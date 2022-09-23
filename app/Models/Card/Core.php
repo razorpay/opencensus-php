@@ -1104,33 +1104,44 @@ class Core extends Base\Core
         return $cardVault->deleteNetworkToken($cardVaultToken);
     }
 
+    // TODO : Refactor later with cards team
     public function updateCardWithTokenData($id, $tokenData)
     {
         $updateData = [];
 
-        if(empty($tokenData['iin']) == false)
+        $card = $this->getCardEntity($id);
+
+        if (empty($tokenData['iin']) === false)
         {
+            $card->setTokenIIN($tokenData['iin']);
             $updateData[Card\Entity::TOKEN_IIN] = $tokenData['iin'];
         }
 
-        if((empty($tokenData['expiry_year']) == false) &&
-            (empty($tokenData['expiry_month']) == false))
+        if ((empty($tokenData['expiry_year']) === false) and
+            (empty($tokenData['expiry_month']) === false))
         {
             $updateData[Card\Entity::TOKEN_EXPIRY_MONTH] = $tokenData['expiry_month'];
 
+            $card->setTokenExpiryMonth($tokenData['expiry_month']);
+
             $expiryYear = $tokenData['expiry_year'];
+
+            $card->setTokenExpiryYear($expiryYear);
 
             $updateData[Card\Entity::TOKEN_EXPIRY_YEAR]  = $expiryYear;
 
             if (strlen($expiryYear) === 2)
             {
+                $card->setTokenExpiryYear('20' . $expiryYear);
                 $updateData[Card\Entity::TOKEN_EXPIRY_YEAR] = '20' . $expiryYear;
             }
         }
 
-        if(empty($updateData) === false)
+        if (empty($updateData) === false)
         {
             $rowsAffected = $this->repo->card->updateById($id, $updateData);
+
+            $this->repo->saveOrFail($card);
 
             if ($rowsAffected === 0)
             {

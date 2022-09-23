@@ -218,6 +218,13 @@ class Repository extends \Razorpay\Spine\Repository
         return $this->newQuery()->whereIn(Common::MERCHANT_ID, $mids)->get();
     }
 
+    public function existsInTable($tableName, $id, $columns = ['*']): bool
+    {
+        $model =  $this->newQuery()->from($tableName)->where(Common::ID, '=', $id)->first();
+
+        return ($model !== null);
+    }
+
     public function saveOrFail($entity, array $options = array())
     {
         $this->saveOrFailImplementation($entity, $options, true);

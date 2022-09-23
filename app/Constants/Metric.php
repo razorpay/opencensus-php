@@ -35,6 +35,9 @@ class Metric
     const ASV_SYNC_ACCOUNT_DEVIATION_TOTAL      = 'asv_sync_account_deviation_total';
     const DB_REQUESTS_BEFORE_MIGRATION          = 'db_requests_before_migration';
     const ASV_SYNC_ACCOUNT_DEVIATION_FAILED     = 'asv_sync_account_deviation_failed';
+    const DUAL_WRITES_TOTAL                     = 'dual_writes_total';
+    const DUAL_WRITES_FAILED                    = 'dual_writes_failed';
+    const DUAL_WRITES_TIME_TAKEN                = 'dual_writes_time_taken';
 
     // Summary type metric names
     // Using '.histogram' as suffix for pattern match to work(refer statsd_mapping.yml) for statsd_exporter

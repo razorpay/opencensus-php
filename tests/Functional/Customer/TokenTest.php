@@ -2117,6 +2117,122 @@ class TokenTest extends TestCase
         $this->assertEquals('2021', $card['token_expiry_year']);
     }
 
+
+    public function testTokenStatusDualWrite()
+    {
+         $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
+
+        $this->app->instance('mpan.cardVault', $cardVault);
+
+        $callable = function ($route, $method, $input)
+        {
+            $response['success'] = true;
+            $token = base64_encode('I2lCam2io3vfu1');
+
+            $response['token'] = 'I2lCam2io3vfu1';
+            $response['fingerprint'] = strrev($token);
+            $response['status'] = 'activated';
+
+            $response['service_provider_tokens'] = [
+                [
+                    'id'             => 'spt_1234abcd',
+                    'entity'         => 'service_provider_token',
+                    'provider_type'  => 'network',
+                    'provider_name'  => 'visa',
+                    'interoperable'  => true,
+                    'status'         => 'suspended',
+                    'provider_data'  => [
+                        'token_reference_number'     => $token,
+                        'payment_account_reference'  => strrev($token),
+                        'token_iin'                  => '400000',
+                        'token_expiry_month'         => '12',
+                        'token_expiry_year'          => '2023',
+                    ],
+                ]
+            ];
+
+            return $response;
+        };
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing($callable);
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+
+        $card = $this->fixtures->create('card', [
+                'country'       => 'IN',
+                "last4"         => "1234",
+                "network"       => "Visa",
+                "type"          => "credit",
+                "issuer"        => "sbi",
+                "expiry_month"  => 12,
+                "expiry_year"   => 2024,
+        ]);
+
+        $token = $this->fixtures->create('token', ['method' => 'card', 'recurring' => false, 'card_id' => $card['id'], ]);
+
+        $cardsNew = \DB::table('cards_new')->select(\DB::raw("*"))->where('id', '=', $card['id'])->get()->first();
+
+        $this->assertNull($cardsNew);
+
+        // Test insert to new entity when update is happening on older original entity
+        $statusPayload = $this->testData['testTokenStatusLive'];
+
+        $statusPayload['request']['content'] = [
+            'token_id'     => $token['id'],
+            'iin'          => '123456',
+            'expiry_month' => '12',
+            'expiry_year'  => '21',
+            'status'       => 'suspended',
+        ];
+
+        $this->ba->appAuth('rzp_test','');
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $statusResponse = $this->startTest($statusPayload);
+
+        $cardsNew = \DB::table('cards_new')->select(\DB::raw("*"))->where('id', '=', $card['id'])->get()->first();
+
+        $this->assertNotNull($cardsNew);
+
+        $cardsNewArray = (array) $cardsNew;
+
+        $this->assertEquals($card['id'], $cardsNewArray['id']);
+
+        $this->assertEquals('123456', $cardsNewArray['token_iin']);
+
+        // test update when both entities exist
+        $statusPayload['request']['content'] = [
+            'token_id'     => $token['id'],
+            'iin'          => '666666',
+            'expiry_month' => '12',
+            'expiry_year'  => '21',
+            'status'       => 'activated',
+        ];
+
+        $this->ba->appAuth('rzp_test','');
+
+        $this->startTest($statusPayload);
+
+        $cards    = \DB::table('cards')->select(\DB::raw("*"))->where('id', '=', $card['id'])->get()->first();
+        $cardsNew = \DB::table('cards_new')->select(\DB::raw("*"))->where('id', '=', $card['id'])->get()->first();
+
+        $this->assertNotNull($cardsNew);
+        $this->assertNotNull($cards);
+
+        $cardsArray    = (array) $cards;
+        $cardsNewArray = (array) $cardsNew;
+
+        $this->assertEquals($cardsArray['id'], $cardsNewArray['id']);
+        $this->assertEquals($cardsArray['updated_at'], $cardsNewArray['updated_at']);
+        $this->assertEquals($cardsArray['created_at'], $cardsNewArray['created_at']);
+        $this->assertEquals('666666', $cardsArray['token_iin']);
+        $this->assertEquals('666666', $cardsNewArray['token_iin']);
+    }
+
     public function testTokenStatusLiveFailure()
     {
         $this->ba->privateAuth();

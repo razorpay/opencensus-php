@@ -629,6 +629,20 @@ return [
         ],
     ],
 
+    'testTokenStatusDualWrite' => [
+        'request' => [
+            'url' => '/internal/tokens/status',
+            'method' => 'post',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testTokenStatusLiveFailure' => [
         'request' => [
             'url' => '/internal/tokens/status',
