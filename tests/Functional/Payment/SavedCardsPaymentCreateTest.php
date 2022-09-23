@@ -597,6 +597,51 @@ class SavedCardsPaymentCreateTest extends TestCase
         Mail::assertQueued(CardSavedMail::class);
     }
 
+    public function testPaymentCreateAndSaveCardGlobalDualWrite()
+    {
+        // set payment data
+        $this->mockSession();
+
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment['save'] = 1;
+
+        $this->payment[Payment::CARD]['number'] = '4000400000000004';
+
+        // create payment and fetch entities
+        $content = $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getDbEntityById('payment', $content['id']);
+
+        $token = $this->getDbEntityById('token', $payment['token_id']);
+
+        $card = $this->getDbEntityById('card', $payment['card_id']);
+
+        $cardsNew = \DB::table('cards_new')->select(\DB::raw("*"))->where('id', '=', $card['id'])->get()->first();
+
+        $this->assertNotNull($cardsNew);
+
+        $cardsNewArray = (array) $cardsNew;
+
+        // validations
+        $this->assertEquals($payment[Payment::CARD_ID], $card['id']);
+        $this->assertEquals($token[Token::CARD_ID], $card['id']);
+        $this->assertEquals($card[Card::ID], $token[Token::CARD_ID]);
+        $this->assertEquals('2024', $card['expiry_year']);
+        $this->assertEquals('12', $card['expiry_month']);
+        $this->assertEquals('0004', $card['last4']);
+
+        // dual write assertions
+        $this->assertEquals($cardsNewArray['id'], $card['id']);
+        $this->assertEquals($cardsNewArray['merchant_id'], $card['merchant_id']);
+        $this->assertEquals($cardsNewArray['vault_token'], $card['vault_token']);
+        $this->assertEquals($cardsNewArray['global_fingerprint'], $card['global_fingerprint']);
+        $this->assertEquals($cardsNewArray['iin'], $card['iin']);
+        $this->assertEquals($cardsNewArray['token_iin'], $card['token_iin']);
+        $this->assertEquals($cardsNewArray['created_at'], $card['created_at']);
+        $this->assertEquals($cardsNewArray['updated_at'], $card['updated_at']);
+    }
+
     /**
      * test emi payment with save card global
      */

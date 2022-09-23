@@ -14,10 +14,10 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Base\Traits\DualWrite;
 use RZP\Models\Admin\Role\TenantRoles;
 use RZP\Models\Base\Traits\ExternalOwner;
 use RZP\Models\Base\Traits\ExternalEntity;
-use RZP\Models\Merchant\RazorxTreatment;
 
 /**
  * @property Merchant\Entity $merchant
@@ -25,7 +25,9 @@ use RZP\Models\Merchant\RazorxTreatment;
  */
 class Entity extends Base\PublicEntity
 {
-    use ExternalOwner, ExternalEntity;
+    use ExternalOwner, ExternalEntity, DualWrite;
+
+    protected $dualWrite = false;
 
     const ID                                    = 'id';
     const MERCHANT_ID                           = 'merchant_id';

@@ -5,8 +5,6 @@ namespace RZP\Models\Card;
 use DB;
 
 use RZP\Models\Base;
-use RZP\Models\Base\Traits\ExternalCore;
-use RZP\Models\Base\Traits\ExternalRepo;
 use RZP\Models\Card;
 use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
@@ -14,6 +12,8 @@ use RZP\Constants\Table;
 use RZP\Models\FundAccount;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Base\Traits\ExternalCore;
+use RZP\Models\Base\Traits\ExternalRepo;
 
 class Repository extends Base\Repository
 {

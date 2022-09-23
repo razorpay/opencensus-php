@@ -12,6 +12,11 @@ class Entity extends \RZP\Base\EloquentEx
     const DELETED_AT = 'deleted_at';
 
     /**
+     * If this is set to true, DualWrite trait will throw an exception unless both writes are successful
+     */
+    const SAVE_OPTION_RAZORPAY_API_STRICT_DUAL_WRITE = 'razorpay_api_strict_dual_write';
+
+    /**
      * Keeps the current action value here to be set by the entity updater
      */
     protected $auditAction = [];
