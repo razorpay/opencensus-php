@@ -309,7 +309,7 @@ class CardVault extends Base\Core
             if ($tempCardMetaDataVariant !== 'on')
             {
 
-             return [];
+             return null;
 
             }
 
