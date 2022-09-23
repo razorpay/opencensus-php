@@ -346,11 +346,15 @@ class PaperNachCiti extends Debit\Base
         $mailData = $this->formatDataForMail($files);
 
         $type = static::GATEWAY . '_' . static::STEP;
+
         $mailable = new NachMail($mailData, $type, $this->gatewayFile->getRecipients());
 
         Mail::queue($mailable);
 
-        $this->sendMail($files);
+        if($this->gatewayFile->getTarget() === Constants::PAPER_NACH_CITI_V2)
+        {
+            $this->sendMail($files);
+        }
     }
 
     protected function sendMail($files)
@@ -376,20 +380,18 @@ class PaperNachCiti extends Debit\Base
                 }
             }
 
-            $this->trace->info(TraceCode::COI_EXPERIMENT,
-                [
-                    'mailData' => $mailData
-                ]);
-
             $type = static::GATEWAY . '_' . static::STEP;
 
-            $mailable = new NachMail2($mailData, $type, $this->gatewayFile->getRecipients());
+            $recipients = ["bangalore.clearing@citi.com", "cgsl.iwdw.ecsdr@citi.com",
+                           "payment-apps-subscriptions@razorpay.com"];
+
+            $mailable = new NachMail2($mailData, $type, $recipients);
 
             Mail::queue($mailable);
         }
         catch (\Exception $ex)
         {
-            $this->trace->error(TraceCode::COI_EXPERIMENT,
+            $this->trace->error(TraceCode::NACH_DEBIT_MAIL_ERROR,
                 [
                     'error while sending Mail' => $ex
                 ]);

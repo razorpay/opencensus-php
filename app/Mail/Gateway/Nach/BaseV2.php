@@ -41,13 +41,10 @@ class BaseV2 extends Mailable
     protected function addRecipients()
     {
         // added internal recipients of razorpay and citi mail ids in gateway parameters
-        // "bangalore.clearing@citi.com", "cgsl.iwdw.ecsdr@citi.com"
-        $citiMailRecipients = ["bangalore.clearing@citi.com", "cgsl.iwdw.ecsdr@citi.com"];
-
-        $this->emails = array_merge($this->emails, $citiMailRecipients);
+        // "bangalore.clearing@citi.com", "cgsl.iwdw.ecsdr@citi.com", "payment-apps-subscriptions@razorpay.com"
 
         $this->to($this->emails);
-
+        
         return $this;
     }
 
