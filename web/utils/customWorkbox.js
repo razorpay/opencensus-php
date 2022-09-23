@@ -7,12 +7,17 @@ import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { BroadcastUpdatePlugin } from 'workbox-broadcast-update';
 
 const ENABLED_CDN_ASSETS = /https:\/\/cdn\.razorpay\.com\/dashboard\/dist\/(js|css)?\/.*\.(js|css)?$/;
+const STALEWHILE_ASSETS = /https:\/\/cdn\.razorpay\.com.*\/dist\/(merchant-entry|merchantLA-entry)?\.*\.(js)?$/;
 const ENABLED_FONTS = /\.(woff|woff2)?$/;
+
+const ENABLED_STATIC_ASSETS = ['/static/analytics/bundle.js', '/static/assets/holidays.js'];
 
 clientsClaim();
 self.skipWaiting();
 
-precacheAndRoute(self.__WB_MANIFEST);
+const __WB_MANIFEST = self.__WB_MANIFEST || [];
+
+precacheAndRoute(__WB_MANIFEST);
 
 registerRoute(
   ({ url: { href = '' } }) => ENABLED_CDN_ASSETS.test(href),
@@ -21,17 +26,22 @@ registerRoute(
     plugins: [
       new BroadcastUpdatePlugin(),
       new CacheableResponsePlugin({
-        statuses: [0, 200],
+        statuses: [200],
       }),
       new ExpirationPlugin({
-        maxAgeSeconds: 60 * 60 * 24 * 30,
+        maxAgeSeconds: 60 * 60 * 24 * 15,
+        maxEntries: __WB_MANIFEST?.length || 200,
+        matchOptions: {
+          ignoreVary: true,
+        },
       }),
     ],
   }),
 );
 
 registerRoute(
-  new RegExp('https://cdn\\.razorpay\\.com.*/dist/(merchant-entry|merchantLA-entry)?\\.*\\.(js)?$'),
+  ({ url: { href = '', pathname } }) =>
+    STALEWHILE_ASSETS.test(href) || ENABLED_STATIC_ASSETS.indexOf(pathname) > -1,
   new StaleWhileRevalidate({
     cacheName: 'static-assets',
     plugins: [new BroadcastUpdatePlugin()],
@@ -47,10 +57,14 @@ registerRoute(
     cacheName: 'fonts',
     plugins: [
       new CacheableResponsePlugin({
-        statuses: [0, 200],
+        statuses: [200],
       }),
       new ExpirationPlugin({
         maxAgeSeconds: 60 * 60 * 24 * 30,
+        maxEntries: 8,
+        matchOptions: {
+          ignoreVary: true,
+        },
       }),
     ],
   }),
