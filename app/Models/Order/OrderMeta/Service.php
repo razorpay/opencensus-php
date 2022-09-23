@@ -98,16 +98,44 @@ class Service extends \RZP\Models\Base\Service
      */
     public function reset1CCOrder(string $orderId)
     {
-        $core = (new Core);
-        $core->validateActive1CCOrderId($orderId);
+        $start = millitime();
 
-        $core->update1CCOrder(
-            $orderId,
+        $this->trace->count(Metric::RESET_ORDER_REQUEST_COUNT,[]);
+
+        $core = (new Core);
+
+        $input = ['order_id' => $orderId];
+
+        try {
+            $core->validateActive1CCOrderId($orderId);
+
+            $core->update1CCOrder(
+                $orderId,
+                [
+                    Order1cc\Fields::COD_FEE => 0,
+                    Order1cc\Fields::SHIPPING_FEE => 0,
+                    Order1cc\Fields::PROMOTIONS => [],
+                ]);
+        } catch (\Throwable $e) {
+            $this->trace->count(Metric::RESET_ORDER_ERROR_COUNT, []);
+
+            $this->trace->error(TraceCode::RESET_ORDER_REQUEST_ERROR,
+                [
+                    'request' =>  $input,
+                    'exception'=> $e->getTrace()
+                ]
+            );
+
+            throw $e;
+        }
+        $this->trace->histogram(Metric::RESET_ORDER_TIME_MILLIS, millitime() - $start, []);
+
+        $this->trace->info(TraceCode::RESET_ORDER_REQUEST,
             [
-                Order1cc\Fields::COD_FEE      => 0,
-                Order1cc\Fields::SHIPPING_FEE => 0,
-                Order1cc\Fields::PROMOTIONS   => [],
-            ]);
+                'request' =>  $input
+            ]
+        );
+
     }
 
     protected function getShippingInfoCacheKey($orderId, $address): string
