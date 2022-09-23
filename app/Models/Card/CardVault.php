@@ -308,7 +308,9 @@ class CardVault extends Base\Core
 
             if ($tempCardMetaDataVariant !== 'on')
             {
-                return [];
+
+             return [];
+
             }
 
             $createdtAt = array_key_exists(CardEntity::CREATED_AT, $card->getAttributes()) ?
@@ -349,6 +351,8 @@ class CardVault extends Base\Core
                 ]
             );
         }
+
+        return [];
     }
 
     public function getBuNamespaceIfApplicable($input, $isRzpX = false ,$gateway=null)

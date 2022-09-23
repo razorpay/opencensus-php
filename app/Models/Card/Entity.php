@@ -98,6 +98,14 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'card';
 
+    /**
+     * If $cardMetaData is null, this means that vault_bu_namespace_card_metadata_variant is not enabled
+     * for the request.
+     *
+     * if $cardMetaData is an empty array, the request is eligible to check if vault_bu_namespace_card_metadata_variant
+     * feature is enabled or not, so as to fetch card metaData from vault service
+     */
+
     protected $cardMetadata = [];
 
     protected $fillable = [
@@ -1450,7 +1458,17 @@ class Entity extends Base\PublicEntity
 
     public function getCardMetadata($key = null)
     {
-        if ($key === null)
+
+        \App::getFacadeRoot()['trace']->info('MISC_TRACE_CODE',
+            [
+                'stack_trace' => debug_backtrace(
+                    DEBUG_BACKTRACE_IGNORE_ARGS, 20),
+                'key' => $key,
+                'isCardMetaNull' => is_null($this->cardMetadata)
+            ]);
+
+        if (($key === null) or
+            ($this->cardMetadata === null))
         {
             return null;
         }
@@ -1459,6 +1477,7 @@ class Entity extends Base\PublicEntity
         {
             $this->cardMetadata = (new Card\CardVault)->getCardMetaData($this);
         }
+
         return $this->cardMetadata[$key] ?? null;
     }
 
