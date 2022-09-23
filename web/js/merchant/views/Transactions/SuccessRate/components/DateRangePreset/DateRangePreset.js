@@ -86,11 +86,6 @@ function DateRangePreset(props) {
               name="endDate"
               onChange={handleDateChange}
               isOutsideRange={isOutsideRange}
-              dateTimeProps={{
-                timeConstraints: {
-                  hours: { max: moment().hours() },
-                },
-              }}
             />
           </div>
         </SuspenseWithLoader>

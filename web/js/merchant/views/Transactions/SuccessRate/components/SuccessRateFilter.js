@@ -25,11 +25,13 @@ const validateDateRange = (dateRange) => {
   const errors = {};
 
   if (!startDate) {
-    errors.date = 'Start Date is required';
+    errors.date = 'Start date is required';
   } else if (!endDate) {
-    errors.date = 'End Date is required';
+    errors.date = 'End date is required';
   } else if (startDate.valueOf() > endDate.valueOf()) {
-    errors.date = 'Start Date cannot be greater than End Date';
+    errors.date = 'Start date cannot be greater than end date';
+  } else if (endDate.valueOf() > moment().endOf('hour').valueOf()) {
+    errors.date = 'End time cannot be greater than current time';
   } else {
     const duration = moment.duration(endDate.diff(startDate));
     const hours = duration.asHours();
@@ -67,9 +69,8 @@ const SuccessRateFilter = (props) => {
     setErrors(errors);
   }, [dateRange]);
 
-  const updateDropdownOptions = activeTab !== 'Overall';
-
   const onSearch = async () => {
+    const updateDropdownOptions = activeTab !== 'Overall';
     const { startDate, endDate } = dateRange;
 
     if (Object.keys(errors).length) {
@@ -95,13 +96,14 @@ const SuccessRateFilter = (props) => {
 
   const onReset = async () => {
     const initialValue = initialFilters();
+    const updateDropdownOptions = false;
     updateDateRange(initialValue);
     setActiveTab('Overall');
     setDefaultInterval(DEFAULT_INTERVAL);
     const payload = queryFilters(updateDropdownOptions);
     await fetchSuccessRate({ payload, updateDropdownOptions });
     const errorsPaylod = getMerchantErrorsPayload(updateDropdownOptions);
-    await fetchMerchantErrors(errorsPaylod);
+    fetchMerchantErrors(errorsPaylod);
     trackSuccessRateEvents(clearFilterSuccessRate(payload));
   };
 
