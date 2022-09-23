@@ -129,7 +129,7 @@ class OneCCShopifyCreateOrder extends Job
                     'attempts' => $this->attempts(),
                     'message'  => 'Deleting the job after configured number of tries. Still unsuccessful.'
                 ]);
-
+            $this->trace->count(Metric::SHOPIFY_1CC_SQS_JOB_EXCEEDED_MAX_RETRY_COUNT, ['job' => $event]);
             $this->delete();
         }
         else
@@ -143,7 +143,7 @@ class OneCCShopifyCreateOrder extends Job
                     'attempts' => $this->attempts(),
                     'delay'    => $delay,
                 ]);
-
+            $this->trace->count(Metric::SHOPIFY_1CC_SQS_JOB_RETRY_COUNT, ['job' => $event]);
             $this->release($delay);
         }
     }

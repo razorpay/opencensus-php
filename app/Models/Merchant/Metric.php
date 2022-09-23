@@ -191,7 +191,10 @@ final class Metric
     const RESET_ORDER_ERROR_COUNT   = 'reset_order_error_count';
     const RESET_ORDER_TIME_MILLIS   = 'reset_order_time_millis';
 
-    const WEBHOOK_PROCESS_REQUEST_1CC_COUNT                  = 'WEBHOOK_PROCESS_REQUEST_1CC_COUNT';
-    const WEBHOOK_PROCESS_REQUEST_1CC_ERROR_COUNT            = 'WEBHOOK_PROCESS_REQUEST_1CC_ERROR_COUNT';
-    const SHOPIFY_WEBHOOK_JOB_FAILED_COUNT                   = 'SHOPIFY_WEBHOOK_JOB_FAILED_COUNT';
+    const WEBHOOK_PROCESS_REQUEST_1CC_COUNT                  = 'webhook_process_request_1cc_count';
+    const WEBHOOK_PROCESS_REQUEST_1CC_ERROR_COUNT            = 'webhook_process_request_1cc_error_count';
+    const SHOPIFY_WEBHOOK_JOB_FAILED_COUNT                   = 'shopify_webhook_job_failed_count';
+
+    const SHOPIFY_1CC_SQS_JOB_EXCEEDED_MAX_RETRY_COUNT       = 'shopify_1cc_sqs_job_exceeded_max_retry_count';
+    const SHOPIFY_1CC_SQS_JOB_RETRY_COUNT                    = 'shopify_1cc_sqs_job_retry_count';
 }
