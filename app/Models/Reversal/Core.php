@@ -1016,7 +1016,7 @@ class Core extends Base\Core
                 {
                     try
                     {
-                        $payout   = $this->repo->payout->findOrFail($payoutId);
+                        $payout = (new Payout\Core)->getAPIModelPayoutFromPayoutService($payoutId);
 
                         $response = $this->repo->transaction(function() use ($input, $payout)
                         {
@@ -1047,6 +1047,9 @@ class Core extends Base\Core
                                     $reversal->getEntityType(),
                                     $reversal);
                             }
+
+                            // todo: check if this step is not required and need to remove it.
+                            $reversal->setIgnoreRelationsForPayoutServiceReversals();
 
                             $reversal = $this->createTransactionFromPayoutReversal($reversal);
 

@@ -62,6 +62,7 @@ class FundTransfer extends Job
                     'fta_id' => $this->ftaId,
                 ]);
 
+            /** @var \RZP\Services\FTS\FundTransfer $transferService */
             $transferService = App::getFacadeRoot()['fts_fund_transfer'];
 
             $transferService->initialize($this->ftaId);

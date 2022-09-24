@@ -4173,6 +4173,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DCC_PAYOUT_DETAILS_ENTITY_COUNTS                          = "DCC_PAYOUT_DETAILS_ENTITY_COUNTS";
     const DCC_PAYOUT_DATA_FETCH_RESPONSE                            = "DCC_PAYOUT_DATA_FETCH_RESPONSE";
 
+    const FETCH_PAYOUT_SERVICE_PAYOUT                            = "FETCH_PAYOUT_SERVICE_PAYOUT";
 
     // Sub Balance Adjustment
     const ADJUSTMENT_BETWEEN_BANKING_BALANCE_CREATE_REQUEST = 'ADJUSTMENT_BETWEEN_BANKING_BALANCE_CREATE_REQUEST';

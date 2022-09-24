@@ -422,4 +422,9 @@ class Entity extends Base\PublicEntity
     }
 
     // -------------------- End Accessors ------------------------------
+
+    public function setIgnoreRelationsForPayoutServiceReversals()
+    {
+        $this->ignoredRelations = [self::ENTITY];
+    }
 }

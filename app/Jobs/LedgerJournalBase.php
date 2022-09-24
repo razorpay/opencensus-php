@@ -25,7 +25,7 @@ class LedgerJournalBase extends Job
     protected $mode;
 
     protected $ledgerResponse;
-    
+
     // ledger transactor id prefix
     const PAYOUT_PREFIX          = "pout_";
     const REVERSAL_PREFIX        = "rvrsl_";

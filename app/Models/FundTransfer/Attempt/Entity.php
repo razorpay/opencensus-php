@@ -4,6 +4,7 @@ namespace RZP\Models\FundTransfer\Attempt;
 
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Payout;
 use RZP\Models\Card\Issuer;
 use RZP\Models\Payment\Refund;
 use RZP\Constants\Entity as E;
@@ -437,6 +438,21 @@ class Entity extends Base\PublicEntity
         }
 
         $source = $this->source()->first();
+
+        if ($this->getSourceType() === Type::PAYOUT)
+        {
+            if ((empty($source) === false) and
+                ($source->getIsPayoutService() === false))
+            {
+                return $source;
+            }
+
+            $payout = (new Payout\Core)->getAPIModelPayoutFromPayoutService($this->getSourceId());
+
+            $this->source()->associate($payout);
+
+            return $payout;
+        }
 
         if (empty($source) === false)
         {

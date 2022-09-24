@@ -8,27 +8,32 @@ use Queue;
 use Carbon\Carbon;
 
 use RZP\Constants\Mode;
-use RZP\Jobs\LedgerJournalTest;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
+use RZP\Jobs\LedgerJournalTest;
 use RZP\Constants\Entity as E;
 use RZP\Jobs\LedgerJournalLive;
 use RZP\Tests\Functional\TestCase;
 use RZP\Services\BatchMicroService;
+use RZP\Jobs\PayoutServiceDataMigration;
 use RZP\Jobs\TokenRegistrationAutoCharge;
+use RZP\Models\Payout\Entity as PayoutEntity;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Invoice\InvoiceTestTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Models\Payout\DataMigration as PayoutDataMigration;
 
 class LedgerJournalJobTest extends TestCase
 {
     use InvoiceTestTrait;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
+    use RequestResponseFlowTrait;
 
 
     protected function setUp(): void
@@ -64,6 +69,54 @@ class LedgerJournalJobTest extends TestCase
 
         // assert payout
         $this->assertEquals('HNjsypA96SgJKJ', $payout->getTransactionId());
+
+        // assert transaction
+        $this->assertEquals('HNjsypA96SgJKJ', $transaction->getId());
+        $this->assertEquals('SamplePoutId12', $transaction->getEntityId());
+        $this->assertEquals('payout', $transaction->getType());
+        $this->assertEquals('24500', $transaction->getBalance());
+    }
+
+    public function testPayoutTransactionCreationForPSPayout()
+    {
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->fundAccount = $this->createVpaFundAccount();
+
+        $this->fixtures->payout->createPayoutWithoutTransaction([
+                                                                    'id'              => 'SamplePoutId12',
+                                                                    'status'          => 'processed',
+                                                                    'pricing_rule_id' => '1nvp2XPMmaRLxb',
+                                                                    'balance_id'      => $balance->getId(),
+                                                                    'fund_account_id' => $this->fundAccount->getId(),
+                                                                    'is_payout_service' => 1
+                                                                ]);
+
+        $payout = $this->getLastEntity('payout', true, 'test');
+
+        (new PayoutServiceDataMigration('test', [
+            PayoutDataMigration\Processor::FROM => $payout[PayoutEntity::CREATED_AT],
+            PayoutDataMigration\Processor::TO   => $payout[PayoutEntity::CREATED_AT],
+            PayoutEntity::BALANCE_ID            => $payout[PayoutEntity::BALANCE_ID]
+        ]))->handle();
+
+        $id = $payout[PayoutEntity::ID];
+
+        PayoutEntity::stripSignWithoutValidation($id);
+
+        $migratedPayout = \DB::connection('live')->select("select * from ps_payouts where id = '$id'")[0];
+
+        $this->assertEquals($payout[PayoutEntity::ID], 'pout_' .$migratedPayout->id);
+
+        $this->fixtures->edit('payout', $id, ['id' => 'Gg7sgBZgvYjlSC']);
+
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $testData = &$this->testData['testPayoutTransactionCreation'];
+        $ledgerJournalJob = new LedgerJournalTest($testData['payload']);
+        $ledgerJournalJob->handle();
+
+        $transaction = $this->getDbLastEntity('transaction');
 
         // assert transaction
         $this->assertEquals('HNjsypA96SgJKJ', $transaction->getId());

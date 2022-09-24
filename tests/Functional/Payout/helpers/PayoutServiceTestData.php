@@ -449,6 +449,22 @@ return [
         ],
     ],
 
+    'testPayoutServiceFtaCreationWithoutPayoutInAPI' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/create_fta/Gg7sgBZgvYjlSB',
+            'content' => [
+                "id" => "Gg7sgBZgvYjlSB",
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'created',
+                'error'  => null
+            ],
+        ],
+    ],
+
     'testCreatePayoutServicePaymentCreation' => [
         'request' => [
             'method' => 'POST',
@@ -1468,7 +1484,6 @@ return [
                 'fund_account_id' => 'fa_100000000000fa',
                 'narration'       => 'test Merchant Fund Transfer',
                 'purpose'         => 'refund',
-                'status'          => 'cancelled',
                 'mode'            => 'IMPS',
                 'tax'             => 90,
                 'fees'            => 590,
@@ -1491,7 +1506,6 @@ return [
                 'fund_account_id' => 'fa_100000000000fa',
                 'narration'       => 'test Merchant Fund Transfer',
                 'purpose'         => 'refund',
-                'status'          => 'cancelled',
                 'mode'            => 'IMPS',
                 'tax'             => 90,
                 'fees'            => 590,
@@ -1816,7 +1830,7 @@ return [
             'method'  => 'POST',
             'url'     => '/payouts_service/create_ledger',
             'content' => [
-                "id"                   => "Gg7sgBZgvYjlSB",
+                "id" => "Gg7sgBZgvYjlSB",
             ],
         ],
         'response' => [

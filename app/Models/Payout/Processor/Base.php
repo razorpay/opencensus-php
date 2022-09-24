@@ -1399,11 +1399,11 @@ class Base extends BaseCore
         }
         else if ($payout->getIsPayoutService() === true)
         {
-            // We only have to send mail/webhook if the payout fails.
-            if ($payout->getStatus() === Status::FAILED)
-            {
-                (new PayoutsStatusDetailsCore())->create($payout);
-            }
+            //// We only have to send mail/webhook if the payout fails.
+            //if ($payout->getStatus() === Status::FAILED)
+            //{
+            //    (new PayoutsStatusDetailsCore())->create($payout);
+            //}
         }
 
         return $payout;
@@ -3248,6 +3248,8 @@ class Base extends BaseCore
                         $payout->setId($id);
 
                         $payout->setIsPayoutService(1);
+
+                        $payout->setSavePayoutServicePayoutFlag(true);
                     }
 
                     if (empty($payout->getStatus()) === true)
@@ -3409,21 +3411,22 @@ class Base extends BaseCore
      * @param string $payoutId
      * @return array
      */
-    public function createFTAForPayoutService(string $payoutId): array
+    public function createFTAForPayoutService(Entity $payout): array
     {
         try
         {
            return $this->mutex->acquireAndRelease(
-               self::FTA_CREATION_PAYOUT_SERVICE . $payoutId,
-               function() use ($payoutId)
+               self::FTA_CREATION_PAYOUT_SERVICE . $payout->getId(),
+               function() use ($payout)
                {
+                   $payoutId = $payout->getId();
+
                    $this->trace->info(TraceCode::FTA_CREATE_REQUEST_FROM_MICROSERVICE,
                        [
                            'payout_id' => $payoutId
                        ]);
 
-                   /** @var Entity $payout */
-                   $payout = $this->repo->payout->findOrFail($payoutId);
+                   $payout->reload();
 
                    $fta = $this->repo->fund_transfer_attempt->getAttemptBySourceId($payoutId, Entity::PAYOUT);
 
@@ -3467,7 +3470,7 @@ class Base extends BaseCore
                 Trace::ERROR,
                 TraceCode::FTA_CREATION_FAILED_FOR_MICROSERVICE,
                 [
-                    'payout_id' => $payoutId,
+                    'payout_id' => $payout->getId(),
                 ]
             );
 
@@ -3497,10 +3500,12 @@ class Base extends BaseCore
             self::LEDGER_CREATION_PAYOUT_SERVICE . $payoutId,
             function() use ($payoutId, $params)
             {
+                $payout = null;
+
                 try
                 {
                     /** @var Entity $payout */
-                    $payout = $this->repo->payout->findOrFail($payoutId);
+                    $payout = (new Payout\Core)->getAPIModelPayoutFromPayoutService($payoutId);
 
                     $queueFlag = $params[Payout\Entity::QUEUE_IF_LOW_BALANCE] ?? false;
 
@@ -3558,14 +3563,14 @@ class Base extends BaseCore
                         ]
                     );
 
-                    if (is_null($payout) === false)
-                    {
-                        $payout->setStatus(Status::FAILED);
-
-                        $payout->setFailureReason('Payout failed. Contact support for help');
-
-                        $this->repo->saveOrFail($payout);
-                    }
+                    //if (is_null($payout) === false)
+                    //{
+                    //    $payout->setStatus(Status::FAILED);
+                    //
+                    //    $payout->setFailureReason('Payout failed. Contact support for help');
+                    //
+                    //    $this->repo->saveOrFail($payout);
+                    //}
 
                     return [
                         Entity::STATUS         => null,
@@ -3946,7 +3951,10 @@ class Base extends BaseCore
                         'response'       => $response
                     ]);
 
-                return $this->repo->payout->findByPublicId($response[Entity::ID]);
+                $id = $response[Entity::ID];
+                $id = Entity::verifyIdAndStripSign($id);
+
+                return (new Payout\Core)->getAPIModelPayoutFromPayoutService($id);
             }
         }
 

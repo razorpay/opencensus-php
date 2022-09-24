@@ -56,8 +56,18 @@ class Repository extends Base\Repository
 
     protected $entity = 'payout';
 
+    /**
+     * @param Entity $payout
+     * @param array  $options
+     */
     public function saveOrFail($payout, array $options = array())
     {
+        if (($payout->getIsPayoutService() === true) and
+            ($payout->getSavePayoutServicePayoutFlag() === false))
+        {
+            return;
+        }
+
         $isHighTpsPayout = Core::isHighTpsMerchant($payout);
 
         ($isHighTpsPayout === true) ? parent::saveOrFailWithoutEsSync($payout, $options) : parent::saveOrFail($payout, $options);
@@ -2611,6 +2621,19 @@ class Repository extends Base\Repository
     {
         \DB::connection($this->getPayoutsServiceConnection())
            ->transaction($callback);
+    }
+
+    public function getPayoutServicePayout(string $id)
+    {
+        $tableName = Table::PAYOUT;
+
+        if (in_array($this->app['env'], ['testing', 'testing_docker'], true) === true)
+        {
+            $tableName = 'ps_payouts';
+        }
+
+        return \DB::connection($this->getPayoutsServiceConnection())
+                  ->select("select * from $tableName where id = '$id' limit 1");
     }
 
     public function fetchCountOfProcessedPayoutsInLast24Hours(string $merchantId)

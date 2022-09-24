@@ -324,6 +324,14 @@ class Base extends FundAccountPayout\Base
         $this->repo->saveOrFail($payout);
     }
 
+    /**
+     * @param $payout Entity
+     * @param $ledgerResponse
+     *
+     * @return mixed
+     * @throws LogicException
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
     public function createTransactionForLedgerReverseShadow($payout, $ledgerResponse)
     {
         $this->trace->info(
@@ -346,7 +354,10 @@ class Base extends FundAccountPayout\Base
 
             (new TxnCore)->saveFeeDetails($txn, $feeSplit);
 
-            $this->app->events->dispatch('api.transaction.created', $txn);
+            if ($payout->getIsPayoutService() === false)
+            {
+                $this->app->events->dispatch('api.transaction.created', $txn);
+            }
         }
 
         $this->trace->info(

@@ -1079,6 +1079,14 @@ class Core extends Base\Core
         if ($isPayoutService === true)
         {
             $this->updateWithDetailsBeforeFtaReconForPayoutService($payout, $ftaData);
+
+            $this->trace->info(
+                TraceCode::PAYOUT_UPDATED_AFTER_FTA_RECON,
+                [
+                    'payout_id' => $payout->getId(),
+                ]);
+
+            return;
         }
 
         $initialUtr = $payout->getUtr();
@@ -1838,6 +1846,8 @@ class Core extends Base\Core
         if ($payout->getIsPayoutService() === true)
         {
             $this->payoutCancelServiceClient->cancelPayoutViaMicroservice($payout->getId(), $remarks);
+
+            return $payout->reload();
         }
 
         // If Payout has purpose 'rzp_fees' we won't allow merchant to cancel that
@@ -3838,53 +3848,56 @@ class Core extends Base\Core
         // This is to ensure that the process that is working on the payout
         // resource, releases mutex on the payout only once all entities are
         // saved in the database.
-        $this->mutex->acquireAndRelease(
-            'failure_payout_id_' . $payout->getId(),
-            function () use ($payout, $ftaFailureReason, $ftaBankStatusCode)
-            {
-                // reloading the payout here to ensure if any other process
-                // gets a mutex on payout resource, it gets a fresh copy
-                // of payout to work.
-                $this->repo->reload($payout);
+        if ($payout->getIsPayoutService() === false)
+        {
+            $this->mutex->acquireAndRelease(
+                'failure_payout_id_' . $payout->getId(),
+                function () use ($payout, $ftaFailureReason, $ftaBankStatusCode)
+                {
+                    // reloading the payout here to ensure if any other process
+                    // gets a mutex on payout resource, it gets a fresh copy
+                    // of payout to work.
+                    $this->repo->reload($payout);
 
-                $this->repo->transaction(
-                    function() use ($payout, $ftaFailureReason, $ftaBankStatusCode) {
+                    $this->repo->transaction(
+                        function() use ($payout, $ftaFailureReason, $ftaBankStatusCode) {
 
-                        $previousStatus = $payout->getStatus();
+                            $previousStatus = $payout->getStatus();
 
-                        $payout->setStatus(Status::FAILED);
+                            $payout->setStatus(Status::FAILED);
 
-                        $payout->setFailureReason($ftaFailureReason);
+                            $payout->setFailureReason($ftaFailureReason);
 
-                        $payout->setStatusCode($ftaBankStatusCode);
+                            $payout->setStatusCode($ftaBankStatusCode);
 
-                        if ($this->shouldHandleRewardForFailedPayout($payout) === true)
-                        {
-                            (new Credits\Transaction\Core)->reverseCreditsForSource(
-                                $payout->getId(),
-                                Constants\Entity::PAYOUT,
-                                $payout);
-                        }
+                            if ($this->shouldHandleRewardForFailedPayout($payout) === true)
+                            {
+                                (new Credits\Transaction\Core)->reverseCreditsForSource(
+                                    $payout->getId(),
+                                    Constants\Entity::PAYOUT,
+                                    $payout);
+                            }
 
-                        $balance = $payout->balance;
+                            $balance = $payout->balance;
 
-                        if ($balance->getType() === Merchant\Balance\Type::BANKING)
-                        {
-                            $this->decreaseFreePayoutsConsumedAndUnsetFeeTypeIfApplicable($payout);
+                            if ($balance->getType() === Merchant\Balance\Type::BANKING)
+                            {
+                                $this->decreaseFreePayoutsConsumedAndUnsetFeeTypeIfApplicable($payout);
 
-                        }
+                            }
 
-                        $this->repo->saveOrFail($payout);
+                            $this->repo->saveOrFail($payout);
 
-                        if ($payout->isBalanceAccountTypeDirect() === true)
-                        {
-                            (new FeeRecovery\Core)->handlePayoutStatusUpdate($payout, $previousStatus);
-                        }
-                    });
-            },
-            self::PAYOUT_FAILURE_MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
-        );
+                            if ($payout->isBalanceAccountTypeDirect() === true)
+                            {
+                                (new FeeRecovery\Core)->handlePayoutStatusUpdate($payout, $previousStatus);
+                            }
+                        });
+                },
+                self::PAYOUT_FAILURE_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+            );
+        }
 
         if ($payout->getIsPayoutService() === true)
         {
@@ -3928,7 +3941,7 @@ class Core extends Base\Core
                 }
             }
 
-            (new PayoutsStatusDetailsCore())->create($payout);
+            //(new PayoutsStatusDetailsCore())->create($payout);
 
         }
         else
@@ -4596,16 +4609,26 @@ class Core extends Base\Core
             return;
         }
 
+        // if update in payout service side fails the the network call itself will fail and hence won't reach this part of code.
+        // This part of code is to update FTA and internal entity which will be deprecated and the route used here is a manual update route.
+        // Hence for Payout Service payouts we won't be checking if the below fields were changed in the payout.
+
         // Only updating fta failure reason if payout failure reason was updated during this request.
+        // For payout service payouts the $payout variable is not updated. Hence bypassing the wasChanged()
+        // check for payout service payouts.
         if ((empty($input[Entity::FAILURE_REASON]) === false) and
-            ($payout->wasChanged(Entity::FAILURE_REASON) === true))
+            (($payout->wasChanged(Entity::FAILURE_REASON) === true) or
+             ($payout->getIsPayoutService() === true)))
         {
             $fta->setFailureReason($input[Entity::FAILURE_REASON]);
         }
 
         // Only updating fta status if payout status was updated during this request.
+        // For payout service payouts the $payout variable is not updated. Hence bypassing the wasChanged()
+        // check for payout service payouts.
         if ((empty($input[Entity::STATUS]) === false) and
-            ($payout->wasChanged(Entity::STATUS) === true))
+            (($payout->wasChanged(Entity::STATUS) === true) or
+             ($payout->getIsPayoutService() === true)))
         {
             $fta->setStatus($input[Entity::STATUS]);
         }
@@ -5551,8 +5574,106 @@ class Core extends Base\Core
                 Entity::ID => $payoutId
             ]);
 
+        $payout = $this->getAPIModelPayoutFromPayoutService($payoutId);
+
         return $this->getProcessor('fund_account_payout')
-                    ->createFTAForPayoutService($payoutId);
+                    ->createFTAForPayoutService($payout);
+    }
+
+    public function getAPIModelPayoutFromPayoutService(string $id)
+    {
+        $this->trace->info(
+            TraceCode::FETCH_PAYOUT_SERVICE_PAYOUT,
+            [
+                Entity::PAYOUT_ID => $id
+            ]);
+
+        $payoutServicePayouts = $this->repo->payout->getPayoutServicePayout($id);
+
+        if (count($payoutServicePayouts) === 0)
+        {
+            return null;
+        }
+
+        $psPayout = $payoutServicePayouts[0];
+
+        $payout = new Entity;
+
+        $payout->setIsPayoutService(1);
+        $payout->setAmount($psPayout->amount);
+        $payout->setBalanceId($psPayout->balance_id);
+        $payout->setCancellationUserId($psPayout->cancellation_user_id);
+        $payout->setChannel($psPayout->channel);
+        $payout->setCreatedAt($psPayout->created_at);
+        $payout->setCurrency($psPayout->currency);
+        $payout->setFailureReason($psPayout->failure_reason);
+        $payout->setFeeType($psPayout->fee_type);
+        $payout->setFees($psPayout->fees);
+        $payout->setFtsTransferId($psPayout->fts_transfer_id);
+        $payout->setFundAccountId($psPayout->fund_account_id);
+        $payout->setId($psPayout->id);
+        $payout->setIdempotencyKey($psPayout->idempotency_key);
+        $payout->setMerchantId($psPayout->merchant_id);
+        $payout->setMethod($psPayout->method);
+        $payout->setMode($psPayout->mode);
+        $payout->setNarration($psPayout->narration);
+        $payout->setAttribute(Entity::NOTES, json_decode($psPayout->notes));
+        $payout->setOnHoldAt($psPayout->on_hold_at);
+        $payout->setRawAttribute(Entity::ORIGIN, $psPayout->origin);
+        $payout->setPayoutLinkId($psPayout->payout_link_id);
+        $payout->setPricingRuleId($psPayout->pricing_rule_id);
+        $payout->setQueuedAt($psPayout->queued_at);
+        $payout->setQueuedReason($psPayout->queued_reason);
+        $payout->setReferenceId($psPayout->reference_id);
+        $payout->setRegisteredName($psPayout->registered_name);
+        $payout->setRemarks($psPayout->remarks);
+        $payout->setScheduledAt($psPayout->scheduled_at);
+        $payout->setRawAttribute(Entity::STATUS, $psPayout->status);
+        $payout->setStatusCode($psPayout->status_code);
+        $payout->setTax($psPayout->tax);
+        $payout->setUpdatedAt($psPayout->updated_at);
+        $payout->setUserId($psPayout->user_id);
+        $payout->setUtr($psPayout->utr);
+        //$payout->setWorkflowFeature($psPayout->workflow_feature);
+        $payout->setStatusDetailsId($psPayout->status_details_id);
+        //$payout->setScheduledOn($psPayout->scheduled_on);
+
+        // Directly calling setRawAttribute to avoid mutators and conversions.
+        $payout->setRawAttribute(Entity::NOTES, $psPayout->notes);
+        $payout->setRawAttribute(Entity::ORIGIN, $psPayout->origin);
+
+        if (empty($psPayout->purpose) === false)
+        {
+            $payout->setPurpose($psPayout->purpose);
+        }
+
+        if (empty($psPayout->purpose_type) === false)
+        {
+            $payout->setPurposeType($psPayout->purpose_type);
+        }
+
+        if (empty($psPayout->batch_id) === false)
+        {
+            $payout->setBatchId($psPayout->batch_id);
+        }
+
+        if (empty($psPayout->transaction_id) === false)
+        {
+            $txn = new Transaction\Entity;
+            $txn->setId($psPayout->transaction_id);
+            $txn->setEntityId($payout->getId());
+            $txn->setType('payout');
+            $payout->transaction()->associate($txn);
+            $payout->unsetRelation('transaction');
+        }
+
+        // This is need to showcase $payout as freshly fetched entity and not like a variable on which many
+        // setters are called. After doing this isDirty will give false.
+        $payout->syncOriginal();
+
+        $payout->setConnection($this->mode);
+
+        return $payout;
     }
 
     public function createPayoutServiceTransaction(array $input)
@@ -5616,9 +5737,8 @@ class Core extends Base\Core
                     return;
                 }
 
-                $reversal = $this->repo->transaction(
+                $this->repo->transaction(
                     function () use ($payout, $reverseReason, $ftaBankStatusCode, $ftsSourceAccountInformation, $ftaStatus) {
-
                         $reversalRequest = [
                             'failure_reason' => $reverseReason,
                         ];
@@ -5646,7 +5766,7 @@ class Core extends Base\Core
                             $this->decreaseFreePayoutsConsumedAndUnsetFeeTypeIfApplicable($payout);
                         }
 
-                        $previousStatus = $payout->getStatus();
+                        //$previousStatus = $payout->getStatus();
 
                         // For certain cases like  where a payout is being marked
                         // as reversed  through recon flows(as in RBL), the above
@@ -5657,20 +5777,20 @@ class Core extends Base\Core
                         // override payout status. In order to ensure status of
                         // payout is reversed in the system, we are setting the
                         // status at the end
-                        $payout->setStatus(Status::REVERSED);
+                        //$payout->setStatus(Status::REVERSED);
 
-                        $reversal = $this->repo->reversal->findReversalForPayout($payout->getId());
+                        //$reversal = $this->repo->reversal->findReversalForPayout($payout->getId());
 
                         // Need to keep this here because handlePayoutStatusUpdate needs the correct payout status
-                        if ($payout->isBalanceAccountTypeDirect() === true) {
-                            (new FeeRecovery\Core)->handlePayoutStatusUpdate($payout, $previousStatus, $reversal);
-                        }
+                        //if ($payout->isBalanceAccountTypeDirect() === true) {
+                        //    (new FeeRecovery\Core)->handlePayoutStatusUpdate($payout, $previousStatus, $reversal);
+                        //}
 
-                        $this->repo->saveOrFail($payout);
+                        //$this->repo->saveOrFail($payout);
 
-                        (new PayoutsStatusDetailsCore())->create($payout);
+                        //(new PayoutsStatusDetailsCore())->create($payout);
 
-                        return $reversal;
+                        //return $reversal;
                     });
             },
             self::PAYOUT_REVERSAL_MUTEX_LOCK_TIMEOUT,
@@ -5814,12 +5934,12 @@ class Core extends Base\Core
             }
         }
 
-        $payout->setStatus(Status::PROCESSED);
-
-        $this->repo->saveOrFail($payout);
-        // webhook handled in payout service
-
-        (new PayoutsStatusDetailsCore())->create($payout);
+        //$payout->setStatus(Status::PROCESSED);
+        //
+        //$this->repo->saveOrFail($payout);
+        //// webhook handled in payout service
+        //
+        //(new PayoutsStatusDetailsCore())->create($payout);
 
     }
 
@@ -6344,8 +6464,13 @@ class Core extends Base\Core
 
     public function createTransactionInLedgerReverseShadowFlow(string $entityId, array $ledgerResponse)
     {
+        /** @var Entity $payout */
         $payout = $this->repo->payout->find($entityId);
 
+        if (empty($payout) === true)
+        {
+            $payout = $this->getAPIModelPayoutFromPayoutService($entityId);
+        }
         if (self::isPayoutTransactionDualWriteEnabled($payout) === false)
         {
             throw new Exception\LogicException('Merchant does not have the ledger reverse shadow feature flag enabled'

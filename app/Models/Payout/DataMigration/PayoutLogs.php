@@ -45,7 +45,8 @@ class PayoutLogs
             {
                 if ($previousStatus === null)
                 {
-                    if ($status === Status::PENDING)
+                    if (($status === Status::PENDING) or
+                        ($status === Status::CREATE_REQUEST_SUBMITTED))
                     {
                         $previousStatus = $status;
 

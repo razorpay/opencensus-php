@@ -360,6 +360,12 @@ class Entity extends Base\PublicEntity
     protected $composite = false;
 
     /*
+     * We will check this flag while calling saveOrFail on payout.
+     * If it is payout service payout and this flag is not set then we will not go ahead with saving the entity.
+     */
+    protected $savePayoutServicePayout = false;
+
+    /*
     This variable is defined to store the expected fee type during payout create or payout process (for states like
     queued, pending, scheduled, etc. It is also used to decrement the counter for free payouts in async manner for the
     payouts where it was increased and then the payout didn't get the fee type as free payout.
@@ -1045,6 +1051,11 @@ class Entity extends Base\PublicEntity
         return ($this->syncFtsFundTransfer === true);
     }
 
+    public function getSavePayoutServicePayoutFlag()
+    {
+        return $this->savePayoutServicePayout;
+    }
+
     public function getFta()
     {
         return $this->fta;
@@ -1500,6 +1511,11 @@ class Entity extends Base\PublicEntity
         $this->syncFtsFundTransfer = $flag;
     }
 
+    public function setSavePayoutServicePayoutFlag(bool $value)
+    {
+        $this->savePayoutServicePayout = $value;
+    }
+
     public function setFta (FundTransfer\Attempt\Entity $fta)
     {
         $this->fta = $fta;
@@ -1542,6 +1558,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CHANNEL, $channel);
     }
 
+    public function setCurrency($currency)
+    {
+        $this->setAttribute(self::CURRENCY, $currency);
+    }
+
     public function setTax($tax)
     {
         $this->setAttribute(self::TAX, $tax);
@@ -1555,6 +1576,11 @@ class Entity extends Base\PublicEntity
     public function setMethod($method)
     {
         $this->setAttribute(self::METHOD, $method);
+    }
+
+    public function setNarration($narration)
+    {
+        $this->setAttribute(self::NARRATION, $narration);
     }
 
     public function setMode($mode)
@@ -1834,14 +1860,49 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ID, $id);
     }
 
+    public function setIdempotencyKey($idempotencyKey)
+    {
+        $this->setAttribute(self::IDEMPOTENCY_KEY, $idempotencyKey);
+    }
+
     public function setTransactionId($txnId)
     {
         return $this->setAttribute(self::TRANSACTION_ID, $txnId);
     }
 
+    public function setMerchantId($merchantId)
+    {
+        return $this->setAttribute(self::MERCHANT_ID, $merchantId);
+    }
+
+    public function setBalanceId($balanceId)
+    {
+        return $this->setAttribute(self::BALANCE_ID, $balanceId);
+    }
+
+    public function setFundAccountId($fundAccountId)
+    {
+        return $this->setAttribute(self::FUND_ACCOUNT_ID, $fundAccountId);
+    }
+
+    public function setReferenceId($referenceId)
+    {
+        $this->setAttribute(self::REFERENCE_ID, $referenceId);
+    }
+
+    public function setUserId($userId)
+    {
+        $this->setAttribute(self::USER_ID, $userId);
+    }
+
     public function setStatusDetailsId($id)
     {
         $this->setAttribute(self::STATUS_DETAILS_ID, $id);
+    }
+
+    public function setRawAttribute(string $key, $value)
+    {
+        $this->attributes[$key] = $value;
     }
 
     // ============================= END SETTERS =============================
@@ -3190,6 +3251,22 @@ class Entity extends Base\PublicEntity
             ->get();
 
         return $sourceDetails->isEmpty() === false;
+    }
+
+    public function reload()
+    {
+        if ($this->getIsPayoutService() === false)
+        {
+            return parent::reload();
+        }
+
+        $instance = (new Core)->getAPIModelPayoutFromPayoutService($this->getId());
+
+        $this->attributes = $instance->attributes;
+
+        $this->original = $instance->original;
+
+        return $this;
     }
 
     public function setPayoutStatusAfterLedgerFailureAndDispatchEvent(string $errorCode = null, string $errorReason = null)

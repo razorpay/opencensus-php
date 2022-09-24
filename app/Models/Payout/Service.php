@@ -1589,7 +1589,12 @@ class Service extends Base\Service
         (new Validator)->validateInput(Validator::CANCEL_PAYOUT, $input);
 
         /** @var Entity $payout */
-        $payout = $this->repo->payout->findByPublicIdAndMerchant($payoutId, $this->merchant);
+        $payout = $this->core->getAPIModelPayoutFromPayoutService(Entity::stripSignWithoutValidation($payoutId));
+
+        if (empty($payout) === true)
+        {
+            $payout = $this->repo->payout->findByIdAndMerchant($payoutId, $this->merchant);
+        }
 
         $remarks = $input[Entity::REMARKS] ?? null;
 
@@ -2428,7 +2433,19 @@ class Service extends Base\Service
     public function updatePayoutStatusManually(string $id, array $input)
     {
         /** @var Entity $payout */
-        $payout = $this->repo->payout->findOrFail($id);
+        try
+        {
+            $payout = $this->repo->payout->findOrFail($id);
+        }
+        catch (\Throwable $exception)
+        {
+            $payout = $this->core->getAPIModelPayoutFromPayoutService($id);
+
+            if (empty($payout) === true)
+            {
+                throw $exception;
+            }
+        }
 
         (new Validator)->validateInput(Validator::PAYOUT_STATUS_MANUAL, $input);
 
@@ -2673,15 +2690,29 @@ class Service extends Base\Service
 
         (new Validator)->validateInput(Validator::PAYOUT_BULK_STATUS_UPDATE_MANUAL, $input);
 
-        $payouts = $this->repo->payout->findMany($input[Entity::PAYOUT_IDS]);
+        $payoutIds = $input[Entity::PAYOUT_IDS];
+
+        $payouts = $this->repo->payout->findMany($payoutIds);
 
         $failedIds = [];
         $processedIds = [];
 
+        // In this for loop we will update only API payouts.
+        // API payout ids are removed from the payout ids list so that we have list of payout service payouts.
+        /** @var Entity $payout */
         foreach ($payouts as $payout)
         {
             try
             {
+                if ($payout->getIsPayoutService() === false)
+                {
+                    array_delete($payout->getId(), $payoutIds);
+                }
+                else
+                {
+                    continue;
+                }
+
                 $this->updatePayoutAndFTAManually($payout, $input);
 
                 $processedIds[] = $payout->getId();
@@ -2701,11 +2732,51 @@ class Service extends Base\Service
             }
         }
 
-        return [
-            'total_count'   => count($payouts),
-            'processed_ids' => $processedIds,
-            'failed_ids'    => $failedIds,
+        $result = [
+            'total_count'                  => count($payouts),
+            'total_payout_service_payouts' => 0
         ];
+
+        foreach ($payoutIds as $payoutId)
+        {
+            try
+            {
+                $payout = $this->core->getAPIModelPayoutFromPayoutService($payoutId);
+
+                if (empty($payout) === true)
+                {
+                    continue;
+                }
+
+                $this->updatePayoutAndFTAManually($payout, $input);
+
+                $result['total_payout_service_payouts']++;
+
+                $processedIds[] = $payout->getId();
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::PAYOUT_BULK_MANUAL_STATUS_UPDATE_EXCEPTION,
+                    [
+                        'payout_id'         => $payoutId,
+                        'failure_reason'    => $e->getMessage(),
+                    ]);
+
+                $failedIds[] = ["{$payoutId} - {$e->getMessage()}"];
+            }
+        }
+
+        $result['total_count'] += $result['total_payout_service_payouts'];
+
+        $result[] = [
+            'processed_ids'                => $processedIds,
+            'failed_ids'                   => $failedIds,
+        ];
+
+        return $result;
     }
 
     protected function updatePayoutAndFTAManually(Entity $payout, array $input) : Entity
