@@ -64,6 +64,13 @@ class Core extends Base\Core
 
         $this->card = $card;
 
+        $iin = $this->fillNetworkDetails($card, $input);
+
+        if (empty($iin) === false)
+        {
+            $card->iinRelation()->associate($iin);
+        }
+
         /**
          * Allow setting of vault token and fingerprint if it is the PG flow
          *
@@ -88,13 +95,6 @@ class Core extends Base\Core
         }
 
         $this->saveCardMetaData($card, $input, $isRzpX);
-
-        $iin = $this->fillNetworkDetails($card, $input);
-
-        if (empty($iin) === false)
-        {
-            $card->iinRelation()->associate($iin);
-        }
 
         if ($dummyProcessing === false)
         {

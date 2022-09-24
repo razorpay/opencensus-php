@@ -1463,8 +1463,6 @@ class Entity extends Base\PublicEntity
 
         \App::getFacadeRoot()['trace']->info('MISC_TRACE_CODE',
             [
-                'stack_trace' => debug_backtrace(
-                    DEBUG_BACKTRACE_IGNORE_ARGS, 20),
                 'key' => $key,
                 'isCardMetaNull' => is_null($this->cardMetadata)
             ]);
