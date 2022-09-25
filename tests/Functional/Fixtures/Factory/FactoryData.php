@@ -489,6 +489,14 @@ final class FactoryData
                                                    ]
         );
 
+        $factory(\RZP\Models\Card\TokenisedIIN\Entity::class, [
+                                                        'iin' => 411111,
+                                                        'high_range' => '111111111',
+                                                        'low_range' => '111111111',
+                                                        'token_iin_length' => 9,
+                                                    ]
+        );
+
         $factory(\RZP\Models\Merchant\Methods\Entity::class, [
                                                                'merchant_id'       => '10000000000000',
                                                                'credit_card'       => '1',

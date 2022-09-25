@@ -1449,7 +1449,8 @@ class CardMandateTest extends TestCase
         $this->ba->privateAuth();
 
         $this->setMockRazorxTreatment(['payment_process_through_tokenised_card' => 'on',
-                                       'recurring_subsequent_through_tokenised_card' => 'on']);
+                                       'recurring_subsequent_through_tokenised_card' => 'on',
+                                       'recurring_tokenisation_not_using_actual_card_iin' => 'on']);
 
         $this->mockCardVaultWithCryptogram();
 
@@ -1457,6 +1458,17 @@ class CardMandateTest extends TestCase
         $token = $this->getDbLastEntity(E::TOKEN);
         $token->setStatus('active');
         $token->saveOrFail();
+
+        $this->fixtures->create('tokenised_iin', [
+                            'iin' => '400018',
+                            'high_range' => '111111111',
+                            'low_range' => '111111111',
+                            'token_iin_length' => 9,
+        ]);
+
+        $card = $token->card;
+        $card->setTokenIin(111111111);
+        $card->saveOrFail();
 
         $content = $this->doS2SRecurringPayment($paymentInput);
         $this->assertNotEmpty($content['razorpay_payment_id']);

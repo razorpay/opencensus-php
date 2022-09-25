@@ -50,10 +50,16 @@ class TokenisationExperiment
         if($token->isRecurring() and
             $token->getRecurringStatus() === Token\RecurringStatus::CONFIRMED)
         {
+            $cardActualIin = $token->card->fetchIinUsingTokenIinForRecurringIfApplicable();
+            if (empty($cardActualIin) === true)
+            {
+                return false;
+            }
+
             $cardAutoProcessor = (new CardAutoRecurringReminderProcessor());
 
             return ($cardAutoProcessor->isExperimentEnabledForTokenisedCard($merchant->getMerchantId()) and
-                    $cardAutoProcessor->shouldRecurringAutoPaymentGoThroughTokenisedCard($token->card));
+                    $cardAutoProcessor->shouldRecurringAutoPaymentGoThroughTokenisedCard($cardActualIin));
         }
 
         if ($merchant->isTokenisedCardPaymentEnabledForMerchant() === false)

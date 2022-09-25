@@ -12,6 +12,7 @@ use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Base\Traits\DualWrite;
@@ -1117,6 +1118,67 @@ class Entity extends Base\PublicEntity
         $iin = $this->iinRelation;
 
         return $this->isRecurringSupportedOnIIN($this->merchant, $iin, $isInitial, $hasSubscription);
+    }
+
+    public function fetchIinUsingTokenIinForRecurringIfApplicable()
+    {
+        $cardActualIin = null;
+        $cardTokenIin = $this->getTokenIin();
+
+        if (empty($cardTokenIin) === false)
+        {
+            $cardActualIin = Card\IIN\IIN::getTransactingIinforRange($cardTokenIin);
+
+            if (empty($cardActualIin) === true)
+            {
+                $app  = \App::getFacadeRoot();
+
+                $app['trace']->info(TraceCode::BIN_MAPPING_FOR_RECURRING_TOKEN_NOT_AVAILABLE, [
+                    'token_iin' => $cardTokenIin,
+                ]);
+
+                // to be ramped up 100% post 30th Sept (or tokenisation deadline)
+                $variant = $app['razorx']->getTreatment($this->getMerchantId(),
+                                                        Merchant\RazorxTreatment::RECURRING_TOKENISATION_NOT_USING_ACTUAL_CARD_IIN,
+                                                        $app['rzp.mode'] ?? 'live');
+
+                if (strtolower($variant) === 'on')
+                {
+                    return null;
+                }
+            }
+        }
+
+        if (empty($cardActualIin) === true)
+        {
+            $cardActualIin = $this->getIin();
+        }
+
+        return $cardActualIin;
+    }
+
+    public function isRecurringSupportedOnTokenIINIfApplicable(bool $isInitial = true, bool $hasSubscription = false)
+    {
+        if ($isInitial === true)
+        {
+            // getIinAttribute() will be called internally
+            $cardActualIin = $this->getIin();
+        }
+        else
+        {
+            $cardActualIin = $this->fetchIinUsingTokenIinForRecurringIfApplicable();
+
+            if (empty($cardActualIin) === true)
+            {
+                return false;
+            }
+        }
+
+        $app  = \App::getFacadeRoot();
+
+        $iinEntity = $app['repo']->iin->find($cardActualIin);
+
+        return $this->isRecurringSupportedOnIIN($this->merchant, $iinEntity, $isInitial, $hasSubscription);
     }
 
     public function isRzpSavedCard()

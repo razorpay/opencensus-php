@@ -2430,7 +2430,7 @@ trait Authorize
             $card = $payment->localToken->card;
         }
 
-        if ($card->isRecurringSupported($isInitialOrCardChange, $payment->hasSubscription()) === false)
+        if ($card->isRecurringSupportedOnTokenIINIfApplicable($isInitialOrCardChange, $payment->hasSubscription()) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED);
@@ -4899,7 +4899,7 @@ trait Authorize
 
             if (($payment->isCard() === true) and
                 ($payment->hasCard() === true) and
-                ($card->isRecurringSupported(true, $payment->hasSubscription()) === true))
+                ($card->isRecurringSupportedOnTokenIINIfApplicable(true, $payment->hasSubscription()) === true))
             {
                 $recurring = true;
             }
@@ -4921,7 +4921,7 @@ trait Authorize
 
             if (($payment->isCard() === true) and
                 ($payment->hasCard() === true) and
-                ($card->isRecurringSupported($payment->isRecurringTypeInitial(), $payment->hasSubscription()) === true))
+                ($card->isRecurringSupportedOnTokenIINIfApplicable($payment->isRecurringTypeInitial(), $payment->hasSubscription()) === true))
             {
                 $payment->setRecurring(true);
             }
@@ -7054,7 +7054,9 @@ trait Authorize
 
             $core = (new Token\Core());
 
-            if ($token->isRecurring() === true)
+            if (($token->isRecurring() === true) and
+                ($token->getMethod() === Method::CARD) and
+                ($token->card->isRzpSavedCard() === true))
             {
                 $variant = $this->app->razorx->getTreatment($token->merchant->getId(),
                     Merchant\RazorxTreatment::RECURRING_TOKENISATION,

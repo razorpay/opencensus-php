@@ -50,10 +50,17 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
         }
         catch (\Exception $e)
         {
+            $traceCode = TraceCode::RECURRING_TOKEN_DELETED_OR_EXPIRED;
+
+            if ($e->getCode() === ErrorCode::BAD_REQUEST_IIN_NOT_EXISTS)
+            {
+                $traceCode = TraceCode::RECURRING_CARD_PAYMENT_IIN_MISSING;
+            }
+
             $this->trace->traceException(
                 $e,
                 null,
-                TraceCode::RECURRING_TOKEN_DELETED_OR_EXPIRED
+                $traceCode
             );
 
             $processor->failInvalidRecurringTokenCardAutoRecurringPayment($payment, $e);
@@ -74,11 +81,13 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
 
         $card = $this->repo->card->fetchForToken($token);
 
-        $iin = $this->app['repo']->iin->find($card['iin']);
+        $cardActualIin = $card->fetchIinUsingTokenIinForRecurringIfApplicable();
+
+        $iin = $this->app['repo']->iin->find($cardActualIin);
 
         if (($card->isRzpSavedCard() === false) and
             ($this->isExperimentEnabledForTokenisedCard($token->getMerchantId()) === true) and
-            ($this->shouldRecurringAutoPaymentGoThroughTokenisedCard($card) === true))
+            ($this->shouldRecurringAutoPaymentGoThroughTokenisedCard($cardActualIin) === true))
         {
             $this->logPaymentRoutingInfo($payment, $card, false);
 
@@ -139,12 +148,12 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
         return false;
     }
 
-    public function shouldRecurringAutoPaymentGoThroughTokenisedCard(Card\Entity $card): bool
+    public function shouldRecurringAutoPaymentGoThroughTokenisedCard($iin): bool
     {
         try
         {
             $variant = $this->app['razorx']->getTreatment(
-                $card->getIin(),
+                $iin,
                 Merchant\RazorxTreatment::RECURRING_SUBSEQUENT_THROUGH_TOKENISED_CARD,
                 $this->mode
             );
@@ -215,6 +224,21 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
                     'payment_id' => $payment->getId(),
                     'token_id'   => $token->getId(),
                     'expired_at' => $token->getExpiredAt(),
+                ]);
+        }
+
+        $card = $this->repo->card->fetchForToken($token);
+
+        $cardActualIin = $card->fetchIinUsingTokenIinForRecurringIfApplicable();
+
+        if (empty($cardActualIin) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_IIN_NOT_EXISTS,
+                null,
+                [
+                    'payment_id' => $payment->getId(),
+                    'token_id'   => $token->getId(),
                 ]);
         }
     }

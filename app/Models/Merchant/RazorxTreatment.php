@@ -542,6 +542,9 @@ final class RazorxTreatment
     // Experiment to toggle tokenisation for recurring tokens
     const RECURRING_TOKENISATION = 'recurring_tokenisation';
 
+    // Experiment to control card IIN usage for recurring tokenisation cases
+    const RECURRING_TOKENISATION_NOT_USING_ACTUAL_CARD_IIN = 'recurring_tokenisation_not_using_actual_card_iin';
+
     // Experiment to toggle block notifying MandateHub after recurring tokenisation
     const BLOCK_HUB_REPORT_AFTER_ASYNC_RECURRING_TOKENISATION = 'block_hub_report_after_async_recurring_tokenisation';
 

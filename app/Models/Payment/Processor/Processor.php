@@ -2050,6 +2050,7 @@ class Processor
         // token charging via dashboard.
         if (($currentRouteName === 'payment_create_recurring') or
             ($currentRouteName === 'subscription_registration_charge_token') or
+            ($currentRouteName === 'subscription_registration_charge_token_bulk') or
             ($currentRouteName === 'payment_create_subscriptions'))
         {
             return null;

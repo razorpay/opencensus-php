@@ -817,7 +817,7 @@ class Service extends Base\Service
 
         $payment->setRecurringType(Payment\RecurringType::INITIAL);
 
-        if ($payment->card->isRecurringSupported(true, $payment->hasSubscription()) === false)
+        if ($payment->card->isRecurringSupportedOnTokenIINIfApplicable(true, $payment->hasSubscription()) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED);
