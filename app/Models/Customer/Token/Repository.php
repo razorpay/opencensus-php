@@ -750,21 +750,25 @@ class Repository extends Base\Repository
      * 1. filter card method tokenIds
      * 2. filter given merchant's tokenIds
      *
-     * @param  string  $merchantId
-     * @param  array  $tokenIds
-     * @return array
+     * @param string $merchantId The Primary key of the Merchant whose Token
+     *                           entities are being fetched
+     * @param array  $tokenIds   The Primary keys of Token entity (or) `token`
+     *                           column values from Token entity
+     *
+     * @return Base\PublicCollection
      */
-    public function filterMerchantCardTokens(string $merchantId, array $tokenIds): array
+    public function filterMerchantCardTokens(string $merchantId, array $tokenIds): Base\PublicCollection
     {
-        /** @var Base\PublicCollection $result */
-        $result = $this->newQueryWithConnection($this->getSlaveConnection())
-                    ->select(Entity::ID)
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->select(Entity::ID, Entity::TOKEN)
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->where(Token\Entity::METHOD, Payment\Method::CARD)
-                    ->whereIn(Entity::ID, $tokenIds)
+                    ->where(function ($query) use ($tokenIds)
+                    {
+                        $query->whereIn(Entity::ID, $tokenIds)
+                              ->orWhereIn(Entity::TOKEN, $tokenIds);
+                    })
                     ->get();
-
-        return $result->getIds();
     }
 
     /**

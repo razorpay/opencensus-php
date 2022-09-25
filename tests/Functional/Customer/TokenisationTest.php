@@ -252,6 +252,70 @@ class TokenisationTest extends TestCase
 
         $testData['request']['content']['merchant_id'] = '10000000000099';
 
+        $testData['response']['content']['merchantId'] = '10000000000099';
+
+        $merchant = $this->fixtures->create('merchant', ['id' => '10000000000099']);
+
+        $merchantId = $merchant['id'];
+
+        $this->fixtures->merchant->addFeatures(['async_tokenisation'], $merchantId);
+
+        $tokenIdsCount = count($tokenIds);
+        $cardIdsCount = count($cardIds);
+
+        for ($i = 0; $i < $tokenIdsCount; $i++)
+        {
+            extract($this->setUpDataForTokenisation('10000000000099', null, 'Visa', 'rzpvault', $tokenIds[$i]));
+
+            $this->buildData($network, $merchantId, $vault, $methodTest, $tokenId, $timestamp, 'IN', null, $cardIds[$i], $iinIds[$i], $tokenNames[$i]);
+        }
+
+        $tokenTokens = [];
+
+        for ($i = 0; $i < $cardIdsCount; $i++)
+        {
+            $token = $this->getDbEntityById('token', $tokenIds[$i]);
+            $tokenTokens[] = $token->getToken();
+        }
+
+        $testData['request']['content']['token_ids'] = $tokenTokens;
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        for ($i = 0; $i < $cardIdsCount; $i++)
+        {
+            $token = $this->getDbEntityById('token', $tokenIds[$i]);
+
+            $card = $this->getDbEntityById('card', 'card_' . $token->getCardId());
+
+            $this->assertEquals($card->getVault(), 'visa');
+
+            $this->assertEquals($card->getMerchantId(), '10000000000099');
+        }
+
+        $this->assertEquals($response['inputTokenIdsCount'], 4);
+
+        $this->assertEquals($response['triggeredTokenIdsCount'],4);
+    }
+
+    public function testBulkTokenisationWhenMultipleValidTokenIdsOfValidMerchantExpectsTokenisationSuccessOnAllTokens(): void
+    {
+        $testData = $this->testData['testBulkTokenisation'];
+
+        $this->ba->adminAuth();
+
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA, Network::MC, Network::RUPAY]);
+
+        $tokenNames = ['10008cardToken', '10009cardToken', '10010cardToken', '10011cardToken'];
+
+        $tokenIds = ['100021custcard', '100023custcard', '100024custcard', '100026custcard'];
+
+        $cardIds = ['100000011lcard', '100000013lcard', '100000014lcard', '100000015lcard'];
+
+        $iinIds = ['411140', '411141', '411142', '411143'];
+
+        $testData['request']['content']['merchant_id'] = '10000000000099';
+
         $testData['request']['content']['token_ids'] = $tokenIds;
 
         $testData['response']['content']['merchantId'] = '10000000000099';
@@ -280,14 +344,14 @@ class TokenisationTest extends TestCase
 
             $card = $this->getDbEntityById('card', 'card_' . $token->getCardId());
 
-            $this->assertEquals($card->getVault(), 'visa');
+            $this->assertEquals('visa', $card->getVault());
 
-            $this->assertEquals($card->getMerchantId(), '10000000000099');
+            $this->assertEquals('10000000000099', $card->getMerchantId());
         }
 
-        $this->assertEquals($response['inputTokenIdsCount'], 4);
+        $this->assertEquals(4, $response['inputTokenIdsCount']);
 
-        $this->assertEquals($response['triggeredTokenIdsCount'],4);
+        $this->assertEquals(4, $response['triggeredTokenIdsCount']);
     }
 
     public function testBulkTokenisationWhenTokenIsAlreadyTokenisedExpectsTokenisationFailure(): void

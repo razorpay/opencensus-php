@@ -2534,17 +2534,39 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     * @param string $merchantId The Primary key of the Merchant whose valid
+     *                           Token Entity Ids are being fetched
+     * @param array  $tokenIds   The Primary keys of Token entity (or) `token`
+     *                           column values from Token entity
+     *
+     * @return array An array of Primary Keys of Token entity
+     */
     public function getValidTokensForTokenisation(string $merchantId, array $tokenIds): array
     {
-        $validTokenIds = $this->repo->token->filterMerchantCardTokens($merchantId, $tokenIds);
+        $validTokenEntities = $this->repo->token->filterMerchantCardTokens($merchantId, $tokenIds);
+
+        $validTokenIds = [];
+        $validTokens = [];
+
+        foreach ($validTokenEntities as $validToken)
+        {
+            $validTokenIds[] = $validToken->getId();
+            $validTokens[] = $validToken->getToken();
+        }
 
         $invalidTokenIds = array_values(array_diff($tokenIds, $validTokenIds));
+        $invalidTokens   = array_values(array_diff($tokenIds, $validTokens));
 
         $this->trace->info(TraceCode::BULK_LOCAL_TOKENISATION_INVALID_TOKENS, [
             'merchantId'            => $merchantId,
-            'validTokensCount'      => count($validTokenIds),
-            'invalidTokensCount'    => count($invalidTokenIds),
+            'totalTokensCount'      => count($tokenIds),
+            'validTokenIdsCount'    => count($validTokenIds),
+            'invalidTokenIdsCount'  => count($invalidTokenIds),
             'invalidTokensIds'      => $invalidTokenIds,
+            'invalidTokenCount'     => count($invalidTokens),
+            'invalidTokens'         => $invalidTokens,
+            'notes'                 => 'Consider invalidTokens or invalidTokensIds basis on what you passed as input',
         ]);
 
         return $validTokenIds;
@@ -3177,12 +3199,12 @@ class Core extends Base\Core
     }
 
     /**
-     * Removes all the card tokens which are not compliant with the 
+     * Removes all the card tokens which are not compliant with the
      * Reserve Bank of India's (RBI) tokenisation guidelines.
-     * 
+     *
      * @param Base\PublicCollection $tokens
      * @param string $merchantId
-     * 
+     *
      * @return Base\PublicCollection
      */
     public function removeNonCompliantCardTokens(Base\PublicCollection $tokens, string $merchantId): Base\PublicCollection
