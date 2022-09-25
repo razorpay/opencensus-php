@@ -4,6 +4,7 @@ namespace RZP\Models\Checkout\Order;
 
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base\Core as BaseCore;
+use RZP\Models\Invoice\Entity as Invoice;
 use RZP\Models\Order\Entity as OrderEntity;
 use RZP\Trace\TraceCode;
 
@@ -19,11 +20,18 @@ class Core extends BaseCore
 
         $this->validateOrderDetails($checkoutOrder, $input[Entity::AMOUNT]);
 
+        $this->validateAndSetInvoiceDetailsIfApplicable($checkoutOrder);
+
         $this->repo->saveOrFail($checkoutOrder);
 
         return $checkoutOrder;
     }
 
+    /**
+     * @param Entity $checkoutOrder
+     *
+     * @return array
+     */
     public function getPaymentArrayFromCheckoutOrder(Entity $checkoutOrder): array
     {
         $paymentArray = [];
@@ -42,6 +50,39 @@ class Core extends BaseCore
         }
 
         return $paymentArray;
+    }
+
+    protected function validateAndSetInvoiceDetailsIfApplicable(Entity $checkoutOrder): void
+    {
+        if ($checkoutOrder->order === null) {
+            return;
+        }
+
+        /** @var ?Invoice $invoice */
+        $invoice = $checkoutOrder->order->invoice()->withTrashed()->first();
+
+        if ($invoice === null)
+        {
+            return;
+        }
+
+        if ($checkoutOrder->isQrCodeOrder()) {
+            $isPartialPayment = $invoice->getAmount() !== $checkoutOrder->getAmount();
+
+            if ($isPartialPayment) {
+                throw new BadRequestValidationFailureException(
+                    'Partial payments are not allowed for QR Code Checkout Orders'
+                );
+            }
+
+            if ($invoice->hasSubscription()) {
+                throw new BadRequestValidationFailureException(
+                    'Subscription/Recurring payments are not allowed for QR Code Checkout Orders'
+                );
+            }
+        }
+
+        $checkoutOrder->invoice()->associate($invoice);
     }
 
     /**

@@ -211,6 +211,11 @@ class Entity extends PublicEntity
         return $this->status === Status::PAID;
     }
 
+    public function isQrCodeOrder(): bool
+    {
+        return ($this->getAttribute(self::META_DATA)[self::RECEIVER_TYPE] ?? '') === ConstantsEntity::QR_CODE;
+    }
+
     // ------------------------------ RELATIONSHIPS START ------------------------------
 
     public function order(): BelongsTo
