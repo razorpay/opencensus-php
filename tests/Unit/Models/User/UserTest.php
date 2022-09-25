@@ -3256,7 +3256,7 @@ class UserTest extends TestCase
         $this->assertEquals(hash('sha3-512', $expectedContext), $response);
     }
 
-    public function testGetContextFromActionForPayoutLinkCreationNoContactNumber()
+    public function testGetContextFromActionForPayoutLinkCreationContactNumberKeyMissing()
     {
         $input = [
             'action'            => 'create_payout_link',
@@ -3271,6 +3271,41 @@ class UserTest extends TestCase
         $user = $this->getDummyUser(2);
 
         $merchant = $this->getDummyMerchant(2);
+
+        $token = Entity::generateUniqueId();
+
+        $r = $this->getReflectionObj('RZP\Models\User\Core', 'getContextFromAction');
+
+        $response = $r->invoke($this->coreMock, $merchant, $user, $input, $token);
+
+        $expectedContext = sprintf('%s:%s:%s:%s:%s:%s:%s',
+                                   $merchant->getId(),
+                                   $user->getId(),
+                                   Constants::CREATE_PAYOUT_LINK,
+                                   $input[Constants::ACCOUNT_NUMBER],
+                                   $token,
+                                   100,
+                                   "test@razorpay.com");
+
+        $this->assertEquals(hash('sha3-512', $expectedContext), $response);
+    }
+
+    public function testGetContextFromActionForPayoutLinkCreationContactNumberKeyPresentButMissingValue()
+    {
+        $input = [
+            'action'            => 'create_payout_link',
+            'amount'            => 100,
+            'purpose'           => 'refund',
+            'account_number'    => '4564563559247998',
+            'contact'           => [
+                'contact'   => '',
+                'email'     => 'test@razorpay.com',
+            ]
+        ];
+
+        $user = $this->getDummyUser(3);
+
+        $merchant = $this->getDummyMerchant(3);
 
         $token = Entity::generateUniqueId();
 

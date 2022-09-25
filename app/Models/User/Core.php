@@ -5641,8 +5641,20 @@ class Core extends Base\Core
         {
             $amount = $input[Constants::AMOUNT];
 
-            $beneficiary = $input[Constants::CONTACT][Constants::CONTACT] ??
-                           $input[Constants::CONTACT][Constants::EMAIL];
+            $contact = $input[Constants::CONTACT];
+
+            $contactNumber = array_pull($contact, Constants::CONTACT, '');
+
+            $contactEmail = array_pull($contact, Constants::EMAIL, '');
+
+            if (empty($contactNumber) === false)
+            {
+                $beneficiary = $contactNumber;
+            }
+            else if (empty($contactEmail) === false)
+            {
+                $beneficiary = $contactEmail;
+            }
 
             if (empty($amount) === false and empty($beneficiary) === false)
             {
