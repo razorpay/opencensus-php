@@ -62,6 +62,11 @@ class SyncEventManager
 
     public function __destruct()
     {
+        // If queues are sync, we will have unreported accountIds (although request is sent to ASV)
+        if($this->isQueueSync()){
+            return;
+        }
+
         // If there are some unreported sync events, log them.
         // Do not throw exception, it would result in unclean/fatal shutdown.
         if ($this->hasUnreportedAccountIds())
@@ -277,7 +282,51 @@ class SyncEventManager
 //                $jobPayload, Mode::LIVE, $metadata);
 //        }
 
+
+        // For dark-api(and some other flows)requests for some queues are processed in Sync, and has the memory that is shared
+        // with that of the original api-request. If a job is triggered inside a DB transaction, the job is processed in
+        // sync and shares the api request's memory, and sync deviation request is sent to ASV.
+        // This clears the queued mids in memory. However, since the original transaction was not committed when this
+        // event was triggered, when ASV fetches the data from API it does not have this updated changes.
+        // Hence, we want to skip the part where we clear the mids in queue for queue-sync requests, so that after the
+        // transaction is committed another request goes for sync deviation to ASV.
+        if ($this->isQueueSync()){
+            $this->trace->info(TraceCode::ASV_CHECK_QUEUE_DRIVER_SYNC,
+                ['msg' => "Queue is sync, do not reset account params."]
+            );
+            return;
+        }
+
+        $this->trace->info(TraceCode::ASV_CHECK_QUEUE_DRIVER_SYNC,
+            ['msg' => "Resetting Account Params"]
+        );
         $this->resetAccountParams();
+    }
+
+    private function isQueueSync(): bool
+    {
+        try {
+
+            $asvSyncQueueSplitzExperimentId = $this->app['config']->get('applications.acs.sync_queue_splitz_experiment_id');
+
+            if (in_array($this->app['env'], ['testing', 'testing_docker'], true)
+                === false and
+                $this->isSplitzOn($asvSyncQueueSplitzExperimentId, $this->app['request']->getId()) === false) {
+                return false;
+            }
+
+            $queueDriver = $this->app['config']->get('applications.acs.queue_driver');
+            $this->trace->info(TraceCode::ASV_CHECK_QUEUE_DRIVER_SYNC,
+                ['queue_driver' => $queueDriver]
+            );
+
+            return !app()->runningInQueue() && $this->app['config']->get('applications.acs.queue_driver') ===  'sync';
+        }  catch (\Throwable $e) {
+            $this->trace->info(TraceCode::ASV_CHECK_QUEUE_DRIVER_SYNC,
+                ['msg' => "Exception while checking queue sync"]
+            );
+            return false;
+        }
     }
 
     public function resetAccountParams()
