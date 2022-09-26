@@ -22,6 +22,15 @@
         // as issue will persist for existing links, hence adding a fallback redirect
         location.href = location.href.replace('//signup', "/signup");
     }
+    const resetRegex = /#\/access\/resetpassword\?/g;
+    const resetRegWithQ = /\?#\/access\/resetpassword\?/g; // this is useful in case of captcha redirect when captcha redirect changes the url to "/?#/access/resetpassword?"
+    if (location.pathname === '/' && location.hash.match(resetRegex)) {
+        if (location.href.match(resetRegWithQ)) {
+            location.href = location.href.replace(resetRegWithQ, "resetpassword?")
+        } else {
+            location.href = location.href.replace(resetRegex, "resetpassword?")
+        }
+    }
   </script>
   @if(env('APP_ENV') === 'production' && $newAuthRoute !== 'resetpassword')
     <script src="https://www.googleoptimize.com/optimize.js?id=GTM-NCWFQ39"></script>
