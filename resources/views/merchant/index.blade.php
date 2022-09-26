@@ -35,7 +35,6 @@
   @endif
 
 @else
-  @include('partials/common')
 
   <!-- Logged in user section -->
 
@@ -51,6 +50,14 @@
   <link rel="dns-prefetch" href="https://www.facebook.com">
   <link rel="dns-prefetch" href="https://www.google.com">
   <link rel="dns-prefetch" href="https://www.google.co.in">
+  <link rel="dns-prefetch" href="https://api.refiner.io">
+  <link rel="dns-prefetch" href="https://js.refiner.io">
+  <link rel="dns-prefetch" href="https://d2r1yp2w7bby2u.cloudfront.net">
+  <link rel="dns-prefetch" href="https://vars.hotjar.com">
+  <link rel="dns-prefetch" href="https://static.hotjar.com">
+  <link rel="dns-prefetch" href="https://cdn.segment.com">
+  <link rel="dns-prefetch" href="https://script.hotjar.com">
+  <link rel="dns-prefetch" href="https://lumberjack.razorpay.com">
 
   <!-- preconnect fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -62,9 +69,11 @@
     <link rel="preload" href="https://cdn.razorpay.com/dashboard/dist/css/merchant-icons.woff2" as="style">
     <link rel="preload" href="https://cdn.razorpay.com/dashboard/dist/css/merchant-icons.woff" as="style">
   @endif
+  <!-- head tag ends here -->
+  @include('partials/common')
 @endif
 
-<!-- head tag ends here -->
+
 
 <script>
 var _dcq = _dcq || [];
