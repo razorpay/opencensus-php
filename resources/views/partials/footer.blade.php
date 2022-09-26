@@ -16,16 +16,17 @@
 
 
     if (window.razorpayAnalytics) {
-        let trackers = ['perf', 'ga', 'fb', 'twitter', 'linkedin', 'bing', 'lj', 'quora', 'reddit', 'criteo']
-         if(window.loadHubspot){
-            trackers.push('hubspot');
-         }
+        let trackers = ['lj'];
 
          if (window.location.href.indexOf('resetpassword') === -1) {
+          trackers = ['perf', 'ga', 'fb', 'twitter', 'linkedin', 'bing', 'quora', 'reddit'];
+          if(window.loadHubspot){
+            trackers.push('hubspot');
+          }
            trackers.push('twitterAgency');
          }
 
-        razorpayAnalytics.init(
+         razorpayAnalytics.init(
           trackers,
           {
             ga: appEnvironment === 'prod' ? 'UA-53341507-2' : 'UA-53341507-4',
@@ -228,19 +229,21 @@
             return filteredURL;
         }
 
-        ga('create', 'UA-53341507-1', 'auto', 'old');
+        if (window.location.href.indexOf('resetpassword') === -1) {
+          ga('create', 'UA-53341507-1', 'auto', 'old');
 
-        var path = getPathWithoutPrivateData();
+          var path = getPathWithoutPrivateData();
 
-        ga('set', 'page', path);
-        ga('old.set', 'page', path);
+          ga('set', 'page', path);
+          ga('old.set', 'page', path);
 
-        window.addEventListener('load', function() {
-            razorpayAnalytics.track('ga', 'pageview');
-            razorpayAnalytics.track('reddit', 'PageVisit');
-            razorpayAnalytics.track('quora', 'ViewContent');
-            razorpayAnalytics.track('bing', {action: 'pageLoad', path: path});
-        });
+          window.addEventListener('load', function() {
+              razorpayAnalytics.track('ga', 'pageview');
+              razorpayAnalytics.track('reddit', 'PageVisit');
+              razorpayAnalytics.track('quora', 'ViewContent');
+              razorpayAnalytics.track('bing', {action: 'pageLoad', path: path});
+          });
+        }
 
         try {
           var pendingAction = JSON.parse(razorpayAnalytics.utils.getCookie('pendingAction'));
@@ -271,7 +274,7 @@
       ga = function () {};
     }
 
-    if (window.isAuthPage) {
+    if (window.isAuthPage && window.location.href.indexOf('resetpassword') === -1) {
         !function(){var analytics=window.analytics=window.analytics||[];if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Segment snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware"];analytics.factory=function(t){return function(){var e=Array.prototype.slice.call(arguments);e.unshift(t);analytics.push(e);return analytics}};for(var t=0;t<analytics.methods.length;t++){var e=analytics.methods[t];analytics[e]=analytics.factory(e)}analytics.load=function(t,e){var n=document.createElement("script");n.type="text/javascript";n.async=!0;n.src="https://cdn.segment.com/analytics.js/v1/"+t+"/analytics.min.js";var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(n,a);analytics._loadOptions=e};analytics.SNIPPET_VERSION="4.1.0";
         // Events on signup and signin are required to be sent to Website project(Segment).
         // isAuthPage is set to true only by signup/signin/forgot password/2FA pages. (excludes all /app pages).

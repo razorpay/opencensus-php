@@ -80,7 +80,7 @@ _dcs.account = '9421167';
 })();
 
 </script>
-@if ($newAuthRoute !== 'signup')
+@if ($newAuthRoute !== 'signup' && $newAuthRoute !== 'resetpassword')
   <script defer src="https://www.googletagmanager.com/gtag/js?id=AW-928471290"></script>
   <script>
     window.dataLayer = window.dataLayer || [];

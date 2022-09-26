@@ -23,9 +23,9 @@
         location.href = location.href.replace('//signup', "/signup");
     }
   </script>
-  @if(env('APP_ENV') === 'production')
+  @if(env('APP_ENV') === 'production' && $newAuthRoute !== 'resetpassword')
     <script src="https://www.googleoptimize.com/optimize.js?id=GTM-NCWFQ39"></script>
-  @else
+  @elseif($newAuthRoute !== 'resetpassword')
     <script src="https://www.googleoptimize.com/optimize.js?id=GTM-WB43S6Q" defer></script>
   @endif
   <script type="text/javascript">
