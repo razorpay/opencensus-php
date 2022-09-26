@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Checkout\Order;
 
+use Carbon\Carbon;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\Invoice\Entity as Invoice;
@@ -53,6 +54,20 @@ class Core extends BaseCore
         }
 
         return $paymentArray;
+    }
+
+    public function markCheckoutOrderPaid(Entity $checkoutOrder): void
+    {
+        if ($checkoutOrder->isPaid())
+        {
+            return;
+        }
+
+        $checkoutOrder->setStatus(Status::PAID);
+        $checkoutOrder->setCloseReason(CloseReason::PAID);
+        $checkoutOrder->setClosedAt(Carbon::now()->getTimestamp());
+
+        $this->repo->saveOrFail($checkoutOrder);
     }
 
     protected function validateAndSetInvoiceDetailsIfApplicable(Entity $checkoutOrder): void

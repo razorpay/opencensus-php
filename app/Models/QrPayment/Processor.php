@@ -148,6 +148,8 @@ class Processor extends Base\Core
             $qrPayment->qrCode->isCheckoutQrCode() &&
             $qrPayment->isExpected()
         ) {
+            (new CheckoutOrder\Core())->markCheckoutOrderPaid($this->checkoutOrder);
+
             (new Service())->setQrCodeStatusAndPaymentIdInCache(
                 $qrPayment->qrCode,
                 $qrPayment->payment
