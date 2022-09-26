@@ -409,7 +409,7 @@
 
                                                     </div>
 
-                                                    @isset($merchant_website)
+                                                    @if($merchant_website !== "" or $merchant_phone !== "" or $merchant_email !== "")
                                                     <div
                                                         style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; text-align: center; display: flex; align-items: center; background: #f9fbfe; background-color: #f9fbfe; padding-top: 16px; padding-left:24px; padding-bottom: 19px; padding-right: 24px;">
                                                         <img src="https://cdn.razorpay.com/static/assets/razorpayx/emails/contacts_zap.png"
@@ -422,15 +422,23 @@
  <a style="color: #0B70E7; text-decoration: none;"
     href="{{ $merchant_website }}">{{
  $merchant_website }}</a>
- <!-- <span style="color: #0B70E7;">
+ @if($merchant_website !== "" and $merchant_phone !== "" and  $merchant_email !== "")
+    <span>,</span>
+ @endif
+ @if($merchant_website !== "" and $merchant_phone !== "" and  $merchant_email == "")
+    <span>or</span>
+ @endif
+ <span style="color: #0B70E7;">
  {{ $merchant_phone }}</span>
- or
+ @if(($merchant_website !== "" or $merchant_phone !== "") and $merchant_email !== "")
+    <span>or</span>
+ @endif
  <a style="color: #0B70E7; text-decoration: none;"
     href="mailto:{{ $merchant_email }}">{{
- $merchant_email }}</a> -->
+ $merchant_email }}</a>
  </span>
                                                     </div>
-                                                    @endisset
+                                                    @endif
 
                                                 </div>
 

@@ -21368,6 +21368,27 @@ class PayoutTest extends OAuthTestCase
         $this->unitTestCase->setPrivateProperty($this->payoutService, 'slackAppService', $this->slackAppMock);
     }
 
+    public function mockPayoutLinksGetSettingsFlow()
+    {
+        $supportDetails = [
+            'AMAZONPAY'       => 'true',
+            'IMPS'            => 'true',
+            'NEFT'            => 'true',
+            'UPI'             => 'true',
+            'expiry'          => 'true',
+            'support_contact' => '9000900090',
+            'support_email'   => 'support@test.com',
+            'support_url'     => 'https://www.support.com',
+            'ticket_id'       => 'undefined'
+        ];
+
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('getSettings')->andReturn($supportDetails);
+
+        $this->app->instance('payout-links', $plMock);
+    }
+
     public function testBeneNotificationOnPayoutProcessed()
     {
         Mail::fake();
@@ -21399,6 +21420,8 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('initiated', $fta->getStatus());
 
         $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->mockPayoutLinksGetSettingsFlow();
 
         $storkMock = Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
@@ -21440,6 +21463,151 @@ class PayoutTest extends OAuthTestCase
         Mail::assertQueued(PayoutMail::class);
     }
 
+    public function testBeneficiaryMailWithCorrectSupportDetailsOnPayoutProcessed()
+    {
+        Mail::fake();
+
+        $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::BENE_EMAIL_NOTIFICATION]);
+
+        $attributes = [
+            'bas_business_id' => '10000000000000',
+            'merchant_id'     => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_detail', $attributes);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $fta = $payout->fundTransferAttempts()->first();
+
+        // Assert that fta status was initiated (FTS sync call).
+        $this->assertEquals('initiated', $fta->getStatus());
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->mockPayoutLinksGetSettingsFlow();
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED, '933815383814');
+
+        Mail::assertQueued(PayoutProcessedContactCommunication::class, function($mail) {
+            $mail->build();
+            $this->assertEquals($mail->subject, '[Notification] Test Merchant has successfully transferred to you.');
+
+            $this->assertArrayHasKey('payout_amount', $mail->viewData);
+            $this->assertArrayHasKey('merchant_name', $mail->viewData);
+            $this->assertArrayHasKey('merchant_billing_label', $mail->viewData);
+            $this->assertArrayHasKey('merchant_brand_logo', $mail->viewData);
+            $this->assertArrayHasKey('merchant_brand_color', $mail->viewData);
+            $this->assertArrayHasKey('merchant_contrast_color', $mail->viewData);
+            $this->assertArrayHasKey('payout_status', $mail->viewData);
+            $this->assertArrayHasKey('payout_utr', $mail->viewData);
+            $this->assertArrayHasKey('payout_reference_id', $mail->viewData);
+            $this->assertArrayHasKey('payout_mode', $mail->viewData);
+            $this->assertArrayHasKey('payout_id', $mail->viewData);
+            $this->assertArrayHasKey('payout_narration', $mail->viewData);
+            $this->assertArrayHasKey('payout_processed_at', $mail->viewData);
+            $this->assertArrayHasKey('merchant_website', $mail->viewData);
+            $this->assertArrayHasKey('merchant_email', $mail->viewData);
+            $this->assertArrayHasKey('merchant_phone', $mail->viewData);
+            $this->assertArrayHasKey('learn_more_url', $mail->viewData);
+
+            $this->assertEquals('https://www.support.com', $mail->viewData['merchant_website']);
+            $this->assertEquals('support@test.com', $mail->viewData['merchant_email']);
+            $this->assertEquals('9000900090', $mail->viewData['merchant_phone']);
+
+            $mail->hasTo('naruto@gmail.com');
+            $mail->hasFrom('no-reply@razorpay.com');
+            $mail->hasReplyTo('no-reply@razorpay.com');
+
+            return true;
+        });
+
+        Mail::assertQueued(PayoutMail::class);
+    }
+
+    public function testBeneficiaryMailOnPayoutProcessedWhenSupportDetailsNotSetInPublicProfile()
+    {
+        Mail::fake();
+
+        $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::BENE_EMAIL_NOTIFICATION]);
+
+        $attributes = [
+            'bas_business_id' => '10000000000000',
+            'merchant_id'     => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_detail', $attributes);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $fta = $payout->fundTransferAttempts()->first();
+
+        // Assert that fta status was initiated (FTS sync call).
+        $this->assertEquals('initiated', $fta->getStatus());
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $supportDetails = [
+            'AMAZONPAY'       => 'true',
+            'IMPS'            => 'true',
+            'NEFT'            => 'true',
+            'UPI'             => 'true',
+            'expiry'          => 'true',
+            'ticket_id'       => 'undefined'
+        ];
+
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('getSettings')->andReturn($supportDetails);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED, '933815383814');
+
+        Mail::assertQueued(PayoutProcessedContactCommunication::class, function($mail) {
+            $mail->build();
+            $this->assertEquals($mail->subject, '[Notification] Test Merchant has successfully transferred to you.');
+
+            $this->assertArrayHasKey('payout_amount', $mail->viewData);
+            $this->assertArrayHasKey('merchant_name', $mail->viewData);
+            $this->assertArrayHasKey('merchant_billing_label', $mail->viewData);
+            $this->assertArrayHasKey('merchant_brand_logo', $mail->viewData);
+            $this->assertArrayHasKey('merchant_brand_color', $mail->viewData);
+            $this->assertArrayHasKey('merchant_contrast_color', $mail->viewData);
+            $this->assertArrayHasKey('payout_status', $mail->viewData);
+            $this->assertArrayHasKey('payout_utr', $mail->viewData);
+            $this->assertArrayHasKey('payout_reference_id', $mail->viewData);
+            $this->assertArrayHasKey('payout_mode', $mail->viewData);
+            $this->assertArrayHasKey('payout_id', $mail->viewData);
+            $this->assertArrayHasKey('payout_narration', $mail->viewData);
+            $this->assertArrayHasKey('payout_processed_at', $mail->viewData);
+            $this->assertArrayHasKey('merchant_website', $mail->viewData);
+            $this->assertArrayHasKey('merchant_email', $mail->viewData);
+            $this->assertArrayHasKey('merchant_phone', $mail->viewData);
+            $this->assertArrayHasKey('learn_more_url', $mail->viewData);
+
+            $this->assertEquals('', $mail->viewData['merchant_website']);
+            $this->assertEquals('', $mail->viewData['merchant_email']);
+            $this->assertEquals('', $mail->viewData['merchant_phone']);
+
+            $mail->hasTo('naruto@gmail.com');
+            $mail->hasFrom('no-reply@razorpay.com');
+            $mail->hasReplyTo('no-reply@razorpay.com');
+
+            return true;
+        });
+
+        Mail::assertQueued(PayoutMail::class);
+    }
+
     // Dashboard Payout - Both Sms and Email
     public function testBeneEmailAndSmsNotificationOnDashboardPayoutProcessed()
     {
@@ -21467,6 +21635,8 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->getDbLastEntity('payout');
 
         $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->mockPayoutLinksGetSettingsFlow();
 
         $storkMock = Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
@@ -21573,6 +21743,8 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->create('merchant_detail', $attributes);
 
+        $this->mockPayoutLinksGetSettingsFlow();
+
         $this->testCreatePayoutInMerchantDashboard();
 
         $payout = $this->getDbLastEntity('payout');
@@ -21603,6 +21775,8 @@ class PayoutTest extends OAuthTestCase
         ];
 
         $this->fixtures->create('merchant_detail', $attributes);
+
+        $this->mockPayoutLinksGetSettingsFlow();
 
         $this->testCreatePayout();
 
@@ -21636,6 +21810,8 @@ class PayoutTest extends OAuthTestCase
         ];
 
         $this->fixtures->create('merchant_detail', $attributes);
+
+        $this->mockPayoutLinksGetSettingsFlow();
 
         $this->testCreatePayout();
 

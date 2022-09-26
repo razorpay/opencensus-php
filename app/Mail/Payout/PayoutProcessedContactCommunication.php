@@ -20,6 +20,12 @@ class PayoutProcessedContactCommunication extends Mailable
 
     const DATE_FORMAT = 'd M Y g:i A';
 
+    const SUPPORT_URL          = 'support_url';
+
+    const SUPPORT_CONTACT      = 'support_contact';
+
+    const SUPPORT_EMAIL        = 'support_email';
+
     protected $payoutId;
 
     /** @var Entity $payout*/
@@ -30,7 +36,9 @@ class PayoutProcessedContactCommunication extends Mailable
 
     protected $recipientEmail = null;
 
-    public function __construct(string $payoutId, string $recipientEmail)
+    protected $supportDetails = null;
+
+    public function __construct(string $payoutId, string $recipientEmail, array $supportDetails)
     {
         parent::__construct();
 
@@ -39,6 +47,8 @@ class PayoutProcessedContactCommunication extends Mailable
         $this->setPayout();
 
         $this->setMerchant();
+
+        $this->supportDetails = $supportDetails;
 
         $this->recipientEmail = $recipientEmail;
     }
@@ -124,9 +134,9 @@ class PayoutProcessedContactCommunication extends Mailable
                                                ->format(self::DATE_FORMAT),
             'payout_notes'            => $this->payout->getNotes()->toArray(),
             'payout_narration'        => $this->payout->getNarration(),
-            'merchant_website'        => $this->merchant->merchantDetail->getWebsite() ?? '',
-            'merchant_email'          => $this->merchant->merchantDetail->getContactEmail() ?? '',
-            'merchant_phone'          => $this->merchant->merchantDetail->getContactMobile() ?? '',
+            'merchant_website'        => $this->supportDetails[self::SUPPORT_URL] ?? '',
+            'merchant_email'          => $this->supportDetails[self::SUPPORT_EMAIL] ?? '',
+            'merchant_phone'          => $this->supportDetails[self::SUPPORT_CONTACT] ?? '',
             'customer_email'          => $this->recipientEmail,
             //'sent'                    => [
             //    'url' => sprintf('https://x.razorpay.com/payouts?id=%s', $this->payout->getPublicId()),

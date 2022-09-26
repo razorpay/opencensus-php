@@ -28,6 +28,8 @@ class PayoutProcessedContactCommunication extends Base
    // constants
     const PAYOUT_ID = 'payout_id';
 
+    const MERCHANT_ID = 'merchant_id';
+
     const PAYOUT_ORIGIN = 'payout_origin';
 
     const SMS_TEMPLATE_KEY = 'sms_template';
@@ -219,6 +221,31 @@ class PayoutProcessedContactCommunication extends Base
         }
     }
 
+    protected function getSettings(string $merchantId): array
+    {
+        $settings = [];
+
+        try
+        {
+            $settings = $this->app['payout-links']->getSettings($merchantId);
+
+            $this->trace->info(TraceCode::PAYOUT_LINK_GET_SETTINGS_RESPONSE, compact('settings'));
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYOUT_LINK_GET_SETTINGS_FAILED,
+                [
+                    self::PAYOUT_ID   => $this->payout->getId(),
+                    self::MERCHANT_ID => $merchantId,
+                ]
+            );
+        }
+        return $settings;
+    }
+
     protected function sendEmail()
     {
         /** @var FundAccount\Entity $fa */
@@ -235,7 +262,9 @@ class PayoutProcessedContactCommunication extends Base
 
         if ($contactEmail !== null)
         {
-            $mailable = new PayoutProcessedContactCommunicationMailable($this->payout->getId(), $contactEmail);
+            $settings = $this->getSettings($this->payout->getMerchantId());
+
+            $mailable = new PayoutProcessedContactCommunicationMailable($this->payout->getId(), $contactEmail, $settings);
 
             Mail::queue($mailable);
 
