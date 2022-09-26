@@ -372,6 +372,7 @@ class Route
         'merchant_create_lead_to_salesforce'       => ['post',     'merchants/lead_to_salesforce',                   'MerchantController@createSalesforceLeadFromDashboard'              ],
         'merchant_create_lead_to_salesforce_admin' => ['post',     'admin/merchants/lead_to_salesforce',             'MerchantController@createSalesforceLeadFromDashboard'              ],
         'salesforce_converge_get_merchant_details' => ['get',      'merchants/{id}/sf_converge_get_merchant_details','MerchantController@getMerchantDetailsForSFConverge'               ],
+        'salesforce_converge_get_terminal_details' => ['get',      'merchants/{id}/sf_converge_get_terminal_details','MerchantController@getTerminalDetailsForSFConverge'               ],
         'merchant_assign_pricing'                  => ['post',     'merchants/{id}/pricing',                         'MerchantController@postAssignPricingPlan'                          ],
         'merchant_get_pricing'                     => ['get',      'merchants/{id}/pricing',                         'MerchantController@getPricingPlan'                                 ],
         'proxy_merchant_get_pricing'               => ['get',      'proxy/merchants/pricing',                        'MerchantController@proxyGetPricingPlan'                            ],
@@ -4491,6 +4492,7 @@ class Route
         'collect_info_merchant_details_internal',
         'generate_gifu_file',
         'salesforce_converge_get_merchant_details',
+        'salesforce_converge_get_terminal_details',
         'generate_nium_settlement_file',
         'merchant_settlements_events_cron',
         'create_test_payouts_for_downtime_detection_icici',
@@ -12959,6 +12961,7 @@ class Route
 
         'salesforce_converge' => [
             'salesforce_converge_get_merchant_details',
+            'salesforce_converge_get_terminal_details'
         ],
 
         'mock_gateways' => [

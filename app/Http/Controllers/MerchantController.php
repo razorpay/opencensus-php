@@ -2891,6 +2891,14 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getTerminalDetailsForSFConverge($merchantid)
+    {
+        $response = $this->service()->getTerminalDetailsForSFConverge($merchantid);
+
+        return ApiResponse::json($response);
+    }
+
+
     public function handleMerchantActionNotificationCron()
     {
         $response = $this->service()->handleMerchantActionNotificationCron();

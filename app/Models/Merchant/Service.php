@@ -9078,6 +9078,24 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function getTerminalDetailsForSFConverge(string $mid): array
+    {
+        $input= [
+            'merchant_ids' => [$mid]
+        ];
+
+        $path = "v1/merchants/terminals";
+
+        $data['terminals'] = $this->app['terminals_service']->proxyTerminalService(
+            $input,
+            \Requests::POST,
+            $path,[],
+            ['X-Truncate-Terminal-Response' => 'salesforce']
+        );
+
+        return $data;
+    }
+
     public function getPurposeCodeDetails(): array
     {
         $data = [];
