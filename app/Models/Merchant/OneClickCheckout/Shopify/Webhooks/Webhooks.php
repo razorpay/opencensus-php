@@ -164,7 +164,6 @@ class Webhooks extends Base\Core
 
         // amount will always have 2 decimals as string
         $refundFromTxn = floatval($txn['amount']) * 100;
-        $refundFromWebhook = floatval($input['transactions'][0]['amount']) * 100;
 
         $keys = explode('|', $txn['authorization']);
 
@@ -181,6 +180,22 @@ class Webhooks extends Base\Core
         }
 
         [$merchantRzpOrderId, $paymentId] = $keys;
+
+        // If a merchant issues a refund but enters an incorrect value and Shopify detects a discrepency
+        // They will still fire the refund/create webhook but send empty transactions array and an error
+        // inside order_adjustment field. See 07e4e7e7b8ee2a83fb3f4575aa897a6d on 22-9-2022 for sample schema
+        // This error is not documented by them
+        if (empty($input['transactions']) === true)
+        {
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_VALIDATION_FAILED,
+                [
+                    'type'         => 'refund_discrepancy_from_shopify',
+                    'transactions' => $input['transactions'],
+                ]);
+            return;
+        }
+        $refundFromWebhook = floatval($input['transactions'][0]['amount']) * 100;
 
         $payment = $this->findPaymentAndSetMode(substr($paymentId, 4));
 
