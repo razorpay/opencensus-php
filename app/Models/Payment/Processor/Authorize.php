@@ -5608,7 +5608,7 @@ trait Authorize
             $gatewayInput['selected_terminals_ids'] = [$token->getTerminalId()];
         }
     }
-    
+
     protected function preProcessPaymentFromSavedMethodGlobal(Customer\Entity $customer,
                                                             Payment\Entity $payment,
                                                             array & $input,
@@ -6826,7 +6826,7 @@ trait Authorize
     {
         try
         {
-            if (($payment->isMethodCardOrEmi() === false) or (($payment->card->getVault() !== Card\Vault::RZP_ENCRYPTION) and $payment->getGateway() !== 'paysecure'))
+            if (($payment->isMethodCardOrEmi() === false) or ($payment->card->getVault() !== Card\Vault::RZP_ENCRYPTION))
             {
                 return;
             }

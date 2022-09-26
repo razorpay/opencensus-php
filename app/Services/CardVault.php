@@ -185,19 +185,9 @@ class CardVault
         $vaultTempSaveNamespace = "cards";
 
         if (isset($buNamespace) === true ) {
-
-            $variant =  $this->app['razorx']->getTreatment($buNamespace, Merchant\RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION, $this->mode);
-
-            $this->trace->info(TraceCode::VAULT_BU_NAMESPACE_MIGRATION_RAZORX_VARIANT, [
-                'razorx_variant' => $variant,
-                'bu_namespace'   => $buNamespace
-            ]);
-
-            if (strtolower($variant) === 'on') {
-                $payload += [
+            $payload += [
                     self::BU_NAMESPACE => $buNamespace,
-                ];
-            }
+            ];
 
             $vaultTempSaveNamespace = $buNamespace;
         }
@@ -245,19 +235,9 @@ class CardVault
         $vaultTempSaveNamespace = "cards";
 
         if (isset($input['bu_namespace'])=== true ) {
-
-             $variant =  $this->app['razorx']->getTreatment($input['bu_namespace'], Merchant\RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION, $this->mode);
-
-             $this->trace->info(TraceCode::VAULT_BU_NAMESPACE_MIGRATION_RAZORX_VARIANT, [
-                 'razorx_variant' => $variant,
-                 'bu_namespace'   => $input['bu_namespace']
-             ]);
-
-             if (strtolower($variant) === 'on') {
-                 $payload += [
-                     self::BU_NAMESPACE => $input['bu_namespace'],
-                 ];
-             }
+             $payload += [
+                 self::BU_NAMESPACE => $input['bu_namespace'],
+             ];
 
             $vaultTempSaveNamespace = $input['bu_namespace'];
         }
@@ -333,19 +313,9 @@ class CardVault
         }
 
         if (isset($buNamespace) === true ) {
-
-            $variant =  $this->app['razorx']->getTreatment($buNamespace, Merchant\RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION, $this->mode);
-
-            $this->trace->info(TraceCode::VAULT_BU_NAMESPACE_MIGRATION_RAZORX_VARIANT, [
-                'razorx_variant' => $variant,
-                'bu_namespace'   => $buNamespace
-            ]);
-
-            if (strtolower($variant) === 'on') {
-                $input += [
-                    self::BU_NAMESPACE => $buNamespace,
-                ];
-            }
+            $input += [
+                self::BU_NAMESPACE => $buNamespace,
+            ];
         }
 
         $response = $this->sendRequest('detokenize', 'post', $input);
@@ -362,19 +332,9 @@ class CardVault
         $vaultTempSaveNamespace = "cards";
 
         if (isset($buNamespace) === true ) {
-
-            $variant =  $this->app['razorx']->getTreatment($buNamespace, Merchant\RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION, $this->mode);
-
-            $this->trace->info(TraceCode::VAULT_BU_NAMESPACE_MIGRATION_RAZORX_VARIANT, [
-                'razorx_variant' => $variant,
-                'bu_namespace'   => $buNamespace
-            ]);
-
-            if (strtolower($variant) === 'on') {
-                $input += [
+            $input += [
                     self::BU_NAMESPACE => $buNamespace,
-                ];
-            }
+            ];
 
             $vaultTempSaveNamespace = $buNamespace;
         }

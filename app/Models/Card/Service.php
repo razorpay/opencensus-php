@@ -89,11 +89,6 @@ class Service extends Base\Service
         {
             return;
         }
-        elseif (starts_with($token, "pay_"))
-        {
-            #Reset Invalid tokens to null.
-            $this->repo->card->resetCardVaultToken($token);
-        }
         else
         {
             $vaultResponse = $cardVault->getVaultTokenFromTempToken($token, $card->toArray(), $gateway);
@@ -113,8 +108,7 @@ class Service extends Base\Service
         $token = $card->getVaultToken();
         $vault = $card->getVault();
 
-        if (($token === null) or
-            (($vault !== Vault::RZP_ENCRYPTION) and isset($gateway) === true and  $gateway !== 'paysecure'))
+        if (($token === null) or ($vault !== Vault::RZP_ENCRYPTION))
         {
             return;
         }
