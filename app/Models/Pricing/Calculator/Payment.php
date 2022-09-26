@@ -4,6 +4,7 @@ namespace RZP\Models\Pricing\Calculator;
 
 use RZP\Constants\Mode;
 use RZP\Exception;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Card;
 use RZP\Models\Currency\Core;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -22,6 +23,18 @@ use RZP\Constants\Entity ;
 // Take extra care while modifying existing logic.
 class Payment extends Base
 {
+    const FLEXMONEY      = 'flexmoney';
+    const HCIN_IFSC      = 'HCIN';
+
+    protected static $flexMoneyIssuers = [
+          IFSC::BARB,
+          IFSC::HDFC,
+          IFSC::KKBK,
+          IFSC::FDRL,
+          IFSC::IDFB,
+          IFSC::ICIC,
+          self::HCIN_IFSC,
+    ];
 
     protected function getBasicPricingRule(Pricing\Plan $pricing, $feature)
     {
@@ -590,6 +603,10 @@ class Payment extends Base
 
         $provider = $payment->getWallet();
 
+        if($this->isFlexMoneyProvider($provider)) {
+            $provider = self::FLEXMONEY;
+        }
+
         // @todo: Pricing structure to do discussed with product
         $filters = [
             [Pricing\Entity::PAYMENT_ISSUER, $provider, true, null],
@@ -840,5 +857,10 @@ class Payment extends Base
         ];
 
         return $filters;
+    }
+
+    protected function isFlexMoneyProvider($issuer): bool
+    {
+        return (in_array(strtoupper($issuer), self::$flexMoneyIssuers));
     }
 }
