@@ -472,6 +472,80 @@ return [
         ],
     ],
 
+    'testFetchAccountServiceStakeholderDocumentNoStakeholderEntity' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/account_service/accounts/{accountId}',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'merchant' => [
+                    'org_id' => '100000razorpay',
+                ],
+                'merchant_details' => [
+                    'business_category' => 'financial_services',
+                ],
+                'stakeholders' => [],
+                'merchant_emails' => [
+                    [
+                        'type' => 'refund',
+                    ]
+                ],
+                'merchant_documents' => [
+                    [
+                        'document_type' => 'address_proof_url',
+                    ],
+                    [
+                        'document_type' => 'aadhar_back',
+                    ]
+                ],
+                'stakeholder_documents' => [
+                    [
+                        'document_type' => 'aadhar_front',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testMerchantDetailsFetchAccountServiceNoStakeholder' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/account_service/accounts/{accountId}',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'merchant' => [
+                    'org_id' => '100000razorpay',
+                ],
+                'merchant_details' => [
+                    'business_category' => 'financial_services',
+                ],
+                'stakeholders' => [],
+                'merchant_emails' => [
+                    [
+                        'type' => 'refund',
+                    ]
+                ],
+                'merchant_documents' => [
+                    [
+                        'document_type' => 'address_proof_url',
+                    ],
+                    [
+                        'document_type' => 'aadhar_front',
+                    ],
+                    [
+                        'document_type' => 'aadhar_back',
+                    ],
+                ],
+                'stakeholder_documents' => [],
+            ],
+        ],
+    ],
+
+
     'testUpdatedAccountsFetchAccountService' => [
         'request' => [
             'method' => 'GET',

@@ -8602,6 +8602,9 @@ class Service extends Base\Service
         $documents = $this->repo->merchant_document->findManyByMerchantIds([$accountId]);
         $merchantEmails = $this->repo->merchant_email->getEmailByMerchantId($accountId);
 
+        $stakeholderArray = $stakeholders->toArray();
+        $isStakeHolderPresent = count($stakeholderArray) > 0;
+
         $merchantDocs = new Base\PublicCollection;
         $stakeholderDocs = new Base\PublicCollection;
         foreach ($documents as $document)
@@ -8615,7 +8618,8 @@ class Service extends Base\Service
                 $docType = $document->getDocumentType();
                 $proofType = Document\Type::DOCUMENT_TYPE_TO_PROOF_TYPE_MAPPING[$docType];
 
-                if (Document\Type::PROOF_TYPE_ENTITY_MAPPING[$proofType] === EntityConstants::STAKEHOLDER)
+                if (Document\Type::PROOF_TYPE_ENTITY_MAPPING[$proofType] === EntityConstants::STAKEHOLDER and
+                    ($isStakeHolderPresent === true))
                 {
                     $stakeholderDocs->add($document);
                 }
@@ -8628,7 +8632,7 @@ class Service extends Base\Service
 
         $data['merchant'] = $merchant->toArray();
         $data['merchant_details'] = $merchantDetails->toArray();
-        $data['stakeholders'] = $stakeholders->toArray();
+        $data['stakeholders'] = $stakeholderArray;
 
         foreach ($stakeholders as $index => $stakeholder)
         {
@@ -10011,7 +10015,7 @@ class Service extends Base\Service
 
         try {
             $result = $this->core()->migrateAggregatorToReseller($merchantId);
-            
+
             $this->trace->info(TraceCode::MIGRATE_AGGREGATOR_TO_RESELLER_SUCCESS, ['$input' => $input, '$result' => $result]);
 
             $this->trace->count(Metric::AGGREGATOR_TO_RESELLER_MIGRATION_SUCCESS);

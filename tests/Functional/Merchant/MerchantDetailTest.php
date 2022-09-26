@@ -687,6 +687,41 @@ class MerchantDetailTest extends OAuthTestCase
         $testData['request']['url'] = '/account_service/accounts/'. $merchant->getId();
         $this->ba->accountServiceAuth();
         $this->runRequestResponseFlow($testData);
+
+        // test fetch account details, where aadhar_back is classified as stakeholder document by default, if stakeholder is present
+        $this->fixtures->create('merchant_document', ['merchant_id' => $merchant->getId(), 'entity_type' => 'merchant', 'document_type' => 'aadhar_back']);
+        array_push($testData['response']['content']['stakeholder_documents'], ['document_type'=>'aadhar_back']);
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testFetchAccountServiceStakeholderDocumentNoStakeholderEntity()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail', ['business_category' => 'financial_services']);
+        $merchant       = $merchantDetail->merchant;
+        $this->fixtures->create('merchant_email', ['merchant_id' => $merchant->getId()]);
+        $this->fixtures->create('merchant_document', ['merchant_id' => $merchant->getId()]);
+        $this->fixtures->create('merchant_document', ['merchant_id' => $merchant->getId(), 'entity_type' => 'stakeholder', 'document_type' => 'aadhar_front']);
+        $this->fixtures->create('merchant_document', ['merchant_id' => $merchant->getId(), 'entity_type' => 'merchant', 'document_type' => 'aadhar_back']);
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/account_service/accounts/'. $merchant->getId();
+        $this->ba->accountServiceAuth();
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testMerchantDetailsFetchAccountServiceNoStakeholder()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail', ['business_category' => 'financial_services']);
+        $merchant       = $merchantDetail->merchant;
+        $this->fixtures->create('merchant_email', ['merchant_id' => $merchant->getId()]);
+        $this->fixtures->create('merchant_document', ['merchant_id' => $merchant->getId()]);
+        $this->fixtures->create('merchant_document', ['merchant_id' => $merchant->getId(), 'entity_type' => 'merchant', 'document_type' => 'aadhar_front']);
+        $this->fixtures->create('merchant_document', ['merchant_id' => $merchant->getId(), 'entity_type' => 'merchant', 'document_type' => 'aadhar_back']);
+        // test fetch account details by account service
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/account_service/accounts/'. $merchant->getId();
+        $this->ba->accountServiceAuth();
+        $this->runRequestResponseFlow($testData);
     }
 
     public function testUpdatedAccountsFetchAccountService()
