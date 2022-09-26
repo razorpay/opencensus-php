@@ -192,7 +192,7 @@ EOT;
                                               ->payment_analytics
                                               ->dbColumn(Analytics\Entity::CREATED_AT);
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->select($paymentColumns)
                     ->join($paTable, $pid, '=', $paPaymentId)
                     ->where($checkoutIdAttr, '=', $checkoutId)
