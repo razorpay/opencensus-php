@@ -343,8 +343,8 @@ export const getPieChartData = (groupData = []) => {
 
   const result = groupData.reduce(
     (accumulator, datapoint, idx) => {
-      // when 'others' SR is '0' there is no need to show on Pie Chart
-      if (!datapoint?.sr) return accumulator;
+      // when total attempts is '0' there is no need to show on Pie Chart
+      if (!datapoint?.total) return accumulator;
       const _backgroundColor = pieChartStyle?.[idx]?.backgroundColor ?? backgroundColor;
       const _borderColor = pieChartStyle?.[idx]?.borderColor ?? borderColor;
       const percentage = (datapoint?.total / totalSum) * 100 || 0;

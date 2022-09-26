@@ -13,7 +13,7 @@ import { getPieChartData, getTagLabel, getFormattedNumber } from '../helper';
 import { TAG_OVERALL_MAP } from '../constants';
 
 const renderInfoCard = ({ name, successful, total, sr } = {}, index) => {
-  if (name === 'others' && !sr) return null;
+  if (!total) return null;
   const label = getTagLabel(name);
   return (
     <div key={`${name}___${index}`} className="col-xs-12 col-sm-6 info-card">
@@ -64,7 +64,7 @@ const VolumePieWidget = (props) => {
           )}
         </div>
         <div className="col-xs-12 col-md-7">
-          {!isLoading && Boolean(data?.sr) && (
+          {!isLoading && Boolean(data?.total) && (
             <div className="col-xs-12 col-sm-6 info-card">
               {isLoading ? (
                 <PlaceholderLoader style={{ marginBottom: '10px' }} />
