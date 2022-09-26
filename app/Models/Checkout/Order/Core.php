@@ -36,10 +36,13 @@ class Core extends BaseCore
     {
         $paymentArray = [];
 
-        $checkoutOrderArray = array_merge(
-            $checkoutOrder->toArrayPrivate(),
-            $checkoutOrder->meta_data
-        );
+        $checkoutOrderArray = $checkoutOrder->toArrayPrivate();
+        // Make all metadata keys as root level keys
+        $checkoutOrderArray = array_merge($checkoutOrderArray, $checkoutOrderArray[Entity::META_DATA]);
+        // Remove 'meta_data' key as it's contents have been promoted to root level
+        unset($checkoutOrderArray[Entity::META_DATA]);
+        // Convert id's to public id's i.e. append entity name to id
+        $checkoutOrder->setPublicAttributes($checkoutOrderArray);
 
         foreach (Entity::CREATE_PAYMENT_ATTRIBUTES as $attributeKey)
         {

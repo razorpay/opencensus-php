@@ -9,9 +9,13 @@ use RZP\Constants\Table;
 use RZP\Models\Base\Notes;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Customer\Entity as Customer;
+use RZP\Models\Merchant\Account\Entity as MerchantAccount;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Invoice\Entity as Invoice;
+use RZP\Models\Offer\Entity as Offer;
 use RZP\Models\Order\Entity as Order;
+use RZP\Models\PaymentLink\Entity as PaymentLink;
 
 /**
  * The CheckoutOrder entity is used for storing all options passed by checkout FE to initialise a specific payment
@@ -165,6 +169,17 @@ class Entity extends PublicEntity
         self::STATUS,
     ];
 
+    /** @var array The attributes which have a setPublicAttribute() setter methods defined */
+    protected $publicSetters = [
+        self::ACCOUNT_ID,
+        self::CUSTOMER_ID,
+        self::ENTITY,
+        self::INVOICE_ID,
+        self::OFFER_ID,
+        self::ORDER_ID,
+        self::PAYMENT_LINK_ID,
+    ];
+
     /** @var array The attributes that should be visible in serialization. */
     protected $visible = [
         self::ID,
@@ -280,6 +295,11 @@ class Entity extends PublicEntity
     // --------------------------------------------------------------------------------
     // ------------------------------ GETTERS START ------------------------------
 
+    public function getAccountId(): string
+    {
+        return $this->getAttribute(self::META_DATA)[self::ACCOUNT_ID] ?? '';
+    }
+
     public function getAmount(): int
     {
         if (empty($this->order)) {
@@ -312,6 +332,11 @@ class Entity extends PublicEntity
     public function getName(): string
     {
         return $this->getAttribute(self::META_DATA)[self::NAME] ?? '';
+    }
+
+    public function getPaymentLinkId():string
+    {
+        return $this->getAttribute(self::META_DATA)[self::PAYMENT_LINK_ID] ?? '';
     }
 
     /**
@@ -378,5 +403,38 @@ class Entity extends PublicEntity
         $this->setAttribute(self::CLOSED_AT, $closedAt);
     }
 
+    // ------------------------ PUBLIC ID SETTERS START ------------------------
+
+    public function setPublicAccountIdAttribute(array &$attributes): void
+    {
+        $attributes[self::ACCOUNT_ID] = MerchantAccount::getSignedIdOrNull($this->getAccountId());
+    }
+
+    public function setPublicCustomerIdAttribute(array &$attributes): void
+    {
+        $attributes[self::CUSTOMER_ID] = Customer::getSignedIdOrNull($this->getCustomerId());
+    }
+
+    public function setPublicInvoiceIdAttribute(array &$attributes): void
+    {
+        $attributes[self::INVOICE_ID] = Invoice::getSignedIdOrNull($this->invoice_id);
+    }
+
+    public function setPublicOfferIdAttribute(array &$attributes): void
+    {
+        $attributes[self::OFFER_ID] = Offer::getSignedIdOrNull($this->getOfferId());
+    }
+
+    public function setPublicOrderIdAttribute(array &$attributes): void
+    {
+        $attributes[self::ORDER_ID] = Order::getSignedIdOrNull($this->order_id);
+    }
+
+    public function setPublicPaymentLinkIdAttribute(array &$attributes): void
+    {
+        $attributes[self::PAYMENT_LINK_ID] = PaymentLink::getSignedIdOrNull($this->getPaymentLinkId());
+    }
+
+    // ------------------------ PUBLIC ID SETTERS END ------------------------
     // ------------------------------ SETTERS END ------------------------------
 }

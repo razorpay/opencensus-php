@@ -72,6 +72,11 @@ class Processor extends Base\Core
         // 3. set merchant based on qr code (shared or not)
         $this->merchant = $this->qrCode->merchant;
 
+        if ($this->qrCode->isCheckoutQrCode()) {
+            // 3.1 Set Merchant in auth as it would be NULL in callback flow
+            $this->app['basicauth']->setMerchant($this->merchant);
+        }
+
         // 4. process payment
         try
         {
