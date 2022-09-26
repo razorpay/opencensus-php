@@ -880,4 +880,52 @@ class Core extends Base\Core
             }
         }
     }
+
+    public function createTransactionInLedgerReverseShadowFlow(string $entityId, array $ledgerResponse)
+    {
+        $adjustment = $this->repo->adjustment->find($entityId);
+        if ($adjustment->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
+        {
+            throw new Exception\LogicException('Merchant does not have the ledger reverse shadow feature flag enabled'
+                , ErrorCode::BAD_REQUEST_MERCHANT_NOT_ON_LEDGER_REVERSE_SHADOW,
+                ['merchant_id' => $adjustment->getMerchantId()]);
+        }
+
+        $mutex = $this->app['api.mutex'];
+        list($entityId, $txnId) = $mutex->acquireAndRelease('adj_' . $entityId,
+            function () use ($adjustment, $ledgerResponse)
+            {
+                $adjustment->reload();
+                $journalId = $ledgerResponse["id"];
+                $balance = Transaction\Processor\Ledger\Base::getMerchantBalanceFromLedgerResponse($ledgerResponse);
+
+                $tempAdjustment = $adjustment;
+                list($adjustment, $txn) = $this->repo->transaction(function() use ($tempAdjustment, $journalId, $balance)
+                {
+                    $adjustment = clone $tempAdjustment;
+
+                    list ($txn, $feeSplit) = (new Transaction\Processor\Adjustment($adjustment))->createTransactionWithIdAndLedgerBalance($journalId, intval($balance));
+                    $this->repo->saveOrFail($txn);
+
+                    // need to update txn id in adj table
+                    $this->repo->saveOrFail($adjustment);
+
+                    return [$adjustment, $txn];
+                });
+
+                // dispatch event for txn created
+                (new Transaction\Core)->dispatchEventForTransactionCreated($txn);
+                return [
+                    $adjustment->getPublicId(),
+                    $txn->getPublicId(),
+                ];
+            },
+            60,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+        );
+        return [
+            'entity_id' => $entityId,
+            'txn_id'    => $txnId
+        ];
+    }
 }

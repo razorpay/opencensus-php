@@ -17,6 +17,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Jobs\LedgerStatus;
 use RZP\Jobs\Transactions;
+use RZP\Models\Transaction;
 use RZP\Models\BankAccount;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Currency\Currency;
@@ -1041,4 +1042,52 @@ class Core extends Base\Core
             }
     }
 
+    public function createTransactionInLedgerReverseShadowFlow(string $entityId, array $ledgerResponse)
+    {
+        $bankTransfer = $this->repo->bank_transfer->find($entityId);
+
+        if ($bankTransfer->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
+        {
+            throw new Exception\LogicException('Merchant does not have the ledger reverse shadow feature flag enabled'
+                , ErrorCode::BAD_REQUEST_MERCHANT_NOT_ON_LEDGER_REVERSE_SHADOW,
+                ['merchant_id' => $bankTransfer->getMerchantId()]);
+        }
+
+        list($entityId, $txnId) = $this->mutex->acquireAndRelease('bt_' . $entityId,
+            function () use ($bankTransfer, $ledgerResponse)
+            {
+                $bankTransfer->reload();
+                $journalId = $ledgerResponse["id"];
+                $balance = Transaction\Processor\Ledger\Base::getMerchantBalanceFromLedgerResponse($ledgerResponse);
+
+                $tempBankTransfer = $bankTransfer;
+                list($bankTransfer, $txn) = $this->repo->transaction(function() use ($tempBankTransfer, $journalId, $balance)
+                {
+                    $bankTransfer = clone $tempBankTransfer;
+
+                    list ($txn, $feeSplit) = (new Transaction\Processor\BankTransfer($tempBankTransfer))->createTransactionWithIdAndLedgerBalance($journalId, intval($balance));
+                    $this->repo->saveOrFail($txn);
+
+                    $bankTransfer->setTransactionId($txn->getId());
+                    $this->repo->saveOrFail($bankTransfer);
+
+                    return [$bankTransfer, $txn];
+                });
+
+                // dispatch event for txn created
+                (new Processor())->dispatchEventForTransactionCreated($bankTransfer, $txn);
+                return [
+                    $bankTransfer->getPublicId(),
+                    $txn->getPublicId(),
+                ];
+            },
+            60,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+        );
+
+        return [
+            'entity_id' => $entityId,
+            'txn_id'    => $txnId
+        ];
+    }
 }

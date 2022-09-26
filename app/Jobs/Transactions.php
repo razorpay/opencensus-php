@@ -76,6 +76,17 @@ class Transactions extends Job
 
             $resource = sprintf(self::LEDGER_TRANSACTIONS_MUTEX_RESOURCE, $this->entityName, $this->entityId);
 
+            // check if dual write already happened
+            $apiTransaction = $this->repoManager->transaction->find($this->ledgerResponse['id']);
+            if ($apiTransaction != null)
+            {
+                $this->trace->info(TraceCode::LEDGER_API_TXN_DUAL_WRITE_DUPLICATE_REQUEST, [
+                    'id' => $this->ledgerResponse['id']
+                ]);
+                $this->delete();
+                return;
+            }
+
             // logic
             switch ($this->entityName)
             {

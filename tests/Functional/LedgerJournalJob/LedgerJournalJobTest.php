@@ -3,28 +3,15 @@
 namespace RZP\Tests\Functional\LedgerJournalJob;
 
 use Mail;
-use Mockery;
 use Queue;
-use Carbon\Carbon;
-
-use RZP\Constants\Mode;
 use RZP\Models\Feature;
-use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
-use RZP\Constants\Timezone;
-use RZP\Services\RazorXClient;
 use RZP\Jobs\LedgerJournalTest;
-use RZP\Constants\Entity as E;
-use RZP\Jobs\LedgerJournalLive;
 use RZP\Tests\Functional\TestCase;
-use RZP\Services\BatchMicroService;
 use RZP\Jobs\PayoutServiceDataMigration;
-use RZP\Jobs\TokenRegistrationAutoCharge;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Invoice\InvoiceTestTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\Payout\DataMigration as PayoutDataMigration;
 
@@ -165,4 +152,100 @@ class LedgerJournalJobTest extends TestCase
         $this->assertEquals('21200', $transaction->getBalance());
     }
 
+    public function testBankTransferTransactionCreation()
+    {
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->fixtures->create('bank_transfer', [
+            'id'             => "SampleBnkTId12",
+            'utr'            => "2222",
+            'balance_id'     => $balance->getId(),
+            'merchant_id'    => '10000000000000'
+        ]);
+
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $testData = &$this->testData[__FUNCTION__];
+        $ledgerJournalJob = new LedgerJournalTest($testData['payload']);
+        $ledgerJournalJob->handle();
+
+        $bankTransfer = $this->getDbLastEntity('bank_transfer');
+        $transaction = $this->getDbLastEntity('transaction');
+
+        // assert bank transfer
+        $this->assertEquals('HNjsypA96SgJKJ', $bankTransfer->getTransactionId());
+
+        // assert transaction
+        $this->assertEquals('HNjsypA96SgJKJ', $transaction->getId());
+        $this->assertEquals('SampleBnkTId12', $transaction->getEntityId());
+        $this->assertEquals('bank_transfer', $transaction->getType());
+        $this->assertEquals('24500', $transaction->getBalance());
+    }
+
+    public function testAdjustmentTransactionCreation()
+    {
+        $balance = $this->getDbLastEntity('balance');
+
+        $txn = $this->fixtures->create('transaction', ['merchant_id' => '10000000000000']);
+        $adj = $this->fixtures->create('adjustment', [
+            'id'             => 'SampleAdjId123',
+            'balance_id'     => $balance->getId(),
+            'merchant_id'    => '10000000000000',
+            'amount'         => 100 ,
+            'description'    => 'test adjustment',
+            'transaction_id'    => $txn->getId()
+        ]);
+        $this->fixtures->edit('adjustment', $adj['id'], ['transaction_id' => null]);
+
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $testData = &$this->testData[__FUNCTION__];
+        $ledgerJournalJob = new LedgerJournalTest($testData['payload']);
+        $ledgerJournalJob->handle();
+
+        $adjustment = $this->getDbLastEntity('adjustment');
+        $transaction = $this->getDbEntityById('transaction', $adjustment->getTransactionId());
+
+        // assert adjustment
+        $this->assertEquals('HNjsypA96SgJKJ', $adjustment->getTransactionId());
+
+        // assert transaction
+        $this->assertEquals('HNjsypA96SgJKJ', $transaction->getId());
+        $this->assertEquals('SampleAdjId123', $transaction->getEntityId());
+        $this->assertEquals('adjustment', $transaction->getType());
+        $this->assertEquals('24500', $transaction->getBalance());
+    }
+
+    public function testCreditTransferTransactionCreation()
+    {
+        $balance = $this->getDbLastEntity('balance');
+
+        $ct = $this->fixtures->create('credit_transfer', [
+            'id'             => 'SampleCtTrfId2',
+            'balance_id'     => $balance->getId(),
+            'merchant_id'    => '10000000000000',
+            'amount'         => 100 ,
+            'description'    => 'test credit transfer',
+            'entity_id'      => 'JGSxG6xVOuzDcp',
+            'entity_type'    => 'payout'
+        ]);
+
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $testData = &$this->testData[__FUNCTION__];
+        $ledgerJournalJob = new LedgerJournalTest($testData['payload']);
+        $ledgerJournalJob->handle();
+
+        $creditTransfer = $this->getDbLastEntity('credit_transfer');
+        $transaction = $this->getDbEntityById('transaction', $creditTransfer->getTransactionId());
+
+        // assert adjustment
+        $this->assertEquals('HNjsypA96SgJKJ', $creditTransfer->getTransactionId());
+
+        // assert transaction
+        $this->assertEquals('HNjsypA96SgJKJ', $transaction->getId());
+        $this->assertEquals('SampleCtTrfId2', $transaction->getEntityId());
+        $this->assertEquals('credit_transfer', $transaction->getType());
+        $this->assertEquals('21200', $transaction->getBalance());
+    }
 }

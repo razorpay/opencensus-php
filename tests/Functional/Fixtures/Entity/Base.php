@@ -58,6 +58,7 @@ class Base
         'app_token'             => \RZP\Models\Customer\AppToken\Entity::class,
         'line_item'             => \RZP\Models\LineItem\Entity::class,
         'adjustment'            => \RZP\Models\Adjustment\Entity::class,
+        'credit_transfer'       => \RZP\Models\CreditTransfer\Entity::class,
         'settlement'            => \RZP\Models\Settlement\Entity::class,
         'settlement_transfer'   => \RZP\Models\Settlement\Transfer\Entity::class,
         'transaction'           => \RZP\Models\Transaction\Entity::class,

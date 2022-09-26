@@ -11,7 +11,11 @@ use RZP\Exception\LogicException;
 use RZP\Models\Payout\Core as PayoutCore;
 use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Models\Reversal\Core as ReversalCore;
+use RZP\Models\Adjustment\Core as AdjustmentCore;
+use RZP\Models\BankTransfer\Core as BankTransferCore;
+use RZP\Models\FundAccount\Validation\Core as FavCore;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\CreditTransfer\Core as CreditTransferCore;
 
 class LedgerJournalBase extends Job
 {
@@ -29,6 +33,11 @@ class LedgerJournalBase extends Job
     // ledger transactor id prefix
     const PAYOUT_PREFIX          = "pout_";
     const REVERSAL_PREFIX        = "rvrsl_";
+    const FAV_PREFIX             = "fav_";
+    const BANK_TRANSFER_PREFIX   = "bt_";
+    const ADJUSTMENT_PREFIX      = "adj_";
+    const CREDIT_TRANSFER_PREFIX = "ct_";
+
     const TRANSACTOR_ID          = "transactor_id";
     const TRANSACTOR_EVENT       = "transactor_event";
 
@@ -61,6 +70,18 @@ class LedgerJournalBase extends Job
             } else if (strpos($transactorId, self::REVERSAL_PREFIX) !== false) {
                 $entityId = str_replace(self::REVERSAL_PREFIX, '', $transactorId);
                 $entityName = Entity::REVERSAL;
+            } else if (strpos($transactorId, self::FAV_PREFIX) !== false) {
+                $entityId = str_replace(self::FAV_PREFIX, '', $transactorId);
+                $entityName = Entity::FUND_ACCOUNT_VALIDATION;
+            } else if (strpos($transactorId, self::ADJUSTMENT_PREFIX) !== false) {
+                $entityId = str_replace(self::ADJUSTMENT_PREFIX, '', $transactorId);
+                $entityName = Entity::ADJUSTMENT;
+            } else if (strpos($transactorId, self::BANK_TRANSFER_PREFIX) !== false) {
+                $entityId = str_replace(self::BANK_TRANSFER_PREFIX, '', $transactorId);
+                $entityName = Entity::BANK_TRANSFER;
+            } else if (strpos($transactorId, self::CREDIT_TRANSFER_PREFIX) !== false) {
+                $entityId = str_replace(self::CREDIT_TRANSFER_PREFIX, '', $transactorId);
+                $entityName = Entity::CREDIT_TRANSFER;
             }
 
             $traceData = [
@@ -73,9 +94,32 @@ class LedgerJournalBase extends Job
                 TraceCode::LEDGER_JOURNAL_QUEUE_JOB_DECODED,
                 $traceData);
 
+            // check if dual write already happened
+            $apiTransaction = $this->repoManager->transaction->find($this->ledgerResponse['id']);
+            if ($apiTransaction != null)
+            {
+                $this->trace->info(TraceCode::LEDGER_API_TXN_DUAL_WRITE_DUPLICATE_REQUEST, [
+                    'id' => $this->ledgerResponse['id']
+                ]);
+                $this->delete();
+                return;
+            }
+
             // perform operations based on entity name
             switch ($entityName)
             {
+                case Entity::BANK_TRANSFER :
+                    $response = (new BankTransferCore())
+                        ->createTransactionInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
+
+                    break;
+
+                case Entity::ADJUSTMENT :
+                    $response = (new AdjustmentCore())
+                        ->createTransactionInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
+
+                    break;
+
                 case Entity::PAYOUT :
                     if ($transactorEvent === Ledger\Payout::PAYOUT_INITIATED)
                     {
@@ -87,6 +131,18 @@ class LedgerJournalBase extends Job
 
                 case Entity::REVERSAL :
                     $response = (new ReversalCore)
+                        ->createTransactionInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
+
+                    break;
+
+                case Entity::CREDIT_TRANSFER :
+                    $response = (new CreditTransferCore())
+                        ->createTransactionInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
+
+                    break;
+
+                case Entity::FUND_ACCOUNT_VALIDATION :
+                    $response = (new FavCore)
                         ->createTransactionInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
 
                     break;

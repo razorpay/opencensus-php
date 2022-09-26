@@ -115,6 +115,18 @@ abstract class Base extends BaseCore
      */
     public function createTransactionWithIdAndLedgerBalance(string $txnId, int $balance)
     {
+        $existingTxn = $this->repo->transaction->find($txnId);
+
+        if ($existingTxn !== null)
+        {
+            $this->trace->info(
+                TraceCode::TRANSACTION_ALREADY_EXISTS
+            );
+
+            // returning fee split as null, as a fee breakup shall already be created
+            return [$existingTxn, null];
+        }
+
         // Creates new or fetches existing transaction entity for the source entity
         $this->setTransactionForSource($txnId);
         // set transaction attributes from the source entity

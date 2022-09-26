@@ -436,6 +436,16 @@ final class FactoryData
                                                      ]
         );
 
+        $factory(\RZP\Models\CreditTransfer\Entity::class, [
+                'id' => $faker->uniqueid,
+                'merchant_id' => 'factory:RZP\Models\Merchant\Entity',
+                'amount' => $faker->randomNumber,
+                'currency' => 'INR',
+                'channel' => Channel::AXIS,
+                'description' => $faker->text
+            ]
+        );
+
         $factory(\RZP\Gateway\Hdfc\Entity::class, [
                                                     'id' => $faker->randomNumber(6),
                                                     'payment_id' => null,
