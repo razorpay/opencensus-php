@@ -309,6 +309,8 @@ class Type
 
     const ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT = 'icici_netbanking_refund_direct_settlement';
 
+    const PAYMENT_LIMIT               = 'payment_limit';
+
     // File contants required for merchant feature onboarding
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
     const MARKETPLACE_VENDOR_AGREEMENT      = FeatureConstants::MARKETPLACE . '.' . FeatureConstants::VENDOR_AGREEMENT;
@@ -505,6 +507,10 @@ class Type
 
         Constants\Entity::BULK_FRAUD_NOTIFICATION => [
             self::BULK_FRAUD_NOTIFICATION,
+        ],
+
+        Constants\Entity::PAYMENT_LIMIT => [
+            self::PAYMENT_LIMIT,
         ]
     ];
 
@@ -661,6 +667,7 @@ class Type
         self::HDFC_COLLECT_NOW_SETTLEMENT_FILE,
         self::NIUM_SETTLEMENT_FILE,
         self::APM_ONBOARD_REQUEST_FILE,
+        self::PAYMENT_LIMIT,
     ];
 
     /**

@@ -10,6 +10,7 @@ use RZP\Constants\Entity;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Key;
 use RZP\Models\Merchant\Methods;
+use RZP\Models\Merchant\PaymentLimit\Service;
 use RZP\Models\Report;
 use RZP\Models\Gateway;
 use RZP\Models\User\Role;
@@ -3390,5 +3391,17 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    
+    public function uploadMaxPaymentLimitViaFile()
+    {
+        $input = Request::all();
+        $data = (new Service())->uploadMaxPaymentLimitViaFile($input);
+        return ApiResponse::json($data);
+    }
+
+    public function executeMaxPaymentLimitWorkflow()
+    {
+        $input = Request::all();
+        $data = (new Service())->executeMaxPaymentLimitWorkflow($input);
+        return ApiResponse::json($data);
+    }
 }

@@ -117,6 +117,11 @@ return [
                 'description' => 'Fetch Merchants',
                 'assignable'  => true,
             ],
+            Permission::EXECUTE_MERCHANT_MAX_PAYMENT_LIMIT_WORKFLOW => [
+                'description' => 'To create workflow for updating max payment limit',
+                'assignable'  => true,
+                'workflow'    => true,
+            ],
         ],
 
         PermissionCategory::MERCHANT_REQUEST => [
@@ -1636,7 +1641,7 @@ return [
                 'description' => 'Allow viewing access to capital-loc withdrawals and repayments',
                 'assignable'  => true,
             ],
-            
+
             Permission::FINANCIAL_DATA_SERVICE => [
                 'description' => 'Allow access to Financial Data Service routes from dashboard',
                 'assignable'  => true,

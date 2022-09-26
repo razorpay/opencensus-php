@@ -416,6 +416,11 @@ class Name
     const EXECUTE_MERCHANT_DISABLE_INTERNATIONAL_BULK = 'execute_merchant_disable_international_bulk';
     const EXECUTE_MERCHANT_ENABLE_INTERNATIONAL_BULK  = 'execute_merchant_enable_international_bulk';
 
+    // Admin Dashboard Bulk Updation of Max Payment and International Payment Limit
+    const MERCHANT_MAX_PAYMENT_LIMIT_UPDATE           = 'merchant_max_payment_limit_update';
+    const EXECUTE_MERCHANT_MAX_PAYMENT_LIMIT_WORKFLOW = 'execute_merchant_max_payment_limit_workflow';
+    const UPDATE_MERCHANT_MAX_PAYMENT_LIMIT_WORKFLOW  = 'update_merchant_max_payment_limit_workflow';
+
     // Admin Dashboard Send Request Activation Documents Notification
     const SEND_REQUEST_ACTIVATION_DOCUMENTS_NOTIFICATION = 'send_request_activation_documents_notification';
 

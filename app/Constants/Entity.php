@@ -280,6 +280,7 @@ class Entity
     const WORKFLOW_ACTION               = 'workflow_action';
     const BULK_WORKFLOW_ACTION          = 'bulk_workflow_action';
     const WORKFLOW_PAYOUT_AMOUNT_RULES  = 'workflow_payout_amount_rules';
+    const PAYMENT_LIMIT                 = 'payment_limit';
 
     // Generic comment and state entities
     const STATE                 = 'state';
@@ -1433,6 +1434,8 @@ class Entity
         self::ROLE_ACCESS_POLICY_MAP        => \RZP\Models\RoleAccessPolicyMap::class,
 
         self::CHECKOUT_ORDER => \RZP\Models\Checkout\Order::class,
+
+        self::PAYMENT_LIMIT => \RZP\Models\Merchant\PaymentLimit::class,
     ];
 
     protected static $repository = [

@@ -3627,6 +3627,10 @@ class Route
         'get_fraud_attributes'                   => ['get',     'payments/fraud/attributes',                                      'PaymentFraudController@getFraudAttributes'                   ],
         'save_payment_fraud'                     => ['post',    'payments/fraud',                                                 'PaymentFraudController@savePaymentFraud'                     ],
 
+        // Merchant Payment Limit
+        'max_payment_limit_update'               => ['post',    'merchant/payment_limit/update',                                  'MerchantController@uploadMaxPaymentLimitViaFile'                    ],
+        'execute_max_payment_limit_workflow'     => ['post',    'merchant/payment_limit/execute_workflow',                        'MerchantController@executeMaxPaymentLimitWorkflow'                  ],
+
         // Merchant Risk Notes
         'merchant_risk_notes_get'              => ['get',       'merchants/{merchant_id}/risk_notes',                       'MerchantRiskNotesController@getAll'    ],
         'merchant_risk_notes_create'           => ['post',      'merchants/{merchant_id}/risk_notes',                       'MerchantRiskNotesController@create'    ],
@@ -5081,6 +5085,9 @@ class Route
         'health_checker_reminder_cron',
         'fraud_checker_milestone_cron',
 
+        'max_payment_limit_update',
+        'execute_max_payment_limit_workflow',
+
         // payout service
         'create_payout_entry',
         'create_reversal_entry',
@@ -6238,6 +6245,8 @@ class Route
         'org_fetch_bank_account',
         'org_update_bank_account',
         'admin_payouts_workflow_config_get',
+        'max_payment_limit_update',
+        'execute_max_payment_limit_workflow',
         'linked_account_reference_data_create',
         'amc_linked_account_create',
         'admin_website_section_action',
@@ -8640,6 +8649,9 @@ class Route
 
         'merchant_risk_data'                              => Permission::GET_MERCHANT_RISK_DATA,
         'bulk_fraud_notify'                               => Permission::BULK_FRAUD_NOTIFY,
+
+        'max_payment_limit_update'                        => Permission::MERCHANT_MAX_PAYMENT_LIMIT_UPDATE,
+        'execute_max_payment_limit_workflow'              => Permission::UPDATE_MERCHANT_MAX_PAYMENT_LIMIT_WORKFLOW,
 
         // PG Ledger Routes
         'pg_onboard_merchant'                               => Permission::PG_LEDGER_ACTIONS,
@@ -12839,6 +12851,9 @@ class Route
 
             // Merchant Fraud
             'bulk_fraud_notify',
+
+            'max_payment_limit_update',
+            'execute_max_payment_limit_workflow',
 
             //Purpose Code
             'purpose_code_fetch',
