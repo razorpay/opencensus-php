@@ -1547,4 +1547,9 @@ class Entity extends Base\PublicEntity
     {
         $this->cardMetadata = $metaDataArray;
     }
+
+    public function setDummyCardName()
+    {
+        $this->setAttribute(self::NAME, "");
+    }
 }
