@@ -50,6 +50,7 @@ use RZP\Models\EntityOrigin;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Payment\Flow;
 use RZP\Jobs\TransferProcess;
+use RZP\Jobs\Barricade\PaymentPayload;
 use RZP\Constants\Environment;
 use RZP\Models\Payment\Metric;
 use RZP\Services\KafkaProducer;
@@ -3826,9 +3827,15 @@ class Processor
 
             if ($sqsPush === 'on')
             {
+                // We do delayed dispatch here
                 $queueName = $this->app['config']->get('queue.barricade_verify.' . $this->mode);
+                PaymentPayload::dispatch($this->mode, $payment->getId(), $data)->delay(now()->addMinutes(10));
 
-                $this->app['queue']->connection('sqs')->pushRaw(json_encode($data), $queueName);
+                $this->trace->info(TraceCode::BARRICADE_SQS_PUSH_SUCCESS,
+                    [
+                        'queueName' => $queueName,
+                        'data'      => $data,
+                    ]);
 
                 return;
             }
