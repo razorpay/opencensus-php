@@ -2239,7 +2239,6 @@ class Gateway
         Gateway::UPI_ICICI,
         Gateway::FULCRUM,
         Gateway::CHECKOUT_DOT_COM,
-        Gateway::PAYU,
     ];
 
     public static $cardMandateGateways = [
@@ -2315,11 +2314,9 @@ class Gateway
             Gateway::NETBANKING_HDFC,
             Gateway::NETBANKING_SBI,
             Gateway::ENACH_NPCI_NETBANKING,
-            Gateway::PAYU,
         ],
         AuthType::DEBITCARD =>  [
             Gateway::ENACH_NPCI_NETBANKING,
-            Gateway::PAYU,
         ],
         AuthType::AADHAAR     => self::EMANDATE_AADHAAR_GATEWAYS,
         AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_GATEWAYS,
@@ -2770,11 +2767,6 @@ class Gateway
             AuthType::AADHAAR          => self::EMANDATE_AADHAAR_BANKS,
             AuthType::AADHAAR_FP       => self::EMANDATE_AADHAAR_BANKS,
         ],
-        // For now, not maintaining gateway wise bank list
-        Gateway::PAYU                  => [
-            AuthType::NETBANKING       => self::ENACH_NPCI_NB_AUTH_NETBANKING_BANKS,
-            AuthType::DEBITCARD        => self::ENACH_NPCI_NB_AUTH_CARD_BANKS,
-        ],
         // This is added here just for test cases
         // We are using UTIB in test cases
         Gateway::ESIGNER_DIGIO         => [
@@ -2813,18 +2805,6 @@ class Gateway
         Gateway::NETBANKING_HDFC,
         Gateway::ENACH_RBL,
         Gateway::NETBANKING_SBI,
-    ];
-
-    /**
-     * List of netbanking gateways that give emandate registration/debit status through webhooks
-     * This is because for some banks they will give final token status in async mode even if, 
-     * transaction was completed.
-     * Similarly for debit txns, gateway will give terminal status through webhooks.
-     *
-     * @var array
-     */
-    public static $apiBasedAsyncEMandateGateways = [
-        Gateway::PAYU,
     ];
 
     /**
@@ -2882,7 +2862,6 @@ class Gateway
         Gateway::NETBANKING_UCO,
         Gateway::NETBANKING_RBL,
         Gateway::NETBANKING_HDFC,
-        Gateway::PAYU,
     ];
 
     /**
@@ -2899,7 +2878,6 @@ class Gateway
     public static $webhooksEnabledGateways = [
         Gateway::ATOM,
         Gateway::WALLET_PHONEPE,
-        Gateway::PAYU,
     ];
 
     /**
@@ -3633,11 +3611,6 @@ class Gateway
     public static function isFileBasedEMandateRegistrationGateway(string $gateway): bool
     {
         return (in_array($gateway, self::$fileBasedEMandateRegistrationGateways) === true);
-    }
-
-    public static function isApiBasedAsyncEMandateGateway(string $gateway): bool
-    {
-        return (in_array($gateway, self::$apiBasedAsyncEMandateGateways) === true);
     }
 
     /**

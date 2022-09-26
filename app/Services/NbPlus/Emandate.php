@@ -94,10 +94,6 @@ class Emandate extends Service
                 $returnData = $this->processAuthorizeFailedFlow($response);
                 break;
 
-            case Action::PREPROCESS_CALLBACK:
-                $returnData = $response[Response::PAYMENT_ID];
-                break;
-
             default:
                 throw new Exception\InvalidArgumentException(
                     'Not a valid action',

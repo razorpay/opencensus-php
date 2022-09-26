@@ -374,27 +374,6 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createPayuEmandateTerminal(array $override)
-    {
-        $attributes = [
-            'merchant_id'           => '10000000000000',
-            'gateway'               => 'payu',
-            'emandate'              => 1,
-            'gateway_merchant_id'   => 'abcd',
-            'network_category'      => 'ecommerce',
-            'gateway_secure_secret' => 'secret',
-            'mode'                  =>  '2',
-            'type'                  => [
-                'recurring_3ds'                 => '1',
-                'recurring_non_3ds'             => '1',
-                'direct_settlement_with_refund' => '1',
-                'optimizer'                     => '1'
-            ],
-        ];
-        $attributes = array_merge($attributes, $override);
-        return $this->createEntityInTestAndLive('terminal', $attributes);
-    }
-
     public function createCashfreeIntentTerminal()
     {
         $attributes = [

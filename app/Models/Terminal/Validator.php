@@ -295,10 +295,6 @@ class Validator extends Base\Validator
         Entity::EMI                                     => 'sometimes|boolean',
         Entity::EMI_SUBVENTION                          => 'sometimes|in:customer,merchant',
         Entity::ENABLED_WALLETS                         => 'sometimes|array',
-        Entity::EMANDATE                                => 'sometimes|boolean|in:0,1',
-        Entity::TYPE . 'recurring_3ds'                  => 'sometimes_if:emandate,1|in:1',
-        Entity::TYPE . 'recurring_non_3ds'              => 'sometimes_if:emandate,1|in:1',
-        Entity::TYPE . 'non_recurring'                  => 'sometimes_if:emandate,1|in:0',
     ];
 
     protected static $cashfreeTerminalRules = [
@@ -781,10 +777,6 @@ class Validator extends Base\Validator
         Entity::NOTES                      => 'sometimes|string',
         Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
         Entity::ENABLED_WALLETS            => 'sometimes|array',
-        Entity::EMANDATE                   => 'sometimes|boolean|in:0,1',
-        Entity::TYPE . 'recurring_3ds'     => 'sometimes_if:emandate,1|in:1',
-        Entity::TYPE . 'recurring_non_3ds' => 'sometimes_if:emandate,1|in:1',
-        Entity::TYPE . 'non_recurring'     => 'sometimes_if:emandate,1|in:0',
     ];
 
     protected static $cashfreeEditTerminalRules = [
