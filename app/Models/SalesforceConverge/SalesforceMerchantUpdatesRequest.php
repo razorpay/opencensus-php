@@ -31,11 +31,11 @@ class SalesforceMerchantUpdatesRequest
 
         $this->activated_at = date('Y-m-d',$merchant->getActivatedAt());
 
-        $this->activation_progress = $merchant->merchantDetail->getActivationProgress();
+        $this->activation_progress = optional($merchant->merchantDetail)->getActivationProgress() ?? 0;
 
-        $this->activation_status = $merchant->merchantDetail->getActivationStatus();
+        $this->activation_status = optional($merchant->merchantDetail)->getActivationStatus();
 
-        $this->activation_flow = $merchant->merchantDetail->getActivationFlow();
+        $this->activation_flow = optional($merchant->merchantDetail)->getActivationFlow();
 
         $this->foh = $merchant->isFundsOnHold();
 

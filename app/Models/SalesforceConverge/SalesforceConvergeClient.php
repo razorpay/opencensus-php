@@ -168,7 +168,7 @@ class SalesforceConvergeClient
             {
                 throw $e;
             }
-            $this->trace->traceException($e, Trace::CRITICAL,
+            $this->trace->traceException($e, Trace::NOTICE,
                                          TraceCode::SALESFORCE_CONVERGE_SERVICE_REQUEST_FAILED,
                                          [
                                              Constants::PAYLOAD => (array) $request,
