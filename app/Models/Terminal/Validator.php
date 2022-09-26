@@ -706,7 +706,9 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::TYPE                       => 'sometimes|array',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::NOTES                      => 'sometimes|string',
     ];
 
     protected static $hdfcEditTerminalRules = [
