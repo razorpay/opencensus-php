@@ -15,11 +15,11 @@ class Srcb extends Base
     use FileHandler;
 
 
-    const PAYMENT_ID            = 'PG Referenc Number';
-    const BANK_REFERENCE_NUMBER = 'Bank Adj Reference Number';
-    const REFUND_AMOUNT         = 'Transaction Amount';
-    const REFUND_NARRATION      = 'Refund & narration';
-    const REFUND_DATE           = 'entrydate(YYYYMMDD)';
+    const PAYMENT_ID                 = 'PG Referenc Number';
+    const BANK_REFERENCE_NUMBER      = 'Bank Adj Reference Number';
+    const REFUND_AMOUNT              = 'Transaction Amount';
+    const REFUND_NARRATION           = 'Refund & narration';
+    const PAYMENT_DATE               = 'entrydate(YYYYMMDD)';
 
     const FILE_NAME                  = 'RAZORPAY_REFUND_PG_';
     const EXTENSION                  = FileStore\Format::TXT;
@@ -34,14 +34,14 @@ class Srcb extends Base
 
         foreach ($data as $row)
         {
-            $refundDate = Carbon::createFromTimestamp($row['refund']['created_at'], Timezone::IST)->format('Ymd');
+            $paymentDate = Carbon::createFromTimestamp($row['payment']['created_at'], Timezone::IST)->format('Ymd');
 
             $content[] = [
                 self::PAYMENT_ID                => $row['payment']['id'],
                 self::BANK_REFERENCE_NUMBER     => $this->fetchBankPaymentId($row),
                 self::REFUND_AMOUNT             => $this->getFormattedAmount($row['refund']['amount']),
                 self::REFUND_NARRATION          => "REFUND",
-                self::REFUND_DATE               => $refundDate,
+                self::PAYMENT_DATE              => $paymentDate,
             ];
         }
 
