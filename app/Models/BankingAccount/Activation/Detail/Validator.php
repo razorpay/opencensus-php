@@ -20,9 +20,6 @@ class Validator extends Base\Validator
     const LIMITED_LIABILITY_PARTNERSHIP = 'limited_liability_partnership';
     const PARTNERSHIP = 'partnership';
     const ONE_PERSON_COMPANY = 'one_person_company';
-    const TRUST = 'trust';
-    const SOCIETY = 'society';
-    const SECTION_8_COMPANY = 'section_8_company';
 
     // Types of Business Types
     const FINANCIAL_SERVICES                    = 'financial_services';
@@ -280,10 +277,7 @@ class Validator extends Base\Validator
         self::SOLE_PROPRIETORSHIP,
         self::LIMITED_LIABILITY_PARTNERSHIP,
         self::PARTNERSHIP,
-        self::ONE_PERSON_COMPANY,
-        self::TRUST,
-        self::SOCIETY,
-        self::SECTION_8_COMPANY
+        self::ONE_PERSON_COMPANY
     ];
 
     public static $allowedBusinessTypes = [
