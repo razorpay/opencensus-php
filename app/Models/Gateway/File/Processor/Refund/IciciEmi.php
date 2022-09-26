@@ -185,20 +185,93 @@ class IciciEmi extends Base
         $formattedData = [];
 
         foreach ($data as $index => $row) {
+
+            $gateway = $row->payment->getGateway();
+
+            $tid = $row->payment->terminal->getGatewayTerminalId();
+
+            $mid = $row->payment->terminal->getGatewayMerchantId();
+
+            $payment_acquirer = $row->payment->terminal->getGatewayAcquirer();
+
+            if($gateway === 'hitachi' && $payment_acquirer === 'ratn')
+            {
+                $finalTid = $tid;
+            }
+            else if($gateway === 'paysecure' && $payment_acquirer === 'ratn')
+            {
+                $finalTid = $tid;
+            }
+            else if($gateway === 'fulcrum' && $payment_acquirer === 'ratn')
+            {
+                $finalTid = strtoupper($tid);
+            }
+            else if($gateway === 'hdfc' && $payment_acquirer === 'hdfc')
+            {
+                $finalTid = $tid;
+            }
+            else if($gateway === 'isg' && $payment_acquirer === 'kotak')
+            {
+                $finalTid = $tid;
+            }
+            else if($gateway === 'mpgs' && $payment_acquirer === 'hdfc')
+            {
+                $finalTid = $mid;
+            }
+            else if($gateway === 'mpgs' && $payment_acquirer === 'icic')
+            {
+                $finalTid = $mid;
+            }
+            else if($gateway === 'first_data' && $payment_acquirer === 'icic')
+            {
+                $finalTid = substr($mid,2);
+            }
+            else if($gateway === 'cybersource' && $payment_acquirer === 'hdfc')
+            {
+                if(substr($mid,0,5) === "hdfc_")
+                {
+                    $finalTid = substr($mid,5);
+                }
+                else
+                {
+                    $finalTid = $mid;
+                }
+            }
+            else if($gateway === 'card_fss' && $payment_acquirer === 'sbin')
+            {
+                $finalTid = $mid;
+            }
+            else
+            {
+                continue;
+            }
+
+            $card = $row->payment->card;
+
+            if (isset($row->payment->card->trivia) && isset($row->payment->token))
+            {
+                $card = $row->payment->token->card;
+            }
+
             $formattedData[] = [
                 'EMI ID' => $row->payment_id,
-                'Full Card No.' => $this->getCardNumber($row->payment->card),
-                'Original Transaction Amount' => $row->payment->amount,
+                'Card PAN' => $card->getLast4(),
+                'Original Transaction Amount' => $this->getFormattedAmount($row->payment->amount/100),
                 'Txn date' => $this->formattedDateFromTimestamp($row->payment->created_at),
                 'Auth ID' => $this->getAuthCode($row->payment),
                 'Merchant Name' => $row->merchant->name,
-                'MID' => $row->merchant->id,
-                'Refund Amount' => $row->amount,
+                'TID' => $finalTid,
+                'Refund Amount' => $this->getFormattedAmount($row->amount/100),
                 'Refund Date' => $this->formattedDateFromTimestamp($row->created_at),
             ];
         }
 
         return $formattedData;
+    }
+
+    protected function getFormattedAmount($amount)
+    {
+        return number_format($amount, 2,'.', '');
     }
 
     public function createFile($data)

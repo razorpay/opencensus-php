@@ -17,6 +17,7 @@ use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Models\Payment;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Services\Beam\Service;
+use RZP\Trace\TraceCode;
 
 class Icici extends Base
 {
@@ -107,15 +108,89 @@ class Icici extends Base
                     $card = $emiPayment->token->card;
                 }
 
+                $gateway = $emiPayment->getGateway();
+
+                $tid = $emiPayment->terminal->getGatewayTerminalId();
+
+                $mid = $emiPayment->terminal->getGatewayMerchantId();
+
+                $payment_acquirer = $emiPayment->terminal->getGatewayAcquirer();
+
+                if($gateway === 'hitachi' && $payment_acquirer === 'ratn')
+                {
+                    $finalTid = $tid;
+                    $finalMid = $mid;
+                }
+                else if($gateway === 'paysecure' && $payment_acquirer === 'ratn')
+                {
+                    $finalTid = $tid;
+                    $finalMid = $mid;
+                }
+                else if($gateway === 'fulcrum' && $payment_acquirer === 'ratn')
+                {
+                    $finalTid = strtoupper($tid);
+                    $finalMid = $mid;
+                }
+                else if($gateway === 'hdfc' && $payment_acquirer === 'hdfc')
+                {
+                    $finalTid = $tid;
+                    $finalMid = $mid;
+                }
+                else if($gateway === 'isg' && $payment_acquirer === 'kotak')
+                {
+                    $finalTid = $tid;
+                    $finalMid = $mid;
+                }
+                else if($gateway === 'mpgs' && $payment_acquirer === 'hdfc')
+                {
+                    $finalTid = $mid;
+                    $finalMid = $mid;
+                }
+                else if($gateway === 'mpgs' && $payment_acquirer === 'icic')
+                {
+                    $finalTid = $mid;
+                    $finalMid = $mid;
+                }
+                else if($gateway === 'first_data' && $payment_acquirer === 'icic')
+                {
+                    $finalTid = substr($mid,2);
+                    $finalMid = $mid;
+                }
+                else if($gateway === 'cybersource' && $payment_acquirer === 'hdfc')
+                {
+                    if(substr($mid,0,5) === "hdfc_")
+                    {
+                        $finalTid = substr($mid,5);
+                    }
+                    else
+                    {
+                        $finalTid = $mid;
+                    }
+                    $finalMid = $mid;
+                }
+                else if($gateway === 'card_fss' && $payment_acquirer === 'sbin')
+                {
+                    $finalTid = $mid;
+                    $finalMid = $mid;
+                }
+                else
+                {
+                    $this->trace->info(TraceCode::PAYMENT_WITH_INCORRECT_TID, [
+                        'Payment with incorrect TID'=> $emiPayment->getId(),
+                    ]);
+
+                    continue;
+                }
+
                 $data[] = [
                     'EMI ID' => $emiPayment->getId(),
                     'Tx Time' => $this->formattedDateFromTimestamp($emiPayment->getAuthorizeTimestamp()),
-                    'Card PAN' => $this->getCardNumber($card, $emiPayment->getGateway()),
-                    'Amount' => $principalAmount,
-                    'Auth Code' => $this->getAuthCode($emiPayment),
+                    'Card PAN' => $card->getLast4(),
+                    'Amount' => $this->getFormattedAmount($principalAmount),
+                    'Auth Code' => str_pad($this->getAuthCode($emiPayment), 6, '0', STR_PAD_LEFT),
                     'Scheme Code' => substr($issuerPlanId, 0, 4) . 'P199' . substr($issuerPlanId, -2),
-                    'MID' => '',
-                    'TID' => '',
+                    'MID' => $finalMid,
+                    'TID' => $finalTid,
                     'Discount/ Cashback Amount' => 'NA',
                     'Tenure' => $tenure,
                     'RRN' => '',
@@ -141,8 +216,8 @@ class Icici extends Base
                     'Product Sub-Category 2' => '',
                     'Model Name' => '',
                     'Card Hash' => '',
-                    'EMI Amount' => $emiAmount,
-                    'Loan Amount' => $principalAmount,
+                    'EMI Amount' => $this->getFormattedAmount($emiAmount),
+                    'Loan Amount' => $this->getFormattedAmount($principalAmount),
                     'Discount / Cashback %' => 'NA',
                     'Is New Model' => '',
                     'Additional Cashback' => '',
@@ -227,6 +302,11 @@ class Icici extends Base
         );
 
         Mail::queue($emiFileMail);
+    }
+
+    protected function getFormattedAmount($amount)
+    {
+        return number_format($amount, 2,'.', '');
     }
 
 }
