@@ -3800,6 +3800,13 @@ class Processor
         {
             return;
         }
+        // Skip verify cll for BharatQr and UpiTransfer
+        if (($payment->isBharatQr() === true)
+            or ($payment->isUpiTransfer() === true))
+        {
+            return;
+        }
+
         $gatewayResult = $this->app->razorx->getTreatment($payment->terminal->getGateway(), self::BARRICADE_PAYMENT_GATEWAY, $this->mode);
         $demoMerchant  = $this->app->razorx->getTreatment($payment->getMerchantId(),self::DEMO_MERCHANT, $this->mode);
 
