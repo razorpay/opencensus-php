@@ -1108,18 +1108,7 @@ class Core extends Base\Core
             ]
         ];
 
-        $noteAttributes =  $checkout['customAttributes'];
-
-        if(!empty($noteAttributes))
-        {
-            foreach ($noteAttributes as $noteAttribute)
-            {
-                if ($noteAttribute['key'] === 'order_notes')
-                {
-                    $order['note'] = $noteAttribute['value'];
-                }
-            }
-        }
+        $order['note'] =  $checkout['note'];
 
         if (empty($checkout['lineItems']['edges']) === false)
         {

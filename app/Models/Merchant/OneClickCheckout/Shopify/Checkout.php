@@ -373,8 +373,6 @@ class Checkout extends Base\Core
 
         $checkoutId = $input['checkout_id'];
 
-        $cartNotes = $input['cart_note'];
-
         $mutation = (new Mutations)->checkoutAttributesUpdateMutation();
 
         $graphqlQuery = [
@@ -386,12 +384,9 @@ class Checkout extends Base\Core
                         [
                             'key'   => 'magic_checkout_url',
                             'value' => $checkoutUrl
-                        ],
-                        [
-                            'key'   => 'order_notes',
-                            'value' => $cartNotes
                         ]
-                    ]
+                    ],
+                    'note' => $input['cart_note']
                 ]
             ]
         ];
