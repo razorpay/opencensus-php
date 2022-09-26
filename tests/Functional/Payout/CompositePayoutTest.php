@@ -397,6 +397,9 @@ class CompositePayoutTest extends TestCase
                     $response['fingerprint'] = null;
                     $response['scheme']      = '2';
                     break;
+
+                case 'delete/token':
+                    self::assertEquals('pay_44f3d176b38b4cd2a588f243e3ff7b20', $input['token']);
             }
 
             return $response;
@@ -1498,5 +1501,43 @@ class CompositePayoutTest extends TestCase
 
         // Assert that the created payout picks up the oldest active Fund Account ID
         $this->assertEquals($oldestActiveFundAccountId, $payouts[0]['fund_account_id']);
+    }
+
+    public function testUpdateCompositePayoutToNonSavedCardsStatusToProcessedManually()
+    {
+        $this->testCreateCompositePayoutForNonSavedCardFlow();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $fta = $payout->fundTransferAttempts()->first();
+
+        // Assert that fta status was initiated (FTS sync call).
+        $this->assertEquals('initiated', $fta->getStatus());
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $request = [
+            'url'     => '/payouts/' . $payout['id'] . '/manual/status',
+            'method'  => 'PATCH',
+            'content' => [
+                'status'              => 'processed',
+                'fts_fund_account_id' => '12345',
+                'fts_account_type'    => 'NODAL',
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout->reload();
+
+        // Assert that payout status was updated.
+        $this->assertEquals('processed', $payout->getStatus());
+
+        $fta->reload();
+
+        // Assert that fta status was also updated along with payout status.
+        $this->assertEquals('processed', $fta->getStatus());
     }
 }

@@ -4596,6 +4596,8 @@ class Core extends Base\Core
                     $input);
         }
 
+        $this->deleteCardMetaDataAndVaultTokenForTerminalStatePayout($status, $payout);
+
         return $payout;
     }
 
