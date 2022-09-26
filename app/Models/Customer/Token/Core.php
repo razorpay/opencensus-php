@@ -1986,7 +1986,7 @@ class Core extends Base\Core
             ],
             "tokenised"    => $isTokenized,
             "merchant"     => [
-                "id"       => $this->merchant->getId(),
+                "id"       => (is_null($this->merchant->getId()) === true) ? null : $this->merchant->getId(),
             ],
             "internal_service_request" => $internalServiceRequest,
         ];
@@ -2018,7 +2018,7 @@ class Core extends Base\Core
         {
             $network = Card\Network::detectNetwork($iin);
 
-        if($network === "UNKNOWN"){
+        if(!isset($network) || $network === "UNKNOWN"){
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_IIN_NOT_EXISTS, ["iin" => $input["card_iin"]]);
         }
 

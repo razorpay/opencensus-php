@@ -35,6 +35,11 @@ class ParAsyncTokenisationJob extends Job
      */
     protected $tokenCore;
 
+    /**
+     * @var Card\Core
+     */
+    protected $cardCore;
+
     public function __construct(string $mode, string $cardId, string $cardNumber = null)
     {
         parent::__construct($mode);
@@ -49,6 +54,8 @@ class ParAsyncTokenisationJob extends Job
         parent::init();
 
         $this->tokenCore = new Token\Core();
+
+        $this->cardCore = new Card\Core();
     }
 
     /**
@@ -72,6 +79,13 @@ class ParAsyncTokenisationJob extends Job
                 'network'                   => strtolower($card->getNetwork()),
                 'attempts'                  => $this->attempts()
             ]);
+
+            if(($this->cardCore->checkIfFetchingParApplicable($card)) === false)
+            {
+                $this->traceFetchingParNotApplicable($card);
+                $this->delete();
+                return;
+            }
 
             $cardInput = $this->tokenCore->buildCardInputForPar($this->cardNumber, $card);
 
@@ -160,5 +174,15 @@ class ParAsyncTokenisationJob extends Job
         {
             $this->release(self::RETRY_INTERVAL);
         }
+    }
+
+    protected function traceFetchingParNotApplicable($card): void
+    {
+        $this->trace->info(TraceCode::FETCH_PAR_NOT_APPLICABLE, [
+            "card_id"                   => $this->cardId,
+            'network'                   => strtolower($card->getNetwork()),
+        ]);
+
+        $this->triggerEvent(EventCode::ASYNC_TOKENISATION_FETCH_PAR_NOT_APPLICABLE, $card);
     }
 }

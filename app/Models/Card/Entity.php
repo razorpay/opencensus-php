@@ -246,6 +246,7 @@ class Entity extends Base\PublicEntity
         self::TOKEN_EXPIRY_MONTH => null,
         self::TOKEN_EXPIRY_YEAR  => null,
         self::TOKEN_LAST_4        => null,
+        self::PROVIDER_REFERENCE_ID  => null
     ];
 
     protected $casts = [

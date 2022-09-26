@@ -108,6 +108,11 @@ class Core extends Base\Core
 
     public function saveParValue($card, $input = null)
     {
+        if(($this->checkIfFetchingParApplicable($card)) === false)
+        {
+            return;
+        }
+
         try {
 
             $id = UniqueIdEntity::generateUniqueId(); // Need to generate random string because we don't have access to task id, Also need to add random string generator for this
@@ -1267,5 +1272,19 @@ class Core extends Base\Core
             Entity::TYPE          => $card->getType(),
             Entity::ISSUER        => $card->getIssuer(),
         ];
+    }
+
+    public function checkIfFetchingParApplicable($card)
+    {
+        $network = $card->getNetwork();
+
+        $network = strtolower($network);
+
+        if($network == 'visa' || $network == 'mastercard' || $network = 'rupay')
+        {
+            return true;
+        }
+
+        return false;
     }
 }

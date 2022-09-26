@@ -1400,4 +1400,9 @@ class EventCode
         'group'   => 'async_tokenisation',
         'name'    => 'async_tokenisation.fetch_par.success'
     ];
+
+    public const ASYNC_TOKENISATION_FETCH_PAR_NOT_APPLICABLE = [
+        'group'   => 'async_tokenisation',
+        'name'    => 'async_tokenisation.fetch_par.not_applicable'
+    ];
 }
