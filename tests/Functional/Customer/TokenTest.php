@@ -2117,10 +2117,9 @@ class TokenTest extends TestCase
         $this->assertEquals('2021', $card['token_expiry_year']);
     }
 
-
     public function testTokenStatusDualWrite()
     {
-         $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
 
         $this->app->instance('mpan.cardVault', $cardVault);
 
@@ -2160,6 +2159,7 @@ class TokenTest extends TestCase
 
         $this->app->instance('card.cardVault', $cardVault);
 
+        $fixedTimestamp = 1664193747;
 
         $card = $this->fixtures->create('card', [
                 'country'       => 'IN',
@@ -2169,6 +2169,8 @@ class TokenTest extends TestCase
                 "issuer"        => "sbi",
                 "expiry_month"  => 12,
                 "expiry_year"   => 2024,
+                "created_at"    => $fixedTimestamp,
+                "updated_at"    => $fixedTimestamp,
         ]);
 
         $token = $this->fixtures->create('token', ['method' => 'card', 'recurring' => false, 'card_id' => $card['id'], ]);
@@ -2198,10 +2200,20 @@ class TokenTest extends TestCase
 
         $this->assertNotNull($cardsNew);
 
+        $cards    = \DB::table('cards')->select(\DB::raw("*"))->where('id', '=', $card['id'])->get()->first();
+        $cardsNew = \DB::table('cards_new')->select(\DB::raw("*"))->where('id', '=', $card['id'])->get()->first();
+
+        $this->assertNotNull($cardsNew);
+        $this->assertNotNull($cards);
+
+        $cardsArray    = (array) $cards;
         $cardsNewArray = (array) $cardsNew;
 
-        $this->assertEquals($card['id'], $cardsNewArray['id']);
-
+        $this->assertEquals($cardsArray['id'], $cardsNewArray['id']);
+        $this->assertNotEquals($fixedTimestamp, $cardsNewArray['updated_at']);
+        $this->assertEquals($cardsArray['updated_at'], $cardsNewArray['updated_at']);
+        $this->assertEquals($cardsArray['created_at'], $cardsNewArray['created_at']);
+        $this->assertEquals('123456', $cardsArray['token_iin']);
         $this->assertEquals('123456', $cardsNewArray['token_iin']);
 
         // test update when both entities exist

@@ -4,9 +4,11 @@ namespace RZP\Models\Base\Traits;
 
 Use App;
 
+use RZP\Trace\TraceCode;
 use RZP\Constants\Metric;
 Use RZP\Models\Base\Entity;
 use RZP\Constants\Entity as E;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestValidationFailureException;
 
 // Note : This trait is not yet tested to support ElasticSearch updates on new table
@@ -70,11 +72,7 @@ trait DualWrite
 
             $this->validateAndUpsert($strictDualWrite, $entityExists, $options);
 
-            $dualWriteDuration = millitime() - $dualWriteStartTime;
-
-            $app = App::getFacadeRoot();
-
-            $app['trace']->histogram(Metric::DUAL_WRITES_TIME_TAKEN, $dualWriteDuration);
+            App::getFacadeRoot()['trace']->histogram(Metric::DUAL_WRITES_TIME_TAKEN, millitime() - $dualWriteStartTime);
         });
     }
 
@@ -83,7 +81,7 @@ trait DualWrite
      */
     public function upsert($strictDualWrite, bool $parentEntityExists, bool $dualEntityExists, array $options = array())
     {
-        $app = App::getFacadeRoot();
+        $trace = App::getFacadeRoot()['trace'];
 
         $actionType = $this->getOperationTypeForMetrics($parentEntityExists, $dualEntityExists);
 
@@ -94,7 +92,7 @@ trait DualWrite
             $this->exists             = $dualEntityExists;
             $this->generateIdOnCreate = false;
 
-            $app['trace']->count(Metric::DUAL_WRITES_TOTAL, [
+            $trace->count(Metric::DUAL_WRITES_TOTAL, [
                 'table'  => $this->getTable(),
                 'action' => $actionType,
             ]);
@@ -103,12 +101,19 @@ trait DualWrite
         }
         catch(\Throwable $ex)
         {
-            $app['trace']->count(Metric::DUAL_WRITES_FAILED, [
+            $trace->count(Metric::DUAL_WRITES_FAILED, [
                 'table'  => $this->getTable(),
                 'action' => $actionType,
             ]);
 
-            $app['trace']->traceException($ex);
+            $trace->traceException($ex,
+                Trace::ERROR,
+                TraceCode::DUAL_WRITE_EXCEPTION,
+                [
+                    'id'     => $this->getId(),
+                    'table'  => $this->getTable(),
+                    'action' => $actionType,
+                ]);
 
             // original entity shouldn't have this modified even in case of failures,
             // as it can be accessed from different flows
@@ -166,7 +171,21 @@ trait DualWrite
 
             $dualWriteEnvValue = getenv($dualWriteEnvKey);
 
-            return ($dualWriteEnvValue == true);
+            $dualWriteEnabled = ($dualWriteEnvValue == true);
+
+            App::getFacadeRoot()['trace']->info(
+                TraceCode::DUAL_WRITE_CONFIG,
+                [
+                    'id'         => $this->getId(),
+                    'key'        => $dualWriteEnvKey,
+                    'value'      => $dualWriteEnvValue,
+                    'enabled'    => $dualWriteEnabled,
+                    'table_name' => $tableName,
+                    'created_at' => $this->getCreatedAt(),
+                    'updated_at' => $this->getUpdatedAt(),
+                ]);
+
+            return $dualWriteEnabled;
         }
 
         return false;
