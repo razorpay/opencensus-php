@@ -661,6 +661,19 @@ class Payment extends Base
         return $pricingRules[0]->getFeeBearer();
     }
 
+    public function validateAndGetFeeModel()
+    {
+        $pricingRules = $this->pricingRules;
+
+        if (count($pricingRules) < 1)
+        {
+            throw new Exception\LogicException(
+                'No pricing rule found. Expected atleast 1');
+        }
+
+        return $pricingRules[0]->getFeeModel();
+    }
+
     /*
      * Even though function says "get", no rule is getting returned here.
      * This is because even the parent class function has the same behavior.
@@ -670,6 +683,36 @@ class Payment extends Base
         parent::getRelevantPricingRule($pricing);
 
         $payment = $this->entity;
+
+        try {
+
+            $allowedMerchantIds = [Pricing\BuyPricing::BPCL_TEST_MERCHANT_ID];
+
+            if ((in_array($payment->merchant->getId(),$allowedMerchantIds) === true) and
+                ($payment->merchant !== null) and
+                (empty($payment->transaction) === false))
+            {
+                $feeModel = $this->validateAndGetFeeModel($this->pricingRules);
+
+                if (empty($feeModel) === false) {
+
+                    $this->trace->info(TraceCode::RULE_LEVEL_FEE_MODEL,
+                        [
+                            'fee_model'=> $feeModel
+                        ]);
+
+                    $payment->transaction->setFeeModel($feeModel);
+                }
+
+            }
+        } catch (\Throwable $e){
+            $this->trace->error(TraceCode::RULE_LEVEL_FEE_MODEL_FAILURE,
+                [
+                   'error'=> $e->getMessage()
+                ]);
+
+        }
+
         // this is an side effect that is unavoidable.
         if (($payment->merchant !== null) and
             ($payment->merchant->isFeeBearerDynamic() === true))

@@ -5280,6 +5280,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_MTU_UPDATE_FAILURE                           = 'MERCHANT_MTU_UPDATE_FAILURE';
 
     const PRICING_RULE_ALREADY_DEFINED                          = 'PRICING_RULE_ALREADY_DEFINED';
+    const RULE_LEVEL_FEE_MODEL_FAILURE                          = 'RULE_LEVEL_FEE_MODEL_FAILURE';
+    const RULE_LEVEL_FEE_MODEL                                  = 'RULE_LEVEL_FEE_MODEL';
 
     const FTA_REFUND_RAMP_INIT                                  = 'FTA_REFUND_RAMP_INIT';
     const FTA_REFUND_RAMP_COMPLETE                              = 'FTA_REFUND_RAMP_COMPLETE';

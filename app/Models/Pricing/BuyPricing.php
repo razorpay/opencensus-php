@@ -141,6 +141,8 @@ class BuyPricing
     const TRUSTLY                       = 'trustly';
     const POLI                          = 'poli';
 
+    const BPCL_TEST_MERCHANT_ID              = 'GfjiTEOfQJJBBX';
+
     protected static $cardGateways = [
         self::HDFC,
         self::AXIS_MIGS,

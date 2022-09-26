@@ -15,6 +15,7 @@ use RZP\Constants\Product;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Trace\TraceCode;
 
 class Entity extends Base\PublicEntity
 {
