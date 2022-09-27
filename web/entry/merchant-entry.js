@@ -15,15 +15,15 @@ function merchantEntry() {
     const appendScript = (src) => {
       const s = document.createElement('script');
       s.src = src;
-      document.head.appendChild(s);
+      document.documentElement.appendChild(s);
     };
-
-    websiteAssets.js.forEach((src) => {
-      appendScript(cdnDashboardUrl + src);
-    });
 
     websiteAssets.css.forEach((src) => {
       appendLink(cdnDashboardUrl + src);
+    });
+
+    websiteAssets.js.forEach((src) => {
+      appendScript(cdnDashboardUrl + src);
     });
 
     const script = document.createElement('script');
