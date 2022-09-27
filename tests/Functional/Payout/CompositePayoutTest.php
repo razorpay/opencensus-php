@@ -371,7 +371,6 @@ class CompositePayoutTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
-                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
                                                 Feature\Constants::ALLOW_NON_SAVED_CARDS,
                                                 Feature\Constants::VAULT_COMPLIANCE_CHECK]);
 
@@ -504,7 +503,6 @@ class CompositePayoutTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
-                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
                                                 Feature\Constants::ALLOW_NON_SAVED_CARDS,
                                                 Feature\Constants::VAULT_COMPLIANCE_CHECK]);
 
@@ -648,7 +646,6 @@ class CompositePayoutTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
-                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
                                                 Feature\Constants::ALLOW_NON_SAVED_CARDS,
                                                 Feature\Constants::VAULT_COMPLIANCE_CHECK]);
 
@@ -703,65 +700,6 @@ class CompositePayoutTest extends TestCase
         $this->assertEquals('pay_44f3d176b38b4cd2a588f243e3ff7b20', $card['vault_token']);
     }
 
-    public function testCreateCompositePayoutWithNamespace()
-    {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
-                                                Feature\Constants::S2S,
-                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES]);
-
-        $this->fixtures->create('iin', [
-            'iin'     => 340169,
-            'network' => Network::$fullName[Network::MC],
-            'type'    => Type::CREDIT,
-            'issuer'  => Issuer::YESB
-        ]);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION    => 'on']);
-
-        $callable = function($route, $method, $input) {
-            $response = [
-                'error'   => '',
-                'success' => true,
-            ];
-
-            switch ($route)
-            {
-                case 'tokenize':
-                    $response['token']       = '0c0e7db24cce4512bc9c71f2dbec7075';
-                    $response['fingerprint'] = '5707cebd2f17c9cb2154ecc42bd7e0c0';
-                    $response['scheme']      = '0';
-                    break;
-            }
-
-            return $response;
-        };
-
-        $this->mockCardVault($callable);
-
-        $this->app['rzp.mode'] = EnvMode::TEST;
-
-        $ftsMock = Mockery::mock('RZP\Services\FTS\FundTransfer', [$this->app])->makePartial();
-
-        $this->app->instance('fts_fund_transfer', $ftsMock);
-
-        $ftsMock->shouldReceive('shouldAllowTransfersViaFts')
-                ->andReturn([true, 'Dummy']);
-
-        $this->ba->privateAuth();
-
-        $testData = &$this->testData['testCreateCompositePayoutForNonSavedCardFlow'];
-
-        unset($testData['request']['content']['fund_account']['card']['input_type']);
-
-        unset($testData['response']['content']['fund_account']['card']['input_type']);
-
-        $this->startTest($testData);
-
-        $card = $this->getDbLastEntity('card');
-
-        $this->assertEquals('0c0e7db24cce4512bc9c71f2dbec7075', $card['vault_token']);
-    }
-
     public function testCreateCompositePayoutToThirdPartyTokenisedCardThroughBankRails()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::ALLOW_NON_SAVED_CARDS,
@@ -802,7 +740,6 @@ class CompositePayoutTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
-                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
                                                 Feature\Constants::ALLOW_NON_SAVED_CARDS,
                                                 Feature\Constants::VAULT_COMPLIANCE_CHECK]);
 
@@ -859,7 +796,6 @@ class CompositePayoutTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
-                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
                                                 Feature\Constants::ALLOW_NON_SAVED_CARDS]);
 
         $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Chirag']);
@@ -911,7 +847,6 @@ class CompositePayoutTest extends TestCase
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
-                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
                                                 Feature\Constants::ALLOW_NON_SAVED_CARDS]);
 
         $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Chirag']);

@@ -567,8 +567,7 @@ class FundTransfer extends Base
             }
         }
 
-        if (($this->fta->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::PAYOUT_NAMESPACE_CHANGES) === true) and
-            ($this->fta->getSourceType() === Constants::PAYOUT))
+        if ($this->fta->getSourceType() === Constants::PAYOUT)
         {
             $tokenised = ($this->fta->card->isTokenPan() === true) ? true : $this->fta->card->isNetworkTokenisedCard();
 

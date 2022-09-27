@@ -575,21 +575,7 @@ class Core extends Base\Core
         {
             $cardVault = (new Card\CardVault);
 
-            if ($isRzpX === false)
-            {
-                $tempInput['bu_namespace'] = $cardVault->getBuNamespaceIfApplicable($card->toArray(), $isRzpX);
-            }
-            else
-            {
-                if ($card->merchant->isFeatureEnabled(Feature\Constants::PAYOUT_NAMESPACE_CHANGES) === true)
-                {
-                    $tempInput['bu_namespace'] = $cardVault->getBuNamespaceIfApplicable($card->toArray(), $isRzpX);
-                }
-                else
-                {
-                    $tempInput['bu_namespace'] = null;
-                }
-            }
+            $tempInput['bu_namespace'] = $cardVault->getBuNamespaceIfApplicable($card->toArray(), $isRzpX);
 
             $tempInput['card'] = $input['number'];
 

@@ -1400,7 +1400,6 @@ class FundAccountsTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
-                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
                                                 Feature\Constants::ALLOW_NON_SAVED_CARDS,
                                                 Feature\Constants::VAULT_COMPLIANCE_CHECK]);
 
@@ -1445,7 +1444,6 @@ class FundAccountsTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
-                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
                                                 Feature\Constants::ALLOW_NON_SAVED_CARDS,
                                                 Feature\Constants::VAULT_COMPLIANCE_CHECK]);
 
@@ -1518,58 +1516,10 @@ class FundAccountsTest extends TestCase
         $this->assertEquals('pay_44f3d176b38b4cd2a588f243e3ff7b20', $card['vault_token']);
     }
 
-    public function testCreateCardFundAccountWithNamespaceChanges()
-    {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
-                                                Feature\Constants::S2S,
-                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES]);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION    => 'on']);
-
-        $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Mr. John']);
-
-        $callable = function($route, $method, $input) {
-            $response = [
-                'error'   => '',
-                'success' => true,
-            ];
-
-            switch ($route)
-            {
-                case 'tokenize':
-                    $response['token']       = '0c0e7db24cce4512bc9c71f2dbec7075';
-                    $response['fingerprint'] = '5707cebd2f17c9cb2154ecc42bd7e0c0';
-                    $response['scheme']      = '0';
-                    break;
-            }
-
-            return $response;
-        };
-
-        $this->mockCardVault($callable);
-
-        $this->ba->privateAuth();
-
-        $testData = &$this->testData['testCreateNonSavedCardFundAccount'];
-
-        unset($testData['request']['content']['card']['input_type']);
-
-        $response = $this->startTest($testData);
-
-        $card = $this->getDbLastEntity('card');
-
-        $this->assertNull($card['trivia']);
-
-        $this->assertArrayNotHasKey('input_type', $response['card']);
-
-        $this->assertEquals('0c0e7db24cce4512bc9c71f2dbec7075', $card['vault_token']);
-    }
-
     public function testCreateNonSavedCardFundAccountWithInvalidVaultTokenAssociated()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
-                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
                                                 Feature\Constants::ALLOW_NON_SAVED_CARDS,
                                                 Feature\Constants::VAULT_COMPLIANCE_CHECK]);
 
@@ -1612,7 +1562,6 @@ class FundAccountsTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
-                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
                                                 Feature\Constants::ALLOW_NON_SAVED_CARDS]);
 
         $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Mr. John']);
@@ -1656,7 +1605,6 @@ class FundAccountsTest extends TestCase
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
-                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
                                                 Feature\Constants::ALLOW_NON_SAVED_CARDS]);
 
         $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Mr. John']);
@@ -1709,7 +1657,6 @@ class FundAccountsTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
-                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
                                                 Feature\Constants::ALLOW_NON_SAVED_CARDS]);
 
         $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Mr. John']);
@@ -1754,7 +1701,6 @@ class FundAccountsTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
-                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
                                                 Feature\Constants::ALLOW_NON_SAVED_CARDS,
                                                 Feature\Constants::VAULT_COMPLIANCE_CHECK]);
 
@@ -1824,7 +1770,6 @@ class FundAccountsTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
-                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
                                                 Feature\Constants::ALLOW_NON_SAVED_CARDS,
                                                 Feature\Constants::VAULT_COMPLIANCE_CHECK]);
 
@@ -1874,7 +1819,6 @@ class FundAccountsTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
-                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
                                                 Feature\Constants::ALLOW_NON_SAVED_CARDS,
                                                 Feature\Constants::VAULT_COMPLIANCE_CHECK]);
 

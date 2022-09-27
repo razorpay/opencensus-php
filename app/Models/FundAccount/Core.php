@@ -489,7 +489,7 @@ class Core extends Base\Core
                     $accountInput = (new Card\Core)->fillCardDetailsWithVaultToken($accountInput);
                 }
 
-                $this->transformAccountInputForCard($accountInput, $merchant);
+                $this->transformAccountInputForCard($accountInput);
 
                 $traceRequest = $this->unsetSensitiveDetails($accountInput);
 
@@ -546,34 +546,31 @@ class Core extends Base\Core
         return $account;
     }
 
-    public function transformAccountInputForCard(&$accountInput, $merchant)
+    public function transformAccountInputForCard(&$accountInput)
     {
-        if ($merchant->isFeatureEnabled(Feature\Constants::PAYOUT_NAMESPACE_CHANGES) === true)
+        $inputType = $accountInput[Card\Entity::INPUT_TYPE] ?? null;
+
+        //Setting default input_type to card
+        if (isset($inputType) === false)
         {
-            $inputType = $accountInput[Card\Entity::INPUT_TYPE] ?? null;
+            $inputType = Card\InputType::CARD;
+        }
 
-            //Setting default input_type to card
-            if (isset($inputType) === false)
-            {
-                $inputType = Card\InputType::CARD;
-            }
+        switch ($inputType)
+        {
+            case Card\InputType::CARD:
+                $accountInput[Card\Entity::TOKENISED] = false;
 
-            switch ($inputType)
-            {
-                case Card\InputType::CARD:
-                    $accountInput[Card\Entity::TOKENISED] = false;
+                break;
 
-                    break;
+            case Card\InputType::SERVICE_PROVIDER_TOKEN:
+                $accountInput[Card\Entity::TOKENISED] = true;
 
-                case Card\InputType::SERVICE_PROVIDER_TOKEN:
-                    $accountInput[Card\Entity::TOKENISED] = true;
+                break;
 
-                    break;
-
-                case Card\InputType::RAZORPAY_TOKEN:
-                default:
-                    break;
-            }
+            case Card\InputType::RAZORPAY_TOKEN:
+            default:
+                break;
         }
 
         unset($accountInput[Card\Entity::INPUT_TYPE]);
