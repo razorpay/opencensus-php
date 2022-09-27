@@ -229,6 +229,8 @@ trait Callback
 
         $result = true;
 
+        $shouldActuallySkip = false;
+
         switch ($method)
         {
             case Payment\Method::NETBANKING:
@@ -246,6 +248,30 @@ trait Callback
                 }
                 break;
 
+            case Payment\Method::EMANDATE:
+                if ((Gateway::isWebhookEnabledGateway($payment->getGateway())) and 
+                    (Gateway::isApiBasedAsyncEMandateGateway($payment->getGateway())) and 
+                    (   // if authorized and token not updated
+                        (($payment->hasBeenAuthorized() === true) and 
+                         ($payment->isRecurringTypeInitial() === true) and
+                         ($payment->isCaptured() === false)) or
+                        // if second recurring and async payment update flow 
+                        (($payment->hasBeenAuthorized() === false) and 
+                         ($payment->isCreated() === true) and
+                         ($payment->isSecondRecurring() === true)) or
+                        // if initial or auto payment is failed
+                        ($payment->isFailed() === true)
+                    ))
+                {
+                    $result = true;
+                }
+                elseif($payment->getGateway() === Gateway::PAYU)
+                {
+                    $shouldActuallySkip = true;
+                }
+
+                break;
+
             default :
                 if ($payment->isCreated() === false)
                 {
@@ -257,6 +283,18 @@ trait Callback
         if ((Gateway::isWebhookEnabledGateway($payment->getGateway())) and ($payment->hasBeenAuthorized() === false))
         {
             $result = true;
+        }
+
+        // For some cases we dont want webhooks to be consumed, like if webhooks comes before callback.
+        if ($shouldActuallySkip === true)
+        {
+            $this->trace->info(TraceCode::SKIP_WEBHOOK_FLOW,
+                [
+                    'method'        => $method,
+                    'payment_id'    => $payment->getId(),
+                ]);
+
+            $result = false;
         }
 
         return $result;

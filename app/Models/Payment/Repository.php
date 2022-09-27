@@ -3220,6 +3220,17 @@ EOT;
             ->first();
     }
 
+    public function getRecurringInitialPayment(string $tokenId, string $merchantId, string $method)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->where(Entity::TOKEN_ID, $tokenId)
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->where(Entity::METHOD, $method)
+                    ->where(Payment\Entity::RECURRING_TYPE, '=', 'initial')
+                    ->where(Entity::STATUS, Status::AUTHORIZED)
+                    ->first();
+    }
+
     public function getPaymentsWithReferenceId($gateway, $status, $limit)
     {
         return $this->newQueryWithConnection($this->getSlaveConnection())

@@ -41,6 +41,7 @@ use RZP\Models\PaymentLink;
 use RZP\Models\UpiTransfer;
 use RZP\Models\BankTransfer;
 use RZP\Models\OfflinePayment;
+use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Settlement\Holidays;
@@ -265,6 +266,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const PAYMENT_TIMEOUT_CARD_RECURRING_MANDATE_WITH_AFA = 345600;   // 4 Days
     const PAYMENT_TIMEOUT_COD_PENDING       = 86400 * 45; // 45days
     const MCC_MARKDOWN_PERCENTAGE           = 1;
+    const PAYMENT_TIMEOUT_EMANDATE_RECURRING = 604800;   // 7 Days
 
     // payment services
     const API                               = 0;
@@ -2518,6 +2520,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                ($this->isSecondRecurring()));
     }
 
+    public function isEmandateRecurring(): bool
+    {
+        return (($this->getAttribute(self::METHOD) === Payment\Method::EMANDATE) and
+                ($this->getAttribute(self::RECURRING) === true));
+    }
+
     /**
      * @return bool
      */
@@ -3611,6 +3619,56 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             }
 
             return (Payment\Gateway::isFileBasedEMandateRegistrationGateway($gateway) === true);
+        }
+
+        return false;
+    }
+
+    public function isApiBasedEmandateAsyncPayment()
+    {
+        $token = $this->localToken;
+        $gateway = $this->getGateway();
+
+        if ($gateway === null)
+        {
+            $app = \App::getFacadeRoot();
+            $app['trace']->critical(TraceCode::SERVER_ERROR_GATEWAY_NOT_SET,
+                [
+                    'payment_id'        => $this->getId(),
+                    'recurring_type'    => $this->getRecurringType(),
+                    'method'            => $this->getMethod(),
+                ]);
+
+            return false;
+        }
+
+        if (($this->isEmandate() === true) and
+            (empty($token) === false) and
+            (Payment\Gateway::isApiBasedAsyncEMandateGateway($gateway) === true))
+        {
+
+            $currentRecurringStatus = $token->getRecurringStatus();
+            $isConfirmed = Token\RecurringStatus::isTokenStatusConfirmed($currentRecurringStatus);
+
+            $isInitialAndTokenUnconfirmed = (($this->isRecurringTypeInitial() === true) and ($isConfirmed === false));
+            $isAutoAndTokenConfirmed = (($this->isRecurringTypeAuto() === true) and ($isConfirmed === true));
+
+            $app = \App::getFacadeRoot();
+            $app['trace']->info(TraceCode::EMANDATE_AUTO_CAPTURE_REQUEST,[
+                'payment_id'                         => $this->getId(),
+                'current_recurring_status'           => $currentRecurringStatus,
+                'is_confirmed'                       => $isConfirmed,
+                'is_confirmed2'                      => ($isConfirmed === false),
+                'is_recurring_type_initial'          => $this->isRecurringTypeInitial(),
+                'is_recurring_type_initial2'         => ($this->isRecurringTypeInitial() === true),
+                'is_initial_and_token_unconfirmed'   => $isInitialAndTokenUnconfirmed,
+                'is_initial_and_token_unconfirmed2'  => ($this->isRecurringTypeInitial() === true) and ($isConfirmed === false),
+                'is_recurring_type_auto'             => $this->isRecurringTypeAuto(),
+                'is_auto_and_token_confirmed'        => $isAutoAndTokenConfirmed,
+                'is_auto_and_token_confirmed2'       => ($this->isRecurringTypeAuto() === true) and ($isConfirmed === true),
+            ]);
+
+            return ($isInitialAndTokenUnconfirmed);
         }
 
         return false;
@@ -4870,6 +4928,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         else if ($this->isCardMandateRecurringAutoPayment() === true)
         {
             return self::PAYMENT_TIMEOUT_CARD_RECURRING_MANDATE_WITH_AFA;
+        }
+        else if ((empty($gateway) === false) and 
+                 ($this->isEmandateRecurring() === true) and
+                 (Payment\Gateway::isApiBasedAsyncEMandateGateway($gateway) === true))
+        {
+            return self::PAYMENT_TIMEOUT_EMANDATE_RECURRING;
         }
 
         $autoRefundDelay = $this->merchant->getAutoRefundDelay();
