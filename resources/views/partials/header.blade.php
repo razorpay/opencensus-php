@@ -32,9 +32,9 @@
         }
     }
   </script>
-  @if(env('APP_ENV') === 'production' && $newAuthRoute !== 'resetpassword')
+  @if(env('APP_ENV') === 'production')
     <script src="https://www.googleoptimize.com/optimize.js?id=GTM-NCWFQ39"></script>
-  @elseif($newAuthRoute !== 'resetpassword')
+  @else
     <script src="https://www.googleoptimize.com/optimize.js?id=GTM-WB43S6Q" defer></script>
   @endif
   <script type="text/javascript">

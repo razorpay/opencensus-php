@@ -1,5 +1,5 @@
 <script>
-    if (location.hostname === 'dashboard.razorpay.com' && location.pathname !== '/resetpassword') {
+    if (location.hostname === 'dashboard.razorpay.com') {
       (function(h,o,t,j,a,r){
         h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
         h._hjSettings={hjid:575141,hjsv:5};
