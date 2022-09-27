@@ -1,42 +1,47 @@
 .Onboarding-coupon {
-  background-image: url('https://cdn.razorpay.com/static/assets/onboarding/onbr-coupon.svg');
-	background-position: center;
-	background-repeat: no-repeat;
-	background-size: cover;
+  background-image: url("https://cdn.razorpay.com/static/assets/onboarding/onbr-coupon.svg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
   padding: 24px;
-  @media (max-width: 768px) {
-    background: #fff;
+
+  @media (max-width 768px) {
+    background: #FFF;
     padding: 18px;
   }
 
   .btn {
-    color: #fefefe;
+    color: #FEFEFE;
     opacity: 0.7;
+
     &:hover {
       opacity: 1;
     }
-    @media (max-width: 768px) {
-      color: #a5a4a4;
+
+    @media (max-width 768px) {
+      color: #A5A4A4;
     }
   }
 
   .content {
     max-width: 40%;
     margin: 20px 0 28px 40px;
-    @media (max-width: 768px) {
+
+    @media (max-width 768px) {
       max-width: 90%;
       margin: 0 auto;
     }
 
     .offer-period {
       display: inline-block;
-      background: #cd82141c;
+      background: #CD82141C;
       color: #CD8214;
       padding: 8px;
       border-radius: 4px;
-      @media (max-width: 768px) {
+
+      @media (max-width 768px) {
         font-size: 13px;
-      }  
+      }
     }
 
     .mweb-coupon-img {
@@ -47,23 +52,26 @@
       color: #162F56;
       font-size: 20px;
       font-weight: 700;
-      margin-top: 20px;  
-      .amount {
-        color: #1F890D
-      }
-      @media (max-width: 768px) {
+      margin-top: 20px;
+
+      @media (max-width 768px) {
         text-align: center;
         line-height: 24px;
       }
     }
 
     .bottom-text {
-      color: #162f568f;
+      color: #162F568F;
       font-size: 16px;
       margin-top: 22px;
       max-width: 96%;
       line-height: 24px;
-      @media (max-width: 768px) {
+
+      .amount {
+        color: #1F890D
+      }
+
+      @media (max-width 768px) {
         text-align: center;
         margin-top: 8px;
         line-height: 22px;
@@ -72,18 +80,19 @@
 
     &__btn {
       margin-top: 24px;
-      @media (max-width: 768px) {
+
+      @media (max-width 768px) {
         margin-bottom: 10px;
       }
+
       .accept-payment {
         margin-right: 25px;
         padding: 12px 24px;
-        @media (max-width: 768px) {
+
+        @media (max-width 768px) {
           width: 100%;
         }
       }
     }
   }
-
-  
 }
