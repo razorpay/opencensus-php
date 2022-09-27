@@ -4,8 +4,10 @@ namespace RZP\Models\Partner;
 
 final class Metric
 {
-    const COMMISSION_CREATED_TOTAL = 'commission_created_total';
-    const COMMISSION_CAPTURE_TOTAL = 'commission_capture_total';
+    //commission metrics
+    const COMMISSION_CREATE_ATTEMPT_TOTAL = 'commission_create_attempt_total';
+    const COMMISSION_CREATED_TOTAL        = 'commission_created_total';
+    const COMMISSION_CAPTURE_TOTAL        = 'commission_capture_total';
 
     const SUBMERCHANT_CREATE_TOTAL              = 'submerchant_create_total';
     const SUBMERCHANT_USER_CREATE_TOTAL         = 'submerchant_user_create_total';

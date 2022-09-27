@@ -64,6 +64,8 @@ class Core extends Base\Core
      */
     public function createFromCapturedPayment(Payment\Entity $payment): array
     {
+        $this->trace->count(Metric::COMMISSION_CREATE_ATTEMPT_TOTAL);
+
         return $this->createCommission($payment);
     }
 
