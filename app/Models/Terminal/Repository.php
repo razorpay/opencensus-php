@@ -185,13 +185,9 @@ class Repository extends Base\Repository
 
         try
         {
-            $mode = $this->app['rzp.mode'] ??  Mode::LIVE ;
-
-            $variantFlag = $this->app->razorx->getTreatment($merchantIds[0], "ROUTE_PROXY_TS_2",  $mode);
-
             $data = ["function" => "getByTypeAndMerchantIds", "merchant_ids" => $merchantIds, "type" => $type];
 
-            if ($variantFlag === 'on')
+            if ($this->app->environment(Environment::TESTING) === false)
             {
                 $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
@@ -253,11 +249,7 @@ class Repository extends Base\Repository
             $query->withTrashed();
         }
 
-        $mode = $this->app['rzp.mode'] ??  Mode::LIVE ;
-
-        $variantFlag = $this->app->razorx->getTreatment($id, "ROUTE_PROXY_TS_BY_ID_2",  $mode);
-
-        if ($variantFlag === 'on' and $fromTerminalsService === true)
+        if ($this->app->environment(Environment::TESTING) === false and $fromTerminalsService === true)
         {
             $data = ["function" => "getById", "terminal_id" => $id, "with_trashed" => $withTrashed];
 
@@ -350,11 +342,7 @@ class Repository extends Base\Repository
 
     public function find($id, $columns = ['*'])
     {
-        $mode = $this->app['rzp.mode'] ??  Mode::LIVE ;
-
-        $variantFlag = $this->app->razorx->getTreatment($id, "ROUTE_PROXY_TS_FIND",  $mode);
-
-        if ($variantFlag === 'terminals_find')
+        if ($this->app->environment(Environment::TESTING) === false)
         {
             $data = ["function" => "find", "terminal_id" => $id];
 
@@ -484,11 +472,7 @@ class Repository extends Base\Repository
 
         try
         {
-            $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
-            $variantFlag = $this->app->razorx->getTreatment($mId, "ROUTE_PROXY_TS_2", $mode);
-
-            if ($variantFlag === 'on')
+            if ($this->app->environment(Environment::TESTING) === false)
             {
                 $data = ["function" => "getActivatedDirectSettlementTerminalsByMerchant", "merchant_id"=> $mId];
 
@@ -550,15 +534,9 @@ class Repository extends Base\Repository
 
         try
         {
-            $mode = $this->app['rzp.mode'] ??  Mode::LIVE ;
-
-            $randomId = (new Entity)->generateId();
-
-            $variantFlag = $this->app->razorx->getTreatment($randomId, "ROUTE_PROXY_TS_5",  $mode);
-
             $data = ["function" => "findByGatewayAndTerminalData", "gateway"=> $gateway, "terminal_data" => $terminalData, "withTrashed" => $withTrashed];
 
-            if ($variantFlag === 'proxy')
+            if ($this->app->environment(Environment::TESTING) === false)
             {
                 $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
@@ -603,11 +581,7 @@ class Repository extends Base\Repository
 
         try
         {
-            $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
-            $variantFlag = $this->app->razorx->getTreatment($gatewayMerchantId, "ROUTE_PROXY_TS_BY_IDENTIFIERS_2", $mode);
-
-            if ($variantFlag === 'proxy')
+            if ($this->app->environment(Environment::TESTING) === false)
             {
                 $data = ["function" => "findByGatewayMerchantId", "gateway_merchant_id"=> $gatewayMerchantId, "gateway"=> $gateway];
 
@@ -667,11 +641,7 @@ class Repository extends Base\Repository
 
         try
         {
-            $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
-            $variantFlag = $this->app->razorx->getTreatment($gatewayMerchantId, "ROUTE_PROXY_TS_BY_IDENTIFIERS_2", $mode);
-
-            if ($variantFlag === 'proxy')
+            if ($this->app->environment(Environment::TESTING) === false)
             {
                 $data = ["function" => "findActivatedTerminalByGatewayMerchantId", "gateway_merchant_id"=> $gatewayMerchantId, "gateway"=> $gateway];
 
@@ -726,11 +696,7 @@ class Repository extends Base\Repository
 
         try
         {
-            $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
-            $variantFlag = $this->app->razorx->getTreatment($gatewayMerchantId, "ROUTE_PROXY_TS_BY_IDENTIFIERS_2", $mode);
-
-            if ($variantFlag === 'proxy')
+            if ($this->app->environment(Environment::TESTING) === false)
             {
                 $data = ["function" => "findTerminalByGatewayMerchantIdAndGatewayTerminalId", "gateway_merchant_id"=> $gatewayMerchantId, "gateway_terminal_id"=> $gatewayTerminalId, "gateway"=> $gateway];
 
@@ -791,11 +757,7 @@ class Repository extends Base\Repository
         ->enabled()
         ->first();
 
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
-        $variantFlag = $this->app->razorx->getTreatment($gatewayMerchantId, "ROUTE_PROXY_TS_4", $mode);
-
-        if ($variantFlag === 'proxy')
+        if ($this->app->environment(Environment::TESTING) === false)
         {
             $data = [
                 "function" => "findEnabledTerminalByMpanAndGatewayMerchantId",
@@ -852,15 +814,9 @@ class Repository extends Base\Repository
 
         try
         {
-            $mode = $this->app['rzp.mode'] ??  Mode::LIVE ;
-
-            $randomId = (new Entity)->generateId();
-
-            $variantFlag = $this->app->razorx->getTreatment($randomId, "ROUTE_PROXY_TS_6",  $mode);
-
             $data = ["function" => "getByParams", "params" => $params];
 
-            if ($variantFlag === 'proxy')
+            if ($this->app->environment(Environment::TESTING) === false)
             {
                 $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
@@ -915,15 +871,9 @@ class Repository extends Base\Repository
         {
             try
             {
-                $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
-                $randomId = (new Entity)->generateId();
-
-                $variantFlag = $this->app->razorx->getTreatment($randomId, "ROUTE_PROXY_TS_4", $mode);
-
                 $data = ["function" => "getNonFailedNonDeactivatedByParams", "params" => $params];
 
-                if ($variantFlag === 'proxy')
+                if ($this->app->environment(Environment::TESTING) === false)
                 {
                     $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
@@ -1026,11 +976,7 @@ class Repository extends Base\Repository
 
         try
         {
-            $mode = $this->app['rzp.mode'] ??  Mode::LIVE ;
-
-            $variantFlag = $this->app->razorx->getTreatment($merchant->getId(), "ROUTE_PROXY_TS_5",  $mode);
-
-            if ($variantFlag === 'proxy')
+            if ($this->app->environment(Environment::TESTING) === false)
             {
                 $data = ["function" => "getEmandateTerminalsForMerchantAndSharedMerchant", "gateways" => $gateways];
 
@@ -1107,11 +1053,7 @@ class Repository extends Base\Repository
 
         $apiTerminals = $query->get();
 
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
-        $variantFlag = $this->app->razorx->getTreatment($gateway, "ROUTE_PROXY_TS_5", $mode);
-
-        if ($variantFlag === 'proxy')
+        if ($this->app->environment(Environment::TESTING) === false)
         {
             $data = ["function" => "getAllBankTransferTerminals", "gateway" => $gateway];
 
@@ -1203,11 +1145,7 @@ class Repository extends Base\Repository
                     ->whereNotNull(Entity::GATEWAY_RECON_PASSWORD)
                     ->first();
 
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
-        $variantFlag = $this->app->razorx->getTreatment($gatewayTerminalId, "ROUTE_PROXY_TS_5", $mode);
-
-        if ($variantFlag === 'proxy')
+        if ($this->app->environment(Environment::TESTING) === false)
         {
             $data = [
                 "function" => "getByGatewayTerminalIdAndGatewayAndReconPasswordNotNull",
@@ -1268,11 +1206,7 @@ class Repository extends Base\Repository
 
         $terminal = $query->findOrFailPublic($tid);
 
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
-        $variantFlag = $this->app->razorx->getTreatment($mid, "ROUTE_PROXY_TS_4", $mode);
-
-        if ($variantFlag === 'proxy')
+        if ($this->app->environment(Environment::TESTING) === false)
         {
             $data = ["function" => "getByIdAndMerchantId", "mid" => $mid, "tid" => $tid];
 
@@ -1328,11 +1262,7 @@ class Repository extends Base\Repository
 
         $terminal = $query->first();
 
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
-        $variantFlag = $this->app->razorx->getTreatment($mid, "ROUTE_PROXY_TS_4", $mode);
-
-        if ($variantFlag === 'proxy')
+        if ($this->app->environment(Environment::TESTING) === false)
         {
             $data = ["function" => "getByMerchantIdAndGateway", "mid" => $mid, "gateway" => $gateway];
 
@@ -1398,11 +1328,7 @@ class Repository extends Base\Repository
 
         $apiTerminalIds = $query->pluck(Entity::ID)->all();
 
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
-        $variantFlag = $this->app->razorx->getTreatment($gateway, "ROUTE_PROXY_TS_2", $mode);
-
-        if ($variantFlag === 'on')
+        if ($this->app->environment(Environment::TESTING) === false)
         {
             $data = ["function" => "getIdsByMerchantIdsAndGateway", "mids" => $mids, "gateway" => $gateway];
 
@@ -1462,11 +1388,7 @@ class Repository extends Base\Repository
         $this->addMerchantWhereCondition($query, [$mid]);
         $terminal = $query->first();
 
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
-        $variantFlag = $this->app->razorx->getTreatment($mid, "ROUTE_PROXY_TS_5", $mode);
-
-        if ($variantFlag === 'proxy')
+        if ($this->app->environment(Environment::TESTING) === false)
         {
             $data = ["function" => "getRecurringTerminalsByMidAndGateway", "mid" => $mid, "gateway" => $gateway];
 
@@ -1525,11 +1447,7 @@ class Repository extends Base\Repository
 
         $terminal = $query->first();
 
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
-        $variantFlag = $this->app->razorx->getTreatment($mid, "ROUTE_PROXY_TS_5", $mode);
-
-        if ($variantFlag === 'proxy')
+        if ($this->app->environment(Environment::TESTING) === false)
         {
             $data = ["function" => "getUpiRecurringTerminalsByMid", "mid" => $mid];
 
@@ -1645,11 +1563,7 @@ class Repository extends Base\Repository
             ->whereIn(Entity::ID, $ids)
             ->get();
 
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
-        $variantFlag = $this->app->razorx->getTreatment($ids[0], "ROUTE_PROXY_TS_6", $mode);
-
-        if (($variantFlag === 'proxy') and ($proxy === true))
+        if (($this->app->environment(Environment::TESTING) === false) and ($proxy === true))
         {
             $data = ["function" => "getByTerminalIds", "ids" => $ids];
 
@@ -1681,6 +1595,15 @@ class Repository extends Base\Repository
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
             }
         }
+
+        return $apiTerminals;
+    }
+
+    public function mockGetByTerminalIds(array $ids)
+    {
+        $apiTerminals = $this->newQuery()
+            ->whereIn(Entity::ID, $ids)
+            ->get();
 
         return $apiTerminals;
     }
@@ -1719,11 +1642,7 @@ class Repository extends Base\Repository
                     ->enabled()
                     ->get();
 
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
-        $variantFlag = $this->app->razorx->getTreatment($gateway, "ROUTE_PROXY_TS_4", $mode);
-
-        if ($variantFlag === 'proxy')
+        if ($this->app->environment(Environment::TESTING) === false)
         {
             $data = [
                 "function" => "getDirectTerminalsForGateway",
@@ -1776,11 +1695,7 @@ class Repository extends Base\Repository
                     })
                     ->first();
 
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
-        $variantFlag = $this->app->razorx->getTreatment($gateway, "ROUTE_PROXY_TS_5", $mode);
-
-        if ($variantFlag === 'proxy')
+        if ($this->app->environment(Environment::TESTING) === false)
         {
             $data = ["function" => "findByGatewayMpan", "gateway" => $gateway, "mpan" => $mpan];
 
@@ -1912,11 +1827,7 @@ class Repository extends Base\Repository
 
         $terminal = $query->firstOrFail();
 
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
-        $variantFlag = $this->app->razorx->getTreatment($merchantId, "ROUTE_PROXY_TS_5", $mode);
-
-        if ($variantFlag === 'proxy')
+        if ($this->app->environment(Environment::TESTING) === false)
         {
             $data = ["function" => "getByMerchantProviderAndMethod", "mid" => $merchantId, "gateway_acquirer" => $provider];
 
@@ -1973,11 +1884,7 @@ class Repository extends Base\Repository
 
         $apiTerminals = $query->get();
 
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
-        $variantFlag = $this->app->razorx->getTreatment($merchantId, "ROUTE_PROXY_TS_5", $mode);
-
-        if ($variantFlag === 'proxy')
+        if ($this->app->environment(Environment::TESTING) === false)
         {
             $data = ["function" => "findByMerchantIdAndMethod", "mid" => $merchantId, "method" => $method];
 
@@ -2023,11 +1930,7 @@ class Repository extends Base\Repository
                     ->enabled()
                     ->get();
 
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
-        $variantFlag = $this->app->razorx->getTreatment($ids[0], "ROUTE_PROXY_TS_3", $mode);
-
-        if ($variantFlag === 'proxy')
+        if ($this->app->environment(Environment::TESTING) === false)
         {
             $data = ["function" => "findManyEnabledByIds", "ids" => $ids];
 
@@ -2091,11 +1994,7 @@ class Repository extends Base\Repository
 
         $apiTerminal = $query->get();
 
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
-        $variantFlag = $this->app->razorx->getTreatment($merchantId, "ROUTE_PROXY_TS_3", $mode);
-
-        if ($variantFlag === 'proxy')
+        if ($this->app->environment(Environment::TESTING) === false)
         {
             $data = ["function" => "findByMerchantIdGatewayAndCurrency", "mid" => $merchantId, "gateway" => $gateway];
 
@@ -2144,11 +2043,7 @@ class Repository extends Base\Repository
                     ->whereIn(Entity::STATUS, $status)
                     ->get();
 
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
-        $variantFlag = $this->app->razorx->getTreatment($mid, "ROUTE_PROXY_TS_5", $mode);
-
-        if ($variantFlag === 'proxy')
+        if ($this->app->environment(Environment::TESTING) === false)
         {
             $data = ["function" => "fetchByMerchantIdGatewayAndStatus", "mid" => $mid, "gateway" => $gateway, "status" => $status];
 

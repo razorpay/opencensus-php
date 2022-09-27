@@ -2,6 +2,7 @@
 
 namespace RZP\Services\Mock;
 
+use RZP\Models\Terminal;
 use RZP\Services\TerminalsService as BaseTerminalsService;
 
 class TerminalsService extends BaseTerminalsService
@@ -132,6 +133,16 @@ class TerminalsService extends BaseTerminalsService
                 'success' => true,
             ];
         }
+        if ($path === 'v1/admin/terminals_with_secrets')
+        {
+            if (empty($input["terminal_ids"]) === false)
+            {
+                $apiTerminals = (new Terminal\Repository)->mockGetByTerminalIds($input["terminal_ids"]);
+
+                return $apiTerminals->toArray();
+            }
+        }
+
         return [];
     }
 

@@ -2151,7 +2151,7 @@ class TerminalMigrationTest extends TestCase
 
             return $response;
 
-        }, 3);
+        }, 1);
 
         $content = $this->editTerminal($tid, $data);
 
@@ -2358,7 +2358,7 @@ class TerminalMigrationTest extends TestCase
 
             return $response;
 
-        }, 2);
+        }, 1);
 
         $url = '/terminals/'.$tid.'/toggle';
 
@@ -2400,26 +2400,6 @@ class TerminalMigrationTest extends TestCase
             'merchant_id' => '10000000000000',
         ]);
 
-        $this->razorxValue = 'terminals_find';
-
-        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
-            $response = new \Requests_Response;
-
-            $this->assertEquals(Requests::GET, $method);
-
-            $this->assertEquals("v1/terminals/1n25f6uN5S1Z5a", $path);
-
-            $this->razorxValue = 'off';
-
-            $data = $this->terminalRepository->find('1n25f6uN5S1Z5a')->toArray();
-
-            $body = json_encode(['data' => $data]);
-
-            $response->body = $body;
-
-            return $response;
-        }, 1);
-
         $terminal2 = $this->terminalRepository->find('1n25f6uN5S1Z5a');
 
         $this->assertEquals($terminal->getId(), $terminal2->getId());
@@ -2434,31 +2414,6 @@ class TerminalMigrationTest extends TestCase
             'merchant_id' => '10000000000000',
             'gateway' => 'upi_yesbank'
         ]);
-
-        $this->razorxValue = 'proxy';
-
-        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
-            $response = new \Requests_Response;
-
-            $this->assertEquals(Requests::POST, $method);
-
-            $data = [
-                'gateway' => 'upi_yesbank',
-                'deleted' => false
-            ];
-
-            $this->assertEquals(json_encode($data), $content);
-
-            $this->assertEquals("v1/merchants/terminals", $path);
-
-            $data = $this->terminalRepository->getByMerchantId('10000000000000')->toArray();
-
-            $body = json_encode(['data' => $data]);
-
-            $response->body = $body;
-
-            return $response;
-        }, 1);
 
         $terminal2 = $this->terminalRepository->findByGatewayAndTerminalData('upi_yesbank');
 
