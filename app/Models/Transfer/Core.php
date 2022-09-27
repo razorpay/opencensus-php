@@ -14,6 +14,7 @@ use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger;
 use RZP\Models\Transaction;
 use RZP\Jobs\TransferProcess;
 use RZP\Models\Settlement\Bucket;
@@ -22,6 +23,9 @@ use RZP\Jobs\TransferProcessSlice;
 use RZP\Jobs\TransferProcessBatch;
 use RZP\Jobs\TransferProcessCapitalFloat;
 use RZP\Jobs\TransferProcessKeyMerchants;
+use RZP\Models\Ledger\RouteJournalEvents;
+use Neves\Events\TransactionalClosureEvent;
+use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 
 class Core extends Base\Core
 {
@@ -764,6 +768,8 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($transferPayment);
 
+        (new Transfer\Core())->createLedgerEntriesForTransfer($transferPayment, $transfer->merchant);
+
         return $transfer;
     }
 
@@ -1125,5 +1131,47 @@ class Core extends Base\Core
         ];
 
         return [$sourceId, $input, $transfer->getMerchantId()];
+    }
+
+    public function createLedgerEntriesForTransfer($payment, Merchant\Entity $merchant)
+    {
+        if (isset($payment) === false)
+        {
+            return;
+        }
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+        {
+            return;
+        }
+
+        try
+        {
+            $transactionMessage = RouteJournalEvents::createBulkTransactionMessageForRoute($payment);
+
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($transactionMessage) {
+                // Job will be dispatched only if the transaction commits.
+                LedgerEntryJob::dispatchNow($this->mode, $transactionMessage, true);
+            }));
+
+            $this->trace->info(
+                TraceCode::TRANSFER_LEDGER_EVENT_TRIGGERED,
+                [
+                    'transfer_id'           => $payment->getTransferId(),
+                    'payment_id'            => $payment->getId(),
+                    'message'               => $transactionMessage,
+                ]);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::PG_LEDGER_ROUTE_ENTRY_FAILED,
+                [
+                    'transfer_id'           => $payment->getTransferId(),
+                    'payment_id'            => $payment->getId()
+                ]);
+        }
     }
 }

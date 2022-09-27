@@ -229,7 +229,7 @@ abstract class AbstractTransfer
                     return (new Core())->createTransactionForTransfer($oldTransfer);
                 });
 
-                $this->createTransferredEntity($transfer, $payment);
+                $transferPayment = $this->createTransferredEntity($transfer, $payment);
 
                 $transfer->setProcessed();
 
@@ -244,6 +244,8 @@ abstract class AbstractTransfer
                 $this->updatePaymentAmountTransferred($payment, $totalTransferAmount);
 
                 $this->repo->saveOrFail($transfer);
+
+                (new Core())->createLedgerEntriesForTransfer($transferPayment, $transfer->merchant);
 
                 return $transfer;
             }, $deadlockRetryAttempts);
@@ -286,12 +288,14 @@ abstract class AbstractTransfer
             {
                 $this->createTransferredCredits($transfer, $type);
             }
+
+            return null;
         }
         else
         {
-            Tracer::inSpan(['name' => 'transfer.process.create_transfer_payment'], function() use ($transfer, $payment)
+            return Tracer::inSpan(['name' => 'transfer.process.create_transfer_payment'], function() use ($transfer, $payment)
             {
-                $this->createTransferredPayment($transfer, $payment);
+                return $this->createTransferredPayment($transfer, $payment);
             });
         }
     }
@@ -307,6 +311,8 @@ abstract class AbstractTransfer
         $transferPayment->transfer()->associate($transfer);
 
         $this->repo->saveOrFail($transferPayment);
+
+        return $transferPayment;
     }
 
     protected function createTransferredCredits($transfer, $type)

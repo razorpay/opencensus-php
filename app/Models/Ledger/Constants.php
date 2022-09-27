@@ -10,6 +10,9 @@ class Constants
 
     //Merchant Capture events
     const MERCHANT_CAPTURED                                 = "payment_merchant_captured";
+    const TRANSFER                                          = "transfer_processed";
+    const TRANSFER_DEBIT                                    = "transfer_debit";
+    const TRANSFER_CREDIT                                   = "transfer_credit";
     const SETTLEMENT_PROCESSED                              = "settlement_processed";
     const AUTOREFUND_PROCESSED                              = "autorefund_processed";
     const TRANSFER_REVERSAL_PROCESSED                       = "transfer_reversal_processed";
@@ -79,6 +82,7 @@ class Constants
     //Payload Keys
     const API_TRANSACTION_ID                                = "api_transaction_id";
     const COMMISSION                                        = "commission";
+    const TRANSFER_COMMISSION                               = "transfer_commission";
     const TRANSACTION_DATE                                  = "transaction_date";
     const IDENTIFIERS                                       = "identifiers";
     const TRANSACTOR_ID                                     = "transactor_id";
