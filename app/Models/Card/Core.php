@@ -1280,7 +1280,7 @@ class Core extends Base\Core
 
         $network = strtolower($network);
 
-        if($network == 'visa' || $network == 'mastercard' || $network = 'rupay')
+        if($network == 'visa' || $network == 'mastercard' || $network == 'rupay')
         {
             return true;
         }
