@@ -27,6 +27,7 @@ const OnboardingCoupons = ({
         popupCount: mtuCouponCount,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
+      toCleverTap: true,
     });
     tracking.trackEvent(
       window.rzpQ.merchantActions().success('merchant_dashboard.view_onboarding_coupons', {
