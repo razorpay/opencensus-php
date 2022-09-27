@@ -259,9 +259,13 @@ class Service extends Base\Service
         {
             $entity = $this->fetchEntityByNameAndId($entity, $id, $input, ConnectionType::RX_WHATSAPP_LIVE);
         }
-        else
+        else if ( $entity === Entity::PAYMENT OR $entity === Entity::ORDER )
         {
             $entity = $this->fetchEntityByNameAndId($entity, $id, $input, ConnectionType::DATA_WAREHOUSE_ADMIN);
+        }
+        else
+        {
+            $entity = $this->fetchEntityByNameAndId($entity, $id, $input, ConnectionType::REPLICA);
         }
 
         $response = $entity->toArrayAdmin();
