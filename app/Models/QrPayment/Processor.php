@@ -278,6 +278,13 @@ class Processor extends Base\Core
             $paymentArrayFromCheckoutOrder = (new CheckoutOrder\Core())->getPaymentArrayFromCheckoutOrder($this->checkoutOrder);
 
             $paymentArray = array_merge($paymentArray, $paymentArrayFromCheckoutOrder);
+
+            if ($this->checkoutOrder->isOfferApplied()) {
+                // Reset the payment amount to order amount if an offer is applied
+                // as payment create process does offer related calculation &
+                // reduces the amount accordingly.
+                $paymentArray[Payment\Entity::AMOUNT] = $this->checkoutOrder->getAmount();
+            }
         }
 
         return $paymentArray;

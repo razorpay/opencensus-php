@@ -101,7 +101,7 @@ class Service extends BaseService
         $input = [
             NonVAQrCodeEntity::ENTITY_ID => $checkoutOrder->getId(),
             NonVAQrCodeEntity::ENTITY_TYPE => ConstantsEntity::CHECKOUT_ORDER,
-            NonVAQrCodeEntity::REQ_AMOUNT => $checkoutOrder->getAmount(),
+            NonVAQrCodeEntity::REQ_AMOUNT => $checkoutOrder->getFinalAmount(),
         ];
 
         $additionalAttributes = [

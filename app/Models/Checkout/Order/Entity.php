@@ -79,6 +79,12 @@ class Entity extends PublicEntity
     public const SIGNATURE = 'signature';
     public const UPI = 'upi';
 
+    /**
+     * Fields used internally that are added to META_DATA
+     */
+    public const DISCOUNTED_AMOUNT = 'discounted_amount';
+    public const DISCOUNT = 'discount';
+
     public const META_DATA_ATTRIBUTES = [
         '_',
         self::ACCOUNT_ID,
@@ -88,6 +94,8 @@ class Entity extends PublicEntity
         self::CURRENCY,
         self::CUSTOMER_ID,
         self::DESCRIPTION,
+        self::DISCOUNTED_AMOUNT,
+        self::DISCOUNT,
         self::FEE,
         self::METHOD,
         self::NAME,
@@ -226,6 +234,17 @@ class Entity extends PublicEntity
         return $this->status === Status::PAID;
     }
 
+    /**
+     * Checks and returns if an offer is applied on the CheckoutOrder.
+     * Assumes that an offerId would be unset if it isn't applied.
+     *
+     * @return bool
+     */
+    public function isOfferApplied(): bool
+    {
+        return $this->getOfferId() !== '';
+    }
+
     public function isQrCodeOrder(): bool
     {
         return ($this->getAttribute(self::META_DATA)[self::RECEIVER_TYPE] ?? '') === ConstantsEntity::QR_CODE;
@@ -300,6 +319,17 @@ class Entity extends PublicEntity
         return $this->getAttribute(self::META_DATA)[self::ACCOUNT_ID] ?? '';
     }
 
+    /**
+     * Return's the amount passed in the input if order_id isn't present.
+     * Returns Order's due amount if order_id is associated.
+     *
+     * NOTE: Please don't use this method for creating payment unless an
+     *       offer is applied. Use getFinalAmount() instead.
+     *
+     * @see self::getFinalAmount()
+     *
+     * @return int
+     */
     public function getAmount(): int
     {
         if (empty($this->order)) {
@@ -324,9 +354,28 @@ class Entity extends PublicEntity
         return $this->getAttribute(self::META_DATA)[self::DESCRIPTION] ?? '';
     }
 
+    public function getDiscountedAmount(): int
+    {
+        $metaData = $this->getAttribute(self::META_DATA);
+
+        return $metaData[self::DISCOUNTED_AMOUNT] ?? $this->getAmount();
+    }
+
     public function getExpireAt(): int
     {
         return $this->getAttribute(self::EXPIRE_AT);
+    }
+
+    /**
+     * Get the final amount that should be charged to the end user
+     *
+     * (Final Amount) = Amount - Discount + Fees
+     *
+     * @return int
+     */
+    public function getFinalAmount(): int
+    {
+        return $this->getDiscountedAmount(); // + Fees (To be added in future)
     }
 
     public function getName(): string
@@ -371,6 +420,16 @@ class Entity extends PublicEntity
         return $this->getAttribute(self::META_DATA)[self::NOTES] ?? [];
     }
 
+    public function getOfferId(): string
+    {
+        return $this->getAttribute(self::META_DATA)[self::OFFER_ID] ?? '';
+    }
+
+    public function getReceiverType(): string
+    {
+        return $this->getAttribute(self::META_DATA)[self::RECEIVER_TYPE] ?? '';
+    }
+
     // ------------------------------ GETTERS END ------------------------------
     // --------------------------------------------------------------------------------
     // ------------------------------ SETTERS START ------------------------------
@@ -380,6 +439,21 @@ class Entity extends PublicEntity
         CloseReason::checkCloseReason($closeReason);
 
         $this->setAttribute(self::CLOSE_REASON, $closeReason);
+    }
+
+    public function setDiscountedAmount(int $discountedAmount): void
+    {
+        $this->setAttribute(self::META_DATA . '->' . self::DISCOUNTED_AMOUNT, $discountedAmount);
+    }
+
+    public function setDiscount(int $discount): void
+    {
+        $this->setAttribute(self::META_DATA . '->' . self::DISCOUNT, $discount);
+    }
+
+    public function setOfferId(string $offerId): void
+    {
+        $this->setAttribute(self::META_DATA . '->' . self::OFFER_ID, $offerId);
     }
 
     public function setStatus(string $status): void
@@ -436,5 +510,15 @@ class Entity extends PublicEntity
     }
 
     // ------------------------ PUBLIC ID SETTERS END ------------------------
+
+    public function unsetOfferId(): void
+    {
+        $metaData = $this->getAttribute(self::META_DATA);
+
+        unset($metaData[self::OFFER_ID]);
+
+        $this->setAttribute(self::META_DATA, $metaData);
+    }
+
     // ------------------------------ SETTERS END ------------------------------
 }

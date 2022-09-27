@@ -3,6 +3,7 @@
 namespace RZP\Models\Checkout\Order;
 
 use Carbon\Carbon;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\Invoice\Entity as Invoice;
@@ -11,6 +12,16 @@ use RZP\Trace\TraceCode;
 
 class Core extends BaseCore
 {
+    use ValidatesAndAppliesOffer;
+
+    /**
+     * @param array $input
+     *
+     * @return Entity
+     *
+     * @throws BadRequestException
+     * @throws BadRequestValidationFailureException
+     */
     public function create(array $input): Entity
     {
         $checkoutOrder = new Entity();
@@ -22,6 +33,8 @@ class Core extends BaseCore
         $this->validateOrderDetails($checkoutOrder, $input[Entity::AMOUNT]);
 
         $this->validateAndSetInvoiceDetailsIfApplicable($checkoutOrder);
+
+        $this->validateAndApplyUPIOfferIfApplicable($checkoutOrder);
 
         $this->repo->saveOrFail($checkoutOrder);
 

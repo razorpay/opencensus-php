@@ -32,6 +32,8 @@ use RZP\Tests\Functional\Order\OrderMeta\OrderMetaTest;
  * @property UpiMandate\Entity $upiMandate
  * @property Product\Entity $products
  * @property OrderMeta\Entity $orderMetas
+ *
+ * @property-read Base\PublicCollection $offers
  */
 class Entity extends Base\PublicEntity
 {

@@ -8140,6 +8140,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // CheckoutOrder related trace codes
     const INPUT_AMOUNT_DIFFERENT_THAN_ORDER_AMOUNT                    = 'INPUT_AMOUNT_DIFFERENT_THAN_ORDER_AMOUNT';
+    const OFFER_ID_NOT_APPLICABLE_ON_CHECKOUT_ORDER                   = 'OFFER_ID_NOT_APPLICABLE_ON_CHECKOUT_ORDER';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

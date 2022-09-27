@@ -201,7 +201,7 @@ class Service extends QrCode\Service
             }
 
             if ($order instanceof CheckoutOrder) {
-                $createArray[Entity::REQ_AMOUNT] = $order->getAmount();
+                $createArray[Entity::REQ_AMOUNT] = $order->getFinalAmount();
                 $createArray[Entity::CLOSE_BY] = $order->getExpireAt();
             }
         }
