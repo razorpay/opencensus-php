@@ -24,11 +24,15 @@ class CreateLedgerJournal extends Job
 
     protected $merchant;
 
-    public function __construct(string $mode, array $transactionMessage)
+    protected $isBulkJournalRequest;
+
+    public function __construct(string $mode, array $transactionMessage, $isBulkJournalRequest = false)
     {
         parent::__construct($mode);
 
         $this->transactionMessage = $transactionMessage;
+
+        $this->isBulkJournalRequest = $isBulkJournalRequest;
     }
 
     public function handle()
@@ -43,9 +47,17 @@ class CreateLedgerJournal extends Job
         $producerKey = $this->transactionMessage[LedgerConstants::TRANSACTOR_ID];
 
         $message = [
-            LedgerConstants::KAFKA_MESSAGE_TASK_NAME => LedgerConstants::REGISTER_EVENT_FOR_LEDGER_TRANSACTION,
             LedgerConstants::KAFKA_MESSAGE_DATA      => $this->transactionMessage,
         ];
+
+        if ($this->isBulkJournalRequest === true)
+        {
+            $message[LedgerConstants::KAFKA_MESSAGE_TASK_NAME] = LedgerConstants::REGISTER_EVENT_FOR_MULTI_MERCHANT_LEDGER_TRANSACTION;
+        }
+        else
+        {
+            $message[LedgerConstants::KAFKA_MESSAGE_TASK_NAME] = LedgerConstants::REGISTER_EVENT_FOR_LEDGER_TRANSACTION;
+        }
 
         $topic = env('CREATE_LEDGER_JOURNAL_EVENT', LedgerConstants::CREATE_LEDGER_JOURNAL_EVENT);
 

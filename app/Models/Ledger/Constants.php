@@ -12,6 +12,7 @@ class Constants
     const MERCHANT_CAPTURED                                 = "payment_merchant_captured";
     const SETTLEMENT_PROCESSED                              = "settlement_processed";
     const AUTOREFUND_PROCESSED                              = "autorefund_processed";
+    const TRANSFER_REVERSAL_PROCESSED                       = "transfer_reversal_processed";
     const CREDIT_ACCOUNTING                                 = 'credit_accounting';
     const AMOUNT_CREDITS                                    = 'amount_credits';
     const FEE_CREDITS                                       = 'fee_credits';
@@ -53,9 +54,13 @@ class Constants
     const DS_CONTROL_AMOUNT                                 = "ds_control_amount";
     const MERCHANT_BALANCE_AMOUNT                           = "merchant_balance_amount";
     const MERCHANT_RECEIVABLE_AMOUNT                        = "merchant_receivable_amount";
+    const MERCHANT_PAYABLE_AMOUNT                           = "merchant_payable_amount";
     const GATEWAY_REVERSED_AMOUNT                           = "gateway_reversed_amount";
     const MERCHANT_REFUND_CREDITS_ADDITION                  = "merchant_refund_credits_addition";
     const MERCHANT_SETTLEMENT_AMOUNT                        = "merchant_settlement_amount";
+    const ENTRY_TYPE                                        = "entry_type";
+    const ENTRY_TYPE_DEBIT                                  = "debit";
+    const ENTRY_TYPE_CREDIT                                 = "credit";
 
     //Refund events Direct Settlement
     const REFUND_PROCESSED_DIRECT_SETTLEMENT                = "refund_processed_ds";
@@ -88,10 +93,12 @@ class Constants
     const AMOUNT                                            = 'amount';
     const NOTES                                             = 'notes';
     const GATEWAY                                           = 'gateway';
+    const JOURNALS                                          = 'journals';
 
-    const REGISTER_EVENT_FOR_LEDGER_TRANSACTION             = 'register_event_for_ledger_transaction';
-    const KAFKA_MESSAGE_TASK_NAME                           = 'task_name';
-    const KAFKA_MESSAGE_DATA                                = 'data';
-    const CREATE_LEDGER_JOURNAL_EVENT                       = 'create-ledger-journal-event';
+    const REGISTER_EVENT_FOR_LEDGER_TRANSACTION                 = 'register_event_for_ledger_transaction';
+    const REGISTER_EVENT_FOR_MULTI_MERCHANT_LEDGER_TRANSACTION  = 'register_event_for_multi_merchant_ledger_transaction';
+    const KAFKA_MESSAGE_TASK_NAME                               = 'task_name';
+    const KAFKA_MESSAGE_DATA                                    = 'data';
+    const CREATE_LEDGER_JOURNAL_EVENT                           = 'create-ledger-journal-event';
 
 }

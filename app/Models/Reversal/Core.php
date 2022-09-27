@@ -5,9 +5,8 @@ namespace RZP\Models\Reversal;
 use Razorpay\Trace\Logger;
 use RZP\Exception;
 use RZP\Constants;
-use RZP\Models\Base;
 use RZP\Error\Error;
-use RZP\Models\Ledger\RefundJournalEvents;
+use RZP\Models\Base;
 use RZP\Models\Payout;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
@@ -30,11 +29,13 @@ use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Ondemand;
 use RZP\Models\Settlement\OndemandPayout;
+use RZP\Models\Ledger\RefundJournalEvents;
 use RZP\Exception\GatewayTimeoutException;
 use Neves\Events\TransactionalClosureEvent;
 use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Models\BankingAccountStatement\Channel;
 use RZP\Models\Adjustment\Core as AdjustmentCore;
+use RZP\Models\Ledger\RouteReversalJournalEvents;
 use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Models\FundAccount\Validation as FundAccountValidation;
@@ -195,8 +196,11 @@ class Core extends Base\Core
                     );
                 }
 
+                $reversal = $result[0] ?? null;
+                (new Reversal\Core())->createLedgerEntriesForRouteReversal($merchant, $reversal, $refund);
+
                 // Return reversal entity
-                return $result[0] ?? null;
+                return $reversal;
             });
     }
 
@@ -1437,6 +1441,52 @@ class Core extends Base\Core
 
                 continue;
             }
+        }
+    }
+
+    public function createLedgerEntriesForRouteReversal(Merchant\Entity $merchant, Reversal\Entity $reversal, Refund\Entity $refund)
+    {
+        if((isset($reversal) === false) or (isset($refund) === false))
+        {
+            return;
+        }
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+        {
+            return;
+        }
+
+        try
+        {
+            $transactionMessage = RouteReversalJournalEvents::createBulkTransactionMessageForRouteReversal($reversal, $refund);
+
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($transactionMessage) {
+                // Job will be dispatched only if the transaction commits.
+                LedgerEntryJob::dispatchNow($this->mode, $transactionMessage, true);
+            }));
+
+            $this->trace->info(
+                TraceCode::TRANSFER_REVERSAL_LEDGER_EVENT_TRIGGERED,
+                [
+                    'transfer_id'           => $reversal->getTransferIdAttribute(),
+                    'reversal_id'           => $reversal->getId(),
+                    'refund_id'             => $refund->getId(),
+                    'transactionMessage'    => $transactionMessage,
+            ]);
+
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::PG_LEDGER_ROUTE_ENTRY_FAILED,
+                [
+                    'transfer_id'           => $reversal->getTransferIdAttribute(),
+                    'reversal_id'           => $reversal->getId(),
+                    'refund_id'             => $refund->getId(),
+                    'payment_id'            => $refund->getPaymentId(),
+                ]);
         }
     }
 }

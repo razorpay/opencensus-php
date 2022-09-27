@@ -6986,6 +6986,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LEDGER_ENTRY_FAILED                                       = "LEDGER_ENTRY_FAILED";
     const LEDGER_DS_REFUND_CASE_NOT_FOUND                           = "LEDGER_DS_REFUND_CASE_NOT_FOUND";
     const PG_LEDGER_ENTRY_FAILED                                    = "PG_LEDGER_ENTRY_FAILED";
+    const PG_LEDGER_ROUTE_ENTRY_FAILED                              = "PG_LEDGER_ROUTE_ENTRY_FAILED";
     const PG_LEDGER_CHARGEBACK_ENTRY_FAILED                         = "PG_LEDGER_CHARGEBACK_ENTRY_FAILED";
     const PAYMENT_GATEWAY_CAPTURED                                  = "PAYMENT_GATEWAY_CAPTURED";
     const GATEWAY_CAPTURED_EVENT_TRIGGERED                          = "GATEWAY_CAPTURED_EVENT_TRIGGERED";
@@ -6994,6 +6995,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CHARGEBACK_RAZORPAY_DISPUTE_DEDUCT_EVENT                  = "CHARGEBACK_RAZORPAY_DISPUTE_DEDUCT_EVENT";
     const CHARGEBACK_RAZORPAY_DISPUTE_REVERSAL_EVENT                = "CHARGEBACK_RAZORPAY_DISPUTE_REVERSAL_EVENT";
     const TRANSACTION_ID_UNAVAILABLE_AT_GATEWAY_CAPTURE             = "TRANSACTION_ID_UNAVAILABLE_AT_GATEWAY_CAPTURE";
+    const TRANSFER_REVERSAL_LEDGER_EVENT_TRIGGERED                  = "TRANSFER_REVERSAL_LEDGER_EVENT_TRIGGERED";
 
     // Merchant Website Checker
     const HEALTH_CHECKER_PERIODIC_CRON_STARTED             = 'HEALTH_CHECKER_PERIODIC_CRON_STARTED';

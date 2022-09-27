@@ -53,8 +53,8 @@ trait Reversal
         {
             $sourcePayment = $transfer->source;
 
-            $sourcePayment->decrementAmountTransferred($input[ReversalEntity::AMOUNT]);    
-            
+            $sourcePayment->decrementAmountTransferred($input[ReversalEntity::AMOUNT]);
+
         }
         else if ($transfer->getSourceType() === E::ORDER)
         {
@@ -132,7 +132,7 @@ trait Reversal
 
         if ($payment->isExternal() === false)
         {
-            $payment = $this->repo->payment->lockForUpdate($payment->getKey());    
+            $payment = $this->repo->payment->lockForUpdate($payment->getKey());
         }
 
         $payment->refundAmount($amount, $baseAmount);
@@ -196,7 +196,12 @@ trait Reversal
 
                     // result has reversal and refund entity in indexes 0 and 1 respectively
                     // returning refund entity
-                    return $result[1] ?? null;
+                    $reversal = $result[0] ?? null;
+                    $refund = $result[1] ?? null;
+
+                    (new ReversalCore())->createLedgerEntriesForRouteReversal($this->merchant, $reversal, $refund);
+
+                    return $refund;
                 });
 
             array_push($refunds , $refund);
