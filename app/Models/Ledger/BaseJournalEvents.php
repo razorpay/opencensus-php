@@ -3,6 +3,7 @@
 
 namespace RZP\Models\Ledger;
 
+use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 
 class BaseJournalEvents
@@ -16,5 +17,17 @@ class BaseJournalEvents
             Constants::CURRENCY                  => $transaction->getCurrency(),
             Constants::TRANSACTION_DATE          => $transaction->getCreatedAt(),
         );
+    }
+
+    public static function getRazorpayMerchantBasedOnFundType($payment, $fundType): string
+    {
+        if ($payment === null)
+        {
+            return (new Merchant\Core())->getRazorpayMerchantBasedOnType($fundType)[Constants::MERCHANT_ID];
+        }
+        else
+        {
+            return $payment[Constants::MERCHANT_ID];
+        }
     }
 }

@@ -39,12 +39,12 @@ class CreateLedgerJournal extends Job
     {
         parent::handle();
 
-        if($this->mode === Mode::TEST)
-        {
-            return;
-        }
+       if($this->mode === Mode::TEST)
+       {
+           return;
+       }
 
-        $producerKey = $this->transactionMessage[LedgerConstants::TRANSACTOR_ID];
+        $producerKey =  $this->transactionMessage[LedgerConstants::TRANSACTOR_ID];
 
         $message = [
             LedgerConstants::KAFKA_MESSAGE_DATA      => $this->transactionMessage,
@@ -107,4 +107,3 @@ class CreateLedgerJournal extends Job
         }
     }
 }
-

@@ -612,9 +612,11 @@ class Core extends Base\Core
 
         $this->sendFundAdditionInitiatedEvent($creditInput, $merchantId, EventCode::CREDIT_ADDITION_INITIATED);
 
+        $payment =  $this->repo->payment->findByPublicId($paymentInput['id']);
+
         try
         {
-            $response =  ((new Credits\Service)->grantCreditsForMerchant($merchantId, $creditInput));
+            $response =  ((new Credits\Service)->grantCreditsForMerchant($merchantId, $creditInput, $payment));
         }
         catch(\Exception $e)
         {
@@ -939,8 +941,9 @@ class Core extends Base\Core
         }
 
         (new Merchant\Validator())->validateIfReserveBalanceAlreadyAdded($description, $merchantId);
-
         $amountAfterFee = $paymentInput['amount'] - $paymentInput['fee'];
+
+        $payment =  $this->repo->payment->findByPublicId($paymentInput['id']);
 
         $input = [
             "amount" => $amountAfterFee,
@@ -962,7 +965,7 @@ class Core extends Base\Core
 
         try
         {
-            $response =  (new Adjustment\Core)->createAdjustment($input, $merchant);
+            $response =  (new Adjustment\Core)->createAdjustment($input, $merchant, $payment);
         }
         catch(\Exception $e)
         {

@@ -6,6 +6,7 @@ use App;
 use Mail;
 
 use RZP\Exception;
+use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
@@ -18,6 +19,8 @@ use RZP\Models\Merchant\Credits;
 use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Mail\Merchant\RazorpayX\Credits\ConfirmationForKycUsers;
 use RZP\Mail\Merchant\RazorpayX\Credits\ConfirmationForChurnedUsers;
+use RZP\Models\Ledger\MerchantCreditJournalEvents;
+use Neves\Events\TransactionalClosureEvent;
 
 class Core extends Base\Core
 {
@@ -57,7 +60,7 @@ class Core extends Base\Core
         return (int) ($amount * (1 / $ratio));
     }
 
-    public function create($merchant, $input)
+    public function create($merchant, $input, $payment = null)
     {
         $creditsLog = (new Credits\Entity)->build($input);
 
@@ -84,15 +87,16 @@ class Core extends Base\Core
 
         return $mutex->acquireAndRelease(
             $resource,
-            function() use ($creditsLog, $merchant) {
-
-                $this->repo->transaction(function() use ($merchant, $creditsLog)
+            function() use ($creditsLog, $merchant, $payment) {
+                $this->repo->transaction(function() use ($merchant, $creditsLog, $payment)
                 {
                     $this->repo->saveOrFail($creditsLog);
 
                     $type = $creditsLog->getType();
 
                     $this->updateCreditsInMerchantAccount($merchant, $creditsLog->getValue(), $type);
+
+                    $this->createLedgerEntriesForMerchantCreditLoading($creditsLog, $payment);
 
                     return $creditsLog;
                 });
@@ -111,6 +115,7 @@ class Core extends Base\Core
             $newCredits = $merchantAmountCredits + $credits;
 
             $this->repo->balance->editMerchantAmountCredits($merchant, $newCredits);
+
         }
         else if ($type === Credits\Type::FEE)
         {
@@ -357,6 +362,41 @@ class Core extends Base\Core
                 TraceCode::LEDGER_JOURNAL_CREATE_FAILED_REVERSE_SHADOW,
                 $alertPayload
             );
+        }
+    }
+
+    private function createLedgerEntriesForMerchantCreditLoading(Entity $creditsLog, $payment)
+    {
+        try
+        {
+            if($creditsLog->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+            {
+                return;
+            }
+
+            $transactionMessage = MerchantCreditJournalEvents::createBulkTransactionMessageForMerchantCreditLoading($creditsLog, $payment);
+
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($transactionMessage)
+            {
+                LedgerEntryJob::dispatchNow($this->mode, $transactionMessage, true);
+            }));
+
+            $this->trace->info(
+                TraceCode::MERCHANT_CREDITS_LOADING_EVENT,
+                [
+                    'merchant' => $creditsLog->getMerchantId(),
+                    'transactionMessage'    => $transactionMessage,
+                    'payment' => $payment,
+                ]);
+
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PG_LEDGER_ENTRY_FAILED,
+                ['credit_id'             => $creditsLog->getId(),]);
         }
     }
 }

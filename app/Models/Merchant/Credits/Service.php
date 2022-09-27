@@ -18,11 +18,11 @@ use RZP\Models\Merchant\Balance as MerchantBalance;
 
 class Service extends Base\Service
 {
-    public function grantCreditsForMerchant($mid, array $input)
+    public function grantCreditsForMerchant($mid, array $input, $payment = null)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($mid);
 
-        $creditsLog = (new Credits\Core)->create($merchant, $input);
+        $creditsLog = (new Credits\Core)->create($merchant, $input, $payment);
 
         return $creditsLog->toArrayPublic();
     }

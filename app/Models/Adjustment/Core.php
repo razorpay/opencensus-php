@@ -27,13 +27,16 @@ use RZP\Models\Merchant\Invoice as MerchantInvoice;
 use RZP\Models\Settlement\Channel as BankingChannel;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Transaction\Processor\Ledger\Adjustment as LedgerAdjustment;
+use RZP\Models\Ledger\MerchantReserveBalanceJournalEvents;
+use Neves\Events\TransactionalClosureEvent;
+use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 
 class Core extends Base\Core
 {
     // input param for adjustment creation on capital collection balances.
     const BALANCE_ID = 'balance_id';
 
-    public function createAdjustment(array $input, Merchant\Entity $merchant): Entity
+    public function createAdjustment(array $input, Merchant\Entity $merchant, $payment=null): Entity
     {
         $this->trace->info(
             TraceCode::ADJUSTMENT_CREATE_REQUEST,
@@ -166,7 +169,46 @@ class Core extends Base\Core
             }
         }
 
+        if ($balanceType === Balance\Type::RESERVE_PRIMARY)
+        {
+            $this->createLedgerEntriesForMerchantReserveBalanceLoading($adj, $merchant, $payment);
+        }
+
         return $adjustment;
+    }
+    private function createLedgerEntriesForMerchantReserveBalanceLoading(Adjustment\Entity $adj, Merchant\Entity $merchant, $payment)
+    {
+        try
+        {
+            if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+            {
+                return;
+            }
+
+            $transactionMessage= MerchantReserveBalanceJournalEvents::createBulkTransactionMessageForMerchantReserveBalanceLoading($adj, $payment);
+
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($transactionMessage)
+            {
+                LedgerEntryJob::dispatchNow($this->mode, $transactionMessage, true);
+            }));
+
+            $this->trace->info(
+                TraceCode::MERCHANT_RESERVE_BALANCE_LOADING_EVENT,
+                [
+                    'merchant' => $merchant->getId(),
+                    'transactionMessage' => $transactionMessage,
+                    'payment' => $payment,
+                ]);
+
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PG_LEDGER_ENTRY_FAILED,
+                ['adjustment_id'             => $adj->getId()]);
+        }
     }
 
     public function createAdjustmentForSource(array $input, Base\PublicEntity $source): Entity
