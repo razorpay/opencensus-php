@@ -264,14 +264,16 @@ class Service extends Base\Service
                 'input'      => $input
             ]);
 
-        $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
+        // commented for now, will be enabled during further ramp-up
+        // $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
         // based on experiment, refund request will be routed to Scrooge
-        if ($this->getNewProcessor()->isRefundRequestV1_1($this->merchant->getId(),$payment))
-        {
-            // Route refund creation to scrooge
-            return (new Payment\Refund\Service())->scroogeRefundCreate($id, $input);
-        }
+
+        // if ($this->getNewProcessor()->isRefundRequestV1_1($this->merchant->getId(),$payment))
+        // {
+        //     // Route refund creation to scrooge
+        //     return (new Payment\Refund\Service())->scroogeRefundCreate($id, $input);
+        // }
 
         $refund = $this->getNewProcessor()->refundPaymentViaMerchant($id, $input);
 

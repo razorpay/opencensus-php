@@ -590,7 +590,8 @@ class EnachRblGatewayTest extends TestCase
 
         // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
         // This will only assert what is necessary.
-        $flag = true;
+        // Not yet live for batch flow, so disabling flag.
+        $flag = false;
 
         if ($flag === true)
         {

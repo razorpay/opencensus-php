@@ -794,21 +794,22 @@ trait Refund
                 'input'         => $input,
             ]);
 
-        if ($this->isRefundRequestV1_1($this->merchant->getId(), $payment) === true)
-        {
-            $this->trace->info(
-            TraceCode::REFUND_FROM_AUTHORIZED_REQUEST_SCROOGE,
-            [
-                'payment_id' => $payment->getId(),
-                'input'      => $input,
-            ]);
+        // commented for now, will be enabled during further ramp-up
+        // if ($this->isRefundRequestV1_1($this->merchant->getId(), $payment) === true)
+        // {
+        //     $this->trace->info(
+        //     TraceCode::REFUND_FROM_AUTHORIZED_REQUEST_SCROOGE,
+        //     [
+        //         'payment_id' => $payment->getId(),
+        //         'input'      => $input,
+        //     ]);
 
-            // Refunds for authorized payments are always full, explicitly set amount
-            $input['amount'] = $payment->getAmount();
+        //     // Refunds for authorized payments are always full, explicitly set amount
+        //     $input['amount'] = $payment->getAmount();
 
-            // Route refund creation to scrooge
-            return $this->newRefundV2Flow($payment, $input);
-        }
+        //     // Route refund creation to scrooge
+        //     return $this->newRefundV2Flow($payment, $input);
+        // }
 
         // Some bank transfer payments cannot be refunded.
         if ($payment->isBankTransfer() === true)
@@ -874,6 +875,23 @@ trait Refund
         if ($this->ba->isSubscriptionsApp() === true)
         {
             return $this->refundAuthorizedPayment($payment, $input);
+        }
+
+        if ($this->isRefundRequestV1_1($this->merchant->getId(), $payment) === true)
+        {
+            $this->trace->info(
+                TraceCode::REFUND_FROM_CAPTURED_REQUEST_SCROOGE,
+                [
+                    'payment_id' => $payment->getId(),
+                    'input'      => $input,
+                ]);
+
+            // For captured payments, refund amount either needs to be defined in $input params, or
+            // by default refund amount will be full payment amount.
+            // No need to override refund amount here.
+
+            // Route refund creation to scrooge
+            return $this->newRefundV2Flow($payment, $input);
         }
 
         //
@@ -2835,24 +2853,6 @@ trait Refund
 
     public function refundCapturedPayment($payment, array $input = [], Batch\Entity $batch = null, $batchID = null)
     {
-        if (($this->isRefundRequestV1_1($this->merchant->getId(), $payment) === true) and
-        ($batch === null) and ($batchID === null))
-        {
-            $this->trace->info(
-            TraceCode::REFUND_FROM_CAPTURED_REQUEST_SCROOGE,
-            [
-                'payment_id' => $payment->getId(),
-                'input'      => $input,
-            ]);
-
-            // For captured payments, refund amount either needs to be defined in $input params, or
-            // by default refund amount will be full payment amount.
-            // No need to override refund amount here.
-
-            // Route refund creation to scrooge
-            return $this->newRefundV2Flow($payment, $input);
-        }
-
         $variant = $this->app->razorx->getTreatment(
                 $this->merchant->getId(),
                 Merchant\RazorxTreatment::DUPLICATE_RECEIPT_CHECK,
@@ -4192,10 +4192,7 @@ trait Refund
     public function isRefundRequestV1_1(string $merchantId, Payment\Entity $payment): bool
     {
         if (($payment->getCurrency() !== Currency\Currency::INR) or
-            ($payment->isDCC() === true) or
-            ($payment->isUpiAndAmountMismatched() === true) or
-            ($payment->isAppCred() === true) or
-            ($payment->isHdfcVasDSCustomerFeeBearerSurcharge() === true))
+            ($payment->isDCC() === true))
         {
             return false;
         }

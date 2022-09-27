@@ -57,7 +57,8 @@ class CreditNoteTest extends TestCase
 
         // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
         // This will only assert what is necessary.
-        $flag = true;
+        // This flow is not live yet on prod for this flow, so disabling flag for the time being.
+        $flag = false;
 
         if ($flag === true)
         {
@@ -95,7 +96,8 @@ class CreditNoteTest extends TestCase
 
         // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
         // This will only assert what is necessary.
-        $flag = true;
+        // This flow is not live yet on prod for this flow, so disabling flag for the time being.
+        $flag = false;
 
         if ($flag === true)
         {
@@ -135,7 +137,8 @@ class CreditNoteTest extends TestCase
 
         // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
         // This will only assert what is necessary.
-        $flag = true;
+        // This flow is not live yet on prod for this flow, so disabling flag for the time being.
+        $flag = false;
 
         if ($flag === true)
         {
@@ -175,7 +178,8 @@ class CreditNoteTest extends TestCase
 
         // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
         // This will only assert what is necessary.
-        $flag = true;
+        // This flow is not live yet on prod for this flow, so disabling flag for the time being.
+        $flag = false;
 
         if ($flag === true)
         {
