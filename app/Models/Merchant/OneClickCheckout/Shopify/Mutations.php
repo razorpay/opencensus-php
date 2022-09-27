@@ -775,7 +775,7 @@ class Mutations
                     price
                     image {
                       id
-                      src
+                      url
                     }
                     sku
                     title

@@ -79,7 +79,7 @@ class Service extends Base\Service
                 'name'              => mb_substr(strval($item['title']), 0, 128, "UTF-8"),
                 'description'       => mb_substr($item['variant']['product']['description'], 0, 256, "UTF-8"),
                 'weight'            => (int)floatval($item['variant']['weight']),
-                'image_url'         => $item['variant']['image']['src'] ?? ""
+                'image_url'         => $item['variant']['image']['url'] ?? ""
             ];
         }
 
