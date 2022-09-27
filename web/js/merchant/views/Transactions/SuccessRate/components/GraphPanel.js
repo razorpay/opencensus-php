@@ -20,10 +20,17 @@ const GraphPanel = (props) => {
   const { datasets } = histogram;
   const hasNoData = !histogram || datasets?.length === 0;
 
+  /**
+   * @param 'tag' is the tag name string not tag object
+   * @param 'position' is the index of "checked tag" from selected tag list
+   */
+
   const updateDatasets = (tag, position) => {
     if (chartReference?.current) {
       const chart = chartReference.current.chartInstance;
-      const tagIndex = tags.indexOf(tag);
+      // 'index' of actual tags list
+      const tagIndex = tags.findIndex(({ name }) => name === tag);
+
       const intervals = getIntervals({
         tag,
         data,
@@ -45,11 +52,18 @@ const GraphPanel = (props) => {
     }
   };
 
+  /**
+   * @param 'tag' is the tag name string not tag object
+   */
+
   const handleTags = (tag) => {
     const tagsClone = [...selectedTags];
-    const tagIndex = tagsClone.indexOf(tag);
+    const tagIndex = tagsClone.findIndex(({ name }) => name === tag);
     if (tagIndex > -1 && tagsClone.length > 1) tagsClone.splice(tagIndex, 1);
-    else if (tagIndex < 0) tagsClone.push(tag);
+    else if (tagIndex < 0) {
+      const newTag = tags.find(({ name }) => name === tag);
+      tagsClone.push(newTag);
+    }
     props.updateSelectedTags(tagsClone);
     updateDatasets(tag, tagIndex);
     trackSuccessRateEvents(methodTagsClick({ selectedTags: tagsClone }));

@@ -1,11 +1,11 @@
 import React, { useCallback } from 'react';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import { getTagLabelWithOverallTag } from '../helper';
-import { defaultTagStyle, DEFAULT_GROUP_BY, tagStyles } from '../constants';
+import { DEFAULT_GROUP_BY } from '../constants';
 import InfoIcon from './InfoIcon';
 
-export const Tag = ({ tag, isActive, onSelect, tagStyle }) => {
-  const { backgroundColor, color, borderStyle, borderWidth } = tagStyle;
+export const Tag = ({ tag, isActive, onSelect }) => {
+  const { backgroundColor, color, borderStyle, borderWidth } = tag;
 
   const onCheck = useCallback((e) => onSelect(e.target.value), [onSelect]);
 
@@ -50,13 +50,19 @@ const TagGroup = ({ isLoading, tags, selectedTags = [], groupBy = '', onSelect, 
   return (
     <div className="tag-list">
       {tags?.map((tag, idx) => {
+        const { name } = tag;
+        const isActive = selectedTags.findIndex((selectedTag) => selectedTag.name === name) > -1;
+
         return (
           <Tag
-            key={`${tag}__${idx}`}
-            tag={{ name: getTagLabelWithOverallTag({ tag, activeTab, groupBy }), value: tag }}
+            key={`${name}__${idx}`}
+            isActive={isActive}
             onSelect={onSelect}
-            isActive={selectedTags.indexOf(tag) > -1}
-            tagStyle={tagStyles[idx] ?? defaultTagStyle}
+            tag={{
+              ...tag,
+              name: getTagLabelWithOverallTag({ tag: name, activeTab, groupBy }),
+              value: name,
+            }}
           />
         );
       })}

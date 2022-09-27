@@ -147,6 +147,7 @@ export const namedColors = {
   'pink.500': '#FF00A8',
   'purple.400': '#EEDCFE',
   'purple.500': '#690392',
+  'grey.800': '#818EA3',
 };
 
 /**************************************** Graph methods ****************************************/
@@ -224,36 +225,6 @@ export const chartStyle = [
     ...defaultChartStyle,
     borderColor: namedColors['purple.500'],
     backgroundColor: namedColors['purple.500'],
-  },
-];
-
-/**************************************** Volume pie chart ****************************************/
-
-export const defaultPieChartStyle = {
-  borderColor: namedColors['black.500'],
-  backgroundColor: namedColors['black.400'],
-};
-
-export const pieChartStyle = [
-  {
-    borderColor: namedColors['orange.500'],
-    backgroundColor: namedColors['orange.400'],
-  },
-  {
-    borderColor: namedColors['blue.500'],
-    backgroundColor: namedColors['blue.400'],
-  },
-  {
-    borderColor: namedColors['green.500'],
-    backgroundColor: namedColors['green.400'],
-  },
-  {
-    borderColor: namedColors['pink.500'],
-    backgroundColor: namedColors['pink.400'],
-  },
-  {
-    borderColor: namedColors['purple.500'],
-    backgroundColor: namedColors['purple.400'],
   },
 ];
 
@@ -369,4 +340,10 @@ export const DEFAULT_GROUP_BY_LIMIT = 4;
 export const GROUP_BY_KEY_VS_LIMIT = {
   type: 3,
   upi_type: 2,
+};
+
+export const fetchDefaultReturn = {
+  tags: [],
+  selectedTags: [],
+  histogram: { labels: [], datasets: [] },
 };

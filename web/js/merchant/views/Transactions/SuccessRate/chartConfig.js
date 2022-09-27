@@ -1,24 +1,14 @@
 import moment from 'moment';
-import { chartFontColor, gridLineColor, TAG_MAP } from './constants';
 import { getFormattedNumber, getSuitableY } from './helper';
+import { chartFontColor, gridLineColor, namedColors, TAG_MAP } from './constants';
 
 /**************************************** Overview Chart Config ****************************************/
 
 export const overviewGraphOptions = {
   responsive: true,
-  layout: {
-    padding: {
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 1,
-    },
-  },
+  layout: { padding: 0 },
   elements: {
-    line: {
-      borderColor: '#000000',
-      borderWidth: 1,
-    },
+    line: { borderColor: namedColors['black.500'], borderWidth: 1 },
     point: { radius: 0, hoverRadius: 0 },
   },
   legend: { display: false },
@@ -222,18 +212,11 @@ export const getChartAreaConfig = ({ breakdown, xLabel, yLabel }) => {
 export const pieChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
+  layout: { padding: { top: 20, right: 0, bottom: 20, left: 0 } },
   legend: { display: false },
   tooltips: { enabled: false },
   hover: { mode: null },
   animation: false,
-  layout: {
-    padding: {
-      top: 30,
-      left: 0,
-      right: 0,
-      bottom: 30,
-    },
-  },
 };
 
 export const piePlugins = [
@@ -255,14 +238,13 @@ export const piePlugins = [
         const value = dataset.data[i];
         const centerPoint = arc.getCenterPoint();
         const model = arc._model;
-        const color = '#818EA3';
         const angle = Math.atan2(
           centerPoint.y - chartCenterPoint.y,
           centerPoint.x - chartCenterPoint.x,
         );
         // important point 2, this point overlapsed with existed points
-        // so we will reduce y by 14 if it's on the right
-        // or add by 14 if it's on the left
+        // so we will reduce y by 10 if it's on the right
+        // or add by 10 if it's on the left
         const point2X = chartCenterPoint.x + Math.cos(angle) * (model.outerRadius + 10);
         let point2Y = chartCenterPoint.y + Math.sin(angle) * (model.outerRadius + 10);
 
@@ -280,14 +262,12 @@ export const piePlugins = [
         // Added 15 to prevent overlapping of labels if they are on the same side and too close to each other.
         const edgePointX = point2X + 15 < chartCenterPoint.x ? 20 : chart.width - 50;
 
-        if (point2X < chartCenterPoint.x) {
-          leftLabelCoordinates.push(point2Y);
-        } else {
-          rightLabelCoordinates.push(point2Y);
-        }
+        if (point2X < chartCenterPoint.x) leftLabelCoordinates.push(point2Y);
+        else rightLabelCoordinates.push(point2Y);
+
         // Draw Line
         // first line: connect between arc's center point and outside point
-        ctx.strokeStyle = color;
+        ctx.strokeStyle = namedColors['grey.800'];
         ctx.beginPath();
         ctx.moveTo(centerPoint.x, centerPoint.y);
         ctx.lineTo(point2X, point2Y);
@@ -304,7 +284,7 @@ export const piePlugins = [
         const valueY = point2Y;
         ctx.textAlign = labelAlignStyle;
         ctx.textBaseline = 'bottom';
-        ctx.fillStyle = '#818EA3';
+        ctx.fillStyle = namedColors['grey.800'];
         ctx.fillText(`${value} %`, labelX, valueY);
         ctx.fillText(label, labelX, labelY);
       });

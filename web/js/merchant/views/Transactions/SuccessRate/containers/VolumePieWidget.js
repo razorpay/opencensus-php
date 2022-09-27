@@ -33,11 +33,11 @@ const renderInfoCard = ({ name, successful, total, sr } = {}, index) => {
 
 const VolumePieWidget = (props) => {
   const { isLoading, activeTab, tab = {} } = props;
-  const { group_by = '', data } = tab;
+  const { group_by = '', data, tags } = tab;
   const user = getUser();
   const _group_by = activeTab === 'Overall' || !user.isOptimizerEnabled ? group_by : 'procurer';
   const groupData = data?.groups?.[_group_by] ?? [];
-  const pieChartData = getPieChartData(groupData);
+  const pieChartData = getPieChartData(groupData, tags);
   const compactData = compact(pieChartData?.datasets?.[0]?.data);
 
   if (isLoading) {

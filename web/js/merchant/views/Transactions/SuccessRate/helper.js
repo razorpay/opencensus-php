@@ -1,19 +1,21 @@
 import moment from 'moment';
+import isObject from 'is-object';
 import { reduce, head, map, unionBy, filter, cloneDeep, upperFirst } from 'lodash';
 import store, { getUser } from 'merchant/store';
 import {
   DEFAULT_PRESET,
   tabsOrder,
+  defaultTagStyle,
+  tagStyles,
   chartStyle,
-  defaultPieChartStyle,
-  pieChartStyle,
+  fetchDefaultReturn,
+  breakdownInterval,
   TAG_MAP,
   DEFAULT_OPTIMIZER_FILTERS,
   TABS_WITH_OPTIMIZER_DROPDOWN_FILTERS,
   TABS_VS_OPTIMIZER_GROUP_BY,
   DEFAULT_GROUP_BY,
   FILTERS_VS_DISPLAY_NAMES,
-  breakdownInterval,
   TAG_OVERALL_MAP,
   PRESETS,
   DEFAULT_GROUP_BY_LIMIT,
@@ -217,7 +219,7 @@ export const getIntervals = ({ tag, data, group_by, activeTab }) => {
   return (
     (tag === 'Overall'
       ? data?.intervals
-      : data?.groups[_group_by]?.find((obj) => obj.name === tag)?.intervals) ?? []
+      : data?.groups[_group_by]?.find(({ name }) => name === tag)?.intervals) ?? []
   );
 };
 
@@ -246,43 +248,44 @@ export const onFetchSR = ({
 }) => {
   try {
     const { groups, intervals = [] } = data;
+    if (!intervals?.length) return fetchDefaultReturn;
 
-    if (intervals?.length > 0) {
-      const tags =
-        groups?.[group_by]?.reduce(
-          (accumulator, { name, sr } = {}) => {
-            if (!name || (name === 'others' && !sr)) return accumulator;
-            accumulator.push(name);
-            return accumulator;
-          },
-          ['Overall'],
-        ) ?? [];
+    const tags =
+      groups?.[group_by]?.reduce(
+        (acc, { name, sr } = {}, idx) => {
+          if (!name || (name === 'others' && !sr)) return acc;
+          acc.push({ name, ...(tagStyles[idx + 1] ?? defaultTagStyle) });
+          return acc;
+        },
+        [{ name: 'Overall', ...tagStyles[0] }],
+      ) ?? [];
 
-      const options = {
-        intervals,
-        startTime,
-        endTime,
-        breakdown,
-      };
+    const options = {
+      intervals,
+      startTime,
+      endTime,
+      breakdown,
+    };
 
-      const selectedTags = updateSelectedTags ? tags : initialSelectedTags;
+    const selectedTags = updateSelectedTags ? tags : initialSelectedTags;
 
-      const labels = getTimelineData(options);
-      const datasets = selectedTags?.map((tag) => {
-        const intervals = getIntervals({ tag, data, group_by, activeTab });
-        return {
-          label: getTagLabelWithOverallTag({ tag, activeTab, groupBy: group_by }),
-          data: generateDatasets(intervals),
-          ...chartStyle[tags?.indexOf(tag)],
-        };
-      });
+    const labels = getTimelineData(options);
+    const datasets = selectedTags?.map((tag) => {
+      const intervals = getIntervals({ tag: tag.name, data, group_by, activeTab });
+      const selectedTagIndex = tags?.findIndex(({ name }) => name === tag.name);
+
       return {
-        tags,
-        selectedTags,
-        histogram: { labels, datasets },
+        label: getTagLabelWithOverallTag({ tag: tag.name, activeTab, groupBy: group_by }),
+        data: generateDatasets(intervals),
+        ...chartStyle[selectedTagIndex],
       };
-    }
-    return { tags: [], selectedTags: [], histogram: { labels: [], datasets: [] } };
+    });
+
+    return {
+      tags,
+      selectedTags,
+      histogram: { labels, datasets },
+    };
   } catch (error) {
     return error;
   }
@@ -337,16 +340,18 @@ export const getSuitableY = (y, yArray = [], direction) => {
   return result;
 };
 
-export const getPieChartData = (groupData = []) => {
-  const { backgroundColor, borderColor } = defaultPieChartStyle;
+export const getPieChartData = (groupData = [], tags) => {
+  const { backgroundColor, borderColor } = defaultTagStyle;
   const totalSum = groupData.reduce((total, value) => total + (value?.total ?? 0), 0);
+  const rearrangedData = reArrange({ arr: groupData, sortKey: 'total' });
 
-  const result = groupData.reduce(
-    (accumulator, datapoint, idx) => {
+  const result = rearrangedData.reduce(
+    (accumulator, datapoint) => {
       // when total attempts is '0' there is no need to show on Pie Chart
       if (!datapoint?.total) return accumulator;
-      const _backgroundColor = pieChartStyle?.[idx]?.backgroundColor ?? backgroundColor;
-      const _borderColor = pieChartStyle?.[idx]?.borderColor ?? borderColor;
+      const tagStyle = tags.find((tag) => tag.name === datapoint?.name);
+      const _backgroundColor = tagStyle.backgroundColor ?? backgroundColor;
+      const _borderColor = tagStyle.color ?? borderColor;
       const percentage = (datapoint?.total / totalSum) * 100 || 0;
       const percentageValue = percentage.toFixed(2);
       const label = getTagLabel(datapoint?.name);
@@ -430,3 +435,34 @@ export const getOptimizerFilters = (data, activeTab) => {
 export const getFormattedNumber = (number) => {
   return new Intl.NumberFormat('en-IN').format(number || 0);
 };
+
+// function to rearrange an array in min - max form
+
+export function reArrange({ arr = [], sortKey = '' }) {
+  if (!Array.isArray(arr)) return arr;
+  const len = arr.length;
+  const clone = [...arr];
+  // temp array to hold modified array
+  const res = new Array(len);
+
+  // sort source array
+  clone.sort((a, b) => {
+    if (isObject(a) && isObject(b) && sortKey !== '') return a[sortKey] - b[sortKey];
+    return a - b;
+  });
+
+  // two pointers: indexes of smallest and largest elements from given array.
+  let small = 0;
+  let large = len - 1;
+
+  // if the index's are same
+  if (small === large) return clone;
+
+  // Store result in res[]
+  for (let i = 0; i < len; i++) {
+    if (i % 2 === 0) res[i] = clone[large--];
+    else res[i] = clone[small++];
+  }
+
+  return res;
+}
