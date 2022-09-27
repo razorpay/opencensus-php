@@ -114,7 +114,7 @@ class CardVault
                 self::SECRET => '4111111111111111',
             ];
 
-            $response = $this->sendRequest('tokenize', 'post', $payload);
+            $response = $this->sendRequest('tokenize/ping', 'post', $payload);
 
             $vault = Card\Vault::RZP_ENCRYPTION;
 
