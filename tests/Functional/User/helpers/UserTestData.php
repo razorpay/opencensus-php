@@ -909,6 +909,40 @@ return [
         ],
     ],
 
+    'testMobileOtpLoginStorkFailed' => [
+        'request' => [
+            'url'     => '/users/login/otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED,
+        ],
+
+    ],
+
+    'testMobileOtpLoginForX' => [
+        'request' => [
+            'url'     => '/users/login/otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testMobileOtpLoginWithPasswordMultipleAccounts' => [
         'request' => [
             'url'     => '/users/login/otp',
@@ -928,6 +962,19 @@ return [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_MULTIPLE_ACCOUNTS_ASSOCIATED,
         ],
+    ],
+
+    'testMobileOtpLoginWithPasswordWithNoAccounts' => [
+        'request' => [
+            'url'     => '/users/login/otp',
+            'method'  => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [],
+
+        ],
+
     ],
 
     'testMobileOtpLoginUserUnverified' => [
@@ -1104,6 +1151,115 @@ return [
                 ]
             ],
         ],
+    ],
+
+    'testMobileLoginVerifyOtpForX' => [
+        'request' => [
+            'url'     => '/users/login/otp/verify',
+            'method'  => 'POST',
+            'content' => [
+                'otp'            => '0007',
+                'token'          => 'Gvt61zZ3Iwzcqy',
+                'contact_mobile' => '9012345678',
+                'captcha'        => 'faked'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testMobileLoginVerifyOtpNoUserMobile' => [
+        'request' => [
+            'url'     => '/users/login/otp/verify',
+            'method'  => 'POST',
+            'content' => [
+                'otp'            => '0007',
+                'token'          => 'Gvt61zZ3Iwzcqy',
+                'contact_mobile' => '9012345678',
+                'captcha'        => 'faked'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INCORRECT_OTP,
+
+                ],
+            ],
+            'status_code' => 400,
+
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP,
+        ]
+    ],
+
+    'testMobileLoginVerifyOtpNoUserEmail' => [
+        'request' => [
+            'url'     => '/users/login/otp/verify',
+            'method'  => 'POST',
+            'content' => [
+                'otp'            => '0007',
+                'token'          => 'Gvt61zZ3Iwzcqy',
+                'email'          => 'a@a.com',
+                'captcha'        => 'faked'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INCORRECT_OTP,
+
+                ],
+            ],
+            'status_code' => 400,
+
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP,
+        ]
+    ],
+
+    'testMobileLoginVerifyOtpAccountLocked' => [
+        'request' => [
+            'url'     => '/users/login/otp/verify',
+            'method'  => 'POST',
+            'content' => [
+                'otp'            => '0007',
+                'token'          => 'Gvt61zZ3Iwzcqy',
+                'contact_mobile' => '9012345678',
+                'captcha'        => 'faked'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_OTP_LOGIN_LOCKED,
+
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_OTP_LOGIN_LOCKED,
+        ]
     ],
 
     'testMobileLoginVerifyOtpForMobileOAuth' => [
@@ -1306,6 +1462,88 @@ return [
                 ]
             ],
         ],
+    ],
+
+    'testMailSignupVerifyOtp' => [
+        'request' => [
+            'url'     => '/users/register/otp/verify',
+            'method'  => 'POST',
+            'content' => [
+                'otp'            => '0007',
+                'token'          => 'Gvt61zZ3Iwzcqy',
+                'email'          => 'abracadabra@gmail.com',
+                'captcha'        => 'faked'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testMailExistsSignupVerifyOtp' => [
+        'request' => [
+            'url'     => '/users/register/otp/verify',
+            'method'  => 'POST',
+            'content' => [
+                'otp'            => '0007',
+                'token'          => 'Gvt61zZ3Iwzcqy',
+                'email'          => 'abracadabra@gmail.com',
+                'captcha'        => 'faked'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_EMAIL_ALREADY_EXISTS,
+
+                ],
+            ],
+            'status_code' => 400,
+
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EMAIL_ALREADY_EXISTS,
+        ]
+    ],
+
+    'testMobileExistsSignupVerifyOtp' => [
+        'request' => [
+            'url'     => '/users/register/otp/verify',
+            'method'  => 'POST',
+            'content' => [
+                'otp'            => '0007',
+                'token'          => 'Gvt61zZ3Iwzcqy',
+                'contact_mobile' => '+919866077649',
+                'captcha'        => 'faked'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CONTACT_MOBILE_ALREADY_EXISTS,
+
+                ],
+            ],
+            'status_code' => 400,
+
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_EXISTS,
+        ]
     ],
 
     'testEmailVerificationOtpSendThresholdExceeded' => [
@@ -1730,6 +1968,20 @@ return [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_EMAIL_NOT_VERIFIED,
         ],
+    ],
+
+    'testMailOtpLoginNoAccount' => [
+        'request' => [
+            'url'     => '/users/login/otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ],
+
+        ],
+
     ],
 
     'testMobileResendOtpLogin' => [
@@ -2620,6 +2872,117 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
         ],
     ],
+
+    'testFailedLogin2faEnforcedNoOtpForMobileOAuthWithCreateWorkflowAction' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [
+                'action' => 'create_workflow_config'
+            ],
+            'server'     => [
+                'HTTP_X-Mobile-Oauth'   => 'true',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+        ],
+    ],
+
+    'testFailedLogin2faEnforcedNoOtpForMobileOAuthWithUpdateWorkflowAction' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [
+                'action' => 'update_workflow_config'
+            ],
+            'server'     => [
+                'HTTP_X-Mobile-Oauth'   => 'true',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+        ],
+    ],
+
+    'testFailedLogin2faEnforcedNoOtpForMobileOAuthWithDeleteWorkflowAction' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [
+                'action' => 'delete_workflow_config'
+            ],
+            'server'     => [
+                'HTTP_X-Mobile-Oauth'   => 'true',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+        ],
+    ],
+
+    'testFailedLogin2faEnforcedNoOtpForMobileOAuthWithBulkApproveAction' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [
+                'action' => 'bulk_approve_payout'
+            ],
+            'server'     => [
+                'HTTP_X-Mobile-Oauth'   => 'true',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+        ],
+    ],
+
+
+
 
     'testFailedLogin2faOtpLimitExceeds' => [
         'request' => [
@@ -3836,6 +4199,25 @@ return [
         ],
     ],
 
+    'testVerifyContactWithOtpWithAction' => [
+        'request' => [
+            'url'     => '/users/verify_contact',
+            'method'  => 'POST',
+            'content' => [
+                'otp'   => '0007',
+                'token' => 'BUIj3m2Nx2VvVj',
+                'action' => 'verify_user',
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'id'                      => 'MerchantUser01',
+                'contact_mobile'          => '123456789',
+                'contact_mobile_verified' => true,
+            ],
+        ],
+    ],
+
     'testVerifyOtpAndUpdateContactMobile' => [
         'request' => [
             'url'     => '/users/verify/update/new/mobile',
@@ -4312,6 +4694,30 @@ return [
             'content'     => [],
             'status_code' => 200,
         ],
+    ],
+
+    'test2faVerifyWrongOtp' => [
+        'request'  => [
+            'url'     => '/users/2fa/verify',
+            'method'  => 'post',
+            'content' => [
+                'otp'            => '0006',
+            ],
+
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code' => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INCORRECT_OTP,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP,
+        ]
     ],
 
     'testVerifyOtpValidationFailure' => [

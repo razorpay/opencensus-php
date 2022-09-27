@@ -1933,6 +1933,73 @@ class UserTest extends TestCase
         $this->assertNotEmpty($response['token']);
     }
 
+    public function testMobileOtpLoginStorkFailed()
+    {
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $storkMock->shouldReceive('sendSms')->andThrow(new BadRequestException(
+            ErrorCode::BAD_REQUEST_RESOURCE_EXHAUSTED
+        ));
+
+        $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'        => '9012345678',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+    }
+
+    public function testMobileOtpLoginForX()
+    {
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context' => 'user_id:login_otp:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['generateOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+            ->willReturn($smsPayload);
+
+        $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'        => '9012345678',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+    }
+
     public function testMobileOtpLoginWithPasswordMultipleAccounts()
     {
         $user1 = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true]);
@@ -1942,6 +2009,21 @@ class UserTest extends TestCase
 
         $content = [
             'contact_mobile'        => '9012345678',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testMobileOtpLoginWithPasswordWithNoAccounts()
+    {
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'        => '1234567890',
         ];
 
         $testData['request']['content'] = $content;
@@ -2000,6 +2082,51 @@ class UserTest extends TestCase
         $ravenMock->expects($this->once())->method('verifyOtp');
 
         $user = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'contact_mobile_verified' => true]);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        return $this->startTest();
+    }
+
+    public function testMobileLoginVerifyOtpForX()
+    {
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $this->enableRazorXTreatmentForRazorX();
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['verifyOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $ravenMock->expects($this->once())->method('verifyOtp');
+
+        $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'contact_mobile_verified' => true]);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        return $this->startTest();
+    }
+
+    public function testMobileLoginVerifyOtpNoUserMobile()
+    {
+        $this->ba->dashboardGuestAppAuth();
+
+        return $this->startTest();
+    }
+
+    public function testMobileLoginVerifyOtpNoUserEmail()
+    {
+        $this->ba->dashboardGuestAppAuth();
+
+        return $this->startTest();
+    }
+
+    public function testMobileLoginVerifyOtpAccountLocked()
+    {
+        $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'contact_mobile_verified' => true, 'account_locked' => true]);
 
         $this->ba->dashboardGuestAppAuth();
 
@@ -2432,6 +2559,40 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testMailSignupVerifyOtp()
+    {
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['verifyOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $ravenMock->expects($this->once())->method('verifyOtp');
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testMailExistsSignupVerifyOtp()
+    {
+        $this->fixtures->create('user', ['email' => 'abracadabra@gmail.com']);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testMobileExistsSignupVerifyOtp()
+    {
+        $this->fixtures->create('user', ['contact_mobile' => '+919866077649']);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
     public function testMailOtpLoginUserUnverified()
     {
         Mail::fake();
@@ -2449,6 +2610,21 @@ class UserTest extends TestCase
         $this->ba->dashboardGuestAppAuth();
 
         $response=$this->startTest();
+    }
+
+    public function testMailOtpLoginNoAccount()
+    {
+        $testData = &$this->testData[__FUNCTION__];
+
+        $content = [
+            'email'                 => 'abracadabra@gmail.com',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
     }
 
     public function testMailSendVerificationOtp()
@@ -3936,6 +4112,274 @@ class UserTest extends TestCase
     }
 
     public function testFailedLogin2faEnforcedNoOtpForMobileOAuth()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $user = $this->fixtures->create('user', [
+            'password'                => 'hello123',
+            'second_factor_auth'      => false,
+            'contact_mobile'          => '9999999999',
+            'contact_mobile_verified' => true,
+        ]);
+
+        $merchant = $this->fixtures->create('merchant', [
+            'second_factor_auth' => true,
+        ]);
+
+        $merchantId = $merchant->getId();
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchantId,
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'    => $user['email'],
+            'password' => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
+
+        $this->setAuthServiceMockForGetApplicationForMobileApp($merchantId);
+
+        $this->setAuthServiceMockForPostApplicationForMobileApp($merchantId);
+
+        $this->authServiceMock
+            ->expects($this->at(2))
+            ->method('sendRequest')
+            ->with('token','POST',[
+                'client_id'             => 'client_id',
+                'client_secret'         => 'client_secret',
+                'grant_type'            => 'mobile_app_client_credentials',
+                'scope'                 => 'x_mobile_app_2fa_token',
+                'mode'                  => 'live',
+                'user_id'               => $user->getId()
+            ])
+            ->willReturn([
+                'public_token'       => 'rzp_test_oauth_10000000000000',
+                'token_type'         => 'Bearer',
+                'expires_in'         => 7862400,
+                'access_token'       => 'access_token',
+                'refresh_token'      => 'refresh_token',
+                'client_id'          => 'client_id',
+            ]);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testFailedLogin2faEnforcedNoOtpForMobileOAuthWithCreateWorkflowAction()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $user = $this->fixtures->create('user', [
+            'password'                => 'hello123',
+            'second_factor_auth'      => false,
+            'contact_mobile'          => '9999999999',
+            'contact_mobile_verified' => true,
+        ]);
+
+        $merchant = $this->fixtures->create('merchant', [
+            'second_factor_auth' => true,
+        ]);
+
+        $merchantId = $merchant->getId();
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchantId,
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'    => $user['email'],
+            'password' => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
+
+        $this->setAuthServiceMockForGetApplicationForMobileApp($merchantId);
+
+        $this->setAuthServiceMockForPostApplicationForMobileApp($merchantId);
+
+        $this->authServiceMock
+            ->expects($this->at(2))
+            ->method('sendRequest')
+            ->with('token','POST',[
+                'client_id'             => 'client_id',
+                'client_secret'         => 'client_secret',
+                'grant_type'            => 'mobile_app_client_credentials',
+                'scope'                 => 'x_mobile_app_2fa_token',
+                'mode'                  => 'live',
+                'user_id'               => $user->getId()
+            ])
+            ->willReturn([
+                'public_token'       => 'rzp_test_oauth_10000000000000',
+                'token_type'         => 'Bearer',
+                'expires_in'         => 7862400,
+                'access_token'       => 'access_token',
+                'refresh_token'      => 'refresh_token',
+                'client_id'          => 'client_id',
+            ]);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testFailedLogin2faEnforcedNoOtpForMobileOAuthWithUpdateWorkflowAction()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $user = $this->fixtures->create('user', [
+            'password'                => 'hello123',
+            'second_factor_auth'      => false,
+            'contact_mobile'          => '9999999999',
+            'contact_mobile_verified' => true,
+        ]);
+
+        $merchant = $this->fixtures->create('merchant', [
+            'second_factor_auth' => true,
+        ]);
+
+        $merchantId = $merchant->getId();
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchantId,
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'    => $user['email'],
+            'password' => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
+
+        $this->setAuthServiceMockForGetApplicationForMobileApp($merchantId);
+
+        $this->setAuthServiceMockForPostApplicationForMobileApp($merchantId);
+
+        $this->authServiceMock
+            ->expects($this->at(2))
+            ->method('sendRequest')
+            ->with('token','POST',[
+                'client_id'             => 'client_id',
+                'client_secret'         => 'client_secret',
+                'grant_type'            => 'mobile_app_client_credentials',
+                'scope'                 => 'x_mobile_app_2fa_token',
+                'mode'                  => 'live',
+                'user_id'               => $user->getId()
+            ])
+            ->willReturn([
+                'public_token'       => 'rzp_test_oauth_10000000000000',
+                'token_type'         => 'Bearer',
+                'expires_in'         => 7862400,
+                'access_token'       => 'access_token',
+                'refresh_token'      => 'refresh_token',
+                'client_id'          => 'client_id',
+            ]);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testFailedLogin2faEnforcedNoOtpForMobileOAuthWithDeleteWorkflowAction()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $user = $this->fixtures->create('user', [
+            'password'                => 'hello123',
+            'second_factor_auth'      => false,
+            'contact_mobile'          => '9999999999',
+            'contact_mobile_verified' => true,
+        ]);
+
+        $merchant = $this->fixtures->create('merchant', [
+            'second_factor_auth' => true,
+        ]);
+
+        $merchantId = $merchant->getId();
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchantId,
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'    => $user['email'],
+            'password' => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
+
+        $this->setAuthServiceMockForGetApplicationForMobileApp($merchantId);
+
+        $this->setAuthServiceMockForPostApplicationForMobileApp($merchantId);
+
+        $this->authServiceMock
+            ->expects($this->at(2))
+            ->method('sendRequest')
+            ->with('token','POST',[
+                'client_id'             => 'client_id',
+                'client_secret'         => 'client_secret',
+                'grant_type'            => 'mobile_app_client_credentials',
+                'scope'                 => 'x_mobile_app_2fa_token',
+                'mode'                  => 'live',
+                'user_id'               => $user->getId()
+            ])
+            ->willReturn([
+                'public_token'       => 'rzp_test_oauth_10000000000000',
+                'token_type'         => 'Bearer',
+                'expires_in'         => 7862400,
+                'access_token'       => 'access_token',
+                'refresh_token'      => 'refresh_token',
+                'client_id'          => 'client_id',
+            ]);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testFailedLogin2faEnforcedNoOtpForMobileOAuthWithBulkApproveAction()
     {
         $this->enableRazorXTreatmentForRazorX();
 
@@ -5981,6 +6425,21 @@ class UserTest extends TestCase
         $this->assertTrue($user->isContactMobileVerified());
     }
 
+    public function testVerifyContactWithOtpWithAction()
+    {
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE => '123456789']);
+
+        $this->ba->proxyAuth();
+
+        $this->mockHubSpotClient('trackHubspotEvent');
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', UserFixture::MERCHANT_USER_ID);
+
+        $this->assertTrue($user->isContactMobileVerified());
+    }
+
     public function testVerifyOtpAndUpdateContactMobile()
     {
         $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE => '123456789']);
@@ -6501,6 +6960,20 @@ class UserTest extends TestCase
         $this->assertEquals(
             $response['contact_mobile_verified'],
             $userDb['contact_mobile_verified']);
+    }
+
+    public function test2faVerifyWrongOtp()
+    {
+        $user = $this->fixtures->create('user', [
+            UserEntity::CONTACT_MOBILE      => '9123456789',
+        ]);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->ba->setAppAuthHeaders(['X-Dashboard-User-Id' => $user['id']]);
+
+        $this->startTest();
+
     }
 
     public function testVerifyOtpValidationFailure()
