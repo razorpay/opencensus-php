@@ -25,11 +25,20 @@ import DualDetailView, { PrimaryView, SecondaryView } from 'common/new-ui/DualDe
 import { updateItemInPayments } from 'merchant/reducers/collection';
 import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { isOrgFeatureExist } from 'merchant/models/User';
+import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
+import { fetchFeatureStatus } from 'merchant/reducers/config';
+import { fetchBankSettleStatus } from 'merchant/views/Settlements/v2/util';
 
 class PaymentDetailsContainer extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      customSettlementLoading: false,
+      adminAsMerchant: false,
+      bankSettleStatus: '',
+      showCustomSettlDetails: false,
+    };
     this.transfersView = React.createRef();
   }
 
@@ -37,23 +46,86 @@ class PaymentDetailsContainer extends Component {
     confirm: PropTypes.func,
   };
 
-  fetchData = (id) => {
-    this.props.resetPayment();
+  getCustomSettleDetails = () => {
+    const {
+      showNotification,
+      user,
+      fetchIsAdminAsMerchant,
+      fetchFeatureStatus,
+      payment,
+    } = this.props;
+    const isOrgSettleToBank = isOrgFeatureExist('org_settle_to_bank');
+    this.setState({
+      customSettlementLoading: true,
+    });
+    const setlID = payment?.transaction?.settlement?.id?.replace('setl_', '');
+    const promiseList = [];
+    promiseList.push(fetchIsAdminAsMerchant());
+    promiseList.push(fetchFeatureStatus(user?.id, 'cancel_settle_to_bank'));
+    promiseList.push(fetchFeatureStatus(user?.id, 'old_custom_settl_flow'));
+    promiseList.push(fetchBankSettleStatus(setlID));
+    return Promise.all(promiseList)
+      .then((response) => {
+        const [
+          adminAsMerchantResp,
+          cancelSettleToBankResp,
+          oldCustomSettleFlowResp,
+          bankSettleStatusResp,
+        ] = response;
+        const adminAsMerchant = adminAsMerchantResp?.data?.is_admin_as_merchant ?? false;
+        const bankSettleStatus = bankSettleStatusResp?.data?.org_settlement?.status ?? '';
+        const showCustomSettlDetails =
+          !cancelSettleToBankResp?.data?.status &&
+          !oldCustomSettleFlowResp?.data?.status &&
+          isOrgSettleToBank;
+        this.setState({
+          customSettlementLoading: false,
+          adminAsMerchant,
+          bankSettleStatus,
+          showCustomSettlDetails,
+        });
+      })
+      .catch(() => {
+        this.setState({
+          customSettlementLoading: false,
+        });
+        showNotification({
+          type: 'error',
+          message: 'Something went wrong, please try again later',
+        });
+      });
+  };
 
-    this.props.fetchItem(id).then((payment) => {
+  fetchData = (id) => {
+    const {
+      resetPayment,
+      fetchItem,
+      fetchRefunds,
+      fetchBankTransfer,
+      fetchUPITransfer,
+      fetchTransfers,
+    } = this.props;
+    resetPayment();
+
+    fetchItem(id).then((payment) => {
       if (payment.amount_refunded !== 0) {
-        this.props.fetchRefunds(payment);
+        fetchRefunds(payment);
       }
 
       if (payment.method === 'bank_transfer') {
-        this.props.fetchBankTransfer(payment);
+        fetchBankTransfer(payment);
       } else if (payment.method === 'upi') {
-        this.props.fetchUPITransfer(payment);
+        fetchUPITransfer(payment);
       }
 
       if (['created', 'authorized', 'failed'].indexOf(payment.status) < 0) {
-        this.props.fetchTransfers(payment);
+        fetchTransfers(payment);
       }
+
+      if (payment?.transaction?.settlement?.id) {
+        this.getCustomSettleDetails();
+      }
+
       selfServeTrackSuccess({
         selfServeAction: 'Payment Details Fetched',
         page: 'Payment Listing',
@@ -63,15 +135,16 @@ class PaymentDetailsContainer extends Component {
   };
 
   checkSecView(props) {
+    const { compactSlider, expandSlider } = this.props;
     if (!props.entity_name) {
-      this.props.compactSlider();
+      compactSlider();
 
       // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
       if (this.transfersView) {
         this.transfersView.current.classList.add('toggle-slider');
       }
     } else {
-      this.props.expandSlider();
+      expandSlider();
       // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
       if (this.transfersView) {
         this.transfersView.current.classList.remove('toggle-slider');
@@ -80,7 +153,7 @@ class PaymentDetailsContainer extends Component {
   }
 
   componentDidMount() {
-    const { closeUrl, id } = this.props;
+    const { closeUrl, id, fetchMerchantManualAction } = this.props;
     const eventCategory = getEventCategoryFromPath(closeUrl);
 
     if (eventCategory)
@@ -89,7 +162,7 @@ class PaymentDetailsContainer extends Component {
         eventAction: 'Open Details - Payments',
         eventLabel: `payment_id=${id}`,
       });
-    this.props.fetchMerchantManualAction(id);
+    fetchMerchantManualAction(id);
   }
 
   componentWillUnmount() {
@@ -105,48 +178,52 @@ class PaymentDetailsContainer extends Component {
   }
 
   UNSAFE_componentWillMount() {
-    this.fetchData(this.props.id);
-    this.props.fetchSettlementAmount();
-    if (this.props.user?.isSingleReconEnabled && this.props.user?.isOptimizerEnabled) {
-      this.props.fetchProviders();
+    const { id, fetchSettlementAmount, user, fetchProviders } = this.props;
+    this.fetchData(id);
+    fetchSettlementAmount();
+    if (user?.isSingleReconEnabled && user?.isOptimizerEnabled) {
+      fetchProviders();
     }
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
-    if (this.props.id !== nextProps.id) {
+    const { id } = this.props;
+    if (id !== nextProps.id) {
       this.fetchData(nextProps.id);
     }
   }
 
   fetchCardDetails = (payment) => {
-    return this.props.fetchCardDetails(payment);
+    const { fetchCardDetails } = this.props;
+    return fetchCardDetails(payment);
   };
 
   goToLink = (link) => {
-    if (this.props.isOpenedInDualMode && link !== 'transfers/new') {
-      this.props.history.push(`/${link}`);
+    const { isOpenedInDualMode, history, entity_name, payment } = this.props;
+    if (isOpenedInDualMode && link !== 'transfers/new') {
+      history.push(`/${link}`);
     }
     // Don't do anything if dual view already opened
-    else if (!this.props.entity_name) {
-      this.props.history.push(`/payments/${this.props.payment.id}/${link}`);
+    else if (!entity_name) {
+      history.push(`/payments/${payment?.id}/${link}`);
     }
   };
 
   confirmCapture = (payment) => {
-    const { closeUrl } = this.props;
+    const { closeUrl, capturePayment, showNotification } = this.props;
     const eventCategory = getEventCategoryFromPath(closeUrl);
 
     window.rzpAnalytics?.({
       eventCategory,
       eventAction: 'Open Form - Capture',
-      eventLabel: `payment_id=${payment.id}`,
+      eventLabel: `payment_id=${payment?.id}`,
     });
 
     this.context
       .confirm({
         header: 'Are you sure you want to capture this payment?',
         message: () => (
-          <div class="text-semi-muted">
+          <div className="text-semi-muted">
             <p>
               The payment amount is{' '}
               <b>
@@ -188,8 +265,7 @@ class PaymentDetailsContainer extends Component {
               ...getCommonAnalyticsProperties(window.rzp_user),
             },
           });
-          return this.props
-            .capturePayment(payment)
+          return capturePayment(payment)
             .then(() => {
               analyticsTrack({
                 objectName: 'capture payment',
@@ -203,7 +279,7 @@ class PaymentDetailsContainer extends Component {
                   ...getCommonAnalyticsProperties(window.rzp_user),
                 },
               });
-              this.props.showNotification({
+              showNotification({
                 type: 'success',
                 message: 'Payment Captured',
                 closeTimeout: 5000,
@@ -222,7 +298,7 @@ class PaymentDetailsContainer extends Component {
                   ...getCommonAnalyticsProperties(window.rzp_user),
                 },
               });
-              this.props.showNotification({
+              showNotification({
                 type: 'error',
                 message: errors,
                 closeTimeout: 5000,
@@ -242,39 +318,44 @@ class PaymentDetailsContainer extends Component {
   };
 
   onCreateTransfer = () => {
+    const { fetchItem, id, updateItemInPayments, fetchTransfers } = this.props;
     this.secClose();
-    this.props.fetchItem(this.props.id).then((payment) => {
-      this.props.updateItemInPayments(payment);
-      this.props.fetchTransfers(payment);
+    fetchItem(id).then((payment) => {
+      updateItemInPayments(payment);
+      fetchTransfers(payment);
     });
   };
 
   onTransferReverse = () => {
-    this.props.fetchItem(this.props.id).then((payment) => {
-      this.props.updateItemInPayments(payment);
+    const { fetchItem, id, updateItemInPayments } = this.props;
+    fetchItem(id).then((payment) => {
+      updateItemInPayments(payment);
     });
   };
 
   onPaymentRefund = () => {
-    this.props.fetchItem(this.props.id).then((payment) => {
-      this.props.updateItemInPayments(payment);
-      this.props.fetchRefunds(payment);
+    const { fetchItem, id, updateItemInPayments, fetchRefunds } = this.props;
+    fetchItem(id).then((payment) => {
+      updateItemInPayments(payment);
+      fetchRefunds(payment);
     });
   };
 
   onUpdateReferenceId = () => {
-    this.props.fetchItem(this.props.id).then((payment) => {
-      this.props.updateItemInPayments(payment);
+    const { fetchItem, id, updateItemInPayments } = this.props;
+    fetchItem(id).then((payment) => {
+      updateItemInPayments(payment);
     });
   };
 
   openRefundModal = (payment, refunds) => {
-    this.props.openModal({
+    const { openModal, fetchCurrentBalance, fetchRefundFee } = this.props;
+    openModal({
       component: (
         <RefundModal
           refunds={refunds}
-          fetchMerchantBalance={this.props.fetchCurrentBalance}
-          fetchRefundFee={this.props.fetchRefundFee}
+          fetchMerchantBalance={fetchCurrentBalance}
+          fetchRefundFee={fetchRefundFee}
           payment={payment}
           onRefund={this.onPaymentRefund}
           onMount={this.onRefundModalMount}
@@ -348,7 +429,18 @@ class PaymentDetailsContainer extends Component {
       entity_name,
       merchantManualAction,
       terminalProviders,
+      user,
+      org,
+      onCloseSecView,
+      settlement_amount,
+      entity_id,
     } = this.props;
+    const {
+      customSettlementLoading,
+      adminAsMerchant,
+      showCustomSettlDetails,
+      bankSettleStatus,
+    } = this.state;
     let statusMsg = {};
 
     const { card = {} } = payment;
@@ -356,7 +448,7 @@ class PaymentDetailsContainer extends Component {
     if (error) {
       statusMsg = {
         type: 'error',
-        message: this.props.error,
+        message: error,
       };
     }
 
@@ -378,19 +470,23 @@ class PaymentDetailsContainer extends Component {
             openRefundModal={this.openRefundModal}
             onRefundDetailsToggleClick={this.onRefundDetailsToggleClick}
             onUpdateReferenceId={this.onUpdateReferenceId}
-            isRoleAllowedEdit={this.props.user.isAllowedEdit('payments')}
+            isRoleAllowedEdit={user?.isAllowedEdit('payments')}
             viewSettlementOverview={this.viewSettlementOverview}
             config={config}
-            user={this.props.user}
-            org={this.props.org}
-            onClose={this.props.onCloseSecView}
+            user={user}
+            org={org}
+            onClose={onCloseSecView}
             merchantManualAction={merchantManualAction}
-            settlement_amount={this.props.settlement_amount}
+            settlement_amount={settlement_amount}
             terminalProviders={terminalProviders}
+            customSettlementLoading={customSettlementLoading}
+            adminAsMerchant={adminAsMerchant}
+            showCustomSettlDetails={showCustomSettlDetails}
+            bankSettleStatus={bankSettleStatus}
           />
         </PrimaryView>
         <SecondaryView entityName="disputes">
-          <DisputeDetails id={this.props.entity_id} onCloseSecView={() => this.secClose(null)} />
+          <DisputeDetails id={entity_id} onCloseSecView={() => this.secClose(null)} />
         </SecondaryView>
         <SecondaryView entityName="transfers">
           <ShowWhen
@@ -402,7 +498,7 @@ class PaymentDetailsContainer extends Component {
               onClose={() => this.secClose(null)}
               onCreate={this.onCreateTransfer}
               ref={(instance) => (this.transfersView = instance)}
-              isDirectTransferEnabled={this.props.user.isDirectTransferEnabled}
+              isDirectTransferEnabled={user?.isDirectTransferEnabled}
             />
           </ShowWhen>
         </SecondaryView>
@@ -430,6 +526,8 @@ export default compose(
       compactSlider: fnCompactSlider,
       updateItemInPayments,
       fetchProviders: fetchTerminalProviders,
+      fetchIsAdminAsMerchant,
+      fetchFeatureStatus,
       ...ModalActions,
       ...PaymentActions,
       ...NotificationsActions,

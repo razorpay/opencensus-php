@@ -15,6 +15,7 @@ import {
 } from 'merchant/reducers/settlements/details';
 import { fetchBankAccountChangeStatus as fnFetchBankAccountChangeStatus } from 'merchant/reducers/profile';
 import { TIMELINE_EVENTS } from './utils';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 class SettlementInfo extends Component {
   componentDidMount() {
@@ -79,6 +80,12 @@ class SettlementInfo extends Component {
       user,
       terminalProviders,
       page,
+      customSettlementLoading,
+      adminAsMerchant,
+      showCustomSettlDetails,
+      bankSettleStatus,
+      viewSettlementOverview,
+      integratedGateways,
     } = this.props;
 
     const { no_settlement } = settlement_amount.data;
@@ -106,7 +113,9 @@ class SettlementInfo extends Component {
       status = 'on_hold';
       jsx = (
         <div className="settlement-detail-toggle">
-          <SettlementStatusLabel status={status} />
+          <ShowWhen additionalCondition={() => !showCustomSettlDetails || adminAsMerchant}>
+            <SettlementStatusLabel status={status} />
+          </ShowWhen>
           {data.on_hold_until ? <a className="nav-link">Hold until {data.on_hold_until}</a> : null}
           <a className="nav-link" onClick={this.onViewDetailsClick}>
             View Details
@@ -116,8 +125,10 @@ class SettlementInfo extends Component {
     } else if (data?.transaction?.settlement) {
       jsx = (
         <div className="settlement-detail-toggle">
-          <SettlementStatusLabel status={status} />
-          <br />
+          <ShowWhen additionalCondition={() => !showCustomSettlDetails || adminAsMerchant}>
+            <SettlementStatusLabel status={status} />
+            <br />
+          </ShowWhen>
           {showTimeline && settlementTimelineDetails && settlementTimelineDetails.eligible_at ? (
             <ContentToggler>
               <span>
@@ -134,10 +145,14 @@ class SettlementInfo extends Component {
                 entityType={entityType}
                 settlementDetails={settlementTimelineDetails}
                 page={page}
+                customSettlementLoading={customSettlementLoading}
+                adminAsMerchant={adminAsMerchant}
+                showCustomSettlDetails={showCustomSettlDetails}
+                bankSettleStatus={bankSettleStatus}
               />
             </ContentToggler>
           ) : (
-            <ContentToggler onToggleClick={this.props.viewSettlementOverview}>
+            <ContentToggler onToggleClick={viewSettlementOverview}>
               <span>
                 Settled on{' '}
                 <Time
@@ -154,6 +169,10 @@ class SettlementInfo extends Component {
                 terminalProviders={terminalProviders}
                 user={user}
                 page={page}
+                customSettlementLoading={customSettlementLoading}
+                adminAsMerchant={adminAsMerchant}
+                showCustomSettlDetails={showCustomSettlDetails}
+                bankSettleStatus={bankSettleStatus}
               />
             </ContentToggler>
           )}
@@ -162,7 +181,9 @@ class SettlementInfo extends Component {
     } else if (isSettlementOnHold) {
       jsx = (
         <div className="settlement-detail-toggle">
-          <SettlementStatusLabel status={isOnHold ? 'under_review' : 'on_temporary_hold'} />
+          <ShowWhen additionalCondition={() => !showCustomSettlDetails || adminAsMerchant}>
+            <SettlementStatusLabel status={isOnHold ? 'under_review' : 'on_temporary_hold'} />
+          </ShowWhen>
           <a className="nav-link" onClick={this.onViewDetailsClick}>
             View Details
           </a>
@@ -176,11 +197,15 @@ class SettlementInfo extends Component {
     ) {
       jsx = (
         <Fragment>
-          {!(data?.transaction && data?.transaction?.settlement) ? (
+          <ShowWhen
+            additionalCondition={() =>
+              !data?.transaction?.settlement && (!showCustomSettlDetails || adminAsMerchant)
+            }
+          >
             <Fragment>
               <SettlementStatusLabel status="scheduled" /> <br />
             </Fragment>
-          ) : null}
+          </ShowWhen>
           {showTimeline &&
           settlementTimelineDetails?.eligible_at &&
           settlementTimelineDetails?.started_at ? (
@@ -200,6 +225,10 @@ class SettlementInfo extends Component {
                   entityType={entityType}
                   settlementDetails={settlementTimelineDetails}
                   page={page}
+                  customSettlementLoading={customSettlementLoading}
+                  adminAsMerchant={adminAsMerchant}
+                  showCustomSettlDetails={showCustomSettlDetails}
+                  bankSettleStatus={bankSettleStatus}
                 />
               </ContentToggler>
             </>
@@ -215,7 +244,7 @@ class SettlementInfo extends Component {
       user.isOptimizerEnabled &&
       data.optimizer_provider !== 'Razorpay'
     ) {
-      const info = this.props.integratedGateways?.includes(data.settled_by) ? (
+      const info = integratedGateways?.includes(data.settled_by) ? (
         <>
           Settlement details last fetched at{' '}
           <Time value={moment().subtract(1, 'day').unix()} format="DD MMM YYYY" /> 9pm and no data{' '}

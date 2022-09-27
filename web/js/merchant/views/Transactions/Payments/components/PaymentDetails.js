@@ -26,6 +26,8 @@ import { isInteger } from 'common/utils/validators';
 import track from '../track';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import { isOrgFeatureExist } from 'merchant/models/User';
+// styles
+import './Payments.styl';
 
 function PaymentDetails(props) {
   const {
@@ -47,10 +49,14 @@ function PaymentDetails(props) {
     location,
     terminalProviders,
     goToLink,
+    customSettlementLoading,
+    adminAsMerchant,
+    showCustomSettlDetails,
+    bankSettleStatus,
   } = props;
 
   const hideRazorpayTextLink = isOrgFeatureExist('hide_razorpay_text_link');
-  const isFromHomePage = location.state?.fromHomePage;
+  const isFromHomePage = location?.state?.fromHomePage;
   const paymentId = payment?.id;
   const bankReference = bankTransfer?.details?.bank_reference;
   const bankReferenceLoading = bankTransfer?.loading;
@@ -181,6 +187,7 @@ function PaymentDetails(props) {
                         );
                         props.confirmCapture(payment);
                       }}
+                      type="button"
                       className="btn btn-primary"
                     >
                       Capture Payment
@@ -189,9 +196,9 @@ function PaymentDetails(props) {
                       additionalCondition={() => !isOrgFeatureExist('block_payment_refund')}
                     >
                       <button
+                        type="button"
                         onClick={openRefundModal}
-                        className="btn btn-primary"
-                        style={{ marginLeft: '8px' }}
+                        className="btn btn-primary btn-refund-payment"
                       >
                         Refund Payment
                       </button>
@@ -349,6 +356,10 @@ function PaymentDetails(props) {
                         trackSameDaySettlement={trackSameDaySettlement}
                         trackSettlementClose={trackSettlementClose}
                         page="Payment Detail"
+                        customSettlementLoading={customSettlementLoading}
+                        adminAsMerchant={adminAsMerchant}
+                        showCustomSettlDetails={showCustomSettlDetails}
+                        bankSettleStatus={bankSettleStatus}
                       />
                     </div>
                   </EntityDetailRow>

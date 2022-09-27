@@ -11,6 +11,10 @@ import { fetchHolidayList as fnFetchHolidayList } from 'merchant/reducers/settle
 import HolidayModal from 'merchant/views/Settlements/Settlements/components/Modals/HolidayModal';
 import { TIMELINE_EVENTS } from './utils';
 import { trackEvents as trackEventsAction } from 'merchant/reducers/trackEvents';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
+import LoaderDots from 'common/ui/LoaderDots';
 
 const SettlementTimeline = ({
   events,
@@ -22,6 +26,10 @@ const SettlementTimeline = ({
   fetchHolidayList,
   page = '',
   trackEventsAction,
+  customSettlementLoading,
+  adminAsMerchant,
+  showCustomSettlDetails,
+  bankSettleStatus,
 }) => {
   const { transaction } = data;
   const { settlement } = transaction;
@@ -150,17 +158,36 @@ const SettlementTimeline = ({
             </div>
             <div className="settled-at-details timeline-sub-text">
               <Time value={parseInt(settled_at, 10)} format="DD MMM YYYY, hh:mm a" />
-              {settlement?.utr ? (
+              <ShowWhen
+                additionalCondition={() =>
+                  settlement?.utr && (!showCustomSettlDetails || adminAsMerchant)
+                }
+              >
                 <div className="mt-6">
                   <span>UTR: </span>
                   <span>{settlement?.utr}</span>
                 </div>
-              ) : null}
+              </ShowWhen>
               <div className="mt-2">
                 <Link to={`/settlements/${settlement?.id}`} onClick={trackEvent}>
                   <code>{settlement?.id}</code>
                 </Link>
               </div>
+              <ShowWhen additionalCondition={() => customSettlementLoading}>
+                <LoaderDots />
+              </ShowWhen>
+              <ShowWhen additionalCondition={() => showCustomSettlDetails}>
+                <div className="mt-6">
+                  <span>Final Settlement Reference no.: </span>
+                  <span>{settlement?.id}</span>
+                </div>
+                <div className="mt-6">
+                  <span>Bank Settlement Status: </span>
+                  <span>
+                    <SettlementStatusLabel status={bankSettleStatus} />
+                  </span>
+                </div>
+              </ShowWhen>
             </div>
           </React.Fragment>
         ) : (
@@ -188,7 +215,13 @@ const SettlementTimeline = ({
   );
 };
 
-const mapStateToProps = (state) => state.settlement;
+const mapStateToProps = (state) => {
+  const { settlement, session } = state;
+  return {
+    settlement: settlement.settlement,
+    user: session.user,
+  };
+};
 
 const mapDispatchToProps = (dispatch) => {
   return bindActionCreators(
@@ -197,6 +230,7 @@ const mapDispatchToProps = (dispatch) => {
       openModal: fnOpenModal,
       fetchHolidayList: fnFetchHolidayList,
       trackEventsAction,
+      showNotification,
     },
     dispatch,
   );
