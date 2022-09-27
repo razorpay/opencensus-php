@@ -4644,13 +4644,6 @@ class Core extends Base\Core
 
         $appTypes = [MerchantApplications\Entity::MANAGED];
 
-        if ($partner->isAggregatorPartner() === true)
-        {
-            // For aggregator partners, we need to check for both managed and referred applications
-            // since we now treat all type of sub-merchants being managed by the aggregator partner
-            $appTypes[] = MerchantApplications\Entity::REFERRED;
-        }
-
         $appIds = (new MerchantApplications\Core)->getMerchantAppIds($partnerId, $appTypes);
 
         if (empty($appIds) === true)
