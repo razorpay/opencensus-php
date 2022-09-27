@@ -43,9 +43,9 @@ class Icici extends Base
     {
         $count = $this->totalTransactions;
 
-        $date = Carbon::now(Timezone::IST)->format('dmY');
+        $date = Carbon::now(Timezone::IST)->format('d-m-Y');
 
-        static::$fileToWriteName = 'Razorpay_ICICIEMI_' . $date . '_' . $count;
+        static::$fileToWriteName = 'ICICI_CC_EMI_Razorpay_' . $date . '_TID';
 
         $filePath = '';
 

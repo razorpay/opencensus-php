@@ -342,7 +342,7 @@ class IciciEmi extends Base
     {
         $date = Carbon::now(Timezone::IST)->format('dmy');
 
-        $fileName = self::FILE_NAME . '_' . $date;
+        $fileName = self::FILE_NAME . '_' . $date . '_TID';
 
 
         // for sftp we put the file in a H2H path
