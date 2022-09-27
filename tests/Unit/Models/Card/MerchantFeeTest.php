@@ -1585,6 +1585,67 @@ class MerchantFeeTest extends TestCase
         $fee->calculateMerchantFees($payment);
     }
 
+    public function testRuleLevelFeeModelPostpaidForNetBanking()
+    {
+        $plan = [
+                'plan_id'             => 'TestPlan1',
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'netbanking',
+                'org_id'              => '100000razorpay',
+                'type'                => 'pricing',
+                'feature'             => 'payment',
+                'fee_bearer'          => 'platform',
+                'fee_model'           => 'postpaid',
+            ];
+
+
+        $this->fixtures->create('pricing', $plan);
+
+        $merchantAttributes = [
+            'id'                => 'GfjiTEOfQJJBBX',
+            'fee_bearer'        => 'platform',
+            'pricing_plan_id'   => 'TestPlan1',
+            'fee_model'         => 'prepaid'
+        ];
+
+        $merchant = $this->fixtures->create('merchant',$merchantAttributes);
+
+        $balance = $this->fixtures->create('balance', ['id' => $merchant->getId(), 'merchant_id' => $merchant->getId()]);
+
+        // begin test
+        $paymentArray = $this->getDefaultPaymentEntityArray();
+
+        $paymentArray['amount'] = 1000;
+
+        $paymentArray['bank'] = 'hdfc';
+
+        $paymentArray[Payment\Entity::METHOD] = Payment\Method::NETBANKING;
+
+        $payment = new Payment\Entity($paymentArray);
+
+        $payment->setBaseAmount(1000);
+
+        $merchant = Merchant\Entity::find('GfjiTEOfQJJBBX');
+
+        $payment->merchant()->associate($merchant);
+
+        $payment->associateTerminal($this->sharpTerminal);
+
+        $transaction = $this->fixtures->on('live')->create('transaction', [
+            'type'        => 'payment',
+            'amount'      => 100 * 100,   // in paisa
+            'merchant_id' => 'GfjiTEOfQJJBBX'
+        ]);
+
+        $payment->transaction()->associate($transaction);
+
+        $fee = (new Pricing\Fee);
+
+        $fee->calculateMerchantFees($payment);
+
+        $this->assertEquals($payment->transaction->getFeeModel(),'postpaid');
+    }
+
     public function testWalletRuleSelection()
     {
         $this->fee->setPricingRepo($this->getMockPricingRepo());
