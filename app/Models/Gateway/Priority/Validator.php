@@ -18,6 +18,7 @@ class Validator extends Base\Validator
         Gateway::HDFC             => 'sometimes|numeric|min:0|max:100',
         Gateway::ATOM             => 'sometimes|numeric|min:0|max:100',
         Gateway::AXIS_MIGS        => 'sometimes|numeric|min:0|max:100',
+        Gateway::AXIS_TOKENHQ     => 'sometimes|numeric|min:0|max:100',
         Gateway::AMEX             => 'sometimes|numeric|min:0|max:100',
         Gateway::CYBERSOURCE      => 'sometimes|numeric|min:0|max:100',
         Gateway::FIRST_DATA       => 'sometimes|numeric|min:0|max:100',

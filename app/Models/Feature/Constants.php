@@ -1217,6 +1217,11 @@ class Constants
     /** Feature flag for custom checkout merchants to enable network tokenization in live mode */
     const NETWORK_TOKENIZATION_PAID = 'network_tokenization_paid';
 
+    /**
+     * Feature flag to enable issuer tokenization apis in live mode
+     */
+    const ISSUER_TOKENIZATION_LIVE = 'issuer_tokenization_live';
+
      /**
       * Feature flag to allow network tokens in response
      */
@@ -1581,9 +1586,9 @@ class Constants
      * Feature flag to to expose arn and rrn in payment acquirer data.
      */
     const EXPOSE_RRN = 'expose_rrn';
-    
+
      /**
-     * Feature flag to configure report for NIUM 
+     * Feature flag to configure report for NIUM
      */
     const IMPORT_FLOW_OPEX_REPORT = 'import_flow_opex_report';
 
@@ -2055,6 +2060,7 @@ class Constants
         self::CREATE_SOURCE_V2                => true,
         self::NETWORK_TOKENIZATION_LIVE       => true,
         self::NETWORK_TOKENIZATION_PAID       => true,
+        self::ISSUER_TOKENIZATION_LIVE        => true,
         self::HIGH_TPS_COMPOSITE_PAYOUT       => true,
         self::HIGH_TPS_PAYOUT_INGRESS         => true,
         self::HIGH_TPS_PAYOUT_EGRESS          => true,

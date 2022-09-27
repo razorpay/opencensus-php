@@ -379,6 +379,19 @@ class CardPaymentService
                     ]);
                 $input['payment']['network_transaction_id'] = '039217544591994';
             }
+
+            try
+            {
+                $this->fetchTokenReferenceNumber($input);
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->info(
+                    TraceCode::FAILED_TO_FETCH_TOKEN_REFERENCE_NUMBER,
+                    [
+                        'payment_id' => $input['payment']['id'],
+                    ]);
+            }
         }
 
         if ((in_array($gateway, Payment\Gateway::OPTIMIZER_CARD_GATEWAYS, true) and
@@ -514,6 +527,21 @@ class CardPaymentService
                     (new CardMandate\Repository())->saveOrFail($cardMandate);
                 }
             }
+        }
+    }
+
+    protected function fetchTokenReferenceNumber(array &$input) {
+
+        if ($this->action === Action::AUTHORIZE && $input['payment']['gateway'] === gateway::AXIS_TOKENHQ) {
+
+            $token = (new repository())->find($input['token']['id']);
+
+            $networkToken = (new Core())->fetchToken($token, false);
+
+            assertTrue(empty($networkToken) === false);
+
+            $trn = $networkToken[0][Entity::PROVIDER_DATA][Entity::TOKEN_REFERENCE_NUMBER] ?? '';
+            $input[Entity::CARD][Entity::TOKEN_REFERENCE_NUMBER] = $trn;
         }
     }
 
@@ -811,6 +839,7 @@ class CardPaymentService
                 'card.country'                      => 'content.input.card.country',
                 'card.tokenised'                    => 'content.input.card.tokenised',
                 'card.token_id'                     => 'content.input.token.id',
+                'card.token_reference_number'       => 'content.input.card.token_reference_number',
                 'iin.iin'                           => 'content.input.iin.iin',
                 'iin.network'                       => 'content.input.iin.network',
                 'iin.country'                       => 'content.input.iin.country',

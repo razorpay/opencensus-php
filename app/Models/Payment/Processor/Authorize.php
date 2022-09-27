@@ -8556,7 +8556,7 @@ trait Authorize
         // for recurring subsequent calls we dont need cryptogram
         // we are storing tokenPAN in card_mandate table for recurring purposes. so need to make fetchcryptogram
         // $recurringTokenNumber is passed the value of TokenPAN in recurring use cases
-        if($recurringTokenNumber === null)
+        if($recurringTokenNumber === null && $card->getVault() !== Card\Vault::AXIS)
         {
             $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $merchant);
         }

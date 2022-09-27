@@ -5,6 +5,7 @@ namespace RZP\Models\Terminal\Auth;
 use App;
 
 use RZP\Models\Payment;
+use RZP\Models\Payment\Gateway;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal\AuthenticationTerminals as AuthTerminals;
 
@@ -33,6 +34,12 @@ abstract class Base
 
     public function getValidAuths($authenticationGateways=[]): array
     {
+        $payment = $this->payment;
+
+        if ($payment->getGateway() === Gateway::AXIS_TOKENHQ) {
+            return [Payment\AuthType::OTP];
+        }
+
         $validAuths = [];
 
         foreach ($this->auths as $auth)
@@ -49,7 +56,7 @@ abstract class Base
     public function getAuthenticationTerminals($terminals): array
     {
         $authenticationGateways = array_unique(array_pluck($terminals, 'authentication_gateway'));
-        
+
         $validAuths = $this->getValidAuths($authenticationGateways);
 
         $traceData = [

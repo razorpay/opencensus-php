@@ -4780,6 +4780,8 @@ class Processor
 
         $this->setForceTerminalIdIfApplicable($payment, $input);
 
+        $this->setAxisTokenHQGatewayIfApplicable($payment, $input);
+
         // Please keep this function at the end of transaction block, as
         // we are updating orders which lies in PG Router service now.
         // This has been done to temporarily handle the distributed transaction failures.
@@ -6971,6 +6973,24 @@ class Processor
             );
 
             $payment->setForceTerminalId($forceTerminalId);
+        }
+    }
+
+    protected function setAxisTokenHQGatewayIfApplicable(Payment\Entity $payment, $input)
+    {
+        $merchant = $payment->merchant;
+
+        if ($merchant->isFeatureEnabled(Feature::ISSUER_TOKENIZATION_LIVE) === false) {
+            return;
+        }
+
+        if (isset($input[Customer\Token\Entity::TOKEN]) === true && $payment->getMethod() == Method::CARD)
+        {
+            $token = (new Customer\Token\Repository())->findByPublicId($input['token']);
+
+            if ($token !== null && $token->card->getVault() == Card\Vault::AXIS) {
+                $payment->setGateway(Payment\Gateway::AXIS_TOKENHQ);
+            }
         }
     }
 

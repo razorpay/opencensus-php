@@ -37,6 +37,7 @@ class Gateway
     const BHARAT_QR              = 'bharat_qr';
     const AXIS_GENIUS            = 'axis_genius';
     const AXIS_MIGS              = 'axis_migs';
+    const AXIS_TOKENHQ           = 'axis_tokenhq';
     const BILLDESK               = 'billdesk';
     const MPI_BLADE              = 'mpi_blade';
     const MPI_ENSTAGE            = 'mpi_enstage';
@@ -263,7 +264,8 @@ class Gateway
         self::UPI_JUSPAY   => [self::ACQUIRER_AXIS],
         self::PAYU         => [self::PAYU],
         self::HDFC_EZETAP  => [self::ACQUIRER_HDFC],
-        self::PAYSECURE    => [self::ACQUIRER_AXIS]
+        self::PAYSECURE    => [self::ACQUIRER_AXIS],
+        self::AXIS_TOKENHQ => [self::ACQUIRER_AXIS],
     ];
 
     const POWER_WALLETS = [
@@ -4251,6 +4253,7 @@ class Gateway
             self::INGENICO,
             self::BILLDESK_OPTIMIZER,
             self::KOTAK_DEBIT_EMI,
+            self::AXIS_TOKENHQ,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -4292,6 +4295,7 @@ class Gateway
             self::INGENICO,
             self::BILLDESK_OPTIMIZER,
             self::KOTAK_DEBIT_EMI,
+            self::AXIS_TOKENHQ,
         ];
 
         return (in_array($gateway, $gateways, true));

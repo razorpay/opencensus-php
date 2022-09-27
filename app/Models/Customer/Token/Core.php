@@ -34,6 +34,7 @@ class Core extends Base\Core
     const GATEWAY_RUPAY = 'tokenisation_rupay';
     const GATEWAY_AMEX = 'tokenisation_amex';
     const GATEWAY_HDFC  = 'tokenisation_hdfc';
+    const GATEWAY_AXIS  = 'tokenisation_axis';
 
     const TokenizationGateways = [
         self::GATEWAY_VISA,
@@ -41,6 +42,7 @@ class Core extends Base\Core
         self::GATEWAY_AMEX,
         self::GATEWAY_RUPAY,
         self::GATEWAY_HDFC,
+        self::GATEWAY_AXIS,
     ];
 
     public const TokenisationGatewayToNetworkMapping = [

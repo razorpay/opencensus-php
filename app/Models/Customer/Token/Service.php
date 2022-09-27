@@ -609,7 +609,7 @@ class Service extends Base\Service
 
             $this->decryptCardNumberIfApplicable($input['card']);
 
-            if ($this->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true)
+            if ($this->merchant->isTokenizationEnabled() === true)
             {
                 list($token, $serviceProviderTokens) = $this->core->createTokenAndTokenizedCard($input);
 
@@ -665,7 +665,7 @@ class Service extends Base\Service
 
         try
         {
-            if (($this->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true ) && ($mode === Mode::LIVE))
+            if (($this->merchant->isTokenizationEnabled() === true ) && ($mode === Mode::LIVE))
             {
                 (new Validator)->validateInput(Validator::FETCH_TOKEN, $input);
 
@@ -805,7 +805,7 @@ class Service extends Base\Service
 
         try
         {
-            if ($this->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true)
+            if ($this->merchant->isTokenizationEnabled() === true)
             {
                 (new Validator)->validateInput(Validator::FETCH_CRYPTOGRAM, $input);
 
@@ -861,7 +861,7 @@ class Service extends Base\Service
 
         try
         {
-            if ($this->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true)
+            if ($this->merchant->isTokenizationEnabled() === true)
             {
                 (new Validator)->validateInput(Validator::FETCH_TOKEN, $input);
 

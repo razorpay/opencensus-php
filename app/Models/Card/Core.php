@@ -798,6 +798,11 @@ class Core extends Base\Core
             $card->setTokenIIn($tokenizedRange);
         }
 
+        if ($input[Card\Entity::NUMBER] === Card\Entity::DUMMY_AXIS_TOKENHQ_CARD) {
+            $card->setTokenIIn(null);
+            $card->setAttribute(Card\Entity::TOKEN_LAST_4, null);
+        }
+
         return $iin;
     }
 
@@ -949,6 +954,10 @@ class Core extends Base\Core
             Card\Entity::TOKEN_PROVIDER         => 'Razorpay',
             Card\Entity::TOKEN                  => $input['token'] ?? "",
         ];
+
+        if ($card->getVault() === Card\Vault::AXIS) {
+            $input[Card\Entity::NUMBER] = Card\Entity::DUMMY_AXIS_TOKENHQ_CARD;
+        }
 
         if($recurringTokenNumber !== null)
         {

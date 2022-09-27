@@ -347,5 +347,12 @@ class AuthenticationTerminals
             self::AUTH_TYPE                 => AuthType::_3DS,
             self::GATEWAY_AUTH_TYPE         => null,
         ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::AXIS_TOKENHQ,
+            self::AUTHENTICATION_GATEWAY    => Gateway::AXIS_TOKENHQ,
+            self::AUTH_TYPE                 => AuthType::OTP,
+            self::GATEWAY_AUTH_TYPE         => AuthType::OTP,
+        ],
     ];
 }

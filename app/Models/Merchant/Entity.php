@@ -2847,6 +2847,11 @@ class Entity extends Base\PublicEntity
                 ($this->isFeatureEnabled(Feature\Constants::IVR_DISABLE) === false);
     }
 
+    public function isTokenizationEnabled() : bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) || $this->isFeatureEnabled(Feature\Constants::ISSUER_TOKENIZATION_LIVE);
+    }
+
     /**
      * Used for Marketplace, dashboard:
      * Return report data for a linked account under a marketplace merchant

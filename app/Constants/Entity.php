@@ -328,6 +328,7 @@ class Entity
     const CARD_FSS               = 'card_fss';
     const UPI_ICICI              = 'upi_icici';
     const AXIS_MIGS              = 'axis_migs';
+    const AXIS_TOKENHQ           = 'axis_tokenhq';
     const MPI_BLADE              = 'mpi_blade';
     const NACH_CITI              = 'nach_citi';
     const NACH_ICICI             = 'nach_icici';

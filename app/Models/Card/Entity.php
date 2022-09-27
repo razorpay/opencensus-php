@@ -89,6 +89,8 @@ class Entity extends Base\PublicEntity
     const DUMMY_MASTERCARD_CARD  = '2221000000511237';
     const DUMMY_VISA_CARD        = '4231560000511234';
     const DUMMY_RUPAY_CARD       = '5085000000521234';
+    const DUMMY_AXIS_TOKENHQ_CARD   = '4532712890380420';
+
 
     const NETWORK_CODE = 'network_code';
 

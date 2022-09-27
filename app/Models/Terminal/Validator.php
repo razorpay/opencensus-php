@@ -175,7 +175,8 @@ class Validator extends Base\Validator
         Payment\Gateway::INGENICO,
         Payment\Gateway::BILLDESK_OPTIMIZER,
         Payment\Gateway::KOTAK_DEBIT_EMI,
-        Payment\Gateway::HDFC_EZETAP
+        Payment\Gateway::HDFC_EZETAP,
+        Payment\Gateway::AXIS_TOKENHQ,
     ];
 
     protected static $createValidators = [
@@ -586,6 +587,21 @@ class Validator extends Base\Validator
         Entity::NOTES                      => 'sometimes|string',
     ];
 
+    protected static $axisTokenhqTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:axis_tokenhq',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|alpha_num|min:6',
+        Entity::INTERNATIONAL              => 'sometimes|boolean',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::CAPABILITY                 => 'sometimes|in:0,2',
+        Entity::MODE                       => 'required|in:2',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::CURRENCY                   => 'sometimes|array',
+        Entity::EMI                        => 'sometimes|boolean',
+        Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
+        Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::NOTES                      => 'sometimes|string',
+    ];
+
     protected static $cybersourceTerminalRules = [
         Entity::GATEWAY                    => 'required|in:cybersource',
         Entity::GATEWAY_TERMINAL_ID        => 'required|string',
@@ -629,6 +645,24 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::CAPABILITY                 => 'sometimes|in:0,2',
+        Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::CURRENCY                   => 'sometimes|array',
+        Entity::NOTES                      => 'sometimes|string',
+    ];
+
+    protected static $axisTokenhqEditTerminalRules = [
+        Entity::GATEWAY                    => 'sometimes|in:axis_tokenhq',
+        Entity::GATEWAY_ACQUIRER           => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|alpha_num|min:6',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|alpha_num|max:8',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|alpha_num|size:32',
+        Entity::GATEWAY_TERMINAL_ID        => 'sometimes',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes',
+        Entity::CARD                       => 'sometimes|boolean|in:1',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::INTERNATIONAL              => 'sometimes|boolean',
+        Entity::CAPABILITY                 => 'sometimes|in:2',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::CURRENCY                   => 'sometimes|array',
@@ -2389,6 +2423,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET2   => 'required|string',
     ];
 
+    protected static $tokenisationAxisEditTerminalRules = [
+        Entity::GATEWAY                  => 'required|string|in:tokenisation_axis',
+        Entity::GATEWAY_TERMINAL_ID      => 'sometimes|string',
+        Entity::PROCURER                 => 'sometimes|string|in:razorpay,merchant',
+    ];
+
     protected static $worldlineEditTerminalRules = [
         Entity::STATUS                     => 'sometimes|string|in:failed,activated',
         Entity::MC_MPAN                    => 'sometimes|string',
@@ -2573,6 +2613,22 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD               => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_PASSWORD2              => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET                   => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET2                  => 'sometimes|string',
+    ];
+
+    protected $tokenisationAxisTerminalRules = [
+        Entity::GATEWAY                                 => 'required|in:tokenisation_axis',
+        Entity::GATEWAY_MERCHANT_ID                     => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2                    => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_ID                     => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET                   => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE                     => 'sometimes|string',
+        Entity::TYPE                                    => 'required|array',
+        Entity::TYPE . '.tokenisation'                  => 'required|in:1',
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
+        Entity::GATEWAY_TERMINAL_PASSWORD               => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD2              => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET2                  => 'sometimes|string',
     ];
 
