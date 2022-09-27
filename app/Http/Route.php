@@ -748,6 +748,7 @@ class Route
 
         // Api for creating merchant using raw file
         'merchant_upload'                          => ['post',     'merchant/upload',                                'MerchantController@uploadMerchant'                ],
+        'merchant_upload_miq_admin'                => ['post',     'merchant/upload_miq/batch',                      'MerchantController@uploadMiqBatch'                                 ],
 
         'merchant_activation_migrate'              => ['post',     'merchant/activation/migrate',                    'MerchantController@postMerchantDetailMigrate'                      ],
         'merchant_activation_archive'              => ['patch',    'merchant/activation/{id}/archive',               'MerchantController@updateActivationArchive'                        ],
@@ -5280,6 +5281,8 @@ class Route
         'fetch_commission_configs',
 
         'create_ledger_journal_batch',
+
+        'merchant_upload_miq_admin',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -13738,6 +13741,7 @@ class Route
             'vault_migrate_token_bulk',
             'create_local_tokens_from_consents_bulk',
             'create_ledger_journal_batch',
+            'merchant_upload_miq_admin',
         ],
 
         'stork' => [

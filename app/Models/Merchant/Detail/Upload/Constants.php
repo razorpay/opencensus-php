@@ -12,6 +12,8 @@ class Constants
 
     const AXIS_MIQ          = 'axis_miq';
 
+    const BULK_UPLOAD_MIQ   = 'bulk_upload_miq';
+
     const SUPPORTED_FORMATS = [
         self::AXIS_MIQ
     ];

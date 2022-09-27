@@ -136,6 +136,64 @@ class MerchantUploadMiqBatchTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateMerchantUploadMIQSuccess()
+    {
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('success', $response[Header::STATUS]);
+
+        $this->assertEmpty($response[Header::ERROR_CODE]);
+
+        $this->assertEmpty($response[Header::ERROR_DESCRIPTION]);
+
+        $this->assertNotEmpty($response[Header::MIQ_OUT_MERCHANT_ID]);
+    }
+
+    public function testCreateMerchantUploadMIQFailed()
+    {
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('failure', $response[Header::STATUS]);
+
+        $this->assertEquals('BAD_REQUEST_ERROR', $response[Header::ERROR_CODE]);
+    }
+
+    public function testCreateMerchantWithoutWebsiteDetailsSuccess()
+    {
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('success', $response[Header::STATUS]);
+
+        $this->assertEmpty($response[Header::ERROR_CODE]);
+
+        $this->assertEmpty($response[Header::ERROR_DESCRIPTION]);
+
+        $this->assertNotEmpty($response[Header::MIQ_OUT_MERCHANT_ID]);
+    }
+
+    public function testCreateMerchantDynamicFeeBearerSuccess()
+    {
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('success', $response[Header::STATUS]);
+
+        $this->assertEquals('dynamic', $response[Header::MIQ_OUT_FEE_BEARER]);
+
+        $this->assertEmpty($response[Header::ERROR_CODE]);
+
+        $this->assertEmpty($response[Header::ERROR_DESCRIPTION]);
+
+        $this->assertNotEmpty($response[Header::MIQ_OUT_MERCHANT_ID]);
+    }
+
     protected function getDefaultFileEntries(): array
     {
         return [

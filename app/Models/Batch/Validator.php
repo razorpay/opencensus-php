@@ -38,10 +38,9 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Batch\Helpers\OauthMigration as OMHelper;
-use RZP\Models\Merchant\Detail\BusinessType as BusinessType;
 use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as HdfcEMDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHeadings;
-
+use RZP\Models\Merchant\Detail\Upload\Processors\BulkUploadMIQParser as UploadMIQParser;
 
 /**
  * Class Validator
@@ -1083,38 +1082,6 @@ class Validator extends Base\Validator
         Header::MIQ_BANK_ACC_NUMBER                  => 'required',
         Header::MIQ_BENEFICIARY_NAME                 => 'required',
         Header::MIQ_BRANCH_IFSC_CODE                 => 'required',
-    ];
-
-    /**
-     * Required website details if website present in Upload MIQ file.
-     * TODO - Move into upload MIQ constant's file.
-     * @var array
-     */
-    protected static $merchantUploadMIQWebsiteEntries = [
-        Header::MIQ_WEBSITE_REFUNDS,
-        Header::MIQ_WEBSITE_ABOUT_US,
-        Header::MIQ_WEBSITE_CONTACT_US,
-        Header::MIQ_WEBSITE_CANCELLATION,
-        Header::MIQ_WEBSITE_PRIVACY_POLICY,
-        Header::MIQ_WEBSITE_PRODUCT_PRICING,
-        Header::MIQ_WEBSITE_TERMS_CONDITIONS,
-        Header::MIQ_WEBSITE_SHIPPING_DELIVERY,
-    ];
-
-    /**
-     * Allowed Business Types.
-     * TODO - Move into upload MIQ constant's file.
-     * @var array
-     */
-    protected static $merchantUploadMIQBusinessTypes = [
-        BusinessType::TYPE1 ,
-        BusinessType::TYPE3,
-        BusinessType::TYPE4,
-        BusinessType::TYPE5,
-        BusinessType::TYPE6,
-        BusinessType::TYPE7,
-        BusinessType::TYPE9,
-        BusinessType::TYPE11 ,
     ];
 
     public function validateConfig($attribute, $value)
@@ -2204,7 +2171,7 @@ class Validator extends Base\Validator
      */
     private function validateMerchantUploadMiqWebsiteDetails(array & $entry)
     {
-        foreach (self::$merchantUploadMIQWebsiteEntries as $header)
+        foreach (UploadMIQParser::$miqWebsiteEntries as $header)
         {
             if(empty($entry[$header]) === true)
             {
@@ -2221,7 +2188,7 @@ class Validator extends Base\Validator
      */
     private function validateMerchantUploadMiqBusinessType(array & $entry)
     {
-        if(in_array($entry[Header::MIQ_BUSINESS_TYPE], self::$merchantUploadMIQBusinessTypes) === false)
+        if(in_array($entry[Header::MIQ_BUSINESS_TYPE], UploadMIQParser::$miqBusinessTypes) === false)
         {
             throw new Exception\BadRequestValidationFailureException($entry[Header::MIQ_BUSINESS_TYPE] . ' invalid business type', Entity::FILE);
         }

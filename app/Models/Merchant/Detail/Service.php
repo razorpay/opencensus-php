@@ -43,6 +43,8 @@ use RZP\Services\KafkaMessageProcessor;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\Comment\Core as CommentCore;
+use RZP\Models\Batch\Header as BatchHeader;
+use RZP\Models\Batch\Status as BatchStatus;
 use RZP\Models\Merchant\Credits as Credits;
 use RZP\Models\Merchant\Document as Document;
 use RZP\Models\Merchant\Referral as Referral;
@@ -928,6 +930,43 @@ class Service extends Base\Service
     public function uploadMerchant(array $input)
     {
         return (new Upload\Core)->uploadMerchant($input);
+    }
+
+    public function uploadMiqBatch(array $input): array
+    {
+        try
+        {
+            $response = (new Upload\Core)->processMerchantEntry($input);
+        }
+        catch (Exception\BaseException $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::BATCH_PROCESSING_ERROR, [
+                BatchHeader::MIQ_OUT_MERCHANT_NAME      => $input[BatchHeader::MIQ_MERCHANT_NAME],
+                BatchHeader::MIQ_OUT_MERCHANT_EMAIL     => $input[BatchHeader::MIQ_CONTACT_EMAIL],
+            ]);
+
+            $error = $e->getError();
+
+            $response[BatchHeader::STATUS]            = BatchStatus::FAILURE;
+
+            $response[BatchHeader::ERROR_CODE]        = $error->getPublicErrorCode();
+
+            $response[BatchHeader::ERROR_DESCRIPTION] = $error->getDescription();
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::BATCH_PROCESSING_ERROR, [
+                BatchHeader::MIQ_OUT_MERCHANT_NAME      => $input[BatchHeader::MIQ_MERCHANT_NAME],
+                BatchHeader::MIQ_OUT_MERCHANT_EMAIL     => $input[BatchHeader::MIQ_CONTACT_EMAIL],
+            ]);
+
+            $response[BatchHeader::STATUS]     = BatchStatus::FAILURE;
+
+            $response[BatchHeader::ERROR_CODE] = ErrorCode::SERVER_ERROR;
+        }
+
+        return $response;
     }
 
     public function sendWhatsappNotification($id, array $input): array

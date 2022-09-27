@@ -2157,6 +2157,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FEE_BEARER, $feeBearer);
     }
 
+    public function setFeeModel($feeModel)
+    {
+        $this->setAttribute(self::FEE_MODEL, $feeModel);
+    }
+
     public function getFeeModel()
     {
         return $this->getAttribute(self::FEE_MODEL);

@@ -52,7 +52,7 @@ class BusinessType
      *
      * @var array
      */
-    protected static $typeIndexMap = [
+    public static $typeIndexMap = [
         self::PROPRIETORSHIP         => 1,
         self::INDIVIDUAL             => 2,
         self::PARTNERSHIP            => 3,
