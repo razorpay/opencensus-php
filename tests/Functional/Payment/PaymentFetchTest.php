@@ -2026,10 +2026,10 @@ class PaymentFetchTest extends TestCase
     }
 
     public function testFetchPaymentWithExposeArn()
-    {   
+    {
         $paymentArray = $this->getDefaultPaymentArray();
         $paymentFromResponse = $this->doAuthAndCapturePayment($paymentArray);
-            
+
         $paymentEntity = $this->getLastPayment(true);
 
         $this->fixtures->edit('payment',$paymentEntity['id'],[

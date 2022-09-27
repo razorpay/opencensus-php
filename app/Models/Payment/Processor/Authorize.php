@@ -64,6 +64,7 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Customer\Token;
 use RZP\Jobs\Order\OrderUpdate;
 use RZP\Models\UpiMandate\Core;
+use RZP\Services\KafkaProducer;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Methods;
@@ -178,6 +179,8 @@ trait Authorize
         $this->preProcessAppCurrencyWrapper($input, $payment);
 
         $this->storeRewards($payment, $input);
+
+        $this->pushCardMetaDataEvent($input, $payment);
 
         return $this->gatewayRelatedProcessing($payment, $input, $gatewayInput);
     }
@@ -11012,6 +11015,81 @@ trait Authorize
         else
         {
             (new Address\Core)->edit($tokenBillingAddress, $billingAddressToSave);
+        }
+    }
+
+    protected function pushCardMetaDataEvent($input, Payment\Entity $payment){
+
+        if ($this->app->runningUnitTests() === false) {
+            try
+            {
+                $data = [];
+                if ($payment->isMethodCardOrEmi() === false)
+                {
+                    return;
+                }
+
+                if (empty($input['token']) === false)
+                {
+                    // search for card data if already saved card
+                    $token = $payment->getGlobalOrLocalTokenEntity();
+                    $network_card = $token->card;
+
+                    if ((empty($network_card) === false) and
+                        ($network_card->isNetworkTokenisedCard() === true))
+                    {
+                        $iin = Card\IIN\IIN::getTransactingIinforRange($network_card->getTokenIin());
+                        $iin_number = $iin;
+                    }
+                    else
+                    {
+                        $iin_number = $network_card->getIin();
+                    }
+
+                    $data = [
+                        "payment_id" => $payment->getId(),
+                        "iin" => $iin_number,
+                    ];
+                }
+                else
+                {
+                    // create a payload to send from input
+                    if (empty($input['card']['number']) === false)
+                    {
+                        $data = [
+                            "payment_id" => $payment->getId(),
+                            'iin' => substr($input['card']['number'], 0, 6)
+                        ];
+                    }
+                }
+
+                if (empty($data) === false) {
+
+                    $topic = 'events.payments-card-meta.v1.' . $this->mode;  //'events.payments-card-meta.v1.live'
+
+                    $event = [
+                        'event_name' => 'PAYMENT.CARD.METADATA',
+                        'event_type' => 'payment-events',
+                        'event_group' => 'initiation',
+                        'version' => 'v1',
+                        'event_timestamp' => (int)(microtime(true)),
+                        'producer_timestamp' => (int)(microtime(true)),
+                        'source' => 'api',
+                        'mode' => $this->mode,
+                        'payment_id' => $data['payment_id'],
+                        'iin' => $data['iin']
+                    ];
+
+                    (new KafkaProducer($topic, stringify($event)))->Produce();
+                }
+            }
+            catch(\Exception $ex){
+                $this->trace->traceException(
+                    $ex,
+                    500,
+                    TraceCode::KAFKA_JOURNAL_ENTRY_PUSH_FAILED,
+                    ["input" => $input]);
+            }
         }
     }
 
