@@ -349,18 +349,28 @@ class Core extends Merchant\Core
             return ;
         }
 
-        if($this->merchant->isFeatureEnabled(Feature\Constants::INSTANT_ACTIVATION_V2_API) === true)
+        $properties = [
+            'id' => $this->merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.partners_excluded_from_instant_act_v2_api_exp_id')
+        ];
+
+        $isExpEnable = (new Merchant\Core())->isSplitzExperimentEnable($properties,'enable');
+
+        if($isExpEnable === true)
         {
-            (new Merchant\Core())->appendTag($submerchant, Constants::INSTANT_ACTIVATION_SUBM);
-
-            $this->trace->info(TraceCode::INSTANT_ACTIVATION_ONBOARDING_API_TAG_APPENDED,[
-                'sub-merchant_id'   => $submerchant->getId(),
-                'tag_name'          => Constants::INSTANT_ACTIVATION_SUBM
-            ]);
-            $dimension = $this->getDimensionsForAccountV2Metrics($submerchant->merchantDetail, $this->merchant);
-
-            $this->trace->count(Metric::ACCOUNT_V2_MERCHANT_SIGNUP_INSTANT_ACTIVATION, $dimension);
+            //we will be restricting existing partners for now, making it general release for newly onboarded partners.
+            return;
         }
+
+        (new Merchant\Core())->appendTag($submerchant, Constants::INSTANT_ACTIVATION_SUBM);
+
+        $this->trace->info(TraceCode::INSTANT_ACTIVATION_ONBOARDING_API_TAG_APPENDED,[
+            'sub-merchant_id'   => $submerchant->getId(),
+            'tag_name'          => Constants::INSTANT_ACTIVATION_SUBM
+        ]);
+        $dimension = $this->getDimensionsForAccountV2Metrics($submerchant->merchantDetail, $this->merchant);
+
+        $this->trace->count(Metric::ACCOUNT_V2_MERCHANT_SIGNUP_INSTANT_ACTIVATION, $dimension);
     }
 
     public function isInstantActivationTagEnabled($merchantId): bool

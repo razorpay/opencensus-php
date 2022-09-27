@@ -404,14 +404,8 @@ class Constants
     ];
 
     const INSTANT_ACTIVATION_V2_API_ESCALATION_MATRIX = [
-        100000      => self::SOFT_LIMIT_IA_V2_API,
         500000      => self::SOFT_LIMIT_IA_V2_API,
         1000000     => self::SOFT_LIMIT_IA_V2_API,
-        1200000     => self::SOFT_LIMIT_IA_V2_API,
-        1300000     => self::SOFT_LIMIT_IA_V2_API,
-        1350000     => self::SOFT_LIMIT_IA_V2_API,
-        1400000     => self::SOFT_LIMIT_IA_V2_API,
-        1450000     => self::SOFT_LIMIT_IA_V2_API,
         1500000     => self::HARD_LIMIT_IA_V2_API,
     ];
 

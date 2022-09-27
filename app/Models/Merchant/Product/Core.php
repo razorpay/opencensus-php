@@ -612,18 +612,27 @@ class Core extends Base\Core
             'attempted_activation_status' => Merchant\Constants::INSTANT_ACTIVATION,
         ]);
 
-        $response = $merchantDetailsCore->saveInstantActivationDetails($input, $merchant);
-
-        $this->trace->info(TraceCode::UPDATED_SUBMERCHANT_ACTIVATION_STATUS,[
-            'merchant_id'               => $merchant->getId(),
-            'current_activation_status' => $response[Detail\Entity::ACTIVATION_STATUS],
-        ]);
-
-        if($response[Detail\Entity::ACTIVATION_STATUS] === Merchant\Constants::INSTANT_ACTIVATION)
+        try
         {
-            $this->trace->count(Metric::PRODUCT_CONFIG_AUTO_UPDATE_MERCHANT_STATUS, [
-                'updated_activation_status' => Merchant\Constants::INSTANT_ACTIVATION
+            $response = $merchantDetailsCore->saveInstantActivationDetails($input, $merchant);
+
+            $this->trace->info(TraceCode::UPDATED_SUBMERCHANT_ACTIVATION_STATUS, [
+                'merchant_id' => $merchant->getId(),
+                'current_activation_status' => $response[Detail\Entity::ACTIVATION_STATUS],
             ]);
+
+            if($response[Detail\Entity::ACTIVATION_STATUS] === Merchant\Constants::INSTANT_ACTIVATION)
+            {
+                $this->trace->count(Metric::PRODUCT_CONFIG_AUTO_UPDATE_MERCHANT_STATUS, [
+                    'updated_activation_status' => Merchant\Constants::INSTANT_ACTIVATION
+                ]);
+            }
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException($e,null,
+                TraceCode::MERCHANT_STATUS_AUTO_UPDATE_ATTEMPT_FAILED
+            );
         }
 
         return true;
