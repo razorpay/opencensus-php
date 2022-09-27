@@ -271,7 +271,7 @@ class Service extends Base\Service
         $admin = $this->app['basicauth']->getAdmin() ?? (($this->app->bound('batchAdmin') === true)? $this->app['batchAdmin'] : null);
 
         $admin = $admin !== null ? $admin : $this->core->getAdminFromHeadersForMobApp();
-        
+
         // TBD: Updates from RBL LMS
         if (empty($admin) === true) {
             $admin = $this->app['basicauth']->getUser();
@@ -500,16 +500,11 @@ class Service extends Base\Service
 
         $bankingAccounts = $bankingAccounts->load(Entity::BALANCE);
 
+        $this->setFeeRecoveryFlagForBankingAccounts($bankingAccounts, $input);
+
         /** @var Entity $ba */
         foreach ($bankingAccounts as &$ba)
         {
-            if(($this->merchant->isFeatureEnabled(Feature\Constants::SKIP_EXPOSE_FEE_RECOVERY) === true) or
-                                                   ((isset($input['fee_recovery']) === true) and
-                                                   ((boolval($input['fee_recovery']) === false))))
-            {
-                $ba->feeRecoverySetFlag = false;
-            }
-
             $balance = $ba->getBalance();
 
             if (empty($balance) === true)
@@ -538,6 +533,19 @@ class Service extends Base\Service
         }
 
         return $bankingAccounts->toArrayPublic();
+    }
+
+    public function setFeeRecoveryFlagForBankingAccounts($bankingAccounts, $input)
+    {
+        foreach ($bankingAccounts as $ba)
+        {
+            if (($this->merchant->isFeatureEnabled(Feature\Constants::SKIP_EXPOSE_FEE_RECOVERY) === true) or
+                ((isset($input['fee_recovery']) === true) and
+                 ((boolval($input['fee_recovery']) === false))))
+            {
+                $ba->feeRecoverySetFlag = false;
+            }
+        }
     }
 
     public function fetchActivatedAccounts()
