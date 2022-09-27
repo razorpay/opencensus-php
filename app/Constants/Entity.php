@@ -190,6 +190,8 @@ class Entity
     const VIRTUAL_ACCOUNT_PRODUCTS     = 'virtual_account_products';
     const SUB_BALANCE_MAP              = 'sub_balance_map';
 
+    const ORG_FEATURE                  = 'org_feature';
+
     const PAYOUTS_INTERMEDIATE_TRANSACTIONS = 'payouts_intermediate_transactions';
 
     const WORKFLOW_CONFIG            = 'workflow_config';

@@ -5297,6 +5297,11 @@ class Service extends Base\Service
             ]);
 
         $data[EntityConstants::MERCHANT][EntityConstants::FEATURE] = $merchant->getEnabledFeatures();
+        if ($merchant->isFeatureEnabled(Feature\Constants::WHITE_LABELLED_ROUTE) === true)
+        {
+            $data[EntityConstants::MERCHANT][EntityConstants::ORG_FEATURE] = $merchant->org->getEnabledFeatures();
+        }
+
         $data[EntityConstants::MERCHANT][EntityConstants::METHODS] = $this->repo->methods->getMethodsForMerchant($merchant);
 
         $this->trace->info(TraceCode::MERCHANT_GET_INTERNAL,
