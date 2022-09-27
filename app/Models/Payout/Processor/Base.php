@@ -629,7 +629,7 @@ class Base extends BaseCore
             /** @var \RZP\Services\FTS\FundTransfer $transferService */
             $transferService = App::getFacadeRoot()['fts_fund_transfer'];
 
-            $transferService->initialize($fta->getId());
+            $transferService->initializeWithFta($fta);
 
             list($initiateTransfers, $reason) = $transferService->shouldAllowTransfersViaFts();
 

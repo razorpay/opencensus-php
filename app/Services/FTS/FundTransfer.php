@@ -1030,6 +1030,24 @@ class FundTransfer extends Base
     {
         $this->fta = $this->FTACore->getFTAEntity($ftaId);
 
+        $this->initializeFundTransferAttributes();
+    }
+
+    /**
+     * Added this function to avoid making a db call to get FTA entity, if FTA entity is already available
+     *
+     * For payout to cards, this is useful as it reduces a network call to get Card meta data from vault, which
+     * otherwise would have been an empty array if FTA was fetched from DB
+     */
+    public function initializeWithFta($fta)
+    {
+        $this->fta = $fta;
+
+        $this->initializeFundTransferAttributes();
+    }
+
+    protected function initializeFundTransferAttributes()
+    {
         $channel = $this->fta->getChannel();
 
         $startTimeNeft = $this->workingHours[self::DEFAULT][Mode::NEFT][self::START_TIME];
@@ -1061,15 +1079,15 @@ class FundTransfer extends Base
 
         $this->bankingStartTimeRtgs = Carbon::createFromTime($startTimeRtgs[self::HOURS],
                                                              $startTimeRtgs[self::MINUTES],
-                                                            0,
-                                                            Timezone::IST)
+                                                             0,
+                                                             Timezone::IST)
                                             ->getTimestamp();
 
         $this->bankingEndTimeRtgs = Carbon::createFromTime($endTimeRtgs[self::HOURS],
                                                            $endTimeRtgs[self::MINUTES],
-                                                          0,
-                                                          Timezone::IST)
-                                            ->getTimestamp();
+                                                           0,
+                                                           Timezone::IST)
+                                          ->getTimestamp();
 
         $this->bankingStartTimeNeft = Carbon::createFromTime($startTimeNeft[self::HOURS],
                                                              $startTimeNeft[self::MINUTES],
@@ -1078,7 +1096,7 @@ class FundTransfer extends Base
                                             ->getTimestamp();
 
         $this->bankingEndTimeNeft = Carbon::today(Timezone::IST)->hour($endTimeNeft[self::HOURS])
-                                            ->minute($endTimeNeft[self::MINUTES])->getTimestamp();
+                                          ->minute($endTimeNeft[self::MINUTES])->getTimestamp();
 
         $this->accountType = $this->getAccountType();
 

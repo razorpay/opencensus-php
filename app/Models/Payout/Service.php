@@ -2491,7 +2491,19 @@ class Service extends Base\Service
 
         if ($this->compositePayoutSaveOrFail === true)
         {
+            $account = $compositePayout->fundAccount->account;
+
             $compositePayout = $compositePayout->load('fundAccount.contact');
+
+            // Specifically adding here for card fund account to preserve card Meta Data, since
+            // loading fundAccount.contact relation was overriding all the existing relations
+            // This was causing us to make a network call to vault to again fetch card Meta Data
+            // to populate fields in toArrayPublic() for payout
+            if (($compositePayout->fundAccount->getAccountType() === Entity::CARD) and
+                (isset($account) === true))
+            {
+                $compositePayout->fundAccount->account()->associate($account);
+            }
         }
         // Setting $composite field for fund_account entity to deny unsetting of contact field in a
         // strictPrivateAuth composite payout request
