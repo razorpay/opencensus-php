@@ -364,8 +364,7 @@ class Checker extends Base\Core
 
         $this->traceCheckResult(TraceCode::OFFER_CARD_INTERNATIONAL_CHECK, [
             'result'            => $result,
-            'offer_internation' => $isInternational,
-            'card_iin'          => $card->getIin(),
+            'offer_international' => $isInternational,
             'international'     => $card->isInternational(),
         ]);
 
@@ -397,9 +396,7 @@ class Checker extends Base\Core
 
             if (empty($cardActualIin) === true)
             {
-                $this->trace->info(TraceCode::BIN_MAPPING_FOR_TOKEN_NOT_AVAILABLE, [
-                    'token_iin' => $cardTokenIin,
-                ]);
+                $this->trace->info(TraceCode::BIN_MAPPING_FOR_TOKEN_NOT_AVAILABLE);
             }
         }
         // not adding this in else condition because this check is needed even for tokenised cards flow after mapping fails.
@@ -423,7 +420,6 @@ class Checker extends Base\Core
         $this->traceCheckResult(TraceCode::OFFER_CARD_IIN_CHECK, [
             'result'     => $result,
             'offer_iins' => $offerIins,
-            'card_iin'   => $cardActualIin,
         ]);
 
         if ($result === false)
