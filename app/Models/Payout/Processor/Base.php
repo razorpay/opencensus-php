@@ -3845,14 +3845,6 @@ class Base extends BaseCore
                     return false;
                 }
 
-                // skip payout creation via payout service
-                // 1. if on hold payouts feature is enabled
-                // 2. if new banking error feature is enabled
-                if ($this->merchant->isFeatureEnabled(Features::NEW_BANKING_ERROR) === true)
-                {
-                    return false;
-                }
-
                 // skip payout creation via payout service if on_hold payouts via
                 // service are not enabled for the merchant.
                 if ($this->merchant->isFeatureEnabled(Features::PAYOUTS_ON_HOLD) === true)
@@ -3954,7 +3946,15 @@ class Base extends BaseCore
                 $id = $response[Entity::ID];
                 $id = Entity::verifyIdAndStripSign($id);
 
-                return (new Payout\Core)->getAPIModelPayoutFromPayoutService($id);
+                $payout = (new Payout\Core)->getAPIModelPayoutFromPayoutService($id);
+
+                if (($this->merchant->isFeatureEnabled(Features::NEW_BANKING_ERROR) === true) and
+                    (isset($response[Payout\Entity::ERROR]) === true))
+                {
+                    $payout[Payout\Entity::ERROR] = $response[Payout\Entity::ERROR];
+                }
+
+                return $payout;
             }
         }
 

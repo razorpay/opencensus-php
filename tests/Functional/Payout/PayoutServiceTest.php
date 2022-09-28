@@ -94,7 +94,7 @@ class PayoutServiceTest extends TestCase
         $this->app['config']->set('applications.banking_account_service.mock', true);
     }
 
-    public function mockPayoutServiceCreate($fail = false, $request = [], $status = 'created', $insufficient_balance = false)
+    public function mockPayoutServiceCreate($fail = false, $request = [], $status = 'created', $insufficient_balance = false, $newBankingError = false)
     {
         // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request headers that
         // are going to be sent to payout service.
@@ -126,7 +126,7 @@ class PayoutServiceTest extends TestCase
                                 // We are returning this response only as we don't have a use case of supporting
                                 // response based on $request, if needed, that can also be added here using
                                 // andReturnUsing method instead of andReturn
-                                    $this->createResponseForPayoutServiceMock($fail, $status, $insufficient_balance)
+                                    $this->createResponseForPayoutServiceMock($fail, $status, $insufficient_balance, $newBankingError)
                                 );
 
         $this->app->instance(PayoutServiceCreate::PAYOUT_SERVICE_CREATE, $payoutServiceCreateMock);
@@ -410,7 +410,7 @@ class PayoutServiceTest extends TestCase
                                                                                                 Status::CANCELLED));
     }
 
-    public function createResponseForPayoutServiceMock($fail, $status = 'created', $insufficient_balance = false)
+    public function createResponseForPayoutServiceMock($fail, $status = 'created', $insufficient_balance = false, $newBankingError = false)
     {
         $response = new Requests_Response();
 
@@ -444,6 +444,43 @@ class PayoutServiceTest extends TestCase
                         ]
                 ]);
             $response->status_code = 400;
+            $response->success = true;
+        }
+        elseif ($newBankingError === true)
+        {
+            $response->body = json_encode(
+                [
+                    "id"                =>   "pout_Gg7sgBZgvYjlSB",
+                    "entity"            =>   "payout",
+                    "fund_account_id"   =>   "fa_100000000000fa",
+                    "amount"            =>   100,
+                    "currency"          =>   "INR",
+                    "merchant_id"       =>   "10000000000000",
+                    "notes"             =>   "",
+                    "fees"              =>   0,
+                    "tax"               =>   0,
+                    "status"            =>   $status,
+                    "purpose"           =>   "refund",
+                    "utr"               =>   "",
+                    "reference_id"      =>   null,
+                    "narration"         =>   "test Merchant Fund Transfer",
+                    "batch_id"          =>   "",
+                    "initiated_at"      =>   1614325830,
+                    "failure_reason"    =>   null,
+                    "created_at"        =>   1614325826,
+                    "fee_type"          =>   null,
+                    "error"   =>
+                        [
+                            "code"        => '',
+                            "description" => '',
+                            "field"       => '',
+                            "source"      => '',
+                            "step"        => '',
+                            "reason"      => '',
+                            "metadata"    => [],
+                        ]
+                ]);
+            $response->status_code = 200;
             $response->success = true;
         }
         else
@@ -1684,6 +1721,58 @@ class PayoutServiceTest extends TestCase
         return $payout;
     }
 
+    public function testCreatePayoutWithNewBankingError(): array
+    {
+        $this->fixtures->on('live')->create('feature', [
+            'name'        => Feature\Constants::NEW_BANKING_ERROR,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->mockPayoutServiceCreate(false, [], 'created', false, true);
+
+        $payout = $this->testCreatePayoutServiceFtaCreation();
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+        //$payout = $this->getLastEntity('payout', true, 'live');
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true, 'live');
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
+        //$this->assertEquals($payout['channel'], 'icici');
+
+        // Verify transaction entity
+        $txn = $this->getLastEntity('transaction', true, 'live');
+        $txnId = str_after($txn['id'], 'txn_');
+
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+        $this->assertNotNull($txn['balance_id']);
+        $this->assertNotNull($txn['posted_at']);
+
+        //$feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true, 'live');
+        //
+        //$expectedBreakup = [
+        //    'name'            => "payout",
+        //    'transaction_id'  => $txnId,
+        //    'pricing_rule_id' => "Bbg7cl6t6I3XA5",
+        //    'percentage'      => null,
+        //    'amount'          => 500,
+        //];
+        //
+        //$this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+
+        return $payout;
+    }
+
     public function testCreatePayoutInsufficientBalance()
     {
         $this->mockPayoutServiceCreate(false, [], 'created', true);
@@ -2457,60 +2546,6 @@ class PayoutServiceTest extends TestCase
 
         $this->assertEquals('scheduled', $payout->getStatus());
 
-    }
-
-
-    // Since NEW_BANKING_ERROR feature is enabled for the merchant, the payout won't go via payouts service and would
-    // directly go to processing state.
-    public function testCreatePayoutForNewBankingErrorPayout()
-    {
-        $this->fixtures->on('live')->create('feature', [
-            'name'        => Feature\Constants::NEW_BANKING_ERROR,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
-
-        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
-
-        $this->testData[__FUNCTION__] = $this->testData['testCreatePayoutForOnHoldPayout'];
-
-        $this->startTest();
-
-        $payout = $this->getDbLastEntity('payout', 'live');
-
-        // Payout should not have gone via payouts service
-        $this->assertEquals(false, $payout->getIsPayoutService());
-
-        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true, 'live');
-
-        // On private auth, payout.user_id should be null
-        $this->assertNull($payout['user_id']);
-
-        // Verify attempt entity
-        $this->assertEquals($payout->getPublicId(), $payoutAttempt['source']);
-        $this->assertEquals($payout->getMerchantId(), $payoutAttempt['merchant_id']);
-        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
-        $this->assertEquals($payout['channel'], 'icici');
-
-        // Verify transaction entity
-        $txn = $this->getDbLastEntity('transaction',  'live');
-        $txnId = str_after($txn['id'], 'txn_');
-
-        $this->assertEquals($payout['transaction_id'], $txn['id']);
-        $this->assertNotNull($txn['balance_id']);
-        $this->assertNotNull($txn['posted_at']);
-
-        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true, 'live');
-
-        $expectedBreakup = [
-            'name'            => "payout",
-            'transaction_id'  => $txnId,
-            'pricing_rule_id' => "Bbg7cl6t6I3XA5",
-            'percentage'      => null,
-            'amount'          => 500,
-        ];
-
-        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
     }
 
     // Since payout has queue_if_low_balance flag set to true, it won't go via payouts service

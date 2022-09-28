@@ -2854,6 +2854,19 @@ class Entity extends Base\PublicEntity
         return $payoutArray;
     }
 
+    public function toArrayPublicPayoutServiceWithNewBankingError()
+    {
+        $errorObj = $this[self::ERROR];
+
+        $this->removeRecursiveRelation();
+
+        $payoutArray = parent::toArrayPublic();
+
+        $payoutArray[self::ERROR] = $errorObj;
+
+        return $payoutArray;
+    }
+
     /**
      * {@inheritDoc}
      */

@@ -435,6 +435,12 @@ class Service extends Base\Service
                 'response_time' => $responseTime - $requestTime
             ]);
 
+        if (($payout->getIsPayoutService() === true) and
+            ($this->merchant->isFeatureEnabled(Features::NEW_BANKING_ERROR)))
+        {
+            return $payout->toArrayPublicPayoutServiceWithNewBankingError();
+        }
+
         return $payout->toArrayPublic();
     }
 

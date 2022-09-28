@@ -218,6 +218,11 @@ class Base
 
         if (isset($response[Payout\Entity::ERROR]) === true)
         {
+            if(isset($response[Payout\Entity::ID]) === true)
+            {
+                return;
+            }
+
             $this->trace->error(
                 TraceCode::PAYOUT_SERVICE_FAILURE_API_RESPONSE,
                 [
