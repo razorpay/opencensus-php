@@ -4376,7 +4376,7 @@ IFSC Code  ICIC0001206
             });
     }
 
-    protected function expectStorkSmsRequest($storkMock, $templateName, $destination, $expectedParms = [])
+    public function expectStorkSmsRequest($storkMock, $templateName, $destination, $expectedParms = [])
     {
         $storkMock->shouldReceive('sendSms')
                   ->times(1)

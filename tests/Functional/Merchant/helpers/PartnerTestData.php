@@ -1656,6 +1656,30 @@ return [
         ],
     ],
 
+    'testCreatePartnerSubmerchantWithValidContactMobileForPrimary' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'name'           => 'some_very_long_long_name_longer_than_25',
+                'email'          => 'user@example.com',
+                'contact_mobile' => '9999999999',
+                'product'        => 'primary',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'              => 'some_very_long_long_name_longer_than_25',
+                'business_banking'  => false,
+                'user' => [
+                    'name'           => 'some_very_long_long_name_longer_than_25',
+                    'email'          => 'user@example.com',
+                    'contact_mobile' => '9999999999'
+                ]
+            ],
+        ],
+    ],
+
     'testCreatePartnerSubmerchantWithValidContactMobileForX' => [
         'request'  => [
             'url'     => '/submerchants',

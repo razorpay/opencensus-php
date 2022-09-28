@@ -20,7 +20,13 @@ trait MocksSplitz
                     ->andReturn($output);
     }
 
-    protected function mockAllSplitzTreatment($output = [])
+    protected function mockAllSplitzTreatment($output = [
+        "response" => [
+            "variant" => [
+                "name" => 'enable',
+            ]
+        ]
+    ])
     {
         return $this->getSplitzMock()
                     ->shouldReceive('evaluateRequest')

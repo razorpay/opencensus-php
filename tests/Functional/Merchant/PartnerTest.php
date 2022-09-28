@@ -1078,7 +1078,6 @@ class PartnerTest extends OAuthTestCase
                 ]
             ]
         ];
-
         $this->mockSplitzTreatment($input, $output);
     }
 
@@ -2162,6 +2161,40 @@ class PartnerTest extends OAuthTestCase
         $this->app->instance('stork_service', $storkMock);
 
         (new MerchantTest())->expectStorkSendSmsRequest($storkMock,'sms.onboarding.partner_submerchant_invite', '9999999999');
+
+        $this->startTest();
+    }
+
+    public function testCreatePartnerSubmerchantWithValidContactMobileForPrimary()
+    {
+        Mail::fake();
+        
+        $this->createPartnerAndUser();
+
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator']);
+
+        $this->ba->proxyAuth();
+
+        $razorxMock = $this->getMockBuilder(Merchant\Core::class)
+            ->setMethods(['isRazorxExperimentEnable'])
+            ->getMock();
+
+        $razorxMock->expects($this->any())
+            ->method('isRazorxExperimentEnable')
+            ->willReturn(true);
+            
+        $this->mockAllSplitzTreatment();
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        // test clipping name to 25 characters
+        $expectedParms = [
+            'subMerchantName' => 'some_very_long_long_na...'
+        ];
+
+        (new MerchantTest())->expectStorkSmsRequest($storkMock,'Sms.Partnerships.Add_sub_merchant_partner', '9999999999', $expectedParms);
 
         $this->startTest();
     }
