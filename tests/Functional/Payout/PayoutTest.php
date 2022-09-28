@@ -21435,7 +21435,7 @@ class PayoutTest extends OAuthTestCase
 
         Mail::assertQueued(PayoutProcessedContactCommunication::class, function($mail) {
             $mail->build();
-            $this->assertEquals($mail->subject, '[Notification] Test Merchant has successfully transferred to you.');
+            $this->assertEquals($mail->subject, 'Ka-Ching! Payment Received from Test Merchant');
 
             $this->assertArrayHasKey('payout_amount', $mail->viewData);
             $this->assertArrayHasKey('merchant_name', $mail->viewData);
@@ -21495,7 +21495,7 @@ class PayoutTest extends OAuthTestCase
 
         Mail::assertQueued(PayoutProcessedContactCommunication::class, function($mail) {
             $mail->build();
-            $this->assertEquals($mail->subject, '[Notification] Test Merchant has successfully transferred to you.');
+            $this->assertEquals($mail->subject, 'Ka-Ching! Payment Received from Test Merchant');
 
             $this->assertArrayHasKey('payout_amount', $mail->viewData);
             $this->assertArrayHasKey('merchant_name', $mail->viewData);
@@ -21574,7 +21574,7 @@ class PayoutTest extends OAuthTestCase
 
         Mail::assertQueued(PayoutProcessedContactCommunication::class, function($mail) {
             $mail->build();
-            $this->assertEquals($mail->subject, '[Notification] Test Merchant has successfully transferred to you.');
+            $this->assertEquals($mail->subject, 'Ka-Ching! Payment Received from Test Merchant');
 
             $this->assertArrayHasKey('payout_amount', $mail->viewData);
             $this->assertArrayHasKey('merchant_name', $mail->viewData);

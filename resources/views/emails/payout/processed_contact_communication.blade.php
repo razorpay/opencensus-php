@@ -165,9 +165,11 @@
                                                             <em
                                                                 style="margin-right: 6px; display: inline-block; vertical-align: middle;">Business
                                                                 Banking Powered by</em>
-                                                            <img style="display: inline-block; vertical-align: middle;"
-                                                                 src="https://cdn.razorpay.com/static/assets/logo/rzpX/rzpx-dark-with-bg.png"
-                                                                 width="100px" />
+                                                            <a style="display: inline-block; vertical-align: middle; text-decoration: none" href="https://razorpay.com/x/current-accounts/?utm_source=email&utm_medium=bene_email&utm_campaign=big_bets">
+                                                                <img style="display: inline-block; vertical-align: middle;"
+                                                                    src="https://cdn.razorpay.com/static/assets/logo/rzpX/rzpx-dark-with-gray-bg.png"
+                                                                    width="100px" />
+                                                            </a>
 
                                                         </div>
                                                         <div class="content branding merchant"
@@ -487,26 +489,27 @@
 
                                                     <div class="card title"
                                                          style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; margin-top: 8px;box-sizing: border-box; padding-top: 20px; padding-bottom: 20px; border-radius: 2px; background: url(https://cdn.razorpay.com/static/assets/razorpayx/emails/razorpayx_footer_bg.png), black; background-repeat: no-repeat; background-size: 100% 100%; border-top-left-radius: 0; border-top-right-radius: 0;">
+                                                        <a style="text-decoration:none; display:block;" href="https://razorpay.com/x/current-accounts/?utm_source=email&utm_medium=bene_email&utm_campaign=big_bets">
+                                                            <img style="width: 100px; padding-left: 24px; padding-right: 24px;"
+                                                                src="https://cdn.razorpay.com/static/assets/logo/rzpX.png">
+                                                                
+                                                            <div
+                                                                style="font-weight: 400; padding-left: 24px; padding-right: 24px;font-size: 18px; padding-top: 16px;line-height: 125%; color: #FAFAFA; text-transform: capitalize;">
+                                                                Banking Made Awesome<br /> For Startups
+                                                            </div>
+                                                            <div
+                                                                style="padding-left: 22px; padding-right: 24px; width: 250px; max-width: 100%; margin: 0;">
+                                                                <img src="https://cdn.razorpay.com/static/assets/razorpayx/emails/promo.gif"
+                                                                    style="margin: 0;" width="100%"
+                                                                    height="auto" />
+                                                            </div>
 
-                                                        <img style="width: 100px; padding-left: 24px; padding-right: 24px;"
-                                                             src="https://cdn.razorpay.com/static/assets/logo/rzpX.png">
-
-                                                        <div
-                                                            style="font-weight: 400; padding-left: 24px; padding-right: 24px;font-size: 18px; padding-top: 16px;line-height: 125%; color: #FAFAFA; text-transform: capitalize;">
-                                                            Banking Made Awesome<br /> For Startups
-                                                        </div>
-                                                        <div
-                                                            style="padding-left: 22px; padding-right: 24px; width: 250px; max-width: 100%; margin: 0;">
-                                                            <img src="https://cdn.razorpay.com/static/assets/razorpayx/emails/promo.gif"
-                                                                 style="margin: 0;" width="100%"
-                                                                 height="auto" />
-                                                        </div>
-
-                                                        <div>
-                                                            <a href="https://x.razorpay.com/"
-                                                               style="margin-left: 24px; margin-right: 24px; text-decoration: none; display: inline-block; font-weight: 500;font-size: 12px; padding: 8px 12px; line-height: 16px; background: #2A86F3; border: 1px solid #2A86F3; color: white; border-radius: 2px;">Explore
-                                                                RazorpayX</a>
-                                                        </div>
+                                                            <div>
+                                                                <a href="https://razorpay.com/x/current-accounts/?utm_source=email&utm_medium=bene_email&utm_campaign=big_bets"
+                                                                style="margin-left: 24px; margin-right: 24px; text-decoration: none; display: inline-block; font-weight: 500;font-size: 12px; padding: 8px 12px; line-height: 16px; background: #2A86F3; border: 1px solid #2A86F3; color: white; border-radius: 2px;">Explore
+                                                                    RazorpayX</a>
+                                                            </div>
+                                                        </a>
 
                                                     </div>
                                                 </div>

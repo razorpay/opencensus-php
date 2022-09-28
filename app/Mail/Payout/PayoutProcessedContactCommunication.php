@@ -16,7 +16,7 @@ class PayoutProcessedContactCommunication extends Mailable
 {
     const EMAIL_TEMPLATE = 'emails.payout.processed_contact_communication';
 
-    const SUBJECT = '[Notification] %s has successfully transferred to you.';
+    const SUBJECT = 'Ka-Ching! Payment Received from %s';
 
     const DATE_FORMAT = 'd M Y g:i A';
 

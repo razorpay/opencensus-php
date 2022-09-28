@@ -23,7 +23,7 @@ class PayoutProcessedContactCommunication extends Base
 
     protected $payoutMerchant;
 
-    const SMS_TEMPLATE = 'sms.payout.payout_processed_contact_communication';
+    const SMS_TEMPLATE = 'sms.payout.payout_processed_contact_communication_v2';
 
    // constants
     const PAYOUT_ID = 'payout_id';
