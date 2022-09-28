@@ -259,6 +259,12 @@ class GraphRequestAny
 
             $this->headers['X-Dashboard-Merchant-Id'] = app('request.ctx')->getMerchantId();
         }
+
+        $this->trace->info(TraceCode::GRAPH_REQUEST_X_DASHBOARD_UID_MID, [
+            'x-dashboard-merchant-id' => $this->headers['X-Dashboard-Merchant-Id'],
+            'x-dashboard-user-id'    => $this->headers['X-Dashboard-User-Id'],
+        ]);
+
     }
 
     private function appendMerchantHeaderIfValid($user)

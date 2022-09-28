@@ -182,6 +182,7 @@ class TraceCode
 
     // Graph Request Trace codes
     const GRAPH_REQUEST_AUTH_VALIDATION_TIME          = 'GRAPH_REQUEST_AUTH_VALIDATION_TIME';
+    const GRAPH_REQUEST_X_DASHBOARD_UID_MID           = 'GRAPH_REQUEST_X_DASHBOARD_UID_MID';
 
     // Api route circuit breaker traces
     const API_CIRCUIT_BREAKER_MARK_FAILURE                 = 'API_CIRCUIT_BREAKER_MARK_FAILURE';
