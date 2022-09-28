@@ -199,6 +199,23 @@ trait Callback
                         return;
                     }
 
+                    // If gateways like Payu did not retun a terminal status
+                    // for emandate payment from webhooks, then we skip all post processing. 
+                    if (($payment->isEmandateAutoRecurring() === true) and 
+                        ($payment->hasBeenAuthorized() === false) and
+                        (Gateway::isApiBasedAsyncEMandateGateway($payment->getGateway()) === true))
+                    {
+                        $this->trace->info(TraceCode::SKIP_S2S_CALLBACK_POST_PROCESSING,
+                            [
+                                'payment_id'    => $payment->getId(),
+                                'gateway'       => $payment->getGateway(),
+                                'status'        => $payment->getStatus(),
+                                'method'        => $payment->getMethod(),
+                            ]);
+
+                        return;
+                    }
+
                     $this->postPaymentAuthorizeOfferProcessing($payment);
 
                     $this->autoCapturePaymentIfApplicable($payment);

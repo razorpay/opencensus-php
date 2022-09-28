@@ -79,6 +79,11 @@ class Gateway extends Base\Gateway
 
     public function getPaymentIdFromServerCallback(array $response, $gateway)
     {
+        // Used for PayU emandate as well, since gateway does not allow setting 
+        // separate URL for diff methods at their end. 
+        // Pls make sure changes in this flow, do not break for emandate.
+        // In future, move UPI callback to staticS2SCallbackGatewayWithModeAndMethod
+        // For emandate, already handled there.
         return $response[Fields::TXNID];
     }
 

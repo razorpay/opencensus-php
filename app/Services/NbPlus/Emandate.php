@@ -29,7 +29,7 @@ class Emandate extends Service
 
         $this->input = $input;
 
-        if (($this->action === Action::AUTHORIZE) and
+        if ((($this->action === Action::AUTHORIZE) or ($this->action === Action::CALLBACK)) and
             ($input[Entity::PAYMENT][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::AUTO))
         {
             $this->transactionType = self::DEBIT;
@@ -170,11 +170,20 @@ class Emandate extends Service
     {
         if ($this->transactionType === self::DEBIT)
         {
-            return [
+            $debitResponse = [
                 'acquirer' => [
                     Payment\Entity::REFERENCE1 => $response[Response::DATA][Response::BANK_REFERENCE_ID],
                 ]
             ];
+
+            if (isset($response[Response::DATA][Response::GATEWAY_PAYMENT_STATUS]) === true)
+            {
+                $debitResponse['additional_data'] = [
+                    'gateway_payment_status' => $response[Response::DATA][Response::GATEWAY_PAYMENT_STATUS] ?? null,
+                ];
+            }
+
+            return $debitResponse;
         }
 
         return $response[Response::DATA][Response::NEXT][Response::REDIRECT];
@@ -182,6 +191,24 @@ class Emandate extends Service
 
     protected function getRecurringData($response): array
     {
+        if ($this->transactionType === self::DEBIT)
+        {
+            $debitResponse = [
+                'acquirer' => [
+                    Payment\Entity::REFERENCE1 => $response[Response::DATA][Response::BANK_REFERENCE_ID] ?? null,
+                ]
+            ];
+
+            if (isset($response[Response::DATA][Response::GATEWAY_PAYMENT_STATUS]) === true)
+            {
+                $debitResponse['additional_data'] = [
+                    'gateway_payment_status' => $response[Response::DATA][Response::GATEWAY_PAYMENT_STATUS] ?? null,
+                ];
+            }
+
+            return $debitResponse;
+        }
+
         $reference = $response[Response::DATA][Response::BANK_REFERENCE_ID] ?? null;
 
         $returnData = [

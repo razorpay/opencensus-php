@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -21,18 +22,32 @@ trait EmandateRecurring
      * Called from updateAndNotifyPaymentAuthorized.
      * @param Entity $payment
      * @param array $data
-     * @param bool $wasFailed
      */
     protected function shouldSkipAuthorizeOnRecurringForEmandate(Entity $payment, array $data): bool
     {
         if (($payment->isEmandateRecurring() === false) or
-            ($payment->isRecurringTypeInitial() === false) or
-            ($payment->isSecondRecurring() === true) or
             (Gateway::isApiBasedAsyncEMandateGateway($payment->getGateway()) === false))
         {
            return false;
         }
 
+        // For Auto Recurring
+        if ($payment->isEmandateAutoRecurring() === true)
+        {
+            // Only skip authorize flow if gateway has not processed payment.
+            // We will wait for webhook in this case.
+            if ((isset($data['additional_data']) === true) and
+                (isset($data['additional_data']['gateway_payment_status']) === true) and 
+                ($data['additional_data']['gateway_payment_status'] === 'pending'))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        // Other checks for initial payment
+        // 
         $token = $payment->getGlobalOrLocalTokenEntity();
 
         if ($token === null)
@@ -66,11 +81,19 @@ trait EmandateRecurring
      */
     protected function updateRecurringEntitiesForEmandateIfApplicable(Entity $payment, array $data, bool $wasFailed = false)
     {
+        // For Auto Recurring
+        if ($payment->isEmandateAutoRecurring() === true)
+        {
+            $this->updatePaymentEntityForEmandateAsyncRecurringPayment($payment, $data);
+            return;
+        }
+
         // only for emandate payments
         if (($payment->isEmandateRecurring() === false) or
             ($payment->isRecurringTypeInitial() === false) or
             ($payment->isSecondRecurring() === true) or
-            ($payment->hasBeenAuthorized() === false))
+            ($payment->hasBeenAuthorized() === false) or
+            (Gateway::isApiBasedAsyncEMandateGateway($payment->getGateway()) === false))
         {
            return;
         }
@@ -197,5 +220,55 @@ trait EmandateRecurring
 
         // based on experiment, refund request will be routed to Scrooge
         return $processor->refundAuthorizedPayment($payment);
+    }
+
+    /**
+     * This is called when gateway returns a pending status. 
+     * In such cases we return the payment id and other details to merchant.
+     * For payment to reach terminal status, we wait for webhook from gateway.
+     *
+     * Called from processPaymentFinal.
+     * @param Entity $payment
+     * @param array $data
+     */
+    protected function processRecurringCreatedForEmandateAsyncGateway(Entity $payment, array $data)
+    {
+        if (($payment->isEmandateAutoRecurring() === true) and
+            (Gateway::isApiBasedAsyncEMandateGateway($payment->getGateway()) === true))
+        {
+            $data = ['razorpay_payment_id' => $payment->getPublicId()];
+
+            if (($payment->hasOrder() === true) and
+                ($this->app['basicauth']->isProxyOrPrivilegeAuth() === false) and
+                ($this->app->runningInQueue() === false))
+            {
+                $this->fillReturnDataWithOrder($payment, $data);
+            }
+
+            return $data;
+        }
+
+        throw new Exception\LogicException('Should not be called for any payment other than Emandate Auto Recurring');
+    }
+
+    // if we got a webhook and payment is still in pending status, 
+    // then just log it and skip authorize flow.
+    // No need to update any entities.
+    protected function updatePaymentEntityForEmandateAsyncRecurringPayment(Entity $payment, array $data)
+    {
+        if (($payment->isCreated() === true) and
+            (Gateway::isApiBasedAsyncEMandateGateway($payment->getGateway()) === true) and
+            (isset($data['additional_data']) === true) and
+            (isset($data['additional_data']['gateway_payment_status']) === true) and 
+            ($data['additional_data']['gateway_payment_status'] === 'pending'))
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_RECURRING_DEBIT_STATUS_UNCHANGED,
+                [
+                    'payment_id'      => $payment->getId(),
+                    'token_id'        => $payment->getTokenId(),
+                    'gateway_data'    => $data,
+                ]);
+        }
     }
 }

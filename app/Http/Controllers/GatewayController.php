@@ -486,6 +486,11 @@ class GatewayController extends Controller
             case Gateway::CASHFREE:
             case Gateway::PAYTM:
             case Gateway::PAYU:
+                // Used for PayU emandate as well, since gateway does not allow setting 
+                // separate URL for diff methods at their end. 
+                // Pls make sure changes in this flow, do not break for emandate.
+                // In future, move UPI callback to staticS2SCallbackGatewayWithModeAndMethod
+                // For emandate, already handled there.
                 $data = $this->processServerCallbackWithGatewayResponse($input, $gateway);
                 break;
             // Need to whitelist upi_yesbank at bank end

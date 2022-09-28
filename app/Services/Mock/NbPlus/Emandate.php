@@ -29,7 +29,7 @@ class Emandate extends EmandataBase
     {
         if ($this->transactionType === self::DEBIT)
         {
-            return [
+            $returnData =  [
                 'response' => [
                     'data' => [
                         'gateway_reference_id' => '1234',
@@ -39,6 +39,14 @@ class Emandate extends EmandataBase
                 ],
                 'error' => null
             ];
+
+            if ($input['input']['payment']['description'] === 'payment_pending')
+            {
+                $returnData['response']['data']['gateway_payment_status'] = 'pending';
+            }
+
+            return $returnData;
+
         }
         return [
             'response' => [

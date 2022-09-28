@@ -234,6 +234,10 @@ trait Authorize
                 $data['acquirer'] = $ret['acquirer'];
                 unset($ret['acquirer']);
 
+                // Emandate auto recurring in case of async gateways
+                $data['additional_data'] = $ret['additional_data'] ?? null;
+                unset($ret['additional_data']);
+
                 // UPI Auto recurring will also send UPI block along with acquirer
                 $data['upi'] = $ret['upi'] ?? null;
                 unset($ret['upi']);
@@ -1116,6 +1120,11 @@ trait Authorize
         if ($payment->isFileBasedEmandateDebitPayment() === true)
         {
             return $this->processCreated($payment);
+        }
+
+        if ($this->shouldSkipAuthorizeOnRecurringForEmandate($payment, $data) === true)
+        {
+            return $this->processRecurringCreatedForEmandateAsyncGateway($payment, $data);
         }
 
         if ($payment->isNach() === true)

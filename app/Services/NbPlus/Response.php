@@ -36,4 +36,7 @@ class Response
 
     // verify
     const GATEWAY_STATUS = 'gateway_status';
+
+    // debit 
+    const GATEWAY_PAYMENT_STATUS = 'gateway_payment_status';
 }

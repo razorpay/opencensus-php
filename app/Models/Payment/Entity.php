@@ -2526,6 +2526,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 ($this->getAttribute(self::RECURRING) === true));
     }
 
+    public function isEmandateAutoRecurring(): bool
+    {
+        return ($this->isEmandateRecurring() and
+               ($this->isSecondRecurring()));
+    }
+
     /**
      * @return bool
      */
