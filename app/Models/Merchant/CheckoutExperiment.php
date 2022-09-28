@@ -28,6 +28,11 @@ class CheckoutExperiment
 
     protected $experimentResults;
 
+    /*** @var array map your experiment id to (experiment name and experiment tag) in your fill method. The experiment
+     * name must be same name you use in your handle response method and exp tag must be same as what you used
+     * in $experimentResults. Sample : ['expID1' => [ 'name' => 'UpiQrV2', 'tag' => 'upi_qr_v2' ] ]  */
+    private $experimentToResponseHandlerMapping;
+
     public function __construct(array $input, string $merchantId)
     {
         $this->app = App::getFacadeRoot();
@@ -40,6 +45,9 @@ class CheckoutExperiment
             'upi_ux'                 => 'existing_variant',
             'emi_ux_revamp'          => false,
             'upi_qr_v2'              => false,
+            'cb_redesign_v1_5'       => false,
+            'recurring_redesign_v1_5' => false,
+            'reuse_upi_paymentId'     => false,
         ];
 
         $this->input = $input;
@@ -62,9 +70,9 @@ class CheckoutExperiment
 
             $bulkEvaluateArray = json_encode($this->experimentsData, JSON_UNESCAPED_SLASHES);
 
-            $bulk_evaluate = '{"bulk_evaluate":' . $bulkEvaluateArray . '}';
+            $bulkEvaluate = '{"bulk_evaluate":' . $bulkEvaluateArray . '}';
 
-            $response = $this->app['splitzService']->bulkCallsToSplitz($bulk_evaluate);
+            $response = $this->app['splitzService']->bulkCallsToSplitz($bulkEvaluate);
 
             return $this->handleExperimentResponses($response);
         }
@@ -82,55 +90,89 @@ class CheckoutExperiment
 
     /**
      * This method fills experiment data for all experiments we want to have.
-     * if you want to add new experiment, add a new fill data method and
-     * call it in this method to fill its data.
+     * if you want to add new experiment, add a new fill data method and make sure you map your exp id to
+     * exp name & exp tag. call the new fill method in this method to fill its data.
      * @return void
      */
     private function fillSplitzExperimentsData(): void
     {
-        $this->experimentsData[] = $this->fillCheckoutRedesignExperimentData();
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.checkout_redesign_v1_5_splitz_experiment_id',
+            'CheckoutRedesign',
+            'checkout_redesign_v1_5',
+            ['merchant_id' => $this->merchantId]
+        );
 
-        $this->experimentsData[] = $this->fillUpiUxExperimentData();
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.checkout_upi_ux_splitz_experiment_id',
+            'UpiUx',
+            'upi_ux',
+            ['merchant_id' => $this->merchantId]
+        );
 
-        $this->experimentsData[] = $this->fillEmiRevampExperimentData();
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.checkout_emi_ui_revamp_splitz_experiment_id',
+            'EmiUxRevamp',
+            'emi_ux_revamp',
+            ['merchant_id' => $this->merchantId]
+        );
 
         if ($this->shouldIncludeUpiQrV2Experiment())
         {
-            $this->experimentsData[] = $this->fillUpiQrV2ExperimentData();
+            $this->fillExperimentData(
+                UniqueIdEntity::generateUniqueId(),
+                'app.checkout_upi_qr_v2_splitz_experiment_id',
+                'UpiQrV2',
+                'upi_qr_v2',
+                ['merchant_id' => $this->merchantId]
+            );
         }
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.checkout_cb_redesign_v1_5_splitz_experiment_id',
+            'CrossBorderRedesign',
+            'cb_redesign_v1_5',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.checkout_recurring_redesign_v1_5_splitz_experiment_id',
+            'RecurringRedesign',
+            'recurring_redesign_v1_5',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.checkout_reuse_upi_payment_id_splitz_experiment_id',
+            'ReuseUpiPaymentId',
+            'reuse_upi_paymentId',
+            ['merchant_id' => $this->merchantId]
+        );
     }
 
-    private function fillCheckoutRedesignExperimentData(): array
-    {
-        return [
-            'id'            => UniqueIdEntity::generateUniqueId(),
-            'experiment_id' => $this->app['config']->get('app.checkout_redesign_v1_5_splitz_experiment_id'),
-        ];
-    }
+    private function fillExperimentData(
+        string $experimentEntityId,
+        string $experimentIdVariable,
+        string $experimentName,
+        string $experimentTag,
+        array $requestData
+    ): void {
+        $experimentId = $this->app['config']->get($experimentIdVariable);
 
-    private function fillUpiUxExperimentData(): array
-    {
-        return [
-            'id'            => UniqueIdEntity::generateUniqueId(),
-            'experiment_id' => $this->app['config']->get('app.checkout_upi_ux_splitz_experiment_id'),
-        ];
-    }
+        $this->experimentToResponseHandlerMapping[$experimentId]['name'] = $experimentName;
+        $this->experimentToResponseHandlerMapping[$experimentId]['tag'] = $experimentTag;
 
-    private function fillEmiRevampExperimentData(): array
-    {
-        return [
-            'id'            => UniqueIdEntity::generateUniqueId(),
-            'experiment_id' => $this->app['config']->get('app.checkout_emi_ui_revamp_splitz_experiment_id'),
-        ];
-    }
-
-    private function fillUpiQrV2ExperimentData(): array
-    {
-        return [
-            'id'            => UniqueIdEntity::generateUniqueId(),
-            'experiment_id' => $this->app['config']->get('app.checkout_upi_qr_v2_splitz_experiment_id'),
-            'request_data'  => json_encode(['merchant_id' => $this->merchantId]),
-        ];
+        $this->experimentsData[] = array(
+            'id'            => $experimentEntityId,
+            'experiment_id' => $experimentId,
+            'request_data'  => json_encode($requestData),
+        );
     }
 
     private function shouldIncludeUpiQrV2Experiment(): bool
@@ -139,40 +181,26 @@ class CheckoutExperiment
     }
 
     /**
-     * This method just goes through all experiments responses and allows us to handle
-     * those responses the way we want for each experiment. if you are creating new
-     * experiment, add new handle method for that experiment and call it here.
-     *
+     * This method just goes through all experiments responses and allows us to handle those responses
+     * the way we want for each experiment. if you are creating new experiment, add new handle response method for
+     * that experiment. your handle method must be named like: <'handle' prefix>, <your exp name>, <'Response' suffix>.
+     * sample handle response method name: handleEmiUxRevampResponse
      * @param $response
      * @return array
      */
     private function handleExperimentResponses($response): array
     {
-        $checkoutRedesignExperimentId = $this->app['config']->get('app.checkout_redesign_v1_5_splitz_experiment_id');
-        $upiUxExperimentId            = $this->app['config']->get('app.checkout_upi_ux_splitz_experiment_id');
-        $emiRevampExperimentId        = $this->app['config']->get('app.checkout_emi_ui_revamp_splitz_experiment_id');
-        $upiQrV2ExperimentId          = $this->app['config']->get('app.checkout_upi_qr_v2_splitz_experiment_id');
-
         foreach ($response['response']['bulk_evaluate_response'] as $experimentResponse)
         {
             $experimentId = $experimentResponse['experiment']['id'];
 
-            if ($experimentId === $checkoutRedesignExperimentId)
-            {
-                $this->experimentResults['checkout_redesign_v1_5'] = $this->handleCheckoutRedesignResponse($experimentResponse);
-            }
-            elseif ($experimentId === $upiUxExperimentId)
-            {
-                $this->experimentResults['upi_ux'] = $this->handleUpiUxResponse($experimentResponse);
-            }
-            elseif ($experimentId === $emiRevampExperimentId)
-            {
-                $this->experimentResults['emi_ux_revamp'] = $this->handleCheckoutRedesignResponse($experimentResponse);
-            }
-            elseif ($experimentId === $upiQrV2ExperimentId)
-            {
-                $this->experimentResults['upi_qr_v2'] = $this->handleUpiQrV2Response($experimentResponse);
-            }
+            $experimentName = $this->experimentToResponseHandlerMapping[$experimentId]['name'];
+
+            $experimentTag = $this->experimentToResponseHandlerMapping[$experimentId]['tag'];
+
+            $responseHandlerMethod = 'handle' . $experimentName . 'Response';
+
+            $this->experimentResults[$experimentTag] = $this->$responseHandlerMethod($experimentResponse);
         }
 
         return $this->experimentResults;
@@ -190,7 +218,35 @@ class CheckoutExperiment
         return $response['variant']['name'] ?? 'existing_variant';
     }
 
+    private function handleEmiUxRevampResponse($response): bool
+    {
+        $variant = $response['variant']['name'] ?? '';
+
+        return $variant === 'variant_on';
+    }
+
     private function handleUpiQrV2Response($response): bool
+    {
+        $variant = $response['variant']['name'] ?? '';
+
+        return $variant === 'variant_on';
+    }
+
+    private function handleCrossBorderRedesignResponse($response): bool
+    {
+        $variant = $response['variant']['name'] ?? '';
+
+        return $variant === 'variant_on';
+    }
+
+    private function handleRecurringRedesignResponse($response): bool
+    {
+        $variant = $response['variant']['name'] ?? '';
+
+        return $variant === 'variant_on';
+    }
+
+    private function handleReuseUpiPaymentIdResponse($response): bool
     {
         $variant = $response['variant']['name'] ?? '';
 
