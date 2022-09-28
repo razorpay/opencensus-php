@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Http\Controllers\CareProxyController;
 
 class Service extends Base\Service
 {
@@ -80,6 +81,24 @@ class Service extends Base\Service
 
     public function isChatEnabledNow() : bool
     {
+        $properties = [
+            'id'            => $this->merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.care_chat_migration_splitz_experiment_id'),
+        ];
+
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $variant = $response['response']['variant']['name'] ?? '';
+
+        $this->trace->info(TraceCode::FRESHCHAT_CARE_MIGRATION_EXPERIMENT_VARIANT, ['variant' => $variant]);
+
+        if ($variant == Constants::ENABLE)
+        {
+            $response = $this->app['care_service']->dashboardProxyRequest(CareProxyController::CHAT_CHECK_AVAILABILITY, []);
+
+            return $response['is_available'];
+        }
+
         return (($this->isValidChatTiming() === true) and
                 ($this->isHolidayForChat() === false));
     }

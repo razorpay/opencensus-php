@@ -421,6 +421,8 @@ return array(
 
     'cmma_escalation_process_id' => env('CMMA_ESCALATION_PROCESS_ID'),
 
+    'care_chat_migration_splitz_experiment_id' => env('CARE_CHAT_MIGRATION_SPLITZ_EXPERIMENT_ID'),
+
     'payment_handle_domain' => env('PAYMENT_HANDLE_DOMAIN'),
 
     'commission_invoice_bucket_migration_exp_id'  => env('COMMISSION_INVOICE_BUCKET_MIGRATION_EXP_ID'),

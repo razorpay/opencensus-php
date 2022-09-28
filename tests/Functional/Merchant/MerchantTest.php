@@ -182,6 +182,10 @@ class MerchantTest extends TestCase
 
     protected $esClient;
 
+    protected $splitzMock;
+
+    protected $careServiceMock;
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/MerchantTestData.php';
@@ -204,6 +208,43 @@ class MerchantTest extends TestCase
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
+    }
+
+    protected function setUpCareServiceMock()
+    {
+        $this->careServiceMock = Mockery::mock('RZP\Services\CareServiceClient', [$this->app])
+                                        ->makePartial()
+                                        ->shouldAllowMockingProtectedMethods();
+
+        $this->app['care_service'] = $this->careServiceMock;
+    }
+
+    protected function expectCareServiceRequestAndRespondWith($expectedPath, $expectedContent, $respondWithBody, $respondWithStatus)
+    {
+        $this->careServiceMock
+            ->shouldReceive('sendRequest')
+            ->times(1)
+            ->with(Mockery::on(function ($actualPath) use ($expectedPath)
+            {
+                return $expectedPath === $actualPath;
+            }), Mockery::on(function ($actualMethod)
+            {
+                return strtolower($actualMethod) === 'post';
+            }),
+                   Mockery::on(function ($actualContent) use ($expectedContent)
+                   {
+                       return $expectedContent === $actualContent;
+                   }))
+            ->andReturnUsing(function () use ($respondWithBody, $respondWithStatus)
+            {
+                $response = new \Requests_Response;
+
+                $response->body = json_encode($respondWithBody);
+
+                $response->status_code = $respondWithStatus;
+
+                return $response;
+            });
     }
 
     public function testMerchantSupportOptionDedupeMerchant()
@@ -12746,6 +12787,18 @@ IFSC Code  ICIC0001206
         return $response['response'];
     }
 
+    protected function mockSplitzTreatment($output)
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->byDefault()
+            ->andReturn($output);
+    }
+
     public function testMerchantSupportOptions()
     {
         $this->app->razorx->method('getTreatment')
@@ -12779,6 +12832,50 @@ IFSC Code  ICIC0001206
             $this->testData[__FUNCTION__]['response'] = $testCase[self::RESPONSE];
 
             $this->testData[__FUNCTION__]['request'] = $testCase[self::REQUEST];
+
+            if (array_key_exists('care_migration', $testCase) === true)
+            {
+                if ($testCase['care_migration'] === true)
+                {
+                    $this->setUpCareServiceMock();
+
+                    $output = [
+                        "response" => [
+                            "variant" => [
+                                "name" => 'enable',
+                            ]
+                        ]
+                    ];
+
+                    $this->mockSplitzTreatment($output);
+
+                    $this->expectCareServiceRequestAndRespondWith(
+                        'https://care-int.razorpay.com/twirp/rzp.care.chat.v1.ChatService/CheckChatAvailability',
+                        [
+                            'merchant' => [
+                                'id' => '10000000000000',
+                                'user_id' => User::MERCHANT_USER_ID,
+                            ]
+                        ],
+                        [
+                            'is_available' => true,
+                        ],
+                        200
+                    );
+                }
+            }
+            else
+            {
+                $output = [
+                    "response" => [
+                        "variant" => [
+                            "name" => 'disable',
+                        ]
+                    ]
+                ];
+
+                $this->mockSplitzTreatment($output);
+            }
 
             $this->createTestDataForTestMerchantSupportOptions($testCase);
 
@@ -12963,6 +13060,22 @@ IFSC Code  ICIC0001206
                 ],
                 self::ACTIVATE_MERCHANT =>  [1],
                 'time'                  => Carbon::createFromTime(2, 0, 0, Timezone::IST),
+            ],
+            //care migration test case
+            [
+                self::REQUEST       => [
+                    'url'      => '/merchants/support/option/flags',
+                    'method'   => \Requests::GET
+                ],
+                self::RESPONSE       => [
+                    'content' => [
+                        "show_chat"                 =>  true,
+                        "show_create_ticket_popup"  =>  false
+                    ],
+                ],
+                self::ACTIVATE_MERCHANT =>  [1],
+                'time'                  => Carbon::createFromTime(2, 0, 0, Timezone::IST),
+                'care_migration'        => true,
             ],
             //holiday
             [

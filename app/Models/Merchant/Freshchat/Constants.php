@@ -6,6 +6,8 @@ namespace RZP\Models\Merchant\Freshchat;
 
 class Constants
 {
+    const ENABLE = 'enable';
+
     const CONFIG                         = 'config';
     const START                          = 'start';
     const END                            = 'end';

@@ -3145,6 +3145,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PUT_FRESHCHAT_TIMINGS_CONFIG                          = 'PUT_FRESHCHAT_TIMINGS_CONFIG';
     const PUT_FRESHCHAT_HOLIDAYS_CONFIG                         = 'PUT_FRESHCHAT_HOLIDAYS_CONFIG';
 
+    const FRESHCHAT_CARE_MIGRATION_EXPERIMENT_VARIANT           = 'FRESHCHAT_CARE_MIGRATION_EXPERIMENT_VARIANT';
+
     const CARE_SERVICE_REQUEST                                  = 'CARE_SERVICE_REQUEST';
     const CARE_SERVICE_RESPONSE                                 = 'CARE_SERVICE_RESPONSE';
     const CARE_SERVICE_ERROR                                    = 'CARE_SERVICE_ERROR';
