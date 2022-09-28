@@ -187,7 +187,7 @@ class Repository extends Base\Repository
         {
             $data = ["function" => "getByTypeAndMerchantIds", "merchant_ids" => $merchantIds, "type" => $type];
 
-            if ($this->app->environment(Environment::TESTING) === false)
+            if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
             {
                 $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
@@ -249,7 +249,7 @@ class Repository extends Base\Repository
             $query->withTrashed();
         }
 
-        if ($this->app->environment(Environment::TESTING) === false and $fromTerminalsService === true)
+        if (($this->app->runningUnitTests() === false) and $fromTerminalsService === true and Environment::isEnvironmentQA($this->app['env']) === false)
         {
             $data = ["function" => "getById", "terminal_id" => $id, "with_trashed" => $withTrashed];
 
@@ -342,7 +342,7 @@ class Repository extends Base\Repository
 
     public function find($id, $columns = ['*'])
     {
-        if ($this->app->environment(Environment::TESTING) === false)
+        if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
         {
             $data = ["function" => "find", "terminal_id" => $id];
 
@@ -472,7 +472,7 @@ class Repository extends Base\Repository
 
         try
         {
-            if ($this->app->environment(Environment::TESTING) === false)
+            if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
             {
                 $data = ["function" => "getActivatedDirectSettlementTerminalsByMerchant", "merchant_id"=> $mId];
 
@@ -536,7 +536,7 @@ class Repository extends Base\Repository
         {
             $data = ["function" => "findByGatewayAndTerminalData", "gateway"=> $gateway, "terminal_data" => $terminalData, "withTrashed" => $withTrashed];
 
-            if ($this->app->environment(Environment::TESTING) === false)
+            if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
             {
                 $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
@@ -581,7 +581,7 @@ class Repository extends Base\Repository
 
         try
         {
-            if ($this->app->environment(Environment::TESTING) === false)
+            if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
             {
                 $data = ["function" => "findByGatewayMerchantId", "gateway_merchant_id"=> $gatewayMerchantId, "gateway"=> $gateway];
 
@@ -641,7 +641,7 @@ class Repository extends Base\Repository
 
         try
         {
-            if ($this->app->environment(Environment::TESTING) === false)
+            if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
             {
                 $data = ["function" => "findActivatedTerminalByGatewayMerchantId", "gateway_merchant_id"=> $gatewayMerchantId, "gateway"=> $gateway];
 
@@ -696,7 +696,7 @@ class Repository extends Base\Repository
 
         try
         {
-            if ($this->app->environment(Environment::TESTING) === false)
+            if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
             {
                 $data = ["function" => "findTerminalByGatewayMerchantIdAndGatewayTerminalId", "gateway_merchant_id"=> $gatewayMerchantId, "gateway_terminal_id"=> $gatewayTerminalId, "gateway"=> $gateway];
 
@@ -757,7 +757,7 @@ class Repository extends Base\Repository
         ->enabled()
         ->first();
 
-        if ($this->app->environment(Environment::TESTING) === false)
+        if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
         {
             $data = [
                 "function" => "findEnabledTerminalByMpanAndGatewayMerchantId",
@@ -816,7 +816,7 @@ class Repository extends Base\Repository
         {
             $data = ["function" => "getByParams", "params" => $params];
 
-            if ($this->app->environment(Environment::TESTING) === false)
+            if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
             {
                 $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
@@ -873,7 +873,7 @@ class Repository extends Base\Repository
             {
                 $data = ["function" => "getNonFailedNonDeactivatedByParams", "params" => $params];
 
-                if ($this->app->environment(Environment::TESTING) === false)
+                if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
                 {
                     $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
@@ -976,7 +976,7 @@ class Repository extends Base\Repository
 
         try
         {
-            if ($this->app->environment(Environment::TESTING) === false)
+            if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
             {
                 $data = ["function" => "getEmandateTerminalsForMerchantAndSharedMerchant", "gateways" => $gateways];
 
@@ -1053,7 +1053,7 @@ class Repository extends Base\Repository
 
         $apiTerminals = $query->get();
 
-        if ($this->app->environment(Environment::TESTING) === false)
+        if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
         {
             $data = ["function" => "getAllBankTransferTerminals", "gateway" => $gateway];
 
@@ -1145,7 +1145,7 @@ class Repository extends Base\Repository
                     ->whereNotNull(Entity::GATEWAY_RECON_PASSWORD)
                     ->first();
 
-        if ($this->app->environment(Environment::TESTING) === false)
+        if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
         {
             $data = [
                 "function" => "getByGatewayTerminalIdAndGatewayAndReconPasswordNotNull",
@@ -1206,7 +1206,7 @@ class Repository extends Base\Repository
 
         $terminal = $query->findOrFailPublic($tid);
 
-        if ($this->app->environment(Environment::TESTING) === false)
+        if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
         {
             $data = ["function" => "getByIdAndMerchantId", "mid" => $mid, "tid" => $tid];
 
@@ -1262,7 +1262,7 @@ class Repository extends Base\Repository
 
         $terminal = $query->first();
 
-        if ($this->app->environment(Environment::TESTING) === false)
+        if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
         {
             $data = ["function" => "getByMerchantIdAndGateway", "mid" => $mid, "gateway" => $gateway];
 
@@ -1328,7 +1328,7 @@ class Repository extends Base\Repository
 
         $apiTerminalIds = $query->pluck(Entity::ID)->all();
 
-        if ($this->app->environment(Environment::TESTING) === false)
+        if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
         {
             $data = ["function" => "getIdsByMerchantIdsAndGateway", "mids" => $mids, "gateway" => $gateway];
 
@@ -1388,7 +1388,7 @@ class Repository extends Base\Repository
         $this->addMerchantWhereCondition($query, [$mid]);
         $terminal = $query->first();
 
-        if ($this->app->environment(Environment::TESTING) === false)
+        if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
         {
             $data = ["function" => "getRecurringTerminalsByMidAndGateway", "mid" => $mid, "gateway" => $gateway];
 
@@ -1447,7 +1447,7 @@ class Repository extends Base\Repository
 
         $terminal = $query->first();
 
-        if ($this->app->environment(Environment::TESTING) === false)
+        if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
         {
             $data = ["function" => "getUpiRecurringTerminalsByMid", "mid" => $mid];
 
@@ -1563,7 +1563,7 @@ class Repository extends Base\Repository
             ->whereIn(Entity::ID, $ids)
             ->get();
 
-        if (($this->app->environment(Environment::TESTING) === false) and ($proxy === true))
+        if (($this->app->runningUnitTests() === false) and ($proxy === true) and Environment::isEnvironmentQA($this->app['env']) === false)
         {
             $data = ["function" => "getByTerminalIds", "ids" => $ids];
 
@@ -1642,7 +1642,7 @@ class Repository extends Base\Repository
                     ->enabled()
                     ->get();
 
-        if ($this->app->environment(Environment::TESTING) === false)
+        if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
         {
             $data = [
                 "function" => "getDirectTerminalsForGateway",
@@ -1695,7 +1695,7 @@ class Repository extends Base\Repository
                     })
                     ->first();
 
-        if ($this->app->environment(Environment::TESTING) === false)
+        if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
         {
             $data = ["function" => "findByGatewayMpan", "gateway" => $gateway, "mpan" => $mpan];
 
@@ -1827,7 +1827,7 @@ class Repository extends Base\Repository
 
         $terminal = $query->firstOrFail();
 
-        if ($this->app->environment(Environment::TESTING) === false)
+        if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
         {
             $data = ["function" => "getByMerchantProviderAndMethod", "mid" => $merchantId, "gateway_acquirer" => $provider];
 
@@ -1884,7 +1884,7 @@ class Repository extends Base\Repository
 
         $apiTerminals = $query->get();
 
-        if ($this->app->environment(Environment::TESTING) === false)
+        if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
         {
             $data = ["function" => "findByMerchantIdAndMethod", "mid" => $merchantId, "method" => $method];
 
@@ -1930,7 +1930,7 @@ class Repository extends Base\Repository
                     ->enabled()
                     ->get();
 
-        if ($this->app->environment(Environment::TESTING) === false)
+        if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
         {
             $data = ["function" => "findManyEnabledByIds", "ids" => $ids];
 
@@ -1994,7 +1994,7 @@ class Repository extends Base\Repository
 
         $apiTerminal = $query->get();
 
-        if ($this->app->environment(Environment::TESTING) === false)
+        if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
         {
             $data = ["function" => "findByMerchantIdGatewayAndCurrency", "mid" => $merchantId, "gateway" => $gateway];
 
@@ -2043,7 +2043,7 @@ class Repository extends Base\Repository
                     ->whereIn(Entity::STATUS, $status)
                     ->get();
 
-        if ($this->app->environment(Environment::TESTING) === false)
+        if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
         {
             $data = ["function" => "fetchByMerchantIdGatewayAndStatus", "mid" => $mid, "gateway" => $gateway, "status" => $status];
 
