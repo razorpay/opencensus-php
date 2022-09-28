@@ -1560,11 +1560,11 @@ class Route
         'unclaimed_merchant_poc_update'            => ['post',     'admin/unclaimed_poc_update',                     'AdminController@unclaimedMerchantPoc'                              ],
 
         // Admin Dashboard Org Level Reports
-        'admin_reports_fetch_filters'              => ['get',      'admin/reports/filters/{type}',                   'AdminReportController@adminReportsFiltersGetByType'                ],
-        'admin_reports_fetch_report_data'          => ['get',      'admin/reports/{type}',                           'AdminReportController@adminReportsGetReportData'                   ],
-        'admin_reports_fetch_reports_by_type'      => ['get',      'admin/reports/fetch/{type}',                     'AdminReportController@adminReportsDownloadReportsByType'           ],
-        'admin_reports_fetch_reports_for_admin'    => ['get',      'admin/reports/admin/list',                       'AdminReportController@adminReportsGetReportsForAdmin'              ],
-        'admin_reports_fetch_reports_by_id'        => ['get',      'admin/reports/download/{report_id}',             'AdminReportController@adminReportsDownloadReportById'              ],
+        'admin_reports_fetch_filters'              => ['get',      'admin_reports/filters/{type}',                   'AdminReportController@adminReportsFiltersGetByType'                ],
+        'admin_reports_fetch_report_data'          => ['get',      'admin_reports/{type}',                           'AdminReportController@adminReportsGetReportData'                   ],
+        'admin_reports_fetch_reports_by_type'      => ['get',      'admin_reports/fetch/{type}',                     'AdminReportController@adminReportsDownloadReportsByType'           ],
+        'admin_reports_fetch_reports_for_admin'    => ['get',      'admin_reports/admin/list',                       'AdminReportController@adminReportsGetReportsForAdmin'              ],
+        'admin_reports_fetch_reports_by_id'        => ['get',      'admin_reports/download/{report_id}',             'AdminReportController@adminReportsDownloadReportById'              ],
 
         // Permission can only be created by certain organizations.
         'permission_create'                        => ['post',     'permissions',                                    'OrganizationController@createPermission'                           ],

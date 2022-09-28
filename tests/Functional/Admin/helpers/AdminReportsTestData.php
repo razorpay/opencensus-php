@@ -7,7 +7,7 @@ use RZP\Error\PublicErrorCode;
 return [
     'testFiltersGetByType' => [
         'request'  => [
-            'url'     => '/admin/reports/filters/detailed_transaction',
+            'url'     => '/admin_reports/filters/detailed_transaction',
             'method'  => 'get',
         ],
         'response' => [
@@ -18,7 +18,7 @@ return [
     ],
     'testGetReportsData' => [
         'request'  => [
-            'url'     => '/admin/reports/detailed_merchant?count=30&skip=5&partner_id=DE7Wb69knrM6U9',
+            'url'     => '/admin_reports/detailed_merchant?count=30&skip=5&partner_id=DE7Wb69knrM6U9',
             'method'  => 'get',
         ],
         'response' => [
@@ -29,7 +29,7 @@ return [
     ],
     'testGetReportsByType' => [
         'request'  => [
-            'url'     => '/admin/reports/fetch/detailed_transaction',
+            'url'     => '/admin_reports/fetch/detailed_transaction',
             'method'  => 'get',
         ],
         'response' => [
@@ -40,7 +40,7 @@ return [
     ],
     'testGetReportsForAdmin' => [
         'request'  => [
-            'url'     => '/admin/reports/admin/list',
+            'url'     => '/admin_reports/admin/list',
             'method'  => 'get',
         ],
         'response' => [
@@ -51,7 +51,7 @@ return [
     ],
     'testReportsGetReportById' => [
         'request'  => [
-            'url'     => '/admin/reports/download/detailed_transaction',
+            'url'     => '/admin_reports/download/detailed_transaction',
             'method'  => 'get',
         ],
         'response' => [
