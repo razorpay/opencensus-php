@@ -193,7 +193,7 @@ export default class Sidebar extends Component {
         <div className={`sidebar${showMobileMenu ? ' show-mobile-menu' : ''}`}>
           <section className="brand-logo">
             <Link to="/dashboard" onClick={this.hideSidebar}>
-              <img src={logoURL || RZPLogoFullPNG} />
+              <img src={logoURL || RZPLogoFullPNG} width="145" height="35" />
             </Link>
           </section>
           <nav>

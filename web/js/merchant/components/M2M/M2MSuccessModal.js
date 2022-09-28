@@ -52,7 +52,7 @@ const M2MSuccessModal = ({ referredMerchants, referredAmount, trackEvents, isRef
     <ModalMask>
       <Modal className="m2m-success-modal" onClose={onModalClose}>
         <div className="m2m-success-banner">
-          <img src="https://cdn.razorpay.com/m2m/m2m_success_banner.svg" />
+          <img src="https://cdn.razorpay.com/m2m/m2m_success_banner.svg" height="205" width="408" />
         </div>
         <div className="m2m-modal-body">
           <div className="m2m-header">{title}</div>

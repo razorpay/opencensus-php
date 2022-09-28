@@ -35,7 +35,12 @@ const IntlPaymentsRecommendation = ({ internationalSettingStatus }) => {
           </button>
         </div>
         <div className="product-card">
-          <img src={imgIntlPaymentRecommendation} alt="intl-payment-recommendation" />
+          <img
+            src={imgIntlPaymentRecommendation}
+            alt="intl-payment-recommendation"
+            height="50"
+            width="50"
+          />
           <div className="product-card__container">
             <div className="name">
               <span>Enable International Payments Today</span>

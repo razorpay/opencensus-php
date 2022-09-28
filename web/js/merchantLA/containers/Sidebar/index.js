@@ -34,16 +34,16 @@ export default class Sidebar extends Component {
   }
 
   render() {
-    let { user, logoURL, showMobileMenu } = this.props;
-    let routes = this.routes;
-    let isMerchant = !!user.current;
+    const { user, logoURL, showMobileMenu } = this.props;
+    const routes = this.routes;
+    const isMerchant = !!user.current;
 
     return (
       <React.Fragment>
         <div class={`sidebar${showMobileMenu ? ' show-mobile-menu' : ''}`}>
           <section class="brand-logo">
             <Link to="/dashboard" onClick={this.hideSidebar}>
-              <img src={logoURL || RZPLogoFullPNG} />
+              <img src={logoURL || RZPLogoFullPNG} width="145" height="35" />
             </Link>
           </section>
           <nav>
