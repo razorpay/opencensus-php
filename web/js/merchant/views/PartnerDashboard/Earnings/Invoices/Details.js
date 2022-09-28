@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import moment from 'moment';
 
 import { merchantFetch } from 'merchant/utils/ajax';
 import { isPresent } from 'common/utils/rzp-utils';
@@ -16,17 +17,18 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetchCommissionInvoiceDetails } from 'merchant/reducers/commissionInvoices/details';
 
 @connect(
-  state => ({
+  (state) => ({
     ...state.commissionInvoice,
   }),
   {
     showNotification,
     fetchCommissionInvoiceDetails,
-  }
+  },
 )
 class InvoiceDetails extends Component {
-  UNSAFE_componentWillMount() {
-    this.props.fetchCommissionInvoiceDetails(this.props.id);
+  componentDidMount() {
+    const { id, fetchCommissionInvoiceDetails } = this.props;
+    fetchCommissionInvoiceDetails(id);
   }
 
   componentDidUpdate(prevProps) {
@@ -39,7 +41,7 @@ class InvoiceDetails extends Component {
     const { commissionInvoice } = this.props;
     const fileId = commissionInvoice.id;
     merchantFetch(`commission_invoice/${fileId}/signed-url`)
-      .then(res => {
+      .then((res) => {
         if (res && res.data) {
           window.open(res.data.signed_url, '_blank');
         }
@@ -65,12 +67,8 @@ class InvoiceDetails extends Component {
       );
     }
 
-    const commissionRange = moment(
-      `${commissionInvoice.year}-${commissionInvoice.month}-01`
-    );
-    const commissionFrom = commissionRange
-      .startOf('month')
-      .format('DD MMM YYYY');
+    const commissionRange = moment(`${commissionInvoice.year}-${commissionInvoice.month}-01`);
+    const commissionFrom = commissionRange.startOf('month').format('DD MMM YYYY');
     const commissionTo = commissionRange.endOf('month').format('DD MMM YYYY');
 
     return (
@@ -88,9 +86,7 @@ class InvoiceDetails extends Component {
             label="Status"
             value={() => (
               <div>
-                <CommissionInvoiceStatusLabel
-                  status={commissionInvoice.status}
-                />
+                <CommissionInvoiceStatusLabel status={commissionInvoice.status} />
               </div>
             )}
           />
@@ -138,10 +134,7 @@ class InvoiceDetails extends Component {
             Invoice Id: <strong>{this.props.id}</strong>
             {isPresent(commissionInvoice) && (
               <div class="btn-toolbar pull-right">
-                <button
-                  class="btn Button--primary--invert"
-                  onClick={this.downloadInvoice}
-                >
+                <button class="btn Button--primary--invert" onClick={this.downloadInvoice}>
                   <i class="i i-download" />
                   <Tooltip theme="dark">Download Invoice</Tooltip>
                 </button>
@@ -153,8 +146,7 @@ class InvoiceDetails extends Component {
             {commissionInvoice.status === 'issued' && (
               <div className="alert alert-warning rzp-banner">
                 <span className="rzp-banner-text">
-                  Commission payment will be initiated once the invoice is
-                  processed.
+                  Commission payment will be initiated once the invoice is processed.
                 </span>
                 <div className="rzp-banner-cta">
                   <ProcessInvoice
@@ -180,13 +172,13 @@ function renderAmountBreakup(commissionInvoice) {
       <div>
         Gross Amount - <Amount value={lineItem.taxable_amount} currency="INR" />
       </div>
-      {lineItem.taxes.map(tax => (
-        <div>
+      {lineItem.taxes.map((tax) => (
+        <div key={tax.name}>
           {tax.name} - <Amount value={tax.tax_amount} currency="INR" />
         </div>
       ))}
       <div>
-        Total GST - <Amount value={lineItem['tax_amount']} currency="INR" />
+        Total GST - <Amount value={lineItem.tax_amount} currency="INR" />
       </div>
     </Definition>
   );

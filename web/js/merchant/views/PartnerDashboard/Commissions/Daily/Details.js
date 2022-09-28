@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import moment from 'moment';
 
 import Amount from 'common/ui/Amount';
 import Spinner from 'common/ui/Spinner';
@@ -10,15 +11,15 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { isPresent } from 'common/utils/rzp-utils';
 import { fetchSingleDayAggregate } from 'merchant/reducers/commission';
 
-@connect(state => ({ ...state.commAggSingleDay }), { fetchSingleDayAggregate })
+@connect((state) => ({ ...state.commAggSingleDay }), { fetchSingleDayAggregate })
 export default class CommissionsDailyEntity extends Component {
-  UNSAFE_componentWillMount() {
+  componentDidMount() {
     this.fetchData(Number(this.props.timestamp));
   }
 
-  UNSAFE_componentWillReceiveProps(nextProps) {
-    if (this.props.timestamp !== nextProps.timestamp) {
-      this.fetchData(Number(nextProps.timestamp));
+  componentDidUpdate(prevProps) {
+    if (this.props.timestamp !== prevProps.timestamp) {
+      this.fetchData(Number(this.props.timestamp));
     }
   }
 
@@ -27,13 +28,7 @@ export default class CommissionsDailyEntity extends Component {
   }
 
   render() {
-    const {
-      loading: isLoading,
-      entity,
-      error,
-      renderBreakups,
-      ...props
-    } = this.props;
+    const { loading: isLoading, entity, error, renderBreakups, ...props } = this.props;
     const data = entity.data;
     return (
       <div class="content-wrapper content-sm txn-details Commission--Detail">
@@ -71,10 +66,7 @@ export default class CommissionsDailyEntity extends Component {
                       value={data.activeMerchants}
                     />
 
-                    <EntityDetailRow
-                      label="No. of Transactions"
-                      value={data.transactions}
-                    />
+                    <EntityDetailRow label="No. of Transactions" value={data.transactions} />
                   </div>
                 </div>
               </div>

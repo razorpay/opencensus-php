@@ -11,8 +11,8 @@ export default class ManageWebhook extends Component {
     loading: true,
   };
 
-  UNSAFE_componentWillMount() {
-    fetchAppWebhooks(this.props.appId, this.props.mode).then(response => {
+  componentDidMount() {
+    fetchAppWebhooks(this.props.appId, this.props.mode).then((response) => {
       this.setState({
         webhook: response.data.items[0],
         loading: false,

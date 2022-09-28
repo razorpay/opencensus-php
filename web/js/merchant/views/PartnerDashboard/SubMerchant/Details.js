@@ -46,29 +46,22 @@ export default class SubmerchantDetailsContainer extends Component {
     if (this.props.history.location.pathname.startsWith('/partners/submerchants/x')) {
       product = PRODUCT_TYPE.X;
     }
+    this.setState({
+      product,
+    });
     this.props.fetchSubmerchantWithProduct(this.props.id, this.props.appId, product);
   };
 
-  UNSAFE_componentWillMount() {
-    this.getPannelData();
-  }
-
   componentDidMount() {
+    this.getPannelData();
     if (!!this.props.closeUrl) {
       trackListEvents('Open Details');
     }
   }
 
-  UNSAFE_componentWillReceiveProps(nextProps) {
-    let product = PRODUCT_TYPE.PG;
-    if (this.props.history.location.pathname.startsWith('/partners/submerchants/x')) {
-      product = PRODUCT_TYPE.X;
-    }
-    this.setState({
-      product,
-    });
-    if (nextProps.id !== this.props.id || nextProps.appId !== this.props.appId) {
-      this.props.fetchSubmerchantWithProduct(nextProps.id, nextProps.appId, product);
+  componentDidUpdate(prevProps) {
+    if (prevProps.id !== this.props.id || prevProps.appId !== this.props.appId) {
+      this.getPannelData();
     }
   }
 

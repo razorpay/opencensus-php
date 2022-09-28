@@ -13,19 +13,19 @@ import { fetchCommission } from 'merchant/reducers/commission';
 import { isPresent } from 'common/utils/rzp-utils';
 
 @connect(
-  state => ({
+  (state) => ({
     ...state.commission,
   }),
-  { fetchCommission }
+  { fetchCommission },
 )
 export default class CommissionEntityContainer extends Component {
-  UNSAFE_componentWillMount() {
+  componentDidMount() {
     this.props.fetchCommission(this.props.id);
   }
 
-  UNSAFE_componentWillReceiveProps(nextProps) {
-    if (this.props.id !== nextProps.id) {
-      this.props.fetchCommission(nextProps.id);
+  componentDidUpdate(prevProps) {
+    if (this.props.id !== prevProps.id) {
+      this.props.fetchCommission(this.props.id);
     }
   }
 
@@ -63,10 +63,7 @@ export default class CommissionEntityContainer extends Component {
                         </EntityDetailRow>
 
                         <EntityDetailRow label="Amount">
-                          <Amount
-                            value={source.amount}
-                            currency={source.currency}
-                          />
+                          <Amount value={source.amount} currency={source.currency} />
                         </EntityDetailRow>
 
                         <EntityDetailRow label="ID" value={source.id} />

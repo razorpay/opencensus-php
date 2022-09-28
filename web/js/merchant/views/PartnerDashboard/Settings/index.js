@@ -14,7 +14,7 @@ import ViewCredentials from './ViewCredentials';
 import { trackSettingsEvents } from '../ga';
 
 @connect(
-  state => ({
+  (state) => ({
     isLoading: state.applications.loading,
     application: state.applications.partnerApplication,
   }),
@@ -22,18 +22,15 @@ import { trackSettingsEvents } from '../ga';
     fetchPartnerApplication,
     closeModal,
     openModal,
-  }
+  },
 )
 export default class SettingsContainer extends Component {
-  UNSAFE_componentWillMount() {
-    this.props.fetchPartnerApplication();
-  }
-
   componentDidMount() {
+    this.props.fetchPartnerApplication();
     trackSettingsEvents();
   }
 
-  handleManageWebhookClick = mode => () => {
+  handleManageWebhookClick = (mode) => () => {
     this.props.openModal({
       component: (
         <ManageWebhook
@@ -45,14 +42,12 @@ export default class SettingsContainer extends Component {
     });
   };
 
-  handleViewCredentialsClick = mode => () => {
+  handleViewCredentialsClick = (mode) => () => {
     const type = mode === 'test' ? 'dev' : 'prod';
     const { clientCredentials } = this.props.application;
     this.props.openModal({
       size: 'small',
-      component: (
-        <ViewCredentials mode={mode} credentials={clientCredentials[type]} />
-      ),
+      component: <ViewCredentials mode={mode} credentials={clientCredentials[type]} />,
     });
   };
 
