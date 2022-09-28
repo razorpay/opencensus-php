@@ -1300,9 +1300,7 @@ return [
         'host' => env('ASV_HOST', 'https://acs-web.razorpay.com'),
         'user' => env('ASV_USERNAME'),
         'password' => env('ASV_PASSWORD'),
-        'asv_http_client_timeout' => env('ASV_HTTP_CLIENT_TIMEOUT', 5),
-        'queue_driver' => env('QUEUE_DRIVER', ""),
-        'sync_queue_splitz_experiment_id' => env('ASV_SYNC_QUEUE_SPLITZ_EXPERIMENT_ID', "")
+        'asv_http_client_timeout' => env('ASV_HTTP_CLIENT_TIMEOUT', 5)
     ],
 
     'recon'         => [
