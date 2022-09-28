@@ -27,13 +27,14 @@ class File extends BaseFile
             ->save();
     }
 
-    public function saveFile(array $fileData, string $fileName, Entity $entity): FileStore\Creator
+    public function saveFileWithFormattedHeader(array $fileData, string $fileName, Entity $entity): FileStore\Creator
     {
         $creator = new FileStore\Creator;
 
         $creator->extension(FileStore\Format::CSV)
             ->content($fileData)
             ->name($fileName)
+            ->headers(false)
             ->entity($entity)
             ->store(FileStore\Store::S3)
             ->type(FileStore\Type::PAYMENT_LIMIT)

@@ -23,4 +23,7 @@ class Constants
     const FILE = 'file';
     const MAX_PAYMENT_LIMIT_OUTPUT = 'max_payment_limit';
 
+    // Signed URL is valid for a week
+    const SIGNED_URL_DURATION = '10080';
+
 }

@@ -26,9 +26,9 @@ class Processor extends Base\Core
 
     public function generateFile(array $fileData, string $fileName)
     {
-        $ufh = (new File())->saveFile($fileData, $fileName, $this->entity);
+        $ufh = (new File())->saveFileWithFormattedHeader($fileData, $fileName, $this->entity);
 
-        $signedFileUrl = $ufh->getSignedUrl();
+        $signedFileUrl = $ufh->getSignedUrl(constants::SIGNED_URL_DURATION);
 
         $this->trace->info(TraceCode::MERCHANT_MAX_PAYMENT_LIMIT_CSV_UPLOADED, [
                 'fileData' => $fileData,
@@ -49,9 +49,11 @@ class Processor extends Base\Core
         $this->validator->validateInput('csvHeader', $headers);
         $this->validator->validateRowsLimit($data);
 
+        $dataWithHeader = array_merge([$headers], $data);
+
         $fileName = Constants::MAX_PAYMENT_LIMIT_OUTPUT . '_' . $entity_id;
 
-        return $this->generateFile($data, $fileName);
+        return $this->generateFile($dataWithHeader, $fileName);
     }
 
 
