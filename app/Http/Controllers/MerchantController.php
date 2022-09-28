@@ -564,6 +564,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postBankAccountFileUpload()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->bankAccountFileUpload($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function putBankAccount($id)
     {
         $input = Request::all();

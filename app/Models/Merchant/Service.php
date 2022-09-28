@@ -2487,6 +2487,13 @@ class Service extends Base\Service
         return (new BankAccount\Core)->bankAccountUpdate($merchant, $input);
     }
 
+    public function bankAccountFileUpload(array $input)
+    {
+        $merchant = app('basicauth')->getMerchant();
+
+        return (new BankAccount\Core)->bankAccountFileUpload($merchant, $input);
+    }
+
     public function bankAccountUpdatePostPennyTestingWorkflow(array $input)
     {
         [$merchant, $merchantDetails] = (New Merchant\Detail\Core())->getMerchantAndSetBasicAuth($input[Constants::MERCHANT_ID]);

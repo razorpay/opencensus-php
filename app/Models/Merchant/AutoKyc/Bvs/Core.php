@@ -83,7 +83,7 @@ class Core extends Base\Core
      *
      * @return BvsValidation\Entity|null
      */
-    public function verify(string $ownerId, array $input, bool $shouldNotInvokeHandler = false): ?BvsValidation\Entity
+    public function verify(string $ownerId, array $input, bool $shouldNotInvokeHandler = false, $skipAsyncFlow = false): ?BvsValidation\Entity
     {
         $input[Constant::OWNER_ID] = $ownerId;
 
@@ -98,7 +98,7 @@ class Core extends Base\Core
         {
             $processor = (new Factory())->getProcessor($input, $this->merchant);
 
-            $response = $processor->Process();
+            $response = $processor->Process(false, $skipAsyncFlow);
 
             $this->trace->info(TraceCode::BVS_GET_VALIDATION_RESPONSE, [
                 'response' => $response->getResponseData()]);

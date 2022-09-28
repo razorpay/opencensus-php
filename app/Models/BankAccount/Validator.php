@@ -22,6 +22,35 @@ class Validator extends Base\Validator
     const INVALID_IFSC_CODE_MESSAGE         = 'Invalid IFSC Code in Bank Account';
     const INVALID_ADDRESS_PROOF_URL_MESSAGE = 'Invalid Address Proof File in Details or Invalid Auth';
 
+    protected static $fileUploadRules = [
+        Detail\Entity::ADDRESS_PROOF_URL => 'required|file|max:50000|mime_types:'
+                                            . 'application/vnd.openxmlformats-officedocument.wordprocessingml.document,'
+                                            . 'application/msword,'
+                                            . 'application/pdf,'
+                                            . 'application/x-pdf,'
+                                            . 'image/png,'
+                                            . 'image/jpg,'
+                                            . 'text/xml,'
+                                            . 'application/xml,'
+                                            . 'application/octet-stream,'
+                                            . 'text/csv,'
+                                            . 'text/plain,'
+                                            . 'video/3gpp2,'
+                                            . 'video/3gpp,'
+                                            . 'video/x-msvideo,'
+                                            . 'video/x-flv,'
+                                            . 'video/mp4,'
+                                            . 'video/m4v,'
+                                            . 'video/x-matroska,'
+                                            . 'video/quicktime,'
+                                            . 'video/mp4,'
+                                            . 'video/mpeg,'
+                                            . 'video/mpeg,'
+                                            . 'application/vnd.rn-realmedia,'
+                                            . 'video/x-ms-wmv,'
+                                            . 'image/jpeg,'
+    ];
+
     protected static $addBankAccountRules = [
         Detail\Entity::ADDRESS_PROOF_URL        => 'sometimes',
         Entity::ENTITY_ID                       => 'sometimes',

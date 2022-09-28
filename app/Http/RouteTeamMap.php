@@ -149,6 +149,7 @@ class RouteTeamMap
         'invitation_resend'                        => [self::TEAM_PAYMENTS_DASHBOARD],
         'merchant_2fa_change_setting'              => [self::TEAM_PAYMENTS_DASHBOARD],
         'merchant_bank_account_change_status'      => [self::TEAM_PAYMENTS_DASHBOARD],
+        'merchant_bank_account_file_upload'        => [self::TEAM_PAYMENTS_DASHBOARD],
         'merchant_bank_account_update'             => [self::TEAM_PAYMENTS_DASHBOARD],
         'merchant_bank_account_create'             => [self::TEAM_PAYMENTS_DASHBOARD],
         'merchant_billing_label_suggestions'       => [self::TEAM_PAYMENTS_DASHBOARD],

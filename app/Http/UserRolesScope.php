@@ -97,6 +97,7 @@ class UserRolesScope
             'merchant_replace_key'                  => [Role::OWNER, Role::ADMIN],
             'merchant_add_bank_account'             => [Role::OWNER, Role::ADMIN],
             'merchant_bank_account_change_status'   => [Role::OWNER, Role::ADMIN],
+            'merchant_bank_account_file_upload'     => [Role::OWNER, Role::ADMIN],
             'create_submerchant_user'               => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'merchant_fetch_users'                  => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
             'merchant_gstin_self_serve_status'      => [Role::OWNER, Role::ADMIN],

@@ -111,6 +111,7 @@ use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Models\Merchant\Methods\Repository as MethodRepo;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
+use RZP\Models\BankAccount\Constants as BankAccountConstants;
 use RZP\Mail\InstrumentRequest\StatusNotify as StatusNotifyMail;
 use RZP\Mail\User\PasswordAndEmailReset as PasswordAndEmailResetMail;
 use RZP\Models\Merchant\Cron\Actions as CronActions;
@@ -12655,6 +12656,285 @@ IFSC Code  ICIC0001206
         return $merchantId;
     }
 
+    protected function getBankAccountUpdateSyncOnlyCacheKey(string $merchantId)
+    {
+        return sprintf(BankAccountConstants::BANK_ACCOUNT_UPDATE_SYNC_ONLY_CACHE_KEY, $merchantId);
+    }
+
+    public function testBankAccountFileUploadTimeout()
+    {
+        $this->setupWorkflowForBankAccountUpdate();
+
+        $merchantId = $this->setupMerchantForBankAccountUpdateWithoutFileUpload(__FUNCTION__, true, [
+            'promoter_pan_name' => 'pan_name'
+        ]);
+
+        $merchant = (new Merchant\Repository)->findOrFail($merchantId);
+
+        $bankAccount = $merchant->bankAccount;
+
+        $data = [
+            'input' => [
+                'ifsc_code' => 'ICIC0001206',
+                'account_number' => '0000009999999999999',
+                'beneficiary_name' => 'Test R4zorpay:'
+
+            ],
+            'old_bank_account_array' => [
+                $bankAccount->toArray()
+            ],
+            'new_bank_account_array' => [
+                'notes' => [],
+                'beneficiary_country' => 'IN',
+                'ifsc_code' => 'ICIC0001206',
+                'account_number' => '0000009999999999999',
+                'beneficiary_name' => 'Test R4zorpay:',
+                'type' => 'merchant',
+                'name' => 'Test R4zorpay:',
+                'ifsc' =>  'ICIC0001206',
+                'mpin_set' => FALSE,
+                'bank_name' => 'ICICI Bank'
+            ],
+            'validation_id' => null,
+            'admin_email' => null,
+        ];
+
+        $cacheKey = $this->getBankAccountUpdateSyncOnlyCacheKey($merchantId);
+
+        $app = App::getFacadeRoot();
+
+        $this->app['cache']->put($cacheKey, $data);
+
+        $this->updateUploadDocumentData(__FUNCTION__, 'address_proof_url');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->esClient->indices()->refresh();
+
+        $action = $this->esDao->searchByIndexTypeAndActionId('workflow_action_test_testing', 'action',
+            substr($workflowAction['id'], 9))[0]['_source'];
+
+        $this->assertEquals($merchantId, $action['maker_id']);
+
+        $this->assertNotEmpty($action['diff']['old']['address_proof_url']);
+        $this->assertNotEmpty($action['diff']['new']['address_proof_url']);
+        $this->assertNotEmpty($action['payload']['input']['address_proof_url']);
+        $this->assertNotEmpty($action['payload']['old_bank_account_array']['address_proof_url']);
+        $this->assertNotEmpty($action['payload']['new_bank_account_array']['address_proof_url']);
+    }
+
+    public function testBankAccountFileUploadFail()
+    {
+        Config(['services.bvs.mock' => true]);
+
+        Config(['services.bvs.sync.flow' => true]);
+
+        Config(['services.bvs.response' => 'failure']);
+
+        $testData = $this->testData['testUpdateBankAccountViaPennyTestingSyncFlow'];
+
+        $testData['response']['content'] = [
+            'create_workflow' => true,
+            'sync_flow' => true,
+        ];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->setupWorkflowForBankAccountUpdate();
+
+        $merchantId = $this->setupMerchantForBankAccountUpdateWithoutFileUpload(__FUNCTION__, true, [
+            'promoter_pan_name' => 'pan_name'
+        ]);
+
+        $this->startTest();
+
+        $this->testData[__FUNCTION__] = $this->testData['testBankAccountFileUploadTimeout'];
+
+        $this->updateUploadDocumentData(__FUNCTION__, 'address_proof_url');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->esClient->indices()->refresh();
+
+        $action = $this->esDao->searchByIndexTypeAndActionId('workflow_action_test_testing', 'action',
+            substr($workflowAction['id'], 9))[0]['_source'];
+
+        $this->assertEquals($merchantId, $action['maker_id']);
+
+        $this->assertNotEmpty($action['diff']['old']['address_proof_url']);
+
+        $this->assertNotEmpty($action['diff']['new']['address_proof_url']);
+
+        $this->assertNotEmpty($action['payload']['input']['address_proof_url']);
+
+        $this->assertNotEmpty($action['payload']['old_bank_account_array']['address_proof_url']);
+
+        $this->assertNotEmpty($action['payload']['new_bank_account_array']['address_proof_url']);
+    }
+
+
+    public function testBankAccountFileUploadSuccess()
+    {
+        Config(['services.bvs.mock' => true]);
+
+        Config(['services.bvs.sync.flow' => true]);
+
+        Config(['services.bvs.response' => 'success']);
+
+        $testData = $this->testData['testUpdateBankAccountViaPennyTestingSyncFlow'];
+
+        $testData['response']['content'] = [
+            'new_bank_account' => [
+                'notes' => [],
+                'beneficiary_country' => 'IN',
+                'ifsc_code' => 'ICIC0001206',
+                'account_number' => '0000009999999999999',
+                'beneficiary_name' => 'Test R4zorpay:',
+                'type' => 'merchant',
+                'name' => 'Test R4zorpay:',
+                'ifsc' =>  'ICIC0001206',
+                'mpin_set' => FALSE,
+                'bank_name' => 'ICICI Bank',
+            ],
+            'sync_flow' => true,
+        ];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->setupWorkflowForBankAccountUpdate();
+
+        $merchantId = $this->setupMerchantForBankAccountUpdateWithoutFileUpload(__FUNCTION__, true, [
+            'promoter_pan_name' => 'pan_name'
+        ]);
+
+        $this->startTest();
+
+        $this->testData[__FUNCTION__] = $this->testData['testBankAccountFileUploadTimeout'];
+
+        $this->updateUploadDocumentData(__FUNCTION__, 'address_proof_url');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $response = $this->startTest();
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->esClient->indices()->refresh();
+
+        $action = $this->esDao->searchByIndexTypeAndActionId('workflow_action_test_testing', 'action',
+            substr($workflowAction['id'], 9))[0]['_source'];
+
+        $this->assertEquals($merchantId, $action['maker_id']);
+
+        $this->assertNotEmpty($action['diff']['old']['address_proof_url']);
+
+        $this->assertNotEmpty($action['diff']['new']['address_proof_url']);
+
+        $this->assertNotEmpty($action['payload']['input']['address_proof_url']);
+
+        $this->assertNotEmpty($action['payload']['old_bank_account_array']['address_proof_url']);
+
+        $this->assertNotEmpty($action['payload']['new_bank_account_array']['address_proof_url']);
+    }
+
+    public function testBankAccountFileUploadNoDataInCacheFailure()
+    {
+        $merchantId = $this->runBankAccountUpdateCreateWorkflow();
+
+        $this->updateUploadDocumentData(__FUNCTION__, 'address_proof_url');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
+    public function runBankAccountUpdateCreateWorkflow()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTesting'];
+
+        Config(['services.bvs.mock' => true]);
+
+        $this->setupWorkflowForBankAccountUpdate();
+
+        $merchantId = $this->setupMerchantForBankAccountUpdateWithoutFileUpload(__FUNCTION__, true, [
+            'promoter_pan_name' => 'pan_name'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+
+        $bvsValidationEntity = $this->getDbLastEntity('bvs_validation')->toArray();
+
+        $bvsResponse = $this->getBvsResponse($bvsValidationEntity['validation_id'], 'failed', 'NO_PROVIDER_ERROR');
+
+        $this->processBvsResponse($bvsResponse);
+
+        // as a workflow is created, assert bank account is not changed for the merchant still
+        $this->assertBankAccountForMerchant($merchantId, [
+            'entity'         => 'bank_account',
+            'ifsc'           => 'RZPB0000000',
+            'account_number' => '10010101011',
+        ]);
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->esClient->indices()->refresh();
+
+        $action = $this->esDao->searchByIndexTypeAndActionId('workflow_action_test_testing', 'action',
+            substr($workflowAction['id'], 9))[0]['_source'];
+
+        $this->assertEquals($merchantId, $action['maker_id']);
+        $this->assertEquals('merchant', $action['maker_type']);
+
+        $this->assertFalse(isset($action['diff']['old']['address_proof_url']));
+        $this->assertFalse(isset($action['diff']['new']['address_proof_url']));
+        $this->assertFalse(isset($action['payload']['input']['address_proof_url']));
+        $this->assertFalse(isset($action['payload']['old_bank_account_array']['address_proof_url']));
+        $this->assertFalse(isset($action['payload']['new_bank_account_array']['address_proof_url']));
+
+        return $merchantId;
+    }
+
+    protected function setupMerchantForBankAccountUpdateWithoutFileUpload($testcasename, $createBankAccount = true, $merchantDetails = [])
+    {
+        Mail::fake();
+
+        $merchant = $this->fixtures->create('merchant', ['name' => 'testname']);
+
+        $this->fixtures->user->createUserMerchantMappingForDefaultUser($merchant->id);
+
+        $merchantId = $merchant['id'];
+
+        $merchantDetails = array_merge($merchantDetails, [
+            'merchant_id'       => $merchantId,
+            'address_proof_url' => 'old_address_proof_file_url',
+        ]);
+
+        $this->fixtures->create('merchant_detail:valid_fields', $merchantDetails);
+
+        if ($createBankAccount === true)
+        {
+            $this->fixtures->merchant->createBankAccount(['merchant_id' => $merchantId, 'entity_id' => $merchantId]);
+        }
+
+        $user = $this->fixtures->create('user', ['email' => 'testingemail@gmail.com', 'contact_mobile' => '1234567890', 'contact_mobile_verified' => true]);
+
+        $this->createMerchantUserMapping($user['id'], $merchantId, 'owner');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        return $merchantId;
+    }
+
     private function assertBankAccountForMerchant($merchantId, $expectedBankAccount)
     {
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
@@ -12682,7 +12962,6 @@ IFSC Code  ICIC0001206
         $org = (new OrgRepository)->getRazorpayOrg();
 
         $this->fixtures->on('live')->create('org:workflow_users', ['org' => $org]);
-
 
         $this->createWorkflow([
             'org_id' => '100000razorpay',
@@ -16486,5 +16765,4 @@ The same has been enabled for the account.
 
         $this->assertNotEquals('risk_review_watchlist_tag', $merchantDetails['fraud_type']);
     }
-
 }

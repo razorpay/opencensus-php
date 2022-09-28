@@ -14,6 +14,10 @@ class Constants
     const BANK_ACCOUNT_UPDATE_PENNY_TESTING_CACHE_KEY = 'bank_account_update_penny_testing_%s';
     const BANK_ACCOUNT_UPDATE_MUTEX_RESOURCE          = 'bank_account_update_mutex_resource_%s';
 
+    const BANK_ACCOUNT_UPDATE_SYNC_ONLY_TTL           = 60 * 60; // in seconds
+    const BANK_ACCOUNT_UPDATE_SYNC_ONLY_CACHE_KEY     = 'new_bank_account_update_data_%s';
+
+
     const ACCOUNT_STATUS                                    = 'account_status';
     const REGISTERED_NAME                                   = 'registered_name';
     const IS_NAME_MATCHED                                   = 'is_name_matched';
@@ -40,4 +44,7 @@ class Constants
     const NEW_BANK_ACCOUNT                                  = 'new_bank_account';
     const SYNC_FLOW                                         = 'sync_flow';
     const WORKFLOW_CREATED                                  = 'workflow_created';
+    const CREATE_WORKFLOW                                   = 'create_workflow';
+    const TIMEOUT                                           = 'timeout';
+    const SYNC_ONLY                                         = 'sync_only';
 }

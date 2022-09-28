@@ -16,7 +16,9 @@ use RZP\Models\Merchant\Service;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Document;
 use RZP\Models\Settlement\Bucket;
+use RZP\Models\Merchant\BvsValidation;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\Comment\Core as CommentCore;
 use RZP\Models\Payment\Processor\Netbanking;
@@ -698,10 +700,115 @@ class Core extends Base\Core
             ]);
     }
 
+    /**
+     * @throws Exception\ServerErrorException
+     * @throws BadRequestException
+     */
+    public function bankAccountFileUpload(MerchantEntity $merchant, array $input)
+    {
+        (new Validator())->validateInput('file_upload', $input);
+
+        $data = $this->getBankAccountUpdateSyncOnlyCacheData($merchant);
+
+        if ($data === null)
+        {
+            throw new ServerErrorException(
+                'Cache data missing for Bank Account Update',
+                ErrorCode::SERVER_ERROR_CACHE_DATA_MISSING_FOR_BANK_ACCOUNT_UPDATE
+            );
+        }
+
+        $oldBankAccountFile = [];
+
+        $newBankAccountFile = [];
+
+        $this->fillAddressProofUrl($input, $merchant, $newBankAccountFile, $oldBankAccountFile);
+
+        $this->trace->info(TraceCode::BANK_ACCOUNT_UPDATE_FILE_UPLOADED, [
+            Document\Constants::FILE_ID => $newBankAccountFile[Detail\Entity::ADDRESS_PROOF_URL]
+        ]);
+
+        $this->addBankAccountFileInSyncOnlyCacheData($merchant, $oldBankAccountFile, $newBankAccountFile);
+
+        $data = $this->getBankAccountUpdateSyncOnlyCacheData($merchant);
+
+        if (isset($data[Constants::NEW_BANK_ACCOUNT_ARRAY][Detail\Entity::ADDRESS_PROOF_URL]) === true)
+        {
+            $this->createWorkflowForBankAccountUpdateWithFileDetails($merchant, $data);
+        }
+
+        $cacheKey = $this->getBankAccountUpdateSyncOnlyCacheKey($merchant);
+
+        $this->app['cache']->delete($cacheKey);
+
+        return ['success' => true];
+    }
+
+    public function addBankAccountFileInSyncOnlyCacheData($merchant, $oldBankAccountFile, $newBankAccountFile)
+    {
+        $data = $this->getBankAccountUpdateSyncOnlyCacheData($merchant);
+
+        $data[Constants::BANK_ACCOUNT_UPDATE_INPUT][Detail\Entity::ADDRESS_PROOF_URL] = $newBankAccountFile[Detail\Entity::ADDRESS_PROOF_URL];
+
+        $data[Constants::OLD_BANK_ACCOUNT_ARRAY][Detail\Entity::ADDRESS_PROOF_URL] = $oldBankAccountFile[Detail\Entity::ADDRESS_PROOF_URL];
+
+        $data[Constants::NEW_BANK_ACCOUNT_ARRAY][Detail\Entity::ADDRESS_PROOF_URL] = $newBankAccountFile[Detail\Entity::ADDRESS_PROOF_URL];
+
+        $this->saveBankAccountUpdateSyncOnlyDataInCache($merchant, $data);
+
+        $this->trace->info(TraceCode::BANK_ACCOUNT_UPDATE_FILE_ID_SAVED_IN_CACHE, [
+            Merchant\Detail\Constants::CACHE_DATA => $data
+        ]);
+    }
+
+    protected function createWorkflowForBankAccountUpdateWithFileDetails(MerchantEntity $merchant, array $data)
+    {
+        $action = (new WorkFlowActionCore())->fetchLastUpdatedWorkflowActionInPermissionList(
+            $merchant->bankAccount->getId(),
+            $merchant->bankAccount->getEntityName(),
+            [Permission\Name::EDIT_MERCHANT_BANK_DETAIL]
+        );
+
+        if ((empty($action) === true) or
+            ((empty($action) === false) and
+            ($action->isOpen() === false)))
+        {
+            if ($data[BvsConstant::VALIDATION_ID] === null)
+            {
+                $this->createWorkflowForBankAccountUpdate($merchant, $data);
+
+                $this->trace->info(TraceCode::BANK_ACCOUNT_UPDATE_WORKFLOW_DUE_TO_TIMEOUT_CREATED, []);
+            }
+
+            else
+            {
+                $validationId = $data[BvsConstant::VALIDATION_ID];
+
+                $validation = (new BvsValidation\Core())->getValidation($validationId);
+
+                list($data, $cacheKey, $status) = $this->getBankAccountUpdateSyncOnlyStatus($validation, $merchant, $merchant->merchantDetail);
+
+                $this->handleBankAccountUpdateCallbackFailure($merchant, $data, $status);
+
+                $this->trace->info(TraceCode::BANK_ACCOUNT_UPDATE_WORKFLOW_DUE_BVS_STATUS_FAIL_CREATED, [
+                    BvsConstant::VALIDATION_ID => $validationId
+                ]);
+            }
+        }
+    }
+
     public function bankAccountUpdate(MerchantEntity $merchant, array $input)
     {
+        $newFlow = false;
+
+        if (isset($input[Constants::SYNC_ONLY]) === true)
+        {
+            $newFlow = $input[Constants::SYNC_ONLY] === 'true';
+            unset($input[Constants::SYNC_ONLY]);
+        }
+
         // If auth type is not admin then only validate feature for account update request.
-        if($this->app['basicauth']->isAdminAuth() === false)
+        if ($this->app['basicauth']->isAdminAuth() === false)
         {
             $this->validateFeatureForAccountUpdate($merchant);
         }
@@ -735,6 +842,85 @@ class Core extends Base\Core
 
         $this->validateNotLaxmiVilasBank($newBankAccount);
 
+        if ($newFlow === true)
+        {
+            return $this->syncOnlyBankAccountUpdateFlow($input, $merchant, $newBankAccount);
+        }
+
+        else
+        {
+            return $this->syncAndAsyncBankAccountUpdateFlow($input, $merchant, $newBankAccount);
+        }
+    }
+
+    private function syncOnlyBankAccountUpdateFlow($input, $merchant, $newBankAccount)
+    {
+        $validation = $this->triggerBankAccountBvsValidationForSyncOnlyFlow($input, $merchant, true, $newBankAccount);
+
+        if ((is_array($validation) === true) and
+            (key_exists(Constants::TIMEOUT, $validation)) and
+            ($validation[Constants::TIMEOUT] === true))
+        {
+            $this->trace->info(TraceCode::BANK_ACCOUNT_UPDATE_BVS_VALIDATION_TIMEOUT, []);
+
+            $response = [];
+
+            $response[Constants::CREATE_WORKFLOW] = true;
+
+            $response[Constants::SYNC_FLOW] = true;
+
+            $response[Constants::TIMEOUT] = true;
+
+            return $response;
+        }
+
+        //if sync validation fails due to wrong merchant input, throw error
+        if($this->validationFailureDueToInputError($validation) === true)
+        {
+            $result = explode(':', $validation->getErrorDescription());
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, [
+                'error code' => $result[0],
+                'error description' => $result[1],
+            ], $validation->getErrorDescription());
+        }
+
+        $validationId = $validation->getValidationId();
+
+        $this->repo->merchant_detail->saveOrFail($merchant->merchantDetail);
+
+        $data = $this->makeBankAccountUpdatePennyTestingData($input, $newBankAccount, $validationId);
+
+        $this->saveBankAccountUpdateSyncOnlyDataInCache($merchant, $data);
+
+        $this->sendBankAccountChangeNotification($newBankAccount, $merchant, MerchantDashboardEvent::BANK_ACCOUNT_CHANGE_REQUEST);
+
+        $this->trace->info(TraceCode::BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_INITIATED, [
+            Merchant\BvsValidation\Entity::VALIDATION_ID => $validationId
+        ]);
+
+        if ($validation->getValidationStatus() === BvsValidationConstants::SUCCESS)
+        {
+            list($data, $cacheKey, $status) = $this->getBankAccountUpdateSyncOnlyStatus($validation, $merchant, $merchant->merchantDetail);
+
+            $this->handleBankAccountUpdateCallbackSuccess($merchant, $data, $status);
+        }
+
+        switch ($validation->getValidationStatus())
+        {
+            case BvsValidationConstants::SUCCESS:
+                $response[Constants::NEW_BANK_ACCOUNT] = $newBankAccount;
+                $response[Constants::SYNC_FLOW] = true;
+                break;
+            default:
+                $response[Constants::CREATE_WORKFLOW] = true;
+                $response[Constants::SYNC_FLOW] = true;
+        }
+
+        return $response;
+    }
+
+    private function syncAndAsyncBankAccountUpdateFlow($input, $merchant, $newBankAccount)
+    {
         $validation = $this->triggerBankAccountBvsValidation($input, $merchant, true);
 
         //if sync validation fails due to wrong merchant input, throw error
@@ -781,7 +967,6 @@ class Core extends Base\Core
         }
 
         return $response;
-
     }
 
     public function handlePennyTestingEventForBankAccountUpdate(array $favInput, MerchantEntity $merchant, string $status, array $pennyTestAndFuzzyMatchResult)
@@ -816,6 +1001,26 @@ class Core extends Base\Core
         if ($validation === null)
         {
             throw new Exception\ServerErrorException('', ErrorCode::SERVER_ERROR);
+        }
+
+        return $validation;
+    }
+
+    protected function triggerBankAccountBvsValidationForSyncOnlyFlow($input, $merchant, $shouldNotInvokeHandler, $newBankAccount = null)
+    {
+        $payload = $this->getBankAccountUpdateBvsPayload($input, $merchant);
+
+        $validation = (new BvsCore($this->merchant, $this->merchant->merchantDetail))->verify($this->merchant->getId(), $payload, $shouldNotInvokeHandler, true);
+
+        if ($validation === null)
+        {
+            $data = $this->makeBankAccountUpdatePennyTestingData($input, $newBankAccount, null);
+
+            $this->saveBankAccountUpdateSyncOnlyDataInCache($merchant, $data);
+
+            $data[Constants::TIMEOUT] = true;
+
+            return $data;
         }
 
         return $validation;
@@ -956,7 +1161,6 @@ class Core extends Base\Core
         {
             $segmentProperties['failure_reason'] = $exception->getMessage();
         }
-
 
         try
         {
@@ -1237,12 +1441,18 @@ class Core extends Base\Core
         return ($data !== null);
     }
 
-
     protected function saveBankAccountUpdatePennyTestingData(MerchantEntity $merchant, array $data)
     {
         $cacheKey = $this->getBankAccountUpdatePennyTestingCacheKey($merchant);
 
         $this->app->cache->put($cacheKey, $data, Constants::BANK_ACCOUNT_UPDATE_PENNY_TESTING_TTL);
+    }
+
+    protected function saveBankAccountUpdateSyncOnlyDataInCache(MerchantEntity $merchant, array $data)
+    {
+        $cacheKey = $this->getBankAccountUpdateSyncOnlyCacheKey($merchant);
+
+        $this->app->cache->put($cacheKey, $data, Constants::BANK_ACCOUNT_UPDATE_SYNC_ONLY_TTL);
     }
 
     protected function validateBankAccountUpdatePennyTestingNotInProgress(MerchantEntity $merchant)
@@ -1279,7 +1489,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function getBankAccountUpdatePennyTestingData(MerchantEntity $merchant)
+    public function getBankAccountUpdatePennyTestingData(MerchantEntity $merchant)
     {
         $cacheKey = $this->getBankAccountUpdatePennyTestingCacheKey($merchant);
 
@@ -1291,6 +1501,20 @@ class Core extends Base\Core
     protected function getBankAccountUpdatePennyTestingCacheKey(MerchantEntity $merchant)
     {
         return sprintf(Constants::BANK_ACCOUNT_UPDATE_PENNY_TESTING_CACHE_KEY, $merchant->getId());
+    }
+
+    public function getBankAccountUpdateSyncOnlyCacheData(MerchantEntity $merchant)
+    {
+        $cacheKey = $this->getBankAccountUpdateSyncOnlyCacheKey($merchant);
+
+        $data = $this->app->cache->get($cacheKey);
+
+        return $data;
+    }
+
+    protected function getBankAccountUpdateSyncOnlyCacheKey(MerchantEntity $merchant)
+    {
+        return sprintf(Constants::BANK_ACCOUNT_UPDATE_SYNC_ONLY_CACHE_KEY, $merchant->getId());
     }
 
 
@@ -1321,7 +1545,6 @@ class Core extends Base\Core
             $this->app['request']->replace($input);
         }
     }
-
 
     protected function makeBankAccountUpdatePennyTestingData(array $input, BankAccount\Entity  $newBankAccount, $validationId)
     {
@@ -1383,13 +1606,41 @@ class Core extends Base\Core
         return array($data, $cacheKey, $status);
     }
 
+
+    /**
+     * @param $validation
+     * @param $merchant
+     * @param $merchantDetails
+     * @return array
+     * @throws Exception\LogicException
+     */
+    private function getBankAccountUpdateSyncOnlyStatus($validation, $merchant, $merchantDetails): array
+    {
+        $this->trace->info(TraceCode::BANK_ACCOUNT_UPDATE_BVS_CALLBACK_RECEIVED, $validation->toArrayPublic());
+
+        $data = $this->getBankAccountUpdateSyncOnlyCacheData($merchant);
+
+        $cacheKey = $this->getBankAccountUpdateSyncOnlyCacheKey($merchant);
+
+        $status = (new BankAccountStatusUpdater($merchant, $merchantDetails, $validation))->getDocumentValidationStatus($validation);
+
+        try {
+            $this->pushBvsResultToSegmentForBankAccountUpdate($merchant, $validation, $status);
+        } catch (\Throwable $exception) {
+            $this->app['trace']->error(TraceCode::BANK_ACCOUNT_UPDATE_SEGMENT_EVENT_PUSH_FAILED, [
+                Constants::ERROR_MESSAGE => $exception->getMessage()
+            ]);
+        }
+        return array($data, $cacheKey, $status);
+    }
+
     /**
      * @param Merchant\BvsValidation\Entity $validation
      * @return bool
      */
     private function validationFailureDueToInputError(Merchant\BvsValidation\Entity $validation): bool
     {
-        return $validation->getValidationStatus() == BvsValidationConstants::FAILED and $validation->getErrorCode() == BvsValidationConstants::INPUT_DATA_ISSUE;
+        return $validation->getValidationStatus() === BvsValidationConstants::FAILED and $validation->getErrorCode() === BvsValidationConstants::INPUT_DATA_ISSUE;
     }
 
     private function sendSelfServeSuccessAnalyticsEventToSegmentForBankAccountUpdateViaWorkflow($merchant)

@@ -54,9 +54,9 @@ class DefaultProcessor implements Processor
         Constant::LLP_DEED                                   => 2,
         Constant::PERSONAL_PAN                               => 3,
         Constant::BUSINESS_PAN                               => 3,
-        Constant::BANK_ACCOUNT_WITH_PERSONAL_PAN             => 5,
-        Constant::BANK_ACCOUNT_WITH_BUSINESS_PAN             => 5,
-        Constant::BANK_ACCOUNT_WITH_BUSINESS_OR_PROMOTER_PAN => 5,
+        Constant::BANK_ACCOUNT_WITH_PERSONAL_PAN             => 12,
+        Constant::BANK_ACCOUNT_WITH_BUSINESS_PAN             => 12,
+        Constant::BANK_ACCOUNT_WITH_BUSINESS_OR_PROMOTER_PAN => 12,
         Constant::AADHAAR                                    => 2,
         Constant::AADHAAR_WITH_PAN                           => 2,
         Constant::VOTERS_ID                                  => 2,
@@ -121,11 +121,18 @@ class DefaultProcessor implements Processor
      * @throws \ErrorException
      * @throws IntegrationException|AssertionException
      */
-    public function Process($sendEnrichmentDetails = false): Response
+    public function Process($sendEnrichmentDetails = false, $skipAsyncFlow = false): Response
     {
         $validation = $this->getCreateValidationArray($sendEnrichmentDetails);
 
         if ($sendEnrichmentDetails === true)
+        {
+            $response = (new BvsClient\BvsValidationClientV2($this->merchant, true, $this->getTimeout()))->createValidation($validation);
+
+            return new ValidationBaseResponseV2($response);
+        }
+
+        if ($skipAsyncFlow === true)
         {
             $response = (new BvsClient\BvsValidationClientV2($this->merchant, true, $this->getTimeout()))->createValidation($validation);
 

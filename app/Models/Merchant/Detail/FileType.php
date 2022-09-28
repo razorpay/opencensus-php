@@ -12,6 +12,19 @@ class FileType
         'zip',
         'xml',
         'csv',
+        '3g2',
+        '3gp',
+        'avi',
+        'flv',
+        'h264',
+        'm4v',
+        'mkv',
+        'mov',
+        'mp4',
+        'mpg',
+        'mpeg',
+        'rm',
+        'wmv',
     ];
 
     const ALLOWED_MIMES = [
@@ -25,5 +38,18 @@ class FileType
        'application/octet-stream',
        'text/csv',
        'text/plain',
+        'video/3gpp2',
+        'video/3gpp',
+        'video/x-msvideo',
+        'video/x-flv',
+        'video/mp4',
+        'video/m4v',
+        'video/x-matroska',
+        'video/quicktime',
+        'video/mp4',
+        'video/mpeg',
+        'video/mpeg',
+        'application/vnd.rn-realmedia',
+        'video/x-ms-wmv'
     ];
 }

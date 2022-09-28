@@ -30,6 +30,19 @@ class Format
     const IOB       = 'iob';
     const VAL       = 'val';
     const PGP       = 'pgp';
+    const MOV       = 'mov';
+    const WMV       = 'wmv';
+    const M4V       = 'm4v';
+    const MKV       = 'mkv';
+    const MPG       = 'mpg';
+    const AVI       = 'avi';
+    const TG2       = '3g2';
+    const TGP       = '3gp';
+    const FLV       = 'flv';
+    const H264      = 'h264';
+    const MP4       = 'mp4';
+    const MPEG      = 'mpeg';
+    const RM        = 'rm';
 
     const EXCEL_COLUMN_TEXT = '@';
 
@@ -56,6 +69,19 @@ class Format
         self::IOB,
         self::VAL,
         self::PGP,
+        self::M4V,
+        self::MOV,
+        self::RM,
+        self::WMV,
+        self::MKV,
+        self::MP4,
+        self::MPG,
+        self::AVI,
+        self::TG2,
+        self::TGP,
+        self::MPEG,
+        self::FLV,
+        self::H264,
     ];
 
     const VALID_EXTENSION_MIME_MAP = [
@@ -95,6 +121,21 @@ class Format
         self::PGP     => ['application/pgp', 'application/octet-stream'],
         self::IOB     => ['text/plain'],
         self::VAL     => ['text/plain'],
+
+        // media
+        self::TG2     => ['video/3gpp2', 'audio/3gpp2'],
+        self::TGP     => ['video/3gpp', 'audio/3gpp'],
+        self::AVI     => ['video/x-msvideo'],
+        self::FLV     => ['video/x-flv'],
+        self::H264    => ['audio/mp4m, video/mp4'],
+        self::M4V     => ['video/m4v'],
+        self::MKV     => ['video/x-matroska'],
+        self::MOV     => ['video/quicktime'],
+        self::MP4     => ['video/mp4'],
+        self::MPG     => ['video/mpeg'],
+        self::MPEG    => ['video/mpeg'],
+        self::RM      => ['application/vnd.rn-realmedia'],
+        self::WMV     => ['video/x-ms-wmv'],
     ];
 
     const VALID_LOCAL_EXTENSIONS = [

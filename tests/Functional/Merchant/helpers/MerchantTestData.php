@@ -2840,6 +2840,7 @@ return [
                 'ifsc_code'        => 'ICIC0001206',
                 'account_number'   => '0000009999999999999',
                 'beneficiary_name' => 'Test R4zorpay:',
+                'sync_only' => 'true',
             ],
             'url'     => '/merchants/bank_account/update',
             'method'  => 'POST',
@@ -2885,6 +2886,47 @@ return [
                 'sync_flow' =>  TRUE
             ]
         ]
+    ],
+
+    'testBankAccountFileUploadTimeout' => [
+        'request'  => [
+            'content' => [],
+            'url'     => '/merchants/bank_account/file/upload',
+            'method'  => 'POST',
+            'server'    => [
+                'HTTP_X-Dashboard-User-2FA-Verified'    => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ]
+    ],
+
+    'testBankAccountFileUploadNoDataInCacheFailure' => [
+        'request'  => [
+            'content' => [],
+            'url'     => '/merchants/bank_account/file/upload',
+            'method'  => 'POST',
+            'server'    => [
+                'HTTP_X-Dashboard-User-2FA-Verified'    => 'true',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR_CACHE_DATA_MISSING_FOR_BANK_ACCOUNT_UPDATE,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\ServerErrorException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_CACHE_DATA_MISSING_FOR_BANK_ACCOUNT_UPDATE,
+        ],
+
     ],
 
     'testUpdateBankAccountViaPennyTestingWithoutExistingBankAccountFail' => [

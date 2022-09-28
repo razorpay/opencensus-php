@@ -45,7 +45,7 @@ class DefaultProcessorMock extends DefaultProcessor
         $this->setMockValidationDetail($this->app['config']['services.bvs.validationDetail'] ?? []);
     }
 
-    public function Process($sendEnrichmentDetails = false): Response
+    public function Process($sendEnrichmentDetails = false, $skipAsyncFlow = false ): Response
     {
         $app = \App::getFacadeRoot();
 

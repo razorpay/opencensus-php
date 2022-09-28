@@ -10,7 +10,7 @@ class Validator extends Base\Validator
 {
     protected static $uploadDocumentRules = [
         Constants::PURPOSE => 'required|string|max:255|custom',
-        Constants::FILE    => 'required|file|max:5120',
+        Constants::FILE    => 'required|file|max:50000'
     ];
 
     //The expiry is in minutes. UFH accepts duration of singed url in minutes
@@ -35,7 +35,32 @@ class Validator extends Base\Validator
     ];
 
     protected static $merchantWorkflowClarificationMimeRules = [
-        Constants::FILE    => 'mimes:pdf,jpeg,jpg,png',
+        Constants::FILE  => 'mime_types:'
+                            . 'application/vnd.openxmlformats-officedocument.wordprocessingml.document,'
+                            . 'application/msword,'
+                            . 'application/pdf,'
+                            . 'application/x-pdf,'
+                            . 'application/xml,'
+                            . 'application/octet-stream,'
+                            . 'application/vnd.rn-realmedia,'
+                            . 'image/png,'
+                            . 'image/jpg,'
+                            . 'image/jpeg,'
+                            . 'text/xml,'
+                            . 'text/csv,'
+                            . 'text/plain,'
+                            . 'video/3gpp2,'
+                            . 'video/3gpp,'
+                            . 'video/x-msvideo,'
+                            . 'video/x-flv,'
+                            . 'video/mp4,'
+                            . 'video/m4v,'
+                            . 'video/x-matroska,'
+                            . 'video/quicktime,'
+                            . 'video/mp4,'
+                            . 'video/mpeg,'
+                            . 'video/mpeg,'
+                            . 'video/x-ms-wmv'
     ];
 
     protected static $b2bExportInvoiceMimeRules = [
