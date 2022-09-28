@@ -114,8 +114,6 @@ class Service extends Base\Service
     {
         $merchantDetails = $this->getDetailsFromAPI($merchantId);
 
-        $merchantDetails['isYesBankMerchant'] = $this->isYesBankMerchant($merchantDetails);
-
         $merchantDetails['submitted'] = (int) ($merchantDetails['submitted'] ?? 0);
 
         $merchantDetails['locked'] = (int) ($merchantDetails['locked'] ?? 0);
@@ -126,16 +124,6 @@ class Service extends Base\Service
 
         return $merchantDetails;
     }
-
-    public function isYesBankMerchant($merchantDetails)
-    {
-        $ifscCode = $merchantDetails['bank_branch_ifsc'];
-
-        $yesIfsc = substr( $ifscCode, 0, 4 );
-
-        return ((strcasecmp($yesIfsc, "YESB") === 0) === true) ;
-    }
-
 
     public function getStateFromCode($state_code = null)
     {
