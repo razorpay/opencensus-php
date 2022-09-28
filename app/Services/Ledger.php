@@ -13,6 +13,7 @@ use RZP\Http\Request\Requests;
 use RZP\Base\RepositoryManager;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
+use Razorpay\Edge\Passport\Passport;
 use RZP\Constants\Entity as EntityConstant;
 use Symfony\Component\HttpFoundation\Response;
 use RZP\Models\Payout\Service as PayoutService;
@@ -658,6 +659,12 @@ class Ledger
         if(isset($headers[self::IDEMPOTENCY_KEY_HEADER]) === true)
         {
             $this->headers[self::IDEMPOTENCY_KEY_HEADER] = $headers[self::IDEMPOTENCY_KEY_HEADER];
+        }
+
+        // Add passport header
+        if(isset($headers[Passport::PASSPORT_JWT_V1]) === true)
+        {
+            $this->headers[Passport::PASSPORT_JWT_V1] = $headers[Passport::PASSPORT_JWT_V1];
         }
     }
 

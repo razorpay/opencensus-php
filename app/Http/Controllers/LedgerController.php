@@ -4,13 +4,17 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
-
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use RZP\Http\RequestHeader;
+use Razorpay\Edge\Passport\Passport;
 
 class LedgerController extends Controller
 {
+    protected $baseLiveUrl;
+
+    protected $baseTestUrl;
+
     /**
      * HTTP request headers
      *
@@ -18,15 +22,33 @@ class LedgerController extends Controller
      */
     protected $headers;
 
+    protected $mode;
+
     public function __construct()
     {
         parent::__construct();
 
+        $this->baseLiveUrl = $this->config->get('applications.ledger')['url']['live'];
+        $this->baseTestUrl = $this->config->get('applications.ledger')['url']['test'];
+
         $this->headers = Request::header();
+    }
+
+    private function addHeaders() {
+        $this->mode = $this->app['rzp.mode'];
+
+        // add passport header
+        if($this->mode === 'live') {
+            $this->headers[Passport::PASSPORT_JWT_V1] = $this->ba->getPassportJwt($this->baseLiveUrl);
+        } else {
+            $this->headers[Passport::PASSPORT_JWT_V1] = $this->ba->getPassportJwt($this->baseTestUrl);
+        }
     }
 
     public function createAccount()
     {
+        $this->addHeaders();
+
         $response = $this->app['ledger']->createAccount($this->input, $this->headers, true);
 
         return ApiResponse::json($response['body'], $response['code']);
@@ -34,6 +56,8 @@ class LedgerController extends Controller
 
     public function createAccountsOnEvent()
     {
+        $this->addHeaders();
+
         $response = $this->app['ledger']->createAccountsOnEvent($this->input, $this->headers, true);
 
         return ApiResponse::json($response['body'], $response['code']);
@@ -108,6 +132,8 @@ class LedgerController extends Controller
 
     public function createJournal()
     {
+        $this->addHeaders();
+
         $response = $this->app['ledger']->createJournal($this->input, $this->headers, true);
 
         return ApiResponse::json($response['body'], $response['code']);
@@ -122,6 +148,8 @@ class LedgerController extends Controller
 
     public function createLedgerConfig()
     {
+        $this->addHeaders();
+
         $response = $this->app['ledger']->createLedgerConfig($this->input, $this->headers, true);
 
         return ApiResponse::json($response['body'], $response['code']);
@@ -157,6 +185,8 @@ class LedgerController extends Controller
 
     public function fetchMultiple()
     {
+        $this->addHeaders();
+
         $response = $this->app['ledger']->fetchMultiple($this->input, $this->headers, true);
 
         return ApiResponse::json($response['body'], $response['code']);
@@ -164,6 +194,8 @@ class LedgerController extends Controller
 
     public function fetchFilter()
     {
+        $this->addHeaders();
+
         $response = $this->app['ledger']->fetchFilter($this->input, $this->headers, true);
 
         return ApiResponse::json($response['body'], $response['code']);
@@ -171,6 +203,8 @@ class LedgerController extends Controller
 
     public function fetchAccountFormFieldOptions()
     {
+        $this->addHeaders();
+
         $response = $this->app['ledger']->fetchAccountFormFieldOptions($this->input, $this->headers, true);
 
         return ApiResponse::json($response['body'], $response['code']);
@@ -178,6 +212,8 @@ class LedgerController extends Controller
 
     public function fetchJournalFormFieldOptions()
     {
+        $this->addHeaders();
+
         $response = $this->app['ledger']->fetchJournalFormFieldOptions($this->input, $this->headers, true);
 
         return ApiResponse::json($response['body'], $response['code']);
@@ -192,6 +228,8 @@ class LedgerController extends Controller
 
     public function fetchLedgerConfigFormFieldOptions()
     {
+        $this->addHeaders();
+
         $response = $this->app['ledger']->fetchLedgerConfigFormFieldOptions($this->input, $this->headers, true);
 
         return ApiResponse::json($response['body'], $response['code']);
@@ -206,6 +244,8 @@ class LedgerController extends Controller
 
     public function deleteMerchants()
     {
+        $this->addHeaders();
+
         $response = $this->app['ledger']->deleteMerchants($this->input, $this->headers, true);
 
         return ApiResponse::json($response['body'], $response['code']);
