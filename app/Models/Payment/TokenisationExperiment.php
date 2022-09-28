@@ -80,6 +80,7 @@ class TokenisationExperiment
      * Splitz experiment - for tokenised global saved card payments,
      * only y% of traffic will go through tokenised card
      *
+     * If the experiment fails by default the payment will go through tokenised card.
      * @return bool
      */
     protected function shouldGlobalCardPaymentGoThroughTokenisedCardExp(): bool
@@ -95,9 +96,9 @@ class TokenisationExperiment
 
             $variant = $response['response']['variant']['name'] ?? '';
 
-            if ($variant === 'variant_on')
+            if ($variant !== 'variant_on')
             {
-                return true;
+                return false;
             }
         }
         catch (\Exception $e)
@@ -109,7 +110,7 @@ class TokenisationExperiment
             );
         }
 
-        return false;
+        return true;
     }
 
     /**
@@ -120,6 +121,8 @@ class TokenisationExperiment
      * 2. Ramp up list - x% traffic will go through tokenised card
      * 3. Whitelist - everything else will go through tokenised card
      *
+     * If the experiment fails by default the payment will go through tokenised card.
+     * 
      * @param  Card\Entity $card
      * @return bool
      */
@@ -139,9 +142,9 @@ class TokenisationExperiment
                 $this->mode
             );
 
-            if ($variant === 'on')
+            if ($variant !== 'on')
             {
-                return true;
+                return false;
             }
         }
         catch (\Exception $e)
@@ -153,7 +156,7 @@ class TokenisationExperiment
             );
         }
 
-        return false;
+        return true;
     }
 
     /**

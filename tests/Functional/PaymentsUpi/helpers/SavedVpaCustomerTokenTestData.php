@@ -15,13 +15,8 @@ return [
                 'email' => 'test@razorpay.com',
                 'tokens' => [
                     'entity' => 'collection',
-                    'count'  => 2,
+                    'count'  => 1,
                     'items'  => [
-                    [
-                        'id'           => 'token_10000custgcard',
-                        'method'       => 'card',
-                        'token'        => '1000gcardtoken',
-                    ],
                     [
                         'id'            => 'token_100000custgupi',
                         'method'        => 'upi',
@@ -54,9 +49,9 @@ return [
                     'count'  => 1,
                     'items'  => [
                         [
-                            'id'           => 'token_10000custgcard',
+                            'id'           => 'token_100gcustltoken',
                             'method'       => 'card',
-                            'token'        => '1000gcardtoken',
+                            'token'        => '1000lcardtoken',
                         ],
                     ],
                 ]

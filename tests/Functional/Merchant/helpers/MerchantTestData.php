@@ -12328,9 +12328,9 @@ return [
                     'tokens' => [
                         'items' => [
                             [
-                                'consent_taken' => false,
+                                'consent_taken' => true,
                                 'card' => [
-                                    'type'      => 'credit',
+                                    'type'      => 'debit',
                                     'issuer'    => 'HDFC',
                                     'network'   => 'Visa',
                                 ]
@@ -12356,11 +12356,9 @@ return [
                     'tokens' => [
                         'items' => [
                             [
-                                // consent_taken would be false for global cards even if it is tokenised
-                                // as we would want to collect consent again & create a tokenised local card
-                                'consent_taken' => false,
+                                'consent_taken' => true,
                                 'card' => [
-                                    'type'      => 'credit',
+                                    'type'      => 'debit',
                                     'issuer'    => 'HDFC',
                                     'network'   => 'Visa',
                                 ]

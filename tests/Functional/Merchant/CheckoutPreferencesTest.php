@@ -2662,6 +2662,8 @@ class CheckoutPreferencesTest extends TestCase
 
         $testData['request']['content']['order_id'] = $order->getPublicId();
 
+        $this->fixturesToCreateCardToken('100022xtokenl1', '100000003card1', '411140', '10000000000000');
+
         $response = $this->runRequestResponseFlow($testData);
     }
 
@@ -2677,7 +2679,7 @@ class CheckoutPreferencesTest extends TestCase
 
         $testData['request']['content']['order_id'] = $order->getPublicId();
 
-        $this->fixtures->edit('token', '10000custgcard', ['acknowledged_at' => Carbon::now()->timestamp]);
+        $this->fixturesToCreateCardToken('100022xtokenl1', '100000003card1', '411140', '10000000000000');
 
         $response = $this->runRequestResponseFlow($testData);
     }
@@ -2840,6 +2842,8 @@ class CheckoutPreferencesTest extends TestCase
 
     public function testGetCheckoutPreferencesForDudupeLocalOverGlobalTokensWhenGlobalTokenExpectsToReturnGlobalToken()
     {
+        $this->markTestSkipped('This test case is not applicable as we are not supporting global tokens');
+
         $this->ba->publicAuth();
 
         $this->mockSession();

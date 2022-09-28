@@ -1366,6 +1366,10 @@ class Entity extends Base\PublicEntity
         return array_only($attributes, $this->fundAccount);
     }
 
+    /**
+     * ToDo: Cards team to add logic to get the latest card details for token iin.
+     * Current logic only handles for iin not for token iin.
+     */
     public function overrideIINDetails()
     {
         if (is_null($this->iinRelation) ===  false) {

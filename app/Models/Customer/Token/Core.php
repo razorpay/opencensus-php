@@ -622,13 +622,7 @@ class Core extends Base\Core
             return $this->fetchTokensByCustomer($customer, $merchant);
         }
 
-        // Global Customers
-        if ((new TokenisationExperiment())->shouldCreateLocalTokenOnGlobalCustomer($merchant->getId())) {
-            return $this->fetchLocalOverGlobalTokensByCustomer($customer, $merchant);
-        }
-
-        // Fetch only global tokens if dual vault tokens are disabled for the merchant.
-        return $this->fetchGlobalTokensByCustomer($customer, $merchant);
+        return $this->fetchGlobalCustomerTokens($customer, $merchant);
     }
 
     /**
@@ -1147,6 +1141,58 @@ class Core extends Base\Core
         return $tokens->filter(static function (Entity $token) {
             return $token->isGlobal();
         });
+    }
+
+    /**
+     * Fetches global customer local card tokens and other non-card global tokens
+     * associated with a global customer.
+     *
+     * @param Customer\Entity $customer
+     * @param Merchant\Entity $merchant
+     *
+     * @return Base\PublicCollection
+     */
+    protected function fetchGlobalCustomerTokens(Customer\Entity $customer, Merchant\Entity $merchant): Base\PublicCollection
+    {
+        if ($customer->isLocal()) {
+            throw new Exception\LogicException('Please use fetchTokensByCustomer() to fetch local tokens.');
+        }
+
+        $tokens = $this->fetchTokensByCustomer($customer, $merchant);
+
+        $merchantTokens = $this->removeOtherMerchantTokens($tokens, $merchant->getId());
+
+        return $this->removeGlobalCardTokens($merchantTokens);
+    }
+
+    /**
+     * Removes customer tokens of other merchants
+     * This case occurs on the global customers as the same customer is used across other merchants
+     *
+     * @param Base\PublicCollection $tokens
+     *
+     * @return Base\PublicCollection
+     */
+    protected function removeOtherMerchantTokens(Base\PublicCollection $tokens, string $merchantId): Base\PublicCollection
+    {
+        return $tokens->filter(static function (Entity $token) use ($merchantId) {
+            return $token->getMerchantId() === $merchantId || $token->isGlobal();
+        })->values();
+    }
+
+    /**
+     * Removes global card tokens as RBI tokenisation guidelines
+     * don't allow us to use global card tokens.
+     *
+     * @param Base\PublicCollection $tokens
+     *
+     * @return Base\PublicCollection
+     */
+    protected function removeGlobalCardTokens(Base\PublicCollection $tokens): Base\PublicCollection
+    {
+        return $tokens->filter(static function (Entity $token) {
+            return (!$token->isCard()) || $token->isLocal();
+        })->values();
     }
 
     /**

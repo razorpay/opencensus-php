@@ -839,8 +839,6 @@ class Checkout
 
             $savedTokens = $tokenCore->removeDisabledNetworkTokens($savedTokens, $data[Entity::METHODS][Methods\Entity::CARD_NETWORKS]);
 
-            $savedTokens = $tokenCore->removeCardTokensWithoutName($savedTokens);
-
             $savedTokens = $tokenCore->removeDuplicateCardRecurringTokensIfAny($savedTokens,$merchant);
 
             $savedTokens = $tokenCore->removeNonCompliantCardTokens($savedTokens, $merchant->getId());
@@ -980,9 +978,7 @@ class Checkout
 
                         $tokensWithoutDisabledCardNetwork = $tokenCore->removeDisabledNetworkTokens($tokensWithoutEmandate, $data[Entity::METHODS][Methods\Entity::CARD_NETWORKS]);
 
-                        $tokensWithoutCardName = $tokenCore->removeCardTokensWithoutName($tokensWithoutDisabledCardNetwork);
-
-                        $tokensWithoutNonComplianceCards = $tokenCore->removeNonCompliantCardTokens($tokensWithoutCardName, $merchant->getId());
+                        $tokensWithoutNonComplianceCards = $tokenCore->removeNonCompliantCardTokens($tokensWithoutDisabledCardNetwork, $merchant->getId());
 
                         $tokensWithoutNonActiveTokenisedCards = $tokenCore->removeNonActiveTokenisedCardTokens($tokensWithoutNonComplianceCards);
 

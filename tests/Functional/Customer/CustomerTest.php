@@ -321,6 +321,8 @@ class customerTest extends TestCase
 
         $this->mockRaven();
 
+        $this->fixturesToCreateToken('100022xtokenl1', '100000003card1', '411140', '10000000000000');
+
         // send OTP
         $response = $this->sendOtp('9988776655');
 
@@ -669,6 +671,8 @@ class customerTest extends TestCase
 
         $this->mockRaven();
 
+        $this->fixturesToCreateToken('100022xtokenl1', '100000003card1', '411140', '10000000000000');
+
         // send OTP
         $response = $this->sendOtp('9988776655');
 
@@ -695,6 +699,8 @@ class customerTest extends TestCase
 
     public function testDudupeLocalOverGlobalTokensWhenGlobalTokenExpectsToReturnGlobalToken()
     {
+        $this->markTestSkipped('This test case is not applicable as we are not supporting global tokens');
+
         $this->ba->publicAuth();
 
         $this->mockRaven();

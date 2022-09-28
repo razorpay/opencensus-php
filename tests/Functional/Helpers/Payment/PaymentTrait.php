@@ -3719,4 +3719,54 @@ trait PaymentTrait
 
         $this->app->instance('card.cardVault', $cardVault);
     }
+    
+    protected function fixturesToCreateToken(
+        $tokenId,
+        $cardId,
+        $iin,
+        $merchantId = '100000Razorpay',
+        $customerId = '10000gcustomer',
+        $inputFields = []
+    )
+    {
+        $acknowledgedAt = Carbon::now()->getTimestamp();
+
+        if (isset($inputFields['do_not_acknowledged']) && $inputFields['do_not_acknowledged'] === true)
+        {
+            $acknowledgedAt = null;
+        }
+
+        $this->fixtures->card->create(
+            [
+                'id'            => $cardId,
+                'merchant_id'   => $merchantId,
+                'name'          => 'test',
+                'iin'           => $iin,
+                'expiry_month'  => '12',
+                'expiry_year'   => '2100',
+                'issuer'        => 'HDFC',
+                'network'       => $inputFields['network'] ?? 'Visa',
+                'last4'         => '1111',
+                'type'          => 'debit',
+                'vault'         => $inputFields['vault'] ?? 'rzpvault',
+                'vault_token'   => 'test_token',
+                'international' => $inputFields['international'] ?? null,
+            ]
+        );
+
+        $this->fixtures->token->create(
+            [
+                'id'              => $tokenId,
+                'customer_id'     => $customerId,
+                'token'           => '1000lcardtoken',
+                'method'          => 'card',
+                'card_id'         => $cardId,
+                'used_at'         => 10,
+                'merchant_id'     => $merchantId,
+                'acknowledged_at' => $acknowledgedAt,
+                'expired_at'      => $inputFields['expired_at'] ?? '9999999999',
+                'status'          => $inputFields['status'] ?? NULL,
+            ]
+        );
+    }
 }

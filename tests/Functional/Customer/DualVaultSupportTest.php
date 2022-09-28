@@ -28,7 +28,7 @@ class DualVaultSupportTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
     }
 
-    public function testCreationOfLocalAndGlobalRazorpayTokensAndPaymentThroughLocalTokenWhenNewCardPayment()
+    public function testCreationOfLocalRazorpayTokensAndPaymentThroughLocalTokenWhenNewCardPayment()
     {
         $this->mockSession();
 
@@ -44,16 +44,12 @@ class DualVaultSupportTest extends TestCase
 
         $this->assertEquals('authorized', $payment['status']);
 
-        $globalToken = $this->getLastEntity('token', true);
-
         $token = $payment->localToken;
         $paymentCard = $payment->card;
         $tokenCard = $token->card;
         $tokenCustomer = $token->customer;
 
         $this->assertNotNull($payment['token_id']);
-        $this->assertEquals('100000Razorpay', $globalToken['merchant_id']);
-        $this->assertEquals($token['customer_id'], $globalToken['customer_id']);
         $this->assertEquals('401200', $tokenCard['iin']);
         $this->assertEquals($token['card_id'], $tokenCard['id']);
         $this->assertEquals('10000000000000', $token['merchant_id']);
@@ -63,7 +59,7 @@ class DualVaultSupportTest extends TestCase
         $this->assertNull($paymentCard['trivia']);
     }
 
-    public function testCreationOfLocalAndGlobalNetworkTokensAndPaymentThroughLocalTokenWhenNewCardPaymentGivenMerchantIsOnboardedOntoNetwork()
+    public function testCreationOfLocalNetworkTokensAndPaymentThroughLocalTokenWhenNewCardPaymentGivenMerchantIsOnboardedOntoNetwork()
     {
         $this->mockSession();
 
@@ -84,18 +80,12 @@ class DualVaultSupportTest extends TestCase
 
         $this->assertEquals('authorized', $payment['status']);
 
-        $globalToken = $this->getLastEntity('token', true);
-        $globalTokenCard = $this->getDbEntityById('card', $globalToken['card_id']);
-
         $token = $payment->localToken;
         $paymentCard = $payment->card;
         $tokenCard = $token->card;
         $tokenCustomer = $token->customer;
 
         $this->assertNotNull($payment['token_id']);
-        $this->assertEquals('100000Razorpay', $globalToken['merchant_id']);
-        $this->assertEquals($token['customer_id'], $globalToken['customer_id']);
-        $this->assertEquals('visa', $globalTokenCard['vault']);
         $this->assertEquals('401200', $tokenCard['iin']);
         $this->assertEquals($token['card_id'], $tokenCard['id']);
         $this->assertEquals('10000000000000', $token['merchant_id']);

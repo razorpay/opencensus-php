@@ -1660,6 +1660,16 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->withSession(['test_checkcookie' => '0']);
 
+        $this->fixturesToCreateToken('100022xtokenl1',
+                                    '100000003card1',
+                                    '411140',
+                                    '10000000000000',
+                                    '10000gcustomer',
+                                    [
+                                        'do_not_acknowledged' => true,
+                                    ]
+        );
+
         $content = $this->verifyOtp('9988776655', 'abc@razorpay.com', '233443', '123');
 
         $this->assertArrayHasKey('tokens', $content);
@@ -1679,7 +1689,7 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->withSession(['test_checkcookie' => '0']);
 
-        $this->fixtures->edit('token', '10000custgcard', ['acknowledged_at' => Carbon::now()->timestamp]);
+        $this->fixturesToCreateToken('100022xtokenl1', '100000003card1', '411140', '10000000000000');
 
         $content = $this->verifyOtp('9988776655', 'abc@razorpay.com', '233443', '123');
 
@@ -1691,9 +1701,7 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->assertArrayHasKey('consent_taken', $content['tokens']['items'][0]);
 
-        // consent_taken would be false for global cards even if it is tokenised
-        // as we would want to collect consent again & create a tokenised local card
-        $this->assertFalse($content['tokens']['items'][0]['consent_taken']);
+        $this->assertTrue($content['tokens']['items'][0]['consent_taken']);
     }
 
     public function testS2SPaymentCreateAndSaveCardWithoutCustomer()

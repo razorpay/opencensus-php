@@ -141,6 +141,8 @@ class CustomerTokenTest extends TestCase
     {
         $this->mockSession();
 
+        $this->fixturesToCreateToken('100022xtokenl1', '100000003card1', '411140', '10000000000000');
+
         $this->ba->proxyAuth();
 
         $this->startTest();
@@ -169,6 +171,8 @@ class CustomerTokenTest extends TestCase
     public function testFetchSavedCustomerStatusWithDeviceToken()
     {
         $this->mockSession();
+
+        $this->fixturesToCreateToken('100022xtokenl1', '100000003card1', '411140', '10000000000000');
 
         $this->ba->publicAuth();
 
@@ -1283,5 +1287,48 @@ class CustomerTokenTest extends TestCase
         ]);
 
         return $merchant->getId();
+    }
+
+    protected function fixturesToCreateToken(
+        $tokenId,
+        $cardId,
+        $iin,
+        $merchantId = '100000Razorpay',
+        $customerId = '10000gcustomer',
+        $inputFields = []
+    )
+    {
+        $this->fixtures->card->create(
+            [
+                'id'            => $cardId,
+                'merchant_id'   => $merchantId,
+                'name'          => 'test',
+                'iin'           => $iin,
+                'expiry_month'  => '12',
+                'expiry_year'   => '2100',
+                'issuer'        => 'HDFC',
+                'network'       => $inputFields['network'] ?? 'Visa',
+                'last4'         => '1111',
+                'type'          => 'debit',
+                'vault'         => $inputFields['vault'] ?? 'rzpvault',
+                'vault_token'   => 'test_token',
+                'international' => $inputFields['international'] ?? null,
+            ]
+        );
+
+        $this->fixtures->token->create(
+            [
+                'id'              => $tokenId,
+                'customer_id'     => $customerId,
+                'token'           => '1000lcardtoken',
+                'method'          => 'card',
+                'card_id'         => $cardId,
+                'used_at'         => 10,
+                'merchant_id'     => $merchantId,
+                'acknowledged_at' => Carbon::now()->getTimestamp(),
+                'expired_at'      => $inputFields['expired_at'] ?? '9999999999',
+                'status'          => $inputFields['status'] ?? NULL,
+            ]
+        );
     }
 }

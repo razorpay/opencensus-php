@@ -5643,6 +5643,13 @@ trait Authorize
                 ($token->isGlobal()) &&
                 (new Payment\TokenisationExperiment())->shouldCreateLocalTokenOnGlobalCustomer($this->merchant->getId())
             ) {
+                // As per RBI guidelines use of global card tokens is not allowed.
+                // Payment flow should newer reach here.
+                $this->trace->warning(TraceCode::GLOBAL_CARD_TOKEN_PAYMENT_SHOULD_NOT_BE_ALLOWED, [
+                    'token_id' => $token->getId(),
+                    'payment_id' => $payment->getId(),
+                ]);
+
                 $token = (new Token\Core())->createLocalTokenFromGlobalToken($token, $this->merchant,$payment->getGateway());
             }
 
@@ -5655,6 +5662,13 @@ trait Authorize
 
                 return;
             }
+
+            // As per RBI guidelines use of global card tokens is not allowed.
+            // Payment flow should newer reach here.
+            $this->trace->warning(TraceCode::GLOBAL_CARD_TOKEN_PAYMENT_SHOULD_NOT_BE_ALLOWED, [
+                'token_id' => $token->getId(),
+                'payment_id' => $payment->getId(),
+            ]);
 
             $gatewayInput['card'] = $this->createCardEntityFromSavedToken($token, $input);
 
@@ -7006,8 +7020,6 @@ trait Authorize
          * This code will not be used after Dec 31st 2021, so needs to be removed then
          */
         $this->storeSavedCardConsentIfPresent($payment);
-
-        $this->createGlobalTokenIfApplicable($payment);
 
         //
         // Needs to be before capture, since disount amount

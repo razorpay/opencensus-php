@@ -625,7 +625,7 @@ return [
                 'entity' => 'collection',
                 'items'  => [
                     [
-                        'token' => '1000gcardtoken',
+                        'token' => '1000lcardtoken',
                         'card'  => [
                             'last4'   => '1111',
                             'network' => 'Visa',
