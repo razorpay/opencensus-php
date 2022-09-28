@@ -19,4 +19,12 @@ class Core extends Base\Core
 
         return $config;
     }
+
+    public function get1ccConfigByMerchantIdAndType(string $merchantId,string $type)
+    {
+       return $this->repo->merchant_1cc_configs->findByMerchantAndConfigType(
+            $merchantId,
+            $type
+        );
+    }
 }

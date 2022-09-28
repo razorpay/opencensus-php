@@ -568,9 +568,9 @@ class Mutations
             code
             field
             message
-          }
-        }
-      }');
+           }
+         }
+       }');
 
     }
 
@@ -590,6 +590,34 @@ class Mutations
           }
         }
       }');
+    }
+
+    public function getAddTagMutation()
+    {
+        return $this->sanitizeMutation('mutation addTags($id: ID!, $tags: [String!]!) {
+          tagsAdd(id: $id, tags: $tags) {
+            node {
+              id
+            }
+            userErrors {
+              message
+            }
+          }
+        }');
+    }
+
+    public function getRemoveTagMutation()
+    {
+        return $this->sanitizeMutation('mutation removeTags($id: ID!, $tags: [String!]!) {
+          tagsRemove(id: $id, tags: $tags) {
+            node {
+              id
+            }
+            userErrors {
+              message
+            }
+          }
+        }');
     }
 
     /**

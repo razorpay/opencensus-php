@@ -23,6 +23,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
             ->where(Entity::MERCHANT_ID, '=', $merchantId)
             ->where(Entity::PLATFORM, '=', $platform)
+            ->where(Base\Entity::DELETED_AT, '=', null)
             ->get();
     }
 

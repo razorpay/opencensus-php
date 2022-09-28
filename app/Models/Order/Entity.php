@@ -179,6 +179,12 @@ class Entity extends Base\PublicEntity
 
     const CUSTOMER_ADDITIONAL_INFO = 'customer_additional_info';
 
+    //paginated fetch params
+    const FROM         = 'from';
+    const TO           = 'to';
+    const COUNT        = 'count';
+    const SKIP         = 'skip';
+
     protected $fillable = [
         self::DISCOUNT,
         self::AMOUNT,
@@ -1107,5 +1113,34 @@ class Entity extends Base\PublicEntity
         $is1ccOrder = $this->is1ccOrder();
 
         return $is1ccOrder === true and isset($this->getNotes()['storefront_id']) === true;
+    }
+
+    /*
+     * We need to add the token if token is non-null
+     * */
+    public function toCodOrderArray()
+    {
+        $arrayPublic = $this->toArrayPublic();
+
+        $orderMetaArray = $this->orderMetas;
+
+        foreach ($orderMetaArray as $orderMeta)
+        {
+            $value = $orderMeta->getValue();
+
+            $arrayPublic[OrderMeta\Order1cc\Fields::COD_ELIGIBILITY_RISK_TIER] = $value[OrderMeta\Order1cc\Fields::COD_INTELLIGENCE][OrderMeta\Order1cc\Fields::COD_ELIGIBILITY_RISK_TIER] ?? Null;
+
+            $arrayPublic[OrderMeta\Order1cc\Fields::COD_ELIGIBILITY_RTO_REASONS] = $value[OrderMeta\Order1cc\Fields::COD_INTELLIGENCE][OrderMeta\Order1cc\Fields::COD_ELIGIBILITY_RTO_REASONS] ?? Null;
+
+            $arrayPublic[OrderMeta\Order1cc\Fields::COD_ELIGIBILITY_RTO_CATEGORY] = $value[OrderMeta\Order1cc\Fields::COD_INTELLIGENCE][OrderMeta\Order1cc\Fields::COD_ELIGIBILITY_RTO_CATEGORY] ?? Null;
+
+            $arrayPublic[OrderMeta\Order1cc\Fields::REVIEW_STATUS] = $value[OrderMeta\Order1cc\Fields::REVIEW_STATUS] ?? Null;
+
+            $arrayPublic[OrderMeta\Order1cc\Fields::REVIEWED_BY] = $value[OrderMeta\Order1cc\Fields::REVIEWED_BY] ?? Null;
+
+            $arrayPublic[OrderMeta\Order1cc\Fields::REVIEWED_AT] = $value[OrderMeta\Order1cc\Fields::REVIEWED_AT] ?? Null;
+        }
+
+        return $arrayPublic;
     }
 }

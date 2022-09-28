@@ -60,6 +60,11 @@ class Fields
     const COD_ELIGIBILITY_RTO_REASONS = 'rto_reasons';
     const COD_ELIGIBILITY_RTO_CATEGORY = 'rto_category';
 
+    //rto recommendation fields
+    const REVIEW_STATUS = 'review_status';
+    const REVIEWED_AT   = 'reviewed_at';
+    const REVIEWED_BY   = 'reviewed_by';
+
     const ONE_CLICK_CHECKOUT = 'one_click_checkout';
 
     public static $dataFields = [

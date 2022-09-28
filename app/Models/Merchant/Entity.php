@@ -1641,6 +1641,22 @@ class Entity extends Base\PublicEntity
         return $codIntelligenceConfig !==  null && $codIntelligenceConfig->getValue() === "1";
     }
 
+    public function getManualControlCodOrderConfig() : bool
+    {
+        $manualControlCodOrderConfig =  (new Merchant1ccConfig\Repository())->
+        findByMerchantAndConfigType($this->getId(), Merchant1ccConfig\Type::MANUAL_CONTROL_COD_ORDER);
+        return $manualControlCodOrderConfig !==  null && $manualControlCodOrderConfig->getValue() === "1";
+    }
+
+    public function getFetchOrderStatusUpdateUrlConfig()
+    {
+        return (new Merchant1ccConfig\Repository())
+            ->findByMerchantAndConfigType(
+                $this->getId(),
+                Merchant1ccConfig\Type::ORDER_STATUS_UPDATE_URL
+            );
+    }
+
     public function get1ccConfig($type)
     {
         return  (new Merchant1ccConfig\Repository())->

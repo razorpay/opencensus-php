@@ -15,6 +15,8 @@ use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\OneClickCheckout;
 use RZP\Models\Merchant\OneClickCheckout\AuthConfig;
 use RZP\Constants;
+use RZP\Models\Order\OrderMeta\Order1cc;
+use RZP\Models\Order\OrderMeta;
 
 class Service extends Base\Service
 {
@@ -559,5 +561,93 @@ class Service extends Base\Service
         $config = (new AuthConfig\Core)->getShopify1ccConfig($this->merchant->getId());
 
         return $config;
+    }
+
+    public function cancelShopifyOrder($input){
+
+        $rzpOrderId = $input[OneClickCheckout\Constants::ID];
+
+        $order = (new Order\Service())->fetchById($rzpOrderId);
+
+        $shopifyOrderId = $order[Order\Entity::NOTES][\RZP\Models\Merchant\OneClickCheckout\Shopify\Constants::SHOPIFY_ORDER_ID];
+
+        $start = millitime();
+
+        (new Core())->cancelShopifyOrder($shopifyOrderId, $input[OneClickCheckout\Constants::MERCHANT_ID]);
+
+        $this->trace->info(
+            TraceCode::SHOPIFY_ORDER_CANCEL,
+            [
+                'id'        =>$rzpOrderId,
+                'time'      => millitime() - $start
+            ]);
+
+        $param = [
+            Order1cc\Fields::REVIEW_STATUS  => Order1cc\Constants::CANCELED,
+            Order\Entity::ID                => $rzpOrderId
+        ];
+
+        (new OrderMeta\Service())->updateReviewStatusFor1ccOrder($param,$input[OneClickCheckout\Constants::MERCHANT_ID]);
+
+    }
+
+    public function addTag($input){
+
+        $rzpOrderId = $input[OneClickCheckout\Constants::ID];
+
+        $order = (new Order\Service())->fetchById($rzpOrderId);
+
+        $shopifyOrderId = $order[Order\Entity::NOTES][Constants::SHOPIFY_ORDER_ID];
+
+        $tags = [\RZP\Models\Merchant\OneClickCheckout\Shopify\Constants::TAG_HOLD];
+
+        $start = millitime();
+
+        (new Core())->addTagToOrder($shopifyOrderId, $input[OneClickCheckout\Constants::MERCHANT_ID],$tags);
+
+        $this->trace->info(
+            TraceCode::SHOPIFY_ADD_TAG,
+            [
+                'id'        =>$rzpOrderId,
+                'time'      => millitime() - $start
+            ]);
+
+        $param = [
+            Order1cc\Fields::REVIEW_STATUS  => OneClickCheckout\Constants::HOLD,
+            Order\Entity::ID                => $rzpOrderId
+        ];
+
+        (new OrderMeta\Service())->updateReviewStatusFor1ccOrder($param,$input[OneClickCheckout\Constants::MERCHANT_ID]);
+
+    }
+
+    public function removeTag($input){
+
+        $rzpOrderId = $input[OneClickCheckout\Constants::ID];
+
+        $order = (new Order\Service())->fetchById($rzpOrderId);
+
+        $shopifyOrderId = $order[Order\Entity::NOTES][\RZP\Models\Merchant\OneClickCheckout\Shopify\Constants::SHOPIFY_ORDER_ID];
+
+        $tags = [\RZP\Models\Merchant\OneClickCheckout\Shopify\Constants::TAG_HOLD];
+
+        $start = millitime();
+
+        (new Core())->removeTagToOrder($shopifyOrderId, $input[OneClickCheckout\Constants::MERCHANT_ID],$tags);
+
+        $this->trace->info(
+            TraceCode::SHOPIFY_REMOVE_TAG,
+            [
+                'id'        =>$rzpOrderId,
+                'time'      => millitime() - $start
+            ]);
+
+        $param = [
+            Order1cc\Fields::REVIEW_STATUS  => Order1cc\Constants::APPROVED,
+            Order\Entity::ID                => $rzpOrderId
+        ];
+
+        (new OrderMeta\Service())->updateReviewStatusFor1ccOrder($param,$input[OneClickCheckout\Constants::MERCHANT_ID]);
+
     }
 }

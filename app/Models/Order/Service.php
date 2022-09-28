@@ -10,6 +10,7 @@ use ApiResponse;
 use RZP\Http\RequestHeader;
 use RZP\Models\Base;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Order\OrderMeta\Order1cc;
 use RZP\Models\Payment;
 use RZP\Diag\EventCode;
 use RZP\Models\Feature;
@@ -967,5 +968,85 @@ class Service extends Base\Service
         {
             return 'Order Details Filtered';
         }
+    }
+
+    public function getCODOrders($input){
+
+        $params = $this->removeEmptyParams($input);
+
+        $this->addDefaultParamCount($params);
+
+        (new Order1cc\Validator)->validateInput('getCODOrder', $params);
+
+        if ((isset($params[Entity::ID])))
+        {
+            $params[Entity::ID] = substr($input[Entity::ID],6);
+        }
+
+        $orders = $this->repo->order->getPaginatedCODOrders($params, $this->merchant->getId(), ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+        $paginatedOrder = $this->toOneCCOrderArray($orders);
+
+        return $paginatedOrder;
+
+    }
+
+    private function addDefaultParamCount(array & $params)
+    {
+        if (isset($params[Entity::COUNT]) === true)
+        {
+            return;
+        }
+
+        $params[Entity::COUNT] = 20;
+    }
+
+    private function removeEmptyParams(array $params): array
+    {
+
+        foreach ($params as $key => $value)
+        {
+            if (!($params[$key] !== ''))
+            {
+                unset($params[$key]);
+            }
+        }
+
+        return $params;
+    }
+    public function toOneCCOrderArray(Base\PublicCollection $publicCollection)
+    {
+        $array = [];
+
+        $collectionClosure = function () {
+            $array[Order1cc\Constants::ENTITY] = $this->entity;
+            $array[Order1cc\Constants::COUNT] =  count($this->items);
+            $array[Order1cc\Constants::HAS_MORE] = $this->getHasMore();
+            $array[Order1cc\Constants::ITEMS] = $this->items;
+            return $array;
+        };
+
+        $collectionArray = $collectionClosure->call($publicCollection);
+        $array[Order1cc\Constants::ENTITY] = $collectionArray[Order1cc\Constants::ENTITY];
+        $array[Order1cc\Constants::COUNT] = count($collectionArray[Order1cc\Constants::ITEMS]);
+        $array[Order1cc\Constants::HAS_MORE] = $collectionArray[Order1cc\Constants::HAS_MORE];
+        $array[Order1cc\Constants::ITEMS] = array_map(function($item)
+        {
+            $order = $item->toCodOrderArray();
+            if (isset($order[Order1cc\Fields::COD_ELIGIBILITY_RTO_REASONS]))
+            {
+                $reasons = $this->app['rto_feature_reason_provider_service']->getRTOReasons($order[Order1cc\Fields::COD_ELIGIBILITY_RTO_REASONS]);
+
+                $order[Order1cc\Fields::COD_ELIGIBILITY_RTO_REASONS] = $reasons;
+            }
+            if (empty($order[Order1cc\Fields::COD_ELIGIBILITY_RTO_CATEGORY]))
+            {
+                $order[Order1cc\Fields::COD_ELIGIBILITY_RTO_CATEGORY] = null;
+            }
+
+            return $order;
+        }, $collectionArray[Order1cc\Constants::ITEMS]);
+
+        return $array;
     }
 }

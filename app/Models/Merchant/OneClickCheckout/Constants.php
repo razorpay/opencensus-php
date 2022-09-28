@@ -9,6 +9,8 @@ class Constants
     const SHIPPING_INFO_URL = 'shipping_info_url';
     const FETCH_COUPONS_URL = 'fetch_coupons_url';
     const APPLY_COUPON_URL  = 'apply_coupon_url';
+    const ORDER_STATUS_UPDATE_URL = 'order_status_update_url';
+    const DOMAIN_URL = 'domain_url';
 
     // supported platform types
     const NATIVE            = 'native';
@@ -26,12 +28,15 @@ class Constants
     const ONE_CC_CAPTURE_BILLING_ADDRESS = 'one_cc_capture_billing_address';
     const ONE_CC_GA_ANALYTICS            = 'one_cc_ga_analytics';
     const ONE_CC_FB_ANALYTICS            = 'one_cc_fb_analytics';
+    const MANUAL_CONTROL_COD_ORDER         = 'manual_control_cod_order';
 
     // common auth keys
     const API_KEY        = 'api_key';
     const API_SECRET     = 'api_secret';
     const OAUTH_TOKEN    = 'oauth_token'; // NOTE: Or ACCESS_TOKEN
     const REFRESH_TOKEN  = 'refresh_token';
+    const USERNAME       = 'username';
+    const PASSWORD       = 'password';
 
     // shopify auth headers
     const X_SHOPIFY_ACCESS_TOKEN            = 'X-Shopify-Access-Token';
@@ -73,10 +78,31 @@ class Constants
         self::OAUTH_TOKEN,
     ];
 
+    const WOOCOMMERCE_AUTH = [
+        self::API_KEY,
+        self::API_SECRET,
+    ];
+
+    const WOOCOMMERCE_AUTH_ENCRYPT = [
+        self::API_SECRET,
+    ];
+
+    const NATIVE_AUTH = [
+        self::USERNAME,
+        self::PASSWORD,
+    ];
+
+    const NATIVE_AUTH_ENCRYPT = [
+        self::USERNAME,
+        self::PASSWORD,
+    ];
+
     const ENCRYPTED_FIELDS = [
         self::API_SECRET,
         self::STOREFRONT_ACCESS_TOKEN,
         self::OAUTH_TOKEN,
+        self::USERNAME,
+        self::PASSWORD,
     ];
 
     const CONFIG_FLAGS = [
@@ -99,19 +125,25 @@ class Constants
     const CONFIG_FLAGS_ACROSS_ALL_PLATFORMS = [
         self::COD_INTELLIGENCE,
         self::ONE_CC_CAPTURE_BILLING_ADDRESS,
-        self::ONE_CC_INTERNATIONAL_SHIPPING
+        self::ONE_CC_INTERNATIONAL_SHIPPING,
+        self::MANUAL_CONTROL_COD_ORDER,
     ];
 
     const SHOPIFY_RESETTABLE_CONFIGS = [
         self::PLATFORM,
-        self::SHOP_ID
+        self::SHOP_ID,
+        self::MANUAL_CONTROL_COD_ORDER,
+        self::DOMAIN_URL,
     ];
 
     const NATIVE_RESETTABLE_CONFIGS = [
         self::PLATFORM,
         self::SHIPPING_INFO_URL,
         self::FETCH_COUPONS_URL,
-        self::APPLY_COUPON_URL
+        self::APPLY_COUPON_URL,
+        self::ORDER_STATUS_UPDATE_URL,
+        self::MANUAL_CONTROL_COD_ORDER,
+        self::DOMAIN_URL,
     ];
 
     const RTO_MLMODEL_ASSIGNMENT   = 'rto-mlmodel-assignment-events';
@@ -131,4 +163,17 @@ class Constants
 
     const POST = "POST";
     const METAFIELD_ENDPOINT = "/metafields.json";
+
+    //action name for rto recommendation
+    const ACTION        = 'action';
+    const APPROVE       = 'approve';
+    const HOLD          = 'hold';
+    const CANCEL        = 'cancel';
+    const CANCEL_ORDER_ENDPOINT = "/cancel.json";
+
+    const ID                = 'id';
+    const MERCHANT_ID        = 'merchant_id';
+    const MODE              = 'mode';
+
+
 }

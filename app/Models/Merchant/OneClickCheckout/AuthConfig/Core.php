@@ -46,6 +46,82 @@ class Core extends Base\Core
         );
     }
 
+    public function updateWoocommerce1ccAuthConfig(array $input)
+    {
+        $encryptedInput = array();
+
+        $merchantId = $input['merchant_id'];
+
+        unset($input['merchant_id']);
+
+        foreach ($input as $key => $value)
+        {
+
+            if (in_array($key, Constants::WOOCOMMERCE_AUTH_ENCRYPT)) {
+
+                $value = $this->app['encrypter']->encrypt($value);
+            }
+
+            $encryptedInput[$key] = $value;
+        }
+
+        $this->transaction(
+            function () use ($encryptedInput, $merchantId)
+            {
+                $recordsDeleted = $this->repo->merchant_1cc_auth_configs->deleteByMerchantAndPlatform(
+                    $merchantId,
+                    Constants::WOOCOMMERCE
+                );
+
+                foreach ($encryptedInput as $key => $value)
+                {
+                    if (in_array($key, Constants::WOOCOMMERCE_AUTH) === true)
+                    {
+                        $this->createAndSaveConfig($merchantId, Constants::WOOCOMMERCE, $key, $value);
+                    }
+                }
+            }
+        );
+    }
+
+    public function updateNative1ccAuthConfig(array $input)
+    {
+        $encryptedInput = array();
+
+        $merchantId = $input['merchant_id'];
+
+        unset($input['merchant_id']);
+
+        foreach ($input as $key => $value)
+        {
+
+            if (in_array($key, Constants::NATIVE_AUTH_ENCRYPT)) {
+
+                $value = $this->app['encrypter']->encrypt($value);
+            }
+
+            $encryptedInput[$key] = $value;
+        }
+
+        $this->transaction(
+            function () use ($encryptedInput, $merchantId)
+            {
+                $recordsDeleted = $this->repo->merchant_1cc_auth_configs->deleteByMerchantAndPlatform(
+                    $merchantId,
+                    Constants::NATIVE
+                );
+
+                foreach ($encryptedInput as $key => $value)
+                {
+                    if (in_array($key, Constants::NATIVE_AUTH) === true)
+                    {
+                        $this->createAndSaveConfig($merchantId, Constants::NATIVE, $key, $value);
+                    }
+                }
+            }
+        );
+    }
+
     protected function createAndSaveConfig($merchantId, $platform, $config, $value)
     {
         $input = [
@@ -67,6 +143,23 @@ class Core extends Base\Core
         $res = $this->repo->merchant_1cc_auth_configs->findByMerchantAndPlatform(
             $merchantId,
             Constants::SHOPIFY
+        );
+
+        $val = array();
+
+        foreach ($res as $object)
+        {
+            $val[$object->getConfig()] = $object->getValue();
+        }
+
+        return $val;
+    }
+
+    public function ge1ccAuthConfigsByMerchantIdAndPlatform(string $merchantId,string $platform)
+    {
+        $res = $this->repo->merchant_1cc_auth_configs->findByMerchantAndPlatform(
+            $merchantId,
+            $platform
         );
 
         $val = array();

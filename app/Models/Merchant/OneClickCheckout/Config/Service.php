@@ -51,11 +51,10 @@ class Service extends Base\Service
 
                 if ($updatePlatform !== $merchantPlatform)
                 {
-                    if ($merchantPlatform === Constants::SHOPIFY)
-                    {
+                    if ($merchantPlatform !== null){
                         $this->repo->merchant_1cc_auth_configs->deleteByMerchantAndPlatform(
                             $this->merchant->getId(),
-                            Constants::SHOPIFY
+                            $merchantPlatform
                         );
                     }
 
@@ -132,9 +131,16 @@ class Service extends Base\Service
 
                 $currentCodIntelligenceEnabledFlag = $this->merchant->getCODIntelligenceConfig();
 
-                if(isset($input[Type::COD_INTELLIGENCE]) && ($currentCodIntelligenceEnabledFlag !== $updatedCodIntelligenceEnabledFlag))
+                $updatedManualControlCodOrderFlag = isset($input[Type::MANUAL_CONTROL_COD_ORDER]) &&
+                    $input[Type::MANUAL_CONTROL_COD_ORDER] === true;
+
+                $currentManualControlCodOrderFlag = $this->merchant->getManualControlCodOrderConfig();
+
+                if((isset($input[Type::COD_INTELLIGENCE]) && ($currentCodIntelligenceEnabledFlag !== $updatedCodIntelligenceEnabledFlag))||
+                    (isset($input[Type::MANUAL_CONTROL_COD_ORDER]) && ($currentManualControlCodOrderFlag !== $updatedManualControlCodOrderFlag)) )
                 {
-                    if ($updatedCodIntelligenceEnabledFlag === true)
+                    if (($updatedCodIntelligenceEnabledFlag xor $updatedManualControlCodOrderFlag) &&
+                        ($currentCodIntelligenceEnabledFlag === false && $currentManualControlCodOrderFlag === false))
                     {
                         $topic =  env('APP_MODE', 'prod').'-'. Constants::RTO_MLMODEL_ASSIGNMENT;
                         try
@@ -162,6 +168,52 @@ class Service extends Base\Service
                         Type::COD_INTELLIGENCE,
                         $updatedCodIntelligenceEnabledFlag
                     );
+                    (new Core)->associateMerchant1ccConfig(
+                        Type::MANUAL_CONTROL_COD_ORDER,
+                        $updatedManualControlCodOrderFlag
+                    );
+                }
+
+                if ($updatePlatform === Constants::WOOCOMMERCE)
+                {
+                    if ((!(isset($input[Type::API_KEY]) && isset($input[Type::API_SECRET]))) &&
+                        ($updatedManualControlCodOrderFlag === true && isset($input[Type::MANUAL_CONTROL_COD_ORDER])))
+                    {
+                        $msg = 'Both api_key and api_secret should be sent for woocommerce platform to enable manual control cod order';
+                        throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,'api_key and api_secret is required', null,$msg);
+
+                    }
+                    if (isset($input[Type::API_KEY]) && isset($input[Type::API_SECRET]) && $updatedManualControlCodOrderFlag === true)
+                    {
+                        (new Merchant\OneClickCheckout\AuthConfig\Service())->updateWoocommerce1ccAuthConfig([
+                            'merchant_id'           => $this->merchant->getId(),
+                            Constants::API_KEY      => $input[Type::API_KEY],
+                            Constants::API_SECRET   => $input[Type::API_SECRET]
+                        ]);
+                    }
+                }
+
+                if ($updatePlatform === Constants::NATIVE)
+                {
+                    if ((!(isset($input[Type::USERNAME]) && isset($input[Type::PASSWORD]) && isset($input[Type::ORDER_STATUS_UPDATE_URL]))) &&
+                        ($updatedManualControlCodOrderFlag === true && isset($input[Type::MANUAL_CONTROL_COD_ORDER])))
+                    {
+                        $msg = 'username, password and order status url should be sent for native platform to enable manual control cod order';
+                        throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,'username, password and order status url are required', null, $msg);
+                    }
+                    if (isset($input[Type::USERNAME]) && isset($input[Type::PASSWORD]) &&
+                        isset($input[Type::ORDER_STATUS_UPDATE_URL]) && $updatedManualControlCodOrderFlag === true)
+                    {
+                        (new Merchant\OneClickCheckout\AuthConfig\Service())->updateNative1ccAuthConfig([
+                            'merchant_id'           => $this->merchant->getId(),
+                            Constants::USERNAME     => $input[Type::USERNAME],
+                            Constants::PASSWORD     => $input[Type::PASSWORD]
+                        ]);
+                        (new Core)->associateMerchant1ccConfig(
+                            Type::ORDER_STATUS_UPDATE_URL,
+                            $input[Type::ORDER_STATUS_UPDATE_URL]
+                        );
+                    }
                 }
 
                 foreach ($input as $key => $value)
@@ -304,7 +356,7 @@ class Service extends Base\Service
             $merchantPlatform = $merchantPlatformConfig->getValue();
         }
 
-        return [
+        $configs = [
             "domain_url"      => $domainUrl,
             "shipping_info"   => $shippingInfoUrl,
             "list_promotions" => $couponsUrl,
@@ -314,8 +366,20 @@ class Service extends Base\Service
             Constants::COD_INTELLIGENCE => $configFlagsResponse[Constants::COD_INTELLIGENCE],
             Constants::ONE_CC_AUTO_FETCH_COUPONS => $configFlagsResponse[Constants::ONE_CC_AUTO_FETCH_COUPONS],
             Constants::ONE_CC_INTERNATIONAL_SHIPPING => $configFlagsResponse[Constants::ONE_CC_INTERNATIONAL_SHIPPING],
-            Constants::ONE_CC_CAPTURE_BILLING_ADDRESS => $configFlagsResponse[Constants::ONE_CC_CAPTURE_BILLING_ADDRESS]
+            Constants::ONE_CC_CAPTURE_BILLING_ADDRESS => $configFlagsResponse[Constants::ONE_CC_CAPTURE_BILLING_ADDRESS],
+            Constants::MANUAL_CONTROL_COD_ORDER => $configFlagsResponse[Constants::MANUAL_CONTROL_COD_ORDER]
         ];
+
+        if ($merchantPlatformConfig !== null and $merchantPlatformConfig->getValue() === Constants::NATIVE)
+        {
+            $orderStatusUpdateUrlConfig = $this->merchant->getFetchOrderStatusUpdateUrlConfig();
+            if ($orderStatusUpdateUrlConfig !== null)
+            {
+                $configs[Constants::ORDER_STATUS_UPDATE_URL] = $orderStatusUpdateUrlConfig->getValue();
+            }
+        }
+
+        return $configs;
     }
 
     /**

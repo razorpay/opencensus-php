@@ -13,4 +13,18 @@ class Service extends Base\Service
         (new Core)->updateShopify1ccConfig($input);
         return;
     }
+
+    public function updateWoocommerce1ccAuthConfig($input)
+    {
+        (new Validator)->validateInput('updateWoocommerceConfig', $input);
+        (new Core)->updateWoocommerce1ccAuthConfig($input);
+        return;
+    }
+
+    public function updateNative1ccAuthConfig($input)
+    {
+        (new Validator)->validateInput('updateNativeConfig', $input);
+        (new Core)->updateNative1ccAuthConfig($input);
+        return;
+    }
 }

@@ -345,6 +345,19 @@ class Core extends Base\Core
     }
 
     /**
+     * @param string $orderId
+     * @param array $orderMetaInput
+     * @return array
+     * @throws ServerErrorException
+     */
+    public function update1CCOrderByMerchantId(string $orderId, array $orderMetaInput,string $merchantId): array
+    {
+        $this->merchant = $this->repo->merchant->find($merchantId);
+
+        return $this->update1CCOrder($orderId,$orderMetaInput);
+    }
+
+    /**
      * @throws ServerErrorException
      */
     public function updateCODIntelligence(string $orderId, array $codIntelligenceInput): array

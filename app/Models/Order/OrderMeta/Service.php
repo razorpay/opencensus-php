@@ -2,15 +2,36 @@
 
 namespace RZP\Models\Order\OrderMeta;
 
+use RZP\Constants\Environment;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Jobs\OneCCReviewCODOrder;
 use RZP\Models\Order\OrderMeta\Order1cc;
 use RZP\Models\Merchant\ShippingInfo;
 use RZP\Models\Merchant\Metric;
+use RZP\Services\Mutex;
 use RZP\Trace\TraceCode;
+use RZP\Models\Order;
+use Throwable;
+
 
 class Service extends \RZP\Models\Base\Service
 {
+    /**
+     * @var Mutex
+     */
+    protected $mutex;
+
+    const MUTEX_PREFIX_1CC = "1cc_order_action:";
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
+
     /**
      * Function to update customer details for 1CC Orders.
      * @param string $orderId
@@ -18,6 +39,7 @@ class Service extends \RZP\Models\Base\Service
      * @return array
      * @throws \RZP\Exception\BadRequestException
      */
+
     public function updateCustomerDetailsFor1CCOrder(string $orderId, array $input): array
     {
         $startTime = millitime();
@@ -68,11 +90,11 @@ class Service extends \RZP\Models\Base\Service
                     throw $ex;
                 }
 
-                $orderMetaInput = [
-                    Order1cc\Fields::COD_FEE => $shippingInfo[Order1cc\Fields::COD_FEE] ?? 0,
-                    Order1cc\Fields::SHIPPING_FEE => $shippingInfo[Order1cc\Fields::SHIPPING_FEE] ?? 0,
-                ];
-            }
+            $orderMetaInput = [
+                Order1cc\Fields::COD_FEE      => $shippingInfo[Order1cc\Fields::COD_FEE] ?? 0,
+                Order1cc\Fields::SHIPPING_FEE => $shippingInfo[Order1cc\Fields::SHIPPING_FEE] ?? 0,
+            ];
+        }
 
             $orderMetaInput = array_merge($orderMetaInput, [
                 Order1cc\Fields::CUSTOMER_DETAILS => $customerInfo,
@@ -224,4 +246,150 @@ class Service extends \RZP\Models\Base\Service
         return $maskedRequest;
     }
 
+    public function updateActionFor1ccOrders($input,$merchant, string $userEmail)
+    {
+        (new Order1cc\Validator())->validateInput('action', $input);
+
+        $action = $input[Order1cc\Constants::ACTION];
+
+        $orderIds = $input[Order1cc\Fields::ID];
+
+        $responses = [];
+
+        foreach ($orderIds as $orderId) {
+
+            $param = [
+                Order1cc\Constants::ACTION => $action,
+                Order\Entity::ID => $orderId
+            ];
+
+            $response = $this-> updateActionFor1ccOrder($param,$merchant,$userEmail);
+
+            array_push($responses,$response);
+        }
+
+        return $responses;
+    }
+
+
+    public function updateActionFor1ccOrder($input,$merchant, string $userEmail)
+    {
+        $response[Order\Entity::ID] =$input[Order\Entity::ID];
+
+        $reviewedAt = time();
+
+        $input[Order1cc\Constants::PLATFORM] = $merchant->getMerchantPlatformConfig()->getValue();
+
+        $merchantId = $merchant->getId();
+
+        try
+        {
+            $order = (new Order\Repository())->findByPublicId($input[Order\Entity::ID]);
+        }
+        catch (Throwable $err)
+        {
+            $response[Order1cc\Constants::ACTION_STATUS] = Order1cc\Constants::FAILURE;
+            $response[Order1cc\Constants::ACTION_ERROR] = [
+                Order1cc\Constants::ACTION_ERROR_CODE => Order1cc\Constants::BAD_REQUEST_ORDER_NOT_FOUND_CODE,
+            ];
+            return $response;
+        }
+
+        $orderMeta = array_first($order->orderMetas, function ($orderMeta)
+        {
+            return $orderMeta->getType() === Type::ONE_CLICK_CHECKOUT;
+        });
+
+        $value = $orderMeta->getValue();
+
+        if ((isset($value[Order1cc\Fields::REVIEW_STATUS]))&& ($value[Order1cc\Fields::REVIEW_STATUS] !== Order1cc\Constants::HOLD))
+        {
+            $response[Order1cc\Constants::ACTION_STATUS] = Order1cc\Constants::FAILURE;
+
+            $response[Order1cc\Constants::ACTION_ERROR] = [
+                Order1cc\Constants::ACTION_ERROR_CODE => Order1cc\Constants::BAD_REQUEST_ACTION_TAKEN_BY_SOMEONE_CODE,
+                Order1cc\Constants::ACTION_ERROR_DATA => [
+                    Order1cc\Fields::REVIEW_STATUS => $value[Order1cc\Fields::REVIEW_STATUS],
+                    Order1cc\Fields::REVIEWED_AT => $value[Order1cc\Fields::REVIEWED_AT],
+                    Order1cc\Fields::REVIEWED_BY => $value[Order1cc\Fields::REVIEWED_BY]
+                ]
+            ];
+
+            return $response;
+        }
+
+        $reviewStatus = Order1cc\Constants::ACTION_INTERMEDIATE_REVIEW_STATUS_MAPPING[$input[Order1cc\Constants::ACTION]];
+
+        $mutexKey = $this->get1ccOrderMutex($input[Order1cc\Fields::ID]);
+
+        try
+        {
+            $this->mutex->acquireAndRelease($mutexKey,
+                function() use ($reviewedAt, $userEmail, $reviewStatus, $merchantId, $input) {
+                    $param = [
+                        Order1cc\Fields::REVIEW_STATUS  => $reviewStatus,
+                        Order1cc\Fields::REVIEWED_AT    => $reviewedAt,
+                        Order1cc\Fields::REVIEWED_BY    => $userEmail
+                    ];
+                    (new Core())->update1CCOrderByMerchantId($input[Order\Entity::ID],$param,$merchantId);
+                },
+                Order1cc\Constants::ORDER_ACTION_MUTEX_LOCK_TIMEOUT,
+                null,
+                Order1cc\Constants::ORDER_ACTION_MUTEX_RETRY_COUNT
+            );
+
+            $input[Order\Entity::MERCHANT_ID] = $merchantId;
+
+            $this->publishReviewCodOrder($input);
+
+            $response[Order1cc\Constants::ACTION_STATUS] = Order1cc\Constants::SUCCESS;
+
+            return $response;
+        }
+        catch (Throwable $err)
+        {
+            $response[Order1cc\Constants::ACTION_STATUS] = Order1cc\Constants::FAILURE;
+            $response[Order1cc\Constants::ACTION_ERROR] = [
+                Order1cc\Constants::ACTION_ERROR_CODE => Order1cc\Constants::BAD_REQUEST_ACTION_ON_ORDER_IN_PROGRESS_CODE,
+            ];
+
+            return $response;
+        }
+    }
+
+    private function publishReviewCodOrder($input)
+    {
+        try
+        {
+            $initialMode = $this->app->environment(Environment::PRODUCTION) === true ? Mode::LIVE : Mode::TEST;
+
+            OneCCReviewCODOrder::dispatch(array_merge($input,
+                [
+                    'mode' => $initialMode,
+                ])
+            );
+
+        }
+        catch (Throwable $err) {
+            $this->trace->error(TraceCode::PUBLISH_ORDER_REVIEW_ACTION_EVENT, [
+                'error' => $err->getMessage(),
+            ]);
+        }
+    }
+
+    public function updateReviewStatusFor1ccOrder($input,$merchantId)
+    {
+        (new Order1cc\Validator())->validateInput('reviewStatus', $input);
+
+        $param = [
+            Order1cc\Fields::REVIEW_STATUS  => $input[Order1cc\Fields::REVIEW_STATUS],
+        ];
+
+        (new Core())->update1CCOrderByMerchantId($input[Order\Entity::ID],$param,$merchantId);
+    }
+
+    protected function get1ccOrderMutex(string $orderId) : string
+    {
+        return self::MUTEX_PREFIX_1CC . $orderId;
+    }
 }

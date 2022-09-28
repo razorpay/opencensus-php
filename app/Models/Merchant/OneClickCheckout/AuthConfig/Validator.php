@@ -23,6 +23,18 @@ class Validator extends Base\Validator
         Constants::STOREFRONT_ACCESS_TOKEN  => 'required|max:255'
     ];
 
+    protected static $updateWoocommerceConfigRules = [
+        Entity::MERCHANT_ID                 => 'required|size:14',
+        Constants::API_KEY                  => 'required|max:255',
+        Constants::API_SECRET               => 'required|max:255'
+    ];
+
+    protected static $updateNativeConfigRules = [
+        Entity::MERCHANT_ID                 => 'required|size:14',
+        Constants::USERNAME                 => 'required|max:255',
+        Constants::PASSWORD                 => 'required|max:255'
+    ];
+
     // NOTE: Decide whether we keep `.myshopify.com` in the value or not
     protected function sanitizeShopifyShopId($name)
     {

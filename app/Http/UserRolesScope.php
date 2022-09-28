@@ -1137,6 +1137,8 @@ class UserRolesScope
             '1cc_merchant_file_upload_audit_create'               => [Role::OWNER, Role::ADMIN],
             '1cc_merchant_file_upload_audit_list'                 => [Role::OWNER, Role::ADMIN],
             '1cc_rto_dashboard_list'                              => [Role::OWNER, Role::ADMIN],
+            '1cc_cod_order_list'                                  => [Role::OWNER,Role::ADMIN],
+            '1cc_cod_order_review'                                => [Role::OWNER,Role::ADMIN],
             '1cc_cod_eligibility_attribute_upsert_bulk'           => [Role::OWNER, Role::ADMIN],
             '1cc_cod_eligibility_attribute_delete'                => [Role::OWNER, Role::ADMIN],
             '1cc_cod_eligibility_attribute_delete_by_attribute'   => [Role::OWNER, Role::ADMIN],

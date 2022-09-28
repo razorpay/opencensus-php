@@ -229,4 +229,26 @@ class OrderController extends Controller
         (new OrderMeta\Service())->reset1CCOrder($orderId);
         return ApiResponse::json([], 200);
     }
+
+    public function getCODOrders(){
+
+        $input = Request::all();
+
+        $data = $this->service()->getCODOrders($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateActionFor1ccOrder(){
+
+        $input = Request::all();
+
+        $merchant = $this->ba->getMerchant();
+
+        $userEmail = $this->ba->getUser()->getEmail();
+
+        $data = (new OrderMeta\Service())->updateActionFor1ccOrders($input,$merchant,$userEmail);
+
+        return ApiResponse::json($data);
+    }
 }

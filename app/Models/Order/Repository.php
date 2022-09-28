@@ -3,14 +3,21 @@
 namespace RZP\Models\Order;
 
 use App;
+use Carbon\Carbon;
 use Illuminate\Support\Arr;
+use RZP\Base\Common;
+use RZP\Constants\Table;
 use RZP\Models\Base;
+use RZP\Models\Merchant\Constants;
+use RZP\Models\Merchant\Merchant1ccConfig\Type;
 use RZP\Models\Offer;
+use RZP\Models\Order\OrderMeta\Order1cc\Fields;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Offer\EntityOffer;
 use RZP\Models\Base\Traits\ExternalCore;
 use RZP\Models\Base\Traits\ExternalRepo;
+use RZP\Models\Order\OrderMeta\Order1cc;
 
 class Repository extends Base\Repository
 {
@@ -220,4 +227,160 @@ class Repository extends Base\Repository
         }
         return $order;
     }
+
+    public function getPaginatedCODOrders(array $params,
+                                          string $merchantId = null,
+                                          string $connectionType = null)
+    {
+        $connection = $this->getConnectionFromType($connectionType);
+
+        $query = $this->newQueryWithConnection($connection);
+
+        $orderMetaTable = Table::ORDER_META;
+        $amountCol = $this->dbColumn(Entity::AMOUNT);
+        $idCol = $this->dbColumn(Entity::ID);
+        $receiptColumn = $this->dbColumn(Entity::RECEIPT);
+        $createdAtCol = $this->dbColumn(Entity::CREATED_AT);
+        $statusCol = $this->dbColumn(Entity::STATUS);
+        $merchantIdCol = $this->dbColumn(Entity::MERCHANT_ID);
+        $typeCol = $orderMetaTable.'.'.\RZP\Models\Order\OrderMeta\Entity::TYPE;
+        $valueCol = $orderMetaTable.'.'.\RZP\Models\Order\OrderMeta\Entity::VALUE;
+
+        $query = $query
+            ->select($idCol,$receiptColumn,$amountCol,$createdAtCol,$valueCol)
+            ->join($orderMetaTable, $idCol, '=', $orderMetaTable . '.order_id')
+            ->where($statusCol, '=',Status::PLACED )
+            ->where($typeCol, '=',Fields::ONE_CLICK_CHECKOUT )
+            ->where($merchantIdCol , '=', $merchantId );
+
+
+        $this->addQueryParamOrderId($query, $params);
+
+        $this->addQueryParamMerchantOrderId($query, $params);
+
+        $this->addQueryParamCodEligibilityRiskTier($query, $params);
+
+        $this->addQueryParamReviewStatus($query, $params);
+
+        $this->buildQueryWithParams($query,$params);
+
+        $query->orderBy($this->dbColumn(Common::CREATED_AT), 'desc');
+
+        $paginatedResult = $this->getPaginated($query, $params);
+
+        return $paginatedResult;
+    }
+
+    private function addQueryParamOrderId($query,array & $params)
+    {
+        $idCol = $this->dbColumn(Entity::ID);
+
+        if (isset($params[Fields::ID]))
+        {
+            $query->where($idCol,'=',$params[Entity::ID]);
+
+            unset($params[Entity::ID]);
+        }
+    }
+
+    private function addQueryParamMerchantOrderId($query,array & $params)
+    {
+        $receiptColumn = $this->dbColumn(Entity::RECEIPT);
+
+        if (isset($params[Entity::RECEIPT]))
+        {
+            $query->where($receiptColumn,'=',$params[Entity::RECEIPT]);
+
+            unset($params[Entity::RECEIPT]);
+        }
+    }
+
+    private function addQueryParamCodEligibilityRiskTier($query,array & $params)
+    {
+        $orderMetaTable = Table::ORDER_META;
+
+        $valueCol = $orderMetaTable.'.'.\RZP\Models\Order\OrderMeta\Entity::VALUE;
+
+        $riskTierFilter = $valueCol.'->'.Fields::COD_INTELLIGENCE.'->'.Fields::COD_ELIGIBILITY_RISK_TIER;
+
+        if (isset($params[Fields::COD_ELIGIBILITY_RISK_TIER]))
+        {
+            $query->where($riskTierFilter,'=',$params[Fields::COD_ELIGIBILITY_RISK_TIER]);
+
+            unset($params[Fields::COD_ELIGIBILITY_RISK_TIER]);
+        }
+    }
+
+    private function addQueryParamReviewStatus($query,array & $params)
+    {
+        $orderMetaTable = Table::ORDER_META;
+
+        $valueCol = $orderMetaTable.'.'.\RZP\Models\Order\OrderMeta\Entity::VALUE;
+
+        $reviewStatusFilter = $valueCol.'->'.Fields::REVIEW_STATUS;
+
+        if (isset($params[Fields::REVIEW_STATUS]))
+        {
+            $query->where(function($query) use ($reviewStatusFilter, $params) {
+                $key = array_search('null', $params[Fields::REVIEW_STATUS]);
+                if ($key !== false)
+                {
+                    array_splice($params[Fields::REVIEW_STATUS], $key, 1);
+                }
+                $query->whereIn($reviewStatusFilter,$params[Fields::REVIEW_STATUS]);
+
+                unset($params[Fields::REVIEW_STATUS]);
+
+                if ($key !== false)
+                {
+                    $query->orWhereNull($reviewStatusFilter);
+                }
+            });
+        }
+        unset($params[Fields::REVIEW_STATUS]);
+    }
+
+    public function fetchPendingOrders(int $offset, string $connectionType = null)
+    {
+        $connection = $this->getConnectionFromType($connectionType);
+
+        $orderMetaTable = Table::ORDER_META;
+        $merchantConfigTable = Table::MERCHANT_1CC_CONFIGS;
+
+        $idCol = $this->dbColumn(Entity::ID);
+        $merchantIdCol = $this->dbColumn(Entity::MERCHANT_ID);
+        $statusCol = $this->dbColumn(Entity::STATUS);
+        $orderMetaUpdatedAtCol = $orderMetaTable.'.'.Entity::UPDATED_AT;
+        $deletedAtCol = $merchantConfigTable.'.'.Entity::DELETED_AT;
+
+        $typeCol = $orderMetaTable.'.'.\RZP\Models\Order\OrderMeta\Entity::TYPE;
+        $orderMetaValueCol = $orderMetaTable.'.'.\RZP\Models\Order\OrderMeta\Entity::VALUE;
+        $merchantConfigValueCol = $merchantConfigTable.'.'.\RZP\Models\Merchant\Merchant1ccConfig\Entity::VALUE;
+        $configCol = $merchantConfigTable.'.'.\RZP\Models\Merchant\Merchant1ccConfig\Entity::CONFIG;
+        $reviewStatusFilter = $orderMetaValueCol.'->'.Fields::REVIEW_STATUS;
+
+        $reviewStatusVar = $reviewStatusFilter .' AS '.Fields::REVIEW_STATUS;
+        $merchantConfigValueColVar = $merchantConfigValueCol.' AS '.Type::PLATFORM;
+
+        $reviewStatusArray = [Order1cc\Constants::APPROVAL_INITIATED,
+            Order1cc\Constants::CANCEL_INITIATED,
+            Order1cc\Constants::HOLD_INITIATED];
+
+
+        return $this->newQueryWithConnection($connection)
+            ->select($idCol, $merchantIdCol, $reviewStatusVar, $merchantConfigValueColVar)
+            ->join($orderMetaTable, $idCol, '=', $orderMetaTable . '.order_id')
+            ->join($merchantConfigTable, $merchantIdCol, '=', $merchantConfigTable.'.merchant_id')
+            ->where($statusCol, '=', Status::PLACED )
+            ->where($typeCol, '=', Fields::ONE_CLICK_CHECKOUT)
+            ->where($configCol, '=', Type::PLATFORM)
+            ->where($deletedAtCol, '=', null)
+            ->whereIn($reviewStatusFilter, $reviewStatusArray)
+            ->where($orderMetaUpdatedAtCol, '<', Carbon::now()->subHours(env('MAGIC_RTO_ACTION_RETRY_TIME_PERIOD_HOURS',2))->toDateTimeString())
+            ->where($orderMetaUpdatedAtCol, '>', Carbon::now()->subDays(env('MAGIC_RTO_ACTION_RETRY_TIME_PERIOD_DAYS',2))->toDateTimeString())
+            ->skip($offset)
+            ->limit(500)
+            ->get();
+    }
+
 }

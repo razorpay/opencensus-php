@@ -1286,4 +1286,193 @@ class Core extends Base\Core
 
         return $checkout['data']['node'] ?? [];
     }
+
+    public function addTagToOrder($shopifyOrderId, string $merchantId, array $tags)
+    {
+        $client = $this->getShopifyClientByMerchantId($merchantId);
+
+        $id = Constants::GID_ORDER.$shopifyOrderId;
+
+        $mutation = (new Mutations)->getAddTagMutation();
+
+        $graphqlQuery = [
+            'query'     => $mutation,
+            'variables' => [
+                'id'        => $id,
+                'tags'      => $tags
+            ],
+        ];
+
+        $this->trace->info(
+            TraceCode::SHOPIFY_ADD_TAG,
+            [
+                'id'    => $id,
+                'tags'  => $tags
+            ]
+        );
+
+        $start = millitime();
+
+        try
+        {
+            $response = $client->sendGraphqlRequest(json_encode($graphqlQuery));
+        }
+        catch (\Exception $exception)
+        {
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_ADD_TAG_ERROR_COUNT,['error_code' => TraceCode::SHOPIFY_1CC_ORDER_ADD_TAG_API_ERROR]);
+
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_ORDER_ADD_TAG_API_ERROR,
+                [
+                    'merchant_id'=>$merchantId,
+                    'query' => $graphqlQuery,
+                    'error' => $exception->getMessage()
+                ]
+            );
+            throw new Exception\ServerErrorException(
+                $exception->getMessage(),
+                $exception->getCode()
+            );
+        }
+
+        $this->monitoring->traceResponseTime(Metric::SHOPIFY_ADD_TAG_CALL_TIME, $start, []);
+
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_ORDER_ADD_TAG_RES,
+            [
+                'type' => 'add_tag',
+                'response' => $response,
+                'time' => millitime() - $start,
+                'shopify_order_id' => $shopifyOrderId
+            ]
+        );
+
+        $this->monitoring->addTraceCount(Metric::SHOPIFY_ADD_TAG_SUCCESS_COUNT, []);
+
+    }
+
+    public function removeTagToOrder($shopifyOrderId, string $merchantId, array $tags)
+    {
+        $client = $this->getShopifyClientByMerchantId($merchantId);
+
+        $id = Constants::GID_ORDER.$shopifyOrderId;
+
+        $mutation = (new Mutations)->getRemoveTagMutation();
+
+        $graphqlQuery = [
+            'query'     => $mutation,
+            'variables' => [
+                'id'        => $id,
+                'tags'      => $tags
+            ],
+        ];
+
+        $this->trace->info(
+            TraceCode::SHOPIFY_REMOVE_TAG,
+            [
+                'id'    => $id,
+                'tags'  => $tags
+            ]
+        );
+
+        $start = millitime();
+
+        try
+        {
+            $response = $client->sendGraphqlRequest(json_encode($graphqlQuery));
+        }
+        catch (\Exception $exception)
+        {
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_ADD_TAG_ERROR_COUNT,['error_code' => TraceCode::SHOPIFY_1CC_ORDER_REMOVE_TAG_API_ERROR]);
+
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_ORDER_REMOVE_TAG_API_ERROR,
+                [
+                    'merchant_id'=>$merchantId,
+                    'query' => $graphqlQuery,
+                    'error' => $exception->getMessage()
+                ]
+            );
+            throw new Exception\ServerErrorException(
+                $exception->getMessage(),
+                $exception->getCode()
+            );
+        }
+
+        $this->monitoring->traceResponseTime(Metric::SHOPIFY_ADD_TAG_CALL_TIME, $start, []);
+
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_ORDER_REMOVE_TAG_RES,
+            [
+                'type' => 'remove_tag',
+                'response' => $response,
+                'time' => millitime() - $start,
+                'shopify_order_id' => $shopifyOrderId
+            ]
+        );
+
+        $this->monitoring->addTraceCount(Metric::SHOPIFY_ADD_TAG_SUCCESS_COUNT, []);
+
+    }
+
+    public function cancelShopifyOrder(string $shopifyOrderId, string $merchantId){
+
+        $client = $this->getShopifyClientByMerchantId($merchantId);
+
+        $method = OneClickCheckout\Constants::POST;
+
+        $resource = '/orders/'.$shopifyOrderId.OneClickCheckout\Constants::CANCEL_ORDER_ENDPOINT;
+
+        $requestStart = millitime();
+
+        try
+        {
+            $response = $client->sendRestApiRequest(null, $method, $resource);
+        }
+        catch (\Exception $exception)
+        {
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_CANCEL_STATUS_ERROR_COUNT,['error_code' => TraceCode::SHOPIFY_1CC_ORDER_CANCEL_API_ERROR]);
+
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_ORDER_CANCEL_API_ERROR,
+                [
+                    'merchant_id'=>$merchantId,
+                    'error' => $exception->getMessage()
+                ]
+            );
+            throw new Exception\ServerErrorException(
+                'Error while calling Shopify URL',
+                ErrorCode::SERVER_ERROR
+            );
+        }
+
+        $this->monitoring->traceResponseTime(Metric::CANCEL_SHOPIFY_ORDER_STATUS_CALL_TIME, $requestStart, []);
+
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_ORDER_CANCEL_API_RES,
+            [
+                'type' => 'cancel_order',
+                'response' => $response,
+                'time' => millitime() - $requestStart,
+                'shopify_order_id' => $shopifyOrderId
+            ]
+        );
+
+        $this->monitoring->addTraceCount(Metric::SHOPIFY_CANCEL_ORDER_SUCCESS_COUNT, []);
+
+    }
+
+    private function getShopifyClientByMerchantId(string $merchantId)
+    {
+        $credentials = $this->getShopifyAuthByMerchantId($merchantId);
+
+        return new Client($credentials);
+    }
+
+    private function getShopifyAuthByMerchantId(string $merchantId)
+    {
+        return (new AuthConfig\Core)->ge1ccAuthConfigsByMerchantIdAndPlatform($merchantId,
+            \RZP\Models\Merchant\OneClickCheckout\Constants::SHOPIFY
+        );
+    }
 }

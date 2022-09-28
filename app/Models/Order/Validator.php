@@ -98,6 +98,7 @@ class Validator extends Base\Validator
         Entity::AMOUNT => 'required|integer|min_amount'
     ];
 
+
     protected function validatePartialPayment($attribute, $value)
     {
         $this->validatePartialPaymentUpdateAllowed();

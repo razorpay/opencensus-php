@@ -13233,4 +13233,194 @@ return [
             'status_code' => 200
         ],
     ],
+
+    'testCODIntelligenceShopifyMerchant1ccConfig' => [
+        'request' => [
+            'url' => '/1cc/merchant/configs',
+            'method' => 'post',
+            'content' => [
+                "shop_id" => "hias",
+                "platform"=> "shopify",
+                "cod_intelligence"=> true
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200
+        ],
+    ],
+
+    'testCODIntelligenceNativeMerchant1ccConfig' => [
+        'request' => [
+            'url' => '/1cc/merchant/configs',
+            'method' => 'post',
+            'content' => [
+                "platform"=> "native",
+                "cod_intelligence"=> true
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200
+        ],
+    ],
+
+    'testCODIntelligenceWoocommerceMerchant1ccConfig' => [
+        'request' => [
+            'url' => '/1cc/merchant/configs',
+            'method' => 'post',
+            'content' => [
+                "platform"=> "woocommerce",
+                "cod_intelligence"=> true
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200
+        ],
+    ],
+
+    'testManualControlCodOrderShopifyMerchant1ccConfig' => [
+        'request' => [
+            'url' => '/1cc/merchant/configs',
+            'method' => 'post',
+            'content' => [
+                "shop_id" => "hias",
+                "platform"=> "shopify",
+                "manual_control_cod_order"=> true
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200
+        ],
+    ],
+
+    'testManualControlCodOrderWoocommerceMerchant1ccConfig' => [
+        'request' => [
+            'url' => '/1cc/merchant/configs',
+            'method' => 'post',
+            'content' => [
+                "platform"=> "woocommerce",
+                "manual_control_cod_order"=> true,
+                "api_key"=>"test_key",
+                "api_secret"=>"test_secret"
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200
+        ],
+    ],
+
+    'testManualControlCodOrderNativeMerchant1ccConfig' => [
+        'request' => [
+            'url' => '/1cc/merchant/configs',
+            'method' => 'post',
+            'content' => [
+                "platform"=> "native",
+                "manual_control_cod_order"=> true,
+                "username"=>"test_username",
+                "password"=>"test_password",
+                "order_status_update_url" => "http://rzp1cc.kinsta.cloud/api/updateOrderStatus.php/"
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200
+        ],
+    ],
+
+    'testInvalidAuthWoocommerceMerchant1ccConfig' => [
+        'request' => [
+            'url' => '/1cc/merchant/configs',
+            'method' => 'post',
+            'content' => [
+                "platform"=> "woocommerce",
+                "manual_control_cod_order"=> true,
+                "api_key"=>"test_key",
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Both api_key and api_secret should be sent for woocommerce platform to enable manual control cod order',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
+        ],
+    ],
+
+    'testInvalidAuthNativeMerchant1ccConfig' => [
+        'request' => [
+            'url' => '/1cc/merchant/configs',
+            'method' => 'post',
+            'content' => [
+                "platform"=> "native",
+                "manual_control_cod_order"=> true,
+                "password"=>"test_password",
+                "order_status_update_url" => "http://rzp1cc.kinsta.cloud/api/updateOrderStatus.php/"
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'username, password and order status url should be sent for native platform to enable manual control cod order',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
+        ],
+    ],
+
+    'testAuthWoocommerceMerchant1ccConfig' => [
+        'request' => [
+            'url' => '/1cc/merchant/configs',
+            'method' => 'post',
+            'content' => [
+                "platform"=> "woocommerce",
+                "api_key"=>"test_key",
+                "api_secret"=>"test_secret"
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200
+        ],
+    ],
+
+    'testAuthNativeMerchant1ccConfig' => [
+        'request' => [
+            'url' => '/1cc/merchant/configs',
+            'method' => 'post',
+            'content' => [
+                "platform"=> "native",
+                "username"=>"test_username",
+                "password"=>"test_password"
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200
+        ],
+    ],
 ];

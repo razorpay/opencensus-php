@@ -102,6 +102,24 @@ final class Metric
 
     const ZIP_CODE_WITHOUT_ADDRESS_FOUND_COUNT          = 'zip_code_without_address_found_count';
 
+    const WOOCOMMERCE_UPDATE_ORDER_STATUS_SUCCESS_COUNT     = 'woocommerce_update_order_status_success_count';
+    const WOOCOMMERCE_UPDATE_ORDER_STATUS_ERROR_COUNT       = 'woocommerce_update_order_status_error_count';
+    const UPDATE_WOOCOMMERCE_ORDER_STATUS_CALL_TIME         = 'update_woocommerce_order_status_call_time';
+
+    const NATIVE_UPDATE_ORDER_STATUS_SUCCESS_COUNT      = 'native_update_order_status_success_count';
+    const NATIVE_UPDATE_ORDER_STATUS_ERROR_COUNT        = 'native_update_order_status_error_count';
+    const UPDATE_NATIVE_ORDER_STATUS_CALL_TIME          = 'update_natives_order_status_call_time';
+
+    const SHOPIFY_CANCEL_ORDER_SUCCESS_COUNT        = 'shopify_cancel_status_success_count';
+    const SHOPIFY_CANCEL_STATUS_ERROR_COUNT         = 'shopify_cancel_order_status_error_count';
+    const CANCEL_SHOPIFY_ORDER_STATUS_CALL_TIME     = 'cancel_shopify_order_status_call_time';
+
+    const SHOPIFY_ADD_TAG_SUCCESS_COUNT         = 'shopify_cancel_status_success_count';
+    const SHOPIFY_ADD_TAG_ERROR_COUNT           = 'shopify_cancel_order_status_error_count';
+    const SHOPIFY_ADD_TAG_CALL_TIME             = 'cancel_shopify_order_status_call_time';
+
+    const SHOPIFY_ORDER_CANCEL_REQUEST_COUNT         = 'shopify_order_cancel_request_count';
+    const SHOPIFY_ADD_TAG_REQUEST_COUNT              = 'shopify_add_tag_request_count';
 
     const CREATE_API_CHECKOUT_ERROR_COUNT               = 'create_api_checkout_error_count';
 

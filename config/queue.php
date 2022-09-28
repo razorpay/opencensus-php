@@ -505,6 +505,11 @@ return [
         'live'       => env('AWS_ONE_CC_SHOPIFY_CREATE_ORDER_LIVE_QUEUE'),
     ],
 
+    'one_cc_review_cod_order' => [
+        'test'       => env('AWS_ONE_CC_REVIEW_COD_ORDER_TEST_QUEUE'),
+        'live'       => env('AWS_ONE_CC_REVIEW_COD_ORDER_LIVE_QUEUE'),
+    ],
+
     'zip-firs-documents' => [
         'test'       => env('AWS_ZIP_FIRS_DOCUMENTS_TEST_QUEUE'),
         'live'       => env('AWS_ZIP_FIRS_DOCUMENTS_LIVE_QUEUE'),

@@ -82,6 +82,76 @@ class MerchantOneCcConfigTest extends TestCase
         $this->startTest();
     }
 
+    public function testCODIntelligenceNativeMerchant1ccConfig()
+    {
+        $this->ba->proxyAuth();
+        $this->setUpAuthConfigForMerchant();
+        $this->startTest();
+    }
+
+    public function testCODIntelligenceShopifyMerchant1ccConfig()
+    {
+        $this->ba->proxyAuth();
+        $this->setUpAuthConfigForMerchant();
+        $this->startTest();
+    }
+
+    public function testCODIntelligenceWoocommerceMerchant1ccConfig()
+    {
+        $this->ba->proxyAuth();
+        $this->setUpAuthConfigForMerchant();
+        $this->startTest();
+    }
+
+    public function testManualControlCodOrderShopifyMerchant1ccConfig()
+    {
+        $this->ba->proxyAuth();
+        $this->setUpAuthConfigForMerchant();
+        $this->startTest();
+    }
+
+    public function testManualControlCodOrderWoocommerceMerchant1ccConfig()
+    {
+        $this->ba->proxyAuth();
+        $this->setUpAuthConfigForMerchant();
+        $this->startTest();
+    }
+
+    public function testInvalidAuthWoocommerceMerchant1ccConfig()
+    {
+        $this->ba->proxyAuth();
+        $this->setUpAuthConfigForMerchant();
+        $this->startTest();
+    }
+
+    public function testManualControlCodOrderNativeMerchant1ccConfig()
+    {
+        $this->ba->proxyAuth();
+        $this->setUpAuthConfigForMerchant();
+        $this->startTest();
+    }
+
+    public function testInvalidAuthNativeMerchant1ccConfig()
+    {
+        $this->ba->proxyAuth();
+        $this->setUpAuthConfigForMerchant();
+        $this->startTest();
+    }
+
+    public function testAuthNativeMerchant1ccConfig()
+    {
+        $this->ba->proxyAuth();
+        $this->setUpAuthConfigForMerchant();
+        $this->startTest();
+    }
+
+    public function testAuthWoocommerceMerchant1ccConfig()
+    {
+        $this->ba->proxyAuth();
+        $this->setUpAuthConfigForMerchant();
+        $this->startTest();
+    }
+
     private function setUpAuthConfigForMerchant()
     {
         $app = App::getFacadeRoot();

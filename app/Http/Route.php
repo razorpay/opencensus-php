@@ -3811,6 +3811,8 @@ class Route
         '1cc_merchant_file_upload_audit_list'          => ['get', '1cc/rto_prediction_service/file_upload_audits/list', 'RtoMerchantFileUploadAuditsController@listFileUploadAudits'],
 
         '1cc_rto_dashboard_list'                     => ['post',   '1cc/rto_prediction_service/dashboard', 'RtoDashboardController@list' ],
+        '1cc_cod_order_list'                         => ['get', '1cc/cod/orders', 'OrderController@getCODOrders'],
+        '1cc_cod_order_review'                       => ['post', '1cc/orders/cod/review','OrderController@updateActionFor1ccOrder'],
 
         // 1 click checkout shopify integration
         '1cc_shopify_checkout'                      => ['post',       '1cc/shopify/checkout',                                  'OneClickCheckoutController@shopifyCreateCheckout'                ],
@@ -4549,6 +4551,7 @@ class Route
         // metro routes
         'payout_email_attachments',
         'account_service_handle_update_event',
+
 
         // cron for generating merchant report
         'merchant_report',
@@ -6208,8 +6211,10 @@ class Route
         '1cc_cod_eligibility_attribute_delete_by_attribute',
         '1cc_cod_eligibility_attribute_upsert_batch',
         '1cc_rto_dashboard_list',
+        '1cc_cod_order_list',
         '1cc_merchant_file_upload_audit_create',
         '1cc_merchant_file_upload_audit_list',
+        '1cc_cod_order_review',
 
         // splitz
         'splitz_evaluate_bulk_proxy',
@@ -9507,7 +9512,7 @@ class Route
 
         'metro' => [
             'payout_email_attachments',
-            'account_service_handle_update_event',
+            'account_service_handle_update_event'
         ],
 
         'vendor_payments' => [
@@ -10804,8 +10809,10 @@ class Route
             'country_fetch',
             'state_fetch',
             '1cc_rto_dashboard_list',
+            '1cc_cod_order_list',
             '1cc_merchant_file_upload_audit_create',
             '1cc_merchant_file_upload_audit_list',
+            '1cc_cod_order_review',
 
             'growth_get_public_asset_details',
 

@@ -5,6 +5,7 @@ namespace RZP\Models\Order\OrderMeta\Order1cc;
 use RZP\Base;
 use RZP\Models\Address;
 use RZP\Trace\TraceCode;
+use RZP\Models\Order\Entity;
 
 class Validator extends Base\Validator
 {
@@ -21,6 +22,9 @@ class Validator extends Base\Validator
         Fields::PROMOTIONS       => 'sometimes|array|custom',
         Fields::CUSTOMER_DETAILS => 'sometimes|array|custom',
         Fields::COD_INTELLIGENCE => 'sometimes|array',
+        Fields::REVIEWED_AT      => 'sometimes|integer',
+        Fields::REVIEWED_BY      => 'sometimes|email',
+        Fields::REVIEW_STATUS    => 'sometimes|in:approved,canceled,hold,approval_initiated,hold_initiated,cancel_initiated',
     ];
 
     protected static $editCustomerDetailsRules = [
@@ -70,6 +74,30 @@ class Validator extends Base\Validator
     protected static $customerDeviceDetailsRules = [
         Fields::CUSTOMER_DETAILS_DEVICE_ID          => 'required|regex:/^\d{1}\.[a-zA-Z0-9]{40}\.\d{13}\.\d{8}$/',
     ];
+
+    protected static $getCODOrderRules = [
+        Fields::COD_ELIGIBILITY_RISK_TIER           => 'sometimes|in:low,medium,high',
+        Fields::REVIEW_STATUS                       => 'sometimes|array|max:6',
+        Fields::REVIEW_STATUS."*"                   => 'distinct|in:approved,canceled,hold,approval_initiated,hold_initiated,cancel_initiated,null',
+        Entity::RECEIPT                             => 'sometimes|string|max:40',
+        Entity::ID                                  => 'sometimes|string|size:20',
+        Entity::FROM                                => 'integer',
+        Entity::TO                                  => 'integer',
+        Entity::COUNT                               => 'integer|min:1|max:50',
+        Entity::SKIP                                => 'integer',
+    ];
+
+    protected static $actionRules = [
+        Constants::ACTION       => 'required|in:approve,cancel,hold',
+        Entity::ID              => 'required|array|min:1',
+        Entity::ID."*"          => 'distinct|string|size:20'
+    ];
+
+    protected static $reviewStatusRules = [
+        Fields::REVIEW_STATUS       => 'required|in:approved,canceled,hold,approval_initiated,hold_initiated,cancel_initiated',
+        Entity::ID                  => 'required|string|size:20',
+    ];
+
 
     protected function validateShippingAddress($attribute, $value)
     {
