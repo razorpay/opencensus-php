@@ -43,4 +43,18 @@ class Constants
     const BANK_ACC_NAME         = "Bank Account Name";
     const IFSC_CODE             = "IFSC Code";
     const MCC_CODE              = 'MCC Code';
+
+    /**
+     * Constants for pricing automation MIQ.
+     */
+    const FEE_TYPE_PERCENT            = 'percent';
+    const FEE_TYPE_FLAT               = 'flat';
+    const PRICING_FEE_BEARER          = 'pricing_fee_bearer';
+    const PRICING_AMOUNT_RANGE_ACTIVE = 'pricing_amount_range_active';
+    const PRICING_AMOUNT_RANGES       = 'pricing_amount_ranges';
+    const PRICING_AMOUNT_RANGE_MIN    = 'pricing_amount_range_min';
+    const PRICING_AMOUNT_RANGE_MAX    = 'pricing_amount_range_max';
+    const PRICING_METHOD_TYPE         = 'pricing_method_type';
+    const PRICING_NETWORK             = 'pricing_network';
+    const PRICING_METHOD_SUBTYPE      = 'pricing_method_subtype';
 }

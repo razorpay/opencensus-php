@@ -6,14 +6,17 @@ namespace RZP\Models\Merchant\Detail\Upload;
 use Throwable;
 
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Status;
+use RZP\Exception\BaseException;
 use RZP\Exception\LogicException;
-use RZP\Exception\BadRequestException;
 use RZP\Models\User\Service as UserService;
 use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Models\Pricing\Entity as PricingEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Pricing\Service as PricingService;
 use RZP\Models\Merchant\Detail\Core as MDetailCore;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Detail\Upload\Processors\Factory;
@@ -100,7 +103,6 @@ class Core extends Base\Core
      * @param array $entry
      * @return array
      * @throws Throwable
-     * @throws BadRequestException
      * @throws LogicException
      */
     public function processMerchantEntry(array $entry): array
@@ -183,8 +185,44 @@ class Core extends Base\Core
 
                 $batchResponse[Header::MIQ_OUT_FEE_BEARER]  = $merchant->getFeeBearer();
 
-                // TODO - pricing automation related codes and then set status success/failure.
-                $batchResponse[Header::STATUS] = Status::SUCCESS;
+                try
+                {
+                    // create forward pricing plan and assign to merchant.
+                    $planName = $merchant->getId();
+
+                    $planInput = $parser->getPricingPlanInput($entry, $planName);
+
+                    $data = (new PricingService())->createPlan($planInput);
+
+                    $merchant->setPricingPlan($data[PricingEntity::ID]);
+
+                    $this->repo->saveOrFail($merchant);
+
+                    $batchResponse[Header::STATUS] = Status::SUCCESS;
+                }
+                catch (BaseException $e)
+                {
+                    $error = $e->getError();
+
+                    $batchResponse[Header::STATUS]            = Status::FAILURE;
+
+                    $batchResponse[Header::ERROR_CODE]        = $error->getPublicErrorCode();
+
+                    $batchResponse[Header::ERROR_DESCRIPTION] = $error->getDescription();
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException($e, null, TraceCode::MERCHANT_UPLOAD_MIQ_PRICING_PLAN_CREATION_FAILED, [
+                        Header::MIQ_OUT_MERCHANT_EMAIL          => $entry[Header::MIQ_CONTACT_EMAIL],
+                        Header::MIQ_OUT_MERCHANT_ID             => $merchant->getId(),
+                    ]);
+
+                    $batchResponse[Header::STATUS]   = Status::FAILURE;
+
+                    $batchResponse[Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
+
+                    $batchResponse[Header::ERROR_DESCRIPTION] = 'Could not create pricing plan';
+                }
             }
 
             $this->trace->info(TraceCode::BATCH_SERVICE_UPLOAD_MIQ_CREATE_RESPONSE, [

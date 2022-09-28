@@ -194,6 +194,16 @@ class MerchantUploadMiqBatchTest extends TestCase
         $this->assertNotEmpty($response[Header::MIQ_OUT_MERCHANT_ID]);
     }
 
+    public function testCreateMerchantWithoutPricingPlan()
+    {
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response[Header::ERROR_CODE]);
+
+    }
+
     protected function getDefaultFileEntries(): array
     {
         return [

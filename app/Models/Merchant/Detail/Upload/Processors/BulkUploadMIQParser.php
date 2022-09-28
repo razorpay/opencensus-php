@@ -3,10 +3,17 @@
 namespace RZP\Models\Merchant\Detail\Upload\Processors;
 
 use RZP\Models\Batch\Header;
+use Razorpay\IFSC\Bank as Banks;
+use RZP\Models\Card\Type as CardType;
+use RZP\Models\Card\Network as CardNetwork;
+use RZP\Constants\Product as ProductConstants;
+use RZP\Models\Pricing\Entity as PricingEntity;
 use RZP\Models\Merchant\FeeBearer as MFeeBearer;
 use RZP\Models\Merchant\Detail\Entity as MDEntity;
+use RZP\Models\Merchant\Methods\Entity as MethodEntity;
 use RZP\Models\Merchant\BusinessDetail\Entity as BEntity;
 use RZP\Models\Merchant\Detail\BusinessType as BusinessType;
+use RZP\Models\Merchant\Detail\Upload\Constants as UConstants;
 use RZP\Models\Merchant\BusinessDetail\Constants as BConstants;
 
 class BulkUploadMIQParser
@@ -72,6 +79,96 @@ class BulkUploadMIQParser
         Header::MIQ_AUTHORISED_SIGNATORY_PAN,
         Header::MIQ_PAN_OWNER_NAME,
         Header::MIQ_CONTACT_NUMBER,
+    ];
+
+    private static $walletPricingMapping = [
+        Header::MIQ_WALLETS_FREECHARGE  => MethodEntity::FREECHARGE,
+        // fee to be charged remaining wallets
+        Header::MIQ_WALLETS_ANY         => Header::MIQ_WALLETS_ANY,
+    ];
+
+    private static $netBankingPricingMapping = [
+        Header::MIQ_AXIS        =>  Banks::UTIB,
+        Header::MIQ_HDFC        =>  Banks::HDFC,
+        Header::MIQ_ICICI       =>  Banks::ICIC,
+        Header::MIQ_SBI         =>  Banks::SBIN,
+        Header::MIQ_YES         =>  Banks::YESB,
+        // fee to be charged remaining banks
+        Header::MIQ_NB_ANY      =>  Header::MIQ_NB_ANY,
+    ];
+
+    private static $cardPricingMapping = [
+        Header::MIQ_CREDIT_CARD_FEE_TYPE => [
+            UConstants::PRICING_FEE_BEARER          => Header::MIQ_CREDIT_CARD_FEE_BEARER,
+            UConstants::PRICING_METHOD_TYPE         => CardType::CREDIT,
+            UConstants::PRICING_NETWORK             => '',
+            UConstants::PRICING_METHOD_SUBTYPE      => '',
+            UConstants::PRICING_AMOUNT_RANGE_ACTIVE => '1',
+            UConstants::PRICING_AMOUNT_RANGES  => [
+                Header::MIQ_CREDIT_CARD_0_2K => [
+                    UConstants::PRICING_AMOUNT_RANGE_MIN => '0',
+                    UConstants::PRICING_AMOUNT_RANGE_MAX => '200000', // 2k
+                ],
+                Header::MIQ_CREDIT_CARD_2K_1CR => [
+                    UConstants::PRICING_AMOUNT_RANGE_MIN => '200000', // 2k
+                    UConstants::PRICING_AMOUNT_RANGE_MAX => '1000000000'  // 1cr
+                ],
+            ],
+        ],
+        Header::MIQ_DEBIT_CARD_FEE_TYPE => [
+            UConstants::PRICING_FEE_BEARER     => Header::MIQ_DEBIT_CARD_FEE_BEARER,
+            UConstants::PRICING_METHOD_TYPE    => CardType::DEBIT,
+            UConstants::PRICING_NETWORK        => '',
+            UConstants::PRICING_METHOD_SUBTYPE => '',
+            UConstants::PRICING_AMOUNT_RANGE_ACTIVE => '1',
+            UConstants::PRICING_AMOUNT_RANGES  => [
+                Header::MIQ_DEBIT_CARD_0_2K => [
+                    UConstants::PRICING_AMOUNT_RANGE_MIN => '0',
+                    UConstants::PRICING_AMOUNT_RANGE_MAX => '200000', // 2k
+                ],
+                Header::MIQ_DEBIT_CARD_2K_1CR => [
+                    UConstants::PRICING_AMOUNT_RANGE_MIN => '200000', // 2k
+                    UConstants::PRICING_AMOUNT_RANGE_MAX => '1000000000',  // 1cr
+                ],
+            ],
+        ],
+        Header::MIQ_RUPAY_FEE_TYPE => [
+            UConstants::PRICING_FEE_BEARER     => Header::MIQ_CREDIT_CARD_FEE_BEARER,
+            UConstants::PRICING_METHOD_TYPE    => CardType::DEBIT,
+            UConstants::PRICING_NETWORK        => CardNetwork::RUPAY,
+            UConstants::PRICING_METHOD_SUBTYPE => '',
+            UConstants::PRICING_AMOUNT_RANGE_ACTIVE => '1',
+            UConstants::PRICING_AMOUNT_RANGES  => [
+                Header::MIQ_RUPAY_0_2K  => [
+                    UConstants::PRICING_AMOUNT_RANGE_MIN => '0',
+                    UConstants::PRICING_AMOUNT_RANGE_MAX => '200000', // 2k
+                ],
+                Header::MIQ_RUPAY_2K_1CR => [
+                    UConstants::PRICING_AMOUNT_RANGE_MIN => '200000', // 2k
+                    UConstants::PRICING_AMOUNT_RANGE_MAX => '1000000000'  // 1cr
+                ],
+            ],
+        ],
+        Header::MIQ_INTL_CARD_FEE_TYPE => [
+            UConstants::PRICING_FEE_BEARER     => Header::MIQ_CREDIT_CARD_FEE_BEARER,
+            UConstants::PRICING_METHOD_TYPE    => '',
+            UConstants::PRICING_NETWORK        => '',
+            UConstants::PRICING_METHOD_SUBTYPE => '',
+            UConstants::PRICING_AMOUNT_RANGE_ACTIVE => '0',
+            UConstants::PRICING_AMOUNT_RANGES  => [
+                Header::MIQ_INTERNATIONAL_CARD => [],
+            ],
+        ],
+        Header::MIQ_BUSINESS_FEE_TYPE => [
+            UConstants::PRICING_FEE_BEARER     => Header::MIQ_BUSINESS_FEE_BEARER,
+            UConstants::PRICING_METHOD_TYPE    => '',
+            UConstants::PRICING_NETWORK        => '',
+            UConstants::PRICING_METHOD_SUBTYPE => 'business',
+            UConstants::PRICING_AMOUNT_RANGE_ACTIVE => '0',
+            UConstants::PRICING_AMOUNT_RANGES  => [
+                Header::MIQ_BUSINESS => [],
+            ],
+        ],
     ];
 
     /**
@@ -231,5 +328,248 @@ class BulkUploadMIQParser
         }
 
         return $maskedEntry;
+    }
+
+    private function getNBRuleInput(array $entry):array
+    {
+        $rules = array();
+
+        $input = $this->getCommonRuleInput();
+
+        $input[PricingEntity::PAYMENT_METHOD] = MethodEntity::NETBANKING;
+
+        if($entry[Header::MIQ_NB_FEE_BEARER] === MFeeBearer::MERCHANT or
+            $entry[Header::MIQ_NB_FEE_BEARER] === MFeeBearer::CUSTOMER)
+        {
+            // converting fee bearer type to lower case, avoiding case sensitivity.
+            $feeBearerType = strtolower($entry[Header::MIQ_NB_FEE_TYPE]);
+
+            $input[PricingEntity::FEE_BEARER] = MFeeBearer::FEE_BEARER_TYPE_MAP[$entry[Header::MIQ_NB_FEE_BEARER]] ?? MFeeBearer::PLATFORM;
+
+            foreach (self::$netBankingPricingMapping as $key => $value)
+            {
+                $rule = $input;
+
+                if ($entry[$key] !='' and ($feeBearerType === UConstants::FEE_TYPE_FLAT  or
+                        $feeBearerType=== UConstants::FEE_TYPE_PERCENT))
+                {
+                    if($feeBearerType === UConstants::FEE_TYPE_PERCENT)
+                    {
+                        $rule[PricingEntity::PERCENT_RATE] = round($entry[$key], 2) * 100;
+                    }
+                    else
+                    {
+                        $rule[PricingEntity::FIXED_RATE] = round($entry[$key], 2) * 100;
+                    }
+
+                    $rule[PricingEntity::PAYMENT_NETWORK] = $value;
+
+                    if ($key === Header::MIQ_NB_ANY)
+                    {
+                        $rule[PricingEntity::PAYMENT_NETWORK] = '';
+                    }
+
+                    $rules[]=$rule;
+                }
+            }
+        }
+
+        return $rules;
+    }
+
+    private function getUpiRuleInput(array $entry): array
+    {
+        $rules = array();
+
+        $input = $this->getCommonRuleInput();
+
+        $input[PricingEntity::PAYMENT_METHOD] = MethodEntity::UPI;
+
+        if($entry[Header::MIQ_UPI_FEE_BEARER] === MFeeBearer::MERCHANT or
+            $entry[Header::MIQ_UPI_FEE_BEARER] === MFeeBearer::CUSTOMER)
+        {
+            // converting fee bearer type to lower case, avoiding case sensitivity.
+            $feeBearerType = strtolower($entry[Header::MIQ_UPI_FEE_TYPE]);
+
+            $input[PricingEntity::FEE_BEARER] = MFeeBearer::FEE_BEARER_TYPE_MAP[$entry[Header::MIQ_UPI_FEE_BEARER]] ?? MFeeBearer::PLATFORM;
+
+            if ($entry[Header::MIQ_UPI] !='' and ($feeBearerType === UConstants::FEE_TYPE_PERCENT
+                    or $feeBearerType === UConstants::FEE_TYPE_FLAT))
+            {
+                $rule = $input; // copying here to create concrete rule input array.
+
+                if($feeBearerType === UConstants::FEE_TYPE_PERCENT)
+                {
+                    $rule[PricingEntity::PERCENT_RATE] = round($entry[Header::MIQ_UPI], 2) * 100;
+                }
+                else
+                {
+                    $rule[PricingEntity::FIXED_RATE] = round($entry[Header::MIQ_UPI], 2) * 100;
+                }
+
+                $rules[]=$rule;
+            }
+        }
+
+        return $rules;
+    }
+
+    private function getWalletRuleInput(array $entry): array
+    {
+        $rules = array();
+
+        $input = $this->getCommonRuleInput();
+
+        $input[PricingEntity::PAYMENT_METHOD] = 'wallet';
+
+        if($entry[Header::MIQ_WALLETS_FEE_BEARER] === MFeeBearer::MERCHANT or
+            $entry[Header::MIQ_WALLETS_FEE_BEARER] === MFeeBearer::CUSTOMER)
+        {
+            // converting fee bearer type to lower case, avoiding case sensitivity.
+            $feeBearerType = strtolower($entry[Header::MIQ_WALLETS_FEE_TYPE]);
+
+            $input[PricingEntity::FEE_BEARER ] = MFeeBearer::FEE_BEARER_TYPE_MAP[$entry[Header::MIQ_WALLETS_FEE_BEARER]] ?? MFeeBearer::PLATFORM;
+
+            foreach (self::$walletPricingMapping as $key => $value)
+            {
+                if ($entry[$key] !='' and ($feeBearerType === UConstants::FEE_TYPE_PERCENT or $feeBearerType === UConstants::FEE_TYPE_FLAT))
+                {
+                    $rule = $input; // copying here to create concrete rule input array.
+
+                    if($feeBearerType === UConstants::FEE_TYPE_PERCENT)
+                    {
+                        $rule[PricingEntity::PERCENT_RATE] = round($entry[$key], 2) * 100;
+                    }
+                    else
+                    {
+                        $rule[PricingEntity::FIXED_RATE] = round($entry[$key], 2) * 100;
+                    }
+
+                    $rule[PricingEntity::PAYMENT_NETWORK] = $value;
+
+                    if ($key === Header::MIQ_WALLETS_ANY)
+                    {
+                        $rule[PricingEntity::PAYMENT_NETWORK] = '';
+                    }
+
+                    $rules[]=$rule;
+                }
+            }
+        }
+
+        return $rules;
+    }
+
+    private function getCardRuleInput(array $entry): array
+    {
+        $rules = array();
+
+        $input = $this->getCommonRuleInput();
+
+        $input[PricingEntity::PAYMENT_METHOD] = MethodEntity::CARD;
+
+        foreach (self::$cardPricingMapping as $key => $value)
+        {
+            $feeBearerHeader = $value[UConstants::PRICING_FEE_BEARER];
+
+            // converting fee bearer type to lower case, avoiding case sensitivity.
+            // possible values of key - Percent, Flat, NA
+            $feeBearerType = strtolower($entry[$key]);
+
+            if (($feeBearerType === UConstants::FEE_TYPE_FLAT or $feeBearerType === UConstants::FEE_TYPE_PERCENT) and
+                ($entry[$feeBearerHeader] === MFeeBearer::CUSTOMER or $entry[$feeBearerHeader] === MFeeBearer::MERCHANT))
+            {
+                $input[PricingEntity::PAYMENT_NETWORK] = $value[UConstants::PRICING_NETWORK];
+
+                $input[PricingEntity::PAYMENT_METHOD_TYPE] = $value[UConstants::PRICING_METHOD_TYPE];
+
+                $input[PricingEntity::PAYMENT_METHOD_SUBTYPE] = $value[UConstants::PRICING_METHOD_SUBTYPE];
+
+                $input[PricingEntity::FEE_BEARER] = MFeeBearer::FEE_BEARER_TYPE_MAP[$entry[$feeBearerHeader]]  ?? MFeeBearer::PLATFORM;
+
+                foreach ($value[UConstants::PRICING_AMOUNT_RANGES] as $rangeHeader => $rangeValues)
+                {
+                    if($entry[$rangeHeader] != '')
+                    {
+                        $rule = $input; // copying here to create concrete rule input array.
+
+                        if(strtolower($entry[$key]) === UConstants::FEE_TYPE_PERCENT)
+                        {
+                            $rule[PricingEntity::PERCENT_RATE] = round($entry[$rangeHeader], 2) * 100;
+                        }
+                        else
+                        {
+                            $rule[PricingEntity::FIXED_RATE] = round($entry[$rangeHeader], 2) * 100;
+                        }
+
+                        if($value[UConstants::PRICING_AMOUNT_RANGE_ACTIVE] === '1')
+                        {
+                            $rule[PricingEntity::AMOUNT_RANGE_MIN] = $rangeValues[UConstants::PRICING_AMOUNT_RANGE_MIN];
+
+                            $rule[PricingEntity::AMOUNT_RANGE_MAX] = $rangeValues[UConstants::PRICING_AMOUNT_RANGE_MAX];
+
+                            $rule[PricingEntity::AMOUNT_RANGE_ACTIVE] = $value[UConstants::PRICING_AMOUNT_RANGE_ACTIVE];
+                        }
+
+                        if($key === Header::MIQ_INTL_CARD_FEE_TYPE)
+                        {
+                            $rule[PricingEntity::INTERNATIONAL] = '1';
+                        }
+
+                        $rules[]=$rule;
+                    }
+                }
+            }
+        }
+
+        return $rules;
+    }
+
+    private function getCommonRuleInput(): array
+    {
+        return [
+            PricingEntity::PRODUCT           => ProductConstants::PRIMARY,
+            PricingEntity::FEATURE           => 'payment',
+            PricingEntity::TYPE              => 'pricing',
+            PricingEntity::INTERNATIONAL     => '0',
+        ];
+    }
+
+    public function getPricingPlanInput(array $entry, string $planName): array
+    {
+        $input = [
+            PricingEntity::PLAN_NAME => $planName,
+            PricingEntity::RULES     => [],
+        ];
+
+        // upi
+        $upiRules = $this->getUpiRuleInput($entry);
+        if(empty($upiRules) ===  false)
+        {
+            array_push($input[PricingEntity::RULES], ...$upiRules); // appending
+        }
+
+        // wallet
+        $walletRules = $this->getWalletRuleInput($entry);
+        if(empty($walletRules) ===  false)
+        {
+            array_push($input[PricingEntity::RULES], ...$walletRules); // appending
+        }
+
+        // net-banking
+        $netBankingRules = $this->getNBRuleInput($entry);
+        if(empty($netBankingRules) ===  false)
+        {
+            array_push($input[PricingEntity::RULES], ...$netBankingRules); // appending
+        }
+
+        // card
+        $cardRules = $this->getCardRuleInput($entry);
+        if(empty($cardRules) ===  false)
+        {
+            array_push($input[PricingEntity::RULES], ...$cardRules); // appending
+        }
+
+        return $input;
     }
 }
