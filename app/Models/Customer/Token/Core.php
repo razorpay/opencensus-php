@@ -1988,7 +1988,7 @@ class Core extends Base\Core
             ],
             "tokenised"    => $isTokenized,
             "merchant"     => [
-                "id"       => (isset($this->merchant) === true) ? null : $this->merchant->getId(),
+                "id"       => (isset($this->merchant) === false) ? null : $this->merchant->getId(),
             ],
             "internal_service_request" => $internalServiceRequest,
         ];
