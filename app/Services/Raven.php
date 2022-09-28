@@ -355,6 +355,7 @@ class Raven
     {
         unset($request['options']['auth']);
         unset($request['content']['otp']);
+        unset($request['content']['params']['otp']);
 
         if (isset($request['content']['receiver']) === true)
         {
