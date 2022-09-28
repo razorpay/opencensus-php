@@ -529,6 +529,17 @@ class Gateway
         self::BILLDESK_OPTIMIZER,
     ];
 
+    const OPTIMIZER_TOKENIZATION_SUPPORTED_GATEWAYS = [
+        self::CASHFREE,
+        self::PAYU,
+        self::CCAVENUE,
+        self::ZAAKPAY,
+        self::PINELABS,
+        self::INGENICO,
+        self::BILLDESK_OPTIMIZER,
+        self::PAYTM,
+    ];
+
     /**
     * Gateways for which we may need to force authorize payments
     * since their verify API's stop working after a certain time
@@ -2819,7 +2830,7 @@ class Gateway
 
     /**
      * List of netbanking gateways that give emandate registration/debit status through webhooks
-     * This is because for some banks they will give final token status in async mode even if, 
+     * This is because for some banks they will give final token status in async mode even if,
      * transaction was completed.
      * Similarly for debit txns, gateway will give terminal status through webhooks.
      *

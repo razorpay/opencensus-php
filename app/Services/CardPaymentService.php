@@ -1395,7 +1395,7 @@ class CardPaymentService
      */
     public function getAdditionalNetworkTokenDetailsForOptimizer(string $gateway, array $input): array
     {
-        if ((in_array($gateway, Payment\Gateway::OPTIMIZER_CARD_GATEWAYS, true) === false) or
+        if ((in_array($gateway, Payment\Gateway::OPTIMIZER_TOKENIZATION_SUPPORTED_GATEWAYS, true) === false) or
             ((isset($input[Entity::CARD][Entity::TOKENISED]) === false) or ($input[Entity::CARD][Entity::TOKENISED] === false)) or
             ((isset($input[Entity::TOKEN]) === false) or (isset($input[Entity::TOKEN]['id']) === false))
         )
