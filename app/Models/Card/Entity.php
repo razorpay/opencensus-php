@@ -615,6 +615,23 @@ class Entity extends Base\PublicEntity
         ]);
     }
 
+    /**
+     * This method is used to group the card on flash checkout manage page.
+     * 
+     * This method will be removed once PR with cardProviderRefId(used for grouping) is merged
+     *
+     * @return string
+     */
+    public function getCardDetailsAsKeyForGrouping(): string
+    {
+        return implode('_', [
+            $this->getLast4(),
+            $this->getIssuer(),
+            $this->getNetworkCode(),
+            $this->getType()
+        ]);
+    }
+
     public function getVaultToken()
     {
         return $this->getAttribute(self::VAULT_TOKEN);

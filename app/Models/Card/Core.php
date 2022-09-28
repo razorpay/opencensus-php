@@ -1236,7 +1236,7 @@ class Core extends Base\Core
 
         // Fetching card details as a unique key for each token as card id will be different for each token
         // even if the tokens are of the same card
-        $uniqueCardCombination = $card->getCardDetailsAsKey();
+        $uniqueCardCombination = $card->getCardDetailsAsKeyForGrouping();
 
         if (array_key_exists($uniqueCardCombination, $cardsList) === false)
         {
