@@ -1316,20 +1316,12 @@ class Core extends Base\Core
         }
 
         $existingTokens = $this->removeNonActiveTokenisedCardTokens($existingTokens);
-
-        $newTokenCardDetails = $newToken->card->getCardDetailsAsKey();
+ 
         $isNewTokenNetworkTokenised = !$newToken->card->isRzpTokenisedCard();
 
         foreach ($existingTokens as $token)
         {
             if (!$token->hasCard())
-            {
-                continue;
-            }
-
-            $existingTokenCardDetails = $token->card->getCardDetailsAsKey();
-
-            if ($newTokenCardDetails !== $existingTokenCardDetails)
             {
                 continue;
             }
@@ -1345,11 +1337,7 @@ class Core extends Base\Core
                 {
                     return $token;
                 }
-
-                continue;
             }
-
-            return $token;
         }
 
         return null;
