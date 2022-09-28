@@ -164,7 +164,7 @@ class Core extends Merchant\Core
         // this creates only test balance
         $subMerchantArray = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_SERVICE], function () use ($subMerchantCreateInput, $partner) {
 
-            return (new Merchant\Service)->createSubMerchant($subMerchantCreateInput, $partner, PartnerConstants::ADD_ACCOUNT, true);
+            return (new Merchant\Service)->createSubMerchant($subMerchantCreateInput, $partner, PartnerConstants::ADD_ACCOUNT_V2_ONBOARDING_API, true);
         });
 
         $subMerchantId    = Entity::verifyIdAndStripSign($subMerchantArray[Entity::ID]);

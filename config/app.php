@@ -371,6 +371,8 @@ return array(
 
     'settle_to_partner_alerting_experiment_id' => env('SETTLE_TO_PARTNER_ALERTING_EXPERIMENT_ID'),
 
+    'add_subm_ratelimiting_experiment_id' => env('ADD_SUBM_RATELIMITING_EXPERIMENT_ID'),
+
     'admin_submerchant_bulk_increase_resources_exp_id' => env('ADMIN_SUBMERCHANT_BULK_INCREASE_RESOURCES_EXP_ID'),
 
     'attach_view_only_role_banking_account_exp_id' => env('ATTACH_VIEW_ONLY_ROLE_BANKING_ACCOUNT'),

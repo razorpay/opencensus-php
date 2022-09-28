@@ -83,6 +83,7 @@ use RZP\Models\Merchant\BusinessDetail;
 use RZP\Models\Merchant\RazorxTreatment;
 use Razorpay\Spine\DataTypes\Dictionary;
 use Razorpay\OAuth\Client as OAuthClient;
+use RZP\Models\Partner\RateLimitConstants;
 use RZP\Models\Comment\Core as CommentCore;
 use RZP\Models\Settlement\SettlementTrait;
 use RZP\Models\Batch\Header as BatchHeader;
@@ -96,6 +97,7 @@ use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Merchant\AutoKyc\Escalations;
 use RZP\Models\Merchant\Detail\ActivationFlow;
+use RZP\Models\Partner\PartnershipsRateLimiter;
 use RZP\Models\Payment\Config as PaymentConfig;
 use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Pricing\Entity as PricingEntity;
@@ -303,12 +305,28 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        $data = Tracer::inspan(['name' => HyperTrace::PARTNER_SUBMERCHANT_INVITE], function () use ($merchant, $input) {
+        $response = Tracer::inspan(['name' => HyperTrace::PARTNER_SUBMERCHANT_INVITE], function () use ($merchant, $input) {
 
-            return (new RateLimitBatch())->partnerSubmerchantInvite($merchant, $input);
+            if ((isset($input[MerchantDetail::CONTACT_MOBILE]) === true) and ($input[MerchantDetail::CONTACT_MOBILE] === "##contact_mobile##"))
+            {
+                unset($input[MerchantDetail::CONTACT_MOBILE]);
+            }
+
+            $createSubMerchantResponse = $this->createSubMerchant($input, $merchant, PartnerConstants::ADD_MULTIPLE_ACCOUNT);
+
+            $data = [
+                'account_id'   => $createSubMerchantResponse['id'] ?? null,
+                'account_name' => $createSubMerchantResponse['name'] ?? null,
+                'email'        => $createSubMerchantResponse['email'] ?? null,
+                'status'       => 'success',
+            ];
+
+            $this->trace->info(TraceCode::SUBMERCHANT_ACCOUNT_CREATE_RESPONSE, $data);
+
+            return $data;
         });
 
-        return $data;
+        return $response;
     }
 
     public function bulkOnboardSubMerchantViaBatch(array $input)
@@ -374,6 +392,39 @@ class Service extends Base\Service
         return $data;
     }
 
+    private function isRateLimiterExperimentEnabledForPartner(Entity $partner): bool
+    {
+        $properties = [
+            'id'            => $partner->getId(),
+            'experiment_id' => $this->app['config']->get('app.add_subm_ratelimiting_experiment_id')
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+    }
+
+    public function subMOnboardingRateLimitEnabled(Entity $merchant, bool $isLinkedAccount, string $source): bool
+    {
+        if ($isLinkedAccount === true ||
+            in_array($source, RateLimitConstants::SUPPORTED_RATELIMIT_SOURCES) === false)
+        {
+            return false;
+        }
+
+        $enabled = $this->isRateLimiterExperimentEnabledForPartner($merchant);
+
+        if ($enabled === false)
+        {
+            if ($source === PartnerConstants::ADD_MULTIPLE_ACCOUNT)
+            {
+                (new RateLimitBatch())->partnerSubmerchantInvite($merchant);
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
     /**
      * We need the merchant param for batch. This can be removed once the code is restructured
      * in a way that batch can call just core class functions.
@@ -388,122 +439,158 @@ class Service extends Base\Service
      */
     public function createSubMerchant(array $input, Entity $merchant = null, string $source = PartnerConstants::ADD_ACCOUNT, bool $optimizeCreationFlow = false): array
     {
-        $merchant = $merchant ?? $this->merchant;
-
-        $isLinkedAccount = (bool) ($input['account'] ?? false);
-
-        $product = $input[Entity::PRODUCT] ?? Product::PRIMARY;
-
-        $isPartner = $merchant->isPartner();
-
-        $hasAggregatorFeature = $merchant->hasAggregatorFeature();
-
-        $this->trace->info(
-            TraceCode::SUBMERCHANT_CREATE_REQUEST,
-            [
-                'name'              => $input[Entity::NAME] ?? null,
-                'merchant_id'       => $merchant->getId(),
-                'is_linked_account' => $isLinkedAccount,
-            ]
-        );
-
-        //
-        // Cannot create sub-merchant for non-linked account if any of the following conditions are met:
-        // 1. Is neither a partner nor has an aggregator feature (for BC we allow the feature)
-        // 2. Is a partner of type pure-platform
-        //
-        if ($isLinkedAccount === false)
+        $rateLimiterUpdated = false;
+        $subMRateLimiter = null;
+        $key = null;
+        try
         {
-            if (($isPartner === false) and ($hasAggregatorFeature === false))
+            $merchant = $merchant ?? $this->merchant;
+
+            $isLinkedAccount = (bool) ($input['account'] ?? false);
+
+            $rateLimit = $this->subMOnboardingRateLimitEnabled($merchant, $isLinkedAccount, $source);
+
+            if($rateLimit === true)
             {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT);
+                $subMRateLimiter = (new PartnershipsRateLimiter($source));
+
+                $key = $subMRateLimiter->getRateLimitRedisKey($merchant->getId());
+
+                $rateLimiterUpdated = $subMRateLimiter->rateLimit($key);
             }
-            else if ($merchant->isPurePlatformPartner() === true)
+
+            $product = $input[Entity::PRODUCT] ?? Product::PRIMARY;
+
+            $isPartner = $merchant->isPartner();
+
+            $hasAggregatorFeature = $merchant->hasAggregatorFeature();
+
+            $this->trace->info(
+                TraceCode::SUBMERCHANT_CREATE_REQUEST,
+                [
+                    'name'              => $input[Entity::NAME] ?? null,
+                    'merchant_id'       => $merchant->getId(),
+                    'is_linked_account' => $isLinkedAccount,
+                    'rateLimiterUpdated'=> $rateLimiterUpdated,
+                ]
+            );
+
+            //
+            // Cannot create sub-merchant for non-linked account if any of the following conditions are met:
+            // 1. Is neither a partner nor has an aggregator feature (for BC we allow the feature)
+            // 2. Is a partner of type pure-platform
+            //
+            if ($isLinkedAccount === false)
             {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT);
+                if (($isPartner === false) and ($hasAggregatorFeature === false))
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT);
+                }
+                else
+                {
+                    if ($merchant->isPurePlatformPartner() === true)
+                    {
+                        throw new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT);
+                    }
+                }
             }
-        }
 
-        $output = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_AND_SET_RELATIONS], function () use ($merchant, $isLinkedAccount, $input, $optimizeCreationFlow) {
+            $output = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_AND_SET_RELATIONS], function() use ($merchant, $isLinkedAccount, $input, $optimizeCreationFlow) {
 
-            return $this->createSubMerchantAndSetRelations($merchant, $isLinkedAccount, $input, $optimizeCreationFlow);
-        });
+                return $this->createSubMerchantAndSetRelations($merchant, $isLinkedAccount, $input, $optimizeCreationFlow);
+            });
 
-        $data = [
-            'status'       => 'success',
-            'merchant_id'  => $output['id'] ?? null,
-            'partner_id'   => $merchant->getId(),
-            'source'       => $source,
-            'product_group'=> $product
-        ];
-
-        $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,
-            $merchant, null,
-            $data);
-
-        $this->trace->info(TraceCode::PARTNERSHIP_SUBMERCHANT_SIGNUP, [
-            'data' => $data
-        ]);
-
-        $this->app->hubspot->trackSubmerchantSignUp($merchant->getEmail());
-
-        $dimension = [
-            'partner_type' => $merchant->getPartnerType(),
-            'source'       => $source
-        ];
-
-        $this->trace->count(PartnerMetric::SUBMERCHANT_CREATE_TOTAL, $dimension);
-        $submerchantId = $output['id'] ?? "";
-        $this->core()->pushSettleToPartnerSubmerchantMetrics($merchant->getId(), $submerchantId);
-
-        if ($isLinkedAccount === true)
-        {
-            $this->app->hubspot->trackLinkedAccountCreation($output['email'] ?? null);
-        }
-        else if (isset($output['id']) === true)
-        {
-            $partnerLeadData = [
-                MerchantDetail::CONTACT_NAME    => $output['name'] ?? null,
-                Entity::EMAIL                   => $output['email'] ?? null,
-                MerchantDetail::CONTACT_MOBILE  => $output['user']['contact_mobile'] ?? null
+            $data = [
+                'status'        => 'success',
+                'merchant_id'   => $output['id'] ?? null,
+                'partner_id'    => $merchant->getId(),
+                'source'        => $source,
+                'product_group' => $product
             ];
 
-            $this->core()->sendPartnerLeadInfoToSalesforce($output['id'], $merchant->getId(), $product, $partnerLeadData);
-        }
+            $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,
+                                                     $merchant, null,
+                                                     $data);
 
-        if($isLinkedAccount === false)
-        {
-            $count = $this->repo->merchant_access_map->getSubMerchantCount($data['partner_id']);
+            $this->trace->info(TraceCode::PARTNERSHIP_SUBMERCHANT_SIGNUP, [
+                'data' => $data
+            ]);
 
-            if (Str::startsWith($submerchantId, 'acc_'))
-            {
-                $submerchantId = substr($submerchantId, 4);
-            }
+            $this->app->hubspot->trackSubmerchantSignUp($merchant->getEmail());
 
-            $properties = [
-                'partner_id'         => $data['partner_id'],
-                'merchant_id'        => $submerchantId,
-                'count_of_affiliate' => $count,
-                'product_group'      => $data['product_group']
+            $dimension = [
+                'partner_type' => $merchant->getPartnerType(),
+                'source'       => $source
             ];
 
-            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
-                $merchant, $properties, SegmentEvent::AFFILIATE_ACCOUNT_ADDED);
+            $this->trace->count(PartnerMetric::SUBMERCHANT_CREATE_TOTAL, $dimension);
+            $submerchantId = $output['id'] ?? "";
+            $this->core()->pushSettleToPartnerSubmerchantMetrics($merchant->getId(), $submerchantId);
 
-            if ($count === 1)
+            if ($isLinkedAccount === true)
             {
+                $this->app->hubspot->trackLinkedAccountCreation($output['email'] ?? null);
+            }
+            else
+            {
+                if (isset($output['id']) === true)
+                {
+                    $partnerLeadData = [
+                        MerchantDetail::CONTACT_NAME   => $output['name'] ?? null,
+                        Entity::EMAIL                  => $output['email'] ?? null,
+                        MerchantDetail::CONTACT_MOBILE => $output['user']['contact_mobile'] ?? null
+                    ];
+
+                    $this->core()->sendPartnerLeadInfoToSalesforce($output['id'], $merchant->getId(), $product, $partnerLeadData);
+                }
+            }
+
+            if ($isLinkedAccount === false)
+            {
+                $count = $this->repo->merchant_access_map->getSubMerchantCount($data['partner_id']);
+
+                if (Str::startsWith($submerchantId, 'acc_'))
+                {
+                    $submerchantId = substr($submerchantId, 4);
+                }
+
                 $properties = [
-                    'partner_id'  => $data['partner_id'],
-                    'merchant_id' => $submerchantId
+                    'partner_id'         => $data['partner_id'],
+                    'merchant_id'        => $submerchantId,
+                    'count_of_affiliate' => $count,
+                    'product_group'      => $data['product_group']
                 ];
-                $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
-                    $merchant, $properties, SegmentEvent::PARTNER_ADDED_FIRST_SUBMERCHANT);
-            }
-        }
 
-        return $output;
+                $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                    $merchant, $properties, SegmentEvent::AFFILIATE_ACCOUNT_ADDED);
+
+                if ($count === 1)
+                {
+                    $properties = [
+                        'partner_id'  => $data['partner_id'],
+                        'merchant_id' => $submerchantId
+                    ];
+                    $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                        $merchant, $properties, SegmentEvent::PARTNER_ADDED_FIRST_SUBMERCHANT);
+                }
+            }
+
+            return $output;
+
+        }
+        catch (\Exception $e)
+        {
+            if ($e->getCode() !== ErrorCode::BAD_REQUEST_DAILY_LIMIT_SUBMERCHANT_ONBOARDING_EXCEEDED
+                && $rateLimiterUpdated === true
+                && $subMRateLimiter !== null)
+            {
+                $this->trace->info(RateLimitConstants::RATELIMIT_CONFIG[$source][RateLimitConstants::TRACE_CODE], ['message' => 'decrementing the counter due to some issue occurred while creating subM']);
+                $subMRateLimiter->decrementRateLimitCount($key);
+            }
+            throw $e;
+        }
     }
 
     public function createLinkedAccount(array $input)

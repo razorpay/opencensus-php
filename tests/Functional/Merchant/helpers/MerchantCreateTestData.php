@@ -216,6 +216,30 @@ return [
         ],
     ],
 
+    'testCreateSubMerchantWithRatelimitExceeded' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'   => 'NewSubmerchant',
+                'name' => 'Submerchant',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_DAILY_LIMIT_SUBMERCHANT_ONBOARDING_EXCEEDED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_DAILY_LIMIT_SUBMERCHANT_ONBOARDING_EXCEEDED,
+        ],
+    ],
+
     'testCreateSubMerchantWithoutFeatureMarketplaceOrPartner' => [
         'request'   => [
             'url'     => '/submerchants',
@@ -675,6 +699,34 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_DAILY_LIMIT_SUBMERCHANT_INVITE_EXCEEDED,
+        ],
+    ],
+
+    'testCreateSubMByAggregatorBatchRatelimitExceededNewRatelimiter' => [
+        'request'  => [
+            'url'     => '/submerchants/batch',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Entity-Id' => '10000000000000',
+            ],
+            'content' => [
+                'id'    => 'NewSubmerchant',
+                'name'  => 'Submerchant',
+                'email' => 'testsub@razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_DAILY_LIMIT_SUBMERCHANT_ONBOARDING_EXCEEDED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_DAILY_LIMIT_SUBMERCHANT_ONBOARDING_EXCEEDED,
         ],
     ],
 

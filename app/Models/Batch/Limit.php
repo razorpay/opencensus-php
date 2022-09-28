@@ -68,7 +68,7 @@ class Limit
         Type::TERMINAL_CREATION                     => 5000,
         Type::MERCHANT_ACTIVATION                   => 5000,
         Type::CAPTURE_SETTING                       => 1100000,
-        Type::PARTNER_SUBMERCHANT_INVITE            => 500,
+        Type::PARTNER_SUBMERCHANT_INVITE            => 200,
         Type::SUBMERCHANT_LINK                      => 50000,
         Type::SUBMERCHANT_DELINK                    => 50000,
         Type::SUBMERCHANT_PARTNER_CONFIG_UPSERT     => 5000,

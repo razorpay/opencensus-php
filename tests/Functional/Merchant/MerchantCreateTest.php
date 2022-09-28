@@ -27,6 +27,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Methods\Entity;
 use RZP\Services\Mock\ApachePinotClient;
 use Illuminate\Database\Eloquent\Factory;
+use RZP\Models\Partner\RateLimitConstants;
 use RZP\Mail\User\LinkedAccountUserAccess;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -37,8 +38,10 @@ use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use Razorpay\OAuth\Application\Entity as OAuthApp;
+use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Mail\User\PasswordReset as PasswordResetMail;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Partner\PartnershipsRateLimiter;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 use RZP\Models\Merchant\Repository as MerchantRepository;
@@ -351,6 +354,9 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals($merchantMap->merchant_id, '7gcKngYfqyDMjN');
     }
 
+    /**
+     * Test case for successful creation of subM from partner dashboard. Validates the increment of couter in the new ratelimiter
+     */
     public function testCreateSubMerchant()
     {
         Mail::fake();
@@ -362,7 +368,80 @@ class MerchantCreateTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
 
+        $this->mockAllExperiments("enable");
+
         $this->startTest();
+
+        $redis = Redis::connection('mutex_redis')->client();
+
+        $redisKey = (new PartnershipsRateLimiter(PartnerConstants::ADD_ACCOUNT))->getRateLimitRedisKey('10000000000000');
+
+        $this->assertEquals(1, $redis->get($redisKey));
+
+        Mail::assertQueued(CreateSubMerchantMail::class, function ($mail)
+        {
+            return $mail->hasTo('test@razorpay.com', 'Submerchant');
+        });
+
+        list($testMapping, $liveMapping) = $this->getLastMappingForBothModes();
+
+        $this->assertNull($testMapping);
+
+        $this->assertNull($liveMapping);
+    }
+
+    /**
+     * Test case for failed creation of subM from partner dashboard. validates the rate limit exceeded exception for new ratelimiter
+     */
+    public function testCreateSubMerchantWithRatelimitExceeded()
+    {
+        Mail::fake();
+
+        $this->fixtures->merchant->addFeatures(['aggregator']);
+        $this->fixtures->merchant->editPricingPlanId(TestPricing::DEFAULT_PRICING_PLAN_ID);
+
+        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $this->mockAllExperiments("enable");
+
+        $redis = Redis::connection('mutex_redis')->client();
+
+        $redisKey = (new PartnershipsRateLimiter(PartnerConstants::ADD_ACCOUNT))->getRateLimitRedisKey('10000000000000');
+
+        $redis->set($redisKey, RateLimitConstants::RATELIMIT_CONFIG[PartnerConstants::ADD_ACCOUNT][RateLimitConstants::THRESHOLD]);
+
+        $this->startTest();
+
+    }
+
+    /**
+     * Test case for successful creation of subM from partner dashboard.
+     * When ramp evaluation skips experiment for the partner and ratelimiter is not invoked
+     */
+    public function testCreateSubMerchantWithoutRateLimiting()
+    {
+        Mail::fake();
+
+        $this->fixtures->merchant->addFeatures(['aggregator']);
+        $this->fixtures->merchant->editPricingPlanId(TestPricing::DEFAULT_PRICING_PLAN_ID);
+
+        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $testData = $this->testData['testCreateSubMerchant'];
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $this->mockAllExperiments("disable");
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $redis = Redis::connection('mutex_redis')->client();
+
+        $redisKey = (new PartnershipsRateLimiter(PartnerConstants::ADD_ACCOUNT))->getRateLimitRedisKey('10000000000000');
+
+        $this->assertNull($redis->get($redisKey));
 
         Mail::assertQueued(CreateSubMerchantMail::class, function ($mail)
         {
@@ -1002,6 +1081,8 @@ class MerchantCreateTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_10000000000000');
 
+        $this->mockAllExperiments("enable");
+
         $this->startTest();
 
         Mail::assertQueued(CreateSubMerchantAffiliateMailForX::class, function ($mail)
@@ -1171,6 +1252,8 @@ class MerchantCreateTest extends TestCase
             PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
         ];
 
+        $this->mockAllExperiments("disable");
+
         $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
 
         $this->ba->batchAppAuth();
@@ -1182,6 +1265,79 @@ class MerchantCreateTest extends TestCase
         $counter = $redis->set($redisKey, RateLimitBatch::THRESHOLD_RATE_LIMIT_COUNT+1);
 
         $this->startTest();
+    }
+
+    /**
+     * Test case for failed creation of subM via batch. validates the rate limit exceeded exception for new ratelimiter
+     */
+    public function testCreateSubMByAggregatorBatchRatelimitExceededNewRatelimiter()
+    {
+        Mail::fake();
+
+        $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
+
+        $configAttributes = [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
+        ];
+
+        $this->mockAllExperiments("enable");
+
+        $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
+
+        $this->ba->batchAppAuth();
+
+        $redis = Redis::connection('mutex_redis')->client();
+
+        $redisKey = (new PartnershipsRateLimiter(PartnerConstants::ADD_MULTIPLE_ACCOUNT))->getRateLimitRedisKey("10000000000000");
+
+        $counter = $redis->set($redisKey, RateLimitConstants::RATELIMIT_CONFIG[PartnerConstants::ADD_MULTIPLE_ACCOUNT][RateLimitConstants::THRESHOLD]+1);
+
+        $this->startTest();
+    }
+
+    /**
+     * Test case for successful creation of subM via batch. Validates the counter increment
+     */
+    public function testCreateSubMByAggregatorBatchNewRatelimiter()
+    {
+        Mail::fake();
+
+        $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
+
+        $configAttributes = [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
+        ];
+
+        $this->mockAllExperiments("enable");
+
+        $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
+
+        $this->ba->batchAppAuth();
+
+        $redis = Redis::connection('mutex_redis')->client();
+
+        $request = $this->testData['testCreateSubMerchantByAggregatorBatch'];
+
+        $this->runRequestResponseFlow($request);
+
+        $redisKey = (new PartnershipsRateLimiter(PartnerConstants::ADD_MULTIPLE_ACCOUNT))->getRateLimitRedisKey("10000000000000");
+
+        $counter = $redis->get($redisKey);
+
+        $this->assertEquals(1, $counter);
+    }
+
+    private function mockAllExperiments(string $variant = 'enable')
+    {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => $variant,
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
     }
 
     public function testCreateSubMerchantByAdminForAggregatorBatch()

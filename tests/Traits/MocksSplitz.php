@@ -20,6 +20,13 @@ trait MocksSplitz
                     ->andReturn($output);
     }
 
+    protected function mockAllSplitzTreatment($output = [])
+    {
+        return $this->getSplitzMock()
+                    ->shouldReceive('evaluateRequest')
+                    ->andReturn($output);
+    }
+
     protected function getSplitzMock()
     {
         if ($this->splitzMock === null)

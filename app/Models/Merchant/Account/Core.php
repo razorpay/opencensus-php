@@ -14,6 +14,7 @@ use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Trace\TraceCode;
 use RZP\Trace\Tracer;
 use RZP\Models\Merchant\LinkedAccountReferenceData;
+use RZP\Models\Partner\Constants as PartnerConstants;
 
 class Core extends Merchant\Core
 {
@@ -408,7 +409,7 @@ class Core extends Merchant\Core
         // this creates only test balance
         $subMerchantArray = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_SERVICE], function () use ($subMerchantCreateInput, $partner) {
 
-            return (new Merchant\Service)->createSubMerchant($subMerchantCreateInput, $partner);
+            return (new Merchant\Service)->createSubMerchant($subMerchantCreateInput, $partner, PartnerConstants::ADD_ACCOUNT_V1_ACCOUNTS_API);
         });
         $subMerchantId    = Entity::verifyIdAndStripSign($subMerchantArray[Entity::ID]);
 

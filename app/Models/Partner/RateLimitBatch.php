@@ -28,7 +28,7 @@ class RateLimitBatch extends Base\Core
         $this->redis = $this->app['redis']->Connection('mutex_redis');
     }
 
-    public function partnerSubmerchantInvite(Entity $merchant, array $input)
+    public function partnerSubmerchantInvite(Entity $merchant): void
     {
         $allow = $this->allowPartnerToAddSubmerchant($merchant);
 
@@ -42,29 +42,6 @@ class RateLimitBatch extends Base\Core
         }
 
         $this->incrementRateLimitCount($merchant);
-
-        if ((isset($input[DetailEntity::CONTACT_MOBILE]) === true) and ($input[DetailEntity::CONTACT_MOBILE] === "##contact_mobile##"))
-        {
-            unset($input[DetailEntity::CONTACT_MOBILE]);
-        }
-
-        $merchantService = new MerchantService;
-
-        $output = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_SERVICE], function () use ($merchantService, $merchant, $input) {
-
-            return $merchantService->createSubMerchant($input, $merchant, Constants::ADD_MULTIPLE_ACCOUNT);
-        });
-
-        $data = [
-            'account_id'   => $output['id'] ?? null,
-            'account_name' => $output['name'] ?? null,
-            'email'        => $output['email'] ?? null,
-            'status'       => 'success',
-        ];
-
-        $this->trace->info(TraceCode::SUBMERCHANT_ACCOUNT_CREATE_RESPONSE, $data);
-
-        return $data;
     }
 
     public function allowPartnerToAddSubmerchant(Entity $merchant)
