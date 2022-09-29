@@ -63,6 +63,7 @@ class LOSController extends Controller
             'X-Auth-Type'   => 'admin',
             'X-Admin-Permissions' => $rolesAndPermissionList['permissions'],
             'X-Admin-Roles' => $rolesAndPermissionList['roles'],
+            RequestHeader::ACCEPT_VERSION => $request->header(RequestHeader::ACCEPT_VERSION, ''),
         ];
 
         return $this->sendRequestAndParseResponse($url, $body, $headers);
