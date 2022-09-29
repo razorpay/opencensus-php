@@ -1074,6 +1074,8 @@ class Name
     // This permission is intentionally not mapped to any route, this is purely for FE to consume,
     // actual route authorization is done at the microservice layer.
     const ACCOUNTS_RECEIVABLE_ADMIN             = 'accounts_receivable_admin';
+    const VIEW_FINANCEX_REPORT                  = 'view_financex_report';
+    const CREATE_FINANCEX_REPORT                = 'create_financex_report';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,

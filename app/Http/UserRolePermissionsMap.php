@@ -13,6 +13,8 @@ class UserRolePermissionsMap
     {
          $rolePermissions = [
              BankingRole::OWNER => [
+                 Permission::CREATE_FINANCEX_REPORT,
+                 Permission::VIEW_FINANCEX_REPORT,
                  Permission::CREATE_PAYOUT,
                  Permission::CREATE_PAYOUT_BULK,
                  Permission::APPROVE_PAYOUT_BULK,
@@ -187,6 +189,8 @@ class UserRolePermissionsMap
              ],
 
              BankingRole::ADMIN => [
+                 Permission::CREATE_FINANCEX_REPORT,
+                 Permission::VIEW_FINANCEX_REPORT,
                  Permission::CREATE_PAYOUT,
                  Permission::CREATE_PAYOUT_BULK,
                  Permission::APPROVE_PAYOUT_BULK,
@@ -323,6 +327,7 @@ class UserRolePermissionsMap
              ],
 
              BankingRole::FINANCE_L1 => [
+                 Permission::VIEW_FINANCEX_REPORT,
                  Permission::CREATE_PAYOUT,
                  Permission::CREATE_PAYOUT_BULK,
                  Permission::APPROVE_PAYOUT_BULK,
@@ -438,6 +443,7 @@ class UserRolePermissionsMap
              ],
 
              BankingRole::OPERATIONS => [
+                 Permission::VIEW_FINANCEX_REPORT,
                  Permission::CREATE_USER_OTP,
                  Permission::UPDATE_USER_PROFILE,
                  Permission::VIEW_USER,
@@ -539,6 +545,7 @@ class UserRolePermissionsMap
              ],
 
              BankingRole::VIEW_ONLY => [
+                 Permission::VIEW_FINANCEX_REPORT,
                  Permission::VIEW_PAYOUT,
                  Permission::VIEW_PAYOUT_PURPOSE,
                  Permission::VIEW_PAYOUT_REVERSAL,

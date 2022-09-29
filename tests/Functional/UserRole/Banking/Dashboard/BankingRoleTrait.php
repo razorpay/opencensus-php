@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\UserRole\Banking\Dashboard;
 
+use RZP\Models\Admin\Permission\Name;
 use RZP\Models\Merchant;
 use RZP\Services\RazorXClient;
 use RZP\Models\User\BankingRole;
@@ -308,6 +309,44 @@ trait BankingRoleTrait
         ];
     }
 
+    private function getUserRolePermissionMap()
+    {
+        return [
+            BankingRole::OWNER => [
+                Name::VIEW_FINANCEX_REPORT,
+                Name::CREATE_FINANCEX_REPORT,
+            ],
+
+            BankingRole::ADMIN => [
+                Name::CREATE_FINANCEX_REPORT,
+                Name::VIEW_FINANCEX_REPORT
+            ],
+
+            BankingRole::FINANCE_L1 => [
+                Name::VIEW_FINANCEX_REPORT
+            ],
+
+            BankingRole::FINANCE_L2 => [
+                Name::VIEW_FINANCEX_REPORT
+            ],
+
+            BankingRole::FINANCE_L3 => [
+                Name::VIEW_FINANCEX_REPORT
+            ],
+
+            BankingRole::OPERATIONS => [
+                Name::VIEW_FINANCEX_REPORT
+            ],
+
+            BankingRole::VIEW_ONLY => [
+                Name::VIEW_FINANCEX_REPORT
+            ],
+
+            BankingRole::CHARTERED_ACCOUNTANT => [
+            ]
+        ];
+    }
+
     protected function getUserRolePermissibleRouteMap(string $role)
     {
         return $this->getUserRoleRouteMap()[$role] ?? null;
@@ -333,5 +372,24 @@ trait BankingRoleTrait
 
                                         return 'off';
                                     }));
+    }
+
+    protected function getLegacyRoles()
+    {
+        return [
+            BankingRole::OWNER,
+            BankingRole::ADMIN,
+            BankingRole::FINANCE_L1,
+            BankingRole::FINANCE_L2,
+            BankingRole::FINANCE_L3,
+            BankingRole::OPERATIONS,
+            BankingRole::VIEW_ONLY,
+            BankingRole::CHARTERED_ACCOUNTANT
+        ];
+    }
+
+    protected function getUserRolePermissiblePermissions(string $role)
+    {
+        return $this->getUserRolePermissionMap()[$role] ?? null;
     }
 }

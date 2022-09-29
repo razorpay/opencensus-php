@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\UserRole;
 
 use RZP\Http\Route;
 use RZP\Models\User\BankingRole;
+use RZP\Models\User\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Http\Middleware\UserAccess;
 use RZP\Http\UserRolePermissionsMap;
@@ -91,6 +92,62 @@ class RoleAccessTest extends TestCase
         //Validate for Chartered_Accountant role
         $this->validateAccesses(BankingRole::CHARTERED_ACCOUNTANT);
 
+    }
+
+    public function testCheckPermissionsForBankingLegacyRoles()
+    {
+        $legacyRoles = $this->getLegacyRoles();
+
+        foreach ($legacyRoles as $role)
+        {
+            $userId = $this->createMerchantUser($role);
+
+            $testData = & $this->testData[__FUNCTION__];
+
+            $testData['request']['url'] = '/users/' . $userId;
+
+            $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $userId;
+
+            $testData['response']['content']['merchants'][1]['banking_role'] = $role;
+
+            $this->ba->dashboardGuestAppAuth();
+
+            $response = $this->startTest();
+
+            $this->assertArrayHasKey(Constants::PERMISSIONS, $response['merchants'][1]);
+
+            $permissions = $response['merchants'][1][Constants::PERMISSIONS];
+
+            $this->validatePermissionForRole($role, $permissions);
+        }
+    }
+
+    protected function validatePermissionForRole(string $role, array $actualPermissions)
+    {
+        $expectedPermissions = $this->getUserRolePermissiblePermissions($role);
+
+        foreach ($expectedPermissions as $pr)
+        {
+            $this->assertContains($pr, $actualPermissions);
+        }
+    }
+
+    protected function createMerchantUser(string $role)
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => $role,
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        return $user->getId();
     }
 
     protected function validateAccesses(string $role)

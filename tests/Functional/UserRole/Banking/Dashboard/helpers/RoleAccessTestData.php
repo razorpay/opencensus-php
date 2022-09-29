@@ -40,4 +40,25 @@ return [
             'status_code' => 400,
         ],
     ],
+
+    'testCheckPermissionsForBankingLegacyRoles' => [
+        'request'  => [
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com'
+            ],
+        ],
+
+        'response'      => [
+            'content'     => [
+                'merchants' => [
+                    [],
+                    [
+                        'banking_role' => 'owner',
+                        'role'         => null,
+                    ]
+                ],
+            ],
+        ],
+    ],
 ];
