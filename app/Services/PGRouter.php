@@ -360,42 +360,45 @@ class PGRouter
 
             forEach($paymentsData as $payment)
             {
-                if (isset($payment['data']['payment']['acquirer_data']) === true and
-                    isset($payment['data']['payment']['acquirer_data']['auth_code']) === true)
+                if(isset($payment['data']['payment']) === true)
                 {
-                    $payment['data']['payment']['reference2'] =
-                        $payment['data']['payment']['acquirer_data']['auth_code'];
+                    if (isset($payment['data']['payment']['acquirer_data']) === true and
+                        isset($payment['data']['payment']['acquirer_data']['auth_code']) === true)
+                    {
+                        $payment['data']['payment']['reference2'] =
+                            $payment['data']['payment']['acquirer_data']['auth_code'];
+                    }
+
+                    if (isset($payment['data']['payment']['card']) === true)
+                    {
+                        $payment['data']['payment']['card']['id'] = $payment['data']['payment']['id'];
+
+                        $card = (new Card\Entity)->forceFill($payment['data']['payment']['card']);
+
+                        $card->setExternal(true);
+
+                        unset($payment['data']['payment']['card']);
+                    }
+
+                    if (isset($payment['data']['payment']['notes']) === true and is_array($payment['data']['payment']['notes']) === false)
+                    {
+                        $payment['data']['payment']['notes'] = json_decode($payment['data']['payment']['notes']);
+                    }
+
+                    $paymentEntity = (new Payment\Entity)->forceFill($payment['data']['payment']);
+
+                    if (($card !== null) and ($withCard === true))
+                    {
+                        $paymentEntity->card()->associate($card);
+                    }
+
+                    if ($paymentEntity->isFailed() === false)
+                    {
+                        $paymentEntity->setErrorNull();
+                    }
+
+                    $collection->push($paymentEntity);
                 }
-
-                if (isset($payment['data']['payment']['card']) === true)
-                {
-                    $payment['data']['payment']['card']['id'] = $payment['data']['payment']['id'];
-
-                    $card = (new Card\Entity)->forceFill($payment['data']['payment']['card']);
-
-                    $card->setExternal(true);
-
-                    unset($payment['data']['payment']['card']);
-                }
-
-                if (isset($payment['data']['payment']['notes']) === true and is_array($payment['data']['payment']['notes']) === false)
-                {
-                    $payment['data']['payment']['notes'] = json_decode($payment['data']['payment']['notes']);
-                }
-
-                $paymentEntity = (new Payment\Entity)->forceFill($payment['data']['payment']);
-
-                if (($card !== null) and ($withCard === true))
-                {
-                    $paymentEntity->card()->associate($card);
-                }
-
-                if ($paymentEntity->isFailed() === false)
-                {
-                    $paymentEntity->setErrorNull();
-                }
-
-                $collection->push($paymentEntity);
             }
         }
         return $collection;
