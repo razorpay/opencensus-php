@@ -302,6 +302,101 @@ class PaymentCreateDCCTest extends TestCase
         return $id;
     }
 
+    protected function enableFeatureOnMerchant($feature){
+        $features[] = $feature;
+        $this->fixtures->merchant->addFeatures($features);
+    }
+
+    // Generate IIN as required
+    protected function createIIN($iinNumber,$iinCountry){
+        $iin = $this->fixtures->iin->create(['iin' => $iinNumber, 'country' => $iinCountry, 'issuer' => 'UTIB', 'network' => 'Visa',
+            'flows'   => ['3ds' => '1', 'pin' => '1', 'otp' => '1',]]);
+        return $iin;
+    }
+
+    protected function getFlowsData($iin){
+        $flowsData = [
+            'content' => ['amount' => 50000, 'currency' => 'INR', 'iin' => $iin->getIin()],
+            'method'  => 'POST',
+            'url'     => '/payment/flows',
+        ];
+        return $this->sendRequest($flowsData);
+    }
+
+    // Usecase: the flows should mark the KW card as currency USD as KWD is not supported by flows API
+    public function testKWDInStandardCheckout()
+    {
+        $iin = $this->createIIN('542859','KW');
+        $responseContent = json_decode($this->getFlowsData($iin)->getContent(), true);
+        $cardCurrency = $responseContent['card_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+        $showMarkup = $responseContent['show_markup'];
+
+        // KWD shouldnt be selected as the feature is not for this merchant
+        $this->assertEquals("USD", $cardCurrency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+        $this->assertEquals(false, $showMarkup);
+
+        $payment = $this->payment;
+        $payment['dcc_currency'] = $cardCurrency;
+        $payment['currency_request_id'] = $currencyRequestId;
+        $payment['card']['number'] = '5428590000004146';
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+
+        $paymentAuth = $this->doAuthPayment($payment);
+        $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
+    }
+
+    // Cornercase: the flows API has forced a currency but the user
+    // inspects the submit button and modifies the currency
+    // the currency shouldn't be supported
+    public function testKWDInStandardCheckoutSkippingFlows()
+    {
+        $iin = $this->createIIN('542859','KW');
+        $responseContent = json_decode($this->getFlowsData($iin)->getContent(), true);
+        $cardCurrency = $responseContent['card_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+        $showMarkup = $responseContent['show_markup'];
+
+        // KWD shouldnt be selected as the feature is not for this merchant
+        $this->assertEquals("USD", $cardCurrency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+        $this->assertEquals(false, $showMarkup);
+
+        $payment = $this->payment;
+        $payment['dcc_currency'] = 'KWD';
+        $payment['currency_request_id'] = $currencyRequestId;
+        $payment['card']['number'] = '5428590000004146';
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+
+        try{
+            $this->doAuthPayment($payment);
+
+        }
+        catch(\Exception $e){
+            $this->assertExceptionClass($e, BadRequestException::class);
+        }
+    }
+
+    // Usecase: even if the merchant is enabled with the shaadi_com flag still they are not enabled on Standard Checkout library
+    public function testKWDInStandardCheckoutForShaadi_com()
+    {
+        $iin = $this->createIIN('542859','KW');
+        $this->enableFeatureOnMerchant('shaadi_com_new_currency');
+        $responseContent = json_decode($this->getFlowsData($iin)->getContent(), true);
+        $cardCurrency = $responseContent['card_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+        $showMarkup = $responseContent['show_markup'];
+
+        // KWD shouldnt be selected as even if the feature is enabled this is standard checkout
+        $this->assertEquals("USD", $cardCurrency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+        $this->assertEquals(false, $showMarkup);
+    }
+
     public function testPaymentValidateAndRedirectDCCS2SForShaadiComFeatureEnabled()
     {
         $id = $this->paymentValidateAndRedirectDCCS2SForShaadiCom();
@@ -1778,7 +1873,7 @@ class PaymentCreateDCCTest extends TestCase
 
         $payment = $this->getPaymentArrayInternationalForRecurringAutoOnDirect();
 
-        $this->fixtures->iin->create(['iin' => '400155', 'country' => 'TR', 'issuer' => 'UTIB', 'network' => 'Visa', 'recurring' => 1,
+        $this->fixtures->iin->create(['iin' => '400155', 'country' => 'KW', 'issuer' => 'UTIB', 'network' => 'Visa', 'recurring' => 1,
             'flows'   => ['3ds' => '1']]);
 
         $payment['card']['number'] = '4001553716254122';

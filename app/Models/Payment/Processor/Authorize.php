@@ -3965,8 +3965,12 @@ trait Authorize
         $this->setPayment($payment);
     }
 
+    /**
+     * @throws Exception\BadRequestException
+     */
     protected function preProcessDCCInputs(array $input, Payment\Entity $payment)
     {
+        $this->validateCurrencySupport($payment, $input);
         if (($payment->isCard() === false) or ($payment->merchant->isDCCEnabledInternationalMerchant() === false))
         {
             return;
@@ -4050,6 +4054,17 @@ trait Authorize
 
         if($this->evalExperimentDCCRecurringAutoOnLibraryDirect($payment) !== true)
         {
+            return;
+        }
+
+
+        //Stop the Non-Supported currencies to flow through the recurring route
+        //As this is direct processing.
+        $isThreeDigitCurrencySupported =
+            (new Payment\Service)->isthreeDecimalCurrencySupportedForMerchant($payment,$payment->merchant);
+        if( $isThreeDigitCurrencySupported === false
+            and in_array($dccCurrency, Currency\Currency::THREE_DECIMAL_CURRENCIES)){
+            // dont do DCC in this case let it be in merchant currency itself
             return;
         }
 
@@ -10566,8 +10581,6 @@ trait Authorize
                 //Address validation if required
                 $this->validateAddressIfPresent($payment,$input);
 
-                $this->validateCurrencySupport($payment, $input);
-
                 $key = $payment->getCacheRedirectInputKey();
 
                 $inputDetails = $this->getInputDetails($payment, $key);
@@ -11304,12 +11317,12 @@ trait Authorize
     {
         // If the payment currency or dcc_currency is either BHD, KWD, or OMR and feature flag is not enabled then throw an error
         $currency = $payment->getCurrency();
-        if (((isset($input['dcc_currency']) === true and in_array($input['dcc_currency'], Currency\Currency::THREE_DECIMAL_CURRENCIES)) or
+        if(((isset($input['dcc_currency']) === true and
+                    in_array($input['dcc_currency'], Currency\Currency::THREE_DECIMAL_CURRENCIES)) or
                 in_array($currency, Currency\Currency::THREE_DECIMAL_CURRENCIES)) and
-            $this->merchant->isFeatureEnabled(Features::SHAADI_COM_NEW_CURRENCY) === false)
-        {
+            $this->merchant->isFeatureEnabled(Features::SHAADI_COM_NEW_CURRENCY) === false){
             $this->trace->info(
-                TraceCode::SHAADI_COM_NEW_CURRENCY_NOT_SUPPORTED,
+                TraceCode::THREE_DIGIT_CURRENCY_PRECISION_NOT_SUPPORTED,
                 [
                     'input'          => $input,
                     'payment_id'     => $payment->getId(),

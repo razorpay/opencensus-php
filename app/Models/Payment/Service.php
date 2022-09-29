@@ -2452,8 +2452,12 @@ class Service extends Base\Service
                 }
 
                 $dccInfo = $this->getDCCInfo($amount, $currency, $merchant->getDccMarkupPercentage(), $isThreeDecimalCurrencySupported);
-
                 $dccInfo['card_currency'] = $iinEntity->getIinCurrency() ?? Currency\Currency::USD;
+
+                if($isThreeDecimalCurrencySupported === false and
+                    in_array($iinEntity->getIinCurrency(), Currency\Currency::THREE_DECIMAL_CURRENCIES)){
+                    $dccInfo['card_currency'] = Currency\Currency::USD;
+                }
 
                 $dccInfo['show_markup'] = $merchant->isDCCMarkupVisible();
 
@@ -2544,7 +2548,7 @@ class Service extends Base\Service
         }
     }
 
-    protected function isthreeDecimalCurrencySupportedForMerchant($payment, $merchant)
+    public function isthreeDecimalCurrencySupportedForMerchant($payment, $merchant)
     {
         // BHD, KWD, and OMR currencies are only supported for merchant shaadi.com with the experiment to control the traffic
         // If request is not s2s or not from shaadi.com, don't show new currencies in list
