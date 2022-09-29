@@ -10,7 +10,7 @@ const AlertRow = ({ creditType, alertValue, onChangeHandler, index }) => {
   const currencySymbol = getCurrency('INR').symbol;
 
   return (
-    <tr class="alert-row">
+    <tr className="alert-row">
       <td>{creditType}</td>
       <td>
         <Input
@@ -86,8 +86,8 @@ const CreditsAlertsTable = ({ items, columnNames, onClickCancel, onClickSave }, 
 
   return (
     <>
-      <div class="table-reponsive">
-        <table class="table table-hover table-striped">
+      <div className="table-responsive">
+        <table className="table table-hover table-striped">
           <thead>
             <tr>
               {columnNames.map((column, idx) => {
@@ -112,11 +112,11 @@ const CreditsAlertsTable = ({ items, columnNames, onClickCancel, onClickSave }, 
           </TableBody>
         </table>
       </div>
-      <div class="footer">
-        <button class="btn btn-default" onClick={onClickCancel}>
+      <div className="footer">
+        <button className="btn btn-default" onClick={onClickCancel}>
           Cancel
         </button>
-        <button class="btn btn-primary" disabled={isSaveDisabled()} onClick={onClickSave}>
+        <button className="btn btn-primary" disabled={isSaveDisabled()} onClick={onClickSave}>
           Save
         </button>
       </div>

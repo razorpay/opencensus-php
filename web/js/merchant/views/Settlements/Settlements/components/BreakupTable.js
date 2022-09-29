@@ -50,8 +50,8 @@ const Breakup = ({ breakup, isNew }) => {
 
 const BreakupTable = ({ items, loading, isNew, columnNames }) => {
   return (
-    <div class="table-reponsive">
-      <table class="table table-hover">
+    <div className="table-responsive">
+      <table className="table table-hover">
         <thead>
           <tr>
             {columnNames.map((column, idx) => {

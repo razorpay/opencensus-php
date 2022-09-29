@@ -14,8 +14,8 @@ const Row = (props) => {
 
 export default ({ items }) => {
   return (
-    <div class="table-reponsive holiday">
-      <table class="table table-hover">
+    <div className="table-responsive holiday">
+      <table className="table table-hover">
         <thead>
           <tr>
             <th />
