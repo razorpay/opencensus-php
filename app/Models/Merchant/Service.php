@@ -577,8 +577,16 @@ class Service extends Base\Service
                 }
             }
 
-            return $output;
+            $isExpEnable = $this->setPaymentConfigForSubM($data['partner_id']);
 
+            if($isExpEnable === true and empty($submerchantId) === false)
+            {
+                $subMerchant = $this->repo->merchant->findOrFailPublic($submerchantId);
+
+                $this->setDefaultLateAuthConfigForMerchant($subMerchant);
+            }
+
+            return $output;
         }
         catch (\Exception $e)
         {
@@ -591,6 +599,16 @@ class Service extends Base\Service
             }
             throw $e;
         }
+    }
+
+    public function setPaymentConfigForSubM(string $partnerId): bool
+    {
+        $properties = [
+            'id'            => $partnerId,
+            'experiment_id' => $this->app['config']->get('app.default_payment_config_for_subm_exp_id')
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
     }
 
     public function createLinkedAccount(array $input)

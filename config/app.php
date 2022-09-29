@@ -379,6 +379,8 @@ return array(
 
     'submerchant_bulk_validation_status_update_exp_id' => env('SUBMERCHANT_BULK_VALIDATION_STATUS_UPDATE_EXP_ID'),
 
+    'default_payment_config_for_subm_exp_id' => env('DEFAULT_PAYMENT_CONFIG_FOR_SUBM_EXP_ID'),
+
     'partners_excluded_from_instant_act_v2_api_exp_id'  => env('PARTNERS_EXCLUDED_FROM_INSTANT_ACT_V2_API_EXP_ID'),
 
     'paypal_migration_experiment_id' => env('PAYPAL_MIGRATION_EXP_ID'),

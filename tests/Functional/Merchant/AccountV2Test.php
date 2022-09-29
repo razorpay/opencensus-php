@@ -506,6 +506,21 @@ class AccountV2Test extends TestCase
         $this->mockSplitzTreatment($input, $output);
 
         $input = [
+            "experiment_id" => "KIYvRvxbpMy7r1",
+            "id"            => "10000000000000"
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => "enable"
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $input = [
             "experiment_id" => "KJfPdCoug8vfap",
             "id"            => "10000000000000"
         ];
@@ -891,4 +906,22 @@ class AccountV2Test extends TestCase
         $this->assertFalse($featureResult);
     }
 
+    public function testCreateAccountV2WithDefaultPaymentConfig()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $this->mockSplitzEvaluation();
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $merchantId = $response['id'];
+
+        Account\Entity::verifyIdAndStripSign($merchantId);
+
+        $paymentConfig = $this->getDbEntity('config', ['merchant_id' => $merchantId]);
+
+        $this->assertNotNull($paymentConfig);
+    }
 }

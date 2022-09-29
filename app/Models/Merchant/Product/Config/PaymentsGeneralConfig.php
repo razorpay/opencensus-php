@@ -192,7 +192,13 @@ class PaymentsGeneralConfig extends Base\Service
 
     public function createConfig(Merchant\Entity $merchant, array $configs): array
     {
-        if (isset($configs[Util\Constants::PAYMENT_CONFIG]) === false)
+//      todo: We can remove this code block once experiment is ramped to 100%.
+//      Instead of creating config while creating product, creating it with sub-merchant account creation.
+//      But it is under experimentation so creating config here whenever required.
+
+        $config = $this->repo->config->fetchConfigByMerchantIdAndType($merchant->getId(), 'late_auth');
+
+        if (isset($configs[Util\Constants::PAYMENT_CONFIG]) === false and count($config) === 0)
         {
             $this->merchantService->setDefaultLateAuthConfigForMerchant($merchant);
         }

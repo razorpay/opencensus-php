@@ -2940,21 +2940,6 @@ class MerchantCreateTest extends TestCase
         $this->mockSplitzTreatment($input, $output);
 
         $input = [
-            "id"            => "10000000000000",
-            "experiment_id" => "JqPQNIjSTvE6v0",
-        ];
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'enable',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($input, $output);
-
-        $input = [
             "experiment_id" => "JIRYzx7YtMuB18",
             "id"            => "10000000000000",
             'request_data'  => json_encode(
@@ -2989,6 +2974,18 @@ class MerchantCreateTest extends TestCase
 
         $splitzMock = $this->getSplitzMock();
         $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))->with(Mockery::hasValue('K1ZaAGS9JfAUHj'))->andReturn($output);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))->with(Mockery::hasValue('KIYvRvxbpMy7r1'))->andReturn($output);
+
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))->with(Mockery::hasValue('JqPQNIjSTvE6v0'))->andReturn($output);
     }
 
     public function testCreateLinkedAccountReferenceData()
@@ -3071,5 +3068,36 @@ class MerchantCreateTest extends TestCase
         $perm = $this->fixtures->create('permission', ['name' => $permissionName]);
 
         $roleOfAdmin->permissions()->attach($perm->getId());
+    }
+
+    public function testCreateSubmerchantAndVerifyDefaultPaymentConfig()
+    {
+        Mail::fake();
+
+        $this->mockSplitzEvaluation();
+
+        $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
+
+        $configAttributes = [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->mockAllExperiments("enable");
+
+        $testData = $this->testData['testCreateSubMerchantByAggregatorWithEmail'];
+
+        $response = $this->startTest($testData);
+
+        $merchantId = $response['id'];
+
+        \RZP\Models\Merchant\Account\Entity::verifyIdAndStripSign($merchantId);
+
+        $paymentConfig = $this->getDbEntity('config', ['merchant_id' => $merchantId]);
+
+        $this->assertNotNull($paymentConfig);
     }
 }
