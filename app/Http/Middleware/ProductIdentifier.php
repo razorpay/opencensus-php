@@ -187,6 +187,7 @@ class ProductIdentifier
 
     public function isDashboardApp()
     {
-        return (in_array($this->internalAppName, BasicAuth::DASHBOARD_APPS) === true);
+        return (in_array($this->internalAppName, BasicAuth::DASHBOARD_APPS) === true ||
+                $this->internalAppName === 'master_onboarding');
     }
 }
