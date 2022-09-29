@@ -45,18 +45,6 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
     {
         $billDeskInput = $this->getRegisterInput($payment, $cardMandate);
 
-        $variant = $this->app['razorx']->getTreatment(
-            $payment->getMerchantId(),
-            Merchant\RazorxTreatment::SIHUB_DISABLE_CARD_FLOW_POST_TOKENIZATION,
-            $this->mode
-        );
-
-        if ((strtolower($variant) === 'on') and
-            (isset($billDeskInput[Constants::CARD])))
-        {
-            unset($billDeskInput[Constants::CARD]);
-        }
-
         $response = $this->app['gateway']->call(MandateHubs::BILLDESK_SIHUB, Payment\Action::CARD_MANDATE_CREATE, $billDeskInput, $this->mode);
 
         // TODO add appropriate checks
@@ -175,11 +163,23 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
      */
     protected function getRegisterInput(Payment\Entity $payment, CardMandate\Entity $cardMandate): array
     {
-        $card = $payment->card;
 
-        $cardData = $card->toArray();
+        $variant = $this->app['razorx']->getTreatment(
+            $payment->getMerchantId(),
+            Merchant\RazorxTreatment::SIHUB_DISABLE_CARD_FLOW_POST_TOKENIZATION,
+            $this->mode
+        );
 
-        $cardData[Constants::CARD_NUMBER] = $this->getCardNumber($card,$payment->getGateway());
+        $cardData = [];
+
+        if (strtolower($variant) !== 'on')
+        {
+            $card = $payment->card;
+
+            $cardData = $card->toArray();
+
+            $cardData[Constants::CARD_NUMBER] = $this->getCardNumber($card,$payment->getGateway());
+        }
 
         $startTime = $payment->localToken->getStartTime();
 
@@ -205,7 +205,7 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
             Constants::GATEWAY          => MandateHubs::BILLDESK_SIHUB,
             Constants::MERCHANT         => $payment->merchant->toArray(),
             Constants::TOKEN            => $tokenData,
-            Constants::CARD             => $cardData,
+            Constants::CARD             => $cardData ?? null,
             Constants::CARD_MANDATE     => $cardMandate->toArray(),
             Constants::END_TIME         => $endTime,
         ];
