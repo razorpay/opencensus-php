@@ -1,15 +1,18 @@
 name: Track Bundle Limit Threshold
 
 on:
-  push:
-    branches:
+  pull_request:
+    branches: 
       - master
+    types:
+      - closed
 
 env:
   GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
 
 jobs:
   asset-checker:
+    if: github.event.pull_request.merged == true
     name: Track Bundle Asset Checker
     runs-on: [self-hosted]
     continue-on-error: true
@@ -107,7 +110,20 @@ jobs:
                   "elements": [
                     {
                       "type": "mrkdwn",
-                      "text": "*PR Link to refer changes*: ${{ steps.tracksizelimit_dangerjs.outputs.prLink }}"
+                      "text": "*PR Link to refer changes*: ${{ github.event.pull_request.html_url }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*PR Title*: "
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "${{ github.event.pull_request.title }}"
                     }
                   ]
                 },
@@ -120,12 +136,12 @@ jobs:
                     },
                     {
                       "type": "image",
-                      "image_url": "${{ steps.tracksizelimit_dangerjs.outputs.prAvatar }}",
+                      "image_url": "${{ github.event.pull_request.user.avatar_url }}",
                       "alt_text": "avatar"
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "${{ steps.tracksizelimit_dangerjs.outputs.prOwner }}"
+                      "text": "${{ github.event.pull_request.user.login }}"
                     }
                   ]
                 },
@@ -143,7 +159,7 @@ jobs:
                       "emoji": true
                     },
                     "value": "click_me",
-                    "url": "${{ steps.tracksizelimit_dangerjs.outputs.prLink }}",
+                    "url": "https://github.com/razorpay/dashboard/blob/master/bundlesize-budget.js",
                     "action_id": "button-action"
                   }
                 }

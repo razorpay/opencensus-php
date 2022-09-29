@@ -65,11 +65,11 @@ const ValidateBundleAssets = ({ budgetConfig, stage }) => {
   setOutput('bundleSizeReport', JSON.stringify(reportData));
 
   if (stage === 'commit') {
+    pr && setPrDetails();
     commentStats({ reportData });
   }
 
   if (stage === 'merge') {
-    setPrDetails();
     generateSlackResponse({ reportData });
   }
 
