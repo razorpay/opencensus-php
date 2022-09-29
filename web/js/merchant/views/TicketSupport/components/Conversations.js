@@ -470,14 +470,17 @@ export default class Conversations extends React.Component {
     if (is_escalated) {
       message = (
         <h3 className="fsz-14">
-          This query is open and our team is working on it. You <br /> can expect reply before:{' '}
+          We’re working on this request on-priority, and will share an <br /> update soon by:{' '}
           <b style={{ color: '#F89A23' }} className="text-warning">
             {responseFormatTime}
           </b>
         </h3>
       );
     }
-    if (STATUS === TICKET_STATUS_LABELS.BEING_PROCESSED && MESSAGE === 'within-expected-time') {
+    if (
+      [TICKET_STATUS_LABELS.BEING_PROCESSED, TICKET_STATUS_LABELS.IN_PROGRESS].includes(STATUS) &&
+      MESSAGE === 'within-expected-time'
+    ) {
       message = (
         <h3 className="fsz-14">
           This query is open and our team is working on it. You <br /> can expect reply before:{' '}
@@ -614,7 +617,7 @@ export default class Conversations extends React.Component {
                                 }}
                               >
                                 <i className="i i-followup" />{' '}
-                                {is_escalated ? 'Requested follow-up' : 'Request follow-up'}
+                                {is_escalated ? 'Requested status update' : 'Request status update'}
                               </button>
                             )}
                             {!can_be_escalated ? (

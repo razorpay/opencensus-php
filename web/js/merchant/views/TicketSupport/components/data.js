@@ -1,6 +1,7 @@
 export const TICKET_STATUS_LABELS = {
   ACTIVE: 'Active',
   BEING_PROCESSED: 'Being Processed',
+  IN_PROGRESS: 'In Progress',
   RESOLVED: 'Resolved',
   CLOSED: 'Closed',
   ACTION_REQUIRED: 'Action required',
@@ -14,7 +15,7 @@ export const statuses = {
     class: 'active',
   },
   '3': {
-    name: TICKET_STATUS_LABELS.BEING_PROCESSED,
+    name: TICKET_STATUS_LABELS.IN_PROGRESS,
     class: 'pending',
   },
   '4': {
@@ -30,19 +31,23 @@ export const statuses = {
     class: 'info',
   },
   '8': {
-    name: TICKET_STATUS_LABELS.BEING_PROCESSED,
+    name: TICKET_STATUS_LABELS.IN_PROGRESS,
     class: 'pending',
   },
   '9': {
-    name: TICKET_STATUS_LABELS.BEING_PROCESSED,
+    name: TICKET_STATUS_LABELS.IN_PROGRESS,
     class: 'pending',
   },
   '10': {
-    name: TICKET_STATUS_LABELS.BEING_PROCESSED,
+    name: TICKET_STATUS_LABELS.IN_PROGRESS,
     class: 'pending',
   },
   '11': {
-    name: TICKET_STATUS_LABELS.BEING_PROCESSED,
+    name: TICKET_STATUS_LABELS.IN_PROGRESS,
+    class: 'pending',
+  },
+  '14': {
+    name: TICKET_STATUS_LABELS.IN_PROGRESS,
     class: 'pending',
   },
   '100': {
@@ -53,6 +58,7 @@ export const statuses = {
 
 export const workflowStatusClass = {
   [TICKET_STATUS_LABELS.BEING_PROCESSED]: 'pending',
+  [TICKET_STATUS_LABELS.IN_PROGRESS]: 'pending',
   [TICKET_STATUS_LABELS.ACTIVE]: 'active',
   [TICKET_STATUS_LABELS.RESOLVED]: 'resolved',
   [TICKET_STATUS_LABELS.CLOSED]: 'danger',

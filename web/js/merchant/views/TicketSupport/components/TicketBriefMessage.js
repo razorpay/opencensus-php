@@ -18,8 +18,11 @@ export default function TicketBriefMessage(props) {
         <div class="Ticket-Brief-Message-Status-Desc text-danger">
           <i class="i i-clock ticket-message-icn" /> Reply Before <b>{expectedResponseDate}</b>
         </div>
-      ) : ticketStatus === TICKET_STATUS_LABELS.BEING_PROCESSED ||
-        ticketStatus === TICKET_STATUS_LABELS.ACTIVE ? (
+      ) : [
+          TICKET_STATUS_LABELS.BEING_PROCESSED,
+          TICKET_STATUS_LABELS.ACTIVE,
+          TICKET_STATUS_LABELS.IN_PROGRESS,
+        ].includes(ticketStatus) ? (
         isEscalated ? (
           <div class="Ticket-Brief-Message-Status-Desc">
             <span>

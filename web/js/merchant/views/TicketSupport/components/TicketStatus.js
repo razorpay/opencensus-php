@@ -7,16 +7,18 @@ const TicketStatus = ({ workflow, ticket } = {}) => {
 
   let statusLabel = workflow?.state || statuses[ticket?.status]?.name;
   const isDelayed =
-    (statusLabel === TICKET_STATUS_LABELS.ACTIVE ||
-      statusLabel === TICKET_STATUS_LABELS.BEING_PROCESSED) &&
-    today > dueDate;
+    [
+      TICKET_STATUS_LABELS.BEING_PROCESSED,
+      TICKET_STATUS_LABELS.ACTIVE,
+      TICKET_STATUS_LABELS.IN_PROGRESS,
+    ].includes(statusLabel) && today > dueDate;
   const status = workflow?.state || statuses[ticket.status];
 
   const cssClass = isDelayed
     ? workflowStatusClass[TICKET_STATUS_LABELS.DELAYED]
     : workflowStatusClass[status] || status?.class;
 
-  statusLabel = isDelayed ? TICKET_STATUS_LABELS.DELAYED : statusLabel;
+  statusLabel = isDelayed ? TICKET_STATUS_LABELS.IN_PROGRESS : statusLabel;
   return <span className={`label ticket-status-label label-${cssClass}`}>{statusLabel}</span>;
 };
 

@@ -296,18 +296,6 @@ class SupportBody extends Component {
       },
     });
   };
-  openQueriesTracking = (screen = 'home page', totalTickets) => {
-    analyticsTrack({
-      objectName: 'View All Queries',
-      actionName: 'clicked',
-      screen,
-      properties: {
-        number_of_open_queries: totalTickets,
-        ...getCommonAnalyticsProperties(window.rzp_user),
-        ...getCommonSupportProperties(),
-      },
-    });
-  };
 
   chatWithUsTracking = ({ showChat } = {}) => {
     const { user: { isChatbotLive, isFreshChatbotLive } = {} } = this.props;
@@ -412,9 +400,8 @@ class SupportBody extends Component {
     });
   };
 
-  handleOpenQueries = ({ screen, openedFrom = 'help', totalTickets } = {}) => {
+  handleOpenQueries = ({ openedFrom = 'help' } = {}) => {
     this.handleClick('open-queries');
-    this.openQueriesTracking(screen, totalTickets);
     this.setState({
       modalToBeOpenedOnBackClick: openedFrom,
     });

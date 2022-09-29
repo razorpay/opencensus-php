@@ -29,7 +29,13 @@ export function getTicketStatus(ticket, workflow = {}) {
 export function getEscalationType(ticket, workflow = {}) {
   const STATUS = getTicketStatus(ticket, workflow);
 
-  if (STATUS === TICKET_STATUS_LABELS.ACTIVE || STATUS === TICKET_STATUS_LABELS.BEING_PROCESSED) {
+  if (
+    [
+      TICKET_STATUS_LABELS.BEING_PROCESSED,
+      TICKET_STATUS_LABELS.ACTIVE,
+      TICKET_STATUS_LABELS.IN_PROGRESS,
+    ].includes(STATUS)
+  ) {
     if (ticket.priority === 4) {
       return 'escalated';
     }
@@ -47,7 +53,13 @@ export function getEscalationType(ticket, workflow = {}) {
 
 export function getResponseArrivalType(ticket, workflow = {}) {
   const STATUS = getTicketStatus(ticket, workflow);
-  if (STATUS === TICKET_STATUS_LABELS.ACTIVE || STATUS === TICKET_STATUS_LABELS.BEING_PROCESSED) {
+  if (
+    [
+      TICKET_STATUS_LABELS.BEING_PROCESSED,
+      TICKET_STATUS_LABELS.ACTIVE,
+      TICKET_STATUS_LABELS.IN_PROGRESS,
+    ].includes(STATUS)
+  ) {
     const today = new Date();
     const dueDate = new Date(ticket?.fr_due_by || parseInt(workflow?.due_date, 10));
 
@@ -102,6 +114,7 @@ export const STATUSES = {
   '9': 'WORK_IN_PROGRESS',
   '10': 'WORK_IN_PROGRESS',
   '11': 'WORK_IN_PROGRESS',
+  '14': 'WORK_IN_PROGRESS',
 };
 
 export const createWorkFlowTicket = (workflow, user) => {
