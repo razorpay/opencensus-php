@@ -20,10 +20,7 @@
 
 @endif
 
-@if ($newAuthFlow === true)
-  @include('partials/new-auth')
-  <!-- register service worker on dashboard.razorpay.com login page -->
-  @if(env('APP_ENV') === 'production')
+@if(env('APP_ENV') === 'production')
     <script type="module">
         import {Workbox} from 'https://storage.googleapis.com/workbox-cdn/releases/6.4.1/workbox-window.prod.mjs';
 
@@ -32,8 +29,10 @@
             wb.register();
         }
     </script>
-  @endif
+@endif
 
+@if ($newAuthFlow === true)
+  @include('partials/new-auth')
 @else
 
   <!-- Logged in user section -->
@@ -69,11 +68,10 @@
     <link rel="preload" href="https://cdn.razorpay.com/dashboard/dist/css/merchant-icons.woff2" as="style">
     <link rel="preload" href="https://cdn.razorpay.com/dashboard/dist/css/merchant-icons.woff" as="style">
   @endif
+  @include('partials/merchant-preload')
   <!-- head tag ends here -->
   @include('partials/common')
 @endif
-
-
 
 <script>
 var _dcq = _dcq || [];
