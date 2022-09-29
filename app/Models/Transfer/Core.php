@@ -1145,6 +1145,13 @@ class Core extends Base\Core
             return;
         }
 
+        $paymentMerchant = $payment->merchant;
+
+        if ($paymentMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+        {
+            return;
+        }
+
         try
         {
             $transactionMessage = RouteJournalEvents::createBulkTransactionMessageForRoute($payment);

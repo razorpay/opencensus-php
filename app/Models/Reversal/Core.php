@@ -1456,6 +1456,13 @@ class Core extends Base\Core
             return;
         }
 
+        $refundMerchant = $refund->merchant;
+
+        if ($refundMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+        {
+            return;
+        }
+
         try
         {
             $transactionMessage = RouteReversalJournalEvents::createBulkTransactionMessageForRouteReversal($reversal, $refund);
