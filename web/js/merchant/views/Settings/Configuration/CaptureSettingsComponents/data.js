@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-import { renderTimeoutAsString } from '../PaymentCaptureComponents/util';
+import { renderTimeoutAsString } from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/util';
 
 export const TIMEOUT_VALUES = [
   { label: '12 Mins', name: 12 },

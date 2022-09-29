@@ -11,7 +11,7 @@ import { Select, Option } from 'common/components/Select';
 import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
 import Link from '@razorpay/commander-shield/src/shared/Link';
 import Button from '@razorpay/blade-old/src/atoms/Button';
-import { FormSection, Field } from '../../onboarding/mobile/Form';
+import { FormSection, Field } from 'merchant/views/onboarding/mobile/Form';
 import { useMutation } from 'react-query';
 import { fetch } from 'common/services/rest/rest-fetch';
 import { StyledFooter } from './Styled';

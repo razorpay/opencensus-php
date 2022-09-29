@@ -2,19 +2,24 @@ import React, { useEffect, useState } from 'react';
 import * as Yup from 'yup';
 import { Formik } from 'formik';
 import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
-import { FormSection, Field, GetTouchedFields } from '../Form';
-import { useActivationFormState, isTabComplete } from '../context/store';
-import useActivation, { getRequestData } from '../hooks/useActivation';
-import useConfigDetails from '../hooks/useConfigDetails';
+import { FormSection, Field, GetTouchedFields } from 'merchant/views/onboarding/mobile/Form';
+import {
+  useActivationFormState,
+  isTabComplete,
+} from 'merchant/views/onboarding/mobile/context/store';
+import useActivation, {
+  getRequestData,
+} from 'merchant/views/onboarding/mobile/hooks/useActivation';
+import useConfigDetails from 'merchant/views/onboarding/mobile/hooks/useConfigDetails';
 import {
   getDetailsForIFSC,
   getBankTabHeader,
   isUnregisteredBusiness,
   getBankFieldError,
-} from '../services/utils';
+} from 'merchant/views/onboarding/mobile/services/utils';
 import { analyticsTrack } from 'common/services/tracking/segment';
 import { useApp } from 'common/context/App';
-import usePartnerActivation from '../hooks/usePartnerActivation';
+import usePartnerActivation from 'merchant/views/onboarding/mobile/hooks/usePartnerActivation';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';
 
 interface BankDetailsProps {

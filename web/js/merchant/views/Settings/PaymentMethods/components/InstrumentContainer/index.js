@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import Instrument from './Instrument';
 import InternationalStatusLabel from 'merchant/components/InternationalStatusLabel';
-import { GREYED, REQUESTABLE } from '../../constants';
+import { GREYED, REQUESTABLE } from 'merchant/views/Settings/PaymentMethods/constants';
 
 /*
  * @param  {*} leafList instrument list

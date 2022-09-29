@@ -3,17 +3,17 @@ import styled from 'styled-components';
 import View from '@razorpay/blade-old/src/atoms/View';
 import shallow from 'zustand/shallow';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
-import useActivation from '../../hooks/useActivation';
-import { useActivationFormState } from '../../context/store';
-import OnboardingStepCard from '../../OnboardingStepCard';
+import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
+import { useActivationFormState } from 'merchant/views/onboarding/mobile/context/store';
+import OnboardingStepCard from 'merchant/views/onboarding/mobile/OnboardingStepCard';
 import {
   isL1Submitted,
   checkIfDedupe,
   hasSelectedBlacklistCategory,
   isUnregisteredBusiness,
-} from '../../services/utils';
-import { ActivationModal, ModalTypeT } from '../../ActivationModals';
-import useBusinessCategory from '../../hooks/useBusinessCategory';
+} from 'merchant/views/onboarding/mobile/services/utils';
+import { ActivationModal, ModalTypeT } from 'merchant/views/onboarding/mobile/ActivationModals';
+import useBusinessCategory from 'merchant/views/onboarding/mobile/hooks/useBusinessCategory';
 import { useApp } from 'common/context/App';
 import { analyticsTrack } from 'common/services/tracking/segment';
 

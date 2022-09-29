@@ -4,8 +4,8 @@ import { withRouter } from 'react-router';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { isMobileDevice } from 'merchant/components/Home/data';
-import { sendDataToSalesForce } from '../../utils/common-api';
-import { getUser } from '../../../merchant/store';
+import { sendDataToSalesForce } from 'common/utils/common-api';
+import { getUser } from 'merchant/store';
 
 const SubmissionSuccessfull = ({ handleClose }) => {
   return (

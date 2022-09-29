@@ -6,7 +6,7 @@ import { connect } from 'react-redux';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { closeModal as fnCloseModal } from 'merchant_common/reducers/modals';
 
-import { SETTLEMENTS_TIMING } from '../constants';
+import { SETTLEMENTS_TIMING } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
 
 const Container = styled.div`
   width: 100%;

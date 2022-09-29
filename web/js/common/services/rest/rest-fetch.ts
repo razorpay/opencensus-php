@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosError } from 'axios';
-import { getMode, ModeT } from '../mode';
+import { getMode, ModeT } from 'common/services/mode';
 export const restInstance = axios.create({});
 
 const isAxiosResponse = <T>(obj: any): obj is AxiosError<T> =>

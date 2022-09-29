@@ -16,7 +16,7 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { merchantFetch } from 'merchant/utils/ajax';
 import InstantRefundFee from 'merchant/views/Transactions/Payments/components/InstantRefundFee';
-import DebitRefundAnnouncement from '../../../components/Announcements/Refunds/DebitRefund';
+import DebitRefundAnnouncement from 'merchant/components/Announcements/Refunds/DebitRefund';
 import SmsNotification from './SmsNotification';
 import WhatsappNotification from './WhatsappNotification';
 import InternationalPayments from './InternationalPayments';

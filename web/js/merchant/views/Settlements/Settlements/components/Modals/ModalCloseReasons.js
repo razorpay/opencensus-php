@@ -5,8 +5,14 @@ import { closeModal as fnCloseModal } from 'merchant_common/reducers/modals';
 import Button from 'common/new-ui/Button';
 import { CLOSE_OPTIONS } from 'merchant/views/Settlements/Settlements/data';
 import Input from 'common/new-ui/Input';
-import { trackEsChurnReason, trackEsModalCloseAction } from '../../ga';
-import { trackSettleNowCloseReason, trackSettleNowConfirmClose } from '../../../trackEvents';
+import {
+  trackEsChurnReason,
+  trackEsModalCloseAction,
+} from 'merchant/views/Settlements/Settlements/ga';
+import {
+  trackSettleNowCloseReason,
+  trackSettleNowConfirmClose,
+} from 'merchant/views/Settlements/trackEvents';
 import { bindActionCreators } from 'redux';
 import Nudge from './ScheduledModal/components/Nudge';
 

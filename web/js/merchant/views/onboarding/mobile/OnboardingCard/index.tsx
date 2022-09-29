@@ -9,17 +9,21 @@ import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
 import { spacings } from '@razorpay/blade-old/src/tokens';
 import { ProgressBar } from 'common/components/ProgressBar';
 import Card from 'common/components/Card';
-import useActivation from '../hooks/useActivation';
-import useEscalation from '../hooks/useEscalation';
+import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
+import useEscalation from 'merchant/views/onboarding/mobile/hooks/useEscalation';
 import CurrentActivationProgress from './CurrentActivationProgress';
 import FormIcon from './Icons/FormIcon.svg';
 import OnboardingCardShimmer from './OnboardingCardShimmer';
-import { checkIfDedupe, isUnregisteredBusiness, setLocalStorage } from '../services/utils';
-import { ActivationModal, ModalTypeT } from '../ActivationModals';
+import {
+  checkIfDedupe,
+  isUnregisteredBusiness,
+  setLocalStorage,
+} from 'merchant/views/onboarding/mobile/services/utils';
+import { ActivationModal, ModalTypeT } from 'merchant/views/onboarding/mobile/ActivationModals';
 import { useApp } from 'common/context/App';
-import { IReferee } from '../Screens/Home';
+import { IReferee } from 'merchant/views/onboarding/mobile/Screens/Home';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';
-import { EASY_ONBOARDING } from '../Constants/OnboardingConstants';
+import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 
 const Separator = styled(View)`
   height: 1px;

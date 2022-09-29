@@ -1,6 +1,6 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import GstinAutoPopulate from '../index';
+import GstinAutoPopulate from 'merchant/views/onboarding/mobile/Fields/GstinAutoPopulate/index';
 import { cleanup, render } from 'test-utils';
 
 afterEach(() => {

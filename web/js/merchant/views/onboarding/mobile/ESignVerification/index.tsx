@@ -3,7 +3,7 @@ import GetOTP from './GetOTP';
 import VerifyOTP from './VerifyOTP';
 import AadharSuccess from './AadharSuccess';
 import Card from 'common/components/Card';
-import useActivation from '../hooks/useActivation';
+import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
 import { analyticsTrack } from 'common/services/tracking/segment';
 import { useApp } from 'common/context/App';
 import AadharError from './AadharError';

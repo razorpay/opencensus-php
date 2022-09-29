@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
-import { calculateCreditDebitAmount } from '../util';
+import { calculateCreditDebitAmount } from 'merchant/views/Settlements/v2/util';
 import ComponentRow from './ComponentRow';
 import TotalAmount from './TotalAmount';
 import * as SettlementActions from 'merchant/reducers/settlements/details';

@@ -2,7 +2,7 @@ import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import { render, screen } from 'test-utils';
 
-import InfoTooltip from '../index';
+import InfoTooltip from 'common/components/InfoTooltip/index';
 
 describe('InfoTooltip', () => {
   test('show InfoTooltip when overlay is a text', () => {

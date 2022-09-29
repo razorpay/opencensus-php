@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Formik } from 'formik';
 import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
-import { isDocumentTabComplete } from '../services/utils';
-import { Field, GetTouchedFields } from '../Form';
-import { useActivationFormState } from '../context/store';
-import useActivation, { getRequestData } from '../hooks/useActivation';
+import { isDocumentTabComplete } from 'merchant/views/onboarding/mobile/services/utils';
+import { Field, GetTouchedFields } from 'merchant/views/onboarding/mobile/Form';
+import { useActivationFormState } from 'merchant/views/onboarding/mobile/context/store';
+import useActivation, {
+  getRequestData,
+} from 'merchant/views/onboarding/mobile/hooks/useActivation';
 
 const ShopEstablishmentNumber: React.FC = () => {
   const { data, postData } = useActivation();

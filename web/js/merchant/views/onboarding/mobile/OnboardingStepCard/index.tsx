@@ -8,9 +8,9 @@ import Link from '@razorpay/commander-shield/src/shared/Link';
 import Button from '@razorpay/blade-old/src/atoms/Button';
 import Icon from '@razorpay/blade-old/src/atoms/Icon';
 import Card from 'common/components/Card';
-import { StepList } from '../Step';
-import { StepPropsT } from '../Step/Step';
-import ErrorIcon from '../Step/Icons/error.svg';
+import { StepList } from 'merchant/views/onboarding/mobile/Step';
+import { StepPropsT } from 'merchant/views/onboarding/mobile/Step/Step';
+import ErrorIcon from 'merchant/views/onboarding/mobile/Step/Icons/error.svg';
 import { useApp } from 'common/context/App';
 
 interface OnboardingStepCardPropsT {

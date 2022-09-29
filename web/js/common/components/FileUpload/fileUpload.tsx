@@ -5,7 +5,7 @@ import Size from '@razorpay/blade-old/src/atoms/Size';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
-import ProgressBarContinuous from '../ProgressBar/ProgressBar';
+import ProgressBarContinuous from 'common/components/ProgressBar/ProgressBar';
 import UploadIcon from './FileUploadIcon.svg';
 import CheckedIcon from './CheckedIcon.svg';
 import { DashedButton, UploadedBox, FileNameContainer } from './Styled';

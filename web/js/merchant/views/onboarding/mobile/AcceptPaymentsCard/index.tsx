@@ -7,14 +7,18 @@ import Text from '@razorpay/blade-old/src/atoms/Text';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import { useSnackbar } from 'common/components/SnackBar/SnackbarContext';
-import useActivation from '../hooks/useActivation';
-import useEscalation from '../hooks/useEscalation';
-import { checkIfDedupe, getFormatedCurrency, isUnregisteredBusiness } from '../services/utils';
+import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
+import useEscalation from 'merchant/views/onboarding/mobile/hooks/useEscalation';
+import {
+  checkIfDedupe,
+  getFormatedCurrency,
+  isUnregisteredBusiness,
+} from 'merchant/views/onboarding/mobile/services/utils';
 import AcceptPaymentsIcon from './Icons/AcceptPaymentsIcon.svg';
 import { useApp } from 'common/context/App';
 import * as Messages from './Constants';
-import usePaymentVolume from '../hooks/usePaymentVolume';
-import { EASY_ONBOARDING } from '../Constants/OnboardingConstants';
+import usePaymentVolume from 'merchant/views/onboarding/mobile/hooks/usePaymentVolume';
+import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 
 const ViewWithBackground = styled(View)`
   background: url('${AcceptPaymentsIcon}') right no-repeat;

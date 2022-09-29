@@ -6,7 +6,7 @@ import {
   openModal as openModalFn,
   closeModal as closeModalFn,
 } from 'merchant_common/reducers/modals';
-import { CreateTicketEmitter } from '../../TicketSupport/utils';
+import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import SettlementMessage from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/SettlementMessage';
 
 const SettlementsBanner = (props) => {

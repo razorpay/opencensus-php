@@ -1,6 +1,6 @@
 import React from 'react';
 import Button from '@razorpay/blade-old/src/atoms/Button';
-import { useActivationFormState } from '../context/store';
+import { useActivationFormState } from 'merchant/views/onboarding/mobile/context/store';
 import FAQs from './FAQs';
 
 export default {

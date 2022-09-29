@@ -14,7 +14,7 @@ import PaymentLimitRemoved from './icons/LimitRemoved.svg';
 import FillKyc from './icons/FillKyc.svg';
 import PaymentPaused from './icons/PaymentPaused.svg';
 import * as Message from './Constant';
-import { SAMPLE_TICKET } from '../Constants/OnboardingConstants';
+import { SAMPLE_TICKET } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';
 import VideoModal from 'merchant/components/VideoModal';
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import Layer from '../Layer';
+import Layer from 'common/components/Layer/Layer';
 import { render } from 'test-utils';
 
 test('Layers rendering', () => {

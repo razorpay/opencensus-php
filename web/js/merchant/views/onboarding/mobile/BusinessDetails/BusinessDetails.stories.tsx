@@ -1,6 +1,6 @@
 import React from 'react';
 import { Story, Meta } from '@storybook/react/types-6-0.d';
-import useActivation from '../hooks/useActivation';
+import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
 import BusinessDetails from './index';
 
 export default {

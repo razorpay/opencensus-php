@@ -5,7 +5,7 @@ import Space from '@razorpay/blade-old/src/atoms/Space';
 import { Motion, spring, presets } from 'react-motion';
 import { FullPageLoader } from 'common/components/Loader';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
-import useActivation from '../../hooks/useActivation';
+import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
 import WhitelistedSteps from './WhitelistedSteps';
 import GreylistedSteps from './GreylistedSteps';
 import ActivationProgressHeader from './ActivationProgressHeader';
@@ -14,15 +14,15 @@ import {
   isUnregisteredBusiness,
   isL1Submitted,
   isVerificationValid,
-} from '../../services/utils';
+} from 'merchant/views/onboarding/mobile/services/utils';
 import { useApp } from 'common/context/App';
-import { ActivationModal, ModalTypeT } from '../../ActivationModals';
+import { ActivationModal, ModalTypeT } from 'merchant/views/onboarding/mobile/ActivationModals';
 import { switchMode } from 'common/services/mode';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';
-import usePartnerActivation from '../../hooks/usePartnerActivation';
+import usePartnerActivation from 'merchant/views/onboarding/mobile/hooks/usePartnerActivation';
 import AccessBlockedSteps from './AccessBlockedSteps';
-import { isVisible } from '../../context/store';
-import { LLPIN_BusinessTypes } from '../../Constants/OnboardingConstants';
+import { isVisible } from 'merchant/views/onboarding/mobile/context/store';
+import { LLPIN_BusinessTypes } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 
 const Screen = styled(View)`
   background-color: #f9fbfe;

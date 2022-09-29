@@ -35,7 +35,7 @@ import {
   statusClass,
   statusPopoverText,
   additionalDetailsStatus,
-} from '../constants';
+} from 'merchant/views/Settings/PaymentMethods/constants';
 import { RequestedStatus } from './InstrumentStatuses/RequestedStatus';
 import RejectedAndActionRequired from './InstrumentStatuses/RejectedAndActionRequired';
 import AdditionalDetails from './InstrumentStatuses/AdditionalDetails';

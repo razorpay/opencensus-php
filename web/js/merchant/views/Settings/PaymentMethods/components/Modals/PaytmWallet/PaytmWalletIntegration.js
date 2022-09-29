@@ -5,7 +5,7 @@ import { ChooseMode } from './ChooseMode';
 import { onboardPaytmTerminal, getPaytmCredentials } from 'merchant/reducers/config';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { connect } from 'react-redux';
-import { ACCOUNT_LINKABLE } from '../../../constants';
+import { ACCOUNT_LINKABLE } from 'merchant/views/Settings/PaymentMethods/constants';
 
 const CHOOSE_ACCOUNT = 'choose-account';
 const CHOOSE_MODE = 'choose-mode';

@@ -1,11 +1,11 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import * as ActivationDB from '../../services/data/ActivationDB';
-import * as DataPieces from '../../services/data/pieces';
-import * as Messages from '../../ActivationModals/Constant';
-import OnboardingCard from '../index';
-import useActivation from '../../hooks/useActivation';
-import OnboardingCardShimmer from '../OnboardingCardShimmer';
+import * as ActivationDB from 'merchant/views/onboarding/mobile/services/data/ActivationDB';
+import * as DataPieces from 'merchant/views/onboarding/mobile/services/data/pieces';
+import * as Messages from 'merchant/views/onboarding/mobile/ActivationModals/Constant';
+import OnboardingCard from 'merchant/views/onboarding/mobile/OnboardingCard/index';
+import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
+import OnboardingCardShimmer from 'merchant/views/onboarding/mobile/OnboardingCard/OnboardingCardShimmer';
 import { render, waitForElementToBeRemoved, screen, fireEvent } from 'test-utils';
 
 afterEach(() => {

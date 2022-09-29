@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/extend-expect';
 import 'regenerator-runtime/runtime';
-import { queryCache } from '../../components/Bootstrap/Wrapper';
+import { queryCache } from 'common/components/Bootstrap/Wrapper';
 import { server } from '../../../../mocks/node';
 process.env.hostName = 'http://localhost:6006';
 

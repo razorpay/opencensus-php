@@ -1,5 +1,5 @@
 import React from 'react';
-import { sanitizeTabName } from '../util';
+import { sanitizeTabName } from 'merchant/views/Settlements/v2/util';
 import { titleCase } from 'common/utils/rzp-utils';
 import Input from 'common/new-ui/Input';
 

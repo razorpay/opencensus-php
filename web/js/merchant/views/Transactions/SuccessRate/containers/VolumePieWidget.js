@@ -6,11 +6,18 @@ import isEmpty from 'lodash/isEmpty';
 import { getUser } from 'merchant/store';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import Spinner from 'common/ui/Spinner';
-import StyledHeader from '../components/StyledHeader';
-import NoDataMessage from '../components/NoDataMessage';
-import { pieChartOptions as options, piePlugins as plugins } from '../chartConfig';
-import { getPieChartData, getTagLabel, getFormattedNumber } from '../helper';
-import { TAG_OVERALL_MAP } from '../constants';
+import StyledHeader from 'merchant/views/Transactions/SuccessRate/components/StyledHeader';
+import NoDataMessage from 'merchant/views/Transactions/SuccessRate/components/NoDataMessage';
+import {
+  pieChartOptions as options,
+  piePlugins as plugins,
+} from 'merchant/views/Transactions/SuccessRate/chartConfig';
+import {
+  getPieChartData,
+  getTagLabel,
+  getFormattedNumber,
+} from 'merchant/views/Transactions/SuccessRate/helper';
+import { TAG_OVERALL_MAP } from 'merchant/views/Transactions/SuccessRate/constants';
 
 const renderInfoCard = ({ name, successful, total, sr } = {}, index) => {
   if (!total) return null;

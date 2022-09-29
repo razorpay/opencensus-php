@@ -2,8 +2,8 @@ import React from 'react';
 import moment from 'moment';
 import styled from 'styled-components';
 
-import { getEnableEsPartialAutomaticDate } from '../utils';
-import { FULL_SHIFT_DAYS } from '../constants';
+import { getEnableEsPartialAutomaticDate } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/utils';
+import { FULL_SHIFT_DAYS } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
 
 const Container = styled.div`
   width: 100%;

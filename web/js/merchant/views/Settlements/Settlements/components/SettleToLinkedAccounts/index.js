@@ -7,7 +7,10 @@ import Spinner from 'common/ui/Spinner';
 import { AsyncBtn } from 'common/new-ui/Button';
 import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
 import { fetchRouteOndemandSettlements as fnfetchRouteOndemandSettlements } from 'merchant/reducers/collection';
-import { getLinkedAccountsBalance, settleLinkedAccountsBalance } from '../api';
+import {
+  getLinkedAccountsBalance,
+  settleLinkedAccountsBalance,
+} from 'merchant/views/Settlements/Settlements/components/api';
 
 const SettleToLinkedAccount = ({
   user: { merchant },

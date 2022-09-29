@@ -30,7 +30,7 @@ import { fetchOpen as fnFetchOpenDisputes } from 'merchant/reducers/disputes/det
 import { bindActionCreators } from 'redux';
 import EasterEgg from 'merchant/components/EasterEgg';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import DashboardBanner from '../../../common/ui/DashboardBanner';
+import DashboardBanner from 'common/ui/DashboardBanner';
 import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
 import { trackSuccessRateEvents, visitSuccessRate } from './SuccessRate/trackEvents';
 

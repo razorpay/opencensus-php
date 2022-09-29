@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrackingProvider } from '../context/TrackingContext';
+import { TrackingProvider } from 'merchant/views/onboarding/mobile/context/TrackingContext';
 
 const Wrapper: React.FC = () => {
   return (

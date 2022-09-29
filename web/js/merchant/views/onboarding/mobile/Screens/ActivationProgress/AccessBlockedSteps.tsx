@@ -1,6 +1,6 @@
 import React from 'react';
 import View from '@razorpay/blade-old/src/atoms/View';
-import OnboardingStepCard from '../../OnboardingStepCard';
+import OnboardingStepCard from 'merchant/views/onboarding/mobile/OnboardingStepCard';
 
 const AccessBlockedSteps: React.FC = () => {
   return (

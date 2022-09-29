@@ -16,7 +16,7 @@ import Configuration from 'merchant/views/Settings/Configuration';
 import PaymentMethods from 'merchant/views/Settings/PaymentMethods';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
-import DashboardBanner from '../../../common/ui/DashboardBanner';
+import DashboardBanner from 'common/ui/DashboardBanner';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 const analyticsGoTo = (name) => {

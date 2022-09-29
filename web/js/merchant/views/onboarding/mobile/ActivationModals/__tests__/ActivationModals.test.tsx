@@ -1,8 +1,8 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import * as Messages from '../Constant';
-import useActivation from '../../hooks/useActivation';
-import ActivationFormModal from '../ActivationFormModals';
+import * as Messages from 'merchant/views/onboarding/mobile/ActivationModals/Constant';
+import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
+import ActivationFormModal from 'merchant/views/onboarding/mobile/ActivationModals/ActivationFormModals';
 import { render, screen, waitForElementToBeRemoved, cleanup, fireEvent } from 'test-utils';
 
 afterEach(() => {

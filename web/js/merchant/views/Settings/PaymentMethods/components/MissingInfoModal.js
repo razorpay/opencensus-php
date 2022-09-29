@@ -8,7 +8,7 @@ import { bindActionCreators } from 'redux';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { withRouter } from 'react-router-dom';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { STANDARD_PRICING_URL } from '../constants';
+import { STANDARD_PRICING_URL } from 'merchant/views/Settings/PaymentMethods/constants';
 
 const SET_VALUE = 'SET_VALUE';
 const SET_PAGE = 'SET_PAGE';

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect } from 'react';
 import { connect } from 'react-redux';
-import VTab from '../components/VTab';
+import VTab from 'merchant/views/Transactions/SuccessRate/components/VTab';
 
 const DEFAULT_ACTIVE_TAB = 0;
 

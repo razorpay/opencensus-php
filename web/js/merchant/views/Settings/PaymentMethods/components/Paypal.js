@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import PaypalOnboardingButton from 'merchant/views/Settings/Configuration/PaypalOnboarding';
 import { getIcon } from './InstrumentIcons';
-import { GREYED } from '../constants';
-import { getClassName, getStatusMessage } from '../../Configuration/InternationalPayments';
+import { GREYED } from 'merchant/views/Settings/PaymentMethods/constants';
+import {
+  getClassName,
+  getStatusMessage,
+} from 'merchant/views/Settings/Configuration/InternationalPayments';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { connect } from 'react-redux';
 

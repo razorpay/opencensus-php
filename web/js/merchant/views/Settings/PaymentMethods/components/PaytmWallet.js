@@ -1,7 +1,7 @@
 import React from 'react';
 
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { ACCOUNT_LINKABLE } from '../constants';
+import { ACCOUNT_LINKABLE } from 'merchant/views/Settings/PaymentMethods/constants';
 
 const ProductionAccount = () => {
   return (

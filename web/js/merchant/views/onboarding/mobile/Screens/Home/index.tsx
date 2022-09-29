@@ -1,9 +1,9 @@
 import React from 'react';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Space from '@razorpay/blade-old/src/atoms/Space';
-import AcceptPaymentsCard from '../../AcceptPaymentsCard';
-import OnboardingCard from '../../OnboardingCard';
-import { StatusUpdate } from '../../UpdateStatus';
+import AcceptPaymentsCard from 'merchant/views/onboarding/mobile/AcceptPaymentsCard';
+import OnboardingCard from 'merchant/views/onboarding/mobile/OnboardingCard';
+import { StatusUpdate } from 'merchant/views/onboarding/mobile/UpdateStatus';
 import styled from 'styled-components';
 
 const StatusUpdates = styled(View)`

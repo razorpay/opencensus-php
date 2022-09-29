@@ -1,4 +1,4 @@
-import { getMode } from '../mode';
+import { getMode } from 'common/services/mode';
 import getMobileDetect from 'common/utils/mobileDetect';
 import axios from 'axios';
 import errorService from '@razorpay/universe-utils/errorService';

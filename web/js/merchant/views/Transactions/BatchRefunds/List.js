@@ -9,7 +9,7 @@ import {
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { getCustomURL } from '../../../components/DocsLink';
+import { getCustomURL } from 'merchant/components/DocsLink';
 import { bindActionCreators } from 'redux';
 
 const gaEvents = setGaTrack('Dashboard - Instant Refunds - BU');

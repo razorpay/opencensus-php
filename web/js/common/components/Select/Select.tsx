@@ -6,10 +6,10 @@ import Space from '@razorpay/blade-old/src/atoms/Space';
 import Icon from '@razorpay/blade-old/src/atoms/Icon';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import { FormikErrors } from 'formik';
-import { Modal, ModalBody } from '../Modal';
-import toArray from '../../services/children/to-array';
-import { StatelessAccordion, Panel } from '../Accordian';
-import Loader from '../Loader';
+import { Modal, ModalBody } from 'common/components/Modal';
+import toArray from 'common/services/children/to-array';
+import { StatelessAccordion, Panel } from 'common/components/Accordian';
+import Loader from 'common/components/Loader';
 import { OptionsPropsT } from './Option';
 import { OptionCheckIcon, OptionContainer } from './Styled';
 

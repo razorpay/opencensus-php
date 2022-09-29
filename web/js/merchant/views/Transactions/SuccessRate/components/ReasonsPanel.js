@@ -2,7 +2,7 @@ import React from 'react';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import StyledHeader from './StyledHeader';
 import NoDataMessage from './NoDataMessage';
-import { getFormattedNumber } from '../helper';
+import { getFormattedNumber } from 'merchant/views/Transactions/SuccessRate/helper';
 
 const LoadingState = (
   <div className="rp-panel">

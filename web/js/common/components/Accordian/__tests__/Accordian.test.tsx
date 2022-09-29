@@ -1,7 +1,7 @@
 import React, { useState, ReactText } from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import StatelessAccordian from '../StatelessAccordian';
-import Panel from '../Panel';
+import StatelessAccordian from 'common/components/Accordian/StatelessAccordian';
+import Panel from 'common/components/Accordian/Panel';
 import { render, fireEvent, screen } from 'test-utils';
 
 const Sa = () => {

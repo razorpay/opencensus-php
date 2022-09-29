@@ -11,7 +11,7 @@ import {
   openModal as fnOpenModal,
 } from 'merchant_common/reducers/modals';
 
-import ScheduledModal from '../';
+import ScheduledModal from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal';
 
 import {
   enableAutomaticSettlements,
@@ -19,13 +19,16 @@ import {
   getInstantPricingPercentage,
   isPricingRateValid,
   setEnableEsPartialAutomaticDate,
-} from '../utils';
-import { DEFAULT_PRICING_RATE, SAMEDAY_MODAL_LOCATIONS } from '../constants';
+} from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/utils';
+import {
+  DEFAULT_PRICING_RATE,
+  SAMEDAY_MODAL_LOCATIONS,
+} from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
 import {
   trackCrossSellBannerRendered,
   trackKnowMoreClicked,
   trackEnableNowClicked,
-} from '../analytics';
+} from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/analytics';
 
 const BIG_UPSELLING_BG = '/dist/css/assets/settlements/bigupselling-bg.svg';
 const SMALL_UPSELLING_BG = '/dist/css/assets/settlements/upselling-bg.svg';

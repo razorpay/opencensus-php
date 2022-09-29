@@ -1,6 +1,6 @@
 import moment from 'moment';
 import { getFixedINRAmount } from 'common/utils/rzp-utils';
-import store from '../../../merchant/store';
+import store from 'merchant/store';
 import analyticsService from '@razorpay/commander-services/analytics';
 
 const dateFormat = 'DD MMM YYYY, hh:mm:ss a';

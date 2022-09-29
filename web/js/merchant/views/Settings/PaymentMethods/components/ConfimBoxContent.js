@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { STANDARD_PRICING_URL } from '../constants';
+import { STANDARD_PRICING_URL } from 'merchant/views/Settings/PaymentMethods/constants';
 import Input from 'common/new-ui/Input';
 import { AsyncButton } from 'react-async-button';
 
@@ -50,8 +50,8 @@ const ConfirmBoxContext = ({ numberOfDays, onRequestAbort, onRequest }) => {
           type="button"
           className="btn btn-primary"
           onClick={onRequest}
-          text={'Request'}
-          pendingText={'Requesting...'}
+          text="Request"
+          pendingText="Requesting..."
           disabled={!isChecked}
         />
       </div>

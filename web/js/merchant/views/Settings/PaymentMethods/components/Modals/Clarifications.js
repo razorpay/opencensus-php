@@ -17,7 +17,7 @@ import {
   MERCHANT_DETAILS,
   ACTION_REQUIRED,
   REJECTED,
-} from '../../constants';
+} from 'merchant/views/Settings/PaymentMethods/constants';
 
 const tabTitle = {
   [WEBSITE_DETAILS]: 'Website Clarifications',

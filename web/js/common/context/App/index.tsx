@@ -1,7 +1,7 @@
 import React, { createContext, ReactNode, useState } from 'react';
-import { axiosInstance } from '../../services/graphql/graphql-fetch';
-import { restInstance } from '../../services/rest/rest-fetch';
-import { setMode as setGlobalMode, ModeT } from '../../services/mode';
+import { axiosInstance } from 'common/services/graphql/graphql-fetch';
+import { restInstance } from 'common/services/rest/rest-fetch';
+import { setMode as setGlobalMode, ModeT } from 'common/services/mode';
 
 interface orgT {
   id: string;

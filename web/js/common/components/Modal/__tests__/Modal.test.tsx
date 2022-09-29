@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import Modal from '../Modal';
-import { ModalHeader, ModalBody, ModalFooter } from '../Styled';
+import Modal from 'common/components/Modal/Modal';
+import { ModalHeader, ModalBody, ModalFooter } from 'common/components/Modal/Styled';
 import { render, fireEvent, screen } from 'test-utils';
 
 const buttonText = 'Click Me';

@@ -9,7 +9,7 @@ import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
 import { Modal, ModalBody } from 'common/components/Modal';
 import Panel from 'common/components/Accordian/Panel';
 import StatelessAccordian from 'common/components/Accordian/StatelessAccordian';
-import { useActivationFormState } from '../context/store';
+import { useActivationFormState } from 'merchant/views/onboarding/mobile/context/store';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';
 
 const StyledSeparator = styled(View)`

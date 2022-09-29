@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
-import { getTagLabelWithOverallTag } from '../helper';
-import { DEFAULT_GROUP_BY } from '../constants';
+import { getTagLabelWithOverallTag } from 'merchant/views/Transactions/SuccessRate/helper';
+import { DEFAULT_GROUP_BY } from 'merchant/views/Transactions/SuccessRate/constants';
 import InfoIcon from './InfoIcon';
 
 export const Tag = ({ tag, isActive, onSelect }) => {

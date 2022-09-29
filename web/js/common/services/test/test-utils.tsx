@@ -7,10 +7,10 @@ import { createMemoryHistory } from 'history';
 import { Provider } from 'react-redux';
 import { server } from '../../../../mocks/node';
 import { errorHandlers } from '../../../../mocks/errorHandlers';
-import { storeWithInitialState } from '../../../merchant/store';
+import { storeWithInitialState } from 'merchant/store';
 import ModalDialog from 'common/ui/ModalDialog';
 import Notifications from 'common/ui/Notifications';
-import Wrapper from '../../components/Bootstrap/Wrapper';
+import Wrapper from 'common/components/Bootstrap/Wrapper';
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 const customRender = (

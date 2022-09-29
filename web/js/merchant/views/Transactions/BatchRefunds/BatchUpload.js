@@ -2,7 +2,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import BatchUpload from './components/BatchUpload';
-import { getCustomURL } from '../../../components/DocsLink';
+import { getCustomURL } from 'merchant/components/DocsLink';
 import { uploadRefundBatch as uploadBatch } from 'merchant/reducers/batches';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { SAMPLE_BATCH_REFUND_FILE } from './List';

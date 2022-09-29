@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import SettlementScheduleV2 from 'merchant/views/Settlements/components/SettlementScheduleV2';
-import { handleAnalytics } from '../Settlements/analytics';
+import { handleAnalytics } from 'merchant/views/Settlements/Settlements/analytics';
 import SettlementsBanner from './SettlementsBanner';
 import BalanceDetails from './BalanceDetails';
 import SettleNow from './SettleNow';

@@ -1,6 +1,6 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import BusninessAOV from '../index';
+import BusninessAOV from 'merchant/views/onboarding/mobile/Fields/BusinessAOV/index';
 import { cleanup, fireEvent, render, screen, delay } from 'test-utils';
 
 interface AppProps {

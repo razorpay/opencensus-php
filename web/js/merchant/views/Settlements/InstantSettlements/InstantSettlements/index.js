@@ -20,7 +20,7 @@ import trackIS, {
   EVENT_CATEGORY_DASHBOARD_INSTANT_SETTLEMENT,
 } from 'merchant/views/Settlements/InstantSettlements/ga';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
-import { trackOnDemandSearchClick } from '../../trackEvents';
+import { trackOnDemandSearchClick } from 'merchant/views/Settlements/trackEvents';
 import { bindActionCreators } from 'redux';
 import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
 import {

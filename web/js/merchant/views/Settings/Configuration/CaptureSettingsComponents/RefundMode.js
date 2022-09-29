@@ -12,7 +12,7 @@ import {
   TIMEOUT_VALUES,
   filterTimeoutBasedOnLimit,
 } from './data';
-import { renderTimeoutAsString } from '../PaymentCaptureComponents/util';
+import { renderTimeoutAsString } from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/util';
 import { GraphicalExplanation } from './GraphicalExplanation';
 
 function RefundMode(props) {

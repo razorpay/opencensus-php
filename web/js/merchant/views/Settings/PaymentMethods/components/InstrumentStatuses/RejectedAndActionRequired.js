@@ -2,8 +2,8 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import { ACTION_REQUIRED } from '../../constants';
-import Clarifications from '../Modals/Clarifications';
+import { ACTION_REQUIRED } from 'merchant/views/Settings/PaymentMethods/constants';
+import Clarifications from 'merchant/views/Settings/PaymentMethods/components/Modals/Clarifications';
 
 const RejectedAndActionRequired = (props) => {
   const { instrument } = props;

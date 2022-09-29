@@ -7,7 +7,10 @@ import Time from 'common/ui/Time';
 import * as SettlementActions from 'merchant/reducers/settlements/details';
 import Spinner from 'common/ui/Spinner';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { handleAnalytics, propertiesPayload } from '../../Settlements/analytics';
+import {
+  handleAnalytics,
+  propertiesPayload,
+} from 'merchant/views/Settlements/Settlements/analytics';
 import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
 import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
 import { fetchFeatureStatus } from 'merchant/reducers/config';

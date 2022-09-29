@@ -1,5 +1,5 @@
 import React from 'react';
-import { sanitizeTabName, removeUnreconciledEntity } from '../util';
+import { sanitizeTabName, removeUnreconciledEntity } from 'merchant/views/Settlements/v2/util';
 import { titleCase } from 'common/utils/rzp-utils';
 
 const Tabs = (props) => {

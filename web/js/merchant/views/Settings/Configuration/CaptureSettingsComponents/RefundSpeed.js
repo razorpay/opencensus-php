@@ -8,7 +8,7 @@ import CaptureMode from './CaptureMode';
 import { fetchLateAuthConfig, createLateAuthConfig } from 'merchant/reducers/config';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { parseTimeoutValues } from './data';
-import { renderTimeoutAsString } from '../PaymentCaptureComponents/util';
+import { renderTimeoutAsString } from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/util';
 import { GraphicalExplanation } from './GraphicalExplanation';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 

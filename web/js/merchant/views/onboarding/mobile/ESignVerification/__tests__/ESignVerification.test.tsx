@@ -1,13 +1,13 @@
 import React from 'react';
 import 'regenerator-runtime/runtime';
 import '@testing-library/jest-dom/extend-expect';
-import ESignVerification from '../index';
-import AadharError from '../AadharError';
-import * as ActivationDB from '../../services/data/ActivationDB';
-import GetOTP from '../GetOTP';
-import VerifyOTP from '../VerifyOTP';
-import AadharSuccess from '../AadharSuccess';
-import useActivation from '../../hooks/useActivation';
+import ESignVerification from 'merchant/views/onboarding/mobile/ESignVerification/index';
+import AadharError from 'merchant/views/onboarding/mobile/ESignVerification/AadharError';
+import * as ActivationDB from 'merchant/views/onboarding/mobile/services/data/ActivationDB';
+import GetOTP from 'merchant/views/onboarding/mobile/ESignVerification/GetOTP';
+import VerifyOTP from 'merchant/views/onboarding/mobile/ESignVerification/VerifyOTP';
+import AadharSuccess from 'merchant/views/onboarding/mobile/ESignVerification/AadharSuccess';
+import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
 import { fireEvent, render, waitFor, screen, waitForElementToBeRemoved, delay } from 'test-utils';
 
 afterEach(() => {

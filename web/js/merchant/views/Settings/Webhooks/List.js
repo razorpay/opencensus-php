@@ -14,7 +14,7 @@ import DocsLink from 'merchant/components/DocsLink';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import CSATSurveyBanner from 'merchant/components/Announcements/CSATSurveyBanner';
-import DashboardBanner from '../../../../common/ui/DashboardBanner';
+import DashboardBanner from 'common/ui/DashboardBanner';
 import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
 import {
   ADD_NEW_WEBHOOK,

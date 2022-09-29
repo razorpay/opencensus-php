@@ -1,5 +1,5 @@
 import React from 'react';
-import Snackbar from '../Snackbar';
+import Snackbar from 'common/components/SnackBar/Snackbar';
 import { render } from 'test-utils';
 
 describe('<Snackbar />', () => {

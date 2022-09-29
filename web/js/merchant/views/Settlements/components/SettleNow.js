@@ -6,7 +6,10 @@ import { openModal as fnOpenModal, closeModal } from 'merchant_common/reducers/m
 import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
 import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
-import { trackOndemand, EVENT_CATEGORY_DASHBOARD_EARLY_SETTLEMENT } from '../Settlements/ga';
+import {
+  trackOndemand,
+  EVENT_CATEGORY_DASHBOARD_EARLY_SETTLEMENT,
+} from 'merchant/views/Settlements/Settlements/ga';
 import { restrictedFeatures, settleNowRestrictionMsgFn } from './utils';
 
 const SettleNow = (props) => {

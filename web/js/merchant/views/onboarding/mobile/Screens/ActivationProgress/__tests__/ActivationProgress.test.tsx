@@ -1,9 +1,9 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import ActivationProgress from '../index';
-import * as ActivationDB from '../../../services/data/ActivationDB';
-import * as ActivationDataPieces from '../../../services/data/pieces';
-import useActivation from '../../../hooks/useActivation';
+import ActivationProgress from 'merchant/views/onboarding/mobile/Screens/ActivationProgress/index';
+import * as ActivationDB from 'merchant/views/onboarding/mobile/services/data/ActivationDB';
+import * as ActivationDataPieces from 'merchant/views/onboarding/mobile/services/data/pieces';
+import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
 import { render, screen, waitForElementToBeRemoved, fireEvent } from 'test-utils';
 
 afterEach(() => {

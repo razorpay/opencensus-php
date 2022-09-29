@@ -2,7 +2,7 @@ import React from 'react';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import { Select, Option } from 'common/components/Select';
 import { FormikErrors } from 'formik';
-import useAovRange from '../../hooks/useAovRange';
+import useAovRange from 'merchant/views/onboarding/mobile/hooks/useAovRange';
 
 export interface BusinessAOVPropsT {
   errorText?: string | false | string[] | FormikErrors<any> | FormikErrors<any>[] | undefined;

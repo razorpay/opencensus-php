@@ -3,7 +3,7 @@ import PayoutList from 'merchant/views/Settlements/InstantSettlements/PayoutDeta
 import PayoutFilters from 'merchant/views/Settlements/InstantSettlements/PayoutDetails/PayoutFilters';
 import PropTypes from 'prop-types';
 import trackIS from 'merchant/views/Settlements/InstantSettlements/ga';
-import { trackOnDemandPayoutSearch } from '../../trackEvents';
+import { trackOnDemandPayoutSearch } from 'merchant/views/Settlements/trackEvents';
 
 const PayoutDetailsContainer = ({ instantSettlement }) => {
   const [status, setStatus] = useState('');

@@ -20,7 +20,7 @@ import InstantRefundFee from 'merchant/views/Transactions/Payments/components/In
 import RTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { CreateTicketEmitter } from '../../TicketSupport/utils';
+import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import { getCustomURL } from 'merchant/components/DocsLink';
 import { REFUND_SETTINGS } from './deeplink-constants';
 import TextHighlighter from 'common/ui/TextHighlighter';

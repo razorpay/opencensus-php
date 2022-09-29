@@ -1,11 +1,11 @@
 import React from 'react';
-import { StatusUpdate } from '../index';
+import { StatusUpdate } from 'merchant/views/onboarding/mobile/UpdateStatus/index';
 import { render, screen, waitForElementToBeRemoved } from 'test-utils';
-import * as ActivationDB from '../../services/data/ActivationDB';
-import * as PaymentEscalationDB from '../../services/data/PaymentEscalationDB';
-import * as ActivationDataPieces from '../../services/data/pieces';
-import useActivation from '../../hooks/useActivation';
-import useEscalation from '../../hooks/useEscalation';
+import * as ActivationDB from 'merchant/views/onboarding/mobile/services/data/ActivationDB';
+import * as PaymentEscalationDB from 'merchant/views/onboarding/mobile/services/data/PaymentEscalationDB';
+import * as ActivationDataPieces from 'merchant/views/onboarding/mobile/services/data/pieces';
+import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
+import useEscalation from 'merchant/views/onboarding/mobile/hooks/useEscalation';
 
 const waitForLoadingToFinish = () =>
   waitForElementToBeRemoved(() => screen.queryByText('Loading...'));

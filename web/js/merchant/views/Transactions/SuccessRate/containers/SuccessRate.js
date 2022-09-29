@@ -4,13 +4,16 @@ import { bindActionCreators } from 'redux';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import Alert from 'common/ui/Forms/Alert';
-import SuccessRateFilter from '../components/SuccessRateFilter';
+import SuccessRateFilter from 'merchant/views/Transactions/SuccessRate/components/SuccessRateFilter';
 import GraphWidget from './GraphWidget';
 import VolumePieWidget from './VolumePieWidget';
 import FailureReasonsWidget from './FailureReasonsWidget';
 
 import { fetchSuccessRate, fetchMerchantErrors } from 'merchant/reducers/successRate';
-import { queryFilters, getMerchantErrorsPayload } from '../helper';
+import {
+  queryFilters,
+  getMerchantErrorsPayload,
+} from 'merchant/views/Transactions/SuccessRate/helper';
 
 const SuccessRate = (props) => {
   const { activeTab, tabs, fetchSuccessRate, fetchMerchantErrors } = props;

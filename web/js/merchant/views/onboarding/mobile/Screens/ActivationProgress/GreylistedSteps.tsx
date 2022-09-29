@@ -2,16 +2,16 @@ import React, { useState } from 'react';
 import shallow from 'zustand/shallow';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 import View from '@razorpay/blade-old/src/atoms/View';
-import OnboardingStepCard from '../../OnboardingStepCard';
-import { useActivationFormState } from '../../context/store';
-import useActivation from '../../hooks/useActivation';
-import useConfigDetails from '../../hooks/useConfigDetails';
-import { checkIfDedupe } from '../../services/utils';
+import OnboardingStepCard from 'merchant/views/onboarding/mobile/OnboardingStepCard';
+import { useActivationFormState } from 'merchant/views/onboarding/mobile/context/store';
+import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
+import useConfigDetails from 'merchant/views/onboarding/mobile/hooks/useConfigDetails';
+import { checkIfDedupe } from 'merchant/views/onboarding/mobile/services/utils';
 import { analyticsTrack } from 'common/services/tracking/segment';
-import { ActivationModal, ModalTypeT } from '../../ActivationModals';
+import { ActivationModal, ModalTypeT } from 'merchant/views/onboarding/mobile/ActivationModals';
 import { useApp } from 'common/context/App';
 import { getMode, switchMode } from 'common/services/mode';
-import { EASY_ONBOARDING } from '../../Constants/OnboardingConstants';
+import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 
 const GreylistedSteps: React.FC<
   RouteComponentProps & {

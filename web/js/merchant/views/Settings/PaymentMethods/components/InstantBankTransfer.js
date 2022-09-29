@@ -16,7 +16,7 @@ import { saveForm, fetchFormData } from './ApmOnboarding/services';
 import { refreshEntries } from './ApmOnboarding/utils';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { INSTRUMENTS, tabs } from './ApmOnboarding/constants';
-import { REQUESTABLE, GREYED } from '../constants';
+import { REQUESTABLE, GREYED } from 'merchant/views/Settings/PaymentMethods/constants';
 
 //Components
 import ApmOnboarding from './ApmOnboarding';

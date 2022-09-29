@@ -17,19 +17,19 @@ import {
   hasSelectedBlacklistCategory,
   isUnregisteredBusiness,
   checkIfDedupe,
-} from '../../services/utils';
+} from 'merchant/views/onboarding/mobile/services/utils';
 import { Tabs, Tab } from 'common/components/Tabs';
-import { isVisible, useActivationFormState } from '../../context/store';
-import useActivation from '../../hooks/useActivation';
-import useBusinessCategory from '../../hooks/useBusinessCategory';
-import BankDetails from '../../BankDetails';
-import ContactDetails from '../../ContactDetails';
-import BusinessOverview from '../../BusinessOverview';
-import BusinessDetails from '../../BusinessDetails';
-import DocumentUpload from '../../DocumentUpload';
-import SaveAndExitModal from '../../SaveAndExitModal';
-import FAQs from '../../FAQs/FAQs';
-import { ActivationModal, ModalTypeT } from '../../ActivationModals';
+import { isVisible, useActivationFormState } from 'merchant/views/onboarding/mobile/context/store';
+import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
+import useBusinessCategory from 'merchant/views/onboarding/mobile/hooks/useBusinessCategory';
+import BankDetails from 'merchant/views/onboarding/mobile/BankDetails';
+import ContactDetails from 'merchant/views/onboarding/mobile/ContactDetails';
+import BusinessOverview from 'merchant/views/onboarding/mobile/BusinessOverview';
+import BusinessDetails from 'merchant/views/onboarding/mobile/BusinessDetails';
+import DocumentUpload from 'merchant/views/onboarding/mobile/DocumentUpload';
+import SaveAndExitModal from 'merchant/views/onboarding/mobile/SaveAndExitModal';
+import FAQs from 'merchant/views/onboarding/mobile/FAQs/FAQs';
+import { ActivationModal, ModalTypeT } from 'merchant/views/onboarding/mobile/ActivationModals';
 import { useApp } from 'common/context/App';
 import { getMode, switchMode } from 'common/services/mode';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';

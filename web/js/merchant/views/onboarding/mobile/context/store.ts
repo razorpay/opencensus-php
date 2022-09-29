@@ -9,8 +9,11 @@ import {
   isPersonalPanVisible,
   isL1Submitted,
   canShowAadharDoc,
-} from '../services/utils';
-import { CIN_BusinessTypes, LLPIN_BusinessTypes } from '../Constants/OnboardingConstants';
+} from 'merchant/views/onboarding/mobile/services/utils';
+import {
+  CIN_BusinessTypes,
+  LLPIN_BusinessTypes,
+} from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 
 const isVisible = (fieldName, context): boolean => {
   switch (fieldName) {

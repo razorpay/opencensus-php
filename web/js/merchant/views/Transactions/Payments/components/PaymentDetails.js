@@ -23,7 +23,7 @@ import SettlementInfo from 'merchant/views/Settlements/components/SettlementInfo
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { OptimizerDetails } from 'merchant/views/Transactions/Payments/components/OptimizerDetails';
 import { isInteger } from 'common/utils/validators';
-import track from '../track';
+import track from 'merchant/views/Transactions/Payments/track';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import { isOrgFeatureExist } from 'merchant/models/User';
 // styles

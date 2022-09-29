@@ -2,7 +2,7 @@ import { render, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
 
 // component
-import EnableNon3dsStatusModal from '../EnableNon3dsStatusModal';
+import EnableNon3dsStatusModal from 'merchant/views/Settings/PaymentMethods/components/Non3dsCardsActivation/EnableNon3dsStatusModal';
 
 describe('<EnableNon3dsStatusModal />', () => {
   test('should render without breaking', () => {

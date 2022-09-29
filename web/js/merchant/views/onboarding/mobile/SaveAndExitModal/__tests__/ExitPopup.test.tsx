@@ -1,6 +1,6 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import ExitPopup from '../SaveAndExitModal';
+import ExitPopup from 'merchant/views/onboarding/mobile/SaveAndExitModal/SaveAndExitModal';
 import { render, screen, fireEvent } from 'test-utils';
 
 test('Exit Popup', () => {

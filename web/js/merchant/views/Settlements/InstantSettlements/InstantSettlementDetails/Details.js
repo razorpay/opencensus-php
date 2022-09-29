@@ -16,7 +16,7 @@ import {
   trackOnDemandHoverInfo,
   trackOnDemandIdDetails,
   trackOnDemandViewMoreClick,
-} from '../../trackEvents';
+} from 'merchant/views/Settlements/trackEvents';
 
 const Details = ({
   settlement,

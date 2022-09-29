@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import { Tabs, Tab, TabContent } from '../index';
+import { Tabs, Tab, TabContent } from 'common/components/DesktopTabs/index';
 import { render, fireEvent } from 'test-utils';
 
 const contentMap = {

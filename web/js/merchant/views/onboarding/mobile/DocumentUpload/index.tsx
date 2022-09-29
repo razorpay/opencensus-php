@@ -13,10 +13,10 @@ import Link from '@razorpay/commander-shield/src/shared/Link';
 import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
 import { Select, Option } from 'common/components/Select';
 import { FileUpload } from 'common/components/FileUpload';
-import ESignVerification from '../ESignVerification';
+import ESignVerification from 'merchant/views/onboarding/mobile/ESignVerification';
 import Card from 'common/components/Card';
-import { FormSection, Field } from '../Form';
-import { useActivationFormState, isVisible } from '../context/store';
+import { FormSection, Field } from 'merchant/views/onboarding/mobile/Form';
+import { useActivationFormState, isVisible } from 'merchant/views/onboarding/mobile/context/store';
 import {
   ADDRESS_PROOF_TYPES,
   BANK_PROOF_TYPE_DOC,
@@ -32,8 +32,8 @@ import {
   NOT_REGISTERED,
   ORG_BusinessTypes,
   HUF,
-} from '../Constants/OnboardingConstants';
-import useActivation from '../hooks/useActivation';
+} from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
 import {
   getAdditionalDocCount,
   getBizCatSubCatPair,
@@ -41,14 +41,14 @@ import {
   getDefaultSelectedDocs,
   getDocumentTitle,
   getAadhaarErrorMessage,
-} from '../services/utils';
+} from 'merchant/views/onboarding/mobile/services/utils';
 import { analyticsTrack } from 'common/services/tracking/segment';
 import ShopEstablishmentNumber from './ShopEstablishmentNumber';
 import { useApp } from 'common/context/App';
-import GstinAutoPopulate from '../Fields/GstinAutoPopulate';
-import useGstin from '../hooks/useGstin';
-import useConfigDetails from '../hooks/useConfigDetails';
-import EmailVerify from '../EmailVerify';
+import GstinAutoPopulate from 'merchant/views/onboarding/mobile/Fields/GstinAutoPopulate';
+import useGstin from 'merchant/views/onboarding/mobile/hooks/useGstin';
+import useConfigDetails from 'merchant/views/onboarding/mobile/hooks/useConfigDetails';
+import EmailVerify from 'merchant/views/onboarding/mobile/EmailVerify';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';
 
 const StyledSeparator = styled(View)`

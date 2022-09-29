@@ -14,9 +14,13 @@ import {
   initialFilters,
   queryFilters,
   getMerchantErrorsPayload,
-} from '../helper';
-import { PRESETS, DEFAULT_INTERVAL } from '../constants';
-import { clearFilterSuccessRate, filterSuccessRate, trackSuccessRateEvents } from '../trackEvents';
+} from 'merchant/views/Transactions/SuccessRate/helper';
+import { PRESETS, DEFAULT_INTERVAL } from 'merchant/views/Transactions/SuccessRate/constants';
+import {
+  clearFilterSuccessRate,
+  filterSuccessRate,
+  trackSuccessRateEvents,
+} from 'merchant/views/Transactions/SuccessRate/trackEvents';
 import { DateRangePreset } from './DateRangePreset';
 import moment from 'moment';
 

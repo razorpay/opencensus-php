@@ -5,7 +5,7 @@ import ModalHeader from 'common/ui/ModalHeader';
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
 import { closeModal } from 'merchant_common/reducers/modals';
-import { CreateTicketEmitter } from '../../../TicketSupport/utils';
+import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import { bindActionCreators } from 'redux';
 import SamedayUpselling from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/components/Upselling';
 import { SAMEDAY_MODAL_LOCATIONS } from './Modals/ScheduledModal/constants';

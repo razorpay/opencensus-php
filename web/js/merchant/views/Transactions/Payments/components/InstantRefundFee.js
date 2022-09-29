@@ -13,7 +13,7 @@ import {
   fetchTransfers,
 } from 'merchant/reducers/payments/details';
 import { closeModal } from 'merchant_common/reducers/modals';
-import { CreateTicketEmitter } from '../../../TicketSupport/utils';
+import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import { bindActionCreators } from 'redux';
 
 const selector = formValueSelector('refundModal');

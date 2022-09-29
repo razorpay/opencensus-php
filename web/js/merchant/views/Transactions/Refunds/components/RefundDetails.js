@@ -13,7 +13,7 @@ import { connect } from 'react-redux';
 import * as PaymentActions from 'merchant/reducers/payments/details';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import SettlementInfo from '../../../Settlements/components/SettlementInfo';
+import SettlementInfo from 'merchant/views/Settlements/components/SettlementInfo';
 import Definition from 'common/ui/Definition';
 import { bindActionCreators } from 'redux';
 import { analyticsTrack } from 'common/utils/analytics';

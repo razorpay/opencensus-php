@@ -1,6 +1,6 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import BusinessType from '../index';
+import BusinessType from 'merchant/views/onboarding/mobile/Fields/BusinessType/index';
 import { render, screen, fireEvent, cleanup, waitFor } from 'test-utils';
 interface AppProps {
   onboardingMilestone?: string;

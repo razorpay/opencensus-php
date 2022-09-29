@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { sanitizeTabName } from '../util';
+import { sanitizeTabName } from 'merchant/views/Settlements/v2/util';
 import ComponentListFilter from './ComponentListFilter';
 import Pagination from './Pagination';
 import TableBody from 'common/ui/TableBody';
@@ -17,7 +17,10 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { titleCase } from 'common/utils/rzp-utils';
 import Spinner from 'common/ui/Spinner';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { handleAnalytics, propertiesPayload } from '../../Settlements/analytics';
+import {
+  handleAnalytics,
+  propertiesPayload,
+} from 'merchant/views/Settlements/Settlements/analytics';
 import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
 
 const DEFAULT_SKIP = 0;

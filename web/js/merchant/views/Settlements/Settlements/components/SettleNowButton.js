@@ -7,7 +7,7 @@ import SettleNowLottieHover from 'merchant/helpers/lottieConfigs/SettleNowHover.
 import { trackAnimatedSettleBtnImpressions } from 'merchant/views/Settlements/Settlements/ga';
 import settleNowIcon from '../../../../../../icons/merchant/settle-now-thunder.svg';
 import PropTypes from 'prop-types';
-import { trackSettleNowClicked } from '../../trackEvents';
+import { trackSettleNowClicked } from 'merchant/views/Settlements/trackEvents';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { noop } from 'common/utils/rzp-utils';
 

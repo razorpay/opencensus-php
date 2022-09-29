@@ -13,9 +13,9 @@ import { fetch } from 'common/services/rest/rest-fetch';
 import { analyticsTrack } from 'common/services/tracking/segment';
 import { useApp } from 'common/context/App';
 import { Divider, StyledView } from './Styled';
-import useActivation from '../hooks/useActivation';
+import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
 import ResendIcon from './ResendIcon.svg';
-import { isUnregisteredBusiness } from '../services/utils';
+import { isUnregisteredBusiness } from 'merchant/views/onboarding/mobile/services/utils';
 
 const generateCaptcha = async () => {
   const fetchData = await fetch<any>({

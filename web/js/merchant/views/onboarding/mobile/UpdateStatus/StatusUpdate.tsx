@@ -5,12 +5,15 @@ import View from '@razorpay/blade-old/src/atoms/View';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import Icon from '@razorpay/blade-old/src/atoms/Icon';
-import useActivation from '../hooks/useActivation';
-import usePaymentVolume from '../hooks/usePaymentVolume';
-import useEscalation from '../hooks/useEscalation';
+import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
+import usePaymentVolume from 'merchant/views/onboarding/mobile/hooks/usePaymentVolume';
+import useEscalation from 'merchant/views/onboarding/mobile/hooks/useEscalation';
 import { useApp } from 'common/context/App';
 import styled from 'styled-components';
-import { checkIfDedupe, isUnregisteredBusiness } from '../services/utils';
+import {
+  checkIfDedupe,
+  isUnregisteredBusiness,
+} from 'merchant/views/onboarding/mobile/services/utils';
 
 const StatusIcon = styled(View)`
   position: relative;

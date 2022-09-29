@@ -9,7 +9,7 @@ import Non3dsCardsActivationResource from 'merchant/models/Non3dsCardsActivation
 import store from 'merchant/store';
 
 // component
-import Non3dsCardsActivation from '../Non3dsCardsActivation';
+import Non3dsCardsActivation from 'merchant/views/Settings/PaymentMethods/components/Non3dsCardsActivation/Non3dsCardsActivation';
 
 jest.mock('merchant/models/Non3dsCardsActivation');
 

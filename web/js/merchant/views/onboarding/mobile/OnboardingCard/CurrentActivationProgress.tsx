@@ -8,7 +8,7 @@ import {
   checkIfDedupe,
   isL1Submitted,
   getFormatedCurrency,
-} from '../services/utils';
+} from 'merchant/views/onboarding/mobile/services/utils';
 import { showProductsModal } from 'merchant/reducers/home';
 import Link from '@razorpay/commander-shield/src/shared/Link';
 import { getMode, switchMode } from 'common/services/mode';
@@ -17,8 +17,8 @@ import Buttons from './Buttons';
 import * as Messages from './Constants';
 import { useApp } from 'common/context/App';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';
-import { IReferee } from '../Screens/Home';
-import { EASY_ONBOARDING } from '../Constants/OnboardingConstants';
+import { IReferee } from 'merchant/views/onboarding/mobile/Screens/Home';
+import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 import VideoModal from 'merchant/components/VideoModal';
 
 const InlineText = styled.span`

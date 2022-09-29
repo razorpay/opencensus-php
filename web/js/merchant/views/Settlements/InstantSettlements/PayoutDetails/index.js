@@ -17,7 +17,7 @@ import trackIS from 'merchant/views/Settlements/InstantSettlements/ga';
 import {
   trackOnDemandPayoutDeductionsHover,
   trackOnDemandPayoutDetailsFetched,
-} from '../../trackEvents';
+} from 'merchant/views/Settlements/trackEvents';
 
 const InstantSettlementPayoutDetails = ({
   match,

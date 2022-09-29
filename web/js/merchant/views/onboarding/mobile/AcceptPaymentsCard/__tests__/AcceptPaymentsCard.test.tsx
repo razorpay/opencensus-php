@@ -1,16 +1,16 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import { useQuery } from 'react-query';
-import AcceptPaymentsCard from '../index';
-import * as ActivationDB from '../../services/data/ActivationDB';
-import * as InternationalWorkflowDB from '../../services/data/InternationalWorkflowDB';
-import * as WebsiteWorkflowDB from '../../services/data/WebsiteWorkflowDB';
-import * as PaymentEscalationDB from '../../services/data/PaymentEscalationDB';
-import * as ActivationDataPieces from '../../services/data/pieces';
-import * as Messages from '../Constants';
-import useActivation from '../../hooks/useActivation';
-import useEscalation from '../../hooks/useEscalation';
-import { PROPRIETORSHIP } from '../../Constants/OnboardingConstants';
+import AcceptPaymentsCard from 'merchant/views/onboarding/mobile/AcceptPaymentsCard/index';
+import * as ActivationDB from 'merchant/views/onboarding/mobile/services/data/ActivationDB';
+import * as InternationalWorkflowDB from 'merchant/views/onboarding/mobile/services/data/InternationalWorkflowDB';
+import * as WebsiteWorkflowDB from 'merchant/views/onboarding/mobile/services/data/WebsiteWorkflowDB';
+import * as PaymentEscalationDB from 'merchant/views/onboarding/mobile/services/data/PaymentEscalationDB';
+import * as ActivationDataPieces from 'merchant/views/onboarding/mobile/services/data/pieces';
+import * as Messages from 'merchant/views/onboarding/mobile/AcceptPaymentsCard/Constants';
+import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
+import useEscalation from 'merchant/views/onboarding/mobile/hooks/useEscalation';
+import { PROPRIETORSHIP } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 import { render, screen, waitForElementToBeRemoved } from 'test-utils';
 import { fetch } from 'common/services/rest/rest-fetch';
 

@@ -3,7 +3,7 @@ import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { getFixedNumber } from 'common/utils/rzp-utils';
 import OverviewGraph from './OverviewGraph';
-import { METHOD_HELP_TEXT } from '../constants';
+import { METHOD_HELP_TEXT } from 'merchant/views/Transactions/SuccessRate/constants';
 
 const MetricsCard = ({ isLoading, metric, isActive }) => {
   const { title = '', sr = '', overviewHistogram = {} } = metric;

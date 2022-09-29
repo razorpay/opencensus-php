@@ -2,12 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
-import { FormSection, Field, GetTouchedFields } from '../Form';
-import { useActivationFormState, isTabComplete } from '../context/store';
-import useActivation, { getRequestData } from '../hooks/useActivation';
-import usePartnerActivation from '../hooks/usePartnerActivation';
+import { FormSection, Field, GetTouchedFields } from 'merchant/views/onboarding/mobile/Form';
+import {
+  useActivationFormState,
+  isTabComplete,
+} from 'merchant/views/onboarding/mobile/context/store';
+import useActivation, {
+  getRequestData,
+} from 'merchant/views/onboarding/mobile/hooks/useActivation';
+import usePartnerActivation from 'merchant/views/onboarding/mobile/hooks/usePartnerActivation';
 import { useApp } from 'common/context/App';
-import EmailVerify from '../EmailVerify';
+import EmailVerify from 'merchant/views/onboarding/mobile/EmailVerify';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';
 
 const contactDetailsSchema = Yup.object().shape({

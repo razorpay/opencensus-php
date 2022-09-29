@@ -4,7 +4,7 @@ import { render } from '@testing-library/react';
 import { NON_3DS_CARD_WORKFLOW_STATUS } from 'merchant/reducers/non3dsCardsActivation';
 
 // component
-import Non3dsStatusDescription from '../Non3dsStatusDescription';
+import Non3dsStatusDescription from 'merchant/views/Settings/PaymentMethods/components/Non3dsCardsActivation/Non3dsStatusDescription';
 
 describe('<Non3dsStatusDescription />', () => {
   test('Should return disabled description for closed workflow status', () => {

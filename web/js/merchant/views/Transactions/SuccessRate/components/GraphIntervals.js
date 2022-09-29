@@ -1,7 +1,7 @@
 import React from 'react';
 import { BtnGroup, Btn } from 'common/ui/BtnGroup/index';
 import GenericTooltip from 'common/ui/Tooltip';
-import { graphIntervals } from '../constants';
+import { graphIntervals } from 'merchant/views/Transactions/SuccessRate/constants';
 
 const GraphIntervals = (props) => {
   const { selected, onChange, startDate, endDate } = props;

@@ -6,7 +6,7 @@ import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
 import TableBody from 'common/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import trackIS from 'merchant/views/Settlements/InstantSettlements/ga';
-import { trackOnDemandPayoutIdClick } from '../../trackEvents';
+import { trackOnDemandPayoutIdClick } from 'merchant/views/Settlements/trackEvents';
 
 const ListItem = ({ payout, settlement, settlementId }) => {
   return (

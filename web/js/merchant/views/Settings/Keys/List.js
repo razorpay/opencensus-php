@@ -13,7 +13,7 @@ import NewKey from 'merchant/views/Settings/Keys/components/NewKey';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import CSATSurveyBanner from 'merchant/components/Announcements/CSATSurveyBanner';
-import DashboardBanner from '../../../../common/ui/DashboardBanner';
+import DashboardBanner from 'common/ui/DashboardBanner';
 import WebsiteComplianceNudge from 'merchant/views/Account/WebsiteAppDetails/Nudge';
 import { shouldShowWebsiteComplianceModal } from 'merchant/views/Account/WebsiteAppDetails/utils';
 import WebsiteComplianceMobilePrompt from 'merchant/views/Account/WebsiteAppDetails/Prompt.mobile';

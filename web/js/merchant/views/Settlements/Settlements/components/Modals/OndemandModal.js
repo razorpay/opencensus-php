@@ -24,22 +24,22 @@ import {
   trackEsAmountError,
   trackEsConfirm,
   trackEsAmountUpdated,
-} from '../../ga';
+} from 'merchant/views/Settlements/Settlements/ga';
 import { fetchCurrentBalance, fetchOndemandRestrictions } from 'merchant/reducers/home';
 import Input from 'common/new-ui/Input';
 import Amount, { AmountTooltip } from 'common/ui/Amount';
 import debounce from 'common/utils/debounce';
 import PropTypes from 'prop-types';
 import ModalCloseReasons from 'merchant/views/Settlements/Settlements/components/Modals/ModalCloseReasons';
-import { onDemandModalTrackEvents } from '../../../trackEvents';
+import { onDemandModalTrackEvents } from 'merchant/views/Settlements/trackEvents';
 import { bindActionCreators } from 'redux';
 import Nudge from './ScheduledModal/components/Nudge';
 import { setEsNudgeSeen } from './ScheduledModal/utils';
 import { NUDGE_TYPES } from './ScheduledModal/constants';
-import UpsellBanners from '../UpsellBanners';
-import SettleToLinkedAccounts from '../SettleToLinkedAccounts';
-import EnableScheduledBanner from '../SettleToLinkedAccounts/EnableScheduledBanner';
-import SettlementSuccessView from '../SettleToLinkedAccounts/SettlementSuccessView';
+import UpsellBanners from 'merchant/views/Settlements/Settlements/components/UpsellBanners';
+import SettleToLinkedAccounts from 'merchant/views/Settlements/Settlements/components/SettleToLinkedAccounts';
+import EnableScheduledBanner from 'merchant/views/Settlements/Settlements/components/SettleToLinkedAccounts/EnableScheduledBanner';
+import SettlementSuccessView from 'merchant/views/Settlements/Settlements/components/SettleToLinkedAccounts/SettlementSuccessView';
 
 class OndemandModal extends Component {
   constructor(props) {

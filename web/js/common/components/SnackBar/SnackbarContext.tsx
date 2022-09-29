@@ -1,6 +1,6 @@
 import React, { createContext, ReactNode, useState } from 'react';
 import isEmpty from '@universe/utils/isEmpty';
-import { Layer } from '../Layer';
+import { Layer } from 'common/components/Layer';
 import Snackbar from './Snackbar';
 
 const snackbarMap = {

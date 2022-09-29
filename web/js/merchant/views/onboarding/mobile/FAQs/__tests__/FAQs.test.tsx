@@ -1,7 +1,7 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import FAQs from '../FAQs';
-import { useActivationFormState } from '../../context/store';
+import FAQs from 'merchant/views/onboarding/mobile/FAQs/FAQs';
+import { useActivationFormState } from 'merchant/views/onboarding/mobile/context/store';
 import { render, fireEvent, screen } from 'test-utils';
 
 test('FAQs component rendering', () => {

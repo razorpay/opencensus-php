@@ -17,7 +17,7 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import BatchUpload from 'merchant/containers/BatchNew/Upload';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 import { titleCase } from 'common/utils/rzp-utils';
-import { getCustomURL } from '../../../../components/DocsLink';
+import { getCustomURL } from 'merchant/components/DocsLink';
 import { bindActionCreators } from 'redux';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 

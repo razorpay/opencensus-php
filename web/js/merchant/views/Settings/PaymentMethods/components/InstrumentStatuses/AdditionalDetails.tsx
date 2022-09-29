@@ -2,7 +2,7 @@ import React, { FC } from 'react';
 import { Link } from 'react-router-dom';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
-import { statusClass, statusPopoverText } from '../../constants';
+import { statusClass, statusPopoverText } from 'merchant/views/Settings/PaymentMethods/constants';
 
 interface IAdditionalDetailsProps {
   displayName: string;

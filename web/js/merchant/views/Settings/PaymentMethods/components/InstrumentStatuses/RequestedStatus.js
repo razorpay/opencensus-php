@@ -1,6 +1,6 @@
 import React from 'react';
 import moment from 'moment';
-import { REQUESTED } from '../../constants';
+import { REQUESTED } from 'merchant/views/Settings/PaymentMethods/constants';
 
 export const RequestedStatus = ({ instrument, tat }) => {
   const { status } = instrument;

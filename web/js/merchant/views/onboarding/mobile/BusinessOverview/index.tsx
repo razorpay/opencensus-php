@@ -11,17 +11,25 @@ import Checkbox from '@razorpay/blade-old/src/atoms/Checkbox';
 import Icon from '@razorpay/blade-old/src/atoms/Icon';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import TextArea from '@razorpay/blade-old/src/atoms/TextArea';
-import { FormSection, Field, GetTouchedFields } from '../Form';
-import { useActivationFormState, isTabComplete } from '../context/store';
-import useActivation, { getRequestData } from '../hooks/useActivation';
-import BusinessType from '../Fields/BusinessType';
-import BusinessCategory from '../Fields/BusinessCategory';
-import BusinessAOV from '../Fields/BusinessAOV';
-import useBusinessCategory from '../hooks/useBusinessCategory';
-import { autoPrefixUrls, hasSelectedBlacklistCategory } from '../services/utils';
+import { FormSection, Field, GetTouchedFields } from 'merchant/views/onboarding/mobile/Form';
+import {
+  useActivationFormState,
+  isTabComplete,
+} from 'merchant/views/onboarding/mobile/context/store';
+import useActivation, {
+  getRequestData,
+} from 'merchant/views/onboarding/mobile/hooks/useActivation';
+import BusinessType from 'merchant/views/onboarding/mobile/Fields/BusinessType';
+import BusinessCategory from 'merchant/views/onboarding/mobile/Fields/BusinessCategory';
+import BusinessAOV from 'merchant/views/onboarding/mobile/Fields/BusinessAOV';
+import useBusinessCategory from 'merchant/views/onboarding/mobile/hooks/useBusinessCategory';
+import {
+  autoPrefixUrls,
+  hasSelectedBlacklistCategory,
+} from 'merchant/views/onboarding/mobile/services/utils';
 import { analyticsTrack } from 'common/services/tracking/segment';
 import { useApp } from 'common/context/App';
-import usePartnerActivation from '../hooks/usePartnerActivation';
+import usePartnerActivation from 'merchant/views/onboarding/mobile/hooks/usePartnerActivation';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';
 
 interface IBusinessOverviewProps {

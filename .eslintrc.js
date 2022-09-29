@@ -9,6 +9,7 @@ module.exports = {
     'plugin:json/recommended-with-comments',
     'plugin:yml/standard',
   ],
+  plugins: ['no-relative-import-paths'],
   // TODO: Uncomment later plugins: ['jsx-a11y'],
   rules: {
     'no-shadow': 'off',
@@ -38,6 +39,10 @@ module.exports = {
     'import/order': 'off',
     'react/display-name': 'off',
     'react/no-find-dom-node': 'warn',
+    'no-relative-import-paths/no-relative-import-paths': [
+      'error',
+      { allowSameFolder: true, rootDir: 'web/js' },
+    ],
   },
   env: {
     browser: true,

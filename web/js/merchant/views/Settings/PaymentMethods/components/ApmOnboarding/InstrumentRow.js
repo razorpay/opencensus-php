@@ -2,9 +2,9 @@ import React, { useMemo } from 'react';
 import { useFormikContext } from 'formik';
 
 //Helper functions and constants
-import { getIcon } from '../InstrumentIcons';
+import { getIcon } from 'merchant/views/Settings/PaymentMethods/components/InstrumentIcons';
 import { INSTRUMENTS } from './constants';
-import { REQUESTABLE, GREYED } from '../../constants';
+import { REQUESTABLE, GREYED } from 'merchant/views/Settings/PaymentMethods/constants';
 
 //Components
 import Input from 'common/new-ui/Input';

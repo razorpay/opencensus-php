@@ -1,5 +1,5 @@
 import React, { ReactElement } from 'react';
-import toArray from '../../services/children/to-array';
+import toArray from 'common/services/children/to-array';
 import { Root } from './Styled';
 import { PanelPropsT } from './Panel';
 

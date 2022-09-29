@@ -16,7 +16,7 @@ import {
   createdAt as createdAtProperty,
 } from 'common/ui/item/pair';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCustomURL } from '../../../components/DocsLink';
+import { getCustomURL } from 'merchant/components/DocsLink';
 import { bindActionCreators } from 'redux';
 import EmptyList from 'merchant/components/EmptyList';
 import { isOrgFeatureExist } from 'merchant/models/User';

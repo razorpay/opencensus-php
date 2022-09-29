@@ -1,6 +1,6 @@
 import React from 'react';
 import { parseTimeoutValues } from './data';
-import { renderTimeoutAsString } from '../PaymentCaptureComponents/util';
+import { renderTimeoutAsString } from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/util';
 
 const CAPTURE_ASSETS_CDN_URL = 'https://cdn.razorpay.com/static/assets/capture-settings';
 

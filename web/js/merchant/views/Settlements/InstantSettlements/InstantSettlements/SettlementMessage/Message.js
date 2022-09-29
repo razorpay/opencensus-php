@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Button from 'common/new-ui/Button';
 import ScheduledModal from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal';
 import trackIS from 'merchant/views/Settlements/InstantSettlements/ga';
-import { trackEnableNow } from '../../../trackEvents';
+import { trackEnableNow } from 'merchant/views/Settlements/trackEvents';
 
 const Message = ({ heading, description, image, showEnableNowButton, openModal }) => {
   function handleEnableNowClick() {

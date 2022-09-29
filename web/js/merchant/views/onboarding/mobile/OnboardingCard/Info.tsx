@@ -5,7 +5,7 @@ import Space from '@razorpay/blade-old/src/atoms/Space';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
-import ErrorIcon from '../Step/Icons/error.svg';
+import ErrorIcon from 'merchant/views/onboarding/mobile/Step/Icons/error.svg';
 
 type AlignType = 'left' | 'right';
 interface InfoPropsT {

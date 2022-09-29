@@ -4,7 +4,7 @@ import Button from 'common/new-ui/Button';
 import ScheduledModal from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal';
 import { connect } from 'react-redux';
 import * as ModalActions from 'merchant_common/reducers/modals';
-import { trackEnableNow } from '../../trackEvents';
+import { trackEnableNow } from 'merchant/views/Settlements/trackEvents';
 import { bindActionCreators } from 'redux';
 
 class ScheduledBanner extends Component {

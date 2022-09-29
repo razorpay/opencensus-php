@@ -9,9 +9,22 @@ import GraphIntervals from './GraphIntervals';
 import ChartArea from './ChartArea';
 
 import { fetchBreakdownIntervals, updateSelectedTags } from 'merchant/reducers/successRate';
-import { breakdownInterval, chartStyle, defaultChartStyle } from '../constants';
-import { queryFilters, generateDatasets, getIntervals, getTagLabelWithOverallTag } from '../helper';
-import { methodIntervalClick, methodTagsClick, trackSuccessRateEvents } from '../trackEvents';
+import {
+  breakdownInterval,
+  chartStyle,
+  defaultChartStyle,
+} from 'merchant/views/Transactions/SuccessRate/constants';
+import {
+  queryFilters,
+  generateDatasets,
+  getIntervals,
+  getTagLabelWithOverallTag,
+} from 'merchant/views/Transactions/SuccessRate/helper';
+import {
+  methodIntervalClick,
+  methodTagsClick,
+  trackSuccessRateEvents,
+} from 'merchant/views/Transactions/SuccessRate/trackEvents';
 
 const GraphPanel = (props) => {
   const chartReference = React.useRef(null);

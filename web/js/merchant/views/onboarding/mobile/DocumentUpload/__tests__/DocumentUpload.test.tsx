@@ -1,8 +1,11 @@
 import React from 'react';
-import { ADDRESS_PROOF_TYPES, BUSINESS_PROOF_TYPE_DOCS } from '../../Constants/OnboardingConstants';
+import {
+  ADDRESS_PROOF_TYPES,
+  BUSINESS_PROOF_TYPE_DOCS,
+} from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 import DocumentUpload from '..';
-import useActivation from '../../hooks/useActivation';
-import * as ActivationDB from '../../services/data/ActivationDB';
+import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
+import * as ActivationDB from 'merchant/views/onboarding/mobile/services/data/ActivationDB';
 import { render, waitForElementToBeRemoved, screen, fireEvent, waitFor } from 'test-utils';
 
 window.HTMLElement.prototype.scrollIntoView = () => {};

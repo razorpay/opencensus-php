@@ -8,8 +8,8 @@ import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import { Select, Option } from 'common/components/Select';
 import { FormikErrors } from 'formik';
 import Icon from '@razorpay/blade-old/src/atoms/Icon';
-import { debounce } from '../../services/utils';
-import useBusinessName from '../../hooks/useBusinessName';
+import { debounce } from 'merchant/views/onboarding/mobile/services/utils';
+import useBusinessName from 'merchant/views/onboarding/mobile/hooks/useBusinessName';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';
 
 interface INameData {

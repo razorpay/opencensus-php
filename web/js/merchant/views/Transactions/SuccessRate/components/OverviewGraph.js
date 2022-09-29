@@ -1,6 +1,6 @@
 import { Line } from 'react-chartjs-2';
 
-import { overviewGraphOptions as options } from '../chartConfig';
+import { overviewGraphOptions as options } from 'merchant/views/Transactions/SuccessRate/chartConfig';
 import { namedColors } from 'common/utils/chart/colors';
 
 const _getChartData = (histogram, isActive, canvas) => {

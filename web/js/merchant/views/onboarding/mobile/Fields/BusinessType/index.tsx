@@ -1,9 +1,9 @@
 import { FormikErrors } from 'formik';
 import React from 'react';
 import { Select, Option } from 'common/components/Select';
-import { isL1Submitted } from '../../services/utils';
+import { isL1Submitted } from 'merchant/views/onboarding/mobile/services/utils';
 import { useApp } from 'common/context/App';
-import useBusinessTypes from '../../hooks/useBusinessTypes';
+import useBusinessTypes from 'merchant/views/onboarding/mobile/hooks/useBusinessTypes';
 
 export interface BusinessTypePropsT {
   errorText?: string | false | string[] | FormikErrors<any> | FormikErrors<any>[] | undefined;

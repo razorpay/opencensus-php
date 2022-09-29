@@ -10,10 +10,10 @@ import Space from '@razorpay/blade-old/src/atoms/Space';
 import Button from '@razorpay/blade-old/src/atoms/Button';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import Text from '@razorpay/blade-old/src/atoms/Text';
-import { FormSection, Field } from '../Form';
-import { useActivationFormState } from '../context/store';
-import useActivation from '../hooks/useActivation';
-import usePartnerActivation from '../hooks/usePartnerActivation';
+import { FormSection, Field } from 'merchant/views/onboarding/mobile/Form';
+import { useActivationFormState } from 'merchant/views/onboarding/mobile/context/store';
+import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
+import usePartnerActivation from 'merchant/views/onboarding/mobile/hooks/usePartnerActivation';
 import { useApp } from 'common/context/App';
 import VerifyOTP from './VerifyOTP';
 

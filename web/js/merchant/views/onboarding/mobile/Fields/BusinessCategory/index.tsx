@@ -3,8 +3,8 @@ import Text from '@razorpay/blade-old/src/atoms/Text';
 import Icon from '@razorpay/blade-old/src/atoms/Icon';
 import { Select, GrpOption, Option } from 'common/components/Select';
 import { FormikErrors } from 'formik';
-import { debounce } from '../../services/utils';
-import useBusinessCategory from '../../hooks/useBusinessCategory';
+import { debounce } from 'merchant/views/onboarding/mobile/services/utils';
+import useBusinessCategory from 'merchant/views/onboarding/mobile/hooks/useBusinessCategory';
 import { analyticsTrack } from 'common/services/tracking/segment';
 import { useApp } from 'common/context/App';
 

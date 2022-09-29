@@ -1,8 +1,8 @@
 import React from 'react';
-import BankDetails from '../index';
+import BankDetails from 'merchant/views/onboarding/mobile/BankDetails/index';
 import { fireEvent, render, screen, waitForElementToBeRemoved } from 'test-utils';
-import useActivation from '../../hooks/useActivation';
-import * as ActivationDB from '../../services/data/ActivationDB';
+import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
+import * as ActivationDB from 'merchant/views/onboarding/mobile/services/data/ActivationDB';
 
 afterEach(() => {
   ActivationDB.reset();

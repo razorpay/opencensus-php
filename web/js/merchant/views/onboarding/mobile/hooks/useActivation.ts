@@ -3,13 +3,16 @@ import { useQuery, useQueryCache, useMutation } from 'react-query';
 import { fetch } from 'common/services/rest/rest-fetch';
 import { useSnackbar } from 'common/components/SnackBar/SnackbarContext';
 import { useApp } from 'common/context/App';
-import { useActivationFormState, isTabComplete } from '../context/store';
-import activationFormatter from '../services/formatters/activation';
+import {
+  useActivationFormState,
+  isTabComplete,
+} from 'merchant/views/onboarding/mobile/context/store';
+import activationFormatter from 'merchant/views/onboarding/mobile/services/formatters/activation';
 import {
   isUnregisteredBusiness,
   isDocumentTabComplete,
   getDefaultSelectedDocs,
-} from '../services/utils';
+} from 'merchant/views/onboarding/mobile/services/utils';
 
 export const postActivation = (data, accountId) =>
   fetch<any>({

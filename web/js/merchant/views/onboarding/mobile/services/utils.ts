@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { isVisible } from '../context/store';
+import { isVisible } from 'merchant/views/onboarding/mobile/context/store';
 import {
   CIN_BusinessTypes,
   LLPIN_BusinessTypes,
@@ -19,7 +19,7 @@ import {
   SOCIETY,
   TRUST,
   BUSINESS_PROOF_CERTIFICATE_TYPES,
-} from '../Constants/OnboardingConstants';
+} from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 
 const PAN_ERROR_MESSAGE =
   'Entered PAN no & name don’t match, please re-enter by verifying with your physical PAN Copy.';

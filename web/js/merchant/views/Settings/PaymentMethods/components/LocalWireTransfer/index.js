@@ -13,13 +13,13 @@ import { trackAccountCopied, trackTandCPopupOpened } from './analytics';
 
 //components
 import AcknowledgementPopup from './AcknowledgementPopup';
-import InstrumentContainer from '../InstrumentContainer';
-import Instrument from '../InstrumentContainer/Instrument';
+import InstrumentContainer from 'merchant/views/Settings/PaymentMethods/components/InstrumentContainer';
+import Instrument from 'merchant/views/Settings/PaymentMethods/components/InstrumentContainer/Instrument';
 import LoaderDots from 'common/ui/LoaderDots';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 
 //Constants
-import { ACTIVATED, GREYED } from '../../constants';
+import { ACTIVATED, GREYED } from 'merchant/views/Settings/PaymentMethods/constants';
 
 //Styles
 import './LocalWireTransfer.styl';
@@ -176,7 +176,7 @@ const LocalWireTransfer = ({
         ...leafList,
         listDescription: isAccountCreated ? ACCOUNT_SUCCESS : leafList.listDescription,
       }}
-      buttonText={'Request'}
+      buttonText="Request"
       containerStatus={isAccountCreated ? ACTIVATED : GREYED}
       onButtonClick={onRequest}
       instrumentRow={InstrumentRow}

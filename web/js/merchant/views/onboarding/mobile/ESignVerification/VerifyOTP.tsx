@@ -10,7 +10,7 @@ import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import Link from '@razorpay/commander-shield/src/shared/Link';
 import { useMutation } from 'react-query';
 import { fetch } from 'common/services/rest/rest-fetch';
-import useActivation from '../hooks/useActivation';
+import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
 import { analyticsTrack } from 'common/services/tracking/segment';
 import { useApp } from 'common/context/App';
 import { Divider } from './Styled';

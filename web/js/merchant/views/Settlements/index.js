@@ -18,7 +18,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import EasterEgg from 'merchant/components/EasterEgg';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
-import DashboardBanner from '../../../common/ui/DashboardBanner';
+import DashboardBanner from 'common/ui/DashboardBanner';
 import SettlementsHeader from './components/SettlementsHeader';
 import { AsyncBtn } from 'common/new-ui/Button';
 import { fetchCurrentBalance as fnFetchCurrentBalance } from 'merchant/reducers/home';

@@ -11,10 +11,16 @@ import Text from '@razorpay/blade-old/src/atoms/Text';
 import Icon from '@razorpay/blade-old/src/atoms/Icon';
 import Checkbox from '@razorpay/blade-old/src/atoms/Checkbox';
 import { Select, Option } from 'common/components/Select';
-import { FormSection, Field, GetTouchedFields } from '../Form';
-import { useActivationFormState, isVisible, isTabComplete } from '../context/store';
-import useActivation, { getRequestData } from '../hooks/useActivation';
-import useGstin from '../hooks/useGstin';
+import { FormSection, Field, GetTouchedFields } from 'merchant/views/onboarding/mobile/Form';
+import {
+  useActivationFormState,
+  isVisible,
+  isTabComplete,
+} from 'merchant/views/onboarding/mobile/context/store';
+import useActivation, {
+  getRequestData,
+} from 'merchant/views/onboarding/mobile/hooks/useActivation';
+import useGstin from 'merchant/views/onboarding/mobile/hooks/useGstin';
 import {
   getLabel,
   isUnregisteredBusiness,
@@ -24,20 +30,20 @@ import {
   isVerificationValid,
   getGstinFiledError,
   getCinFieldError,
-} from '../services/utils';
+} from 'merchant/views/onboarding/mobile/services/utils';
 import {
   states,
   CIN_BusinessTypes,
   LLPIN_BusinessTypes,
   PROPRIETORSHIP,
-} from '../Constants/OnboardingConstants';
+} from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 import { analyticsTrack } from 'common/services/tracking/segment';
 import { useApp } from 'common/context/App';
 import { useSnackbar } from 'common/components/SnackBar/SnackbarContext';
 import { fetch } from 'common/services/rest/rest-fetch';
-import BusinessName from '../Fields/BusinessName';
-import GstinAutoPopulate from '../Fields/GstinAutoPopulate';
-import usePartnerActivation from '../hooks/usePartnerActivation';
+import BusinessName from 'merchant/views/onboarding/mobile/Fields/BusinessName';
+import GstinAutoPopulate from 'merchant/views/onboarding/mobile/Fields/GstinAutoPopulate';
+import usePartnerActivation from 'merchant/views/onboarding/mobile/hooks/usePartnerActivation';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';
 
 const Container = styled(View)`

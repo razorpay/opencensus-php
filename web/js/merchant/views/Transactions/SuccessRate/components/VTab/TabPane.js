@@ -1,12 +1,12 @@
 import React, { useCallback } from 'react';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { getFormattedNumber } from '../../helper';
+import { getFormattedNumber } from 'merchant/views/Transactions/SuccessRate/helper';
 import {
   ERROR_CATEGORIES,
   ERROR_CATEGORIES_VS_DISPLAY_TEXT,
   TOOLTIP_TEXT_VS_ERROR_CATEGORIES,
-} from '../../constants';
+} from 'merchant/views/Transactions/SuccessRate/constants';
 
 const TabPane = (props) => {
   const { isLoading, ariaLabel, selectedTab, onTabChange, tabData = {} } = props;

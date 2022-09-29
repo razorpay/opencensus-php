@@ -2,9 +2,9 @@
 import React from 'react';
 import 'regenerator-runtime/runtime';
 import '@testing-library/jest-dom/extend-expect';
-import * as TermsAndConditionDB from '../../services/TermsAndConditionDB';
-import GenerateTncPage from '../index';
-import TncSuccess from '../TncSuccess';
+import * as TermsAndConditionDB from 'merchant/views/TermsAndCondition/services/TermsAndConditionDB';
+import GenerateTncPage from 'merchant/views/TermsAndCondition/GenerateTnc/index';
+import TncSuccess from 'merchant/views/TermsAndCondition/GenerateTnc/TncSuccess';
 import { fireEvent, render, cleanup, waitFor, screen } from 'test-utils';
 
 afterEach(() => {

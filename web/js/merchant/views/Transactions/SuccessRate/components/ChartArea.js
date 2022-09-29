@@ -1,6 +1,6 @@
 import React, { useState, useEffect, memo, useMemo, forwardRef } from 'react';
 import { Line } from 'react-chartjs-2';
-import { getChartAreaConfig } from '../chartConfig';
+import { getChartAreaConfig } from 'merchant/views/Transactions/SuccessRate/chartConfig';
 import cloneDeep from 'lodash/cloneDeep';
 
 const ChartArea = forwardRef((props, ref) => {

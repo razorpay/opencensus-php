@@ -3,8 +3,14 @@ import styled, { keyframes } from 'styled-components';
 
 import { AsyncBtn } from 'common/new-ui/Button';
 import ScheduledModal from '..';
-import { NUDGE_TYPES, POST_ENABLE_TYPES } from '../constants';
-import { getEsNudgeSeen, getNoOfDaysAfterEsPartialEnable } from '../utils';
+import {
+  NUDGE_TYPES,
+  POST_ENABLE_TYPES,
+} from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
+import {
+  getEsNudgeSeen,
+  getNoOfDaysAfterEsPartialEnable,
+} from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/utils';
 
 const WobbleHorizontal = keyframes`
 	16.65% {

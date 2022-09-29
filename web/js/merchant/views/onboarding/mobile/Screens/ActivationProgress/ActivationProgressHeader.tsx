@@ -6,10 +6,10 @@ import View from '@razorpay/blade-old/src/atoms/View';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import Link from '@razorpay/commander-shield/src/shared/Link';
-import SaveAndExitModal from '../../SaveAndExitModal';
+import SaveAndExitModal from 'merchant/views/onboarding/mobile/SaveAndExitModal';
 import HeaderBackground from './images/header_background.svg';
-import useActivation from '../../hooks/useActivation';
-import { checkIfDedupe } from '../../services/utils';
+import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
+import { checkIfDedupe } from 'merchant/views/onboarding/mobile/services/utils';
 import { useApp } from 'common/context/App';
 
 const StyledActivationProgressHeader = styled(View)`

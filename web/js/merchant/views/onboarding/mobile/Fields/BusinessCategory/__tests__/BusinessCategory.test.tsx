@@ -1,6 +1,6 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import BusninessCategory from '../index';
+import BusninessCategory from 'merchant/views/onboarding/mobile/Fields/BusinessCategory/index';
 import { cleanup, fireEvent, render, screen, waitFor, waitForElementToBeRemoved } from 'test-utils';
 
 interface AppProps {

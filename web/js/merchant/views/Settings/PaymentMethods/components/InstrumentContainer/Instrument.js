@@ -1,7 +1,7 @@
 import InternationalStatusLabel from 'merchant/components/InternationalStatusLabel';
 import AsyncButton from 'react-async-button';
-import { getIcon } from '../InstrumentIcons';
-import { REQUESTABLE, GREYED, REQUESTED } from '../../constants';
+import { getIcon } from 'merchant/views/Settings/PaymentMethods/components/InstrumentIcons';
+import { REQUESTABLE, GREYED, REQUESTED } from 'merchant/views/Settings/PaymentMethods/constants';
 
 /*
  * @param  {*} data = { icon, name, description, status }

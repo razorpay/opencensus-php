@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import ActivationForm from '../index';
-import * as ActivationDB from '../../../services/data/ActivationDB';
-import * as DataPieces from '../../../services/data/pieces';
+import ActivationForm from 'merchant/views/onboarding/mobile/Screens/ActivationForm/index';
+import * as ActivationDB from 'merchant/views/onboarding/mobile/services/data/ActivationDB';
+import * as DataPieces from 'merchant/views/onboarding/mobile/services/data/pieces';
 import { waitForElementToBeRemoved, screen, render, fireEvent, waitFor, delay } from 'test-utils';
 
 /* eslint-disable func-names */

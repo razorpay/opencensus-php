@@ -8,7 +8,7 @@ import { MemoryRouter as Router, Route } from 'react-router-dom';
 import Wrapper from 'common/components/Bootstrap/Wrapper';
 
 // component
-import ListTable from '../components/ListTable';
+import ListTable from 'merchant/views/Transactions/B2bPayments/components/ListTable';
 
 const context = {
   org: {

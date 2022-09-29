@@ -4,9 +4,9 @@ import { bindActionCreators } from 'redux';
 
 import { getUser } from 'merchant/store';
 import Tabs, { Tab, TabPane } from 'common/ui/ReactTabs';
-import MetricsCard from '../components/MetricsCard';
-import GraphPanel from '../components/GraphPanel';
-import MethodFilter from '../components/MethodFilter';
+import MetricsCard from 'merchant/views/Transactions/SuccessRate/components/MetricsCard';
+import GraphPanel from 'merchant/views/Transactions/SuccessRate/components/GraphPanel';
+import MethodFilter from 'merchant/views/Transactions/SuccessRate/components/MethodFilter';
 
 import debounce from 'common/utils/debounce';
 import {
@@ -17,8 +17,16 @@ import {
   setSelectedDropdownFilterOptions,
   setDefaultInterval,
 } from 'merchant/reducers/successRate';
-import { queryFilters, getMerchantErrorsPayload, getBreakdownInterval } from '../helper';
-import { methodTabClick, methodDropdownChange, trackSuccessRateEvents } from '../trackEvents';
+import {
+  queryFilters,
+  getMerchantErrorsPayload,
+  getBreakdownInterval,
+} from 'merchant/views/Transactions/SuccessRate/helper';
+import {
+  methodTabClick,
+  methodDropdownChange,
+  trackSuccessRateEvents,
+} from 'merchant/views/Transactions/SuccessRate/trackEvents';
 
 const GraphWidget = (props) => {
   const {

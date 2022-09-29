@@ -3,11 +3,11 @@ import { Provider } from 'react-redux';
 import { ThemeProvider } from 'styled-components';
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
 import { QueryCache, ReactQueryCacheProvider } from 'react-query';
-import { SnackbarProvider } from '../SnackBar/SnackbarContext';
-import { AppProvider, AppContextTypes } from '../../context/App';
-import { LayerProvider } from '../Layer/LayerContext';
-import { fetchGraphQL } from '../../services/graphql/graphql-fetch';
-import store from '../../../merchant/store';
+import { SnackbarProvider } from 'common/components/SnackBar/SnackbarContext';
+import { AppProvider, AppContextTypes } from 'common/context/App';
+import { LayerProvider } from 'common/components/Layer/LayerContext';
+import { fetchGraphQL } from 'common/services/graphql/graphql-fetch';
+import store from 'merchant/store';
 
 export const queryCache = new QueryCache({
   defaultConfig: {

@@ -1,6 +1,6 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import FileUpload from '../fileUpload';
+import FileUpload from 'common/components/FileUpload/fileUpload';
 import { fireEvent, render, screen } from 'test-utils';
 
 describe('fileUpload component', () => {

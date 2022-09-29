@@ -1,9 +1,15 @@
 import React, { useEffect } from 'react';
-import { ERROR_CATEGORIES, ERROR_CATEGORIES_VS_DISPLAY_TEXT } from '../../constants';
+import {
+  ERROR_CATEGORIES,
+  ERROR_CATEGORIES_VS_DISPLAY_TEXT,
+} from 'merchant/views/Transactions/SuccessRate/constants';
 import TabPane from './TabPane';
 import TabContent from './TabContent';
-import ReasonsPanel from '../ReasonsPanel';
-import { methodFailureReasonClick, trackSuccessRateEvents } from '../../trackEvents';
+import ReasonsPanel from 'merchant/views/Transactions/SuccessRate/components/ReasonsPanel';
+import {
+  methodFailureReasonClick,
+  trackSuccessRateEvents,
+} from 'merchant/views/Transactions/SuccessRate/trackEvents';
 
 function VTab(props) {
   const { selectedTab, isLoading, onTabChange, ariaLabel, tabData } = props;

@@ -13,7 +13,7 @@ import {
 } from 'merchant_common/reducers/modals';
 import CarouselModal from 'common/components/Carousel/CarouselModal';
 import { isMobileDevice } from 'merchant/components/Home/data';
-import { getAssetTrackingProperties } from '../../../merchant/models/GrowthService/commonUtils';
+import { getAssetTrackingProperties } from 'merchant/models/GrowthService/commonUtils';
 import sanitizer from 'common/utils/xss-sanitizer';
 
 let slideIndex = 0;

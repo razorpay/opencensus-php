@@ -2,9 +2,9 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import { fireEvent, render, screen, waitForElementToBeRemoved, waitFor } from 'test-utils';
-import BusinessOverview from '../index';
-import useActivation from '../../hooks/useActivation';
-import * as ActivationDB from '../../services/data/ActivationDB';
+import BusinessOverview from 'merchant/views/onboarding/mobile/BusinessOverview/index';
+import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
+import * as ActivationDB from 'merchant/views/onboarding/mobile/services/data/ActivationDB';
 afterEach(() => {
   ActivationDB.reset();
 });

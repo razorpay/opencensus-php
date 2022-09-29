@@ -2,7 +2,7 @@ import React from 'react';
 import Amount from 'common/ui/Amount';
 import SwitchField from 'common/ui/Forms/SwitchField';
 import InternationalStatusLabel from 'merchant/components/InternationalStatusLabel';
-import withInternationalConfig from '../../Configuration/InternationalConfig';
+import withInternationalConfig from 'merchant/views/Settings/Configuration/InternationalConfig';
 import Non3dsCardsActivation from './Non3dsCardsActivation';
 
 const statusMap = {
