@@ -4,6 +4,7 @@ namespace RZP\Models\State;
 
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Table;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Detail\Status;
@@ -80,5 +81,24 @@ class Repository extends Base\Repository
                     ->get()
                     ->pluck(Entity::ENTITY_ID)
                     ->toArray();
+    }
+
+    public function fetchAutoKycPassMerchants(int $createdAt)
+    {
+        $stateCreatedAtCol  = $this->repo->state->dbColumn(Entity::CREATED_AT);
+        $merchantDetailMerchantIdCol = $this->repo->merchant_detail->dbColumn
+        (\RZP\Models\Merchant\Detail\Entity::MERCHANT_ID);
+
+        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
+            ->leftjoin(Table::MERCHANT_DETAIL, Entity::ENTITY_ID, $merchantDetailMerchantIdCol)
+            ->select(Entity::ENTITY_ID)
+            ->where(Entity::ENTITY_TYPE, '=', 'merchant_detail')
+            ->where(Entity::NAME, '=', 'activated_mcc_pending')
+            ->where(\RZP\Models\Merchant\Detail\Entity::ACTIVATION_STATUS, '=', 'activated_mcc_pending')
+            ->where($stateCreatedAtCol, '>', $createdAt)
+            ->distinct()
+            ->get()
+            ->pluck(Entity::ENTITY_ID)
+            ->toArray();
     }
 }

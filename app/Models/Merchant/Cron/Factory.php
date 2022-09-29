@@ -18,6 +18,7 @@ use RZP\Models\Merchant\Cron\Jobs\FirstPaymentOfferCronJob;
 use RZP\Models\Merchant\Cron\Jobs\TransactionDetailsCronJob;
 use RZP\Models\Merchant\Cron\Jobs\AppsflyerUninstallCronJob;
 use RZP\Models\Merchant\Cron\Jobs\L1FormEmailTriggerCronJob;
+use RZP\Models\Merchant\Cron\Jobs\MerchantAutoKycPassCronJob;
 use RZP\Models\Merchant\Cron\Jobs\MtuTransactedEventReconJob;
 use RZP\Models\Merchant\Cron\Jobs\L1NotSubmittedIn1DayCronJob;
 use RZP\Models\Merchant\Cron\Jobs\L1NotSubmittedIn1HourCronJob;
@@ -114,9 +115,13 @@ class Factory
             case Constants::WEBSITE_COMPLIANCE_GRACE_PERIOD_REMINDER_JOB:
                 return (new WebsiteComplianceGracePeriodReminderCronJob($input));
             case Constants::MERCHANT_AUTO_KYC_FAILURE_CRON_JOB_NAME:
+                RuntimeManager::setMaxExecTime(900);
                 return (new MerchantAutoKycFailureCronJob($input) );
             case Constants::SUBMERCHANT_FIRST_TRANSACTION:
                 return (new SubmerchantFirstTransactionCronJob($input));
+            case Constants::MERCHANT_AUTO_KYC_PASS_CRON_JOB_NAME:
+                RuntimeManager::setMaxExecTime(900);
+                return (new MerchantAutoKycPassCronJob($input) );
         }
 
         throw new BadRequestValidationFailureException("invalid cron");

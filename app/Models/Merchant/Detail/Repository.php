@@ -564,7 +564,7 @@ class Repository extends Base\Repository
             ->pluck(Entity::MERCHANT_ID)
             ->toArray();
     }
-    
+
     public function findMerchantByActivationStatusAndActivationFormMileStone(array $activationStatusList,
                                                                              array $orgIdList = [Org\Entity::RAZORPAY_ORG_ID],
                                                                              int $updatedAt = null,
