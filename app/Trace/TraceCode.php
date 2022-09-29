@@ -4550,6 +4550,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CPS_ROUTE_CONFIG                                      = 'CPS_ROUTE_CONFIG';
     const CPS_RAZORX_VARIANT                                    = 'CPS_RAZORX_VARIANT';
     const GATEWAY_CAPTURE_RAZORX_VARIANT                        = 'GATEWAY_CAPTURE_RAZORX_VARIANT';
+    const FETCH_RZP_TOKENS_RAZORX                               = 'FETCH_RZP_TOKENS_RAZORX';
     const ASYNC_TOKEN_MIGRATION_RAZORX_VARIANT                  = 'ASYNC_TOKEN_MIGRATION_RAZORX_VARIANT';
     const ASYNC_FETCH_PAR_RAZORX_VARIANT                        = 'ASYNC_FETCH_PAR_RAZORX_VARIANT';
     const TOKEN_HQ_RESPONSE_EVENT_DATA                          = 'TOKEN_HQ_RESPONSE_EVENT_DATA';

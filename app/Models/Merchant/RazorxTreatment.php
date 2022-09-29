@@ -641,6 +641,9 @@ final class RazorxTreatment
     //Experiment to disable card flow for sihub post tokenization deadline
     const SIHUB_DISABLE_CARD_FLOW_POST_TOKENIZATION = 'sihub_disable_card_flow_post_tokenization';
 
+    //Experiment to disable fetching tokens which are not rzp tokenised
+    const DISABLE_RZP_TOKENISED_TOKENS_FETCH  = 'disable_rzp_tokenised_tokens_fetch';
+
     const DUMMY_CARD_NAME_POST_TOKENIZATION = 'dummy_card_name_post_tokenisation';
 
     const DUMMY_CARD_DETAILS_POST_TOKENIZATION = 'dummy_card_details_post_tokenisation';

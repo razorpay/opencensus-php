@@ -690,8 +690,23 @@ class Service extends Base\Service
                 {
                     $response['compliant_with_tokenisation_guidelines'] = true;
                 }
-                else
-                {
+                else {
+                    $experimentVariable = UniqueIdEntity::generateUniqueId();
+
+                    $app = \App::getFacadeRoot();
+
+                    $variant = $app['razorx']->getTreatment($experimentVariable, Merchant\RazorxTreatment::DISABLE_RZP_TOKENISED_TOKENS_FETCH, $app['rzp.mode'] ?? 'live');
+
+                    $this->trace->info(TraceCode::FETCH_RZP_TOKENS_RAZORX, [
+                        'token'          => $token,
+                        'razorx_variant' => $variant,
+                    ]);
+
+                    if (strtolower($variant) === 'on') {
+                        throw new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_ERROR, null, null, "the requested token is not network tokenised  ");
+                    }
+
                     $response['compliant_with_tokenisation_guidelines'] = false;
                 }
 
