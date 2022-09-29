@@ -60,15 +60,17 @@ class CardPaymentServiceTest extends TestCase
                            ->getMock();
 
         // we are ramping up auth terminal selection hence to make sure all test cases passes
+
         $this->app->instance('razorx', $razorxMock);
-
         $this->app->razorx->method('getTreatment')
-                          ->will($this->returnCallback(
-                            function ($mid, $feature, $mode)
-                            {
-                                return $this->razorxValue;
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'store_empty_value_for_non_exempted_card_metadata')
+                        return 'off';
 
-                            }) );
+                    return $this->razorxValue;
+                }) );
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
         $this->terminalsServiceMock = $this->getTerminalsServiceMock();
@@ -692,6 +694,7 @@ class CardPaymentServiceTest extends TestCase
         $this->disbaleCpsConfig();
         $this->razorxValue = "on";
     }
+
 
     public function testHeadlessFatalErrorInCpsResponse()
     {
@@ -1401,7 +1404,7 @@ class CardPaymentServiceTest extends TestCase
             ->will($this->returnCallback(
                 function ($mid, $feature, $mode)
                 {
-                    if ($feature === 'merchants_refund_create_v1.1')
+                    if ($feature === 'merchants_refund_create_v1.1' or $feature === 'store_empty_value_for_non_exempted_card_metadata')
                     {
                         return 'off';
                     }
@@ -1599,7 +1602,7 @@ class CardPaymentServiceTest extends TestCase
                           ->will($this->returnCallback(
                             function ($mid, $feature, $mode)
                             {
-                                if ($feature === 'card_payments_authorize_all_terminals')
+                                if ($feature === 'card_payments_authorize_all_terminals' or $feature === 'store_empty_value_for_non_exempted_card_metadata')
                                 {
                                     return 'off';
                                 }
@@ -1786,6 +1789,7 @@ class CardPaymentServiceTest extends TestCase
         $this->disbaleCpsConfig();
     }
 
+
     public function testCreatePaymentWithSavedNetworkTokenGlobal()
     {
         $this->mockSession();
@@ -1812,7 +1816,7 @@ class CardPaymentServiceTest extends TestCase
                           ->will($this->returnCallback(
                             function ($mid, $feature, $mode)
                             {
-                                if ($feature === 'card_payments_authorize_all_terminals')
+                                if ($feature === 'card_payments_authorize_all_terminals' or $feature === 'store_empty_value_for_non_exempted_card_metadata' )
                                 {
                                     return 'off';
                                 }
@@ -2035,6 +2039,7 @@ class CardPaymentServiceTest extends TestCase
         $this->disbaleCpsConfig();
     }
 
+
      public function testCreatePaymentWithSavedNetworkTokenLocal()
     {
         $this->mockSession();
@@ -2051,7 +2056,7 @@ class CardPaymentServiceTest extends TestCase
                           ->will($this->returnCallback(
                             function ($mid, $feature, $mode)
                             {
-                                if ($feature === 'card_payments_authorize_all_terminals')
+                                if ($feature === 'card_payments_authorize_all_terminals' or $feature === 'store_empty_value_for_non_exempted_card_metadata' )
                                 {
                                     return 'off';
                                 }
@@ -2489,7 +2494,7 @@ class CardPaymentServiceTest extends TestCase
         ->will($this->returnCallback(
             function ($mid, $feature, $mode) use ($value)
             {
-                if ($feature === 'card_payments_authorize_all_terminals') {
+                if ($feature === 'card_payments_authorize_all_terminals' or  $feature === 'store_empty_value_for_non_exempted_card_metadata') {
                     return 'off';
                 }
 
@@ -3845,7 +3850,7 @@ class CardPaymentServiceTest extends TestCase
             ->will($this->returnCallback(
                 function ($mid, $feature, $mode)
                 {
-                    if ($feature === 'card_payments_authorize_all_terminals')
+                    if ($feature === 'card_payments_authorize_all_terminals' or  $feature === 'store_empty_value_for_non_exempted_card_metadata')
                     {
                         return 'off';
                     }
@@ -4089,7 +4094,7 @@ class CardPaymentServiceTest extends TestCase
                           ->will($this->returnCallback(
                             function ($mid, $feature, $mode)
                             {
-                                if ($feature === 'card_payments_authorize_all_terminals')
+                                if ($feature === 'card_payments_authorize_all_terminals' or $feature === 'store_empty_value_for_non_exempted_card_metadata')
                                 {
                                     return 'off';
                                 }

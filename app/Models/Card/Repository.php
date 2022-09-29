@@ -3,17 +3,22 @@
 namespace RZP\Models\Card;
 
 use DB;
-
+use App;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Constants\Mode;
 use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Models\FundAccount;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Base\Traits\ExternalCore;
+
 use RZP\Models\Base\Traits\ExternalRepo;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
@@ -338,5 +343,57 @@ class Repository extends Base\Repository
         return $query->select(Table::CARD . ".*")
                     ->join($fundAccount, $cardsIdColumn, '=', $fundAccountIdForeignColumn)
                     ->where('fund_accounts.account_type', $params['fund_account_type']);
+    }
+
+
+    public function saveOrFail($card , array $options = [])
+    {
+
+        $arr = [
+            Card\Entity::NAME           => $card[Card\Entity::NAME] ?? '',
+            Card\Entity::IIN            => $card[Card\Entity::IIN] ?? '',
+            Card\Entity::EXPIRY_MONTH   => $card[Card\Entity::EXPIRY_MONTH] ?? '',
+            Card\Entity::EXPIRY_YEAR    => $card[Card\Entity::EXPIRY_YEAR] ?? '',
+        ];
+
+        $this->app = App::getFacadeRoot();
+
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+        $variant = $this->app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::STORE_EMPTY_VALUE_FOR_NON_EXEMPTED_CARD_METADATA, $mode);
+
+        $this->app['trace']->info(TraceCode::STORE_EMPTY_VALUE_CARD_METADATA_RAZORX_VARIANT, [
+            'razorx_variant' => $variant,
+            'card_id'   => $card->getId()
+        ]);
+
+        if (($variant === 'on') and
+            ($this->checkIfCardMetaDataIsApplicableForDBSave($card) === false) )
+        {
+            unset($card[Card\Entity::IIN]);
+            unset($card[Card\Entity::NAME]);
+            unset($card[Card\Entity::EXPIRY_MONTH]);
+            unset($card[Card\Entity::EXPIRY_YEAR]);
+
+        }
+
+        parent::saveOrFail($card);
+
+        if ($variant === 'on')
+        {
+            $card->fill($arr);
+        }
+    }
+
+    public function checkIfCardMetaDataIsApplicableForDBSave(Card\Entity $card) : bool
+    {
+        if ($card->isInternational() ===  true or $card->isBajaj() === true )
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }

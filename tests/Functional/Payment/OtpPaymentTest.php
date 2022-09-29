@@ -51,7 +51,7 @@ class OtpPaymentTest extends TestCase
                           ->will($this->returnCallback(
                             function ($mid, $feature, $mode)
                             {
-                                if ($feature === 'save_all_cards' or $feature === 'use_edge_passport_for_auth')
+                                if ($feature === 'save_all_cards' or $feature === 'use_edge_passport_for_auth' or $feature === 'store_empty_value_for_non_exempted_card_metadata')
                                 {
                                     return 'off';
                                 }

@@ -39,7 +39,7 @@ class TerminalAuthenticationTest extends TestCase
                           ->will($this->returnCallback(
                             function ($mid, $feature, $mode)
                             {
-                                if ($feature === 'save_all_cards')
+                                if ($feature === 'save_all_cards' or  $feature === 'store_empty_value_for_non_exempted_card_metadata')
                                 {
                                     return 'off';
                                 }

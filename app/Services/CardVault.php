@@ -198,7 +198,7 @@ class CardVault
          */
 
         $razorxFeature = Merchant\RazorxTreatment::VAULT_TEMP_SAVE ."_". $vaultTempSaveNamespace;
-        $tempSaveVariant =  $this->app['razorx']->getTreatment($this->request->getTaskId(),$razorxFeature , $this->mode);
+        $tempSaveVariant = $this->app['razorx']->getTreatment($this->request->getTaskId(),$razorxFeature , $this->mode);
 
         $this->trace->info(TraceCode::VAULT_TEMP_SAVE_RAZORX_VARIANT, [
             'vault_temp_save_namespace' => $vaultTempSaveNamespace,
@@ -248,7 +248,7 @@ class CardVault
          */
 
         $razorxFeature = Merchant\RazorxTreatment::VAULT_TEMP_SAVE . "_" .$vaultTempSaveNamespace;
-        $tempSaveVariant =  $this->app['razorx']->getTreatment($this->request->getTaskId(),$razorxFeature , $this->mode);
+        $tempSaveVariant = $this->app['razorx']->getTreatment($this->request->getTaskId(),$razorxFeature , $this->mode);
 
         $this->trace->info(TraceCode::VAULT_TEMP_SAVE_RAZORX_VARIANT, [
             'vault_temp_save_namespace' => $vaultTempSaveNamespace,
@@ -345,7 +345,7 @@ class CardVault
          */
 
         $razorxFeature = Merchant\RazorxTreatment::VAULT_TEMP_SAVE ."_". $vaultTempSaveNamespace;
-        $tempSaveVariant =  $this->app['razorx']->getTreatment($this->request->getTaskId(),$razorxFeature , $this->mode);
+        $tempSaveVariant = $this->app['razorx']->getTreatment($this->request->getTaskId(),$razorxFeature , $this->mode);
 
         $this->trace->info(TraceCode::VAULT_TEMP_SAVE_RAZORX_VARIANT, [
             'vault_temp_save_namespace' => $vaultTempSaveNamespace,

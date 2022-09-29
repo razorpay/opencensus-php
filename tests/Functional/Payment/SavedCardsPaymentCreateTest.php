@@ -897,6 +897,24 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->app->instance('card.cardVault', $cardVault);
 
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setMethods(['getTreatment', 'getCachedTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature ==='store_empty_value_for_non_exempted_card_metadata' ) {
+                        return 'off';
+                    }
+
+                    return 'off';
+                }) );
+
         $this->count = 0;
 
         $cardVault->shouldReceive('sendRequest')
@@ -951,15 +969,6 @@ class SavedCardsPaymentCreateTest extends TestCase
             });
 
         $this->app->instance('card.cardVault', $cardVault);
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setMethods(['getTreatment', 'getCachedTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
 
         $paymentInput = $this->getDefaultPaymentArray();
         $paymentInput['save'] = 1;
@@ -1040,7 +1049,6 @@ class SavedCardsPaymentCreateTest extends TestCase
                         $response['token'] = strrev($input['token']);
                         $response['fingerprint'] = strrev($input['token']);
                         $response['providerReferenceId'] = "12345678911234";
-                        
                     break;
                 }
                 return $response;
@@ -1055,7 +1063,16 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'store_empty_value_for_non_exempted_card_metadata') {
+                        return 'off';
+                    }
+                    else {
+                        return 'on';
+                    }
+                }) );
 
         $this->makeSaveCardGlobalPayment();
 

@@ -513,8 +513,9 @@ class CompositePayoutTest extends TestCase
             'issuer'  => Issuer::YESB
         ]);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION             => 'on',
-                                       RazorxTreatment::VAULT_BU_NAMESPACE_CARD_METADATA_VARIANT => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION                     => 'on',
+                                       RazorxTreatment::VAULT_BU_NAMESPACE_CARD_METADATA_VARIANT         => 'on',
+                                       RazorxTreatment::STORE_EMPTY_VALUE_FOR_NON_EXEMPTED_CARD_METADATA => 'on']);
 
         $callable = function($route, $method, $input) {
             $response = [

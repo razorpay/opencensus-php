@@ -26,13 +26,13 @@ class CreateCards extends Migration
 
             $table->char(Card::MERCHANT_ID, Card::ID_LENGTH);
 
-            $table->string(Card::NAME);
+            $table->string(Card::NAME)->default('0');
 
-            $table->char(Card::EXPIRY_MONTH, 2);
+            $table->char(Card::EXPIRY_MONTH, 2)->default('0');
 
-            $table->char(Card::EXPIRY_YEAR, 4);
+            $table->char(Card::EXPIRY_YEAR, 4)->default('0');
 
-            $table->char(Card::IIN, 6);
+            $table->char(Card::IIN, 6)->default('0');
 
             $table->char(Card::TOKEN_IIN, 9)
                   ->nullable()

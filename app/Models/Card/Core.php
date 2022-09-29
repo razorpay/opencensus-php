@@ -177,7 +177,7 @@ class Core extends Base\Core
         {
             $payment->card->setProviderReferenceId($response['providerReferenceId']);
 
-            $payment->card->saveOrFail();
+            $this->repo->saveOrFail($payment->card);
         }
 
         if(empty($response['providerReferenceId']) === true)
@@ -214,7 +214,7 @@ class Core extends Base\Core
                 $tokenisedCard->setTokenExpiryYear($expiry_year);
             }
 
-            $tokenisedCard->saveOrFail();
+            $this->repo->saveOrFail($tokenisedCard);
         }
 
         return [$tokenisedCard, $response['service_provider_tokens']];
@@ -677,9 +677,11 @@ class Core extends Base\Core
                 {
                     $network_card = $this->repo->card->getCardById($token_entity["card_id"]);
 
-                    $card['iin'] = $network_card['iin'];
+                    $tokenCardIin =  $network_card->getIin();
 
-                    $iinNumber = $network_card['iin'];
+                    $updatedIin   =  strlen($tokenCardIin) === 6 ? $tokenCardIin :$iinNumber ;
+                    $card['iin']  =  $updatedIin;
+                    $iinNumber    =  $updatedIin;
                 }
 
                 $this->trace->info(
@@ -929,8 +931,8 @@ class Core extends Base\Core
             Card\Entity::NAME                   => $card->getName(),
             Card\Entity::TOKEN_EXPIRY_MONTH     => $cryptogram['token_expiry_month'] ?? null,
             Card\Entity::TOKEN_EXPIRY_YEAR      => $cryptogram['token_expiry_year'] ?? null,
-            Card\Entity::EXPIRY_MONTH           => $card->getExpiryMonth(),
-            Card\Entity::EXPIRY_YEAR            => $card->getExpiryYear(),
+            Card\Entity::EXPIRY_MONTH           => '0',
+            Card\Entity::EXPIRY_YEAR            => '9999',
             Card\Entity::LAST4                  => $card->getLast4(),
             Card\Entity::CRYPTOGRAM_VALUE       => $cryptogram['cryptogram_value'] ?? null,
             Card\Entity::TOKENISED              => true,

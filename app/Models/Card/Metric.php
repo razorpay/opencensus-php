@@ -18,11 +18,17 @@ class Metric extends Base\Core
     const CARD_METADATA_SAVE                       = 'card_metadata_save';
     const CARD_METADATA_FETCH_AFTER_5_DAYS         = 'card_metadata_fetch_after_5_days';
     const CARD_METADATA_FETCH_BEFORE_OR_ON_5TH_DAY = 'card_metadata_fetch_before_or_on_5th_day';
+    const CARD_METADATA_FETCH_FROM_API_DB          = 'card_metadata_fetch_from_api_db';
+    const CARD_METADATA_FETCH_FROM_VAULT           = 'card_metadata_fetch_from_vault';
     const LABEL_STATUS                             = 'status';
     const LABEL_ACTION                             = 'action';
     const LABEL_STATUS_CODE                        = 'status_code';
     const LABEL_BU_NAMESPACE                       = 'bu_namespace';
     const LABEL_NAMESPACE                          = 'namespace';
+    const IS_VAULT_TOKEN_EMPTY                     = 'is_vault_token_empty';
+    const TEMP_VAULT_TOKEN                         = 'temp_vault_token';
+    const NETWORK_TOKEN                            = 'network_token';
+    const ATTRIBUTE_NAME                           = 'attribute_name';
 
     public function pushCardVaultDimensions($input, $status, $statusCode = null, $action = null, $exe = null)
     {
@@ -116,4 +122,33 @@ class Metric extends Base\Core
 
         return $dimensions;
     }
+
+    public function pushCardMetaDataMetrics ($metricName , $AttributeName , $isVaultTokenEmpty , $isTempVaultToken, $isNetworkToken)
+        {
+            try
+            {
+                $dimensions = [];
+
+                $dimensions[self::ATTRIBUTE_NAME] = $AttributeName;
+
+                $dimensions[self::IS_VAULT_TOKEN_EMPTY] = $isVaultTokenEmpty;
+
+                $dimensions[self::TEMP_VAULT_TOKEN] = $isTempVaultToken;
+
+                $dimensions[self::NETWORK_TOKEN] = $isNetworkToken ;
+
+                $this->trace->count($metricName, $dimensions);
+            }
+            catch (\Throwable $exc)
+            {
+                $this->trace->traceException(
+                    $exc,
+                    Trace::ERROR,
+                    TraceCode::CARD_METADATA_METRICS_PUSH_FAILED,
+                    [
+                        'Field Name'    =>  $AttributeName
+                    ]);
+            }
+        }
+
 }

@@ -1447,8 +1447,9 @@ class FundAccountsTest extends TestCase
                                                 Feature\Constants::ALLOW_NON_SAVED_CARDS,
                                                 Feature\Constants::VAULT_COMPLIANCE_CHECK]);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION             => 'on',
-                                       RazorxTreatment::VAULT_BU_NAMESPACE_CARD_METADATA_VARIANT => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION                     => 'on',
+                                       RazorxTreatment::VAULT_BU_NAMESPACE_CARD_METADATA_VARIANT         => 'on',
+                                       RazorxTreatment::STORE_EMPTY_VALUE_FOR_NON_EXEMPTED_CARD_METADATA => 'on']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Mr. John']);
 

@@ -99,6 +99,8 @@ class Entity extends Base\PublicEntity
     const INPUT_TYPE             = 'input_type';
     const BU_NAMESPACE           = 'bu_namespace';
 
+    const TEMP_VAULT_TOKEN_PREFIX = 'pay_';
+
     protected static $sign = 'card';
 
     protected $entity = 'card';
@@ -945,28 +947,88 @@ class Entity extends Base\PublicEntity
     {
         $name = $this->getCardMetadata(self::NAME);
 
-        return (empty($name) === false) ? $name : $this->getAttributeFromArray(self::NAME);
+        $name = (empty($name) === false) ? $name : $this->getAttributeFromArray(self::NAME);
+
+        if ($name === null or $name === '0')
+        {
+          return '';
+        }
+        else
+        {
+            return $name;
+        }
     }
 
     protected function getIinAttribute()
     {
         $iin = $this->getCardMetadata(self::IIN);
 
-        return (empty($iin) === false) ? $iin : $this->getAttributeFromArray(self::IIN);
+        $isVaultTokenEmpty = (empty($this->getVaultToken()) === true);
+
+        $isTempVaultToken = str_contains($this->getVaultToken(), self::TEMP_VAULT_TOKEN_PREFIX);
+
+        $isNetworkToken = $this->isNetworkTokenisedCard();
+
+        if (empty($iin) === true )
+        {
+            (new Card\Metric)->pushCardMetaDataMetrics(METRIC::CARD_METADATA_FETCH_FROM_API_DB ,self::IIN, $isVaultTokenEmpty, $isTempVaultToken, $isNetworkToken);
+        }
+        else
+        {
+            (new Card\Metric)->pushCardMetaDataMetrics(METRIC::CARD_METADATA_FETCH_FROM_VAULT ,self::IIN, $isVaultTokenEmpty, $isTempVaultToken, $isNetworkToken);
+        }
+
+        $iin = (empty($iin) === false) ? $iin : $this->getAttributeFromArray(self::IIN);
+
+        if ($iin === null or $iin === '0')
+        {
+            if ($this->getTrivia() === '1')
+            {
+                $iinNumber = Card\IIN\IIN::getTransactingIinforRange($this->getTokenIin()) ?? substr($this->getTokenIin(),0,6) ;
+                $this->cardMetadata['iin'] = $iinNumber;
+                return $iinNumber;
+            }
+            else
+            {
+                return '';
+            }
+        }
+        else
+        {
+            return $iin;
+        }
     }
 
     protected function getExpiryMonthAttribute()
     {
         $expiryMonth = $this->getCardMetadata(self::EXPIRY_MONTH);
 
-        return (empty($expiryMonth) === false) ? (int)$expiryMonth :(int) $this->getAttributeFromArray(self::EXPIRY_MONTH);
+        $expiryMonth = (empty($expiryMonth) === false) ? $expiryMonth : $this->getAttributeFromArray(self::EXPIRY_MONTH);
+
+        if ($expiryMonth === null or $expiryMonth === '0')
+        {
+            return '';
+        }
+        else
+        {
+            return (int)$expiryMonth;
+        }
     }
 
     protected function getExpiryYearAttribute()
     {
         $expiryYear = $this->getCardMetadata(self::EXPIRY_YEAR);
 
-        return (empty($expiryYear) === false) ? (int)$expiryYear :(int) $this->getAttributeFromArray(self::EXPIRY_YEAR);
+        $expiryYear = (empty($expiryYear) === false) ? $expiryYear : $this->getAttributeFromArray(self::EXPIRY_YEAR);
+
+        if ($expiryYear === null or $expiryYear === '0')
+        {
+            return '';
+        }
+        else
+        {
+            return (int)$expiryYear;
+        }
     }
 
     protected function isPublicExpiryAllowed()
@@ -1307,6 +1369,11 @@ class Entity extends Base\PublicEntity
         }
 
         $data['message_type'] = $this->iinRelation ? $this->iinRelation->getMessageType() : null;
+
+        $data[Card\Entity::NAME]            = $this->getName();
+        $data[Card\Entity::IIN]             = $this->getIin();
+        $data[Card\Entity::EXPIRY_MONTH]    = $this->getExpiryMonth();
+        $data[Card\Entity::EXPIRY_YEAR]     = $this->getExpiryYear();
 
         if ($data[Card\Entity::TRIVIA] === '1')
         {

@@ -111,6 +111,10 @@ class HitachiGatewayTest extends TestCase
                     {
                         return 'control';
                     }
+                    if ($feature === 'store_empty_value_for_non_exempted_card_metadata')
+                    {
+                        return 'off';
+                    }
 
                     return 'on';
                 }));

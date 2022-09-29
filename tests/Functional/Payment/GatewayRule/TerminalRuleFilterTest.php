@@ -10,6 +10,7 @@ use RZP\Models\Emi;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -36,6 +37,24 @@ class TerminalRuleFilterTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->fixtures->merchant->addFeatures('rule_filter');
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'store_empty_value_for_non_exempted_card_metadata')
+                    {
+                        return 'off';
+                    }
+                    return 'on';
+
+                }) );
 
         $app = App::getFacadeRoot();
 
@@ -530,6 +549,7 @@ class TerminalRuleFilterTest extends TestCase
             'network'       => 'Visa',
             'issuer'        => 'HDFC',
             'name'          => 'Test',
+            'iin'           => '401200',
             'international' => false,
         ];
 

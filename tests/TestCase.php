@@ -166,7 +166,7 @@ class TestCase extends IlluminateTestCase
                     break;
                 case 'cards/metadata/fetch':
                     $response['token'] = $input['token'];
-                    $response['iin'] = $input['411111'];
+                    $response['iin'] = $input['iin'];
                     $response['expiry_month'] = '02';
                     $response['expiry_year'] = '30';
                     $response['name'] = 'cards';

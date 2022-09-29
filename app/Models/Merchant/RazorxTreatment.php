@@ -45,6 +45,10 @@ final class RazorxTreatment
     //Razorx treatment constant, allows system to save the cards data temporarily in vault db
     const VAULT_TEMP_SAVE  = 'vault_temp_save';
 
+    //Razorx treatment constant , allows system to control not saving of metadata for non exempted cases
+
+    const STORE_EMPTY_VALUE_FOR_NON_EXEMPTED_CARD_METADATA  = 'store_empty_value_for_non_exempted_card_metadata';
+
     // Response filed filtering based on role
     const RESPONSE_FIELDS_FILTERING_FOR_ROLES = 'response_fields_filtering_for_roles';
 

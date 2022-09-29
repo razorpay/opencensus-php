@@ -1598,8 +1598,8 @@ class TokenisationTest extends TestCase
         $this->assertEquals('5890', $paymentCard['token_last4']);
 
         //replace below lines to token_expiry_year and token_expiry_month ,once they are populated
-        $this->assertEquals('2024', $paymentCard['expiry_year']);
-        $this->assertEquals('12', $paymentCard['expiry_month']);
+        $this->assertEquals('9999', $paymentCard['expiry_year']);
+        $this->assertEquals('0', $paymentCard['expiry_month']);
         $this->assertEquals('3335', $paymentCard['last4']);
         $this->assertEquals('2024', $paymentCard['token_expiry_year']);
         $this->assertEquals('12', $paymentCard['token_expiry_month']);
@@ -1678,8 +1678,8 @@ class TokenisationTest extends TestCase
         $this->assertEquals('5890', $paymentCard['token_last4']);
 
         //replace below lines to token_expiry_year and token_expiry_month ,once they are populated
-        $this->assertEquals('2024', $paymentCard['expiry_year']);
-        $this->assertEquals('12', $paymentCard['expiry_month']);
+        $this->assertEquals('9999', $paymentCard['expiry_year']);
+        $this->assertEquals('0', $paymentCard['expiry_month']);
         $this->assertEquals('3335', $paymentCard['last4']);
         $this->assertEquals('2024', $paymentCard['token_expiry_year']);
         $this->assertEquals('12', $paymentCard['token_expiry_month']);
@@ -1754,8 +1754,8 @@ class TokenisationTest extends TestCase
         $this->assertEquals(1, $paymentCard['trivia']);
 
         //replace below lines to token_expiry_year and token_expiry_month ,once they are populated
-        $this->assertEquals('2024', $paymentCard['expiry_year']);
-        $this->assertEquals('12', $paymentCard['expiry_month']);
+        $this->assertEquals('9999', $paymentCard['expiry_year']); // we can 't get the expiry details  for token pans since we are not storing it
+        $this->assertEquals('0', $paymentCard['expiry_month']);
         $this->assertEquals('404464916', $paymentCard['token_iin']);
         $this->assertEquals('400782', $paymentCard['iin']);
         $this->assertEquals('credit', $paymentCard['type']);
@@ -1876,8 +1876,8 @@ class TokenisationTest extends TestCase
         $this->assertEquals("passed", $payment2['two_factor_auth']);
         $this->assertNotNull($payment2['token_id']);
 
-        $this->assertEquals('2024', $paymentCard['expiry_year']);
-        $this->assertEquals('12', $paymentCard['expiry_month']);
+        $this->assertEquals('9999', $paymentCard['expiry_year']); // we cant get the expiry of card for token pans payments since we are not storing it
+        $this->assertEquals('0', $paymentCard['expiry_month']);
         $this->assertEquals('credit', $paymentCard['type']);
 
         //$this->assertNull($paymentCard['trivia']);
@@ -2140,6 +2140,10 @@ class TokenisationTest extends TestCase
                         return 'on_' . strtolower($mid);
                     }
 
+                    return 'off';
+                }
+
+                if ($feature === RazorxTreatment::STORE_EMPTY_VALUE_FOR_NON_EXEMPTED_CARD_METADATA) {
                     return 'off';
                 }
 

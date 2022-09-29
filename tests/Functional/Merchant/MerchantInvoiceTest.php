@@ -544,6 +544,30 @@ class MerchantInvoiceTest extends TestCase
 
         $this->createData();
 
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === RazorxTreatment::MERCHANTS_REFUND_CREATE_V_1_1 or $feature === 'store_empty_value_for_non_exempted_card_metadata')
+                    {
+                        return 'off';
+                    }
+
+                    if ($feature === RazorxTreatment::STORE_EMPTY_VALUE_FOR_NON_EXEMPTED_CARD_METADATA)
+                    {
+                        return 'off';
+                    }
+
+                    return 'control';
+                }));
+
         // Card payment greater than 2k
         // Created in last month captured in next month
         $p4 = $this->getDefaultPaymentArray();
@@ -567,25 +591,6 @@ class MerchantInvoiceTest extends TestCase
         ]);
 
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function ($mid, $feature, $mode)
-                {
-                    if ($feature === RazorxTreatment::MERCHANTS_REFUND_CREATE_V_1_1)
-                    {
-                        return 'off';
-                    }
-
-                    return 'control';
-                }));
 
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
         $this->refundPayment($p4['id'], 3471, ['speed' => 'optimum', 'is_fta' => true]);
