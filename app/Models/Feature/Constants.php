@@ -121,6 +121,7 @@ class Constants
     const ES_AUTOMATIC                    = 'es_automatic';
     const ES_AUTOMATIC_RESTRICTED         = 'es_automatic_restricted';
     const ONDEMAND_LINKED                 = 'ondemand_linked';
+    const ONDEMAND_LINKED_PREPAID         = 'ondemand_linked_prepaid';
     const ONDEMAND_ROUTE                  = 'ondemand_route';
     const HEADLESS_DISABLE                = 'headless_disable';
     const BEPG_DISABLE                    = 'bepg_disable';
@@ -1763,6 +1764,7 @@ class Constants
         self::ES_AUTOMATIC                    => true,
         self::ES_AUTOMATIC_RESTRICTED         => true,
         self::ONDEMAND_LINKED                 => true,
+        self::ONDEMAND_LINKED_PREPAID         => true,
         self::ONDEMAND_ROUTE                  => true,
         self::HEADLESS_DISABLE                => true,
         self::BEPG_DISABLE                    => true,
@@ -2324,6 +2326,11 @@ class Constants
         self::ONDEMAND_LINKED   => [
             'feature'       => self::ONDEMAND_LINKED,
             'display_name'  => 'Ondemand Linked',
+            'documentation' => '',
+        ],
+        self::ONDEMAND_LINKED_PREPAID   => [
+            'feature'       => self::ONDEMAND_LINKED_PREPAID,
+            'display_name'  => 'Ondemand Linked Prepaid',
             'documentation' => '',
         ],
         self::ONDEMAND_ROUTE   => [

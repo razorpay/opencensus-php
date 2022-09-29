@@ -2001,6 +2001,36 @@ return [
         ],
     ],
 
+    'testCreatePrepaidOndemandSettlementForLinkedAccountSuccess' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/linked_account_settlements',
+            'method'  => 'post',
+            'content' => [
+                'merchant_id'                    => '10000000000000',
+                'mode'                           => 'test',
+                'amount'                         => 1000000,
+                'settlement_ondemand_trigger_id' => 'qaghswtyuiwsgh'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'              => 'settlement.ondemand',
+                'amount_requested'    => 1000000,
+                'amount_settled'      => 0,
+                'amount_pending'      => 976400,
+                'amount_reversed'     => 0,
+                'fees'                => 23600,
+                'tax'                 => 3600,
+                'currency'            => 'INR',
+                'settle_full_balance' => false,
+                'status'              => 'initiated',
+                'description'         => null,
+                'notes'               => [],
+                'scheduled'           => false
+            ],
+        ],
+    ],
+
     'testCreateOndemandSettlementForLinkedAccountValidationError' => [
         'request'  => [
             'url'     => '/settlements/ondemand/linked_account_settlements',

@@ -4878,6 +4878,48 @@ class SettlementOndemandTest extends TestCase
         ], $settlementOndemand);
     }
 
+    public function testCreatePrepaidOndemandSettlementForLinkedAccountSuccess()
+    {
+        $this->ba->capitalEarlySettlementAuth();
+
+        $this->fixtures->create('merchant', [
+            'id'   => '10000000000001'
+        ]);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'ondemand_linked']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000001', 'name' => 'ondemand_route']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000001', 'name' => 'ondemand_linked_prepaid']);
+
+        $this->fixtures->on(Mode::TEST)->merchant->edit('10000000000000', ['parent_id' => '10000000000001']);
+
+        $this->fixtures->pricing->createOndemandPercentRatePricingPlan();
+
+        $this->startTest();
+
+        $settlementOndemand = $this->getLastEntity('settlement.ondemand',true);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                    => '10000000000000',
+            'user_id'                        => null,
+            'amount'                         => 1000000,
+            'total_amount_settled'           => 0,
+            'total_fees'                     => 23600,
+            'total_tax'                      => 3600,
+            'total_amount_reversed'          => 0,
+            'total_amount_pending'           => 976400,
+            'max_balance'                    => false,
+            'currency'                       => 'INR',
+            'status'                         => 'initiated',
+            'transaction_type'               => 'transaction',
+            'settlement_ondemand_trigger_id' => 'qaghswtyuiwsgh'
+        ], $settlementOndemand);
+    }
+
     public function testCreateOndemandSettlementForLinkedAccountValidationError()
     {
         $this->ba->capitalEarlySettlementAuth();

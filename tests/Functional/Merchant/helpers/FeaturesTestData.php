@@ -497,17 +497,17 @@ return [
                         'value'        => false,
                         'display_name' => 'Smart Collect'
                     ],
-                    147 => array (
+                    148 => array (
                         'feature' => 'view_opfin_sso_announcement',
                         'value' => true,
                         'display_name' => 'View opfin sso announcemnet',
                     ),
-                    148 => array (
+                    149 => array (
                         'feature' => 'view_ssl_banner',
                         'value' => true,
                         'display_name' => 'View SSL banner',
                     ),
-                    149 => array (
+                    150 => array (
                         'feature' => 'view_onboarding_cards',
                         'value' => true,
                         'display_name' => 'View onboarding cards',
@@ -1493,6 +1493,7 @@ return [
                     'es_automatic',
                     'es_automatic_restricted',
                     'ondemand_linked',
+                    'ondemand_linked_prepaid',
                     'ondemand_route',
                     'headless_disable',
                     'bepg_disable',
@@ -1612,6 +1613,7 @@ return [
                         'es_automatic',
                         'es_automatic_restricted',
                         'ondemand_linked',
+                        'ondemand_linked_prepaid',
                         'ondemand_route',
                         'headless_disable',
                         'bepg_disable',
@@ -1738,6 +1740,7 @@ return [
                     'es_automatic',
                     'es_automatic_restricted',
                     'ondemand_linked',
+                    'ondemand_linked_prepaid',
                     'ondemand_route',
                     'headless_disable',
                     'bepg_disable',

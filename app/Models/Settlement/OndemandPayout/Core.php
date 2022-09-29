@@ -18,6 +18,7 @@ use RZP\Models\Settlement\Holidays;
 use RZP\Models\Settlement\Ondemand;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Settlement\OndemandFundAccount;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandPayoutReversal;
 
 class Core extends Base\Core
@@ -140,6 +141,9 @@ class Core extends Base\Core
         return false;
     }
 
+    /**
+     * @throws BadRequestException
+     */
     public function createPayoutsFromOndemand($settlementOndemand, $mode, $requestDetails): array
     {
         $splitAmount = $this->splitAmountBasedOnMode($settlementOndemand->getAmount(), $mode);
@@ -177,11 +181,23 @@ class Core extends Base\Core
                 $settlementOndemand->user()->associate($this->user);
             }
 
-            // 0 fees to be deducted from child merchants' settlements as this will follow a postpaid model
-            if (($this->merchant->isFeatureEnabled(Feature\Constants::ONDEMAND_LINKED) === true &&
-                (isset($requestDetails['settlement_type']) === true &&
-                    $requestDetails['settlement_type']  === 'linked_account_settlement')) === false)
+            $isLinkedAccountSettlement = ($this->merchant->isFeatureEnabled(Feature\Constants::ONDEMAND_LINKED) && isset($requestDetails['settlement_type']) && $requestDetails['settlement_type'] === 'linked_account_settlement');
+            $isPrepaidLinkedAccountSettlement = false;
+            /** @var  $parentMerchant  MerchantEntity */
+            if ($isLinkedAccountSettlement)
             {
+                $parentMerchant = $this->repo->merchant->findOrFail($this->merchant->getParentId());
+                $isPrepaidLinkedAccountSettlement = $parentMerchant->isFeatureEnabled(Feature\Constants::ONDEMAND_LINKED_PREPAID);
+            }
+
+            // Without ONDEMAND_LINKED_PREPAID feature flag, No fees will be deducted from child merchants settlements as by default Is for route is a postpaid model
+            if (!$isLinkedAccountSettlement)
+            {
+                $this->addOndemandPayoutFees($settlementOndemandPayout);
+            } else if ($isPrepaidLinkedAccountSettlement)
+            {
+                // Prepaid linked account settlements will be charged based on the parent merchant pricing plan.
+                $settlementOndemandPayout->merchant()->associate($parentMerchant);
                 $this->addOndemandPayoutFees($settlementOndemandPayout);
             }
 
