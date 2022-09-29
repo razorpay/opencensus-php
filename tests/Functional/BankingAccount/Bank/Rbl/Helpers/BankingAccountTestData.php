@@ -4336,7 +4336,7 @@ return [
 
                     'account_login_date' => 1658921126,
                     'account_open_date' => 1661106600,
-            
+
                     'customer_appointment_date' => 1660761000,
                     'rm_assignment_type' => 'insignia',
                     'rm_employee_code' => '35155',
@@ -4346,12 +4346,12 @@ return [
 
                     'doc_collection_date' => 1660847400,
                     'doc_collection_tat' => 24,
-            
+
                     'account_opening_ir_close_date' => 1661279400,
                     'account_opening_ftnr' => 0,
                     'account_opening_ftnr_reasons' => 'AO BM/BOM Sign/Stamp/Emp_No/Approval Missing,AO Scanning Issue',
                     'account_opening_tat' => 30,
-            
+
                     'api_ir_closed_date' => 1661365800,
                     'api_onboarding_ftnr' => 0,
                     'api_onboarding_ftnr_reasons' => 'API BM/BOM Sign/Stamp/Emp_No/Approval Missing,API RRT/Attachment/Details Issue,API Scanning Issue',
@@ -4655,6 +4655,46 @@ return [
             'content' => [
                 'channel'     => 'rbl',
                 'status'      => 'created'
+            ],
+        ],
+    ],
+
+    'testUpdateBankingAccountActivationDetailsViaMOB' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [
+                'merchant_poc_name' => 'Sample Name',
+                'merchant_poc_designation' => 'Financial Consultant',
+                'merchant_poc_email' => 'sample@sample.com',
+                'merchant_poc_phone_number' => '9876556789',
+                'merchant_documents_address' => 'x, y, z',
+                'initial_cheque_value' => 100,
+                'account_type' => 'insignia',
+                'merchant_city' => 'Bangalore',
+                'is_documents_walkthrough_complete' => true,
+                'merchant_region' => 'South',
+                'expected_monthly_gmv' => 10000,
+                'average_monthly_balance' => 0,
+                'business_category' => 'partnership',
+                'sales_team' => 'sme',
+                'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
+                'sales_poc_phone_number' => '1234554321'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_poc_name' => 'Sample Name',
+                'merchant_poc_designation' => 'Financial Consultant',
+                'merchant_poc_email' => 'sample@sample.com',
+                'merchant_poc_phone_number' => '9876556789',
+                'merchant_documents_address' => 'x, y, z',
+                'account_type' => 'insignia',
+                'merchant_city' => 'Bangalore',
+                'merchant_region' => 'South',
+                'business_category' => 'partnership',
             ],
         ],
     ],

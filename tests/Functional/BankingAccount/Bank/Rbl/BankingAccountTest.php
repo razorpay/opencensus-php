@@ -9271,4 +9271,33 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
+    public function testUpdateBankingAccountActivationDetailsViaMOB()
+    {
+        $bankingAccount = $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $admin = $this->fixtures->create('admin', ['org_id' => Org::RZP_ORG, 'email' => 'abc@razorpay.com']);
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts_internal/activation/' . $bankingAccount->getPublicId() . '/details',
+                'method'  => 'PATCH',
+                'server'  => [
+                    'HTTP_X-Admin-Email' => $admin->getEmail(),
+                ]
+            ],
+        ];
+
+        $this->ba->mobAppAuthForInternalRoutes();
+
+        $this->startTest($dataToReplace);
+    }
 }

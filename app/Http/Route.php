@@ -3088,6 +3088,8 @@ class Route
         'banking_account_activation_detail'
         .'_update'                                => ['patch',    'banking_accounts/activation/{id}/details',                   'BankingAccountController@patchActivationDetail'            ],
         'banking_account_activation_detail'
+        .'_update_internal'                        => ['patch',    'banking_accounts_internal/activation/{id}/details',                   'BankingAccountController@patchActivationDetail'            ],
+        'banking_account_activation_detail'
         .'_slot_booking'                          => ['post',    'banking_accounts/activation/{id}/details/slot_booking',      'BankingAccountController@addActivationSlotBookingDetail'   ],
 
         'banking_account_activation_mis_download' => ['get',      'banking_accounts/activation/mis/download',                  'BankingAccountController@downloadActivationMis'            ],
@@ -4061,6 +4063,7 @@ class Route
         'banking_account_create_admin',
         'banking_account_create_lms_mob',
         'banking_account_update_lms_mob',
+        'banking_account_activation_detail_update_internal',
         'external_merchant_composite_details_fetch',
         'banking_account_service_lms_routes_all',
         'mob_ca_lms_routes',
@@ -4491,6 +4494,7 @@ class Route
     // Put it in the Admin Array instead
     public static $internal = [
         'banking_accounts_get_internal',
+        'banking_account_activation_detail_update_internal',
         'merchant_onboarding_crons',
         'capture_cron_for_b2b_payments',
         'settlement_cron_for_b2b_payments',
@@ -8303,6 +8307,8 @@ class Route
         'banking_account_activation_spocs'         => Permission::VIEW_ACTIVATION_FORM,
         'banking_account_activation_detail_create' => Permission::VIEW_ACTIVATION_FORM,
         'banking_account_activation_detail_update' => Permission::VIEW_ACTIVATION_FORM,
+        'banking_account_activation_detail_update'.
+        '_internal'                                 => Permission::VIEW_ACTIVATION_FORM,
         'banking_account_comments_create'          => Permission::VIEW_ACTIVATION_FORM,
         'co_created_reset_password_admin'          => Permission::VIEW_ACTIVATION_FORM,
         'banking_account_activation_mis_download'  => Permission::VIEW_ACTIVATION_FORM,
@@ -9498,6 +9504,7 @@ class Route
             'internal_merchant_fetch',
             'banking_accounts_list',
             'banking_accounts_get_internal',
+            'banking_account_activation_detail_update_internal'
         ],
 
         'accounts_receivable' => [
@@ -11039,6 +11046,7 @@ class Route
             'banking_account_bank_lms_assign_to_partner_bulk',
             'create_invitation_for_ca_onboarding_partner',
             'banking_account_activation_detail_update',
+            'banking_account_activation_detail_update_internal',
             'banking_account_activation_mis_download',
             'banking_account_activation_spocs',
             'banking_account_activation_status_change_log',
@@ -14873,6 +14881,7 @@ class Route
         'banking_account_verify_otp',
         'banking_account_activation_detail_create',
         'banking_account_activation_detail_update',
+        'banking_account_activation_detail_update_internal',
         'banking_account_activation_mis_download',
         'banking_account_webhook_account_info',
         'banking_account_create_lead',
