@@ -269,8 +269,13 @@ class Service extends Base\Service
             //run experiment from every flow except for admin dashboard
             if ($admin === false)
             {
-                if ($merchant->isBusinessBankingEnabled() === true)
+                if ((new Merchantcore)->isRegularMerchant($merchant)===false)
                 {
+                    return false;
+                }
+
+                if ($merchant->isRazorpayOrgId() === false) {
+
                     return false;
                 }
 
