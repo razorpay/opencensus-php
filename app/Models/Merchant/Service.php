@@ -8265,7 +8265,7 @@ class Service extends Base\Service
             "active"               => $merchant->isActivated(),
             "parent"               => $this->settlementToPartner($mid),
             "partner_bank_account" => isset($merchantSettleToPartner[$mid]) ? $merchantSettleToPartner[$mid] : null,
-            "pan_details"          => ($merchant->merchantDetail !== null) ? $merchant->merchantDetail->getPan() : null,
+            "pan_details"          => $this->getMerchantPANDetails($merchant),
             "purpose_code"         => $merchant->getPurposeCode(),
             "iec_code"             => $merchant->getIecCode(),
             "business_address"     => ($merchant->merchantDetail !== null) ? $merchant->merchantDetail->getBusinessRegisteredAddressAsText(', ') : null,
@@ -8275,6 +8275,23 @@ class Service extends Base\Service
             "org_id"               => $merchant->getOrgId(),
             "merchant_email"       => $email,
         ];
+    }
+
+    private function getMerchantPANDetails($merchant) {
+        $PANDetails = null;
+        if($merchant->merchantDetail !== null) {
+            $PANDetails = $merchant->merchantDetail->getPan();
+            // we need pan_details for OPGSP settlements preferably company pan
+            // in case there is a merchant who doesn't have company pan we check if the business type is PROPRIETORSHIP
+            // then we send promoter_pan details
+            // else null
+            if(empty($PANDetails) === true) {
+                if($merchant->merchantDetail->getBusinessType() === BusinessType::PROPRIETORSHIP ) {
+                    $PANDetails = $merchant->merchantDetail->getPromoterPan();
+                }
+            }
+        }
+        return $PANDetails;
     }
 
     private function getMerchantOrgSettleValue($merchant)

@@ -9,6 +9,8 @@ use Carbon\Carbon;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetailsEntity;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Services\RazorXClient;
 use Razorpay\OAuth\Application;
 use RZP\Models\Merchant\Account;
@@ -2904,4 +2906,167 @@ class SettlementTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testGetMerchantConfigForSettlementForMerchantWithBusinessTypeProprietorshipWithCompanyPan()
+    {
+        $this->ba->settlementsAuth();
+
+        $this->fixtures->create('org',[
+            'id' => 'IUXvshap3Hbzot',
+            'display_name' => 'HDFC CollectNow Bank'
+        ]);
+
+        $this->fixtures->merchant->createMerchantWithDetails(
+            'IUXvshap3Hbzot',
+            '110000Razorpay',
+            [
+                MerchantEntity::NAME            => 'Test IIR MID 1254',
+                MerchantEntity::ACTIVATED       => 1,
+                MerchantEntity::LIVE            => 1,
+                MerchantEntity::ACTIVATED_AT    => Carbon::now()->timestamp,
+                MerchantEntity::WEBSITE         => 'www.testIIRMid1235.com',
+                MerchantEntity::CATEGORY2       => 'category2_1'
+            ],
+            [
+                MerchantDetailsEntity::ACTIVATION_STATUS        => 'activated',
+                MerchantDetailsEntity::BUSINESS_TYPE            => '1',
+                MerchantDetailsEntity::BUSINESS_CATEGORY        => 'biz category 2',
+                MerchantDetailsEntity::BUSINESS_SUBCATEGORY     => 'biz subcategory',
+                MerchantDetailsEntity::PROMOTER_PAN             => 'AJDDOC1234',
+                MerchantDetailsEntity::COMPANY_PAN              => 'COMPANYPAN'
+            ]);
+
+        $result = $this->getGlobalConfig('110000Razorpay');
+
+        $this->assertEquals("COMPANYPAN", $result["pan_details"]);
+    }
+
+    public function testGetMerchantConfigForSettlementForMerchantWithBusinessTypeProprietorshipWithPromoterPan()
+    {
+        $this->ba->settlementsAuth();
+
+        $this->fixtures->create('org',[
+            'id' => 'IUXvshap3Hbzot',
+            'display_name' => 'HDFC CollectNow Bank'
+        ]);
+
+        $this->fixtures->merchant->createMerchantWithDetails(
+            'IUXvshap3Hbzot',
+            '110000Razorpay',
+            [
+                MerchantEntity::NAME            => 'Test IIR MID 1254',
+                MerchantEntity::ACTIVATED       => 1,
+                MerchantEntity::LIVE            => 1,
+                MerchantEntity::ACTIVATED_AT    => Carbon::now()->timestamp,
+                MerchantEntity::WEBSITE         => 'www.testIIRMid1235.com',
+                MerchantEntity::CATEGORY2       => 'category2_1'
+            ],
+            [
+                MerchantDetailsEntity::ACTIVATION_STATUS        => 'activated',
+                MerchantDetailsEntity::BUSINESS_TYPE            => '1',
+                MerchantDetailsEntity::BUSINESS_CATEGORY        => 'biz category 2',
+                MerchantDetailsEntity::BUSINESS_SUBCATEGORY     => 'biz subcategory',
+                MerchantDetailsEntity::PROMOTER_PAN             => 'PROMOTERPAN',
+            ]);
+
+        $result = $this->getGlobalConfig('110000Razorpay');
+
+        $this->assertEquals("PROMOTERPAN", $result["pan_details"]);
+    }
+
+    public function testGetMerchantConfigForSettlementForMerchantWithBusinessTypeProprietorshipWithNoPan()
+    {
+        $this->ba->settlementsAuth();
+
+        $this->fixtures->create('org',[
+            'id' => 'IUXvshap3Hbzot',
+            'display_name' => 'HDFC CollectNow Bank'
+        ]);
+
+        $this->fixtures->merchant->createMerchantWithDetails(
+            'IUXvshap3Hbzot',
+            '110000Razorpay',
+            [
+                MerchantEntity::NAME            => 'Test IIR MID 1254',
+                MerchantEntity::ACTIVATED       => 1,
+                MerchantEntity::LIVE            => 1,
+                MerchantEntity::ACTIVATED_AT    => Carbon::now()->timestamp,
+                MerchantEntity::WEBSITE         => 'www.testIIRMid1235.com',
+                MerchantEntity::CATEGORY2       => 'category2_1'
+            ],
+            [
+                MerchantDetailsEntity::ACTIVATION_STATUS        => 'activated',
+                MerchantDetailsEntity::BUSINESS_TYPE            => '1',
+                MerchantDetailsEntity::BUSINESS_CATEGORY        => 'biz category 2',
+                MerchantDetailsEntity::BUSINESS_SUBCATEGORY     => 'biz subcategory',
+            ]);
+
+        $result = $this->getGlobalConfig('110000Razorpay');
+
+        $this->assertNull($result["pan_details"]);
+    }
+
+    public function testGetMerchantConfigForSettlementForMerchantWithBusinessTypePrivateWithNoPan()
+    {
+        $this->ba->settlementsAuth();
+
+        $this->fixtures->create('org',[
+            'id' => 'IUXvshap3Hbzot',
+            'display_name' => 'HDFC CollectNow Bank'
+        ]);
+
+        $this->fixtures->merchant->createMerchantWithDetails(
+            'IUXvshap3Hbzot',
+            '110000Razorpay',
+            [
+                MerchantEntity::NAME            => 'Test IIR MID 1254',
+                MerchantEntity::ACTIVATED       => 1,
+                MerchantEntity::LIVE            => 1,
+                MerchantEntity::ACTIVATED_AT    => Carbon::now()->timestamp,
+                MerchantEntity::WEBSITE         => 'www.testIIRMid1235.com',
+                MerchantEntity::CATEGORY2       => 'category2_1'
+            ],
+            [
+                MerchantDetailsEntity::ACTIVATION_STATUS        => 'activated',
+                MerchantDetailsEntity::BUSINESS_TYPE            => '4',
+                MerchantDetailsEntity::BUSINESS_CATEGORY        => 'biz category 2',
+                MerchantDetailsEntity::BUSINESS_SUBCATEGORY     => 'biz subcategory',
+            ]);
+
+        $result = $this->getGlobalConfig('110000Razorpay');
+
+        $this->assertNull($result["pan_details"]);
+    }
+
+    public function testGetMerchantConfigForSettlementForMerchantWithBusinessTypePrivateWithCompanyPan()
+    {
+        $this->ba->settlementsAuth();
+
+        $this->fixtures->create('org',[
+            'id' => 'IUXvshap3Hbzot',
+            'display_name' => 'HDFC CollectNow Bank'
+        ]);
+
+        $this->fixtures->merchant->createMerchantWithDetails(
+            'IUXvshap3Hbzot',
+            '110000Razorpay',
+            [
+                MerchantEntity::NAME            => 'Test IIR MID 1254',
+                MerchantEntity::ACTIVATED       => 1,
+                MerchantEntity::LIVE            => 1,
+                MerchantEntity::ACTIVATED_AT    => Carbon::now()->timestamp,
+                MerchantEntity::WEBSITE         => 'www.testIIRMid1235.com',
+                MerchantEntity::CATEGORY2       => 'category2_1'
+            ],
+            [
+                MerchantDetailsEntity::ACTIVATION_STATUS        => 'activated',
+                MerchantDetailsEntity::BUSINESS_TYPE            => '4',
+                MerchantDetailsEntity::BUSINESS_CATEGORY        => 'biz category 2',
+                MerchantDetailsEntity::BUSINESS_SUBCATEGORY     => 'biz subcategory',
+                MerchantDetailsEntity::COMPANY_PAN              => 'COMPANYPAN',
+            ]);
+
+        $result = $this->getGlobalConfig('110000Razorpay');
+
+        $this->assertEquals("COMPANYPAN",$result["pan_details"]);
+    }
 }
