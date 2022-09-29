@@ -1071,9 +1071,12 @@ class Name
 
     const MERCHANT_BULK_UPLOAD_MIQ              = 'merchant_batch_upload_miq';
 
-    // This permission is intentionally not mapped to any route, this is purely for FE to consume,
+    // These permissions are intentionally not mapped to any route, this is purely for FE to consume,
     // actual route authorization is done at the microservice layer.
     const ACCOUNTS_RECEIVABLE_ADMIN             = 'accounts_receivable_admin';
+    const BILL_PAYMENTS_VIEW                    = 'bill_payments_view';
+    const BILL_PAYMENTS_CREATE_ACCOUNT          = 'bill_payments_create_account';
+    const BILL_PAYMENTS_FETCH_BILL              = 'bill_payments_fetch_bill';
     const VIEW_FINANCEX_REPORT                  = 'view_financex_report';
     const CREATE_FINANCEX_REPORT                = 'create_financex_report';
 

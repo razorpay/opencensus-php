@@ -2,10 +2,10 @@
 
 namespace RZP\Tests\Functional\UserRole\Banking\Dashboard;
 
-use RZP\Models\Admin\Permission\Name;
 use RZP\Models\Merchant;
 use RZP\Services\RazorXClient;
 use RZP\Models\User\BankingRole;
+use RZP\Models\Admin\Permission\Name;
 
 trait BankingRoleTrait
 {
@@ -315,31 +315,56 @@ trait BankingRoleTrait
             BankingRole::OWNER => [
                 Name::VIEW_FINANCEX_REPORT,
                 Name::CREATE_FINANCEX_REPORT,
+                Name::ACCOUNTS_RECEIVABLE_ADMIN,
+                Name::BILL_PAYMENTS_VIEW,
+                Name::BILL_PAYMENTS_CREATE_ACCOUNT,
+                Name::BILL_PAYMENTS_FETCH_BILL,
             ],
 
             BankingRole::ADMIN => [
+                Name::VIEW_FINANCEX_REPORT,
                 Name::CREATE_FINANCEX_REPORT,
-                Name::VIEW_FINANCEX_REPORT
+                Name::ACCOUNTS_RECEIVABLE_ADMIN,
+                Name::BILL_PAYMENTS_VIEW,
+                Name::BILL_PAYMENTS_CREATE_ACCOUNT,
+                Name::BILL_PAYMENTS_FETCH_BILL,
             ],
 
             BankingRole::FINANCE_L1 => [
-                Name::VIEW_FINANCEX_REPORT
+                Name::VIEW_FINANCEX_REPORT,
+                Name::ACCOUNTS_RECEIVABLE_ADMIN,
+                Name::BILL_PAYMENTS_VIEW,
+                Name::BILL_PAYMENTS_CREATE_ACCOUNT,
+                Name::BILL_PAYMENTS_FETCH_BILL,
             ],
 
             BankingRole::FINANCE_L2 => [
-                Name::VIEW_FINANCEX_REPORT
+                Name::VIEW_FINANCEX_REPORT,
+                Name::ACCOUNTS_RECEIVABLE_ADMIN,
+                Name::BILL_PAYMENTS_VIEW,
+                Name::BILL_PAYMENTS_CREATE_ACCOUNT,
+                Name::BILL_PAYMENTS_FETCH_BILL,
             ],
 
             BankingRole::FINANCE_L3 => [
-                Name::VIEW_FINANCEX_REPORT
+                Name::VIEW_FINANCEX_REPORT,
+                Name::ACCOUNTS_RECEIVABLE_ADMIN,
+                Name::BILL_PAYMENTS_VIEW,
+                Name::BILL_PAYMENTS_CREATE_ACCOUNT,
+                Name::BILL_PAYMENTS_FETCH_BILL,
             ],
 
             BankingRole::OPERATIONS => [
-                Name::VIEW_FINANCEX_REPORT
+                Name::VIEW_FINANCEX_REPORT,
+                Name::ACCOUNTS_RECEIVABLE_ADMIN,
+                Name::BILL_PAYMENTS_VIEW,
+                Name::BILL_PAYMENTS_CREATE_ACCOUNT,
+                Name::BILL_PAYMENTS_FETCH_BILL,
             ],
 
             BankingRole::VIEW_ONLY => [
-                Name::VIEW_FINANCEX_REPORT
+                Name::VIEW_FINANCEX_REPORT,
+                Name::BILL_PAYMENTS_VIEW,
             ],
 
             BankingRole::CHARTERED_ACCOUNTANT => [

@@ -185,7 +185,10 @@ class UserRolePermissionsMap
                  Permission::VIEW_PRIVILEGES,
                  Permission::VIEW_ALL_ROLES,
 
-                 Permission::ACCOUNTS_RECEIVABLE_ADMIN
+                 Permission::ACCOUNTS_RECEIVABLE_ADMIN,
+                 Permission::BILL_PAYMENTS_VIEW,
+                 Permission::BILL_PAYMENTS_CREATE_ACCOUNT,
+                 Permission::BILL_PAYMENTS_FETCH_BILL
              ],
 
              BankingRole::ADMIN => [
@@ -323,7 +326,10 @@ class UserRolePermissionsMap
                  Permission::VIEW_ROLE,
                  Permission::VIEW_ALL_ROLES,
 
-                 Permission::ACCOUNTS_RECEIVABLE_ADMIN
+                 Permission::ACCOUNTS_RECEIVABLE_ADMIN,
+                 Permission::BILL_PAYMENTS_VIEW,
+                 Permission::BILL_PAYMENTS_CREATE_ACCOUNT,
+                 Permission::BILL_PAYMENTS_FETCH_BILL
              ],
 
              BankingRole::FINANCE_L1 => [
@@ -439,7 +445,10 @@ class UserRolePermissionsMap
                  Permission::VIEW_ROLE,
                  Permission::VIEW_ALL_ROLES,
 
-                 Permission::ACCOUNTS_RECEIVABLE_ADMIN
+                 Permission::ACCOUNTS_RECEIVABLE_ADMIN,
+                 Permission::BILL_PAYMENTS_VIEW,
+                 Permission::BILL_PAYMENTS_CREATE_ACCOUNT,
+                 Permission::BILL_PAYMENTS_FETCH_BILL
              ],
 
              BankingRole::OPERATIONS => [
@@ -508,7 +517,10 @@ class UserRolePermissionsMap
                  Permission::VIEW_PRIVILEGES,
                  Permission::VIEW_ALL_ROLES,
 
-                 Permission::ACCOUNTS_RECEIVABLE_ADMIN
+                 Permission::ACCOUNTS_RECEIVABLE_ADMIN,
+                 Permission::BILL_PAYMENTS_VIEW,
+                 Permission::BILL_PAYMENTS_CREATE_ACCOUNT,
+                 Permission::BILL_PAYMENTS_FETCH_BILL
              ],
 
              BankingRole::CHARTERED_ACCOUNTANT => [
@@ -592,7 +604,9 @@ class UserRolePermissionsMap
                  Permission::HAS_APP_ACCESS,
                  Permission::DOWNLOAD_REPORTING,
                  Permission::VIEW_PRIVILEGES,
-                 Permission::VIEW_ALL_ROLES
+                 Permission::VIEW_ALL_ROLES,
+
+                 Permission::BILL_PAYMENTS_VIEW
              ],
 
              BankingRole::VENDOR => [
