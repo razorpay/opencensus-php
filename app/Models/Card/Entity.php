@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Constants\Timezone;
 
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
@@ -89,6 +90,7 @@ class Entity extends Base\PublicEntity
     const DUMMY_MASTERCARD_CARD  = '2221000000511237';
     const DUMMY_VISA_CARD        = '4231560000511234';
     const DUMMY_RUPAY_CARD       = '5085000000521234';
+    const DUMMY_IIN              = '999999';
     const DUMMY_AXIS_TOKENHQ_CARD   = '4532712890380420';
 
 
@@ -905,10 +907,33 @@ class Entity extends Base\PublicEntity
             unset($array[self::IIN]);
             return;
         }
+
+        $app  = \App::getFacadeRoot();
+
+        $experimentVariable = UniqueIdEntity::generateUniqueId();
+
+        $variant = $app['razorx']->getTreatment($experimentVariable, Merchant\RazorxTreatment::DUMMY_VALUE_WHILE_EXPOSE_FEATURE_ENABLED, $app['rzp.mode'] ?? 'live');
+
+        if((($this->merchant->isFeatureEnabled(Feature\Constants::EXPOSE_CARD_IIN)) === true) && (strtolower($variant) === 'on') )
+        {
+            $array[self::IIN] = self::DUMMY_IIN;
+        }
+
     }
 
     public function setPublicExpiryMonthAttribute(array & $array)
     {
+        $app  = \App::getFacadeRoot();
+
+        $experimentVariable = UniqueIdEntity::generateUniqueId();
+
+        $variant = $app['razorx']->getTreatment($experimentVariable, Merchant\RazorxTreatment::DUMMY_VALUE_WHILE_EXPOSE_FEATURE_ENABLED, $app['rzp.mode'] ?? 'live');
+
+        if((($this->merchant->isFeatureEnabled(Feature\Constants::EXPOSE_CARD_EXPIRY)) === true) && (strtolower($variant) === 'on') )
+        {
+            $array[self::EXPIRY_MONTH] = "01";
+        }
+
         if ($this->isPublicExpiryAllowed() === false)
         {
             unset($array[self::EXPIRY_MONTH]);
@@ -927,6 +952,17 @@ class Entity extends Base\PublicEntity
 
     public function setPublicExpiryYearAttribute(array & $array)
     {
+        $app  = \App::getFacadeRoot();
+
+        $experimentVariable = UniqueIdEntity::generateUniqueId();
+
+        $variant = $app['razorx']->getTreatment($experimentVariable, Merchant\RazorxTreatment::DUMMY_VALUE_WHILE_EXPOSE_FEATURE_ENABLED, $app['rzp.mode'] ?? 'live');
+
+        if((($this->merchant->isFeatureEnabled(Feature\Constants::EXPOSE_CARD_EXPIRY)) === true) && (strtolower($variant) === 'on') )
+        {
+            $array[self::EXPIRY_YEAR] = self::DUMMY_EXPIRY_YEAR;
+        }
+
         if ($this->isPublicExpiryAllowed() === false)
         {
             unset($array[self::EXPIRY_YEAR]);

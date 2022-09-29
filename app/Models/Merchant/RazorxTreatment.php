@@ -641,4 +641,6 @@ final class RazorxTreatment
     const DUMMY_CARD_NAME_POST_TOKENIZATION = 'dummy_card_name_post_tokenisation';
 
     const DUMMY_CARD_DETAILS_POST_TOKENIZATION = 'dummy_card_details_post_tokenisation';
+
+    const DUMMY_VALUE_WHILE_EXPOSE_FEATURE_ENABLED = 'dummy_value_while_expose_feature_enabled';
 }
