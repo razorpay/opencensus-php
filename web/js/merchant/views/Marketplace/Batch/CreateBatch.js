@@ -13,6 +13,8 @@ import {
   validateReversalsBatch,
 } from 'merchant/reducers/batches';
 import { closeModal } from 'merchant_common/reducers/modals';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { isOrgFeatureExist } from 'merchant/models/User';
 
 const gaEvents = setGaTrack('Dashboard - Route - BU');
 
@@ -75,48 +77,52 @@ export default class CreateHostedMandateBatch extends Component {
     const { openUploadModal, user } = this.props;
 
     return (
-      <div class="RouteBatch--dropdown">
-        <div class="panel panel-default" onClick={openUploadModal(this.renderTransfersModal)}>
-          <div class="panel-body">
+      <div className="RouteBatch--dropdown">
+        <div className="panel panel-default" onClick={openUploadModal(this.renderTransfersModal)}>
+          <div className="panel-body">
             <img src="/dist/css/assets/marketplace/transfers.svg" />
-            <div class="description">
-              <div class="text-primary">
+            <div className="description">
+              <div className="text-primary">
                 <strong>Transfers</strong>
               </div>
               <div>Create transfers in batch</div>
             </div>
-            <i class="i-chevron-right pull-right text-primary" />
+            <i className="i-chevron-right pull-right text-primary" />
           </div>
         </div>
-        <div class="panel panel-default" onClick={openUploadModal(this.renderReversalsModal)}>
-          <div class="panel-body">
+        <div className="panel panel-default" onClick={openUploadModal(this.renderReversalsModal)}>
+          <div className="panel-body">
             <img src="/dist/css/assets/marketplace/reversals.svg" />
-            <div class="description">
-              <div class="text-primary">
+            <div className="description">
+              <div className="text-primary">
                 <strong>Reversals</strong>
               </div>
               <div>Create reversals in batch</div>
             </div>
-            <i class="i-chevron-right pull-right text-primary" />
+            <i className="i-chevron-right pull-right text-primary" />
           </div>
         </div>
-        {!user.isRouteLinkedAccountCreationDisabled && (
+        <ShowWhen
+          additionalCondition={() =>
+            !user.isRouteLinkedAccountCreationDisabled && !isOrgFeatureExist('block_account_update')
+          }
+        >
           <div
-            class="panel panel-default"
+            className="panel panel-default"
             onClick={openUploadModal(this.renderLinkedAccountsModal)}
           >
-            <div class="panel-body">
+            <div className="panel-body">
               <img src="/dist/css/assets/marketplace/linked_accounts.svg" />
-              <div class="description">
-                <div class="text-primary">
+              <div className="description">
+                <div className="text-primary">
                   <strong>Linked accounts</strong>
                 </div>
                 <div>Create linked accounts in a batch</div>
               </div>
-              <i class="i-chevron-right pull-right text-primary" />
+              <i className="i-chevron-right pull-right text-primary" />
             </div>
           </div>
-        )}
+        </ShowWhen>
       </div>
     );
   }

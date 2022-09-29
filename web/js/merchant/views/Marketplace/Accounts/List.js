@@ -22,6 +22,7 @@ import AccountsListFilter from 'merchant/views/Marketplace/Accounts/components/A
 import ListContainer from 'merchant/containers/ListContainer';
 import AccountCreation from 'merchant/views/Marketplace/Accounts/New';
 import AccountDetails from 'merchant/views/Marketplace/Accounts/Details';
+import { isOrgFeatureExist } from 'merchant/models/User';
 
 @connect(
   (state) => {
@@ -43,6 +44,7 @@ export default class AccountsListContainer extends ListContainer {
   };
 
   onToggleDashboardAccess = (account, cb) => {
+    const { toggleDashboardAccess, showNotification, updateAccount } = this.props;
     const checked = !account.dashboard_access;
     const { header, message, data } = validateDashboardAccess(account, checked);
 
@@ -54,20 +56,19 @@ export default class AccountsListContainer extends ListContainer {
         affirmativePendingLabel: `${checked ? 'Enabling' : 'Disabling'}`,
         abortLabel: 'Cancel',
         action: () => {
-          return this.props
-            .toggleDashboardAccess(data)
+          return toggleDashboardAccess(data)
             .then((resp) => {
               cb(true);
 
               if (resp) {
-                this.props.showNotification({
+                showNotification({
                   type: 'success',
                   message: `Dashboard access ${checked ? 'Enabled' : 'Disabled'} for merchant "${
                     account.name
                   }"`,
                 });
 
-                this.props.updateAccount({
+                updateAccount({
                   ...account,
                   ...data,
                 });
@@ -82,7 +83,7 @@ export default class AccountsListContainer extends ListContainer {
                 errors = 'Some network error has occurred';
               }
 
-              this.props.showNotification({
+              showNotification({
                 type: 'error',
                 message: errors,
               });
@@ -99,6 +100,7 @@ export default class AccountsListContainer extends ListContainer {
   };
 
   onToggleAllowRefunds = (account, cb) => {
+    const { toggleAllowRefunds, showNotification, updateAccount } = this.props;
     const checked = !account.allow_reversals;
     const { header, message, data } = validateAllowRefundsMessages(account, checked);
 
@@ -110,20 +112,19 @@ export default class AccountsListContainer extends ListContainer {
         affirmativePendingLabel: `${checked ? 'Enabling' : 'Disabling'}`,
         abortLabel: 'Cancel',
         action: () => {
-          return this.props
-            .toggleAllowRefunds(data)
+          return toggleAllowRefunds(data)
             .then((resp) => {
               cb(true);
 
               if (resp) {
-                this.props.showNotification({
+                showNotification({
                   type: 'success',
                   message: `Dashboard access ${checked ? 'Enabled' : 'Disabled'} for merchant "${
-                    account.name
+                    account?.name
                   }"`,
                 });
 
-                this.props.updateAccount({
+                updateAccount({
                   ...account,
                   ...data,
                 });
@@ -138,7 +139,7 @@ export default class AccountsListContainer extends ListContainer {
                 errors = 'Some network error has occurred';
               }
 
-              this.props.showNotification({
+              showNotification({
                 type: 'error',
                 message: errors,
               });
@@ -155,14 +156,16 @@ export default class AccountsListContainer extends ListContainer {
   };
 
   fetchList({ id, ...rest }) {
+    const { fetchAccounts } = this.props;
     if (id && id.indexOf('acc_') > -1) {
       id = id.replace('acc_', '');
     }
-    return this.props.fetchAccounts({ id, ...rest });
+    return fetchAccounts({ id, ...rest });
   }
 
   fetchAccounts = (skip, count) => {
-    this.props.fetchAccounts({ skip, count });
+    const { fetchAccounts } = this.props;
+    fetchAccounts({ skip, count });
   };
 
   onAccountCreation = (account) => {
@@ -178,44 +181,48 @@ export default class AccountsListContainer extends ListContainer {
   };
 
   showAddAccountModal = () => {
-    this.props.openModal({
+    const { openModal } = this.props;
+    openModal({
       size: 'small',
       component: <AccountCreation onSave={this.onAccountCreation} />,
     });
   };
 
   showEditAccountModal = (account) => {
-    this.props.openModal({
+    const { openModal } = this.props;
+    openModal({
       size: 'small',
       component: <AccountCreation onSave={this.resetPagination} accountData={account} />,
     });
   };
 
   showAccountDetailsModal = (account) => {
-    this.props.closeModal();
+    const { closeModal } = this.props;
+    closeModal();
     this.setState({ showAccountDetailsFor: account.id });
   };
 
   highlightRowAndClose = (accountId) => {
-    this.props.luminateRow(accountId);
+    const { luminateRow, closeModal } = this.props;
+    luminateRow(accountId);
     this.setState({ showAccountDetailsFor: null });
-    this.props.closeModal();
+    closeModal();
   };
 
   exportAccountsCSV = () => {
-    this.props.showNotification({
+    const { showNotification, exportAccountsCSV } = this.props;
+    showNotification({
       type: 'info',
       message: 'Your file will download shortly',
       hidePrevious: true,
     });
 
-    return this.props
-      .exportAccountsCSV()
+    return exportAccountsCSV()
       .then((response) => {
         window.location.href = response.data.url;
       })
       .catch(({ errors }) => {
-        this.props.showNotification({
+        showNotification({
           type: 'error',
           message: errors,
           hidePrevious: true,
@@ -224,30 +231,33 @@ export default class AccountsListContainer extends ListContainer {
   };
 
   render() {
-    const { loading, accounts, user } = this.props;
+    const { loading, accounts, user, showNotification } = this.props;
     const status = this.state.status;
     const isCreationDisabled = user.isRouteLinkedAccountCreationDisabled;
 
     return (
-      <div class="LinkedAccountsList content-wrapper">
+      <div className="LinkedAccountsList content-wrapper">
         <HeaderAction>
-          <div class="btn-toolbar pull-right">
+          <div className="btn-toolbar pull-right">
             <ShowWhen additionalCondition={(_user) => !_user.isOrgAxis}>
               <TakeATourButton feature={RZPFeatures.ROUTE} />
             </ShowWhen>
 
             <DocsLink title="Documentation" url="https://razorpay.com/docs/route/" />
 
-            <button class="btn btn-default" onClick={this.exportAccountsCSV}>
-              <i class="i i-download" />
+            <button type="button" className="btn btn-default" onClick={this.exportAccountsCSV}>
+              <i className="i i-download" />
               <span>Export All (CSV)</span>
             </button>
 
             <ShowWhen
-              additionalCondition={(_user) => _user.isAllowedEdit('accounts') && !_user.isOrgAxis}
+              additionalCondition={(_user) =>
+                _user.isAllowedEdit('accounts') && !isOrgFeatureExist('block_account_update')
+              }
             >
               <button
-                class="btn btn-primary"
+                type="button"
+                className="btn btn-primary"
                 onClick={this.showAddAccountModal}
                 disabled={isCreationDisabled}
                 title={
@@ -255,7 +265,7 @@ export default class AccountsListContainer extends ListContainer {
                   'Linked account creation is not allowed for your business type'
                 }
               >
-                <i class="i i-plus" />
+                <i className="i i-plus" />
                 <span>Add Account</span>
               </button>
             </ShowWhen>
@@ -306,7 +316,7 @@ export default class AccountsListContainer extends ListContainer {
             accountId={this.state.showAccountDetailsFor}
             onClose={this.highlightRowAndClose}
             onSubmitSuccessCB={() => {
-              this.props.showNotification({
+              showNotification({
                 type: 'success',
                 message: 'The account has been activated',
               });
