@@ -25,6 +25,12 @@ class CardVault extends Base\Core
     const TOKEN                            = 'token';
     const TEMP_VAULT_TOKEN_PREFIX          = 'pay_';
 
+    const TOKEN_NOT_FOUND = 'TOKEN_NOT_FOUND';
+
+    const NON_RETRYABLE_CARD_META_DATA_FETCH_ERRORS = [
+        self::TOKEN_NOT_FOUND,
+    ];
+
     public function __construct()
     {
         parent::__construct();
@@ -350,6 +356,14 @@ class CardVault extends Base\Core
                     'message' => 'Failed to fetch card meta data'
                 ]
             );
+
+            $response = $e->getData();
+
+            if ((isset($response['error']) === true) and
+                (in_array($response['error'], self::NON_RETRYABLE_CARD_META_DATA_FETCH_ERRORS, true) === true))
+            {
+                return null;
+            }
         }
 
         return [];
