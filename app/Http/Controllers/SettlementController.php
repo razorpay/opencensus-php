@@ -6,6 +6,7 @@ use ApiResponse;
 use Request;
 use Response;
 use RZP\Trace\TraceCode;
+use RZP\Base\RuntimeManager;
 use RZP\Constants\Entity;
 use RZP\Constants\Entity as E;
 use RZP\Models\Batch;
@@ -527,7 +528,7 @@ class SettlementController extends Controller
     public function getNiumFile()
     {
         $input = Request::all();
-
+        $this->increaseAllowedSystemLimits();
         $data = $this->service()->getNiumFile($input);
 
         return ApiResponse::json($data);
@@ -893,6 +894,11 @@ class SettlementController extends Controller
         $data = $this->service()->updateStatusofOptimiserExecution($input);
 
         return ApiResponse::json($data);
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('1024M');
     }
 
 }
