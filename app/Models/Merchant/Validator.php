@@ -3066,6 +3066,17 @@ class Validator extends Base\Validator
         'merchant_ids'                          => 'sometimes|array',
     ];
 
+    protected static $couponConfigDataRules = [
+       'reference_id'        => 'required',
+       'disabled_methods'    => 'sometimes|array',
+       'visibility'          => 'sometimes|boolean',
+    ];
+
+    protected static $merchantCouponConfigRules = [
+        'config'         => 'required|in:coupon_config',
+        'merchant_id'    => 'required',
+        'value_json'     => 'required|array',
+    ];
     public function validateEnableNon3dsConditions(Entity $merchant)
     {
 

@@ -21,6 +21,7 @@ use RZP\Models\Card;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Merchant\Entity;
 use RZP\Jobs\Order\OrderUpdate;
+use RZP\Models\Merchant\Merchant1ccConfig\Type;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Risk;
 use RZP\Models\Admin;
@@ -5821,12 +5822,12 @@ class Processor
             return $response;
         }
 
-        // For PayU, in case of registration payment, 
+        // For PayU, in case of registration payment,
         // token confirmation will be sent via webhooks.
         // Cannot auto capture until we know final status of token.
-        // For some banks, they will let us know the status in sync, 
+        // For some banks, they will let us know the status in sync,
         // for others they will give the final status in T+2 days via webhooks.
-        // 
+        //
         // In case of debit payment, final confirmation is received from webhooks.
         if ($payment->isApiBasedEmandateAsyncPayment() === true)
         {
@@ -7282,6 +7283,32 @@ class Processor
                     ErrorCode::BAD_REQUEST_ERROR,
                     null,
                     null);
+            }
+
+            $promotions = $orderMeta->getValue()[Order\OrderMeta\Order1cc\Fields::PROMOTIONS] ?? null;
+
+            $couponData = null;
+            if (empty($promotions) === false)
+            {
+                foreach ($promotions as $promotion)
+                {
+                    if (isset($promotion['type']) === false ||
+                        $promotion['type'] !== 'gift_card')
+                    {
+                        $couponData = $promotion;
+                    }
+                }
+            }
+            if ($couponData !== null)
+            {
+                $couponConfig = $this->merchant->get1ccConfig(Type::COUPON_CONFIG);
+
+                $disabledMethods =(new Merchant\MerchantPromotions\Service())->getDisabledMethods($couponConfig, $couponData['reference_id']);
+
+                if(in_array($input['method'], $disabledMethods) === true)
+                {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_METHOD_DISABLED_FOR_COUPON);
+                }
             }
         }
     }

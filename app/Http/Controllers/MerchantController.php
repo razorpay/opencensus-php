@@ -3430,4 +3430,16 @@ class MerchantController extends Controller
         $data = (new Service())->executeMaxPaymentLimitWorkflow($input);
         return ApiResponse::json($data);
     }
+    
+    /**
+     * @throws \Throwable
+     */
+    public function updateMerchant1ccCouponConfig()
+    {
+        $input = Request::all();
+
+        $response =  $this->service()->updateMerchant1ccCouponConfig($input);
+
+        return ApiResponse::json($response);
+    }
 }

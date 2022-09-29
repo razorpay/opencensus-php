@@ -10687,4 +10687,42 @@ class Service extends Base\Service
             $this->merchant, $segmentProperties, $segmentEventName
         );
     }
+
+    /**
+     * Add/Update Merchant 1cc Config from dark
+     * @param array $input
+     * @return void
+     * @throws \Throwable
+     */
+    public function updateMerchant1ccCouponConfig(array $input)
+    {
+        (new Validator)->validateInput('merchantCouponConfig', $input);
+
+        if ($this->merchant === null and $this->app['basicauth']->isPrivilegeAuth() === true)
+        {
+            $this->merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+
+            $this->app['basicauth']->setMerchant($this->merchant);
+        }
+
+        $config = [];
+
+        foreach ($input['value_json'] as $value)
+        {
+            (new Validator)->validateInput('couponConfigData', $value);
+
+            if (isset($value['visibility']) === false)
+            {
+                $value['visibility'] = 1;
+            }
+
+            $config[$value['reference_id']] = $value;
+        }
+
+        return (new Merchant\Core)->associateMerchant1ccConfig(
+            $input['config'],
+            "coupon visibility and disable payment method configs",
+            $config
+        );
+    }
 }

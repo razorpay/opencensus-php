@@ -14,6 +14,7 @@ use RZP\Models\Merchant\Validator;
 use RZP\Models\Merchant\OneClickCheckout\Shopify;
 use RZP\Models\Merchant\Merchant1ccConfig;
 use RZP\Models\Merchant\OneClickCheckout\DomainUtils;
+use RZP\Models\Merchant\Merchant1ccConfig\Type;
 
 class Service extends Base\Service
 {
@@ -303,6 +304,16 @@ class Service extends Base\Service
                 (new Order\OrderMeta\Core)->update1CCOrder($orderId, ['promotions' => [$decodedResponse['promotion']]]);
             }
 
+            // get coupon_config for MID
+            $couponConfig = $this->merchant->get1ccConfig(Type::COUPON_CONFIG);
+
+            $disabledMethods = $this->getDisabledMethods($couponConfig, $decodedResponse['promotion']['reference_id']);
+
+            if (empty($disabledMethods) === false)
+            {
+                $decodedResponse['promotion']['disabled_methods'] = $disabledMethods;
+            }
+
             return ['status_code' => 200, 'data' => ['promotions' => [$decodedResponse['promotion']]]];
 
         } finally {
@@ -477,5 +488,27 @@ class Service extends Base\Service
                 'platform' => $platformConfig->getValue(),
             ]
         );
+    }
+
+    /**
+     * @param $couponConfig
+     * @param $referenceId
+     * @return array|void[]
+     */
+    public function getDisabledMethods($couponConfig, $referenceId): array
+    {
+        $disabledMethods = [];
+        if ($couponConfig !== null)
+        {
+            $couponConfigData = $couponConfig->getValueJson();
+            if(array_key_exists($referenceId, $couponConfigData) === true) {
+                $config = $couponConfigData[$referenceId];
+            }
+            if (empty($config) == false)
+            {
+                $disabledMethods = $config['disabled_methods'];
+            }
+        }
+        return $disabledMethods;
     }
 }

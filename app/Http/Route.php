@@ -3800,6 +3800,7 @@ class Route
         '1cc_configs_get'                           => ['get',        '1cc/merchant/configs',                                  'MerchantController@get1ccConfig'],
         '1cc_merchant_preferences'                  => ['get',        'merchant/1cc_preferences',                                  'MerchantController@get1ccMerchantPreferences'],
         '1cc_disable_magic'                         => ['post',       '1cc/magic/disable',                                       'MerchantController@disable1ccMagicCheckout'],
+        'update_merchant_1cc_coupon_config'         => ['post',       '1cc/merchant/coupon/configs',                             'MerchantController@updateMerchant1ccCouponConfig'],
 
         '1cc_cod_eligibility_attribute_list'                => ['get',    '1cc/rto_prediction_service/cod_eligibility_attribute/{cod_eligibility_type}',             'CODEligibilityAttributeController@list'       ],
         '1cc_cod_eligibility_attribute_upsert_bulk'         => ['post',   '1cc/rto_prediction_service/cod_eligibility_attribute/{cod_eligibility_type}/upsert/bulk', 'CODEligibilityAttributeController@bulkUpsert' ],
@@ -5206,7 +5207,7 @@ class Route
         'update_shipping_slabs_dark',
         'update_cod_slabs_dark',
         'update_cod_serviceability_slabs_dark',
-
+        'update_merchant_1cc_coupon_config',
         'banking_axis_invitations_send',
 
         'buy_pricing_terminal_cost',
@@ -13578,6 +13579,7 @@ class Route
             'update_serviceability_url_dark',
             'update_merchant_platform_dark',
             'update_merchant_1cc_config_dark',
+            'update_merchant_1cc_coupon_config',
             'update_shipping_slabs_dark',
             'update_cod_serviceability_slabs_dark',
         ],
