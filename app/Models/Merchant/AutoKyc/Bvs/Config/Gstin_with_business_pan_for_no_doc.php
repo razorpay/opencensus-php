@@ -56,6 +56,15 @@ class Gstin_with_business_pan_for_no_doc extends BaseConfig
             "1" => [
                 "rule_type" => "string_comparison_rule",
                 "rule_def"  => [
+                    "equals" => [
+                        "dummy_value",
+                        "dummy_value"
+                    ],
+                ],
+            ],
+            "2" => [
+                "rule_type" => "string_comparison_rule",
+                "rule_def"  => [
                     "===" => [
                         "false",
                         [
@@ -64,7 +73,7 @@ class Gstin_with_business_pan_for_no_doc extends BaseConfig
                     ]
                 ]
             ],
-            "2" => [
+            "3" => [
                 "rule_type" => "string_comparison_rule",
                 "rule_def"  => [
                     "===" => [
