@@ -314,31 +314,32 @@ class Service extends Base\Service
 
     public function pauseNotSupportedCardTokens($input)
     {
-        $count = 1000;
-        if (empty($input['count']) === false)
-        {
-            $count = $input['count'];
-        }
-
-        $tokens = $this->repo->token->getDomesticTokensWithoutCardMandateToPause($count);
-
         $succeeded = [];
         $failed = [];
 
-        foreach ($tokens as $token)
+        if (empty($input['token_ids']) === true)
         {
-            try {
-                $this->core->pauseCardToken($token->getId());
+            return [
+                'failed'    => $failed,
+                'succeeded' => $succeeded,
+            ];
+        }
 
-                $succeeded[] = $token->getId();
+        foreach ($input['token_ids'] as $tokenId)
+        {
+            try
+            {
+                $this->core->pauseCardToken($tokenId);
+
+                $succeeded[] = $tokenId;
             }
             catch (\Exception $e)
             {
                 $this->trace->traceException($e, Trace::ERROR, TraceCode::NOT_SUPPORTED_CARD_TOKEN_PAUSE_FAILED, [
-                    'token_id' => $token->getId(),
+                    'token_id' => $tokenId,
                 ]);
 
-                $failed[] = $token->getId();
+                $failed[] = $tokenId;
             }
         }
 

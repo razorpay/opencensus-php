@@ -283,19 +283,21 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
      */
     protected function getValidationInput(Payment\Entity $payment, CardMandate\Entity $cardMandate, $forceCard = true)
     {
+        if($forceCard === true)
+        {
+            $card = $payment->localToken->card;
 
-        $card = $payment->localToken->card;
+            $cardData = $card->toArray();
 
-        $cardData = $card->toArray();
-
-        $cardData[Constants::CARD_NUMBER] = $this->getCardNumber($card,$payment->getGateway());
+            $cardData[Constants::CARD_NUMBER] = $this->getCardNumber($card, $payment->getGateway());
+        }
 
         $inputResponse = [
             Constants::PAYMENT      => $payment->toArray(),
             Constants::TERMINAL     => $payment->terminal ? $payment->terminal->toArray() : null,
             Constants::GATEWAY      => MandateHubs::BILLDESK_SIHUB,
             Constants::NOTIFICATION => $payment->cardMandateNotification->toArray(),
-            Constants::CARD         => $cardData,
+            Constants::CARD         => $cardData ?? null,
             Constants::TOKEN        => $payment->localToken->toArray(),
             Constants::MERCHANT     => $payment->merchant->toArray(),
             Constants::CARD_MANDATE => $cardMandate->toArray(),
@@ -337,7 +339,11 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
                 $networkToken = $tokenInput['token'];
                 $tokenData = array_merge($inputResponse[Constants::TOKEN], $networkToken);
                 $inputResponse[Constants::TOKEN] = $tokenData;
-                unset($inputResponse[Constants::CARD]);
+
+                if (isset($inputResponse[Constants::CARD]))
+                {
+                    unset($inputResponse[Constants::CARD]);
+                }
 
                 return $inputResponse;
 
