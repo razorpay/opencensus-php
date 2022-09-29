@@ -99,7 +99,8 @@
     "storybook": "start-storybook -p 6006 -s ../public",
     "build-storybook": "build-storybook",
     "tsc": "tsc",
-    "chromatic": "chromatic --project-token $CHROMATIC_TOKEN --auto-accept-changes --exit-once-uploaded"
+    "chromatic": "chromatic --project-token $CHROMATIC_TOKEN --auto-accept-changes --exit-once-uploaded",
+    "test:build:merchant": "DANGER_ENV=true STAGE=production node tools/build.js --project=merchant"
   },
   "devDependencies": {
     "@babel/core": "7.9.0",
@@ -156,6 +157,7 @@
     "typescript-styled-plugin": "0.15.0",
     "webfonts-loader": "7.4.0",
     "webpack": "4.41.5",
+    "webpack-bundle-analyzer": "3.9.0",
     "yargs": "15.3.1"
   },
   "jest": {

@@ -1,7 +1,7 @@
 const validatePrDescription = require('./validatePrDescription');
 const checkJiraOrAsanaLink = require('./checkJiraOrAsanaLink');
 const checkAdheredToGuidelines = require('./checkAdheredToGuidelines');
-const { pr } = require('./utils');
+const { pr } = require('../utils');
 
 function prReviewGuidelinesCheck() {
   validatePrDescription(pr.body);

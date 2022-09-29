@@ -1,0 +1,154 @@
+name: Track Bundle Limit Threshold
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+jobs:
+  asset-checker:
+    name: Track Bundle Asset Checker
+    runs-on: [self-hosted]
+    continue-on-error: true
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Use Node v16
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.13.1
+
+      - name: Install libraries for webp conversion
+        run: |
+          apt-get update && apt-get install -y libjpeg-dev libpng-dev libtiff-dev libgif-dev
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.OS }}-npm-cache-${{ hashFiles('**/package-lock.json') }}
+
+      - run: npm install -g yarn
+
+      - name: Install Dependencies
+        run: |
+          npm config set unsafe-perm true
+          HUSKY=0 npm ci
+        env:
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+          
+      - name: Build All
+        run: cd web && npm run test:build:merchant
+        env:
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+          VERSION: ${{ github.sha }}
+
+      - name: Size Limit Action - DangerJS
+        id: tracksizelimit_dangerjs
+        uses: danger/danger-js@10.6.6
+        with:
+          args: "--id tracksizelimit_dangerjs --dangerfile dangerfile-tracklimit.js"
+        env:
+          GITHUB_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          DANGER_DISABLE_TRANSPILATION: 'true'
+                
+      - name: Print Bundle Size Report
+        run: echo "Bundle Size Report - ${{ steps.tracksizelimit_dangerjs.outputs.reportTable }}"
+
+      - name: slack Send
+        uses: slackapi/slack-github-action@v1.22.0
+        with:
+          payload: |
+            {
+              "type": "home",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "Dashboard Bundle Size Report - PR merge"
+                  }
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "Bundle size check to restrict users to maintain bundle size within threshold limits. This Report consist of the size comparison with threshold and Percentage used of threshold"
+                    }
+                  ]
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text":" ${{ steps.tracksizelimit_dangerjs.outputs.reportTable }} "
+                  }
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*PR Link to refer changes*: ${{ steps.tracksizelimit_dangerjs.outputs.prLink }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*PR Raised by*: "
+                    },
+                    {
+                      "type": "image",
+                      "image_url": "${{ steps.tracksizelimit_dangerjs.outputs.prAvatar }}",
+                      "alt_text": "avatar"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "${{ steps.tracksizelimit_dangerjs.outputs.prOwner }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "View Bundle size Threshold Limits path based"
+                  },
+                  "accessory": {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "Visit Link",
+                      "emoji": true
+                    },
+                    "value": "click_me",
+                    "url": "${{ steps.tracksizelimit_dangerjs.outputs.prLink }}",
+                    "action_id": "button-action"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.DASHBOARD_SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK

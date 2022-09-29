@@ -1,5 +1,5 @@
-const { printMessage, universeUsage } = require('./utils');
-const { PR_AUTOMATED_CHECKS } = require('./constants');
+const { printMessage, universeUsage } = require('../utils');
+const { PR_AUTOMATED_CHECKS } = require('../constants');
 
 const jiraIssueIdRegex = /((?<!([A-Za-z]{1,10})-?)[A-Z]+-\d+)/;
 const asanaRegex = /(?<=https:\/\/app.asana.com)[.\S]*/;

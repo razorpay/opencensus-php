@@ -1,5 +1,5 @@
-const { printMessage, universeUsage } = require('./utils');
-const { PR_AUTOMATED_CHECKS } = require('./constants');
+const { printMessage, universeUsage } = require('../utils');
+const { PR_AUTOMATED_CHECKS } = require('../constants');
 
 const adheredToGuidelinesRegex = /[ \S]*(?=Have you adhered to)/;
 const checkboxRegex = /\[x\]/i;

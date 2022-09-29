@@ -9,6 +9,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const WorkbboxWebpackPlugin = require('workbox-webpack-plugin');
 const ImageminWebpWebpackPlugin = require('imagemin-webp-webpack-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const fontsToProjectMap = {
   pokedex: 'merchant',
@@ -181,6 +182,20 @@ module.exports = ({ config, project }) => {
       'process.env.PUBLIC_ENV': JSON.stringify(process.env.STAGE),
     }),
   );
+
+  if (process.env.DANGER_ENV) {
+    config.plugins = config.plugins.filter((plugin) => {
+      return plugin?.constructor?.name !== 'BundleAnalyzerPlugin';
+    });
+    config.plugins.push(
+      new BundleAnalyzerPlugin({
+        analyzerMode: 'json',
+        openAnalyzer: false,
+        reportFilename: `${project}-stats.json`,
+        defaultSizes: 'gzip',
+      }),
+    );
+  }
 
   if (IS_WORKBOX_ENABLE.indexOf(project) > -1) {
     config.plugins.push(
