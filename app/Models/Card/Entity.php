@@ -93,6 +93,9 @@ class Entity extends Base\PublicEntity
     const DUMMY_IIN              = '999999';
     const DUMMY_AXIS_TOKENHQ_CARD   = '4532712890380420';
 
+    const DUMMY_IIN              = '999999';
+    const DUMMY_CARD_EXPIRY_MONTH     = '01';
+    const DUMMY_CARD_NAME             =  '';
 
     const NETWORK_CODE = 'network_code';
 
@@ -1395,6 +1398,28 @@ class Entity extends Base\PublicEntity
         return $attributes;
     }
 
+    public function toArrayPublic()
+    {
+        $data = parent::toArrayPublic();
+
+           $experimentVariable = UniqueIdEntity::generateUniqueId();
+
+            $app  = \App::getFacadeRoot();
+
+            $variant = $app['razorx']->getTreatment($experimentVariable, Merchant\RazorxTreatment::SEND_DUMMY_CARD_DETAILS_POST_TOKENISATION, $app['rzp.mode'] ?? 'live');
+
+            $app['trace']->info(TraceCode::FETCH_CARD_DUMMY_CARD_DETAILS, [
+                'token'          => $data,
+                'razorx_variant' => $variant,
+            ]);
+
+            if(strtolower($variant) === 'on') {
+                $this->setDummyCardData($data);
+            }
+
+        return $data;
+    }
+
     public function toArray()
     {
         $data = parent::toArray();
@@ -1678,5 +1703,25 @@ class Entity extends Base\PublicEntity
     public function setDummyCardName()
     {
         $this->setAttribute(self::NAME, "");
+    }
+
+    public function setDummyCardData(& $data)
+    {
+        if(isset($data[self::IIN])){
+            $data[self::IIN] = self::DUMMY_IIN;
+        }
+
+        if(isset($data[self::NAME])){
+            $data[self::NAME] = self::DUMMY_CARD_NAME;
+        }
+
+        if(isset($data[self::EXPIRY_YEAR])){
+            $data[self::EXPIRY_YEAR] = self::DUMMY_EXPIRY_YEAR;
+        }
+
+        if(isset($data[self::EXPIRY_MONTH])){
+            $data[self::EXPIRY_MONTH] = self::DUMMY_CARD_EXPIRY_MONTH;
+        }
+
     }
 }

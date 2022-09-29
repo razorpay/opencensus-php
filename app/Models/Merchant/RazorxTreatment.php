@@ -601,6 +601,9 @@ final class RazorxTreatment
 
     public const SMARTCOLLECT_SERVICE_QR_PAYMENTS_CALLBACK = 'smartcollect_service_qr_payments_callback';
 
+    //Experiment to sent dummy details in merchant facing APIs
+    const SEND_DUMMY_CARD_DETAILS_POST_TOKENISATION = 'send_dummy_card_details_post_tokenisation';
+
     /* Experiment to enable self serve workflow */
     public const RX_SELF_SERVE_WORKFLOW = "rx_self_serve_workflow";
 

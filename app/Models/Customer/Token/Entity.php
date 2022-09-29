@@ -1087,6 +1087,23 @@ class Entity extends Base\PublicEntity
                 } else {
                     $publicArray[self::COMPLIANT_WITH_TOKENISATION_GUIDELINES] = false;
                 }
+
+                $experimentVariable = UniqueIdEntity::generateUniqueId();
+
+                $app  = \App::getFacadeRoot();
+
+                $variant = $app['razorx']->getTreatment($experimentVariable, Merchant\RazorxTreatment::SEND_DUMMY_CARD_DETAILS_POST_TOKENISATION, $app['rzp.mode'] ?? 'live');
+
+                $app['trace']->info(TraceCode::FETCH_CARD_DUMMY_CARD_DETAILS, [
+                    'token'          => $publicArray,
+                    'razorx_variant' => $variant,
+                ]);
+
+                if(strtolower($variant) === 'on')
+                {
+                    (new Card\Entity())->setDummyCardData($publicArray['card']);
+                }
+
             }
             catch (\Throwable $e)
             {
