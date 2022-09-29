@@ -48,6 +48,7 @@ class Entity extends Base\PublicEntity
     const COPY_DISABLE                          = 'copy_disable';
 
     public static $displayOrder = [
+        BankingRole::OWNER,
         BankingRole::ADMIN,
         BankingRole::FINANCE_L1,
         BankingRole::FINANCE_L2,
@@ -56,6 +57,7 @@ class Entity extends Base\PublicEntity
         BankingRole::OPERATIONS,
         BankingRole::CHARTERED_ACCOUNTANT,
         BankingRole::VIEW_ONLY,
+        BankingRole::VENDOR,
     ];
 
     protected $fillable = [
@@ -105,7 +107,8 @@ class Entity extends Base\PublicEntity
     ];
 
     public static $disableCopyForRoles = [
-        BankingRole::ADMIN
+        BankingRole::ADMIN,
+        BankingRole::OWNER
     ];
 
     // ============================= RELATIONS =============================

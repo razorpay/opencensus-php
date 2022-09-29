@@ -3872,6 +3872,8 @@ class Route
 
         //CAC routes
         'cac_role_fetch_all'                    => ['get',                    'cac/roles',                                               'RolesController@listRolesForMerchant'],
+        'cac_role_fetch_role_map'               => ['get',                    'cac/role_map',                                               'RolesController@listRolesMap'],
+        'admin_fetch_role_map'               => ['get',                    'admin/cac/role_map',                                               'RolesController@listRolesMap'],
         'view_cac_role'                         => ['get',                    'cac/role/{id}',                                                  'RolesController@getRole'],
         'role_self_get'                         => ['get',                    'cac/self/role',                                                   'RolesController@getSelfRole'                                    ],
         //'delete_cac_role'                       => ['delete',                 'cac/role/{id}',                                                  'RolesController@deleteRole'                                 ],
@@ -6233,6 +6235,7 @@ class Route
         //CAC
         'cac_privileges_fetch',
         'cac_role_fetch_all',
+        'cac_role_fetch_role_map',
         'role_self_get',
         'view_cac_role',
         //'delete_cac_role',
@@ -6258,6 +6261,7 @@ class Route
         'org_fetch_bank_account',
         'org_update_bank_account',
         'admin_payouts_workflow_config_get',
+        'admin_fetch_role_map',
         'max_payment_limit_update',
         'execute_max_payment_limit_workflow',
         'linked_account_reference_data_create',
@@ -7600,6 +7604,7 @@ class Route
         'workflow_get'                             => Permission::VIEW_WORKFLOW,
         'workflow_payout_amount_rules_get_admin'   => Permission::VIEW_WORKFLOW,
         'admin_payouts_workflow_config_get'        => Permission::VIEW_WORKFLOW,
+        'admin_fetch_role_map'                     => Permission::VIEW_WORKFLOW,
         'workflow_payout_amount_rules_edit'        => Permission::EDIT_WORKFLOW,
         'workflow_get_multiple'                    => Permission::VIEW_ALL_WORKFLOW,
         'workflow_merchants_create_payout_get'     => Permission::VIEW_ALL_WORKFLOW,
@@ -9173,6 +9178,7 @@ class Route
         //CAC
         'cac_privileges_fetch'                         => Permission::VIEW_PRIVILEGES,
         'cac_role_fetch_all'                           => Permission::VIEW_ALL_ROLES,
+        'cac_role_fetch_role_map'                      => Permission::VIEW_ALL_ROLES,
         'view_cac_role'                                => Permission::VIEW_ROLE,
         'role_self_get'                                => Permission::VIEW_USER,
         //'delete_cac_role'                              => Permission::DELETE_ROLE,
@@ -10822,6 +10828,7 @@ class Route
             //CAC
             'cac_privileges_fetch',
             'cac_role_fetch_all',
+            'cac_role_fetch_role_map',
             'role_self_get',
             'view_cac_role',
             //'delete_cac_role',
@@ -12945,6 +12952,7 @@ class Route
             //CAC
             'cac_privileges_fetch',
             'cac_role_fetch_all',
+            'admin_fetch_role_map',
             'view_cac_role',
             //'delete_cac_role',
             'create_cac_role',

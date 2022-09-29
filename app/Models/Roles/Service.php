@@ -4,6 +4,7 @@ namespace RZP\Models\Roles;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\User\BankingRole;
 use RZP\Trace\TraceCode;
 use RZP\Models\RoleAccessPolicyMap;
 
@@ -42,6 +43,13 @@ class Service extends Base\Service
         });
 
         return $rolesGrouppedByType;
+    }
+
+    public function listRolesMap($input)
+    {
+        Entity::$rolesHiddenFromDashboard = [];
+
+        return $this->listRolesForMerchant($input);
     }
 
     public function fetchSelfRole()

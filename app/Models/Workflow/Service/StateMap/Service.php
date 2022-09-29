@@ -7,6 +7,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Workflow\Service\Metric;
 use RZP\Models\Workflow\Service\StateMap;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -54,6 +55,13 @@ class Service extends Base\Service
      */
     public function update(string $id, array $input)
     {
+        $this->trace->info(
+            TraceCode::TYPEFORM_COMPLETE_RESPONSES_PARSING_ISSUE,
+            [
+                'id' => $id,
+                'input' => $input
+            ]);
+
         (new Validator)->setStrictFalse()->validateInput(Validator::UPDATE_STATE, $input);
 
         $stateMap = $this->repo->workflow_state_map->getByStateId($id);

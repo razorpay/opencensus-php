@@ -477,4 +477,44 @@ class RolesTest extends TestCase
                 'updated_at'  => 1493805150
             ]);
     }
+
+    public function testFetchRoleMap()
+    {
+        $this->fixtures->create('merchant',[ 'id' => self::DEFAULT_X_MERCHANT_ID ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'activation_status' => 'activated',
+            'merchant_id'       => self::DEFAULT_X_MERCHANT_ID,
+            'business_type'     => '2',
+        ]);
+
+        $user1 = $this->fixtures->user->createEntityInTestAndLive('user', []);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_X_MERCHANT_ID, $user1->getId());
+
+        $customRole1 = $this->fixtures->create('roles', ['name' => 'CAC 1', 'id' => '100customRole1','org_id' => "100000razorpay"]);
+
+        $customRole2 = $this->fixtures->create('roles', ['name' => 'CAC 2', 'id' => '100customRole2','org_id' => "100000razorpay"]);
+
+        $customRole3 = $this->fixtures->create('roles', ['name' => 'CAC 3', 'id' => '100customRole3', 'org_id' => "100000razorpay"]);
+
+        $response = $this->startTest();
+    }
+
+    public function testFetchRoleMapWithOnlyStandardRoles()
+    {
+        $this->fixtures->create('merchant',[ 'id' => self::DEFAULT_X_MERCHANT_ID ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'activation_status' => 'activated',
+            'merchant_id'       => self::DEFAULT_X_MERCHANT_ID,
+            'business_type'     => '2',
+        ]);
+
+        $user1 = $this->fixtures->user->createEntityInTestAndLive('user', []);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_X_MERCHANT_ID, $user1->getId());
+
+        $response = $this->startTest();
+    }
 }
