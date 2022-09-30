@@ -381,24 +381,31 @@ class Service extends Base\Service
      * @param array $input
      * @return int
      */
-    public function updateSettlementStatusInTransfer(array $input):int
+    public function updateSettlementStatusInTransfer(array $input) : int
     {
+        $status = $input['status'] ?? [];
+
         $limit = $input['limit'] ?? 1000;
 
-        $settlementIds = $this->repo->settlement->fetchSettlementIdsWithIncorrectStatusOnTransfers($limit);
+        $settlementIds = $this->repo->settlement->fetchSettlementIdsWithIncorrectStatusOnTransfers($status, $limit);
 
-        $this->trace->info(TraceCode::SETTLEMENT_IDS_FOR_STATUS_UPDATE_ON_TRANSFERS,
-        [
-            'limit'          => $limit,
-            'count'          => count($settlementIds),
-            'settlement_ids' => $settlementIds,
-        ]);
+        $count = count($settlementIds);
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_IDS_FOR_STATUS_UPDATE_ON_TRANSFERS,
+            [
+                'limit'             => $limit,
+                'count'             => $count,
+                'settlement_ids'    => $settlementIds,
+            ]
+        );
 
         foreach ($settlementIds as $settlementId)
         {
             TransferSettlementStatus::dispatch($this->mode, $settlementId);
         }
-        return count($settlementIds);
+
+        return $count;
     }
 
     public function processPendingPaymentTransfers(array $input)

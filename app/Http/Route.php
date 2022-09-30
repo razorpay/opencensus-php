@@ -2019,7 +2019,7 @@ class Route
         'linked_account_update_bank_account'       => ['patch',    'beta/accounts/{id}/bank_account',                'MerchantController@updateLinkedAccountBankAccount'                 ],
         'linked_account_reference_data_create'     => ['post',     'la_reference_data',                              'AccountController@createLinkedAccountReferenceData'                ],
         'amc_linked_account_create'                => ['post',     'la_amc',                                         'AccountController@createAMCLinkedAccountViaAdmin'                  ],
-        'transfer_settlement_status_update'        => ['patch',     'transfers/settlement_status',                   'TransferController@updateSettlementStatusInTransfer'               ],
+        'transfer_settlement_status_update'        => ['patch',    'transfers/settlement_status',                    'TransferController@updateSettlementStatusInTransfer'               ],
 
         'user_register'                            => ['post',     'users/register',                                 'UserController@registerUser'                                       ],
         'user_otp_register'                        => ['post',     'users/register/otp',                             'UserController@registerUserWithOtp'                                ],

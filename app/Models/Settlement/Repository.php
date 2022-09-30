@@ -179,22 +179,29 @@ class Repository extends Base\Repository
         }
     }
 
-    public function fetchSettlementIdsWithIncorrectStatusOnTransfers(int $limit=1000)
+    public function fetchSettlementIdsWithIncorrectStatusOnTransfers(array $transferStatus = [], int $limit = 1000)
     {
-        $settlementIdColumn = $this->dbColumn(Entity::ID);
-        $settlementStatusColumn = $this->dbColumn(Entity::STATUS);
-        $recipientSettlementIdColumn = $this->repo->transfer->dbColumn(TransferEntity::RECIPIENT_SETTLEMENT_ID);
-        $transferSettlementStatusColumn = $this->repo->transfer->dbColumn(TransferEntity::SETTLEMENT_STATUS);
+        $idColumn                       = $this->dbColumn(Entity::ID);
+        $statusColumn                   = $this->dbColumn(Entity::STATUS);
+        $recipientSettlementIdColumn    = $this->repo->transfer->dbColumn(TransferEntity::RECIPIENT_SETTLEMENT_ID);
+        $settlementStatusColumn         = $this->repo->transfer->dbColumn(TransferEntity::SETTLEMENT_STATUS);
+        $transferStatusColumn           = $this->repo->transfer->dbColumn(TransferEntity::STATUS);
 
 
-        return $this->newQueryOnSlave()
-            ->select($settlementIdColumn)
-            ->join(Table::TRANSFER,$settlementIdColumn,'=',$recipientSettlementIdColumn)
-            ->where($settlementStatusColumn,'=', Status::PROCESSED)
-            ->where($transferSettlementStatusColumn,'<>', SettlementStatus::SETTLED)
-            ->limit($limit)
-            ->distinct()
-            ->pluck($settlementIdColumn)
-            ->toArray();
+        $query = $this->newQueryOnSlave()
+                      ->select($idColumn)
+                      ->join(Table::TRANSFER, $idColumn, '=', $recipientSettlementIdColumn)
+                      ->where($statusColumn, Status::PROCESSED)
+                      ->where($settlementStatusColumn, '<>', SettlementStatus::SETTLED);
+
+        if (empty($transferStatus) === false)
+        {
+            $query = $query->whereIn($transferStatusColumn, $transferStatus);
+        }
+
+        return $query->limit($limit)
+                     ->distinct()
+                     ->pluck($idColumn)
+                     ->toArray();
     }
 }
