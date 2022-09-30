@@ -1186,6 +1186,18 @@ class Core extends Base\Core
         return true;
     }
 
+    private function isQrCodeEnabled()
+    {
+        $enabledFeatures = $this->merchant->getEnabledFeatures();
+
+        if (in_array(FeatureConstants::QR_CODES, $enabledFeatures, true) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     private function isPaymemtGatewayEnabled()
     {
         $activation_status = $this->merchant->merchantDetail->getActivationStatus();
@@ -1226,6 +1238,11 @@ class Core extends Base\Core
         if ($this->isPaymentPagesEnabled() === true)
         {
             $currentProducts[] = Constants::PAYMENT_PAGES;
+        }
+
+        if ($this->isQrCodeEnabled() === true)
+        {
+            $currentProducts[] = Constants::QR_CODE;
         }
 
         return $currentProducts;

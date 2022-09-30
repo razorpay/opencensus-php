@@ -1126,13 +1126,6 @@ final class Constants
             self::IS_NEW_PRODUCT => false
         ],
 
-        self::QR_CODE => [
-            self::TYPE           => 'qr_code',
-            self::TITLE          => 'QR Code',
-            self::DESCRIPTION    => 'Show QR code to your customer that helps them to pay from Razorpay supported partners',
-            self::IS_NEW_PRODUCT => true
-        ],
-
         self::TAP_AND_PAY => [
             self::TYPE           => 'tap_and_pay',
             self::TITLE          => 'Tap & Pay',
@@ -1144,8 +1137,15 @@ final class Constants
             self::TYPE           => 'payment_pages',
             self::TITLE          => 'Payment Pages',
             self::DESCRIPTION    => 'Create your custom branded page',
+            self::IS_NEW_PRODUCT => false
+        ],
+
+        self::QR_CODE => [
+            self::TYPE           => 'qr_code',
+            self::TITLE          => 'QR',
+            self::DESCRIPTION    => 'Generate QR codes on the go',
             self::IS_NEW_PRODUCT => true
-        ]
+        ],
     ];
 
     // Mapping is used for smart dashboard merchant details.
