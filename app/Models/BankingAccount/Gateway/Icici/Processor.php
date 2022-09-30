@@ -4,12 +4,16 @@ namespace RZP\Models\BankingAccount\Gateway\Icici;
 
 use App;
 
+use RZP\Services\Mozart;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\BankingAccount;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccount\Entity;
 use RZP\Exception\BadRequestException;
+use RZP\Services\BankingAccountService;
 use RZP\Exception\GatewayErrorException;
+use RZP\Models\BankingAccountStatement\Details as BasDetails;
 use RZP\Models\BankingAccount\Gateway\Processor as BaseProcessor;
 
 class Processor extends BaseProcessor
@@ -34,13 +38,25 @@ class Processor extends BaseProcessor
 
     protected $accountNumber;
 
-    public function __construct(array $input = [])
+    public function __construct(array $setUpForBalanceFetch = [])
     {
         parent::__construct();
 
-        $this->setUpForBalanceFetch($input);
+        if (empty($setUpForBalanceFetch) === false)
+        {
+            $app = App::getFacadeRoot();
 
-        $this->accountCredentials = $this->extractBankingAccountCredsFromBASResponse($this->basResponse);
+            /* @var BankingAccountService $bas */
+            $bas = $app['banking_account_service'];
+
+            $merchantId    = $setUpForBalanceFetch[BasDetails\Entity::MERCHANT_ID];
+            $accountNumber = $setUpForBalanceFetch[BasDetails\Entity::ACCOUNT_NUMBER];
+            $channel       = $setUpForBalanceFetch[BasDetails\Entity::CHANNEL];
+
+            $this->accountCredentials = $bas->fetchBankingCredentials($merchantId, $channel, $accountNumber);
+
+            $this->accountNumber = $accountNumber;
+        }
     }
 
     protected function formatDataForMozartBalanceFetchApi()
@@ -99,18 +115,88 @@ class Processor extends BaseProcessor
             }
             catch (GatewayErrorException $ex)
             {
-                $this->handleGatewayErrorExceptionFromMozart($request,
-                                                             $ex,
-                                                             BankingAccount\Channel::ICICI);
+                $traceRequest = $this->unsetSensitiveDetails($request);
+
+                $this->trace->traceException(
+                    $ex,
+                    Trace::CRITICAL,
+                    TraceCode::MOZART_SERVICE_REQUEST_FAILED,
+                    [
+                        'request' => $traceRequest,
+                        'channel' => BankingAccount\Channel::ICICI,
+                    ]);
+
+                // throwing a generic error with which includes the gateway error description from Mozart
+                $errorDescription = $this->getIciciGatewayDescriptionFromException($ex);
+
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED,
+                    null,
+                    [
+                        'data'    => $ex->getData(),
+                        'channel' => BankingAccount\Channel::ICICI
+                    ],
+                    $errorDescription);
             }
             catch (\Throwable $exception)
             {
-                $this->handleThrowableErrorExceptionFromMozart($request,
-                                                               $exception,
-                                                               BankingAccount\Channel::ICICI,
-                                                               $retryCount);
+                $traceRequest = $this->unsetSensitiveDetails($request);
+
+                $this->trace->traceException(
+                    $exception,
+                    Trace::CRITICAL,
+                    TraceCode::MOZART_SERVICE_REQUEST_FAILED,
+                    [
+                        'request' => $traceRequest,
+                        'channel' => BankingAccount\Channel::ICICI
+                    ]);
+
+                $errorCode = $exception->getCode();
+
+                $shouldRetry = $this->shouldRetryMozartRequest($errorCode);
+
+                if (($shouldRetry === true) and
+                    ($retryCount < self::MAX_MOZART_RETRIES))
+                {
+                    $this->trace->info(
+                        TraceCode::MOZART_SERVICE_RETRY,
+                        [
+                            'message' => $exception->getMessage(),
+                            'data'    => $exception->getData(),
+                        ]);
+
+                    $retryCount++;
+                }
+                else
+                {
+                    throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED
+                    );
+                }
             }
         }while($retryCount <= self::MAX_MOZART_RETRIES);
+    }
+
+    protected function getIciciGatewayDescriptionFromException(GatewayErrorException $ex)
+    {
+        $gatewayErrorDesc = $ex->getGatewayErrorDesc();
+
+        if ($gatewayErrorDesc === Mozart::NO_ERROR_MAPPING_DESCRIPTION)
+        {
+            $gatewayErrorDesc = "Unknown";
+        }
+
+        if (empty($gatewayErrorDesc) === false)
+        {
+            return self::GATEWAY_ERROR_PREFIX . $gatewayErrorDesc;
+        }
+
+        return self::GATEWAY_ERROR_PREFIX . "Unknown";
+    }
+
+    protected function getFormattedAmount($amount)
+    {
+        return intval(number_format($amount * 100, 0, '.', ''));
     }
 
     protected function fetchBalanceFromMozartResponse(array $response)
@@ -131,7 +217,9 @@ class Processor extends BaseProcessor
     {
         $response = $this->verifyCredentials();
 
-        return $this->fetchBalanceFromMozartResponse($response);
+        $balance = $this->fetchBalanceFromMozartResponse($response);
+
+        return $balance;
     }
 
     public function formatAccountDetails(array $input)
@@ -164,12 +252,13 @@ class Processor extends BaseProcessor
         // TODO: Implement generateRequestForSourceAccount() method.
     }
 
-    protected function extractBankingAccountCredsFromBASResponse($response)
+    protected function unsetSensitiveDetails(array $request)
     {
-        return [
-            Fields::CORP_ID   => $response[Fields::CORP_ID],
-            Fields::CORP_USER => $response[Fields::CORP_USER],
-            Fields::URN       => $response[Fields::URN],
-        ];
+        if (isset($request[Fields::SOURCE_ACCOUNT][Fields::CREDENTIALS]) === true)
+        {
+            unset($request[Fields::SOURCE_ACCOUNT][Fields::CREDENTIALS]);
+        }
+
+        return $request;
     }
 }

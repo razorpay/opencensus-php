@@ -19,10 +19,6 @@ return [
             'account_number'    => env('RZP_FEES_DETAILS_ICICI_ACCOUNT_NUMBER'),
             'ifsc'              => env('RZP_FEES_DETAILS_ICICI_IFSC'),
         ],
-        'axis'              => [
-            'account_number'    => env('RZP_FEES_DETAILS_AXIS_ACCOUNT_NUMBER'),
-            'ifsc'              => env('RZP_FEES_DETAILS_AXIS_IFSC'),
-        ],
     ],
 
     'icici' => [

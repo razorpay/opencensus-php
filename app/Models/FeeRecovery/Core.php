@@ -18,7 +18,6 @@ use RZP\Models\Schedule\Task;
 use RZP\Models\BankingAccount;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
-use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Transaction\CreditType;
 use RZP\Models\Settlement\SlackNotification;
@@ -659,23 +658,9 @@ class Core extends Base\Core
 
         $fundAccountId = $feeRecoveryFundAccount->getPublicId();
 
-        $payoutMode = Payout\Mode::IFT;
-
-        switch($balance->getChannel())
-        {
-            case Channel::AXIS:
-            case Channel::YESBANK:
-
-                $payoutMode = Payout\Mode::NEFT;
-                break;
-
-            default:
-                break;
-        }
-
         $payoutPayload = [
             Payout\Entity::FUND_ACCOUNT_ID      => $fundAccountId,
-            Payout\Entity::MODE                 => $payoutMode,
+            Payout\Entity::MODE                 => Payout\Mode::IFT,
             Payout\Entity::CURRENCY             => Currency::INR,
             Payout\Entity::BALANCE_ID           => $balance->getId(),
             Payout\Entity::PURPOSE              => Payout\Purpose::RZP_FEES,

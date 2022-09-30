@@ -6,18 +6,14 @@ use RZP\Exception;
 
 class Channel
 {
-    const RBL     = 'rbl';
-    const ICICI   = 'icici';
-    const AXIS    = 'axis';
-    const YESBANK = 'yesbank';
+    const RBL = 'rbl';
+    const ICICI = 'icici';
 
     public static function getChannels()
     {
         return [
             self::RBL,
-            self::ICICI,
-            self::AXIS,
-            self::YESBANK,
+            self::ICICI
         ];
     }
 

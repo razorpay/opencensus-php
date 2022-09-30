@@ -1779,8 +1779,8 @@ class Entity extends Base\PublicEntity
                                ->where(BankingAccount\Entity::STATUS, BankingAccount\Status::ACTIVATED)
                                ->get();
 
-        // Some CAs (ICICI, Axis, Yes Bank) exist at banking account service.
-        $basAccount = app('banking_account_service')->fetchActivatedDirectAccountsFromBas($this);
+        //icici ca account exists at banking account service.
+        $basAccount = app('banking_account_service')->fetchIciciActivatedAccountFromBas($this);
 
         if(empty($basAccount) === false)
         {

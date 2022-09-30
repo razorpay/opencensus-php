@@ -3577,7 +3577,7 @@ class Core extends Base\Core
                     if(empty($caActivationStatus) === true or
                        $caActivationStatus !== 'activated')
                     {
-                        $caActivationStatus = (new BankingAccountService\Core())->fetchBasCaStatus($merchant['id']);
+                        $caActivationStatus = (new BankingAccountService\Core())->fetchIciciCaStatus($merchant['id']);
                     }
                 }
 

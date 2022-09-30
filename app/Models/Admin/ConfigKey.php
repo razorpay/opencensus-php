@@ -121,12 +121,9 @@ class ConfigKey
 
     const ICICI_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_DELETE_MODE = self::PREFIX . 'icici_banking_account_gateway_balance_update_delete_mode';
 
-    const CONNECTED_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_DELETE_MODE = self::PREFIX . 'connected_banking_account_gateway_balance_update_delete_mode';
     //Merchant gateway balance is maintained at our end to display on dashboard and is updated by cron regularly.
     //This key puts limit on number of merchants for which to update in one run for icici
     const ICICI_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT = self::PREFIX . 'icici_banking_account_gateway_balance_update_rate_limit';
-
-    const CONNECTED_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT = self::PREFIX . 'connected_banking_account_gateway_balance_update_rate_limit';
 
     // RBL_STATEMENT_FETCH_ATTEMPT_LIMIT is defining the number of attempt count for account statement fetch
     // per request. RBL has internal pagination with flag for statement fetch and we need to refetch with
@@ -233,19 +230,11 @@ class ConfigKey
     // Count of the number of free direct account payouts for ICICI allowed per merchant in a month.
     const FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_ICICI_SLAB1 = self::PREFIX . FreePayout::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT . '_' . Channel::ICICI . '_' . FreePayout::SLAB1;
 
-    const FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_AXIS_SLAB1 = self::PREFIX . FreePayout::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT . '_' . Channel::AXIS . '_' . FreePayout::SLAB1;
-
-    const FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_YESBANK_SLAB1 = self::PREFIX . FreePayout::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT . '_' . Channel::YESBANK . '_' . FreePayout::SLAB1;
-
     const FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB2 = self::PREFIX . FreePayout::FREE_SHARED_ACCOUNT_PAYOUTS_COUNT . '_' . FreePayout::SLAB2;
 
     const FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB2 = self::PREFIX . FreePayout::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT . '_' . Channel::RBL . '_' . FreePayout::SLAB2;
 
     const FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_ICICI_SLAB2 = self::PREFIX . FreePayout::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT . '_' . Channel::ICICI . '_' . FreePayout::SLAB2;
-
-    const FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_AXIS_SLAB2 = self::PREFIX . FreePayout::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT . '_' . Channel::AXIS . '_' . FreePayout::SLAB2;
-
-    const FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_YESBANK_SLAB2 = self::PREFIX . FreePayout::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT . '_' . Channel::YESBANK . '_' . FreePayout::SLAB2;
 
     const FREE_PAYOUTS_SUPPORTED_MODES = self::PREFIX . FreePayout::FREE_PAYOUTS_SUPPORTED_MODES;
 
@@ -380,10 +369,8 @@ class ConfigKey
         self::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING,
         self::RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT,
         self::ICICI_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_DELETE_MODE,
-        self::CONNECTED_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_DELETE_MODE,
         self::RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_DELETE_MODE,
         self::ICICI_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT,
-        self::CONNECTED_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT,
         self::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT,
         self::RBL_STATEMENT_FETCH_SPECIAL_ATTEMPT_LIMIT,
         self::RBL_STATEMENT_FETCH_RETRY_LIMIT,
@@ -418,13 +405,9 @@ class ConfigKey
         self::FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB1,
         self::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB1,
         self::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_ICICI_SLAB1,
-        self::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_AXIS_SLAB1,
-        self::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_YESBANK_SLAB1,
         self::FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB2,
         self::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB2,
         self::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_ICICI_SLAB2,
-        self::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_AXIS_SLAB2,
-        self::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_YESBANK_SLAB2,
         self::FREE_PAYOUTS_SUPPORTED_MODES,
         self::DOWNTIME_SLACK_NOTIFICATION_CHANNELS,
         self::ENABLE_PAYMENT_DOWNTIME_CARD,

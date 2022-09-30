@@ -333,16 +333,10 @@ class FundTransfer extends Base
     {
         $channel = $this->fta->getChannel();
 
-        $source = $this->fta->source;
-
         $sourceType = $this->fta->getSourceType();
 
-        $sourceBalanceAccountType = $source->balance->getAccountType();
-
         // Ref: https://razorpay.slack.com/archives/CNXASR0H3/p1586861024155400
-        if (($sourceType === Entity::PAYOUT) and
-            ($channel === Channel::YESBANK) and
-            ($sourceBalanceAccountType !== Balance\AccountType::DIRECT))
+        if (($sourceType === Entity::PAYOUT) and ($channel === Channel::YESBANK))
         {
             $channel = Channel::ICICI;
         }
@@ -365,6 +359,8 @@ class FundTransfer extends Base
         {
             $request[Constants::TRANSFER][Constants::AMOUNT] = $this->source->getBaseAmount();
         }
+
+        $source = $this->fta->source;
 
         if ($sourceType === Entity::PAYOUT)
         {

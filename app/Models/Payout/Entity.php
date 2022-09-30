@@ -51,7 +51,6 @@ use Razorpay\OAuth\Application\Repository as AppRepo;
 use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 use RZP\Models\PayoutsStatusDetails as PayoutsStatusDetails;
 use RZP\Models\PayoutsDetails\Entity as PayoutsDetailsEntity;
-use RZP\Models\BankingAccountService\Channel as BASChannel;
 
 /**
  * @property Customer\Entity        $customer
@@ -1415,17 +1414,17 @@ class Entity extends Base\PublicEntity
 
     public function getSourceFtsFundAccountId()
     {
-        $channel = $this->balance->getChannel();
-
         $bankingAccount = $this->balance->bankingAccount;
 
         $ftsFundAccountId = optional($bankingAccount)->getFtsFundAccountId();
 
         if (empty($ftsFundAccountId) === true and
             ($this->isBalanceAccountTypeDirect() === true) and
-            (in_array($channel, BankingAccount\Core::$directChannelsForConnectBanking) === true))
+            ($this->balance->getChannel() === Channel::ICICI))
         {
             $app = App::getFacadeRoot();
+
+            $channel       = $this->balance->getChannel();
 
             $accountNumber = $this->balance->getAccountNumber();
 
@@ -2175,11 +2174,11 @@ class Entity extends Base\PublicEntity
 
         $attributes[self::BANKING_ACCOUNT_ID] = optional($this->bankingAccount)->getPublicId();
 
-        //In case of CAs implemented in BAS (ICICI, Axis, Yesbank) banking_account_id is fetched from banking account service.
+        //In case of icici ca banking_account_id is fetched from banking account service.
         //banking_account_id is cached for subsequent calls
         if (empty($attributes[self::BANKING_ACCOUNT_ID]) === true and
             $this->isBalanceAccountTypeDirect() === true and
-            in_array($this->balance->getChannel(), BASChannel::getDirectTypeChannels()))
+            $this->balance->getChannel() === Channel::ICICI)
         {
             $attributes[self::BANKING_ACCOUNT_ID] = app('banking_account_service')->fetchBankingAccountId($attributes[self::BALANCE_ID]);
         }
