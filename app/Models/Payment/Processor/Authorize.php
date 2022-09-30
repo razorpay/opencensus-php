@@ -11058,6 +11058,7 @@ trait Authorize
             try
             {
                 $data = [];
+                $iin_number = "";
                 if ($payment->isMethodCardOrEmi() === false)
                 {
                     return;
@@ -11072,30 +11073,33 @@ trait Authorize
                     if ((empty($network_card) === false) and
                         ($network_card->isNetworkTokenisedCard() === true))
                     {
-                        $iin = Card\IIN\IIN::getTransactingIinforRange($network_card->getTokenIin());
-                        $iin_number = $iin;
+                        $iin_number = Card\IIN\IIN::getTransactingIinforRange($network_card->getTokenIin());
                     }
                     else
                     {
                         $iin_number = $network_card->getIin();
                     }
-
-                    $data = [
-                        "payment_id" => $payment->getId(),
-                        "iin" => $iin_number,
-                    ];
                 }
                 else
                 {
                     // create a payload to send from input
                     if (empty($input['card']['number']) === false)
                     {
-                        $data = [
-                            "payment_id" => $payment->getId(),
-                            'iin' => substr($input['card']['number'], 0, 6)
-                        ];
+                        if (isset($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) == true && $input[Payment\Entity::CARD][Card\Entity::TOKENISED] == true) {
+                            $iin_number = Card\IIN\IIN::getTransactingIinforRange(substr($input['card']['number'], 0, 6));
+                        }
+                        else if (isset($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) == true && $input[Payment\Entity::CARD][Card\Entity::TOKENISED] == false){
+                            $iin_number = $input['card']['iin'];
+                        }
+                        else {
+                            $iin_number = substr($input['card']['number'], 0, 6);
+                        }
                     }
                 }
+                $data = [
+                    "payment_id" => $payment->getId(),
+                    "iin" => $iin_number,
+                ];
 
                 if (empty($data) === false) {
 
