@@ -16,7 +16,6 @@ const fontsToProjectMap = {
 };
 
 const IS_WORKBOX_ENABLE = ['merchant', 'merchantLA'];
-const PRELOAD_ASSETS_FOR = ['merchant', 'merchantLA'];
 
 module.exports = ({ config, project }) => {
   config.entry = {
@@ -165,35 +164,17 @@ module.exports = ({ config, project }) => {
     }),
   );
 
-  // Have added js and css in the same call
-  // because the plugin was adding js as script tags as well as link tags.
-  // We can use only link tags for preload
-  if (PRELOAD_ASSETS_FOR.includes(project)) {
-    config.plugins.push(
-      new HtmlWebpackPlugin({
-        filename: `${project}-preload.blade.php`,
-        inject: false,
-        cache: false,
-        chunks: [project],
-        version: JSON.stringify(process.env.VERSION),
-        templateContent: ({ htmlWebpackPlugin }) => {
-          return `
-            ${htmlWebpackPlugin.files.css
-              .map((css) => `<link rel="preload" href="${css}" as="style" />\n`)
-              .join('')}
-            ${htmlWebpackPlugin.files.js
-              .map((js) => `<link rel="preload" href="${js}" as="script" />\n`)
-              .join('')}`;
-        },
-      }),
-    );
-  }
-
   const BLACKLISTED_PLUGINS = ['CleanWebpackPlugin', 'CompressionPlugin'];
 
   config.plugins = config.plugins.filter((plugin) => {
     return BLACKLISTED_PLUGINS.indexOf(plugin?.constructor?.name) === -1;
   });
+
+  // config.plugins.shift(); //removed cleanup plugin as outputpath is common for each build
+
+  // if (isProd) {
+  //   config.plugins.splice(4, 1); //removing compress plugin as we have files othe than dist folder
+  // }
 
   config.plugins.push(
     new webpack.DefinePlugin({
