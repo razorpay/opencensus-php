@@ -66,9 +66,9 @@ class NoDocLimitWarnHandler extends Handler
 
         return [
             'acc_id'        => $merchantId,
-            'gmv_limit'     => $threshold,
-            'current_gmv'   => $currentGmv,
-            'message'       =>  "You can accept payments upto INR " .max(($threshold - $currentGmv), 0). ". In order to remove this limit, kindly submit the KYC documents."
+            'gmv_limit'     => $threshold/100,
+            'current_gmv'   => $currentGmv/100,
+            'message'       =>  "You can accept payments upto INR " .max(($threshold - $currentGmv)/100, 0). ". In order to remove this limit, kindly submit the KYC documents."
         ];
     }
 }
