@@ -29,6 +29,7 @@ use Illuminate\Support\Arr;
 use RZP\Http\Request\Requests;
 use RZP\Models\Customer\Token\Repository;
 use RZP\Models\Customer\Token\Core;
+use RZP\Models\Feature;
 use Illuminate\Support\Str;
 
 class CardPaymentService
@@ -42,6 +43,7 @@ class CardPaymentService
     const X_REQUEST_ID             = 'X-Request-ID';
     const X_RAZORPAY_TRACKID       = 'X-Razorpay-TrackId';
     const X_RZP_TESTCASE_ID        = 'X-RZP-TESTCASE-ID';
+    const RZPCTX_OPTIMIZER       = 'RZPCTX-OPTIMIZER';
 
     const REQUEST_TIMEOUT = 75; // Seconds
     const MAX_RETRY_COUNT = 1;
@@ -468,6 +470,38 @@ class CardPaymentService
     }
 
     /**
+     * @param array $data
+     * @param array $request
+     */
+    public function traceOptimizerMerchant(array $data, array &$request)
+    {
+        try {
+            if ((isset($data[self::INPUT]) === true))
+            {
+                if (isset($data[self::INPUT][Entity::PAYMENT]) === true)
+                {
+                    $paymentData = $data[self::INPUT][Entity::PAYMENT] ?? null;
+                    $mid = $paymentData['merchant_id'];
+                    $this->trace->info(TraceCode::CPS_MERCHANT_FEATURE_DATA_MID, [$mid]);
+                    if (((new Feature\Service())->checkFeatureEnabled(Feature\Constants::MERCHANT, $mid, Feature\Constants::RAAS))['status'])
+                    {
+                        $request['headers'][self::RZPCTX_OPTIMIZER] = "true";
+                    } else
+                    {
+                        $request['headers'][self::RZPCTX_OPTIMIZER] = "false";
+                    }
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(TraceCode::CPS_MERCHANT_FEATURE_ERROR, [
+                $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
      * @throws \Exception
      */
     protected function fetchPNetworkData(array &$input)
@@ -715,6 +749,8 @@ class CardPaymentService
                 $request['headers'][self::X_RZP_TESTCASE_ID] = $testCaseId;
             }
         }
+
+        $this->traceOptimizerMerchant($data, $request);
 
         $this->traceRequest($request);
 
