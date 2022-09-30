@@ -6,6 +6,7 @@ use App;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -219,22 +220,11 @@ class CardVault extends Base\Core
                return [];
            }
 
-            $app = App::getFacadeRoot();
+            $metaDataSaveConfig = $this->isCardMetaDataSaveConfigEnabled();
 
-            $mode = $app['rzp.mode'] ?? Mode::LIVE;
-
-            /** Razorx experiment to save the card meta data temporarily in vault db
-             * for a  period of 5 days
-             *
-             * @var  $tempCardMetaDataVariant
-             */
-            $tempCardMetaDataVariant = $this->app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(),
-                                                                          RazorxTreatment::VAULT_BU_NAMESPACE_CARD_METADATA_VARIANT,
-                                                                          $mode);
-
-            $this->trace->info(TraceCode::VAULT_TEMP_CARD_METADATA_RAZORX_VARIANT,
+            $this->trace->info(TraceCode::VAULT_TEMP_CARD_METADATA_CONFIG,
                                [
-                                   'temp_save_card_meta_variant' => $tempCardMetaDataVariant,
+                                   'metadata_save_config'  => $metaDataSaveConfig,
                                    'action'                      => 'save',
                                ]);
 
@@ -266,7 +256,7 @@ class CardVault extends Base\Core
                 self::TOKEN        => $card->getVaultToken(),
             ];
 
-            if ($tempCardMetaDataVariant !== 'on')
+            if ($metaDataSaveConfig === false)
             {
                 return $payload;
             }
@@ -298,25 +288,17 @@ class CardVault extends Base\Core
                 return [];
             }
 
-            $app = App::getFacadeRoot();
+            $metaDataFetchConfig = $this->isCardMetaDataFetchConfigEnabled();
 
-            $mode = $app['rzp.mode'] ?? Mode::LIVE;
-
-            $tempCardMetaDataVariant =  $this->app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(),
-                                                                           RazorxTreatment::VAULT_BU_NAMESPACE_CARD_METADATA_VARIANT,
-                                                                           $mode);
-
-            $this->trace->info(TraceCode::VAULT_TEMP_CARD_METADATA_RAZORX_VARIANT,
+            $this->trace->info(TraceCode::VAULT_TEMP_CARD_METADATA_CONFIG,
                                [
-                                   'temp_card_metadata_variant'          => $tempCardMetaDataVariant,
-                                   'action'                              => 'fetch',
+                                   'metadata__fetch_config'      => $metaDataFetchConfig,
+                                   'action'                      => 'fetch',
                                ]);
 
-            if ($tempCardMetaDataVariant !== 'on')
+            if ($metaDataFetchConfig === false)
             {
-
              return null;
-
             }
 
             $createdtAt = array_key_exists(CardEntity::CREATED_AT, $card->getAttributes()) ?
@@ -648,5 +630,16 @@ class CardVault extends Base\Core
         $input['token'] = $vaultToken;
 
         return $this->app['card.cardVault']->updateToken($input);
+    }
+
+
+    protected function isCardMetaDataFetchConfigEnabled(): bool
+    {
+        return (bool) Admin\ConfigKey::get(Admin\ConfigKey::CARD_METADATA_FETCH_ENABLED, true);
+    }
+
+    protected function isCardMetaDataSaveConfigEnabled(): bool
+    {
+        return (bool) Admin\ConfigKey::get(Admin\ConfigKey::CARD_METADATA_SAVE_ENABLED, true);
     }
 }

@@ -943,6 +943,13 @@ class Core extends Base\Core
             Card\Entity::TOKEN                  => $input['token'] ?? "",
         ];
 
+
+        if ( $card->getVault() === Card\Vault::HDFC)
+        {
+            $input[Card\Entity::TOKEN_EXPIRY_MONTH ] = $cryptogram['card']['expiry_month'] ?? null;
+            $input[Card\Entity::TOKEN_EXPIRY_YEAR ] =  $cryptogram['card']['expiry_year'] ?? null;
+        }
+
         if ($card->getVault() === Card\Vault::AXIS) {
             $input[Card\Entity::NUMBER] = Card\Entity::DUMMY_AXIS_TOKENHQ_CARD;
         }

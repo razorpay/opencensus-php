@@ -223,7 +223,10 @@ class Validator extends Base\Validator
         ConfigKey::PAYER_ACCOUNT_NAME_INVALID_REGEXES                                  => 'filled|array',
         ConfigKey::SCROOGE_0LOC_ENABLED                                                => 'filled|boolean',
         ConfigKey::ONDEMAND_SETTLEMENT_INTERNAL_MERCHANTS                              => 'array',
-        ConfigKey::MCC_DEFAULT_MARKDOWN_PERCENTAGE                                     => 'filled|numeric'
+        ConfigKey::MCC_DEFAULT_MARKDOWN_PERCENTAGE                                     => 'filled|numeric',
+        ConfigKey::CARD_METADATA_FETCH_ENABLED                                         => 'filled|boolean',
+        ConfigKey::CARD_METADATA_SAVE_ENABLED                                          => 'filled|boolean'
+
     ];
 
     protected static $setRedisKeysRules = [

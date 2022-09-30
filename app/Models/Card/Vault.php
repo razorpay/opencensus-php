@@ -8,6 +8,7 @@ class Vault
     const RZP_VAULT              = 'rzpvault';
     const RZP_ENCRYPTION         = 'rzpencryption';
     const AXIS                   = 'axis';
+    const HDFC                   = 'hdfc';
 
     const RZP_VAULT_SCHEME       = '0';
     const RZP_ENCRYPTION_SCHEME  = '1';
