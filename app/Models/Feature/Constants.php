@@ -3019,6 +3019,17 @@ class Constants
             'display_name'  => 'Feature to disable sms notification to beneficiary for Payouts made via Dashboard',
             'documentation' => '',
         ],
+        self::CANCEL_SETTLE_TO_BANK => [
+            'feature'       => self::CANCEL_SETTLE_TO_BANK,
+            'display_name'  => 'Feature to cancel bank settlement',
+            'documentation' => '',
+        ],
+        self::OLD_CUSTOM_SETTL_FLOW => [
+            'feature'       => self::OLD_CUSTOM_SETTL_FLOW,
+            'display_name'  => 'Feature to enable old custom settlement flow',
+            'documentation' => '',
+        ],
+
     ];
 
     /**
