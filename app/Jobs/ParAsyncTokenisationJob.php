@@ -102,7 +102,6 @@ class ParAsyncTokenisationJob extends Job
                 'timeTaken'           => millitime() - $startTime,
                 'network'             => $card->getNetwork(),
                 'card_fingerprint_id' => $card_fingerprint_id,
-                'card'                => $card,
                 'response'            => $data
             ]);
 

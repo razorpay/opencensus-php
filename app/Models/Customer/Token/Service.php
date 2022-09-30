@@ -1048,9 +1048,14 @@ class Service extends Base\Service
 
     public function updateStatus($input)
     {
+
+       $traceInput = $input ;
+
+       $this->unsetSensitiveCardMetaDetails($traceInput);
+
         $this->trace->info(
             TraceCode::VAULT_TOKEN_STATUS_UPDATE_SERVICE,
-            ['input' => $input]);
+            ['input' => $traceInput]);
 
         (new Validator)->validateInput(Validator::GET_STATUS, $input);
 
@@ -1065,11 +1070,14 @@ class Service extends Base\Service
 
         $response['vault_token'] = $token->card['vault_token'];
 
-        $this->trace->info(
-            TraceCode::VAULT_TOKEN_STATUS_UPDATE_SERVICE,
-            ['input' => $input]);
-
         return $response;
+    }
+
+    protected function unsetSensitiveCardMetaDetails(array & $input)
+    {
+        unset($input[Card\Entity::IIN]);
+        unset($input[Card\Entity::EXPIRY_MONTH]);
+        unset($input[Card\Entity::EXPIRY_YEAR]);
     }
 
     protected function triggerStatusWebhook($input, $dbToken)

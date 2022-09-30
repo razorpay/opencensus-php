@@ -184,8 +184,7 @@ class Core extends Base\Core
         {
             $this->trace->info(TraceCode::TRACE_EMPTY_PROVIDER_REFERENCE,
                 [
-                    'card'     => $card,
-                    'response' => $response
+                    'card_id' => $card->getId()
                 ]
             );
         }
@@ -687,7 +686,6 @@ class Core extends Base\Core
                 $this->trace->info(
                     TraceCode::UPDATED_IIN_AND_TOKEN_DETAILS,
                     [
-                        'iin_number = '    => $iinNumber,
                         'token_entity = '  => $token_entity,
                     ]);
             }
@@ -797,7 +795,6 @@ class Core extends Base\Core
     protected function traceMissingIin($card)
     {
         $data = [
-            'iin'       => $card->getIin(),
             'card_id'   => $card->getPublicId(),
             'merchant'  => $card->merchant->getBillingLabel()
         ];

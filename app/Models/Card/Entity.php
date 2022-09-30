@@ -1408,8 +1408,8 @@ class Entity extends Base\PublicEntity
 
             $variant = $app['razorx']->getTreatment($experimentVariable, Merchant\RazorxTreatment::SEND_DUMMY_CARD_DETAILS_POST_TOKENISATION, $app['rzp.mode'] ?? 'live');
 
+
             $app['trace']->info(TraceCode::FETCH_CARD_DUMMY_CARD_DETAILS, [
-                'token'          => $data,
                 'razorx_variant' => $variant,
             ]);
 

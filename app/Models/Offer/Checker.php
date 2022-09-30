@@ -419,7 +419,7 @@ class Checker extends Base\Core
 
         $this->traceCheckResult(TraceCode::OFFER_CARD_IIN_CHECK, [
             'result'     => $result,
-            'offer_iins' => $offerIins,
+            'offer_iins' => $offerIins
         ]);
 
         if ($result === false)

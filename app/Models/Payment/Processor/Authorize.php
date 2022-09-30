@@ -2777,8 +2777,8 @@ trait Authorize
                 ErrorCode::BAD_REQUEST_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING,
                 Payment\Entity::BANK,
                     [
-                         'payment' => $payment->toArray(),
-                         'token'   => $token->toArray(),
+                         'payment' => $payment->getId(),
+                         'token'   => $token->getId(),
                     ]);
         }
     }
@@ -7159,7 +7159,7 @@ trait Authorize
 
             $this->trace->info(TraceCode::ASYNC_TOKEN_MIGRATION_RAZORX_VARIANT, [
                 'payment_id'     => $payment->getId(),
-                'token'          => $token,
+                'token'          => $token->getId(),
                 'merchant_id'    => $payment->getMerchantId(),
                 'razorx_variant' => $variant,
             ]);

@@ -619,6 +619,11 @@ class CardVault
         // in network tokenization response will contain tokenized card number, cryptogram value etc
         unset($response[self::SERVICE_PROVIDER_TOKENS]);
 
+        unset($response['iin']);
+        unset($response['name']);
+        unset($response['expiry_month']);
+        unset($response['expiry_year']);
+
         return $response;
     }
 

@@ -102,13 +102,16 @@ class Event extends Base\Core
 
             $eventData = $this->fetchResponseEventData($exe, $eventData, $response);
 
+            $traceEventData = $eventData;
+
+            unset($traceEventData['card_iin']);
+
             $this->trace->info(TraceCode::TOKEN_HQ_RESPONSE_EVENT_DATA, [
                 'response'       => $response,
-                'eventData'      => $eventData,
+                'eventData'      => $traceEventData,
                 'execption'      => $exe,
                 'eventCode'      => $eventCode,
                 'event'          => $event,
-                'input'          => $input,
                 'type'           => $type
             ]);
 

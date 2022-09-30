@@ -840,7 +840,6 @@ class CardPaymentService
                 'card.tokenised'                    => 'content.input.card.tokenised',
                 'card.token_id'                     => 'content.input.token.id',
                 'card.token_reference_number'       => 'content.input.card.token_reference_number',
-                'iin.iin'                           => 'content.input.iin.iin',
                 'iin.network'                       => 'content.input.iin.network',
                 'iin.country'                       => 'content.input.iin.country',
                 'iin.emi'                           => 'content.input.iin.emi',

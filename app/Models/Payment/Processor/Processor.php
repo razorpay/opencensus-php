@@ -5604,14 +5604,11 @@ class Processor
         if ((isset($input[Payment\Entity::CARD]) === true) and
             (is_array($input[Payment\Entity::CARD]) === true))
         {
-            if (empty($input[Payment\Entity::CARD][Card\Entity::NUMBER]) === false)
-            {
-                $input[Payment\Entity::CARD][Card\Entity::IIN] = substr($input[Payment\Entity::CARD][Card\Entity::NUMBER], 0, 6);
-            }
-
             unset($input[Payment\Entity::CARD][Card\Entity::NAME]);
             unset($input[Payment\Entity::CARD][Card\Entity::NUMBER]);
             unset($input[Payment\Entity::CARD][Card\Entity::CVV]);
+            unset($input[Payment\Entity::CARD][Card\Entity::EXPIRY_MONTH]);
+            unset($input[Payment\Entity::CARD][Card\Entity::EXPIRY_YEAR]);
         }
     }
 

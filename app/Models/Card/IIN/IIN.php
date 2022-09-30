@@ -916,7 +916,7 @@ class IIN
 			"53765284",
 			"53765285",
 			"53765286",
-            "53765287", 
+            "53765287",
 			"53765288",
 			"53765289",
             "53765275",
@@ -108731,8 +108731,6 @@ class IIN
             $app['trace']->info(
                 TraceCode::DB_TOKENISED_IIN_SELECTED,
                 [
-                    'dbIIN' => $cardIin,
-                    'staticiin' => $iin_static
                 ]
             );
 

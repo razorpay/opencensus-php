@@ -654,6 +654,9 @@ class PGRouter
         // SBB Issue - Axis Migs
         unset($traceData["request"]["content"]);
 
+
+        unset($traceData["response"]["data"]["payment"]["card"]);
+
         $this->trace->info(TraceCode::PG_ROUTER_RESPONSE,
             ["response" => $traceData ?? [],
                 "statusCode" =>  $response->status_code
