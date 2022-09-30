@@ -18,6 +18,9 @@ class Constants
     const CARE                          = 'care';
     const ERRORS                        = 'errors';
     const DEVELOPERS                    = 'developers';
+    const AFFORDABILITY                 = 'affordability';
+    const FINOPS                        = 'finops';
+    const DEVOPS_BEAM                   = 'devops_beam';
     const ALERTS                        = 'alerts';
     const EMI                           = 'emi';
     const CAPTURE                       = 'capture';
@@ -129,6 +132,9 @@ class Constants
         self::BANKING_POD_TECH          => 'payments-banking-tech@razorpay.com',
         self::CROSS_BORDER_TECH         => 'payments-cross-border-engineering@razorpay.com',
         self::PARTNER_COMMISSIONS       => 'partners-commissions@razorpay.com',
+        self::AFFORDABILITY             => 'tech-onlinepayments-affordability@razorpay.com',
+        self::FINOPS                    => 'finances.recon@razorpay.com',
+        self::DEVOPS_BEAM               => 'devops+beam@razorpay.com',
     ];
 
     const MERCHANT_CUSTOM_MAIL_ADDRESSES = [
