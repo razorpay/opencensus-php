@@ -13,10 +13,8 @@ import {
 } from 'merchant/views/Settlements/Settlements/analytics';
 import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
 import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
-import { fetchFeatureStatus } from 'merchant/reducers/config';
-import { isOrgFeatureExist } from 'merchant/models/User';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { fetchBankSettleStatus } from 'merchant/views/Settlements/v2/util';
+import { fetchBankSettleStatus, customSettlementEnabled } from 'merchant/views/Settlements/v2/util';
 import LoaderDots from 'common/ui/LoaderDots';
 
 const SettlementInfo = (props) => {
@@ -27,12 +25,11 @@ const SettlementInfo = (props) => {
     user,
     terminalProviders,
     showNotification,
-    fetchFeatureStatus,
     fetchIsAdminAsMerchant,
   } = props;
 
   const [state, setState] = useState({
-    isCustomSettlLoading: false,
+    customSettlementLoading: false,
     adminAsMerchant: false,
     bankSettleStatus: '',
     showCustomSettlDetails: false,
@@ -40,38 +37,29 @@ const SettlementInfo = (props) => {
 
   const getCustomSettleDetails = () => {
     const { settlementId } = props;
-    const isOrgSettleToBank = isOrgFeatureExist('org_settle_to_bank');
     const setlID = settlementId?.replace('setl_', '');
     const promiseList = [];
-    setState((prevState) => ({
-      ...prevState,
-      isCustomSettlLoading: true,
-    }));
+    setState({
+      customSettlementLoading: true,
+    });
     promiseList.push(fetchIsAdminAsMerchant());
-    promiseList.push(fetchFeatureStatus(user?.id, 'cancel_settle_to_bank'));
-    promiseList.push(fetchFeatureStatus(user?.id, 'old_custom_settl_flow'));
     promiseList.push(fetchBankSettleStatus(setlID));
     return Promise.all(promiseList)
       .then((response) => {
-        const adminAsMerchant = response?.[0]?.data?.is_admin_as_merchant ?? false;
-        const cancelSettleToBank = response?.[1]?.data?.status ?? false;
-        const oldCustomSettleFlow = response?.[2]?.data?.status ?? false;
-        const bankSettleStatus = response?.[3]?.data?.org_settlement?.status ?? '';
-        const showCustomSettlDetails =
-          !cancelSettleToBank && !oldCustomSettleFlow && isOrgSettleToBank;
-        setState((prevState) => ({
-          ...prevState,
-          isCustomSettlLoading: false,
+        const [adminAsMerchantResp, bankSettleStatusResp] = response;
+        const adminAsMerchant = adminAsMerchantResp?.data?.is_admin_as_merchant ?? false;
+        const bankSettleStatus = bankSettleStatusResp?.data?.org_settlement?.status ?? '';
+        setState({
+          customSettlementLoading: false,
           adminAsMerchant,
           bankSettleStatus,
-          showCustomSettlDetails,
-        }));
+          showCustomSettlDetails: true,
+        });
       })
       .catch(() => {
-        setState((prevState) => ({
-          ...prevState,
-          isCustomSettlLoading: false,
-        }));
+        setState({
+          customSettlementLoading: false,
+        });
         showNotification({
           type: 'error',
           message: 'Something went wrong, please try again later',
@@ -79,9 +67,16 @@ const SettlementInfo = (props) => {
       });
   };
 
+  const checkFeatureFlags = () => {
+    const isCustomSettlement = customSettlementEnabled(user);
+    if (isCustomSettlement) {
+      getCustomSettleDetails();
+    }
+  };
+
   useEffect(() => {
     settlementInfo();
-    getCustomSettleDetails();
+    checkFeatureFlags();
   }, []);
 
   useEffect(() => {
@@ -121,7 +116,12 @@ const SettlementInfo = (props) => {
 
   if (error) return null;
 
-  const { isCustomSettlLoading, adminAsMerchant, bankSettleStatus, showCustomSettlDetails } = state;
+  const {
+    customSettlementLoading,
+    adminAsMerchant,
+    bankSettleStatus,
+    showCustomSettlDetails,
+  } = state;
 
   return (
     <React.Fragment>
@@ -162,7 +162,7 @@ const SettlementInfo = (props) => {
       <ShowWhen additionalCondition={() => !showCustomSettlDetails || adminAsMerchant}>
         <EntityDetailRow label="UTR" value={settlement?.utr} />
       </ShowWhen>
-      <ShowWhen additionalCondition={() => isCustomSettlLoading}>
+      <ShowWhen additionalCondition={() => customSettlementLoading}>
         <LoaderDots />
       </ShowWhen>
       <ShowWhen additionalCondition={() => showCustomSettlDetails}>
@@ -191,5 +191,4 @@ export default connect(mapStateToProps, {
   ...SettlementActions,
   showNotification,
   fetchIsAdminAsMerchant,
-  fetchFeatureStatus,
 })(SettlementInfo);

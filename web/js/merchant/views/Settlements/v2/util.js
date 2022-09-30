@@ -1,3 +1,4 @@
+import { isOrgFeatureExist } from 'merchant/models/User';
 import { merchantFetch } from 'merchant/utils/ajax';
 export const calculateCreditDebitAmount = (items, isBreakupNew) => {
   return items.reduce(
@@ -30,4 +31,11 @@ export const fetchBankSettleStatus = (settlementId) => {
     url: `org_settlements/${settlementId}`,
     method: 'GET',
   });
+};
+
+export const customSettlementEnabled = (user) => {
+  const isOrgSettleToBank = isOrgFeatureExist('org_settle_to_bank');
+  const isCancelSeettleToBank = user?.isFeatureEnabled('cancel_settle_to_bank');
+  const isOldCustomSettleFlow = user?.isFeatureEnabled('old_custom_settl_flow');
+  return isOrgSettleToBank && !isCancelSeettleToBank && !isOldCustomSettleFlow;
 };

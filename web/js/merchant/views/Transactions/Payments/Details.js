@@ -25,10 +25,8 @@ import DualDetailView, { PrimaryView, SecondaryView } from 'common/new-ui/DualDe
 import { updateItemInPayments } from 'merchant/reducers/collection';
 import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import { isOrgFeatureExist } from 'merchant/models/User';
 import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
-import { fetchFeatureStatus } from 'merchant/reducers/config';
-import { fetchBankSettleStatus } from 'merchant/views/Settlements/v2/util';
+import { fetchBankSettleStatus, customSettlementEnabled } from 'merchant/views/Settlements/v2/util';
 
 class PaymentDetailsContainer extends Component {
   constructor(props) {
@@ -46,43 +44,33 @@ class PaymentDetailsContainer extends Component {
     confirm: PropTypes.func,
   };
 
+  checkFeatureFlags = () => {
+    const { user } = this.props;
+    const isCustomSettlement = customSettlementEnabled(user);
+    if (isCustomSettlement) {
+      this.getCustomSettleDetails();
+    }
+  };
+
   getCustomSettleDetails = () => {
-    const {
-      showNotification,
-      user,
-      fetchIsAdminAsMerchant,
-      fetchFeatureStatus,
-      payment,
-    } = this.props;
-    const isOrgSettleToBank = isOrgFeatureExist('org_settle_to_bank');
+    const { showNotification, fetchIsAdminAsMerchant, payment } = this.props;
+    const setlID = payment?.transaction?.settlement?.id?.replace('setl_', '');
+    const promiseList = [];
     this.setState({
       customSettlementLoading: true,
     });
-    const setlID = payment?.transaction?.settlement?.id?.replace('setl_', '');
-    const promiseList = [];
     promiseList.push(fetchIsAdminAsMerchant());
-    promiseList.push(fetchFeatureStatus(user?.id, 'cancel_settle_to_bank'));
-    promiseList.push(fetchFeatureStatus(user?.id, 'old_custom_settl_flow'));
     promiseList.push(fetchBankSettleStatus(setlID));
     return Promise.all(promiseList)
       .then((response) => {
-        const [
-          adminAsMerchantResp,
-          cancelSettleToBankResp,
-          oldCustomSettleFlowResp,
-          bankSettleStatusResp,
-        ] = response;
+        const [adminAsMerchantResp, bankSettleStatusResp] = response;
         const adminAsMerchant = adminAsMerchantResp?.data?.is_admin_as_merchant ?? false;
         const bankSettleStatus = bankSettleStatusResp?.data?.org_settlement?.status ?? '';
-        const showCustomSettlDetails =
-          !cancelSettleToBankResp?.data?.status &&
-          !oldCustomSettleFlowResp?.data?.status &&
-          isOrgSettleToBank;
         this.setState({
           customSettlementLoading: false,
           adminAsMerchant,
           bankSettleStatus,
-          showCustomSettlDetails,
+          showCustomSettlDetails: true,
         });
       })
       .catch(() => {
@@ -123,7 +111,7 @@ class PaymentDetailsContainer extends Component {
       }
 
       if (payment?.transaction?.settlement?.id) {
-        this.getCustomSettleDetails();
+        this.checkFeatureFlags();
       }
 
       selfServeTrackSuccess({
@@ -527,7 +515,6 @@ export default compose(
       updateItemInPayments,
       fetchProviders: fetchTerminalProviders,
       fetchIsAdminAsMerchant,
-      fetchFeatureStatus,
       ...ModalActions,
       ...PaymentActions,
       ...NotificationsActions,
