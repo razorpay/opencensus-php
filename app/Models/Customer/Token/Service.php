@@ -133,6 +133,24 @@ class Service extends Base\Service
 
         $token = $this->core->getByTokenIdAndCustomer($tokenId, $customer);
 
+        $app = \App::getFacadeRoot();
+
+        $variant = $app['razorx']->getTreatment($id, Merchant\RazorxTreatment::DISABLE_RZP_TOKENISED_TOKENS_FETCH, $app['rzp.mode'] ?? 'live');
+
+        $this->trace->info(TraceCode::FETCH_RZP_TOKENS_RAZORX, [
+            'token'          => $tokenId,
+            'razorx_variant' => $variant,
+        ]);
+
+        if (strtolower($variant) === 'on') {
+            if ($token->hasCard() && ($token->card->isTokenisationCompliant() === false))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_ID,
+                    'token');
+            }
+        }
+
         return $token->toArrayPublic();
     }
 
@@ -240,7 +258,7 @@ class Service extends Base\Service
      *
      * @param string $id customer ID
      *
-     * @return entity tokens
+     * @return array tokens
      */
     public function fetchMultiple($id)
     {
@@ -260,6 +278,23 @@ class Service extends Base\Service
         }
 
         $tokens = $this->repo->token->getByCustomer($customer, $withVpas, $this->merchant->getId(), $this->mode);
+
+        $app = \App::getFacadeRoot();
+
+        $variant = $app['razorx']->getTreatment($id, Merchant\RazorxTreatment::DISABLE_RZP_TOKENISED_TOKENS_FETCH, $app['rzp.mode'] ?? 'live');
+
+        $this->trace->info(TraceCode::FETCH_RZP_TOKENS_RAZORX, [
+            'token'          => $id,
+            'merchant'       => $this->merchant,
+            'razorx_variant' => $variant,
+        ]);
+
+        if (strtolower($variant) === 'on') {
+
+            $tokens = $this->core->removeNonCompliantCardTokens($tokens,$this->merchant->getId());
+
+        }
+
 
         return $tokens->toArrayPublic();
     }
@@ -705,7 +740,7 @@ class Service extends Base\Service
 
                     if (strtolower($variant) === 'on') {
                         throw new Exception\BadRequestException(
-                            ErrorCode::BAD_REQUEST_ERROR, null, null, "the requested token is not network tokenised  ");
+                            ErrorCode::BAD_REQUEST_ERROR, null, null, "the saved card is no longer compliant with RBI guidelines. Please use another card/payment ");
                     }
 
                     $response['compliant_with_tokenisation_guidelines'] = false;

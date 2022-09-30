@@ -122,7 +122,7 @@ class TokenisationExperiment
      * 3. Whitelist - everything else will go through tokenised card
      *
      * If the experiment fails by default the payment will go through tokenised card.
-     * 
+     *
      * @param  Card\Entity $card
      * @return bool
      */
@@ -240,7 +240,7 @@ class TokenisationExperiment
     }
 
     /**
-     * Runs a Splitz experiment to help decide whether to remove cards which are 
+     * Runs a Splitz experiment to help decide whether to remove cards which are
      * non-compliant to RBI's tokenisation guidelines from the output.
      *
      * If exp fails, By default function will return true i.e, non-compliant cards will be removed.
