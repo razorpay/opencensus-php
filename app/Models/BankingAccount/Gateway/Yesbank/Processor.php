@@ -1,15 +1,13 @@
 <?php
 
-namespace RZP\Models\BankingAccount\Gateway\Icici;
-
-use App;
+namespace RZP\Models\BankingAccount\Gateway\Yesbank;
 
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\BankingAccount;
 use RZP\Models\BankingAccount\Entity;
-use RZP\Exception\BadRequestException;
 use RZP\Exception\GatewayErrorException;
+use RZP\Models\BankingAccount\Gateway\Fields as BaseFields;
 use RZP\Models\BankingAccount\Gateway\Processor as BaseProcessor;
 
 class Processor extends BaseProcessor
@@ -17,7 +15,7 @@ class Processor extends BaseProcessor
     const FETCH_GATEWAY_BALANCE_TIMEOUT         = 10;
     const FETCH_GATEWAY_BALANCE_CONNECT_TIMEOUT = 5;
 
-    const GATEWAY_ERROR_PREFIX = 'ICICI Gateway Error: ';
+    const GATEWAY_ERROR_PREFIX = 'YESBANK Gateway Error: ';
 
     const MAX_MOZART_RETRIES = 1;
 
@@ -43,34 +41,11 @@ class Processor extends BaseProcessor
         $this->accountCredentials = $this->extractBankingAccountCredsFromBASResponse($this->basResponse);
     }
 
-    protected function formatDataForMozartBalanceFetchApi()
+    public function fetchGatewayBalance(): int
     {
-        //AGGR_ID, AGGR_NAME, BENEFICIARY_API_KEY are common for all merchants . so fetching these from credstash
-        $data = [
-            Fields::SOURCE_ACCOUNT => [
-                Fields::SOURCE_ACCOUNT_NUMBER => $this->accountNumber,
-                Fields::CREDENTIALS           => [
-                    Fields::CORP_ID             => $this->accountCredentials[Fields::CORP_ID],
-                    Fields::CORP_USER           => $this->accountCredentials[Fields::CORP_USER],
-                    Fields::AGGR_ID             => $this->config['banking_account']['icici'][Fields::AGGR_ID_CONFIG],
-                    Fields::AGGR_NAME           => $this->config['banking_account']['icici'][Fields::AGGR_NAME_CONFIG],
-                    Fields::URN                 => $this->accountCredentials[Fields::URN],
-                    Fields::BENEFICIARY_API_KEY => $this->config['banking_account']['icici'][Fields::BENEFICIARY_API_KEY_CONFIG],
-                ],
-            ]
-        ];
+        $response = $this->verifyCredentials();
 
-        return $data;
-    }
-
-    protected function shouldRetryMozartRequest(string $errorCode): bool
-    {
-        if (in_array($errorCode, $this->mozartRetryCode, true) === true)
-        {
-            return true;
-        }
-
-        return false;
+        return $this->fetchBalanceFromMozartResponse($response);
     }
 
     protected function verifyCredentials()
@@ -86,10 +61,10 @@ class Processor extends BaseProcessor
             try
             {
                 $response = $this->app->mozart->sendMozartRequest('fts',
-                                                                  BankingAccount\Channel::ICICI,
+                                                                  BankingAccount\Channel::YESBANK,
                                                                   Action::ACCOUNT_BALANCE,
                                                                   $request,
-                                                                  Action::V2,
+                                                                  Action::V1,
                                                                   false,
                                                                   self::FETCH_GATEWAY_BALANCE_TIMEOUT,
                                                                   self::FETCH_GATEWAY_BALANCE_CONNECT_TIMEOUT
@@ -97,41 +72,44 @@ class Processor extends BaseProcessor
 
                 return $response;
             }
-            catch (GatewayErrorException $ex)
+            catch (GatewayErrorException $exception)
             {
                 $this->handleGatewayErrorExceptionFromMozart($request,
-                                                             $ex,
-                                                             BankingAccount\Channel::ICICI);
+                                                             $exception,
+                                                             BankingAccount\Channel::YESBANK);
             }
             catch (\Throwable $exception)
             {
                 $this->handleThrowableErrorExceptionFromMozart($request,
                                                                $exception,
-                                                               BankingAccount\Channel::ICICI,
+                                                               BankingAccount\Channel::YESBANK,
                                                                $retryCount);
             }
         }while($retryCount <= self::MAX_MOZART_RETRIES);
     }
 
-    protected function fetchBalanceFromMozartResponse(array $response)
+    protected function formatDataForMozartBalanceFetchApi()
     {
-        $balance = $response[Fields::DATA][Fields::BALANCE];
-
-        return $this->getFormattedAmount($balance);
+        return [
+            BaseFields::SOURCE_ACCOUNT => [
+                BaseFields::SOURCE_ACCOUNT_NUMBER => $this->accountNumber,
+                BaseFields::CREDENTIALS           => [
+                    Fields::CUSTOMER_ID   => $this->accountCredentials[Fields::CUSTOMER_ID],
+                    Fields::APP_ID        => $this->accountCredentials[Fields::APP_ID],
+                    Fields::AUTH_USERNAME => $this->accountCredentials[Fields::AUTH_USERNAME],
+                    Fields::AUTH_PASSWORD => $this->accountCredentials[Fields::AUTH_PASSWORD],
+                    Fields::CLIENT_ID     => $this->accountCredentials[Fields::CLIENT_ID],
+                    Fields::CLIENT_SECRET => $this->accountCredentials[Fields::CLIENT_SECRET],
+                ],
+            ],
+        ];
     }
 
-    /**
-     * @param Entity $bankingAccount
-     *
-     * @return int
-     *
-     * @throws BadRequestException
-     */
-    public function fetchGatewayBalance(): int
+    protected function fetchBalanceFromMozartResponse(array $response)
     {
-        $response = $this->verifyCredentials();
+        $balance = $response[Fields::DATA][Fields::ACCOUNT_BALANCE_AMOUNT];
 
-        return $this->fetchBalanceFromMozartResponse($response);
+        return $this->getFormattedAmount($balance);
     }
 
     public function formatAccountDetails(array $input)
@@ -167,9 +145,12 @@ class Processor extends BaseProcessor
     protected function extractBankingAccountCredsFromBASResponse($response)
     {
         return [
-            Fields::CORP_ID   => $response[Fields::CORP_ID],
-            Fields::CORP_USER => $response[Fields::CORP_USER],
-            Fields::URN       => $response[Fields::URN],
+            Fields::CUSTOMER_ID   => $response[Fields::CUSTOMER_ID],
+            Fields::APP_ID        => $response[Fields::APP_ID],
+            Fields::AUTH_PASSWORD => $response[Fields::AUTH_PASSWORD],
+            Fields::AUTH_USERNAME => $response[Fields::AUTH_USERNAME],
+            Fields::CLIENT_ID     => $response[Fields::CLIENT_ID],
+            Fields::CLIENT_SECRET => $response[Fields::CLIENT_SECRET],
         ];
     }
 }

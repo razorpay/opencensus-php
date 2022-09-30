@@ -259,6 +259,8 @@ class Channel
         return [
             self::RBL,
             self::ICICI,
+            self::AXIS,
+            self::YESBANK,
         ];
     }
 
@@ -385,6 +387,19 @@ class Channel
             self::RZPX       => [
                 Constants\Entity::BANK_ACCOUNT  =>  [
                     Mode::IFT,
+                ],
+            ],
+            self::AXIS       => [
+                Constants\Entity::BANK_ACCOUNT => [
+                    Mode::NEFT,
+                    Mode::RTGS,
+                    Mode::IMPS,
+                    Mode::IFT,
+                ],
+                Constants\Entity::CARD          =>  [
+                    Mode::IMPS,
+                    Mode::UPI,
+                    Mode::NEFT,
                 ],
             ],
         ];

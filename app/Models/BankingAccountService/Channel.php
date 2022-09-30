@@ -8,13 +8,19 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Channel
 {
     const ICICI   = FTAChannel::ICICI;
+    const YESBANK = FTAChannel::YESBANK;
+    const AXIS    = FTAChannel::AXIS;
 
     protected static $channels = [
         self::ICICI,
+        self::YESBANK,
+        self::AXIS,
     ];
 
     protected static $directTypeChannels = [
         self::ICICI,
+        self::YESBANK,
+        self::AXIS,
     ];
 
     public static function isValid(string $channel = null): bool
@@ -45,6 +51,11 @@ class Channel
     public static function getAll(): array
     {
         return self::$channels;
+    }
+
+    public static function getDirectTypeChannels(): array
+    {
+        return self::$directTypeChannels;
     }
 
 }

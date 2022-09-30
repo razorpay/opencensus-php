@@ -2,25 +2,30 @@
 
 namespace RZP\Models\BankingAccount\Gateway;
 
+use App;
+use Razorpay\Trace\Logger;
 use Illuminate\Support\Facades\Redis;
 
 use RZP\Constants;
-use Razorpay\Trace;
 use RZP\Models\Base;
 use RZP\Services\FTS;
 use RZP\Error\ErrorCode;
+use RZP\Services\Mozart;
 use RZP\Trace\TraceCode;
 use RZP\Services\CardVault;
 use RZP\Models\Card\BuNamespace;
 use RZP\Models\BankingAccount\Entity;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\RecordAlreadyExists;
-use RZP\Models\BankingAccountStatement\Channel;
+use RZP\Services\BankingAccountService;
 use RZP\Models\BankingAccount\Gateway\Rbl\Fields as Fields;
+use RZP\Models\BankingAccount\Gateway\Fields as BaseFields;
+use RZP\Models\BankingAccountStatement\Details as BasDetails;
 
 abstract class Processor extends Base\Core
 {
-    const FTS_MAX_RETRIES = 1;
+    const FTS_MAX_RETRIES    = 1;
+    const MAX_MOZART_RETRIES = 1;
 
     const PINCODES_REDIS_KEY = 'pincode_set';
 
@@ -28,11 +33,46 @@ abstract class Processor extends Base\Core
 
     const FTS_VALIDATION_ERROR_DESCRIPTION = 'Operation failed. FTS Account could not stored because of a validation error: ';
 
+    const GATEWAY_ERROR_PREFIX = 'Gateway Error: ';
+
+    protected $basResponse;
+
+    protected $accountCredentials;
+
+    protected $accountNumber;
+
     protected $ftsErrorCodesToPropagate = [
         ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_FUND_ACCOUNT_CREATION_VALIDATION_FAILED,
         ErrorCode::BAD_REQUEST_ERROR_SOURCE_ACCOUNT_CREATION_VALIDATION_FAILED,
         ErrorCode::BAD_REQUEST_ERROR_DIRECT_FUND_ACCOUNT_AND_SOURCE_ACCOUNT_CREATION_VALIDATION_FAILED
     ];
+
+    protected $mozartRetryCode = [
+        TraceCode::MOZART_SERVICE_REQUEST_FAILED,
+        TraceCode::MOZART_SERVICE_REQUEST_TIMEOUT,
+        ErrorCode::SERVER_ERROR_MOZART_SERVICE_TIMEOUT,
+        ErrorCode::SERVER_ERROR_MOZART_SERVICE_ERROR,
+        ErrorCode::SERVER_ERROR_MOZART_INTEGRATION_ERROR,
+    ];
+
+    protected function setUpForBalanceFetch($input)
+    {
+        if (empty($input) === false)
+        {
+            $app = App::getFacadeRoot();
+
+            /* @var BankingAccountService $bas */
+            $bas = $app['banking_account_service'];
+
+            $merchantId    = $input[BasDetails\Entity::MERCHANT_ID];
+            $accountNumber = $input[BasDetails\Entity::ACCOUNT_NUMBER];
+            $channel       = $input[BasDetails\Entity::CHANNEL];
+
+            $this->basResponse = $bas->fetchBankingCredentials($merchantId, $channel, $accountNumber);
+
+            $this->accountNumber = $accountNumber;
+        }
+    }
 
     public function validateAndPreProcessInputForAccountCreation(array $input)
     {
@@ -513,6 +553,11 @@ abstract class Processor extends Base\Core
         return (bool) $isAvailable;
     }
 
+    protected function getFormattedAmount($amount)
+    {
+        return intval(number_format($amount * 100, 0, '.', ''));
+    }
+
     abstract public function formatAccountDetails(array $input);
 
     abstract protected function validateBeforeActivation(Entity $bankingAccount, array $input);
@@ -527,4 +572,105 @@ abstract class Processor extends Base\Core
 
     // every gateway processor must implement this function for fetching balance from gateway
     abstract public function fetchGatewayBalance();
+
+    protected function unsetSensitiveDetails(array $request)
+    {
+        if (isset($request[BaseFields::SOURCE_ACCOUNT][BaseFields::CREDENTIALS]) === true)
+        {
+            unset($request[BaseFields::SOURCE_ACCOUNT][BaseFields::CREDENTIALS]);
+        }
+
+        return $request;
+    }
+
+    protected function shouldRetryMozartRequest(string $errorCode): bool
+    {
+        if (in_array($errorCode, $this->mozartRetryCode, true) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function handleGatewayErrorExceptionFromMozart($request, $exception, $channel)
+    {
+        $traceRequest = $this->unsetSensitiveDetails($request);
+
+        $this->trace->traceException(
+            $exception,
+            Logger::CRITICAL,
+            TraceCode::MOZART_SERVICE_REQUEST_FAILED,
+            [
+                'request' => $traceRequest,
+                'channel' => $channel
+            ]
+        );
+
+        $errorDescription = $this->getGatewayErrorDescriptionFromException($exception);
+
+        throw new BadRequestException(
+            ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED,
+            null,
+            [
+                'data'    => $exception->getData(),
+                'channel' => $channel
+            ],
+            $errorDescription
+        );
+    }
+
+    protected function getGatewayErrorDescriptionFromException($exception)
+    {
+        $gatewayErrorDesc = $exception->getGatewayErrorDesc();
+
+        if ($gatewayErrorDesc === Mozart::NO_ERROR_MAPPING_DESCRIPTION)
+        {
+            $gatewayErrorDesc = "Unknown";
+        }
+
+        if (empty($gatewayErrorDesc) === false)
+        {
+            return static::GATEWAY_ERROR_PREFIX . $gatewayErrorDesc;
+        }
+
+        return static::GATEWAY_ERROR_PREFIX . "Unknown";
+    }
+
+    protected function handleThrowableErrorExceptionFromMozart($request, $exception, $channel, &$retryCount)
+    {
+        $traceRequest = $this->unsetSensitiveDetails($request);
+
+        $this->trace->traceException(
+            $exception,
+            Logger::CRITICAL,
+            TraceCode::MOZART_SERVICE_REQUEST_FAILED,
+            [
+                'request' => $traceRequest,
+                'channel' => $channel,
+            ]);
+
+        $errorCode = $exception->getCode();
+
+        $shouldRetry = $this->shouldRetryMozartRequest($errorCode);
+
+        if (($shouldRetry === true) and
+            ($retryCount < static::MAX_MOZART_RETRIES))
+        {
+            $this->trace->info(
+                TraceCode::MOZART_SERVICE_RETRY,
+                [
+                    'message' => $exception->getMessage(),
+                    'data'    => $exception->getData(),
+                ]);
+
+            $retryCount++;
+        }
+        else
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED
+            );
+        }
+    }
 }

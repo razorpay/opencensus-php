@@ -7,12 +7,16 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Channel
 {
-    const RBL   = Settlement\Channel::RBL;
-    const ICICI = Settlement\Channel::ICICI;
+    const RBL     = Settlement\Channel::RBL;
+    const ICICI   = Settlement\Channel::ICICI;
+    const AXIS    = Settlement\Channel::AXIS;
+    const YESBANK = Settlement\Channel::YESBANK;
 
     protected static $channels = [
         self::RBL,
         self::ICICI,
+        self::AXIS,
+        self::YESBANK,
     ];
 
     /**
@@ -23,6 +27,8 @@ class Channel
     protected static $skipTxnCreation = [
         self::RBL,
         self::ICICI,
+        self::AXIS,
+        self::YESBANK,
     ];
 
     public static function isValid(string $channel): bool

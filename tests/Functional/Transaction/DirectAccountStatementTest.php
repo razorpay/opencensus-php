@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Transaction;
 
 use Carbon\Carbon;
 
+use RZP\Models\Payout;
 use RZP\Constants\Mode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -121,7 +122,10 @@ class DirectAccountStatementTest extends TestCase
                                     'transaction_id' => $payout->getTransactionId(),
                                 ]);
 
-        $this->reversePayout($payout);
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status'     => 'reversed',
+            'failure_reason' => '',
+        ]);
 
         $reversal = $this->getDbLastEntity('reversal');
 

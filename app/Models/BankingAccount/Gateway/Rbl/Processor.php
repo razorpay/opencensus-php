@@ -60,15 +60,15 @@ class Processor extends BankingAccount\Gateway\Processor
     /** @var Entity $bankingAccount */
     protected $bankingAccount;
 
-    public function __construct(array $setUpForBalanceFetch = [])
+    public function __construct(array $input = [])
     {
         parent::__construct();
 
-        if (empty($setUpForBalanceFetch) === false)
+        if (empty($input) === false)
         {
-            $merchantId = $setUpForBalanceFetch[Entity::MERCHANT_ID];
+            $merchantId = $input[Entity::MERCHANT_ID];
 
-            $channel = $setUpForBalanceFetch[Entity::CHANNEL];
+            $channel = $input[Entity::CHANNEL];
 
             /** @var Entity $bankingAccount */
             $this->bankingAccount = $this->repo->banking_account->getBankingAccountByMerchantIdAndChannel($merchantId, $channel);

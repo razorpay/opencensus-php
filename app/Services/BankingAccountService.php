@@ -14,7 +14,6 @@ use RZP\Http\Request\Requests;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\BankingAccountService\Core;
 use RZP\Models\Merchant\Balance\AccountType;
-use RZP\Models\BankingAccount\Gateway\Icici;
 use RZP\Models\BankingAccountService\Channel;
 use RZP\Models\BankingAccountService\Constants;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -63,7 +62,7 @@ class BankingAccountService
     {
         $repo = new BalanceRepo();
 
-        $balances = $repo->getBalancesByMerchantIdChannelAndAccountType($merchantId, Channel::ICICI, AccountType::DIRECT);
+        $balances = $repo->getBalancesByMerchantIdChannelAndAccountType($merchantId, Channel::getDirectTypeChannels(), AccountType::DIRECT);
 
         if (count($balances) === 0)
         {
@@ -101,18 +100,14 @@ class BankingAccountService
         $path = 'business/'. $businessId . '/banking_account_by_account_number/'. $accountNumber . '/credentials';
 
         $headers = [
-            Fields::CHANNEL        => $channel,
+            Fields::CHANNEL => $channel,
         ];
 
         $response = $this->sendRequestAndProcessResponse($path, 'GET', [], $headers);
 
         if (isset($response['data']) === true)
         {
-            $response = [
-                Icici\Fields::CORP_ID   => $response['data']['corp_id'],
-                Icici\Fields::CORP_USER => $response['data']['user_id'],
-                Icici\Fields::URN       => $response['data']['urn'],
-            ];
+           return $response['data'];
         }
         else
         {
@@ -491,7 +486,7 @@ class BankingAccountService
         return $response['data'];
     }
 
-    public function fetchIciciActivatedAccountFromBas(MerchantEntity $merchant)
+    public function fetchActivatedDirectAccountsFromBas(MerchantEntity $merchant)
     {
         $merchantId = $merchant->getMerchantId();
 

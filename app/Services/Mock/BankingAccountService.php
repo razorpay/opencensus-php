@@ -3,10 +3,14 @@
 namespace RZP\Services\Mock;
 
 use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\BankingAccount\Entity;
+use RZP\Exception\BadRequestException;
+use RZP\Models\BankingAccount\Gateway\Axis;
 use RZP\Models\BankingAccount\Gateway\Icici;
+use RZP\Models\BankingAccount\Gateway\Yesbank;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\BankingAccountService\Channel as BASChannel;
 
 class BankingAccountService
 {
@@ -50,11 +54,35 @@ class BankingAccountService
     public function fetchBankingCredentials($merchantId, string $channel = 'icici', string $accountNumber = '1234566')
     {
         //ICICI test ca credentials required for payouts testing in dark.
-        return [
-            Icici\Fields::CORP_ID   => 'RAZORPAY12345',
-            Icici\Fields::CORP_USER => 'USER12345',
-            Icici\Fields::URN       => 'URN12345',
-        ];
+        switch($channel)
+        {
+            case Channel::ICICI:
+                return [
+                    Icici\Fields::CORP_ID   => 'RAZORPAY12345',
+                    Icici\Fields::CORP_USER => 'USER12345',
+                    Icici\Fields::URN       => 'URN12345',
+                ];
+
+            case Channel::YESBANK:
+                return [
+                    Yesbank\Fields::CUSTOMER_ID   => 'customer123',
+                    Yesbank\Fields::APP_ID        => 'RAZORPAYX',
+                    Yesbank\Fields::AUTH_PASSWORD => 'random_pass',
+                    Yesbank\Fields::AUTH_USERNAME => 'random_user',
+                    Yesbank\Fields::CLIENT_ID     => 'client_123',
+                    Yesbank\Fields::CLIENT_SECRET => 'random_pass',
+                ];
+
+            case Channel::AXIS:
+                return [
+                    Axis\Fields::ENCRYPTION_KEY => 'encryption_123',
+                    Axis\Fields::ENCRYPTION_IV  => 'encryption_iv_123',
+                    Axis\Fields::CLIENT_ID      => 'client_123',
+                    Axis\Fields::CLIENT_SECRET  => 'client_pass',
+                    Axis\Fields::CORP_CODE      => 'CORP123',
+                ];
+        }
+
     }
 
     public function fetchFtsFundAccountIdFromBas($merchantId, string $channel = 'icici', string $accountNumber = '123456')
@@ -335,10 +363,12 @@ class BankingAccountService
         return $result;
     }
 
-    public function fetchIciciActivatedAccountFromBas(MerchantEntity $merchant)
+    public function fetchActivatedDirectAccountsFromBas(MerchantEntity $merchant)
     {
+        // TODO: BAS can include other banks' accounts too. Update test cases with those.
+
         $iciciBalance = $merchant->directBankingBalances()
-                                 ->where('channel', '=', 'icici')
+                                 ->whereIn('channel', BASChannel::getDirectTypeChannels())
                                  ->first();
 
         $ba = null;

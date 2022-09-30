@@ -124,6 +124,9 @@ class Validator extends Base\Validator
         ConfigKey::RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_DELETE_MODE   => 'filled|boolean',
         ConfigKey::ICICI_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_DELETE_MODE => 'filled|boolean',
 
+        ConfigKey::CONNECTED_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT  => 'filled|integer',
+        ConfigKey::CONNECTED_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_DELETE_MODE => 'filled|boolean',
+
         ConfigKey::RX_ICICI_2FA_WEBHOOK_PROCESS_TYPE              => 'filled|integer',
 
         ConfigKey::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT              => 'filled|integer',
@@ -179,6 +182,12 @@ class Validator extends Base\Validator
         ConfigKey::FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB2       => 'filled|integer',
         ConfigKey::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB2   => 'filled|integer',
         ConfigKey::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_ICICI_SLAB2 => 'filled|integer',
+
+        ConfigKey::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_AXIS_SLAB1    => 'filled|integer',
+        ConfigKey::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_YESBANK_SLAB1 => 'filled|integer',
+        ConfigKey::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_AXIS_SLAB2    => 'filled|integer',
+        ConfigKey::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_YESBANK_SLAB2 => 'filled|integer',
+
         ConfigKey::FREE_PAYOUTS_SUPPORTED_MODES           => 'filled|array',
         ConfigKey::DELAY_RUPAY_CAPTURE                    => 'filled|boolean',
         ConfigKey::PAGINATION_ATTRIBUTES_FOR_TRIM_SPACE   => 'array',

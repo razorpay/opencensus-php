@@ -500,11 +500,11 @@ class Repository extends Base\Repository
     }
 
     public function getBalancesByMerchantIdChannelAndAccountType(string $merchantId,
-                                                                 string $channel,
+                                                                 array $channels,
                                                                  string $accountType)
     {
         return $this->newQuery()
-                    ->where(Entity::CHANNEL, $channel)
+                    ->whereIn(Entity::CHANNEL, $channels)
                     ->where(Entity::ACCOUNT_TYPE, $accountType)
                     ->merchantIdAndType($merchantId, Type::BANKING)
                     ->get();

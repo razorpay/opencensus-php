@@ -284,6 +284,20 @@ class Status
                 Attempt\Status::FAILED    => self::FAILED,
                 Attempt\Status::PROCESSED => self::PROCESSED,
             ],
+            Channel::AXIS => [
+                Attempt\Status::CREATED   => self::CREATED,
+                Attempt\Status::INITIATED => self::INITIATED,
+                Attempt\Status::REVERSED  => self::REVERSED,
+                Attempt\Status::FAILED    => self::FAILED,
+                Attempt\Status::PROCESSED => self::PROCESSED,
+            ],
+            Channel::YESBANK => [
+                Attempt\Status::CREATED   => self::CREATED,
+                Attempt\Status::INITIATED => self::INITIATED,
+                Attempt\Status::REVERSED  => self::REVERSED,
+                Attempt\Status::FAILED    => self::FAILED,
+                Attempt\Status::PROCESSED => self::PROCESSED,
+            ],
         ],
     ];
     public static $payoutStatusToLedgerEventMap = [

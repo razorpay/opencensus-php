@@ -221,8 +221,10 @@ class Core extends Base\Core
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
+        $channel = strtolower($basBankingAccount['partner_bank']);
+
         $input = [
-            BankingAccountEntity::CHANNEL      => Channel::ICICI,
+            BankingAccountEntity::CHANNEL      => $channel,
             BankingAccountEntity::ACCOUNT_TYPE => 'current',
             BankingAccountEntity::ACCOUNT_IFSC => $basBankingAccount['ifsc'],
         ];
@@ -250,12 +252,11 @@ class Core extends Base\Core
 
         $ba->setBasCaStatus($status);
 
-
-        // Fetching balance by account number in-case icici have multiple CA's
+        // Fetching balance by account number in-case there are multiple CA's
         $balance = $this->repo->balance->getBalanceByMerchantIdAccountNumberChannelAndAccountType($merchantId,
-                                                                                       $basBankingAccount['account_number'],
-                                                                                       Channel::ICICI,
-                                                                                       'direct');
+                                                                                                  $basBankingAccount['account_number'],
+                                                                                                  $channel,
+                                                                                                  'direct');
 
         $ba->merchant()->associate($merchant);
 
@@ -265,7 +266,7 @@ class Core extends Base\Core
     }
 
     /**
-     * In case of icici ca balance exists but not banking_account entity.
+     * In case of CAs implemented in BAS (ICICI, Axis, Yesbank) balance exists but not banking_account entity.
      * We make a call to banking account service to fetch the banking account id.
      *
      * @param string $balanceId
@@ -278,9 +279,9 @@ class Core extends Base\Core
         /* @var BalanceEntity $balance */
         $balance = $this->repo->balance->findOrFailById($balanceId);
 
-        //banking account does not exist for icici ca only.
+        //banking account does not exist for BAS CAs only.
         if ((empty($balance->bankingAccount) === true) and
-            ($balance->getChannel() === Channel::ICICI) and
+            (in_array($balance->getChannel(), Channel::getDirectTypeChannels())) and
             ($balance->getAccountType() === Merchant\Balance\AccountType::DIRECT))
         {
             //call to bas to fetch the banking_account_id.
@@ -383,7 +384,7 @@ class Core extends Base\Core
     /*
      * FE checks for ca_activation_status field and lands on live mode if it's activated.
      */
-    public function fetchIciciCaStatus($merchantId)
+    public function fetchBasCaStatus($merchantId)
     {
         $status = null;
         //Avoiding failure of /user api if banking account service is down.
