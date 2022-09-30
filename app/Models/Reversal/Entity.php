@@ -280,6 +280,26 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CHANNEL, $channel);
     }
 
+    public function setAmount($amount)
+    {
+        $this->setAttribute(self::AMOUNT, $amount);
+    }
+
+    public function setBalanceId($balanceId)
+    {
+        $this->setAttribute(self::BALANCE_ID, $balanceId);
+    }
+
+    public function setCurrency($currency)
+    {
+        $this->setAttribute(self::CURRENCY, $currency);
+    }
+
+    public function setMerchantId($merchantId)
+    {
+        $this->setAttribute(self::MERCHANT_ID, $merchantId);
+    }
+
     public function setFee(int $fee)
     {
         assertTrue($fee >= 0);

@@ -1229,7 +1229,19 @@ class Core extends Base\Core
 
     public function createTransactionInLedgerReverseShadowFlow(string $entityId, array $ledgerResponse)
     {
+        $isPayoutServiceReversal = false;
+
         $reversal = $this->repo->reversal->find($entityId);
+
+        if (empty($reversal) === true)
+        {
+            $reversal = $this->getAPIModelReversalFromPayoutService($entityId);
+
+            if ((empty($reversal) === false) && empty($reversal->getId() === false))
+            {
+                $isPayoutServiceReversal = true;
+            }
+        }
 
         $featureChecks = (($reversal->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true) or
                          (($reversal->merchant->isFeatureEnabled(Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS) === true) and
@@ -1244,20 +1256,28 @@ class Core extends Base\Core
 
         $txn = $this->app['api.mutex']->acquireAndRelease(
             'rvrsl_'.$entityId,
-            function () use ($reversal, $ledgerResponse)
+            function () use ($reversal, $ledgerResponse, $isPayoutServiceReversal)
             {
-                $reversal->reload();
+                // No need to make a call to payout service again if reversal belongs there.
+                if ($isPayoutServiceReversal === false)
+                {
+                    $reversal->reload();
+                }
 
-                return $this->repo->transaction(function() use ($reversal, $ledgerResponse)
+                return $this->repo->transaction(function() use ($reversal, $ledgerResponse, $isPayoutServiceReversal)
                 {
                     $txnId      = $ledgerResponse[Entity::ID];
                     $newBalance = Transaction\Processor\Ledger\Base::getMerchantBalanceFromLedgerResponse($ledgerResponse);
 
                     list($txn, $feeSplit) = (new Transaction\Processor\Reversal($reversal))->createTransactionForLedger($txnId, $newBalance);
 
-                    $reversal->transaction()->associate($txn);
+                    // No need to update reversal if it doesn't exists in api db. PS dual write will take care of it.
+                    if ($isPayoutServiceReversal === false)
+                    {
+                        $reversal->transaction()->associate($txn);
 
-                    $this->repo->saveOrFail($reversal);
+                        $this->repo->saveOrFail($reversal);
+                    }
 
                     if ($feeSplit !== null)
                     {
@@ -1269,7 +1289,7 @@ class Core extends Base\Core
                         // As we will stop the dual write to the transactions table
                         // If fee split is null, it means that duplicate txn was found
                         // so no dispatch necessary again.
-                        if ($reversal->getEntityType() === E::PAYOUT)
+                        if (($reversal->getEntityType() === E::PAYOUT) && ($isPayoutServiceReversal === false))
                         {
                             $this->app->events->dispatch('api.transaction.created', $reversal->transaction);
                         }
@@ -1495,5 +1515,78 @@ class Core extends Base\Core
                     'payment_id'            => $refund->getPaymentId(),
                 ]);
         }
+    }
+
+    public function getAPIModelReversalFromPayoutService(string $id)
+    {
+        $this->trace->info(
+            TraceCode::FETCH_PAYOUT_SERVICE_REVERSAL,
+            [
+                Entity::REVERSAL_ID => $id
+            ]);
+
+        $payoutServiceReversals = $this->repo->reversal->getPayoutServiceReversal($id);
+
+        if (count($payoutServiceReversals) === 0)
+        {
+            return null;
+        }
+
+        $psReversal = $payoutServiceReversals[0];
+
+        $reversal = new Entity;
+
+        $reversal->setAmount($psReversal->amount);
+        $reversal->setBalanceId($psReversal->balance_id);
+        $reversal->setChannel($psReversal->channel);
+        $reversal->setCreatedAt($psReversal->created_at);
+        $reversal->setCurrency($psReversal->currency);
+        $reversal->setFee($psReversal->fees);
+        $reversal->setId($psReversal->id);
+        $reversal->setMerchantId($psReversal->merchant_id);
+        $reversal->setTax($psReversal->tax);
+        $reversal->setUpdatedAt($psReversal->updated_at);
+        $reversal->setUtr($psReversal->utr);
+
+        if (empty($psReversal->notes) === false)
+        {
+            $reversal->setAttribute(Entity::NOTES, json_decode($psReversal->notes));
+        }
+        else
+        {
+            $reversal->setNotes([]);
+        }
+
+        if (empty($psReversal->transaction_id) === false)
+        {
+            $txn = new Transaction\Entity;
+            $txn->setId($psReversal->transaction_id);
+            $txn->setEntityId($reversal->getId());
+            $txn->setType('reversal');
+            $reversal->transaction()->associate($txn);
+            $reversal->unsetRelation('transaction');
+        }
+
+        if (empty($psReversal->payout_id) === false)
+        {
+            $payout = (new Payout\Core())->getAPIModelPayoutFromPayoutService($psReversal->payout_id);
+            $reversal->entity()->associate($payout);
+
+            $reversal->setIgnoreRelationsForPayoutServiceReversals();
+        }
+
+        // This is need to showcase $payout as freshly fetched entity and not like a variable on which many
+        // setters are called. After doing this isDirty will give false.
+        $reversal->syncOriginal();
+
+        $reversal->setConnection($this->mode);
+
+        $this->trace->info(
+            TraceCode::FETCH_PAYOUT_SERVICE_REVERSAL_SUCCESS,
+            [
+                "reversal" => $reversal->toArray()
+            ]);
+
+        return $reversal;
     }
 }

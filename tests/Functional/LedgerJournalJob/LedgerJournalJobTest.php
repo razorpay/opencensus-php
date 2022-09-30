@@ -152,6 +152,73 @@ class LedgerJournalJobTest extends TestCase
         $this->assertEquals('21200', $transaction->getBalance());
     }
 
+    public function testReversalTransactionCreationForPSReversal()
+    {
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->fundAccount = $this->createVpaFundAccount();
+
+        $this->fixtures->create('payout', [
+            'id'                => 'SamplePoutId15',
+            'status'            => 'processed',
+            'pricing_rule_id'   => '1nvp2XPMmaRLxb',
+            'balance_id'        => $balance->getId(),
+            'fund_account_id'   => $this->fundAccount->getId(),
+            'is_payout_service' => 1
+        ]);
+
+        $payout = $this->getLastEntity('payout', true, 'test');
+
+        $this->fixtures->reversal->createReversalWithoutTransaction([
+            'id'              => 'SampleRvrslId2',
+            'entity_id'       => 'SamplePoutId15',
+            'entity_type'     => 'payout',
+            'balance_id'      => $balance->getId(),
+        ]);
+
+        $reversal = $this->getLastEntity('reversal', true, 'test');
+
+        (new PayoutServiceDataMigration('test', [
+            PayoutDataMigration\Processor::FROM => $payout[PayoutEntity::CREATED_AT],
+            PayoutDataMigration\Processor::TO   => $payout[PayoutEntity::CREATED_AT],
+            PayoutEntity::BALANCE_ID            => $payout[PayoutEntity::BALANCE_ID]
+        ]))->handle();
+
+        $payoutId = $payout[PayoutEntity::ID];
+
+        PayoutEntity::stripSignWithoutValidation($payoutId);
+
+        $migratedPayout = \DB::connection('live')->select("select * from ps_payouts where id = '$payoutId'")[0];
+
+        $this->assertEquals($payout[PayoutEntity::ID], 'pout_' .$migratedPayout->id);
+
+        $this->fixtures->edit('payout', $payoutId, ['id' => 'Gg7sgBZgvYjlSC']);
+
+        $reversalId = $reversal['id'];
+
+        PayoutEntity::stripSignWithoutValidation($reversalId);
+
+        $migratedReversal = \DB::connection('live')->select("select * from ps_reversals where id = '$reversalId'")[0];
+
+        $this->assertEquals($reversal['id'], 'rvrsl_' .$migratedReversal->id);
+
+        $this->fixtures->edit('reversal', $reversalId, ['id' => 'Gg7sgBZgvYjlSD']);
+
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $testData = &$this->testData['testReversalTransactionCreation'];
+        $ledgerJournalJob = new LedgerJournalTest($testData['payload']);
+        $ledgerJournalJob->handle();
+
+        $transaction = $this->getDbEntityById('transaction', 'HNjsypA96SgJKJ');
+
+        // assert transaction
+        $this->assertEquals('HNjsypA96SgJKJ', $transaction->getId());
+        $this->assertEquals('SampleRvrslId2', $transaction->getEntityId());
+        $this->assertEquals('reversal', $transaction->getType());
+        $this->assertEquals('21200', $transaction->getBalance());
+    }
+
     public function testBankTransferTransactionCreation()
     {
         $balance = $this->getDbLastEntity('balance');

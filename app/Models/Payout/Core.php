@@ -5619,7 +5619,6 @@ class Core extends Base\Core
         $payout->setMethod($psPayout->method);
         $payout->setMode($psPayout->mode);
         $payout->setNarration($psPayout->narration);
-        $payout->setAttribute(Entity::NOTES, json_decode($psPayout->notes));
         $payout->setOnHoldAt($psPayout->on_hold_at);
         $payout->setRawAttribute(Entity::ORIGIN, $psPayout->origin);
         $payout->setPayoutLinkId($psPayout->payout_link_id);
@@ -5674,6 +5673,12 @@ class Core extends Base\Core
         $payout->syncOriginal();
 
         $payout->setConnection($this->mode);
+
+        $this->trace->info(
+            TraceCode::FETCH_PAYOUT_SERVICE_PAYOUT_SUCCESS,
+            [
+                'payout' => $payout->toArray()
+            ]);
 
         return $payout;
     }
@@ -6466,13 +6471,18 @@ class Core extends Base\Core
 
     public function createTransactionInLedgerReverseShadowFlow(string $entityId, array $ledgerResponse)
     {
+        $isPayoutServicePayout = false;
+
         /** @var Entity $payout */
         $payout = $this->repo->payout->find($entityId);
 
         if (empty($payout) === true)
         {
             $payout = $this->getAPIModelPayoutFromPayoutService($entityId);
+
+            $isPayoutServicePayout = true;
         }
+
         if (self::isPayoutTransactionDualWriteEnabled($payout) === false)
         {
             throw new Exception\LogicException('Merchant does not have the ledger reverse shadow feature flag enabled'
@@ -6494,11 +6504,18 @@ class Core extends Base\Core
         $subProcessor = $downstreamProcessor->getSubProcessorClass();
 
         $txn = $this->mutex->acquireAndRelease('pout_' . $entityId,
-            function() use ($payout, $ledgerResponse, $subProcessor) {
+            function() use ($payout, $ledgerResponse, $subProcessor, $isPayoutServicePayout) {
+
                 $payout->reload();
 
-                return $this->repo->transaction(function() use ($ledgerResponse, $payout, $subProcessor) {
+                return $this->repo->transaction(function() use ($ledgerResponse, $payout, $subProcessor, $isPayoutServicePayout) {
                     $txn = $subProcessor->createTransactionForLedgerReverseShadow($payout, $ledgerResponse);
+
+                    // No need to update payout if it doesn't exists in api db. PS dual write will take care of it.
+                    if ($isPayoutServicePayout === true)
+                    {
+                        return $txn;
+                    }
 
                     $payout->transaction()->associate($txn);
 
