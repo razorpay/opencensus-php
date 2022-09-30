@@ -3744,6 +3744,12 @@ class Core extends Base\Core
 
         $this->repo->attach($user, $product . Entity::MERCHANTS, [$merchantId => $mappingParams]);
 
+        if ((new Merchant\Core())->isRazorxExperimentEnable(
+                $user->getId(), RazorxTreatment::CREATE_ACCOUNT_API_PERFORMANCE_ANALYSIS) === true)
+        {
+            return [];
+        }
+
         $this->trace->info(TraceCode::MERCHANT_USER_ATTACH_SUCCESSFUL);
 
         $response = $user->toArrayPublic();

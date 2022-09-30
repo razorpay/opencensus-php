@@ -649,4 +649,7 @@ final class RazorxTreatment
     const DUMMY_CARD_DETAILS_POST_TOKENIZATION = 'dummy_card_details_post_tokenisation';
 
     const DUMMY_VALUE_WHILE_EXPOSE_FEATURE_ENABLED = 'dummy_value_while_expose_feature_enabled';
+
+    //Experiment used to control for the flow of create account API for performance analysis
+    const CREATE_ACCOUNT_API_PERFORMANCE_ANALYSIS = 'create_account_api_performance_analysis';
 }

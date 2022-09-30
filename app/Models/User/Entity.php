@@ -491,6 +491,7 @@ class Entity extends Base\PublicEntity
         }
 
         $merchants = $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
+                          ->select(Table::MERCHANT . '.' . Merchant\Entity::ORG_ID)
                           ->get();
 
         $orgIdList = [];
@@ -499,6 +500,8 @@ class Entity extends Base\PublicEntity
         {
             $orgIdList[] = $merchant[Merchant\Entity::ORG_ID];
         }
+
+        $orgIdList = array_unique($orgIdList);
 
         return (new Admin\Org\Repository)
                     ->hasAnyOrgEnforced2Fa($orgIdList);
