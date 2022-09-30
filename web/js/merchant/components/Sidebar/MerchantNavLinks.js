@@ -4,11 +4,7 @@ import MainNavLink from 'merchant_common/components/MainNavLink';
 import MagicCheckoutNavLink from 'merchant/components/Sidebar/MagicCheckoutNavLink';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import {
-  getIsBankingEnabled,
-  trackCashAdvanceSidebarLinkClicked,
-  trackCashAdvanceSidebarLinkRendered,
-} from './helpers';
+import { getIsBankingEnabled } from './helpers';
 import { trackViewedBankingNavBar } from './ga';
 import BBPSImage from 'assets/bbps.png';
 import * as LocalStorageService from 'common/utils/localStorage';
@@ -31,31 +27,6 @@ function MerchantNavLinks(props) {
   const isRecommendProduct =
     hasRecommendedProduct && payment === 0 && user.isProductRecommendationEnabled;
 
-  // checks if the splitz experiment 'cash_advance_sidebar_position' variant is 'top'
-  const isCashAdvanceSidebarPosTopExp = !!user.isCashAdvanceSidebarPosTopExp;
-  const handleCashAdvanceClick = () => {
-    trackCashAdvanceSidebarLinkClicked({
-      user,
-      position: isCashAdvanceSidebarPosTopExp ? 'top' : 'bottom',
-    });
-  };
-  const cashAdvanceMainNavLink = (
-    <MainNavLink
-      label="Loans (Cash Advance)"
-      icon="i fa fa-star text-warning"
-      to="/capital/cash-advance/"
-      isLive
-      additionalCondition={(currentUser) =>
-        currentUser.isAllowedView('cash_advance') &&
-        (currentUser.isLOCEnabled ||
-          currentUser.isCashAdvanceStage2Enabled ||
-          currentUser.isWithdrawFeatureEnabled ||
-          currentUser.isCashOnCardEnabled)
-      }
-      onClick={handleCashAdvanceClick}
-    />
-  );
-
   useEffect(() => {
     //set recommend product to localstorage.
     if (user.isProductRecommendationEnabled) {
@@ -65,11 +36,6 @@ function MerchantNavLinks(props) {
     if (getIsBankingEnabled(user)) {
       trackViewedBankingNavBar();
     }
-
-    trackCashAdvanceSidebarLinkRendered({
-      user,
-      position: isCashAdvanceSidebarPosTopExp ? 'top' : 'bottom',
-    });
   }, []);
 
   const getProductBadge = (products) => {
@@ -123,9 +89,19 @@ function MerchantNavLinks(props) {
 
       <div class="divider" />
 
-      {/* Renders sidebar link for Cash Advance at this position if splitz 
-          experiment 'cash_advance_sidebar_position' variant is 'top' */}
-      {isCashAdvanceSidebarPosTopExp && cashAdvanceMainNavLink}
+      <MainNavLink
+        label="Loans (Cash Advance)"
+        icon="i i-star text-warning"
+        to="/capital/cash-advance/"
+        isLive
+        additionalCondition={(currentUser) =>
+          currentUser.isAllowedView('cash_advance') &&
+          (currentUser.isLOCEnabled ||
+            currentUser.isCashAdvanceStage2Enabled ||
+            currentUser.isWithdrawFeatureEnabled ||
+            currentUser.isCashOnCardEnabled)
+        }
+      />
 
       <MainNavLink
         label="Invoices"
@@ -276,7 +252,7 @@ function MerchantNavLinks(props) {
 
       <MainNavLink
         label="Working Capital Loans"
-        icon="i fa fa-inr text-warm"
+        icon="i i-rupee text-warm"
         to="/capital/non-fldg-loans/"
         additionalCondition={(currentUser) => currentUser.isNonFldgLoansEnabled}
         isNew={false}
@@ -284,7 +260,7 @@ function MerchantNavLinks(props) {
 
       <MainNavLink
         label="Loans"
-        icon="i fa fa-inr text-warm"
+        icon="i i-rupee text-warm"
         to="/capital/loans/apply"
         isNew={!isRecommendProduct}
         additionalCondition={(currentUser) =>
@@ -292,11 +268,9 @@ function MerchantNavLinks(props) {
         }
       />
 
-      {!isCashAdvanceSidebarPosTopExp && cashAdvanceMainNavLink}
-
       <MainNavLink
         label="Corporate Cards"
-        icon="i fa fa-credit-card text-warm"
+        icon="i i-credit-card text-warm"
         to="/capital/corporate-cards/"
         isNew={!isRecommendProduct}
         additionalCondition={(currentUser) => currentUser.isCardsLOSEnabled}

@@ -532,11 +532,6 @@ export default class User {
     return getSplitzExperimentVariant('developer_console')?.variables?.result === 'on';
   }
 
-  get isCashAdvanceSidebarPosTopExp() {
-    const variant = getSplitzExperimentVariant('cash_advance_sidebar_position');
-    return variant?.name === 'top';
-  }
-
   get isProjectKeystoneCorporateCardsEnabled() {
     return (
       getSplitzExperimentVariant('keystone_corporate_cards_experiment')?.variables?.result === 'on'

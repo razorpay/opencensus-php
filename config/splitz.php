@@ -204,9 +204,6 @@ return [
         'WEBSITE_COMPLIANCE_MODAL_EXP'      => env('WEBSITE_COMPLIANCE_MODAL_EXP', ''),
         'WEBSITE_COMPLIANCE_FLOW_EXP'      => env('WEBSITE_COMPLIANCE_FLOW_EXP', ''),
 
-        // Cash Advance sidebar link position
-        'CASH_ADVANCE_SIDEBAR_POSITION' => env('CASH_ADVANCE_SIDEBAR_POSITION', ''),
-
         // show invoices for current FY
         'INVOICE_CURRENT_FY' => env('INVOICE_CURRENT_FY', ''),
         //Frontend care Quick Link
