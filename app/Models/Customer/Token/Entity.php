@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Base\BuilderEx;
 use RZP\Constants\Timezone;
 use RZP\Models\Base;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
@@ -1101,6 +1102,10 @@ class Entity extends Base\PublicEntity
 
                 if(strtolower($variant) === 'on')
                 {
+                    $publicArray['card']['expiry_month'] = "01";
+
+                    $publicArray['card']['expiry_year'] = "2099";
+
                     (new Card\Entity())->setDummyCardData($publicArray['card']);
                 }
 
