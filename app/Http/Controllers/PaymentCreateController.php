@@ -131,7 +131,18 @@ class PaymentCreateController extends Controller
 
         $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
 
-        $response = $this->processCoprotoJsonData($data);
+        if (isset($this->app['rzp.mode']) and $this->app['rzp.mode'] === 'test' and isset($data['method']) === true and
+            $data['method'] === Gateway::CARDLESS_EMI)
+        {
+            $trackId = $data['payment_id'];
+            $redirectUrl = $this->route->getUrl('payment_redirect_to_authenticate_get', ['id' => $trackId]);
+            $data['request']['url'] = $redirectUrl;
+            $response = $this->generateRedirectJson($data);
+        }
+        else
+        {
+            $response = $this->processCoprotoJsonData($data);
+        }
 
         $this->logResponseIfApplicable($response);
 
@@ -781,13 +792,13 @@ class PaymentCreateController extends Controller
 
         if (empty($input['rearch']) === false)
         {
-            $data = $this->app['pg_router']->paymentAuthenticate($id, [], true);            
+            $data = $this->app['pg_router']->paymentAuthenticate($id, [], true);
 
-            if (empty($data['html']) === false) 
+            if (empty($data['html']) === false)
             {
                 return $data['html'];
             }
-            
+
             return $data;
         }
 
