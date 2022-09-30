@@ -45,3 +45,4 @@ vars:
     value: "api"
   - name: APP_NAME
     value: "api-web"
+    # value: "api-sqs-main" # use this value to sync code to sqs pod

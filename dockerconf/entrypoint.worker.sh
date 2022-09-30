@@ -82,6 +82,9 @@ change_db_user_for_workers() {
     sed -i "s/SLAVE_DB_TEST_USERNAME .*/SLAVE_DB_TEST_USERNAME=perf_api_test_worker/g" $vault_file
     sed -i "s/DB_LIVE_USERNAME .*/DB_LIVE_USERNAME=perf_api_worker/g" $vault_file
     sed -i "s/DB_TEST_USERNAME .*/DB_TEST_USERNAME=perf_api_test_worker/g" $vault_file
+  elif [[ "${APP_MODE}" == "devserve" ]]; then
+    # skipping as the secrets are injected via kube secrets
+    continue
   else
     sed -i "s/SLAVE_DB_LIVE_USERNAME .*/SLAVE_DB_LIVE_USERNAME=api_${APP_MODE}_worker/g" $vault_file
     sed -i "s/SLAVE_DB_TEST_USERNAME .*/SLAVE_DB_TEST_USERNAME=api_${APP_MODE}_test_worker/g" $vault_file
@@ -153,7 +156,12 @@ main() {
     else
       echo "starting sqs listener"
       create_kafka_credentials_dir
-      php artisan queue:work "${app_type}" --tries=0 --sleep="${sleep_time}"
+      if [[ "${APP_MODE}" == "devserve" ]]; then
+        tail -F storage/logs/$HOSTNAME-trace-$(date +%Y-%m-%d).log &
+        php artisan queue:listen "${app_type}" --tries=0 --sleep="${sleep_time}"
+      else
+        php artisan queue:work "${app_type}" --tries=0 --sleep="${sleep_time}"
+      fi
     fi
   elif [[ "${app_type}" == "sqs_multi_default" ]]; then
     change_db_user_for_workers
@@ -167,7 +175,12 @@ main() {
     else
       echo "starting sqs listener"
       create_kafka_credentials_dir
-      php artisan queue:work "${app_type}" --tries=0 --queue="${APP_MODE}-${queue_name}" --sleep="${sleep_time}"
+      if [[ "${APP_MODE}" == "devserve" ]]; then
+        tail -F storage/logs/$HOSTNAME-trace-$(date +%Y-%m-%d).log &
+        php artisan queue:listen "${app_type}" --tries=0 --queue="${APP_MODE}-${queue_name}" --sleep="${sleep_time}"
+      else
+        php artisan queue:work "${app_type}" --tries=0 --queue="${APP_MODE}-${queue_name}" --sleep="${sleep_time}"
+      fi
     fi
   elif [[ "${app_type}" == "sqs-raw" ]]; then
     change_db_user_for_workers
@@ -181,7 +194,12 @@ main() {
     else
       echo "starting sqs-raw listener"
       create_kafka_credentials_dir
-      php artisan queue:work "${app_type}" --tries=0 --queue="${APP_MODE}-${queue_name}" --sleep="${sleep_time}"
+      if [[ "${APP_MODE}" == "devserve" ]]; then
+        tail -F storage/logs/$HOSTNAME-trace-$(date +%Y-%m-%d).log &
+        php artisan queue:listen "${app_type}" --tries=0 --queue="${APP_MODE}-${queue_name}" --sleep="${sleep_time}"
+      else
+        php artisan queue:work "${app_type}" --tries=0 --queue="${APP_MODE}-${queue_name}" --sleep="${sleep_time}"
+      fi
     fi
   else
     echo "Invalid entrypoint arguments in worker container."

@@ -7,6 +7,11 @@ use RZP\Services\Aws\Credentials\FileCache;
 // We cache the result in file system(by using FileCache adapter).
 //
 $awsCredentialsCache = new FileCache;
+if (env('APP_MODE') === "devserve")
+{
+    // for anonymous client as devstack uses localstack
+    $awsCredentialsCache = false;
+}
 
 return [
 
