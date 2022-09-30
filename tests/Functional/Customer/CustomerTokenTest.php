@@ -506,6 +506,8 @@ class CustomerTokenTest extends TestCase
 
     public function testFetchAppTokensV2RazorPaySharedAccountDisplayNameSuccessful()
     {
+        $this->markTestSkipped('This test case is not applicable as we are not supporting global tokens as per RBI compliance');
+
         $this->mockSession();
 
         $this->mockSharedAccountMerchant('test merchant','https://www.abcd.xyz.com', '/logos/random_image.png');

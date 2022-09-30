@@ -2754,6 +2754,8 @@ class Core extends Base\Core
             return $token->isCard();
         });
 
+        $cardTokens = $this->removeGlobalCardTokens($cardTokens);
+
         foreach ($cardTokens as $token)
         {
             $tokenIdList[] = $token->getId();
