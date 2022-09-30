@@ -112,15 +112,27 @@ class GrowthService extends Base\Service
         return $this->sendRequest($parameters, self::GET_PUBLIC_ASSET_URL, Requests::POST);
     }
 
+    /**
+     * @throws Exception\ServerErrorException
+     */
     public function editTemplateAndEnableDowntimeNotificationForXDashboard($parameters)
     {
+        $this->skipPassport = true;
         $templateParameters = ["template" => $parameters['template']];
 
-        $this->sendRequest($templateParameters, self::EDIT_TEMPLATE_URL, Requests::POST);
+        $editTemplateResponse = $this->sendRequest($templateParameters, self::EDIT_TEMPLATE_URL, Requests::POST);
+
+        if (!array_key_exists("template", $editTemplateResponse["response"])) {
+            return $editTemplateResponse;
+        }
 
         $subCampaignGetParams = ["sub_campaign_id" => $parameters['subcampaign']["sub_campaign_id"]];
 
         $subCampaignGetResponse = $this->sendRequest($subCampaignGetParams, self::GET_SUBCAMPAIGN_URL, Requests::POST);
+
+        if (!array_key_exists("sub_campaign", $subCampaignGetResponse["response"])) {
+            return $subCampaignGetResponse;
+        }
 
         if ($subCampaignGetResponse["response"]["sub_campaign"]["status"] != self::ACTIVATED) {
             $subCampaignActionParams = $parameters['subcampaign'];
