@@ -243,6 +243,8 @@ class TokenisationExperiment
      * Runs a Splitz experiment to help decide whether to remove cards which are 
      * non-compliant to RBI's tokenisation guidelines from the output.
      *
+     * If exp fails, By default function will return true i.e, non-compliant cards will be removed.
+     * 
      * @param string $merchantId
      *
      * @return bool
@@ -271,6 +273,6 @@ class TokenisationExperiment
             );
         }
 
-        return false;
+        return true;
     }
 }

@@ -2756,6 +2756,10 @@ class Core extends Base\Core
 
         $cardTokens = $this->removeGlobalCardTokens($cardTokens);
 
+        $cardTokens = $this->removeNonCompliantCardTokens($cardTokens, 'flash_checkout');
+
+        $cardTokens = $this->removeNonActiveTokenisedCardTokens($cardTokens);
+
         foreach ($cardTokens as $token)
         {
             $tokenIdList[] = $token->getId();
