@@ -1362,7 +1362,7 @@ class Core extends Base\Core
         }
 
         $existingTokens = $this->removeNonActiveTokenisedCardTokens($existingTokens);
- 
+
         $isNewTokenNetworkTokenised = !$newToken->card->isRzpTokenisedCard();
 
         foreach ($existingTokens as $token)
@@ -2021,9 +2021,6 @@ class Core extends Base\Core
                 "type"     => (is_null($IINEntity) === true) ? null : $IINEntity->getType(),
             ],
             "tokenised"    => $isTokenized,
-            "merchant"     => [
-                "id"       => (isset($this->merchant) === false) ? null : $this->merchant->getId(),
-            ],
             "internal_service_request" => $internalServiceRequest,
         ];
 
@@ -2033,6 +2030,15 @@ class Core extends Base\Core
                 "card_data" => [
                     "token_iin" => substr($input['number'], 0, 9),
                 ]
+            ];
+        }
+
+        if(!empty($this->merchant))
+        {
+            $input += [
+                "merchant"     => [
+                    "id"       => $this->merchant->getId(),
+                ],
             ];
         }
     }
