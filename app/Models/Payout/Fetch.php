@@ -222,6 +222,11 @@ class Fetch extends BaseFetch
         Entity::CONTACT_EMAIL,
         Entity::CONTACT_TYPE,
         Entity::CHANNEL,
+        Entity::PENDING_ON_ROLES,
+        Fetch::COUNT,
+        Fetch::SKIP,
+        Fetch::FROM,
+        Fetch::TO,
         self::EXPAND,
     ];
 
