@@ -69,6 +69,11 @@ class CardPaymentServiceTest extends TestCase
                     if ($feature === 'store_empty_value_for_non_exempted_card_metadata')
                         return 'off';
 
+                    if ($feature === 'disable_rzp_tokenised_payment')
+                    {
+                        return 'off';
+                    }
+
                     return $this->razorxValue;
                 }) );
 
@@ -1821,6 +1826,11 @@ class CardPaymentServiceTest extends TestCase
                                     return 'off';
                                 }
 
+                                if ($feature === 'disable_rzp_tokenised_payment')
+                                {
+                                    return 'off';
+                                }
+
                                 return 'on';
 
                             }) );
@@ -2505,6 +2515,11 @@ class CardPaymentServiceTest extends TestCase
                         return $value;
                     }
                     return 'on';
+                }
+
+                if ($feature === RazorxTreatment::DISABLE_RZP_TOKENISED_PAYMENT)
+                {
+                    return 'off' ;
                 }
 
                 return 'on';
@@ -3851,6 +3866,11 @@ class CardPaymentServiceTest extends TestCase
                 function ($mid, $feature, $mode)
                 {
                     if ($feature === 'card_payments_authorize_all_terminals' or  $feature === 'store_empty_value_for_non_exempted_card_metadata')
+                    {
+                        return 'off';
+                    }
+
+                    if ($feature === 'disable_rzp_tokenised_payment')
                     {
                         return 'off';
                     }

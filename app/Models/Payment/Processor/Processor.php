@@ -1164,6 +1164,8 @@ class Processor
 
             $this->setMethodForInput($input);
 
+            $this->validateTokenisedPayment($input);
+
             $this->setMethodForSubscription($input);
 
             $this->appendMetadataForPayment($input);
@@ -2669,6 +2671,45 @@ class Processor
         else
         {
             $input[Payment\Entity::METHOD] = Payment\Method::CARD;
+        }
+    }
+
+    protected function validateTokenisedPayment(& $input)
+    {
+        $experimentVariable = UniqueIdEntity::generateUniqueId();
+
+        $variant = $this->app->razorx->getTreatment($experimentVariable, Merchant\RazorxTreatment::DISABLE_RZP_TOKENISED_PAYMENT, $this->mode);
+
+        if( strtolower($variant) === 'on')
+        {
+            if (($input[Payment\Entity::METHOD]) == Payment\Method::CARD and (isset($input[Payment\Entity::TOKEN]) === true)) {
+                $tokenId = $input[Payment\Entity::TOKEN];
+
+                if (isset($input[Payment\Entity::CUSTOMER_ID]) === true) {
+                    $customerId = $input[Payment\Entity::CUSTOMER_ID];
+
+                    Customer\Entity::verifyIdAndStripSign($customerId);
+
+                    $token = (new Customer\Token\Core)->getByTokenIdAndCustomerId($tokenId, $customerId);
+
+                } else {
+                    $merchant = $this->merchant;
+
+                    $token = (new Customer\Token\Core)->getByTokenIdAndMerchant($tokenId, $merchant);
+
+                }
+
+                $this->trace->info(TraceCode::TRACK_TOKENISED_PAYMENT_VALIDATION, [
+                    'token' => $token,
+                    'test' => $token->card->isNetworkTokenisedCard(),
+                ]);
+
+                if ($token->card->isNetworkTokenisedCard() === false) {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_INVALID_ID,
+                        'token');
+                }
+            }
         }
     }
 

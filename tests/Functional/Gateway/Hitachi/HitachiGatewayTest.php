@@ -92,6 +92,11 @@ class HitachiGatewayTest extends TestCase
                         return 'off';
                     }
 
+                    if ($feature === 'disable_rzp_tokenised_payment')
+                    {
+                        return 'off';
+                    }
+
                     if ($feature === 'secure_3d_international')
                     {
                         return 'v2';

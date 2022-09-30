@@ -13,6 +13,7 @@ final class RazorxTreatment
 
     const AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES  = 'adharEkyc_for_reg_businessTypes';
     const AADHAAR_EKYC_FOR_TRUST_SOCIETY_NGO   = 'aadharEkyc_for_trust_society_ngo';
+    const DISABLE_RZP_TOKENISED_PAYMENT        = 'disable_rzp_tokenised_payment';
 
     //Razorx treatment constant, whether to make sync call or not
 

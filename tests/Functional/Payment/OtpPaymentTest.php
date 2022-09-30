@@ -55,6 +55,12 @@ class OtpPaymentTest extends TestCase
                                 {
                                     return 'off';
                                 }
+
+                                if ($feature === 'disable_rzp_tokenised_payment')
+                                {
+                                    return 'off';
+                                }
+
                                 return 'on';
                             }));
     }
