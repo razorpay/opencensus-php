@@ -108,7 +108,7 @@ class Gateway extends Base\Gateway
             {
                 $meta_data['order_id'] = $input['order_id'];
             }
-            $meta_data['payment_id'] = $input['payment']['id'];
+            $meta_data['payment_id'] = $input['payment']['public_id'];
 
             $response['meta_data'] = $meta_data;
         }
