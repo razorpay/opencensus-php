@@ -10,6 +10,7 @@ use RZP\Models\Base\Notes;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Customer\Entity as Customer;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Account\Entity as MerchantAccount;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Invoice\Entity as Invoice;
@@ -128,6 +129,28 @@ class Entity extends PublicEntity
         self::UPI,
     ];
 
+    /** @var string[] Id attribute to class mapping */
+    protected const ID_ATTRIBUTES = [
+        self::ACCOUNT_ID => Account::class,
+        self::AUTH_LINK_ID => Invoice::class,
+        self::CUSTOMER_ID => Customer::class,
+        self::INVOICE_ID => Invoice::class,
+        self::OFFER_ID => Offer::class,
+        self::ORDER_ID => Order::class,
+        self::PAYMENT_LINK_ID => PaymentLink::class,
+    ];
+
+    /**
+     * Fields that will be modified before input validation.
+     *
+     * @var string[]
+     *
+     * @see modifyIdAttributes()
+     */
+    protected static $modifiers = [
+        'id_attributes',
+    ];
+
     /** @var array The attributes that should be mutated to dates. */
     protected $dates = [
         self::CLOSED_AT,
@@ -158,6 +181,7 @@ class Entity extends PublicEntity
     protected $fillable = [
         self::CHECKOUT_ID,
         self::CONTACT,
+        self::CUSTOMER_ID,
         self::EMAIL,
         self::INVOICE_ID,
         self::ORDER_ID,
@@ -213,6 +237,8 @@ class Entity extends PublicEntity
         self::EXPIRE_AT,
         self::META_DATA,
     ];
+
+    protected static $unsetCreateInput = self::META_DATA_ATTRIBUTES;
 
     public function toArrayPrivate(): array
     {
@@ -521,4 +547,17 @@ class Entity extends PublicEntity
     }
 
     // ------------------------------ SETTERS END ------------------------------
+    // --------------------------------------------------------------------------------
+    // ---------------------------- MODIFIERS START ----------------------------
+
+    protected function modifyIdAttributes(array &$input): void
+    {
+        foreach (self::ID_ATTRIBUTES as $attribute => $class) {
+            if (array_key_exists($attribute, $input)) {
+                $input[$attribute] = $class::verifyIdAndSilentlyStripSign($input[$attribute]);
+            }
+        }
+    }
+
+    // ---------------------------- MODIFIERS END ----------------------------
 }

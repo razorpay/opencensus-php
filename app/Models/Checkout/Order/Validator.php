@@ -29,6 +29,7 @@ class Validator extends BaseValidator
         Entity::AMOUNT => 'required|int|min_amount',
         Entity::AUTH_LINK_ID => 'sometimes|string|alpha_num|size:14',
         Entity::CHECKOUT_ID => 'required|string|alpha_num|size:14',
+        Entity::CUSTOMER_ID => 'sometimes|string|alpha_num|size:14',
         Entity::CONTACT => 'sometimes|contact_syntax',
         Entity::CURRENCY => 'sometimes|size:3',
         Entity::DESCRIPTION => 'sometimes|string|custom',
@@ -57,7 +58,7 @@ class Validator extends BaseValidator
         {
             $message = 'Only plain text characters are allowed';
 
-            throw new BadRequestValidationFailureException($message);
+            throw new BadRequestValidationFailureException($message, $attribute);
         }
 
         return true;
@@ -74,7 +75,7 @@ class Validator extends BaseValidator
             $message = 'expire_at should be at least ' . $minExpireAt->diffForHumans($now) .
                 ' and should not be greater than ' . $maxExpireAt->diffForHumans($now);
 
-            throw new BadRequestValidationFailureException($message);
+            throw new BadRequestValidationFailureException($message, $attribute);
         }
 
         return true;
@@ -86,7 +87,7 @@ class Validator extends BaseValidator
         {
             $message = 'Only plain text characters are allowed';
 
-            throw new BadRequestValidationFailureException($message);
+            throw new BadRequestValidationFailureException($message, $attribute);
         }
 
         return true;

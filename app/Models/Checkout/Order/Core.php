@@ -125,15 +125,19 @@ class Core extends BaseCore
      *
      * @return void
      *
+     * @throws BadRequestException
      * @throws BadRequestValidationFailureException
+     * @throws \Throwable
      */
     protected function validateOrderDetails(Entity $checkoutOrder, int $inputAmount): void
     {
-        $order = $checkoutOrder->order;
+        $orderId = $checkoutOrder->order_id;
 
-        if ($order === null) {
+        if (empty($orderId)) {
             return;
         }
+
+        $order = $this->repo->order->findByIdAndMerchant($orderId, $this->merchant);
 
         if ($order->isPaid()) {
             throw new BadRequestValidationFailureException(
@@ -151,5 +155,7 @@ class Core extends BaseCore
                 'input_amount' => $inputAmount,
             ]);
         }
+
+        $checkoutOrder->order()->associate($order);
     }
 }
