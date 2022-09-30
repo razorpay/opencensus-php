@@ -6,6 +6,7 @@ use App;
 use Carbon\Carbon;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Base;
+use RZP\Models\Card\CobrandingPartner;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Emi;
@@ -286,6 +287,26 @@ class Checker extends Base\Core
 
         $result = false;
 
+        $card = $this->payment->card;
+
+        if($card !== null)
+        {
+            $cardActualIin = $this->fetchCardIIN();
+
+            $iinEntity = $this->repo->iin->find($cardActualIin);
+
+            $coBrandingPartner = $iinEntity->getCobrandingPartner();
+
+            $offerIins = $this->offer->getIins();
+
+            // If an offer has both iins and issuer on one-card, then we check both
+            // If only issuer based offer is applied on one-card, we fail the offer
+            
+            if ($coBrandingPartner === CobrandingPartner::ONECARD and empty($offerIins) === true) {
+                return $result;
+            }
+        }
+
         switch ($paymentMethod)
         {
             case Payment\Method::CARD:
@@ -385,25 +406,7 @@ class Checker extends Base\Core
             return true;
         }
 
-        $card = $this->payment->card;
-
-        $cardActualIin = null;
-        $cardTokenIin = $card->getTokenIin();
-
-        if (empty($cardTokenIin) === false)
-        {
-            $cardActualIin = (string) Card\IIN\IIN::getTransactingIinforRange($cardTokenIin);
-
-            if (empty($cardActualIin) === true)
-            {
-                $this->trace->info(TraceCode::BIN_MAPPING_FOR_TOKEN_NOT_AVAILABLE);
-            }
-        }
-        // not adding this in else condition because this check is needed even for tokenised cards flow after mapping fails.
-        if (empty($cardActualIin) === true)
-        {
-            $cardActualIin = $card->getIin();
-        }
+       $cardActualIin = $this->fetchCardIIN();
 
         $result = false;
 
@@ -648,5 +651,31 @@ class Checker extends Base\Core
         }
 
         return $result;
+    }
+
+    protected function fetchCardIIN(): string
+    {
+        $card = $this->payment->card;
+
+        $cardActualIin = null;
+
+        $cardTokenIin = $card->getTokenIin();
+
+        if (empty($cardTokenIin) === false)
+        {
+            $cardActualIin = (string)Card\IIN\IIN::getTransactingIinforRange($cardTokenIin);
+
+            if (empty($cardActualIin) === true)
+            {
+                $this->trace->info(TraceCode::BIN_MAPPING_FOR_TOKEN_NOT_AVAILABLE);
+            }
+        }
+        // not adding this in else condition because this check is needed even for tokenised cards flow after mapping fails.
+        if (empty($cardActualIin) === true)
+        {
+            $cardActualIin = $card->getIin();
+        }
+
+        return $cardActualIin;
     }
 }
