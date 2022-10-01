@@ -11088,13 +11088,20 @@ trait Authorize
                         if (isset($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) == true && $input[Payment\Entity::CARD][Card\Entity::TOKENISED] == true) {
                             $iin_number = Card\IIN\IIN::getTransactingIinforRange(substr($input['card']['number'], 0, 6));
                         }
-                        else if (isset($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) == true && $input[Payment\Entity::CARD][Card\Entity::TOKENISED] == false){
-                            $iin_number = $input['card']['iin'];
-                        }
                         else {
-                            $iin_number = substr($input['card']['number'], 0, 6);
+                            $trimmed_number = str_replace(' ', '', trim($input['card']['number']));
+                            $iin_number = substr($trimmed_number, 0, 6);
                         }
                     }
+
+                    $this->trace->info(
+                        TraceCode::CARD_META_DATA_EVENT,
+                        [
+                            'card_number_condition' => empty($input['card']['number']) === false,
+                            'tokenised_condition' => isset($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) == true && $input[Payment\Entity::CARD][Card\Entity::TOKENISED] == true,
+                            'iin_number' => $iin_number,
+                            'payment_id' => $payment->getId(),
+                        ]);
                 }
                 $data = [
                     "payment_id" => $payment->getId(),
