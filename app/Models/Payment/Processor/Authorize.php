@@ -11073,7 +11073,7 @@ trait Authorize
                     if ((empty($network_card) === false) and
                         ($network_card->isNetworkTokenisedCard() === true))
                     {
-                        $iin_number = Card\IIN\IIN::getTransactingIinforRange($network_card->getTokenIin());
+                        $iin_number = Card\IIN\IIN::getTransactingIinforRange($network_card->getTokenIin()) ?? substr($network_card->getTokenIin(),0,6);
                     }
                     else
                     {
@@ -11086,23 +11086,27 @@ trait Authorize
                     if (empty($input['card']['number']) === false)
                     {
                         if (isset($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) == true && $input[Payment\Entity::CARD][Card\Entity::TOKENISED] == true) {
-                            $iin_number = Card\IIN\IIN::getTransactingIinforRange(substr($input['card']['number'], 0, 6));
+                            $iin_token = substr($input['card']['number'], 0, 6);
+                            $iin_number = Card\IIN\IIN::getTransactingIinforRange($iin_token) ?? $iin_token;
                         }
                         else {
                             $trimmed_number = str_replace(' ', '', trim($input['card']['number']));
                             $iin_number = substr($trimmed_number, 0, 6);
                         }
                     }
-
-                    $this->trace->info(
-                        TraceCode::CARD_META_DATA_EVENT,
-                        [
-                            'card_number_condition' => empty($input['card']['number']) === false,
-                            'tokenised_condition' => isset($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) == true && $input[Payment\Entity::CARD][Card\Entity::TOKENISED] == true,
-                            'iin_number' => $iin_number,
-                            'payment_id' => $payment->getId(),
-                        ]);
                 }
+
+                $this->trace->info(
+                    TraceCode::CARD_META_DATA_EVENT,
+                    [
+                        'input_token' => empty($input['token']) === false,
+                        'is_network_card' => empty($network_card) === false,
+                        'card_number_condition' => empty($input['card']['number']) === false,
+                        'tokenised_condition' => isset($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) == true && $input[Payment\Entity::CARD][Card\Entity::TOKENISED] == true,
+                        'iin_number' => $iin_number === null,
+                        'payment_id' => $payment->getId(),
+                    ]);
+
                 $data = [
                     "payment_id" => $payment->getId(),
                     "iin" => $iin_number,
