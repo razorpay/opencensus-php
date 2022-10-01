@@ -787,6 +787,8 @@ class Constants
      */
     const ORG_CUSTOM_BRANDING = 'org_custom_branding';
 
+    const ORG_CUSTOM_SETTLEMENT_CONF = 'org_custom_settl_conf';
+
     /*
      * Enables admin dashboard session logout at org level
      */
@@ -1938,6 +1940,7 @@ class Constants
         self::PL_BATCH_UPLOAD_FEATURE         => true,
         self::SETTLEMENTS_SMS_STOP            => true,
         self::ORG_CUSTOM_BRANDING             => true,
+        self::ORG_CUSTOM_SETTLEMENT_CONF      => true,
         self::EXPOSE_EXTRA_ATTRIBUTES         => true,
         self::SHOW_LATE_AUTH_ATTRIBUTES       => true,
         self::SHOW_REFND_LATEAUTH_PARAM       => true,

@@ -157,6 +157,15 @@ class Validator extends Base\Validator
         'via'                     => 'required|string|in:fts,payout'
     ];
 
+    protected static $orgConfigGetRules = [
+        'org_id'            => 'required|size:18'
+    ];
+
+    protected static $orgConfigCreateRules = [
+        'org_id'            => 'required|size:18',
+        'config'            => 'required|array',
+    ];
+
     protected static $settlementsStatusReplayRules = [
         'settlement_ids'    => 'required|array',
         'settlement_ids.*'  => 'required|string|size:14',

@@ -40,7 +40,8 @@ class Dashboard extends Base
     const REPORT_TRIGGER               = '/twirp/rzp.settlements.report.v1.ReportService/TriggerReport';
     const TRANSFER_STATUS_UPDATE       = '/twirp/rzp.settlements.transfer.v1.TransferService/UpdateStatus';
 
-    const MERCHANT_CONFIG_GET                      = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Get';
+    const MERCHANT_CONFIG_GET          = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Get';
+    const ORG_CONFIG_CREATE_OR_UPDATE  = '/twirp/rzp.settlements.org_settlement_config.v1.OrgConfigService/CreateOrUpdate';
     const MERCHANT_CONFIG_GET_SCHEDULABLE_ENTITIES = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/SchedulableEntities';
 
     const REPLAY_SETTLEMENTS_STATUS_UPDATE = '/twirp/rzp.settlements.settlement.v1.SettlementService/ReplaySettlementUpdate';
@@ -184,6 +185,18 @@ class Dashboard extends Base
     }
 
     /**
+     * Org Config Service Get
+     * @param array  $input
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function orgConfigGet(array $input) : array
+    {
+        return $this->makeRequest(self::ORG_CONFIG_GET, $input, self::SERVICE_DASHBOARD);
+    }
+
+    /**
      * Merchant Config Service Create
      * @param array  $input
      * @param null $mode
@@ -194,6 +207,19 @@ class Dashboard extends Base
     public function merchantConfigCreate(array $input, $mode = null) : array
     {
         return $this->makeRequest(self::MERCHANT_CONFIG_CREATE, $input, self::SERVICE_DASHBOARD, $mode);
+    }
+
+    /**
+     * Org Config Service Create
+     * @param array  $input
+     * @param null $mode
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function orgConfigCreateOrUpdate(array $input, $mode = null) : array
+    {
+        return $this->makeRequest(self::ORG_CONFIG_CREATE_OR_UPDATE, $input, self::SERVICE_DASHBOARD, $mode);
     }
 
     /**

@@ -86,6 +86,18 @@ class Api extends Base
     }
 
     /**
+     * Org Config Service Get
+     * @param array  $input
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function orgConfigGet(array $input) : array
+    {
+        return $this->makeRequest(self::ORG_CONFIG_GET, $input, self::SERVICE_API);
+    }
+
+    /**
      *
      * @param $input
      * @param $via

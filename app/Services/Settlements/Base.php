@@ -18,7 +18,7 @@ class Base
 
     const TRANSACTION_HOLD                  = '/twirp/rzp.settlements.transaction.v1.TransactionService/Hold';
     const TRANSACTION_RELEASE               = '/twirp/rzp.settlements.transaction.v1.TransactionService/Release';
-
+    const ORG_CONFIG_GET                    = '/twirp/rzp.settlements.org_settlement_config.v1.OrgConfigService/Get';
     const MERCHANT_CONFIG_GET               = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Get';
     const MERCHANT_CONFIG_CREATE            = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Create';
     const MERCHANT_CONFIG_UPDATE            = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Update';

@@ -917,6 +917,43 @@ class Core extends Base\Core
 
         $request = array_merge($req, $response);
 
+        try
+        {
+            $hasCustomSettlmentEnabled = $merchant->org->isFeatureEnabled(Constants::ORG_CUSTOM_SETTLEMENT_CONF);
+
+            if ($hasCustomSettlmentEnabled === true)
+            {
+                $orgId = $merchant->getOrgId();
+
+                $orgConfigReq['org_id'] = $orgId;
+
+                $response = app('settlements_api')->orgConfigGet($orgConfigReq, $mode);
+
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_SERVICE_FETCH_ORG_CONFIG_SUCCESS,
+                    [
+                        'org' => $orgId,
+                        'request' => $orgConfigReq,
+                        'mode' => $mode,
+                        'response' => $response,
+                    ]);
+
+                if ((isset($response['config']) === true) && empty($response['config']['schedules'] === false)) {
+                    $orgSchedules = $response['config']['schedules'];
+
+                    $request['config']['schedules'] = $orgSchedules;
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SETTLEMENT_SERVICE_FETCH_ORG_CONFIG_FAILED
+            );
+        }
+
         $result = app('settlements_api')->migrateMerchantConfigUpdate($request, $mode);
 
         $this->trace->info(

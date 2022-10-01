@@ -910,6 +910,20 @@ class SettlementTest extends TestCase
         return $this->fixtures->create('partner_config', $attributes);
     }
 
+    public function testGetConfigForOrgBadRequest()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateConfigForOrgBadRequest()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     protected function getDefaultPartnerConfigAttributes()
     {
         return [

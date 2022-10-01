@@ -1444,6 +1444,40 @@ class Service extends Base\Service
         return app('settlements_dashboard')->merchantConfigUpdate($input);
     }
 
+    public function orgConfigGet(array $input) : array
+    {
+
+        (new Validator)->validateInput('org_config_get', $input);
+
+        $input['org_id'] = Entity::stripDefaultSign($input['org_id']);
+
+        try
+        {
+            $resp = app('settlements_dashboard')->orgConfigGet($input);
+        }
+        catch(\Throwable $e)
+        {
+            if ($e->getMessage() == 'record_not_found: record not found')
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR,null, null,
+                    $e->getMessage());
+            }
+
+            throw $e;
+        }
+
+        return $resp;
+    }
+
+    public function orgConfigCreateOrUpdate(array $input) : array
+    {
+        (new Validator)->validateInput('org_config_create', $input);
+
+        $input['org_id'] = Entity::stripDefaultSign($input['org_id']);
+
+        return app('settlements_dashboard')->orgConfigCreateOrUpdate($input);
+    }
+
     public function merchantConfigBulkUpdate(array $input) : array
     {
         return app('settlements_dashboard')->merchantConfigBulkUpdate($input);

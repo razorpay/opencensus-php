@@ -897,6 +897,8 @@ class Route
         'setl_merchant_config_get'                 => ['post',     'settlements/merchant_config/get',                'SettlementController@merchantConfigGet'                            ],
         'setl_merchant_config_create'              => ['post',     'settlements/merchant_config/create',             'SettlementController@merchantConfigCreate'                         ],
         'setl_merchant_config_update'              => ['post',     'settlements/merchant_config/update',             'SettlementController@merchantConfigUpdate'                         ],
+        'setl_org_config_get'                      => ['post',     'settlements/org_config/get',                     'SettlementController@orgConfigGet'                            ],
+        'setl_org_config_create_or_update'         => ['post',     'settlements/org_config/create_or_update',        'SettlementController@orgConfigCreateOrUpdate'                         ],
         'setl_merchant_config_bulk_update'         => ['post',     'settlements/merchant_config/bulk_update',         'SettlementController@merchantConfigBulkUpdate'                     ],
         'setl_fetch_details'                       => ['post',     'settlements/fetch_details',                      'SettlementController@fetchSettlementDetails'                       ],
         'setl_get_scheduleableEntities'            => ['get',      'settlements/scheduleable/entities',              'SettlementController@merchantConfigGetScheduleableEntities'        ],
@@ -7200,6 +7202,8 @@ class Route
         'setl_admin_fetch_multiple',
         'setl_merchant_config_get',
         'setl_merchant_config_create',
+        'setl_org_config_get',
+        'setl_org_config_create_or_update',
         'setl_merchant_config_update',
         'setl_merchant_config_bulk_update',
         'setl_get_scheduleableEntities',
@@ -7756,6 +7760,8 @@ class Route
         // TODO: get clarity on permissions
         'setl_merchant_config_get'                 => Permission::VIEW_ALL_ENTITY,
         'setl_merchant_config_create'              => Permission::SETTLEMENT_BULK_UPDATE,
+        'setl_org_config_get'                      => Permission::VIEW_ALL_ENTITY,
+        'setl_org_config_create_or_update'         => Permission::SETTLEMENT_BULK_UPDATE,
         'setl_merchant_config_update'              => Permission::SETTLEMENT_SERVICE_MERCHANT_CONFIG_EDIT,
         'setl_merchant_config_bulk_update'         => Permission::SETTLEMENT_SERVICE_MERCHANT_CONFIG_EDIT,
         'setl_update_bene_name'                    => Permission::SETTLEMENT_SERVICE_MERCHANT_CONFIG_EDIT,
@@ -12418,6 +12424,8 @@ class Route
             'setl_update_bene_name',
             'setl_merchant_config_create',
             'setl_merchant_config_get',
+            'setl_org_config_create_or_update',
+            'setl_org_config_get',
             'setl_merchant_config_update',
             'setl_merchant_config_bulk_update',
             'setl_migrate_payout',
@@ -14358,6 +14366,8 @@ class Route
         'gateway_create_rule',
         'gateway_update_rule',
         'gateway_delete_rule',
+        'setl_org_config_create_or_update',
+        'setl_org_config_get',
     ];
 
     /**

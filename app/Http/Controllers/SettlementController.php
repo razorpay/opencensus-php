@@ -383,6 +383,24 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function orgConfigGet()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->orgConfigGet($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function orgConfigCreateOrUpdate()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->orgConfigCreateOrUpdate($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function merchantConfigUpdate()
     {
         $input = Request::all();
