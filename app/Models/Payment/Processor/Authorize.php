@@ -11086,8 +11086,8 @@ trait Authorize
                     if (empty($input['card']['number']) === false)
                     {
                         if (isset($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) == true && $input[Payment\Entity::CARD][Card\Entity::TOKENISED] == true) {
-                            $iin_token = substr($input['card']['number'], 0, 6);
-                            $iin_number = Card\IIN\IIN::getTransactingIinforRange($iin_token) ?? $iin_token;
+                            $iin_token = substr($input['card']['number'], 0, 9);
+                            $iin_number = Card\IIN\IIN::getTransactingIinforRange($iin_token) ?? substr($iin_token,0,6);
                         }
                         else {
                             $trimmed_number = str_replace(' ', '', trim($input['card']['number']));
