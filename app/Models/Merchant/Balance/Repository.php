@@ -32,9 +32,12 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function findOrFail($id, $columns = array('*'))
+    public function findOrFail($id, $columns = array('*'), string $connectionType = null)
     {
-        return $this->newQuery()
+        $query = (empty($connectionType) === true) ?
+            $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+
+        return $query
                     ->merchantIdAndType($id)
                     ->firstOrFail();
     }
@@ -49,9 +52,12 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function findOrFailPublic($id, $columns = array('*'))
+    public function findOrFailPublic($id, $columns = array('*'), string $connectionType = null)
     {
-        return $this->newQuery()
+        $query = (empty($connectionType) === true) ?
+            $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+
+        return $query
                     ->merchantIdAndType($id)
                     ->firstOrFailPublic();
     }

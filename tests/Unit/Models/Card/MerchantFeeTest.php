@@ -1716,7 +1716,9 @@ class MerchantFeeTest extends TestCase
 
             $payment->associateTerminal($this->sharpTerminal);
 
-            $payment->card = (new Card\Entity)->build($this->card);
+            $card = (new Card\Entity)->build($this->card);
+
+            $payment->card()->associate($card);
 
             $payment->card->setNetwork('Visa');
 
@@ -1816,7 +1818,9 @@ class MerchantFeeTest extends TestCase
 
         $payment = new Payment\Entity($paymentArray);
 
-        $payment->card = (new Card\Entity)->build($this->card);
+        $card = (new Card\Entity)->build($this->card);
+
+        $payment->card()->associate($card);
 
         $payment->card->setNetwork($network);
 
@@ -2012,7 +2016,9 @@ class MerchantFeeTest extends TestCase
 
         $payment->associateTerminal($this->sharpTerminal);
 
-        $payment->card = (new Card\Entity)->build($this->card);
+        $card = (new Card\Entity)->build($this->card);
+
+        $payment->card()->associate($card);
 
         $payment->card->setNetwork($network);
 
@@ -2039,7 +2045,9 @@ class MerchantFeeTest extends TestCase
 
         $payment->associateTerminal($this->sharpTerminal);
 
-        $payment->card = (new Card\Entity)->build($this->card);
+        $card = (new Card\Entity)->build($this->card);
+
+        $payment->card()->associate($card);
 
         $payment->card->setNetwork($network);
 

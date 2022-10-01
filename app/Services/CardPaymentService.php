@@ -803,7 +803,13 @@ class CardPaymentService
         {
             $cardId = $data[self::INPUT][Entity::PAYMENT][Payment\Entity::CARD_ID];
 
-            $card = (new Card\Repository())->find($cardId);
+            $card = null;
+
+            try
+            {
+                $card = (new Card\Repository())->findOrFail($cardId);
+            }
+            catch (\Throwable $exception) {}
 
             if ((is_null($card) === false) and (is_null($card->iinRelation) === false))
             {

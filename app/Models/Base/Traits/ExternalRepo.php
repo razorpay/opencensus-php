@@ -13,18 +13,19 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Base\PublicEntity;
 use Razorpay\Trace\Logger as Trace;
 
-
 trait ExternalRepo
 {
+    use ArchivedCore;
+
     protected $entityName;
 
-    public function findByPublicId($id)
+    public function findByPublicId($id, string $connectionType = null)
     {
         $this->entityName = $this->entity;
 
         try
         {
-            $entity = parent::findByPublicId($id);
+            $entity = $this->findByPublicIdArchived($id, $connectionType);
 
             return $entity;
         }
@@ -39,13 +40,17 @@ trait ExternalRepo
         return $this->fetchExternalEntity($id);
     }
 
-    public function findByPublicIdAndMerchant(string $id, Merchant\Entity $merchant,array $params = []): PublicEntity
+    public function findByPublicIdAndMerchant(
+        string $id,
+        Merchant\Entity $merchant,
+        array $params = [],
+        string $connectionType = null): PublicEntity
     {
         $this->entityName = $this->entity;
 
         try
         {
-            $entity = parent::findByPublicIdAndMerchant($id, $merchant, $params);
+            $entity = $this->findByPublicIdAndMerchantArchived($id, $merchant, $params, $connectionType);
 
             $class = Entity::getExternalRepoSingleton($this->entity);
 
@@ -68,13 +73,17 @@ trait ExternalRepo
         return $this->fetchExternalEntity($id, $merchant->getId(), $params);
     }
 
-    public function findByIdAndMerchant(string $id, Merchant\Entity $merchant,array $params = []): PublicEntity
+    public function findByIdAndMerchant(
+        string $id,
+        Merchant\Entity $merchant,
+        array $params = [],
+        string $connectionType = null): PublicEntity
     {
         $this->entityName = $this->entity;
 
         try
         {
-            $entity = parent::findByIdAndMerchant($id, $merchant, $params);
+            $entity = $this->findByIdAndMerchantArchived($id, $merchant, $params, $connectionType);
 
             return $entity;
         }
@@ -93,13 +102,13 @@ trait ExternalRepo
         return $this->fetchExternalEntity($id, $merchant->getId(), $params);
     }
 
-    public function findByIdAndMerchantId($id, $merchantId)
+    public function findByIdAndMerchantId($id, $merchantId, string $connectionType = null)
     {
         $this->entityName = $this->entity;
 
         try
         {
-            $entity = parent::findByIdAndMerchantId($id, $merchantId);
+            $entity = $this->findByIdAndMerchantIdArchived($id, $merchantId, $connectionType);
 
             return $entity;
         }
@@ -124,7 +133,7 @@ trait ExternalRepo
 
         try
         {
-            $entity = parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
+            $entity = $this->findOrFailByPublicIdWithParamsArchived($id, $params, $connectionType);
 
             return $entity;
         }
@@ -143,13 +152,13 @@ trait ExternalRepo
         return $this->fetchExternalEntity($id, "", $params);
     }
 
-    public function findOrFailPublic($id, $columns = array('*'))
+    public function findOrFailPublic($id, $columns = array('*'), string $connectionType = null)
     {
         $this->entityName = $this->entity;
 
         try
         {
-            $entity = parent::findOrFailPublic($id, $columns);
+            $entity = $this->findOrFailPublicArchived($id, $columns, $connectionType);
 
             return $entity;
         }
@@ -164,13 +173,13 @@ trait ExternalRepo
         return $this->fetchExternalEntity($id, "");
     }
 
-    public function findOrFail($id, $columns = array('*'))
+    public function findOrFail($id, $columns = array('*'), string $connectionType = null)
     {
         $this->entityName = $this->entity;
 
         try
         {
-            $entity = parent::findOrFail($id, $columns);
+            $entity = $this->findOrFailArchived($id, $columns, $connectionType);
 
             return $entity;
         }

@@ -300,11 +300,16 @@ class Repository extends Base\Repository
      */
     public function getCardById(string $cardId)
     {
-        return $this->newQuery()
-                    ->where(Entity::ID, $cardId)
-                    ->first();
-    }
+        $card = null;
 
+        try
+        {
+            $card = $this->findOrFail($cardId);
+        }
+        catch (\Throwable $exception) {}
+
+        return $card;
+    }
 
     public function fetchCardsWithVaultToken(string $vaultToken, string $merchantId)
     {

@@ -300,11 +300,11 @@ class Repository extends Base\Repository
         return $terminals;
     }
 
-    public function findOrFail($id, $columns = array('*'))
+    public function findOrFail($id, $columns = array('*'), string $connectionType = null)
     {
         $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'findOrFail', 'route_name' => $this->fetchRouteName()]);
 
-        $model = $this->find($id, $columns);
+        $model = $this->find($id, $columns, $connectionType);
 
         if ( ! is_null($model))
         {
@@ -319,11 +319,11 @@ class Repository extends Base\Repository
         throw new Exception\DbQueryException($data);
     }
 
-    public function findOrFailPublic($id, $columns = ['*'])
+    public function findOrFailPublic($id, $columns = ['*'], string $connectionType = null)
     {
         $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'findOrFailPublic', 'route_name' => $this->fetchRouteName()]);
 
-        $model = $this->find($id, $columns);
+        $model = $this->find($id, $columns, $connectionType);
 
         if (is_null($model) === false)
         {
@@ -340,7 +340,7 @@ class Repository extends Base\Repository
             ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
     }
 
-    public function find($id, $columns = ['*'])
+    public function find($id, $columns = ['*'], string $connectionType = null)
     {
         if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
         {
@@ -362,7 +362,7 @@ class Repository extends Base\Repository
 
                     $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'find', 'route_name' => $this->fetchRouteName()]);
 
-                    $terminal = parent::find($id, $columns);
+                    $terminal = parent::find($id, $columns, $connectionType);
 
                     if (Terminal\Service::compareTerminalEntity($terminal, $terminalEntityByTS) === false)
                     {
@@ -381,7 +381,8 @@ class Repository extends Base\Repository
         }
 
         $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'find', 'route_name' => $this->fetchRouteName()]);
-        return parent::find($id, $columns);
+
+        return parent::find($id, $columns, $connectionType);
     }
 
     public function findMany($ids, $columns = array('*'))

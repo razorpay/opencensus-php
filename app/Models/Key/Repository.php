@@ -18,13 +18,16 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID => 'sometimes|alpha_num',
     ];
 
-    public function find($id, $columns = ['*'])
+    public function find($id, $columns = ['*'], string $connectionType = null)
     {
         $cacheTtl = $this->getCacheTtl();
 
         $prefix = Pricing\Repository::getQueryCachePrefixForDistributingLoad();
 
-        return $this->newQuery()
+        $query = (empty($connectionType) === true) ?
+            $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+
+        return $query
                     ->remember($cacheTtl)
                     ->cacheTags($prefix . '_' . $this->entity . '_'. $id)
                     ->find($id, $columns);

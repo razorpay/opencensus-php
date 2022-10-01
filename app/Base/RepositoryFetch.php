@@ -292,6 +292,9 @@ trait RepositoryFetch
             case ConnectionType::SLAVE:
                 return $this->getSlaveConnection();
 
+            case ConnectionType::ARCHIVED_DATA_REPLICA:
+                return $this->getArchivedDataReplicaConnection();
+
             case ConnectionType::DATA_WAREHOUSE_ADMIN:
                 if ($this->isExperimentEnabled(self::ADMIN_TIDB_EXPERIMENT) === true)
                 {
@@ -842,25 +845,26 @@ trait RepositoryFetch
         return $this->merchantIdRequiredForMultipleFetch;
     }
 
-    public function findByPublicId($id)
+    public function findByPublicId($id, string $connectionType = null)
     {
         $entity = $this->getEntityClass();
 
         $id = $entity::verifyIdAndStripSign($id);
 
-        return $this->findOrFailPublic($id);
+        return $this->findOrFailPublic($id, ['*'], $connectionType);
     }
 
     public function findByPublicIdAndMerchant(
         string $id,
         Merchant\Entity $merchant,
-        array $params = []): PublicEntity
+        array $params = [],
+        string $connectionType = null): PublicEntity
     {
         $entity = $this->getEntityClass();
 
         $entity::verifyIdAndStripSign($id);
 
-        return $this->findByIdAndMerchant($id, $merchant, $params);
+        return $this->findByIdAndMerchant($id, $merchant, $params, $connectionType);
     }
 
     public function findManyByPublicIdsAndMerchant(
@@ -890,7 +894,8 @@ trait RepositoryFetch
     public function findByIdAndMerchant(
         string $id,
         Merchant\Entity $merchant,
-        array $params = []): PublicEntity
+        array $params = [],
+        string $connectionType = null): PublicEntity
     {
         if ($merchant->isFeatureEnabled(Constants::MERCHANT_ROUTE_WA_INFRA))
         {
@@ -898,7 +903,9 @@ trait RepositoryFetch
         }
         else
         {
-            $query = $this->getQueryForFindWithParams($params);
+            $query = (empty($connectionType) === true) ?
+                $this->getQueryForFindWithParams($params) :
+                $this->getQueryForFindWithParams($params, $this->getConnectionFromType($connectionType));
         }
 
         $entity = $query->merchantId($merchant->getId())
@@ -919,11 +926,13 @@ trait RepositoryFetch
         return $entity;
     }
 
-    public function findByIdAndMerchantId($id, $merchantId)
+    public function findByIdAndMerchantId($id, $merchantId, string $connectionType = null)
     {
-        return $this->newQuery()
-                    ->merchantId($merchantId)
-                    ->findOrFailPublic($id);
+        $query = (empty($connectionType) === true) ?
+            $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+
+        return $query->merchantId($merchantId)
+                     ->findOrFailPublic($id);
     }
 
     /**
@@ -931,10 +940,11 @@ trait RepositoryFetch
      * Like: deleted
      *
      * @param string $id
-     * @param array  $params
-     * @param bool $useMasterEsReplica
+     * @param array $params
+     * @param string|null $connectionType
      *
      * @return PublicEntity
+     * @throws \RZP\Exception\BadRequestException
      */
     public function findOrFailByPublicIdWithParams(
         string $id,

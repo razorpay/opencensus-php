@@ -18,8 +18,11 @@ class Repository extends Base\Repository
                         ->first();
         }
 
-    public function findbyPublicId($id) {
-        return $this->newQuery()
+    public function findbyPublicId($id, string $connectionType = null) {
+        $query = (empty($connectionType) === true) ?
+            $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+
+        return $query
                     ->where(Entity::ID, '=', $id)
                     ->first();
     }

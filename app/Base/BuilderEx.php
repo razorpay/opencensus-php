@@ -5,10 +5,12 @@ namespace RZP\Base;
 use Illuminate\Database\Query\JoinClause;
 
 use RZP\Exception;
+use RZP\Models\Card;
 use RZP\Error\ErrorCode;
-use RZP\Constants\Entity as E;
-use RZP\Modules\Acs\SyncEventObserver;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Entity;
+use RZP\Constants\Entity as E;
+use RZP\Models\Admin\ConfigKey;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Modules\Acs\SyncEventManager;
 
@@ -115,6 +117,8 @@ class BuilderEx extends \Razorpay\Spine\BuilderEx
     {
         $collection = parent::get($columns);
 
+        $collection = $this->setMissingEagerLoad($collection);
+
         try
         {
             $entityName = $this->getModel()->getEntityName();
@@ -131,5 +135,60 @@ class BuilderEx extends \Razorpay\Spine\BuilderEx
         }
 
         return $collection;
+    }
+
+    // Note : This function at the moment is solving only entity loading without considering $constraints
+    // Ref : https://laravel.com/docs/9.x/eloquent-relationships
+    private function setMissingEagerLoad($models)
+    {
+        foreach ($this->eagerLoad as $name => $constraints)
+        {
+            // For nested eager loads we'll skip loading them here, and they will be set as an
+            // eager load on the query to retrieve the relation so that they will be eager
+            // loaded on that query, because that is where they get hydrated as models.
+            if (($name === Entity::CARD) or ($name === Card\Entity::RELATION_GLOBAL_CARD))
+            {
+                $models = $this->cardEagerLoad($name, $models);
+            }
+        }
+
+        return $models;
+    }
+
+    private function cardEagerLoad($name, $models)
+    {
+        // ToDo: Enable by default post gaining enough confidence
+        $customEagerLoad = (bool) ConfigKey::get(ConfigKey::CARD_ARCHIVAL_FALLBACK_EAGER_LOAD, false);
+
+        if ($customEagerLoad === false)
+        {
+            return $models;
+        }
+
+        foreach ($models as $model)
+        {
+            if ($model->hasRelation($name) === false)
+            {
+                try
+                {
+                    // Exceptions in this flow can be silent.
+                    $cardId = ($name === Card\Entity::RELATION_GLOBAL_CARD) ?
+                        $model->getAttribute(Card\Entity::GLOBAL_CARD_ID) : $model->getCardId();
+
+                    if (empty($cardId) === false)
+                    {
+                        $card = (new Card\Repository)->findOrFail($cardId);
+
+                        if (empty($card) === false)
+                        {
+                            $model->setRelation($name, $card);
+                        }
+                    }
+                }
+                catch (\Throwable $exception) {}
+            }
+        }
+
+        return $models;
     }
 }

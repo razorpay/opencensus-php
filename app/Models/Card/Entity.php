@@ -29,8 +29,6 @@ class Entity extends Base\PublicEntity
 {
     use ExternalOwner, ExternalEntity, DualWrite;
 
-    protected $dualWrite = false;
-
     const ID                                    = 'id';
     const MERCHANT_ID                           = 'merchant_id';
     const GLOBAL_CARD_ID                        = 'global_card_id';
@@ -103,6 +101,8 @@ class Entity extends Base\PublicEntity
     const TOKEN_ID               = 'token_id';
     const INPUT_TYPE             = 'input_type';
     const BU_NAMESPACE           = 'bu_namespace';
+
+    const RELATION_GLOBAL_CARD = 'globalCard';
 
     const TEMP_VAULT_TOKEN_PREFIX = 'pay_';
 

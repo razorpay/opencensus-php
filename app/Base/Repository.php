@@ -145,9 +145,12 @@ class Repository extends \Razorpay\Spine\Repository
         return $entity;
     }
 
-    public function findOrFailPublic($id, $columns = ['*'])
+    public function findOrFailPublic($id, $columns = ['*'], string $connectionType = null)
     {
-        return $this->newQuery()->findOrFailPublic($id, $columns);
+        $query = (empty($connectionType) === true) ?
+            $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+
+        return $query->findOrFailPublic($id, $columns);
     }
 
     public function findOrFailPublicWithRelations(
@@ -522,6 +525,14 @@ class Repository extends \Razorpay\Spine\Repository
         return $this->newQueryWithConnection($slaveConnection);
     }
 
+    public function find($id, $columns = array('*'), string $connectionType = null)
+    {
+        $query = (empty($connectionType) === true) ?
+            $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+
+        return $query->find($id, $columns);
+    }
+
     /**
      * Overwriting this here, as we want to reuse the find method overridden
      * in certain repository classes (required for query caching). We want to execute find and throw exception
@@ -532,9 +543,9 @@ class Repository extends \Razorpay\Spine\Repository
      * @param  array  $columns
      * @return \RZP\Models\Base\Entity
      */
-    public function findOrFail($id, $columns = array('*'))
+    public function findOrFail($id, $columns = array('*'), string $connectionType = null)
     {
-        if ( ! is_null($model = $this->find($id, $columns))) return $model;
+        if ( ! is_null($model = $this->find($id, $columns, $connectionType))) return $model;
 
         $this->processDbQueryFailure('find', array('id' => $id, 'columns' => $columns));
     }
@@ -1131,6 +1142,25 @@ class Repository extends \Razorpay\Spine\Repository
         $mode = ($mode ?? $this->app['rzp.mode']) ?? Mode::LIVE;
 
         $connection = ($mode === Mode::TEST) ? Connection::MASTER_REPLICA_TEST : Connection::MASTER_REPLICA_LIVE;
+
+        return $connection;
+    }
+
+    protected function getArchivedDataReplicaConnection(string $mode = null)
+    {
+        if (($this->app->runningUnitTests() === true) or
+            ($this->app['env'] === Environment::TESTING) or
+            ($this->app['env'] === Environment::TESTING_DOCKER))
+        {
+            // Unit tests are written in such a way that data is deleted from test db and put in live db
+            // So when running unit tests we are always returning live db connection.
+            // Connection is LIVE and not ARCHIVED_DATA_REPLICA_LIVE because testing DBs are overriden in LIVE connection for unit testing
+            return Connection::LIVE;
+        }
+
+        $mode = ($mode ?? $this->app['rzp.mode']) ?? Mode::LIVE;
+
+        $connection = ($mode === Mode::TEST) ? Connection::ARCHIVED_DATA_REPLICA_TEST : Connection::ARCHIVED_DATA_REPLICA_LIVE;
 
         return $connection;
     }

@@ -558,7 +558,9 @@ class TerminalRuleFilterTest extends TestCase
             $cardArray = array_merge($cardArray, $options);
         }
 
-        $payment->card = (new Card\Entity)->fill($cardArray);
+        $card = (new Card\Entity)->fill($cardArray);
+
+        $payment->card()->associate($card);
     }
 
     protected function updatePaymentEntityWithEmiDetails(Payment\Entity $payment, $emiDetails)

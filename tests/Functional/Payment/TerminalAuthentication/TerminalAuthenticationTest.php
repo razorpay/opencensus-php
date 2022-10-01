@@ -660,7 +660,8 @@ class TerminalAuthenticationTest extends TestCase
         $paymentArray['method'] = 'card';
 
         $payment = (new Payment\Entity)->fill($paymentArray);
-        $payment->card = $card;
+
+        $payment->card()->associate($card);
 
         $merchant = Merchant\Entity::find('10000000000000');
         $terminal = Terminal\Entity::find('1000HdfcShared');
@@ -750,7 +751,7 @@ class TerminalAuthenticationTest extends TestCase
 
         $payment = (new Payment\Entity)->fill($payment);
 
-        $payment->card = $card;
+        $payment->card()->associate($card);
 
         $merchant = Merchant\Entity::find('10000000000000');
         $terminal = Terminal\Entity::find('1000HdfcShared');

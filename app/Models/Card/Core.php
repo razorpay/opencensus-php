@@ -907,7 +907,15 @@ class Core extends Base\Core
 
     public function getCardEntity($id)
     {
-        return $this->repo->card->find($id);
+        // Need to use ExternalRepo findOrFail function.
+        // Find is not overriden. Replicating same behaviour by silencing exception
+        try
+        {
+            return $this->repo->card->findOrFail($id);
+        }
+        catch (\Throwable $exception) {}
+
+        return null;
     }
 
     public function isCvvOptional($input): bool

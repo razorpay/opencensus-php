@@ -38,6 +38,9 @@ class Metric
     const DUAL_WRITES_TOTAL                     = 'dual_writes_total';
     const DUAL_WRITES_FAILED                    = 'dual_writes_failed';
     const DUAL_WRITES_TIME_TAKEN                = 'dual_writes_time_taken';
+    const ARCHIVED_ENTITY_FETCH_TOTAL           = 'archived_entity_fetch_total';
+    const ARCHIVED_ENTITY_FETCH_SUCCESS         = 'archived_entity_fetch_success';
+    const ARCHIVED_ENTITY_FETCH_TIME_TAKEN      = 'archived_entity_fetch_time_taken';
 
     // Summary type metric names
     // Using '.histogram' as suffix for pattern match to work(refer statsd_mapping.yml) for statsd_exporter

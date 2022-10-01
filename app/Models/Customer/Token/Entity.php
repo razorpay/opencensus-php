@@ -666,6 +666,25 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FREQUENCY);
     }
 
+    public function getCardAttribute()
+    {
+        if ($this->relationLoaded('card') === true)
+        {
+            return $this->getRelation('card');
+        }
+
+        if ($this->hasCard() === true)
+        {
+            $card = (new Card\Repository)->findOrFail($this->getCardId());
+
+            $this->card()->associate($card);
+
+            return $card;
+        }
+
+        return null;
+    }
+
     public function hasCardMandate()
     {
         return $this->isAttributeNotNull(self::CARD_MANDATE_ID);

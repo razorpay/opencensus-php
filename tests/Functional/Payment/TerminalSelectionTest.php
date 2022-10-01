@@ -1287,7 +1287,8 @@ class TerminalSelectionTest extends TestCase
         $paymentArray['method'] = 'card';
 
         $payment = (new Payment\Entity)->fill($paymentArray);
-        $payment->card = $card;
+
+        $payment->card()->associate($card);
 
         $merchant = Merchant\Entity::find('10000000000000');
 
@@ -1622,7 +1623,8 @@ class TerminalSelectionTest extends TestCase
         $paymentArray['method'] = 'card';
 
         $payment       = (new Payment\Entity)->fill($paymentArray);
-        $payment->card = $card;
+
+        $payment->card()->associate($card);
 
         $merchant = Merchant\Entity::find('10000000000000');
 
@@ -2081,7 +2083,8 @@ class TerminalSelectionTest extends TestCase
             $this->fixtures->merchant->setCategory($category);
 
             $payment = (new Payment\Entity)->fill($paymentArray);
-            $payment->card = $card;
+
+            $payment->card()->associate($card);
 
             $merchant = Merchant\Entity::find('10000000000000');
 
@@ -2133,7 +2136,8 @@ class TerminalSelectionTest extends TestCase
         $paymentArray['method'] = 'card';
 
         $payment = (new Payment\Entity)->fill($paymentArray);
-        $payment->card = $card;
+
+        $payment->card()->associate($card);
 
         $merchant = Merchant\Entity::find('10000000000000');
 
@@ -2483,7 +2487,8 @@ class TerminalSelectionTest extends TestCase
         $paymentArray['method'] = 'card';
 
         $payment = (new Payment\Entity)->fill($paymentArray);
-        $payment->card = $card;
+
+        $payment->card()->associate($card);
 
         $merchant = Merchant\Entity::find($subMerchantId);
 
@@ -2557,7 +2562,8 @@ class TerminalSelectionTest extends TestCase
         $paymentArray['method'] = 'card';
 
         $payment = (new Payment\Entity)->fill($paymentArray);
-        $payment->card = $card;
+
+        $payment->card()->associate($card);
         $payment->setId("IUZpAQvrlzgaHU");
 
         $merchant = Merchant\Entity::find('10000000000000');
@@ -2608,7 +2614,8 @@ class TerminalSelectionTest extends TestCase
         $paymentArray['method'] = 'card';
 
         $payment = (new Payment\Entity)->fill($paymentArray);
-        $payment->card = $card;
+
+        $payment->card()->associate($card);
         $payment->setId("IUZpAQvrlzgaHU");
 
         $merchant = Merchant\Entity::find('10000000000000');
@@ -2775,7 +2782,8 @@ class TerminalSelectionTest extends TestCase
 
 
         $payment = (new Payment\Entity)->fill($paymentArray);
-        $payment->card = $card;
+
+        $payment->card()->associate($card);
 
         $merchant = Merchant\Entity::find($merchantId);
 
@@ -2864,7 +2872,7 @@ class TerminalSelectionTest extends TestCase
 
         $payment->merchant()->associate($merchant);
 
-        $payment->card = $card;
+        $payment->card()->associate($card);
 
         $input = [
             'payment' => $payment,

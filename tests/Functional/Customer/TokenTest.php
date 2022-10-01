@@ -2196,10 +2196,6 @@ class TokenTest extends TestCase
 
         $statusResponse = $this->startTest($statusPayload);
 
-        $cardsNew = \DB::table('cards_new')->select(\DB::raw("*"))->where('id', '=', $card['id'])->get()->first();
-
-        $this->assertNotNull($cardsNew);
-
         $cards    = \DB::table('cards')->select(\DB::raw("*"))->where('id', '=', $card['id'])->get()->first();
         $cardsNew = \DB::table('cards_new')->select(\DB::raw("*"))->where('id', '=', $card['id'])->get()->first();
 

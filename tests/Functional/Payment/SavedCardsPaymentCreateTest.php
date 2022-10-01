@@ -71,6 +71,69 @@ class SavedCardsPaymentCreateTest extends TestCase
     }
 
     /**
+     * test card payment creation using a local saved archived card and token
+     */
+    public function testLocalSavedCardPaymentCreateWithArchivedCard()
+    {
+        // data seeding : create new customer, token entity and set token card in live DB
+        $cardEntity = \DB::table('cards')->select(\DB::raw("*"))->where('id', '=', '100000000lcard')->get()->first();
+
+        $card = (array) $cardEntity;
+
+        $cardId = '10000larchcard';
+        $card['id'] = $cardId;
+
+        \DB::connection('live')->table('cards')->insert($card);
+
+        $customerEntity = \DB::connection('test')->table('customers')->select(\DB::raw("*"))->where('id', '=', '100000customer')->get()->first();
+
+        $customer = (array) $customerEntity;
+
+        $customerId = '100000archived';
+        $customer['id'] = $customerId;
+
+        \DB::table('customers')->insert($customer);
+
+        $tokenEntity = \DB::table('tokens')->select(\DB::raw("*"))->where('id', '=', '100000custcard')->get()->first();
+
+        $token = (array) $tokenEntity;
+
+        $tokenId = '100000archcard';
+        $token['id'] = $tokenId;
+        $token['token'] = '10000archtoken';
+        $token['customer_id'] = $customerId;
+        $token['card_id'] = $cardId;
+
+        \DB::connection('test')->statement('SET FOREIGN_KEY_CHECKS=0');
+
+        \DB::table('tokens')->insert($token);
+
+        // set payment data using token
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment[Payment::CARD] = array('cvv'  => 111);
+
+        $this->payment[Payment::TOKEN] = '10000archtoken';
+
+        $this->payment[Payment::CUSTOMER_ID] = 'cust_'. $customerId;
+
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        // validations
+        $this->assertEquals($payment[Payment::TOKEN_ID], 'token_' . $tokenId);
+
+        $this->assertEquals($payment[Payment::GLOBAL_TOKEN_ID], null);
+
+        $this->assertEquals($payment[Payment::CUSTOMER_ID], 'cust_' . $customerId);
+
+        $this->assertEquals($payment[Payment::GLOBAL_CUSTOMER_ID], null);
+
+        \DB::connection('test')->statement('SET FOREIGN_KEY_CHECKS=1');
+    }
+
+    /**
      * test card payment creation using a local saved card and token
      */
     public function testLocalSavedCardPaymentCreateWithoutMethodAndWithTokenId()

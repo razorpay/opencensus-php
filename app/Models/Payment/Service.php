@@ -3903,7 +3903,13 @@ class Service extends Base\Service
         {
             $payment = $this->repo->payment->find($paymentId);
 
-            $card = $this->repo->card->find($cardId);
+            $card = null;
+
+            try
+            {
+                $card = $this->repo->card->findOrFail($cardId);
+            }
+            catch (\Throwable $exception) {}
 
             $updated = (new Token\Core)->updatePaymentToken($payment, $card);
 

@@ -12,11 +12,14 @@ use RZP\Constants\Entity as E;
  */
 trait CacheQueries
 {
-    public function find($id, $columns = ['*'])
+    public function find($id, $columns = ['*'], string $connectionType = null)
     {
         $cacheTtl = $this->getCacheTtl();
 
-        return $this->newQuery()
+        $query = (empty($connectionType) === true) ?
+            $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+
+        return $query
                     ->remember($cacheTtl)
                     ->cacheTags($this->entity . '_'. $id)
                     ->find($id, $columns);

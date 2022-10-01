@@ -1074,5 +1074,17 @@ return [
             'status_code' => 200,
         ]
     ],
+
+    'testFetchPaymentsCardEntity' => [
+        'request' => [
+            'method' => 'GET',
+            'content' => [
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ],
+    ],
 ];
 

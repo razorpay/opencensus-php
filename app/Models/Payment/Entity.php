@@ -3274,6 +3274,25 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->getAttribute(self::REFERENCE17);
     }
 
+    public function getCardAttribute()
+    {
+        if ($this->relationLoaded('card') === true)
+        {
+            return $this->getRelation('card');
+        }
+
+        if ($this->hasCard() === true)
+        {
+            $card = (new Card\Repository)->findOrFail($this->getCardId());
+
+            $this->card()->associate($card);
+
+            return $card;
+        }
+
+        return null;
+    }
+
     public function isSecondRecurring()
     {
         if (($this->isRecurring() === true) and

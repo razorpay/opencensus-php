@@ -16,9 +16,12 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function findByIdAndMerchantId($id, $merchantId)
+    public function findByIdAndMerchantId($id, $merchantId, string $connectionType = null)
     {
-        return $this->newQuery()
+        $query = (empty($connectionType) === true) ?
+            $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+
+        return $query
                     ->where(Entity::ID, $id)
                     ->merchantId($merchantId)
                     ->first();

@@ -19,7 +19,7 @@ trait ExternalScroogeRepo
 {
     protected $entityName;
 
-    public function findByPublicId($id)
+    public function findByPublicId($id, string $connectionType = null)
     {
         $this->entityName = $this->entity;
 
@@ -43,7 +43,7 @@ trait ExternalScroogeRepo
                 (Entity::validateExternalRepoEntity($this->entityName) === true))
             {
                 $scroogeResponse =  $this->fetchExternalRefundById($id);
-                $apiResponse     = parent::findByPublicId($id);
+                $apiResponse     = parent::findByPublicId($id, $connectionType);
 
                 (new Service())->compareRefundsAndLogDifference(
                     [$apiResponse->toArray()], [$scroogeResponse->toArray()], ['method_name' => __FUNCTION__]);
@@ -62,10 +62,14 @@ trait ExternalScroogeRepo
                 ]);
         }
 
-        return parent::findByPublicId($id);
+        return parent::findByPublicId($id, $connectionType);
     }
 
-    public function findByPublicIdAndMerchant(string $id, MerchantEntity $merchant, array $params = []): PublicEntity
+    public function findByPublicIdAndMerchant(
+        string $id,
+        MerchantEntity $merchant,
+        array $params = [],
+        string $connectionType = null): PublicEntity
     {
         $this->entityName = $this->entity;
 
@@ -90,7 +94,7 @@ trait ExternalScroogeRepo
                 (Entity::validateExternalRepoEntity($this->entityName) === true))
             {
                 $scroogeResponse = $this->fetchExternalRefundById($id, $merchant->getId());
-                $apiResponse     = parent::findByPublicIdAndMerchant($id, $merchant, $params);
+                $apiResponse     = parent::findByPublicIdAndMerchant($id, $merchant, $params, $connectionType);
 
                 (new Service())->compareRefundsAndLogDifference(
                     [$apiResponse->toArray()], [$scroogeResponse->toArray()], ['method_name' => __FUNCTION__]);
@@ -110,10 +114,14 @@ trait ExternalScroogeRepo
                 ]);
         }
 
-        return parent::findByPublicIdAndMerchant($id, $merchant, $params);
+        return parent::findByPublicIdAndMerchant($id, $merchant, $params, $connectionType);
     }
 
-    public function findByIdAndMerchant(string $id, MerchantEntity $merchant, array $params = []): PublicEntity
+    public function findByIdAndMerchant(
+        string $id,
+        MerchantEntity $merchant,
+        array $params = [],
+        string $connectionType = null): PublicEntity
     {
         $this->entityName = $this->entity;
 
@@ -138,7 +146,7 @@ trait ExternalScroogeRepo
                 (Entity::validateExternalRepoEntity($this->entityName) === true))
             {
                 $scroogeResponse = $this->fetchExternalRefundById($id, $merchant->getId());
-                $apiResponse     = parent::findByIdAndMerchant($id, $merchant, $params);
+                $apiResponse     = parent::findByIdAndMerchant($id, $merchant, $params, $connectionType);
 
                 (new Service())->compareRefundsAndLogDifference(
                     [$apiResponse->toArray()], [$scroogeResponse->toArray()], ['method_name' => __FUNCTION__]);
@@ -158,10 +166,10 @@ trait ExternalScroogeRepo
                 ]);
         }
 
-        return parent::findByIdAndMerchant($id, $merchant, $params);
+        return parent::findByIdAndMerchant($id, $merchant, $params, $connectionType);
     }
 
-    public function findByIdAndMerchantId($id, $merchantId)
+    public function findByIdAndMerchantId($id, $merchantId, string $connectionType = null)
     {
         $this->entityName = $this->entity;
 
@@ -186,7 +194,7 @@ trait ExternalScroogeRepo
                 (Entity::validateExternalRepoEntity($this->entityName) === true))
             {
                 $scroogeResponse = $this->fetchExternalRefundById($id, $merchantId);;
-                $apiResponse     = parent::findByIdAndMerchantId($id, $merchantId);
+                $apiResponse     = parent::findByIdAndMerchantId($id, $merchantId, $connectionType);
 
                 (new Service())->compareRefundsAndLogDifference(
                     [$apiResponse->toArray()], [$scroogeResponse->toArray()], ['method_name' => __FUNCTION__]);
@@ -206,7 +214,7 @@ trait ExternalScroogeRepo
                 ]);
         }
 
-        return parent::findByIdAndMerchantId($id, $merchantId);
+        return parent::findByIdAndMerchantId($id, $merchantId, $connectionType);
     }
 
     public function findOrFailByPublicIdWithParams($id, array $params, string $connectionType = null): PublicEntity
@@ -256,7 +264,7 @@ trait ExternalScroogeRepo
         return parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
     }
 
-    public function findOrFailPublic($id, $columns = array('*'))
+    public function findOrFailPublic($id, $columns = array('*'), string $connectionType = null)
     {
         $this->entityName = $this->entity;
 
@@ -281,7 +289,7 @@ trait ExternalScroogeRepo
                 (Entity::validateExternalRepoEntity($this->entityName) === true))
             {
                 $scroogeResponse = $this->fetchExternalRefundById($id);
-                $apiResponse     = parent::findOrFailPublic($id);
+                $apiResponse     = parent::findOrFailPublic($id, $columns, $connectionType);
 
                 (new Service())->compareRefundsAndLogDifference(
                     [$apiResponse->toArray()], [$scroogeResponse->toArray()], ['method_name' => __FUNCTION__]);
@@ -300,10 +308,10 @@ trait ExternalScroogeRepo
                 ]);
         }
 
-        return parent::findOrFailPublic($id);
+        return parent::findOrFailPublic($id, $columns, $connectionType);
     }
 
-    public function findOrFail($id, $columns = array('*'))
+    public function findOrFail($id, $columns = array('*'), string $connectionType = null)
     {
         $this->entityName = $this->entity;
 
@@ -328,7 +336,7 @@ trait ExternalScroogeRepo
                 (Entity::validateExternalRepoEntity($this->entityName) === true))
             {
                 $scroogeResponse = $this->fetchExternalRefundById($id);
-                $apiResponse     = parent::findOrFail($id);
+                $apiResponse     = parent::findOrFail($id, $columns, $connectionType);
 
                 (new Service())->compareRefundsAndLogDifference(
                     [$apiResponse->toArray()], [$scroogeResponse->toArray()], ['method_name' => __FUNCTION__]);
@@ -347,7 +355,7 @@ trait ExternalScroogeRepo
                 ]);
         }
 
-        return parent::findOrFail($id);
+        return parent::findOrFail($id, $columns, $connectionType);
     }
 
     public function validateExternalFetchEnabledForScrooge($id = null)

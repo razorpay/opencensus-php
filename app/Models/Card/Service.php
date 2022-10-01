@@ -62,7 +62,13 @@ class Service extends Base\Service
 
     public function migtateCardVaultToken($cardId, $bulkUpdate = false, $gateway = null)
     {
-        $card = $this->repo->card->find($cardId);
+        $card = null;
+
+        try
+        {
+            $card = $this->repo->card->findOrFail($cardId);
+        }
+        catch (\Throwable $exception) {}
 
         if ($bulkUpdate == true)
         {

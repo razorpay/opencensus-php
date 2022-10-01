@@ -9344,4 +9344,63 @@ class PaymentCreateTest extends TestCase
         $this->processAndAssertStatusCode($testData, $response);
         $this->processAndAssertResponseData($testData, $response);
     }
+
+    public function testFetchPaymentsCardEntity()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $this->doAuthAndCapturePayment($paymentArray);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/' . $payment['id']. '/card';
+
+        $data = $this->startTest();
+
+        $this->assertNotEmpty($data);
+
+        $this->assertEquals('card', $data['entity']);
+        $this->assertEquals('credit', $data['type']);
+        $this->assertEquals('3335', $data['last4']);
+        $this->assertEquals('Visa', $data['network']);
+        $this->assertEquals('HDFC', $data['issuer']);
+
+        // Test archival case : remove card data from test db (current) and add in live db.
+
+        $cardId = substr($data['id'], 5);
+
+        $cardEntity = \DB::table('cards')->select(\DB::raw("*"))->where('id', '=', $cardId)->get()->first();
+
+        $card = (array) $cardEntity;
+
+        // insert card into live DB
+        \DB::connection('live')->table('cards')->insert($card);
+
+        \DB::connection('test')->statement('SET FOREIGN_KEY_CHECKS=0');
+
+        // remove card from test db
+        \DB::connection('test')->table('cards')->where('id', '=', $cardId)->limit(1)->update(['id' => 'KOOmLB0xqazzXp']);
+
+        $cardEntity = \DB::connection('test')->table('cards')->select(\DB::raw("*"))->where('id', '=', $cardId)->get()->first();
+
+        $this->assertNull($cardEntity);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/' . $payment['id']. '/card';
+
+        $data = $this->startTest();
+
+        $this->assertNotEmpty($data);
+
+        $this->assertEquals('card', $data['entity']);
+        $this->assertEquals('credit', $data['type']);
+        $this->assertEquals('3335', $data['last4']);
+        $this->assertEquals('Visa', $data['network']);
+        $this->assertEquals('HDFC', $data['issuer']);
+
+        \DB::connection('test')->table('cards')->where('id', '=', 'KOOmLB0xqazzXp')->limit(1)->update(['id' => $cardId]);
+
+        \DB::connection('test')->statement('SET FOREIGN_KEY_CHECKS=1');
+    }
 }
