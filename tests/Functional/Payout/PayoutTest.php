@@ -21946,13 +21946,46 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
 
-        $storkMock = Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+        $this->dontExpectAnyStorkServiceRequest();
 
-        $storkMock = $this->expectStorkSendSmsRequest($storkMock,
-            PayoutProcessedNotification::SMS_TEMPLATE,
-            $contact->getContact());
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED, '933815383814');
 
-        $this->app->instance('stork_service', $storkMock);
+        Mail::assertNotQueued(PayoutProcessedContactCommunication::class);
+    }
+
+    public function testBeneNoEmailNotificationOnDashboardPayoutProcessedWithSourceXPayroll()
+    {
+        Mail::fake();
+
+        $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+
+        $contact = $this->getDbEntityById('contact', '1000001contact');
+
+        $this->fixtures->merchant->removeFeatures([Feature\Constants::DISABLE_DB_PAYOUT_BENE_EMAIL]);
+
+        $this->fixtures->merchant->removeFeatures([Feature\Constants::DISABLE_DB_PAYOUT_BENE_SMS]);
+
+        $attributes = [
+            'bas_business_id' => '10000000000000',
+            'merchant_id'     => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_detail', $attributes);
+
+        $this->testCreateXpayrollPayoutWithSourceDetails();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $fta = $payout->fundTransferAttempts()->first();
+
+        // Assert that fta status was initiated (FTS sync call).
+        $this->assertEquals('initiated', $fta->getStatus());
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->dontExpectAnyStorkServiceRequest();
 
         $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED, '933815383814');
 

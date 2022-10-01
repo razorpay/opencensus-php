@@ -46,6 +46,7 @@ use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Payout\Batch as PayoutsBatch;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Exception\UserWorkflowNotApplicableException;
+use RZP\Models\PayoutSource\Core as PayoutSourceCore;
 use RZP\Models\PayoutMeta\Entity as PayoutMetaEntity;
 use Razorpay\OAuth\Application\Repository as AppRepo;
 use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
@@ -3339,5 +3340,13 @@ class Entity extends Base\PublicEntity
                 'payout_status'  => $this->getStatus(),
                 'failure_reason' => $this->getFailureReason(),
             ]);
+    }
+
+    public function isVanillaPayout() :bool
+    {
+        // Vanilla payout will not have an corresponding entry in the payout_sources table
+        $payoutSource = (new PayoutSourceCore())->getPayoutSource($this->getId());
+
+        return $payoutSource == null;
     }
 }

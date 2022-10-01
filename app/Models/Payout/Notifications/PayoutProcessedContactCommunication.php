@@ -84,7 +84,7 @@ class PayoutProcessedContactCommunication extends Base
 
         if ($this->payout->getOrigin() === Entity::API &&
             $enableApiPayoutBeneEmail === true &&
-            $this->payout->isVendorPayment() === false)
+            $this->payout->isVanillaPayout() === true)
         {
             $this->sendEmail();
         }
@@ -93,7 +93,7 @@ class PayoutProcessedContactCommunication extends Base
 
         if ($this->payout->getOrigin() === Entity::DASHBOARD &&
             $enableDbPayoutBeneEmail === true &&
-            $this->payout->isVendorPayment() === false)
+            $this->payout->isVanillaPayout() === true)
         {
             $this->sendEmail();
         }
@@ -101,7 +101,8 @@ class PayoutProcessedContactCommunication extends Base
         $enableApiPayoutBeneSms = $this->payout->merchant->isFeatureEnabled(Feature\Constants::ENABLE_API_PAYOUT_BENE_SMS);
 
         if ($this->payout->getOrigin() === Entity::API &&
-            $enableApiPayoutBeneSms === true)
+            $enableApiPayoutBeneSms === true &&
+            $this->payout->isVanillaPayout() === true)
         {
             $this->sendSms();
         }
@@ -109,7 +110,8 @@ class PayoutProcessedContactCommunication extends Base
         $enableDbPayoutBeneSms = ($this->payout->merchant->isFeatureEnabled(Feature\Constants::DISABLE_DB_PAYOUT_BENE_SMS) === false);
 
         if ($this->payout->getOrigin() === Entity::DASHBOARD &&
-            $enableDbPayoutBeneSms === true)
+            $enableDbPayoutBeneSms === true &&
+            $this->payout->isVanillaPayout() === true)
         {
             $this->sendSms();
         }
