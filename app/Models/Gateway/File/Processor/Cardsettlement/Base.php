@@ -165,7 +165,7 @@ class Base extends BaseProcessor
 
         $cardTokenId = $card->getVaultToken();
 
-        $cardToken= (new Card\CardVault)->getCardNumber($cardTokenId);
+        $cardToken= (new Card\CardVault)->getCardNumber($cardTokenId, $card->toArray());
 
         return $cardToken;
     }
