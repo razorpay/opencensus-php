@@ -152,12 +152,12 @@ class UpdateMerchantContext extends Job
 
                         $merchantDetail->setKycClarificationReasons($kycClarificationReasons);
 
-                        $clarificationCore->removeNoDocFeatureIfApplicable($merchant, $merchantDetail);
-
                         $newActivationStatus = Status::NEEDS_CLARIFICATION;
 
                         $this->trace->count(Metrics::NEEDS_CLARIFICATION_TRIGGERED_TOTAL);
                     }
+
+                    $clarificationCore->removeNoDocFeatureIfApplicable($merchant, $merchantDetail);
                 }
             }
 
