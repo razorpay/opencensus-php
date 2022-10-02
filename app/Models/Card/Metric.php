@@ -29,6 +29,7 @@ class Metric extends Base\Core
     const TEMP_VAULT_TOKEN                         = 'temp_vault_token';
     const NETWORK_TOKEN                            = 'network_token';
     const ATTRIBUTE_NAME                           = 'attribute_name';
+    const ROUTE                                    = 'route';
 
     public function pushCardVaultDimensions($input, $status, $statusCode = null, $action = null, $exe = null)
     {
@@ -136,6 +137,10 @@ class Metric extends Base\Core
                 $dimensions[self::TEMP_VAULT_TOKEN] = $isTempVaultToken;
 
                 $dimensions[self::NETWORK_TOKEN] = $isNetworkToken ;
+
+                $app = \App::getFacadeRoot();
+
+                $dimensions[self::ROUTE] = $app['request.ctx']->getRoute();
 
                 $this->trace->count($metricName, $dimensions);
             }

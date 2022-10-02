@@ -126,7 +126,6 @@ class Core extends Base\Core
             if (strtolower($variant) === "on") {
 
                 $this->trace->info(TraceCode::ASYNC_FETCH_PAR_RAZORX_VARIANT, [
-                    'card'           => $card,
                     'razorx_variant' => $variant,
                 ]);
 
@@ -682,12 +681,6 @@ class Core extends Base\Core
                     $card['iin']  =  $updatedIin;
                     $iinNumber    =  $updatedIin;
                 }
-
-                $this->trace->info(
-                    TraceCode::UPDATED_IIN_AND_TOKEN_DETAILS,
-                    [
-                        'token_entity = '  => $token_entity,
-                    ]);
             }
         }
 
@@ -718,7 +711,7 @@ class Core extends Base\Core
             {
                 $this->trace->error(
                     TraceCode::CARD_NETWORK_INVALID,
-                    ['network' => $iinNetwork, 'iin' => $iinNumber]);
+                    []);
             }
 
             $type = $iin['type'];
@@ -1223,10 +1216,7 @@ class Core extends Base\Core
 
     public function setTokenExpiryMonthAndYear($input, bool $isRzpX)
     {
-        return (empty($input[Entity::TOKENISED]) === false) and
-               ((empty($input[Entity::CRYPTOGRAM_VALUE]) === false) or
-               (($input[Entity::TOKENISED] === true) and
-                ($isRzpX === true)));
+        return (empty($input[Entity::TOKENISED]) === false and  boolval($input[Entity::TOKENISED]) === true);
     }
 
     public function checkIfVaultTokenIsNull($card, bool $compositePayoutSaveOrFail)

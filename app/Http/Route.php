@@ -14130,6 +14130,11 @@ class Route
         'payment_create_checkout_json'
     ];
 
+    protected static $skipCardMetaCallToVault = [
+        'admin_fetch_entity_by_id',
+        'admin_fetch_entity_multiple'
+    ];
+
     protected static $rearchRoutes = [
         'payment_create_ajax',
         'payment_create_private_old',
@@ -15815,6 +15820,13 @@ class Route
         $jsonpRoutes = self::$jsonpRoutes;
 
         return in_array($route, $jsonpRoutes);
+    }
+
+    public static function skipCardMetaCall($route): bool
+    {
+        $skipRouteList = self::$skipCardMetaCallToVault;
+
+        return (in_array($route, $skipRouteList, true) === true);
     }
 
     public static function isRearchRoute($route)

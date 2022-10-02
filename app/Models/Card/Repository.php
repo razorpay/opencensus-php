@@ -6,19 +6,16 @@ use DB;
 use App;
 use RZP\Models\Base;
 use RZP\Models\Card;
-use RZP\Constants\Mode;
+use RZP\Models\Admin;
 use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
 use RZP\Constants\Table;
+use RZP\Trace\TraceCode;
 use RZP\Models\FundAccount;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\Account;
-use RZP\Models\Base\UniqueIdEntity;
-use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Base\Traits\ExternalCore;
-
 use RZP\Models\Base\Traits\ExternalRepo;
-use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
@@ -353,7 +350,6 @@ class Repository extends Base\Repository
 
     public function saveOrFail($card , array $options = [])
     {
-
         $arr = [
             Card\Entity::NAME           => $card[Card\Entity::NAME] ?? '',
             Card\Entity::IIN            => $card[Card\Entity::IIN] ?? '',
@@ -363,28 +359,24 @@ class Repository extends Base\Repository
 
         $this->app = App::getFacadeRoot();
 
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+        $setNullConfig = $this->isUnsetCardMetaDataConfigEnabled();
 
-        $variant = $this->app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::STORE_EMPTY_VALUE_FOR_NON_EXEMPTED_CARD_METADATA, $mode);
-
-        $this->app['trace']->info(TraceCode::STORE_EMPTY_VALUE_CARD_METADATA_RAZORX_VARIANT, [
-            'razorx_variant' => $variant,
-            'card_id'   => $card->getId()
+        $this->app['trace']->info(TraceCode::STORE_EMPTY_VALUE_CARD_METADATA, [
+            'setNullConfig' => $setNullConfig,
+            'card_id'       => $card->getId()
         ]);
 
-        if (($variant === 'on') and
-            ($this->checkIfCardMetaDataIsApplicableForDBSave($card) === false) )
+        if ( $setNullConfig === true and $this->checkIfCardMetaDataIsApplicableForDBSave($card) === false)
         {
             unset($card[Card\Entity::IIN]);
             unset($card[Card\Entity::NAME]);
             unset($card[Card\Entity::EXPIRY_MONTH]);
             unset($card[Card\Entity::EXPIRY_YEAR]);
-
         }
 
         parent::saveOrFail($card);
 
-        if ($variant === 'on')
+        if ($setNullConfig === true)
         {
             $card->fill($arr);
         }
@@ -400,5 +392,10 @@ class Repository extends Base\Repository
         {
             return false;
         }
+    }
+
+    protected function isUnsetCardMetaDataConfigEnabled(): bool
+    {
+        return (bool) Admin\ConfigKey::get(Admin\ConfigKey::SET_CARD_METADATA_NULL, true);
     }
 }

@@ -57,6 +57,13 @@ class CardPaymentService
     const ERROR     = 'error';
     const AUTHORIZE = 'authorize';
 
+
+    // card meta data
+    const NAME          = 'name';
+    const IIN           = 'iin';
+    const EXPIRY_MONTH  = 'expiry_month';
+    const EXPIRY_YEAR   = 'expiry_year';
+
     /**
      * Default OTP attempts limit
      * @var integer
@@ -440,6 +447,8 @@ class CardPaymentService
             $action = Action::VERIFY;
         }
 
+        $this->addDummyCardMetaDataIfNotPresent($content);
+
         $this->addOrderDetailsIfNotPresent($content);
 
         $this->addMerchantFeatures($content);
@@ -814,6 +823,35 @@ class CardPaymentService
             if ((is_null($card) === false) and (is_null($card->iinRelation) === false))
             {
                 $data[self::INPUT][Entity::IIN] = $card->iinRelation->toArrayPublic();
+            }
+        }
+    }
+
+    protected function addDummyCardMetaDataIfNotPresent(array & $data)
+    {
+        if (isset($data[self::INPUT]) === true)
+        {
+            if (isset($data[self::INPUT][Entity::CARD]) === true)
+            {
+                if(empty( $data[self::INPUT][Entity::CARD][self::NAME]) === true)
+                {
+                    $data[self::INPUT][Entity::CARD][self::NAME] = "dummy card";
+                }
+
+                if(empty( $data[self::INPUT][Entity::CARD][self::EXPIRY_MONTH]) === true )
+                {
+                    $data[self::INPUT][Entity::CARD][self::EXPIRY_MONTH] = 1;
+                }
+
+                if(empty( $data[self::INPUT][Entity::CARD][self::EXPIRY_YEAR]) === true )
+                {
+                    $data[self::INPUT][Entity::CARD][self::EXPIRY_YEAR] = 2099;
+                }
+
+                if(empty( $data[self::INPUT][Entity::CARD][self::IIN]) === true )
+                {
+                    $data[self::INPUT][Entity::CARD][self::IIN] = "999999";
+                }
             }
         }
     }

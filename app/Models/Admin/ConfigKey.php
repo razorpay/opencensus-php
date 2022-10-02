@@ -343,6 +343,8 @@ class ConfigKey
 
     const CARD_METADATA_SAVE_ENABLED = SELF::PREFIX . 'card_metadata_save_enabled';
 
+    const SET_CARD_METADATA_NULL = SELF::PREFIX. 'set_card_metadata_null';
+
     const PUBLIC_KEYS = [
         self::TENANT_ROLES_ENTITY,
         self::TENANT_ROLES_ROUTES,

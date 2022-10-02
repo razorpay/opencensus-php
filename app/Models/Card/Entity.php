@@ -1008,6 +1008,7 @@ class Entity extends Base\PublicEntity
 
         $isNetworkToken = $this->isNetworkTokenisedCard();
 
+
         if (empty($iin) === true )
         {
             (new Card\Metric)->pushCardMetaDataMetrics(METRIC::CARD_METADATA_FETCH_FROM_API_DB ,self::IIN, $isVaultTokenEmpty, $isTempVaultToken, $isNetworkToken);
@@ -1674,12 +1675,7 @@ class Entity extends Base\PublicEntity
 
     public function getCardMetadata($key = null)
     {
-
-        \App::getFacadeRoot()['trace']->info('MISC_TRACE_CODE',
-            [
-                'key' => $key,
-                'isCardMetaNull' => is_null($this->cardMetadata)
-            ]);
+        $app = \App::getFacadeRoot();
 
         if (($key === null) or
             ($this->cardMetadata === null))
@@ -1687,9 +1683,13 @@ class Entity extends Base\PublicEntity
             return null;
         }
 
-        if (isset($this->cardMetadata[$key]) === false)
+        $routeName = $app['request.ctx']->getRoute();
+
+        $skip = $app['api.route']->skipCardMetaCall($routeName);
+
+        if ( ($skip === false) and  (isset($this->cardMetadata[$key]) === false))
         {
-            $this->cardMetadata = (new Card\CardVault)->getCardMetaData($this);
+            $this->cardMetadata = (new Card\CardVault)->getCardMetaData($this, $routeName);
         }
 
         return $this->cardMetadata[$key] ?? null;

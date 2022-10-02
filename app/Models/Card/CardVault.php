@@ -279,7 +279,7 @@ class CardVault extends Base\Core
         return [];
     }
 
-    public function getCardMetaData($card)
+    public function getCardMetaData($card, $routeName=null)
     {
         try
         {
@@ -315,14 +315,14 @@ class CardVault extends Base\Core
                     'difference'            => $diff,
                 ]);
 
-                $this->trace->count(Metric::CARD_METADATA_FETCH_AFTER_5_DAYS);
+                $this->trace->count(Metric::CARD_METADATA_FETCH_AFTER_5_DAYS, ["route" => $routeName]);
             }
             else
             {
-                $this->trace->count(Metric::CARD_METADATA_FETCH_BEFORE_OR_ON_5TH_DAY);
+                $this->trace->count(Metric::CARD_METADATA_FETCH_BEFORE_OR_ON_5TH_DAY, ["route" => $routeName]);
             }
 
-            $this->trace->count(Metric::CARD_METADATA_FETCH);
+            $this->trace->count(Metric::CARD_METADATA_FETCH ,["route" => $routeName]);
 
             $input = [
                 self::TOKEN => $card->getVaultToken()

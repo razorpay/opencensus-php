@@ -2700,7 +2700,7 @@ class Processor
                 }
 
                 $this->trace->info(TraceCode::TRACK_TOKENISED_PAYMENT_VALIDATION, [
-                    'token' => $token,
+                    'token' => $token->getId(),
                     'test' => $token->card->isNetworkTokenisedCard(),
                 ]);
 

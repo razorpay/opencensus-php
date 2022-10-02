@@ -227,8 +227,8 @@ class Validator extends Base\Validator
         ConfigKey::ONDEMAND_SETTLEMENT_INTERNAL_MERCHANTS                              => 'array',
         ConfigKey::MCC_DEFAULT_MARKDOWN_PERCENTAGE                                     => 'filled|numeric',
         ConfigKey::CARD_METADATA_FETCH_ENABLED                                         => 'filled|boolean',
-        ConfigKey::CARD_METADATA_SAVE_ENABLED                                          => 'filled|boolean'
-
+        ConfigKey::CARD_METADATA_SAVE_ENABLED                                          => 'filled|boolean',
+        ConfigKey::SET_CARD_METADATA_NULL                                              => 'filled|boolean'
     ];
 
     protected static $setRedisKeysRules = [
