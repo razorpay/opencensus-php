@@ -4759,9 +4759,25 @@ class Processor
         {
             $this->persistCardDetailsTemporarily($input);
         }
-        else if ($action === Action::CALLBACK or $action === Action::CAPTURE or $action === Action::PAY)
+        else if ($action === Action::CALLBACK or $action === Action::PAY)
         {
             $this->setCardNumberAndCvv($input,$cardArray);
+        }
+        else if ($action === Action::CAPTURE)
+        {
+            try
+            {
+                $this->setCardNumberAndCvv($input,$cardArray);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->error(
+                    TraceCode::CARD_DETAILS_DECRYPTION_ERROR,
+                    [
+                        'message'       => 'Failed to detokenize/decrypt data'
+                    ]
+                );
+            }
         }
     }
 
