@@ -267,10 +267,6 @@ class BulkUploadMIQParser
         {
             $feeBearerValue = $entry[$feeBearerHeader];
 
-            if($feeBearerValue === MFeeBearer::MERCHANT)
-            {
-                $feeBearerValue = MFeeBearer::PLATFORM;
-            }
             $feeBearers[$feeBearerValue] = true;
         }
 
@@ -338,13 +334,14 @@ class BulkUploadMIQParser
 
         $input[PricingEntity::PAYMENT_METHOD] = MethodEntity::NETBANKING;
 
-        if($entry[Header::MIQ_NB_FEE_BEARER] === MFeeBearer::MERCHANT or
-            $entry[Header::MIQ_NB_FEE_BEARER] === MFeeBearer::CUSTOMER)
+        $feeBearer = $entry[Header::MIQ_NB_FEE_BEARER];
+
+        if($feeBearer === MFeeBearer::PLATFORM or $feeBearer === MFeeBearer::CUSTOMER)
         {
             // converting fee bearer type to lower case, avoiding case sensitivity.
             $feeBearerType = strtolower($entry[Header::MIQ_NB_FEE_TYPE]);
 
-            $input[PricingEntity::FEE_BEARER] = MFeeBearer::FEE_BEARER_TYPE_MAP[$entry[Header::MIQ_NB_FEE_BEARER]] ?? MFeeBearer::PLATFORM;
+            $input[PricingEntity::FEE_BEARER] = $feeBearer ?? MFeeBearer::PLATFORM;
 
             foreach (self::$netBankingPricingMapping as $key => $value)
             {
@@ -385,13 +382,14 @@ class BulkUploadMIQParser
 
         $input[PricingEntity::PAYMENT_METHOD] = MethodEntity::UPI;
 
-        if($entry[Header::MIQ_UPI_FEE_BEARER] === MFeeBearer::MERCHANT or
-            $entry[Header::MIQ_UPI_FEE_BEARER] === MFeeBearer::CUSTOMER)
+        $feeBearer = $entry[Header::MIQ_UPI_FEE_BEARER];
+
+        if($feeBearer === MFeeBearer::PLATFORM or $feeBearer === MFeeBearer::CUSTOMER)
         {
             // converting fee bearer type to lower case, avoiding case sensitivity.
             $feeBearerType = strtolower($entry[Header::MIQ_UPI_FEE_TYPE]);
 
-            $input[PricingEntity::FEE_BEARER] = MFeeBearer::FEE_BEARER_TYPE_MAP[$entry[Header::MIQ_UPI_FEE_BEARER]] ?? MFeeBearer::PLATFORM;
+            $input[PricingEntity::FEE_BEARER] = $feeBearer ?? MFeeBearer::PLATFORM;
 
             if ($entry[Header::MIQ_UPI] !='' and ($feeBearerType === UConstants::FEE_TYPE_PERCENT
                     or $feeBearerType === UConstants::FEE_TYPE_FLAT))
@@ -422,13 +420,14 @@ class BulkUploadMIQParser
 
         $input[PricingEntity::PAYMENT_METHOD] = 'wallet';
 
-        if($entry[Header::MIQ_WALLETS_FEE_BEARER] === MFeeBearer::MERCHANT or
-            $entry[Header::MIQ_WALLETS_FEE_BEARER] === MFeeBearer::CUSTOMER)
+        $feeBearer = $entry[Header::MIQ_WALLETS_FEE_BEARER];
+
+        if($feeBearer === MFeeBearer::PLATFORM or $feeBearer=== MFeeBearer::CUSTOMER)
         {
             // converting fee bearer type to lower case, avoiding case sensitivity.
             $feeBearerType = strtolower($entry[Header::MIQ_WALLETS_FEE_TYPE]);
 
-            $input[PricingEntity::FEE_BEARER ] = MFeeBearer::FEE_BEARER_TYPE_MAP[$entry[Header::MIQ_WALLETS_FEE_BEARER]] ?? MFeeBearer::PLATFORM;
+            $input[PricingEntity::FEE_BEARER ] = $feeBearer?? MFeeBearer::PLATFORM;
 
             foreach (self::$walletPricingMapping as $key => $value)
             {
@@ -476,8 +475,10 @@ class BulkUploadMIQParser
             // possible values of key - Percent, Flat, NA
             $feeBearerType = strtolower($entry[$key]);
 
+            $feeBearer = $entry[$feeBearerHeader];
+
             if (($feeBearerType === UConstants::FEE_TYPE_FLAT or $feeBearerType === UConstants::FEE_TYPE_PERCENT) and
-                ($entry[$feeBearerHeader] === MFeeBearer::CUSTOMER or $entry[$feeBearerHeader] === MFeeBearer::MERCHANT))
+                ($feeBearer === MFeeBearer::CUSTOMER or $feeBearer === MFeeBearer::PLATFORM))
             {
                 $input[PricingEntity::PAYMENT_NETWORK] = $value[UConstants::PRICING_NETWORK];
 
@@ -485,7 +486,7 @@ class BulkUploadMIQParser
 
                 $input[PricingEntity::PAYMENT_METHOD_SUBTYPE] = $value[UConstants::PRICING_METHOD_SUBTYPE];
 
-                $input[PricingEntity::FEE_BEARER] = MFeeBearer::FEE_BEARER_TYPE_MAP[$entry[$feeBearerHeader]]  ?? MFeeBearer::PLATFORM;
+                $input[PricingEntity::FEE_BEARER] = $feeBearer  ?? MFeeBearer::PLATFORM;
 
                 foreach ($value[UConstants::PRICING_AMOUNT_RANGES] as $rangeHeader => $rangeValues)
                 {
