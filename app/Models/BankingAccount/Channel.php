@@ -15,16 +15,20 @@ class Channel
     const RBL     = FTAChannel::RBL;
     const ICICI   = FTAChannel::ICICI;
     const KOTAK   = FTAChannel::KOTAK;
+    const AXIS    = FTAChannel::AXIS;
 
     public static $directTypeChannels = [
         self::RBL,
         self::ICICI,
+        self::AXIS,
+        self::YESBANK,
     ];
 
     protected static $channels = [
         self::YESBANK,
         self::RBL,
         self::ICICI,
+        self::AXIS,
     ];
 
     protected static $defaultSharedTypeChannels = [

@@ -218,7 +218,20 @@ class Mode
                         self::NEFT,
                     ],
                 ],
-            ]
+                Settlement\Channel::AXIS  => [
+                    Constants\Entity::BANK_ACCOUNT => [
+                        self::RTGS,
+                        self::NEFT,
+                        self::IMPS,
+                        self::IFT,
+                    ],
+                    Constants\Entity::CARD => [
+                        self::IMPS,
+                        self::NEFT
+                    ],
+                ],
+                    // Need to add mappings for YESBANK
+            ],
         ];
     }
 

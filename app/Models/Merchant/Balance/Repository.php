@@ -494,23 +494,23 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function getBalanceByMerchantIdChannelAndAccountType(string $merchantId,
-                                                                string $channel,
-                                                                string $accountType)
+    public function getBalanceByMerchantIdChannelsAndAccountType(string $merchantId,
+                                                                 array $channels,
+                                                                 string $accountType)
     {
         return $this->newQuery()
-                    ->where(Entity::CHANNEL, $channel)
+                    ->whereIn(Entity::CHANNEL, $channels)
                     ->where(Entity::ACCOUNT_TYPE, $accountType)
                     ->merchantIdAndType($merchantId, Type::BANKING)
                     ->first();
     }
 
-    public function getBalancesByMerchantIdChannelAndAccountType(string $merchantId,
-                                                                 string $channel,
-                                                                 string $accountType)
+    public function getBalancesByMerchantIdChannelsAndAccountType(string $merchantId,
+                                                                  array $channels,
+                                                                  string $accountType)
     {
         return $this->newQuery()
-                    ->where(Entity::CHANNEL, $channel)
+                    ->whereIn(Entity::CHANNEL, $channels)
                     ->where(Entity::ACCOUNT_TYPE, $accountType)
                     ->merchantIdAndType($merchantId, Type::BANKING)
                     ->get();

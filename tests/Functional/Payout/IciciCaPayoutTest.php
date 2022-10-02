@@ -25,6 +25,7 @@ use RZP\Models\Settlement\Channel;
 Use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Services\Mock\BankingAccountService;
 use RZP\Models\BankingAccount\Gateway\Icici;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -2757,5 +2758,44 @@ class IciciCaPayoutTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $fundAccount->getPublicId();
 
         $this->startTest();
+    }
+    protected function mockBASResponseForFetchingBankingCredentialsForAxisGateway($exception = null): void
+    {
+        $basMock = $this->getMockBuilder(BankingAccountService::class)
+                        ->setConstructorArgs([$this->app])
+                        ->setMethods(['fetchBankingCredentials'])
+                        ->getMock();
+
+        $basMock->method('fetchBankingCredentials')
+                ->willReturn([
+                                 'crp_id' => 'corp123',
+                                 'user_id' => 'user123',
+                                 'urn' => 'dummyURN',
+                             ]);
+
+        if ($exception !== null)
+        {
+            $basMock->method('sendMozartRequest')
+                    ->willThrowException($exception);
+        }
+
+        $this->app->instance('banking_account_service', $basMock);
+    }
+    public function testBalanceFetchFailureDueToChangeInBASResponseFields()
+    {
+        $basDetailsBeforeCronRuns = $this->getDbEntity('banking_account_statement_details',
+                                                       ['account_number' => 2224440041626905]);
+
+        $this->assertEquals(0, $basDetailsBeforeCronRuns->getBalanceLastFetchedAt());
+
+        $this->mockBASResponseForFetchingBankingCredentialsForAxisGateway();
+
+        $this->setupIciciDispatchGatewayBalanceUpdateForMerchants();
+
+        /** @var Details\Entity $basDetailsAfterCronRuns */
+        $basDetailsAfterCronRuns = $this->getDbEntity('banking_account_statement_details',
+                                                      ['account_number' => 2224440041626905]);
+
+        $this->assertEquals(0, $basDetailsAfterCronRuns->getBalanceLastFetchedAt());
     }
 }

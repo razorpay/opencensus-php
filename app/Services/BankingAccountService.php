@@ -63,7 +63,7 @@ class BankingAccountService
     {
         $repo = new BalanceRepo();
 
-        $balances = $repo->getBalancesByMerchantIdChannelAndAccountType($merchantId, Channel::ICICI, AccountType::DIRECT);
+        $balances = $repo->getBalancesByMerchantIdChannelsAndAccountType($merchantId, Channel::getDirectTypeChannels(), AccountType::DIRECT);
 
         if (count($balances) === 0)
         {
@@ -101,18 +101,26 @@ class BankingAccountService
         $path = 'business/'. $businessId . '/banking_account_by_account_number/'. $accountNumber . '/credentials';
 
         $headers = [
-            Fields::CHANNEL        => $channel,
+            Fields::CHANNEL => $channel,
         ];
 
         $response = $this->sendRequestAndProcessResponse($path, 'GET', [], $headers);
 
         if (isset($response['data']) === true)
         {
-            $response = [
-                Icici\Fields::CORP_ID   => $response['data']['corp_id'],
-                Icici\Fields::CORP_USER => $response['data']['user_id'],
-                Icici\Fields::URN       => $response['data']['urn'],
-            ];
+            if ($channel === Channel::ICICI)
+            {
+                $response = [
+                    Icici\Fields::CORP_ID   => $response['data']['corp_id'],
+                    Icici\Fields::CORP_USER => $response['data']['user_id'],
+                    Icici\Fields::URN       => $response['data']['urn'],
+                ];
+            }
+            else
+            {
+                $response = $response['data'];
+            }
+
         }
         else
         {
@@ -491,7 +499,7 @@ class BankingAccountService
         return $response['data'];
     }
 
-    public function fetchIciciActivatedAccountFromBas(MerchantEntity $merchant)
+    public function fetchActivatedDirectAccountsFromBas(MerchantEntity $merchant)
     {
         $merchantId = $merchant->getMerchantId();
 

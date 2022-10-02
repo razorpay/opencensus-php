@@ -7239,17 +7239,17 @@ class Core extends Base\Core
         $bankingAccounts = $this->repo->banking_account->fetchBankingAccountByMerchantIdAccountTypeChannelAndStatus(
             $merchant->getMerchantId(), BankingAccount\Channel::RBL, BankingAccount\AccountType::CURRENT, BankingAccount\Status::ACTIVATED);
 
-        //Rbl
+        // RBL
         if(empty($bankingAccounts) === false)
         {
             return true;
         }
         else
         {
-            //Icici
+            // ICICI, Axis, Yes Bank (CAs implemented in BAS)
             $repo = new BalanceRepo();
 
-            $balance = $repo->getBalanceByMerchantIdChannelAndAccountType($merchant->getMerchantId(), BankingAccountService\Channel::ICICI, Balance\AccountType::DIRECT);
+            $balance = $repo->getBalanceByMerchantIdChannelsAndAccountType($merchant->getMerchantId(), BankingAccountService\Channel::getDirectTypeChannels(), Balance\AccountType::DIRECT);
 
             $businessId = '';
 

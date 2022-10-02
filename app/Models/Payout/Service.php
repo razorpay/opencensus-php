@@ -3344,6 +3344,14 @@ class Service extends Base\Service
             {
                 $input[Entity::CHANNEL] = 'icici';
             }
+            else if ($channel === 'axis')
+            {
+                $input[Entity::CHANNEL] = 'axis';
+            }
+            else if ($channel === 'yesbank')
+            {
+                $input[Entity::CHANNEL] = 'yesbank';
+            }
         }
         else if ($balance->isAccountTypeShared() === true)
         {

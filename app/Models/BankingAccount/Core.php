@@ -137,6 +137,12 @@ class Core extends Base\Core
         Status::REJECTED    	=>	self::REJECTED_PN_BODY
     ];
 
+    public static $directChannelsForConnectBanking = [
+        Channel::YESBANK,
+        Channel::AXIS,
+        Channel::ICICI,
+    ];
+
     public function __construct()
     {
         parent::__construct();
@@ -1343,6 +1349,11 @@ class Core extends Base\Core
                 return (new AdminService)->getConfigKey(
                         ['key' => ConfigKey::ICICI_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_DELETE_MODE]) ?? false;
 
+            case Channel::AXIS:
+            case Channel::YESBANK:
+                return (new AdminService)->getConfigKey(
+                    ['key' => ConfigKey::CONNECTED_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_DELETE_MODE]) ?? false;
+
             default:
                 return false;
         }
@@ -1898,6 +1909,12 @@ class Core extends Base\Core
                     ['key' => ConfigKey::ICICI_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT]);
                 break;
 
+            case Channel::AXIS:
+            case Channel::YESBANK:
+                $limit = (int) (new AdminService)->getConfigKey(
+                    ['key' => ConfigKey::CONNECTED_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT]);
+                break;
+
             default:
                 // just a safe check (it would never reach here), ideally it will fail at
                 //validation at core when cron hits request with wrong channel
@@ -1950,6 +1967,10 @@ class Core extends Base\Core
         }
         else
         {
+            if (in_array($channel, self::$directChannelsForConnectBanking) === true)
+            {
+                return 'RZP\Jobs' . '\\' . 'ConnectedBankingAccountGatewayBalanceUpdate';
+            }
             // just a safe check (it would never reach here), ideally it will fail at
             //validation at core when cron hits request with wrong channel
             $this->trace->error(

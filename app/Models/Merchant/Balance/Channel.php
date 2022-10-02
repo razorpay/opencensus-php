@@ -13,8 +13,10 @@ use RZP\Models\BankingAccount;
  */
 class Channel
 {
-    const RBL   = BankingAccount\Channel::RBL;
-    const ICICI = BankingAccount\Channel::ICICI;
+    const RBL     = BankingAccount\Channel::RBL;
+    const ICICI   = BankingAccount\Channel::ICICI;
+    const AXIS    = BankingAccount\Channel::AXIS;
+    const YESBANK = BankingAccount\Channel::YESBANK;
 
     public static function exists(string $channel): bool
     {
