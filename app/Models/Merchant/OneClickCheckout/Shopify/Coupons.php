@@ -137,12 +137,12 @@ class Coupons extends Base\Core
 
         $data = $response['data']['checkoutDiscountCodeApplyV2'];
 
-        if (empty($data['checkoutUserErrors']) === false)
+        $checkout = $data['checkout'];
+
+        if (empty($data['checkoutUserErrors']) === false || empty($checkout['discountApplications']['edges']) === true)
         {
             return (new Errors)->getInvalidCouponApplicationResponse();
         }
-
-        $checkout = $data['checkout'];
 
         $promotions = $checkout['discountApplications']['edges'][0]['node'];
 
