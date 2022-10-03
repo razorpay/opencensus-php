@@ -35,7 +35,7 @@ import { getFormattedAmountNew, checkHTML5APIvalidity } from 'common/utils/rzp-u
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import RepaymentAnnouncment from 'merchant/components/Announcements/PaymentRecovery';
 import SupportRequest from 'merchant/components/Announcements/SupportRequest';
-import { fetchCarouselBanner as fetchCarouselBannerProp } from '../../../merchant/reducers/growthService';
+import { fetchCarouselBanner as fetchCarouselBannerProp } from 'merchant/reducers/growthService';
 import Carousel from 'common/components/Carousel';
 import { STATUSES } from 'merchant/views/TicketSupport/utils';
 import WebsiteComplianceNudge from 'merchant/views/Account/WebsiteAppDetails/Nudge';
@@ -129,17 +129,20 @@ class AnalyticsMobile extends Component {
       activationData,
       websiteSectionDetailsData,
       websiteComplianceModalVisibility,
+      user,
     } = this.props;
 
     if (
       activationData.data &&
       websiteSectionDetailsData.data &&
-      websiteComplianceModalVisibility.data
+      websiteComplianceModalVisibility.data &&
+      user
     ) {
       const shouldShowModal = shouldShowWebsiteComplianceModal(
         activationData,
         websiteSectionDetailsData,
         websiteComplianceModalVisibility,
+        user,
       );
 
       if (shouldShowModal && this.state.isWebsiteComplianceModalShown === false) {

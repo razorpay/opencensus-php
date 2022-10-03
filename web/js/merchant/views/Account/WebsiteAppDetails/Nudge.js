@@ -27,12 +27,13 @@ function WebsiteAppDetailsNudge({
 }) {
   const isMobileResolution = isMobileDevice();
   const shouldShowNudge =
-    isNudgeSoftForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data) ||
-    isNudgeHardForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data);
+    isNudgeSoftForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data, user) ||
+    isNudgeHardForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data, user);
 
   const nudgeType = isNudgeSoftForWebsiteCompliance(
     activationData.data,
     websiteSectionDetailsData.data,
+    user,
   )
     ? 'soft'
     : 'hard';

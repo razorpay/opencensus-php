@@ -127,7 +127,7 @@ class UserController extends Controller
                 if ($this->redirectionApplicableForGuest() === true)
                 {
                     $redirectPath = env('EASY_DASHBOARD_URL') . \Request::getRequestUri();
-                    $redirectPath = preg_replace('/\?/', '&', $redirectPath); // because we are adding a new query param at the begining 
+                    $redirectPath = preg_replace('/\?/', '&', $redirectPath); // because we are adding a new query param at the begining
                     $redirectPath = preg_replace('/signup/', 'onboarding?source=website', $redirectPath);
 
                     return redirect($redirectPath);
@@ -286,7 +286,7 @@ class UserController extends Controller
         $data = (new SplitzService())->getVariantBulk($details['current'], [$experimentId], [], "splitz/bulkEvaluate");
 
         if ((($data[$experimentId]['variables']['result'] ?? null) === 'on') and
-            ($activationFormMilestone == 'L1' or $activationFormMilestone == 'L2')) {
+            ($activationFormMilestone == 'L1' or $activationFormMilestone == 'L2' or $details['submitted'] == 1) and $details['activation_status'] != 'activated') {
             return true;
         };
 

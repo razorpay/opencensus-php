@@ -34,7 +34,7 @@ import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 import CovidKnowMore from 'common/ui/CovidKnowMore';
 import CreditPullModal from 'merchant/containers/CreditPullModal';
-import { fetchCarouselBanner as fetchCarouselBannerProp } from '../../../merchant/reducers/growthService';
+import { fetchCarouselBanner as fetchCarouselBannerProp } from 'merchant/reducers/growthService';
 import {
   trackPresetChange,
   trackSettlementsClick,
@@ -69,7 +69,7 @@ import DedupeModal from 'merchant/components/Home/DedupeModal';
 import NeoStoneTracker from 'common/ui/NotificationsDropdown/Neostone/Tracker';
 import CongratulatoryBanner from 'merchant/components/Announcements/CongratulatoryBanner';
 import { getXCAStatus } from 'common/ui/NotificationsDropdown/Neostone/common/utils';
-import ShowWhen from '../../components/ShowWhen';
+import ShowWhen from 'merchant/components/ShowWhen';
 import EasterEgg from 'merchant/components/EasterEgg';
 import GrowthAssetEB from 'common/ui/GrowthAssetEB';
 import M2MBanner from 'merchant/components/M2M/M2MBanner';
@@ -220,17 +220,20 @@ class AnalyticsDesktop extends Component {
       activationData,
       websiteSectionDetailsData,
       websiteComplianceModalVisibility,
+      user,
     } = this.props;
 
     if (
       activationData.data &&
       websiteSectionDetailsData.data &&
-      websiteComplianceModalVisibility.data
+      websiteComplianceModalVisibility.data &&
+      user
     ) {
       const shouldShowModal = shouldShowWebsiteComplianceModal(
         activationData,
         websiteSectionDetailsData,
         websiteComplianceModalVisibility,
+        user,
       );
 
       if (shouldShowModal && this.state.isWebsiteComplianceModalShown === false) {

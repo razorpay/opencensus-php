@@ -103,12 +103,14 @@ class KeysListContainer extends ListContainer {
     if (
       activationData.data &&
       websiteSectionDetailsData.data &&
-      websiteComplianceModalVisibility.data
+      websiteComplianceModalVisibility.data &&
+      user
     ) {
       const shouldShowModal = shouldShowWebsiteComplianceModal(
         activationData,
         websiteSectionDetailsData,
         websiteComplianceModalVisibility,
+        user,
       );
 
       if (shouldShowModal && user.isWebsiteComplianceFlowEnabled && isMobileResolution) {

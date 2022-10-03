@@ -79,10 +79,10 @@ export function getLatestNeedsClarificationComment(clarificationReasons) {
   return comments;
 }
 
-export function isNudgeHardForWebsiteCompliance(activationData, websiteComplianceData) {
+export function isNudgeHardForWebsiteCompliance(activationData, websiteComplianceData, user) {
   if (!activationData || !websiteComplianceData) return false;
 
-  const isActivated = activationData?.activated === 1;
+  const isActivated = user?.isAccepted;
 
   let areSectionUrlsReceived = true;
   if (Array.isArray(websiteComplianceData)) {
@@ -100,10 +100,10 @@ export function isNudgeHardForWebsiteCompliance(activationData, websiteComplianc
   );
 }
 
-export function isNudgeSoftForWebsiteCompliance(activationData, websiteComplianceData) {
+export function isNudgeSoftForWebsiteCompliance(activationData, websiteComplianceData, user) {
   if (!activationData || !websiteComplianceData) return false;
 
-  const isActivated = activationData?.activated === 1;
+  const isActivated = user?.isAccepted;
 
   let areSectionUrlsReceived = true;
   if (Array.isArray(websiteComplianceData)) {
@@ -124,10 +124,12 @@ export function shouldShowWebsiteComplianceModal(
   activationData,
   websiteComplianceData,
   visibilityData,
+  user,
 ) {
   const shouldShowWebsiteCompliancePrompt = isNudgeSoftForWebsiteCompliance(
     activationData.data,
     websiteComplianceData.data,
+    user,
   );
   const totalViewCount = Number(visibilityData.data.website_incomplete_soft_nudge_count);
   const previousViewTimestamp = Number(visibilityData.data.website_incomplete_soft_nudge_timestamp);
