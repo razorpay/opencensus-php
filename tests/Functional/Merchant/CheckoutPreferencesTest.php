@@ -3311,7 +3311,14 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertEquals(0, count($response['methods']['intl_bank_transfer']));
     }
 
-    private function getBankAccountMockData(){
-        return '[{"routing_code":"routing_code","routing_type":"ACH","account_number":"1234567889","beneficiary_name":"GemsGems","va_currency":"USD","bank_name":"JP Morgan Chase","bank_address":"810 Seventh Avenue, New York, NY 10019, US"}]';
+    private function getBankAccountMockData($va_currency = "USD") : string{
+        switch($va_currency){
+            case "USD":
+                return '[{"bank_name": "Community Federal Savings Bank", "va_currency": "USD", "bank_address": "810 Seventh Avenue, New York, NY 10019, US", "account_number": "0335086498", "routing_details": [{"routing_code": "026073150", "routing_type": "ach_routing_number"}, {"routing_code": "026073008", "routing_type": "wire_routing_number"}], "beneficiary_name": "ALPHA CORP"}]';
+            case "GBP":
+                return '[{"bank_name": "Community Federal Savings Bank", "va_currency": "GBP", "bank_address": "12 Steward Street, The Steward Building, London, E1 6FQ, GB", "account_number": "92979037", "routing_details": [{"routing_code": "123456", "routing_type": "sort_code"}], "beneficiary_name": "ALPHA CORP"}]';
+            default:
+                return '[{"bank_name": "Community Federal Savings Bank", "va_currency": "SWIFT", "bank_address": "12 Steward Street, The Steward Building, London, E1 6FQ, GB", "account_number": "GB51TCCL12345692979037", "routing_details": [{"routing_code": "TCCLGB123", "routing_type": "bic_swift"}], "beneficiary_name": "ALPHA CORP"}]';
+        }
     }
 }

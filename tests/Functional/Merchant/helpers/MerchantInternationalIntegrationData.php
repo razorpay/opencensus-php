@@ -48,4 +48,28 @@ return [
             ]
         ]
     ],
+
+    'testFetchIntlVAWithPreferredRoutingCodeConfigNotPresent' => [
+        'request'  => [
+            'url'       => '/international/virtual_accounts',
+            'method'    => 'GET',
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ],
+    ],
+
+    'testFetchIntlVAWithPreferredRoutingCodeConfigPresent' => [
+        'request'  => [
+            'url'       => '/international/virtual_accounts',
+            'method'    => 'GET',
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ],
+    ],
 ];

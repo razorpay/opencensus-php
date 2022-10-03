@@ -186,7 +186,86 @@ class MerchantInternationalIntegrationTest Extends TestCase
             "Currency Not Supported for International Bank Transfer");
     }
 
-    private function getBankAccountMockData(){
-        return '[{"routing_code":"routing_code","routing_type":"ACH","account_number":"1234567889","beneficiary_name":"GemsGems","va_currency":"USD","bank_name":"JP Morgan Chase","bank_address":"810 Seventh Avenue, New York, NY 10019, US"}]';
+    public function testFetchIntlVAWithPreferredRoutingCodeConfigPresent()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant_international_integrations', [
+            InternationalIntegration\Entity::MERCHANT_ID => $merchantDetail['merchant_id'],
+            InternationalIntegration\Entity::INTEGRATION_ENTITY => Gateway::CURRENCY_CLOUD,
+            InternationalIntegration\Entity::INTEGRATION_KEY => "1029329285-19298",
+            InternationalIntegration\Entity::NOTES => [],
+            InternationalIntegration\Entity::BANK_ACCOUNT => $this->getBankAccountMockData("USD"),
+        ]);
+
+        $this->fixtures->merchant->addFeatures('enable_b2b_export',$merchantDetail['merchant_id']);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        // Assert Keys
+        foreach($content as $account){
+            $this->assertArrayKeysExist($account,["va_currency","routing_code","routing_type","account_number","beneficiary_name","bank_name","bank_address"]);
+        }
+
+        $virtual_account = $content[0];
+
+        // Asserting Routing Code and Type as First Index (Default)
+        $this->assertEquals($virtual_account['routing_code'],"026073150");
+        $this->assertEquals($virtual_account['routing_type'],"ach_routing_number");
+    }
+
+    public function testFetchIntlVAWithPreferredRoutingCodeConfigNotPresent()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant_international_integrations', [
+            InternationalIntegration\Entity::MERCHANT_ID => $merchantDetail['merchant_id'],
+            InternationalIntegration\Entity::INTEGRATION_ENTITY => Gateway::CURRENCY_CLOUD,
+            InternationalIntegration\Entity::INTEGRATION_KEY => "1029329285-19298",
+            InternationalIntegration\Entity::NOTES => [],
+            InternationalIntegration\Entity::BANK_ACCOUNT => $this->getBankAccountMockData("GBP"),
+        ]);
+
+        $this->fixtures->merchant->addFeatures('enable_b2b_export',$merchantDetail['merchant_id']);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        // Assert Keys
+        foreach($content as $account){
+            $this->assertArrayKeysExist($account,["va_currency","routing_code","routing_type","account_number","beneficiary_name","bank_name","bank_address"]);
+        }
+
+        $virtual_account = $content[0];
+
+        // Asserting Routing Code and Type as First Index (Default)
+        $this->assertEquals($virtual_account['routing_code'],"123456");
+        $this->assertEquals($virtual_account['routing_type'],"sort_code");
+    }
+
+    private function getBankAccountMockData($va_currency = "USD") : string{
+        switch($va_currency){
+            case "USD":
+                return '[{"bank_name": "Community Federal Savings Bank", "va_currency": "USD", "bank_address": "810 Seventh Avenue, New York, NY 10019, US", "account_number": "0335086498", "routing_details": [{"routing_code": "026073150", "routing_type": "ach_routing_number"}, {"routing_code": "026073008", "routing_type": "wire_routing_number"}], "beneficiary_name": "ALPHA CORP"}]';
+            case "GBP":
+                return '[{"bank_name": "Community Federal Savings Bank", "va_currency": "GBP", "bank_address": "12 Steward Street, The Steward Building, London, E1 6FQ, GB", "account_number": "92979037", "routing_details": [{"routing_code": "123456", "routing_type": "sort_code"}], "beneficiary_name": "ALPHA CORP"}]';
+            default:
+                return '[{"bank_name": "Community Federal Savings Bank", "va_currency": "SWIFT", "bank_address": "12 Steward Street, The Steward Building, London, E1 6FQ, GB", "account_number": "GB51TCCL12345692979037", "routing_details": [{"routing_code": "TCCLGB123", "routing_type": "bic_swift"}], "beneficiary_name": "ALPHA CORP"}]';
+        }
     }
 }

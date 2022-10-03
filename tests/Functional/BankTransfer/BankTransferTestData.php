@@ -2620,10 +2620,39 @@ return [
                 'notification_type' => 'cash_manager_transaction_notification'
             ],
             'content' => [
-                'id' => 'a0d9034e-bc9f-45e7-a1e4-6485735798f6',
-                'account_number' => '15b78101-0142-44a1-9758-8f7262429e9b',
-                'currency' => 'USD',
-                'amount' => '47'
+                    'id' => 'a0d9034e-bc9f-45e7-a1e4-6485735798f6',
+                    'account_id' => '15b78101-0142-44a1-9758-8f7262429e9b',
+                    'currency' => 'USD',
+                    'amount' => '47',
+                    'related_entity_type' => 'inbound_funds',
+                    'related_entity_id' => 'a0d9034e-bc9f-45e7-a1e4-6485735798f6'
+            ]
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ],
+
+    'testCashManagerTransactionNotificationForCurrencyCloudWithHeaderInInput' => [
+        'request' => [
+            'url' => '/international/virtual_accounts/payment/create',
+            'method' => 'post',
+            'headers' => null,
+            'content' => [
+                'header' => [
+                    'message_type' => 'cash_manager_transaction',
+                    'notification_type' => 'cash_manager_transaction_notification'
+                ],
+                'body' => [
+                    'id' => 'a0d9034e-bc9f-45e7-a1e4-6485735798f6',
+                    'account_id' => '15b78101-0142-44a1-9758-8f7262429e9b',
+                    'currency' => 'USD',
+                    'amount' => '47',
+                    'related_entity_type' => 'inbound_funds',
+                    'related_entity_id' => 'a0d9034e-bc9f-45e7-a1e4-6485735798f6'
+                ]
             ]
         ],
         'response' => [
@@ -2641,6 +2670,7 @@ return [
                 'notification_type' => 'transfer_completed_notification'
             ],
             'content' => [
+                'id' => 'a0d9034e-bc9f-45e7-a1e4-6485735798f6',
                 'reason' => '',
             ]
         ],

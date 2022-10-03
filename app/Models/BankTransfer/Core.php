@@ -977,6 +977,9 @@ class Core extends Base\Core
 
     protected function createAddressEntityForB2B($response, $payment)
     {
+        /*
+            Sample Address by Gateway - "sender": "Joe Bloggs;1 Street, City, GB, Postcode;GB;1111111111;;00000000",
+        */
         $senderDetails = explode(';',$response['sender']);
         $address = explode(',',$senderDetails[1]);
 
@@ -988,11 +991,11 @@ class Core extends Base\Core
         }
 
         $billingAddressFromInput['type']    = Address\Type::BILLING_ADDRESS;
-        $billingAddressFromInput['name']    = $senderDetails[0];
-        $billingAddressFromInput['zipcode'] = last($address);
-        $billingAddressFromInput['line1']   = $senderDetails[1];
-        $billingAddressFromInput['city']    = $address[1];
-        $billingAddressFromInput['country'] = $senderDetails[2];
+        $billingAddressFromInput['name']    = trim($senderDetails[0]);
+        $billingAddressFromInput['zipcode'] = trim(last($address));
+        $billingAddressFromInput['line1']   = trim($address[0]);
+        $billingAddressFromInput['city']    = trim($address[1]);
+        $billingAddressFromInput['country'] = trim($senderDetails[2]);
 
         $this->trace->info(TraceCode::ADDRESS_CREATE_REQUEST,[
             'billing_address' => $billingAddressFromInput,

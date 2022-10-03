@@ -29,6 +29,14 @@ class Core extends Base\Core
     const AMOUNT            = "amount";
     const ACCOUNT           = "account";
     const SYMBOL            = "symbol";
+    const ROUTING_TYPE      = 'routing_type';
+    const ROUTING_CODE      = 'routing_code';
+    const ROUTING_DETAILS   = 'routing_details';
+
+    // Routing Code Types
+
+    const WIRE_ROUTING_NUMBER   = 'wire_routing_number';
+    const ACH_ROUTING_NUMBER    = 'ach_routing_number';
 
     public function createMerchantInternationalIntegration($input)
     {
@@ -311,14 +319,26 @@ class Core extends Base\Core
                  return [];
             }
 
-            $bank_accounts = json_decode($bank_accounts_json,true);
+            $bank_accounts_map = json_decode($bank_accounts_json,true);
 
-            $bank_accounts_redacted = $this->redactBankAccounts($bank_accounts);
+            $bank_accounts = [];
+
+            foreach($bank_accounts_map as $key => $account)
+            {                
+                $preferredRoutingCode = $this->getPreferredRoutingCodeByCurrency($account[self::VA_CURRENCY],$account[self::ROUTING_DETAILS]);
+
+                unset($account[self::ROUTING_DETAILS]);
+
+                $account[self::ROUTING_TYPE] = $preferredRoutingCode[self::ROUTING_TYPE];
+                $account[self::ROUTING_CODE] = $preferredRoutingCode[self::ROUTING_CODE];
+
+                array_push($bank_accounts,$account);
+            }
 
             $this->trace->info(
                 TraceCode::FETCH_INTERNATIONAL_BANK_TRANSFERS_ACCOUNTS,
                 [
-                    'bank_accounts' => $bank_accounts_redacted
+                    'bank_accounts' => $this->redactBankAccounts($bank_accounts)
                 ]
             );
 
@@ -347,5 +367,27 @@ class Core extends Base\Core
         $converted_amount = (new \RZP\Models\Currency\Core())->convertAmount($amount, $currency, $va_currency);
 
         return (int) ceil($converted_amount + (($markUpPercentage * $converted_amount) / 100));
+    }
+
+    private function getPreferredRoutingCodeByCurrency($va_currency,$routing_details)
+    {
+        $preferredRoutingCodeMapping = [
+            Currency::USD => self::ACH_ROUTING_NUMBER
+        ];
+
+        if(array_key_exists($va_currency,$preferredRoutingCodeMapping) === false)
+        {
+            return $routing_details[0];
+        }
+        else
+        {
+            foreach ($routing_details as $routing_detail)
+            {
+                if($routing_detail[self::ROUTING_TYPE] === $preferredRoutingCodeMapping[$va_currency]){
+                    return $routing_detail;
+                }
+            }
+            return $routing_detail[0];
+        }
     }
 }

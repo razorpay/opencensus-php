@@ -9303,19 +9303,40 @@ class BankTransferTest extends TestCase
                                   {
                                       return [
                                           'data' => [
-                                              'id'                => "1d36c99f-8932-4922-a26a-6390624973e4",
-                                              'account_id'        => "2d693293-0a82-4a70-bc56-85e67cf16e87",
-                                              'account_number'    => "GB01TCCL66412720599341",
-                                              'account_number_type'=> "iban",
-                                              'account_holder_name'=> "abc",
-                                              'bank_name'         => "The Currency Cloud Limited",
-                                              'bank_address'      => "12 Steward Street, The Steward Building, London, E1 6FQ, GB",
-                                              'bank_country'      => "GB",
-                                              'currency'          => $data['currency'],
-                                              'payment_type'      => "regular",
-                                              'routing_code'      => "TCCLGB31",
-                                              'routing_code_type' => "bic_swift",
-                                              'status'            => "successful"
+                                            "funding_accounts" => [
+                                                [
+                                                    "id" => "1c3a920b-87fc-4c61-8b47-ce924a348215",
+                                                    "account_id" => "0c96a02f-996c-4856-8364-d7041849bf4d",
+                                                    "account_number" => "0332452785",
+                                                    "account_number_type" => "account_number",
+                                                    "account_holder_name" => "Sid Pvt Limited",
+                                                    "bank_name" => "Community Federal Savings Bank",
+                                                    "bank_address" => "810 Seventh Avenue, New York, NY 10019, US",
+                                                    "bank_country" => "US",
+                                                    "currency" => $data['currency'],
+                                                    "payment_type" => "regular",
+                                                    "routing_code" => "026073880",
+                                                    "routing_code_type" => "wire_routing_number",
+                                                    "created_at" => "2022-08-23T11:44:03+00:00",
+                                                    "updated_at" => "2022-08-23T11:44:03+00:00"
+                                                ],
+                                                [
+                                                    "id" => "1c3a920b-87fc-4c61-8b47-ce924a348215",
+                                                    "account_id" => "0c96a02f-996c-4856-8364-d7041849bf4d",
+                                                    "account_number" => "0332452785",
+                                                    "account_number_type" => "account_number",
+                                                    "account_holder_name" => "Sid Pvt Limited",
+                                                    "bank_name" => "Community Federal Savings Bank",
+                                                    "bank_address" => "810 Seventh Avenue, New York, NY 10019, US",
+                                                    "bank_country" => "US",
+                                                    "currency" => $data['currency'],
+                                                    "payment_type" => "regular",
+                                                    "routing_code" => "026073150",
+                                                    "routing_code_type" => "ach_routing_number",
+                                                    "created_at" => "2022-08-23T11:44:03+00:00",
+                                                    "updated_at" => "2022-08-23T11:44:03+00:00"
+                                                ]
+                                            ]
                                           ]
                                       ];
                                   }
@@ -9417,6 +9438,34 @@ class BankTransferTest extends TestCase
         $this->assertEquals($paymentEntity['amount'],30000);
     }
 
+    public function testCashManagerTransactionNotificationForCurrencyCloudWithHeaderInInput()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant_international_integrations',[
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'notes' => [],
+        ]);
+
+        $this->mockMozartResponseForCurrencyCloud();
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->sendRequest($request);
+
+        $paymentEntity = $this->getLastPayment(true);
+
+        $this->assertEquals($paymentEntity['status'], 'authorized');
+        $this->assertEquals($paymentEntity['gateway'], 'currency_cloud');
+        $this->assertEquals($paymentEntity['method'], 'intl_bank_transfer');
+        $this->assertEquals($paymentEntity['base_amount'],294000);
+        $this->assertEquals($paymentEntity['amount'],30000);
+    }
+
     public function testCashManagerTransactionNotificationForCurrencyCloudWithDifferentMcc()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
@@ -9483,7 +9532,7 @@ class BankTransferTest extends TestCase
 
         Payment::verifyIdAndStripSign($paymentEntity['id']);
 
-        $secondRequest['content']['reason'] = $paymentEntity['id'];
+        $secondRequest['content']['reason'] = "Sub Account Transfer to House; " . $paymentEntity['id'];
 
         $secondResponse = $this->sendRequest($secondRequest);
 

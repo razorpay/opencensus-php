@@ -567,6 +567,16 @@ class BankTransferController extends Controller
             $header = Request::header('notification-type');
         };
 
+        if(isset($header) === false || empty($header) === true)
+        {
+            $header = $input['header']['notification_type'];
+        }
+
+        if(array_key_exists("id", $input) === false)
+        {
+            $input = $input['body'] ?? '';
+        }
+
         $response = $this->service()->notificationsFromCurrencyCloud($input,$header);
 
         return ApiResponse::json($response);
