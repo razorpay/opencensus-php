@@ -1088,7 +1088,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $card = $this->getLastEntity('card', true);
 
-        $this->assertEquals('Random Name', $card['name']);
+        $this->assertEquals('', $card['name']);
     }
 
     public function testQrCodeTestPayments()

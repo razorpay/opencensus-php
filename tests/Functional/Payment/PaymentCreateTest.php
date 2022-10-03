@@ -4890,7 +4890,7 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals($payment['international'], false);
 
-        $this->assertEquals($card['name'], 'Test Card');
+        $this->assertEquals($card['name'], '');
 
         $this->assertEquals($card['issuer'], 'HDFC');
 

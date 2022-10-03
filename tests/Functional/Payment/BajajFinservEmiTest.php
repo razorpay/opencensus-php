@@ -345,7 +345,7 @@ class BajajFinservEmiTest extends TestCase
 
         $card = $this->getLastEntity('card', true);
 
-        $this->assertEquals('12', $card['expiry_month']);
+        $this->assertEquals('01', $card['expiry_month']);
         $this->assertEquals('2099', $card['expiry_year']);
 
         $paymentEntity = $this->getLastEntity('payment', true);

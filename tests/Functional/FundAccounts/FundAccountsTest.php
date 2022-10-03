@@ -845,8 +845,8 @@ class FundAccountsTest extends TestCase
 
         $expectedCardAttrs = [
             'merchant_id'   => '10000000000000',
-            'expiry_month'  => 4,
-            'expiry_year'   => 2025,
+            'expiry_month'  => "01",
+            'expiry_year'   => "2099",
         ];
 
         $this->assertArraySelectiveEquals($expectedCardAttrs, $card);
@@ -898,8 +898,8 @@ class FundAccountsTest extends TestCase
 
         $expectedCardAttrs = [
             'merchant_id'   => '10000000000000',
-            'expiry_month'  => 4,
-            'expiry_year'   => 2025,
+            'expiry_month'  => "01",
+            'expiry_year'   => "2099",
         ];
 
         $this->assertArraySelectiveEquals($expectedCardAttrs, $card);
@@ -919,8 +919,8 @@ class FundAccountsTest extends TestCase
 
         $expectedCardAttrs = [
             'merchant_id'   => '10000000000000',
-            'expiry_month'  => 4,
-            'expiry_year'   => 2025,
+            'expiry_month'  => "01",
+            'expiry_year'   => "2099",
         ];
 
         $this->assertArraySelectiveEquals($expectedCardAttrs, $card);
@@ -2302,8 +2302,8 @@ class FundAccountsTest extends TestCase
 
         $expectedCardAttrs = [
             'merchant_id'   => '10000000000000',
-            'expiry_month'  => 4,
-            'expiry_year'   => 2025,
+            'expiry_month'  => "01",
+            'expiry_year'   => "2099",
         ];
 
         $this->assertArraySelectiveEquals($expectedCardAttrs, $card);

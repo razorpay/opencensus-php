@@ -282,8 +282,8 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->assertEquals($payment[Payment::GLOBAL_CUSTOMER_ID], '10000gcustomer');
 
         //assert card expiry month , year and last 4
-        $this->assertEquals('2100', $card['expiry_year']);
-        $this->assertEquals('12',   $card['expiry_month']);
+        $this->assertEquals('2099', $card['expiry_year']);
+        $this->assertEquals('01',   $card['expiry_month']);
         $this->assertEquals('1111', $card['last4']);
         $this->assertNull($card['token_expiry_year']);
         $this->assertNull(  $card['token_expiry_month']);
@@ -496,8 +496,8 @@ class SavedCardsPaymentCreateTest extends TestCase
         $card =  $this->getLastEntity('card', true);
 
 
-        $this->assertEquals('2024', $card['expiry_year']);
-        $this->assertEquals('12', $card['expiry_month']);
+        $this->assertEquals('2099', $card['expiry_year']);
+        $this->assertEquals('01', $card['expiry_month']);
         $this->assertEquals('0004', $card['last4']);
         $this->assertNull($card['token_expiry_year']);
         $this->assertNull($card['token_expiry_month']);

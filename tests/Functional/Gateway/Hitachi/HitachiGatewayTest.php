@@ -1520,7 +1520,7 @@ class HitachiGatewayTest extends TestCase
 
         $card = $this->getLastEntity('card', true);
 
-        $this->assertEquals('Random Name', $card['name']);
+        $this->assertEquals('', $card['name']);
 
         $payment = $this->getLastEntity('payment', true);
 

@@ -623,8 +623,8 @@ class TokenTest extends TestCase
 
         $this->assertEquals($card['vault'], 'visa');
 
-        $this->assertEquals('2024', $card['expiry_year']);
-        $this->assertEquals('12', $card['expiry_month']);
+        $this->assertEquals('2099', $card['expiry_year']);
+        $this->assertEquals('01', $card['expiry_month']);
         $this->assertEquals('3335', $card['last4']);
         $this->assertEquals('2024', $card['token_expiry_year']);
         $this->assertEquals('12', $card['token_expiry_month']);
@@ -669,8 +669,8 @@ class TokenTest extends TestCase
 
         $this->assertEquals($card['vault'], 'american express');
 
-        $this->assertEquals('2024', $card['expiry_year']);
-        $this->assertEquals('12', $card['expiry_month']);
+        $this->assertEquals('2099', $card['expiry_year']);
+        $this->assertEquals('01', $card['expiry_month']);
         $this->assertEquals('3335', $card['last4']);
         $this->assertEquals('2024', $card['token_expiry_year']);
         $this->assertEquals('12', $card['token_expiry_month']);
@@ -863,8 +863,8 @@ class TokenTest extends TestCase
         //assert card
         $card = $this->getLastEntity('card', true);
 
-        $this->assertEquals('8', $card['expiry_month']);
-        $this->assertEquals('2023', $card['expiry_year']);
+        $this->assertEquals('01', $card['expiry_month']);
+        $this->assertEquals('2099', $card['expiry_year']);
         $this->assertEquals('11', $card['token_expiry_month']);
         $this->assertEquals('2022', $card['token_expiry_year']);
     }
@@ -2111,8 +2111,8 @@ class TokenTest extends TestCase
         //assert card
         $card = $this->getLastEntity('card', true);
 
-        $this->assertEquals('12', $card['expiry_month']);
-        $this->assertEquals('2023', $card['expiry_year']);
+        $this->assertEquals('01', $card['expiry_month']);
+        $this->assertEquals('2099', $card['expiry_year']);
         $this->assertEquals('12', $card['token_expiry_month']);
         $this->assertEquals('2021', $card['token_expiry_year']);
     }

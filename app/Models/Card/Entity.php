@@ -1436,6 +1436,22 @@ class Entity extends Base\PublicEntity
         return $data;
     }
 
+    public function toArrayAdmin()
+    {
+        $data =  parent::toArrayAdmin();
+
+        $app  = \App::getFacadeRoot();
+
+        $auth = $app['basicauth'];
+
+        if ($auth->isAdminAuth() === true)
+        {
+            $this->setDummyCardData($data);
+        }
+
+        return $data ;
+    }
+
     public function toArray()
     {
         $data = parent::toArray();

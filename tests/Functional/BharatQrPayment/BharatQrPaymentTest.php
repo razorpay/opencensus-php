@@ -99,7 +99,7 @@ class BharatQrPaymentTest extends TestCase
 
         $card = $this->getLastEntity('card', true);
 
-        $this->assertEquals('Random Name', $card['name']);
+        $this->assertEquals('', $card['name']);
     }
 
     public function testFetchBQRPaymentForBankReference()
@@ -268,7 +268,7 @@ class BharatQrPaymentTest extends TestCase
 
         $card = $this->getLastEntity('card', true);
 
-        $this->assertEquals('Razorpay', $card['name']);
+        $this->assertEquals('', $card['name']);
     }
 
     public function testMakeTestPaymentsViaScService()
@@ -316,7 +316,7 @@ class BharatQrPaymentTest extends TestCase
 
         $card = $this->getLastEntity('card', true);
 
-        $this->assertEquals('Razorpay', $card['name']);
+        $this->assertEquals('', $card['name']);
     }
 
     protected function enableRazorXTreatmentForRoutingFromApiToScService()
@@ -416,8 +416,8 @@ class BharatQrPaymentTest extends TestCase
 
         $card = $this->getLastEntity('card', true);
 
-        $this->assertEquals('Razorpay', $card['name']);
-        $this->assertEquals('Razorpay', $card['name']);
+        $this->assertEquals('', $card['name']);
+        $this->assertEquals('', $card['name']);
     }
 
 
@@ -917,7 +917,7 @@ class BharatQrPaymentTest extends TestCase
 
         $card = $this->getLastEntity('card', true);
 
-        $this->assertEquals('Random Name', $card['name']);
+        $this->assertEquals('', $card['name']);
     }
 
     public function testQrPaymentWithMerchantDetails()
@@ -976,7 +976,7 @@ class BharatQrPaymentTest extends TestCase
 
         $card = $this->getLastEntity('card', true);
 
-        $this->assertEquals('Random Name', $card['name']);
+        $this->assertEquals('', $card['name']);
     }
 
     protected function createVirtualAccount()

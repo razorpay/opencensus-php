@@ -372,8 +372,8 @@ class GooglePayCardTest extends TestCase
 
         // Assert card entity
         $card = $this->getLastEntity('card', true);
-        $this->assertEquals('444433', $card['iin']);
+        $this->assertEquals('999999', $card['iin']);
         $this->assertEquals('VISA', $card['network']);
-        $this->assertEquals('dummy card', $card['name']);
+        $this->assertEquals('', $card['name']);
     }
 }

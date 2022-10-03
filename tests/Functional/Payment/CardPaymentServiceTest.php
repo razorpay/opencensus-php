@@ -1788,7 +1788,7 @@ class CardPaymentServiceTest extends TestCase
         $this->assertEquals('IN', $card['country']);
         $this->assertEquals('ICIC', $card['issuer']);
         $this->assertEquals('credit', $card['type']);
-        $this->assertEquals('400782', $card['iin']);
+        $this->assertEquals('999999', $card['iin']);
         $this->assertEquals('404464916', $card['token_iin']);
 
         $this->disbaleCpsConfig();
@@ -2044,7 +2044,7 @@ class CardPaymentServiceTest extends TestCase
         $this->assertEquals('credit', $card['type']);
 
         $this->assertEquals('404464916', $card['token_iin']);
-        $this->assertEquals('400782', $card['iin']);
+        $this->assertEquals('999999', $card['iin']);
 
         $this->disbaleCpsConfig();
     }
@@ -2284,7 +2284,7 @@ class CardPaymentServiceTest extends TestCase
         $this->assertEquals('ICIC', $card['issuer']);
         $this->assertEquals('credit', $card['type']);
         $this->assertEquals('404464916', $card['token_iin']);
-        $this->assertEquals('400782', $card['iin']);
+        $this->assertEquals('999999', $card['iin']);
 
         $this->disbaleCpsConfig();
     }
@@ -2312,7 +2312,7 @@ class CardPaymentServiceTest extends TestCase
         $this->assertEquals('HDFC', $card['issuer']);
         $this->assertEquals('credit', $card['type']);
         $this->assertEquals('404464916', $card['token_iin']);
-        $this->assertEquals('400782', $card['iin']);
+        $this->assertEquals('999999', $card['iin']);
     }
 
     public function testIsPaymentProcessedWithActualCardOnLocalMerchantWhenExpReturnsFalse()
@@ -2338,7 +2338,7 @@ class CardPaymentServiceTest extends TestCase
         $this->assertEquals('HDFC', $card['issuer']);
         $this->assertEquals('credit', $card['type']);
         $this->assertNull($card['token_iin']);
-        $this->assertEquals('401200', $card['iin']);
+        $this->assertEquals('999999', $card['iin']);
 
         $this->disbaleCpsConfig();
     }
@@ -2376,7 +2376,7 @@ class CardPaymentServiceTest extends TestCase
         $this->assertEquals('HDFC', $card['issuer']);
         $this->assertEquals('credit', $card['type']);
         $this->assertEquals('404464916', $card['token_iin']);
-        $this->assertEquals('400782', $card['iin']);
+        $this->assertEquals('999999', $card['iin']);
     }
 
     public function testIsPaymentProcessedWithActualCardOnGlobalMerchantWhenExpReturnsFalse()
@@ -2401,7 +2401,7 @@ class CardPaymentServiceTest extends TestCase
         $this->assertEquals('HDFC', $card['issuer']);
         $this->assertEquals('credit', $card['type']);
         $this->assertNull($card['token_iin']);
-        $this->assertEquals('401200', $card['iin']);
+        $this->assertEquals('999999', $card['iin']);
 
         $this->disbaleCpsConfig();
     }
@@ -4079,7 +4079,7 @@ class CardPaymentServiceTest extends TestCase
         $this->assertEquals('credit', $card['type']);
 
         $this->assertEquals('404464916', $card['token_iin']);
-        $this->assertEquals('400782', $card['iin']);
+        $this->assertEquals('999999', $card['iin']);
 
         $this->disbaleCpsConfig();
     }
@@ -4321,7 +4321,7 @@ class CardPaymentServiceTest extends TestCase
         $this->assertEquals('ICIC', $card['issuer']);
         $this->assertEquals('credit', $card['type']);
         $this->assertEquals('404464916', $card['token_iin']);
-        $this->assertEquals('400782', $card['iin']);
+        $this->assertEquals('999999', $card['iin']);
 
         $this->disbaleCpsConfig();
     }
