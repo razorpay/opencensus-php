@@ -1525,10 +1525,12 @@ class CardPaymentService
 
         $par = $networkToken[0][Entity::PROVIDER_DATA][Entity::PAYMENT_ACCOUNT_REFERENCE] ?? '';
         $trn = $networkToken[0][Entity::PROVIDER_DATA][Entity::TOKEN_REFERENCE_NUMBER] ?? '';
+        $nri = $networkToken[0][Entity::PROVIDER_DATA][Entity::NETWORK_REFERENCE_ID] ?? '';
 
         $input[Entity::CARD][Entity::PAYMENT_ACCOUNT_REFERENCE] = $par;
         $input[Entity::CARD][Entity::TOKEN_REFERENCE_NUMBER] = $trn;
         $input[Entity::CARD][Entity::TOKEN_REFERENCE_ID] = $trid;
+        $input[Entity::CARD][Entity::NETWORK_REFERENCE_ID] = $nri;
 
         return $input;
     }

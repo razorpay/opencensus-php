@@ -713,6 +713,7 @@ class Entity
     const TOKEN_REFERENCE_NUMBER    = 'token_reference_number';
     const TOKENISED_TERMINAL_ID     = 'tokenised_terminal_id';
     const TOKEN_REFERENCE_ID        = 'token_reference_id';
+    const NETWORK_REFERENCE_ID      = 'network_reference_id';
     const PROVIDER_DATA             = 'provider_data';
     const TOKENISED                 = 'tokenised';
 
