@@ -9,7 +9,7 @@ use RZP\Services\SplitzService as BaseSplitz;
 class SplitzService extends BaseSplitz
 {
 
-    public function createSegment($preSignedUrl, $segmentName)
+    public function createSegment($preSignedUrl, $segmentName, $s3Path)
     {
         $resp = new Requests_Response;
         $resp->success     = true;
@@ -27,7 +27,7 @@ class SplitzService extends BaseSplitz
         return $resp;
     }
 
-    public function updateSegment($preSignedUrl, $segmentName, $id)
+    public function updateSegment($preSignedUrl, $segmentName, $id, $s3Path)
     {
         $resp = new Requests_Response;
         $resp->success     = true;

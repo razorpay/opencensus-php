@@ -18,10 +18,10 @@ class Core extends Base\Core
         $preSignedUrl = $this->getPreSignedUrl($filePath);
 
         if (!isset($seg_res['response']['segment'])) {
-            $response = $this->app->splitzService->createSegment($preSignedUrl, $segmentName);
+            $response = $this->app->splitzService->createSegment($preSignedUrl, $segmentName, $filePath);
         } else {
             $segment = $seg_res['response']['segment'];
-            $response = $this->app->splitzService->updateSegment($preSignedUrl, $segmentName,$segment);
+            $response = $this->app->splitzService->updateSegment($preSignedUrl, $segmentName, $segment, $filePath);
         }
 
         return $response;

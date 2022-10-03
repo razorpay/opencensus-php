@@ -79,20 +79,21 @@ class SplitzService extends Base\Service
         $this->ba             = app('basicauth');
     }
 
-    public function createSegment($preSignedUrl, $segmentName)
+    public function createSegment($preSignedUrl, $segmentName, $s3Path)
     {
-        $parameters = $this->getParametersForCreateSegment($preSignedUrl, $segmentName);
+        $parameters = $this->getParametersForCreateSegment($preSignedUrl, $segmentName, $s3Path);
 
         return $this->sendRequest($parameters, self::CREATE_SEGMENT_URL, Requests::POST);
     }
 
-    private function getParametersForCreateSegment($presignedUrl, $segmentName): array
+    private function getParametersForCreateSegment($presignedUrl, $segmentName, $s3Path): array
     {
         return [
             'segment' => [
                 'name'                => $segmentName,
                 'description'         => $segmentName,
                 'signedUrl'           => $presignedUrl,
+                's3Path'              => $s3Path,
                 'falsePositivityRate' => static::FALSE_POSITIVITY_RATE
             ]
         ];
@@ -172,14 +173,14 @@ class SplitzService extends Base\Service
         return $splitzResponse;
     }
 
-    public function updateSegment($preSignedUrl, $segmentName, $segment)
+    public function updateSegment($preSignedUrl, $segmentName, $segment, $s3Path)
     {
-        $parameters = $this->getParametersForUpdateSegment($preSignedUrl, $segmentName, $segment);
+        $parameters = $this->getParametersForUpdateSegment($preSignedUrl, $segmentName, $segment, $s3Path);
 
         return $this->sendRequest($parameters, self::UPDATE_SEGMENT_URL, Requests::POST);
     }
 
-    private function getParametersForUpdateSegment($presignedUrl, $segmentName, $segment): array
+    private function getParametersForUpdateSegment($presignedUrl, $segmentName, $segment, $s3Path): array
     {
 
         $segmentParams = [
@@ -187,6 +188,7 @@ class SplitzService extends Base\Service
             'name'                => $segmentName,
             'description'         => $segmentName,
             'signedUrl'           => $presignedUrl,
+            's3Path'              => $s3Path,
             'falsePositivityRate' => static::FALSE_POSITIVITY_RATE
         ];
 
