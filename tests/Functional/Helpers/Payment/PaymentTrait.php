@@ -939,6 +939,19 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function verifyPaymentNew($id)
+    {
+        $request = array(
+            'url'    => '/payments/'.$id.'/verify_new',
+            'method' => 'POST');
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function verifyAllPayments()
     {
         $request = array(

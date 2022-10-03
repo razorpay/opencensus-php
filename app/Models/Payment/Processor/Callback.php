@@ -266,23 +266,10 @@ trait Callback
                 break;
 
             case Payment\Method::EMANDATE:
-                if ((Gateway::isWebhookEnabledGateway($payment->getGateway())) and 
-                    (Gateway::isApiBasedAsyncEMandateGateway($payment->getGateway())) and 
-                    (   // if authorized and token not updated
-                        (($payment->hasBeenAuthorized() === true) and 
-                         ($payment->isRecurringTypeInitial() === true) and
-                         ($payment->isCaptured() === false)) or
-                        // if second recurring and async payment update flow 
-                        (($payment->hasBeenAuthorized() === false) and 
-                         ($payment->isCreated() === true) and
-                         ($payment->isSecondRecurring() === true)) or
-                        // if initial or auto payment is failed
-                        ($payment->isFailed() === true)
-                    ))
-                {
-                    $result = true;
-                }
-                elseif($payment->getGateway() === Gateway::PAYU)
+                $acceptEmandateWebhook = $this->emandateS2SCallbackCheck($payment);
+
+                if (($acceptEmandateWebhook === false) and
+                    ($payment->getGateway() === Gateway::PAYU))
                 {
                     $shouldActuallySkip = true;
                 }
@@ -312,6 +299,42 @@ trait Callback
                 ]);
 
             $result = false;
+        }
+
+        return $result;
+    }
+
+    protected function emandateS2SCallbackCheck($payment): bool
+    {
+        $result = false;
+
+        if (empty($payment) === true)
+        {
+            return $result;
+        }
+
+        // Following conditions should be true to accept webhooks
+        // 1. gateway can accept webhooks 
+        // 2. gateway is an async status gateway
+        // 3. token and payment status check
+        // 4. did gateway send webhook too soon
+        if ((Gateway::isWebhookEnabledGateway($payment->getGateway())) and 
+            (Gateway::isApiBasedAsyncEMandateGateway($payment->getGateway())) and 
+            (   // if authorized and token not updated
+                (($payment->hasBeenAuthorized() === true) and 
+                 ($payment->isRecurringTypeInitial() === true) and
+                 ($payment->isCaptured() === false)) or
+                // if second recurring and async payment update flow 
+                (($payment->hasBeenAuthorized() === false) and 
+                 ($payment->isCreated() === true) and
+                 ($payment->isSecondRecurring() === true)) or
+                // if initial or auto payment is failed
+                ($payment->isFailed() === true)) and
+            // if gateways send callback before NBPlus has saved
+            // entities, skip webhook consumption
+            ($this->checkCallbackTooSoon($payment) === false))
+        {
+            $result = true;
         }
 
         return $result;
@@ -1156,5 +1179,32 @@ trait Callback
         $payment->setMethod(Payment\Method::UPI);
 
         $payment->saveOrFail();
+    }
+
+    protected function checkCallbackTooSoon($payment)
+    {
+        if (empty($payment) === true)
+        {
+            return true;
+        }
+
+        $diff = Carbon::now()->getTimestamp() - $payment->getCreatedAt();
+
+        $this->trace->info(TraceCode::PAYMENT_CALLBACK_RETRY,
+                [
+                    'payment_id'         => $payment->getId(),
+                    'current_timestamp'  => Carbon::now()->getTimestamp(),
+                    'payment_created_at' => $payment->getCreatedAt(),
+                    'delta'              => $diff,
+                ]);
+
+        if ($diff > self::CALLBACK_PROCESS_AGAIN_DURATION * 10)
+        {
+            $this->trace->info(TraceCode::PAYMENT_CALLBACK_RETRY_SUCCESS);
+
+            return false;
+        }
+
+        return true;
     }
 }

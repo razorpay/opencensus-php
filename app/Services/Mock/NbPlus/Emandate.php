@@ -97,17 +97,26 @@ class Emandate extends EmandataBase
 
     protected function verify($input)
     {
-        return [
+        $returnData = [
             'response' => [
                 'data' => [
                     'gateway_reference_id' => '1234',
                     'bank_reference_id'    => '1234',
                     'gateway_token'        => str_random(),
                     'gateway_status'       => true,
+                    'recurring_status'     => 'confirmed',
                 ]
             ],
             'error' => null
         ];
+
+        if ($input['input']['payment']['description'] === 'payment_pending')
+        {
+            $returnData['response']['data']['gateway_status'] = true;
+            $returnData['response']['data']['gateway_payment_status'] = 'pending';
+        }
+
+        return $returnData;
     }
 
     protected function authorizeFailed($input)

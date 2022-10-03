@@ -29,7 +29,9 @@ class Emandate extends Service
 
         $this->input = $input;
 
-        if ((($this->action === Action::AUTHORIZE) or ($this->action === Action::CALLBACK)) and
+        if ((empty($input) === false) and
+            (isset($input[Entity::PAYMENT]) === true) and
+            (isset($input[Entity::PAYMENT][Payment\Entity::RECURRING_TYPE]) === true) and
             ($input[Entity::PAYMENT][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::AUTO))
         {
             $this->transactionType = self::DEBIT;
