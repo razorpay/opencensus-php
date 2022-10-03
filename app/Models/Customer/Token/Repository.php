@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use DB;
 
 use Illuminate\Database\Eloquent\Builder;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Card;
@@ -257,7 +258,14 @@ class Repository extends Base\Repository
          $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
          $cardIdColumn = $this->repo->card->dbColumn(Card\Entity::ID);
 
-         return $this->newQueryWithConnection($this->getSlaveConnection())
+        $connectionName = $this->getSlaveConnection();
+
+        if ((bool) ConfigKey::get(ConfigKey::CARD_ARCHIVAL_FALLBACK_ENABLED, false))
+        {
+            $connectionName = $this->getConnectionFromType(ConnectionType::ARCHIVED_DATA_REPLICA);
+        }
+
+         return $this->newQueryWithConnection($connectionName)
                      ->select($this->repo->token->dbColumn('*'))
                      ->join(Table::CARD, $tokenCardIdColumn, '=', $cardIdColumn)
                      ->where(Entity::METHOD, '=', $method)

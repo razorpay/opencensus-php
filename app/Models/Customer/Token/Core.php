@@ -398,7 +398,16 @@ class Core extends Base\Core
 
         if ($validateExisting === true)
         {
+            $requeststartAt = millitime();
+
             $existingToken = $this->validateExistingToken($token);
+
+            $this->trace->info(
+                TraceCode::EXISTING_TOKEN_CHECK,
+                [
+                    'existing_token'  => empty($existingToken) === false ? $existingToken->getId() : null,
+                    'fetch_time_ms'      => millitime() - $requeststartAt,
+                ]);
 
             if ($existingToken !== null)
             {
@@ -1322,7 +1331,16 @@ class Core extends Base\Core
                 return null;
             }
 
+            $requestStartAt = millitime();
+
             $existingTokens = $this->repo->token->getByMethodAndCustomerIdIsNull($token->getMethod(),$token->getMerchantId(), $token->card->getVaultToken());
+
+            $this->trace->info(
+                TraceCode::EXISTING_TOKENS_EXECUTION_TIME,
+                [
+                    'existing_tokens_count'     => count($existingTokens),
+                    'fetch_time_ms'             => millitime() - $requestStartAt,
+                ]);
         }
 
         $this->trace->info(
