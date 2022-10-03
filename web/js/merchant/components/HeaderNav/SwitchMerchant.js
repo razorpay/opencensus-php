@@ -13,9 +13,12 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
     .flatMap((merchant) => (merchant.parent_id ? [] : merchant))
     .concat(linkedActs);
 
+  // Remove razorpayX accounts from list
+  const filteredMerchants = merchants.filter((merchant) => merchant.product !== 'banking');
+
   return (
     <PowerSelect
-      options={merchants}
+      options={filteredMerchants}
       className="switch-merchant"
       placeholder="Switch Merchant"
       searchIndices={['name', 'display_name']}
