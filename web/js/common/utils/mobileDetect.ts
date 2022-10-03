@@ -16,9 +16,8 @@ const getMobileDetect = (userAgent: string = navigator.userAgent): MobileDetect 
 
   const isMobile = (): boolean => Boolean(isAndroid() || isIos() || isOpera() || isWindows());
   const isDesktop = (): boolean => Boolean(!isMobile() && !isSSR());
-  // we are specifically expecting source = webview in query params from app team when ever they open pages in webview.
-  const isWebView = (): boolean =>
-    Boolean(userAgent.includes('wv') || window.location.search.includes('source=webview'));
+  // we are specifically expecting source=webview in query params from mobile app team whenever they open pages in react native webview.
+  const isWebView = (): boolean => Boolean(window.location.search.includes('source=webview'));
 
   return {
     isMobile,
