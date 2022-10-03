@@ -1,6 +1,5 @@
 FROM c.rzp.io/proxy_dockerhub/library/golang:1.16.3-alpine3.12
 
-ARG GIT_TOKEN
 ENV CGO_ENABLED 0
 
 WORKDIR /go/src/github.com/razorpay/dashboard/e2e
@@ -12,9 +11,9 @@ RUN apk add --update --no-cache --repository https://dl-4.alpinelinux.org/alpine
 COPY go.mod .
 COPY go.sum .
 
-RUN set -eux && \
-    echo 'exec echo ${GIT_TOKEN}' > /tmp/askpass.sh && \
-    chmod +x /tmp/askpass.sh && \
+ARG GIT_USERNAME
+RUN --mount=type=secret,id=git_token set -eux && \
+    echo "machine github.com login ${GIT_USERNAME} password $(cat /run/secrets/git_token)" > ~/.netrc && \
     export GIT_ASKPASS=/tmp/askpass.sh && \
     export GOSUMDB=off && \
     go mod download
