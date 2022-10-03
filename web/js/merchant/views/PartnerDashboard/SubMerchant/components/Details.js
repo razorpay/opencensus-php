@@ -32,6 +32,8 @@ export default (props) => {
     isSubMerchantKYCAccess,
   } = props;
 
+  const isPGProduct = product === PRODUCT_TYPE.PG;
+  const isXProduct = product === PRODUCT_TYPE.X;
   const contact_mobile = submerchant?.user?.contact_mobile;
   const activation_status = submerchant?.details?.activation_status;
   const smallWrapper = ['activated', 'activated_mcc_pending', 'under_review', 'rejected'].includes(
@@ -48,7 +50,7 @@ export default (props) => {
         <div class="panel panel-default SliderPanel SubmerchantDetail__Panel">
           <div class="panel-heading">
             <div class="submerchant-name">
-              {isReseller && isSubMerchantKycResellerEnabled
+              {isReseller && isPGProduct && isSubMerchantKycResellerEnabled
                 ? 'REQUEST KYC APPROVAL '
                 : submerchant.name || 'Default Name'}
             </div>
@@ -85,7 +87,7 @@ export default (props) => {
                   <Time value={submerchant.created_at} format="LL" />
                 </EntityDetailRow>
 
-                <ShowWhen additionalCondition={() => product === PRODUCT_TYPE.PG}>
+                <ShowWhen additionalCondition={() => isPGProduct}>
                   {/* Status of Activation */}
                   <EntityDetailRow label="Activation Status">
                     {isReseller && isSubMerchantKycResellerEnabled ? (
@@ -129,7 +131,7 @@ export default (props) => {
                   </EntityDetailRow>
                 </ShowWhen>
 
-                <ShowWhen additionalCondition={() => product === PRODUCT_TYPE.X}>
+                <ShowWhen additionalCondition={() => isXProduct}>
                   <EntityDetailRow label="Current Account Status">
                     <XSubmerchantCAStatusLabel
                       status={
@@ -154,9 +156,7 @@ export default (props) => {
 
                 <ShowWhen
                   myRole="owner admin manager"
-                  additionalCondition={(user) =>
-                    user.isPartner('aggregator') && product === PRODUCT_TYPE.PG
-                  }
+                  additionalCondition={(user) => user.isPartner('aggregator') && isPGProduct}
                 >
                   <div class="pair-group-item">
                     {submerchant.user ? (
@@ -175,7 +175,7 @@ export default (props) => {
                   </div>
                 </ShowWhen>
 
-                {isReseller && isSubMerchantKycResellerEnabled && (
+                {isReseller && isPGProduct && isSubMerchantKycResellerEnabled && (
                   <DetailsAction
                     activation_status={submerchant.details.activation_status}
                     kyc_access={submerchant.kyc_access}
