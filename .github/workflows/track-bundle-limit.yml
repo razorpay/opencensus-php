@@ -119,19 +119,6 @@ jobs:
                   "elements": [
                     {
                       "type": "mrkdwn",
-                      "text": "*PR Title*: "
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "${{ github.event.pull_request.title }}"
-                    }
-                  ]
-                },
-                {
-                  "type": "context",
-                  "elements": [
-                    {
-                      "type": "mrkdwn",
                       "text": "*PR Raised by*: "
                     },
                     {
