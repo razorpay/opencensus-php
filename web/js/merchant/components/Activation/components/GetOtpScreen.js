@@ -7,6 +7,8 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { classList } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import * as EventActions from 'merchant/reducers/trackEvents';
+import ResendIcon from 'assets/onboarding/resend.svg';
+import DisableResendIcon from 'assets/onboarding/disable-resend.svg';
 
 const GetOtpScreen = ({
   analyticsProperties,
@@ -353,7 +355,7 @@ const GetOtpScreen = ({
                     className="captcha-screen__captcha-img"
                   />
                   <img
-                    src="/dist/css/assets/onboarding/resend.svg"
+                    src={ResendIcon}
                     className={classList(
                       'captcha-screen__resend',
                       !hasMobileLinked ? 'captcha-screen__resend-disabled' : '',
@@ -367,10 +369,7 @@ const GetOtpScreen = ({
                     className="spin-btn white medium visible"
                     style={{ margin: '0 53px 13px' }}
                   />
-                  <img
-                    src="/dist/css/assets/onboarding/disable-resend.svg"
-                    className="reload-icon"
-                  />
+                  <img src={DisableResendIcon} className="reload-icon" />
                 </>
               )}
             </div>

@@ -24,7 +24,7 @@ import OnBoarding, {
 import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGuide';
 
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
-
+import HeroMain from 'assets/payment_pages/hero_main.svg';
 @withRouter
 @connect(
   (state) => ({
@@ -90,7 +90,7 @@ export default class PaymentPagesOnBoarding extends React.Component {
               {...sliderProps}
               title="Payment Pages"
               feature={RZPFeatures.PP}
-              imageUrl="https://razorpay.com/assets/paymentpages/hero-main.svg"
+              imageUrl={HeroMain}
               desc="Build a custom, branded payment page for your business in under 10 minutes and start accepting international and domestic payments with zero integration and tech efforts."
             />
           )}

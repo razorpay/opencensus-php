@@ -3,6 +3,7 @@ import { trackLinkClick } from './ga';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { getCustomURL } from 'merchant/components/DocsLink';
 import { isOrgFeatureExist } from 'merchant/models/User';
+import PoweredByRzp from 'assets/branding/powered_by_rzp.png';
 
 const footer_links = [
   {
@@ -27,7 +28,7 @@ const FooterLine = ({ user }) => {
       <footer className="pagefooter">
         {user.isOrgAxis && (
           <img
-            src="/img/branding/powered-by-razorpay-dashboard.png"
+            src={PoweredByRzp}
             className="rzp-branding-logo logo-footer"
             alt="Powered by Razorpay"
           />

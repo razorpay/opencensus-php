@@ -1,6 +1,9 @@
 import React from 'react';
 import Button from 'common/new-ui/Button';
 import { isMobileDevice } from 'merchant/components/Home/data';
+import ShopifyBg from 'assets/shopify_migration/shopify_bg.png';
+import Clock from 'assets/shopify_migration/shopify_clock.png';
+import HeroIllustration from 'assets/shopify_migration/hero_Illustration.png';
 
 const ShopifyMigrationPopUp = ({ closeModal, nextPopUpFunc }) => {
   const routeToShopify = (e) => {
@@ -22,18 +25,12 @@ const ShopifyMigrationPopUp = ({ closeModal, nextPopUpFunc }) => {
         <i className="i i-close" />
       </button>
       <div className="shopify-bg-container">
-        <img
-          src={`${window.cdnBaseUrl}/static/assets/shopify-migration-popup/shopifyBg.png`}
-          className="style-bg"
-        />
+        <img src={ShopifyBg} className="style-bg" />
       </div>
       <div className="content">
         {!isMobileDevice() && (
           <div className="timer">
-            <img
-              src={`${window.cdnBaseUrl}/static/assets/shopify-migration-popup/clock.png`}
-              alt="timer"
-            />
+            <img src={Clock} alt="timer" />
           </div>
         )}
 
@@ -68,10 +65,7 @@ const ShopifyMigrationPopUp = ({ closeModal, nextPopUpFunc }) => {
           </Button>
         </div>
         <div className="hero-illustration">
-          <img
-            src={`${window.cdnBaseUrl}/static/assets/shopify-migration-popup/heroIllustration.png`}
-            alt="illustration"
-          />
+          <img src={HeroIllustration} alt="illustration" />
         </div>
       </div>
     </div>

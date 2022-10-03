@@ -28,6 +28,7 @@ import { isOrgFeatureExist } from 'merchant/models/User';
 import ShopifyMigrationPopUp from 'common/ui/ShopifyMigrationPopUp';
 import lazyLoader from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import PoweredByRzp from 'assets/branding/powered_by_rzp.png';
 
 const WhatsNew = lazyLoader(() =>
   import(/* webpackChunkName: 'merchantWhatsNew' */ 'common/ui/WhatsNew/Old'),
@@ -205,7 +206,7 @@ class HeaderNav extends Component {
             <div className="navbar-collapse" id="headerNav">
               {!showMobileNav && !user.isOrgRZP && !user.isOrgAxis && (
                 <img
-                  src="/img/branding/powered-by-razorpay-dashboard.png"
+                  src={PoweredByRzp}
                   className="rzp-branding-logo logo-header"
                   alt="Powered by Razorpay"
                 />

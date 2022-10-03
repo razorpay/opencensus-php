@@ -1,12 +1,13 @@
 import { trackLinkClick } from './ga';
 import React from 'react';
+import PoweredByRzp from 'assets/branding/powered_by_rzp.png';
 
 export default ({ user }) => {
   return (
     <React.Fragment>
       {!user.isOrgRZP && (
         <img
-          src="/img/branding/powered-by-razorpay-dashboard.png"
+          src={PoweredByRzp}
           class="rzp-branding-logo"
           alt="Powered by Razorpay"
           style={{ marginLeft: 14 }}

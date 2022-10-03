@@ -8,6 +8,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { updateModalConfigDetails } from 'merchant/reducers/ModalConfigApi';
 import { isMobileDevice } from 'merchant/components/Home/data';
+import MwebCoupon from 'assets/onboarding/mobweb_coupon.svg';
 
 const OnboardingCoupons = ({
   closeModal,
@@ -51,13 +52,7 @@ const OnboardingCoupons = ({
       </button>
       <div className="content">
         <div className="offer-period">Limited time offer</div>
-        {isMobileDevice() && (
-          <img
-            src="https://cdn.razorpay.com/static/assets/onboarding/mweb_coupon.svg"
-            alt="coupon"
-            className="mweb-coupon-img"
-          />
-        )}
+        {isMobileDevice() && <img src={MwebCoupon} alt="coupon" className="mweb-coupon-img" />}
         <div className="credit-text">CONGRATULATIONS ON RECEIVING LIMITED PERIOD OFFER!!</div>
         <div className="bottom-text">
           Your transaction fee is waived off! Accept the first payment in the next 5 days to avail

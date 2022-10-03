@@ -3,40 +3,49 @@ import LazyLoad, { forceCheck } from 'react-lazyload';
 import RTracking from 'react-tracking';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
 import { utmCampaignMap, utmMediumMap, utmSourceMap } from 'merchant/helpers/x/updateUtmCookie';
+import CurrentAccount from 'assets/products/blue-theme/current-account.svg';
+import PayoutLink from 'assets/products/blue-theme/payout-link.svg';
+import VendorPayments from 'assets/products/blue-theme/vendor-payments.svg';
+import Payouts from 'assets/products/blue-theme/payouts.svg';
+import Payroll from 'assets/products/blue-theme/payroll.svg';
+import Thirdwatch from 'assets/products/thirdwatch.svg';
+import PrepayCod from 'assets/products/prepay-cod.svg';
+import WorkingCapitalLoans from 'assets/products/blue-theme/working-capital-loans.svg';
+import CorporateCreditCards from 'assets/products/blue-theme/corporate-credit-cards.svg';
 
 const closeButtonClass = 'close';
 
 const appListBusinessBanking = [
   {
-    icon: '/dist/css/assets/products/blue-theme/current-account.svg',
+    icon: CurrentAccount,
     name: 'Current Accounts',
     link: 'https://razorpay.com/x/current-accounts/',
     desc: 'Business Banking built for disruptors.',
     showForUnregisteredBusiness: false,
   },
   {
-    icon: '/dist/css/assets/products/blue-theme/payout-link.svg',
+    icon: PayoutLink,
     name: 'Payout Links',
     link: 'https://razorpay.com/x/payout-links/',
     desc: 'Easy and instant payouts',
     showForUnregisteredBusiness: false,
   },
   {
-    icon: '/dist/css/assets/products/blue-theme/vendor-payments.svg',
+    icon: VendorPayments,
     name: 'Vendor Payments',
     link: 'https://razorpay.com/x/vendor-payments/',
     desc: 'Automated Tax payments.',
     showForUnregisteredBusiness: false,
   },
   {
-    icon: '/dist/css/assets/products/blue-theme/payouts.svg',
+    icon: Payouts,
     name: 'Payouts',
     link: 'https://razorpay.com/x/payouts/',
     desc: '24x7, Instant & Automated Payouts',
     showForUnregisteredBusiness: false,
   },
   {
-    icon: '/dist/css/assets/products/blue-theme/payroll.svg',
+    icon: Payroll,
     name: 'Payroll',
     link: 'https://razorpay.com/payroll/',
     desc: 'Automate and execute payroll',
@@ -47,14 +56,14 @@ const appListBusinessBanking = [
 // eslint-disable-next-line no-unused-vars
 const appListRiskAndFraud = [
   {
-    icon: '/dist/css/assets/products/thirdwatch.svg',
+    icon: Thirdwatch,
     name: 'Thirdwatch',
     link: 'https://razorpay.com/thirdwatch/',
     desc: 'Fight fraud with Artificial Intelligence',
     showForUnregisteredBusiness: true,
   },
   {
-    icon: '/dist/css/assets/products/prepay-cod.svg',
+    icon: PrepayCod,
     name: 'Prepay COD',
     link: 'https://razorpay.com/thirdwatch/prepay-cod/',
     desc: 'Convert risky CoD orders to prepaid.',
@@ -65,14 +74,14 @@ const appListRiskAndFraud = [
 
 const appListLending = [
   {
-    icon: '/dist/css/assets/products/blue-theme/working-capital-loans.svg',
+    icon: WorkingCapitalLoans,
     name: 'Working Capital Loans',
     link: 'https://razorpay.com/capital/working-capital-loans/',
     desc: 'Avail collateral-free business loans',
     showForUnregisteredBusiness: false,
   },
   {
-    icon: '/dist/css/assets/products/blue-theme/corporate-credit-cards.svg',
+    icon: CorporateCreditCards,
     name: 'Corporate Credit Cards',
     link: 'https://razorpay.com/x/corporate-cards/',
     desc: 'Instantly approved corporate credit card',

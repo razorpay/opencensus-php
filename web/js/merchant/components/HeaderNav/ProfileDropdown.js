@@ -15,13 +15,13 @@ import { logout, updateSession } from 'merchant/reducers/session';
 import { SwitchMerchantTypeahead } from 'merchant/components/HeaderNav/SwitchMerchant';
 import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
 import rolesList from 'merchant/helpers/permissions/roles-list';
-import logoutGoogleAccount from '../../../common/utils/logoutGoogle';
+import logoutGoogleAccount from 'common/utils/logoutGoogle';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, isLoggedInViaMobile } from 'common/utils/rzp-utils';
 import RTracking from 'react-tracking';
 import { track as trackPartnerOnbr } from 'merchant/views/PartnerDashboard/Onboarding/ga';
 import { isOrgFeatureExist } from 'merchant/models/User';
-
+import RTBUserIconBg from 'assets/trustedbadge/rtb_user_icon_bg.svg';
 import BusinessImage from 'assets/business.svg';
 
 @withRouter
@@ -232,11 +232,7 @@ export default class ProfileDropdown extends Component {
                     );
                   }}
                 >
-                  <img
-                    src="https://cdn.razorpay.com/static/assets/trustedbadge/rtb_user_icon_bg.svg"
-                    className="rtb-user-bg-img"
-                    alt="trust badge"
-                  />
+                  <img src={RTBUserIconBg} className="rtb-user-bg-img" alt="trust badge" />
                   <i className="rtb-nav-icon" />
                   Hey, Trusted Business
                 </span>

@@ -7,7 +7,7 @@ import Text from '@razorpay/blade-old/src/atoms/Text';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
 import Card from 'common/components/Card';
-import FormIcon from './Icons/FormIcon.svg';
+import FormIcon from 'assets/onboarding/form_icon.svg';
 
 const Separator = styled(View)`
   height: 1px;

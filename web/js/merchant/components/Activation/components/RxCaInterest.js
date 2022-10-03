@@ -1,6 +1,7 @@
-import React, { Component } from 'react';
-import Button from 'common/new-ui/Button';
-import Input, { Description, Error, inputClass } from 'common/new-ui/Input';
+import React from 'react';
+import Input from 'common/new-ui/Input';
+import RazorXLogo from 'assets/razorpayX-logo.png';
+import PointIcon from 'assets/onboarding/points.svg';
 
 const rxBenefits = [
   'PG Pricing reduced to 1.85%',
@@ -19,7 +20,7 @@ const RxCaInterest = ({ value, onChange, disabled }) => {
       <div className="divider" />
       <div className="rx-ca-container">
         <div className="left-container">
-          <img className="rx-logo" src="/dist/css/assets/razorpayX-logo.png" />
+          <img className="rx-logo" src={RazorXLogo} />
           <div className="text-ca">Current Account</div>
         </div>
         <div className="right-container">
@@ -30,7 +31,7 @@ const RxCaInterest = ({ value, onChange, disabled }) => {
             <div className="benefits">
               {rxBenefits.map((el, i) => (
                 <div className="info" key={i}>
-                  <img className="points-img" src="/dist/css/assets/onboarding/points.svg" />
+                  <img className="points-img" src={PointIcon} />
                   {el}
                 </div>
               ))}
@@ -38,7 +39,7 @@ const RxCaInterest = ({ value, onChange, disabled }) => {
             <Input.Check
               disabled={disabled}
               className="ca-checkbox"
-              fieldLabel={'Yes, I am interested to open RazorpayX current account'}
+              fieldLabel="Yes, I am interested to open RazorpayX current account"
               onChange={onChange}
               checked={value}
             />

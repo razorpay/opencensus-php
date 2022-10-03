@@ -21,9 +21,9 @@ import OnBoarding, {
 } from 'merchant/components/OnBoarding';
 
 import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGuide';
-import track from '../track';
+import track from 'merchant/views/PaymentLinks/track';
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
-
+import PaymentLinkIcon from 'assets/product_onboarding/payment_link.svg';
 @connect(
   (state) => ({
     user: state.session.user,
@@ -75,7 +75,7 @@ export default class PaymentPagesOnBoarding extends React.Component {
               {...sliderProps}
               title="Payment Links"
               feature={RZPFeatures.PL}
-              imageUrl="/dist/css/assets/product_onboarding/payment_link.svg"
+              imageUrl={PaymentLinkIcon}
               desc="Create and share a Razorpay Payment Link in under a minute with your customers via email, SMS, messenger, chatbot etc. Get domestic and international payments online directly into your bank account."
             />
           )}

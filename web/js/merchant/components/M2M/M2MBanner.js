@@ -3,6 +3,7 @@ import loadFriendBuy from './m2mFriendBuy';
 import { connect } from 'react-redux';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import * as EventActions from 'merchant/reducers/trackEvents';
+import M2MBannerSvg from 'assets/m2m/m2mBanner.svg';
 
 const M2MBanner = (props) => {
   const { referralAmount, referralAmountCurrency, user, trackEvents } = props;
@@ -87,7 +88,7 @@ const M2MBanner = (props) => {
   return (
     <div className="refferal-banner">
       <div className="banner-illustration">
-        <img src="https://cdn.razorpay.com/m2m/m2m_banner.svg" />
+        <img src={M2MBannerSvg} />
       </div>
       <div className="banner-info">
         <div className="desktop-view">

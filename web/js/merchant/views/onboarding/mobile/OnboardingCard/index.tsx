@@ -12,7 +12,6 @@ import Card from 'common/components/Card';
 import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
 import useEscalation from 'merchant/views/onboarding/mobile/hooks/useEscalation';
 import CurrentActivationProgress from './CurrentActivationProgress';
-import FormIcon from './Icons/FormIcon.svg';
 import OnboardingCardShimmer from './OnboardingCardShimmer';
 import {
   checkIfDedupe,
@@ -24,6 +23,7 @@ import { useApp } from 'common/context/App';
 import { IReferee } from 'merchant/views/onboarding/mobile/Screens/Home';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';
 import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+import FormIcon from 'assets/onboarding/form_icon.svg';
 
 const Separator = styled(View)`
   height: 1px;

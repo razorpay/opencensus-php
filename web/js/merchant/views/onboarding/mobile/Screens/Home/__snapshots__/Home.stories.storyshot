@@ -47,7 +47,7 @@ exports[`Storyshots Onboarding/Home Default 1`] = `
               </div>
               <img
                 alt="fill_activation_form_icon"
-                src="FormIcon.svg"
+                src="form_icon.svg"
               />
             </div>
             <div
