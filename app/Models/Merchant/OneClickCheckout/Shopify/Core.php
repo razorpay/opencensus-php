@@ -113,7 +113,18 @@ class Core extends Base\Core
 
         if (empty($checkoutCreate['checkoutUserErrors']) === false)
         {
-            $this->trace->info(
+            $checkoutError = $checkoutCreate['checkoutUserErrors'][0];
+
+            if ($checkoutError['message'] === "Variant is invalid")
+            {
+                $this->trace->error(TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
+                    [
+                        'type' => 'shopify_invalid_variant_error',
+                        'response' => $checkoutError
+                    ]);
+                $this->monitoring->addTraceCount(Metric::CREATE_API_CHECKOUT_ERROR_COUNT,['error_type' => TraceCode::SHOPIFY_INVALID_VARIANT_ERROR]);
+            }
+            $this->trace->error(
                  TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
                  [
                      'type'     => 'error_creating_checkout',
