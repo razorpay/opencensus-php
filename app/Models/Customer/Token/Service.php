@@ -743,7 +743,7 @@ class Service extends Base\Service
 
                     if (strtolower($variant) === 'on') {
                         throw new Exception\BadRequestException(
-                            ErrorCode::BAD_REQUEST_ERROR, null, null, "the saved card is no longer compliant with RBI guidelines. Please use another card/payment ");
+                            ErrorCode::BAD_REQUEST_TOKEN_NOT_APPLICABLE, null, null, "the saved card is no longer compliant with RBI guidelines. Please use another card/payment ");
                     }
 
                     $response['compliant_with_tokenisation_guidelines'] = false;

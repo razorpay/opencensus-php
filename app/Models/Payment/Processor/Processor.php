@@ -2708,7 +2708,7 @@ class Processor
 
                 if ($token->card->isTokenisationCompliant() === false) {
                     throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_INVALID_ID,
+                        ErrorCode::BAD_REQUEST_TOKEN_NOT_APPLICABLE,
                         'token');
                 }
             }

@@ -2809,6 +2809,7 @@ class ErrorCode
 
     const BAD_REQUEST_PAYMENT_METHOD_DISABLED_FOR_COUPON                           = 'BAD_REQUEST_PAYMENT_METHOD_DISABLED_FOR_COUPON';
 
+    const BAD_REQUEST_TOKEN_NOT_APPLICABLE                                         = 'BAD_REQUEST_TOKEN_NOT_APPLICABLE';
 
     static function getConstants()
     {
