@@ -6922,6 +6922,27 @@ class UserTest extends TestCase
                           ->willReturn('on');
     }
 
+    protected function enableRazorXTreatmentForBlockBankingRoutes()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function($mid, $feature, $mode) {
+                                  if ($feature === 'block_banking_requests')
+                                  {
+                                      return 'on';
+                                  }
+
+                                  return 'off';
+                              }));
+    }
+
     public function enableRazorXTreatmentForRazorXForOrgLevel2Fa()
     {
 
@@ -9795,5 +9816,109 @@ class UserTest extends TestCase
         $response = $this->startTest();
 
         $this->assertNotNull($response);
+    }
+
+    public function testMerchantGetTagsRouteViaBankingProductWithBlockingFeatureEnabled()
+    {
+        $this->enableRazorXTreatmentForBlockBankingRoutes();
+
+        $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
+    }
+
+    public function testCurrencyFetchAllProxyRouteViaBankingProductWithBlockingFeatureEnabled()
+    {
+        $this->enableRazorXTreatmentForBlockBankingRoutes();
+
+        $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
+    }
+
+    public function testMerchantPartnerConfigsFetchProxyRouteViaBankingProductWithBlockingFeatureEnabled()
+    {
+        $this->enableRazorXTreatmentForBlockBankingRoutes();
+
+        $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
+    }
+
+    public function testSettlementHolidaysRouteViaBankingProductWithBlockingFeatureEnabled()
+    {
+        $this->enableRazorXTreatmentForBlockBankingRoutes();
+
+        $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
+    }
+
+    public function testSettlementAmountRouteViaBankingProductWithBlockingFeatureEnabled()
+    {
+        $this->enableRazorXTreatmentForBlockBankingRoutes();
+
+        $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
+    }
+
+    public function testMerchantFetchTpvsRouteViaBankingProductWithBlockingFeatureEnabled()
+    {
+        $this->enableRazorXTreatmentForBlockBankingRoutes();
+
+        $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
+    }
+
+    public function testMerchantTpvCreateRouteViaBankingProductWithBlockingFeatureEnabled()
+    {
+        $this->enableRazorXTreatmentForBlockBankingRoutes();
+
+        $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
+    }
+
+    public function testUserFetchPurposeCodeRouteViaBankingProductWithBlockingFeatureEnabled()
+    {
+        $this->enableRazorXTreatmentForBlockBankingRoutes();
+
+        $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
     }
 }

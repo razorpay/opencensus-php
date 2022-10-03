@@ -653,4 +653,7 @@ final class RazorxTreatment
 
     //Experiment used to control for the flow of create account API for performance analysis
     const CREATE_ACCOUNT_API_PERFORMANCE_ANALYSIS = 'create_account_api_performance_analysis';
+
+    //Experiment used to control whether routes specified in $bankingDisabledRoutes should block banking requests or not
+    const BLOCK_BANKING_REQUESTS = 'block_banking_requests';
 }

@@ -15050,6 +15050,17 @@ class Route
         'email_user_status_for_email_update'    => [Mode::LIVE, Mode::TEST],
     ];
 
+    public static $bankingDisabledRoutes = [
+        'merchant_get_tags',
+        'currency_fetch_all_proxy',
+        'merchant_partner_configs_fetch',
+        'setl_holidays',
+        'setl_amount',
+        'merchant_fetch_tpvs',
+        'merchant_tpv_create',
+        'user_fetch_purpose_code'
+    ];
+
     // Route specific config for running read queries on mysql db:
     // Incase the connection is not being forced to slave or master while reading data from DB,
     // Heartbeat lag checker decides where the queries should be routed: master or slave-replica.

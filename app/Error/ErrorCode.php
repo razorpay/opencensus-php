@@ -2811,6 +2811,8 @@ class ErrorCode
 
     const BAD_REQUEST_TOKEN_NOT_APPLICABLE                                         = 'BAD_REQUEST_TOKEN_NOT_APPLICABLE';
 
+    const BAD_REQUEST_ROUTE_NOT_ACCESSIBLE_VIA_BANKING                             = 'BAD_REQUEST_ROUTE_NOT_ACCESSIBLE_VIA_BANKING';
+
     static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);

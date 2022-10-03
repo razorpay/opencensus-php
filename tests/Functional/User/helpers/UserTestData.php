@@ -6193,4 +6193,132 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_TAKEN,
         ],
     ],
+
+    'testMerchantGetTagsRouteViaBankingProductWithBlockingFeatureEnabled' => [
+        'request' => [
+            'url'     => '/merchants/10000000000000/tags',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_ROUTE_NOT_ACCESSIBLE_VIA_BANKING,
+                ],
+            ],
+            'status_code' => 400,
+        ]
+    ],
+
+    'testCurrencyFetchAllProxyRouteViaBankingProductWithBlockingFeatureEnabled' => [
+        'request' => [
+            'url'     => '/currency/all/proxy',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_ROUTE_NOT_ACCESSIBLE_VIA_BANKING,
+                ],
+            ],
+            'status_code' => 400,
+        ]
+    ],
+
+    'testMerchantPartnerConfigsFetchProxyRouteViaBankingProductWithBlockingFeatureEnabled' => [
+        'request' => [
+            'url'     => '/merchants/me/partner/configs',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_ROUTE_NOT_ACCESSIBLE_VIA_BANKING,
+                ],
+            ],
+            'status_code' => 400,
+        ]
+    ],
+
+    'testSettlementHolidaysRouteViaBankingProductWithBlockingFeatureEnabled' => [
+        'request' => [
+            'url'     => '/settlement/holidays',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_ROUTE_NOT_ACCESSIBLE_VIA_BANKING,
+                ],
+            ],
+            'status_code' => 400,
+        ]
+    ],
+
+    'testSettlementAmountRouteViaBankingProductWithBlockingFeatureEnabled' => [
+        'request' => [
+            'url'     => '/settlements/amount',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_ROUTE_NOT_ACCESSIBLE_VIA_BANKING,
+                ],
+            ],
+            'status_code' => 400,
+        ]
+    ],
+
+    'testMerchantFetchTpvsRouteViaBankingProductWithBlockingFeatureEnabled' => [
+        'request' => [
+            'url'     => '/merchant/tpvs',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_ROUTE_NOT_ACCESSIBLE_VIA_BANKING,
+                ],
+            ],
+            'status_code' => 400,
+        ]
+    ],
+
+    'testMerchantTpvCreateRouteViaBankingProductWithBlockingFeatureEnabled' => [
+        'request' => [
+            'url'     => '/merchant/tpv',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_ROUTE_NOT_ACCESSIBLE_VIA_BANKING,
+                ],
+            ],
+            'status_code' => 400,
+        ]
+    ],
+
+    'testUserFetchPurposeCodeRouteViaBankingProductWithBlockingFeatureEnabled' => [
+        'request' => [
+            'url'     => '/users/purpose/code',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_ROUTE_NOT_ACCESSIBLE_VIA_BANKING,
+                ],
+            ],
+            'status_code' => 400,
+        ]
+    ],
 ];

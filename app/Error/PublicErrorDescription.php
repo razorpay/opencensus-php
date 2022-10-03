@@ -1680,4 +1680,6 @@ class PublicErrorDescription
     const EMERCHANTPAY_INSTRUMENT_INVALID_DESC                                      = "Invalid payment method requested";
     const BAD_REQUEST_RAZORPAY_WALLET_ERROR                                         = "failed to perform razorpay wallet transaction.";
     const SERVER_ERROR_INVALID_ACS_EVENT_PROCESSOR                                  = "invalid acs event processor attached to acs event processor factory";
+
+    const BAD_REQUEST_ROUTE_NOT_ACCESSIBLE_VIA_BANKING                              = 'Route not enabled for banking';
 }
