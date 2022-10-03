@@ -284,8 +284,7 @@ class Event extends Base\Core
             $iin = $this->repo->card->retrieveIinDetails($cardIIN);
 
             $eventData += [
-                'card_iin'     => $cardIIN,
-                 'card_issuer' => $iin->getIssuer(),
+                'card_issuer' => $iin->getIssuer(),
                 'card_network' => $iin->getNetwork(),
                 'card_category'=> $iin->getCategory(),
                 'card_type'    => $iin->getType(),
