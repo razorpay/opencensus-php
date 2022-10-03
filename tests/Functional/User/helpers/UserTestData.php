@@ -2062,6 +2062,54 @@ return [
         ],
     ],
 
+    'testOauthLoginMobileSignupEmailNotConfirmed' => [
+        'request'  => [
+            'url'     => '/users/oauth-login',
+            'method'  => 'POST',
+            'content' => [
+                'email'          => 'hello123@gmail.com',
+                'oauth_provider' => "[\"google\"]",
+                'id_token'       => 'valid id token'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testOauthLoginEmailSignupEmailNotConfirmed' => [
+        'request'  => [
+            'url'     => '/users/oauth-login',
+            'method'  => 'POST',
+            'content' => [
+                'email'          => 'hello123@gmail.com',
+                'oauth_provider' => "[\"google\"]",
+                'id_token'       => 'valid id token'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'confirmed'      => true,
+                'merchants'      => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
 
     'testOauthLoginForMobileOAuth' => [
         'request'  => [

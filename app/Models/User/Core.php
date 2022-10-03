@@ -2468,7 +2468,7 @@ class Core extends Base\Core
         // For this User signs up via email/password and drops off in the middle
         // comes back and logs in via Google OAUth
         // We will reset and invalidate user's password for security reasons.
-        if ($user->getConfirmedAttribute() === false)
+        if ($user->getConfirmedAttribute() === false and $user->isSignupViaEmail() === true)
         {
             $response[Constants::INVALIDATE_SESSIONS] = true;
 

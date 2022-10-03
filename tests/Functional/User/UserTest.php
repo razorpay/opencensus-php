@@ -3172,6 +3172,57 @@ class UserTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testOauthLoginMobileSignupEmailNotConfirmed()
+    {
+        $this->fixtures->create('user', [
+            'id'    => "FL0nl7kME8j3Dd",
+            'email' => 'hello123@gmail.com',
+            'contact_mobile' => '9876543210',
+            'confirm_token'  => '0123456789',
+            'signup_via_email' => 0,
+            'password' => 'hello123',
+        ]);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        $user = $this->getDbEntity('user', ['id' => 'FL0nl7kME8j3Dd']);
+
+        $this->assertNotNull($user->getContactMobile());
+    }
+
+    public function testOauthLoginEmailSignupEmailNotConfirmed()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->user->createUserForMerchant($merchant->getId(), [
+            'id'    => "FL0nl7kME8j3Dd",
+            'email' => 'hello123@gmail.com',
+            'contact_mobile' => '9876543210',
+            'confirm_token'  => '0123456789',
+            'signup_via_email' => 1,
+            'password' => 'hello123'
+        ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'        => $merchant->getId(),
+            'business_name'      => $merchant['name'],
+            'contact_name'       => $merchant['name'],
+            'business_type'      => '1',
+            'transaction_volume' => '1',
+            'contact_mobile'     => '9999999999'
+        ]);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        $user = $this->getDbLastEntity('user');
+
+        $this->assertNull($user->getContactMobile());
+    }
+
     public function testOauthLoginForDifferentSource()
     {
         // user already exists with confirmed password
