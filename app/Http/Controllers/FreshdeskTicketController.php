@@ -40,6 +40,15 @@ class FreshdeskTicketController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function internalFetchMerchantFreshdeskTickets()
+    {
+        $input = Request::all();
+
+        $response = (new FreshdeskTicketService)->internalFetchMerchantFreshdeskTickets($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postTicketForAccountRecovery()
     {
         $input = Request::all();

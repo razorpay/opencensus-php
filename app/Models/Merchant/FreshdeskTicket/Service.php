@@ -644,6 +644,15 @@ class Service extends Base\Service
         ];
     }
 
+    public function internalFetchMerchantFreshdeskTickets($input)
+    {
+        (new Validator)->validateInput(__FUNCTION__, $input);
+
+        $tickets = $this->repo->merchant_freshdesk_tickets->fetch($input);
+
+        return $tickets->toArrayPublic();
+    }
+
     public function internalPostTicketV2($input)
     {
         $input = $this->makeInputForInternalPostTicket($input);

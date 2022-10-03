@@ -39,6 +39,43 @@ return [
         ],
     ],
 
+    'testInternalFetchMerchantFreshdeskTickets' => [
+        'request' => [
+            'url' => '/internal/merchant_freshdesk_tickets?merchant_id=10000000000001',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'count'   => 1,
+                'items' => [
+                    [
+                        'id' => 'razorpayid0034',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testInternalFetchMerchantFreshdeskTicketsValidationError' => [
+        'request' => [
+            'url' => '/internal/merchant_freshdesk_tickets',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content'       => [
+                'error' => [
+                    'description' => 'The id field is required when none of merchant id / ticket id are present.',
+                    'code'        => 'BAD_REQUEST_ERROR',
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
+
     'testFetchTicketsForMerchantFailedForSomeInstance' => [
         'request' => [
             'url'     => '/fd/support_dashboard/ticket',

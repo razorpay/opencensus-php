@@ -310,6 +310,30 @@ class FreshdeskTicketV2Test extends TestCase
 
     }
 
+    public function testInternalFetchMerchantFreshdeskTicketsValidationError()
+    {
+        $this->ba->careAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testInternalFetchMerchantFreshdeskTickets()
+    {
+        $this->ba->careAppAuth();
+
+        $ticketDetails["fd_instance"] = "rzpind";
+
+        $this->fixtures->create('merchant_freshdesk_tickets', [
+            'id'             => 'razorpayid0034',
+            'ticket_id'      => '34',
+            'merchant_id'    => '10000000000001',
+            'type'           => 'support_dashboard',
+            'ticket_details' => $ticketDetails,
+        ]);
+
+        $this->startTest();
+    }
+
     public function testFetchTicketsForMerchantWithTagFilter()
     {
         $this->createTicketsToFetch();

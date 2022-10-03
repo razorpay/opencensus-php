@@ -3285,6 +3285,7 @@ class Route
         'fd_post_ticket_reply'                    => ['post',      'fd/{type}/ticket/{id}/reply',                               'FreshdeskTicketController@postTicketReply'                    ],
         'internal_fd_post_ticket_reply'           => ['post',      'internal/fd/{type}/ticket/{id}/reply',                      'FreshdeskTicketController@postTicketReply'                    ],
         'fd_post_ticket_grievance'                => ['post',      'fd/{type}/ticket/{id}/grievance',                           'FreshdeskTicketController@postTicketGrievance'                ],
+        'internal_fetch_merchant_freshdesk_tickets' => ['get',     'internal/merchant_freshdesk_tickets',                       'FreshdeskTicketController@internalFetchMerchantFreshdeskTickets'],
 
         'fd_consume_webhook'                      => ['post',      'fd/webhook/{event}',                                        'FreshdeskTicketController@postWebhook'                        ],
 
@@ -5079,6 +5080,7 @@ class Route
         'care_service_chat_proxy',
         'segment_create_update',
         'internal_fd_post_ticket_reply',
+        'internal_fetch_merchant_freshdesk_tickets',
 
         // IPL bot
         'throttle_create_config_spinnaker',
@@ -13969,6 +13971,7 @@ class Route
             'user_fetch_internal',
             'internal_fd_create_ticket',
             'internal_fd_post_ticket_reply',
+            'internal_fetch_merchant_freshdesk_tickets',
         ],
 
         'cmma' => [

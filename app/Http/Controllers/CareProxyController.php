@@ -95,6 +95,9 @@ class CareProxyController extends Controller
     const CREATE_QUICKLINKS      = 'twirp/rzp.care.quicklink.v1.QuicklinkService/CreateQuickLinks';
     const RETRIEVE_QUICKLINKS    = 'twirp/rzp.care.quicklink.v1.QuicklinkService/RetrieveQuickLinks';
 
+    //Freshdesk
+    const FRESHDESK_MERCHANT_CONVERSATIONS = 'twirp/rzp.care.freshdesk.v1.FreshdeskService/GetTicketConversations';
+
     const ROUTE_VS_PERMISSION = [
         self::CALLBACK_GET_DATE_CONFIG                => Name::CALLBACK_SLOT_CONFIG_VIEW,
         self::CALLBACK_EDIT_DATE_CONFIG               => Name::CALLBACK_SLOT_CONFIG_EDIT,
@@ -150,6 +153,7 @@ class CareProxyController extends Controller
         self::CHAT_CHECK_AVAILABILITY,
         self::FETCH_WORKFLOWS,
         self::RETRIEVE_QUICKLINKS,
+        self::FRESHDESK_MERCHANT_CONVERSATIONS,
     ];
 
     const CRON_ROUTES = [
