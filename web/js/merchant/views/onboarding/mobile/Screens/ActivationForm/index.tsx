@@ -210,6 +210,80 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     }
   }, [data, activeTabId, isBusinessDetailsCompleted, canShowTncCheckbox]);
 
+  useEffect(() => {
+    if (isContactDetailsCompleted) {
+      trackEvents({
+        objectName: 'SignUp',
+        actionName: 'tab filled',
+        screen: 'home page',
+        eventAction: 'success',
+        properties: {
+          filed_tab_details: 'Contact Details',
+          tab_filled: 'yes',
+          submerchant_id: submerchantId,
+        },
+      });
+    }
+    if (isBusinessOverviewCompleted) {
+      trackEvents({
+        objectName: 'SignUp',
+        actionName: 'tab filled',
+        screen: 'home page',
+        eventAction: 'success',
+        properties: {
+          filed_tab_details: 'Business Overview',
+          tab_filled: 'yes',
+          submerchant_id: submerchantId,
+        },
+      });
+    }
+    if (isBusinessDetailsCompleted) {
+      trackEvents({
+        objectName: 'SignUp',
+        actionName: 'tab filled',
+        screen: 'home page',
+        eventAction: 'success',
+        properties: {
+          filed_tab_details: 'Business Details',
+          tab_filled: 'yes',
+          submerchant_id: submerchantId,
+        },
+      });
+    }
+    if (isBankAndCompanyDetailsCompleted) {
+      trackEvents({
+        objectName: 'SignUp',
+        actionName: 'tab filled',
+        screen: 'home page',
+        eventAction: 'success',
+        properties: {
+          filed_tab_details: 'Bank Details',
+          tab_filled: 'yes',
+          submerchant_id: submerchantId,
+        },
+      });
+    }
+    if (isDocumentsUploadCompleted) {
+      trackEvents({
+        objectName: 'SignUp',
+        actionName: 'tab filled',
+        screen: 'home page',
+        eventAction: 'success',
+        properties: {
+          filed_tab_details: 'Document',
+          tab_filled: 'yes',
+          submerchant_id: submerchantId,
+        },
+      });
+    }
+  }, [
+    isBankAndCompanyDetailsCompleted,
+    isBusinessDetailsCompleted,
+    isBusinessOverviewCompleted,
+    isContactDetailsCompleted,
+    isDocumentsUploadCompleted,
+  ]);
+
   if (activationStatus === 'loading') {
     return <FullPageLoader />;
   }
@@ -518,72 +592,6 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
 
   const isAllTabCompleted =
     isL1AllTabComplete && isBankAndCompanyDetailsCompleted && isDocumentsUploadCompleted;
-
-  if (isContactDetailsCompleted) {
-    trackEvents({
-      objectName: 'SignUp',
-      actionName: 'tab filled',
-      screen: 'home page',
-      eventAction: 'success',
-      properties: {
-        filed_tab_details: 'Contact Details',
-        tab_filled: 'yes',
-        submerchant_id: submerchantId,
-      },
-    });
-  }
-  if (isBusinessOverviewCompleted) {
-    trackEvents({
-      objectName: 'SignUp',
-      actionName: 'tab filled',
-      screen: 'home page',
-      eventAction: 'success',
-      properties: {
-        filed_tab_details: 'Business Overview',
-        tab_filled: 'yes',
-        submerchant_id: submerchantId,
-      },
-    });
-  }
-  if (isBusinessDetailsCompleted) {
-    trackEvents({
-      objectName: 'SignUp',
-      actionName: 'tab filled',
-      screen: 'home page',
-      eventAction: 'success',
-      properties: {
-        filed_tab_details: 'Business Details',
-        tab_filled: 'yes',
-        submerchant_id: submerchantId,
-      },
-    });
-  }
-  if (isBankAndCompanyDetailsCompleted) {
-    trackEvents({
-      objectName: 'SignUp',
-      actionName: 'tab filled',
-      screen: 'home page',
-      eventAction: 'success',
-      properties: {
-        filed_tab_details: 'Bank Details',
-        tab_filled: 'yes',
-        submerchant_id: submerchantId,
-      },
-    });
-  }
-  if (isDocumentsUploadCompleted) {
-    trackEvents({
-      objectName: 'SignUp',
-      actionName: 'tab filled',
-      screen: 'home page',
-      eventAction: 'success',
-      properties: {
-        filed_tab_details: 'Document',
-        tab_filled: 'yes',
-        submerchant_id: submerchantId,
-      },
-    });
-  }
 
   const canSubmitActivationForm = (): boolean => {
     if (activeTabId === 'documents') {

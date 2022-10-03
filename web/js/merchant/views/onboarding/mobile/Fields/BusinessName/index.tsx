@@ -41,6 +41,7 @@ const BusinessName = ({
 }: IBusinessNameProps): React.ReactElement => {
   const [inputValue, setInputValue] = useState(businessNameValue);
   const businessNameData = useRef({});
+  const isBusinessNameChanged = useRef(false);
   const trackEvents = useTrackEvents();
   const onInputChange = debounce((val) => {
     businessNameData.current = { company_name: val };
@@ -56,14 +57,18 @@ const BusinessName = ({
     if (selectedBusinessNameData) {
       businessNameData.current = selectedBusinessNameData;
     }
-    trackEvents({
-      objectName: 'Bottom sheet',
-      actionName: 'Closed',
-      screen: 'home page',
-      properties: {
-        'Modal Label': 'Business name',
-      },
-    });
+
+    if (!isBusinessNameChanged.current) {
+      isBusinessNameChanged.current = true;
+      trackEvents({
+        objectName: 'Bottom sheet',
+        actionName: 'Closed',
+        screen: 'home page',
+        properties: {
+          'Modal Label': 'Business name',
+        },
+      });
+    }
     updateBusinessName(businessNameData.current);
   };
 
