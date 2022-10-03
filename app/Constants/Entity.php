@@ -1540,7 +1540,7 @@ class Entity
         self::REFUND  => Models\Admin\ConfigKey::SCROOGE_0LOC_ENABLED,
     ];
 
-    protected static $archivalFallbackConfigKey = [
+    public static $archivalFallbackConfigKey = [
         self::CARD    => Models\Admin\ConfigKey::CARD_ARCHIVAL_FALLBACK_ENABLED,
     ];
 
@@ -1906,11 +1906,6 @@ class Entity
     public static function isEntitySyncedInLiveAndTest($entity)
     {
         return in_array($entity, self::$syncedInLiveAndTest, true);
-    }
-
-    public static function getArchivalFallbackConfigKeyName(string $entity)
-    {
-        return self::$archivalFallbackConfigKey[$entity];
     }
 
     /**

@@ -10,7 +10,6 @@ use RZP\Models\Merchant;
 use RZP\Constants\Entity;
 use RZP\Constants\Metric;
 use RZP\Base\ConnectionType;
-use RZP\Base\Database\Config;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base\PublicEntity;
 
@@ -304,8 +303,11 @@ trait ArchivedCore
 
             $archivalFallbackConfigEnabled = false;
 
-            $isWorkerPod = $app['config']->get(Config::WORKER_CONFIG . '.' . Config::IS_WORKER_POD);
+            $isWorkerPod = (($app->runningInQueue() === true) or
+                            ((isset($app['worker.ctx']) === true) and
+                                (empty($app['worker.ctx']) === false)));
 
+            // Loading from config key in workers
             if ($isWorkerPod === true)
             {
                 $archivalFallbackConfigEnabled = $this->isArchivalFallbackConfigKeyEnabled($entityName);
@@ -320,6 +322,7 @@ trait ArchivedCore
                     'value'       => $archivalFallbackEnvValue,
                     'source'      => 'CONFIG',
                     'enabled'     => $archivalFallbackConfigEnabled,
+                    'worker_pod'  => $isWorkerPod,
                     'entity_name' => $entityName,
                 ]);
             }
@@ -332,9 +335,14 @@ trait ArchivedCore
 
     private function isArchivalFallbackConfigKeyEnabled($entityName): bool
     {
-        $keyName = Entity::getArchivalFallbackConfigKeyName($entityName);
+        if (isset(Entity::$archivalFallbackConfigKey[$entityName]) === true)
+        {
+            $keyName = Entity::$archivalFallbackConfigKey[$entityName];
 
-        return (bool) ConfigKey::get($keyName, false);
+            return (bool) ConfigKey::get($keyName, false);
+        }
+
+        return false;
     }
 
     private function tracePreQueryMetrics(string $functionName)
