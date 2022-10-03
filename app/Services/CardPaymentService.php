@@ -43,7 +43,9 @@ class CardPaymentService
     const X_REQUEST_ID             = 'X-Request-ID';
     const X_RAZORPAY_TRACKID       = 'X-Razorpay-TrackId';
     const X_RZP_TESTCASE_ID        = 'X-RZP-TESTCASE-ID';
-    const RZPCTX_OPTIMIZER       = 'RZPCTX-OPTIMIZER';
+    const RZPCTX_OPTIMIZER         = 'RZPCTX-OPTIMIZER';
+    const RZPCTX_MERCHANT_ID       = 'RZPCTX-MERCHANT-ID';
+    const RZPCTX_GATEWAY           = 'RZPCTX-GATEWAY';
 
     const REQUEST_TIMEOUT = 75; // Seconds
     const MAX_RETRY_COUNT = 1;
@@ -492,6 +494,8 @@ class CardPaymentService
                     $paymentData = $data[self::INPUT][Entity::PAYMENT] ?? null;
                     $mid = $paymentData['merchant_id'];
                     $this->trace->info(TraceCode::CPS_MERCHANT_FEATURE_DATA_MID, [$mid]);
+                    $request['headers'][self::RZPCTX_MERCHANT_ID] = $mid;
+                    $request['headers'][self::RZPCTX_GATEWAY] = $request['content'][self::INPUT][Entity::PAYMENT]['gateway'];
                     if (((new Feature\Service())->checkFeatureEnabled(Feature\Constants::MERCHANT, $mid, Feature\Constants::RAAS))['status'])
                     {
                         $request['headers'][self::RZPCTX_OPTIMIZER] = "true";
@@ -499,6 +503,11 @@ class CardPaymentService
                     {
                         $request['headers'][self::RZPCTX_OPTIMIZER] = "false";
                     }
+                    $this->trace->info(TraceCode::CPS_MERCHANT_FEATURE_ENABLED, [
+                        $request['headers'][self::RZPCTX_OPTIMIZER],
+                        $request['headers'][self::RZPCTX_MERCHANT_ID],
+                        $request['headers'][self::RZPCTX_GATEWAY]
+                    ]);
                 }
             }
         }

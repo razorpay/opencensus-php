@@ -4595,6 +4595,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CPS_MERCHANT_FEATURE_DATA_MID                         = 'CPS_MERCHANT_FEATURE_DATA_MID';
     const CPS_MERCHANT_FEATURE_ERROR                            = 'CPS_MERCHANT_FEATURE_ERROR';
     const DUMMY_CARD_METADATA_TO_CPS                            = 'DUMMY_CARD_METADATA_TO_CPS';
+    const CPS_MERCHANT_FEATURE_ENABLED                          = 'CPS_MERCHANT_FEATURE_ENABLED';
 
     // Nb Plus Service
     const NBPLUS_PAYMENT_SERVICE_REQUEST                        = 'NBPLUS_PAYMENT_SERVICE_REQUEST';
