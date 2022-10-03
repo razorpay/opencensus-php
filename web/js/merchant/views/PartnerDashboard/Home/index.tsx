@@ -16,7 +16,6 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import AddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/AddMerchant';
 import ActivationGuide from 'merchant/views/PartnerDashboard/Home/Components/ActivationGuide';
 import ReferralGuide from 'merchant/views/PartnerDashboard/Home/Components/ReferralGuide/index';
-import CommissionCardBody from 'merchant/views/PartnerDashboard/Commissions/components/FUX-Cards/CommissionCard/CardBody';
 import { showActivationConfetti } from 'merchant/views/PartnerDashboard/Home/Components/utils';
 import './home.styl';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
@@ -177,7 +176,6 @@ const Home = ({ user, showNotification, openModal, closeModal, tracking }: Partn
   };
 
   const isFirstReferralDone = FUXStatus.value?.first_submerchant_added === true;
-  const isFirstInvoiceGen = FUXStatus.value?.first_commission_payout === true;
   const isUserOwner = user?.role === 'owner';
   return (
     <div className="partner-dashboard-home">
@@ -209,16 +207,6 @@ const Home = ({ user, showNotification, openModal, closeModal, tracking }: Partn
           isUserOwner={isUserOwner}
           user={user}
         />
-      </ShowWhen>
-
-      <ShowWhen
-        additionalCondition={(currentUser) =>
-          currentUser.isPartner() && currentUser.isPartner('pure_platform') && isFirstInvoiceGen
-        }
-      >
-        <div className="fux-commission-cards home-view">
-          <CommissionCardBody />
-        </div>
       </ShowWhen>
     </div>
   );
