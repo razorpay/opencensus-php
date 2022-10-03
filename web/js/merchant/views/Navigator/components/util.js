@@ -1,5 +1,5 @@
 import isEmpty from '@universe/utils/isEmpty';
-import { Operand } from '../models/Operand';
+import { Operand } from 'merchant/views/Navigator/models/Operand';
 
 export const operators = [
   {
@@ -352,6 +352,50 @@ const currencyParameter = [
   },
 ];
 
+const getExpStatus = (name) => {
+  const user = window.rzp_user;
+  return ((user?.experiments || {})[name] || {}).result === 'on';
+};
+
+const eMandatePaymentMethod = getExpStatus('optimizer_emandate') ? [{ value: 'emandate' }] : [];
+
+const tokenAuthTypeParameter = getExpStatus('optimizer_emandate')
+  ? [
+      {
+        name: 'Payment Token Auth Type',
+        value: '$payment.optimizer_token_auth_type',
+        description: 'Netbanking, Debit Card, Aadhaar',
+        id: 2,
+        values: [
+          {
+            value: 'netbanking',
+          },
+          {
+            value: 'debit card',
+          },
+          {
+            value: 'aadhaar',
+          },
+        ],
+        operators: {
+          '==': {
+            multiple: false,
+            type: 'dropdown',
+          },
+          in: {
+            multiple: true,
+            type: 'dropdown',
+          },
+          '!=': {
+            multiple: false,
+            type: 'dropdown',
+          },
+        },
+        type: 'string',
+      },
+    ]
+  : [];
+
 export const parameters = [
   {
     name: 'Channels',
@@ -409,6 +453,7 @@ export const parameters = [
       {
         value: 'emi',
       },
+      ...eMandatePaymentMethod,
     ],
     operators: {
       '==': {
@@ -760,6 +805,7 @@ export const parameters = [
   ...walletPrameter,
   ...internationalParameter,
   ...currencyParameter,
+  ...tokenAuthTypeParameter,
 ];
 export const PROVIDERS = [
   { name: 'Smart Router1', id: 1, value: 'smartrouter' },

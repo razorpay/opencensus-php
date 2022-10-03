@@ -256,6 +256,7 @@ class Service extends Base\Service
             'pp_onboarding_redirection_exp',
             'rx_cohesive_flow_kbd',
             'rx_todo_v1',
+            'optimizer_emandate',
             'rx_bill_payments',
         ];
 
