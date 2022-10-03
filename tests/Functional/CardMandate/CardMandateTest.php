@@ -1055,7 +1055,7 @@ class CardMandateTest extends TestCase
         $paymentInp['amount'] = 800000;
 
         $subr = $this->fixtures->create('subscription_registration',
-            ['method' => 'card', 'max_amount' => 400000, 'expire_at' => 4091958776, 'notes' => []]);
+            ['method' => 'card', 'max_amount' => 400000, 'expire_at' => 1735669799, 'notes' => []]);
 
         $order = $this->fixtures->create('order',
             ['amount' => 800000, 'payment_capture' => 1]);

@@ -688,6 +688,21 @@ class Entity extends Base\PublicEntity
                      ->getTimestamp();
     }
 
+    public function getTokenExpiryTimestamp()
+    {
+        $year = $this->getTokenExpiryYear();
+
+        $month = $this->getTokenExpiryMonth();
+
+        if($month === 0) {
+            return null;
+        }
+
+        return Carbon::createFromDate($year, $month, 1, Timezone::IST)
+            ->endOfMonth()
+            ->getTimestamp();
+    }
+
     public function getGlobalFingerPrint()
     {
         return $this->getAttribute(self::GLOBAL_FINGERPRINT);

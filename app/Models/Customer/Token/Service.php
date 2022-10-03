@@ -725,6 +725,9 @@ class Service extends Base\Service
                 if ($token->card->isNetworkTokenisedCard() === true)
                 {
                     $response['compliant_with_tokenisation_guidelines'] = true;
+
+                    $response['expired_at'] = $token->card->getTokenExpiryTimestamp();
+
                 }
                 else {
                     $experimentVariable = UniqueIdEntity::generateUniqueId();

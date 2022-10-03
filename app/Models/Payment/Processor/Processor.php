@@ -2702,9 +2702,11 @@ class Processor
                 $this->trace->info(TraceCode::TRACK_TOKENISED_PAYMENT_VALIDATION, [
                     'token' => $token->getId(),
                     'test' => $token->card->isNetworkTokenisedCard(),
+                    'token' => $token,
+                    'test' => $token->card->isTokenisationCompliant(),
                 ]);
 
-                if ($token->card->isNetworkTokenisedCard() === false) {
+                if ($token->card->isTokenisationCompliant() === false) {
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_INVALID_ID,
                         'token');

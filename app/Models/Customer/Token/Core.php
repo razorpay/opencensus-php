@@ -1917,7 +1917,7 @@ class Core extends Base\Core
 
         $token->card()->associate($card);
 
-        $token->setExpiredAt($card->getExpiryTimestamp());
+        $token->setExpiredAt($card->getTokenExpiryTimestamp());
 
         $token->merchant()->associate($this->merchant);
 
@@ -1977,6 +1977,8 @@ class Core extends Base\Core
         $token->setStatus($serviceProviderTokens[0]['status']);
 
         $token->card()->associate($card);
+
+        $token->setExpiredAt($card->getTokenExpiryTimestamp());
 
         $this->repo->saveOrFail($card);
 

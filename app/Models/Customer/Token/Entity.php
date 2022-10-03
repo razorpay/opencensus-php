@@ -1125,6 +1125,8 @@ class Entity extends Base\PublicEntity
 
                     $publicArray['card']['expiry_year'] = "2099";
 
+                    $publicArray['expired_at'] = $card->getTokenExpiryTimestamp();
+
                     (new Card\Entity())->setDummyCardData($publicArray['card']);
                 }
 
