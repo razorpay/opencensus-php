@@ -7599,6 +7599,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RTO_1CC_DEVICE_IP_NOT_FOUND                         = 'RTO_1CC_DEVICE_IP_NOT_FOUND';
     const RTO_1CC_DEVICE_USER_AGENT_NOT_FOUND                 = 'RTO_1CC_DEVICE_USER_AGENT_NOT_FOUND';
 
+    const RAW_ADDRESS_BATCH_VALIDATOR_TRACE                   = 'RAW_ADDRESS_BATCH_VALIDATOR_TRACE';
     const RAW_ADDRESS_CREATE_REQUEST                          = 'RAW_ADDRESS_CREATE_REQUEST';
     const RAW_ADDRESS_BULK_CREATE_REQUEST                     = 'RAW_ADDRESS_BULK_CREATE_REQUEST';
     const RAW_ADDRESS_KAFKA_CONSUME_REQUEST                   = 'RAW_ADDRESS_KAFKA_CONSUME_REQUEST';
