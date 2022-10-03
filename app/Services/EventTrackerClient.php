@@ -221,7 +221,6 @@ class EventTrackerClient extends AbstractEventClient
 
             if ($payment->hasCard() === true)
             {
-                $properties['card_iin'] = $payment->card->getIin();
                 $properties['card_network'] = $payment->card->getNetwork();
                 $properties['card_type'] = $payment->card->getType();
                 $properties['card_country'] = $payment->card->getCountry();

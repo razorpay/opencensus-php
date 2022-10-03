@@ -70,7 +70,6 @@ class PaymentFraudEvent extends Event
             $card = $payment->card;
 
             $properties['payment'] += [
-                'card_iin'          => $card->getIin(),
                 'card_iin_headless' => $card->isHeadLessOtp(),
                 'card_network'      => $card->getNetwork(),
                 'card_type'         => $card->getType(),

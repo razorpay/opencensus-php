@@ -6152,7 +6152,6 @@ trait Authorize
             $card = $payment->card;
 
             $meta['metadata']['payment'] += [
-                'card_iin'          => $card->getIin(),
                 'card_iin_headless' => $card->isHeadLessOtp(),
                 'card_network'      => $card->getNetwork(),
                 'card_type'         => $card->getType(),
@@ -6281,7 +6280,6 @@ trait Authorize
             $card = $payment->card;
 
             $meta['metadata']['payment'] += [
-                'card_iin'          => $card->getIin(),
                 'card_iin_headless' => $card->isHeadLessOtp(),
                 'card_network'      => $card->getNetwork(),
                 'card_type'         => $card->getType(),
