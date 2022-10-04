@@ -980,7 +980,7 @@ class UserTest extends TestCase
 
         $this->repoMock->shouldReceive('driver')->with('user')->andReturn($userRepoMock);
 
-        $userRepoMock->shouldReceive('findByEmail')->withAnyArgs()->andReturn($this->userEntityMock);
+        $userRepoMock->shouldReceive('getUserFromEmail')->withAnyArgs()->andReturn($this->userEntityMock);
 
         $this->app->instance('repo', $this->repoMock);
 

@@ -5784,6 +5784,33 @@ class UserTest extends TestCase
         });
     }
 
+    public function testPasswordResetMailCaseInsensitive()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        Mail::fake();
+
+        $this->fixtures->create('user', ['email' => 'RESETPASS@RAZORPAY.COM']);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        Mail::assertSent(PasswordReset::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('org', $viewData);
+            $this->assertArrayHasKey('token', $viewData);
+            $this->assertArrayHasKey('email', $viewData);
+            $this->assertArrayHasKey('showAxisSupportUrl', $viewData['org']);
+
+            $this->assertEquals('emails.user.password_reset', $mail->view);
+
+            return true;
+        });
+    }
+
     public function testPasswordResetMailForBadEmail()
     {
         Mail::fake();
@@ -5891,6 +5918,40 @@ class UserTest extends TestCase
 
     public function testPasswordResetByToken()
     {
+        $resetAttributes = [
+            'email'                 => 'resetpass@razorpay.com',
+            'password_reset_token'  => str_random(50),
+            'password_reset_expiry' => Carbon::now()->timestamp + Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME,
+        ];
+
+        // create user with password reset token; reset password
+        // and check if old_passwords are getting updated
+        $user = $this->fixtures->create('user', $resetAttributes);
+        $oldPassword2 = $user->getPassword();
+        $this->doTestPasswordResetByToken($user);
+        $user = $this->getDbEntityById('user', $user->getId());
+        $this->assertNotNull($user->getAttribute(Entity::OLD_PASSWORDS));
+        $this->assertEquals(
+            [$oldPassword2, $user->getPassword()],
+            $user->getAttribute(Entity::OLD_PASSWORDS)
+        );
+
+        // Repeats same request against to assert attribute OLD_PASSWORDS is captured.
+        $this->fixtures->edit('user', $user->getId(), $resetAttributes);
+        $user = $this->getDbEntityById('user', $user->getId());
+        $oldPassword1 = $user->getPassword();
+        $this->doTestPasswordResetByToken($user);
+        $user = $this->getDbEntityById('user', $user->getId());
+        $this->assertEquals(
+            [$oldPassword2, $oldPassword1, $user->getPassword()],
+            $user->getAttribute(Entity::OLD_PASSWORDS)
+        );
+    }
+
+    public function testPasswordResetByTokenCaseInsensitive()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
         $resetAttributes = [
             'email'                 => 'resetpass@razorpay.com',
             'password_reset_token'  => str_random(50),

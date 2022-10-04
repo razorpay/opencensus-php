@@ -472,6 +472,8 @@ class Constants
 
     const API_STORK_SEND_SMS_RAZORX_EXP    = 'api_stork_send_sms';
 
+    const FETCH_USER_EMAIL_CASE_INSENSITIVE = 'fetch_email_case_insensitive';
+
     // Constants related to product-switch for user_fetch
     const PRODUCT_SWITCH          = 'product_switch';
     const PRODUCT_SWITCH_REQUIRED = 'product_switch_required';

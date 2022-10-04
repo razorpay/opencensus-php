@@ -3731,6 +3731,21 @@ return [
         ],
     ],
 
+    'testPasswordResetMailCaseInsensitive' => [
+        'request' => [
+            'url'     => '/users/reset-password',
+            'method'  => 'post',
+            'content' => [
+                'email' => 'resetpass@razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "success" => true,
+            ],
+        ],
+    ],
+
     'testPasswordResetMailForBadEmail' => [
         'request' => [
             'url'     => '/users/reset-password',
@@ -3808,6 +3823,22 @@ return [
     ],
 
     'testPasswordResetByToken' => [
+        'request'  => [
+            'url'     => '/users/reset-password-token',
+            'method'  => 'post',
+            'content' => [
+                'password'              => '123456xx',
+                'password_confirmation' => '123456xx',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "success" => true,
+            ],
+        ],
+    ],
+
+    'testPasswordResetByTokenCaseInsensitive' => [
         'request'  => [
             'url'     => '/users/reset-password-token',
             'method'  => 'post',

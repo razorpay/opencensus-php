@@ -43,6 +43,7 @@ use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\OAuthApplication\Constants as OAuthApplicationConstants;
 use RZP\Models\User\RateLimitLoginSignup\Facade as LoginSignupRateLimit;
+use RZP\Constants\Mode;
 
 use Razorpay\Trace\Logger as Trace;
 use function Clue\StreamFilter\append;
@@ -1678,11 +1679,18 @@ class Service extends Base\Service
 
         if (isset($input['email']) === true)
         {
-            $email = mb_strtolower($input['email']);
+            $email = $input['email'];
 
             //find or fail public by email.
             /** @var User\Entity $user */
-            $user = $this->repo->user->getUserFromEmail($email);
+            if($this->app['razorx']->getTreatment(mb_strtolower($email), Constants::FETCH_USER_EMAIL_CASE_INSENSITIVE, Mode::LIVE) === 'on')
+            {
+                $user = $this->repo->user->getUserFromEmailCaseInsensitive($email);
+            }
+            else
+            {
+                $user = $this->repo->user->getUserFromEmail(mb_strtolower($email));
+            }
 
             if (empty($user) === true)
             {
@@ -1936,10 +1944,17 @@ class Service extends Base\Service
 
         if(isset($input['email']))
         {
-            $email = mb_strtolower($input['email']);
+            $email = $input['email'];
 
             /** @var Entity $user */
-            $user = $this->repo->user->findByEmail($email);
+            if($this->app['razorx']->getTreatment(mb_strtolower($email), Constants::FETCH_USER_EMAIL_CASE_INSENSITIVE, Mode::LIVE) === 'on')
+            {
+                $user = $this->repo->user->getUserFromEmailCaseInsensitive($email);
+            }
+            else
+            {
+                $user = $this->repo->user->getUserFromEmail(mb_strtolower($email));
+            }
         }
         else
         {

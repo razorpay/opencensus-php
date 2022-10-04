@@ -138,6 +138,13 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function getUserFromEmailCaseInsensitive(string $email)
+    {
+        return $this->newQuery()
+                    ->whereRaw('LOWER('.Entity::EMAIL.') = (?)', [mb_strtolower($email)])
+                    ->first();
+    }
+
     /**
      * {@inheritDoc}
      */
