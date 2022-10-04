@@ -4,6 +4,8 @@ namespace RZP\Models\Card;
 
 use DB;
 use App;
+use RZP\Base\ConnectionType;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Admin;
@@ -310,8 +312,15 @@ class Repository extends Base\Repository
 
     public function fetchCardsWithVaultToken(string $vaultToken, string $merchantId)
     {
+        $connectionName = $this->getSlaveConnection();
+
+        if ((bool) ConfigKey::get(ConfigKey::CARD_ARCHIVAL_FALLBACK_ENABLED, false))
+        {
+            $connectionName = $this->getConnectionFromType(ConnectionType::ARCHIVED_DATA_REPLICA);
+        }
+
         // Query Executed - select `*` from `cards` where `merchant_id` = ? and `vault_token` = ?
-        return $this->newQuery()
+        return $this->newQueryWithConnection($connectionName)
             ->where(Entity::MERCHANT_ID, '=', $merchantId)
             ->where(Entity::VAULT_TOKEN, '=', $vaultToken)
             ->get();
