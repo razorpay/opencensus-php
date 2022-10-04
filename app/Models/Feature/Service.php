@@ -94,6 +94,19 @@ class Service extends Base\Service
                                 ]);
                         break;
 
+                    case 'ps_merchant_onboard':
+                        // first sending the request to ledger because if anything fails we don't add the feature
+                        $this->ledgerAccountCreateRequest($merchant);
+
+                        // Add LEDGER_JOURNAL_READS feature to merchant
+                        (new Core)->create(
+                            [
+                                Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                                Entity::ENTITY_ID => $merchant->getId(),
+                                Entity::NAME => Constants::LEDGER_JOURNAL_READS,
+                            ]);
+                        break;
+
                     case 'reverse_shadow':
                         // Add `ledger_journal_reads` feature flag
                         (new Core)->create(
