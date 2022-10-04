@@ -606,7 +606,7 @@ class TokenTest extends TestCase
     {
         $this->mockCardVaultWithMigrateToken();
 
-        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live', 'network_tokenization_paid']);
 
         $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA, Network::MC, Network::RUPAY]);
 
@@ -644,7 +644,7 @@ class TokenTest extends TestCase
     {
         $this->mockCardVaultWithMigrateToken();
 
-        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live', 'network_tokenization_paid']);
 
         $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA, Network::MC, Network::RUPAY, Network::AMEX]);
 
@@ -2273,7 +2273,7 @@ class TokenTest extends TestCase
     {
         $this->mockCardVaultWithMigrateToken();
 
-        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live', 'network_tokenization_paid']);
 
         $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::RUPAY]);
 

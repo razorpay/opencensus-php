@@ -8,6 +8,7 @@ use Response;
 use Request;
 use App;
 use RZP\Http\CheckoutView;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
@@ -249,13 +250,13 @@ class PaymentCreateController extends Controller
             $input = $tokenisationConsent->decryptCardDetails($input);
         }
 
-        $input = $this->setParametersBasedOnConsentToSaveCard($input);
-
         (new Payment\Metric())->pushCheckoutSubmitRequestMetrics($input, $startTime);
 
         $this->setMerchantCallbackUrlIfApplicable($input);
 
         $merchant = $this->app['basicauth']->getMerchant();
+
+        $input = $this->setParametersBasedOnConsentToSaveCard($input, $merchant);
 
         if (($merchant->isFeeBearerCustomerOrDynamic() === true) and
             (isset($input['fee']) === false))
@@ -1827,22 +1828,41 @@ class PaymentCreateController extends Controller
         $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATION_INITIATED, null, null, $metaDetails, $properties);
     }
 
-    protected function setParametersBasedOnConsentToSaveCard(array $input): array
+    protected function setParametersBasedOnConsentToSaveCard(array $input, MerchantEntity $merchant): array
     {
         $library = $input['_']['library'] ?? '';
         $allowedLibraries = [Payment\Analytics\Metadata::RAZORPAYJS, Payment\Analytics\Metadata::CUSTOM];
 
-        if((isset($input['consent_to_save_card']) === true) and
-            (in_array($library, $allowedLibraries, true) === true))
+        if (in_array($library, $allowedLibraries, true) === true)
         {
-            if(isset($input['card']['number']) === true)
+            if (!$merchant->isCustomCheckoutNetworkTokenisationEnabled())
             {
-                $input['save'] = $input['consent_to_save_card'];
+                if (isset($input['save']) || isset($input['consent_to_save_card']))
+                {
+                    $this->trace->warning(
+                        TraceCode::NETWORK_TOKENIZATION_PAID_FLAG_NOT_ENABLED,
+                        [
+                            'merchant_id'          => $merchant->getId(),
+                            'save'                 => $input['save'] ?? '',
+                            'consent_to_save_card' => $input['consent_to_save_card'] ?? '',
+                        ]
+                    );
+
+                    unset($input['save']);
+                    unset($input['consent_to_save_card']);
+                }
             }
-            elseif((isset($input['token']) === true) and
-                    (isset($input['card']['cvv']) === true))
+            elseif (isset($input['consent_to_save_card']) === true)
             {
-                $input['user_consent_for_tokenisation'] = $input['consent_to_save_card'];
+                if (isset($input['card']['number']) === true)
+                {
+                    $input['save'] = $input['consent_to_save_card'];
+                }
+                elseif ((isset($input['token']) === true) and
+                    (isset($input['card']['cvv']) === true))
+                {
+                    $input['user_consent_for_tokenisation'] = $input['consent_to_save_card'];
+                }
             }
         }
 

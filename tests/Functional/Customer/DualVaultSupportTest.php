@@ -34,6 +34,8 @@ class DualVaultSupportTest extends TestCase
 
         $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
 
+        $this->fixtures->merchant->addFeatures(['network_tokenization_paid']);
+
         $payment = $this->getDefaultPaymentArray();
         $payment['_']['library'] = 'razorpayjs';
         $payment['save'] = 1;
@@ -65,8 +67,8 @@ class DualVaultSupportTest extends TestCase
 
         $this->mockCardVaultWithMigrateToken();
 
-        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
-        $this->fixtures->merchant->addFeatures(['network_tokenization_live'], '100000Razorpay');
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live', 'network_tokenization_paid']);
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live', 'network_tokenization_paid'], '100000Razorpay');
 
         $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
 
@@ -237,6 +239,8 @@ class DualVaultSupportTest extends TestCase
         $this->mockSession();
 
         $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_paid']);
 
         $payment = $this->getDefaultPaymentArray();
         $payment['_']['library'] = 'razorpayjs';

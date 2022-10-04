@@ -1217,7 +1217,10 @@ class Constants
      */
     const NETWORK_TOKENIZATION_LIVE = 'network_tokenization_live';
 
-    /** Feature flag for custom checkout merchants to enable network tokenization in live mode */
+    /**
+     * Feature flag for custom checkout merchants to enable network tokenization in live mode
+     * Saved card feature for custom checkout merchants will not work without this feature flag
+     */
     const NETWORK_TOKENIZATION_PAID = 'network_tokenization_paid';
 
     /**

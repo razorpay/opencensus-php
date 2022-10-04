@@ -9,8 +9,10 @@ use Mockery;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Card\Network;
 use RZP\Models\Card\Repository;
 use RZP\Tests\Functional\Fixtures\Entity\Card;
+use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\Invoice\InvoiceTestTrait;
 
 use RZP\Error\PublicErrorCode;
@@ -49,6 +51,7 @@ class PaymentCreateTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
     use InvoiceTestTrait;
+    use TerminalTrait;
 
     protected function setUp(): void
     {
@@ -8151,7 +8154,7 @@ class PaymentCreateTest extends TestCase
 
     public function testUserConsentPageWithoutCvv()
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN, Feature\Constants::NETWORK_TOKENIZATION_PAID]);
 
         $this->ba->publicAuth();
 
@@ -8172,7 +8175,7 @@ class PaymentCreateTest extends TestCase
 
     public function testUserConsentPageWithoutCardNumber()
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN, Feature\Constants::NETWORK_TOKENIZATION_PAID]);
 
         $this->ba->publicAuth();
 
@@ -8193,7 +8196,12 @@ class PaymentCreateTest extends TestCase
 
     public function testUserConsentPageForSavedCardWithConsentToSaveCardParam()
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN]);
+        $this->fixtures->merchant->addFeatures(
+            [
+                Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN,
+                Feature\Constants::NETWORK_TOKENIZATION_PAID,
+            ]
+        );
 
         $this->ba->publicAuth();
 
@@ -8215,7 +8223,12 @@ class PaymentCreateTest extends TestCase
 
     public function testUserConsentPageForNewCardWithConsentToSaveCardParam()
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN]);
+        $this->fixtures->merchant->addFeatures(
+            [
+                Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN,
+                Feature\Constants::NETWORK_TOKENIZATION_PAID,
+            ]
+        );
 
         $this->ba->publicAuth();
 
@@ -8284,6 +8297,8 @@ class PaymentCreateTest extends TestCase
     {
         $this->ba->publicAuth();
 
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NETWORK_TOKENIZATION_PAID]);
+
         $payment = $this->getDefaultPaymentArray();
 
         $payment['_']['library'] = 'razorpayjs';
@@ -8304,6 +8319,8 @@ class PaymentCreateTest extends TestCase
     public function testPaymentForSavedCardWithEncryptedCardDetails()
     {
         $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NETWORK_TOKENIZATION_PAID]);
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -9345,6 +9362,91 @@ class PaymentCreateTest extends TestCase
         $this->processAndAssertResponseData($testData, $response);
     }
 
+    public function testSaveCardWhenNewCardAndNetworkTokenisationPaidFlagNotEnabledExpectsCardNotSaved()
+    {
+        $this->fixtures->merchant->removeFeatures(['network_tokenization_paid']);
+
+        $paymentDetails = $this->getDefaultPaymentArray();
+
+        $paymentDetails['_']['library'] = 'razorpayjs';
+
+        $paymentDetails['save'] = 1;
+
+        $paymentDetails['customer_id'] = 'cust_100000customer';
+
+        $PaymentResponse = $this->doAuthPayment($paymentDetails);
+
+        $payment = $this->getDbEntityById('payment', $PaymentResponse['razorpay_payment_id'], true);
+
+        $this->assertNull($payment->localToken);
+
+        $this->assertNull($payment->globalToken);
+    }
+
+    public function testSaveCardWhenNetworkTokenisationPaidFlagNotEnabledAndNotCustomCheckoutMerchantLibraryExpectsCardSavedAndTokenised()
+    {
+        $this->fixtures->merchant->removeFeatures(['network_tokenization_paid']);
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live'], '10000000000000');
+
+        $this->mockCardVaultWithMigrateToken();
+
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
+
+        $paymentDetails = $this->getDefaultPaymentArray();
+
+        $paymentDetails['_']['library'] = 'checkoutjs';
+
+        $paymentDetails['save'] = 1;
+
+        $paymentDetails['customer_id'] = 'cust_100000customer';
+
+        $PaymentResponse = $this->doAuthPayment($paymentDetails);
+
+        $payment = $this->getDbEntityById('payment', $PaymentResponse['razorpay_payment_id'], true);
+
+        $this->assertNotNull($payment->localToken);
+
+        $this->assertNull($payment->globalToken);
+
+        $this->assertNotNull($payment->localToken['acknowledged_at']);
+
+        $this->assertEquals('visa', $payment->localToken->card->getVault());
+    }
+
+    public function testSaveCardWhenExistingSavedCardAndNetworkTokenisationPaidFlagNotEnabledExpectsCardTokenisationConsentNotSaved()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures(
+            [
+                'cust_checkout_cnsnt_scrn',
+                'network_tokenization_live',
+            ]
+        );
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->mockCardVaultWithMigrateToken();
+
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
+
+        $payment['card'] = array('cvv' => 111);
+        $payment['_']['library'] = 'razorpayjs';
+        $payment['method'] = 'card';
+        $payment['customer_id'] = 'cust_100000customer';
+        $payment['consent_to_save_card'] = 1;
+        $payment['token'] = 'token_100000custcard';
+
+        $this->doAuthPaymentViaCheckoutRoute($payment);
+
+        $token = $this->getDbEntityById('token', '100000custcard', true);
+
+        $this->assertNull($token['acknowledged_at']);
+
+        $this->assertEquals('rzpvault', $token->card->getVault());
+    }
+    
     public function testFetchPaymentsCardEntity()
     {
         $paymentArray = $this->getDefaultPaymentArray();

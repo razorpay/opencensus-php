@@ -1550,7 +1550,7 @@ class TokenisationTest extends TestCase
 
         $this->mockRazorXTreatment('on');
 
-        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live', 'network_tokenization_paid']);
 
         $this->fixtures->iin->create([
             'iin'     => '400782',
@@ -1616,7 +1616,7 @@ class TokenisationTest extends TestCase
 
         $this->mockRazorXTreatment('on');
 
-        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live', 'network_tokenization_paid']);
 
         $this->fixtures->iin->create([
             'iin'     => '400782',
@@ -1714,8 +1714,8 @@ class TokenisationTest extends TestCase
 
         $this->mockRazorXTreatment('on');
 
-        $this->fixtures->merchant->addFeatures(['network_tokenization_live'], '100000Razorpay');
-        $this->fixtures->merchant->addFeatures(['network_tokenization_live'], '10000000000000');
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live', 'network_tokenization_paid'], '100000Razorpay');
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live', 'network_tokenization_paid'], '10000000000000');
 
         $this->fixtures->iin->create([
             'iin'     => '400782',
@@ -1772,7 +1772,7 @@ class TokenisationTest extends TestCase
 
         $this->mockRazorXTreatment('off');
 
-        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live', 'network_tokenization_paid']);
 
         $this->fixtures->iin->create([
             'iin'     => '400782',
@@ -1838,8 +1838,8 @@ class TokenisationTest extends TestCase
 
         $this->mockCardVaultWithMigrateToken();
 
-        $this->fixtures->merchant->addFeatures(['network_tokenization_live'], '100000Razorpay');
-        $this->fixtures->merchant->addFeatures(['network_tokenization_live'], '10000000000000');
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live', 'network_tokenization_paid'], '100000Razorpay');
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live', 'network_tokenization_paid'], '10000000000000');
 
         $this->fixtures->iin->create([
             'iin'     => '400782',
@@ -1910,8 +1910,8 @@ class TokenisationTest extends TestCase
 
         $this->mockCardVaultWithMigrateToken();
 
-        $this->fixtures->merchant->addFeatures(['network_tokenization_live'], '100000Razorpay');
-        $this->fixtures->merchant->addFeatures(['network_tokenization_live'], '10000000000000');
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live', 'network_tokenization_paid'], '100000Razorpay');
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live', 'network_tokenization_paid'], '10000000000000');
 
         $this->fixtures->iin->create([
             'iin'     => '400782',
@@ -1980,8 +1980,8 @@ class TokenisationTest extends TestCase
 
         $this->mockCardVaultWithMigrateToken();
 
-        $this->fixtures->merchant->addFeatures(['network_tokenization_live'], '100000Razorpay');
-        $this->fixtures->merchant->addFeatures(['network_tokenization_live'], '10000000000000');
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live', 'network_tokenization_paid'], '100000Razorpay');
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live', 'network_tokenization_paid'], '10000000000000');
 
         $this->fixtures->iin->create([
             'iin'     => '400782',
@@ -2044,8 +2044,8 @@ class TokenisationTest extends TestCase
 
         $this->mockRazorXTreatment('on');
 
-        $this->fixtures->merchant->addFeatures(['network_tokenization_live'], '100000Razorpay');
-        $this->fixtures->merchant->addFeatures(['network_tokenization_live'], '10000000000000');
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live', 'network_tokenization_paid'], '100000Razorpay');
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live', 'network_tokenization_paid'], '10000000000000');
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::DISABLE_TOKENISED_PAYMENT]);
 
