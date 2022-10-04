@@ -1,7 +1,7 @@
 <?php
 
 
-namespace RZP\Services\CommissionService;
+namespace RZP\Services\Partnerships;
 
 use App;
 use Request;
@@ -14,7 +14,7 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use Throwable;
 
-class CommissionService extends Base\Service
+class PartnershipsService extends Base\Service
 {
     const CONTENT_TYPE_JSON           = 'application/json';
 
@@ -96,12 +96,12 @@ class CommissionService extends Base\Service
         $app = App::getFacadeRoot();
         $this->trace = $app['trace'];
         $this->env = $app['env'];
-        $CommissionServiceConfig = $app['config']['applications.commission_service'];
-        $this->baseUrl = $CommissionServiceConfig['url'];
-        $this->key = $CommissionServiceConfig['username'];
-        $this->secret = $CommissionServiceConfig['secret'];
-        $this->skipPassport = $CommissionServiceConfig['skip_jwt_passport'];
-        $this->requestTimeout = $CommissionServiceConfig['request_timeout'];
+        $PartnershipsConfig = $app['config']['applications.partnerships'];
+        $this->baseUrl = $PartnershipsConfig['url'];
+        $this->key = $PartnershipsConfig['username'];
+        $this->secret = $PartnershipsConfig['secret'];
+        $this->skipPassport = $PartnershipsConfig['skip_jwt_passport'];
+        $this->requestTimeout = $PartnershipsConfig['request_timeout'];
         $this->auth = $app['basicauth'];
     }
 
@@ -215,7 +215,7 @@ class CommissionService extends Base\Service
 
             return $this->parseAndReturnResponse($response);
         } catch (Throwable $e) {
-            throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_COMMISSION_SERVICE_FAILURE, null, $e);
+            throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_PARTNERSHIPS_FAILURE, null, $e);
         }
     }
 
@@ -244,7 +244,7 @@ class CommissionService extends Base\Service
         }
         $headers[self::X_PASSPORT_JWT_V1] = $jwt;
 
-        $this->trace->info(TraceCode::COMMISSION_SERVICE_REQUEST, ['url' => $url, 'parameters' => $parameters,'options' => $options]);
+        $this->trace->info(TraceCode::PARTNERSHIPS_REQUEST, ['url' => $url, 'parameters' => $parameters,'options' => $options]);
 
         return [
             'url'       => $url,
@@ -265,8 +265,8 @@ class CommissionService extends Base\Service
             throw new Exception\RuntimeException('Malformed json response');
         }
 
-        $commissionServiceResponse = ['status_code' => $code, 'response' => $res];
+        $partnershipsServiceResponse = ['status_code' => $code, 'response' => $res];
 
-        return $commissionServiceResponse;
+        return $partnershipsServiceResponse;
     }
 }

@@ -10,7 +10,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 
-class CommissionServiceController extends Controller
+class PartnershipsServiceController extends Controller
 {
     public function __construct()
     {
@@ -25,13 +25,15 @@ class CommissionServiceController extends Controller
         try {
             if (empty($parameters) === false) {
 
-                $response = $this->app->commissionService->sendAdminRequest($parameters, $path, Request::method());
+                $response = $this->app->partnerships->sendAdminRequest($parameters, $path, Request::method());
 
                 $response = ApiResponse::json($response);
 
             }
         } catch (\Throwable $e) {
-            throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_COMMISSION_SERVICE_FAILURE, null, $e);
+            throw new Exception\ServerErrorException(
+                'Error completing the request', ErrorCode::SERVER_ERROR_PARTNERSHIPS_FAILURE, null, $e
+            );
         }
 
         return $response;
@@ -45,13 +47,15 @@ class CommissionServiceController extends Controller
         try {
             if (empty($parameters) === false) {
 
-                $response = $this->app->commissionService->createRuleGroup($parameters);
+                $response = $this->app->partnerships->createRuleGroup($parameters);
 
                 $response = ApiResponse::json($response);
 
             }
         } catch (\Throwable $e) {
-            throw new Exception\ServerErrorException('Error completing the createRuleGroup request', ErrorCode::SERVER_ERROR_COMMISSION_SERVICE_FAILURE, null, $e);
+            throw new Exception\ServerErrorException(
+                'Error completing the createRuleGroup request', ErrorCode::SERVER_ERROR_PARTNERSHIPS_FAILURE, null, $e
+            );
         }
 
         return $response;
@@ -65,13 +69,15 @@ class CommissionServiceController extends Controller
         try {
             if (empty($parameters) === false) {
 
-                $response = $this->app->commissionService->createRule($parameters);
+                $response = $this->app->partnerships->createRule($parameters);
 
                 $response = ApiResponse::json($response);
 
             }
         } catch (\Throwable $e) {
-            throw new Exception\ServerErrorException('Error completing the createRule request', ErrorCode::SERVER_ERROR_COMMISSION_SERVICE_FAILURE, null, $e);
+            throw new Exception\ServerErrorException(
+                'Error completing the createRule request', ErrorCode::SERVER_ERROR_PARTNERSHIPS_FAILURE, null, $e
+            );
         }
 
         return $response;
@@ -85,13 +91,15 @@ class CommissionServiceController extends Controller
         try {
             if (empty($parameters) === true) {
 
-                $response = $this->app->commissionService->getAllRuleGroup($parameters);
+                $response = $this->app->partnerships->getAllRuleGroup($parameters);
 
                 $response = ApiResponse::json($response);
 
             }
         } catch (\Throwable $e) {
-            throw new Exception\ServerErrorException('Error completing the getAllRuleGroup request', ErrorCode::SERVER_ERROR_COMMISSION_SERVICE_FAILURE, null, $e);
+            throw new Exception\ServerErrorException(
+                'Error completing the getAllRuleGroup request', ErrorCode::SERVER_ERROR_PARTNERSHIPS_FAILURE, null, $e
+            );
         }
 
         return $response;
@@ -105,13 +113,15 @@ class CommissionServiceController extends Controller
         try {
             if (empty($parameters) === false) {
 
-                $response = $this->app->commissionService->getRuleGroupById($parameters);
+                $response = $this->app->partnerships->getRuleGroupById($parameters);
 
                 $response = ApiResponse::json($response);
 
             }
         } catch (\Throwable $e) {
-            throw new Exception\ServerErrorException('Error completing the getRuleGroupById request', ErrorCode::SERVER_ERROR_COMMISSION_SERVICE_FAILURE, null, $e);
+            throw new Exception\ServerErrorException(
+                'Error completing the getRuleGroupById request', ErrorCode::SERVER_ERROR_PARTNERSHIPS_FAILURE, null, $e
+            );
         }
 
         return $response;
@@ -125,13 +135,15 @@ class CommissionServiceController extends Controller
         try {
             if (empty($parameters) === false) {
 
-                $response = $this->app->commissionService->updateRuleGroup($parameters);
+                $response = $this->app->partnerships->updateRuleGroup($parameters);
 
                 $response = ApiResponse::json($response);
 
             }
         } catch (\Throwable $e) {
-            throw new Exception\ServerErrorException('Error completing the updateRuleGroup request', ErrorCode::SERVER_ERROR_COMMISSION_SERVICE_FAILURE, null, $e);
+            throw new Exception\ServerErrorException(
+                'Error completing the updateRuleGroup request', ErrorCode::SERVER_ERROR_PARTNERSHIPS_FAILURE, null, $e
+            );
         }
 
         return $response;
@@ -145,13 +157,15 @@ class CommissionServiceController extends Controller
         try {
             if (empty($parameters) === false) {
 
-                $response = $this->app->commissionService->updateRule($parameters);
+                $response = $this->app->partnerships->updateRule($parameters);
 
                 $response = ApiResponse::json($response);
 
             }
         } catch (\Throwable $e) {
-            throw new Exception\ServerErrorException('Error completing the updateRule request', ErrorCode::SERVER_ERROR_COMMISSION_SERVICE_FAILURE, null, $e);
+            throw new Exception\ServerErrorException(
+                'Error completing the updateRule request', ErrorCode::SERVER_ERROR_PARTNERSHIPS_FAILURE, null, $e
+            );
         }
 
         return $response;
@@ -165,13 +179,15 @@ class CommissionServiceController extends Controller
         try {
             if (empty($parameters) === false) {
 
-                $response = $this->app->commissionService->getRule($parameters);
+                $response = $this->app->partnerships->getRule($parameters);
 
                 $response = ApiResponse::json($response);
 
             }
         } catch (\Throwable $e) {
-            throw new Exception\ServerErrorException('Error completing the getRule request', ErrorCode::SERVER_ERROR_COMMISSION_SERVICE_FAILURE, null, $e);
+            throw new Exception\ServerErrorException(
+                'Error completing the getRule request', ErrorCode::SERVER_ERROR_PARTNERSHIPS_FAILURE, null, $e
+            );
         }
 
         return $response;
@@ -185,13 +201,15 @@ class CommissionServiceController extends Controller
         try {
             if (empty($parameters) === false) {
 
-                $response = $this->app->commissionService->getRuleByRuleGroupId($parameters);
+                $response = $this->app->partnerships->getRuleByRuleGroupId($parameters);
 
                 $response = ApiResponse::json($response);
 
             }
         } catch (\Throwable $e) {
-            throw new Exception\ServerErrorException('Error completing the getRuleByRuleGroupId request', ErrorCode::SERVER_ERROR_COMMISSION_SERVICE_FAILURE, null, $e);
+            throw new Exception\ServerErrorException(
+                'Error completing the getRuleByRuleGroupId request', ErrorCode::SERVER_ERROR_PARTNERSHIPS_FAILURE, null, $e
+            );
         }
 
         return $response;
@@ -205,13 +223,15 @@ class CommissionServiceController extends Controller
         try {
             if (empty($parameters) === false) {
 
-                $response = $this->app->commissionService->createRuleConfigMapping($parameters);
+                $response = $this->app->partnerships->createRuleConfigMapping($parameters);
 
                 $response = ApiResponse::json($response);
 
             }
         } catch (\Throwable $e) {
-            throw new Exception\ServerErrorException('Error completing the createRuleConfigMapping request', ErrorCode::SERVER_ERROR_COMMISSION_SERVICE_FAILURE, null, $e);
+            throw new Exception\ServerErrorException(
+                'Error completing the createRuleConfigMapping request', ErrorCode::SERVER_ERROR_PARTNERSHIPS_FAILURE, null, $e
+            );
         }
 
         return $response;
@@ -225,13 +245,15 @@ class CommissionServiceController extends Controller
         try {
             if (empty($parameters) === false) {
 
-                $response = $this->app->commissionService->updateRuleConfigMapping($parameters);
+                $response = $this->app->partnerships->updateRuleConfigMapping($parameters);
 
                 $response = ApiResponse::json($response);
 
             }
         } catch (\Throwable $e) {
-            throw new Exception\ServerErrorException('Error completing the updateRuleConfigMapping request', ErrorCode::SERVER_ERROR_COMMISSION_SERVICE_FAILURE, null, $e);
+            throw new Exception\ServerErrorException(
+                'Error completing the updateRuleConfigMapping request', ErrorCode::SERVER_ERROR_PARTNERSHIPS_FAILURE, null, $e
+            );
         }
 
         return $response;

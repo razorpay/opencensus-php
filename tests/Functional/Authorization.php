@@ -1085,7 +1085,7 @@ class Authorization
 
     public function partnershipServiceAuth($mode = 'test')
     {
-        $partnershipConfig = \Config::get('applications.partnership_service');
+        $partnershipConfig = \Config::get('applications.partnerships');
 
         $pwd = $partnershipConfig['secret'];
 

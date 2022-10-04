@@ -8,7 +8,7 @@ use RZP\Tests\Traits\MocksSplitz;
 use RZP\Jobs\PartnerConfigAuditLogger;
 use RZP\Models\Partner\Config\Entity;
 use RZP\Tests\Functional\Partner\Constants;
-use RZP\Services\CommissionService\CommissionService;
+use RZP\Services\Partnerships\PartnershipsService;
 
 class PartnerConfigAuditLoggerTest extends TestCase
 {
@@ -48,11 +48,11 @@ class PartnerConfigAuditLoggerTest extends TestCase
 
         $this->mockSplitzTreatment($splitzInput, $splitzOutput);
 
-        $commissionServiceMock = Mockery::mock(CommissionService::class)->makePartial();
-        $this->app->instance('commissionService', $commissionServiceMock);
+        $partnershipsServiceMock = Mockery::mock(PartnershipsService::class)->makePartial();
+        $this->app->instance('partnerships', $partnershipsServiceMock);
 
-        $commissionServiceMock->shouldReceive('createAuditLog')
-                              ->once();
+        $partnershipsServiceMock->shouldReceive('createAuditLog')
+                                ->once();
 
         $this->job->handle();
 
@@ -75,11 +75,11 @@ class PartnerConfigAuditLoggerTest extends TestCase
 
         $this->mockSplitzTreatment($splitzInput, $splitzOutput);
 
-        $commissionServiceMock = Mockery::mock(CommissionService::class)->makePartial();
-        $this->app->instance('commissionService', $commissionServiceMock);
+        $partnershipsServiceMock = Mockery::mock(PartnershipsService::class)->makePartial();
+        $this->app->instance('partnerships', $partnershipsServiceMock);
 
-        $commissionServiceMock->shouldReceive('createAuditLog')
-                              ->never();
+        $partnershipsServiceMock->shouldReceive('createAuditLog')
+                                ->never();
 
         $this->job->handle();
 
@@ -106,11 +106,11 @@ class PartnerConfigAuditLoggerTest extends TestCase
 
         $this->mockSplitzTreatment($splitzInput, $splitzOutput);
 
-        $commissionServiceMock = Mockery::mock(CommissionService::class)->makePartial();
-        $this->app->instance('commissionService', $commissionServiceMock);
+        $partnershipsServiceMock = Mockery::mock(PartnershipsService::class)->makePartial();
+        $this->app->instance('partnerships', $partnershipsServiceMock);
 
-        $commissionServiceMock->shouldReceive('createAuditLog')
-                              ->once();
+        $partnershipsServiceMock->shouldReceive('createAuditLog')
+                                ->once();
 
         $this->job->handle();
 

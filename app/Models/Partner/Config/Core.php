@@ -523,7 +523,7 @@ class Core extends Base\Core
                ]);
 
             $request = $this->getAuditData($entity, $params);
-            $this->app->commissionService->createAuditLog($request);
+            $this->app->partnerships->createAuditLog($request);
         }
     }
 

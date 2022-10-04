@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Services\CommissionService;
+namespace RZP\Services\Partnerships;
 
 
 use RZP\Base;

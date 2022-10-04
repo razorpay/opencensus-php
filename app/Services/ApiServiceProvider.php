@@ -767,7 +767,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerAuthzXPlatformAdminClient();
 
-        $this->registerCommissionService();
+        $this->registerPartnerships();
 
         $this->registerSmartCollect();
 
@@ -2219,18 +2219,18 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         });
     }
 
-    protected function registerCommissionService()
+    protected function registerPartnerships()
     {
-        $this->app->singleton('commissionService', function ($app) {
+        $this->app->singleton('partnerships', function ($app) {
 
-            $mock = $app['config']->get('applications.commission_service.mock');
+            $mock = $app['config']->get('applications.partnerships.mock');
 
             if ($mock === true)
             {
-                return new RZP\Services\Mock\CommissionService();
+                return new RZP\Services\Mock\PartnershipsService();
             }
 
-            return new RZP\Services\CommissionService\CommissionService();
+            return new RZP\Services\Partnerships\PartnershipsService();
         });
     }
 

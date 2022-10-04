@@ -13824,7 +13824,7 @@ class Route
             'setl_adj_add'
         ],
 
-        'partnership_service' => [
+        'partnerships' => [
             'fetch_commission_configs'
         ],
 
