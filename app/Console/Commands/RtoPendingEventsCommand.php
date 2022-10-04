@@ -61,6 +61,8 @@ class RtoPendingEventsCommand extends Command
 
         //Preventing worker from terminating to make sure logs are published in sumo.
         sleep(60);
+
+        $this->info("ending rto pending events sqs producer command");
     }
 }
 

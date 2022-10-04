@@ -95,11 +95,9 @@ class RtoOrderActionRetryHandler extends Job
                 ];
                 $value[OneClickCheckout\Constants::PLATFORM] = $order[OneClickCheckout\Constants::PLATFORM];
 
-                $initialMode = $this->app->environment(Environment::PRODUCTION) === true ? Mode::LIVE : Mode::TEST;
-
                 OneCCReviewCODOrder::dispatch(array_merge($value,
                         [
-                            'mode' => $initialMode,
+                            'mode' => $this->mode,
                         ])
                 );
 
