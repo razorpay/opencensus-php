@@ -10876,6 +10876,7 @@ class Route
             'admin_collect_info_merchant_details_patch',
             'merchant_enhanced_activation_details',
             'mob_admin_routes',
+            'salesforce_event_admin',
             'mob_ca_lms_routes',
             'merchant_business_types_admin',
             'merchant_info',

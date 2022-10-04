@@ -13922,7 +13922,7 @@ IFSC Code  ICIC0001206
 
     public function testUpsertOpportunityOnSalesforceViaAdmin()
     {
-        $this->ba->appAuth('rzp_test');
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
