@@ -1,6 +1,7 @@
 import React from 'react';
 import { readableFileSize, titleCase, classList, isBlank } from 'common/utils/rzp-utils';
 import Staged from './Staged';
+import { videoTypesMap } from './constants';
 
 import FilePlaceholderImage from 'assets/files/file-placeholder.svg';
 
@@ -14,6 +15,7 @@ const fileTypesMap = {
   png: 'image/png',
   xml: 'text/xml',
   jpeg: 'image/jpeg',
+  ...videoTypesMap,
 };
 
 // File type = docs are not safe to upload in general
@@ -72,13 +74,22 @@ export default class FileUpload extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.defaultValue !== this.props.defaultValue) {
+    const { defaultValue: prevDefaultValue, resetFileUpload: prevResetFileUpload } = prevProps;
+    const { defaultValue, multi, resetFileUpload } = this.props;
+    if (prevDefaultValue !== defaultValue) {
       // eslint-disable-next-line react/no-did-update-set-state
       this.setState((prevState) => {
         return {
-          isDocPreUploaded: !!this.props.defaultValue,
-          files: this.props.defaultValue && !this.props.multi ? [] : prevState?.files,
+          isDocPreUploaded: !!defaultValue,
+          files: defaultValue && !multi ? [] : prevState?.files,
         };
+      });
+    }
+    if (prevResetFileUpload !== resetFileUpload) {
+      // eslint-disable-next-line react/no-did-update-set-state
+      this.setState({
+        files: [],
+        isDocPreUploaded: !!defaultValue,
       });
     }
   }

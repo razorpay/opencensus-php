@@ -8,9 +8,7 @@ import {
   BANK_ACCOUNT_UPDATE_PENNY_TESTING_SUCCESS,
 } from './constants';
 
-const BankUpdateRenderStep = ({ onSave, closeModal }) => {
-  const [step, setStep] = useState('init');
-  const [newBankAccountDetails, setNewBankAccountDetails] = useState();
+const BankUpdateRenderStep = ({ setStep, step, onSave, closeModal }) => {
   const [verificationError, setVerificationError] = useState();
 
   const renderBankAccountUpdateForm = () => {
@@ -38,14 +36,13 @@ const BankUpdateRenderStep = ({ onSave, closeModal }) => {
         />
       );
     case 'sync-failed-async-started':
-      return <BankAccountUpdateAsyncFlow newBankAccountDetails={newBankAccountDetails} />;
+      return <BankAccountUpdateAsyncFlow />;
     default:
       return (
         <BankAccountUpdateForm
           onSave={onSave}
           setVerificationError={setVerificationError}
           setStep={setStep}
-          setNewBankAccountDetails={setNewBankAccountDetails}
         />
       );
   }

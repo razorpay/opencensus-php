@@ -15,7 +15,7 @@ const BankAccountUpdateState = ({
     <div className="bank-details-change-states-wrapper">
       <div className="bank-details-change-state">
         {lottieData && (
-          <div className={classList(lottieDivClass)}>
+          <div className={classList(lottieDivClass)} data-testid="bank-update-state-animation">
             <SuspenseWithLoader>
               <CustomLottie
                 animationData={lottieData}

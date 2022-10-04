@@ -38,6 +38,7 @@ const NeedsClarificationModal = ({
   const [isResponseValid, setIsResponseValid] = useState(false);
   const [documents, setDocuments] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingDocument, setIsUploadingDocument] = useState(false);
   const [isClarificationSubmitted, setIsClarificationSubmitted] = useState(false);
   const MAX_FILES = 10;
   const isBankAccountUpdateWorkflow = workflowType === WORKFLOW_TYPES.BANK_DETAIL_UPDATE;
@@ -61,7 +62,7 @@ const NeedsClarificationModal = ({
     const formData = new FormData();
     formData.append('purpose', 'merchant_workflow_clarification');
     formData.append('file', file);
-
+    setIsUploadingDocument(true);
     return merchantFetch({
       url: 'documents',
       method: 'post',
@@ -103,7 +104,8 @@ const NeedsClarificationModal = ({
           type: 'error',
           message: err.errors,
         });
-      });
+      })
+      .finally(() => setIsUploadingDocument(false));
   };
 
   const onBiggerFileSize = () => {
@@ -225,6 +227,7 @@ const NeedsClarificationModal = ({
             workflows={workflows}
             closeModal={closeModal}
             isSubmitting={isSubmitting}
+            isUploadingDocument={isUploadingDocument}
             isResponseValid={isResponseValid}
             isClarificationSubmitted={isClarificationSubmitted}
             onChange={onChange}

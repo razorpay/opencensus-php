@@ -531,4 +531,48 @@ export const handlers = [
       ctx.delay(50),
     );
   }),
+
+  // Bank account
+  rest.get('https://ifsc.razorpay.com/:ifscCode', (req, res, ctx) => {
+    const { ifscCode } = req.params;
+
+    if (ifscCode === 'ICIC0003714') {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          BANK: 'ICIC Bank',
+          BRANCH: 'Aundh, Pune',
+        }),
+        ctx.delay(50),
+      );
+    }
+
+    if (ifscCode === 'IDFC0003715') {
+      return res.networkError('Failed to connect');
+    }
+
+    return res(
+      ctx.status(200),
+      ctx.json({
+        BANK: 'HDFC Bank',
+        BRANCH: '',
+      }),
+      ctx.delay(50),
+    );
+  }),
+
+  rest.post('*/merchant/api/test/merchants/bank_account/file/upload', (req, res, ctx) => {
+    if (req.body.get('address_proof_url') === 'VALID_FILE') {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status_code: 200,
+          success: true,
+        }),
+        ctx.delay(50),
+      );
+    }
+
+    return res(ctx.errors([{ message: 'Some error occurred' }]), ctx.delay(50));
+  }),
 ];

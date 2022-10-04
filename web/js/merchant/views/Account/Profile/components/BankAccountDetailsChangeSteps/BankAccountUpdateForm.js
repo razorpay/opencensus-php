@@ -21,11 +21,8 @@ import Loader from 'common/components/Loader';
 import { trackBankAccountDetailsChange } from 'merchant/views/Account/Profile/components/BankAccountDetailsChangeSteps/utils';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
-import FileUpload from 'merchant/components/File/Upload';
-import { MAX_FILE_SIZE_LIMIT } from 'merchant/views/Account/constants';
 
 import * as ModalActions from 'merchant_common/reducers/modals';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 const reVerifyAccountNumber = (value, allValues) => {
   return value !== allValues.account_number ? 'Account number does not match' : undefined;
@@ -62,29 +59,12 @@ const getBankName = (bank) => {
   return `${bank.BANK}, ${bank.BRANCH}`;
 };
 
-// TODO: temporarily disable new flow until new API for File upload is available
 const BankAccountUpdateForm = (props) => {
-  const { handleSubmit, settlementConfig, ifsc_code, showNotification, user } = props;
+  const { handleSubmit, settlementConfig, ifsc_code, setStep, setVerificationError, user } = props;
   const isOnTemporaryHold = settlementConfig.data?.config?.features?.hold?.status;
   const temporaryHoldReason = settlementConfig.data?.config?.features?.hold?.reason;
   const [showBranch, setShowBranch] = useState(false);
   const isMounted = useRef(false);
-  const [file, setFile] = useState(null);
-
-  const handleFileChange = (file) => {
-    setFile(file);
-  };
-
-  const removeFile = () => {
-    setFile(null);
-  };
-
-  const onBiggerFileSize = () => {
-    showNotification({
-      type: 'error',
-      message: `File exceeds total upload limit of ${MAX_FILE_SIZE_LIMIT / 1024 / 1024}MB!`,
-    });
-  };
 
   const { refetch, data: bankData, isFetching } = useQuery(
     ['ifsc_code', ifsc_code],
@@ -118,18 +98,17 @@ const BankAccountUpdateForm = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ifsc_code]);
 
+  const handleSubmitCallback = ({ state, error }) => {
+    setStep(state);
+    if (error) {
+      setVerificationError(error);
+    }
+  };
+
   const handleSubmission = (body) => {
     const { onSave } = props;
     const newBody = { ...body };
-    if (!file) {
-      showNotification({
-        type: 'error',
-        message: 'Please upload a valid Bank Account proof.',
-      });
-      return null;
-    }
-    newBody.address_proof_url = file;
-    return onSave(newBody);
+    return onSave(newBody, handleSubmitCallback);
   };
 
   const getBankAccountBannerContent = () => {
@@ -237,6 +216,7 @@ const BankAccountUpdateForm = (props) => {
                 component={InputField}
                 className="material-input"
                 validate={[required(), validateBenificiaryName]}
+                validateOnChange
               />
               <small className="help-block">
                 <i className="i i-info-circle" />
@@ -245,36 +225,6 @@ const BankAccountUpdateForm = (props) => {
             </div>
           </div>
 
-          <div className="form-group">
-            <label className="col-md-12 control-label label-required">
-              Company&apos;s Bank Account Statement with Address
-            </label>
-            <div className="col-md-12">
-              <span className="help-block">
-                Upload following:
-                <ul>
-                  <li>
-                    Bank Account Statement (last three months or since opening of account) OR
-                    cancelled cheque issued in the name of the registered business
-                  </li>
-                </ul>
-              </span>
-            </div>
-            <div className="col-md-12">
-              <FileUpload
-                name="bank-proof"
-                size="small"
-                maxSize={MAX_FILE_SIZE_LIMIT}
-                showFileSize={false}
-                showAcceptInfo={true}
-                accept={['jpg', 'png', 'pdf']}
-                onCloseClick={removeFile}
-                onFileChange={handleFileChange}
-                onBiggerFileSize={onBiggerFileSize}
-                showCloseBtn
-              />
-            </div>
-          </div>
           <div className="form-actions">
             <AsyncButton
               type="button"
@@ -302,7 +252,7 @@ const mapStateToProps = (state) => {
 };
 
 const mapDispatchToProps = (dispatch) => {
-  return bindActionCreators({ ...ModalActions, ...NotificationsActions }, dispatch);
+  return bindActionCreators({ ...ModalActions }, dispatch);
 };
 
 export default compose(

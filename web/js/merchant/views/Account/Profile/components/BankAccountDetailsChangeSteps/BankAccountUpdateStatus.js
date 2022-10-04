@@ -8,7 +8,7 @@ const BankAccountUpdateStatus = ({
   return (
     <div className="bank-details-change-states-wrapper">
       <div className="bank-details-change-state">
-        <i className={`bank-details-icon bank-details-icon--${icon}`} />
+        {icon && <i className={`bank-details-icon bank-details-icon--${icon}`} />}
         <div className="bank-details-header">{title}</div>
         <div>{subtitle}</div>
         <div className="form-actions">

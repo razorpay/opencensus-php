@@ -21,4 +21,4 @@ export const ATTR_DETAILS = {
   },
 };
 
-export const MAX_FILE_SIZE_LIMIT = 5242880; // 5 MB = 5 * 1024 * 1024
+export const MAX_FILE_SIZE_LIMIT = 52428800; // 50 MB = 100 * 1024 * 1024

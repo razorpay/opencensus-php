@@ -38,20 +38,6 @@ export const BankVerificationErrorInDetailsMap = {
   },
 };
 
-export const BankVerificationErrors = {
-  'KC03: Invalid Beneficiary Account Number or IFSC':
-    "The bank account details you've provided are incorrect. Try again with another account.",
-  'KC05: Account Blocked/Frozen':
-    'The given bank account is either blocked or frozen. Try again with another account.',
-  'KC06: NRE Account':
-    'NRE accounts are currently not supported for payments.Try again with another account.',
-  'KC07: Account Closed': 'The given bank account is closed. Try again with another account.',
-  'KC27: Invalid Account':
-    "The bank account details you've provided are incorrect. Try again with another account.",
-  'KC40: Invalid Beneficiary IFSC Code or NBIN':
-    "The bank account details you've provided are incorrect. Try again with another account.",
-};
-
 const pageDismissalText = "Please don't press back or close the page";
 
 export const BANK_ACCOUNT_UPDATE_UNDER_REVIEW = {
@@ -61,12 +47,20 @@ export const BANK_ACCOUNT_UPDATE_UNDER_REVIEW = {
   icon: 'bank-circle',
 };
 
-export const BANK_ACCOUNT_UPDATE_FILE_UPLOAD = {
+export const CANCELLED_CHEQUE_VIDEO_UPLOAD = {
   lottieData: LottieLoadingData,
-  title: 'Uploading your bank account statement',
+  title: 'Uploading your video of cancelled cheque',
   subtitle: pageDismissalText,
   info:
-    "We're uploading your bank account statement for our team to review. This may take a few seconds.",
+    "We're uploading your video of cancelled cheque for our team to review. This may take a few seconds.",
+};
+
+export const BANK_VERIFICATION_LETTER_UPLOAD = {
+  lottieData: LottieLoadingData,
+  title: 'Uploading your bank verification letter',
+  subtitle: pageDismissalText,
+  info:
+    "We're uploading your bank verification letter for our team to review. This may take a few seconds.",
 };
 
 export const BANK_ACCOUNT_UPDATE_SUBMIT_DETAILS = {

@@ -1,3 +1,6 @@
+// Polyfill "window.fetch" used in the React component.
+import 'whatwg-fetch';
+
 import '@testing-library/jest-dom/extend-expect';
 import 'regenerator-runtime/runtime';
 import { queryCache } from 'common/components/Bootstrap/Wrapper';

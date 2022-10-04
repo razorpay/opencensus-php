@@ -1,19 +1,25 @@
-$white-color = #FFFFFF;
+// stylelint-disable declaration-no-important
+// stylelint-disable no-descending-specificity
+$white-color = #FFF;
 $label-suggestions-border-color = #E8EAEE;
-$selected-label-bg-color = #dbe9ff;
+$selected-label-bg-color = #DBE9FF;
 $light-blue-color = #2B83EA;
 $shadow-black-color = #3A45671E;
 $accent-negative-900 = #D12D2D;
 $accent-neutral-900 = #CD8214;
 $accent-positive-900 = #1F890E;
+$gray-600 = #818FA4;
 $dark-blue-100 = #536582;
+$blue-800 = #344A6C;
 $blue-900 = #162F56;
 $blue-910 = #162F561A;
-$blue-940 = #162f5661;
+$blue-940 = #162F5661;
 $blue-960 = #162F568A;
 $blue-980 = #162F56BD;
+$primary-100 = #FAFCFF;
 $primary-900 = #0B70E7;
-$white-110 = #e0e4f91a;
+$primary-300 = #E7F1FD;
+$white-110 = #E0E4F91A;
 $blue-100 = #528FF0;
 $white-200 = #E1E5EA;
 
@@ -36,7 +42,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
     vertical-align: middle;
     font-size: 12px;
     border-radius: 50%;
-    background: #f14f50;
+    background: #F14F50;
     color: $white-color;
   }
 
@@ -62,13 +68,16 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
     .title {
       text-align: right;
     }
+
     .help-content {
       vertical-align: text-bottom;
       padding-left: 4px;
     }
   }
+
   .terms-and-cond {
     display: flex;
+
     .edit-details-btn {
       padding: 3px 8px;
       font-size: 12px;
@@ -76,16 +85,14 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
   }
 }
 
-@media screen and (max-width: $screen-sm-min)
+@media screen and (max-width $screen-sm-min)
   .panel-heading
     display: flex
     flex-wrap: wrap
     justify-content: space-between
 
 .rzp-gst-content.modal-body {
-
   .gst-update-note > .rzp-banner {
-
     border-width: 1px;
   }
 }
@@ -114,6 +121,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
   cursor: default;
   border-right: 0;
 }
+
 .curr-billing-label-input + .input-group-addon {
   background-color: $white-color;
 }
@@ -124,6 +132,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
   border-bottom: none;
   cursor: pointer;
 }
+
 .billing-label-suggestions-border-bottom {
   border-bottom: 1px solid $label-suggestions-border-color;
 }
@@ -138,7 +147,9 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
   width: 380px;
   z-index: 3;
 }
-.billing-label-popover.rzp-popover.rzp-tooltip.align-bottom .rzp-tooltip-inner > .rzp-popover-arrow, .billing-label-popover.rzp-popover.rzp-tooltip.align-top .rzp-tooltip-inner > .rzp-popover-arrow {
+
+.billing-label-popover.rzp-popover.rzp-tooltip.align-bottom .rzp-tooltip-inner > .rzp-popover-arrow,
+.billing-label-popover.rzp-popover.rzp-tooltip.align-top .rzp-tooltip-inner > .rzp-popover-arrow {
   left: 30%;
 }
 
@@ -148,9 +159,11 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
   color: $light-blue-color;
   margin-top: 20px;
 }
-.add-cutom-label-header>span {
+
+.add-cutom-label-header > span {
   cursor: pointer;
 }
+
 .hide-element {
   display: none;
 }
@@ -158,6 +171,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
 .suggested-label-selected {
   background-color: $selected-label-bg-color;
 }
+
 .suggested-label-selected-tick {
   float: right;
   height: 12px;
@@ -165,261 +179,261 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
 }
 
 .transaction-limit
-  width 50%
+  width: 50%
 
   .help-content
-    padding-left 5px
+    padding-left: 5px
 
   .transaction-limit__change-info
-    width 200%
-    margin-top 10px
-    padding-left 10px
+    width: 200%
+    margin-top: 10px
+    padding-left: 10px
 
     &.inprogress
-      border-left 4px solid $accent-neutral-900
+      border-left: 4px solid $accent-neutral-900
 
     &.rejected
-      border-left 4px solid $accent-negative-900
+      border-left: 4px solid $accent-negative-900
 
     &.success
-      border-left 4px solid $accent-positive-900
+      border-left: 4px solid $accent-positive-900
 
 .transaction-limit-update-form
-
   .highlight-limit
-    color #414b50
-    font-weight bold
-    display block
-    margin-top 5px
+    color: #414B50
+    font-weight: bold
+    display: block
+    margin-top: 5px
 
   input
-    border none
-    border-radius 0
-    background-color $white-110
+    border: none
+    border-radius: 0
+    background-color: $white-110
 
   textarea
-    overflow scroll
-    background-color $white-110
-    border none
-    border-bottom 2px solid $blue-910
+    overflow: scroll
+    background-color: $white-110
+    border: none
+    border-bottom: 2px solid $blue-910
 
   textarea.Input-el
-    max-height 150px
-    resize none
-    height 140px
-
+    max-height: 150px
+    resize: none
+    height: 140px
 
   .Input-label
-    margin-bottom 9px
-    margin-top -7px
-    font-size 12px
-    color $blue-960
+    margin-bottom: 9px
+    margin-top: -7px
+    font-size: 12px
+    color: $blue-960
 
   .note
-    color $blue-960
-    margin 15px 0
-    font-size 13px
+    color: $blue-960
+    margin: 15px 0
+    font-size: 13px
 
   .transactionlimit-fileupload
-    margin-bottom 20px
+    margin-bottom: 20px
 
   .notify-error
-    color #f05050
+    color: #F05050
 
 .bank-account
-  width 50%
+  width: 50%
 
   .help-content
-    padding-left 5px
+    padding-left: 5px
 
   .bank-account__change-info
-    width 200%
-    margin-top 10px
-    padding-left 10px
+    width: 200%
+    margin-top: 10px
+    padding-left: 10px
 
     &.inprogress
-      border-left 4px solid $accent-neutral-900
+      border-left: 4px solid $accent-neutral-900
 
     &.rejected
-      border-left 4px solid $accent-negative-900
+      border-left: 4px solid $accent-negative-900
 
     &.success
-      border-left 4px solid $accent-positive-900
+      border-left: 4px solid $accent-positive-900
 
 .gst-invoice-note
-  border-left 3px solid $accent-neutral-900
-  padding-left 10px
-  color $blue-960
+  border-left: 3px solid $accent-neutral-900
+  padding-left: 10px
+  color: $blue-960
 
 .gst-opt-out-cta
-  display flex
-  flex-direction column
+  display: flex
+  flex-direction: column
 
   span
-    display flex
+    display: flex
 
   div
-    display flex
-    flex-direction row
+    display: flex
+    flex-direction: row
 
-  .address-section span:nth-child(1), .pincode-section span:nth-child(1)
-    padding 10px 0 0 15px
-    flex .3
+  .address-section span:nth-child(1),
+  .pincode-section span:nth-child(1)
+    padding: 10px 0 0 15px
+    flex: 0.3
 
-  .address-section span:nth-child(2), .pincode-section span:nth-child(2)
-    padding 10px 15px 0
-    flex .7
-    align-items end
-    display flex
-    flex-direction row
-    justify-content flex-end
+  .address-section span:nth-child(2),
+  .pincode-section span:nth-child(2)
+    padding: 10px 15px 0
+    flex: 0.7
+    align-items: end
+    display: flex
+    flex-direction: row
+    justify-content: flex-end
 
   .action span
-    display flex
-    flex 1
-    padding 10px 15px 0
-    justify-content flex-end
+    display: flex
+    flex: 1
+    padding: 10px 15px 0
+    justify-content: flex-end
 
     p
-      padding-top 10px
-      font-weight bold
-      cursor pointer
-      color $blue-100
+      padding-top: 10px
+      font-weight: bold
+      cursor: pointer
+      color: $blue-100
 
-.btn-highlight, .btn-highlight:hover
-  border 1px solid #0b70e7bd
-  background #0b70e70d
-  margin-top 15px !important
-  color $light-blue-color
+.btn-highlight,
+.btn-highlight:hover
+  border: 1px solid #0B70E7BD
+  background: #0B70E70D
+  margin-top: 15px !important
+  color: $light-blue-color
 
 .gst-help-block
-  padding 1px
-  margin-bottom 15px
-  color $blue-980
+  padding: 1px
+  margin-bottom: 15px
+  color: $blue-980
 
 .gst-confirmation-modal-header
-  line-height 25px
+  line-height: 25px
 
 .rzp-gst-content
   .rzp-tooltip-inner
-    left -502px
-    top -50px
+    left: -502px
+    top: -50px
 
   .Input-label
-    margin-bottom 9px
+    margin-bottom: 9px
 
   .Input
-    margin-top 5px
+    margin-top: 5px
 
   .label-info
-    margin-top -4px
-    margin-bottom 14px
-    font-size 12px
-    color $blue-940
-    background-color #FAFAFA
+    margin-top: -4px
+    margin-bottom: 14px
+    font-size: 12px
+    color: $blue-940
+    background-color: #FAFAFA
 
   input
-    margin-bottom 18px
+    margin-bottom: 18px
 
   .suggested-address-row
-    padding 5px 0 5px 10px
-    border-left 3px solid $blue-100
-    border-radius 2px
-    margin-bottom 10px
+    padding: 5px 0 5px 10px
+    border-left: 3px solid $blue-100
+    border-radius: 2px
+    margin-bottom: 10px
 
-    p{
-      display inline
-      color $blue-100
-      font-weight 500
-      cursor pointer
+    p {
+      display: inline
+      color: $blue-100
+      font-weight: 500
+      cursor: pointer
     }
 
 .website-self-serve__listItem
-  width 50%
+  width: 50%
 
 .additional-websites__listcontainer
-  display flex
-  justify-content end
+  display: flex
+  justify-content: end
 
 .website-self-serve__change-info
-    width 200%
-    margin-top 10px
-    border-left 4px solid $accent-neutral-900
-    padding-left 10px
+  width: 200%
+  margin-top: 10px
+  border-left: 4px solid $accent-neutral-900
+  padding-left: 10px
 
-    &.reject
-      border-left-color $accent-negative-900
+  &.reject
+    border-left-color: $accent-negative-900
 
 .website-self-serve-initiate-modal
-
   .img-container
-    display flex
-    justify-content center
-    padding 15px 0
+    display: flex
+    justify-content: center
+    padding: 15px 0
 
   .content
-    display flex
-    flex-direction column
-    font-size 13px
+    display: flex
+    flex-direction: column
+    font-size: 13px
 
     strong
-      padding 2px 0 2px 22px
+      padding: 2px 0 2px 22px
 
     span ol li
-      padding 7px 11px 7px 5px
+      padding: 7px 11px 7px 5px
 
     .note
-      background-color #FCF8E5
-      border 1px solid $blue-910
-      margin 0 22px 5px
-      padding 5px 5px 7px
+      background-color: #FCF8E5
+      border: 1px solid $blue-910
+      margin: 0 22px 5px
+      padding: 5px 5px 7px
 
   .action
-    display flex
-    justify-content center
-    padding 10px 0 22px
+    display: flex
+    justify-content: center
+    padding: 10px 0 22px
 
     button
-      width 87%
-      font-size 13px
+      width: 87%
+      font-size: 13px
 
 .website-update-form
-  font-size 13px
+  font-size: 13px
 
   .Input-label
-    margin-bottom 10px
+    margin-bottom: 10px
 
   .Input
-    margin-top 15px
+    margin-top: 15px
 
   .Input-checkbox + .Input-inlineLabel
-    font-size 13px
+    font-size: 13px
 
   .actions-header
-    display flex
-    justify-content flex-start
+    display: flex
+    justify-content: flex-start
 
     div:last-child
-      margin-left 45px
+      margin-left: 45px
 
     label
-      margin-left 10px
+      margin-left: 10px
 
   .note
-    background-color #FCF8E5
-    border 1px solid $blue-910
-    padding 5px 5px 7px
-    margin-top 20px
+    background-color: #FCF8E5
+    border: 1px solid $blue-910
+    padding: 5px 5px 7px
+    margin-top: 20px
 
   .upload-invoice
     >label
-      margin-top 13px
+      margin-top: 13px
 
     .notify-error
-      color #f05050
+      color: #F05050
 
   .info-container
-    position relative
+    position: relative
 
     .rzp-popover.rzp-tooltip .rzp-tooltip-inner
       position: fixed
@@ -427,9 +441,9 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
       top: 825px
 
 .profile-container .divider {
-  border-left 1px solid #8a949a
-  margin 0 5px
-  opacity 0.3
+  border-left: 1px solid #8A949A
+  margin: 0 5px
+  opacity: 0.3
 }
 
 .bank-account-details-change-modal {
@@ -466,6 +480,10 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
     .bank-details-change-content {
       max-width: 416px;
       margin: auto;
+
+      &.sync-failed-async-started {
+        max-width: 550px;
+      }
 
       .bank-details-header {
         font-weight: bold;
@@ -531,7 +549,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
       border-bottom: 1px solid $blue-910;
     }
 
-    .material-input+.input-group-addon {
+    .material-input + .input-group-addon {
       color: $accent-positive-900;
       font-size: 11px;
       line-height: 18px;
@@ -548,7 +566,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
       overflow-x: hidden;
     }
 
-    [role=loader] {
+    [role="loader"] {
       border-width: 1.5px;
     }
 
@@ -578,6 +596,10 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
       padding-left: 12px;
       width: auto;
       max-width: 100%;
+
+      &--secondary {
+        white-space: normal;
+      }
     }
   }
 
@@ -611,7 +633,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
     }
 
     &-content {
-      color: #344A6C;
+      color: $blue-800;
     }
 
     &:last-of-type {
@@ -643,6 +665,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
         font-size: 13px;
         line-height: 18px;
         color: $blue-900;
+        word-break: break-all;
       }
     }
 
@@ -650,7 +673,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
       margin-bottom: 0;
     }
 
-    .is-focused>.Input-label {
+    .is-focused > .Input-label {
       border-color: $primary-900;
     }
 
@@ -666,14 +689,15 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
     }
 
     textarea::placeholder {
-      /* Chrome, Firefox, Opera, Safari 10.1+ */
+      // Chrome, Firefox, Opera, Safari 10.1+
       color: $blue-910;
       opacity: 1;
-      /* Firefox */
+      // Firefox
     }
 
+    // stylelint-disable-next-line selector-no-vendor-prefix
     textarea::-ms-input-placeholder {
-      /* Microsoft Edge */
+      // Microsoft Edge
       color: $blue-910;
     }
 
@@ -707,7 +731,6 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
 .bank-details-change-content {
   .file-upload {
     .description {
-      text-align: center;
       font-size: 16px;
       line-height: 20px;
       color: $blue-980;
@@ -723,12 +746,36 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
     }
 
     .upload-info {
-      color: #818FA4;
-      margin-bottom: 16px;
+      color: $gray-600;
+      margin-bottom: 36px;
+
+      label {
+        color: $blue-800;
+        margin-bottom: 4px;
+        font-weight: 400;
+        font-size: 13px;
+        line-height: 18px;
+      }
+
+      fieldset > div:last-child {
+        margin-top: 24px;
+      }
+
+      label + div {
+        color: $gray-600;
+      }
     }
 
     .form-group {
       margin-bottom: 0;
+    }
+
+    .form-actions {
+      text-align: center;
+
+      button {
+        max-width: 416px;
+      }
     }
   }
 }
@@ -740,6 +787,26 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+
+.watch-sample-video-link {
+  color: $primary-900;
+  border: 1px solid $primary-300;
+  border-radius: 16px;
+  background: $primary-100;
+  margin-top: 16px;
+  margin-left: 28px;
+  font-size: 10px;
+  line-height: 14px;
+
+  .m-r {
+    margin-right: 6px;
+  }
+
+  &:hover,
+  &:focus {
+    color: $primary-900;
+  }
 }
 
 .bank-details-change-states-wrapper {
@@ -807,18 +874,23 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
     margin: 4px;
     padding: 8px;
     border: none;
-    .Alert-icon--before, .Alert-icon--close {
+
+    .Alert-icon--before,
+    .Alert-icon--close {
       font-size: 16px;
       line-height: 16px;
     }
+
     .Alert-icon--before {
       margin-right: 6px;
     }
+
     .Alert-icon--close {
       margin-left: 6px;
       cursor: pointer;
       color: $blue-900;
     }
+
     &--warning {
       background: #CD82141A;
 
@@ -872,7 +944,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
     }
   }
 
-  &+.list-group {
+  & + .list-group {
     .list-group-item:first-child {
       border-top: none;
     }
@@ -880,25 +952,26 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
 }
 
 .pr-12 {
-  padding-right 12px
+  padding-right: 12px
 }
 
 .bank-details-review {
-  color $accent-neutral-900
+  color: $accent-neutral-900
 }
 
 .profile-container {
   .nav-link {
-    color $blue-100
-    cursor pointer
+    color: $blue-100
+    cursor: pointer
   }
+
   .gray {
-    color #808080
+    color: #808080
   }
 }
 
 .under-review {
-  opacity 0.5
+  opacity: 0.5
 }
 
 .firc-form-container {
@@ -965,11 +1038,11 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
 
       &::-webkit-scrollbar {
         width: 5px;
-        background-color: #d8dde5;
+        background-color: #D8DDE5;
       }
 
       &::-webkit-scrollbar-thumb {
-        background-color: #a9b3c2;
+        background-color: #A9B3C2;
       }
     }
   }
@@ -991,48 +1064,48 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
 }
 
 .workflow-status
-  width 100%
-  margin-top 10px
-  padding-left 10px
+  width: 100%
+  margin-top: 10px
+  padding-left: 10px
 
   &.inprogress
-    border-left 4px solid $accent-neutral-900
+    border-left: 4px solid $accent-neutral-900
 
   &.rejected
-    border-left 4px solid $accent-negative-900
+    border-left: 4px solid $accent-negative-900
 
   &.success
-    border-left 4px solid $accent-positive-900
+    border-left: 4px solid $accent-positive-900
 
 .panel-heading
   .workflow-status
     width: 100%
 
 .needs-clarification-form
-  button[type=submit]
+  button[type="submit"]
     margin-top: 40px
 
   .notify-error
-    color #f05050
+    color: #F05050
 
   .Dropzone
     margin-top: 20px
 
   textarea
-    overflow scroll
-    background-color $white-110
-    border none
-    border-bottom 2px solid $blue-910
+    overflow: scroll
+    background-color: $white-110
+    border: none
+    border-bottom: 2px solid $blue-910
 
   textarea.Input-el
-    max-height 150px
-    resize none
-    height 140px
+    max-height: 150px
+    resize: none
+    height: 140px
 
 .gst-details-block
   .request-info-tooltip
-    margin-left 5px
-    color #58666e
+    margin-left: 5px
+    color: #58666E
 
 .set-password-modal
   .merchant-note

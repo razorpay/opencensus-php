@@ -10,12 +10,14 @@ import {
   BANK_ACCOUNT_UPDATE_UNDER_REVIEW,
   BANK_ACCOUNT_UPDATE_SUBMIT_DETAILS,
 } from '../../BankAccountDetailsChangeSteps';
+import { allowedVideoExtensions } from 'merchant/components/File/constants';
 
 const NeedsClarificationModalContent = ({
   workflowType,
   workflows,
   closeModal,
   isSubmitting,
+  isUploadingDocument,
   isResponseValid,
   isClarificationSubmitted,
   onChange,
@@ -25,7 +27,8 @@ const NeedsClarificationModalContent = ({
   onBiggerFileSize,
   isBankAccountUpdateWorkflow,
 }) => {
-  const isSubmitDisabled = workflows[workflowType].loading || isSubmitting || !isResponseValid;
+  const isSubmitDisabled =
+    workflows[workflowType].loading || isSubmitting || !isResponseValid || isUploadingDocument;
   const needsClarificationMessage = workflows[workflowType].needs_clarification;
 
   if (isBankAccountUpdateWorkflow && isSubmitting) {
@@ -81,8 +84,7 @@ const NeedsClarificationModalContent = ({
           showCloseBtn
           {...(isBankAccountUpdateWorkflow && {
             multi: false,
-            showAcceptInfo: true,
-            accept: ['jpg', 'png', 'pdf'],
+            accept: ['jpg', 'png', 'pdf', ...allowedVideoExtensions],
           })}
         />
       </div>

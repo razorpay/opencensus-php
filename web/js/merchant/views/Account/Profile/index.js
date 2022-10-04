@@ -61,7 +61,7 @@ import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import {
-  BankVerificationErrors,
+  BankVerificationErrorInDetailsMap,
   getResponseTime,
   trackBankAccountDetailsChange,
 } from 'merchant/views/Account/Profile/components/BankAccountDetailsChangeSteps';
@@ -536,6 +536,9 @@ class Profile extends Component {
     body.beneficiary_email = user.email;
     body.beneficiary_mobile = user.contact_mobile;
 
+    //for the new flow
+    body.sync_only = true;
+
     for (const prop in body) {
       if (body.hasOwnProperty(prop)) {
         formdata.append(prop, body[prop]);
@@ -568,17 +571,14 @@ class Profile extends Component {
               requestType: data?.sync_flow ? 'sync' : 'async',
             },
           });
-          let message;
           if (data.new_bank_account && data.sync_flow === true) {
-            message = 'Bank account details updated successfully.';
             fetchBankAccount();
             setBankDetailsStepCallback({
               state: 'penny-testing-success',
             });
-          } else {
-            // async flow created for bank account update, worflow can take upto 8 hrs for creation
-            message = 'Bank Account change request updated successfully.';
             fetchWorkflowStatus(WORKFLOW_TYPES.BANK_DETAIL_UPDATE);
+          } else {
+            // penny-testing failure or timeout
             const workflowStatusKey = `${WORKFLOW_TYPES.BANK_DETAIL_UPDATE}--${user.id}`;
             const workflowStatus = JSON.parse(localStorage.getItem('workflow_status'));
             const newWorkflowStatus = {
@@ -589,31 +589,36 @@ class Profile extends Component {
               },
             };
             localStorage.setItem('workflow_status', JSON.stringify(newWorkflowStatus));
-            this.setState({ isBankAccountChangeAllowed: false });
             setBankDetailsStepCallback({
               state: 'sync-failed-async-started',
             });
           }
-          if (!data.sync_flow) {
+          if (data.timeout) {
             trackBankAccountDetailsChange({
               objectName: 'Bank Account Request',
               actionName: 'Timeout',
             });
           }
-          showNotification({
-            type: 'success',
-            message,
-          });
-          closeModal();
         })
         .catch(({ errors }) => {
           const inputError =
-            errors?.[0] in BankVerificationErrors ? BankVerificationErrors[errors[0]] : errors;
+            errors?.[0] in BankVerificationErrorInDetailsMap
+              ? BankVerificationErrorInDetailsMap[errors[0]]
+              : null;
 
-          showNotification({
-            type: 'error',
-            message: inputError,
-          });
+          if (inputError) {
+            // bank verification error because of user input
+            setBankDetailsStepCallback({
+              state: 'penny-testing-details-error',
+              error: inputError,
+            });
+          } else {
+            closeModal();
+            showNotification({
+              type: 'error',
+              message: errors,
+            });
+          }
           trackBankAccountDetailsChange({
             objectName: 'Bank Account Update Submit',
             actionName: 'Result',

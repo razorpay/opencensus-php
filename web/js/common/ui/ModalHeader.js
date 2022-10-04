@@ -3,7 +3,12 @@ import PropTypes from 'prop-types';
 const ModalHeader = (props) => (
   <div class="modal-header">
     {props.onCloseClick && (
-      <button type="button" class="close" onClick={props.onCloseClick}>
+      <button
+        type="button"
+        class="close"
+        onClick={props.onCloseClick}
+        data-testid="modal-header-close-btn"
+      >
         <i class="i i-close" />
       </button>
     )}
