@@ -225,6 +225,18 @@ class Entity extends PublicEntity
     ];
 
     /**
+     * Relations to ignore while checking existence of associated entities
+     * while saving current entity.
+     *
+     * @var array
+     */
+    protected $ignoredRelations = [
+        // Order is ignored as it's an external entity that comes from PG Router
+        // and isn't present in API DB
+        ConstantsEntity::ORDER,
+    ];
+
+    /**
      * Fields which will be generated during build
      *
      * @var string[]
