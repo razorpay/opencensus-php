@@ -247,8 +247,8 @@ export const onFetchSR = ({
   selectedTags: initialSelectedTags,
 }) => {
   try {
-    const { groups, intervals = [] } = data;
-    if (!intervals?.length) return fetchDefaultReturn;
+    const { groups, intervals = [], total } = data;
+    if (!total) return fetchDefaultReturn;
 
     const tags =
       groups?.[group_by]?.reduce(

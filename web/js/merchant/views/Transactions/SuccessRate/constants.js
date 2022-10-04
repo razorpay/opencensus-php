@@ -83,9 +83,9 @@ export const metricsCard = {
   name: '',
   title: '',
   helpText: '',
-  sr: '',
-  successful: '',
-  total: '',
+  sr: 0,
+  successful: 0,
+  total: 0,
   overviewHistogram: { labels: [], datasets: [] },
 };
 

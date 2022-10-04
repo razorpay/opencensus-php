@@ -6,7 +6,7 @@ import OverviewGraph from './OverviewGraph';
 import { METHOD_HELP_TEXT } from 'merchant/views/Transactions/SuccessRate/constants';
 
 const MetricsCard = ({ isLoading, metric, isActive }) => {
-  const { title = '', sr = '', overviewHistogram = {} } = metric;
+  const { title = '', sr = '', overviewHistogram = {}, total } = metric;
   const { datasets = [] } = overviewHistogram;
   const noData = !isLoading && datasets?.length === 0;
 
@@ -31,7 +31,7 @@ const MetricsCard = ({ isLoading, metric, isActive }) => {
       )}
       {!isLoading ? (
         <h1>
-          <span>{sr ? `${getFixedNumber(sr)}%` : '--'}</span>
+          <span>{total ? `${getFixedNumber(sr || 0)}%` : '--'}</span>
         </h1>
       ) : (
         <PlaceholderLoader style={{ width: '60%', height: '16px', margin: '16px 0' }} />
