@@ -895,7 +895,7 @@ class Core extends Base\Core
         $oldAdditionalDetails = json_decode($oldAdditionalDetails, true);
 
         // since this attribute is being read from a json, it is returned as a string
-        $oldSalesPitchCompleted = ($oldAdditionalDetails[ActivationDetail\Entity::SALES_PITCH_COMPLETED] ?? null) === '1';
+        $oldSalesPitchCompleted = ($oldAdditionalDetails[ActivationDetail\Entity::SALES_PITCH_COMPLETED] ?? null) === 1;
 
         // If non one_ca flow, mark sales_pitch as completed
         $oldSalesPitchCompleted = $isOneCaFlow ? $oldSalesPitchCompleted : true;
@@ -905,7 +905,7 @@ class Core extends Base\Core
         // values sent in the activation input
         $newDeclarationStepCompleted = ($activationDetailInput[ActivationDetail\Entity::DECLARATION_STEP] ?? null) == 1;
 
-        $newSalesPitchCompleted = ($activationDetailInput[ActivationDetail\Entity::ADDITIONAL_DETAILS][ActivationDetail\Entity::SALES_PITCH_COMPLETED] ?? null) === '1';
+        $newSalesPitchCompleted = ($activationDetailInput[ActivationDetail\Entity::ADDITIONAL_DETAILS][ActivationDetail\Entity::SALES_PITCH_COMPLETED] ?? null) === 1;
 
         $newSalesPitchCompleted = $isOneCaFlow ? $newSalesPitchCompleted : true;
 

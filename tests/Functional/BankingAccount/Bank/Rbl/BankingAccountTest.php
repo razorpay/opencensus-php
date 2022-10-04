@@ -509,7 +509,7 @@ class BankingAccountTest extends TestCase
         });
     }
 
-    public function verifyFreshDeskTicketCreationOnBankingAccountUpdate($baId, $baActivationDetailId, $oldDeclarationStep = 0, $oldSalesPitchCompleted = '0', $newDeclarationStep = 1, $newSalesPitchCompleted = '1', $shouldQueue = true)
+    public function verifyFreshDeskTicketCreationOnBankingAccountUpdate($baId, $baActivationDetailId, $oldDeclarationStep = 0, $oldSalesPitchCompleted = 0, $newDeclarationStep = 1, $newSalesPitchCompleted = 1, $shouldQueue = true)
     {
         $this->fixtures->edit('banking_account', $baId, ['status' => 'created']);
 
@@ -598,25 +598,25 @@ class BankingAccountTest extends TestCase
             'booking_date_and_time'     => strtotime('17-Nov-2021 11:30:00'),
         ]);
 
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, '0', 0, '0', false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, '0', 0, '1', false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, '0', 1, '0', false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, '0', 1, '1', true);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, 0, 0, 0, false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, 0, 0, 1, false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, 0, 1, 0, false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, 0, 1, 1, true);
 
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, '1', 0, '0', false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, '1', 0, '1', false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, '1', 1, '0', true);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, '1', 1, '1', true);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, 1, 0, 0, false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, 1, 0, 1, false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, 1, 1, 0, true);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, 1, 1, 1, true);
 
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, '0', 0, '0', false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, '0', 0, '1', true);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, '0', 1, '0', false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, '0', 1, '1', true);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, 0, 0, 0, false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, 0, 0, 1, true);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, 0, 1, 0, false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, 0, 1, 1, true);
 
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, '1', 0, '0', false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, '1', 0, '1', false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, '1', 1, '0', false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, '1', 1, '1', false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 0, 0, false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 0, 1, false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 1, 0, false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 1, 1, false);
     }
 
     public function testFreshDeskTicketCreationBehaviourForDifferentNonOneCaScenarios()
@@ -645,25 +645,25 @@ class BankingAccountTest extends TestCase
             'booking_date_and_time'     => strtotime('17-Nov-2021 11:30:00'),
         ]);
 
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 0, '0', false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 0, '1', false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 1, '0', true);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 1, '1', true);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 0, 0, false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 0, 1, false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 1, 0, true);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 1, 1, true);
 
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 0, '0', false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 0, '1', false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 1, '0', true);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 1, '1', true);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 0, 0, false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 0, 1, false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 1, 0, true);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 1, 1, true);
 
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 0, '0', false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 0, '1', false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 1, '0', false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 1, '1', false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 0, 0, false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 0, 1, false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 1, 0, false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 1, 1, false);
 
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 0, '0', false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 0, '1', false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 1, '0', false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 1, '1', false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 0, 0, false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 0, 1, false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 1, 0, false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 1, 1, false);
     }
 
     public function testFreshDeskTicketforSalesAssistedFlow()
