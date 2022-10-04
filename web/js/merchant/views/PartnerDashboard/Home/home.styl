@@ -1,4 +1,6 @@
-$partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard';
+// stylelint-disable max-nesting-depth,  no-descending-specificity
+
+$partnerDashboardCdn = "https://cdn.razorpay.com/static/assets/partner-dashboard";
 
 .partner-dashboard-home {
   $screen-xs-max = 767px;
@@ -12,11 +14,11 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
   .page-heading {
     font-size: 24px;
     font-weight: 700;
-    color: #162f563d;
+    color: #162F563D;
     margin: 22px;
     padding-top: 16px;
 
-    @media screen and (max-width: $screen-xs-max) {
+    @media screen and (max-width $screen-xs-max) {
       padding-top: 50px;
     }
   }
@@ -25,11 +27,11 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
     display: flex;
     margin: 22px;
 
-    @media screen and (max-width: $desktop-wide) {
+    @media screen and (max-width $desktop-wide) {
       display: block;
     }
 
-    @media screen and (max-width: $screen-xs-max) {
+    @media screen and (max-width $screen-xs-max) {
       background-image: unset;
     }
 
@@ -41,32 +43,36 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
     }
 
     .content-sub-title {
-      color: #6f7691;
+      color: #6F7691;
     }
 
     .referral-guide {
       width: 48%;
       padding: 25px 0 0 40px;
-      background: #fff;
+      background: #FFF;
       margin-right: 24px;
       height: 277px;
       box-shadow: 0 2px 12px -8px;
       border-radius: 4px;
 
-      @media screen and (max-width: $desktop-wide) {
+      @media screen and (max-width $desktop-wide) {
         width: 100%;
         padding: 16px 16px 16px 20px;
+        height: 250px;
+      }
+
+      @media screen and (max-width $screen-xs-max) {
         height: 300px;
       }
 
       &__title {
-        color: #162f56de;
+        color: #162F56DE;
         font-weight: 700;
         font-size: 18px;
       }
 
       &__sub-title {
-        color: #162f568a;
+        color: #162F568A;
         font-weight: 400;
         font-size: 13px;
       }
@@ -80,7 +86,7 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
         box-shadow: 0 2px 12px -8px;
         padding: 25px 40px;
 
-        @media screen and (max-width: $desktop-wide) {
+        @media screen and (max-width $desktop-wide) {
           padding: 16px;
         }
 
@@ -89,7 +95,7 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
           height: 50px;
           width: 25px;
 
-          @media screen and (max-width: $desktop-wide) {
+          @media screen and (max-width $desktop-wide) {
             margin-right: 20px;
           }
 
@@ -98,7 +104,7 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
             left: -70px;
             top: 8px;
 
-            @media screen and (max-width: $desktop-wide) {
+            @media screen and (max-width $desktop-wide) {
               left: -50px;
             }
           }
@@ -107,7 +113,7 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
         .referral-content {
           margin-left: 18px;
 
-          @media screen and (max-width: $desktop-wide) {
+          @media screen and (max-width $desktop-wide) {
             margin-left: 12px;
             margin-top: 16px;
           }
@@ -121,22 +127,22 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
 
     .referal-guide-new {
       width: 50%;
-      box-shadow: none;  
+      box-shadow: none;
       margin: 0;
       border-radius: 0;
 
-       @media (max-width: 756px) {
-          width: 100%;
-        }
+      @media (max-width $desktop-wide) {
+        width: 100%;
+      }
     }
 
     .product-list {
       width: 50%;
       position: relative;
       overflow: hidden;
-      background: #fff;
+      background: #FFF;
 
-      @media screen and (max-width: $desktop-wide) {
+      @media screen and (max-width $desktop-wide) {
         margin-top: 0;
         width: 100%;
         padding: 0 16px;
@@ -148,7 +154,7 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
         bottom: -25px;
         right: -5px;
 
-        @media screen and (max-width: $desktop-wide) {
+        @media screen and (max-width $desktop-wide) {
           display: none;
         }
       }
@@ -158,7 +164,7 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
         margin-top: 65px;
         margin-left: 18px;
 
-        @media screen and (max-width: $desktop-wide) {
+        @media screen and (max-width $desktop-wide) {
           margin-top: 16px;
           width: 100%;
           padding-bottom: 16px;
@@ -168,7 +174,7 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
           display: flex;
           margin-top: 25px;
 
-          @media screen and (max-width: $desktop-wide) {
+          @media screen and (max-width $desktop-wide) {
             margin-top: 0;
           }
 
@@ -180,7 +186,7 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
             display: flex;
             cursor: pointer;
 
-            @media screen and (max-width: $desktop-wide) {
+            @media screen and (max-width $desktop-wide) {
               flex-wrap: wrap;
               width: 100%;
             }
@@ -188,11 +194,11 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
             .product-cta {
               padding-top: 6px;
               font-weight: 700;
-              color: #2b83ea;
+              color: #2B83EA;
               display: flex;
               align-items: center;
 
-              @media screen and (max-width: $desktop-wide) {
+              @media screen and (max-width $desktop-wide) {
                 margin-left: 18px;
               }
 
@@ -207,7 +213,7 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
               margin-left: 18px;
               width: 265px;
 
-              @media screen and (max-width: $desktop-wide) {
+              @media screen and (max-width $desktop-wide) {
                 max-width: 100%;
                 width: 70%;
               }
@@ -217,7 +223,7 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
           &:not(:first-child) {
             margin-top: 20px;
 
-            @media screen and (max-width: $desktop-wide) {
+            @media screen and (max-width $desktop-wide) {
               margin-top: 10px;
             }
           }
@@ -228,22 +234,22 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
     .aggregator-card {
       padding: 25px 0 0 38px;
       width: 50%;
-      background: #fff;
+      background: #FFF;
       box-shadow: 0 2px 12px -8px;
       border-radius: 4px;
       position: relative;
-      
-      @media screen and (max-width: $desktop-wide) {
+
+      @media screen and (max-width $desktop-wide) {
         width: 100%;
-        margin: 20px 0px;
+        margin: 20px 0;
         padding-bottom: 12px;
         padding-left: 20px;
       }
 
       .agg-content {
-        @media screen and (max-width: $desktop-wide) {
-         margin-bottom: 36px;
-        }  
+        @media screen and (max-width $desktop-wide) {
+          margin-bottom: 36px;
+        }
       }
 
       .agg-img-wrap {
@@ -253,18 +259,17 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
         position: absolute;
         bottom: -28px;
         right: -30px;
-        
-        @media screen and (max-width: $desktop-wide) {
-         display: none;
-        }  
 
+        @media screen and (max-width $desktop-wide) {
+          display: none;
+        }
       }
 
       .agg-title {
         font-weight: 700;
         font-size: 20px;
         margin-bottom: 26px;
-        color: rgba(22,47,86,0.871);
+        color: rgb(22 47 86 / 0.871);
       }
 
       .agg-desc {
@@ -277,11 +282,11 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
       .agg-sub-desc {
         font-weight: 400;
         font-size: 14px;
-        color: #6f7691
+        color: #6F7691
         margin-bottom: 21px;
         width: 60%
 
-        @media screen and (max-width: $desktop-wide) {
+        @media screen and (max-width $desktop-wide) {
           margin-bottom: 20px;
           width: 100%;
         }
@@ -354,13 +359,13 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
 
   .activation-guide-card {
     display: flex;
-    background-color: #fff;
+    background-color: #FFF;
     margin: 22px;
     border-bottom: 8px solid #BBC2FF;
     border-radius: 4px;
-    box-shadow: 0px 2px 12px -8px;
+    box-shadow: 0 2px 12px -8px;
 
-    @media screen and (max-width: $desktop-min) {
+    @media screen and (max-width $desktop-min) {
       flex-wrap: wrap;
     }
 
@@ -379,7 +384,7 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
         width: 100%;
         height: 120px;
 
-        @media screen and (min-width: $desktop-min) {
+        @media screen and (min-width $desktop-min) {
           display: none;
         }
 
@@ -389,7 +394,7 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
         }
       }
 
-      @media screen and (max-width: $desktop-min) {
+      @media screen and (max-width $desktop-min) {
         flex: 1;
         align-items: start;
         padding-top: 8px;
@@ -399,7 +404,7 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
         padding: 20px;
         width: 260px;
 
-        @media screen and (max-width: $desktop-min) {
+        @media screen and (max-width $desktop-min) {
           padding-bottom: 8px;
         }
 
@@ -407,8 +412,8 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
           font-weight: 600;
           font-size: 20px;
 
-          &:after {
-            content: ''
+          &::after {
+            content: ""
             display: block;
             width: 36px;
             height: 4px;
@@ -422,7 +427,7 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
           font-weight: 500;
           font-size: 13px;
 
-          @media screen and (max-width: $desktop-min) {
+          @media screen and (max-width $desktop-min) {
             display: none;
           }
         }
@@ -430,7 +435,7 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
         img {
           margin-top: 18px;
 
-          @media screen and (max-width: $desktop-min) {
+          @media screen and (max-width $desktop-min) {
             display: none;
           }
         }
@@ -452,7 +457,7 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
         right: 0;
         top: 12px;
 
-        @media screen and (max-width: $desktop-min) {
+        @media screen and (max-width $desktop-min) {
           display: none;
         }
 
@@ -462,7 +467,7 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
         }
       }
 
-      @media screen and (max-width: $desktop-min) {
+      @media screen and (max-width $desktop-min) {
         padding-top: 8px;
       }
 
@@ -470,7 +475,7 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
         display: flex;
         margin-top: 15px;
 
-        @media screen and (max-width: $desktop-min) {
+        @media screen and (max-width $desktop-min) {
           flex-wrap: wrap;
         }
 
@@ -513,7 +518,7 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
           width: 38%;
           margin-left: 12px;
 
-          @media screen and (max-width: $screen-xs-max) {
+          @media screen and (max-width $screen-xs-max) {
             width: 70%;
           }
         }
@@ -525,7 +530,7 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
         }
 
         &__sub-title {
-          color: #162f56de;
+          color: #162F56DE;
           font-weight: 500;
           font-size: 14px;
           line-height: 20px;
@@ -540,7 +545,7 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
           margin-left: 10%;
           position: relative;
 
-          @media screen and (max-width: $screen-xs-max) {
+          @media screen and (max-width $screen-xs-max) {
             margin-left: 74px;
             margin-top: 8px;
           }
@@ -552,7 +557,6 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
       opacity: 0.5;
     }
   }
-
 }
 
 .agg-container {
@@ -560,14 +564,15 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
   height: 565px;
   display: flex;
 
-  @media (max-width: 756px) {
+  @media (max-width 756px) {
     width: auto;
     height: auto;
     display: block;
   }
 
-  .Labelweb__StyledText-sc-1eubdu6-1, .dark-label {
-    color: #626161 !important;  
+  .Labelweb__StyledText-sc-1eubdu6-1,
+  .dark-label {
+    color: #626161;
   }
 
   .modal-left-side {
@@ -576,8 +581,8 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
     padding: 20px 10px;
     position: relative;
 
-    @media (max-width: 756px) {
-      background: #e2e5ff;
+    @media (max-width 756px) {
+      background: #E2E5FF;
       height: 100px;
       border-bottom: 4px solid #528FF0;
       position: sticky;
@@ -587,20 +592,21 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
 
     .agg-close {
       display: none;
-        @media (max-width: 756px) {
-          position: sticky;
-          top: 28px;
-          right: 20px;
-          display: block;
-        }
-      } 
-  
+
+      @media (max-width 756px) {
+        position: sticky;
+        top: 28px;
+        right: 20px;
+        display: block;
+      }
+    }
+
     .left-content {
       position: absolute;
       top: 160px;
       left: 42px;
 
-      @media (max-width: 756px) {
+      @media (max-width 756px) {
         position: relative;
         top: 0;
         left: 20px;
@@ -611,18 +617,18 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
         font-size: 24px;
         color: #4555C0;
 
-        @media (max-width: 756px) {
+        @media (max-width 756px) {
           font-size: 18px;
           margin-left: 18px;
         }
       }
 
       .seperator-line {
-        border-top: 4px solid #4555c0;
+        border-top: 4px solid #4555C0;
         width: 32px;
-        margin: 10px 0px;
+        margin: 10px 0;
 
-        @media (max-width: 756px) {
+        @media (max-width 756px) {
           display: none;
         }
       }
@@ -633,24 +639,24 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
         color: #4555C0;
         padding-left: 14px;
 
-        @media (max-width: 756px) {
+        @media (max-width 756px) {
           display: none;
         }
 
         li {
-          margin: 10px 0px;
+          margin: 10px 0;
         }
       }
 
       .succ-img {
         width: 100%;
         height: 170px;
-        background: url(partnerDashboardCdn/partner-onboard-resellers/aggregatorSuccess.svg) no-repeat;
+        background: url("partnerDashboardCdn/partner-onboard-resellers/aggregatorSuccess.svg") no-repeat;
         max-width: 180px;
         background-size: contain;
         margin: 20px auto;
 
-        @media (max-width: 756px) {
+        @media (max-width 756px) {
           display: none;
         }
       }
@@ -666,21 +672,21 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
       border: none;
       background: none;
       margin: 0;
-      box-shadow: none;  
+      box-shadow: none;
     }
 
     .activation-step__content_agg {
-      width: 75%;  
+      width: 75%;
       margin-left: 12px;
     }
 
     .agg-step-connector {
-      bottom: -40px;  
+      bottom: -40px;
     }
 
     .agg-activation-step {
       display: flex;
-      margin-top: 40px; 
+      margin-top: 40px;
     }
 
     .agg-step-connector {
@@ -692,13 +698,13 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
       bottom: -40px;
       display: flex;
       flex-direction: column;
-      justify-content: space-around;  
+      justify-content: space-around;
 
       .connector {
         width: 4px;
         height: 4px;
         border-radius: 50%;
-        background: #eaeaea;  
+        background: #EAEAEA;
       }
     }
 
@@ -709,55 +715,56 @@ $partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard
       right: 20px;
 
       .agg-close {
-        @media (max-width: 756px) {
+        @media (max-width 756px) {
           position: fixed;
           top: 28px;
           right: 20px;
           display: none;
         }
-      }  
+      }
     }
 
     .agg-success-btn {
-      margin-top: 80px;  
+      margin-top: 80px;
       margin-left: 20px;
 
-      @media (max-width: 756px) {
+      @media (max-width 756px) {
         margin-top: 200px;
       }
     }
 
     .form-wrap {
-      margin: 30px 100px 0px 0px;
+      margin: 30px 100px 0 0;
 
-      @media (max-width: 756px) {
-          margin: 30px 30px;
+      @media (max-width 756px) {
+        margin: 30px;
       }
     }
   }
 }
 
 .agg-container-success {
-  @media (max-width: 756px) {
+  @media (max-width 756px) {
     background: url($partnerDashboardCdn/partner-onboard-resellers/Celeb.svg);
   }
 }
 
 .light-label {
   font-size: 12px;
-  color: rgba(22,47,86,0.54);
+  color: rgb(22 47 86 / 0.54);
   font-weight: 400;
 }
+
 #filled-input-bkg {
-  background-color: rgba(0, 0, 0, 0.007);
+  background-color: rgb(0 0 0 / 0.007);
 }
 
 .full-screen-mobile {
-  @media (max-width: 756px) {
+  @media (max-width 756px) {
     max-width: 756px;
     margin: 0;
-    height: 100%;  
+    height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
-  }  
+  }
 }
