@@ -8,7 +8,7 @@ use RZP\Services\MasterOnboardingService as MOBService;
 
 class MasterOnboardingService
 {
-    public function sendRequestAndParseResponse(string $path, string $method, array $data = [], bool $isAdmin = true)
+    public function sendRequestAndParseResponse(string $path, string $method, array $data = [], bool $isAdmin = true, array $headers = [])
     {
         $path = (new MOBService)->getPathWithQueryString($method, $path, $data);
 
@@ -244,5 +244,10 @@ class MasterOnboardingService
         }
 
         return $result;
+    }
+
+    public function mobMigration(array $input): array
+    {
+        return $input;
     }
 }

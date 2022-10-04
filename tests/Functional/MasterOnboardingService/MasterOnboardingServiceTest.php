@@ -124,6 +124,13 @@ class MasterOnboardingServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testMobMigration()
+    {
+        $this->addRoleAndPermissionForAdmin();
+
+        $this->startTest();
+    }
+
     public function testMobToBasRoutes()
     {
         $attributes = [

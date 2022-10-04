@@ -639,6 +639,21 @@ return [
         ],
     ],
 
+    'testMobMigration' => [
+        'request'  => [
+            'url'     => '/mob/migration',
+            'method'  => 'POST',
+            'content' => [
+                'mids' => ["10000000000000"],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "10000000000000",
+            ]
+        ]
+    ],
+
     'testMobToBasRoutes' => [
         'request'  => [
             'url'     => '/mob/bas/merchant/banking_application/business/10000000000000/applications/10000000000000',

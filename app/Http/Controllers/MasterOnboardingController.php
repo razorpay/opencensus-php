@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 
+use RZP\Trace\TraceCode;
 use RZP\Services\MasterOnboardingService;
 
 class MasterOnboardingController extends Controller
@@ -52,5 +53,16 @@ class MasterOnboardingController extends Controller
         $response = $this->masterOnboardingService->sendRequestAndParseResponse($requestUri, $method, $payload, true);
 
         return ApiResponse::json($response);
+    }
+
+    public function mobMigration()
+    {
+        $input = Request::all();
+
+        $this->trace->info(TraceCode::MASTER_ONBOARDING_MIGRATION_REQUEST, $input);
+
+        $data = $this->masterOnboardingService->mobMigration($input["mids"]);
+
+        return ApiResponse::json($data);
     }
 }

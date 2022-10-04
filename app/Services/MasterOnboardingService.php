@@ -158,13 +158,16 @@ class MasterOnboardingService
         return $path;
     }
 
-    public function sendRequestAndParseResponse(string $path, string $method, array $data = [], bool $isAdmin = true)
+    public function sendRequestAndParseResponse(string $path, string $method, array $data = [], bool $isAdmin = true, array $headers = [])
     {
         $path = $this->getPathWithQueryString($method, $path, $data);
 
         $url = $this->baseUrl . '/v1/' . $path;
 
-        $headers = ($isAdmin === true) ? $this->getAdminRequestHeaders($data) : $this->getProxyRequestHeaders();
+        if (count($headers) == 0)
+        {
+            $headers = ($isAdmin === true) ? $this->getAdminRequestHeaders($data) : $this->getProxyRequestHeaders();
+        }
 
         $headers = array_merge($headers, $this->getMOBHeaders());
 
@@ -230,6 +233,58 @@ class MasterOnboardingService
 
             throw $e;
         }
+    }
+
+    public function mobMigration(array $input): array
+    {
+        foreach ($input as $merchantId)
+        {
+            $repo = new MerchantRepo();
+
+            $merchant = $repo->findOrFail($merchantId);
+
+            $users = $merchant->owners(ProductType::BANKING)->get();
+
+            if (count($users) <= 0)
+            {
+                $users = $merchant->owners(ProductType::PRIMARY)->get();
+            }
+
+            $headers = [
+                'Grpc-metadata-X-Merchant-Id'       => $merchant->getId(),
+                'Grpc-metadata-X-Dashboard-User-Id' => $user->getId(),
+                'Grpc-metadata-X-Service'           => 'banking',
+                'Grpc-metadata-X-Razorpay-TaskId'   => $this->app['request']->getTaskId(),
+            ];
+
+            foreach ($users as $user)
+            {
+                $result = $this->sendRequestAndParseResponse("intents","POST", [
+                    'source'              => 'signup',
+                    'product_bundle_name' => 'ca_v1',
+                    "apply_application"   => true,
+                ], $headers);
+
+                $workflowId = $result['intent']['application']['obs_workflow_id'];
+
+                $this->sendRequestAndParseResponse("save_workflow","POST", [
+                    "id"            => $workflowId,
+                    "field_data"    => [
+                        [
+                            "field_name"    => "request",
+                            "field_value"   => [
+                                "flow"      => "eligibility_check_and_application_creation",
+                                "payload"   => [
+                                    "" => "",
+                                ]
+                            ]
+                        ]
+                    ]
+                ], false, $headers);
+            }
+        }
+
+        return $input;
     }
 
     protected function formatResponse($response)

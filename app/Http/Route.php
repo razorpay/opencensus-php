@@ -2558,6 +2558,7 @@ class Route
 
         // Master Onboarding Service routes
         'mob_admin_routes'                         => ['any',      'mob/admin/{path?}',                                     'MasterOnboardingController@adminRequest'                           ],
+        'mob_migration'                            => ['post',     'mob/migration',                                         'MasterOnboardingController@mobMigration'                           ],
         'mob_intent_apply_application'             => ['post',     'mob/intents/{id}/application/apply',                    'MasterOnboardingController@proxyRequest'                           ],
         'mob_fetch_application'                    => ['get',      'mob/applications/{id}',                                 'MasterOnboardingController@proxyRequest'                           ],
         'mob_fetch_multiple_applications'          => ['get',      'mob/applications',                                      'MasterOnboardingController@proxyRequest'                           ],
@@ -6281,6 +6282,7 @@ class Route
         'nocode_debugging_route',
         'merchant_enhanced_activation_details',
         'mob_admin_routes',
+        'mob_migration',
         'mob_ca_lms_routes',
         'merchant_business_types_admin',
         'merchant_info',
@@ -7456,6 +7458,7 @@ class Route
         'nocode_debugging_route'                    => Permission::DEBUG_NOCODE_ROUTES,
         'merchant_enhanced_activation_details'     => Permission::VIEW_MERCHANT,
         'mob_admin_routes'                          => Permission::MOB_ADMIN,
+        'mob_migration'                             => Permission::MOB_ADMIN,
         'mob_ca_lms_routes'                         => Permission::VIEW_ACTIVATION_FORM,
         'admin_trigger_2fa_otp'                    => Permission::AUTH_LOCAL_ADMIN,
         'admin_account_lock_unlock'                => Permission::AUTH_LOCAL_ADMIN,
@@ -10876,6 +10879,7 @@ class Route
             'admin_collect_info_merchant_details_patch',
             'merchant_enhanced_activation_details',
             'mob_admin_routes',
+            'mob_migration',
             'salesforce_event_admin',
             'mob_ca_lms_routes',
             'merchant_business_types_admin',
