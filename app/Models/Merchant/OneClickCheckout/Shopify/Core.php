@@ -72,9 +72,15 @@ class Core extends Base\Core
         catch(\Exception $e)
         {
             $this->monitoring->addTraceCount(Metric::CREATE_SHOPIFY_CHECKOUT_ERROR_COUNT,['error_type' => TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR]);
-
+            $this->trace->error(
+                 TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
+                 [
+                     'type'     => 'error_while_calling_shopify_url',
+                     'response' => $e->getMessage(),
+                 ]
+            );
             throw new Exception\ServerErrorException(
-                'Error while calling Shopify URL',
+                'error_while_placing_checkout',
                 ErrorCode::SERVER_ERROR
             );
         }
@@ -115,14 +121,24 @@ class Core extends Base\Core
         {
             $checkoutError = $checkoutCreate['checkoutUserErrors'][0];
 
-            if ($checkoutError['message'] === "Variant is invalid")
+            if ($checkoutError['message'] === 'Variant is invalid')
             {
                 $this->trace->error(TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
                     [
                         'type' => 'shopify_invalid_variant_error',
                         'response' => $checkoutError
                     ]);
-                $this->monitoring->addTraceCount(Metric::CREATE_API_CHECKOUT_ERROR_COUNT,['error_type' => TraceCode::SHOPIFY_INVALID_VARIANT_ERROR]);
+                $this->monitoring->addTraceCount(
+                    Metric::CREATE_API_CHECKOUT_ERROR_COUNT,
+                    ['error_type' => TraceCode::SHOPIFY_INVALID_VARIANT_ERROR]
+                );
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR,
+                    null,
+                    null,
+                    'INVALID_VARIANTS'
+                );
             }
             $this->trace->error(
                  TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
@@ -135,7 +151,7 @@ class Core extends Base\Core
             $this->monitoring->addTraceCount(Metric::CREATE_API_CHECKOUT_ERROR_COUNT, ['error_type' => TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR]);
 
             throw new Exception\ServerErrorException(
-                'Error while calling URL',
+                'error_creating_checkout',
                 ErrorCode::SERVER_ERROR
             );
         }
@@ -1447,7 +1463,7 @@ class Core extends Base\Core
             $this->trace->error(
                 TraceCode::SHOPIFY_1CC_ORDER_CANCEL_API_ERROR,
                 [
-                    'merchant_id'=>$merchantId,
+                    'type'  => 'error_while_calling_shopify_url',
                     'error' => $exception->getMessage()
                 ]
             );

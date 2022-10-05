@@ -2,8 +2,14 @@
 
 namespace RZP\Models\Merchant\OneClickCheckout\Shopify;
 
+use App;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\OneClickCheckout;
 use GuzzleHttp\Client as HttpClient;
+use GuzzleHttp\Exception\RequestException as GuzzleRequestException;
 
 /**
  * handles all communication with shopify for 1cc
@@ -18,7 +24,10 @@ class Client
     const POST                        = 'POST';
     const GET                         = 'GET';
     const PUT                         = 'PUT';
-    const RETRIABLE_STATUS_CODES      = [429, 500];
+    const MAX_ATTEMPTS                = 4;
+
+    protected $app;
+    protected $trace;
 
     // credentials required from merchants
     protected $shopId;
@@ -29,6 +38,9 @@ class Client
 
     public function __construct(array $config)
     {
+        $this->app = App::getFacadeRoot();
+        $this->trace = $this->app['trace'];
+
         $this->shopId                = $config[OneClickCheckout\Constants::SHOP_ID];
         $this->apiKey                = $config[OneClickCheckout\Constants::API_KEY];
         $this->apiSecret             = $config[OneClickCheckout\Constants::API_SECRET];
@@ -95,25 +107,60 @@ class Client
             }
         }
 
-        try
+        $responseArr;
+        $attempts = 0;
+        while ($attempts < self::MAX_ATTEMPTS)
         {
-            $response = (new HttpClient)->request($method, $this->endpoint, [
-                'headers' => $this->headers,
-                'body' => $body
-            ]);
+            $attempts++;
+            try
+            {
+                $response = (new HttpClient)->request($method, $this->endpoint, [
+                  'headers' => $this->headers,
+                  'body'    => $body
+                ]);
 
-            // TODO: fix this and return headers as well for 429
-            return $response->getBody()->getContents();
+                $responseArr = $this->parseResponse($response);
+                $delay = $this->returnBackoffIfRetriableRequest($responseArr, $apiType, $attempts);
+                if ($delay === -1)
+                {
+                    return $responseArr['raw_contents'];
+                }
+                usleep($delay);
+                continue;
+            }
+            catch (GuzzleRequestException $e)
+            {
+                $errResponse = $e->getResponse();
+                $responseArr = $this->parseResponse($errResponse);
+
+                // In case of auth failures, Shopify does not return a body.
+                if ($responseArr['status_code'] === 401 || $responseArr['status_code'] === 403)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_ERROR,
+                        null,
+                        null,
+                        'UNAUTHORIZED'
+                    );
+                }
+
+                $delay = $this->returnBackoffIfRetriableRequest($responseArr, $apiType, $attempts);
+                if ($delay === -1)
+                {
+                    throw $e;
+                }
+                usleep($delay);
+                continue;
+            }
         }
-        catch (Throwable $e)
-        {
-            throw new Exception\ServerErrorException(
-                'Error while calling URL',
-                ErrorCode::SERVER_ERROR,
-                null,
-                $e
-            );
-        }
+        $this->trace->error(
+            TraceCode::SHOPIFY_1CC_API_RETRY_EXCEEDED_LIMIT,
+            [
+               'type'           => 'retry_exceeded',
+               'api_type'       => $apiType,
+               'attempt_number' => $attempts,
+            ]);
+        return $responseArr['raw_contents'];
     }
 
     protected function setHeaders(string $apiType)
@@ -154,5 +201,93 @@ class Client
         }
         $this->endpoint = $url;
     }
+
+    // NOTE: Unable to find documentation for rate limit headers for graphql APIs
+    protected function logRateLimit(array $response, string $apiType): void
+    {
+        $body = $response['body'];
+        $headers = $response['headers'];
+
+        switch ($apiType)
+        {
+            case OneClickCheckout\Constants::STOREFRONT:
+                break;
+
+            case OneClickCheckout\Constants::ADMIN_GRAPHQL:
+                $cost = $body['extensions']['cost'] ?? [];
+                $this->trace->info(
+                    TraceCode::SHOPIFY_1CC_RATE_LIMIT,
+                    [
+                        'type'     => $apiType,
+                        'cost'     => $cost,
+                    ]);
+                break;
+
+            case OneClickCheckout\Constants::ADMIN_REST:
+                $this->trace->info(
+                    TraceCode::SHOPIFY_1CC_RATE_LIMIT,
+                    [
+                        'type'       => $apiType,
+                        'rate_limit' => $headers['X-Shopify-Shop-Api-Call-Limit'] ?? 'Throttled',
+                    ]);
+                break;
+        }
+    }
+
+    protected function returnBackoffIfRetriableRequest(array $response, string $apiType, int $attemptNumber): int
+    {
+        $this->logRateLimit($response, $apiType);
+
+        $shouldRetry = $this->shouldRetry($response, $apiType);
+        if ($shouldRetry === false)
+        {
+            return -1;
+        }
+
+        $delay = $this->getDelay($apiType, $attemptNumber, $response);
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_API_RETRY,
+            [
+               'type'           => 'api_retried',
+               'api_type'       => $apiType,
+               'status_code'    => $response['status_code'],
+               'backoff_millis' => $delay/1000,
+               'attempt_number' => $attemptNumber,
+            ]);
+        return $delay;
+    }
+
+    protected function parseResponse($response): array
+    {
+        // getContents is a stream, so calling it again will return null
+        $rawContents = $response->getBody()->getContents();
+        return [
+            'status_code'  => $response->getStatusCode(),
+            'headers'      => $response->getHeaders(),
+            'raw_contents' => $rawContents,
+            'body'         => json_decode($rawContents, true),
+            'protocol'     => $response->getProtocolVersion(),
+            'reason'       => $response->getReasonPhrase(),
+        ];
+    }
+
+    // delay in microseconds
+    protected function getDelay(string $apiType, int $attempt, array $response): int
+    {
+        return (500 + $attempt * 300) * 1000;
+    }
+
+    protected function shouldRetry(array $response, string $apiType): bool
+    {
+        $isStatusCodeRetriable = $response['status_code'] === 429 || $response['status_code'] >= 500;
+        if ($apiType === OneClickCheckout\Constants::ADMIN_REST)
+        {
+            return $isStatusCodeRetriable;
+        }
+
+        // graphql requests always return 200 even if it gets throttled so we check the response body
+        return ($response['body']['errors'][0]['message'] ?? '') === 'Throttled' || $isStatusCodeRetriable;
+    }
+
 
 }

@@ -310,11 +310,9 @@ class Service extends Base\Service
             'shipping_fee'     => $orderArray['shipping_fee'],
             'order_id'         => $shopifyOrder['order']['name'],
             'total_tax'        => $shopifyOrder['order']['total_tax'],
-            'order_status_url' => $shopifyOrder['order']['order_status_url'],
             'payment_method'   => $payment['method'],
             'payment_currency' => $payment['currency'],
             'payment_id'       => $paymentId,
-            'customer_details' => $orderArray['customer_details'],
             'shipping_country' => Constants\Country::getCountryNameByCode($countryCode) ?? $countryCode
         ];
 
@@ -327,6 +325,10 @@ class Service extends Base\Service
                 'order_id' => $orderId,
                 'response' => $response,
             ]);
+
+        // Do not log PII.
+        $response['customer_details'] = $orderArray['customer_details'];
+        $response['order_status_url'] = $shopifyOrder['order']['order_status_url'];
 
         return $response;
     }
