@@ -80,7 +80,7 @@ class ParAsyncTokenisationJob extends Job
                 'attempts'                  => $this->attempts()
             ]);
 
-            if(($this->cardCore->checkIfFetchingParApplicable($card->getNetwork())) === false)
+            if(($this->cardCore->checkIfFetchingParApplicable($card)) === false)
             {
                 $this->traceFetchingParNotApplicable($card);
                 $this->delete();

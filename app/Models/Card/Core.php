@@ -108,7 +108,7 @@ class Core extends Base\Core
 
     public function saveParValue($card, $input = null)
     {
-        if(($this->checkIfFetchingParApplicable($card->getNetwork())) === false)
+        if(($this->checkIfFetchingParApplicable($card)) === false)
         {
             return;
         }
@@ -1273,21 +1273,17 @@ class Core extends Base\Core
         ];
     }
 
-    public function checkIfFetchingParApplicable($network, $isTokenized = null)
+    public function checkIfFetchingParApplicable($card)
     {
+        $network = $card->getNetwork();
+
         $network = strtolower($network);
 
-        if($network === 'rupay' && $isTokenized === true)
-        {
-            return false;
-        }
-
-        if($network === 'visa' || $network === 'mastercard' || $network === 'rupay')
+        if($network == 'visa' || $network == 'mastercard' || $network == 'rupay')
         {
             return true;
         }
 
         return false;
     }
-
 }

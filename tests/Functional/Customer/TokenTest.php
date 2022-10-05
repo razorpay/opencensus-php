@@ -363,12 +363,9 @@ class TokenTest extends TestCase
 
         $this->ba->privateAuth();
 
-        try {
-            $this->startTest();
-        }
-        catch(\Throwable $e) {
-            $this->assertEquals("BAD_REQUEST_ERROR",  $e->getError()->code);
-        }
+        $parApiResponse = $this->startTest();
+
+        $this->assertEquals($parApiResponse["payment_account_reference"], "50014EES0F4P295H2FQG7Q37823B9");
     }
 
     public function testParApiWithCardNumber()
@@ -377,12 +374,9 @@ class TokenTest extends TestCase
 
         $this->ba->privateAuth();
 
-        try {
-            $this->startTest();
-        }
-        catch(\Throwable $e) {
-            $this->assertEquals("BAD_REQUEST_ERROR",  $e->getError()->code);
-        }
+        $parApiResponse = $this->startTest();
+
+        $this->assertEquals($parApiResponse["payment_account_reference"], "50014EES0F4P295H2FQG7Q37823B9");
     }
 
     public function  testParApiWithTokenPanWithTokenisedTrue()
@@ -405,12 +399,9 @@ class TokenTest extends TestCase
 
         $fetchParPayload = $this->testData["testParApiWithTokenPanWithTokenisedTrueTestData"];
 
-        try {
-            $this->startTest($fetchParPayload);
-        }
-        catch(\Throwable $e) {
-            $this->assertEquals("BAD_REQUEST_ERROR",  $e->getError()->code);
-        }
+        $fetchParResponse = $this->startTest($fetchParPayload);
+
+        $this->assertEquals($fetchParResponse["payment_account_reference"], "50014EES0F4P295H2FQG7Q37823B9");
     }
 
     public function testParApiWithCardNumberWithTokenisedFalse()

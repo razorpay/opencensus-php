@@ -2072,12 +2072,6 @@ class Core extends Base\Core
 
         list($iin, $isTokenized) = $this->getIIN($input);
 
-        if(((new Card\Core())->checkIfFetchingParApplicable($network, $isTokenized)) === false)
-        {
-        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
-
-        }
-
         $this->setInstrumentationInput($input, $iin, $isTokenized, $internalServiceRequest);
 
         (new Token\Event())->pushEvents($input, Event::PAR_API, "_REQUEST_RECEIVED");
