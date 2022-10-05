@@ -12,7 +12,7 @@ import {
 
 const FeedbackRate = ({ feedbackRateData, isloading }) => {
   const { feedback_percentage: feedbackPercentage } =
-    feedbackRateData.length && !Array.isArray(feedbackRateData[0])
+    feedbackRateData?.length && !Array.isArray(feedbackRateData[0])
       ? feedbackRateData[0]
       : { feedback_percentage: 0 };
   const footerStatus =
