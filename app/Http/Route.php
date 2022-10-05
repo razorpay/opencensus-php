@@ -4195,8 +4195,6 @@ class Route
         'feature_dummy',
         'razorx_dummy',
 
-        'zipcode_add',
-        'zipcode_remove',
         // Routes webhook_create and webhook_edit exist in this list as exception, a merchant i.e. Limetray uses it.
         'webhook_create',
         'webhook_edit',
@@ -13613,6 +13611,8 @@ class Route
             'update_merchant_1cc_coupon_config',
             'update_shipping_slabs_dark',
             'update_cod_serviceability_slabs_dark',
+            'zipcode_add',
+            'zipcode_remove',
         ],
 
         'xpayroll' => [

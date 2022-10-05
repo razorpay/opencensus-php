@@ -662,6 +662,16 @@ class Service extends Base\Service
         }
     }
 
+    protected function fetchCityAndState(array $address)
+    {
+        return $this->repo->zipcode_directory->findByZipcodeAndCountry($address['zipcode'], $address['country']);
+    }
+
+    protected function isZipcodeResponseValid(array $response): bool
+    {
+        return ($response['city'] !== '' && $response['state'] !== '' && $response['state_code'] !== '');
+    }
+
     /**
      * @param $decodedResponse
      * @throws \Throwable
@@ -752,6 +762,18 @@ class Service extends Base\Service
                 ['zipcode' => $address['zipcode'], 'country' => $address['country'], 'error' => $ex->getMessage()]
             );
             $response = ['city' => '', 'state' => '', 'state_code' => ''];
+        }
+        if ($this->isZipcodeResponseValid($response) === false)
+        {
+            $dbResponse = $this->fetchCityAndState($address);
+            if (empty($dbResponse) === false)
+            {
+                $response = [
+                    'city' => $dbResponse['city'],
+                    'state' => $dbResponse['state'],
+                    'state_code' => $dbResponse['state_code'],
+                ];
+            }
         }
         $address['city'] = $response['city'];
 
