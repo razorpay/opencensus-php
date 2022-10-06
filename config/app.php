@@ -480,6 +480,8 @@ return array(
 
     'checkout_emi_ui_revamp_splitz_experiment_id' => env('CHECKOUT_EMI_UI_REVAMP_SPLITZ_EXPERIMENT_ID'),
 
-    'shaadi_com_new_currency_support_experiment_id' => env('SHAADI_COM_NEW_CURRENCY_SUPPORT_EXPERIMENT_ID')
+    'shaadi_com_new_currency_support_experiment_id' => env('SHAADI_COM_NEW_CURRENCY_SUPPORT_EXPERIMENT_ID'),
+
+    'partner_independent_kyc_exp_id' => env('PARTNER_INDEPENDENT_KYC_EXP_ID')
 
 );

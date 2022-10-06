@@ -194,7 +194,10 @@ class UpdateMerchantContext extends Job
             $this->sendSegmentEvents();
         }
 
-        $this->updatePartnerContext($merchant);
+        if($merchant->isResellerPartner())
+        {
+            $this->updatePartnerContext($merchant);
+        }
     }
 
 
@@ -221,9 +224,12 @@ class UpdateMerchantContext extends Job
 
             $newActivationStatus = (new PartnerCore())->getApplicablePartnerActivationStatus($merchant->merchantDetail, $partnerActivation);
 
-            $isSystemBasedNeedsClarificationEnabledForPartner = (new Merchant\Core())->isRazorxExperimentEnable(
-                $merchant->getId(),
-                RazorxTreatment::SYSTEM_BASED_NEEDS_CLARIFICATION_FOR_PARTNER);
+            $properties = [
+                'id'            => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.partner_independent_kyc_exp_id'),
+            ];
+
+            $isSystemBasedNeedsClarificationEnabledForPartner = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable', TraceCode::SYSTEM_BASED_NEEDS_CLARIFICATION_FOR_PARTNER_ERROR);
 
             if (($clarificationCore->shouldTriggerNeedsClarification($partnerActivation) === true) and
                 ($isSystemBasedNeedsClarificationEnabledForPartner === true))

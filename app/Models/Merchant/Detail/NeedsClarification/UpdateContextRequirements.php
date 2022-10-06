@@ -136,16 +136,19 @@ class UpdateContextRequirements
         self::default => [
             [self::COMPANY_PAN_VERIFICATION],
             [self::BANK_DETAILS_VERIFICATION],
-            [self::GSTIN_VERIFICATION]
+            [self::GSTIN_VERIFICATION],
+            [self::POA_VERIFICATION],
         ],
         BusinessType::NOT_YET_REGISTERED => [
             [self::PERSONAL_PAN_VERIFICATION],
             [self::BANK_DETAILS_VERIFICATION],
+            [self::POA_VERIFICATION],
         ],
         BusinessType::PROPRIETORSHIP => [
             [self::PERSONAL_PAN_VERIFICATION],
             [self::BANK_DETAILS_VERIFICATION],
-            [self::GSTIN_VERIFICATION]
+            [self::GSTIN_VERIFICATION],
+            [self::POA_VERIFICATION],
         ]
     ];
 
