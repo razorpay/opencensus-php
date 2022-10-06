@@ -105,6 +105,7 @@ class Gateway
     const NETBANKING_UCO         = 'netbanking_uco';
     const NETBANKING_UJJIVAN     = 'netbanking_ujjivan';
     const NETBANKING_TMB         = 'netbanking_tmb';
+    const NETBANKING_KARNATAKA   = 'netbanking_karnataka';
     const NETBANKING_DBS         = 'netbanking_dbs';
     const NACH_CITI              = 'nach_citi';
     const NACH_ICICI             = 'nach_icici';
@@ -1439,6 +1440,7 @@ class Gateway
         Payment\Gateway::NETBANKING_PNB         => 1609936200,
         Payment\Gateway::NETBANKING_DLB         => 1609936200,
         Payment\Gateway::NETBANKING_TMB         => 1640249582,
+        Payment\Gateway::NETBANKING_KARNATAKA   => 1640249582,
         Payment\Gateway::NETBANKING_NSDL        => 1618511400,
         Payment\Gateway::NETBANKING_BDBL        => 1618511400,
         Payment\Gateway::NETBANKING_SARASWAT    => 1618511400,
@@ -1572,6 +1574,7 @@ class Gateway
             self::NETBANKING_SARASWAT,
             self::NETBANKING_UCO,
             self::NETBANKING_TMB,
+            self::NETBANKING_KARNATAKA,
             self::NETBANKING_DBS,
             self::INGENICO,
         ],
@@ -2171,6 +2174,8 @@ class Gateway
         self::NETBANKING_TMB,
         self::NACH_CITI,
         self::NACH_ICICI,
+        self::NETBANKING_BDBL,
+        self::NETBANKING_KARNATAKA,
     ];
 
     public static $captureVerifyEnabled = [
@@ -3071,6 +3076,7 @@ class Gateway
         IFSC::UCBA         => Gateway::NETBANKING_UCO,
         IFSC::UJVN         => Gateway::NETBANKING_UJJIVAN,
         IFSC::TMBL         => Gateway::NETBANKING_TMB,
+        IFSC::KARB         => Gateway::NETBANKING_KARNATAKA,
         IFSC::DBSS         => Gateway::NETBANKING_DBS,
         Netbanking::LAVB_R => Gateway::NETBANKING_DBS,
     ];
@@ -3145,6 +3151,7 @@ class Gateway
         IFSC::SRCB => Gateway::NETBANKING_SARASWAT,
         IFSC::UCBA => Gateway::NETBANKING_UCO,
         IFSC::TMBL => Gateway::NETBANKING_TMB,
+        IFSC::KARB => Gateway::NETBANKING_KARNATAKA,
         IFSC::UJVN => Gateway::NETBANKING_UJJIVAN,
         Netbanking::HDFC_C =>Gateway::NETBANKING_HDFC,
         IFSC::DBSS         => Gateway::NETBANKING_DBS,
@@ -4393,6 +4400,7 @@ class Gateway
             self::NETBANKING_UCO,
             self::EMERCHANTPAY,
             self::NETBANKING_TMB,
+            self::NETBANKING_KARNATAKA,
             self::NETBANKING_CANARA,
             self::NETBANKING_DBS,
             self::INGENICO,
@@ -4509,6 +4517,7 @@ class Gateway
             self::NETBANKING_UCO,
             self::EMERCHANTPAY,
             self::NETBANKING_TMB,
+            self::NETBANKING_KARNATAKA,
             self::WALLET_FREECHARGE,
             self::NETBANKING_DBS,
             self::NETBANKING_HDFC,

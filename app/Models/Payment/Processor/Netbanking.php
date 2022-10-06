@@ -147,6 +147,7 @@ class Netbanking
         IFSC::UCBA,
         IFSC::UJVN,
         IFSC::TMBL,
+        IFSC::KARB,
         IFSC::DBSS,
         self::LAVB_R,
     ];
@@ -211,6 +212,7 @@ class Netbanking
         IFSC::UCBA,
         IFSC::UJVN,
         IFSC::TMBL,
+        IFSC::KARB,
         IFSC::DBSS,
         self::LAVB_R,
         IFSC::SRCB,
@@ -1150,6 +1152,14 @@ class Netbanking
             ],
             'tpv'    => [
                 IFSC::TMBL,
+            ]
+        ],
+        Gateway::NETBANKING_KARNATAKA => [
+            'retail' => [
+                IFSC::KARB,
+            ],
+            'tpv'    => [
+                IFSC::KARB,
             ]
         ],
         Gateway::NETBANKING_DBS => [

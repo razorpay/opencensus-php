@@ -1439,6 +1439,22 @@ class Validator extends Base\Validator
         Entity::TYPE                    => 'sometimes|array',
     ];
 
+    protected static $netbankingKarnatakaTerminalRules = [
+        Entity::GATEWAY                 => 'required|in:netbanking_karnataka',
+        Entity::GATEWAY_MERCHANT_ID     => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET   => 'required|string',
+        Entity::TPV                     => 'sometimes|in:0,1,2',
+        Entity::STATUS                  => 'sometimes|in:pending,activated,deactivated,failed',
+    ];
+
+    protected static $netbankingKarnatakaEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID     => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET   => 'sometimes|string',
+        Entity::TPV                     => 'sometimes|in:0,1,2',
+        Entity::STATUS                  => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::TYPE                    => 'sometimes|array',
+    ];
+
     protected static $netbankingCubEditTerminalRules = [
         Entity::GATEWAY                    => 'sometimes|in:netbanking_cub',
         Entity::NETWORK_CATEGORY           => 'sometimes|string',
