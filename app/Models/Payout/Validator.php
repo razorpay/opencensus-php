@@ -99,6 +99,8 @@ class Validator extends Base\Validator
 
     const PAYOUT_SERVICE_DATA_MIGRATION_INPUT = 'payout_service_data_migration_input';
 
+    const PAYOUT_SERVICE_DUAL_WRITE_INPUT = 'payout_service_dual_write_input';
+
     // Payout Service Validations
     const PAYOUT_SERVICE_CREATE                     = 'payout_service_create';
     const PAYOUT_SERVICE_TRANSACTION_CREATE         = 'payout_service_transaction_create';
@@ -187,6 +189,12 @@ class Validator extends Base\Validator
         'from'              => 'required|epoch',
         'to'                => 'required|epoch',
     ];
+
+    protected static $payoutServiceDualWriteInputRules = [
+        Entity::PAYOUT_ID => 'required|string|size:14',
+        'timestamp'       => 'required|epoch',
+    ];
+
     /**
      * @see Batch\Validator Need to change for payout rules if any changes are done here
      *

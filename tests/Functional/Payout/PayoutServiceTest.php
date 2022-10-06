@@ -1579,7 +1579,7 @@ class PayoutServiceTest extends TestCase
             'status'         => 'created',
             'tax'            => 90,
             'fees'           => 590,
-            'notes'          => ['abc' => 'def']
+            'notes' => ['abc' => 'def']
         ]);
 
         $this->fixtures->create('transaction', [

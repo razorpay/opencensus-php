@@ -3,6 +3,7 @@
 namespace RZP\Models\PayoutSource;
 
 use RZP\Models\Base;
+use RZP\Constants\Table;
 
 class Repository extends Base\Repository
 {
@@ -44,5 +45,18 @@ class Repository extends Base\Repository
         return $this->newQueryWithConnection($this->getReportingReplicaConnection())
                     ->where($payoutIdColumn, $payoutId)
                     ->get();
+    }
+
+    public function getPayoutServiceSources(string $payoutId)
+    {
+        $tableName = Table::PAYOUT_SOURCE;
+
+        if (in_array($this->app['env'], ['testing', 'testing_docker'], true) === true)
+        {
+            $tableName = 'ps_payout_sources';
+        }
+
+        return \DB::connection($this->getPayoutsServiceConnection())
+                  ->select("select * from $tableName where payout_id = '$payoutId'");
     }
 }

@@ -1052,7 +1052,6 @@ class Core extends Base\Core
                                     $reversal);
                             }
 
-                            // todo: check if this step is not required and need to remove it.
                             $reversal->setIgnoreRelationsForPayoutServiceReversals();
 
                             $reversal = $this->createTransactionFromPayoutReversal($reversal);
@@ -1525,7 +1524,7 @@ class Core extends Base\Core
                 Entity::REVERSAL_ID => $id
             ]);
 
-        $payoutServiceReversals = $this->repo->reversal->getPayoutServiceReversal($id);
+        $payoutServiceReversals = $this->repo->reversal->getPayoutServiceReversalById($id);
 
         if (count($payoutServiceReversals) === 0)
         {

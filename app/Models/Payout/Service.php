@@ -4131,6 +4131,11 @@ class Service extends Base\Service
         return $this->core->payoutServiceRedisKeySet($input);
     }
 
+    public function payoutServiceDualWrite($input)
+    {
+        return $this->core->payoutServiceDualWrite($input);
+    }
+
     public function initiateDataMigration(array $input): array
     {
         $response = $this->core->initiateDataMigration($input);

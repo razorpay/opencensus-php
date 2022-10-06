@@ -72,19 +72,6 @@ class CreateFundAccounts extends Migration
             $table->index(FundAccount::DELETED_AT);
 
             $table->index(FundAccount::UNIQUE_HASH);
-
-            $table->foreign(FundAccount::MERCHANT_ID)
-                  ->references(Merchant::ID)
-                  ->on(Table::MERCHANT)
-                  ->on_delete('restrict');
-        });
-
-        Schema::table(Table::PAYOUT, function($table)
-        {
-            $table->foreign(Payout::FUND_ACCOUNT_ID)
-                  ->references(FundAccount::ID)
-                  ->on(Table::FUND_ACCOUNT)
-                  ->on_delete('restrict');
         });
     }
 

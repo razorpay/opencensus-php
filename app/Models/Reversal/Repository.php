@@ -342,7 +342,20 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function getPayoutServiceReversal(string $id)
+    public function getPayoutServiceReversalByPayoutId(string $payoutId)
+    {
+        $tableName = Table::REVERSAL;
+
+        if (in_array($this->app['env'], ['testing', 'testing_docker'], true) === true)
+        {
+            $tableName = 'ps_reversals';
+        }
+
+        return \DB::connection($this->getPayoutsServiceConnection())
+                  ->select("select * from $tableName where payout_id = '$payoutId'");
+    }
+
+    public function getPayoutServiceReversalById(string $id)
     {
         $tableName = Table::REVERSAL;
 

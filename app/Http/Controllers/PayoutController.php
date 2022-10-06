@@ -866,6 +866,15 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function payoutServiceDualWrite()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->payoutServiceDualWrite($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function initiateDataMigration()
     {
         $input = Request::all();

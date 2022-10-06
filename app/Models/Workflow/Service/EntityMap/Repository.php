@@ -3,6 +3,7 @@
 namespace RZP\Models\Workflow\Service\EntityMap;
 
 use RZP\Models\Base;
+use RZP\Constants\Table;
 
 class Repository extends Base\Repository
 {
@@ -35,5 +36,18 @@ class Repository extends Base\Repository
         $workflowEntity = $this->findByEntityIdAndEntityType($entityType, $entityId);
 
         return empty($workflowEntity) === false;
+    }
+
+    public function getPayoutServiceWorkflowEntityMap(string $payoutId)
+    {
+        $tableName = Table::WORKFLOW_ENTITY_MAP;
+
+        if (in_array($this->app['env'], ['testing', 'testing_docker'], true) === true)
+        {
+            $tableName = 'ps_' . $tableName;
+        }
+
+        return \DB::connection($this->getPayoutsServiceConnection())
+                  ->select("select * from $tableName where entity_id = '$payoutId' and entity_type = 'payout'");
     }
 }

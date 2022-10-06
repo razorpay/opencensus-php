@@ -55,6 +55,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\QueuedPayoutsInitiate;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Payout\Notifications;
+use RZP\Jobs\PayoutServiceDualWrite;
 use RZP\Mail\Payout\PendingApprovals;
 use RZP\Jobs\ScheduledPayoutsProcess;
 use RZP\Models\Transaction\CreditType;
@@ -167,6 +168,8 @@ class Core extends Base\Core
     const MAX_ATTEMPTS_FOR_DATA_MIGRATION      = 10;
     const PS_DATA_MIGRATION_LIMIT              = 10;
     const MUTEX_LOCK_TIMEOUT_PS_DATA_MIGRATION = 180;
+
+    const PAYOUT_SERVICE_TEMPORARY_METADATA_TABLE = 'payout_meta_temporary';
 
     /**
      * @var Mutex
@@ -770,7 +773,10 @@ class Core extends Base\Core
                     $ftaData);
         }
 
-        $payout->reload();
+        if ($payout->getIsPayoutService() === false)
+        {
+            $payout->reload();
+        }
 
         if ((in_array($status, self::FAILURE_STATUSES_FOR_PAYOUT_TO_AMEX, true) === true) and
             ($payout->fundAccount->getAccountType() === FundAccount\Type::CARD) and
@@ -7123,6 +7129,23 @@ class Core extends Base\Core
         return $this->payoutServiceRedisClient->payoutsMicroserviceRedisKeySet($input);
     }
 
+    public function payoutServiceDualWrite($input)
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_DUAL_WRITE_DISPATCH_TO_QUEUE_REQUEST,
+            $input
+        );
+
+        PayoutServiceDualWrite::dispatch($this->mode, $input);
+
+        $this->trace->info(
+            TraceCode::PAYOUT_DUAL_WRITE_DISPATCHED_TO_QUEUE,
+            $input
+        );
+
+        return ['status' => 'success'] ;
+    }
+
     public function addMerchantForTestPayouts(string $merchantId)
     {
         $this->merchant = $this->repo->merchant->findOrFailPublic($merchantId);
@@ -7326,6 +7349,95 @@ class Core extends Base\Core
             self::MUTEX_LOCK_TIMEOUT_PS_DATA_MIGRATION,
             ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
         );
+    }
+
+    public function processDualWrite(array $input)
+    {
+        (new Validator)->validateInput(Validator::PAYOUT_SERVICE_DUAL_WRITE_INPUT, $input);
+
+        $payoutId = $input[Entity::PAYOUT_ID];
+
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $metadata = $this->getMetaDataFromPayoutServiceForDualWrite($payoutId);
+
+        if (empty($metadata) == false)
+        {
+            $timestamp = get_object_vars(json_decode($metadata['meta_value']))['timestamp'];
+
+            if ($input['timestamp'] < $timestamp)
+            {
+                $this->trace->info(
+                    TraceCode::PAYOUT_SERVICE_DUAL_WRITE_NO_ACTION,
+                    $input
+                );
+
+                return;
+            }
+        }
+
+        (new DualWrite\Processor)->dualWriteDataForPayoutId($payoutId);
+
+        $this->upsertMetaDataInPayoutServiceForDualWrite($payoutId, $currentTime, $metadata);
+    }
+
+    public function getMetaDataFromPayoutServiceForDualWrite($payoutId)
+    {
+        $metadata = $this->repo->payout->getPayoutServicePayoutMetaDataForDualWrite($payoutId);
+
+        if (count($metadata) === 0)
+        {
+            return [];
+        }
+
+        $metadata = $metadata[0];
+
+        return get_object_vars($metadata);
+    }
+
+    public function upsertMetaDataInPayoutServiceForDualWrite(string $payoutId, $currentTime, $metadata)
+    {
+        $tableName = self::PAYOUT_SERVICE_TEMPORARY_METADATA_TABLE;
+
+        if (in_array($this->app['env'], ['testing', 'testing_docker'], true) === true)
+        {
+            $tableName = 'ps_' . $tableName;
+        }
+
+        if (empty($metadata) === true)
+        {
+            $data = [
+                Entity::ID         => Entity::generateUniqueId(),
+                Entity::PAYOUT_ID  => $payoutId,
+                'meta_name'        => 'dual_write',
+                'meta_value'       => json_encode(['timestamp' => $currentTime]),
+                Entity::CREATED_AT => Carbon::now(Timezone::IST)->getTimestamp(),
+                Entity::UPDATED_AT => Carbon::now(Timezone::IST)->getTimestamp(),
+            ];
+
+            $this->trace->info(
+                TraceCode::PAYOUT_SERVICE_DUAL_WRITE_INSERT_METADATA,
+                $data
+            );
+
+            $this->repo->payout->insertIntoPayoutServiceDB($tableName, $data);
+        }
+        else
+        {
+            $id = $metadata[Entity::ID];
+
+            $data = [
+                'meta_value'       => json_encode(['timestamp' => $currentTime]),
+                Entity::UPDATED_AT => Carbon::now(Timezone::IST)->getTimestamp(),
+            ];
+
+            $this->trace->info(
+                TraceCode::PAYOUT_SERVICE_DUAL_WRITE_UPDATE_METADATA,
+                $data
+            );
+
+            $this->repo->payout->updateInPayoutServiceDB($tableName, $id, $data);
+        }
     }
 
     protected function getPayoutServiceMigrationRedisKey(string $merchantId, string $balanceId)

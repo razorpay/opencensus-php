@@ -257,31 +257,6 @@ class CreatePayoutsTable extends Migration
             $table->index(Payout::PURPOSE_TYPE);
 
             $table->index(Payout::PAYOUT_LINK_ID);
-
-            $table->foreign(Payout::BALANCE_ID)
-                  ->references(Balance\Entity::ID)
-                  ->on(Table::BALANCE)
-                  ->on_delete('restrict');
-
-            $table->foreign(Payout::MERCHANT_ID)
-                  ->references(Merchant\Entity::ID)
-                  ->on(Table::MERCHANT)
-                  ->on_delete('restrict');
-
-            $table->foreign(Payout::CUSTOMER_ID)
-                  ->references(Customer\Entity::ID)
-                  ->on(Table::CUSTOMER)
-                  ->on_delete('restrict');
-
-            $table->foreign(Payout::PAYMENT_ID)
-                  ->references(Payment\Entity::ID)
-                  ->on(Table::PAYMENT)
-                  ->on_delete('restrict');
-
-            $table->foreign(Payout::BATCH_FUND_TRANSFER_ID)
-                  ->references(BatchFundTransfer\Entity::ID)
-                  ->on(Table::BATCH_FUND_TRANSFER)
-                  ->on_delete('restrict');
         });
     }
 

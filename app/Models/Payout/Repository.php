@@ -2608,12 +2608,21 @@ class Repository extends Base\Repository
                      ->toArray();
     }
 
-    // Does a bulk insert.
-    public function insertIntoDestination(string $destinationTable, $data)
+    // Does a bulk insert into Payout Service DB.
+    public function insertIntoPayoutServiceDB(string $destinationTable, $data)
     {
         $this->newQueryWithConnection($this->getPayoutsServiceConnection())
              ->from($destinationTable)
              ->insert($data);
+    }
+
+    // Does an update on Payout Service DB.
+    public function updateInPayoutServiceDB(string $destinationTable, string $id, $data)
+    {
+        $this->newQueryWithConnection($this->getPayoutsServiceConnection())
+             ->from($destinationTable)
+             ->where('id', $id)
+             ->update($data);
     }
 
     // Opens a DB transaction on PS DB connection.
@@ -2634,6 +2643,32 @@ class Repository extends Base\Repository
 
         return \DB::connection($this->getPayoutsServiceConnection())
                   ->select("select * from $tableName where id = '$id' limit 1");
+    }
+
+    public function getPayoutServicePayoutMetaDataForDualWrite(string $payoutId)
+    {
+        $tableName = 'payout_meta_temporary';
+
+        if (in_array($this->app['env'], ['testing', 'testing_docker'], true) === true)
+        {
+            $tableName = 'ps_' . $tableName;
+        }
+
+        return \DB::connection($this->getPayoutsServiceConnection())
+                  ->select("select * from $tableName where payout_id = '$payoutId' and meta_name = 'dual_write'");
+    }
+
+    public function getPayoutServicePayoutLogs(string $payoutId)
+    {
+        $tableName = 'payout_logs';
+
+        if (in_array($this->app['env'], ['testing', 'testing_docker'], true) === true)
+        {
+            $tableName = 'ps_' . $tableName;
+        }
+
+        return \DB::connection($this->getPayoutsServiceConnection())
+                  ->select("select * from $tableName where payout_id = '$payoutId' order by created_at asc");
     }
 
     public function fetchCountOfProcessedPayoutsInLast24Hours(string $merchantId)

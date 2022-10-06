@@ -3667,6 +3667,7 @@ class Route
         'decrement_free_payouts_payouts_service'  => ['post',     'payouts_service/decrement_free_payouts',                 'PayoutController@decrementFreePayoutsForPayoutsService'       ],
         'rollback_free_payouts'                   => ['post',     'payouts_service/free_payout_rollback',                   'PayoutController@freePayoutRollback'                          ],
         'payouts_service_redis_key_set'           => ['post',     'payouts_service_redis_key_set',                          'PayoutController@payoutServiceRedisKeySet'                    ],
+        'payouts_service_dual_write'              => ['post',     'payouts_service/dual_write',                             'PayoutController@payoutServiceDualWrite'                      ],
 
         // Data Consistency Checker Routes
         'initiate_payouts_consistency_check'      => ['post',     'consistency_checker',                                    'PayoutController@initiatePayoutsConsistencyCheck'             ],
@@ -5110,6 +5111,7 @@ class Route
 
         // payout service
         'create_payout_entry',
+        'payouts_service_dual_write',
         'create_reversal_entry',
         'banking_account_fetch_by_account_number',
         'banking_account_fetch_by_balance_id',
@@ -14021,6 +14023,7 @@ class Route
 
         'payouts_service' => [
             'create_payout_entry',
+            'payouts_service_dual_write',
             'fund_account_get_internal',
             'banking_account_fetch_by_account_number',
             'banking_account_fetch_by_balance_id',

@@ -77,6 +77,10 @@ return [
         'test'       => env('AWS_PAYOUTS_TEST_QUEUE'),
         'live'       => env('AWS_PAYOUTS_LIVE_QUEUE'),
     ],
+    'payout_service_dual_write' => [
+        'test'       => env('AWS_PAYOUT_SERVICE_DUAL_WRITE_LIVE_QUEUE'),
+        'live'       => env('AWS_PAYOUT_SERVICE_DUAL_WRITE_LIVE_QUEUE'),
+    ],
     'scheduled_payouts_process' => [
         'test'       =>  env('AWS_SCHEDULED_PAYOUTS_PROCESS_TEST_QUEUE'),
         'live'       =>  env('AWS_SCHEDULED_PAYOUTS_PROCESS_LIVE_QUEUE'),

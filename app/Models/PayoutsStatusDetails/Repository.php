@@ -75,4 +75,16 @@ class Repository extends Base\Repository
 
     }
 
+    public function getPayoutServiceStatusDetails(string $payoutId)
+    {
+        $tableName = 'payout_status_details';
+
+        if (in_array($this->app['env'], ['testing', 'testing_docker'], true) === true)
+        {
+            $tableName = 'ps_payout_status_details';
+        }
+
+        return \DB::connection($this->getPayoutsServiceConnection())
+                  ->select("select * from $tableName where payout_id = '$payoutId'");
+    }
 }

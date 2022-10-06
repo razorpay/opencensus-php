@@ -36,10 +36,12 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
     // Queue config keys to throw error if any.
     const PAYOUT_POST_CREATE_PROCESS              = 'payout_post_create_process';
     const PAYOUT_POST_CREATE_PROCESS_LOW_PRIORITY = 'payout_post_create_process_low_priority';
+    const PAYOUT_SERVICE_DUAL_WRITE               = 'payout_service_dual_write';
 
     protected $shouldThrowErrorOnFailure = [
         self::PAYOUT_POST_CREATE_PROCESS,
-        self::PAYOUT_POST_CREATE_PROCESS_LOW_PRIORITY
+        self::PAYOUT_POST_CREATE_PROCESS_LOW_PRIORITY,
+        self::PAYOUT_SERVICE_DUAL_WRITE,
     ];
 
     /**

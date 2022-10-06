@@ -33,4 +33,17 @@ class Repository extends Base\Repository
                     ->whereIn(Entity::PAYOUT_ID, $payoutIds)
                     ->update($updates);
     }
+
+    public function getPayoutServicePayoutDetails(string $payoutId)
+    {
+        $tableName = 'payout_details';
+
+        if (in_array($this->app['env'], ['testing', 'testing_docker'], true) === true)
+        {
+            $tableName = 'ps_' . $tableName;
+        }
+
+        return \DB::connection($this->getPayoutsServiceConnection())
+                  ->select("select * from $tableName where payout_id = '$payoutId'");
+    }
 }

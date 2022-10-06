@@ -130,7 +130,7 @@ class Processor
             function() use ($payoutServiceData) {
                 foreach ($payoutServiceData as $table => $data)
                 {
-                    $this->repo->payout->insertIntoDestination($table, $data);
+                    $this->repo->payout->insertIntoPayoutServiceDB($table, $data);
                 }
             }
         );
