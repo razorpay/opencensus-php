@@ -125,6 +125,7 @@ class Cors
                 'request-start-time',
                 'sentry-trace',
                 'Authorization',
+                'baggage',
             ];
 
             $headers = [
