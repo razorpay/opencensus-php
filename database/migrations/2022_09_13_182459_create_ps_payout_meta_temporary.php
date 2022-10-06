@@ -28,7 +28,7 @@ class CreatePsPayoutMetaTemporary extends Migration
 
             $table->char('payout_id', Payout::ID_LENGTH);
 
-            $table->char('meta_name', 255);
+            $table->char('meta_name', 32);
 
             $table->json('meta_value');
         });
