@@ -36,7 +36,7 @@ class Constants
 
     const ID                    = 'id';
     const COUNT                 = 'count';
-    const DOCUMENTS_DETAIL      = 'documents_detail';
+    const DOCUMENTS_DETAIL      = 'documents_details';
     const TYPE                  = 'type';
     const UFH_FILE_ID           = 'ufh_file_id';
     const ACCEPTANCE_TIMESTAMP  = 'acceptance_timestamp';
