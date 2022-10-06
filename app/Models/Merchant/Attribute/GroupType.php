@@ -68,6 +68,16 @@ class GroupType
             Type::FINANCE_L3,
             Type::OPERATIONS,
             Type::VIEW_ONLY,
-        ]
+        ],
+
+        Group::MASTERCARD => [
+            Type::REQUESTER_ID,
+            Type::MERCHANT_NAME,
+        ],
+
+        Group::VISA => [
+            Type::REQUESTER_ID,
+            Type::MERCHANT_NAME,
+        ],
     ];
 }

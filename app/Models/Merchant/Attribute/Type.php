@@ -68,4 +68,8 @@ class Type
     // CA Onboarding flow values
     const ONE_CA                        = 'ONE_CA';
 
+    //Network Types
+    const REQUESTER_ID                    = 'requester_id';
+    const MERCHANT_NAME                   = 'merchant_name';
+
 }

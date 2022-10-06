@@ -5,6 +5,7 @@ namespace RZP\Services;
 use App;
 use Razorpay\Trace\Logger as Trace;
 use Requests_Hooks;
+use RZP\Constants\Product;
 use RZP\Exception;
 use RZP\Gateway\Hitachi\Status;
 use RZP\Models\Order;
@@ -459,6 +460,12 @@ class CardPaymentService
 
         $this->addAuthenticationDataIfApplicable($content);
 
+        // Should migrate merchant_attribute table also as part of rearch to accomodate 3ds2 flow.
+        if($action === Action::AUTHORIZE)
+        {
+            $this->addThreeDSDetailsIfApplicable($content);
+        }
+
         $response = $this->sendRequest('POST', 'action/' . $action, $content);
 
         if ($this->action === Action::AUTHORIZE)
@@ -890,6 +897,33 @@ class CardPaymentService
         }
     }
 
+    //Migrate it as part of rearch to send 3ds2 details as part of AREQ
+    protected function addThreeDSDetailsIfApplicable(array & $data)
+    {
+        if( $data['input'][Entity::MERCHANT]->Is3dsDetailsRequiredEnabled() && $data['input']['card']['international'])
+        {
+            $merchantId = $data['input'][Entity::MERCHANT]->getId();
+            $network =  strtolower($data['input']['iin']['network']);
+
+            if(in_array($network,Merchant\Constants::listOfNetworksSupportedOn3ds2))
+            {
+                $requestorId = (new Merchant\Attribute\Repository())->getValueForProductGroupType($merchantId,Product::PRIMARY,$network,Merchant\Attribute\Type::REQUESTER_ID);
+                $merchantName = (new Merchant\Attribute\Repository())->getValueForProductGroupType($merchantId,Product::PRIMARY,$network,Merchant\Attribute\Type::MERCHANT_NAME);
+
+                if($requestorId && $merchantName)
+                {
+                    $data['input']['card']['authentication_out_of_band']['3ds_requestor_id'] = $requestorId['value'];
+                    $data['input']['card']['authentication_out_of_band']['3ds_requestor_name'] = $merchantName['value'];
+                }
+                else{
+                    list($requestorIdValue, $merchantNameValue) = (new Merchant\Attribute\Service())->getDefaultValuesForMerchantOnboarding($network,$data['input'][Entity::MERCHANT]);
+                    $data['input']['card']['authentication_out_of_band']['3ds_requestor_id'] = $requestorIdValue;
+                    $data['input']['card']['authentication_out_of_band']['3ds_requestor_name'] = $merchantNameValue;
+                }
+            }
+        }
+    }
+
     protected function traceRequest(array $request)
     {
         try
@@ -929,6 +963,8 @@ class CardPaymentService
                 'card.tokenised'                    => 'content.input.card.tokenised',
                 'card.token_id'                     => 'content.input.token.id',
                 'card.token_reference_number'       => 'content.input.card.token_reference_number',
+                'card.3ds2_requestor_id'            => 'content.input.card.authentication_out_of_band.3ds_requestor_id',
+                'card.3ds2_requestor_name'          => 'content.input.card.authentication_out_of_band.3ds_requestor_name',
                 'iin.network'                       => 'content.input.iin.network',
                 'iin.country'                       => 'content.input.iin.country',
                 'iin.emi'                           => 'content.input.iin.emi',

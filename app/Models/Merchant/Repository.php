@@ -6,6 +6,7 @@ use DB;
 use Closure;
 use Carbon\Carbon;
 
+use Illuminate\Database\Query\JoinClause;
 use RZP\Exception;
 use RZP\Base\Common;
 use RZP\Exception\LogicException;
@@ -1786,5 +1787,38 @@ class Repository extends Base\Repository
     {
         return $this->newQueryWithConnection($this->getSlaveConnection())
             ->findMany($merchantIds);
+    }
+
+    public function fetchMerchantsWithNotOnboardedOnNetworks($product, array $networks, $limit)
+    {
+        $merchantAttributeTable = $this->repo->merchant_attribute->getTableName();
+        $prodColumn  = $this->repo->merchant_attribute->dbColumn(Attribute\Entity::PRODUCT);
+        $idColumn = $this->dbColumn(Entity::ID);
+
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->select($idColumn)
+            ->leftJoin(
+                $merchantAttributeTable,
+                function(JoinClause $join) use($product,$networks) {
+                    $midColumn   = $this->repo->merchant_attribute->dbColumn(Attribute\Entity::MERCHANT_ID);
+                    $prodColumn  = $this->repo->merchant_attribute->dbColumn(Attribute\Entity::PRODUCT);
+                    $groupColumn = $this->repo->merchant_attribute->dbColumn(Attribute\Entity::GROUP);
+
+                    $idColumn = $this->dbColumn(Entity::ID);
+
+                    $join->on($idColumn,$midColumn);
+                    $join->where($prodColumn,$product);
+                    $join->whereIn($groupColumn,$networks);
+                }
+            )
+            ->whereNull($prodColumn)
+            ->where(Entity::ACTIVATED,"=",1)
+            ->where(Entity::INTERNATIONAL,"=",1)
+            ->limit($limit)
+            ->distinct()
+            ->get()
+            ->pluck(Entity::ID)
+            ->toArray();
     }
 }

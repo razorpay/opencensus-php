@@ -99,6 +99,8 @@ class Route
         'merchant_onboarding_cron_jobs'            => ['post',     'merchants/onboarding/cron_jobs',                  'MerchantController@handleOnboardingCronjobs'  ],
         'merchant_onboarding_crons'                => ['post',     'merchants/onboarding/{cronType}/crons',          'MerchantController@handleOnboardingCrons'            ],
         'fetch_merchant_escalation'                => ['get',      'merchants/onboarding/escalations',               'MerchantController@fetchOnboardingEscalations'       ],
+        'merchant_card_networks_onboarding'        => ['post',     'merchants/onboarding/networks',                  'MerchantController@onboardMerchantOnNetworks'],
+        'merchant_card_networks_onboarding_bulk'   => ['post',     'merchants/onboarding/networks/bulk',             'MerchantController@onboardMerchantOnNetworkBulk'],
         'payment_create'                           => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'           ],
         'internal_transactions'                    => ['post',     'internal/transactions',                          'TransactionController@postInternalTransaction'       ],
         'internal_transactions_cron'               => ['post',     'internal/transactions/cron',                          'TransactionController@postInternalTransactionCron'       ],
@@ -4565,12 +4567,14 @@ class Route
         // metro routes
         'payout_email_attachments',
         'account_service_handle_update_event',
+        'merchant_card_networks_onboarding',
 
 
         // cron for generating merchant report
         'merchant_report',
         'merchant_onboarding_escalations',
         'merchant_onboarding_cron_jobs',
+        'merchant_card_networks_onboarding_bulk',
         'settlement_ondemand_process',
         'settlement_ondemand_full_enable',
         'settlement_ondemand_restricted_enable',
@@ -9548,7 +9552,8 @@ class Route
 
         'metro' => [
             'payout_email_attachments',
-            'account_service_handle_update_event'
+            'account_service_handle_update_event',
+            'merchant_card_networks_onboarding',
         ],
 
         'vendor_payments' => [
@@ -13169,6 +13174,7 @@ class Route
 
             'merchant_onboarding_escalations',
             'merchant_onboarding_cron_jobs',
+            'merchant_card_networks_onboarding_bulk',
             'setcronjob_webhook',
             // The rest are crons
             'entity_tax_update',

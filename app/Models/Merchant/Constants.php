@@ -338,6 +338,9 @@ final class Constants
     const AGGREGATIONS              =    "aggregations";
     const FILTERS                   =    "filters";
 
+    const MASTERCARD = 'mastercard';
+    const VISA       = 'visa';
+
     const MERCHANT_WORKFLOW_CLARIFICATION                =  "merchant_workflow_clarification";
     const WORKFLOW_CLARIFICATION_DOCUMENTS_IDS           =  "clarification_documents_ids";
     const UFH_FILE_URL                                   = "%sadmin/entity/ufh.files/live/file_%s ,  ";
@@ -390,6 +393,13 @@ final class Constants
         BusinessCategory::SOCIAL                    => 20000000,
         BusinessCategory::OTHERS                    => 50000000,
     ];
+
+    //Will have to add MC value here, when we receive cert values from MasterCard
+    const listOfNetworksSupportedOn3ds2 = [
+        self::VISA,
+    ];
+
+    const MERCHANT_ONBOARD_ON_NETWORK_METRO_TOPIC = 'merchant_onboarding_networks';
 
     /**
      * Partner types that are allowed to view and manage

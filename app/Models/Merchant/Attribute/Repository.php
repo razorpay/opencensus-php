@@ -8,6 +8,7 @@ use Illuminate\Database\Query\JoinClause;
 use RZP\Models\Base;
 use RZP\Models\Payout;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 
 
 class Repository extends Base\Repository
@@ -56,6 +57,16 @@ class Repository extends Base\Repository
         }
 
         return $query->get();
+    }
+
+    public function getValueForProductGroupType(string $merchantId, string $product, string $group,string $type)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->where(Entity::PRODUCT, $product)
+                    ->where(Entity::GROUP, $group)
+                    ->where(Entity::TYPE, $type)
+                    ->first();
     }
 
     public function updateMerchantAttributeValuesById(array $merchantAttributeIds, string $newAttributevalue)

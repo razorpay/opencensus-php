@@ -3469,6 +3469,11 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::ADDRESS_NAME_REQUIRED) === true);
     }
 
+    public function Is3dsDetailsRequiredEnabled(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::ENABLE_3DS2) === true);
+    }
+
     public function isSignupCampaign($signupCampaign): bool
     {
         $app = App::getFacadeRoot();

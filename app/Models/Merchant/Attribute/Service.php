@@ -3,6 +3,7 @@
 
 namespace RZP\Models\Merchant\Attribute;
 
+use RZP\Constants\Mode;
 use Throwable;
 
 use RZP\Models\Base;
@@ -29,13 +30,26 @@ class Service extends Base\Service
     const TRACE_STEP_FEATURE_FLAG_FOR_INTENT_FLAG_ADDED = 'feature_flag_for_intent_flag_added';
     const TRACE_STEP_FEATURE_FLAG_FOR_INTENT_FLAG_EXISTS = 'feature_flag_for_intent_flag_exists';
 
+    const MASTERCARD = 'mastercard';
+    const VISA       = 'visa';
+    const RAZORPAY   = 'Razorpay';
+
+    const ADD = "ADD";
+    const DELETE = "DELETE";
+
     protected $core;
+
+    protected $mutex;
 
     /** @var $diag DiagClient */
     protected $diag;
 
     /** @var $salesforce SalesForceClient */
     protected $salesforce;
+    /**
+     * @var Repository
+     */
+    protected $entityRepo;
 
     public function __construct()
     {
@@ -48,6 +62,8 @@ class Service extends Base\Service
         $this->diag = $this->app['diag'];
 
         $this->salesforce = $this->app['salesforce'];
+
+        $this->mutex = $this->app['api.mutex'];
 
     }
 
@@ -358,4 +374,202 @@ class Service extends Base\Service
             }
         }
     }
+
+    public function onboardMerchantOnNetworks($input)
+    {
+        try
+        {
+            $message = $input['message'];
+
+            $data = json_decode(base64_decode($message['data'], true), true);
+
+            $this->trace->info(TraceCode::MERCHANT_ONBOARD_REQUEST_ON_NETWORK_DATA,[
+                'data' => $data,
+            ]);
+
+            $merchantId = $data['merchant_id'];
+
+            $mutex_key = "merchant_onboard_network_" . $merchantId;
+
+            $this->mutex->acquireAndRelease($mutex_key,
+                function () use ($merchantId,$data)
+                {
+                    $merchant = $this->repo->merchant->find($merchantId);
+                    foreach ($data['networks'] as $network)
+                    {
+                        $networkAttributes = $this->entityRepo->getValueForProductGroupType($merchantId,Product::PRIMARY,$network,Type::REQUESTER_ID);
+
+                        //To skip already onboarded merchants except Mastercard default merchants
+                        if($networkAttributes && !($network === self::MASTERCARD && ($networkAttributes['value'] === $this->app['config']->get('gateway.mastercard.razorpay_requester_id'))))
+                        {
+                            continue;
+                        }
+                        $requesterAttribute =[];
+                        $nameAttribute=[];
+
+                        switch($network)
+                        {
+                            case self::VISA:
+                                list($requesterAttribute, $nameAttribute) = $this->onboardOnVisa($merchant);
+                                break;
+
+                            case self::MASTERCARD:
+                                list($requesterAttribute, $nameAttribute) = $this->onboardOnMasterCard($merchant);
+                                break;
+
+                            default:
+                                $this->trace->info(TraceCode::ONBOARDING_NETWORK_NOT_SUPPORTED,[
+                                    'network' => $network,
+                                    'merchant_id' => $merchantId,
+                                ]);
+                                break;
+                        }
+
+                        if($requesterAttribute && $nameAttribute)
+                        {
+                            if($networkAttributes && ($network === self::MASTERCARD && ($networkAttributes['value'] === $this->app['config']->get('gateway.mastercard.razorpay_requester_id'))))
+                            {
+                                $this->core->update($networkAttributes,$requesterAttribute);
+                            }
+                            else{
+                                $this->core->create($requesterAttribute,$merchant);
+                                $this->core->create($nameAttribute,$merchant);
+                            }
+                        }
+                    }
+
+                },20,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS);
+
+
+        }
+        catch(\Exception $e)
+        {
+            throw new \Exception(TraceCode::MERCHANT_ONBOARD_REQUEST_ON_NETWORK_FAILED);
+        }
+
+        return [
+            "status" => "successful",
+            "merchant_id" => $merchantId,
+        ];
+    }
+
+    protected function onboardOnVisa($merchant)
+    {
+        list($visaIdentifier , $visaName) = $this->getDefaultValuesForMerchantOnboarding(Group::VISA,$merchant);
+
+        $requesterAttribute = [
+            Entity::PRODUCT     => Product::PRIMARY,
+            Entity::GROUP       => Group::VISA,
+            Entity::TYPE        => Type::REQUESTER_ID,
+            Entity::VALUE       => $visaIdentifier,
+        ];
+
+        $nameAttribute = [
+            Entity::PRODUCT     => Product::PRIMARY,
+            Entity::GROUP       => Group::VISA,
+            Entity::TYPE        => Type::MERCHANT_NAME,
+            Entity::VALUE       => $visaName,
+        ];
+
+        return [$requesterAttribute, $nameAttribute];
+    }
+
+    protected function onboardOnMasterCard($merchant)
+    {
+
+        try {
+            $mcIdentifier = $this->app['config']->get('gateway.mastercard.identifier_id');
+            $input = $this->getRequestBodyForMCIdentifier($merchant,$mcIdentifier);
+            $response = $this->app->mozart->sendMozartRequest('onboarding',self::MASTERCARD,'merchant_enrollment',$input);
+
+            if ($response['data']['merchantData'][0]['status'] === "Successful")
+            {
+                $mcRequesterId = $input['merchantData']['merchantID'];
+            }
+            else
+            {
+                throw new \Exception('Status was not successful');
+            }
+        }
+        catch(\Exception $e)
+        {
+            list($mcRequesterId, $mcNameId) = $this->getDefaultValuesForMerchantOnboarding(Group::MASTERCARD,$merchant);
+        }
+
+        $requesterAttribute = [
+            Entity::PRODUCT     => Product::PRIMARY,
+            Entity::GROUP       => Group::MASTERCARD,
+            Entity::TYPE        => Type::REQUESTER_ID,
+            Entity::VALUE       => $mcRequesterId,
+        ];
+
+        $nameAttribute = [
+            Entity::PRODUCT     => Product::PRIMARY,
+            Entity::GROUP       => Group::MASTERCARD,
+            Entity::TYPE        => Type::MERCHANT_NAME,
+            Entity::VALUE       => $input['merchantData']['merchantName'],
+        ];
+
+        return [$requesterAttribute, $nameAttribute];
+
+    }
+
+    protected function getRequestBodyForMCIdentifier($merchant,$mcIdentifier)
+    {
+        $merchantData = [
+            'merchantID'            => $mcIdentifier.'_'.$merchant->getId(),
+            'merchantName'          => $mcIdentifier.'_'. (isset($billingLabel) ? $billingLabel : $merchant->getName()),
+        ];
+        $input = [
+            'merchantData'  => $merchantData,
+            'action'         => self::ADD,
+        ];
+        return $input;
+
+    }
+
+    public function onboardMerchantOnNetworkBulk($input)
+    {
+        $limit = isset($input['limit']) ? $input['limit'] : 1000;
+        $merchantIds = [];
+
+        $this->app['rzp.mode']=Mode::LIVE;
+
+        if(!isset($input['merchant_ids']))
+        {
+            $merchantIds = $this->repo->merchant->fetchMerchantsWithNotOnboardedOnNetworks(Product::PRIMARY,Merchant\Constants::listOfNetworksSupportedOn3ds2,$limit);
+        }
+        else{
+            $merchantIds = $input['merchant_ids'];
+        }
+
+        foreach ($merchantIds as $id)
+        {
+            (new \RZP\Models\Merchant\Core)->checkAndPushMessageToMetroForNetworkOnboard($id);
+        }
+
+        return [
+            "status" => "successful",
+            "total_merchant_ids" => count($merchantIds),
+        ];
+    }
+
+    public function getDefaultValuesForMerchantOnboarding($network,$merchant)
+    {
+        $billingLabel = $merchant->getBillingLabel();
+
+        if($network === Group::VISA)
+        {
+            $requestorIdValue = $this->app['config']->get('gateway.visa.identifier_id').'*'.$merchant->getId();
+            $merchantNameValue = isset($billingLabel) ? $billingLabel : $merchant->getName();
+        }elseif ($network === Group::MASTERCARD){
+            $requestorIdValue = $this->app['config']->get('gateway.mastercard.razorpay_requester_id');
+            $merchantNameValue = $this->app['config']->get('gateway.mastercard.identifier_id').'_'.(isset($billingLabel) ? $billingLabel : $merchant->getName());
+        }
+
+        return [$requestorIdValue, $merchantNameValue];
+    }
+
+
 }

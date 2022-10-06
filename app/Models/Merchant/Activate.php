@@ -127,6 +127,8 @@ class Activate extends Base\Core
         $merchant->setDefaultMethodsBasedOnCategory();
 
         $merchant->activate();
+        //Will be added back when we test e2e flow for onboarding all the merchants
+        //(new Core)->checkAndPushMessageToMetroForNetworkOnboard($merchant->getId());
 
         $merchant->releaseFunds();
 
@@ -137,7 +139,7 @@ class Activate extends Base\Core
             $merchant->setHasKeyAccess(true);
         }
 
-        $merchantCore = new Merchant\Core;
+        $merchantCore = new Core();
 
         $merchantCore->updateInternationalIfApplicable($merchant, $merchantDetail);
 
@@ -223,6 +225,8 @@ class Activate extends Base\Core
         $merchant->setDefaultMethodsBasedOnCategory();
 
         $merchant->activate();
+        //Will be added back when we test e2e flow for onboarding all the merchants
+        //(new Core)->checkAndPushMessageToMetroForNetworkOnboard($merchant->getId());
 
         $this->enableOneClickCheckoutIfApplicable($merchant);
 
@@ -502,6 +506,8 @@ class Activate extends Base\Core
         $merchant->setDefaultMethodsBasedOnCategory();
 
         $merchant->activate();
+        //Will be added back when we test e2e flow for onboarding all the merchants
+        //(new Core)->checkAndPushMessageToMetroForNetworkOnboard($merchant->getId());
 
         // Create the live mode balance entity for the merchant
         $merchantBalance = (new Merchant\Core)->createBalance($merchant, Mode::LIVE);

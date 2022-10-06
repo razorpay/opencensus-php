@@ -341,6 +341,15 @@ return [
         'test_ama_password' => env('AMEX_GATEWAY_TEST_AMA_PASSWORD'),
     ],
 
+    'visa' => [
+        'identifier_id'   => env('VISA_IDENTIFIER_ID','10075249'),
+    ],
+
+    'mastercard' => [
+         'identifier_id'            => env('MASTERCARD_IDENTIFIER_ID','RAZ39520'),
+         'razorpay_requester_id'    => env('MASTERCARD_RZP_REQUESTER_ID','RAZ39520'),
+    ],
+
     'axis_migs' => [
         'test_hash_secret'  => env('AXIS_MIGS_GATEWAY_TEST_HASH_SECRET'),
         'test_merchant_id'  => env('AXIS_MIGS_GATEWAY_TEST_MERCHANT_ID'),

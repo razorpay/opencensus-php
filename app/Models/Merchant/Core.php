@@ -7838,6 +7838,46 @@ class Core extends Base\Core
         return !$isSubMerchant;
     }
 
+    public function  checkAndPushMessageToMetroForNetworkOnboard($merchantId)
+    {
+        $networks = [];
+
+        foreach(Constants::listOfNetworksSupportedOn3ds2 as $network)
+        {
+            array_push($networks,$network);
+        }
+
+        $data = [
+            'merchant_id' => $merchantId,
+            'networks'    => $networks,
+        ];
+
+        $metroMessage = [
+            'data' => json_encode($data, true),
+            'attributes' => [
+                'mode' => $this->mode ?? Mode::LIVE,
+            ]
+        ];
+
+        try
+        {
+            $response = $this->app['metro']->publish(Constants::MERCHANT_ONBOARD_ON_NETWORK_METRO_TOPIC, $metroMessage);
+
+            $this->trace->info(TraceCode::MERCHANT_ONBOARD_NETWORK_METRO_PUBLISHED,
+                [
+                    'topic'    => Constants::MERCHANT_ONBOARD_ON_NETWORK_METRO_TOPIC,
+                    'response' => $response,
+                    'merchant_id' => $merchantId,
+                ]);
+
+        }
+        catch (Throwable $e)
+        {
+            $this->trace->info(TraceCode::MERCHANT_ONBOARD_NETWORK_METRO_MESSAGE_ERROR, $data);
+        }
+
+    }
+
     public function bulkMigrateAggregatorToResellerPartner(array $input)
     {
         (new Validator())->validateInput('bulkAggregatorToResellerMigration', $input);
@@ -8450,4 +8490,5 @@ class Core extends Base\Core
 
         return false;
     }
+
 }

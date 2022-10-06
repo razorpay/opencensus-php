@@ -845,5 +845,56 @@ return [
                 ]
             ]
         ],
+    ],
+
+    'testOnboardMerchantOnNetworkBulkWithLimit' => [
+        'request' =>[
+            'content' => [
+                    'limit' => 1,
+            ],
+            'url' => '/merchants/onboarding/networks/bulk',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                "status" => "successful",
+                "total_merchant_ids" => 1,
+            ]
+        ],
+    ],
+
+    'testOnboardMerchantOnNetworkBulkWithArray' => [
+        'request' =>[
+            'content' => [
+                    'limit' => 2,
+                    'merchant_ids' => ["1000000Razorpay","Client00123456","10000000000000"],
+            ],
+            'url' => '/merchants/onboarding/networks/bulk',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                "status" => "successful",
+                "total_merchant_ids" => 3,
+            ]
+        ],
+    ],
+
+    'testOnboardMerchantOnNetworks' => [
+        'request' => [
+            'content' => [
+                'message' => [
+                    'data' => "ewogICJtZXJjaGFudF9pZCI6ICIxMDAwMDAwMDAwMDAwMCIsCiAgIm5ldHdvcmtzIjogWwogICAgIm1hc3RlcmNhcmQiLAogICAgInZpc2EiCiAgXQp9",
+                ]
+            ],
+            'url' => '/merchants/onboarding/networks',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                "status" => "successful",
+                "merchant_id" => "10000000000000",
+            ]
+        ],
     ]
 ];

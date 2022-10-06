@@ -778,6 +778,10 @@ class Constants
      */
     const ALLOW_B2B_ACTIVATION = 'allow_b2b_activation';
 
+    /**
+     * Add 3ds merchant details to Authorize body
+     */
+    const ENABLE_3DS2 = 'enable_3ds2';
     /*
      * Enable feature to appear/disappear support url at org level
     */
@@ -2183,6 +2187,7 @@ class Constants
         self::CONSOLIDATED_ORG_REPORTS        => true,
         self::EXPOSE_RRN                      => true,
         self::IMPORT_FLOW_OPEX_REPORT         => true,
+        self::ENABLE_3DS2                     => true,
     ];
 
     // Entity type constants

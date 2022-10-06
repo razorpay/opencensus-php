@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Detail;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\Core;
 use RZP\Models\Partner;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -26,6 +27,9 @@ class InternationalCore extends Base\Core
         $merchantDetails = (new Detail\Core)->getMerchantDetails($merchant);
 
         $merchant->enableInternational();
+
+        //Will be added back when we test e2e flow for onboarding all the merchants
+        //(new Core)->checkAndPushMessageToMetroForNetworkOnboard($merchant->getId());
 
         if ($this->getInternationalActivationFlow($merchant) === InternationalActivationFlow::WHITELIST
             and ($merchant->getOrgId() === Org::RAZORPAY_ORG_ID))

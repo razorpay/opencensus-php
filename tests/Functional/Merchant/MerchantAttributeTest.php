@@ -2,6 +2,8 @@
 
 namespace Functional\Merchant;
 
+use App;
+use RZP\Constants\Product;
 use RZP\Exception;
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
@@ -26,11 +28,16 @@ class MerchantAttributeTest extends TestCase
 
     const DEFAULT_MERCHANT_ID = '10000000000000';
 
+    protected $repo;
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/MerchantAttributeTestData.php';
 
         parent::setUp();
+
+        $this->app = App::getFacadeRoot();
+        $this->repo = $this->app['repo'];
 
         $this->setUpMerchantForBusinessBanking(false, 100000);
     }
@@ -494,5 +501,70 @@ class MerchantAttributeTest extends TestCase
                 'entity_id' => $merchantId,
                 'entity_type' => 'merchant'
             ])->pluck('name')->toArray();
+    }
+
+    public function testOnboardMerchantOnNetworkBulkWithLimit()
+    {
+        $this->ba->cronAuth();
+
+        $this->startTest();
+    }
+
+    public function testOnboardMerchantOnNetworkBulkWithArray()
+    {
+        $this->ba->cronAuth();
+
+        $this->startTest();
+    }
+
+    public function testOnboardMerchantOnNetworks()
+    {
+        $this->ba->MetroAuth();
+
+        $this->mockMozartForMasterCard();
+
+        $this->startTest();
+
+        $attribute = $this->repo->merchant_attribute->getValueForProductGroupType("10000000000000",Product::PRIMARY,Merchant\Attribute\Group::MASTERCARD,Merchant\Attribute\Type::REQUESTER_ID);
+        $this->assertNotEmpty($attribute);
+
+        $attribute = $this->repo->merchant_attribute->getValueForProductGroupType("10000000000000",Product::PRIMARY,Merchant\Attribute\Group::MASTERCARD,Merchant\Attribute\Type::MERCHANT_NAME);
+        $this->assertNotEmpty($attribute);
+
+        $attribute = $this->repo->merchant_attribute->getValueForProductGroupType("10000000000000",Product::PRIMARY,Merchant\Attribute\Group::VISA,Merchant\Attribute\Type::REQUESTER_ID);
+        $this->assertNotEmpty($attribute);
+
+        $attribute = $this->repo->merchant_attribute->getValueForProductGroupType("10000000000000",Product::PRIMARY,Merchant\Attribute\Group::VISA,Merchant\Attribute\Type::MERCHANT_NAME);
+        $this->assertNotEmpty($attribute);
+
+    }
+
+    protected function mockMozartForMasterCard()
+    {
+        $mozartServiceMock = $this->getMockBuilder(\RZP\Services\Mock\Mozart::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['sendMozartRequest'])
+            ->getMock();
+
+        $mozartServiceMock->method('sendMozartRequest')
+            ->will($this->returnCallback(
+                function ($namespace,$gateway,$action,$data)
+                {
+                    if($action === 'merchant_enrollment')
+                    {
+                        return [
+                            'data' => [
+                                "merchantData" =>[
+                                    [
+                                        "status"     => "Successful",
+                                        "merchantID" => $data['merchantData']['merchantID'],
+                                    ]
+                                ]
+                            ]
+                        ];
+                    }
+                }
+                ));
+
     }
 }
