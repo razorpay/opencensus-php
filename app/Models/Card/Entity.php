@@ -1037,7 +1037,7 @@ class Entity extends Base\PublicEntity
 
         if ($iin === null or $iin === '0')
         {
-            if ($this->getTrivia() === '1')
+            if (empty($this->getTokenIin()) === false)
             {
                 $iinNumber = Card\IIN\IIN::getTransactingIinforRange($this->getTokenIin()) ?? substr($this->getTokenIin(),0,6) ;
                 $this->cardMetadata['iin'] = $iinNumber;
