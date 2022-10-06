@@ -38,6 +38,7 @@ class Constants
     const CANARA           = 'canara';
     const ISG              = 'isg';
     const SBI              = 'sbi';
+    const SBI_NCE          = 'sbi_nce';
     const CORPORATION      = 'corporation';
     const YESB             = 'yesb';
     const CUB              = 'cub';
@@ -127,6 +128,7 @@ class Constants
             self::ONECARD,
             self::ICICI,
             self::YESB,
+            self::SBI_NCE,
         ],
         Type::COMBINED => [
             self::KOTAK,
@@ -354,6 +356,7 @@ class Constants
             self::RBL      => ['Rblcards.emi@razorpay.com'],
             self::SCBL     => ['scbl.emi@razorpay.com'],
             self::SBI      => ['emi.ops@sbicard.com', 'deepak.semwal@sbicard.com', 'settlements@razorpay.com', 'Divya.Verma@sbicard.com', 'albin.george@razorpay.com'],
+            self::SBI_NCE  => ['emi.ops@sbicard.com', 'deepak.semwal@sbicard.com', 'settlements@razorpay.com', 'Divya.Verma@sbicard.com'],
             self::CITI     => ['emi-citibank@razorpay.com'],
             self::BOB      => ['bob.cc.emi@razorpay.com'],
             self::ICICI    => ['icicicards.emi@razorpay.com'],

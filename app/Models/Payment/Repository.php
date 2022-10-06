@@ -17,6 +17,7 @@ use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Offer;
 use RZP\Models\Order;
 use RZP\Gateway\Enach;
 use RZP\Constants\Mode;
@@ -583,6 +584,38 @@ EOT;
                     ->with($relations)
                     ->select($paymentData)
                     ->get();
+    }
+
+    public function fetchNoCostEmiPaymentsWithBankCode($from, $to, $bank)
+    {
+        $paymentData = $this->dbColumn('*');
+        $paymentStatus = $this->dbColumn(Entity::STATUS);
+        $paymentIdCol = $this->dbColumn(Entity::ID);
+
+        $entityOfferTable = $this->repo->entity_offer->getTableName();
+        $entityOfferEntityIdCol = $this->repo->entity_offer->dbColumn(EntityOffer\Entity::ENTITY_ID);
+        $entityOfferEntityTypeCol = $this->repo->entity_offer->dbColumn(EntityOffer\Entity::ENTITY_TYPE);
+        $entityOfferOfferIdCol = $this->repo->entity_offer->dbColumn(EntityOffer\Entity::OFFER_ID);
+        $entityOfferOfferTypeCol = $this->repo->entity_offer->dbColumn(EntityOffer\Entity::ENTITY_OFFER_TYPE);
+
+        $offerTable = $this->repo->offer->getTableName();
+        $offerEntityIdCol = $this->repo->offer->dbColumn(UniqueIdEntity::ID);
+        $emiSubventionCol = $this->repo->offer->dbColumn(Offer\Entity::EMI_SUBVENTION);
+
+        $query =  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+            ->join($entityOfferTable, $entityOfferEntityIdCol, '=', $paymentIdCol)
+            ->join($offerTable, $entityOfferOfferIdCol, '=', $offerEntityIdCol)
+            ->where($entityOfferEntityTypeCol, '=', EntityName::PAYMENT)
+            ->where($entityOfferOfferTypeCol, '=', EntityName::OFFER)
+            ->where($emiSubventionCol, '=', true)
+            ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
+            ->where($paymentStatus, '=', Status::CAPTURED)
+            ->where(Entity::BANK, '=', $bank)
+            ->where(Entity::METHOD, '=', Method::EMI)
+            ->select($paymentData);
+            //                    ->get();
+//        s($query->toSql());
+        return $query->get();
     }
 
     public function fetchEmiPaymentsOfCobrandingPartnerWithRelationsBetween($from, $to, $cobrandingPartner, $relations)

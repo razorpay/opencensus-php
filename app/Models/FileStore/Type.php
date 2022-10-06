@@ -255,6 +255,7 @@ class Type
     const ICICI_EMI_FILE_SFTP               = 'icici_emi_file_sftp';
     const ICICI_EMI_FILE_MAIL               = 'icici_emi_file_mail';
     const SBI_EMI_FILE                      = 'sbi_emi_file';
+    const SBI_NC_EMI_FILE                   = 'sbi_nc_emi_file';
     const HSBC_EMI_FILE                     = 'hsbc_emi_file';
     const SBI_EMI_OUTPUT_FILE               = 'sbi_emi_output_file';
     const ONECARD_EMI_FILE                  = 'onecard_emi_file';
@@ -411,6 +412,7 @@ class Type
             self::KOTAK_EMI_FILE,
             self::RBL_EMI_FILE,
             self::SBI_EMI_FILE,
+            self::SBI_NC_EMI_FILE,
             self::SBI_EMI_OUTPUT_FILE,
             self::ONECARD_EMI_FILE,
             self::AXIS_PAYSECURE,
@@ -530,6 +532,7 @@ class Type
         self::KOTAK_EMI_FILE,
         self::RBL_EMI_FILE,
         self::SBI_EMI_FILE,
+        self::SBI_NC_EMI_FILE,
         self::SBI_EMI_OUTPUT_FILE,
         self::ONECARD_EMI_FILE,
         self::AXIS_PAYSECURE,
