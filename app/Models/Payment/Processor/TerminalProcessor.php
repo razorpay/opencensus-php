@@ -40,7 +40,7 @@ class TerminalProcessor extends Base\Core
      * @return array
      */
     public function getTerminalsForPayment(Payment\Entity $payment, Merchant\Entity $chargeAccountMerchant = null,
-                                           CardMandate\Entity $cardMandate = null)
+                                           CardMandate\Entity $cardMandate = null, string $authenticationChannel = Constants::DEFAULT_AUTHENTICATION_CHANNEL)
     {
         $this->payment = $payment;
 
@@ -51,6 +51,7 @@ class TerminalProcessor extends Base\Core
             'merchant'                  => $this->payment->merchant,
             'charge_account_merchant'   => $chargeAccountMerchant,
             'card_mandate'              => $cardMandate,
+            'authentication_channel'    => $authenticationChannel,
         ];
 
         $terminalSelector = new Terminal\Selector($input, $options);
@@ -88,7 +89,7 @@ class TerminalProcessor extends Base\Core
         })->values()->all();
     }
 
-    public function setAuthenticationGateway(Payment\Entity $payment, array & $gatewayInput)
+    public function setAuthenticationGateway(Payment\Entity $payment, array & $gatewayInput, string $authenticationChannel)
     {
         $this->payment = $payment;
 
@@ -125,7 +126,7 @@ class TerminalProcessor extends Base\Core
 
                 $terminalsAuthZ = [$terminalAuthZ];
 
-                $terminal = $terminalSelector->selectAuthenticationTerminal($terminalsAuthZ);
+                $terminal = $terminalSelector->selectAuthenticationTerminal($terminalsAuthZ, $authenticationChannel);
 
                 $this->trace->info(
                     TraceCode::AUTH_TERMINAL_SELECTED_VIA_SMART_ROUTING,
@@ -169,6 +170,12 @@ class TerminalProcessor extends Base\Core
             $terminal = $paymentAuthSelect->select();
         }
 
+        // add default gateway_auth_version to v1 if not present
+        if(!isset($terminal['gateway_auth_version']) or empty($terminal['gateway_auth_version']))
+        {
+            $terminal['gateway_auth_version'] = 'v1';
+        }
+
         $this->trace->info(
                 TraceCode::AUTH_SELECTION_FINAL_TERMINAL,
                 ['terminal' => $terminal]
@@ -180,7 +187,8 @@ class TerminalProcessor extends Base\Core
         {
             $gatewayInput['authenticate'] = [
               'gateway'   => $terminal['authentication_gateway'],
-              'auth_type' => $terminal['gateway_auth_type']
+              'auth_type' => $terminal['gateway_auth_type'],
+              'gateway_auth_version' => $terminal['gateway_auth_version']
             ];
 
             $payment->setAuthenticationGateway($gatewayInput['authenticate']['gateway']);

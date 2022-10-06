@@ -41,6 +41,8 @@ class Constants
     const PAYMENT_SETTLED_BY            = 'payment_settled_by';
     const PAYMENT_REFERENCE1            = 'payment_reference1';
     const FORCE_AUTH_PAYMENT            = 'force_auth_payment';
+    const AUTHENTICATION_CHANNEL        = 'authentication_channel';
+    const DEFAULT_AUTHENTICATION_CHANNEL        = 'browser';
 
     //kafka constants
     const REGISTER_PAYMENT_IN_SCHEDULER                = 'register_payment_in_scheduler';

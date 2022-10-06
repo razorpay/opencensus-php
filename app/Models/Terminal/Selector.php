@@ -13,6 +13,7 @@ use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Diag\EventCode;
 use RZP\Models\Payment\Processor\CardlessEmi;
+use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
@@ -412,18 +413,18 @@ class Selector extends Base\Core
         return $sortedTerminals;
     }
 
-    public function selectAuthenticationTerminal($terminal)
+    public function selectAuthenticationTerminal($terminal, $authenticationChannel)
     {
         $payment = $this->input['payment'];
 
         $merchant = $this->input['merchant'];
 
-        $terminals = $this->sendParametersToSmartRoutingAuthN($payment, $merchant, $terminal);
+        $terminals = $this->sendParametersToSmartRoutingAuthN($payment, $merchant, $terminal, $authenticationChannel);
 
         return $terminals[0];
     }
 
-    private function sendParametersToSmartRoutingAuthN($payment, $merchant, $terminal)
+    private function sendParametersToSmartRoutingAuthN($payment, $merchant, $terminal, $authenticationChannel)
     {
         try
         {
@@ -455,6 +456,8 @@ class Selector extends Base\Core
             $paymentData['meta_data'] = $this->getPaymentMetadataArray($payment);
 
             $paymentData['application'] = $payment->getApplication();
+
+            $paymentData[PaymentConstants::AUTHENTICATION_CHANNEL] = $authenticationChannel;
 
             $authNTerminals = $this->getAuthNTerminals();
 
@@ -853,6 +856,8 @@ class Selector extends Base\Core
             $paymentData['meta_data'] = $this->getPaymentMetadataArray($payment);
 
             $paymentData['force_terminal_id'] = $payment->getForceTerminalId();
+
+            $paymentData[PaymentConstants::AUTHENTICATION_CHANNEL] = $this->input[PaymentConstants::AUTHENTICATION_CHANNEL];
 
             if(($payment->getMethod() === Method::PAYLATER || $payment->getMethod() === Method::CARDLESS_EMI) and
                 (in_array($payment['wallet'], CardlessEmi::$fullNameForSupportedBanks, true) ||

@@ -112,6 +112,8 @@ trait Authorize
 
     protected $isJsonRoute = false;
 
+    protected $authenticationChannel = PaymentConstants::DEFAULT_AUTHENTICATION_CHANNEL;
+
     /**
      * @param Payment\Entity $payment
      * @param array          $input
@@ -283,7 +285,7 @@ trait Authorize
             {
                 $chargeAccountMerchant = $gatewayInput[Payment\Entity::CHARGE_ACCOUNT_MERCHANT] ?? null;
 
-                $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment, $chargeAccountMerchant);
+                $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment, $chargeAccountMerchant, null, $this->authenticationChannel);
             }
 
             $this->trace->info(
@@ -326,7 +328,7 @@ trait Authorize
                 'payment_id'        => $payment->getId(),
             ]);
 
-        (new TerminalProcessor)->setAuthenticationGateway($payment, $gatewayInput);
+        (new TerminalProcessor)->setAuthenticationGateway($payment, $gatewayInput, $this->authenticationChannel);
     }
 
     protected function hitGatewayIfRequired(Payment\Entity $payment, array $input, array & $gatewayInput)
@@ -340,6 +342,11 @@ trait Authorize
         if ($this->payment->isCod() === true)
         {
             return;
+        }
+        // set authentication channel based on request body
+        if(isset($input['authentication']) and isset($input['authentication'][PaymentConstants::AUTHENTICATION_CHANNEL]))
+        {
+            $this->authenticationChannel = $input['authentication'][PaymentConstants::AUTHENTICATION_CHANNEL];
         }
 
         $this->setSelectedTerminals($payment, $gatewayInput);
