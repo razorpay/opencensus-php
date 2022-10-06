@@ -96,6 +96,9 @@ class Entity extends Base\PublicEntity
     const EXTERNAL_ID                    = 'external_id';
     const PRODUCT_INTERNATIONAL          = 'product_international';
 
+
+
+
     // this is same as mcc in legal entity table.
     // This will be removed after migrating to legal entity
     const CATEGORY                       = 'category';

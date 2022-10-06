@@ -1,0 +1,28 @@
+# Managed by @acct-svc-devs team
+# In case of any issues or changes here, reach out to #platform_account_service
+name: ASV Notification for Merchant related entity Changes
+on:
+  pull_request:
+    paths:
+      - 'app/Models/Merchant/Entity.php'
+      - 'app/Models/Merchant/Detail/Entity.php'
+      - 'app/Models/Merchant/Document/Entity.php'
+      - 'app/Models/Merchant/Email/Entity.php'
+      - 'app/Models/Merchant/Stakeholder/Entity.php'
+      - 'app/Models/Merchant/BusinessDetail/Entity.php'
+      - 'app/Models/Merchant/Website/Entity.php'
+      - 'app/Models/Merchant/BusinessDetail/Constants.php'
+
+jobs:
+  slack-notify:
+    name: Notify Account service team
+    runs-on: [ self-hosted ]
+    if: ${{ github.event.pull_request.merged }}
+    steps:
+      - uses: rtCamp/action-slack-notify@v2.2.0
+        env:
+          SLACK_MESSAGE: '@acct-svc-devs New changes on API-Account Service sync entities. Please check.'
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_LINK_NAMES: true
+          SLACK_CHANNEL: platform_asv_alerts
+          SLACK_ICON: https://avatars2.githubusercontent.com/u/2181346?s=200&v=4 # Optional. can be (repository, sender, an URL) (defaults to webhook app avatar)
