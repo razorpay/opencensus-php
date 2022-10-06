@@ -122,12 +122,14 @@ class Core extends Base\Core
         }
         catch (\Throwable $e)
         {
+            $request = $input;
+            unset($request[Constants::ACCESS_TOKEN]);
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
                 TraceCode::EINVOICE_REQUEST_EXCEPTION,
                 [
-                    'request'   => $input,
+                    'request'   => $request,
                     'response'  => $response,
                 ]);
 

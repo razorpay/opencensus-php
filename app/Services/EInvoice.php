@@ -144,7 +144,9 @@ class EInvoice
     protected function traceRequest(array $request)
     {
         unset($request['options']['auth']);
-
+        $content = json_decode($request['content'], true);
+        unset($content['access_token']);
+        $request['content'] = $content;
         $this->trace->info(TraceCode::EINVOICE_REQUEST, $request);
     }
 
