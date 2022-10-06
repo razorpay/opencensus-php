@@ -11,6 +11,7 @@ use RZP\Constants as Constants;
 use RZP\Models\Feature as Feature;
 use RZP\Models\Workflow\Service\Config;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Workflow\Service\Adapter\Constants as WorkflowConstants;
 
 class Service extends Base\Service
 {
@@ -208,6 +209,109 @@ class Service extends Base\Service
                     ]);
             }
         }
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     *
+     * bulkCreateWorkflowConfig, for each MID
+     * 1. creates payout-approval workflow config
+     * 2. creates icici-payout-approval workflow config
+     * 3. enable payout_workflows feature for the MID
+     */
+    public function bulkCreateWorkflowConfig(array $input)
+    {
+        $this->trace->info(TraceCode::WORKFLOW_CONFIG_BULK_CREATE_REQUEST,
+            [
+                'input' => $input,
+            ]);
+
+        (new Validator)->validateInput(Validator::WORKFLOW_CONFIG_BULK_CREATE, $input);
+
+        $merchantIds = $input[Entity::MERCHANT_IDS];
+
+        $successMids = [];
+
+        $failedMids = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $merchant = $this->repo->merchant->getMerchant($merchantId);
+
+            // Mark the MID as failed if workflow feature already enabled
+            // This is to prevent both duplicate input MIDs and already workflow enabled MIDs
+            if ($merchant->isFeatureEnabled(FeatureConstants::PAYOUT_WORKFLOWS) == true)
+            {
+                array_push($failedMids, $merchantId);
+
+                continue;
+            }
+
+            try
+            {
+                // create payout-approval workflow config
+                $workflowInput = $this->getBasicTemplatePayload($merchantId, WorkflowConstants::PAYOUT_APPROVAL_CONFIG_TYPE);
+
+                $this->core->createWorkflowConfig($workflowInput);
+
+                // create icici-payout-approval workflow config
+                $workflowInput = $this->getBasicTemplatePayload($merchantId, WorkflowConstants::ICICI_PAYOUT_APPROVAL_TYPE);
+
+                $this->core->createWorkflowConfig($workflowInput);
+
+                // enable payout_workflows feature for the MID
+                $featureInput = [
+                    Feature\Entity::ENTITY_TYPE => Feature\Constants::MERCHANT,
+                    Feature\Entity::ENTITY_ID => $merchantId,
+                    Feature\Entity::NAME => Feature\Constants::PAYOUT_WORKFLOWS,
+                ];
+
+                (new Feature\Core)->create($featureInput, true);
+
+                array_push($successMids, $merchantId);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->error(TraceCode::WORKFLOW_CONFIG_BULK_CREATE_FAILED,
+                    [
+                        'merchant_id' => $merchantId,
+                        'exception' => $e
+                    ]);
+
+                array_push($failedMids, $merchantId);
+            }
+        }
+
+        return [
+            "total_mids" => count($merchantIds),
+            "success_mids" => $successMids,
+            "failed_mids" => $failedMids
+        ];
+    }
+
+    public function getBasicTemplatePayload(string $merchantId, string $configType)
+    {
+        $configTemplate = json_decode('{
+            "config_template": [{
+                "range": "1-20000000000",
+                "steps": [{
+                    "step": "1",
+                    "op": "OR",
+                    "roles": [{
+                        "role_name": "Owner",
+                        "role_id": "owner",
+                        "approval_count": "1"
+                    }]
+                }]
+            }]
+        }', true);
+
+        $configTemplate[Entity::OWNER_ID] = $merchantId;
+
+        $configTemplate[WorkflowConstants::CONFIG_TYPE] = $configType;
+
+        return $configTemplate;
     }
 
     /**

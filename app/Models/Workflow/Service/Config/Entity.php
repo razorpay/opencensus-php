@@ -16,6 +16,7 @@ class Entity extends Base\PublicEntity
     const CONFIG_ID              = 'config_id';
     const CONFIG_TYPE            = 'config_type';
     const MERCHANT_ID            = 'merchant_id';
+    const MERCHANT_IDS           = 'merchant_ids';
     const ORG_ID                 = 'org_id';
     const ENABLED                = 'enabled';
     const CONFIG                 = 'config';

@@ -1589,6 +1589,7 @@ class Route
         'workflow_config_create_admin'              => ['post',    'admin/workflow/config',                               'WorkflowServiceController@createWorkflowConfig'                           ],
         'workflow_config_update_admin'              => ['put',    'admin/workflow/config',                                'WorkflowServiceController@updateWorkflowConfig'                           ],
         'workflow_config_delete_admin'              => ['delete',    'admin/workflow/config',                             'WorkflowServiceController@deleteWorkflowConfig'                           ],
+        'workflow_config_create_bulk_admin'         => ['post',    'admin/workflow/config/bulk',                          'WorkflowServiceController@bulkCreateWorkflowConfig'                           ],
 
         // Workflows API
         'workflow_create'                          => ['post',     'workflows',                                      'WorkflowController@createWorkflow'                                 ],
@@ -7443,6 +7444,7 @@ class Route
         'workflow_config_create_admin',
         'workflow_config_update_admin',
         'workflow_config_delete_admin',
+        'workflow_config_create_bulk_admin',
     ];
 
     public static $routePermission = [
@@ -8777,6 +8779,7 @@ class Route
         'workflow_config_create_admin'              => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'workflow_config_update_admin'              => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'workflow_config_delete_admin'              => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'workflow_config_create_bulk_admin'         => Permission::SELF_SERVE_WORKFLOW_CONFIG,
 
         'salesforce_event_admin'                    => Permission::VIEW_ACTIVATION_FORM,
     ];
@@ -12997,6 +13000,7 @@ class Route
             'workflow_config_create_admin',
             'workflow_config_update_admin',
             'workflow_config_delete_admin',
+            'workflow_config_create_bulk_admin',
         ],
 
         //

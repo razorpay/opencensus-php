@@ -13,6 +13,8 @@ class Validator extends Base\Validator
 
     const WORKFLOW_CONFIG_UPDATE = 'workflow_config_update';
 
+    const WORKFLOW_CONFIG_BULK_CREATE = 'workflow_config_bulk_create';
+
     protected static $workflowConfigCreateRules = [
         Entity::TEMPLATE             => 'required_if:asl_template,null|array',
         Entity::ASL_TEMPLATE         => 'required_if:template,null|array',
@@ -35,6 +37,10 @@ class Validator extends Base\Validator
         Entity::OWNER_ID             => 'required|string|max:14',
         Entity::OWNER_TYPE           => 'required|string|max:20',
         Entity::TEMPLATE             => 'sometimes|array',
+    ];
+
+    protected static $workflowConfigBulkCreateRules = [
+        Entity::MERCHANT_IDS         => 'required|array|max:50',
     ];
 
     protected static $createRules = [

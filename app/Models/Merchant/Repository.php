@@ -197,6 +197,13 @@ class Repository extends Base\Repository
         return $query->org_id;
     }
 
+    public function getMerchant(string $merchantId)
+    {
+        return $this->newQuery()
+            ->where(Entity::ID, '=', $merchantId)
+            ->firstOrFail();
+    }
+
     public function getPricingPlanOrFailPublic($merchant)
     {
         $pricing = $merchant->getPricingPlanId();

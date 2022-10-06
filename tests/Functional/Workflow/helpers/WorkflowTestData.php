@@ -3,6 +3,7 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Workflow\Service\Config\Entity;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\Workflow;
 
@@ -1210,6 +1211,54 @@ return [
                 "org_id" =>  "100000razorpay",
                 "created_at" =>  "1597317215"
             ],
+        ],
+    ],
+
+    'testBulkCreateWorkflowConfigInAdminAuthWithFeatureAlreadyEnabled' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/admin/workflow/config/bulk',
+            'content' => [
+                Entity::MERCHANT_IDS => ['10000000000000']
+            ],
+            'server' => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+                'HTTP_X-Request-Origin'   => config('applications.banking_service_url'),
+            ]
+        ],
+        'response' => [
+            'content' => [
+                "total_mids" =>  1,
+                "success_mids" =>  [],
+                "failed_mids" =>  ['10000000000000']
+            ]
+        ]
+    ],
+
+    'testBulkCreateWorkflowConfigInAdminAuthWithInvalidInput' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/admin/workflow/config/bulk',
+            'content' => [
+                Entity::MERCHANT_IDS => ['10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000', '10000000000000']
+            ],
+            'server' => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+                'HTTP_X-Request-Origin'   => config('applications.banking_service_url'),
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The merchant ids may not have more than 50 items.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

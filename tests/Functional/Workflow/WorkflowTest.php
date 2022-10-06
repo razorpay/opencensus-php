@@ -356,6 +356,48 @@ class WorkflowTest extends TestCase
         $this->assertEquals(true, $isPayoutWorkflowFeatureEnabled);
     }
 
+    public function testBulkCreateWorkflowConfigInAdminAuthWithFeatureAlreadyEnabled()
+    {
+        $admin = $this->prepareAdminForPayoutWorkflow('test');
+
+        $adminToken = $this->fixtures->on('test')->create('admin_token', [
+            'admin_id'   => $admin->getId(),
+            'token'      => Hash::make('ThisIsATokenForTest'),
+        ]);
+
+        $token = 'ThisIsATokenForTest' . $adminToken->getId();
+
+        $this->ba->adminAuth('test', $token);
+
+        DB::table('admins')->update(['allow_all_merchants' => 1]);
+
+        $this->ba->addAccountAuth('10000000000000');
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_WORKFLOWS]);
+
+        $this->startTest();
+    }
+
+    public function testBulkCreateWorkflowConfigInAdminAuthWithInvalidInput()
+    {
+        $admin = $this->prepareAdminForPayoutWorkflow('test');
+
+        $adminToken = $this->fixtures->on('test')->create('admin_token', [
+            'admin_id'   => $admin->getId(),
+            'token'      => Hash::make('ThisIsATokenForTest'),
+        ]);
+
+        $token = 'ThisIsATokenForTest' . $adminToken->getId();
+
+        $this->ba->adminAuth('test', $token);
+
+        DB::table('admins')->update(['allow_all_merchants' => 1]);
+
+        $this->ba->addAccountAuth('10000000000000');
+
+        $this->startTest();
+    }
+
     public function testUpdateWorkflowConfig()
     {
         $user = $this->fixtures->create('user');
