@@ -61,6 +61,7 @@ class Service extends Base\Service
             'capital_freshdesk_integration',
             'razorpay_chat_bot',
             'is_freshchat_chatbot_enabled',
+            'support_chat_timing',
             'frontend_care_active',
             'new_categories_enable',
             'care_ticket_ui_revamp',

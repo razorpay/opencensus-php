@@ -280,7 +280,15 @@ export default class Support extends Component {
 
   render() {
     const { user, org, history, scheduleCallConfig } = this.props;
-    const { notifyCount, isOpened, isHidden, isWebView, botIsLoaded, supportFlags } = this.state;
+    const {
+      notifyCount,
+      isOpened,
+      isHidden,
+      isWebView,
+      botIsLoaded,
+      supportFlags,
+      isOpenedOnce,
+    } = this.state;
     // Temporarily disabled till further notice for improving support quality index for calls,
     const isCallEnabled = false;
 
@@ -318,6 +326,7 @@ export default class Support extends Component {
           <SupportBody
             onToggle={this.handleToggle}
             isOpened={isOpened}
+            isOpenedOnce={isOpenedOnce}
             botIsLoaded={botIsLoaded}
             onChat={this.handleChat}
             notifyCount={notifyCount}

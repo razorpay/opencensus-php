@@ -14,8 +14,7 @@ function SupportActions({
   user,
   supportFlags,
   botIsLoaded,
-  timings,
-  date,
+  chatTiming,
   isClickToCallSubmitted,
   isChatWithUsDisabled,
   openDashboardGuide,
@@ -76,9 +75,10 @@ function SupportActions({
             onClick={isChatDisabled ? noop : handleClick.bind(null, 'chat')}
           >
             Chat with us
-            {timings.length ? (
+            {chatTiming?.start && chatTiming?.end ? (
               <small className="help-content">
-                ({date.start} {date.start_zone} - {date.end} {date.end_zone})
+                ({chatTiming.start} {chatTiming.start_zone} - {chatTiming.end} {chatTiming.end_zone}
+                )
               </small>
             ) : null}
             {notifyCount > 0 && <span className="notify-icon m-l">{notifyCount}</span>}
@@ -123,7 +123,6 @@ SupportActions.defaultProps = {
   scheduleCallbackReason: '',
   user: {},
   supportFlags: {},
-  timings: [],
   handleClick: () => {},
   openDashboardGuide: () => {},
 };
@@ -142,8 +141,7 @@ SupportActions.propTypes = {
   scheduleCallbackReason: PropTypes.string,
   user: PropTypes.object,
   supportFlags: PropTypes.object,
-  timings: PropTypes.array,
-  date: PropTypes.object.isRequired,
+  chatTiming: PropTypes.object.isRequired,
 };
 
 export default SupportActions;

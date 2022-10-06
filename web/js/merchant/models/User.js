@@ -718,6 +718,9 @@ export default class User {
   get isFreshChatbotLive() {
     return this.getExpStatus('is_freshchat_chatbot_enabled');
   }
+  get isSupportChatTimingMigrated() {
+    return this.getExpStatus('support_chat_timing');
+  }
 
   get isWorkboxEnable() {
     return this.getExpStatus('enable_workbox');

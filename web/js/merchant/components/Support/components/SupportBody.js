@@ -60,13 +60,16 @@ const isWorkingDay = () => {
 )
 class SupportBody extends Component {
   state = {
-    timings: [],
+    chatTiming: {},
     careSupportSection: null,
     openClickToCall: false,
     isClickToCallSubmitted: false,
     isChatWithUsDisabled: false,
     modalToBeOpenedOnBackClick: '',
   };
+
+  isConfigLoaded = false;
+
   openDashboardGuide = (_) => {
     analyticsTrack({
       objectName: 'dashboard guide',
@@ -152,54 +155,116 @@ class SupportBody extends Component {
     TicketSystemEmitter.on('closeModal', () => {
       this.handleCloseCareSupportSection();
     });
-    const timingConfigParam = {
-      url: 'merchants/chat/timings_config',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
-    const clickToCallParam = {
-      url: `care_service/merchant/twirp/rzp.care.callback.v1.CallbackService/CheckInstantCallbackEligibility`,
-      mode: 'live',
-      method: 'post',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
-    Promise.all([
-      merchantFetch(timingConfigParam).then((response) => {
-        if (response?.success) {
-          this.setState({ timings: response?.data });
-        }
-      }),
-      merchantFetch(clickToCallParam).then((response) => {
-        if (response?.success) {
-          this.setState({ openClickToCall: response?.data?.is_eligible }, () => {
-            const { user: { isFrontendCareActive, isClickToCallActive } = {} } = this.props;
-
-            const { openClickToCall } = this.state;
-
-            if (isFrontendCareActive && isClickToCallActive && openClickToCall) {
-              analyticsTrack({
-                objectName: 'Click to Call',
-                actionName: 'Initialised',
-                screen: 'home page',
-                properties: {
-                  ...getCommonAnalyticsProperties(window.rzp_user),
-                  ...getCommonSupportProperties(),
-                },
-              });
-            }
-          });
-        }
-      }),
-    ]).catch((err) => console.log(err));
 
     if (getMobileDetect().isWebView() && shouldOpenRaiseAQueryOnMount) {
       window.rzpTicketSystem.openModal(`#tickets`);
     }
     this.checkIfClickToCallSubmitted();
   }
+
+  componentDidUpdate() {
+    const { isOpenedOnce } = this.props;
+
+    if (isOpenedOnce && !this.isConfigLoaded) {
+      this.handleFetchChatConfig();
+      this.handleFetchC2CConfig();
+      this.isConfigLoaded = true;
+    }
+  }
+
+  handleFetchChatConfig = async () => {
+    const { user: { isSupportChatTimingMigrated = false } = {} } = this.props;
+
+    const timingConfigParam = {
+      url: 'merchants/chat/timings_config',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+
+    if (isSupportChatTimingMigrated) {
+      timingConfigParam.url =
+        'care_service/merchant/twirp/rzp.care.chat.v1.ChatService/CheckChatAvailability';
+      timingConfigParam.mode = 'live';
+      timingConfigParam.method = 'post';
+    }
+
+    try {
+      const response = await merchantFetch(timingConfigParam);
+
+      if (response?.success) {
+        let chatTiming;
+        if (isSupportChatTimingMigrated) {
+          const timing = response?.data?.timing;
+          chatTiming = {
+            start: parseInt(timing?.start_time, 10) / 60,
+            end: parseInt(timing?.end_time, 10) / 60,
+            start_zone: 'AM',
+            end_zone: 'AM',
+          };
+        } else {
+          const timings = response?.data;
+          const today = new Date().getDay();
+          if (timings.length) {
+            chatTiming = {
+              start: timings[today].start / 60,
+              end: timings[today].end / 60,
+              start_zone: 'AM',
+              end_zone: 'AM',
+            };
+          }
+        }
+
+        if (chatTiming?.start > 12) {
+          chatTiming.start = chatTiming.start - 12;
+          chatTiming.start_zone = 'PM';
+        }
+
+        if (chatTiming?.end > 12) {
+          chatTiming.end = chatTiming.end - 12;
+          chatTiming.end_zone = 'PM';
+        }
+        this.setState({ chatTiming });
+      }
+    } catch (error) {
+      this.handleError({ error });
+    }
+  };
+
+  handleFetchC2CConfig = async () => {
+    try {
+      const response = await merchantFetch({
+        url: `care_service/merchant/twirp/rzp.care.callback.v1.CallbackService/CheckInstantCallbackEligibility`,
+        mode: 'live',
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response?.success) {
+        this.setState({ openClickToCall: response?.data?.is_eligible }, () => {
+          const { user: { isFrontendCareActive, isClickToCallActive } = {} } = this.props;
+
+          const { openClickToCall } = this.state;
+
+          if (isFrontendCareActive && isClickToCallActive && openClickToCall) {
+            analyticsTrack({
+              objectName: 'Click to Call',
+              actionName: 'Initialised',
+              screen: 'home page',
+              properties: {
+                ...getCommonAnalyticsProperties(window.rzp_user),
+                ...getCommonSupportProperties(),
+              },
+            });
+          }
+        });
+      }
+    } catch (error) {
+      this.handleError({ error });
+    }
+  };
 
   checkIfClickToCallSubmitted = () => {
     if (getCookie('click-to-call-submitted')) {
@@ -364,8 +429,8 @@ class SupportBody extends Component {
           ...getCommonSupportProperties(),
         },
       });
-    } catch {
-      //
+    } catch (error) {
+      this.handleError({ error });
     }
   };
   onClickToCallSuccess = () => {
@@ -461,7 +526,7 @@ class SupportBody extends Component {
       careSupportSection,
       isClickToCallSubmitted,
       isChatWithUsDisabled,
-      timings,
+      chatTiming,
       openClickToCall,
     } = this.state;
     const shouldDisable = !isWorkingDay();
@@ -480,27 +545,6 @@ class SupportBody extends Component {
 
     if (scheduleCallConfig.reason === 'ALREADY_BOOKED') {
       scheduleCallbackReason = <span className="text-danger">Call already requested.</span>;
-    }
-
-    const today = new Date().getDay();
-    let date;
-    if (timings.length) {
-      date = {
-        start: timings[today].start / 60,
-        end: timings[today].end / 60,
-        start_zone: 'AM',
-        end_zone: 'AM',
-      };
-
-      if (date.start > 12) {
-        date.start = date.start - 12;
-        date.start_zone = 'PM';
-      }
-
-      if (date.end > 12) {
-        date.end = date.end - 12;
-        date.end_zone = 'PM';
-      }
     }
 
     const isMobile = isMobileDevice(1020);
@@ -606,8 +650,7 @@ class SupportBody extends Component {
               user={user}
               supportFlags={supportFlags}
               botIsLoaded={botIsLoaded}
-              timings={timings}
-              date={date}
+              chatTiming={chatTiming}
               isEligible={scheduleCallConfig.is_eligible}
               isClickToCallSubmitted={isClickToCallSubmitted}
               isChatWithUsDisabled={isChatWithUsDisabled}
