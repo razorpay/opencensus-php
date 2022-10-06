@@ -930,6 +930,25 @@ return [
         ],
     ],
 
+    'testFetchPayoutByIdWithNonProxyOrPrivateAuth' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts_internal/pout_Gg7sgBZgvYjlSB',
+            'server'  => [
+                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000000',
+            ],
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "id"       => "pout_Gg7sgBZgvYjlSB",
+                "entity"   => "payout",
+                "currency" => "INR",
+            ],
+        ],
+    ],
+
     'testFetchPayoutMultiple' => [
         'request'  => [
             'method'  => 'GET',
@@ -1107,7 +1126,7 @@ return [
         ],
     ],
 
-    'testFetchPayoutMultipleWithNoAccountNumber' => [
+    'testFetchPayoutMultipleWithNoAccountNumberAndOnlyDirectBankingAccount' => [
         'request'  => [
             'method'  => 'GET',
             'url'     => '/payouts?product=banking&count=2',
@@ -1122,6 +1141,115 @@ return [
                 "entity"   => "collection",
                 "count"    => 1,
                 "has_more" => false,
+                "items"    => [
+                    [
+                        "id"              => "pout_Gg7sgBZgvYjlSB",
+                        "entity"          => "payout",
+                        "fund_account_id" => "fa_100000000000fa",
+                        "amount"          => 100,
+                        "currency"        => "INR",
+                        "merchant_id"     => "10000000000000",
+                        "notes"           => [],
+                        "fees"            => 590,
+                        "tax"             => 90,
+                        "status"          => "processing",
+                        "purpose"         => "refund",
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testFetchPayoutMultipleWithNoAccountNumberAndOnlySharedBankingAccount' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts?product=banking&count=2',
+            'server'  => [
+                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000000',
+            ],
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "entity"   => "collection",
+                "count"    => 1,
+                "has_more" => true,
+                "items"    => [
+                    [
+                        "id"              => "pout_Gg7sgBZgvYjlSB",
+                        "entity"          => "payout",
+                        "fund_account_id" => "fa_100000000000fa",
+                        "amount"          => 100,
+                        "currency"        => "INR",
+                        "merchant_id"     => "10000000000000",
+                        "notes"           => "",
+                        "fees"            => 0,
+                        "tax"             => 0,
+                        "status"          => "processing",
+                        "purpose"         => "refund",
+                        "utr"             => "",
+                        "reference_id"    => null,
+                        "narration"       => "test Merchant Fund Transfer",
+                        "batch_id"        => "",
+                        "initiated_at"    => 1614325830,
+                        "failure_reason"  => null,
+                        "created_at"      => 1614325826,
+                        "fee_type"        => null
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testFetchPayoutMultipleWithNoAccountNumberAndMoreThanOneBankingBalance' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts?product=banking&count=2',
+            'server'  => [
+                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000000',
+            ],
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "entity"   => "collection",
+                "count"    => 1,
+                "has_more" => false,
+                "items"    => [
+                    [
+                        "id"              => "pout_Gg7sgBZgvYjlSB",
+                        "entity"          => "payout",
+                        "fund_account_id" => "fa_100000000000fa",
+                        "amount"          => 100,
+                        "currency"        => "INR",
+                        "merchant_id"     => "10000000000000",
+                        "notes"           => [],
+                        "fees"            => 590,
+                        "tax"             => 90,
+                        "status"          => "processing",
+                        "purpose"         => "refund",
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testFetchPayoutMultipleWithNonProxyOrPrivateAuth' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts_internal?account_number=2224440041626905&count=2',
+            'server'  => [
+                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000000',
+            ],
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "entity"   => "collection",
+                "count"    => 1,
                 "items"    => [
                     [
                         "id"              => "pout_Gg7sgBZgvYjlSB",

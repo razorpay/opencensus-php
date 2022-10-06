@@ -1504,7 +1504,7 @@ class PayoutServiceTest extends TestCase
 
         $migratedPayout = \DB::connection('test')->select("select * from ps_payouts where id = 'Gg7sgBZgvYjlSB'")[0];
 
-        $this->assertEquals($payout[Entity::ID], 'pout_' .$migratedPayout->id);
+        $this->assertEquals($payout[Entity::ID], 'pout_' . $migratedPayout->id);
 
         $this->fixtures->edit('payout', 'Gg7sgBZgvYjlSB', ['id' => 'Gg7sgBZgvYjlSC']);
 
@@ -4619,6 +4619,27 @@ class PayoutServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchPayoutByIdWithNonProxyOrPrivateAuth()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);
+
+        $request['url'] = '/payouts_internal/' . $payout->getPublicId();
+
+        $this->testData[__FUNCTION__]['request']['url'] = $request['url'];
+
+        $this->testData[__FUNCTION__]['response']['content']['id'] = $payout->getPublicId();
+
+        $this->mockPayoutServiceFetchShouldNotBeInvoked();
+
+        $this->ba->appAuthLive($this->config['applications.payout_links.secret']);
+
+        $this->startTest();
+    }
+
     public function testFetchPayoutMultiple()
     {
         $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);
@@ -4734,7 +4755,7 @@ class PayoutServiceTest extends TestCase
         $this->startTest();
     }
 
-    public function testFetchPayoutMultipleWithNoAccountNumber()
+    public function testFetchPayoutMultipleWithNoAccountNumberAndOnlyDirectBankingAccount()
     {
         $this->testCreatePayout();
 
@@ -4755,6 +4776,72 @@ class PayoutServiceTest extends TestCase
         $this->mockPayoutServiceFetchShouldNotBeInvoked();
 
         $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testFetchPayoutMultipleWithNoAccountNumberAndOnlySharedBankingAccount()
+    {
+        $request['url'] = '/payouts';
+
+        $input = [
+            'product' => 'banking',
+            'count'   => 2,
+        ];
+
+        $query = (new PayoutServiceFetch)->buildQueryFromInput($input);
+
+        $request['url'] .= '?' . $query;
+
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);
+
+        $this->mockPayoutServiceFetch(false, $request);
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testFetchPayoutMultipleWithNoAccountNumberAndMoreThanOneBankingBalance()
+    {
+        $this->testCreatePayout();
+
+        $this->fixtures->on('live')->create(
+            'balance',
+            [
+                'account_type' => 'direct',
+                'merchant_id' => $this->bankingBalance->getMerchantId(),
+                'type' => 'banking',
+                'account_number' =>  $this->bankingBalance->getAccountNumber() + 2,
+            ]
+        );
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);
+
+        $this->testData[__FUNCTION__]['response']['content']['items'][0]['id'] = $payout->getPublicId();
+
+        $this->mockPayoutServiceFetchShouldNotBeInvoked();
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testFetchPayoutMultipleWithNonProxyOrPrivateAuth()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);
+
+        $this->testData[__FUNCTION__]['response']['content']['items'][0]['id'] = $payout->getPublicId();
+
+        $this->mockPayoutServiceFetchShouldNotBeInvoked();
+
+        $this->ba->appAuthLive($this->config['applications.payout_links.secret']);
 
         $this->startTest();
     }

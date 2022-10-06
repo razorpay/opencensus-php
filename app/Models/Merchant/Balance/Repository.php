@@ -285,6 +285,21 @@ class Repository extends Base\Repository
                      ->first();
     }
 
+    /**
+     * @param string      $merchantId
+     * @param string      $balanceType
+     * @param string|null $connection
+     *
+     * @return mixed
+     */
+    public function getMerchantBalancesByType(string $merchantId, string $balanceType, string $connection = null)
+    {
+        $query = ($connection !== null) ? $this->newQueryWithConnection($connection) : $this->newQuery();
+
+        return $query->merchantIdAndType($merchantId, $balanceType)
+                     ->get();
+    }
+
     public function getMerchantBalanceByTypeAndAccountType(
         string $merchantId,
         string $balanceType,

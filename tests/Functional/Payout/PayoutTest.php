@@ -21352,6 +21352,8 @@ class PayoutTest extends OAuthTestCase
         $this->createPayoutWithWorkflowEntities(50000, '2224440041626905', Payout\Purpose::SALARY, 'FXMwu4HMK7ZT0G');
         $this->createPayoutWithWorkflowEntities(65432, '2224440041626905', Payout\Purpose::REFUND, 'FXMwu4HMK7ZT0H');
 
+        $this->app['basicauth']->setBasicType(BasicAuth\Type::PRIVILEGE_AUTH);
+
         $this->payoutService->sendPendingPayoutsNotificationToSlack();
     }
 

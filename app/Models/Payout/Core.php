@@ -2162,6 +2162,17 @@ class Core extends Base\Core
             return false;
         }
 
+        /** @var $auth BasicAuth */
+        $auth = $this->app['basicauth'];
+
+        // Currently on private and proxy auth requests and response for get payouts is supported on payouts service
+        // hence we are not allowing requests via payouts service if neither of these auth are used.
+        if (($auth->isPrivateAuth() !== true) and
+            ($auth->isProxyAuth() !== true))
+        {
+            return false;
+        }
+
         $isRoutingViaMicroserviceFeasible = (new Fetch)->canFetchRequestBeRoutedToMicroservice($input);
 
         if ($isRoutingViaMicroserviceFeasible === false)
@@ -2186,6 +2197,17 @@ class Core extends Base\Core
             return false;
         }
 
+        /** @var $auth BasicAuth */
+        $auth = $this->app['basicauth'];
+
+        // Currently on private and proxy auth requests and response for get payouts is supported on payouts service
+        // hence we are not allowing requests via payouts service if neither of these auth are used.
+        if (($auth->isPrivateAuth() !== true) and
+            ($auth->isProxyAuth() !== true))
+        {
+            return false;
+        }
+
         $isRoutingViaMicroserviceFeasible = (new Fetch)->canFetchRequestBeRoutedToMicroservice($input);
 
         if ($isRoutingViaMicroserviceFeasible === false)
@@ -2203,6 +2225,25 @@ class Core extends Base\Core
             $accountType = $balance->getAccountType();
         }
 
+        else
+        {
+            // If we don't get account number in request, we check how many balances exist for merchant with type
+            // banking. If they are !== 1, we return false else we check the account type of the balance and based on
+            // that decide to let it go via payouts service or not.
+            $balances = $this->repo->balance->getMerchantBalancesByType($this->merchant->getId(),
+                                                                        Balance\Type::BANKING);
+
+            $countOfBalances = count($balances);
+
+            if ($countOfBalances !== 1)
+            {
+                return false;
+            }
+
+            $accountType = $balances[0]->getAccountType();
+        }
+
+
         if ($accountType !== Balance\AccountType::SHARED)
         {
             return false;
@@ -2212,9 +2253,12 @@ class Core extends Base\Core
 
         if ($isFetchEnabledViaPs === true)
         {
-            $input[Entity::ACCOUNT_NUMBER] = $balance->getAccountNumber();
+            if (isset($input[Entity::BALANCE_ID]) === true)
+            {
+                $input[Entity::ACCOUNT_NUMBER] = $balance->getAccountNumber();
 
-            unset($input[Entity::BALANCE_ID]);
+                unset($input[Entity::BALANCE_ID]);
+            }
 
             if (isset($input[Entity::PAYOUT_MODE]) === true)
             {
