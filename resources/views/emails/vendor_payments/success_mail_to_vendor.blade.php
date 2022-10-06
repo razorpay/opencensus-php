@@ -96,7 +96,7 @@
 </head>
 
 <body style="background-color: #f0f0f0">
-  <div style="background-color: #f0f0f0">
+  <div style="background-color: #f0f0f0; padding-bottom:40px">
     <!--[if mso | IE]>
     <table
             align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
@@ -106,7 +106,7 @@
     <![endif]-->
 
     <div class="max-width-override"
-      style="background: {{ $merchant['brand_color'] }}; background-color: {{ $merchant['brand_color'] }}; Margin: 0px auto; max-width: unset;">
+      style="background: #528FF0; background-color: #528FF0; Margin: 0px auto; max-width: unset;">
       <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation"
         style="background:{{ $merchant['brand_color'] }};background-color:{{ $merchant['brand_color'] }};width:100%;">
         <tbody>
@@ -156,9 +156,20 @@
                                   ">
                                 <div class="header" style="
                                       box-sizing: border-box;
-                                      padding-top: 16px;
                                       max-width: 100%;
                                     ">
+
+                                  <div class="content" style="background: #EDF0F5; background-color: #EDF0F5; padding: 5px; color: #0C2651; font-weight: 400;font-size: 14px; line-height: 16px; text-align: center;">
+                                    <em
+                                        style="margin-right: 6px; display: inline-block; vertical-align: middle;">Business
+                                        Banking Powered by</em>
+                                    <a style="display: inline-block; vertical-align: middle; text-decoration: none" href="https://razorpay.com/x/current-accounts/?utm_source=email&utm_medium=bene_email&utm_campaign=big_bets">
+                                        <img style="display: inline-block; vertical-align: middle;"
+                                            src="https://cdn.razorpay.com/static/assets/logo/rzpX/rzpx-dark-with-gray-bg.png"
+                                            width="100px" />
+                                    </a>
+                                  </div>
+
                                   <div class="content branding merchant" style="
                                         width: 85%;
                                         width: calc(46000% - 211600px);
@@ -170,6 +181,7 @@
                                         padding-left: 16px;
                                         padding-right: 16px;
                                         padding-bottom: 16px;
+                                        padding-top: 16px;
                                       ">
                                     <div class="branding-content" style="
                                           text-align: center;
@@ -1262,6 +1274,7 @@
                                     text-align: left;
                                     color: #000000;
                                   ">
+                              @if(isset($merchant['support_contact']) or isset($merchant['support_phonenumber']) or isset($merchant['support_email']))
                               <div class="footer-text" style="
                                       font-size: 12px;
                                       line-height: 1.5;
@@ -1305,6 +1318,7 @@
                                   @endisset
                                 </div>
                               </div>
+                              @endif
                             </div>
                           </td>
                         </tr>
@@ -1313,6 +1327,77 @@
                   </tr>
                 </tbody>
               </table>
+
+              <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
+
+          <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+            <tbody>
+              <tr>
+                <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
+
+                    <div class="mj-column-per-100 outlook-group-fix"
+                         style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+                          <tbody>
+                            <tr>
+                                <td style="vertical-align:top;padding:0px;">
+
+                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation"
+                                           style="" width="100%">
+
+                                        <tr>
+                                            <td align="left"
+                                                style="font-size:0px;padding:0px;word-break:break-word;">
+
+                                                <div
+                                                    style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
+
+                                                    <div class="card title"
+                                                         style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; margin-top: 8px;box-sizing: border-box; padding-top: 20px; padding-bottom: 20px; border-radius: 2px; background: url(https://cdn.razorpay.com/static/assets/razorpayx/emails/razorpayx_footer_bg.png), black; background-repeat: no-repeat; background-size: 100% 100%; border-top-left-radius: 0; border-top-right-radius: 0;">
+                                                        <a style="text-decoration:none; display:block;" href="https://razorpay.com/x/current-accounts/?utm_source=email&utm_medium=bene_email&utm_campaign=big_bets">
+                                                            <img style="width: 100px; padding-left: 24px; padding-right: 24px;"
+                                                                src="https://cdn.razorpay.com/static/assets/logo/rzpX.png">
+                                                                
+                                                            <div
+                                                                style="font-weight: 400; padding-left: 24px; padding-right: 24px;font-size: 18px; padding-top: 16px;line-height: 125%; color: #FAFAFA; text-transform: capitalize;">
+                                                                Banking Made Awesome<br /> For Startups
+                                                            </div>
+                                                            <div
+                                                                style="padding-left: 22px; padding-right: 24px; width: 250px; max-width: 100%; margin: 0;">
+                                                                <img src="https://cdn.razorpay.com/static/assets/razorpayx/emails/promo.gif"
+                                                                    style="margin: 0;" width="100%"
+                                                                    height="auto" />
+                                                            </div>
+
+                                                            <div>
+                                                                <a href="https://razorpay.com/x/current-accounts/?utm_source=email&utm_medium=bene_email&utm_campaign=big_bets"
+                                                                style="margin-left: 24px; margin-right: 24px; text-decoration: none; display: inline-block; font-weight: 500;font-size: 12px; padding: 8px 12px; line-height: 16px; background: #2A86F3; border: 1px solid #2A86F3; color: white; border-radius: 2px;">Explore
+                                                                    RazorpayX</a>
+                                                            </div>
+                                                        </a>
+
+                                                    </div>
+                                                </div>
+
+                                            </td>
+                                        </tr>
+
+                                    </table>
+
+                                </td>
+                            </tr>
+
+                          </tbody>
+                        </table>
+                    </div>
+                </td>
+              </tr>
+            </tbody>
+        </table>
+
+    </div>
+
             </div>
 
             <!--[if mso | IE]>
