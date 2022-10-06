@@ -2628,6 +2628,77 @@ return [
         ],
     ],
 
+    'testCreateContactWithPayoutsServiceInternalAuth' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'vendor',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+                'batch_id'        => 'KNLfqctfnSg4yY',
+                'idempotency_key' => 'batch_KJjiE5OFofdtBE',
+            ],
+            'url'     => '/contacts_internal',
+            'server'  =>  [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+                'type'         => 'vendor',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+                'batch_id'        => 'batch_KNLfqctfnSg4yY',
+            ],
+            'status_code' => '201'
+        ],
+    ],
+
+    'testPayoutsServiceInternalFundAccountCreation' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts_internal',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => '',
+                'bank_account' => [
+                    'name'           => 'test name',
+                    'ifsc'           => 'ICIC0000020',
+                    'account_number' => '000205031288'
+                ],
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'entity'       => 'fund_account',
+                'contact_id'   => '',
+                'account_type' => 'bank_account',
+                'bank_account' => [
+                    'ifsc'           => 'ICIC0000020',
+                    'bank_name'      => 'ICICI Bank',
+                    'name'           => 'test name',
+                    'notes'          => [],
+                    'account_number' => '000205031288',
+                ]
+            ],
+            'status_code' => 201,
+        ],
+    ],
+
     'testCreatePayoutWithLedgerFreePayoutViaPSFeatureEnabled' => [
         'request'  => [
             'method'  => 'POST',

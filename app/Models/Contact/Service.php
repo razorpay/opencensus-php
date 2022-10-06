@@ -63,7 +63,9 @@ class Service extends Base\Service
      */
     public function create(array $input): array
     {
-        $entity = $this->core->create($input, $this->merchant);
+        $batchId = (isset($input[Entity::BATCH_ID]) === true) ? $input[Entity::BATCH_ID] : null;
+
+        $entity = $this->core->create($input, $this->merchant, $batchId);
 
         $responseCode = ($entity->wasRecentlyCreated === true) ? Response::HTTP_CREATED : Response::HTTP_OK;
 

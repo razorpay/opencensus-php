@@ -331,7 +331,9 @@ class Service extends Base\Service
             $createDuplicate = false;
         }
 
-        $entity = $this->core->create($input, $this->merchant, $source, $createDuplicate);
+        $batchId = (isset($input[Entity::BATCH_ID]) === true) ? $input[Entity::BATCH_ID] : null;
+
+        $entity = $this->core->create($input, $this->merchant, $source, $createDuplicate, $batchId);
 
         $responseCode = ($entity->wasRecentlyCreated === true) ? Response::HTTP_CREATED : Response::HTTP_OK;
 
@@ -355,6 +357,7 @@ class Service extends Base\Service
                 ($this->auth->isSettlementsApp() === true) or
                 ($this->auth->isScroogeApp() === true) or
                 ($this->auth->isXPayrollApp() === true) or
+                ($this->auth->isPayoutService() === true) or
                 ($this->auth->isCapitalCollectionsApp() === true));
     }
 

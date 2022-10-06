@@ -14044,6 +14044,8 @@ class Route
             'dcc_payouts_details_fetch',
             'decrement_free_payouts_payouts_service',
             'rollback_free_payouts',
+            'contact_create_internal',
+            'fund_account_create_internal',
             'payment_fetch_card_metadata',
             'workflow_state_callback',
             'workflow_state_callback_update',

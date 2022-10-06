@@ -55,7 +55,8 @@ class Validator extends Base\Validator
         Entity::CARD . '.' . Card\Entity::TOKEN          => 'sometimes:card|string',
         Entity::CARD . '.' . Card\Entity::INPUT_TYPE     => 'sometimes:card|string|in:razorpay_token,service_provider_token,card',
         Entity::CARD . '.' . Card\Entity::TOKEN_ID       => 'sometimes:card|public_id',
-        Entity::CARD . '.' . Card\Entity::TOKEN_PROVIDER => 'sometimes:card|string'
+        Entity::CARD . '.' . Card\Entity::TOKEN_PROVIDER => 'sometimes:card|string',
+        Entity::BATCH_ID                                 => 'sometimes|string',
     ];
 
     protected static $beforeCreateRules = [

@@ -4496,6 +4496,48 @@ class PayoutServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateContactWithPayoutsServiceInternalAuth()
+    {
+        $this->ba->appAuthLive($this->config['applications.payouts_service.secret']);
+
+        $this->startTest();
+
+        $contactDb = $this->getDbLastEntity('contact', 'live');
+
+        $this->assertEquals($contactDb['type'],'vendor');
+
+        $this->assertEquals($contactDb['batch_id'],'KNLfqctfnSg4yY');
+
+        $this->assertEquals($contactDb['idempotency_key'],'batch_KJjiE5OFofdtBE');
+    }
+
+    public function testPayoutsServiceInternalFundAccountCreation()
+    {
+        $this->ba->appAuthLive($this->config['applications.payouts_service.secret']);
+
+        $contact = $this->fixtures->on('live')->create('contact',
+                                           [
+                                               'name' => 'test name',
+                                               'type' => 'vendor'
+                                           ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['contact_id'] = $contact->getPublicId();
+
+        $this->testData[__FUNCTION__]['response']['content']['contact_id'] = $contact->getPublicId();
+
+        $this->startTest();
+
+        $fundAccount = $this->getDbLastEntity('fund_account', 'live');
+
+        $contactDb = $this->getDbLastEntity('contact', 'live');
+
+        $this->assertEquals($contactDb['type'],'vendor');
+
+        $this->assertEquals($contactDb['id'], $contact['id']);
+
+        $this->assertEquals($fundAccount->contact['id'], $contact['id']);
+    }
+
     public function testFetchPayoutById()
     {
         $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);

@@ -37,6 +37,7 @@ class Validator extends Base\Validator
         Entity::PAN                     => 'sometimes|string|min:0|max:40',
         Entity::EXPENSE_ID              => 'sometimes|string|max:40',
         Entity::GST_IN                  => 'sometimes|string|max:40|custom',
+        Entity::BATCH_ID                => 'sometimes|string',
     ];
 
     protected static $editRules = [
