@@ -333,56 +333,6 @@ class PartnerTest extends OAuthTestCase
         $this->startTest($testData);
     }
 
-    /**
-     * 1. Creates fixtures for referredApp and managedApp for aggregate partner
-     * 2. Create fixtures for 3 subM (2 referred and 1 managed)
-     * 3. Calls updates on subM attached via referred application
-     * 4. validated if only referred subM(s) are affected
-     */
-    public function testChangeSubmerchantAppAssociation()
-    {
-        $input = ["experiment_id" => "JuzQGh5pQfqNU9", "id" => '10000000000000'];
-        $output = ["response" => ["variant" => ["name" => 'enable']]];
-        $this->mockSplitzTreatment($input, $output);
-
-        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'aggregator']);
-
-        $referredApp = $this->fixtures->merchant->createDummyPartnerApp([
-            'id' => '8ckreferredapp',
-            'partner_type' => 'reseller'
-        ], true);
-
-        $managedApp = $this->fixtures->merchant->createDummyPartnerApp([
-            'id' => '8ckemanagedapp',
-            'partner_type' => 'aggregator'
-        ], true);
-
-        $subM1 = $this->fixtures->merchant->create(['id' => 'subm1referredX']);
-        $subM2 = $this->fixtures->merchant->create(['id' => 'subm2referredX']);
-        $subM3 = $this->fixtures->merchant->create(['id' => 'subm1managedXX']);
-
-        $accessMap1 = $this->getAccessMapArray('application', $referredApp->getId(), $subM1->getId(), self::DEFAULT_MERCHANT_ID, 'accessmapsubm1');
-        $this->fixtures->create('merchant_access_map', $accessMap1);
-
-        $accessMap2 = $this->getAccessMapArray('application', $referredApp->getId(), $subM2->getId(), self::DEFAULT_MERCHANT_ID, 'accessmapsubm2');
-        $this->fixtures->create('merchant_access_map', $accessMap2);
-
-        $accessMap3 = $this->getAccessMapArray('application', $managedApp->getId(), $subM3->getId(), self::DEFAULT_MERCHANT_ID, 'accessmapsubm3');
-        $this->fixtures->create('merchant_access_map', $accessMap3);
-
-        $this->ba->privateAuth();
-
-        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
-
-        $subM1AccessMap = $this->getDbEntityById('merchant_access_map', $accessMap1['id']);
-        $subM2AccessMap = $this->getDbEntityById('merchant_access_map', $accessMap2['id']);
-        $subM3AccessMap = $this->getDbEntityById('merchant_access_map', $accessMap3['id']);
-
-        $this->assertEquals($subM1AccessMap->getEntityId(), $managedApp->getId());
-        $this->assertEquals($subM2AccessMap->getEntityId(), $managedApp->getId());
-        $this->assertEquals($subM3AccessMap->getEntityId(), $managedApp->getId());
-    }
-
     public function testApprovingMarkAsPartnerMerchantRequest()
     {
         // Create a merchant request
@@ -2168,7 +2118,7 @@ class PartnerTest extends OAuthTestCase
     public function testCreatePartnerSubmerchantWithValidContactMobileForPrimary()
     {
         Mail::fake();
-        
+
         $this->createPartnerAndUser();
 
         $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator']);
@@ -2182,7 +2132,7 @@ class PartnerTest extends OAuthTestCase
         $razorxMock->expects($this->any())
             ->method('isRazorxExperimentEnable')
             ->willReturn(true);
-            
+
         $this->mockAllSplitzTreatment();
 
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
