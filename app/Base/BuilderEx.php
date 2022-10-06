@@ -157,14 +157,6 @@ class BuilderEx extends \Razorpay\Spine\BuilderEx
 
     private function cardEagerLoad($name, $models)
     {
-        // ToDo: Enable by default post gaining enough confidence
-        $customEagerLoad = (bool) ConfigKey::get(ConfigKey::CARD_ARCHIVAL_FALLBACK_EAGER_LOAD, false);
-
-        if ($customEagerLoad === false)
-        {
-            return $models;
-        }
-
         foreach ($models as $model)
         {
             if ($model->hasRelation($name) === false)

@@ -1544,6 +1544,10 @@ class Entity
         self::CARD    => Models\Admin\ConfigKey::CARD_ARCHIVAL_FALLBACK_ENABLED,
     ];
 
+    public static $dualWriteConfigKey = [
+        self::CARD    => Models\Admin\ConfigKey::CARD_DUAL_WRITE_ENABLED,
+    ];
+
     protected static $externalServiceClass = [
         self::REPORTING_LOGS                => \RZP\Services\Reporting::class,
         self::REPORTING_CONFIGS             => \RZP\Services\Reporting::class,

@@ -8,6 +8,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Metric;
 Use RZP\Models\Base\Entity;
 use RZP\Constants\Entity as E;
+use RZP\Models\Admin\ConfigKey;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -177,20 +178,16 @@ trait DualWrite
             return;
         }
 
-        // To enable replicating updates on original entity by either inserting or updating dual entity
-        if ($this->isDualWriteEnabledViaEnv('update') === false)
-        {
-            return;
-        }
-
         $dualEntityExists = $repo->existsInTable($this->getTable(), $this->getId());
 
         // insert the new record/update if present
         $this->upsert($strictDualWrite, $parentEntityExists, $dualEntityExists, $options);
     }
 
-    private function isDualWriteEnabledViaEnv(string $operation = '') : bool
+    private function isDualWriteEnabledViaEnv() : bool
     {
+        $app = App::getFacadeRoot();
+
         $originalValue = $this->dualWrite();
 
         // To get original table name always for env key
@@ -201,32 +198,29 @@ trait DualWrite
         // reset dual write value
         $this->setDualWrite($originalValue);
 
-        if (empty($tableName) === false)
+        if (empty($tableName) === true)
         {
-            $dualWriteEnvKey = 'ENABLE_DUAL_WRITE_' . strtoupper($tableName);
+            return false;
+        }
 
-            // Enabling updates through a different key
-            if ($operation === 'update')
-            {
-                $dualWriteEnvKey = 'ENABLE_DUAL_WRITE_UPDATE_' . strtoupper($tableName);
-            }
+        $dualWriteEnvKey = 'ENABLE_DUAL_WRITE_' . strtoupper($tableName);
 
-            $dualWriteEnvValue = getenv($dualWriteEnvKey);
+        $dualWriteEnvValue = getenv($dualWriteEnvKey);
 
-            // Note : Explicitly setting `==` to handle env datatype conversions. Do not change to `===`
-            $dualWriteEnabled = ($dualWriteEnvValue == true);
+        // Note : Explicitly setting `==` to handle env datatype conversions. Do not change to `===`
+        if ($dualWriteEnvValue == true)
+        {
+            return true;
+        }
 
-            App::getFacadeRoot()['trace']->info(TraceCode::DUAL_WRITE_CONFIG, [
-                'id'         => $this->getId(),
-                'key'        => $dualWriteEnvKey,
-                'value'      => $dualWriteEnvValue,
-                'enabled'    => $dualWriteEnabled,
-                'table_name' => $tableName,
-                'created_at' => $this->getCreatedAt(),
-                'updated_at' => $this->getUpdatedAt(),
-            ]);
+        $isWorkerPod = (($app->runningInQueue() === true) or
+            ((isset($app['worker.ctx']) === true) and
+                (empty($app['worker.ctx']) === false)));
 
-            return $dualWriteEnabled;
+        // Loading from config key in workers
+        if ($isWorkerPod === true)
+        {
+            return $this->isDualWriteConfigKeyEnabled($tableName);
         }
 
         return false;
@@ -250,5 +244,17 @@ trait DualWrite
         }
 
         return 'insert';
+    }
+
+    private function isDualWriteConfigKeyEnabled($entityName): bool
+    {
+        if (isset(E::$dualWriteConfigKey[$entityName]) === true)
+        {
+            $keyName = E::$dualWriteConfigKey[$entityName];
+
+            return (bool) ConfigKey::get($keyName, false);
+        }
+
+        return false;
     }
 }
