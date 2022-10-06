@@ -60,7 +60,7 @@ class Entity extends Base\PublicEntity
     const TOKEN_EXPIRY_YEAR                     = 'token_expiry_year';
     const TOKEN_LAST_4                          = 'token_last4';
     const PROVIDER_REFERENCE_ID                 = 'provider_reference_id';
-
+    const COBRANDING_PARTNER                    = 'cobranding_partner';
 
     /**
      * Number and cvv are never saved in the database
@@ -887,6 +887,31 @@ class Entity extends Base\PublicEntity
         return $iinEntity;
     }
 
+    public function getCobrandingPartner()
+    {
+        $cobranding_partner = null;
+
+        if($this->iinRelation)
+        {
+            $cobranding_partner = $this->iinRelation->getCobrandingPartner();
+        }
+        else if(empty($this->getTokenIin())=== false)
+        {
+            $tokenIin = $this->getTokenIin();
+
+            $cardActualIin = (string) Card\IIN\IIN::getTransactingIinforRange($tokenIin);
+
+            $iin = (new Card\Repository)->retrieveIinDetails($cardActualIin);
+
+            if($iin !== null)
+            {
+                $cobranding_partner = $iin->getCobrandingPartner();
+            }
+        }
+
+        return $cobranding_partner;
+    }
+
     public function setPublicIssuerAttribute(array & $array)
     {
         // Allowing only for policy bazaar and shared merchant account
@@ -1391,11 +1416,12 @@ class Entity extends Base\PublicEntity
     protected function getTokenRelevantAttributes()
     {
         $attributes = [
-            self::EXPIRY_MONTH => $this->getExpiryMonth(),
-            self::EXPIRY_YEAR  => $this->getExpiryYear(),
-            self::EMI          => $this->getEmi(),
-            self::ISSUER       => $this->getIssuer(),
-            self::FLOWS        => $this->getFlows()
+            self::EXPIRY_MONTH          => $this->getExpiryMonth(),
+            self::EXPIRY_YEAR           => $this->getExpiryYear(),
+            self::EMI                   => $this->getEmi(),
+            self::ISSUER                => $this->getIssuer(),
+            self::FLOWS                 => $this->getFlows(),
+            self::COBRANDING_PARTNER    => $this->getCobrandingPartner()
         ];
 
         return $attributes;
