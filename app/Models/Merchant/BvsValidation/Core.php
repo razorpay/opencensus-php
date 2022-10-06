@@ -29,11 +29,13 @@ class Core extends Base\Core
 
     const MAX_RETRY_COUNT = 3;
 
-    const BVS_VALIDATION_PROCESSING_ATTEMPT_COUNT_TTL_IN_SEC = 10800;
+    const BVS_RESPONSE_PROCESSING_ATTEMPT_COUNT_TTL_IN_SEC = 10800;
 
     const BVS_VALIDATION_CUSTOM_CALLBACK_HANDLER_TTL_IN_SEC = 36000;
 
     const DEFAULT_CALLBACK_HANDLER_FUNCTION = 'updateValidationStatusForMerchant';
+
+    const BVS_LEGAL_DOCUMENT_PROCESSING_ATTEMPT_COUNT = 'bvs_legal_document_processing_attempt_count_';
 
     protected $mutex;
 
@@ -71,12 +73,12 @@ class Core extends Base\Core
 
         try
         {
-            if ($this->isValidationProcessingAttemptExceeded($validationId, $payload) === true)
+            if ($this->isKafkaMessageProcessingAttemptExceeded($validationId, $payload, self::BVS_VALIDATION_PROCESSING_ATTEMPT_COUNT ) === true)
             {
                 return;
             }
 
-            $this->incrementValidationProcessingAttempt($validationId);
+            $this->incrementKafkaMessageProcessingAttempt($validationId, self::BVS_VALIDATION_PROCESSING_ATTEMPT_COUNT);
 
             $this->processValidation($validationId, $validationObj);
         }
@@ -91,6 +93,37 @@ class Core extends Base\Core
             throw $e;
         }
     }
+
+    public function processBvsLegalDocuments(array $payload)
+    {
+        (new Validator())->validateInput('process_kafka_message_legal_document', $payload);
+
+        $id = $payload[Constants::ID];
+
+        try
+        {
+            //If kafka message processing attempt exceeded, retry job will send request to BVS for creation of legal documents again.
+            if ($this->isKafkaMessageProcessingAttemptExceeded($id, $payload, self::BVS_LEGAL_DOCUMENT_PROCESSING_ATTEMPT_COUNT) === true)
+            {
+                return;
+            }
+
+            $this->incrementKafkaMessageProcessingAttempt($id, self::BVS_LEGAL_DOCUMENT_PROCESSING_ATTEMPT_COUNT);
+
+            $this->processDocuments($id, $payload);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::ONBOARDING_BVS_VERIFICATION_JOB_ERROR,
+                $payload);
+
+            throw $e;
+        }
+    }
+
 
     public function getValidation(string $validationId)
     {
@@ -304,7 +337,7 @@ class Core extends Base\Core
 
         $merchantId = $this->getMerchantId($validation);
 
-        // only edit  bvs_validation table if there is any update on the validation object
+        //only edit bvs_validation table if there is any update on the validation object
         if (empty($validationObj) === false)
         {
             $validation->edit($validationObj);
@@ -419,9 +452,9 @@ class Core extends Base\Core
      *
      * @return bool
      */
-    protected function isValidationProcessingAttemptExceeded(string $validationId, array $payload): bool
+    protected function isKafkaMessageProcessingAttemptExceeded(string $validationId, array $payload, string $attribute): bool
     {
-        $retryAttemptsCount = $this->getValidationProcessingAttempts($validationId);
+        $retryAttemptsCount = $this->getValidationProcessingAttempts($validationId, $attribute);
 
         $retryAttemptMetrics = [
             Constants::RETRY_ATTEMPT_COUNT => $retryAttemptsCount
@@ -444,9 +477,9 @@ class Core extends Base\Core
      *
      * @return int return the retry count for the validationId
      */
-    protected function getValidationProcessingAttempts(string $validationId): int
+    protected function getValidationProcessingAttempts(string $validationId, string $attribute): int
     {
-        $bvsValidationProcessingAttemptKey = $this->getbvsValidationProcessingAttemptKey($validationId);
+        $bvsValidationProcessingAttemptKey = $this->getbvsValidationProcessingAttemptKey($validationId, $attribute);
 
         return $this->cache->get($bvsValidationProcessingAttemptKey) ?? 0;
     }
@@ -457,11 +490,11 @@ class Core extends Base\Core
      *
      * @param string $validationId
      */
-    protected function incrementValidationProcessingAttempt(string $validationId): void
+    protected function incrementKafkaMessageProcessingAttempt(string $validationId, string $attribute): void
     {
-        $bvsValidationProcessingAttempt = $this->getValidationProcessingAttempts($validationId);
+        $bvsValidationProcessingAttempt = $this->getValidationProcessingAttempts($validationId, $attribute);
 
-        $this->updateBvsValidationProcessingAttempts($validationId, $bvsValidationProcessingAttempt + 1);
+        $this->updateBvsValidationProcessingAttempts($validationId, $bvsValidationProcessingAttempt + 1, $attribute);
     }
 
     /**
@@ -470,11 +503,11 @@ class Core extends Base\Core
      * @param string $validationId
      * @param int    $count
      */
-    protected function updateBvsValidationProcessingAttempts(string $validationId, int $count): void
+    protected function updateBvsValidationProcessingAttempts(string $validationId, int $count,  string $attribute): void
     {
-        $bvsValidationProcessingAttemptRedisKey = $this->getbvsValidationProcessingAttemptKey($validationId);
+        $bvsValidationProcessingAttemptRedisKey = $this->getbvsValidationProcessingAttemptKey($validationId, $attribute);
 
-        $this->cache->put($bvsValidationProcessingAttemptRedisKey, $count, self::BVS_VALIDATION_PROCESSING_ATTEMPT_COUNT_TTL_IN_SEC);
+        $this->cache->put($bvsValidationProcessingAttemptRedisKey, $count, self::BVS_RESPONSE_PROCESSING_ATTEMPT_COUNT_TTL_IN_SEC);
     }
 
     /**
@@ -484,9 +517,9 @@ class Core extends Base\Core
      *
      * @return string
      */
-    protected function getbvsValidationProcessingAttemptKey(string $validationId): string
+    protected function getbvsValidationProcessingAttemptKey(string $validationId, string $attribute): string
     {
-        return self::BVS_VALIDATION_PROCESSING_ATTEMPT_COUNT . $validationId;
+        return $attribute . $validationId;
     }
 
     protected function getCallbackHandlerFunction(Base\Entity $validation)
@@ -556,5 +589,22 @@ class Core extends Base\Core
     protected function getCustomHandlerKey(Base\Entity $validation)
     {
         return sprintf(self::BVS_VALIDATION_CUSTOM_CALLBACK_HANDLER_CACHE_KEY, $validation->getValidationId());
+    }
+
+    private function processDocuments($id, array $payload)
+    {
+        $documentsDetail =  $payload[Constants::DOCUMENTS_DETAIL];
+
+        foreach ($documentsDetail as $documentDetail)
+        {
+            $consentFor = "L2_" . $documentDetail['type'];
+
+            $updatedAt = $documentDetail['acceptance_timestamp'];
+
+            $status = $documentDetail['status'];
+
+            $this->repo->merchant_consents->updateStatusForRequestIdandConsentFor($id, $consentFor, $updatedAt, $status);
+        }
+
     }
 }

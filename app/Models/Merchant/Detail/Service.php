@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\Detail;
 
+use DOMDocument;
+use RZP\Http\RequestHeader;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Balance\Type as ProductType;
@@ -89,6 +91,14 @@ use RZP\Notifications\Dashboard\Constants as DashboardNotificationConstants;
 use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
 use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
 use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient\BvsValidationClient;
+use GuzzleHttp\Client as HttpClient;
+use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient;
+use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\LegalDocumentBaseResponse;
+use RZP\Models\Merchant\Consent\Details\Entity as MerchantConsentDetails;
+use RZP\Models\Merchant\Consent\Entity as MerchantConsent;
+use RZP\Models\Merchant\Consent\Constants as ConsentConstant;
+use Illuminate\Database\Query\Builder;
+use RZP\Exception\LogicException;
 
 class Service extends Base\Service
 {
@@ -343,7 +353,11 @@ class Service extends Base\Service
     {
         $activationFormMilestone = $input[Entity::ACTIVATION_FORM_MILESTONE] ?? null;
 
-        $merchant = $this->repo->merchant->findOrFailPublic($this->merchant->getMerchantId());
+        $consent = $input[DEConstants::CONSENT] ?? null;
+
+        $merchantId = $this->merchant->getMerchantId();
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         Entity::modifyConvertEmptyStringsToNull($input);
 
@@ -353,6 +367,39 @@ class Service extends Base\Service
         }
         else
         {
+            if ($activationFormMilestone === DEConstants::L2_SUBMISSION and $consent != null)
+            {
+                // If merchant has not accepted the legal documents, merchant can not submit the L2 form.
+                if ($consent === false)
+                {
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, [
+                        'error description' => 'The merchant has not accepted the legal documents.'
+                    ]);
+                }
+
+                //if legal documents are not present already, store them in database
+                if($this->checkIfConsentsPresent($merchantId, $activationFormMilestone) === false)
+                {
+                    $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS, [
+                        'message' => 'Consents are not present.'
+                    ]);
+
+                    $this->storeConsents($merchantId, $input);
+
+                    $response = $this->callBvsServiceToCreateLegalDocuments($input);
+
+                    $responseData = $response->getResponseData();
+
+                    $this->updateConsentStatus($merchantId, $activationFormMilestone, $responseData['id']);
+                }
+                else
+                {
+                    $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS, [
+                        'message' => 'Consents are already present.'
+                    ]);
+                }
+            }
+
             $response = $this->saveMerchantDetails($input, $merchant);
 
             $this->app['terminals_service']->reRequestInternalInstrumentRequestsOnActivationFormSubmit($merchant->getId());
@@ -1374,7 +1421,8 @@ class Service extends Base\Service
                     ];
                 }
 
-                array_multisort(array_column($subCategoriesMetaData, BusinessCategoriesV2\BusinessSubCategoryMetaData::DISPLAY_ORDER), $subCategoriesMetaData);
+                $array_column = array_column($subCategoriesMetaData, BusinessCategoriesV2\BusinessSubCategoryMetaData::DISPLAY_ORDER);
+                array_multisort($array_column, $subCategoriesMetaData);
 
                 $categoriesMetaData[] = [
                     BusinessCategoriesV2\BusinessCategory::CATEGORY_NAME    => BusinessCategoriesV2\BusinessCategory::DESCRIPTIONS[$category],
@@ -1384,7 +1432,8 @@ class Service extends Base\Service
                 ];
             }
 
-            array_multisort(array_column($categoriesMetaData, BusinessCategoriesV2\BusinessCategory::DISPLAY_ORDER), $categoriesMetaData);
+            $array_column1 = array_column($categoriesMetaData, BusinessCategoriesV2\BusinessCategory::DISPLAY_ORDER);
+            array_multisort($array_column1, $categoriesMetaData);
 
             $parentCategories[] =  [
                 BusinessCategoriesV2\BusinessParentCategory::PARENT_CATEGORY_NAME   => BusinessCategoriesV2\BusinessParentCategory::DESCRIPTIONS[$parentCategory],
@@ -1394,7 +1443,8 @@ class Service extends Base\Service
             ];
         }
 
-        array_multisort(array_column($parentCategories, BusinessCategoriesV2\BusinessParentCategory::DISPLAY_ORDER), $parentCategories);
+        $array_column2 = array_column($parentCategories, BusinessCategoriesV2\BusinessParentCategory::DISPLAY_ORDER);
+        array_multisort($array_column2, $parentCategories);
 
         return $parentCategories;
     }
@@ -3192,5 +3242,193 @@ class Service extends Base\Service
         (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_BVS_EVENTS, $input, $this->mode);
 
         return true;
+    }
+
+    public function checkIfConsentsPresent($merchantId, $activationFormMilestone)
+    {
+        $consentDetails = $this->repo->merchant_consents->getConsentDetailsForMerchantIdandConsentFor($merchantId, $activationFormMilestone);
+
+        if($consentDetails === null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function storeConsents(string $merchantId, array $input)
+    {
+        $documentDetailsInput = $input[DEConstants::DOCUMENTS_DETAIL] ?? null;
+
+        if($documentDetailsInput === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, [
+                'error description' => 'Legal documents are not present in the request. '
+            ]);
+        }
+
+        foreach ($documentDetailsInput as $documentDetailInput)
+        {
+            $details = new MerchantConsentDetails();
+
+            $createdAt = Carbon::now()->getTimestamp();
+
+            $id = (new Entity)->generateUniqueIdFromTimestamp($createdAt);
+
+            $details->setId($id);
+
+            $details->setURL($documentDetailInput[DEConstants::URL]);
+
+            $details->setCreatedAt($createdAt);
+
+            $merchant_consent = new MerchantConsent();
+
+            $merchant_consent->setMerchantId($merchantId);
+
+            $merchant_consent->setConsentFor($input[Entity::ACTIVATION_FORM_MILESTONE] . '_' . $documentDetailInput[DEConstants::TYPE]);
+
+            $merchant_consent->setDetailsId($id);
+
+            $merchant_consent->setStatus(ConsentConstant::PENDING);
+
+            $merchant_consent->setCreatedAt($createdAt);
+
+            $metadata = [
+                ConsentConstant::IP_ADDRESS => $_SERVER['HTTP_X_IP_ADDRESS'] ?? $this->app['request']->ip(),
+                ConsentConstant::USER_AGENT => $this->app['request']->header('X-User-Agent') ?? $this->app['request']->header('User-Agent') ?? null,
+            ];
+
+            $merchant_consent->setMetadata($metadata);
+
+            $merchant_consent->setUserId($this->app['request']->header(RequestHeader::X_DASHBOARD_USER_ID) );
+
+            $merchant_consent->setId((new Entity)->generateUniqueId());
+
+            try
+            {
+                $this->repo->merchant_consent_details->saveOrFail($details);
+
+                $this->repo->merchant_consents->saveOrFail($merchant_consent);
+
+            }
+            catch (LogicException $e)
+            {
+                throw new LogicException($e);
+            }
+        }
+    }
+
+    private function callBvsServiceToCreateLegalDocuments(array $input)
+    {
+        $documentDetailsInput = $input[DEConstants::DOCUMENTS_DETAIL];
+
+        $documents_detail = [];
+
+        foreach ($documentDetailsInput as $documentDetailInput)
+        {
+            $document_detail = [
+                "type"              => $documentDetailInput['type'],
+                "content_type"      => "html",
+                "content"           => $this->getFileContentInHtml($documentDetailInput['url'])
+            ];
+
+            array_push($documents_detail, $document_detail) ;
+        }
+
+        $ownerDetails = [
+            "owner_id"                => $this->merchant->getMerchantId(),
+            "ip_address"              => $_SERVER['HTTP_X_IP_ADDRESS'] ?? $this->app['request']->ip(),
+            "acceptance_timestamp"    => Carbon::now()->getTimestamp(),
+            "signatory_name"          => $this->merchant->merchantDetail->getPromoterPanName(),
+            "owner_name"              => $this->merchant->merchantDetail->getBusinessName(),
+            "contact_number"          => $this->merchant->merchantDetail->getContactMobile(),
+            "email"                   => $this->merchant->getEmail(),
+        ];
+
+        $body = [
+            "client_details"                     => ['platform' => 'pg'],
+            "owner_details"                      => $ownerDetails,
+            "documents_detail"                   => $documents_detail
+        ];
+
+        $response = (new BvsClient\BvsLegalDocumentManagerClient($this->merchant))->createLegalDocument($body);
+
+        $this->trace->info(TraceCode::BVS_RESPONSE_CREATE_CONSENTS, [
+            'id' => $response->getId(),
+            'status' => $response->getStatus()
+        ]);
+
+        return new LegalDocumentBaseResponse($response);
+    }
+
+    private function updateConsentStatus($merchantId, $activationFormMilestone, $requestId)
+    {
+        $this->repo->merchant_consents->updateStatusForMerchantIdAndConsentFor($merchantId, $activationFormMilestone, ConsentConstant::INITIATED, Carbon::now()->getTimestamp(), $requestId);
+    }
+
+    /**
+     * @param $documentDetailInput
+     * @return string|string[]|null
+     */
+    private function getFileContentInHtml($url)
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+        $result = curl_exec($ch);
+
+        $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if (curl_errno($ch)) {
+            $error_msg = curl_error($ch);
+            echo $error_msg;
+        }
+
+        $unescapeString = stripcslashes($result);
+
+        $dom = new DOMDocument("1.0", "utf-8");
+        $dom->formatOutput = true;
+        libxml_use_internal_errors(true);
+        $dom->loadHTML($unescapeString);
+        libxml_clear_errors();
+
+        $content_body =  $this->get_match($unescapeString);
+
+        if($content_body === null)
+        {
+            $this->trace->info(
+                TraceCode::STORAGE_CONSENT_FETCH_DOCUMENT,
+                [
+                    'message' => 'Couldnot fetch correct body of the document'
+                ]);
+        }
+
+        $content_body_str = (string)$content_body;
+
+        //regex to remove self closing tags
+        $cleaned_content_body_str = preg_replace('/<(path|img|xml|br|hr)(.*?)>/s', " ", $content_body_str);
+
+        $final_content_body = '<html lang="en"><head><title></title></head><body>' . $cleaned_content_body_str . '</body></html>';
+
+        curl_close($ch);
+
+        return $final_content_body;
+    }
+
+    private function get_match($content)
+    {
+        //Regex statement to fetch main body
+        if (preg_match('/<main>(.*?)<\/main>/s', $content,$matches))
+        {
+            $content_body = $matches[0];
+
+            $clean_content = preg_replace('/<footer>(.*?)<\/footer>/s', ' ', $content_body);
+
+            return $clean_content;
+        }
+        else {
+            return null;
+        }
     }
 }

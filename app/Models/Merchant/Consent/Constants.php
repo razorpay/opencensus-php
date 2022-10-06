@@ -17,6 +17,18 @@ class Constants
     const REFUND      = 'refund';
     const PRIVACY     = 'privacy';
     const SHIPPING    = 'shipping';
+    const IP_ADDRESS  = 'ip_address';
+
+    //STATUS
+    const PENDING     = 'pending';
+    const INITIATED   = 'initiated';
+    const SUCCESS     = 'success';
+    const FAILED      = 'failed';
+
+    const STORE_CONSENTS_RETRY_PERIOD_IN_SEC             = 86400;
+    const STORE_CONSENTS_ATTEMPT_COUNT_REDIS_KEY_PREFIX  = 'store_consents_attempt_count';
+    const STORE_CONSENTS_MAX_ATTEMPT                     = 3;
+    const STORE_DOCUMENTS_ATTEMPT_COUNT                  = 'store_documents_attempt_count';
 
     const WEBSITE      = 'website';
     const CONSENT_KEYS = self::WEBSITE .'_'. self::CONTACT_US . ',' .

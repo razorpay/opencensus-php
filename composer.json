@@ -83,7 +83,8 @@
         "ext-dom": "*",
         "ext-libxml": "*",
         "p3k/emoji-detector": "^0.3.1",
-        "jakeasmith/http_build_url": "^1"
+        "jakeasmith/http_build_url": "^1",
+        "ext-curl": "*"
     },
     "repositories": [
         {

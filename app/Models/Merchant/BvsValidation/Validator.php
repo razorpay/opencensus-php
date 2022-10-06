@@ -39,4 +39,11 @@ class Validator extends Base\Validator
         Constants::ERROR_DESCRIPTION        => 'sometimes|string|max:255',
         Constants::RULE_EXECUTION_LIST      => 'sometimes|array',
     ];
+
+    protected static $processKafkaMessageLegalDocumentRules = [
+        Constants::ID                       => 'required|string|max:14',
+        Constants::STATUS                   => 'required|string|max:255',
+        Constants::COUNT                    => 'sometimes|int',
+        Constants::DOCUMENTS_DETAIL         => 'sometimes|array',
+    ];
 }

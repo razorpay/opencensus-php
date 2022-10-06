@@ -126,9 +126,12 @@ class Constant
     const AADHAAR_FRONT_AND_BACK_OCR                    = "aadhaar_front_and_back";
 
     // Response fields
-    const VALIDATION_ID   = 'validation_id';
-    const VALIDATION_UNIT = 'validation_unit';
-    const STATUS          = 'status';
+    const VALIDATION_ID     = 'validation_id';
+    const VALIDATION_UNIT   = 'validation_unit';
+    const STATUS            = 'status';
+    const ID                = 'id';
+    const COUNT             = 'count';
+    const DOCUMENTS_DETAIL  = 'documents_detail';
 
     // Artefact types in BVS
     const PERSONAL_PAN                           = 'personal_pan';

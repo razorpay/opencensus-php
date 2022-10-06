@@ -34,6 +34,13 @@ class Constants
     const BANK_DETAILS_VERIFICATION_ERROR   = 'bank_details_verification_error';
     const BANK_DETAILS_FUZZY_SCORE          = 'bank_details_fuzzy_score';
 
+    const ID                    = 'id';
+    const COUNT                 = 'count';
+    const DOCUMENTS_DETAIL      = 'documents_detail';
+    const TYPE                  = 'type';
+    const UFH_FILE_ID           = 'ufh_file_id';
+    const ACCEPTANCE_TIMESTAMP  = 'acceptance_timestamp';
+
     const PLATFORMS = [
         self::RX,
         self::PG,

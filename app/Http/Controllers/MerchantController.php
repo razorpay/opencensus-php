@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use App;
 use Request;
 use ApiResponse;
+use RZP\Constants\Entity as E;
 use RZP\Exception;
 use RZP\Constants\Entity;
 use RZP\Models\Feature\Constants as Feature;
@@ -20,7 +21,6 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Partner;
 use RZP\Base\RuntimeManager;
-use RZP\Constants\Entity as E;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Credits;
@@ -2367,6 +2367,16 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    /**
+     * @return mixed
+     */
+    public function retryStoreLegalDocuments()
+    {
+        $response = $this->service()->retryStoreLegalDocuments();
+
+        return ApiResponse::json($response);
+    }
+
     public function getGlobalMerchantConfigs($mid)
     {
         $response = $this->service()->getGlobalMerchantConfigs($mid);
@@ -3417,6 +3427,13 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getMerchantConsents(string $merchantId)
+    {
+        $response = $this->service()->getMerchantConsents($merchantId);
+
+        return ApiResponse::json($response);
+    }
+
     public function uploadMaxPaymentLimitViaFile()
     {
         $input = Request::all();
@@ -3430,7 +3447,7 @@ class MerchantController extends Controller
         $data = (new Service())->executeMaxPaymentLimitWorkflow($input);
         return ApiResponse::json($data);
     }
-    
+
     /**
      * @throws \Throwable
      */
@@ -3442,4 +3459,5 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
 }

@@ -144,6 +144,7 @@ use RZP\Models\TrustedBadge;
 use RZP\Models\Partner\Commission\Core as PartnerCommissionCore;
 use RZP\Models\EntityOrigin\Core as EntityOriginCore;
 use \RZP\Models\Workflow\Action\Entity as ActionEntity;
+use RZP\Models\Merchant\Consent as Consent;
 
 class Service extends Base\Service
 {
@@ -10699,6 +10700,18 @@ class Service extends Base\Service
             'allow_only_3ds'      => $this->merchant->isFeatureEnabled(FeatureConstants::ACCEPT_ONLY_3DS_PAYMENTS),
             'updated_at'          => $updatedDate
         ]);
+    }
+
+    public function retryStoreLegalDocuments()
+    {
+        (new Consent\Core())->retryStoreLegalDocuments();
+
+        return ['success' => true];
+    }
+
+    public function getMerchantConsents($merchantId)
+    {
+        return (new Consent\Core())->getMerchantConsents($merchantId);
     }
 
     private function sendSelfServeSuccessAnalyticsEventToSegmentForEnablingFlashCheckout()

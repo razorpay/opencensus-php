@@ -34,6 +34,10 @@ class Constants
     const AGGREGATED_TURNOVER_SLAB   = 'aggregated_turnover_slab';
     const WEBSITE_VISITS             = 'website_visits';
 
+    //Legal documents
+    const CONSENT                    = 'consent';
+    const DOCUMENTS_DETAIL           = 'documents_detail';
+
     //app_urls
     const PLAYSTORE_URL    = 'playstore_url';
     const APPSTORE_URL     = 'appstore_url';

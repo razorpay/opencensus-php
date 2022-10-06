@@ -775,6 +775,8 @@ class Route
         'admin_website_section_save'               => ['post',     'merchant/{id}/website/section',                 'MerchantController@saveAdminWebsiteSection'                                ],
         'admin_website_section_fetch'              => ['get',      'merchant/{id}/website/section',                 'MerchantController@getAdminWebsiteSection'                                ],
 
+        'merchant_consents_admin_fetch'            => ['get',       'merchant/consents/{mid}',                      'MerchantController@getMerchantConsents'                          ],
+
         'appsflyer_attribution_details'            => ['post',     'appsflyer/attribution-details',                  'MerchantController@postAppsflyerAttributionDetails'],
         'merchant_checkout_details_save'           => ['post',     'merchant/checkout_details',                      'MerchantController@postMerchantCheckoutDetail'                     ],
         'merchant_checkout_details'                => ['get',      'merchant/checkout_details',                      'MerchantController@getMerchantCheckoutDetail'                      ],
@@ -3327,6 +3329,9 @@ class Route
         //cron job to retry penny testing for initiated case
         'retry_penny_testing_cron'                => ['post',      'merchants/retry_penny_testing',                           'MerchantController@retryPennyTestingCron'                 ],
 
+        //cron job to retry storing legal documents
+        'retry_store_legal_documents_cron'        => ['post',      'merchants/retry_store_legal_documents',                   'MerchantController@retryStoreLegalDocuments'                 ],
+
         // low balance notification config apis
         'create_low_balance_config'               => ['post',       'low_balance_configs',                    'LowBalanceConfigController@create'],
         'create_low_balance_config_admin'         => ['post',       'low_balance_configs/admin',              'LowBalanceConfigController@adminCreate'],
@@ -4935,6 +4940,7 @@ class Route
         'update_admin_through_batch',
         'merchant_create_terminal_internal',
         'retry_penny_testing_cron',
+        'retry_store_legal_documents_cron',
         'merchant_methods_edit_internal',
         'refund_create_batch_service',
         'methods_update_merchants_internal',
@@ -5818,6 +5824,7 @@ class Route
         'merchant_user_app_incr_product_session',
         'merchant_recent_trans_with_source',
         'merchant_workflow_details',
+        'merchant_consents_admin_fetch',
         'merchant_workflow_clarification',
         'user_edit_self',
         'user_otp_create',
@@ -6257,6 +6264,7 @@ class Route
         'workflow_config_create',
         'workflow_config_update',
         'workflow_config_delete',
+
     ];
     // These will run on internal auth with the assurance
     // of X-Admin-Token being passed.
@@ -6276,6 +6284,7 @@ class Route
         'admin_website_section_action',
         'admin_website_section_save',
         'admin_website_section_fetch',
+        'merchant_consents_admin_fetch',
         'admin_collect_info_merchant_details_patch',
         'nocode_debugging_route',
         'merchant_enhanced_activation_details',
@@ -7447,6 +7456,7 @@ class Route
         'admin_website_section_fetch'                     => Permission::EDIT_MERCHANT,
         'public_merchant_website_section_page_load'       => Permission::VIEW_MERCHANT,
         'public_merchant_website_section_pages'           => Permission::VIEW_MERCHANT,
+        'merchant_consents_admin_fetch'                   => Permission::VIEW_MERCHANT,
         //'banking_account_bank_lms_fetch_multiple'      => Permission::RBL_BANK_MID_OFFICE,
         //'banking_account_bank_lms_fetch_by_id'         => Permission::RBL_BANK_MID_OFFICE,
         //'banking_account_bank_lms_comments_list'       => Permission::RBL_BANK_MID_OFFICE,
@@ -10657,6 +10667,7 @@ class Route
             'update_survey_tracker',
             'increase_transaction_limit_self_serve',
             'merchant_workflow_details',
+            'merchant_consents_admin_fetch',
             'merchant_workflow_clarification',
             'update_payment_config',
             'update_wait_timeout',
@@ -11838,6 +11849,7 @@ class Route
             'merchants_risk_admin',
             'merchants_risk_service',
             'merchant_workflow_details',
+            'merchant_consents_admin_fetch',
             'merchants_update_bank_account',
             'merchants_update_bulk',
             'merchants_update_channel',
@@ -13281,6 +13293,7 @@ class Route
             'terminal_service_sync_delete',
             'transfer_settlements_update',
             'retry_penny_testing_cron',
+            'retry_store_legal_documents_cron',
             'payment_links_bulk_expire',
             'payment_links_es_cleanup',
             'fee_recovery_payout_process',

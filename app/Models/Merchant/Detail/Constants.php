@@ -274,6 +274,12 @@ class Constants
 
     const L1_SUBMISSION = 'L1';
     const L2_SUBMISSION = 'L2';
+
+    const CONSENT = 'consent';
+    const DOCUMENTS_DETAIL = 'documents_detail';
+    const URL = 'url';
+    const TYPE = 'type';
+
     /*
      * Allowed activation form milestones
      */

@@ -16,6 +16,7 @@ class KafkaMessageProcessor
     const API_BVS_EVENTS = 'api-bvs-validation-result-events';
     const ADDRESS_DEDUPE_EVENT = 'address-dedupe-response';
     const RAW_ADDRESS_CONTACTS = 'raw-address-contacts';
+    const LEGAL_DOCUMENTS_EVENTS = 'api-bvs-legal-document-result-events';
 
     /** @var Application $app */
     protected $app;
@@ -114,6 +115,8 @@ class KafkaMessageProcessor
                 return new BulkUploadConsumer($payload, $mode);
             case self::RAW_ADDRESS_CONTACTS:
                 return new RawAddressContactsConsumer($payload, $mode);
+            case self::LEGAL_DOCUMENTS_EVENTS:
+                return new KafkaJobs\BvsLegalDocumentsJob($payload['data'], $mode);
             default:
                 return null;
         }

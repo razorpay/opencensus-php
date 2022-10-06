@@ -41,4 +41,14 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::URL);
     }
+
+    public function setId($id)
+    {
+        return $this->setAttribute(self::ID, $id);
+    }
+
+    public function setURL($url)
+    {
+        return $this->setAttribute(self::URL, $url);
+    }
 }

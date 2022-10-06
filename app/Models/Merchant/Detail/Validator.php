@@ -151,6 +151,8 @@ class Validator extends Base\Validator
         BDConstants::IOS_APP_PRESENT            => 'sometimes|boolean',
         BDConstants::OTHERS_PRESENT             => 'sometimes|boolean',
         BDConstants::ANDROID_APP_PRESENT        => 'sometimes|boolean',
+        BDConstants::CONSENT                    => 'sometimes|boolean',
+        BDConstants::DOCUMENTS_DETAIL           => 'sometimes|array'
     ];
 
     protected static $editRules = [
@@ -264,6 +266,8 @@ class Validator extends Base\Validator
         BDConstants::OTHERS_PRESENT                      => 'sometimes|boolean',
         BDConstants::ANDROID_APP_PRESENT                 => 'sometimes|boolean',
         Entity::IEC_CODE                                 => 'sometimes|string|max:20',
+        BDConstants::CONSENT                             => 'sometimes|boolean',
+        BDConstants::DOCUMENTS_DETAIL                    => 'sometimes|array'
     ];
 
     protected static $preSignupRules = [
@@ -382,6 +386,8 @@ class Validator extends Base\Validator
         Entity::CONTACT_MOBILE              => 'sometimes|max:15|contact_syntax',
         Entity::CONTACT_NAME                => 'sometimes|string|max:50',
         Entity::CONTACT_EMAIL               => 'sometimes|email|max:255',
+        BDConstants::CONSENT                => 'sometimes|boolean',
+        BDConstants::DOCUMENTS_DETAIL       => 'sometimes|array'
     ];
 
     protected static $instantActivationBatchRules = [

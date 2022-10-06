@@ -9,6 +9,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     //consents
     const CREATE_MERCHANT_CONSENT_DETAILS           = 'CREATE_MERCHANT_CONSENT_DETAILS';
     const CREATE_MERCHANT_CONSENTS                  = 'CREATE_MERCHANT_CONSENTS';
+    const BVS_RESPONSE_CREATE_CONSENTS              = 'BVS_RESPONSE_CREATE_CONSENTS';
     const MERCHANT_WEBSITE_SECTION_ACTION           = 'MERCHANT_WEBSITE_SECTION_ACTION';
     const MERCHANT_WEBSITE_SECTION_ACTION_UPDATE    = 'MERCHANT_WEBSITE_SECTION_ACTION_UPDATE';
     const ADMIN_WEBSITE_SECTION_ACTION              = 'ADMIN_WEBSITE_SECTION_ACTION';
@@ -16,6 +17,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const WEBSITE_SECTION_RESPONSE                  = 'WEBSITE_SECTION_RESPONSE';
     const WEBSITE_SECTION_ERROR                     = 'WEBSITE_SECTION_ERROR';
     const WEBSITE_ADHERENCE_INFO                    = 'WEBSITE_ADHERENCE_INFO';
+    const MERCHANT_STORE_CONSENTS_CRON_RETRY        = 'MERCHANT_STORE_CONSENTS_CRON_RETRY';
 
     const QR_CODE_IMAGE_DOWNLOAD_REQUEST                        = 'QR_CODE_IMAGE_DOWNLOAD_REQUEST';
     const QR_CODE_DOWNLOAD_FAILED_REGENERATING                  = 'QR_CODE_DOWNLOAD_FAILED_REGENERATING';
@@ -4223,6 +4225,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_STATUS_CHANGED_TO_BATCH_SUBMITTED                  = 'PAYOUT_STATUS_CHANGED_TO_BATCH_SUBMITTED';
     const PAYOUT_FAILED_EMAIL                                       = 'PAYOUT_FAILED_EMAIL';
     const PAYOUT_AUTO_REJECTED_EMAIL                                = 'PAYOUT_AUTO_REJECTED_EMAIL';
+
+    const STORAGE_CONSENT_FETCH_DOCUMENT                            = 'STORAGE_CONSENT_FETCH_DOCUMENT';
 
     const REFUND_REVERSAL_CREATED                               = 'REFUND_REVERSAL_CREATED';
     const REFUND_REVERSAL_INITIATED                             = 'REFUND_REVERSAL_INITIATED';
