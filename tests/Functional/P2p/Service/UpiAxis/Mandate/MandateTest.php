@@ -636,4 +636,90 @@ class MandateTest extends TestCase
 
         $this->assertTrue($response['success']);
     }
+
+    public function testFetchAllStatusesWithPendingState()
+    {
+        $helper = $this->getMandateHelper();
+
+        $request = $helper->getCreateMandatePayload($this->gateway);
+
+        $this->createMandateOnMock($helper, $request);
+
+
+        $collection = $helper->fetchAll([
+            'expand'    => ['payer', 'payee'],
+            'response'   =>'pending'
+        ]);
+
+        $this->assertCollection($collection, 1, [
+            [
+                'status'    => 'requested',
+                'type'      => 'collect',
+                'flow'      => 'debit',
+            ],
+        ]);
+    }
+
+    public function testFetchAllStatusesWithActiveState()
+    {
+        $helper = $this->getMandateHelper();
+
+        $request = $helper->getCreateMandatePayload($this->gateway);
+
+        $this->createMandateOnMock($helper, $request);
+
+        $lastMandate = $this->fixtures->getDbLastMandate()->toArray();
+
+        $request = $helper->initiateAuthorize($lastMandate[Entity::ID], []);
+
+        $content = $this->handleSdkRequest($request);
+
+        $helper->authorizeMandate($request['callback'], $content);
+
+        $collection = $helper->fetchAll([
+                        'expand'    => ['payer', 'payee'],
+                        'response'   =>'active'
+                      ]);
+
+        $this->assertCollection($collection, 1, [
+            [
+                'status'    => 'approved',
+            ],
+        ]);
+    }
+
+
+    public function testFetchAllStatusesWithHistoryState()
+    {
+        $helper = $this->getMandateHelper();
+
+        $request = $helper->getCreateMandatePayload($this->gateway);
+
+        $this->createMandateOnMock($helper, $request);
+
+        $lastMandate = $this->fixtures->getDbLastMandate();
+
+        $request = $helper->initiateAuthorize($lastMandate->getId(), []);
+
+        $content = $this->handleSdkRequest($request);
+
+        $helper->authorizeMandate($request['callback'], $content);
+
+        $request = $helper->initiateRevoke($lastMandate->getId(), []);
+
+        $content = $this->handleSdkRequest($request);
+
+        $response = $helper->revokeMandate($request['callback'], $content);
+
+        $collection = $helper->fetchAll([
+                            'expand'    => ['payer', 'payee'],
+                            'response'   =>'history'
+                      ]);
+
+        $this->assertCollection($collection, 1, [
+            [
+                'status'    => 'revoked',
+            ],
+        ]);
+    }
 }

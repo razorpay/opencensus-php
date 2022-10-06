@@ -193,6 +193,7 @@ class Validator extends Base\Validator
 
         $rules = $this->makeRules([
                   Entity::STATUS   => 'sometimes',
+                  Entity::RESPONSE => 'sometimes',
                 ]);
 
         return $this->makeRules(array_merge($rules, $parentRule));
