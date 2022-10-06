@@ -7,7 +7,6 @@ import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { BroadcastUpdatePlugin } from 'workbox-broadcast-update';
 
 const ENABLED_CDN_ASSETS = /https:\/\/cdn\.razorpay\.com\/dashboard\/dist\/(js|css)?\/.*\.(js|css)?$/;
-const STALEWHILE_ASSETS = /https:\/\/cdn\.razorpay\.com.*\/dist\/(merchant-entry|merchantLA-entry)?\.*\.(js)?$/;
 const ENABLED_FONTS = /\.(woff|woff2)?$/;
 
 const ENABLED_STATIC_ASSETS = ['/static/analytics/bundle.js', '/static/assets/holidays.js'];
@@ -40,8 +39,7 @@ registerRoute(
 );
 
 registerRoute(
-  ({ url: { href = '', pathname } }) =>
-    STALEWHILE_ASSETS.test(href) || ENABLED_STATIC_ASSETS.indexOf(pathname) > -1,
+  ({ url: { pathname } }) => ENABLED_STATIC_ASSETS.indexOf(pathname) > -1,
   new StaleWhileRevalidate({
     cacheName: 'static-assets',
     plugins: [new BroadcastUpdatePlugin()],

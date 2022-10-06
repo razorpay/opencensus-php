@@ -14,6 +14,7 @@
 @endif
 
 @if (($isConfirmed || $isMobileConfirmed) and $isPreSignupComplete)
+  <link rel="preload" href="https://cdn.razorpay.com/dashboard/dist/merchant-entry.js" as="script">
 
 @elseif ($newAuthFlow === false)
   <link rel='stylesheet' href="{{$cdnDashboardUrl}}/css/generated/signup.css" type='text/css' />

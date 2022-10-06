@@ -204,6 +204,7 @@ module.exports = ({ config, project }) => {
           '/dist/': 'https://cdn.razorpay.com/dashboard/dist/',
         },
         include: [/\.(js|css)?$/, /\.(woff|woff2)?$/],
+        exclude: [/(merchant-entry|merchantLA-entry).js$/],
         swSrc: './utils/customWorkbox.js',
         swDest: `sw-utils/sw-${project}.js`,
       }),
