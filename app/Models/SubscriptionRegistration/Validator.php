@@ -144,6 +144,15 @@ class Validator extends Base\Validator
 
             if ($maxAmount > $maxAmountLimit)
             {
+
+                $this->getTrace()->count(
+                    Metric::SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED,
+                    [
+                        'message' => 'The max amount may not be greater than ' . $maxAmountLimit . '.',
+                        'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
+                    ]
+                );
+
                 throw new BadRequestValidationFailureException(
                     'The max amount may not be greater than ' . $maxAmountLimit . '.',
                     Entity::MAX_AMOUNT
@@ -152,6 +161,15 @@ class Validator extends Base\Validator
 
             if ($maxAmount <= Token\Entity::LEAST_MAX_AMOUNT_LIMIT)
             {
+
+                $this->getTrace()->count(
+                    Metric::SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED,
+                    [
+                        'message' => 'The max amount should be greater than zero.',
+                        'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
+                    ]
+                );
+
                 throw new BadRequestValidationFailureException(
                     'The max amount should be greater than zero.',
                     Entity::MAX_AMOUNT
@@ -192,6 +210,14 @@ class Validator extends Base\Validator
                 {
                     if ($firstPaymentAmount > 0)
                     {
+                        $this->getTrace()->count(
+                            Metric::SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED,
+                            [
+                                'message' => 'token.first_payment_amount should be “null” for method = “card”',
+                                'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
+                            ]
+                        );
+
                         throw new BadRequestValidationFailureException('token.first_payment_amount should be “null” for method = “card”');
                     }
                 }
@@ -204,6 +230,15 @@ class Validator extends Base\Validator
         if ((empty($input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::METHOD]) === false) and
             ($input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::METHOD] !== $order->getMethod()))
         {
+
+            $this->getTrace()->count(
+                Metric::SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED,
+                [
+                    'message' => 'order method doesn\'t match with token method',
+                    'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
+                ]
+            );
+
             throw new BadRequestValidationFailureException(
                 'order method doesn\'t match with token method',
                 Entity::METHOD
@@ -222,6 +257,15 @@ class Validator extends Base\Validator
 
         if (empty($input[CustomerEntity::CONTACT]) === true)
         {
+
+            $this->getTrace()->count(
+                Metric::SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED,
+                [
+                    'message' => PublicErrorDescription::BAD_REQUEST_AUTH_LINK_CONTACT_EMPTY,
+                    'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
+                ]
+            );
+
             throw new BadRequestValidationFailureException(
                 PublicErrorDescription::BAD_REQUEST_AUTH_LINK_CONTACT_EMPTY,
                 CustomerEntity::CONTACT
@@ -231,6 +275,15 @@ class Validator extends Base\Validator
         if (empty($input[CustomerEntity::EMAIL]) === true and
             $merchant->isFeatureEnabled(Feature\Constants::EMAIL_OPTIONAL) === false)
         {
+
+            $this->getTrace()->count(
+                Metric::SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED,
+                [
+                    'message' => PublicErrorDescription::BAD_REQUEST_AUTH_LINK_EMAIL_EMPTY,
+                    'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
+                ]
+            );
+
             throw new BadRequestValidationFailureException(
                 PublicErrorDescription::BAD_REQUEST_AUTH_LINK_EMAIL_EMPTY,
                 CustomerEntity::EMAIL
@@ -242,6 +295,15 @@ class Validator extends Base\Validator
     {
         if ($this->entity->token !== null)
         {
+
+            $this->getTrace()->count(
+                Metric::SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED,
+                [
+                    'message' => 'token is already associated',
+                    'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
+                ]
+            );
+
             throw new BadRequestValidationFailureException(
                 'token is already associated',
                 Entity::TOKEN
@@ -253,6 +315,15 @@ class Validator extends Base\Validator
     {
         if ($this->entity->token === null)
         {
+
+            $this->getTrace()->count(
+                Metric::SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED,
+                [
+                    'message' => 'token must be associated first to authenticate',
+                    'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
+                ]
+            );
+
             throw new BadRequestValidationFailureException(
                 'token must be associated first to authenticate',
                 Entity::TOKEN
@@ -261,6 +332,15 @@ class Validator extends Base\Validator
 
         if ($this->entity->getStatus() !== Status::CREATED)
         {
+
+            $this->getTrace()->count(
+                Metric::SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED,
+                [
+                    'message' => 'token can be authorized only in created state of token registration',
+                    'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
+                ]
+            );
+
             throw new BadRequestValidationFailureException(
                 'token can be authorized only in created state of token registration',
                 Entity::TOKEN
@@ -273,6 +353,15 @@ class Validator extends Base\Validator
         if (($subscriptionRegistration->paperMandate === null) or
             ($subscriptionRegistration->paperMandate->getEntityName() !== E::PAPER_MANDATE))
         {
+
+            $this->getTrace()->count(
+                Metric::SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED,
+                [
+                    'message' => 'token registration should be created for paper mandate',
+                    'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
+                ]
+            );
+
             throw new BadRequestValidationFailureException('token registration should be created for paper mandate');
         }
 
@@ -283,6 +372,15 @@ class Validator extends Base\Validator
     {
         if ($invoice->getEntityType() !== E::SUBSCRIPTION_REGISTRATION)
         {
+
+            $this->getTrace()->count(
+                Metric::SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED,
+                [
+                    'message' => 'invoice created should be for token registration',
+                    'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
+                ]
+            );
+
             throw new BadRequestValidationFailureException(
                 'invoice created should be for token registration'
             );
@@ -293,6 +391,15 @@ class Validator extends Base\Validator
     {
         if ($order->getMethod() !== Method::NACH)
         {
+
+            $this->getTrace()->count(
+                Metric::SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED,
+                [
+                    'message' => 'order created should be for token registration',
+                    'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
+                ]
+            );
+
             throw new BadRequestValidationFailureException(
                 'order created should be for token registration'
             );
@@ -304,6 +411,15 @@ class Validator extends Base\Validator
         if ((empty($input[Entity::AUTH_LINK_ID]) === false) and
             (empty($input[Entity::ORDER_ID]) === false))
         {
+
+            $this->getTrace()->count(
+                Metric::SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED,
+                [
+                    'message' => 'both order id and auth link id is not required',
+                    'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
+                ]
+            );
+
             throw new BadRequestValidationFailureException(
               'both order id and auth link id is not required'
             );
@@ -321,6 +437,15 @@ class Validator extends Base\Validator
 
         if ($idCount !== 1)
         {
+
+            $this->getTrace()->count(
+                Metric::SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED,
+                [
+                    'message' => 'any one of order or auth link or token id is required',
+                    'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
+                ]
+            );
+
             throw new BadRequestValidationFailureException(
                 'any one of order or auth link or token id is required'
             );
@@ -340,6 +465,15 @@ class Validator extends Base\Validator
 
         if ($paperMandate === null)
         {
+
+            $this->getTrace()->count(
+                Metric::SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED,
+                [
+                    'message' => 'paper mandate can\'t be null for token registration',
+                    'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
+                ]
+            );
+
             throw new \LogicException(
                 'paper mandate can\'t be null for token registration',
                 null,
@@ -362,6 +496,15 @@ class Validator extends Base\Validator
 
         if ($method === Method::UPI)
         {
+
+            $this->getTrace()->count(
+                Metric::SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED,
+                [
+                    'message' => 'first payment amount not allowed',
+                    'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
+                ]
+            );
+
             throw new BadRequestValidationFailureException(
                 'first payment amount not allowed'
             );
@@ -375,6 +518,15 @@ class Validator extends Base\Validator
 
         if ($firstPaymentAmount > $maxAmount)
         {
+
+            $this->getTrace()->count(
+                Metric::SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED,
+                [
+                    'message' => 'first payment amount cannot be greater than maximum amount',
+                    'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
+                ]
+            );
+
             throw new BadRequestValidationFailureException(
                 'first payment amount cannot be greater than maximum amount'
             );
@@ -398,6 +550,15 @@ class Validator extends Base\Validator
 
         if ($token->getRecurringStatus() !== Token\RecurringStatus::REJECTED)
         {
+
+            $this->getTrace()->count(
+                Metric::SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED,
+                [
+                    'message' => 'token can\'t be retried if it is not rejected',
+                    'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
+                ]
+            );
+
             throw new BadRequestValidationFailureException(
                 'token can\'t be retried if it is not rejected'
             );
@@ -405,6 +566,15 @@ class Validator extends Base\Validator
 
         if ($token->getMethod() !== Payment\Method::NACH)
         {
+
+            $this->getTrace()->count(
+                Metric::SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED,
+                [
+                    'message' => 'only nach method token can be retried',
+                    'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
+                ]
+            );
+
             throw new BadRequestValidationFailureException(
                 'only nach method token can be retried'
             );
@@ -414,6 +584,15 @@ class Validator extends Base\Validator
 
         if (count($this->repo->payment->getPaymentCountByToken($tokenId)->get()) !== 1)
         {
+
+            $this->getTrace()->count(
+                Metric::SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED,
+                [
+                    'message' => 'token can be retried only if exactly one payment created for it',
+                    'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
+                ]
+            );
+
             throw new BadRequestValidationFailureException(
                 'token can be retried only if exactly one payment created for it'
             );
@@ -429,6 +608,15 @@ class Validator extends Base\Validator
     {
         if ($this->getMode() !== Constants\Mode::TEST)
         {
+
+            $this->getTrace()->count(
+                Metric::SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED,
+                [
+                    'message' => 'this is only allowed for test payments',
+                    'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
+                ]
+            );
+
             throw new BadRequestValidationFailureException(
                 'this is only allowed for test payments'
             );
@@ -436,6 +624,15 @@ class Validator extends Base\Validator
 
         if ($this->entity->getMethod() !== Method::NACH)
         {
+
+            $this->getTrace()->count(
+                Metric::SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED,
+                [
+                    'message' => 'this is only allowed for nach method',
+                    'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
+                ]
+            );
+
             throw new BadRequestValidationFailureException(
                 'this is only allowed for nach method'
             );
@@ -443,6 +640,15 @@ class Validator extends Base\Validator
 
         if ($this->entity->token === null)
         {
+
+            $this->getTrace()->count(
+                Metric::SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED,
+                [
+                    'message' => 'payment is not created yet',
+                    'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
+                ]
+            );
+
             throw new BadRequestValidationFailureException(
                 'payment is not created yet'
             );
@@ -450,6 +656,15 @@ class Validator extends Base\Validator
 
         if ($this->entity->token->getRecurringStatus() !== Token\RecurringStatus::INITIATED)
         {
+
+            $this->getTrace()->count(
+                Metric::SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED,
+                [
+                    'message' => 'payment is already processed, can\'t perform this now',
+                    'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
+                ]
+            );
+
             throw new BadRequestValidationFailureException(
                 'payment is already processed, can\'t perform this now'
             );
@@ -468,6 +683,15 @@ class Validator extends Base\Validator
         {
             if ($method !== Method::NACH)
             {
+
+                $this->getTrace()->count(
+                    Metric::SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED,
+                    [
+                        'message' => 'The selected account type is invalid.',
+                        'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
+                    ]
+                );
+                
                 throw new BadRequestValidationFailureException(
                     'The selected account type is invalid.');
             }

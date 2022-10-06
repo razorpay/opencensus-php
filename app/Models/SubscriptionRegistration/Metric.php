@@ -21,4 +21,9 @@ final class Metric
     const SUBSCRIPTION_REGISTRATION_TOKEN_ASSOCIATED        = 'subscription_registration_token_associated';
     const SUBSCRIPTION_REGISTRATION_AUTO_PAYMENT_SUCCESSFUL = 'subscription_registration_auto_payment_successful';
     const SUBSCRIPTION_REGISTRATION_AUTO_PAYMENT_FAILED     = 'subscription_registration_auto_payment_failed';
+
+    const SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED       = 'subscription_registration_validation_failed';
+    const SUBSCRIPTION_REGISTRATION_AUTHENTICATION_FAILED   = 'subscription_registration_authentication_failed';
+
+    const INVOICE_MUTEX_ACQUIRE_FAILED                      = 'invoice_mutex_acquire_failed';
 }

@@ -35,6 +35,7 @@ use Illuminate\Support\Facades\Storage;
 use RZP\Models\Item\Type as LineItemType;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Jobs\Invoice\BatchJob as InvoiceBatchJob;
+use RZP\Models\SubscriptionRegistration\Metric as M;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Jobs\Invoice\BatchIssue as InvoiceBatchIssueJob;
 use RZP\Jobs\Invoice\BatchNotify as InvoiceBatchNotifyJob;
@@ -1546,6 +1547,14 @@ class Core extends Base\Core
 
         if ($mutexAcquired === false)
         {
+            $this->trace->count(
+                M::INVOICE_MUTEX_ACQUIRE_FAILED,
+                [
+                    'message' => ErrorCode::BAD_REQUEST_INVOICE_RECEIPT_ANOTHER_OPERATION_IN_PROGRESS,
+                    'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
+                ]
+            );
+
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_INVOICE_RECEIPT_ANOTHER_OPERATION_IN_PROGRESS,
                 null,
