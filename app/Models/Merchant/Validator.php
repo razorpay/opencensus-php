@@ -97,6 +97,8 @@ class Validator extends Base\Validator
 
     const EMAIL_UPDATE_SAME_AS_CURRENT_VALIDATION_FAILURE_MESSAGE = 'Provided Email Should Be different than current one';
 
+    const AUTO_AMC_LINKED_ACCOUNT_CREATION_JOB = 'worker:auto_linked_account_creation';
+
     const EXTENSIONMIMEMAP = [
         'jpeg'  => 'image/jpeg',
         'jpg'   => 'image/jpeg',
@@ -1343,8 +1345,12 @@ class Validator extends Base\Validator
         if(($linkedAccount === true) and
             ($merchant->getCategory() === Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Entity::CATEGORY]) and
             ($merchant->getCategory2() === Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Entity::CATEGORY2]) and
-            (app('request.ctx')->getRoute() !== 'merchant_features_update' and app('request.ctx')->getRoute() !== 'amc_linked_account_create'))
+            (app('worker.ctx')->getJobName() !== self::AUTO_AMC_LINKED_ACCOUNT_CREATION_JOB))
         {
+            App::getFacadeRoot()['trace']->info(TraceCode::AMC_LINKED_ACCOUNT_CREATION_JOB, [
+                'job_name' => app('worker.ctx')->getJobName()
+            ]);
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CREATION_NOT_ALLOWED
             );
