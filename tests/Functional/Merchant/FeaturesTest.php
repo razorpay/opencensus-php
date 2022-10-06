@@ -3223,12 +3223,28 @@ Regards,
 
     public function testOnboardMerchantOnPGSuccess()
     {
+        $this->app['config']->set('applications.ledger.enabled', true);
+
         $this->fixtures->merchant->addFeatures(['ledger_journal_writes']);
         $this->addPermissionToBaAdmin(Permission::PG_LEDGER_ACTIONS);
 
         $this->ba->adminAuth();
 
         $testData = $this->testData[__FUNCTION__];
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createAccountsOnEvent')
+            ->times(1)
+            ->andReturn([
+                'body' => [
+                        "accounts" => [
+                            "pg_merchant_onboarding" => null
+                        ]
+                ],
+                'code' => 200
+            ]);
 
         $this->startTest($testData);
         $featuresArray = $this->getDbEntity('feature',

@@ -284,8 +284,6 @@ class Service extends Base\Service
     //Auto Loads Credits and Balances from current
     private function ledgerPGAccountCreateRequest($merchant)
     {
-        $this->repo->transaction(function () use ($merchant)
-        {
             $merchantId = $merchant->getId();
 
             // Fetch Merchant balance. Required to generate request body for account creation on ledger
@@ -294,13 +292,14 @@ class Service extends Base\Service
             //fetches fee, amount and refund credits from credits table
             $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCreditsLockForUpdate($merchantId);
 
-            (new Merchant\Balance\Ledger\Core)->createPGLedgerAccount(
+            $isAccountCreated = (new Merchant\Balance\Ledger\Core)->createPGLedgerAccount(
                 $merchant,
                 $this->mode,
                 $balance->getBalance(),
                 $creditBalances
             );
-        });
+            return $isAccountCreated;
+
     }
 
     private function ledgerPGGatewayAccountCreateRequest(string $merchantId, string $gateway)
@@ -1059,26 +1058,35 @@ class Service extends Base\Service
                     throw new \Exception(Constants::MERCHANT_FEATURE_ALREADY_ENABLED);
                 }
 
-                // Create PG account on ledger service
-                $this->ledgerPGAccountCreateRequest($merchant);
+                $this->repo->transaction(function () use ($merchant, $merchantId)
+                {
+                    // Create PG account on ledger service
+                    $isAccountCreated = $this->ledgerPGAccountCreateRequest($merchant);
 
-                // Add PG_LEDGER_JOURNAL_WRITES feature to merchant
-                (new Core)->create(
-                    [
-                        Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
-                        Entity::ENTITY_ID => $merchant->getId(),
-                        Entity::NAME => Constants::PG_LEDGER_JOURNAL_WRITES,
-                    ]);
+                    if (!$isAccountCreated)
+                    {
+                        throw new \Exception(Constants::ACCOUNT_CREATION_FAILED);
+                    }
 
-                $this->trace->info(
-                    TraceCode::MERCHANT_ONBOARDED_TO_PG_LEDGER,
-                    [
-                        Constants::MERCHANT_ID  => $merchantId,
-                        CONSTANTS::FEATURE => CONSTANTS::PG_LEDGER_JOURNAL_WRITES
-                    ]
-                );
+                    // Add PG_LEDGER_JOURNAL_WRITES feature to merchant
+                    (new Core)->create(
+                        [
+                            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                            Entity::ENTITY_ID => $merchant->getId(),
+                            Entity::NAME => Constants::PG_LEDGER_JOURNAL_WRITES,
+                        ]);
+
+                    $this->trace->info(
+                        TraceCode::MERCHANT_ONBOARDED_TO_PG_LEDGER,
+                        [
+                            Constants::MERCHANT_ID => $merchantId,
+                            CONSTANTS::FEATURE => CONSTANTS::PG_LEDGER_JOURNAL_WRITES
+                        ]
+                    );
+                });
 
                 $result[Constants::MESSAGE] = CONSTANTS::MERCHANT_ONBOARDED;
+
             }
             catch (\Exception $e)
             {

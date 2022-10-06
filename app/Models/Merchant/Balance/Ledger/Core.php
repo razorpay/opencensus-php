@@ -155,6 +155,7 @@ class Core extends Base\Core
             ];
             $ledgerService = $this->app['ledger'];
             $ledgerService->createAccountsOnEvent($payload, $requestHeaders, true);
+            return true;
         }
         catch (\Throwable $ex)
         {
@@ -167,6 +168,7 @@ class Core extends Base\Core
                     self::MERCHANT_ID => $merchant->getMerchantId(),
                     self::TENANT      => self::PG
                 ]);
+            return false;
         }
     }
 
@@ -318,17 +320,17 @@ class Core extends Base\Core
 
         if(isset($creditBalances[self::FEE]) === true)
         {
-            $payload[self::MERCHANT_FEE_OPENING_BALANCE] = $creditBalances[self::FEE];
+            $payload[self::MERCHANT_FEE_OPENING_BALANCE] = (string) $creditBalances[self::FEE];
         }
 
         if(isset($creditBalances[self::AMOUNT]) === true)
         {
-            $payload[self::MERCHANT_REWARD_OPENING_BALANCE] = $creditBalances[self::AMOUNT];
+            $payload[self::MERCHANT_REWARD_OPENING_BALANCE] = (string) $creditBalances[self::AMOUNT];
         }
 
         if(isset($creditBalances[self::REFUND]) === true)
         {
-            $payload[self::MERCHANT_REFUND_OPENING_BALANCE] = $creditBalances[self::REFUND];
+            $payload[self::MERCHANT_REFUND_OPENING_BALANCE] = (string) $creditBalances[self::REFUND];
         }
 
         $this->trace->info(
