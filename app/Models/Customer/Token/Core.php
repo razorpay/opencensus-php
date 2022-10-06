@@ -2031,6 +2031,20 @@ class Core extends Base\Core
 
     public function setInstrumentationInput(& $input, $iin, $isTokenized, $internalServiceRequest)
     {
+        if(!empty($this->merchant))
+        {
+            $input += [
+                "merchant"     => [
+                    "id"       => $this->merchant->getId(),
+                ],
+            ];
+        }
+
+        if(empty($iin) === true || $iin === null)
+        {
+            return ;
+        }
+
         $IINEntity = $this->repo->card->retrieveIinDetails($iin);
 
         $input += [
@@ -2053,14 +2067,6 @@ class Core extends Base\Core
             ];
         }
 
-        if(!empty($this->merchant))
-        {
-            $input += [
-                "merchant"     => [
-                    "id"       => $this->merchant->getId(),
-                ],
-            ];
-        }
     }
 
     // Pass internal Service request as false only if Par is being called from any Merchant/External
@@ -2080,13 +2086,19 @@ class Core extends Base\Core
         {
             $network = Card\Network::detectNetwork($iin);
 
-        if(!isset($network) || $network === "UNKNOWN"){
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_IIN_NOT_EXISTS, ["iin" => $input["card_iin"]]);
-        }
+            if(!isset($network) || $network === "UNKNOWN"){
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_IIN_NOT_EXISTS, ["iin" => $input["card_iin"]]);
+            }
 
             $network = Card\Network::$fullName[$network];
 
             $input["network"] = strtolower($network);
+        }
+
+        if(((new Card\Core())->checkIfFetchingParApplicable($network, $isTokenized)) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+
         }
 
         return [$network, (new Card\Core)->fetchParValue($input)];
