@@ -139,6 +139,11 @@ class Service extends Base\Service
      */
     protected $payoutServiceOnHoldSLAUpdateClient;
 
+    /**
+     * @var PayoutService\BulkPayout
+     */
+    protected $payoutServiceBulkPayoutsClient;
+
     public function __construct()
     {
         parent::__construct();
@@ -166,6 +171,8 @@ class Service extends Base\Service
         $this->payoutServiceOnHoldSLAUpdateClient = $this->app[PayoutService\OnHoldSLAUpdate::PAYOUT_SERVICE_ON_HOLD_SLA_UPDATE];
 
         $this->payoutStatusReasonMapApiServiceClient = $this->app[PayoutService\StatusReasonMap::PAYOUT_SERVICE_STATUS_REASON_MAP];
+
+        $this->payoutServiceBulkPayoutsClient = $this->app[PayoutService\BulkPayout::PAYOUT_SERVICE_BULK_PAYOUTS];
 
         $this->payoutDetailsCore = new PayoutDetails\Core();
 
@@ -1617,6 +1624,12 @@ class Service extends Base\Service
      */
     public function createBulkPayout(array $input): array
     {
+        if (($this->merchant->isFeatureEnabled(Features::PAYOUT_SERVICE_ENABLED) === true) and
+            ($this->merchant->isFeatureEnabled(Features::FREE_PAYOUT_LEDGER_VIA_PS) === true))
+        {
+            return $this->payoutServiceBulkPayoutsClient->createBulkPayoutViaMicroservice($input);
+        }
+
         $payoutBatch = new Base\PublicCollection;
 
         $validator = new Validator;

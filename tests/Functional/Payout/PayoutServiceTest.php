@@ -13,6 +13,7 @@ use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payout\Core;
 use RZP\Models\Pricing\Fee;
+use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
@@ -24,6 +25,7 @@ use RZP\Models\Payout\DataMigration;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payout\WorkflowFeature;
 use RZP\Jobs\PayoutServiceDataMigration;
+use RZP\Services\PayoutService\BulkPayout;
 use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Balance\Type as Type;
@@ -51,7 +53,6 @@ use RZP\Services\PayoutService\PayoutsUpdateFailureProcessingCron;
 use RZP\Services\PayoutService\FreePayout as PayoutServiceFreePayout;
 use RZP\Services\PayoutService\QueuedInitiate as PayoutServiceQueuedInitiate;
 use RZP\Services\PayoutService\MerchantConfig as PayoutServiceMerchantConfig;
-use RZP\Services\PayoutService\UpdateFreePayout as PayoutServiceUpdateFreePayout;
 use RZP\Services\PayoutService\DashboardScheduleTimeSlots as PayoutServiceDashboardScheduleTimeSlots;
 
 class PayoutServiceTest extends TestCase
@@ -635,6 +636,104 @@ class PayoutServiceTest extends TestCase
                 ]);
             $response->status_code = 200;
             $response->success     = true;
+        }
+
+        return $response;
+    }
+
+    public function mockPayoutServiceCreateBulkPayout($fail = false, $request = [])
+    {
+        $createBulkPayoutMock = Mockery::mock('RZP\Services\PayoutService\BulkPayout',
+                                           [$this->app])->makePartial();
+
+        $defaultRequest['headers'][RequestHeader::X_Batch_Id] = "";
+
+        $defaultRequest['headers'][RequestHeader::X_ENTITY_ID] = "";
+
+        $request = array_merge($defaultRequest, $request);
+
+        $createBulkPayoutMock->shouldReceive('sendRequest')
+                          ->withArgs(
+                              function($arg) use ($request) {
+                                  try
+                                  {
+                                      // Using this method only here as we want to check if the keys in the
+                                      // request are coming properly or not.
+                                      $this->assertArrayKeySelectiveEquals($request, $arg);
+
+                                      return true;
+                                  }
+                                  catch (\Throwable $e)
+                                  {
+                                      return false;
+                                  }
+                              }
+                          )
+                          ->andReturn(
+                          // We are returning this response only as we don't have a use case of supporting
+                          // response based on $request, if needed, that can also be added here using
+                          // andReturnUsing method instead of andReturn
+                              $this->createBulkPayoutResponseForPayoutServiceMock($fail)
+                          );
+
+        $this->app->instance(BulkPayout::PAYOUT_SERVICE_BULK_PAYOUTS, $createBulkPayoutMock);
+    }
+
+    public function createBulkPayoutResponseForPayoutServiceMock($fail)
+    {
+        $response = new Requests_Response();
+
+        if ($fail === true)
+        {
+            $response->body = json_encode(
+                [
+                    "error" =>
+                        [
+                            "code"        => ErrorCode::BAD_REQUEST_ERROR,
+                            "description" => "Service Failure",
+                            "field"       => null
+                        ]
+                ]);
+            $response->status_code = 400;
+            $response->success     = true;
+        }
+        else
+        {
+            $response->body = json_encode(
+                [
+                    'entity' => 'collection',
+                    'count'  => 1,
+                    'items'  => [
+                        [
+                            'entity'          => 'payout',
+                            'fund_account'    => [
+                                'entity'       => 'fund_account',
+                                'account_type' => 'bank_account',
+                                'bank_account' => [
+                                    'ifsc'           => 'HDFC0003780',
+                                    'bank_name'      => 'HDFC Bank',
+                                    'name'           => 'Vivek Karna',
+                                    'account_number' => '50100244702362',
+                                ],
+                                'active'       => true,
+                            ],
+                            'amount'          => 100,
+                            'currency'        => 'INR',
+                            'fees'            => 590,
+                            'tax'             => 90,
+                            'status'          => 'processing',
+                            'purpose'         => 'refund',
+                            'utr'             => null,
+                            'user_id'         => 'MerchantUser01',
+                            'mode'            => 'IMPS',
+                            'reference_id'    => null,
+                            'narration'       => '123',
+                            'idempotency_key' => 'batch_abc123'
+                        ],
+                    ]
+                ]);
+            $response->status_code = 200;
+            $response->success = true;
         }
 
         return $response;
@@ -4021,6 +4120,44 @@ class PayoutServiceTest extends TestCase
             FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
 
         $this->startTest($testData);
+    }
+
+    public function testBulkPayout()
+    {
+        $this->mockPayoutServiceCreateBulkPayout();
+
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'  => 'C0zv9I46W4wiOq',
+            'HTTP_X-Entity-Id' => '10000000000000',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS]);
+
+        $this->startTest();
+    }
+
+    public function testBulkPayoutServiceFailure()
+    {
+        $this->mockPayoutServiceCreateBulkPayout(true);
+
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'  => 'C0zv9I46W4wiOq',
+            'HTTP_X-Entity-Id' => '10000000000000',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS]);
+
+        $this->startTest();
     }
 
     public function testDccPayoutsDetailsFetch()
