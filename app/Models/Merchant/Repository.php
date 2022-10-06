@@ -1611,6 +1611,17 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    public function getMerchantsFromMerchantIdList(array $merchantIds)
+    {
+        if (empty($merchantIds) === true) {
+            return [];
+        }
+
+        return $this->newQuery()
+            ->whereIn(Entity::ID, $merchantIds)
+            ->get();
+    }
+
     public function filterMerchantIdsWithMinActivatedTime(array $mids, int $minActivatedTime,array $orgIdList = [Org\Entity::RAZORPAY_ORG_ID]): array
     {
         $timestamp                 = Carbon::now(Timezone::IST)->getTimestamp();

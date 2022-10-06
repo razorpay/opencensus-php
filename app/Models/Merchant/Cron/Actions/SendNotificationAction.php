@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Cron\Actions;
 use RZP\Models\Merchant\Cron\Constants;
 use RZP\Models\Merchant\Cron\Dto\ActionDto;
 use RZP\Models\Merchant\Escalations\Core as EscalationCore;
+use RZP\Services\Segment\EventCode as SegmentEvent;
 
 class SendNotificationAction extends BaseAction
 {
@@ -35,6 +36,30 @@ class SendNotificationAction extends BaseAction
             $status = ($successCount < count($merchantIds)) ? Constants::PARTIAL_SUCCESS : Constants::SUCCESS;
         }
 
+        $merchants = $this->repo->merchant->getMerchantsFromMerchantIdList($merchantIds);
+
+        foreach ($merchants as $merchant) {
+            $this->pushSegmentEvent($merchant);
+            $this->startHubspotEvent($merchant);
+        }
         return new ActionDto($status);
+    }
+
+    private function pushSegmentEvent($merchant)
+    {
+        $properties = [];
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $merchant, $properties, SegmentEvent::OFFERMTU_TARGETED_MERCHANT);
+    }
+
+    private function startHubspotEvent($merchant)
+    {
+        if ($merchant->getEmail() !== null)
+        {
+            $this->app->hubspot->trackHubspotEvent($merchant->getEmail(), [
+                'Offermtu Targeted Merchant' => true
+            ]);
+        }
     }
 }
