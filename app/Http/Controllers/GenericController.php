@@ -21,7 +21,7 @@ class GenericController extends Controller
         'x-report-type',
         'x-cross-org-id',
         'x-org-id',
-        'Accept-Version',
+        'accept-version',
     ];
 
     const WHITELISTED_ROUTES_REGEX = [
