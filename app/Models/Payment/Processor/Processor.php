@@ -3933,6 +3933,8 @@ class Processor
             'id'                  => $payment->terminal->getId(),
             'gateway'             => $payment->terminal->getGateway(),
             'vpa'                 => $payment->terminal->getVpa(),
+            'gateway_merchant_id' => $terminal->getGatewayMerchantId(),
+            'gateway_terminal_id' => $terminal->getGatewayTerminalId(),
         ];
 
 
