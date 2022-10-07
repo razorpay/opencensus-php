@@ -2,7 +2,9 @@
 # In case of any issues or changes here, reach out to #platform_account_service
 name: ASV Notification for Merchant related entity Changes
 on:
-  pull_request:
+  push:
+    branches:
+      - master
     paths:
       - 'app/Models/Merchant/Entity.php'
       - 'app/Models/Merchant/Detail/Entity.php'
@@ -17,7 +19,6 @@ jobs:
   slack-notify:
     name: Notify Account service team
     runs-on: [ self-hosted ]
-    if: ${{ github.event.pull_request.merged }}
     steps:
       - uses: rtCamp/action-slack-notify@v2.2.0
         env:
