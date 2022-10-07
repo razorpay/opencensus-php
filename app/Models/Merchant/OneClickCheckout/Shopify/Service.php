@@ -571,7 +571,7 @@ class Service extends Base\Service
 
         $order = (new Order\Service())->fetchById($rzpOrderId);
 
-        $shopifyOrderId = $order[Order\Entity::NOTES][\RZP\Models\Merchant\OneClickCheckout\Shopify\Constants::SHOPIFY_ORDER_ID];
+        $shopifyOrderId = $order[Order\Entity::NOTES][OneClickCheckout\Shopify\Constants::SHOPIFY_ORDER_ID];
 
         $start = millitime();
 
@@ -599,7 +599,7 @@ class Service extends Base\Service
 
         $order = (new Order\Service())->fetchById($rzpOrderId);
 
-        $shopifyOrderId = $order[Order\Entity::NOTES][Constants::SHOPIFY_ORDER_ID];
+        $shopifyOrderId = $order[Order\Entity::NOTES][OneClickCheckout\Shopify\Constants::SHOPIFY_ORDER_ID];
 
         $tags = [\RZP\Models\Merchant\OneClickCheckout\Shopify\Constants::TAG_HOLD];
 
@@ -629,7 +629,7 @@ class Service extends Base\Service
 
         $order = (new Order\Service())->fetchById($rzpOrderId);
 
-        $shopifyOrderId = $order[Order\Entity::NOTES][\RZP\Models\Merchant\OneClickCheckout\Shopify\Constants::SHOPIFY_ORDER_ID];
+        $shopifyOrderId = $order[Order\Entity::NOTES][OneClickCheckout\Shopify\Constants::SHOPIFY_ORDER_ID];
 
         $tags = [\RZP\Models\Merchant\OneClickCheckout\Shopify\Constants::TAG_HOLD];
 
