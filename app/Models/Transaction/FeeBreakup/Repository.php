@@ -7,8 +7,6 @@ use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
-use RZP\Trace\TraceCode;
-use Razorpay\Trace\Logger as Trace;
 
 class Repository extends Base\Repository
 {
@@ -93,37 +91,5 @@ class Repository extends Base\Repository
         $this->newQuery()
             ->where(Entity::ID, $id)
             ->delete();
-    }
-
-    public function saveOrFail($entity, array $options = array())
-    {
-        parent::saveOrFail($entity, $options);
-
-        try
-        {
-            $fillArray = $entity->toArrayPublic();
-
-            if (isset($fillArray[Entity::PRICING_RULE]) === true)
-            {
-                unset($fillArray[Entity::PRICING_RULE]);
-            }
-
-            $newEntity = (new Transaction\FeeBreakupNew\Entity)->build($fillArray);
-
-            (new Transaction\FeeBreakupNew\Repository)->saveOrFail($newEntity, $options);
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->traceException(
-                $ex,
-                Trace::ERROR,
-                TraceCode::FEE_BREAKUP_NEW_SAVE_ERROR,
-                [
-                    'id' => $entity->getId(),
-                    'error' => $ex->getMessage(),
-                ]);
-        }
-
-        return $entity;
     }
 }

@@ -7271,9 +7271,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_UPDATE_AFTER_FTA_RECON_SERVICE_DATA_SYNC_FAILED = 'PAYOUT_UPDATE_AFTER_FTA_RECON_SERVICE_DATA_SYNC_FAILED';
     const REARCH_CRITIERIA_CHECK_FAILED                         = 'REARCH_CRITIERIA_CHECK_FAILED';
 
-    // fees_breakup_new
-    const FEE_BREAKUP_NEW_SAVE_ERROR                          = 'FEE_BREAKUP_NEW_SAVE_ERROR';
-
     // XPayroll
     const XPAYROLL_PAYOUT_UPDATER_ERROR                       = 'XPAYROLL_PAYOUT_UPDATER_ERROR';
     const XPAYROLL_PAYOUT_REQUEST                             = 'XPAYROLL_PAYOUT_REQUEST';
