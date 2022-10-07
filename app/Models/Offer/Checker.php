@@ -11,9 +11,9 @@ use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Emi;
 use RZP\Trace\TraceCode;
-use RZP\Models\Offer\Core;
 use RZP\Exception\LogicException;
 use RZP\Models\Card;
+use RZP\Models\Customer\Token;
 
 class Checker extends Base\Core
 {
@@ -24,6 +24,8 @@ class Checker extends Base\Core
     protected $payment;
 
     protected $card;
+
+    protected $isDummyPayment;
 
     // Flag to toggle verbose logging, Initialised to false by default.
     protected $verbose;
@@ -124,7 +126,7 @@ class Checker extends Base\Core
     public function checkApplicabilityForPaymentBeforeCheckout(Payment\Entity $payment, Order\Entity $order): bool
     {
         $this->payment = $payment;
-
+        $this->isDummyPayment = true;
         $this->order = $order;
 
         if(($this->offer->getMaxOfferUsage() !== NULL) and
@@ -301,7 +303,7 @@ class Checker extends Base\Core
 
             // If an offer has both iins and issuer on one-card, then we check both
             // If only issuer based offer is applied on one-card, we fail the offer
-            
+
             if ($coBrandingPartner === CobrandingPartner::ONECARD and empty($offerIins) === true) {
                 return $result;
             }
@@ -487,37 +489,73 @@ class Checker extends Base\Core
         {
             return true;
         }
+        // Offer max usage will only be applicable for cards network which have exposed PAR api
+        if ((new Card\Core())->checkIfFetchingParApplicable($this->payment->card->getNetwork()) === false)
+        {
+            return true;
+        }
 
-        $cardVaultToken = $this->getCardVaultToken();
+        $providerReferenceId = $this->payment->card->getProviderReferenceId();
 
-        $merchantId = $this->payment->merchant->getId();
+        // If provider_reference_id is null, then we will call the par api to get the provider_reference_id
+        if ($providerReferenceId === null)
+        {
+            $providerReferenceId = $this->getParValue();
+        }
 
-        // Fetches all cards wihose own vault token or whose global cards have the
-        // given vault token
-        $cardIds = $this->repo->card->fetchWithVaultToken($cardVaultToken, $merchantId);
+        // If provider_reference_id is not null, we will validate the max usage on the current card
+        if ($providerReferenceId !== null)
+        {
 
-        // Gets linked offer ids to get payment count if any and
-        // appends current offer's id with it
-        $offerIds = $this->offer->getLinkedOfferIds();
-        $offerIds[] = $this->offer->getId();
+            $merchantId = $this->payment->merchant->getId();
 
-        // Gets the number of successfully captured payments which have been paid
-        // with the cardIds fetched above and whose associated order has the above
-        // offerIds applied on them
-        $paymentCountForOffers = $this->repo
-                                      ->payment
-                                      ->getPaymentCountForCardIdsAndOfferIds($cardIds, $offerIds);
+            $cardIds = $this->repo->card->fetchCardIdsWithProviderReferenceId($providerReferenceId, $merchantId);
 
-        $result = $this->checkPaymentCountForOffer($paymentCountForOffers);
+            // Gets linked offer ids to get payment count if any and
+            // appends current offer's id with it
+            $offerIds = $this->offer->getLinkedOfferIds();
+            $offerIds[] = $this->offer->getId();
 
-        $this->traceCheckResult(
-            TraceCode::OFFER_CARD_USAGE_CHECK,
-            [
-                'result'                   => $result,
-                'payment_count_for_offers' => $paymentCountForOffers,
-            ]);
+            // Gets the number of successfully captured payments which have been paid
+            // with the cardIds fetched above and whose associated order has the above
+            // offerIds applied on them
+            $paymentCountForOffers = $this->repo
+                ->payment
+                ->getPaymentCountForCardIdsAndOfferIds($cardIds, $offerIds);
 
-        return $result;
+            $result = $this->checkPaymentCountForOffer($paymentCountForOffers);
+
+            $this->traceCheckResult(
+                TraceCode::OFFER_CARD_USAGE_CHECK,
+                [
+                    'result' => $result,
+                    'payment_count_for_offers' => $paymentCountForOffers,
+                ]);
+
+            return $result;
+        }
+        return false;
+    }
+
+    protected function getParValue() {
+
+        $vaultToken = $this->payment->card->getVaultToken();
+        $cardNumber = (new Card\CardVault)->getCardNumber($vaultToken);
+
+        $cardInput = (new Token\Core())->buildCardInputForPar($cardNumber, $this->payment->card);
+
+        // Fetches par value for given card number
+        list($network, $data) = (new Token\Core())->fetchParValue($cardInput, true);
+        $providerReferenceId = $data["fingerprint"];
+
+        $this->payment->card->setProviderReferenceId($providerReferenceId);
+
+        // For dummy payment we will not persist the card entity
+        if ($this->isDummyPayment === false)
+        {
+            $this->payment->card->saveOrFail();
+        }
+        return $providerReferenceId;
     }
 
     protected function checkPaymentCountForOffer(array $paymentCountForOffers): bool

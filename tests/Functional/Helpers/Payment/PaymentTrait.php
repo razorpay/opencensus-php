@@ -3609,6 +3609,10 @@ trait PaymentTrait
                         ]
                     ];
                     break;
+
+                case 'cards/fingerprints':
+                    $response['fingerprint'] = '1234';
+                    break;
             }
 
             return $response;
@@ -3732,7 +3736,7 @@ trait PaymentTrait
 
         $this->app->instance('card.cardVault', $cardVault);
     }
-    
+
     protected function fixturesToCreateToken(
         $tokenId,
         $cardId,

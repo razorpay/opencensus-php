@@ -88,6 +88,8 @@ class PaymentMiscTest extends TestCase
 
         $this->ba->privateAuth();
 
+        $this->mockCardVaultWithCryptogram(null, true);
+
         $this->sendRequest($orderData);
 
         $order = $this->getLastEntity('order', true);
@@ -107,6 +109,8 @@ class PaymentMiscTest extends TestCase
         ];
 
         $this->ba->publicAuth();
+
+        $this->mockCardVaultWithCryptogram(null, true);
 
         $response = $this->runRequestResponseFlow($flowsData);
 

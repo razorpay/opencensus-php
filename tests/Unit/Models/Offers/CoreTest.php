@@ -14,6 +14,9 @@ class CoreTest extends TestCase
 
    public function testCheckOfferApplicabilityDuringPaymentUsingSavedCard()
     {
+
+        $this->mockCardVaultWithCryptogram();
+
         $offer1 = $this->fixtures->create('offer', [
             'iins' => ['461786'],
             'block' => false,
@@ -70,6 +73,8 @@ class CoreTest extends TestCase
 
     public function testCheckOfferApplicabilityDuringPaymentUsingNewCard()
     {
+        $this->mockCardVaultWithCryptogram();
+
         $offer = $this->fixtures->create('offer', [
             'iins' => ['461786', '400782'],
             'block' => false,

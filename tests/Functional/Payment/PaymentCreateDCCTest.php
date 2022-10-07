@@ -1188,6 +1188,8 @@ class PaymentCreateDCCTest extends TestCase
 
     public function testForceOfferPaymentCreateWithDCC()
     {
+        $this->mockCardVaultWithCryptogram();
+
         $offer = $this->fixtures->create('offer');
 
         $order = $this->fixtures->order->createWithOffers($offer, [
@@ -1231,6 +1233,8 @@ class PaymentCreateDCCTest extends TestCase
 
     public function testOfferPaymentCreateWithDCC()
     {
+        $this->mockCardVaultWithCryptogram();
+
         $offer = $this->fixtures->create('offer');
 
         $order = $this->fixtures->order->createWithOffers([$offer]);
@@ -1295,6 +1299,8 @@ class PaymentCreateDCCTest extends TestCase
         $payment['dcc_currency'] = 'INR';
         $payment['currency_request_id'] = $currencyRequestId;
         $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+
+        $this->mockCardVaultWithCryptogram();
 
         $this->doAuthPayment($payment);
 

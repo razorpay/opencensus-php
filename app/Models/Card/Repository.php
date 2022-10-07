@@ -159,31 +159,19 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Fetches card id's with either own vault token or global card's vault token
-     * equal to the given vault token
+     * Fetches card id's with given provider_reference_id and merchant_id
      *
-     * @param  string $vautltToken vault token to check
-     * @param  string $merchantId  merchant_id whose local cards needs to be checked
+     * @param  string $providerReferenceId
+     * @param  string $merchantId
      * @return array               card ids matching
      */
-    public function fetchWithVaultToken(string $vautltToken, string $merchantId): array
+    public function fetchCardIdsWithProviderReferenceId(string $providerReferenceId, string $merchantId): array
     {
-        $globalCardIdsWithToken = $this->newQuery()
-                                       ->select(Entity::ID)
-                                       ->where(Entity::MERCHANT_ID, '=', Account::SHARED_ACCOUNT)
-                                       ->where(Entity::VAULT_TOKEN, '=', $vautltToken)
-                                       ->pluck(Entity::ID)->toArray();
-
-        // Query Executed - select `id` from `cards` where `merchant_id` = ? and
-        // (`vault_token` = ? or `global_card_id` in (?))
         return $this->newQuery()
                     ->select(Entity::ID)
-                    ->where(Entity::MERCHANT_ID, '=',$merchantId)
-                    ->where(function ($query) use ($vautltToken, $globalCardIdsWithToken)
-                    {
-                        $query->where(Entity::VAULT_TOKEN, '=', $vautltToken)
-                              ->orWhereIn(Entity::GLOBAL_CARD_ID, $globalCardIdsWithToken);
-                    })->pluck(Entity::ID)->toArray();
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Entity::PROVIDER_REFERENCE_ID, '=', $providerReferenceId)
+                    ->pluck(Entity::ID)->toArray();
     }
 
     public function findCardsWithVaultAndNoPayments(string $vault, int $limit)

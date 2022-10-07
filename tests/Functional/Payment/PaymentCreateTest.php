@@ -9287,6 +9287,9 @@ class PaymentCreateTest extends TestCase
     public function testCheckOfferApplicabilityForPaymentUsingSavedCardWithMappingAvailable()
     {
         $this->ba->publicAuth();
+
+        $this->mockCardVaultWithCryptogram();
+
         $offer1 = $this->fixtures->create('offer', [
             'iins' => ['461786'],
             'block' => true,
@@ -9326,6 +9329,9 @@ class PaymentCreateTest extends TestCase
     public function testCheckOfferApplicabilityForPaymentUsingSavedCardWithMappingUnavailable()
     {
         $this->ba->publicAuth();
+
+        $this->mockCardVaultWithCryptogram();
+
         $offer1 = $this->fixtures->create('offer', [
             'iins' => ['461786'],
             'block' => true,

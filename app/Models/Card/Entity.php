@@ -1634,6 +1634,8 @@ class Entity extends Base\PublicEntity
             $card[Card\Entity::INTERNATIONAL] = $iinEntity->isInternational();
 
             $card[Card\Entity::VAULT_TOKEN] = 'XXXXXXXXXXX';
+
+            $card[Card\Entity::PROVIDER_REFERENCE_ID] = 'XXXXXXXXXXX';
         }
 
         return $card;

@@ -162,8 +162,14 @@ class TestCase extends IlluminateTestCase
                 case 'detokenize':
                     $response['value'] = base64_decode($input['token']);
                     break;
+
+                case 'cards/fingerprints':
+                    $response['fingerprint'] = '1234';
+                    break;
+
                 case 'cards/metadata':
                     break;
+
                 case 'cards/metadata/fetch':
                     $response['token'] = $input['token'];
                     $response['iin'] = $input['iin'];

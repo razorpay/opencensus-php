@@ -945,6 +945,8 @@ class SubscriptionPaymentTest extends TestCase
 
         $this->mockApplyOffer();
 
+        $this->mockCardVaultWithCryptogram();
+
         $request = [
             'method'  => 'POST',
             'url'     => '/payments/create/ajax',
