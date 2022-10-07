@@ -901,6 +901,7 @@ return [
                 "id"       => "pout_Gg7sgBZgvYjlSB",
                 "entity"   => "payout",
                 "currency" => "INR",
+                "notes" => [],
             ],
         ],
     ],
@@ -945,6 +946,26 @@ return [
                 "id"       => "pout_Gg7sgBZgvYjlSB",
                 "entity"   => "payout",
                 "currency" => "INR",
+            ],
+        ],
+    ],
+
+    'testFetchPayoutByIdWithIdNotFoundErrorFromService' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/pout_Gg7sgBZgvYjlSB',
+            'server'  => [
+                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000000',
+            ],
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "id"       => "pout_Gg7sgBZgvYjlSB",
+                "entity"   => "payout",
+                "currency" => "INR",
+                "notes" => [],
             ],
         ],
     ],

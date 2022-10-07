@@ -133,7 +133,7 @@ class PayoutServiceTest extends TestCase
         $this->app->instance(PayoutServiceCreate::PAYOUT_SERVICE_CREATE, $payoutServiceCreateMock);
     }
 
-    public function mockPayoutServiceFetch($fail = false, $request = [])
+    public function mockPayoutServiceFetch($fail = false, $request = [], $errorDescription = 'Service Failure')
     {
         $payoutServiceFetchMock = Mockery::mock('RZP\Services\PayoutService\Fetch',
                                                 [$this->app])->makePartial();
@@ -166,8 +166,11 @@ class PayoutServiceTest extends TestCase
                                    }
                                )
                                ->andReturnUsing(
-                                   function() use ($request, $fail) {
-                                       return $this->getResponseForPayoutFetchServiceMock($fail, $request);
+                                   function() use ($request, $fail, $errorDescription) {
+                                       return $this->getResponseForPayoutFetchServiceMock($fail,
+                                                                                          $request,
+                                                                                          'processing',
+                                                                                          $errorDescription);
                                    }
                                );
 
@@ -515,7 +518,10 @@ class PayoutServiceTest extends TestCase
         return $response;
     }
 
-    public function getResponseForPayoutFetchServiceMock($fail, $request,  $status = 'processing')
+    public function getResponseForPayoutFetchServiceMock($fail,
+                                                         $request,
+                                                         $status = 'processing',
+                                                         $errorDescription = 'Service Failure')
     {
         $url = $request['url'];
 
@@ -525,18 +531,20 @@ class PayoutServiceTest extends TestCase
 
             if (substr($url, 0, strlen($getPayoutByIdUrl)) === $getPayoutByIdUrl)
             {
-                return $this->getResponseForPayoutByIdServiceMock($fail, $status);
+                return $this->getResponseForPayoutByIdServiceMock($fail, $status, $errorDescription);
             }
             else
             {
-                return $this->getResponseForPayoutFetchMultipleServiceMock($fail, $status);
+                return $this->getResponseForPayoutFetchMultipleServiceMock($fail, $status, $errorDescription);
             }
         }
 
         return new Requests_Response();
     }
 
-    public function getResponseForPayoutByIdServiceMock($fail, $status = 'processing')
+    public function getResponseForPayoutByIdServiceMock($fail,
+                                                        $status = 'processing',
+                                                        $errorDescription = 'Service Failure')
     {
         $response = new Requests_Response();
 
@@ -547,7 +555,7 @@ class PayoutServiceTest extends TestCase
                     "error" =>
                         [
                             "code"        => ErrorCode::BAD_REQUEST_ERROR,
-                            "description" => "Service Failure",
+                            "description" => $errorDescription,
                             "field"       => null
                         ]
                 ]);
@@ -585,7 +593,9 @@ class PayoutServiceTest extends TestCase
         return $response;
     }
 
-    public function getResponseForPayoutFetchMultipleServiceMock($fail, $status = 'processing')
+    public function getResponseForPayoutFetchMultipleServiceMock($fail,
+                                                                 $status = 'processing',
+                                                                 $errorDescription = 'Service Failure')
     {
         $response = new Requests_Response();
 
@@ -596,7 +606,7 @@ class PayoutServiceTest extends TestCase
                     "error" =>
                         [
                             "code"        => ErrorCode::BAD_REQUEST_ERROR,
-                            "description" => "Service Failure",
+                            "description" => $errorDescription,
                             "field"       => null
                         ]
                 ]);
@@ -4773,6 +4783,29 @@ class PayoutServiceTest extends TestCase
         $this->mockPayoutServiceFetchShouldNotBeInvoked();
 
         $this->ba->appAuthLive($this->config['applications.payout_links.secret']);
+
+        $this->startTest();
+    }
+
+    public function testFetchPayoutByIdWithIdNotFoundErrorFromService()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);
+
+        $request['url'] = $this->testData[__FUNCTION__]['request']['url'];
+
+        $request['url'] = '/payouts/' . $payout->getPublicId();
+
+        $this->testData[__FUNCTION__]['request']['url'] = $request['url'];
+
+        $this->testData[__FUNCTION__]['response']['content']['id'] = $payout->getPublicId();
+
+        $this->mockPayoutServiceFetch(true, $request, PublicErrorDescription::BAD_REQUEST_INVALID_ID);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
         $this->startTest();
     }

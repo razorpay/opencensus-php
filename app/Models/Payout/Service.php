@@ -39,6 +39,7 @@ use RZP\Exception\DbQueryException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccountService;
 use RZP\Models\Base\PublicCollection;
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception\ServerErrorException;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PayoutOutbox\RequestType;
@@ -1118,19 +1119,35 @@ class Service extends Base\Service
             $input[Entity::SOURCE_TYPE_EXCLUDE] = PayoutSourceEntity::XPAYROLL;
         }
 
+        $payout = null;
+
         if ($this->core->shouldFetchPayoutByIdViaMicroservice($input) === true)
         {
-            $payout = $this->core->fetchByIdFromPayoutsService($id, $input);
+            try
+            {
+                $payout = $this->core->fetchByIdFromPayoutsService($id, $input);
+            }
 
-            return $payout;
+            catch (\Exception $e)
+            {
+                if ($e->getMessage() !== PublicErrorDescription::BAD_REQUEST_INVALID_ID)
+                {
+                    throw $e;
+                }
+            }
         }
 
-        $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant, $input);
+        if (empty($payout) === true)
+        {
+            $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
-        //tracking slack app related events
-        $this->trackPayoutsFetchEvent($input, $payout);
+            //tracking slack app related events
+            $this->trackPayoutsFetchEvent($input, $payout);
 
-        return $payout->toArrayPublic();
+            return $payout->toArrayPublic();
+        }
+
+        return $payout;
     }
 
     /**
