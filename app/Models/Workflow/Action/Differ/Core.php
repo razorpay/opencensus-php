@@ -16,6 +16,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Workflow\Helper;
+use RZP\Models\Admin\Permission;
 use \RZP\Models\Workflow\Service;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Workflow\Action\Differ;
@@ -227,8 +228,32 @@ class Core extends Base\Core
                  */
                 $differ[Differ\Entity::PAYLOAD] = (new Helper())->encryptSensitiveFields($differ[Differ\Entity::PAYLOAD]);
 
-                $this->esDao->storeAdminEvent(
-                    strtolower($this->baseIndex), self::ES_TYPE, $differ);
+                try
+                {
+                    $this->esDao->storeAdminEvent(
+                        strtolower($this->baseIndex), self::ES_TYPE, $differ);
+                }
+                catch (\Throwable $e)
+                {
+                    $permission = $differ[Differ\Entity::PERMISSION] ?? null;
+
+                    if ($permission === Permission\Name::NEEDS_CLARIFICATION_RESPONDED)
+                    {
+                        $this->trace->count(Metric::HEIMDALL_ACTION_LOG_FAIL);
+
+                        $this->trace->traceException(
+                            $e,
+                            Trace::ERROR,
+                            TraceCode::HEIMDALL_ACTION_LOG_FAIL,
+                            $differ);
+
+                        return;
+                    }
+                    else
+                    {
+                        throw $e;
+                    }
+                }
             }
         }
         catch (\Exception $e)
