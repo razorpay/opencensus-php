@@ -1361,7 +1361,7 @@ return [
         'url'           => env('APP_RTO_PREDICTION_SERVICE_URL'),
         'username'      => 'api',
         'secret'        => env('APP_RTO_PREDICTION_SERVICE_SECRET'),
-        'timeout'       => env('APP_RTO_PREDICTION_SERVICE_TIMEOUT', 3),
+        'timeout'       => env('APP_RTO_PREDICTION_SERVICE_TIMEOUT', 10),
     ],
 
     'tokenization' => [
