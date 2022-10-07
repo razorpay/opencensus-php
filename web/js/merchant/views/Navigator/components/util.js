@@ -371,7 +371,7 @@ const tokenAuthTypeParameter = getExpStatus('optimizer_emandate')
             value: 'netbanking',
           },
           {
-            value: 'debit card',
+            value: 'debitcard',
           },
           {
             value: 'aadhaar',
