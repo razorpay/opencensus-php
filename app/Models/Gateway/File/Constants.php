@@ -70,6 +70,7 @@ class Constants
     const ICICI_EMI        = 'icici_emi';
     const HSBC             = 'hsbc';
     const SRCB             = 'srcb';
+    const KARB             = 'karb';
     const HDFC_CORP        = 'hdfc_corp';
     const UJVN             = 'ujjivan';
 
@@ -171,6 +172,7 @@ class Constants
             self::NSDL,
             self::BDBL,
             self::SRCB,
+            self::KARB,
             self::UCO,
             self::DBS,
             self::HDFC_CORP,
@@ -304,6 +306,7 @@ class Constants
             self::NSDL        => ['nsdl-netbanking-refunds@razorpay.com'],
             self::BDBL        => ['bdbl-netbanking-refunds@razorpay.com'],
             self::SRCB        => ['srcb-netbanking-refunds@razorpay.com'],
+            self::KARB        => [],
             self::UCO         => ['uco-netbanking-refunds@razorpay.com'],
             self::DBS         => ['dbs-netbanking-claims@razorpay.com'],
             self::HDFC_CORP   => [],

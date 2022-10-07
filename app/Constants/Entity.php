@@ -367,6 +367,7 @@ class Entity
     const NETBANKING_AUSF        = 'netbanking_ausf';
     const NETBANKING_DLB         = 'netbanking_dlb';
     const NETBANKING_TMB         = 'netbanking_tmb';
+    const NETBANKING_KARNATAKA   = 'netbanking_karnataka';
     const WALLET_PHONEPE         = 'wallet_phonepe';
     const WALLET_PHONEPESWITCH   = 'wallet_phonepeswitch';
     const NETBANKING_CSB         = 'netbanking_csb';

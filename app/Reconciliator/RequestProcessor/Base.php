@@ -101,6 +101,7 @@ class Base extends Core
     const NETBANKING_AUSF_CORP     = 'NetbankingAusfCorp';
     const NETBANKING_DLB           = 'NetbankingDlb';
     const NETBANKING_TMB           = 'NetbankingTmb';
+    const NETBANKING_KARB          = 'NetbankingKarb';
     const NETBANKING_KOTAK_V2      = 'NetbankingKotakV2';
     const NETBANKING_NSDL          = 'NetbankingNsdl';
     const NETBANKING_BDBL          = 'NetbankingBdbl';
@@ -249,6 +250,7 @@ class Base extends Core
         self::NETBANKING_DLB           => ['alerts@dhanbank.co.in'],
         self::NETBANKING_UJJIVAN           => [],
         self::NETBANKING_TMB           => ['recon@tmbank.in'],
+        self::NETBANKING_KARB          => [],
         self::CHECKOUT_DOT_COM         => [],
         self::CARDLESS_EMI_ZESTMONEY   => ['finops.settlements@zestmoney.in'],
         self::PAYLATER_LAZYPAY         => [],

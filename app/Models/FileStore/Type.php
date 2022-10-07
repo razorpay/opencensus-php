@@ -115,7 +115,9 @@ class Type
 
     const DLB_NETBAKING_REFUND              = 'dlb_netbanking_refund';
 
-    const TMB_NETBANKING_REFUND              = 'tmb_netbanking_refund';
+    const TMB_NETBANKING_REFUND             = 'tmb_netbanking_refund';
+
+    const KARNATAKA_NETBANKING_REFUND       = 'karnataka_netbanking_refund';
 
     const INDUSIND_NETBANKING_REFUND        = 'indusind_netbanking_refund';
 
@@ -455,6 +457,7 @@ class Type
             self::BDBL_NETBANKING_REFUND,
             self::SARASWAT_NETBANKING_REFUND,
             self::SARASWAT_NETBANKING_CLAIMS,
+            self::KARNATAKA_NETBANKING_REFUND,
             self::AXIS_CARD_SETTLEMENT_FILE,
             self::AXIS_CARD_SETTLEMENT_OUTPUT_FILE,
             self::UCO_NETBANKING_REFUND,
@@ -659,6 +662,7 @@ class Type
         self::BULK_FRAUD_NOTIFICATION,
         self::SARASWAT_NETBANKING_REFUND,
         self::SARASWAT_NETBANKING_CLAIMS,
+        self::KARNATAKA_NETBANKING_REFUND,
         self::AXIS_CARD_SETTLEMENT_OUTPUT_FILE,
         self::AXIS_CARD_SETTLEMENT_FILE,
         self::DBS_NETBANKING_CLAIMS,
@@ -869,6 +873,7 @@ class Type
             self::RBL_ENACH_CANCEL,
             self::BDBL_NETBANKING_REFUND,
             self::SARASWAT_NETBANKING_REFUND,
+            self::KARNATAKA_NETBANKING_REFUND,
             self::SBI_UPI_REFUND,
             self::UCO_NETBANKING_REFUND,
             self::DBS_NETBANKING_COMBINED,
