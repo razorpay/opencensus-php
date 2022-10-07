@@ -8,6 +8,7 @@ use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
+use RZP\Services\NbPlus\Netbanking;
 use RZP\Models\Base\PublicCollection;
 use RZP\Gateway\Netbanking\Axis\Constants;
 use RZP\Models\Gateway\File\Processor\FileHandler;
@@ -70,7 +71,7 @@ class Axis extends Base
             $formattedData[] = [
                 $row['terminal']['gateway_merchant_id'],
                 Constants::PAYEE_NAME,
-                $row['gateway']['bank_payment_id'],
+                $this->fetchBankPaymentId($row),
                 $row['terminal']['gateway_merchant_id'],
                 $row['payment']['id'],
                 number_format($row['payment']['amount'] / 100, 2, '.', ''),
@@ -99,5 +100,16 @@ class Axis extends Base
         }
 
         return static::BASE_STORAGE_DIRECTORY . $name . '_' . $time . '_1';
+    }
+
+    protected function fetchBankPaymentId($data)
+    {
+        if (($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE) or
+            (($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE_PAYMENTS)))
+        {
+            return $data['gateway'][Netbanking::BANK_TRANSACTION_ID]; // payment through nbplus service
+        }
+
+        return $data['gateway']['bank_payment_id']; // payment through api
     }
 }

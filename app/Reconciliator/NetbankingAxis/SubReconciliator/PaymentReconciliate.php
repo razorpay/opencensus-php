@@ -7,7 +7,7 @@ use RZP\Gateway\Base\Action;
 use RZP\Models\Payment\Status;
 use RZP\Gateway\Netbanking\Axis;
 
-class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceRecon
 {
     const COLUMN_PAYMENT_REF_NO     = 'PRN No';
     const COLUMN_BANK_PAYMENT_ID    = 'BID';
