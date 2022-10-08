@@ -51,7 +51,7 @@ class Checkout extends Base\Core
     }
 
     // returns notes for Rzp order using Shopify storefront id and line items
-    public function getNotesForCheckout(array $checkout, string $cartId): array
+    public function getNotesForCheckout(array $checkout, string $cartId, array $cartObj = []): array
     {
         $notes = [
             "storefront_id" => $checkout['id'],
@@ -67,6 +67,29 @@ class Checkout extends Base\Core
             $title = $this->getVariantName($item);
 
             $notes[$title] = 'Quantity: ' . strval($item['quantity']);
+        }
+
+        // Store the script discount details in RZP notes
+        if (empty($cartObj) === false)
+        {
+            $discountFromScript = 0;
+            $discountTitle = null;
+
+            foreach ($cartObj['line_items'] as $lineItem)
+            {
+                $discountFromScript += $lineItem['total_discount'];
+
+                if (empty($lineItem['discounts']) === false)
+                {
+                    $discountTitle = $lineItem['discounts'][0]['title'];
+                }
+            }
+
+            if ($discountFromScript > 0)
+            {
+                $notes['Script_Discount_Amount'] = $discountFromScript;
+                $notes['Script_Discount_Title']  = $discountTitle;
+            }
         }
 
         return $notes;

@@ -121,7 +121,10 @@ final class Metric
     const SHOPIFY_ORDER_CANCEL_REQUEST_COUNT         = 'shopify_order_cancel_request_count';
     const SHOPIFY_ADD_TAG_REQUEST_COUNT              = 'shopify_add_tag_request_count';
 
-    const CREATE_API_CHECKOUT_ERROR_COUNT               = 'create_api_checkout_error_count';
+    const CREATE_API_CHECKOUT_ERROR_COUNT             = 'create_api_checkout_error_count';
+    const CART_FETCH_API_ERROR_COUNT                  = 'cart_fetch_api_error_count';
+    const SCRIPT_DISCOUNT_FETCH_FAIL_COUNT            = 'script_discount_fetch_fail_count';
+    const SCRIPT_DISCOUNT_FETCH_SUCCESS_COUNT         = 'script_discount_fetch_success_count';
 
     const CREATE_SHOPIFY_CHECKOUT_REQUEST_COUNT         = 'create_shopify_checkout_request_count';
     const CREATE_SHOPIFY_CHECKOUT_ERROR_COUNT           = 'create_shopify_checkout_error_count';

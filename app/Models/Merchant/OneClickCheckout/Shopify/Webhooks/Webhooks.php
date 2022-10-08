@@ -54,15 +54,24 @@ class Webhooks extends Base\Core
      */
     public function handle(array $data): void
     {
+        $headers = $data['headers'];
+
         $initialMode = $this->app->environment(Environment::PRODUCTION) === true ? Mode::LIVE : Mode::TEST;
         $this->app['basicauth']->setMode($initialMode);
 
-        OneCCShopifyCreateOrder::dispatch(
-          array_merge($data,
-          [
-            'mode' => $initialMode,
-            'type' => 'webhook'
-        ]));
+        if ($headers['x-shopify-topic'][0] == 'refunds/create')
+        {
+            OneCCShopifyCreateOrder::dispatch(
+              array_merge($data,
+              [
+                'mode' => $initialMode,
+                'type' => 'webhook'
+            ]));
+        }
+        elseif ($headers['x-shopify-topic'][0] == 'carts/create' || $headers['x-shopify-topic'][0] == 'carts/update')
+        {
+            $this->storeCartInCache($data);
+        }
     }
 
     public function processWebhookWithLock(array $data)
@@ -269,6 +278,59 @@ class Webhooks extends Base\Core
               ]);
               return;
         }
+    }
+
+    protected function storeCartInCache(array $data)
+    {
+        $rawContents = $data['raw_contents'];
+        $headers = $data['headers'];
+        $platform = $data['platform'];
+        $input = $data['input'];
+
+        $shopId = $this->utils->stripAndReturnShopId($headers['x-shopify-shop-domain'][0]);
+        $configs = $this->getMerchantConfigs($shopId);
+
+        if (empty($configs) === true)
+        {
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_CART_EVENT_VALIDATION_FAILED,
+                [
+                  'type'  => 'configs_not_found',
+                ]);
+            return;
+        }
+
+        $signature = $headers['x-shopify-hmac-sha256'][0];
+        $isSignatureValid = $this->validator->isSignatureValid($rawContents, $signature, $configs['api_secret']);
+
+        if ($isSignatureValid === false)
+        {
+            return;
+        }
+
+        try
+        {
+            $res = (new Shopify\Service)->storeCartInCache($configs['merchant_id'], $input);
+
+            $this->trace->info(
+                TraceCode::SHOPIFY_1CC_WEBHOOK_CART_STORE_SUCCESS,
+                [
+                    'type'    => 'shopify_cart_webhook_store',
+                    'result'  => $res
+                ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_WEBHOOK_CART_STORE_FAILED,
+                [
+                  'type'    => 'shopify_cart_webhook_store_fail',
+                  'message' => $e->getMessage()
+              ]);
+
+              return;
+        }
+
     }
 
     protected function getTransactionsByOrder($client, string $merchantOrderId)

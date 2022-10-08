@@ -89,6 +89,20 @@ class Client
         );
     }
 
+    /**
+     * fetch cart object using
+     * cart id
+     */
+    public function getCartById(string $cartId)
+    {
+        $body = $this->sendRestApiRequest(
+            [],
+            'GET',
+            '/carts/' . strval($cartId) . '.json'
+        );
+        return $body;
+    }
+
     protected function sendRequest($body = null, string $apiType, string $method, string $resource = '')
     {
         $this->setHeaders($apiType);
@@ -107,6 +121,15 @@ class Client
             }
         }
 
+        $data = [
+            'headers' => $this->headers
+        ];
+
+        if ($method != 'GET')
+        {
+            $data['body'] = $body ?? [];
+        }
+
         $responseArr;
         $attempts = 0;
         while ($attempts < self::MAX_ATTEMPTS)
@@ -114,10 +137,7 @@ class Client
             $attempts++;
             try
             {
-                $response = (new HttpClient)->request($method, $this->endpoint, [
-                  'headers' => $this->headers,
-                  'body'    => $body
-                ]);
+                $response = (new HttpClient)->request($method, $this->endpoint, $data);
 
                 $responseArr = $this->parseResponse($response);
                 $delay = $this->returnBackoffIfRetriableRequest($responseArr, $apiType, $attempts);

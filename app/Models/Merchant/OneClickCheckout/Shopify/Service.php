@@ -55,6 +55,8 @@ class Service extends Base\Service
 
     protected $monitoring;
 
+    protected $cache;
+
     public function __construct()
     {
         parent::__construct();
@@ -69,20 +71,63 @@ class Service extends Base\Service
         //Cart line items for the modal
         $lineItems = $checkout['lineItems']['edges'];
 
-        foreach ($lineItems as $item)
+        foreach ($lineItems as $key => $item)
         {
             $item=$item['node'];
             $cartLineItems[] = [
-                'variant_id'        => mb_substr(strval($item['variant']['id']), 0, 128, "UTF-8"),
+                'variant_id'        => mb_substr(strval($item['variant']['id']), 0, 128, 'UTF-8'),
                 'tax_amount'        => 0,
-                'sku'               => mb_substr(strval($item['variant']['sku']), 0, 128, "UTF-8"),
-                'price'             => (int)(floatval($item['variant']['price']) * 100),
+                'sku'               => mb_substr(strval($item['variant']['sku']), 0, 128, 'UTF-8'),
+                'price'             => round(floatval($item['variant']['price']) * 100),
                 'quantity'          => (int)floatval($item['quantity']),
-                'name'              => mb_substr(strval($item['title']), 0, 128, "UTF-8"),
-                'description'       => mb_substr($item['variant']['product']['description'], 0, 256, "UTF-8"),
+                'name'              => mb_substr(strval($item['title']), 0, 128, 'UTF-8'),
+                'description'       => mb_substr($item['variant']['product']['description'], 0, 256, 'UTF-8'),
                 'weight'            => (int)floatval($item['variant']['weight']),
                 'image_url'         => $item['variant']['image']['url'] ?? ""
             ];
+        }
+
+        return $cartLineItems;
+    }
+
+    public function shopifyScriptCartLineItems(array $checkout, $cartFromCache) : array
+    {
+        if (empty($cartFromCache) === true)
+        {
+            return $this->shopifyCartLineItems($checkout);
+        }
+
+        //Cart line items for the modal
+        $cacheCartLineItems = $cartFromCache['line_items'];
+
+        $checkoutLineItems = $checkout['lineItems']['edges'];
+
+        foreach ($cacheCartLineItems as $key => $item)
+        {
+            $cartLineItems[] = [
+                'variant_id'        => mb_substr(strval($item['variant_id']), 0, 128, 'UTF-8'),
+                'tax_amount'        => 0,
+                'sku'               => mb_substr(strval($item['sku']), 0, 128, 'UTF-8'),
+                'price'             => round(floatval($item['original_price']) * 100),
+                'offer_price'       => round(floatval($item['discounted_price']) * 100),
+                'quantity'          => (int)floatval($item['quantity']),
+                'name'              => mb_substr(strval($item['title']), 0, 128, 'UTF-8'),
+                'description'       => mb_substr($item['title'], 0, 256, 'UTF-8'),
+                'weight'            => (int)floatval($item['grams'] / 1000),
+                'image_url'         => "",
+            ];
+
+            foreach ($checkoutLineItems as $lineItem) {
+
+                $lineItem = $lineItem['node'];
+
+                $variantIdFromCheckout = str_replace('gid://shopify/ProductVariant/', '', base64_decode($lineItem['variant']['id']));
+
+                if ($item['variant_id'] == $variantIdFromCheckout)
+                {
+                    $cartLineItems[$key]['image_url'] = $lineItem['variant']['image']['url'] ?? "";
+                }
+            }
         }
 
         return $cartLineItems;
@@ -101,12 +146,36 @@ class Service extends Base\Service
     public function shopifyCreateCheckout(array $input): array
     {
         $start = millitime();
+        $isScriptDiscountApplied = false;
         $cart = $input['cart'];
         $cartId = $cart['token'];
 
         $checkout = (new Core)->placeShopifyCheckout(['cart' => $cart]);
 
-        $amount = (int)(floatval($checkout['totalPriceV2']['amount']) * 100);
+        $cartPrice = (int)(floatval($cart['total_price']));
+
+        $checkoutAmount = round(floatval($checkout['totalPriceV2']['amount']) * 100);
+
+        $isScriptDiscountApplied = $this->isScriptDiscountApplied($cart);
+
+        if ($isScriptDiscountApplied)
+        {
+            $scriptData = $this->getScriptData($cartId, $cartPrice, $checkout);
+
+            $amount = $scriptData['amount'];
+
+            $lineItemsData = $scriptData['lineItemsData'];
+
+            $orderNotes = $scriptData['orderNotes'];
+        }
+        else
+        {
+            $lineItemsData = $this->shopifyCartLineItems($checkout);
+
+            $amount = $checkoutAmount;
+
+            $orderNotes = (new Checkout)->getNotesForCheckout($checkout, $cartId);
+        }
 
         $order = (new Order\Service)->createOrder([
             'receipt'          => (new OneClickCheckout\Constants)::SHOPIFY_TEMP_RECEIPT,
@@ -114,16 +183,17 @@ class Service extends Base\Service
             'currency'         => 'INR',
             'payment_capture'  => 1,
             'line_items_total' => $amount,
-            'notes'            => (new Checkout)->getNotesForCheckout($checkout, $cartId),
-            'line_items'       => $this->shopifyCartLineItems($checkout),
+            'notes'            => $orderNotes,
+            'line_items'       => $lineItemsData,
         ]);
 
         $checkoutParams = [
-            'order_id'           => $order->getPublicId(),
-            'currency'           => 'INR',
-            'name'               => $this->merchant->getBillingLabel(),
-            'one_click_checkout' => true,
-            'customer_cart'      => (new Pixels)->getDataForFbPixels($checkout),
+            'order_id'              => $order->getPublicId(),
+            'currency'              => 'INR',
+            'name'                  => $this->merchant->getBillingLabel(),
+            'one_click_checkout'    => true,
+            'customer_cart'         => (new Pixels)->getDataForFbPixels($checkout),
+            'script_coupon_applied' => $isScriptDiscountApplied,
         ];
 
         $this->trace->info(
@@ -141,6 +211,29 @@ class Service extends Base\Service
         return $checkoutParams;
     }
 
+    public function isScriptDiscountApplied(array $cart)
+    {
+        $isScriptApplied = false;
+
+        foreach ($cart['items'] as $key => $item)
+        {
+            if (empty($item['line_level_discount_allocations']) === false)
+            {
+                foreach ($item['line_level_discount_allocations'] as $lineLevelDiscount)
+                {
+                    if ($lineLevelDiscount['discount_application']['type'] === 'script')
+                    {
+                        $isScriptApplied = true;
+
+                        break;
+                    }
+                }
+            }
+        }
+
+        return $isScriptApplied;
+    }
+
     /**
      * Ensures preferences function receives same parametres as in normal API call
      * @param array input - Post body and URL params received
@@ -155,6 +248,63 @@ class Service extends Base\Service
             [
                 'order_id' => $order->getPublicId(),
             ]);
+    }
+
+    /**
+     * Get the final checkout
+     */
+    protected function getScriptData($cartId, $cartPrice, $checkout)
+    {
+        $checkoutAmount = round(floatval($checkout['totalPriceV2']['amount']) * 100);
+
+        $cart = (new Cart)->getCartData($cartId);
+
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_GET_SCRIPT_DISCOUNT,
+            [
+                'type'           => 'getCreateCheckoutAmount',
+                'cart'           => $cart,
+                'checkout_amount' => $checkoutAmount,
+                'cart_price'      => $cartPrice
+            ]);
+
+        if (empty($cart) === true || isset($cart['error']) === true)
+        {
+            $amount = $checkoutAmount;
+
+            $lineItemsData = $this->shopifyCartLineItems($checkout);
+
+            $orderNotes = (new Checkout)->getNotesForCheckout($checkout, $cartId);
+
+            $this->monitoring->addTraceCount(Metric::SCRIPT_DISCOUNT_FETCH_FAIL_COUNT, ['error_type' => TraceCode::SHOPIFY_1CC_SCRIPT_DISCOUNT_FETCH_FAIL]);
+        }
+        else
+        {
+            $amount = 0;
+
+            foreach($cart['line_items'] as $item)
+            {
+                $amount += round(floatval($item['line_price']) * 100);
+            }
+
+            // TODO: Reconsider this check, is it required or not
+            if(strval($amount) != strval($cartPrice))
+            {
+                $amount = $checkoutAmount;
+            }
+
+            $this->monitoring->addTraceCount(Metric::SCRIPT_DISCOUNT_FETCH_SUCCESS_COUNT, []);
+
+            $lineItemsData = $this->shopifyScriptCartLineItems($checkout, $cart);
+
+            $orderNotes = (new Checkout)->getNotesForCheckout($checkout, $cartId, $cart);
+        }
+
+        return [
+            'amount'        => $amount,
+            'lineItemsData' => $lineItemsData,
+            'orderNotes'    => $orderNotes
+        ];
     }
 
     public function controlMagicCheckout(string $key, string $value)
@@ -174,6 +324,8 @@ class Service extends Base\Service
 
     public function shopifyGetCheckoutOptions(array $input): array
     {
+        $isScriptDiscountApplied = false;
+
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_RETARGETING_URL_HIT,
             ['input' => $input]);
@@ -184,7 +336,14 @@ class Service extends Base\Service
 
         $checkoutId = $order->getNotes()['storefront_id'];
 
+        $scriptDiscountAmount = $order->getNotes()['Script_Discount_Amount']?? 0;
+
         $checkout = (new Checkout)->getCheckoutFromAdminApi($checkoutId);
+
+        if ($scriptDiscountAmount > 0)
+        {
+            $isScriptDiscountApplied = true;
+        }
 
         $checkoutParams = [
             'order_id'           => $input['order_id'],
@@ -196,6 +355,7 @@ class Service extends Base\Service
                 'email'   => $checkout['email'] ?? '',
                 'contact' => $checkout['phone'] ?? '',
             ],
+            'script_coupon_applied' => $isScriptDiscountApplied,
         ];
 
         return $checkoutParams;
@@ -231,7 +391,7 @@ class Service extends Base\Service
             [
                 'type'           => 'mutex_initiated',
                 'input'          => $input,
-                'fromShopifyApi' => $fromShopifyApi,
+                'from_shopify_api' => $fromShopifyApi,
             ]
         );
 
@@ -395,7 +555,7 @@ class Service extends Base\Service
                  TraceCode::SHOPIFY_1CC_API_COUPONS_ERROR,
                  [
                      'type'       => 'invalid_checkout_id',
-                     'checkoutId' => $checkoutId,
+                     'checkout_id' => $checkoutId,
                      'checkout'   => $checkout,
                  ]);
 
@@ -416,7 +576,7 @@ class Service extends Base\Service
             {
                 $this->trace->info(
                     TraceCode::SHOPIFY_1CC_UPDATE_EMAIL_FAILED,
-                    ['checkoutId' => $checkoutId, 'reason' => $e.getMessage()]);
+                    ['checkout_id' => $checkoutId, 'reason' => $e.getMessage()]);
             }
         }
 
@@ -462,7 +622,7 @@ class Service extends Base\Service
             {
                 $this->trace->error(
                     TraceCode::SHOPIFY_1CC_UPDATE_EMAIL_FAILED,
-                    ['checkoutId' => $checkoutId, 'reason' => $e.getMessage()]);
+                    ['checkout_id' => $checkoutId, 'reason' => $e.getMessage()]);
             }
         }
 
@@ -521,7 +681,7 @@ class Service extends Base\Service
               [
                   'type'       => 'update_address_failed',
                   'response'   => $response,
-                  'checkoutId' => $checkoutId,
+                  'checkout_id' => $checkoutId,
                   'address'    => $address
               ]
           );
@@ -563,6 +723,25 @@ class Service extends Base\Service
         $config = (new AuthConfig\Core)->getShopify1ccConfig($this->merchant->getId());
 
         return $config;
+    }
+
+    public function storeCartInCache(string $merchantId, $cartInput)
+    {
+        if (empty($cartInput['token']) === true)
+        {
+            return ['success' => false];
+        }
+
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_CART_WEBHOOK,
+            [
+                'type'        => 'store_webhook_cart',
+                'cart_object' => $cartInput,
+            ]);
+
+        (new Cart)->setCartToCache($merchantId, $cartInput);
+
+        return ['success' => true];
     }
 
     public function cancelShopifyOrder($input){
@@ -650,6 +829,5 @@ class Service extends Base\Service
         ];
 
         (new OrderMeta\Service())->updateReviewStatusFor1ccOrder($param,$input[OneClickCheckout\Constants::MERCHANT_ID]);
-
     }
 }

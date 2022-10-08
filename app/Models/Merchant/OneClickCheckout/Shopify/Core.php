@@ -42,6 +42,8 @@ class Core extends Base\Core
         parent::__construct();
 
         $this->monitoring = new Monitoring();
+
+        $this->cache = $this->app['cache'];
     }
 
     public function placeShopifyCheckout(array $input): array
@@ -313,7 +315,7 @@ class Core extends Base\Core
             TraceCode::SHOPIFY_1CC_UPDATE_EMAIL_BODY,
             [
                 'type' => 'update_checkout_email',
-                'checkoutId' => $checkoutId,
+                'checkout_id' => $checkoutId,
                 'time' => millitime() - $start
             ]
         );
@@ -372,8 +374,8 @@ class Core extends Base\Core
             TraceCode::SHOPIFY_1CC_UPDATE_SHIPPING_BODY,
             [
                 'type' => 'update_shipping_address',
-                'checkoutId' => $checkoutId,
-                'shippingAddress' => $shippingAddress
+                'checkout_id' => $checkoutId,
+                'shipping_address' => $shippingAddress
             ]
         );
 
@@ -416,7 +418,7 @@ class Core extends Base\Core
                      [
                          'type'       => 'invalid_response_fetching_rates',
                          'response'   => $body,
-                         'checkoutId' => $checkoutId,
+                         'checkout_id' => $checkoutId,
                          'retries'    => $currentTries,
                          'time'       => millitime() - $start,
                      ]
@@ -445,7 +447,7 @@ class Core extends Base\Core
                     [
                         'type' => 'shipping_api_response',
                         'checkout'     => $checkout,
-                        'currentTries' => $currentTries,
+                        'current_tries' => $currentTries,
                         'time'         => millitime() - $start,
                         'rates'        => $rates,
                     ]
@@ -460,7 +462,7 @@ class Core extends Base\Core
              TraceCode::SHOPIFY_1CC_API_SHIPPING_ERROR,
              [
                  'type'       => 'retry_limit_exceeded_fetching_rates',
-                 'checkoutId' => $checkoutId,
+                 'checkout_id' => $checkoutId,
                  'retries'    => $currentTries,
                  'time'       => millitime() - $start,
              ]
@@ -935,6 +937,26 @@ class Core extends Base\Core
             ];
 
             $body['current_total_discounts'] = $promotions[0]['value'];
+        }
+
+        // Add script discount as coupon
+        if (isset($rzpOrder['notes']['Script_Discount_Amount']) && $rzpOrder['notes']['Script_Discount_Amount'] > 0)
+        {
+            if ($rzpOrder['notes']['Script_Discount_Title'] != null)
+            {
+                $scriptDiscountTitle = $rzpOrder['notes']['Script_Discount_Title'];
+            }
+            else
+            {
+                $scriptDiscountTitle = "Discount";
+            }
+
+            $body['discount_codes'][] = [
+                'code'   => $scriptDiscountTitle,
+                'amount' => $rzpOrder['notes']['Script_Discount_Amount']
+            ];
+
+            $body['current_total_discounts'] = $rzpOrder['notes']['Script_Discount_Amount'];
         }
 
         $body['financial_status'] = 'paid';
