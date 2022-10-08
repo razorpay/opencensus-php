@@ -3,6 +3,7 @@
 namespace RZP\Models\Order\OrderMeta\Order1cc;
 
 use RZP\Base;
+use RZP\Exception;
 use RZP\Models\Address;
 use RZP\Trace\TraceCode;
 use RZP\Models\Order\Entity;
@@ -127,7 +128,13 @@ class Validator extends Base\Validator
 
     public function validateDevice($attribute, $value)
     {
+        if (empty($value['id']) === true)
+        {
+            return new Exception\BadRequestValidationFailureException('The id field is required.');
+        }
+
         $device['id'] = $value['id'];
+
         $this->validateInput("customerDeviceDetails", $device);
 
         if(!isset($value['ip']))
