@@ -37,7 +37,7 @@ class Validator extends Base\Validator
         'merchant_info.merchant_international_integration_id'   => 'sometimes|string|size:14',
         'merchant_info.service_offered'                         => 'sometimes|string',
         'merchant_info.average_delivery_in_days'                => 'sometimes|integer',
-        'merchant_info.registration_number'                     => 'sometimes|string|regex:/^[ulUL][0-9]{5}[A-Za-z]{2}[0-9]{4}[A-Za-z]{3}[0-9]{6}$/',
+        'merchant_info.registration_number'                     => 'sometimes|string',
         'merchant_info.gst_number'                              => 'sometimes|string|size:15',
         'merchant_info.date_of_incorporation'                   => 'sometimes|date_format:"Y-m-d"|before:"today"',
         'merchant_info.physical_delivery'                       => 'sometimes|string|in:yes,no',
