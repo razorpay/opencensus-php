@@ -12,11 +12,13 @@ use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
 use RZP\Services\HubspotClient;
 use RZP\Models\Admin\Permission;
+use RZP\Services\Mock\Mozart;
 use RZP\Services\RazorXClient;
 use RZP\Models\User\BankingRole;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\BankingAccount\Core;
 use Illuminate\Support\Facades\Mail;
 use RZP\Models\BankingAccount\Entity;
 use RZP\Models\BankingAccount\Status;
@@ -9299,5 +9301,70 @@ class BankingAccountTest extends TestCase
         $this->ba->mobAppAuthForInternalRoutes();
 
         $this->startTest($dataToReplace);
+    }
+
+    public function testPreventMetroCallbackForGatewayBalanceFetch()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $this->fixtures->edit('merchant_detail', self::DefaultMerchantId, $attribute);
+
+        $balance = $this->fixtures->create('balance',
+        [
+            'merchant_id'       => self::DefaultMerchantId,
+            'type'              => 'banking',
+            'account_type'      => 'direct',
+            'account_number'    => '2224440041626905',
+            'balance'           => 200,
+        ]);
+
+        $ba = $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => self::DefaultMerchantId,
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '560038',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+            'balance_id'            => $balance->getId()
+        ]);
+
+        $metroMock = \Mockery::mock('RZP\Metro\MetroHandler');
+
+        $metroMock->shouldNotReceive("publish");
+
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(50000);
+
+        $processor = new Rbl\Processor([
+            Entity::MERCHANT_ID => $ba->getMerchantId(),
+            Entity::CHANNEL     => 'rbl'
+        ]);
+
+        $processor->fetchGatewayBalance();
+    }
+
+    protected function mockMozartResponseForFetchingBalanceFromRblGateway(int $amount): void
+    {
+        $mozartServiceMock = $this->getMockBuilder(Mozart::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['sendMozartRequest'])
+            ->getMock();
+
+        $mozartServiceMock->method('sendMozartRequest')
+            ->willReturn([
+                'data' => [
+                    'success' => true,
+                    Rbl\Fields::GET_ACCOUNT_BALANCE => [
+                        Rbl\Fields::BODY => [
+                            Rbl\Fields::BAL_AMOUNT => [
+                                Rbl\Fields::AMOUNT_VALUE => $amount
+                            ]
+                        ]
+                    ]
+                ]
+            ]);
+
+        $this->app->instance('mozart', $mozartServiceMock);
     }
 }

@@ -30,10 +30,15 @@ class Metro extends Base\Service
 
     public function publishToMetro(Entity $bankingAccount, int $retryCount = 1)
     {
+        $dbt = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 8);
+        $caller = $dbt[7]['function'] ?? null;
+
         // Don't publish to metro if is bankingAccount isn't a current_account or if bankingAcccount update is triggered by master-onboarding (MOB).
         // (This metro event is sent to make MOB update its DB to reflect updates made to an application where MOB is not the source. Therefore, it is
         // not required to send a metro event if the source of application update is MOB because MOB would already have the updated version of the application.)
-        if ($bankingAccount->getAccountType() !== self::CURRENT or $this->app['basicauth']->isMobApp())
+        if ($bankingAccount->getAccountType() !== self::CURRENT or
+            $this->app['basicauth']->isMobApp() or
+            $caller === 'fetchGatewayBalance')
         {
             return;
         }
