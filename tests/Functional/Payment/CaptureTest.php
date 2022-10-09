@@ -1906,4 +1906,80 @@ class CaptureTest extends TestCase
         $this->assertEquals('paid', $order['status']);
     }
 
+    public function testRefundAtOnManualCaptureOnLateAuthorizedPayment()
+    {
+        $this->fixtures->merchant->edit(
+            '10000000000000',
+            [
+                'auto_refund_delay'      => '2 days',
+                'auto_capture_late_auth' => true,
+            ]);
+
+        $order = $this->fixtures->create(
+            'order',
+            [
+                'id'              => '100000000order'
+            ]);
+
+        $payment2 = $this->fixtures->create('payment:failed', [
+            'email'         => 'a@b.com',
+            'amount'        => 1000000,
+            'contact'       => '9918899029',
+            'method'        => 'wallet',
+            'wallet'        => 'payumoney',
+            'gateway'       => 'wallet_payumoney',
+            'card_id'       => null,
+            'order_id'      => '100000000order'
+        ]);
+
+        $payment1 = $this->getDefaultPaymentArray();
+
+        $payment1['amount'] = 1000000;
+
+        $payment1['order_id'] = 'order_100000000order';
+
+        $payment1 = $this->doAuthPayment($payment1);
+
+        $payment1 = $this->getDbLastEntity('payment');
+
+        $this->authorizeFailedPayment($payment2->getPublicId());
+
+        //Capture first payment
+        $payment1 = $this->capturePayment($payment1->getPublicId(), '1000000');
+
+        $now = Carbon::now()->getTimestamp();
+        //Capture second payment
+       $this->makeFailedCaptureRequest($payment2->getPublicId(), '1000000');
+
+        $payment2 = $this->getEntityById('payment', $payment2->getId(), true);
+
+        $order   = $this->getLastEntity('order', true);
+
+        $this->assertEquals('captured', $payment1['status']);
+
+        $this->assertEquals('authorized', $payment2['status']);
+
+        $this->assertLessThanOrEqual( $payment2['refund_at'], $now);
+
+        $this->assertEquals('paid', $order['status']);
+    }
+
+    public function makeFailedCaptureRequest($id, $amount, $currency = 'INR') {
+        $request = array(
+            'method'  => 'POST',
+            'url'     => '/payments/' . $id . '/capture',
+            'content' => array('amount' => $amount));
+
+        if ($currency !== 'INR')
+        {
+            $request['content']['currency'] = $currency;
+        }
+
+        $this->ba->privateAuth();
+        $this->makeRequestAndCatchException(function () use ($request) {
+            $this->makeRequestAndGetContent($request);
+        },
+            Exception\BadRequestValidationFailureException::class,
+            'Corresponding order already has a captured payment.');
+    }
 }

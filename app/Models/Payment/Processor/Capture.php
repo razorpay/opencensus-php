@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use Carbon\Carbon;
 use RZP\Gateway\Base\Metric;
 use RZP\Jobs;
 use RZP\Constants;
@@ -1279,6 +1280,12 @@ trait Capture
 
             if ($order->getStatus() === Order\Status::PAID)
             {
+                // Setting Refund At value so that auto refund cron can pick payment to refund
+                // in case order is already paid
+                $payment->setRefundAt(Carbon::now()->getTimestamp());
+
+                $this->repo->saveOrFail($payment);
+
                 throw new Exception\BadRequestValidationFailureException(
                     'Corresponding order already has a captured payment.');
             }
@@ -1295,7 +1302,7 @@ trait Capture
             }
         }
     }
-    
+
     /**
      * Update attributes of Order entity post corresponding payment is captured.
      *
