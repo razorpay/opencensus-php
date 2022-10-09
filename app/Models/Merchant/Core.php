@@ -1643,29 +1643,38 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     * @param Entity      $merchant
+     * @param Entity|null $partner
+     *
+     * Propagate all PARTNER_APPLICATION type features of partner to sub merchants.
+     * @return null
+     */
     public function addPartnerAddedFeaturesToSubmerchant(Entity $merchant, Entity $partner = null)
     {
-        if(empty($partner)) {
+        if (empty($partner))
+        {
             return null;
         }
-        $isPropagatePartnerAddedFeature = $this->isRazorxExperimentEnable(
-            $partner->getId(),
-            RazorxTreatment::PROPAGATE_PARTNER_ADDED_FEATURE_TO_SUBMERCHANTS
-        );
 
-        if($isPropagatePartnerAddedFeature === true) {
-            $this->addPartnerAddedFeaturesToSubmerchantOnMode($merchant, $partner, Mode::LIVE);
-            $this->addPartnerAddedFeaturesToSubmerchantOnMode($merchant, $partner, Mode::TEST);
-        }
+        $this->addPartnerAddedFeaturesToSubmerchantOnMode($merchant, $partner, Mode::LIVE);
+
+        $this->addPartnerAddedFeaturesToSubmerchantOnMode($merchant, $partner, Mode::TEST);
     }
 
     public function addPartnerAddedFeaturesToSubmerchantOnMode(Entity $merchant, Entity $partner, string $mode)
     {
-        $this->repo->transactionOnConnection(function () use ($merchant, $partner, $mode)
-        {
+        $this->repo->transactionOnConnection(function() use ($merchant, $partner, $mode) {
             $merchantApplicationCore = new MerchantApplications\Core();
-            $appType = $merchantApplicationCore->getDefaultAppTypeForPartner($partner);
-            $appId = $merchantApplicationCore->getMerchantAppIds($partner->getId(), [$appType])[0];
+            $appType                 = $merchantApplicationCore->getDefaultAppTypeForPartner($partner);
+            $appIds                   = $merchantApplicationCore->getMerchantAppIds($partner->getId(), [$appType]);
+
+            if (empty($appIds) === true)
+            {
+                return;
+            }
+
+            $appId = $appIds[0];
 
             $featureNames   =  $this->repo
                                     ->feature
@@ -1680,16 +1689,15 @@ class Core extends Base\Core
             foreach ($featureNames as $featureName)
             {
                 $featureParams->push([
-                    Feature\Entity::ENTITY_TYPE => Feature\Constants::MERCHANT,
-                    Feature\Entity::ENTITY_ID   => $merchant->getId(),
-                    Feature\Entity::NAME        => $featureName
-                ]);
+                                         Feature\Entity::ENTITY_TYPE => Feature\Constants::MERCHANT,
+                                         Feature\Entity::ENTITY_ID   => $merchant->getId(),
+                                         Feature\Entity::NAME        => $featureName
+                                     ]);
             }
 
-            $featureCore = new Feature\Core();
+            $featureCore       = new Feature\Core();
             $featureCore->mode = $mode;
-            $featureParams->map(function ($item) use ($featureCore, $mode)
-            {
+            $featureParams->map(function($item) use ($featureCore, $mode) {
                 return $featureCore->create($item, false, true, $mode);
             });
         }, $mode);

@@ -113,17 +113,13 @@ class UserTest extends TestCase
         $partner = $this->merchantEntityMock;
         $partner->shouldReceive('getId')->andReturn('10000000000001');
 
-        $coreMock->shouldReceive('isRazorxExperimentEnable')
-            ->with('10000000000001', RazorxTreatment::PROPAGATE_PARTNER_ADDED_FEATURE_TO_SUBMERCHANTS)
-            ->andReturn(true);
         $coreMock->shouldReceive('addPartnerAddedFeaturesToSubmerchantOnMode')
-            ->with($submerchant, $partner, Mode::TEST)->andReturn();
+                 ->with($submerchant, $partner, Mode::TEST)->andReturn();
         $coreMock->shouldReceive('addPartnerAddedFeaturesToSubmerchantOnMode')
-            ->with($submerchant, $partner, Mode::LIVE)->andReturn();
+                 ->with($submerchant, $partner, Mode::LIVE)->andReturn();
 
         $result = $coreMock->addPartnerAddedFeaturesToSubmerchant($submerchant, $this->merchantEntityMock);
 
-        $coreMock->shouldHaveReceived("isRazorxExperimentEnable");
         $coreMock->shouldHaveReceived("addPartnerAddedFeaturesToSubmerchantOnMode")->twice();
         $this->assertNull($result);
     }
