@@ -40,7 +40,7 @@ class Validator extends BaseValidator
         Entity::NAME => 'sometimes|string|custom',
         Entity::NOTES => 'filled|notes',
         Entity::OFFER_ID => 'sometimes|string|alpha_num|size:14',
-        Entity::ORDER_ID => 'sometimes|string|alpha_num|size:14',
+        Entity::ORDER_ID => 'sometimes|required_with:invoice_id|string|alpha_num|size:14',
         Entity::PAYMENT_LINK_ID => 'sometimes|string|alpha_num|size:14',
         Entity::RECEIVER_TYPE => 'required|in:qr_code',
         Entity::SIGNATURE => 'sometimes|string',

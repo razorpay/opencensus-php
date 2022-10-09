@@ -114,13 +114,11 @@ class Entity extends PublicEntity
      */
     public const CREATE_PAYMENT_ATTRIBUTES = [
         '_',
-        self::ACCOUNT_ID,
         self::CONTACT,
         self::CURRENCY,
         self::CUSTOMER_ID,
         self::DESCRIPTION,
         self::EMAIL,
-        self::INVOICE_ID,
         self::METHOD,
         self::NOTES,
         self::OFFER_ID,

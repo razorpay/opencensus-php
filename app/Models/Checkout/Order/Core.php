@@ -7,7 +7,6 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\Invoice\Entity as Invoice;
-use RZP\Models\Order\Entity as OrderEntity;
 use RZP\Trace\TraceCode;
 
 class Core extends BaseCore
@@ -83,6 +82,17 @@ class Core extends BaseCore
         $this->repo->saveOrFail($checkoutOrder);
     }
 
+    /**
+     * Checks if the Order is associated with an Invoice.
+     * Also, Validates & rejects requests if Partial/Subscription Payments are
+     * being used with QrCode type checkout orders.
+     *
+     * @param Entity $checkoutOrder
+     *
+     * @return void
+     *
+     * @throws BadRequestValidationFailureException
+     */
     protected function validateAndSetInvoiceDetailsIfApplicable(Entity $checkoutOrder): void
     {
         if ($checkoutOrder->order === null) {
