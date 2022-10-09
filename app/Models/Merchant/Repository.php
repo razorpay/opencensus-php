@@ -1791,34 +1791,35 @@ class Repository extends Base\Repository
 
     public function fetchMerchantsWithNotOnboardedOnNetworks($product, array $networks, $limit)
     {
-        $merchantAttributeTable = $this->repo->merchant_attribute->getTableName();
-        $prodColumn  = $this->repo->merchant_attribute->dbColumn(Attribute\Entity::PRODUCT);
-        $idColumn = $this->dbColumn(Entity::ID);
+        return $this->repo->useSlave(function () use ($product,$networks,$limit){
+            $merchantAttributeTable = $this->repo->merchant_attribute->getTableName();
+            $prodColumn  = $this->repo->merchant_attribute->dbColumn(Attribute\Entity::PRODUCT);
+            $idColumn = $this->dbColumn(Entity::ID);
 
+            return $this->newQuery()
+                ->select($idColumn)
+                ->leftJoin(
+                    $merchantAttributeTable,
+                    function(JoinClause $join) use($product,$networks) {
+                        $midColumn   = $this->repo->merchant_attribute->dbColumn(Attribute\Entity::MERCHANT_ID);
+                        $prodColumn  = $this->repo->merchant_attribute->dbColumn(Attribute\Entity::PRODUCT);
+                        $groupColumn = $this->repo->merchant_attribute->dbColumn(Attribute\Entity::GROUP);
 
-        return $this->newQueryWithConnection($this->getSlaveConnection())
-            ->select($idColumn)
-            ->leftJoin(
-                $merchantAttributeTable,
-                function(JoinClause $join) use($product,$networks) {
-                    $midColumn   = $this->repo->merchant_attribute->dbColumn(Attribute\Entity::MERCHANT_ID);
-                    $prodColumn  = $this->repo->merchant_attribute->dbColumn(Attribute\Entity::PRODUCT);
-                    $groupColumn = $this->repo->merchant_attribute->dbColumn(Attribute\Entity::GROUP);
+                        $idColumn = $this->dbColumn(Entity::ID);
 
-                    $idColumn = $this->dbColumn(Entity::ID);
-
-                    $join->on($idColumn,$midColumn);
-                    $join->where($prodColumn,$product);
-                    $join->whereIn($groupColumn,$networks);
-                }
-            )
-            ->whereNull($prodColumn)
-            ->where(Entity::ACTIVATED,"=",1)
-            ->where(Entity::INTERNATIONAL,"=",1)
-            ->limit($limit)
-            ->distinct()
-            ->get()
-            ->pluck(Entity::ID)
-            ->toArray();
+                        $join->on($idColumn,$midColumn);
+                        $join->where($prodColumn,$product);
+                        $join->whereIn($groupColumn,$networks);
+                    }
+                )
+                ->whereNull($prodColumn)
+                ->where(Entity::ACTIVATED,"=",1)
+                ->where(Entity::INTERNATIONAL,"=",1)
+                ->limit($limit)
+                ->distinct()
+                ->get()
+                ->pluck(Entity::ID)
+                ->toArray();
+        });
     }
 }

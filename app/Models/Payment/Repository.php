@@ -3266,14 +3266,16 @@ EOT;
 
     public function getPaymentsWithReferenceId($gateway, $status, $limit)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
-            ->where(Entity::GATEWAY, $gateway)
-            ->status($status)
-            ->whereNotNull(Entity::REFERENCE2)
-            ->whereNull(Entity::REFERENCE16)
-            ->orderBy(Entity::CREATED_AT, 'desc')
-            ->limit($limit)
-            ->get();
+        return $this->repo->useSlave(function () use ($gateway,$status,$limit){
+            return $this->newQuery()
+                ->where(Entity::GATEWAY, $gateway)
+                ->status($status)
+                ->whereNotNull(Entity::REFERENCE2)
+                ->whereNull(Entity::REFERENCE16)
+                ->orderBy(Entity::CREATED_AT, 'desc')
+                ->limit($limit)
+                ->get();
+        });
     }
 
     //select * from `payments`
