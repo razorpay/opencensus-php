@@ -4,8 +4,11 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
 use RZP\Trace\TraceCode;
+use RZP\Exception\BaseException;
+use RZP\Exception\RuntimeException;
 
 
 class CustomerController extends Controller
@@ -262,9 +265,26 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->verifyOtp1cc($input);
+        try
+        {
+            $data = $this->service()->verifyOtp1cc($input);
 
-        return ApiResponse::json($data);
+            return ApiResponse::json($data);
+        }
+        catch (\Throwable $ex)
+        {
+            if (($ex instanceof BaseException) === true)
+            {
+                switch ($ex->getError()->getInternalErrorCode())
+                {
+                    case ErrorCode::SERVER_ERROR_RAVEN_FAILURE:
+                    case ErrorCode::SERVER_ERROR_RUNTIME_ERROR: // Thrown at Services/Raven.php::sendRequest
+                        $data = $ex->getError()->toPublicArray(true);
+                        return ApiResponse::json($data, 503);
+                }
+            }
+            throw $ex;
+        }
     }
 
     /**

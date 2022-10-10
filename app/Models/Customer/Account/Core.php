@@ -357,12 +357,22 @@ class Core extends Base\Core
             }
             return $response;
         } catch (\Throwable $e) {
+            $internalErrorCode = '';
+            if (($e instanceof Exception\BaseException) === true)
+            {
+                $internalErrorCode = $e->getError()->getInternalErrorCode();
+            }
+            $dimensions = [
+                'mode' => $this->mode,
+                'internal_error_code' => $internalErrorCode,
+            ];
             if ($e->getCode() === ErrorCode::BAD_REQUEST_INCORRECT_OTP)
             {
-                $this->trace->count(Metric::ONE_CC_VERIFY_OTP_REQUEST_ERROR_COUNT);
+                $this->trace->count(Metric::ONE_CC_VERIFY_OTP_REQUEST_ERROR_COUNT, $dimensions);
             }
-            else {
-                $this->trace->count(Metric::ONE_CC_VERIFY_OTP_REQUEST_FAULT_COUNT);
+            else
+            {
+                $this->trace->count(Metric::ONE_CC_VERIFY_OTP_REQUEST_FAULT_COUNT, $dimensions);
             }
             $ex = $e;
             throw $e;
