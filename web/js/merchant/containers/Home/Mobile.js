@@ -129,20 +129,17 @@ class AnalyticsMobile extends Component {
       activationData,
       websiteSectionDetailsData,
       websiteComplianceModalVisibility,
-      user,
     } = this.props;
 
     if (
       activationData.data &&
       websiteSectionDetailsData.data &&
-      websiteComplianceModalVisibility.data &&
-      user
+      websiteComplianceModalVisibility.data
     ) {
       const shouldShowModal = shouldShowWebsiteComplianceModal(
         activationData,
         websiteSectionDetailsData,
         websiteComplianceModalVisibility,
-        user,
       );
 
       if (shouldShowModal && this.state.isWebsiteComplianceModalShown === false) {

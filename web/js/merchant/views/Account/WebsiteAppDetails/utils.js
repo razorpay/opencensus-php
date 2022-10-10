@@ -32,6 +32,12 @@ export const getStatusClass = (status) => {
   }
 };
 
+const EXCLUDED_ACTIVATION_STATUS_LIST = [
+  'activated',
+  'needs_clarification',
+  'activated_kyc_pending',
+];
+
 export function getLatestNeedsClarificationComment(clarificationReasons) {
   if (!clarificationReasons) return [];
 
@@ -79,10 +85,8 @@ export function getLatestNeedsClarificationComment(clarificationReasons) {
   return comments;
 }
 
-export function isNudgeHardForWebsiteCompliance(activationData, websiteComplianceData, user) {
+export function isNudgeHardForWebsiteCompliance(activationData, websiteComplianceData) {
   if (!activationData || !websiteComplianceData) return false;
-
-  const isActivated = user?.isAccepted;
 
   let areSectionUrlsReceived = true;
   if (Array.isArray(websiteComplianceData)) {
@@ -94,16 +98,14 @@ export function isNudgeHardForWebsiteCompliance(activationData, websiteComplianc
 
   return (
     websiteComplianceData.isWebsiteSectionsApplicable &&
-    (!isActivated || activationData.activation_status !== 'needs_clarification') &&
+    !EXCLUDED_ACTIVATION_STATUS_LIST.includes(activationData.activation_status) &&
     !areSectionUrlsReceived &&
     activationData?.isTransacted
   );
 }
 
-export function isNudgeSoftForWebsiteCompliance(activationData, websiteComplianceData, user) {
+export function isNudgeSoftForWebsiteCompliance(activationData, websiteComplianceData) {
   if (!activationData || !websiteComplianceData) return false;
-
-  const isActivated = user?.isAccepted;
 
   let areSectionUrlsReceived = true;
   if (Array.isArray(websiteComplianceData)) {
@@ -115,7 +117,7 @@ export function isNudgeSoftForWebsiteCompliance(activationData, websiteComplianc
 
   return (
     websiteComplianceData.isWebsiteSectionsApplicable &&
-    (!isActivated || activationData.activation_status !== 'needs_clarification') &&
+    !EXCLUDED_ACTIVATION_STATUS_LIST.includes(activationData.activation_status) &&
     !areSectionUrlsReceived
   );
 }
@@ -124,12 +126,10 @@ export function shouldShowWebsiteComplianceModal(
   activationData,
   websiteComplianceData,
   visibilityData,
-  user,
 ) {
   const shouldShowWebsiteCompliancePrompt = isNudgeSoftForWebsiteCompliance(
     activationData.data,
     websiteComplianceData.data,
-    user,
   );
   const totalViewCount = Number(visibilityData.data.website_incomplete_soft_nudge_count);
   const previousViewTimestamp = Number(visibilityData.data.website_incomplete_soft_nudge_timestamp);

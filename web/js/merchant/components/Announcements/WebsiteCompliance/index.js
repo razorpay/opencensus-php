@@ -13,13 +13,12 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 /* Renders only on dWeb */
 function WebsiteComplianceBanner({ activationData, websiteSectionDetailsData, user, screen }) {
   const shouldShowBanner =
-    isNudgeSoftForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data, user) ||
-    isNudgeHardForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data, user);
+    isNudgeSoftForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data) ||
+    isNudgeHardForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data);
 
   const nudgeType = isNudgeSoftForWebsiteCompliance(
     activationData.data,
     websiteSectionDetailsData.data,
-    user,
   )
     ? 'soft'
     : 'hard';
