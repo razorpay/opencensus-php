@@ -110,7 +110,7 @@ class Checker extends Base\Core
     public function checkApplicabilityForPayment(Payment\Entity $payment, Order\Entity $order): bool
     {
         $this->payment = $payment;
-
+        $this->isDummyPayment = false;
         $this->order = $order;
 
         $isCurrentOfferUsageAvailable = $this->checkMaxOfferUsage();
@@ -492,21 +492,26 @@ class Checker extends Base\Core
         // Offer max usage will only be applicable for cards network which have exposed PAR api
         if ((new Card\Core())->checkIfFetchingParApplicable($this->payment->card->getNetwork()) === false)
         {
-            return true;
+            $this->traceCheckResult(
+                TraceCode::OFFER_CARD_USAGE_CHECK,
+                [
+                    'network' => $this->payment->card->getNetwork(),
+                    'message' => 'Max offer usage per card is not applicable on this card'
+                ]);
+            return false;
         }
 
         $providerReferenceId = $this->payment->card->getProviderReferenceId();
 
         // If provider_reference_id is null, then we will call the par api to get the provider_reference_id
-        if ($providerReferenceId === null)
+        if (empty($providerReferenceId) === true)
         {
             $providerReferenceId = $this->getParValue();
         }
 
         // If provider_reference_id is not null, we will validate the max usage on the current card
-        if ($providerReferenceId !== null)
+        if (empty($providerReferenceId) === false)
         {
-
             $merchantId = $this->payment->merchant->getId();
 
             $cardIds = $this->repo->card->fetchCardIdsWithProviderReferenceId($providerReferenceId, $merchantId);
