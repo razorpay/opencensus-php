@@ -13,7 +13,6 @@ import PaymentPagesList from 'merchant/views/PaymentPages/PaymentPages/List';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from '../../../common/ui/DashboardBanner';
-import MagicCheckoutBanner from 'merchant/components/Announcements/PaymentPagesMagicCheckout';
 
 @connect((state) => {
   return {
@@ -34,7 +33,6 @@ export default class PaymentPagesContainer extends Component {
       <>
         <div className="banner-container">
           <DashboardBanner />
-          <MagicCheckoutBanner userId={user.current} email={user.email} />
         </div>
 
         {isQuickGuideOpen && <QuickGuide className="QuickGuide-v2" />}
