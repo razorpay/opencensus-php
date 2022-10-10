@@ -744,23 +744,15 @@ class Service extends Base\Service
                 if ($e->getCode() === ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND)
                 {
                     //fetch details from google api
-                    return $this->app['pincodesearch']->fetchCityAndStateFromPincodeAndCountry($address['zipcode'], $address['country']);
+                    $response = $this->app['pincodesearch']->fetchCityAndStateFromPincodeAndCountry($address['zipcode'], $address['country']);
                 }
                 else
                 {
-                    $this->trace->count(Metric::ZIP_CODE_WITHOUT_ADDRESS_FOUND_COUNT);
-                    $this->trace->error(TraceCode::ZIP_CODE_WITHOUT_ADDRESS_FOUND_REQUEST,
-                        ['zipcode' => $address['zipcode'], 'country' => $address['country'], 'error' => $e->getMessage()]
-                    );
-                    $response = ['city' => '', 'state' => '', 'state_code' => ''];
+                    throw $e;
                 }
             }
-        } catch (Throwable $ex) {
-            //to catch the exception from fetchCityAndStateFromPincodeAndCountry google api call
-            $this->trace->count(Metric::ZIP_CODE_WITHOUT_ADDRESS_FOUND_COUNT);
-            $this->trace->error(TraceCode::ZIP_CODE_WITHOUT_ADDRESS_FOUND_REQUEST,
-                ['zipcode' => $address['zipcode'], 'country' => $address['country'], 'error' => $ex->getMessage()]
-            );
+        } catch (Throwable $ex)
+        {
             $response = ['city' => '', 'state' => '', 'state_code' => ''];
         }
         if ($this->isZipcodeResponseValid($response) === false)
@@ -773,6 +765,14 @@ class Service extends Base\Service
                     'state' => $dbResponse['state'],
                     'state_code' => $dbResponse['state_code'],
                 ];
+            }
+            else
+            {
+                $this->trace->count(Metric::ZIP_CODE_WITHOUT_ADDRESS_FOUND_COUNT);
+                $this->trace->error(TraceCode::ZIP_CODE_WITHOUT_ADDRESS_FOUND_REQUEST, [
+                    'zipcode' => $address['zipcode'],
+                    'country' => $address['country'],
+                ]);
             }
         }
         $address['city'] = $response['city'];
