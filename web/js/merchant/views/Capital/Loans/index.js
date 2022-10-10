@@ -5,10 +5,15 @@ import { withRouter } from 'react-router-dom';
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
-import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
-import ApplicationOverviewLoadingSkeleton from '../components/ApplicationOverviewLoadingSkeleton';
-import { getDisabledReasons, getProductNames, isCashAdvanceProduct, isLoanProduct } from '../utils';
-import Spinner from '../components/Spinner';
+import getApplicationProgressPercentage from 'merchant/views/Capital/utils/ProgressPercentageCalculator';
+import ApplicationOverviewLoadingSkeleton from 'merchant/views/Capital/components/ApplicationOverviewLoadingSkeleton';
+import {
+  getDisabledReasons,
+  getProductNames,
+  isCashAdvanceProduct,
+  isLoanProduct,
+} from 'merchant/views/Capital/utils';
+import Spinner from 'merchant/views/Capital/components/Spinner';
 import ApplicationOnboardingForm from './Forms/ApplicationOnboardingForm';
 import ApplicationStatusOverview from './ApplicationStatusOverview';
 import LoanEntity from './LoanEntity';
@@ -284,8 +289,10 @@ export default class LoanApplicationOverview extends React.Component {
   };
 
   getProductDetails = () => {
-    return this.props.loanApplicationDetails.products.data.find(
-      (p) => p.name === this.getProductCode(),
+    return (
+      this.props.loanApplicationDetails?.products?.data?.find(
+        (p) => p?.name === this.getProductCode(),
+      ) || {}
     );
   };
 
