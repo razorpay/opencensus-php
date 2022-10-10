@@ -105,7 +105,6 @@ class Service extends Base\Service
 
                 if (json_last_error() !== JSON_ERROR_NONE)
                 {
-                    $this->trace->count(Metric::FETCH_COUPONS_MERCHANT_ERROR_COUNT, $dimensions);
                     $ex = new Exception\ServerErrorException(
                         'Error while calling Merchant URL',
                         ErrorCode::SERVER_ERROR_MERCHANT_FETCH_COUPONS_EXTERNAL_CALL_EXCEPTION
@@ -124,7 +123,6 @@ class Service extends Base\Service
 
             if (isset($decodedResponse['promotions']) === false)
             {
-                $this->trace->count(Metric::FETCH_COUPONS_MERCHANT_ERROR_COUNT, $dimensions);
                 $ex = new Exception\ServerErrorException('', ErrorCode::SERVER_ERROR_MERCHANT_FETCH_COUPONS_EXTERNAL_CALL_EXCEPTION);
                 throw $ex;
             }
@@ -142,6 +140,11 @@ class Service extends Base\Service
 
             return $decodedResponse;
         }
+        catch (\Throwable $e)
+        {
+            $ex = $e;
+            throw $e;
+        }
         finally
         {
             if (empty($ex) === true){
@@ -156,13 +159,24 @@ class Service extends Base\Service
                     )
                 );
             }else {
+                $internalErrorCode = "";
+                if (($ex instanceof Exception\BaseException) === true) {
+                    $internalErrorCode = $ex->getError()->getInternalErrorCode();
+                }
+                $this->trace->count(Metric::FETCH_COUPONS_MERCHANT_ERROR_COUNT, array_merge(
+                    $dimensions,
+                    [
+                        'internal_error_code' => $internalErrorCode,
+                    ]
+                ));
                 $this->trace->error(TraceCode::FETCH_COUPONS_ERROR,
                     array_merge(
                         $dimensions,
                         [
                             'request' => $this->getMaskedContactDetails($input),
-                            'response' => $this->getMaskedCoupons($decodedResponse) ,
-                            'exception'=> $ex->getTrace()
+                            'response' => $this->getMaskedCoupons($decodedResponse),
+                            'internal_error_code' => $internalErrorCode,
+                            'exception'=> $ex->getTrace(),
                         ]
                     )
                 );
@@ -217,8 +231,6 @@ class Service extends Base\Service
                 $rzpOrder = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
                 $merchantOrderId = $rzpOrder->getReceipt();
             } catch (Throwable $e) {
-
-                $this->trace->count(Metric::MERCHANT_COUPON_VALIDITY_ERROR_COUNT, $dimensions);
                 $ex = new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
                 throw $ex;
             }
@@ -263,7 +275,6 @@ class Service extends Base\Service
                 $statusCode = $response->status_code;
 
                 if (json_last_error() !== JSON_ERROR_NONE) {
-                    $this->trace->count(Metric::MERCHANT_COUPON_VALIDITY_ERROR_COUNT, $dimensions);
                     $ex = new Exception\ServerErrorException(
                         'Error while calling Merchant URL',
                         ErrorCode::SERVER_ERROR_MERCHANT_COUPON_VALIDITY_EXTERNAL_CALL_EXCEPTION
@@ -316,7 +327,14 @@ class Service extends Base\Service
 
             return ['status_code' => 200, 'data' => ['promotions' => [$decodedResponse['promotion']]]];
 
-        } finally {
+        }
+        catch(\Throwable $e)
+        {
+            $ex = $e;
+            throw $e;
+        }
+        finally
+        {
             if (empty($ex) === true){
                 $this->trace->info(TraceCode::MERCHANT_CHECK_COUPON_VALIDITY_REQUEST,
                     array_merge(
@@ -330,6 +348,16 @@ class Service extends Base\Service
                     )
                 );
             }else {
+                $internalErrorCode = "";
+                if (($ex instanceof Exception\BaseException) === true) {
+                    $internalErrorCode = $ex->getError()->getInternalErrorCode();
+                }
+                $this->trace->count(Metric::MERCHANT_COUPON_VALIDITY_ERROR_COUNT, array_merge(
+                    $dimensions,
+                    [
+                        'internal_error_code' => $internalErrorCode,
+                    ]
+                ));
                 $this->trace->error(TraceCode::MERCHANT_CHECK_COUPON_VALIDITY_ERROR,
                     array_merge(
                         $dimensions,

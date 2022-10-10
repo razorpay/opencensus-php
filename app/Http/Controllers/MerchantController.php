@@ -3084,9 +3084,28 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $response = (new Merchant\MerchantPromotions\Service())->fetchCouponCodes($input);
+        try
+        {
+            $response = (new Merchant\MerchantPromotions\Service())->fetchCouponCodes($input);
 
-        return ApiResponse::json($response);
+            return ApiResponse::json($response);
+        }
+        catch (\Throwable $ex)
+        {
+            if (($ex instanceof Exception\BaseException) === true)
+            {
+                switch ($ex->getError()->getInternalErrorCode())
+                {
+                    case ErrorCode::SERVER_ERROR_MERCHANT_FETCH_COUPONS_EXTERNAL_CALL_EXCEPTION:
+                    case ErrorCode::GATEWAY_ERROR_REQUEST_ERROR:
+                    case ErrorCode::GATEWAY_ERROR_TIMED_OUT:
+                    case ErrorCode::SERVER_ERROR_PGROUTER_SERVICE_FAILURE:
+                        $data = $ex->getError()->toPublicArray(true);
+                        return ApiResponse::json($data, 503);
+                }
+            }
+            throw $ex;
+        }
     }
 
     public function getShippingInfo()
@@ -3101,19 +3120,55 @@ class MerchantController extends Controller
     public function applyCoupon()
     {
         $input = Request::all();
+        try
+        {
+            $response = (new Merchant\MerchantPromotions\Service())->applyCoupon($input);
 
-        $response = (new Merchant\MerchantPromotions\Service())->applyCoupon($input);
-
-        return ApiResponse::json($response['data'], $response['status_code']);
+            return ApiResponse::json($response['data'], $response['status_code']);
+        }
+        catch (\Throwable $ex)
+        {
+            if (($ex instanceof Exception\BaseException) === true)
+            {
+                switch ($ex->getError()->getInternalErrorCode())
+                {
+                    case ErrorCode::SERVER_ERROR_MERCHANT_FETCH_COUPONS_EXTERNAL_CALL_EXCEPTION:
+                    case ErrorCode::GATEWAY_ERROR_REQUEST_ERROR:
+                    case ErrorCode::GATEWAY_ERROR_TIMED_OUT:
+                    case ErrorCode::SERVER_ERROR_PGROUTER_SERVICE_FAILURE:
+                        $data = $ex->getError()->toPublicArray(true);
+                        return ApiResponse::json($data, 503);
+                }
+            }
+            throw $ex;
+        }
     }
 
     public function removeCoupon()
     {
         $input = Request::all();
 
-        (new Merchant\MerchantPromotions\Service())->removeCoupon($input);
+        try
+        {
+            (new Merchant\MerchantPromotions\Service())->removeCoupon($input);
 
-        return ApiResponse::json([], 200);
+            return ApiResponse::json([], 200);
+        }
+        catch (\Throwable $ex)
+        {
+            if (($ex instanceof Exception\BaseException) === true)
+            {
+                switch ($ex->getError()->getInternalErrorCode())
+                {
+                    case ErrorCode::GATEWAY_ERROR_REQUEST_ERROR:
+                    case ErrorCode::GATEWAY_ERROR_TIMED_OUT:
+                    case ErrorCode::SERVER_ERROR_PGROUTER_SERVICE_FAILURE:
+                        $data = $ex->getError()->toPublicArray(true);
+                        return ApiResponse::json($data, 503);
+                }
+            }
+            throw $ex;
+        }
     }
 
     public function updateFetchCouponsUrl()
