@@ -8,6 +8,7 @@ use RZP\Models\Vpa;
 use RZP\Models\Card;
 use RZP\Models\Feature;
 use RZP\Models\BankAccount;
+use RZP\Models\Card\Network;
 use RZP\Models\WalletAccount;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -56,6 +57,10 @@ class Validator extends Base\Validator
         Entity::CARD . '.' . Card\Entity::INPUT_TYPE     => 'sometimes:card|string|in:razorpay_token,service_provider_token,card',
         Entity::CARD . '.' . Card\Entity::TOKEN_ID       => 'sometimes:card|public_id',
         Entity::CARD . '.' . Card\Entity::TOKEN_PROVIDER => 'sometimes:card|string',
+        // These parameters are needed for scrooge use case for detokenisation of international and
+        // bajaj finserv cards
+        Entity::CARD . '.' . Card\Entity::NETWORK        => 'sometimes:card|string',
+        Entity::CARD . '.' . Card\Entity::INTERNATIONAL  => 'sometimes:card|bool',
         Entity::BATCH_ID                                 => 'sometimes|string',
     ];
 
@@ -156,6 +161,11 @@ class Validator extends Base\Validator
         $this->validateExclusiveFieldsForCard($attribute, $value);
 
         $this->validateInputTypeForCard($attribute, $value);
+
+        if (isset($value[Card\Entity::NETWORK]) === true)
+        {
+            $this->validateCardNetwork($value[Card\Entity::NETWORK]);
+        }
     }
 
     public function validateExclusiveFieldsForCard($attribute, $value)
@@ -188,6 +198,15 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'both card.token_id and card.token should not be sent'
+            );
+        }
+
+        if (((isset($value[Card\Entity::INTERNATIONAL]) === true) or
+            (isset($value[Card\Entity::NETWORK]) === true)) and
+            (isset($value[Card\Entity::TOKEN]) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'card.token should be sent if card.network or card.international is passed.'
             );
         }
     }
@@ -241,6 +260,16 @@ class Validator extends Base\Validator
                     'card.input_type should be sent along with card.token_id'
                 );
             }
+        }
+    }
+
+    public function validateCardNetwork($network)
+    {
+        if (Network::isValidNetworkCode($network) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $network . ' is not a valid network'
+            );
         }
     }
 

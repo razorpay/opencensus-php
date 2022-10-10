@@ -4089,6 +4089,68 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testCreatePayoutWithInvalidNetworkForRefundsApp' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'content' => [
+                "account_number"    => '2224440041626905',
+                "amount"            => 1000000,
+                "currency"          => "INR",
+                "mode"              => "NEFT",
+                "purpose"           => "refund",
+                "fund_account"  => [
+                    "account_type"  => "card",
+                    "card" => [
+                        "token"        => "NDAwMDQwMDAwMDAwMDAwNA==",
+                    ],
+                    "contact"  => [
+                        "name"      => "Gaurav Kumar",
+                        "email"     => "gaurav.kumar@example.com",
+                        "contact"   => "9876543210",
+                        "type"      => "employee",
+                        "reference_id"  => "188181269",
+                        "notes"  => [
+                            "notes_key_1"  => "Tea, Earl Grey, Hot",
+                            "notes_key_2"  => "Tea, Earl Grey... decaf."
+                        ]
+                    ]
+                ],
+                "source_details"  =>  [
+                    [
+                        "source_id"     =>  "HYKmlGHHyEhZuM", // refund id
+                        "source_type"   =>  "refund",
+                        "priority"      =>  1
+                    ]
+                ],
+                "queue_if_low_balance"  => true,
+                "reference_id"          => "can be use to store refund id",
+                "narration"             => "Acme Corp Fund Transfer",
+                "notes"  => [
+                    "notes_key_1"  => "Beam me up Scotty",
+                    "notes_key_2"  => "Engage"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'xyz is not a valid network',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreatePayoutWithCardNumberForRefundsApp' => [
         'request' => [
             'method'  => 'POST',

@@ -6278,6 +6278,81 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testCreatePayoutWithInternationalCardForRefundsApp()
+    {
+        $this->ba->appAuthTest($this->config['applications.scrooge.secret']);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->mockCardVault();
+
+        $testData = &$this->testData['testCreatePayoutWithVaultTokenAndDummyNameForRefundsApp'];
+
+        $testData['request']['content']['fund_account']['card']['international'] = true;
+
+        $this->startTest($testData);
+    }
+
+    public function testCreatePayoutWithBajajFinServeCardForRefundsApp()
+    {
+        $this->ba->appAuthTest($this->config['applications.scrooge.secret']);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->mockCardVault();
+
+        $testData = &$this->testData['testCreatePayoutWithVaultTokenAndDummyNameForRefundsApp'];
+
+        $testData['request']['content']['fund_account']['card']['network'] = 'BAJAJ';
+
+        $this->startTest($testData);
+    }
+
+    public function testCreatePayoutWithInvalidNetworkForRefundsApp()
+    {
+        $this->ba->appAuthTest($this->config['applications.scrooge.secret']);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->mockCardVault();
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account']['card']['network'] = 'xyz';
+
+        $this->startTest($testData);
+    }
+
     public function testCreatePayoutWithVaultTokenAndDummyNameForRefundsApp()
     {
         $this->ba->appAuthTest($this->config['applications.scrooge.secret']);

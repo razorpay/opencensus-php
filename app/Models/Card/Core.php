@@ -975,11 +975,18 @@ class Core extends Base\Core
 
         $vaultToken = $input[Entity::TOKEN];
 
+        $network = (isset($input[Entity::NETWORK]) === true) ? Network::getFullName($input[Entity::NETWORK]) : null;
+
+        $additionalInput = [
+            Card\Entity::NETWORK       => $network,
+            Card\Entity::INTERNATIONAL => $input[Entity::INTERNATIONAL] ?? null
+        ];
+
         try
         {
             $cardVault = (new Card\CardVault);
 
-            $cardNumber = $cardVault->getCardNumber($vaultToken);
+            $cardNumber = $cardVault->getCardNumber($vaultToken, $additionalInput);
         }
         catch (\Throwable $e)
         {
@@ -999,8 +1006,10 @@ class Core extends Base\Core
         //Add card number
         $input[Entity::NUMBER] = $cardNumber;
 
-        //Unset vault token as we have fetched card number
+        //Unset vault token, network and international as we have fetched card number
         unset($input[Entity::TOKEN]);
+        unset($input[Entity::INTERNATIONAL]);
+        unset($input[Entity::NETWORK]);
 
         //fetch other card details like expiry month/year etc. from vault token.
         $card = $this->repo->card->fetchLatestCardWithVaultTokenOnly($vaultToken);
