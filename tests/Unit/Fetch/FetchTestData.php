@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Str;
 use RZP\Http\BasicAuth\Type;
 use \RZP\Constants\Entity as E;
 
@@ -809,6 +810,13 @@ return [
     E::PAYOUTS_BATCH => [],
 
     E::CREDIT_TRANSFER => [],
+
+    E::CHECKOUT_ORDER => [
+        'checkout_id' => Str::random(14),
+        'invoice_id' => Str::random(14),
+        'merchant_id' => Str::random(14),
+        'order_id' => Str::random(14),
+    ],
 
     E::TRUSTED_BADGE => [],
 

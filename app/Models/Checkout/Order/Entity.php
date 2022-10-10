@@ -75,6 +75,7 @@ class Entity extends PublicEntity
     public const NAME = 'name';
     public const NOTES = 'notes';
     public const OFFER_ID = 'offer_id';
+    public const PAYABLE_AMOUNT = 'payable_amount';
     public const PAYMENT_LINK_ID = 'payment_link_id';
     public const RECEIVER_TYPE = 'receiver_type';
     public const SIGNATURE = 'signature';
@@ -256,6 +257,26 @@ class Entity extends PublicEntity
             self::EMAIL     => $this->email,
             self::CONTACT   => $this->contact,
             self::META_DATA => $this->meta_data,
+        ]);
+    }
+
+    public function toArrayAdmin(): array
+    {
+        $data = parent::toArrayAdmin();
+
+        $metaData = $this->getAttribute(self::META_DATA);
+
+        // This removes unnecessary meta data like user agent, env, flow, library etc.
+        // which is not required on admin dashboard.
+        unset($metaData['_']);
+
+        return array_merge($data, [
+            self::PAYABLE_AMOUNT => $this->getFinalAmount(),
+            self::MERCHANT_ID    => $this->merchant_id,
+            self::CONTACT        => $this->contact,
+            self::EMAIL          => $this->email,
+            self::RECEIVER_TYPE  => $this->getReceiverType(),
+            self::META_DATA      => json_encode($metaData),
         ]);
     }
 

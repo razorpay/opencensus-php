@@ -4,6 +4,9 @@ namespace RZP\Constants;
 
 use RZP\Base\Fetch;
 use RZP\Models\Admin\EntityRoleScope;
+use RZP\Models\Checkout\Order\CloseReason as CheckoutOrderCloseReason;
+use RZP\Models\Checkout\Order\Entity as CheckoutOrder;
+use RZP\Models\Checkout\Order\Status as CheckoutOrderStatus;
 use RZP\Models\Payout;
 use RZP\Models\Dispute;
 use RZP\Models\External;
@@ -3646,6 +3649,43 @@ class AdminFetch
                     Fetch::LABEL  => 'Coupon Code',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ]
+            ],
+
+            Entity::CHECKOUT_ORDER => [
+                CheckoutOrder::CHECKOUT_ID => [
+                    Fetch::LABEL  => 'Checkout Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                CheckoutOrder::INVOICE_ID => [
+                    Fetch::LABEL  => 'Invoice Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                CheckoutOrder::MERCHANT_ID => [
+                    Fetch::LABEL  => 'Merchant Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                CheckoutOrder::ORDER_ID => [
+                    Fetch::LABEL  => 'Order Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                CheckoutOrder::CONTACT => [
+                    Fetch::LABEL  => 'Contact',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                CheckoutOrder::EMAIL => [
+                    Fetch::LABEL  => 'Email',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                CheckoutOrder::STATUS => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => array_keys(CheckoutOrderStatus::STATUSES),
+                ],
+                CheckoutOrder::CLOSE_REASON => [
+                    Fetch::LABEL  => 'Close Reason',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => array_keys(CheckoutOrderCloseReason::REASONS),
+                ],
             ],
 
             Entity::TRUSTED_BADGE => [
