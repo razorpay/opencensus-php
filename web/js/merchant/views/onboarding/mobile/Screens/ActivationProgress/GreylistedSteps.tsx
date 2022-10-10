@@ -6,7 +6,7 @@ import OnboardingStepCard from 'merchant/views/onboarding/mobile/OnboardingStepC
 import { useActivationFormState } from 'merchant/views/onboarding/mobile/context/store';
 import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
 import useConfigDetails from 'merchant/views/onboarding/mobile/hooks/useConfigDetails';
-import { checkIfDedupe } from 'merchant/views/onboarding/mobile/services/utils';
+import { checkIfDedupe, consentPayload } from 'merchant/views/onboarding/mobile/services/utils';
 import { analyticsTrack } from 'common/services/tracking/segment';
 import { ActivationModal, ModalTypeT } from 'merchant/views/onboarding/mobile/ActivationModals';
 import { useApp } from 'common/context/App';
@@ -95,7 +95,13 @@ const GreylistedSteps: React.FC<
     const payload = isInstantActivationEnabled
       ? { activation_form_milestone: 'L2' }
       : { submit: 1 };
-    postData(payload).then((res) => {
+
+    const payloadData = {
+      ...payload,
+      ...consentPayload,
+    };
+
+    postData(payloadData).then((res) => {
       if (res) {
         const dedupeStatus = checkIfDedupe({ ...res, isInstantActivationEnabled });
         if (res.submitted && dedupeStatus === 'blocked') {

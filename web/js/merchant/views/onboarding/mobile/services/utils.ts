@@ -566,3 +566,21 @@ export const getAadhaarErrorMessage = (verificationErrorCode: string): string =>
       return '';
   }
 };
+
+export const consentPayload = {
+  consent: true,
+  documents_detail: [
+    {
+      type: 'Privacy Policy',
+      url: 'https://razorpay.com/privacy/',
+    },
+    {
+      type: 'Service Agreement',
+      url: 'https://razorpay.com/agreement/',
+    },
+    {
+      type: 'Terms & Conditions',
+      url: 'https://razorpay.com/terms/',
+    },
+  ],
+};

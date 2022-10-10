@@ -17,6 +17,7 @@ import {
   hasSelectedBlacklistCategory,
   isUnregisteredBusiness,
   checkIfDedupe,
+  consentPayload,
 } from 'merchant/views/onboarding/mobile/services/utils';
 import { Tabs, Tab } from 'common/components/Tabs';
 import { isVisible, useActivationFormState } from 'merchant/views/onboarding/mobile/context/store';
@@ -388,7 +389,13 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     const payload = isInstantActivationEnabled
       ? { activation_form_milestone: 'L2' }
       : { submit: 1 };
-    postData(payload)
+
+    const payloadData = {
+      ...payload,
+      ...consentPayload,
+    };
+
+    postData(payloadData)
       .then((res) => {
         setIsApiCalling(false);
         if (res) {

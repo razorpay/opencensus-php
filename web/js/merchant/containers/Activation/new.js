@@ -286,6 +286,28 @@ export default class ActivationContainer extends React.Component {
         },
       });
 
+      let payload = {};
+
+      if (isL1Done === 'L1') {
+        payload = {
+          consent: true,
+          documents_detail: [
+            {
+              type: 'Privacy Policy',
+              url: 'https://razorpay.com/privacy/',
+            },
+            {
+              type: 'Service Agreement',
+              url: 'https://razorpay.com/agreement/',
+            },
+            {
+              type: 'Terms & Conditions',
+              url: 'https://razorpay.com/terms/',
+            },
+          ],
+        };
+      }
+
       return merchantFetch({
         url: 'merchant/activation',
         method: 'post',
@@ -297,6 +319,7 @@ export default class ActivationContainer extends React.Component {
             user.activation_form_milestone === 'L2'
               ? 'L2'
               : 'L1',
+          ...payload,
           ...data,
         },
         accountId: accountId || submerchantId,

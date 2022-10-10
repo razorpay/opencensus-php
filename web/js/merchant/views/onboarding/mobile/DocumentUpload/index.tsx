@@ -1125,14 +1125,31 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
                 </Text>
               )}
             <Text size="xsmall" align="center">
-              By submitting these details you agree to our{' '}
+              By submitting these details you agree to our
               <Link
                 href="https://razorpay.com/terms/"
                 target="_blank"
                 size="xsmall"
                 rel="noreferrer noopener"
               >
-                terms and conditions
+                terms and conditions,
+              </Link>
+              <Link
+                href="https://razorpay.com/privacy/"
+                target="_blank"
+                size="xsmall"
+                rel="noreferrer noopener"
+              >
+                privacy policy,
+              </Link>
+              and
+              <Link
+                href="https://razorpay.com/agreement/"
+                target="_blank"
+                size="xsmall"
+                rel="noreferrer noopener"
+              >
+                service agreement.
               </Link>
             </Text>
           </Form>
