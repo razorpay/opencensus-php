@@ -2689,7 +2689,7 @@ class Route
 
         // Pincode Service
         'pincode_get'                              => ['get',      'pincodes/{id}',                                  'PincodeSearchController@get'                                       ],
-        '1cc_pincode_get'                          => ['get',      '1cc/pincodes/{id}',                              'PincodeSearchController@get'                                       ],
+        '1cc_pincode_get'                          => ['get',      '1cc/pincodes/{id}',                              'PincodeSearchController@getFor1cc'                                 ],
         '1cc_country_pincode_get'                  => ['get',      'locations/country/{country}/pincode/{pincode}',  'PincodeSearchController@getByCountry'                              ],
         '1cc_location_autosuggest'                 => ['get',      'locations/autosuggest',                          'LocationController@getAddressSuggestions'                          ],
         'internal_pincode_get'                     => ['get',      'internal/pincodes/{id}',                         'PincodeSearchController@get'                                       ],

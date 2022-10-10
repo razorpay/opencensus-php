@@ -5,6 +5,8 @@ namespace RZP\Http\Controllers;
 use ApiResponse;
 use Request;
 use RZP\Models\Location;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BaseException;
 use RZP\Models\Pincode\ZipcodeDirectory\Service;
 use RZP\Services\LocationService;
 
@@ -38,7 +40,23 @@ class LocationController extends Controller
 
     public function getAddressSuggestions()
     {
-        return (new LocationService($this->app))->getAddressSuggestions($this->app['request']->query->all());
+        try
+        {
+            return (new LocationService($this->app))->getAddressSuggestions($this->app['request']->query->all());
+        }
+        catch (\Throwable $ex)
+        {
+            if (($ex instanceof BaseException) === true)
+            {
+                switch ($ex->getError()->getInternalErrorCode())
+                {
+                    case ErrorCode::SERVER_ERROR:
+                        $data = $ex->getError()->toPublicArray(true);
+                        return ApiResponse::json($data, 503);
+                }
+            }
+            throw $ex;
+        }
     }
 
     public function add(): array
