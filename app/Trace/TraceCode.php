@@ -2607,6 +2607,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SHIELD_WORKFLOW_REQUEST_SKIPPED                       = 'SHIELD_WORKFLOW_REQUEST_SKIPPED';
     const EXECUTING_SHIELD_WORKFLOW_REQUEST                     = 'EXECUTING_SHIELD_WORKFLOW_REQUEST';
     const SHIELD_WORKFLOW_REQUEST_EXECUTED                      = 'SHIELD_WORKFLOW_REQUEST_EXECUTED';
+    const SHIELD_WORKFLOW_ENTITY_ID                             = 'SHIELD_WORKFLOW_ENTITY_ID';
     const FRAUD_DETECTION_STARTED                               = 'FRAUD_DETECTION_STARTED';
     const FRAUD_DETECTION_DONE                                  = 'FRAUD_DETECTION_DONE';
     const FRAUD_DETECTION_FAILED                                = 'FRAUD_DETECTION_FAILED';

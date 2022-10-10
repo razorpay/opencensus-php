@@ -164,8 +164,19 @@ class ShieldController extends Controller
         // adding additonal info in diff payload
         $payload['_operation_params'] = Request::route()->parameters();
 
+        $externalEntityId = '';
+
+        if (array_key_exists('merchant_id', $existingPayload) === true)
+        {
+            $externalEntityId = $existingPayload['merchant_id'];
+        }
+        else if (array_key_exists('merchant_id', $payload) === true)
+        {
+            $externalEntityId = $payload['merchant_id'];
+        }
+
         $this->app['workflow']
-            ->setEntityAndId(self::EXTERNAL_SHIELD_ENTITY, $this->getExternalEntityId($routeName))
+            ->setEntityAndId(self::EXTERNAL_SHIELD_ENTITY, $this->getExternalEntityId($routeName, $externalEntityId))
             ->handle($existingPayload, $payload);
 
         $this->app['trace']->info(TraceCode::SHIELD_WORKFLOW_REQUEST_SKIPPED, [
@@ -225,31 +236,34 @@ class ShieldController extends Controller
         return [$requestUri, $method, $payload];
     }
 
-    protected function getExternalEntityId($routeName)
+    protected function getExternalEntityId($routeName,  $externalEntityId)
     {
-        $externalEntityId = '';
-
         switch ($routeName)
         {
             case self::RULES_UPDATE_ROUTE:
             case self::RISK_THRESHOLD_CONFIG_UPDATE_ROUTE:
             case self::MERCHANT_RISK_THRESHOLD_UPDATE_ROUTE:
+            if ($externalEntityId === '') {
                 $ruleIdentifiers = Request::route()->parameters();
 
-                array_walk($ruleIdentifiers, function(&$value, $key)
-                {
+                array_walk($ruleIdentifiers, function (&$value, $key) {
                     $value = $key . '=' . $value;
                 });
 
                 $externalEntityId = implode('#', $ruleIdentifiers);
-
+            }
                 break;
 
             default:
-                $externalEntityId = substr($this->app['request']->getId(), 0, 12);
-
+                if ($externalEntityId === '') {
+                    $externalEntityId = substr($this->app['request']->getId(), 0, 12);
+                }
                 break;
         }
+
+        $this->app['trace']->info(TraceCode::SHIELD_WORKFLOW_ENTITY_ID, [
+            'merchant_id' => $externalEntityId,
+        ]);
 
         return $externalEntityId;
     }
