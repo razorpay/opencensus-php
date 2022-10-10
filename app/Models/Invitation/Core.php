@@ -14,6 +14,7 @@ use Psr\Http\Message\RequestInterface;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Http\Request\Requests;
+use RZP\Mail\Base\Constants;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Feature;
@@ -482,10 +483,12 @@ class Core extends Base\Core
         {
             $merchantIds = $this->repo->feature->findMerchantIdsHavingFeatures([Feature\Constants::RBL_BANK_LMS_DASHBOARD]);
 
+            $isAnExistingUserOnX = $this->isExistingUserOnX($allMerchantsForInvitedUser);
+
             if (empty($merchantIds) === false && $this->merchant->getId() === $merchantIds[0])
-                $inviteMailer = new BankLmsInvite($invitation->getId(), $senderName, $invitedUserExists, $allMerchantsForInvitedUser, $invitation->getRole());
+                $inviteMailer = new BankLmsInvite($invitation->getId(), $senderName, $invitedUserExists, $isAnExistingUserOnX, $invitation->getRole());
             else
-                $inviteMailer = new RazorpayXInvitationMail($invitation->getId(), $senderName, $invitedUserExists, $allMerchantsForInvitedUser, $invitation->getRole());
+                $inviteMailer = new RazorpayXInvitationMail($invitation->getId(), $senderName, $invitedUserExists, $isAnExistingUserOnX, $invitation->getRole());
 
             Mail::queue($inviteMailer);
         }
@@ -720,5 +723,22 @@ class Core extends Base\Core
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
             $this->merchant, $segmentProperties, $segmentEventName
         );
+    }
+    protected function isExistingUserOnX($allMerchantsForInvitedUser)
+    {
+        if (empty($allMerchantsForInvitedUser) === true)
+        {
+            return false;
+        }
+
+        foreach ($allMerchantsForInvitedUser as $merchantUserMap)
+        {
+            if (optional($merchantUserMap->pivot)->product === Constants::BANKING)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

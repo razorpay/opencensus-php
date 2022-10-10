@@ -29,11 +29,11 @@ class BankLmsInvite extends Mailable
 
     protected $invitedUserExists;
 
-    protected $allMerchantsForInvitedUser;
+    protected $isAnExistingUserOnX;
 
     protected $role;
 
-    public function __construct($invitationId, $senderName, bool $invitedUserExists, $allMerchantsForInvitedUser = null, $role = null)
+    public function __construct($invitationId, $senderName, bool $invitedUserExists, bool $isAnExistingUserOnX, $role = null)
     {
         parent::__construct();
 
@@ -47,7 +47,7 @@ class BankLmsInvite extends Mailable
 
         $this->invitedUserExists = $invitedUserExists;
 
-        $this->allMerchantsForInvitedUser = $allMerchantsForInvitedUser;
+        $this->isAnExistingUserOnX = $isAnExistingUserOnX;
 
         $this->role = $role;
     }

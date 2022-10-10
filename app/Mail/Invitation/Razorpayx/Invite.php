@@ -36,11 +36,11 @@ class Invite extends Mailable
 
     protected $invitedUserExists;
 
-    protected $allMerchantsForInvitedUser;
+    protected $isAnExistingUserOnX;
 
     protected $role;
 
-    public function __construct($invitationId, $senderName, bool $invitedUserExists, $allMerchantsForInvitedUser = null, $role = null)
+    public function __construct($invitationId, $senderName, bool $invitedUserExists, bool $isAnExistingUserOnX, $role = null)
     {
         parent::__construct();
 
@@ -54,7 +54,7 @@ class Invite extends Mailable
 
         $this->invitedUserExists = $invitedUserExists;
 
-        $this->allMerchantsForInvitedUser = $allMerchantsForInvitedUser;
+        $this->isAnExistingUserOnX = $isAnExistingUserOnX;
 
         $this->role = $role;
     }
@@ -154,7 +154,7 @@ class Invite extends Mailable
          */
         if (empty($this->role) === false && $this->role == Role::CHARTERED_ACCOUNTANT) {
 
-            if ($this->isAnExistingUserOnX($this->allMerchantsForInvitedUser))
+            if ($this->isAnExistingUserOnX)
             {
                 $this->view(self::CA_PORTAL_INVITE_EXISTING_X_USER_TEMPLATE_PATH);
             }
@@ -173,7 +173,7 @@ class Invite extends Mailable
          * Case where invited user is already registered on X
          * Invited user has a record in merchant_user table with product as banking
          */
-        else if ($this->isAnExistingUserOnX($this->allMerchantsForInvitedUser))
+        else if ($this->isAnExistingUserOnX)
         {
             $this->view(self::EXISTING_X_USER_TEMPLATE_PATH);
         }
@@ -197,21 +197,4 @@ class Invite extends Mailable
         return $this;
     }
 
-    protected function isAnExistingUserOnX($allMerchantsForInvitedUser)
-    {
-        if (empty($allMerchantsForInvitedUser) === true)
-        {
-            return false;
-        }
-
-        foreach ($allMerchantsForInvitedUser as $merchantUserMap)
-        {
-            if (optional($merchantUserMap->pivot)->product === Constants::BANKING)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
 }
