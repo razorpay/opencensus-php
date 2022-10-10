@@ -127,6 +127,11 @@ class Service extends BaseService
             }
         }
 
+        if (isset($input[NonVAQrCodeEntity::CUSTOMER_ID]))
+        {
+            $checkoutOrder->setPublicCustomerIdAttribute($input);
+        }
+
         return Tracer::inspan(
             ['name' => HyperTrace::QR_CODE_CREATE_FOR_CHECKOUT],
             static function () use ($input) {
