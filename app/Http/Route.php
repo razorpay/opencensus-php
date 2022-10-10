@@ -14183,7 +14183,13 @@ class Route
 
     protected static $skipCardMetaCallToVault = [
         'admin_fetch_entity_by_id',
-        'admin_fetch_entity_multiple'
+        'admin_fetch_entity_multiple',
+        'customer_fetch_token',
+        'customer_fetch_tokens',
+        'otp_verify',
+        'payment_timeout_new',
+        'merchant_checkout_preferences',
+        'payment_fetch_card_details'
     ];
 
     protected static $rearchRoutes = [
