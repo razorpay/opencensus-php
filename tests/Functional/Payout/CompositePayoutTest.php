@@ -381,142 +381,6 @@ class CompositePayoutTest extends TestCase
             'issuer'  => Issuer::YESB
         ]);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION    => 'on']);
-
-        $callable = function($route, $method, $input) {
-            $response = [
-                'error'   => '',
-                'success' => true,
-            ];
-
-            switch ($route)
-            {
-                case 'tokenize':
-                    $response['token']       = 'pay_44f3d176b38b4cd2a588f243e3ff7b20';
-                    $response['fingerprint'] = null;
-                    $response['scheme']      = '2';
-                    break;
-
-                case 'delete/token':
-                    self::assertEquals('pay_44f3d176b38b4cd2a588f243e3ff7b20', $input['token']);
-            }
-
-            return $response;
-        };
-
-        $this->mockCardVault($callable);
-
-        $this->app['rzp.mode'] = EnvMode::TEST;
-
-        $ftsMock = Mockery::mock('RZP\Services\FTS\FundTransfer', [$this->app])->makePartial();
-
-        $this->app->instance('fts_fund_transfer', $ftsMock);
-
-        $ftsMock->shouldReceive('shouldAllowTransfersViaFts')
-                ->andReturn([true, 'Dummy']);
-
-        $this->ba->privateAuth();
-
-        $response = $this->startTest();
-
-        $card = $this->getDbLastEntity('card');
-
-        $this->assertEquals('pay_44f3d176b38b4cd2a588f243e3ff7b20', $card['vault_token']);
-
-        return $response;
-    }
-
-    public function testCreateCompositePayoutForNonSavedCardFlowAndDeleteTokenAfterPayoutIsProcessed()
-    {
-        $response = $this->testCreateCompositePayoutForNonSavedCardFlow();
-
-        $this->fixtures->stripSign($response['id']);
-
-        $payoutId = $response['id'];
-
-        $this->ba->ftsAuth();
-
-        // Processed Webhook sent from FTS
-        $ftsWebhook = [
-            'bank_processed_time' => '',
-            'bank_account_type'   => 'NODAL',
-            'bank_status_code'    => 'SUCCESS',
-            'channel'             => 'ICICI',
-            'extra_info'          => [
-                'beneficiary_name' => 'Chirag',
-                'cms_ref_no'       => '7a452792bee81',
-                'internal_error'   => false,
-                'ponum'            => '',
-            ],
-            'failure_reason'      => '',
-            'fund_transfer_id'    => 327798418,
-            'gateway_error_code'  => '',
-            'gateway_ref_no'      => 'JKjdVokXZ2KMcP',
-            'mode'                => 'IMPS',
-            'narration'           => '256557209A0A',
-            'remarks'             => '',
-            'return_utr'          => '',
-            'source_account_id'   => 1,
-            'source_id'           => $payoutId,
-            'source_type'         => 'payout',
-            'status'              => 'PROCESSED',
-            'utr'                 => '231456121234458',
-            'status_details'      => null,
-        ];
-
-        $request = [
-            'method'  => 'POST',
-            'url'     => '/update_fts_fund_transfer',
-            'content' => $ftsWebhook,
-        ];
-
-        $app = App::getFacadeRoot();
-
-        $cardVault = Mockery::mock('RZP\Services\CardVault', [$app])->makePartial();
-
-        $this->app->instance('card.cardVault', $cardVault);
-
-        $mockedResponse = [
-            'error'   => '',
-            'success' => true,
-        ];
-
-        $cardVault->shouldReceive('deleteToken')
-                  ->andReturnUsing(function(string $vaultToken) use ($mockedResponse) {
-
-                      self::assertEquals('pay_44f3d176b38b4cd2a588f243e3ff7b20', $vaultToken);
-
-                      return $mockedResponse;
-                  });
-
-        $this->expectWebhookEvent('payout.processed');
-
-        $this->makeRequestAndGetContent($request);
-
-        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
-
-        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::PROCESSED);
-        $this->assertNotNull($updatedPayout[Payout\Entity::PROCESSED_AT]);
-    }
-
-    public function testCreateCompositePayoutForNonSavedCardFlowAndDeleteTokenAfterPayoutIsProcessedWithSaveCardMetaData()
-    {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
-                                                Feature\Constants::S2S,
-                                                Feature\Constants::ALLOW_NON_SAVED_CARDS,
-                                                Feature\Constants::VAULT_COMPLIANCE_CHECK]);
-
-        $this->fixtures->create('iin', [
-            'iin'     => 340169,
-            'network' => Network::$fullName[Network::MC],
-            'type'    => Type::CREDIT,
-            'issuer'  => Issuer::YESB
-        ]);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION                     => 'on',
-                                       RazorxTreatment::VAULT_BU_NAMESPACE_CARD_METADATA_VARIANT         => 'on',
-                                       RazorxTreatment::STORE_EMPTY_VALUE_FOR_NON_EXEMPTED_CARD_METADATA => 'on']);
-
         $callable = function($route, $method, $input) {
             $response = [
                 'error'   => '',
@@ -1441,9 +1305,87 @@ class CompositePayoutTest extends TestCase
 
     public function testUpdateCompositePayoutToNonSavedCardsStatusToProcessedManually()
     {
-        $this->testCreateCompositePayoutForNonSavedCardFlow();
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
+                                                Feature\Constants::S2S,
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS,
+                                                Feature\Constants::VAULT_COMPLIANCE_CHECK]);
 
-        $payout = $this->getDbLastEntity('payout');
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => Type::CREDIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $callable = function($route, $method, $input) {
+            $response = [
+                'error'   => '',
+                'success' => true,
+            ];
+
+            switch ($route)
+            {
+                case 'tokenize':
+                    $response['token']       = 'pay_44f3d176b38b4cd2a588f243e3ff7b20';
+                    $response['fingerprint'] = null;
+                    $response['scheme']      = '2';
+                    break;
+
+                case 'cards/metadata/fetch':
+                    $response['token']        = $input['token'];
+                    $response['iin']          = '411111';
+                    $response['expiry_month'] = '08';
+                    $response['expiry_year']  = '2025';
+                    $response['name']         = 'chirag';
+                    break;
+
+                case 'cards/metadata':
+                    self::assertArrayKeysExist($input, [
+                        Entity::TOKEN,
+                        Entity::NAME,
+                        Entity::EXPIRY_YEAR,
+                        Entity::EXPIRY_MONTH,
+                        Entity::IIN
+                    ]);
+
+                    self::assertEquals(5, count($input));
+                    break;
+
+                case 'delete/token':
+                    self::assertEquals('pay_44f3d176b38b4cd2a588f243e3ff7b20', $input['token']);
+
+                    break;
+            }
+
+            return $response;
+        };
+
+        $this->mockCardVault($callable);
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $ftsMock = Mockery::mock('RZP\Services\FTS\FundTransfer', [$this->app])->makePartial();
+
+        $this->app->instance('fts_fund_transfer', $ftsMock);
+
+        $ftsMock->shouldReceive('shouldAllowTransfersViaFts')
+                ->andReturn([true, 'Dummy']);
+
+        $this->ba->privateAuth();
+
+        $testData = &$this->testData['testCreateCompositePayoutForNonSavedCardFlow'];
+
+        $response = $this->startTest($testData);
+
+        $card = $this->getDbLastEntity('card');
+
+        $this->assertEquals('pay_44f3d176b38b4cd2a588f243e3ff7b20', $card['vault_token']);
+
+        $this->fixtures->stripSign($response['id']);
+
+        $payoutId = $response['id'];
+
+        $payout = $this->getDbEntity('payout',['id' => $payoutId]);
 
         $fta = $payout->fundTransferAttempts()->first();
 

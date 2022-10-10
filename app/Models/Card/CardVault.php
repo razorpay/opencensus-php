@@ -220,14 +220,6 @@ class CardVault extends Base\Core
                return [];
            }
 
-            $metaDataSaveConfig = $this->isCardMetaDataSaveConfigEnabled();
-
-            $this->trace->info(TraceCode::VAULT_TEMP_CARD_METADATA_CONFIG,
-                               [
-                                   'metadata_save_config'  => $metaDataSaveConfig,
-                                   'action'                      => 'save',
-                               ]);
-
             $expiryYear  = "";
             $expiryMonth = "";
 
@@ -256,11 +248,6 @@ class CardVault extends Base\Core
                 self::TOKEN        => $card->getVaultToken(),
             ];
 
-            if ($metaDataSaveConfig === false)
-            {
-                return $payload;
-            }
-
             $this->cardVault->saveCardMetaData($payload);
 
             // returning payload so that we don't have to call first time and we will have these details in memory
@@ -286,19 +273,6 @@ class CardVault extends Base\Core
             if (str_contains($card->getVaultToken(), self::TEMP_VAULT_TOKEN_PREFIX) === false)
             {
                 return [];
-            }
-
-            $metaDataFetchConfig = $this->isCardMetaDataFetchConfigEnabled();
-
-            $this->trace->info(TraceCode::VAULT_TEMP_CARD_METADATA_CONFIG,
-                               [
-                                   'metadata__fetch_config'      => $metaDataFetchConfig,
-                                   'action'                      => 'fetch',
-                               ]);
-
-            if ($metaDataFetchConfig === false)
-            {
-             return null;
             }
 
             $createdtAt = array_key_exists(CardEntity::CREATED_AT, $card->getAttributes()) ?
@@ -630,16 +604,5 @@ class CardVault extends Base\Core
         $input['token'] = $vaultToken;
 
         return $this->app['card.cardVault']->updateToken($input);
-    }
-
-
-    protected function isCardMetaDataFetchConfigEnabled(): bool
-    {
-        return (bool) Admin\ConfigKey::get(Admin\ConfigKey::CARD_METADATA_FETCH_ENABLED, true);
-    }
-
-    protected function isCardMetaDataSaveConfigEnabled(): bool
-    {
-        return (bool) Admin\ConfigKey::get(Admin\ConfigKey::CARD_METADATA_SAVE_ENABLED, true);
     }
 }

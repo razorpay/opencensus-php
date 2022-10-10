@@ -339,10 +339,6 @@ class ConfigKey
 
     const MCC_DEFAULT_MARKDOWN_PERCENTAGE = SELF::PREFIX . 'mcc_default_markdown_percentage';
 
-    const CARD_METADATA_FETCH_ENABLED = SELF::PREFIX . 'card_metadata_fetch_enabled';
-
-    const CARD_METADATA_SAVE_ENABLED = SELF::PREFIX . 'card_metadata_save_enabled';
-
     const SET_CARD_METADATA_NULL = SELF::PREFIX. 'set_card_metadata_null';
 
     const PUBLIC_KEYS = [
@@ -490,8 +486,6 @@ class ConfigKey
         self::PAYOUT_SERVICE_DATA_MIGRATION_BATCH_ATTEMPTS,
         self::ONDEMAND_SETTLEMENT_INTERNAL_MERCHANTS,
         self::MCC_DEFAULT_MARKDOWN_PERCENTAGE,
-        self::CARD_METADATA_FETCH_ENABLED,
-        self::CARD_METADATA_SAVE_ENABLED,
     ];
 
     const REDIS_CONFIG_MAP = [
