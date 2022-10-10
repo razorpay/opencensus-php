@@ -736,6 +736,9 @@ class MerchantDetailTest extends OAuthTestCase
         $this->fixtures->create('stakeholder', ['updated_at'=> 1,'merchant_id' => "m2"]);
         $this->fixtures->create('merchant_email', ['updated_at'=> 2, 'merchant_id' => "m3"]);
         $this->fixtures->create('merchant_document', ['updated_at'=> 3, 'merchant_id' => "m4"]);
+        $this->fixtures->create('merchant_website', ['updated_at'=> 5, 'merchant_id' => "m9"]);
+        $this->fixtures->create('merchant_business_detail', ['updated_at'=> 5, 'merchant_id' => "m10"]);
+
         $merchantDetail = $this->fixtures->create('merchant_detail', ['updated_at'=> 1, 'business_category' => 'financial_services']);
         $merchant       = $merchantDetail->merchant;
         $merchantnew = $this->fixtures->create('merchant', ['updated_at'=> 1]);
@@ -745,26 +748,44 @@ class MerchantDetailTest extends OAuthTestCase
         $this->fixtures->create('stakeholder', ['updated_at'=> 2, 'merchant_id' => "m3"]);
         $this->fixtures->create('merchant_email', ['updated_at'=> 3, 'merchant_id' => "m4"]);
         $this->fixtures->create('merchant_document', ['updated_at'=> 4, 'merchant_id' => "m2"]);
+        $this->fixtures->create('merchant_website', ['updated_at'=> 3, 'merchant_id' => "m9"]);
+        $this->fixtures->create('merchant_business_detail', ['updated_at'=> 4, 'merchant_id' => "m10"]);
 
         //time out of range mids should not be considered
         $this->fixtures->create('stakeholder', ['updated_at'=> 0,'merchant_id' => "m78"]);
         $this->fixtures->create('merchant_email', ['updated_at'=> 6, 'merchant_id' => "m54"]);
         $this->fixtures->create('merchant_document', ['updated_at'=> 7, 'merchant_id' => "m7"]);
+        $this->fixtures->create('merchant_website', ['updated_at'=> 8, 'merchant_id' => "m92"]);
+        $this->fixtures->create('merchant_business_detail', ['updated_at'=> 8, 'merchant_id' => "m410"]);
 
         // test fetch updated accounts
         $testData = $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/account_service/updated_accounts?from=1&duration=4';
-        $testData['response']['content']['count'] = 5;
-        array_push($testData['response']['content']['account_ids'], $merchant->getId(), "m3",  "m4" ,$merchantnew->getId(),"m2");
+        $testData['response']['content']['count'] = 7;
+        array_push($testData['response']['content']['account_ids'],
+            $merchant->getId(), "m3", "m4" ,$merchantnew->getId(),"m2", "m9", "m10");
 
         $this->ba->accountServiceAuth();
         $this->runRequestResponseFlow($testData);
 
-        // test fetch updated accounts with limit
+        // test fetch updated accounts with limit 2
         $testData = $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/account_service/updated_accounts?from=1&duration=4&limit=2';
         $testData['response']['content']['count'] = 2;
         array_push($testData['response']['content']['account_ids'], $merchant->getId(), "m3");
+
+        // test fetch updated accounts with limit 1
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/account_service/updated_accounts?from=1&duration=4&limit=1';
+        $testData['response']['content']['count'] = 1;
+        array_push($testData['response']['content']['account_ids'], $merchant->getId());
+
+        // test fetch updated accounts with limit 4
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/account_service/updated_accounts?from=1&duration=4&limit=4';
+        $testData['response']['content']['count'] = 4;
+        array_push($testData['response']['content']['account_ids'],
+            $merchant->getId(), "m3", "m4" ,$merchantnew->getId());
 
         $this->ba->accountServiceAuth();
         $this->runRequestResponseFlow($testData);

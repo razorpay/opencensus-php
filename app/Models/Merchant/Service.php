@@ -8739,36 +8739,7 @@ class Service extends Base\Service
         $fromTimestamp = intval($input['from']);
         $toTimestamp = $fromTimestamp + intval($input['duration']);
 
-
-        // get Merchants whose email was updated between the query range
-        $merchantWithEmailUpdates = $this->repo->merchant_email
-                                    ->getEmailsUpdatedBetween($fromTimestamp, $toTimestamp)
-                                    ->pluck('merchant_id')->toArray();
-
-        // get Merchants whose details were updated between the query range
-        $merchantWithDetailsUpdates = $this->repo->merchant_detail
-                ->getIfUpdatedBetween($fromTimestamp, $toTimestamp)
-                ->pluck('merchant_id')->toArray();
-
-        // get Merchants which were updated between the query range
-        $merchantsUpdated = $this->repo->merchant
-            ->getIfUpdatedBetween($fromTimestamp, $toTimestamp)
-            ->pluck('id')->toArray();
-
-        // get Merchants whose documents were updated between the query range
-        $merchantsWithDocumentsUpdates = $this->repo->merchant_document
-            ->getIfUpdatedBetween($fromTimestamp, $toTimestamp)
-            ->pluck('merchant_id')->toArray();
-
-        // get Merchants whose stakeholders were updated between the query range
-        $merchantsWithStakeholdersUpdates = $this->repo->stakeholder
-            ->getIfUpdatedBetween($fromTimestamp, $toTimestamp)
-            ->pluck('merchant_id')->toArray();
-
-        $updatedMerchantIds = array_merge($merchantWithDetailsUpdates, $merchantWithEmailUpdates,
-            $merchantsUpdated, $merchantsWithDocumentsUpdates, $merchantsWithStakeholdersUpdates);
-
-        $uniqueUpdatedMerchantIds = array_values(array_unique($updatedMerchantIds));
+        $uniqueUpdatedMerchantIds = $this->getUpdatedMerchantsInTimerange($fromTimestamp, $toTimestamp);
 
         if(isset($input['limit'])) {
             $uniqueUpdatedMerchantIds = array_slice($uniqueUpdatedMerchantIds , 0, intval($input['limit']));
@@ -8785,6 +8756,58 @@ class Service extends Base\Service
         $this->trace->debug(TraceCode::ASV_FETCH_UPDATED_ACCOUNT_IDS_RESPONSE, $response);
 
         return $response;
+    }
+
+    /**
+     * @throws Exception\ServerErrorException
+     */
+    public function getUpdatedMerchantsInTimerange(int $fromTimestamp, int $toTimestamp): array
+    {
+        // get Merchants whose email was updated between the query range
+        $merchantWithEmailUpdates = $this->repo->merchant_email
+            ->getEmailsUpdatedBetween($fromTimestamp, $toTimestamp)
+            ->pluck('merchant_id')->toArray();
+
+        // get Merchants whose details were updated between the query range
+        $merchantWithDetailsUpdates = $this->repo->merchant_detail
+            ->getIfUpdatedBetween($fromTimestamp, $toTimestamp)
+            ->pluck('merchant_id')->toArray();
+
+        // get Merchants which were updated between the query range
+        $merchantsUpdated = $this->repo->merchant
+            ->getIfUpdatedBetween($fromTimestamp, $toTimestamp)
+            ->pluck('id')->toArray();
+
+        // get Merchants whose documents were updated between the query range
+        $merchantsWithDocumentsUpdates = $this->repo->merchant_document
+            ->getIfUpdatedBetween($fromTimestamp, $toTimestamp)
+            ->pluck('merchant_id')->toArray();
+
+        // get Merchants whose stakeholders were updated between the query range
+        $merchantsWithStakeholdersUpdates = $this->repo->stakeholder
+            ->getIfUpdatedBetween($fromTimestamp, $toTimestamp)
+            ->pluck('merchant_id')->toArray();
+
+        // get Merchants whose website details were updated between the query range
+        $merchantsWithWebsiteUpdates = $this->repo->merchant_website
+            ->getIfUpdatedBetween($fromTimestamp, $toTimestamp)
+            ->pluck('merchant_id')->toArray();
+
+        // get Merchants whose business details were updated between the query range
+        $merchantsWithBusinessUpdates = $this->repo->merchant_business_detail
+            ->getIfUpdatedBetween($fromTimestamp, $toTimestamp)
+            ->pluck('merchant_id')->toArray();
+
+        $updatedMerchantIds = array_merge(
+            $merchantWithDetailsUpdates,
+            $merchantWithEmailUpdates,
+            $merchantsUpdated,
+            $merchantsWithDocumentsUpdates,
+            $merchantsWithStakeholdersUpdates,
+            $merchantsWithWebsiteUpdates,
+            $merchantsWithBusinessUpdates);
+
+        return array_values(array_unique($updatedMerchantIds));
     }
 
     public function getMerchantDetailsForAccountService(string $accountId): array
