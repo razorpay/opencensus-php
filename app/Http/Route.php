@@ -11382,6 +11382,7 @@ class Route
             'fetch_merchant_notification_config',
             'fetch_merchant_notification_config_admin',
             'fetch_merchant_products',
+            'fetch_merchant_sr',
             'fetch_offline_device_multiple',
             'fetch_order_line_items',
             'fetch_partner_intent',
