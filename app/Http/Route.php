@@ -3844,7 +3844,7 @@ class Route
         '1cc_shopify_complete_preflight'            => ['options',    '1cc/shopify/complete',                                  'OneClickCheckoutController@allowCors'                  ],
         '1cc_shopify_add_checkout_url'              => ['post',       '1cc/shopify/checkout/url',                              'OneClickCheckoutController@shopifyUpdateCheckoutUrl'                ],
         '1cc_shopify_add_checkout_url_preflight'    => ['options',    '1cc/shopify/checkout/url',                              'OneClickCheckoutController@allowCors'                  ],
-        '1cc_shopify_checkout_options'              => ['get',        '1cc/shopify/checkout_options',                          'OneClickCheckoutController@shopifyGetCheckoutOptions'                ],
+        '1cc_shopify_checkout_options'              => ['get',        '1cc/shopify/checkout_options',                          'OneClickCheckoutController@getCheckoutOptions'                ],
         '1cc_shopify_checkout_options_preflight'    => ['options',    '1cc/shopify/checkout_options',                          'OneClickCheckoutController@allowCors'                  ],
         '1cc_shopify_oauth_redirect'                => ['get',        '1cc/shopify/oauth/redirect',                            'OneClickCheckoutController@shopifyOAuthRedirect'                ],
         '1cc_shopify_oauth_callback'                => ['get',        '1cc/shopify/oauth/callback',                            'OneClickCheckoutController@shopifyOAuthRedirect'                ],

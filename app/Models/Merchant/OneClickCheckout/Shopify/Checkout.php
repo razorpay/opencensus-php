@@ -3,11 +3,12 @@
 namespace RZP\Models\Merchant\OneClickCheckout\Shopify;
 
 use App;
-use RZP\Models\Merchant\Metric;
 use Throwable;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Metric;
 use RZP\Models\Order\Service as OrderService;
 use RZP\Models\Merchant\OneClickCheckout;
 use RZP\Models\Merchant\OneClickCheckout\AuthConfig;
@@ -17,13 +18,137 @@ class Checkout extends Base\Core
 {
     const GID_CHECKOUT = 'gid://shopify/Checkout/';
 
+    protected $errors;
     protected $monitoring;
 
     public function __construct()
     {
         parent::__construct();
-
         $this->monitoring = new Monitoring();
+        $this->errors = new Errors();
+    }
+
+    public function validateCreateCheckout(array $input): void
+    {
+        if (empty($input['cart']) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The cart field is required.'
+            );
+        }
+        else if (empty($input['cart']['items']) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The cart cannot be empty.'
+            );
+        }
+        else if (empty($input['cart']['token']) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The cart token is required.'
+            );
+        }
+    }
+
+    // Creates a Shopify checkout using Storefront API.
+    public function placeShopifyCheckout(array $input): array
+    {
+        $start = millitime();
+
+        $cart = $input['cart'];
+
+        $client = $this->getShopifyClientByMerchant();
+
+        $mutation = (new Mutations)->getCreateCheckoutMutation();
+
+        $lineItems = (new Utils)->getLineItemsFromCart($cart);
+
+        $graphqlLineItems = (new Utils)->convertToGraphqlId($lineItems);
+
+        $body = ['query' => $mutation, 'variables' => ['input' => $graphqlLineItems]];
+
+        $this->monitoring->addTraceCount(Metric::CREATE_SHOPIFY_CHECKOUT_REQUEST_COUNT, []);
+
+        $requestStart = millitime();
+
+        $response = null;
+
+        try {
+            $response = json_decode($client->sendStorefrontRequest(json_encode($body)), true);
+        }
+        catch(\Exception $e)
+        {
+            $this->monitoring->addTraceCount(
+                Metric::CREATE_SHOPIFY_CHECKOUT_ERROR_COUNT,
+                ['error_type' => TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR]
+            );
+            $this->trace->error(
+                 TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
+                 [
+                     'type'     => 'error_while_calling_shopify_url',
+                     'response' => $e->getMessage(),
+                 ]
+            );
+            throw $e;
+        }
+
+        $this->monitoring->traceResponseTime(Metric::CREATE_SHOPIFY_CHECKOUT_CALL_TIME, $requestStart, []);
+
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_CREATE_CHECKOUT_RES,
+            [
+                'type' => 'place_shopify_checkout',
+                'body' => $body,
+                'response' => $response,
+                'time' => millitime() - $start
+            ]
+        );
+
+        if (empty($response['errors']) === false)
+        {
+            $this->trace->info(
+                 TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
+                 [
+                     'type'     => 'error_creating_checkout',
+                     'response' => $response,
+                 ]
+            );
+
+            $this->monitoring->addTraceCount(
+                Metric::CREATE_API_CHECKOUT_ERROR_COUNT,
+                ['error_type' => TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR]
+            );
+
+            throw new Exception\ServerErrorException(
+                'error_creating_checkout',
+                ErrorCode::SERVER_ERROR
+            );
+        }
+
+        $checkoutCreate = $response['data']['checkoutCreate'];
+        if (empty($checkoutCreate['checkoutUserErrors']) === false)
+        {
+            $checkoutError = $checkoutCreate['checkoutUserErrors'][0];
+            $this->throwIfVariantIsInvalid($checkoutError);
+            $this->trace->error(
+                 TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
+                 [
+                     'type'     => 'error_creating_checkout',
+                     'response' => $response,
+                 ]
+            );
+
+            $this->monitoring->addTraceCount(
+                Metric::CREATE_API_CHECKOUT_ERROR_COUNT,
+                ['error_type' => TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR]);
+
+            throw new Exception\ServerErrorException(
+                'error_creating_checkout',
+                ErrorCode::SERVER_ERROR
+            );
+        }
+
+        return $checkoutCreate['checkout'];
     }
 
     public function getCheckoutbyStorefrontId(string $checkoutId): array
@@ -165,9 +290,7 @@ class Checkout extends Base\Core
     public function updateCheckoutFromAdmin(array $input): array
     {
         $orderId = $input['order_id'];
-
-        $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
-
+        $order = (new RzpOrders)->findOrderByIdAndMerchant($orderId);
         $customerDetails = $this->getCustomerDetailsFromOrderMeta($order);
 
         if (empty($customerDetails) === true)
@@ -201,10 +324,7 @@ class Checkout extends Base\Core
         if ($newCheckoutId !== $checkoutId and $newCheckoutId !== '')
         {
             $newNotes = array_merge($order->getNotes()->toArray(), ['storefront_id' => $newCheckoutId]);
-
-            (new OrderService)->update(
-              $orderId,
-              ['notes' => $newNotes]);
+            (new RzpOrders)->updateOrderNotes($orderId, $newNotes);
         }
 
         return [];
@@ -295,12 +415,15 @@ class Checkout extends Base\Core
         }
         catch (\Exception $e)
         {
-            $this->monitoring->addTraceCount(Metric::UPDATE_CHECKOUT_DETAILS_ERROR_COUNT, ['error_type' => TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR]);
+            $this->monitoring->addTraceCount(
+                Metric::UPDATE_CHECKOUT_DETAILS_ERROR_COUNT,
+                ['error_type' => 'update_checkout']
+            );
 
             $this->trace->error(
                 TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
                 [
-                    'type'        => 'update_checkout',
+                    'type'        => 'update_checkout_failed',
                     'error'       => $e->getMessage(),
                     'checkout_id' => $token,
                 ]);
@@ -328,6 +451,16 @@ class Checkout extends Base\Core
 
     protected function getCheckoutIdFromOrder($order): string
     {
+        $notes = $order->getNotes();
+        if (empty($notes['storefront_id']) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                'Invalid Magic Order'
+            );
+        }
         return $order->toArrayPublic()['notes']['storefront_id'];
     }
 
@@ -353,7 +486,10 @@ class Checkout extends Base\Core
     protected function getShopifyClientByMerchant()
     {
         $creds = (new AuthConfig\Core)->getShopify1ccConfig($this->merchant->getId());
-
+        if (empty($creds) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR_MERCHANT_SHOPIFY_ACCOUNT_NOT_CONFIGURED);
+        }
         return new Client($creds);
     }
 
@@ -375,6 +511,8 @@ class Checkout extends Base\Core
         }
         catch (\Throwable $e)
         {
+            $this->monitoring->addTraceCount(Metric::ADD_MAGIC_URL_IN_CHECKOUT_ERROR_COUNT, ['error_type' => TraceCode::SHOPIFY_1CC_MAGIC_URL_UPDATE_ERROR]);
+
             $this->trace->error(
                 TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
                 [
@@ -413,23 +551,29 @@ class Checkout extends Base\Core
                 ]
             ]
         ];
-
-        $response = array();
-        try{
-            $this->monitoring->addTraceCount(Metric::ADD_MAGIC_URL_IN_CHECKOUT_REQUEST_COUNT, []);
-
-            $start = millitime();
-
-            $response = $client->sendStorefrontRequest(json_encode($graphqlQuery));
-
-            $this->monitoring->traceResponseTime(Metric::ADD_MAGIC_URL_IN_CHECKOUT_CALL_TIME, $start, []);
-
-        }
-        catch(\Exception $e)
-        {
-            $this->monitoring->addTraceCount(Metric::ADD_MAGIC_URL_IN_CHECKOUT_ERROR_COUNT, ['error_type' => TraceCode::SHOPIFY_1CC_MAGIC_URL_UPDATE_ERROR]);
-        }
+        $this->monitoring->addTraceCount(Metric::ADD_MAGIC_URL_IN_CHECKOUT_REQUEST_COUNT, []);
+        $start = millitime();
+        $response = $client->sendStorefrontRequest(json_encode($graphqlQuery));
+        $this->monitoring->traceResponseTime(Metric::ADD_MAGIC_URL_IN_CHECKOUT_CALL_TIME, $start, []);
         return $response;
     }
 
+    // Throws an error if the variant is invalid.
+    protected function throwIfVariantIsInvalid(array $checkoutError): void
+    {
+        if ($checkoutError['message'] === 'Variant is invalid')
+        {
+            $this->trace->error(TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
+                [
+                    'type'     => 'shopify_invalid_variant_error',
+                    'response' => $checkoutError
+                ]);
+            $this->monitoring->addTraceCount(
+                Metric::CREATE_API_CHECKOUT_ERROR_COUNT,
+                ['error_type' => TraceCode::SHOPIFY_INVALID_VARIANT_ERROR]
+            );
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR_MERCHANT_SHOPIFY_INVALID_VARIANTS_RECEIVED);
+        }
+    }
 }

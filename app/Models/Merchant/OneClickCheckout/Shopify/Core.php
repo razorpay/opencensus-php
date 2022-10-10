@@ -46,121 +46,6 @@ class Core extends Base\Core
         $this->cache = $this->app['cache'];
     }
 
-    public function placeShopifyCheckout(array $input): array
-    {
-        $start = millitime();
-
-        $cart = $input['cart'];
-
-        $client = $this->getShopifyClientByMerchant();
-
-        $mutation = (new Mutations)->getCreateCheckoutMutation();
-
-        $lineItems = (new Utils)->getLineItemsFromCart($cart);
-
-        $graphqlLineItems = (new Utils)->convertToGraphqlId($lineItems);
-
-        $body = ['query' => $mutation, 'variables' => ['input' => $graphqlLineItems]];
-
-        $this->monitoring->addTraceCount(Metric::CREATE_SHOPIFY_CHECKOUT_REQUEST_COUNT, []);
-
-        $requestStart = millitime();
-
-        $response = null;
-
-        try {
-            $response = json_decode($client->sendStorefrontRequest(json_encode($body)), true);
-        }
-        catch(\Exception $e)
-        {
-            $this->monitoring->addTraceCount(Metric::CREATE_SHOPIFY_CHECKOUT_ERROR_COUNT,['error_type' => TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR]);
-            $this->trace->error(
-                 TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
-                 [
-                     'type'     => 'error_while_calling_shopify_url',
-                     'response' => $e->getMessage(),
-                 ]
-            );
-            throw new Exception\ServerErrorException(
-                'error_while_placing_checkout',
-                ErrorCode::SERVER_ERROR
-            );
-        }
-
-        $this->monitoring->traceResponseTime(Metric::CREATE_SHOPIFY_CHECKOUT_CALL_TIME, $requestStart, []);
-
-        $this->trace->info(
-            TraceCode::SHOPIFY_1CC_CREATE_CHECKOUT_RES,
-            [
-                'type' => 'place_shopify_checkout',
-                'body' => $body,
-                'response' => $response,
-                'time' => millitime() - $start
-            ]
-        );
-
-        if (empty($response['errors']) === false)
-        {
-            $this->trace->info(
-                 TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
-                 [
-                     'type'     => 'error_creating_checkout',
-                     'response' => $response,
-                 ]
-            );
-
-            $this->monitoring->addTraceCount(Metric::CREATE_API_CHECKOUT_ERROR_COUNT, ['error_type' => TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR]);
-
-            throw new Exception\ServerErrorException(
-                'Error while calling URL',
-                ErrorCode::SERVER_ERROR
-            );
-        }
-
-        $checkoutCreate = $response['data']['checkoutCreate'];
-
-        if (empty($checkoutCreate['checkoutUserErrors']) === false)
-        {
-            $checkoutError = $checkoutCreate['checkoutUserErrors'][0];
-
-            if ($checkoutError['message'] === 'Variant is invalid')
-            {
-                $this->trace->error(TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
-                    [
-                        'type' => 'shopify_invalid_variant_error',
-                        'response' => $checkoutError
-                    ]);
-                $this->monitoring->addTraceCount(
-                    Metric::CREATE_API_CHECKOUT_ERROR_COUNT,
-                    ['error_type' => TraceCode::SHOPIFY_INVALID_VARIANT_ERROR]
-                );
-
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_ERROR,
-                    null,
-                    null,
-                    'INVALID_VARIANTS'
-                );
-            }
-            $this->trace->error(
-                 TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
-                 [
-                     'type'     => 'error_creating_checkout',
-                     'response' => $response,
-                 ]
-            );
-
-            $this->monitoring->addTraceCount(Metric::CREATE_API_CHECKOUT_ERROR_COUNT, ['error_type' => TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR]);
-
-            throw new Exception\ServerErrorException(
-                'error_creating_checkout',
-                ErrorCode::SERVER_ERROR
-            );
-        }
-
-        return $checkoutCreate['checkout'];
-    }
-
     public function setMetaFieldValue(string $key, string $value)
     {
         $client = $this->getShopifyClientByMerchant();
@@ -326,7 +211,10 @@ class Core extends Base\Core
     public function getShopifyClientByMerchant()
     {
         $creds = $this->getShopifyAuthByMerchant();
-
+        if (empty($creds) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR_MERCHANT_SHOPIFY_ACCOUNT_NOT_CONFIGURED);
+        }
         return new Client($creds);
     }
 
@@ -424,6 +312,8 @@ class Core extends Base\Core
                      ]
                 );
 
+                $this->monitoring->addTraceCount(Metric::FETCH_SHIPPING_INFO_ERROR_COUNT, ['error_type' => 'fetch_shipping_rates_failed']);
+
                 return [
                     'serviceable'  => false,
                     'cod'          => false,
@@ -468,7 +358,7 @@ class Core extends Base\Core
              ]
         );
 
-        $this->monitoring->addTraceCount(Metric::RETRY_LIMIT_EXCEEDED_RATES_ERROR_COUNT,['error_type'=>'retry_limit_exceeded_fetching_rates'] );
+        $this->monitoring->addTraceCount(Metric::FETCH_SHIPPING_INFO_ERROR_COUNT,['error_type'=>'retry_limit_exceeded_fetching_rates'] );
 
         return [
             'serviceable'  => false,
@@ -581,10 +471,6 @@ class Core extends Base\Core
         {
             $body['customer']['phone'] = null;
 
-            $retry = true;
-        }
-        else if (strpos($message, $errorBadGateway) !== false || strpos($message, $errorService) !== false)
-        {
             $retry = true;
         }
 
@@ -797,7 +683,7 @@ class Core extends Base\Core
         catch (\Exception $e)
         {
             $exceptionHandlerResponse = null;
-
+            // If rate limit is hit then do nothing
             if ($fromShopifyApi === true)
             {
                 $this->monitoring->addTraceCount(Metric::PLACE_SHOPIFY_ORDER_ERROR_COUNT, ['error_type' => 'DELEGATED_TO_SQS']);
@@ -1018,10 +904,10 @@ class Core extends Base\Core
 
         $body = $this->getTransactionBody($merchantOrderId, $payment);
 
+        $client = $this->getShopifyClientByMerchant();
+
         try
         {
-          $client = $this->getShopifyClientByMerchant();
-
           $this->monitoring->addTraceCount(Metric::UPDATE_SHOPIFY_TRANSACTION_REQUEST_COUNT, []);
 
           $updateRequestStart = millitime();

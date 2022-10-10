@@ -126,6 +126,10 @@ final class Metric
     const SCRIPT_DISCOUNT_FETCH_FAIL_COUNT            = 'script_discount_fetch_fail_count';
     const SCRIPT_DISCOUNT_FETCH_SUCCESS_COUNT         = 'script_discount_fetch_success_count';
 
+    const SHOPIFY_COUPON_FETCH_ERROR_COUNT              = 'shopify_coupon_fetch_error_count';
+    const SHOPIFY_UPDATE_EMAIL_ERROR_COUNT              = 'shopify_update_email_error_count';
+    const FETCH_SHIPPING_INFO_ERROR_COUNT               = 'fetch_shipping_info_error_count';
+
     const CREATE_SHOPIFY_CHECKOUT_REQUEST_COUNT         = 'create_shopify_checkout_request_count';
     const CREATE_SHOPIFY_CHECKOUT_ERROR_COUNT           = 'create_shopify_checkout_error_count';
     const CREATE_SHOPIFY_CHECKOUT_CALL_TIME             = 'create_shopify_checkout_call_time';
@@ -145,6 +149,8 @@ final class Metric
     const PLACE_SHOPIFY_ORDER_REQUEST_COUNT             = 'place_shopify_order_request_count';
     const PLACE_SHOPIFY_ORDER_ERROR_COUNT               = 'place_shopify_order_error_count';
     const PLACE_SHOPIFY_ORDER_CALL_TIME                 = 'place_shopify_order_call_time';
+    const SHOPIFY_1CC_PG_ROUTER_ERROR_COUNT             = 'shopify_1cc_pg_router_error_count';
+    const SHOPIFY_1CC_API_RATE_LIMIT                    = 'shopify_1cc_api_rate_limit';
 
     const UPDATE_SHOPIFY_TRANSACTION_REQUEST_COUNT      = 'update_shopify_transaction_request_count';
     const UPDATE_SHOPIFY_TRANSACTION_ERROR_COUNT        = 'update_shopify_transaction_error_count';
@@ -218,4 +224,9 @@ final class Metric
 
     const SHOPIFY_1CC_SQS_JOB_EXCEEDED_MAX_RETRY_COUNT       = 'shopify_1cc_sqs_job_exceeded_max_retry_count';
     const SHOPIFY_1CC_SQS_JOB_RETRY_COUNT                    = 'shopify_1cc_sqs_job_retry_count';
+
+    const SHOPIFY_1CC_APPLY_COUPON_ERROR_COUNT               = 'shopify_1cc_apply_coupon_error_count';
+    const SHOPIFY_1CC_APPLY_COUPON_FAILURE_COUNT             = 'shopify_1cc_apply_coupon_failure_count';
+    const SHOPIFY_1CC_UPDATE_EMAIL_FAILURE_COUNT             = 'shopify_1cc_update_email_failure_count';
+
 }

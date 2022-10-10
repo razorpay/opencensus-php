@@ -6,6 +6,7 @@ use App;
 use Throwable;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
+use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\OneClickCheckout;
 use RZP\Models\Merchant\OneClickCheckout\AuthConfig;
 
@@ -15,6 +16,15 @@ class Coupons extends Base\Core
     const COUPON_PLUGINS = [
         'Klaviyo',
     ];
+
+    protected $monitoring;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->monitoring = new Monitoring();
+    }
 
     public function getCoupons(array $input): array
     {
@@ -36,6 +46,8 @@ class Coupons extends Base\Core
                    'response' => $response,
                ]);
 
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_COUPON_FETCH_ERROR_COUNT, ['error_type' => 'invalid_checkout_id']);
+
             return ['promotions' => []];
         }
 
@@ -50,8 +62,8 @@ class Coupons extends Base\Core
         foreach ($discounts as $value)
         {
             $value = $value['node'];
-            $discountMinAmount = floatval($value['prerequisiteSubtotalRange']['greaterThanOrEqualTo']);
-            $minQuantityRange = floatval($value['prerequisiteQuantityRange']['greaterThanOrEqualTo']);
+            $discountMinAmount = isset($value['prerequisiteSubtotalRange']['greaterThanOrEqualTo']) ? floatval($value['prerequisiteSubtotalRange']['greaterThanOrEqualTo']) : 0;
+            $minQuantityRange = isset($value['prerequisiteQuantityRange']['greaterThanOrEqualTo']) ? floatval($value['prerequisiteQuantityRange']['greaterThanOrEqualTo']) : 0;
             $discountStartDate = $value['startsAt'];
             $dicountEndDate = $value['endsAt'];
 
@@ -132,7 +144,7 @@ class Coupons extends Base\Core
 
         if (empty($response['errors']) === false)
         {
-            return (new Errors)->getInvalidCouponApplicationResponse();
+            return $this->getInvalidCouponApplicationResponse($input, $response, 'apply_coupon_api_error');
         }
 
         $data = $response['data']['checkoutDiscountCodeApplyV2'];
@@ -141,14 +153,14 @@ class Coupons extends Base\Core
 
         if (empty($data['checkoutUserErrors']) === false || empty($checkout['discountApplications']['edges']) === true)
         {
-            return (new Errors)->getInvalidCouponApplicationResponse();
+            return $this->getInvalidCouponApplicationResponse($input, $response, 'apply_coupon_api_checkout_user_error');
         }
 
         $promotions = $checkout['discountApplications']['edges'][0]['node'];
 
         if ($promotions['applicable'] !== true)
         {
-            return (new Errors)->getInvalidCouponApplicationResponse();
+            return $this->getInvalidCouponApplicationResponse($input, $response, 'apply_coupon_not_applicable');
         }
 
         $value = (new Utils)->formatNumber($checkout['lineItemsSubtotalPrice']['amount'] - $checkout['subtotalPrice']) * 100;
@@ -225,11 +237,32 @@ class Coupons extends Base\Core
         }
     }
 
-    // Returns SHopify Client based on current set merchant
+    // Returns Shopify Client based on current set merchant
     protected function getShopifyClientByMerchant()
     {
         $creds = (new AuthConfig\Core)->getShopify1ccConfig($this->merchant->getId());
-
+        if (empty($creds) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR_MERCHANT_SHOPIFY_ACCOUNT_NOT_CONFIGURED);
+        }
         return new Client($creds);
+    }
+
+    /**
+     * @param $input
+     * @param $response
+     * @return array
+     */
+    protected function getInvalidCouponApplicationResponse($input, $response, $errorType): array
+    {
+        $this->monitoring->addTraceCount(Metric::SHOPIFY_1CC_APPLY_COUPON_FAILURE_COUNT, ['error_type' => $errorType]);
+
+        $this->trace->error(
+            TraceCode::SHOPIFY_1CC_APPLY_COUPON_ERROR,
+            [
+                'input'    => $input,
+                'response' => $response,
+            ]);
+        return (new Errors)->getInvalidCouponApplicationResponse();
     }
 }

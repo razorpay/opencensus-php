@@ -12,8 +12,17 @@ use RZP\Http\Request\Requests;
 use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\OneClickCheckout;
 
-class Shipping
+class Shipping extends Base\Core
 {
+    protected $monitoring;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->monitoring = new Monitoring();
+    }
+
     public function updateShippingAddress(string $checkoutId, array $address, Shopify\Client $client)
     {
         $mutation = (new Mutations)->getUpdateShippingAddressMutation();
@@ -66,6 +75,8 @@ class Shipping
 
             if (empty($body['errors']) === false || $body['data'] === null)
             {
+                $this->monitoring->addTraceCount(Metric::FETCH_SHIPPING_INFO_ERROR_COUNT, ['error_type' => TraceCode::SHOPIFY_1CC_API_SHIPPING_ERROR]);
+
                 throw new Exception\ServerErrorException(
                     'Fetching shipping rates from Shopify failed',
                     ErrorCode::SERVER_ERROR
@@ -88,6 +99,8 @@ class Shipping
             }
 
         } while ($currentTries < $maxTries);
+
+        $this->monitoring->addTraceCount(Metric::FETCH_SHIPPING_INFO_FAIL_COUNT, ['error_type' => TraceCode::SHOPIFY_1CC_API_SHIPPING_ERROR]);
 
         // No response received from Shopify servers
         return [

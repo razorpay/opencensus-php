@@ -1,0 +1,99 @@
+<?php
+
+namespace RZP\Models\Merchant\OneClickCheckout\Shopify;
+
+use App;
+use Throwable;
+use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Models\Order;
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Models\Merchant\Metric;
+
+class RzpOrders extends Base\Core
+{
+    protected $monitoring;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->monitoring = new Monitoring();
+    }
+
+    public function createOrder(array $input)
+    {
+        try
+        {
+            return (new Order\Service)->createOrder($input);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_PG_ROUTER_FAILED,
+                [
+                    'type'  => 'order_create',
+                    'error' => $e->getMessage(),
+                ]);
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_1CC_PG_ROUTER_ERROR_COUNT, ['error_type'  => 'order_create']);
+            throw $e;
+        }
+    }
+
+    public function findOrderByIdAndMerchant(string $orderId)
+    {
+        try
+        {
+            return $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_PG_ROUTER_FAILED,
+                [
+                    'type'  => 'order_fetch',
+                    'error' => $e->getMessage(),
+                ]);
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_1CC_PG_ROUTER_ERROR_COUNT, ['error_type'  => 'order_fetch']);
+            throw $e;
+        }
+    }
+
+    public function updateOrderNotes(string $orderId, array $notes): void
+    {
+        try
+        {
+            (new Order\Service)->update($orderId, $notes);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_PG_ROUTER_FAILED,
+                [
+                    'type'  => 'order_notes_update',
+                    'error' => $e->getMessage(),
+                ]);
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_1CC_PG_ROUTER_ERROR_COUNT, ['error_type'  => 'order_notes_update']);
+            throw $e;
+        }
+    }
+
+    public function updateReceipt(Order\Entity $order, string $receipt): void
+    {
+        try
+        {
+            (new Order\Core)->updateReceipt($order, $receipt);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_PG_ROUTER_FAILED,
+                [
+                    'type'  => 'order_notes_update',
+                    'error' => $e->getMessage(),
+                ]);
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_1CC_PG_ROUTER_ERROR_COUNT, ['error_type'  => 'order_receipt_update']);
+            throw $e;
+        }
+    }
+}

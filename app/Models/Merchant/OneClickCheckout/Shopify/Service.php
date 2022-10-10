@@ -146,13 +146,12 @@ class Service extends Base\Service
     public function shopifyCreateCheckout(array $input): array
     {
         $start = millitime();
+        (new Checkout)->validateCreateCheckout($input);
         $isScriptDiscountApplied = false;
         $cart = $input['cart'];
         $cartId = $cart['token'];
 
-        $checkout = (new Core)->placeShopifyCheckout(['cart' => $cart]);
-
-        $cartPrice = (int)(floatval($cart['total_price']));
+        $checkout = (new Checkout)->placeShopifyCheckout(['cart' => $cart]);
 
         $checkoutAmount = round(floatval($checkout['totalPriceV2']['amount']) * 100);
 
@@ -160,6 +159,8 @@ class Service extends Base\Service
 
         if ($isScriptDiscountApplied)
         {
+            $cartPrice = (int)(floatval($cart['total_price']));
+
             $scriptData = $this->getScriptData($cartId, $cartPrice, $checkout);
 
             $amount = $scriptData['amount'];
@@ -177,15 +178,17 @@ class Service extends Base\Service
             $orderNotes = (new Checkout)->getNotesForCheckout($checkout, $cartId);
         }
 
-        $order = (new Order\Service)->createOrder([
-            'receipt'          => (new OneClickCheckout\Constants)::SHOPIFY_TEMP_RECEIPT,
-            'amount'           => $amount,
-            'currency'         => 'INR',
-            'payment_capture'  => 1,
-            'line_items_total' => $amount,
-            'notes'            => $orderNotes,
-            'line_items'       => $lineItemsData,
-        ]);
+        $order = (new RzpOrders)->createOrder(
+            [
+                'receipt'          => (new OneClickCheckout\Constants)::SHOPIFY_TEMP_RECEIPT,
+                'amount'           => $amount,
+                'currency'         => 'INR',
+                'payment_capture'  => 1,
+                'line_items_total' => $amount,
+                'notes'            => $orderNotes,
+                'line_items'       => $lineItemsData,
+            ]
+        );
 
         $checkoutParams = [
             'order_id'              => $order->getPublicId(),
@@ -198,7 +201,10 @@ class Service extends Base\Service
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_CREATE_RZP_ORDER_RES,
-            ['order_id' => $order->getPublicId(), 'time' => millitime() - $start]);
+            [
+                'order_id' => $order->getPublicId(),
+                'time' => millitime() - $start,
+            ]);
 
         // form url encoded sends bool as string!
         if (isset($input['send_preferences']) === true and $input['send_preferences'] == 'true')
@@ -262,8 +268,8 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_GET_SCRIPT_DISCOUNT,
             [
-                'type'           => 'getCreateCheckoutAmount',
-                'cart'           => $cart,
+                'type'            => 'create_checkout_amount',
+                'cart'            => $cart,
                 'checkout_amount' => $checkoutAmount,
                 'cart_price'      => $cartPrice
             ]);
@@ -288,7 +294,7 @@ class Service extends Base\Service
             }
 
             // TODO: Reconsider this check, is it required or not
-            if(strval($amount) != strval($cartPrice))
+            if (strval($amount) != strval($cartPrice))
             {
                 $amount = $checkoutAmount;
             }
@@ -322,7 +328,7 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function shopifyGetCheckoutOptions(array $input): array
+    public function getCheckoutOptions(array $input): array
     {
         $isScriptDiscountApplied = false;
 
@@ -332,11 +338,11 @@ class Service extends Base\Service
 
         (new Core)->validateCheckoutOptionsRequest($input);
 
-        $order = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
+        $order = (new RzpOrders)->findOrderByIdAndMerchant($input['order_id']);
 
         $checkoutId = $order->getNotes()['storefront_id'];
 
-        $scriptDiscountAmount = $order->getNotes()['Script_Discount_Amount']?? 0;
+        $scriptDiscountAmount = $order->getNotes()['Script_Discount_Amount'] ?? 0;
 
         $checkout = (new Checkout)->getCheckoutFromAdminApi($checkoutId);
 
@@ -363,24 +369,9 @@ class Service extends Base\Service
 
     public function updateCheckout(array $input): array
     {
-        try
-        {
-            $response =  (new Checkout)->updateCheckoutFromAdmin($input);
-            return $response;
-        }
-        catch (\Throwable $e)
-        {
-            $this->monitoring->addTraceCount(Metric::ABANDON_CHECKOUT_ERROR_COUNT,['error_type'=>'update_checkout_failed']);
-
-            $this->trace->error(
-                TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
-                [
-                    'type'  => 'update_checkout_failed',
-                    'input' => $input,
-                    'error' => $e->getMessage()
-                ]);
-        }
-
+        (new Validator())->setStrictFalse()->validateInput(Validator::UPDATE_CHECKOUT, $input);
+        (new Checkout)->updateCheckoutFromAdmin($input);
+        // TODO: handle 400, 503 to frontend
         return [];
     }
 
@@ -425,12 +416,16 @@ class Service extends Base\Service
 
           $this->app['basicauth']->setMerchant($this->merchant);
         }
+        else
+        {
+            (new Validator)->setStrictFalse()->validateInput(Validator::COMPLETE_CHECKOUT, $input);
+        }
 
         $orderId = $input['razorpay_order_id'];
 
         $paymentId = $input['razorpay_payment_id'];
 
-        $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
+        $order = (new RzpOrders())->findOrderByIdAndMerchant($orderId);
 
         $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
 
@@ -525,7 +520,7 @@ class Service extends Base\Service
 
         $notes['shopify_order_id'] = strval($shopifyOrder['order']['id']);
 
-        (new Order\Service)->update($rzpOrderId, array('notes'=> $notes));
+        (new RzpOrders())->updateOrderNotes($rzpOrderId, ['notes' => $notes]);
 
         $shopifyOrderName = strval($shopifyOrder['order']['name']);
 
@@ -537,8 +532,7 @@ class Service extends Base\Service
                 'receipt'  => $shopifyOrderName,
                 'external' => $rzpOrder->isExternal()
         ]);
-
-        (new Order\Core)->updateReceipt($rzpOrder, $shopifyOrderName);
+        (new RzpOrders())->updateReceipt($rzpOrder, $shopifyOrderName);
     }
 
     // returns list of coupons, filter out personal and shipping coupons
@@ -559,6 +553,8 @@ class Service extends Base\Service
                      'checkout'   => $checkout,
                  ]);
 
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_COUPON_FETCH_ERROR_COUNT, ['error_type' => 'invalid_checkout_id']);
+
             return ['promotions' => []];
         }
 
@@ -577,6 +573,8 @@ class Service extends Base\Service
                 $this->trace->info(
                     TraceCode::SHOPIFY_1CC_UPDATE_EMAIL_FAILED,
                     ['checkout_id' => $checkoutId, 'reason' => $e.getMessage()]);
+
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_UPDATE_EMAIL_ERROR_COUNT, ['error_type' => 'email_update_failed']);
             }
         }
 
@@ -603,13 +601,30 @@ class Service extends Base\Service
         return (new Coupons)->getCoupons($input);
     }
 
+    /**
+     * @throws Exception\BadRequestValidationFailureException
+     */
     public function applyShopifyCoupon(array $input, string $merchantId = ''):array
     {
+        if (empty($input['order_id']) === true)
+        {
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_1CC_APPLY_COUPON_ERROR_COUNT, ['error_type' => TraceCode::SHOPIFY_COUPONS_BAD_REQUEST_ERROR]);
+
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_APPLY_COUPON_ERROR,
+                [
+                    'input' => $input,
+                    'error' => 'Shopify checkout_id is required'
+                ]);
+
+            throw new Exception\BadRequestValidationFailureException("Shopify checkout_id is required.");
+        }
+
         // existing coupon will be removed by checkout when new coupon is applied
         $checkoutId = $input['order_id'];
 
         // remove existing coupon
-        $response = (new Core)->removeCoupon($checkoutId);
+        (new Core)->removeCoupon($checkoutId);
 
         // TODO: fix when email updated multiple times
         if (empty($input['email']) === false)
@@ -623,6 +638,9 @@ class Service extends Base\Service
                 $this->trace->error(
                     TraceCode::SHOPIFY_1CC_UPDATE_EMAIL_FAILED,
                     ['checkout_id' => $checkoutId, 'reason' => $e.getMessage()]);
+
+                $this->monitoring->addTraceCount(Metric::SHOPIFY_1CC_UPDATE_EMAIL_FAILURE_COUNT, ['error_type' => 'shopify_1cc_apply_coupon_error']);
+
             }
         }
 
@@ -634,6 +652,20 @@ class Service extends Base\Service
 
         if (isset($merchantId) === true and in_array($merchantId, self::farziEnabledMids) === true)
         {
+            if (empty($input['cart_id']) === true)
+            {
+                $this->monitoring->addTraceCount(Metric::SHOPIFY_1CC_APPLY_COUPON_ERROR_COUNT, ['error_type' => 'shopify_1cc_apply_coupon_error']);
+
+                $this->trace->error(
+                    TraceCode::SHOPIFY_1CC_APPLY_COUPON_ERROR,
+                    [
+                        'input' => $input,
+                        'error' => 'Shopify cart_id is required'
+                    ]);
+
+                throw new Exception\BadRequestValidationFailureException("Shopify cart_id is required.");
+            }
+
            (new Farzi)->addFarziCoupon($code, $cartId);
         }
 
@@ -679,12 +711,14 @@ class Service extends Base\Service
           $this->trace->info(
               TraceCode::SHOPIFY_1CC_API_SHIPPING_ERROR,
               [
-                  'type'       => 'update_address_failed',
-                  'response'   => $response,
+                  'type'        => 'update_address_failed',
+                  'response'    => $response,
                   'checkout_id' => $checkoutId,
-                  'address'    => $address
+                  'address'     => $address
               ]
           );
+
+          $this->monitoring->addTraceCount(Metric::FETCH_SHIPPING_INFO_ERROR_COUNT, ['error_type' => TraceCode::SHOPIFY_1CC_API_SHIPPING_ERROR]);
 
           return [
               'id'			     => $address['id'],
@@ -701,7 +735,7 @@ class Service extends Base\Service
         $rates = (new Core)->sleepAndPollForShippingInfo($checkoutId);
 
         $response = [
-            'id'			   => $address['id'],
+            'id'	       => $address['id'],
             'zipcode'    => $address['zipcode'],
             'state_code' => $address['state_code'],
             'country'    => $address['country'],
@@ -714,7 +748,10 @@ class Service extends Base\Service
     protected function getShopifyClientByMerchant()
     {
         $creds = $this->getShopifyAuthByMerchant();
-
+        if (empty($creds) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR_MERCHANT_SHOPIFY_ACCOUNT_NOT_CONFIGURED);
+        }
         return new Client($creds);
     }
 

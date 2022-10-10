@@ -5,8 +5,10 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Environment;
+use RZP\Exception\BaseException;
 use RZP\Models\Merchant\OneClickCheckout\Shopify;
 use RZP\Models\Merchant\OneClickCheckout\Webhooks;
 use RZP\Models\Merchant\OneClickCheckout\RtoRecommendation;
@@ -23,37 +25,38 @@ class OneClickCheckoutController extends Controller
         $rawContents = Request::getContent();
         $headers = Request::header();
         $contentType = $headers['content-type'][0];
-        $bodyJSON = [];
-
-        if ($contentType === 'text/plain')
+        $bodyJSON = $contentType === 'text/plain' ? $this->parseToJSONIfApplicable($rawContents, $contentType) : Request::all();
+        try
         {
-            $bodyJSON = $this->parseToJSONIfApplicable($rawContents, $contentType);
+            $result = (new Shopify\Service)->shopifyCreateCheckout($bodyJSON);
+            $response = ApiResponse::json($result, 200);
+            $this->addCorsHeaders($response, 'POST, OPTIONS');
+            return $response;
         }
-        else
+        catch (\Throwable $e)
         {
-            $bodyJSON = Request::all();
+            $response = $this->handleError($e);
+            $this->addCorsHeaders($response, 'POST, OPTIONS');
+            return $response;
         }
-
-        $result = (new Shopify\Service)->shopifyCreateCheckout($bodyJSON);
-
-        $response = ApiResponse::json($result, 200);
-
-        $this->addCorsHeaders($response, 'POST, OPTIONS');
-
-        return $response;
     }
 
-    public function shopifyGetCheckoutOptions()
+    public function getCheckoutOptions()
     {
         $input = Request::all();
-
-        $result = (new Shopify\Service)->shopifyGetCheckoutOptions($input);
-
-        $response = ApiResponse::json($result, 200);
-
-        $this->addCorsHeaders($response, 'GET, OPTIONS');
-
-        return $response;
+        try
+        {
+            $result = (new Shopify\Service)->getCheckoutOptions($input);
+            $response = ApiResponse::json($result, 200);
+            $this->addCorsHeaders($response, 'GET, OPTIONS');
+            return $response;
+        }
+        catch (\Throwable $e)
+        {
+            $response = $this->handleError($e);
+            $this->addCorsHeaders($response, 'GET, OPTIONS');
+            return $response;
+        }
     }
 
     public function shopifyCompleteCheckout()
@@ -62,13 +65,19 @@ class OneClickCheckoutController extends Controller
         $headers = Request::header();
         $bodyJSON = $this->parseToJSONIfApplicable($rawContents, $headers['content-type'][0]);
 
-        $result = (new Shopify\Service())->completeCheckoutWithLock($bodyJSON);
-
-        $response = ApiResponse::json($result, 200);
-
-        $this->addCorsHeaders($response, 'POST, OPTIONS');
-
-        return $response;
+        try
+        {
+            $result = (new Shopify\Service)->completeCheckoutWithLock($bodyJSON);
+            $response = ApiResponse::json($result, 200);
+            $this->addCorsHeaders($response, 'POST, OPTIONS');
+            return $response;
+        }
+        catch (\Throwable $e)
+        {
+            $response = $this->handleError($e);
+            $this->addCorsHeaders($response, 'POST, OPTIONS');
+            return $response;
+        }
     }
 
     public function shopifyOAuthRedirect()
@@ -86,12 +95,19 @@ class OneClickCheckoutController extends Controller
         $headers = Request::header();
         $bodyJSON = $this->parseToJSONIfApplicable($rawContents, $headers['content-type'][0]);
 
-        $result = (new Shopify\Service)->updateCheckout($bodyJSON);
-        $response = ApiResponse::json($result, 200);
-
-        $this->addCorsHeaders($response, 'POST, OPTIONS');
-
-        return $response;
+        try
+        {
+            $result = (new Shopify\Service)->updateCheckout($bodyJSON);
+            $response = ApiResponse::json($result, 200);
+            $this->addCorsHeaders($response, 'POST, OPTIONS');
+            return $response;
+        }
+        catch (\Throwable $e)
+        {
+            $response = $this->handleError($e);
+            $this->addCorsHeaders($response, 'POST, OPTIONS');
+            return $response;
+        }
     }
 
     public function shopifyUpdateCheckoutUrl()
@@ -100,13 +116,19 @@ class OneClickCheckoutController extends Controller
         $headers = Request::header();
         $bodyJSON = $this->parseToJSONIfApplicable($rawContents, $headers['content-type'][0]);
 
-        $result = (new Shopify\Service)->updateCheckoutUrl($bodyJSON);
-
-        $response = ApiResponse::json($result, 200);
-
-        $this->addCorsHeaders($response, 'POST, OPTIONS');
-
-        return $response;
+        try
+        {
+            $result = (new Shopify\Service)->updateCheckoutUrl($bodyJSON);
+            $response = ApiResponse::json($result, 200);
+            $this->addCorsHeaders($response, 'POST, OPTIONS');
+            return $response;
+        }
+        catch (\Throwable $e)
+        {
+            $response = $this->handleError($e);
+            $this->addCorsHeaders($response, 'POST, OPTIONS');
+            return $response;
+        }
     }
 
     public function processWebhook(string $platform)
@@ -174,4 +196,32 @@ class OneClickCheckoutController extends Controller
         return $body;
     }
 
+    // $e can be exception or throwable so we do not add a strong type.
+    protected function handleError($e)
+    {
+        if (($e instanceof BaseException) === false)
+        {
+            throw $e;
+        }
+        switch ($e->getError()->getInternalErrorCode())
+        {
+            case ErrorCode::BAD_REQUEST_ERROR_MERCHANT_SHOPIFY_INVALID_VARIANTS_RECEIVED:
+            case ErrorCode::BAD_REQUEST_ERROR_MERCHANT_SHOPIFY_ACCOUNT_NOT_CONFIGURED:
+            case ErrorCode::BAD_REQUEST_ERROR_MERCHANT_SHOPIFY_ACCOUNT_ACCESS_DENIED:
+                $data = $e->getError()->toPublicArray(true);
+                return ApiResponse::json($data, 422);
+
+            case ErrorCode::BAD_REQUEST_ERROR_MERCHANT_SHOPIFY_ACCOUNT_THROTTLED:
+                $data = $e->getError()->toPublicArray(true);
+                return ApiResponse::json($data, 429);
+
+            case ErrorCode::SERVER_ERROR_PGROUTER_SERVICE_FAILURE:
+            case ErrorCode::SERVER_ERROR_SHOPIFY_SERVICE_FAILURE:
+                $data = $e->getError()->toPublicArray(true);
+                return ApiResponse::json($data, 503);
+
+            default:
+              throw $e;
+        }
+    }
 }

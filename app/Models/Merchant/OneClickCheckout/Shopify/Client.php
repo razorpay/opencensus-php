@@ -28,6 +28,7 @@ class Client
 
     protected $app;
     protected $trace;
+    protected $monitoring;
 
     // credentials required from merchants
     protected $shopId;
@@ -40,6 +41,7 @@ class Client
     {
         $this->app = App::getFacadeRoot();
         $this->trace = $this->app['trace'];
+        $this->monitoring = new Monitoring();
 
         $this->shopId                = $config[OneClickCheckout\Constants::SHOP_ID];
         $this->apiKey                = $config[OneClickCheckout\Constants::API_KEY];
@@ -131,6 +133,7 @@ class Client
         }
 
         $responseArr;
+        $lastStatusCode = '';
         $attempts = 0;
         while ($attempts < self::MAX_ATTEMPTS)
         {
@@ -140,7 +143,7 @@ class Client
                 $response = (new HttpClient)->request($method, $this->endpoint, $data);
 
                 $responseArr = $this->parseResponse($response);
-                $delay = $this->returnBackoffIfRetriableRequest($responseArr, $apiType, $attempts);
+                $delay = $this->getBackoffIfRetriableRequest($responseArr, $apiType, $attempts);
                 if ($delay === -1)
                 {
                     return $responseArr['raw_contents'];
@@ -152,19 +155,21 @@ class Client
             {
                 $errResponse = $e->getResponse();
                 $responseArr = $this->parseResponse($errResponse);
-
+                $lastStatusCode = $responseArr['status_code'];
                 // In case of auth failures, Shopify does not return a body.
                 if ($responseArr['status_code'] === 401 || $responseArr['status_code'] === 403)
                 {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_ERROR,
-                        null,
-                        null,
-                        'UNAUTHORIZED'
-                    );
+                    $type = $responseArr['status_code'] === 401 ? 'unauthorized' : 'forbidden';
+                    $this->trace->error(
+                        TraceCode::SHOPIFY_1CC_API_ACCESS_DENIED,
+                        [
+                           'type'      => $type,
+                           'api_type'  => $apiType,
+                        ]);
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR_MERCHANT_SHOPIFY_ACCOUNT_ACCESS_DENIED);
                 }
 
-                $delay = $this->returnBackoffIfRetriableRequest($responseArr, $apiType, $attempts);
+                $delay = $this->getBackoffIfRetriableRequest($responseArr, $apiType, $attempts);
                 if ($delay === -1)
                 {
                     throw $e;
@@ -176,11 +181,21 @@ class Client
         $this->trace->error(
             TraceCode::SHOPIFY_1CC_API_RETRY_EXCEEDED_LIMIT,
             [
-               'type'           => 'retry_exceeded',
-               'api_type'       => $apiType,
-               'attempt_number' => $attempts,
+               'type'             => 'retry_exceeded',
+               'api_type'         => $apiType,
+               'attempt_number'   => $attempts,
+               'last_status_code' => $lastStatusCode,
             ]);
-        return $responseArr['raw_contents'];
+            $this->monitoring->addTraceCount(
+                Metric::SHOPIFY_1CC_API_RATE_LIMIT,
+                ['error_type' => 'retry_exceeded', 'api_type' => $apiType]
+            );
+
+        if ($lastStatusCode >= 500)
+        {
+            throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_SHOPIFY_SERVICE_FAILURE);
+        }
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR_MERCHANT_SHOPIFY_ACCOUNT_THROTTLED);
     }
 
     protected function setHeaders(string $apiType)
@@ -254,7 +269,7 @@ class Client
         }
     }
 
-    protected function returnBackoffIfRetriableRequest(array $response, string $apiType, int $attemptNumber): int
+    protected function getBackoffIfRetriableRequest(array $response, string $apiType, int $attemptNumber): int
     {
         $this->logRateLimit($response, $apiType);
 
@@ -268,12 +283,16 @@ class Client
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_API_RETRY,
             [
-               'type'           => 'api_retried',
+               'type'           => 'api_retry',
                'api_type'       => $apiType,
                'status_code'    => $response['status_code'],
                'backoff_millis' => $delay/1000,
                'attempt_number' => $attemptNumber,
             ]);
+        $this->monitoring->addTraceCount(
+            Metric::SHOPIFY_1CC_API_RATE_LIMIT,
+            ['status_code' => $response['status_code'], 'api_type' => $apiType]
+        );
         return $delay;
     }
 
@@ -308,6 +327,4 @@ class Client
         // graphql requests always return 200 even if it gets throttled so we check the response body
         return ($response['body']['errors'][0]['message'] ?? '') === 'Throttled' || $isStatusCodeRetriable;
     }
-
-
 }

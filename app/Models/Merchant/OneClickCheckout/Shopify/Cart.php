@@ -103,6 +103,10 @@ class Cart extends Base\Core
     protected function getShopifyClientByMerchant()
     {
         $creds = $this->getShopifyAuthByMerchant();
+        if (empty($creds) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR_MERCHANT_SHOPIFY_ACCOUNT_NOT_CONFIGURED);
+        }
         return new Client($creds);
     }
 

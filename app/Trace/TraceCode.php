@@ -7723,6 +7723,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SHOPIFY_1CC_METAFIELD_API_ERROR                     = 'SHOPIFY_1CC_METAFIELD_API_ERROR';
 
     const SHOPIFY_1CC_API_ERROR                               = 'SHOPIFY_1CC_API_ERROR';
+    const SHOPIFY_1CC_API_ACCESS_DENIED                       = 'SHOPIFY_1CC_API_ACCESS_DENIED';
+    const SHOPIFY_1CC_PG_ROUTER_FAILED                        = 'SHOPIFY_1CC_PG_ROUTER_FAILED';
     const SHOPIFY_1CC_API_CHECKOUT_ERROR                      = 'SHOPIFY_1CC_API_CHECKOUT_ERROR';
     const SHOPIFY_1CC_API_ORDER_ERROR                         = 'SHOPIFY_1CC_API_ORDER_ERROR';
     const SHOPIFY_1CC_API_ORDER_ERROR_RETRY                   = 'SHOPIFY_1CC_API_ORDER_ERROR_RETRY';
@@ -8279,6 +8281,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INPUT_AMOUNT_DIFFERENT_THAN_ORDER_AMOUNT                    = 'INPUT_AMOUNT_DIFFERENT_THAN_ORDER_AMOUNT';
     const OFFER_ID_NOT_APPLICABLE_ON_CHECKOUT_ORDER                   = 'OFFER_ID_NOT_APPLICABLE_ON_CHECKOUT_ORDER';
     const TRACK_TOKENISED_PAYMENT_VALIDATION                          = 'TRACK_TOKENISED_PAYMENT_VALIDATION';
+
+    const GET_SHOPIFY_CLIENT_ERROR                                    = 'GET_SHOPIFY_CLIENT_ERROR';
+    const SHOPIFY_1CC_APPLY_COUPON_ERROR                              = 'SHOPIFY_1CC_APPLY_COUPON_ERROR';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
