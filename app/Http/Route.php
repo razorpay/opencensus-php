@@ -3675,6 +3675,7 @@ class Route
         'decrement_free_payouts_payouts_service'  => ['post',     'payouts_service/decrement_free_payouts',                 'PayoutController@decrementFreePayoutsForPayoutsService'       ],
         'rollback_free_payouts'                   => ['post',     'payouts_service/free_payout_rollback',                   'PayoutController@freePayoutRollback'                          ],
         'payouts_service_redis_key_set'           => ['post',     'payouts_service_redis_key_set',                          'PayoutController@payoutServiceRedisKeySet'                    ],
+        'status_details_source_update'            => ['post',     'payouts_service/status_details_source_update',           'PayoutController@statusDetailsSourceUpdate'                   ],
         'payouts_service_dual_write'              => ['post',     'payouts_service/dual_write',                             'PayoutController@payoutServiceDualWrite'                      ],
 
         // Data Consistency Checker Routes
@@ -5140,6 +5141,7 @@ class Route
         'initiate_payouts_consistency_check',
         'payout_bulk_update_attachments',
         'decrement_free_payouts_payouts_service',
+        'status_details_source_update',
 
         'rollback_free_payouts',
         'payouts_service_redis_key_set',
@@ -14077,6 +14079,7 @@ class Route
             'payment_fetch_card_metadata',
             'workflow_state_callback',
             'workflow_state_callback_update',
+            'status_details_source_update',
         ],
 
         'ledger' => [

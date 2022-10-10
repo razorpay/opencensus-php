@@ -16,6 +16,15 @@ use RZP\Models\FundTransfer\Attempt\Constants as FTAConstants;
 
 class Core extends Base\Core
 {
+    // currently adding xpayroll source only
+    public $whitelistedSourceArray = [
+        Payout\SourceUpdater\XPayrollUpdater::class,
+    ];
+
+    public $subscriberClassSourceTypeMap = [
+        Payout\SourceUpdater\XPayrollUpdater::class => PayoutSource\Entity::XPAYROLL,
+    ];
+
     public function __construct()
     {
         parent::__construct();
@@ -106,33 +115,30 @@ class Core extends Base\Core
 
         $this->savePayoutStatusDetailsEntity($payout, $status, $reason, $description);
 
-        // currently adding xpayroll source only
-        $whitelistedSourceArray = [
-            PayoutSource\Entity::XPAYROLL,
-        ];
+       $this->statusDetailsSourceUpdate($payout);
+    }
 
-        $sourceDetails = $payout->getSourceDetails();
+    public function statusDetailsSourceUpdate(Payout\Entity $payout)
+    {
+        $sourcesUpdated = [];
+        /**
+         * Adding the code for sending update to source for processing status status details because it may happen that
+         * for a payout for processing status multiple status details update has come. So, internal apps will get
+         * updated about it from here .
+         */
+        $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
+        $subscriberList = Payout\SourceUpdater\Factory::getUpdaters($payout, $mode);
 
-        foreach ($sourceDetails as $source)
+        foreach ($subscriberList as $subscriber)
         {
-            $sourceType = $source->getSourceType();
-
-            if(in_array($sourceType,$whitelistedSourceArray) === true)
+            if(in_array(get_class($subscriber),$this->whitelistedSourceArray) === true)
             {
-                /**
-                 * Adding the code for sending update to source for processing status status details because it may happen that
-                 * for a payout for processing status multiple status details update has come. So, internal apps will get
-                 * updated about it from here .
-                 */
-                $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
-                $subscriberList = Payout\SourceUpdater\Factory::getUpdaters($payout, $mode);
-
-                foreach ($subscriberList as $subscriber)
-                {
-                    $subscriber->update();
-                }
+                $subscriber->update();
+                array_push($sourcesUpdated, $this->subscriberClassSourceTypeMap[get_class($subscriber)]);
             }
         }
+
+        return $sourcesUpdated;
     }
 
     public function savePayoutStatusDetailsEntity($payout, $status, $reason, $description)

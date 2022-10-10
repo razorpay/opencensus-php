@@ -13508,6 +13508,38 @@ class PayoutTest extends OAuthTestCase
         ]);
 
         SourceUpdater::update($payout);
+        // Todo: Fix test case
+        //$xPayrollServiceMock4 = Mockery::mock('RZP\Services\XPayroll\Service')->makePartial();
+        //$xPayrollServiceMock4->shouldReceive('sendStatusUpdate')
+        //                     ->andReturnUsing(function(array $request) {
+        //                         $statusDetails   = $request['status_details'];
+        //                         $statusDetailsId = $request['status_details_id'];
+        //
+        //                         $statusDetailsExpected = [
+        //                             'reason'      => 'beneficiary_bank_confirmation_pending',
+        //                             'source'      => 'beneficiary_bank',
+        //                             'description' => 'Confirmation of credit to the beneficiary is pending from beneficiary bank. Please check the status after 09th November 2021, 11:45 PM',
+        //                         ];
+        //
+        //                         self::assertArraySubset($statusDetailsExpected, $statusDetails);
+        //
+        //                         return [];
+        //                     });
+        //
+        //$this->app->instance('xpayroll', $xPayrollServiceMock4);
+        //
+        //(new Payout\Core)->statusDetailsSourceUpdate(
+        //    [
+        //        'payout_id'      => $payout->getId(),
+        //        'status_details' => [
+        //            'reason'      => 'beneficiary_bank_confirmation_pending',
+        //            'source'      => 'beneficiary_bank',
+        //            'description' => 'Confirmation of credit to the beneficiary is pending from beneficiary bank. Please check the status after 09th November 2021, 11:45 PM',
+        //        ],
+        //        'source_details' => [
+        //            'source_type' => 'xpayroll'
+        //        ]
+        //    ]);
     }
 
     public function testFetchPayoutsOnPrivateAuth()

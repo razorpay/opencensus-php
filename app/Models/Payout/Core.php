@@ -5203,6 +5203,22 @@ class Core extends Base\Core
         return $response;
     }
 
+    public function statusDetailsSourceUpdate($input)
+    {
+        (new Validator)->setStrictFalse()->validateInput(Validator::STATUS_DETAILS_SOURCE_UPDATE, $input);
+
+        $payout = $this->getAPIModelPayoutFromPayoutService(Entity::PAYOUT_ID);
+
+        $payout->setAttribute(Entity::SOURCE_DETAILS, $input[Entity::SOURCE_DETAILS]);
+        $payout->setAttribute(Entity::STATUS_DETAILS, $input[Entity::STATUS_DETAILS]);
+
+        $sourcesUpdated = (new PayoutsStatusDetailsCore())->statusDetailsSourceUpdate($payout);
+
+        return [
+            'sources_updated' => $sourcesUpdated
+        ];
+    }
+
     protected function rollbackFreePayoutsCountAndSupportedModes($balance, $request)
     {
         $freePayoutObj = new FreePayout();
@@ -5880,8 +5896,8 @@ class Core extends Base\Core
                 Attempt\Constants::FTA_STATUS       => $ftaData[Attempt\Constants::FTA_STATUS] ?? null,
                 Entity::STATUS_DETAILS              => [
                     'beneficiary_bank'      => $payout->provideBeneBankName() ?? 'beneficiary bank',
-                    'processed_by_time'     => $statusDetails[Attempt\Entity::PARAMETERS][Attempt\Constants::PROCESSED_BY_TIME] ?? null,
-                    'reason'                => $statusDetails[Attempt\Entity::REASON] ?? '',
+                    'processed_by_time'     => $ftaData[Attempt\Entity::PARAMETERS][Attempt\Constants::PROCESSED_BY_TIME] ?? null,
+                    'reason'                => $ftaData[Attempt\Entity::REASON] ?? '',
                 ]
             ];
 

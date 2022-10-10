@@ -111,6 +111,7 @@ class Validator extends Base\Validator
     const DECREMENT_FREE_PAYOUT_FOR_PAYOUTS_SERVICE = 'decrement_free_payout_for_payouts_service';
     const MIGRATE_FREE_PAYOUT_PAYOUTS_SERVICE       = 'migrate_free_payout_payouts_service';
     const ROLLBACK_FREE_PAYOUT_PAYOUTS_SERVICE      = 'rollback_free_payout_payouts_service';
+    const STATUS_DETAILS_SOURCE_UPDATE              = 'status_details_source_update';
 
     const PAYOUTS_SERVICE_CREATE_FAILURE_PROCESSING_CRON    = 'payouts_service_create_failure_processing_cron';
     const PAYOUTS_SERVICE_UPDATE_FAILURE_PROCESSING_CRON    = 'payouts_service_update_failure_processing_cron';
@@ -250,6 +251,12 @@ class Validator extends Base\Validator
     protected static $payoutServiceCreateRules = [
         Entity::ID                   => 'required|string|size:14',
         Entity::MERCHANT_ID          => 'required|string|size:14'
+    ];
+
+    protected static $statusDetailsSourceUpdateRules = [
+        ENTITY::PAYOUT_ID            => 'required|string|size:14',
+        ENTITY::STATUS_DETAILS       => 'required|array',
+        ENTITY::SOURCE_DETAILS       => 'required|array'
     ];
 
     protected static $decrementFreePayoutForPayoutsServiceRules = [
