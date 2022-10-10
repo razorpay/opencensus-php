@@ -462,6 +462,11 @@ class Service
             {
                 $originalDataArray = $originalData->toArray();
 
+                //Unsetting Merchant Website (in case of Merchant Detail Entity), so these aren't synced with ES.
+                //Sending merchant_website is causing unprecedented growth of fields on this ES index
+                //because every website is considered as a new field in ES (because of JSON structure).
+                unset($originalDataArray['merchant_website']);
+
                 // Set entity
                 $this->setEntity($originalData->getEntityName());
             }
@@ -475,6 +480,11 @@ class Service
             if (method_exists($dirtyData, 'toArray') === true)
             {
                 $dirtyDataArray = $dirtyData->toArray();
+
+                //Unsetting Merchant Website (in case of Merchant Detail Entity), so these aren't synced with ES.
+                //Sending merchant_website is causing unprecedented growth of fields on this ES index
+                //because every website is considered as a new field in ES (because of JSON structure).
+                unset($dirtyDataArray['merchant_website']);
 
                 // Set entity (redundant if it already got set above from $originalData)
                 $this->setEntity($dirtyData->getEntityName());

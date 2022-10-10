@@ -642,6 +642,18 @@ class Core extends Base\Core
 
         $input = [Entity::ACTIVATION_STATUS => Status::ACTIVATED];
 
+        $oldMerchantDetails->load('merchant');
+
+        $oldMerchantDetails->load('avgOrderValue');
+
+        $oldMerchantDetails->load('merchantWebsite');
+
+        $oldMerchantDetails->load('verificationDetail');
+
+        $oldMerchantDetails->load('businessDetail');
+
+        $oldMerchantDetails->load('stakeholder');
+
         // The reason routeName and Controller is set here because
         // the workflow being triggered is associated with the different route.
         $this->app['workflow']
