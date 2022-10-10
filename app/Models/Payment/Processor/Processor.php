@@ -534,6 +534,13 @@ class Processor
                 return false;
             }
 
+            if ($this->isPaymentViaTokenisedCard($input))
+            {
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::NON_SAVED_TOKENISED_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+                return ($result === 'on');
+            }
+
 
             if (empty($input[Payment\Entity::ORDER_ID]) === false)
             {
@@ -667,13 +674,6 @@ class Processor
             if ($merchant->isFeeBearerCustomerOrDynamic() ===true )
             {
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::FEE_BEARER_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-
-                return ($result === 'on');
-            }
-
-            if ($this->isPaymentViaTokenisedCard($input))
-            {
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::NON_SAVED_TOKENISED_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
 
                 return ($result === 'on');
             }
@@ -7415,7 +7415,6 @@ class Processor
     private function isPaymentViaTokenisedCard($input): bool
     {
         return empty($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === false &&
-            boolval($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === true &&
-            empty($input[Payment\Entity::CARD][Card\Entity::CRYPTOGRAM_VALUE]) === false;
+            boolval($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === true;
     }
 }
