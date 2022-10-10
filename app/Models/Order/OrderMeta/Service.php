@@ -5,6 +5,7 @@ namespace RZP\Models\Order\OrderMeta;
 use RZP\Constants\Environment;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Exception\BaseException;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\OneCCReviewCODOrder;
 use RZP\Models\Order\OrderMeta\Order1cc;
@@ -106,7 +107,13 @@ class Service extends \RZP\Models\Base\Service
             $this->trace->histogram(Metric::UPDATE_CUSTOMERS_DETAILS_TIME_MILLIS, $duration, $dimensions);
 
             return $result;
-        } finally {
+        }
+        catch(\Throwable $e)
+        {
+            $ex = $e;
+            throw $e;
+        }
+        finally {
             $this->traceUpdateCustomerDetailsLogs($orderId, $input, $result, $ex);
         }
     }
@@ -139,7 +146,16 @@ class Service extends \RZP\Models\Base\Service
                     Order1cc\Fields::PROMOTIONS => [],
                 ]);
         } catch (\Throwable $e) {
-            $this->trace->count(Metric::RESET_ORDER_ERROR_COUNT, []);
+            $internalErrorCode = '';
+            if (($e instanceof BaseException) === true)
+            {
+                $internalErrorCode = $e->getError()->getInternalErrorCode();
+            }
+
+            $this->trace->count(Metric::RESET_ORDER_ERROR_COUNT, [
+                'mode' => $this->mode,
+                'internal_error_code' => $internalErrorCode,
+            ]);
 
             $this->trace->error(TraceCode::RESET_ORDER_REQUEST_ERROR,
                 [
@@ -191,6 +207,17 @@ class Service extends \RZP\Models\Base\Service
                 ]
             );
         }else {
+            $internalErrorCode = '';
+            if (($ex instanceof BaseException) === true)
+            {
+                $internalErrorCode = $ex->getError()->getInternalErrorCode();
+            }
+            $this->trace->count(Metric::UPDATE_CUSTOMERS_DETAILS_ERROR_COUNT, array_merge(
+                [
+                    'internal_error_code' => $internalErrorCode,
+                    'mode'                => $this->mode,
+                ]
+            ));
             $this->trace->error(TraceCode::UPDATE_CUSTOMERS_DETAILS_REQUEST_ERROR,
                 [
                     'request' =>  $this->maskCustomerDetails($input),

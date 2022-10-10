@@ -4,7 +4,9 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
+use RZP\Error\ErrorCode;
 use RZP\Models\Order\OrderMeta;
+use RZP\Exception\BaseException;
 
 class OrderController extends Controller
 {
@@ -219,15 +221,52 @@ class OrderController extends Controller
             $input['customer_details']['device']['ip'] = $this->app['request']->ip();
         }
 
-        (new OrderMeta\Service())->updateCustomerDetailsFor1CCOrder($orderId, $input);
+        try
+        {
+            (new OrderMeta\Service())->updateCustomerDetailsFor1CCOrder($orderId, $input);
 
-        return ApiResponse::json([], 200);
+            return ApiResponse::json([], 200);
+        }
+        catch (\Throwable $ex)
+        {
+            if (($ex instanceof BaseException) === true)
+            {
+                switch ($ex->getError()->getInternalErrorCode())
+                {
+                    case ErrorCode::GATEWAY_ERROR_REQUEST_ERROR:
+                    case ErrorCode::GATEWAY_ERROR_TIMED_OUT:
+                    case ErrorCode::SERVER_ERROR_PGROUTER_SERVICE_FAILURE:
+                        $data = $ex->getError()->toPublicArray(true);
+                        return ApiResponse::json($data, 503);
+                }
+            }
+            throw $ex;
+        }
     }
 
     public function reset1CCOrder(string $orderId)
     {
-        (new OrderMeta\Service())->reset1CCOrder($orderId);
-        return ApiResponse::json([], 200);
+        try
+        {
+            (new OrderMeta\Service())->reset1CCOrder($orderId);
+            return ApiResponse::json([], 200);
+        }
+        catch (\Throwable $ex)
+        {
+            if (($ex instanceof BaseException) === true)
+            {
+                switch ($ex->getError()->getInternalErrorCode())
+                {
+                    case ErrorCode::GATEWAY_ERROR_REQUEST_ERROR:
+                    case ErrorCode::GATEWAY_ERROR_TIMED_OUT:
+                    case ErrorCode::SERVER_ERROR_PGROUTER_SERVICE_FAILURE:
+                        $data = $ex->getError()->toPublicArray(true);
+                        return ApiResponse::json($data, 503);
+                }
+            }
+            throw $ex;
+        }
+
     }
 
     public function getCODOrders(){
