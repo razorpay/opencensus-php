@@ -6,6 +6,8 @@ use Request;
 use ApiResponse;
 
 use RZP\Services;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BaseException;
 
 class ThirdWatchController
 {
@@ -25,9 +27,27 @@ class ThirdWatchController
 
         $input['device']['user_agent'] = Request::header('X-User-Agent') ?? Request::header('User-Agent') ?? null;
 
-        $response = (new Services\ThirdWatchService)->checkCodEligibility($input);
+        try
+        {
+            $response = (new Services\ThirdWatchService)->checkCodEligibility($input);
 
-        return ApiResponse::json($response, 200);
+            return ApiResponse::json($response, 200);
+        }
+        catch (\Throwable $ex)
+        {
+            if (($ex instanceof BaseException) === true)
+            {
+                switch ($ex->getError()->getInternalErrorCode())
+                {
+                    case ErrorCode::GATEWAY_ERROR_REQUEST_ERROR:
+                    case ErrorCode::GATEWAY_ERROR_TIMED_OUT:
+                    case ErrorCode::SERVER_ERROR_PGROUTER_SERVICE_FAILURE:
+                        $data = $ex->getError()->toPublicArray(true);
+                        return ApiResponse::json($data, 503);
+                }
+            }
+            throw $ex;
+        }
     }
 
     // called from Thirdwatch internal app
