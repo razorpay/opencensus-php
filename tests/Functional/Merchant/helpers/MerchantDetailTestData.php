@@ -468,6 +468,14 @@ return [
                         'document_type' => 'aadhar_front',
                     ]
                 ],
+                'merchant_website' => [
+                    'refund_process_period'=> "3-5 days",
+                    'admin_website_details'=> "{'website':'surkar.in'}"
+                ],
+                'merchant_business_detail' => [
+                    "business_parent_category"=> "ABC",
+                    "app_urls" => "{'app_url':'playstore.com/manthan/'}"
+                ],
             ],
         ],
     ],

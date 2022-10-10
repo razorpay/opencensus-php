@@ -681,12 +681,32 @@ class MerchantDetailTest extends OAuthTestCase
         $this->fixtures->create('merchant_email', ['merchant_id' => $merchant->getId()]);
         $this->fixtures->create('merchant_document', ['merchant_id' => $merchant->getId()]);
         $this->fixtures->create('merchant_document', ['merchant_id' => $merchant->getId(), 'entity_type' => 'stakeholder', 'document_type' => 'aadhar_front']);
-
         // test fetch account details by account service
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/account_service/accounts/'. $merchant->getId();
+
+        $testData['response']['content']['merchant_website'] = null;
+        $testData['response']['content']['merchant_business_detail'] = null;
+        $this->ba->accountServiceAuth();
+        $this->runRequestResponseFlow($testData);
+
+
+        // Test merchant_website and merchant_business details are fetched
+        $this->fixtures->create('merchant_website', [
+                'merchant_id' => $merchant->getId(),
+                'refund_process_period'=> "3-5 days",
+                'admin_website_details'=> "{'website':'surkar.in'}"]
+        );
+        $this->fixtures->create('merchant_business_detail', [
+            'merchant_id' => $merchant->getId(),
+            "business_parent_category"=> "ABC",
+            "app_urls" => "{'app_url':'playstore.com/manthan/'}"
+        ]);
         $testData = $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/account_service/accounts/'. $merchant->getId();
         $this->ba->accountServiceAuth();
         $this->runRequestResponseFlow($testData);
+
 
         // test fetch account details, where aadhar_back is classified as stakeholder document by default, if stakeholder is present
         $this->fixtures->create('merchant_document', ['merchant_id' => $merchant->getId(), 'entity_type' => 'merchant', 'document_type' => 'aadhar_back']);

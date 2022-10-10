@@ -838,6 +838,8 @@ class Entity
         self::STAKEHOLDER,
         self::MERCHANT_DOCUMENT,
         self::MERCHANT_EMAIL,
+        self::MERCHANT_WEBSITE,
+        self::MERCHANT_BUSINESS_DETAIL
     ];
 
     /**

@@ -8821,6 +8821,9 @@ class Service extends Base\Service
         $documents = $this->repo->merchant_document->findManyByMerchantIds([$accountId]);
         $merchantEmails = $this->repo->merchant_email->getEmailByMerchantId($accountId);
 
+        $merchantWebsite = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($accountId);
+        $merchantBusinessDetails = $this->repo->merchant_business_detail->getBusinessDetailsForMerchantId($accountId);
+
         $stakeholderArray = $stakeholders->toArray();
         $isStakeHolderPresent = count($stakeholderArray) > 0;
 
@@ -8865,6 +8868,8 @@ class Service extends Base\Service
         $data['stakeholder_documents'] = $stakeholderDocs->toArray();
         $data['merchant_documents'] = $merchantDocs->toArray();
         $data['merchant_emails'] = $merchantEmails->toArray();
+        $data['merchant_business_detail'] = $merchantBusinessDetails == null ? null : $merchantBusinessDetails->toArray();
+        $data['merchant_website'] = $merchantWebsite == null ? null : $merchantWebsite->toArray();
 
         return $data;
     }
