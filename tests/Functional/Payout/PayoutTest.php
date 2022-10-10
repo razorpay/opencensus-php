@@ -444,6 +444,17 @@ class PayoutTest extends OAuthTestCase
                 'updated_at' => 1000000001
             ],
             [
+                'id' => 'randomid111123',
+                'payout_id' => 'randomid111111',
+                'event' => 'abc',
+                'from' => 'abc',
+                'to' => 'non_existing_status',
+                'mode' => 'SYSTEM',
+                'triggered_by' => 'SYSTEM',
+                'created_at' => 1000000001,
+                'updated_at' => 1000000001
+            ],
+            [
                 'id' => 'randomid111114',
                 'payout_id' => 'randomid111111',
                 'event' => 'abc',

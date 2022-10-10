@@ -15,6 +15,11 @@ class PayoutLogs extends Base
 
         foreach ($payoutLogsData as $status => $timestamp)
         {
+            if (in_array($status, Status::$timestampedStatuses, true) === false)
+            {
+                continue;
+            }
+
             $timestampKey = $status . '_at';
 
             if ($status === Status::CREATED)

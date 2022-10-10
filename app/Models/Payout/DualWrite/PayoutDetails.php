@@ -40,7 +40,7 @@ class PayoutDetails extends Base
         $this->repo->saveOrFail($apiPayoutsDetails);
 
         $this->trace->info(
-            TraceCode::PAYOUT_SERVICE_DUAL_WRITE_PAYOUT_DETAILS_INIT,
+            TraceCode::PAYOUT_SERVICE_DUAL_WRITE_PAYOUT_DETAILS_DONE,
             ['payout_id' => $id]
         );
 
