@@ -73,20 +73,20 @@ class Entity extends Base\Entity
     public static $druidRepoMap = [
         // for devstack/stage envs
         '100000razorpay' => [
-            Constant::MERCHANT_FACT_NAME => 'druid.hdfc_banking_merchants_fact',
-            Constant::PAYMENT_FACT_NAME  => 'druid.hdfc_banking_payments_fact',
+            Constant::MERCHANT_FACT_NAME => 'pinot.hdfc_banking_merchants_fact',
+            Constant::PAYMENT_FACT_NAME  => 'pinot.hdfc_banking_payments_fact',
         ],
 
         // Prod HDFC Org
         Org\Entity::HDFC_ORG_ID => [
-            Constant::MERCHANT_FACT_NAME => 'druid.hdfc_banking_merchants_fact',
-            Constant::PAYMENT_FACT_NAME  => 'druid.hdfc_banking_payments_fact',
+            Constant::MERCHANT_FACT_NAME => 'pinot.hdfc_banking_merchants_fact',
+            Constant::PAYMENT_FACT_NAME  => 'pinot.hdfc_banking_payments_fact',
         ],
 
         // UAT Axis env -> axis org
         'FxrZxmcysGkcuU' => [
-            Constant::MERCHANT_FACT_NAME => 'druid.hdfc_banking_merchants_fact',
-            Constant::PAYMENT_FACT_NAME  => 'druid.hdfc_banking_payments_fact',
+            Constant::MERCHANT_FACT_NAME => 'pinot.hdfc_banking_merchants_fact',
+            Constant::PAYMENT_FACT_NAME  => 'pinot.hdfc_banking_payments_fact',
         ],
     ];
 

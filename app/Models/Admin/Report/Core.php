@@ -45,45 +45,45 @@ class Core extends Base\Core
     }
 
     /*
-     * Fetch data for reports from druid depending on the report type
+     * Fetch data for reports from pinot depending on the report type
      */
     public function fetchDataForReport(string $type, $filters)
     {
         $merchantFactName = Entity::getFactNameByFactTypeForCurrentOrg(Constant::MERCHANT_FACT_NAME);
         $paymentFactName  = Entity::getFactNameByFactTypeForCurrentOrg(Constant::PAYMENT_FACT_NAME);
 
-        switch ($type)
-        {
-            case Constant::REPORT_TYPE_DETAILED_TRANSACTION:
-                [$error, $response] = $this->generateTransactionDetailData($paymentFactName, $filters);
-                break;
+        try {
+            switch ($type)
+            {
+                case Constant::REPORT_TYPE_DETAILED_TRANSACTION:
+                    $response = $this->generateTransactionDetailData($paymentFactName, $filters);
+                    break;
 
-            case Constant::REPORT_TYPE_DETAILED_MERCHANT:
-                [$error, $response] = $this->generateMerchantDetailData($paymentFactName, $filters);
-                break;
+                case Constant::REPORT_TYPE_DETAILED_MERCHANT:
+                    $response = $this->generateMerchantDetailData($paymentFactName, $filters);
+                    break;
 
-            case Constant::REPORT_TYPE_DETAILED_FAILURE:
-                [$error, $response] = $this->generateDetailedFailureData($paymentFactName, $filters);
-                break;
+                case Constant::REPORT_TYPE_DETAILED_FAILURE:
+                    $response = $this->generateDetailedFailureData($paymentFactName, $filters);
+                    break;
 
-            case Constant::REPORT_TYPE_SUMMARY_MERCHANT:
-                [$error, $response] = $this->generateSummaryMerchantData($merchantFactName, $filters);
-                break;
+                case Constant::REPORT_TYPE_SUMMARY_MERCHANT:
+                    $response = $this->generateSummaryMerchantData($merchantFactName, $filters);
+                    break;
 
-            case Constant::REPORT_TYPE_SUMMARY_PAYMENT:
-                [$error, $response] = $this->generateSummaryTransactionData($paymentFactName, $filters);
-                break;
+                case Constant::REPORT_TYPE_SUMMARY_PAYMENT:
+                    $response = $this->generateSummaryTransactionData($paymentFactName, $filters);
+                    break;
 
-            case Constant::REPORT_TYPE_DETAILED_FAILURE_DETAIL:
-                [$error, $response] = $this->generateDetailedFailureDetailData($paymentFactName, $filters);
-                break;
+                case Constant::REPORT_TYPE_DETAILED_FAILURE_DETAIL:
+                    $response = $this->generateDetailedFailureDetailData($paymentFactName, $filters);
+                    break;
 
-            default: throw new Exception\InvalidArgumentException(
-                'Not a valid report type.');
+                default: throw new Exception\InvalidArgumentException(
+                    'Not a valid report type.');
+            }
         }
-
-        if(isset($error) === true)
-        {
+        catch (\Exception $e) {
             throw new Exception\ServerErrorException(
                 'Unable to process this request.', ErrorCode::SERVER_ERROR);
         }
@@ -100,17 +100,14 @@ class Core extends Base\Core
         $selectQuery = 'SELECT
                   payments_merchant_id as partner_id,
                   method_custom as payment_method,
-                  count(CASE WHEN is_success=1 THEN 1 END) as success_count,
-                  count(CASE WHEN is_success=0 THEN 1 END) as failure_count,
-                  sum(CASE WHEN is_success=1 THEN payments_base_amount END) as success_amount,
-                  sum(CASE WHEN is_success=0 THEN payments_base_amount END) as failure_amount,
+                  sum(CASE WHEN is_success=1 THEN 1 ELSE 0 END) as success_count,
+                  sum(CASE WHEN is_success=0 THEN 1 ELSE 0 END) as failure_count,
                   count(*) as total_count,
+                  sum(CASE WHEN is_success=1 THEN payments_base_amount ELSE 0 END) as success_amount,
+                  sum(CASE WHEN is_success=0 THEN payments_base_amount ELSE 0 END) as failure_amount,
                   sum(payments_base_amount) as total_amount,
-                  months
-              from
-              (
-                SELECT *, EXTRACT(MONTH FROM __time) as months FROM  '.$factName.'
-              )
+                  month(FromDateTime(payments_created_date, \'yyyy-MM-dd\')) AS months
+                  from '.$factName.'
                 ';
 
         $conditions = [];
@@ -129,11 +126,11 @@ class Core extends Base\Core
 
         $query = $this->prepareDruidQuery($selectQuery, $conditions, $groupByQuery, $orderByQuery, $count, $skip);
 
-        $druidPayload = [
+        $pinotPayload = [
             'query' => $query,
         ];
 
-        [$error, $response] = $this->app['druid.service']->getDataFromDruid($druidPayload);
+        $response = $this->app['eventManager']->getDataFromPinot($pinotPayload);
 
         $result = [];
 
@@ -145,7 +142,7 @@ class Core extends Base\Core
             $result[] = $row;
         }
 
-        return [$error, $result];
+        return  $result;
     }
 
     public function generateMerchantDetailData($factName, $filters)
@@ -181,11 +178,11 @@ class Core extends Base\Core
 
         $query = $this->prepareDruidQuery($selectQuery, $conditions, $groupByQuery, $orderByQuery, $count, $skip);
 
-        $druidPayload = [
+        $pinotPayload = [
             'query' => $query,
         ];
 
-        [$error, $response] = $this->app['druid.service']->getDataFromDruid($druidPayload);
+        $response = $this->app['eventManager']->getDataFromPinot($pinotPayload);
 
         $result = [];
 
@@ -200,7 +197,7 @@ class Core extends Base\Core
             $result[] = $row;
         }
 
-        return [$error, $result];
+        return  $result;
     }
 
     public function generateDetailedFailureData($factName, $filters)
@@ -230,13 +227,13 @@ class Core extends Base\Core
 
         $query = $this->prepareDruidQuery($selectQuery, $conditions, $groupByQuery, $orderByQuery, $count, $skip);
 
-        $druidPayload = [
+        $pinotPayload = [
             'query' => $query,
         ];
 
-        [$error, $response] = $this->app['druid.service']->getDataFromDruid($druidPayload);
+        $response = $this->app['eventManager']->getDataFromPinot($pinotPayload);
 
-        return [$error, $response];
+        return $response;
     }
 
     public function generateDetailedFailureDetailData($factName, $filters)
@@ -271,13 +268,13 @@ class Core extends Base\Core
 
         $query = $this->prepareDruidQuery($selectQuery, $conditions, $groupByQuery, $orderByQuery);
 
-        $druidPayload = [
+        $pinotPayload = [
             'query' => $query,
         ];
 
-        [$error, $response] = $this->app['druid.service']->getDataFromDruid($druidPayload);
+        $response = $this->app['eventManager']->getDataFromPinot($pinotPayload);
 
-        return [$error, $response];
+        return $response;
     }
 
     public function generateDetailedFailureDetailDownloadData($factName, $filters)
@@ -285,6 +282,7 @@ class Core extends Base\Core
         $count = $filters['count'] ?? self::COUNT;
 
         $skip = $filters['skip'] ?? self::SKIP;
+
 
         $selectQuery = 'SELECT
                   count(*) as payment_count,
@@ -312,11 +310,11 @@ class Core extends Base\Core
 
         $query = $this->prepareDruidQuery($selectQuery, $conditions, $groupByQuery, $orderByQuery, $count, $skip);
 
-        $druidPayload = [
+        $pinotPayload = [
             'query' => $query,
         ];
 
-        [$error, $response] = $this->app['druid.service']->getDataFromDruid($druidPayload);
+         $response = $this->app['eventManager']->getDataFromPinot($pinotPayload);
 
         // Todo: get *** STEP < SOURCE < REASON ***
 
@@ -329,15 +327,15 @@ class Core extends Base\Core
 //            ]
 //        );
 
-        return [$error, $response];
+        return $response;
     }
 
     public function generateSummaryMerchantData($factName, $filters)
     {
         $selectQuery = 'SELECT
-                    count(CASE WHEN status=\'Moved out\' THEN 1 END) as moved_out,
-                    count(CASE WHEN status=\'Active\' THEN 1 END) as active,
-                    count(CASE WHEN status=\'Inactive\' THEN 1 END) as inactive,
+                    sum(CASE WHEN status=\'Moved out\' THEN 1 ELSE 0 END) as moved_out,
+                    sum(CASE WHEN status=\'Active\' THEN 1 ELSE 0 END) as active,
+                    sum(CASE WHEN status=\'Inactive\' THEN 1 ELSE 0 END) as inactive,
                     count(*) total,
                     status
                 from  '.$factName.'
@@ -354,22 +352,21 @@ class Core extends Base\Core
 
         $query = $this->prepareDruidQuery($selectQuery, $conditions, $groupByQuery, $orderByQuery);
 
-        $druidPayload = [
+        $pinotPayload = [
             'query' => $query,
         ];
 
-        [$error, $response] = $this->app['druid.service']->getDataFromDruid($druidPayload);
+         $response = $this->app['eventManager']->getDataFromPinot($pinotPayload);
 
-
-        return [$error, $response];
+        return $response;
     }
 
     public function generateSummaryTransactionData($factName, $filters)
     {
         $selectQuery = '  SELECT
                     method_custom as payment_method,
-                    count(CASE WHEN is_success=1 THEN 1 END) as success_count,
-                    count(CASE WHEN is_success=0 THEN 1 END) as failure_count,
+                    sum(CASE WHEN is_success=1 THEN 1 ELSE 0 END) as success_count,
+                    sum(CASE WHEN is_success=0 THEN 1 ELSE 0 END) as failure_count,
                     count(*) as total_count
                   from   '.$factName.'
                    ';
@@ -385,13 +382,13 @@ class Core extends Base\Core
 
         $query = $this->prepareDruidQuery($selectQuery, $conditions, $groupByQuery, $orderByQuery);
 
-        $druidPayload = [
+        $pinotPayload = [
             'query' => $query,
         ];
 
-        [$error, $response] = $this->app['druid.service']->getDataFromDruid($druidPayload);
+        $response = $this->app['eventManager']->getDataFromPinot($pinotPayload);
 
-        return [$error, $response];
+        return $response;
     }
 
     public function generateSingleMerchantDetailDownloadData($factName, $filters)
@@ -410,7 +407,6 @@ class Core extends Base\Core
         if(isset($filters[Constant::FIELD_PARTNER_ID]) === true)
         {
             $conditions = array_merge($conditions, $this->parseFilterEqualsForQuery($filters, Constant::FIELD_PARTNER_ID, 'payments_merchant_id'));
-
         }
         else
         {
@@ -424,13 +420,13 @@ class Core extends Base\Core
 
         $query = $this->prepareDruidQuery($selectQuery, $conditions, $groupByQuery, $orderByQuery);
 
-        $druidPayload = [
+        $pinotPayload = [
             'query' => $query,
         ];
 
-        [$error, $response] = $this->app['druid.service']->getDataFromDruid($druidPayload);
+        $response = $this->app['eventManager']->getDataFromPinot($pinotPayload);
 
-        return [$error, $response];
+        return $response;
     }
 
     protected function parseTimeFilters($filters)

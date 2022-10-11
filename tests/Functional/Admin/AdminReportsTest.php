@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Admin;
 
 use RZP\Models\Feature\Constants;
+use RZP\Services\Mock\ApachePinotClient;
 use RZP\Services\Mock\DruidService as MockDruidService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -24,21 +25,20 @@ class AdminReportsTest extends TestCase
 
         $this->ba->adminAuth();
 
-        config(['services.druid.mock' => true]);
+        $this->mockApachePinot();
+    }
 
-        $druidService = $this->getMockBuilder(MockDruidService::class)
+    private function mockApachePinot()
+    {
+        $pinotService = $this->getMockBuilder(ApachePinotClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getDataFromDruid'])
+            ->onlyMethods(['getDataFromPinot'])
             ->getMock();
 
-        $this->app->instance('druid.service', $druidService);
+        $this->app->instance('apache.pinot', $pinotService);
 
-        $dataFromDruid = [
-            'cat' => 30,
-        ];
-
-        $druidService->method( 'getDataFromDruid')
-            ->willReturn([null, [$dataFromDruid]]);
+        $pinotService->method('getDataFromPinot')
+            ->willReturn(null);
     }
 
     public function testFiltersGetByType()
