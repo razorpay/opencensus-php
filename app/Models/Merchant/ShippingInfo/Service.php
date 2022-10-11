@@ -54,20 +54,16 @@ class Service extends Base\Service
         $ex = '';
 
         $dimensions = [
-            'merchant_id' => $this->merchant->getId(),
             'mode' => $this->mode,
         ];
 
+        $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CHECK_CALL_COUNT, $dimensions);
+
         try {
-
-            $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CHECK_CALL_COUNT, $dimensions);
-
             $serviceabilityCheckStartTime = millitime();
 
             if(!isset($input[self::SHIPPING_INFO_ADDRESSES]) || !isset($input['order_id']))
             {
-                $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT, $dimensions);
-
                 $ex = new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_SERVICEABILITY_INVALID_INPUT
                 );
@@ -90,7 +86,6 @@ class Service extends Base\Service
 
             if($orderMeta === null)
             {
-                $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT, $dimensions);
                 $ex = new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_1CC_ORDER);
                 throw $ex;
             }
@@ -103,15 +98,12 @@ class Service extends Base\Service
             }
             catch (Throwable $e)
             {
-                $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT, $dimensions);
                 $ex = new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_1CC_ORDER);
                 throw $ex;
             }
 
             if(is_null($merchantOrderId))
             {
-                $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT, $dimensions);
-
                 $ex = new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_SERVICEABILITY_INVALID_INPUT
                 );
@@ -124,7 +116,6 @@ class Service extends Base\Service
             $addresses = $input[self::SHIPPING_INFO_ADDRESSES];
             if (count($addresses) !== 1)
             {
-                $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT, $dimensions);
                 $ex = new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_SERVICEABILITY_INVALID_INPUT
                 );
@@ -199,7 +190,6 @@ class Service extends Base\Service
 
                     if ($serviceabilityUrlConfig === null)
                     {
-                        $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT, $dimensions);
                         $ex = new Exception\BadRequestException(
                             ErrorCode::BAD_REQUEST_MERCHANT_SERVICEABILITY_URL_NOT_CONFIGURED);
                         throw $ex;
@@ -324,7 +314,13 @@ class Service extends Base\Service
 
             return [self::SHIPPING_INFO_ADDRESSES => [$address]];
 
-        } finally {
+        }
+        catch (\Throwable $e)
+        {
+            $ex = $e;
+            throw $e;
+        }
+        finally {
             if (empty($ex) === true){
                 $this->trace->info(TraceCode::MERCHANT_ADDRESS_SHIPPING_INFO_REQUEST,
                     array_merge($dimensions,
@@ -334,10 +330,21 @@ class Service extends Base\Service
                         ])
                 );
             }else {
+                $internalErrorCode = "";
+                if (($ex instanceof Exception\BaseException) === true) {
+                    $internalErrorCode = $ex->getError()->getInternalErrorCode();
+                }
+                $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT,
+                    array_merge($dimensions,
+                        [
+                            'internal_error_code' => $internalErrorCode,
+                        ])
+                );
                 $this->trace->error(TraceCode::MERCHANT_ADDRESS_SHIPPING_INFO_ERROR,
                     array_merge($dimensions,
                         [
                             'response' => $decodedResponse,
+                            'internal_error_code' => $internalErrorCode,
                             'exception' => $ex->getTrace()
                         ])
                 );

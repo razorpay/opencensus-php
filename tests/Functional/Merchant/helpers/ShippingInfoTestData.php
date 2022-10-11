@@ -154,7 +154,7 @@ return [
                     'code'        => PublicErrorCode::SERVER_ERROR,
                 ],
             ],
-            'status_code' => 500,
+            'status_code' => 503,
         ],
         'exception' => [
             'class' => RZP\Exception\BadRequestException::class,

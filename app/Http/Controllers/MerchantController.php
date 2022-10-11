@@ -3,9 +3,11 @@
 namespace RZP\Http\Controllers;
 
 use App;
+use Http\Client\Common\Exception\ServerErrorException;
 use Request;
 use ApiResponse;
 use RZP\Constants\Entity as E;
+use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Constants\Entity;
 use RZP\Models\Feature\Constants as Feature;
@@ -3112,9 +3114,27 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $response = (new Merchant\ShippingInfo\Service())->getShippingInfo($input);
-
-        return ApiResponse::json($response);
+        try
+        {
+            $response = (new Merchant\ShippingInfo\Service())->getShippingInfo($input);
+            return ApiResponse::json($response);
+        }
+        catch (\Throwable $ex)
+        {
+            if (($ex instanceof Exception\BaseException) === true)
+            {
+                switch ($ex->getError()->getInternalErrorCode())
+                {
+                    case ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION:
+                    case ErrorCode::GATEWAY_ERROR_REQUEST_ERROR:
+                    case ErrorCode::GATEWAY_ERROR_TIMED_OUT:
+                    case ErrorCode::SERVER_ERROR_PGROUTER_SERVICE_FAILURE:
+                        $data = $ex->getError()->toPublicArray(true);
+                        return ApiResponse::json($data, 503);
+                }
+            }
+            throw $ex;
+        }
     }
 
     public function applyCoupon()

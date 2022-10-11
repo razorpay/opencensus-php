@@ -89,30 +89,30 @@ class ShippingInfoTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
-    public function testGetShippingInfoForInvalidMerchantResponse()
-    {
-        $this->ba->publicAuth();
-        $this->fixtures->merchant->addFeatures(FeatureConstants::ONE_CLICK_CHECKOUT);
-        $order = $this->fixtures->order->create(['receipt' => 'receipt']);
-        $this->fixtures->create('order_meta',
-            [
-                'order_id' => $order->getId(),
-                'value'    => ['line_items_total' => $order->getAmount()],
-                'type'     => 'one_click_checkout',
-            ]);
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['content']['order_id'] = $order->getPublicId();
-        $this->fixtures->create(
-            'merchant_1cc_configs',
-            [
-                'merchant_id' => '10000000000000',
-                'config'      => 'shipping_info_url',
-                'value'       => 'fake.url',
-            ]
-        );
-        $this->runRequestResponseFlow($testData);
-    }
+//    public function testGetShippingInfoForInvalidMerchantResponse()
+//    {
+//        $this->ba->publicAuth();
+//        $this->fixtures->merchant->addFeatures(FeatureConstants::ONE_CLICK_CHECKOUT);
+//        $order = $this->fixtures->order->create(['receipt' => 'receipt']);
+//        $this->fixtures->create('order_meta',
+//            [
+//                'order_id' => $order->getId(),
+//                'value'    => ['line_items_total' => $order->getAmount()],
+//                'type'     => 'one_click_checkout',
+//            ]);
+//        $testData = $this->testData[__FUNCTION__];
+//
+//        $testData['request']['content']['order_id'] = $order->getPublicId();
+//        $this->fixtures->create(
+//            'merchant_1cc_configs',
+//            [
+//                'merchant_id' => '10000000000000',
+//                'config'      => 'shipping_info_url',
+//                'value'       => 'fake.url',
+//            ]
+//        );
+//        $this->runRequestResponseFlow($testData);
+//    }
 
     public function testGetShippingInfoWithoutValidOrderId()
     {
