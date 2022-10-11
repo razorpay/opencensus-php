@@ -2848,7 +2848,7 @@ class Service extends Base\Service
     public function verifyOtpForAddEmail(array $input): array
     {
         $this->validator->validateInput('add_email_verify', $input);
-
+        $input[Entity::EMAIL] = mb_strtolower($input[Entity::EMAIL]);
         $user = $this->core()->verifyOtpForAddEmail($input, $this->user);
 
         //if the user signs up on PG with mobile number and does not enter email id and then
