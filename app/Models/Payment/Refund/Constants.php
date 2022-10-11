@@ -91,14 +91,11 @@ class Constants
     const TRANSFER_METHOD = 'transfer_method';
 
 
-    const CARD_TOKEN_EXPIRY_MONTH   = 'token_expiry_month';
-    const CARD_TOKEN_EXPIRY_YEAR    = 'token_expiry_year';
-    const CARD_TRIVIA               = 'trivia';
     const TOKEN_STATUS              = 'token_status';
-    const NETWORK_TOKENISED_CARD    = 'network_tokenised_card';
     const TOKENIZED                 = 'tokenized';
     const TOKEN_EXPIRED_AT          = 'token_expired_at';
     const IIN                       = 'iin';
+    const INTERNATIONAL             = 'international';
 
     /**
      * razorx experiments related constants

@@ -584,8 +584,6 @@ final class RazorxTreatment
 
     const ASYNC_TOKEN_MIGRATION = 'async_token_migration';
 
-    const REFUNDS_IIN_REMOVAL = "refunds_iin_removal";
-
     const NON_RZP_TOKENISED_IR = "non_rzp_tokenised_ir";
 
     /** Experiment to enable custom access control */

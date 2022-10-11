@@ -4009,41 +4009,19 @@ trait Refund
             // Therefore, Scrooge must not send a validation error.
             //
 
-            $variant = $this->app->razorx->getTreatment(
-                $payment->getId(),
-                Merchant\RazorxTreatment::REFUNDS_IIN_REMOVAL,
-                $this->mode);
-
-            if ($variant === RefundConstants::RAZORX_VARIANT_ON)
+            if (($payment->hasCard() === true) and
+                (empty($payment->card->getIssuer()) === false) and
+                (empty($payment->card->getType()) === false))
             {
-                if (($payment->hasCard() === true) and
-                    (empty($payment->card->getIssuer()) === false) and
-                    (empty($payment->card->getType()) === false))
-                {
-                    $queryParams[RefundConstants::NETWORK_CODE] = $payment->card->getNetworkCode();
-                    $queryParams[RefundConstants::ISSUER] = $payment->card->getIssuer();
-                    $queryParams[RefundConstants::CARD_TYPE] = strtolower($payment->card->getType());
+                $queryParams[RefundConstants::NETWORK_CODE] = $payment->card->getNetworkCode();
+                $queryParams[RefundConstants::ISSUER] = $payment->card->getIssuer();
+                $queryParams[RefundConstants::CARD_TYPE] = strtolower($payment->card->getType());
+                $queryParams[RefundConstants::INTERNATIONAL] = strval($payment->card->isInternational());
 
-                    $cardEntityArray = $payment->card->toArrayRefund();
-                    if (isset($cardEntityArray[RefundConstants::IIN]) === true)
-                    {
-                        $queryParams[RefundConstants::BIN] = $cardEntityArray[RefundConstants::IIN];
-                    }
-                }
-            }
-            else
-            {
-                $iin = $payment->card->iinRelation;
-
-                if (($payment->hasCard() === true) and
-                    (is_null($iin) === false) and
-                    (empty($iin->getIssuer()) === false) and
-                    (empty($iin->getType()) === false))
+                $cardEntityArray = $payment->card->toArrayRefund();
+                if (isset($cardEntityArray[RefundConstants::IIN]) === true)
                 {
-                    $queryParams[RefundConstants::NETWORK_CODE] = $payment->card->getNetworkCode();
-                    $queryParams[RefundConstants::ISSUER] = $iin->getIssuer();
-                    $queryParams[RefundConstants::CARD_TYPE] = strtolower($iin->getType());
-                    $queryParams[RefundConstants::BIN] = $iin->getIin();
+                    $queryParams[RefundConstants::BIN] = $cardEntityArray[RefundConstants::IIN];
                 }
             }
         }
