@@ -15,6 +15,7 @@ import {
 import { closeModal } from 'merchant_common/reducers/modals';
 
 import RegistrationLinksBatchForm from './components/RegistrationLinkBatchCreationForm';
+import { getRecurringChargeAPILabel } from 'merchant/views/Subscriptions/utils';
 
 const gaEvents = setGaTrack('Dashboard - Subscriptions - BU');
 
@@ -36,7 +37,7 @@ export default class CreateHostedMandateBatch extends React.Component {
       gaEvents={gaEvents}
       maxRows="5,00,000"
       maxFileSize={57671680} // 55 MB
-      batchType="recurring_charge"
+      batchType={getRecurringChargeAPILabel()}
       docUrl="https://razorpay.com/docs/recurring-payments/dashboard-operations/batch-operations/"
       sampleUrl="https://cdn.razorpay.com/dashboard/sample_recurring_payments.csv"
       processingOptions={true}

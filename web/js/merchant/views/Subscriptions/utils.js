@@ -22,3 +22,9 @@ export function isAmountLiesInRange(amount, maxAmountInPaisa = Infinity, minAmou
   const amountInPaisa = rupeesToPaise(Number(amount));
   return isValidAmount && amountInPaisa >= minAmountInPaisa && amountInPaisa <= maxAmountInPaisa;
 }
+
+export function getRecurringChargeAPILabel() {
+  const isRecurringChargeBulkEnabled =
+    window?.rzp_user?.experiments?.batch_service_recurring_charge_bulk?.result === 'on';
+  return isRecurringChargeBulkEnabled ? 'recurring_charge_bulk' : 'recurring_charge';
+}

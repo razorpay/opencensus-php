@@ -7,6 +7,7 @@ import {
   entityFetchErrorState,
 } from 'merchant_common/reducers/entity';
 import { merchantFetch } from 'merchant/utils/ajax';
+import { getRecurringChargeAPILabel } from 'merchant/views/Subscriptions/utils';
 
 const REFUND = 'REFUND_BATCHS';
 const VIRTUAL_ACCOUNT_BATCHS = 'VIRTUAL_ACCOUNT_BATCHS';
@@ -386,7 +387,7 @@ export const fetchPaymentBatches = fetchBatches('direct_debit');
 
 /* batches for emandate */
 export const fetchHostMandateBatches = fetchBatches([
-  'recurring_charge',
+  getRecurringChargeAPILabel(),
   'auth_link',
   'recurring_charge_axis',
 ]);
@@ -397,8 +398,8 @@ export const validateRefundBatch = validateBatch('refund');
 export const createRefundBatch = createBatch('refund', 'REFUND');
 export const validateVABatch = validateBatch('virtual_account_edit');
 export const createVABatch = createBatch('virtual_account_edit', 'VIRTUAL_ACCOUNT');
-export const createRecurringChargeBatch = createBatch('recurring_charge');
-export const validateRecurringChargeBatch = validateBatch('recurring_charge');
+export const createRecurringChargeBatch = createBatch(getRecurringChargeAPILabel());
+export const validateRecurringChargeBatch = validateBatch(getRecurringChargeAPILabel());
 export const createRecurringChargeAxisBatch = createBatch('recurring_charge_axis');
 export const validateRecurringChargeAxisBatch = validateBatch('recurring_charge_axis');
 export const fetchHostedMandateBatchDetails = fetchBatchDetails();
