@@ -7,8 +7,9 @@ import rTracking from 'react-tracking';
 import Loader from 'common/ui/Loader';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { AsyncBtn } from 'common/new-ui/Button';
-import { SubmissionSuccessfull } from '../NotificationsDropdown/RazorpayXNitroAnnouncement';
-import { sendDataToSalesForce } from '../../utils/common-api';
+import { SubmissionSuccessfull } from 'common/ui/NotificationsDropdown/RazorpayXNitroAnnouncement';
+import { sendDataToSalesForce } from 'common/utils/common-api';
+import growthServiceCTAHandler from 'merchant/models/GrowthService/growthServiceCTAHandler';
 
 const Description = ({ description, type }) => {
   switch (type) {
@@ -33,20 +34,13 @@ const ExclusiveOffer = ({
 }) => {
   const [activeView, setActiveView] = useState('detail-view');
 
-  const trackCTAClickAndOpenUrl = (id, label, url) => {
+  const trackCTAClickAndOpenUrl = (url) => {
     const isExternal = /^http(s)?:\/\//.test(url);
     if (isExternal) {
       window.open(url, '_blank');
     } else {
       history.push(url);
     }
-    tracking.trackEvent(
-      window.rzpQ.merchantActions().initiated('merchant_dashboard.click_form_cta1', {
-        cta_text: label,
-        pageUrl: window.location.href,
-        trackingID: id,
-      }),
-    );
   };
 
   const trackCTAClickAndSave = (id, label) => {
@@ -90,6 +84,26 @@ const ExclusiveOffer = ({
       });
   };
 
+  const buttonHandler = () => {
+    tracking.trackEvent(
+      window.rzpQ.merchantActions().initiated('merchant_dashboard.click_form_cta1', {
+        cta_text: exclusive_offers?.offer_cta?.label,
+        pageUrl: window.location.href,
+        trackingID: exclusive_offers?.id,
+      }),
+    );
+    if (exclusive_offers?.offer_cta?.handler)
+      return growthServiceCTAHandler(
+        exclusive_offers?.offer_cta?.handler,
+        history,
+        exclusive_offers?.id,
+        tracking,
+      );
+    else if (exclusive_offers?.offer_cta?.url)
+      return trackCTAClickAndOpenUrl(exclusive_offers?.offer_cta?.url);
+    else return trackCTAClickAndSave(exclusive_offers?.id, exclusive_offers?.offer_cta?.label);
+  };
+
   if (!loading) {
     if (Object.keys(exclusive_offers).length > 0 && activeView === 'detail-view') {
       return (
@@ -129,15 +143,7 @@ const ExclusiveOffer = ({
               <AsyncBtn.Primary
                 className="btn"
                 type="submit"
-                onClick={() =>
-                  exclusive_offers?.offer_cta?.url !== undefined
-                    ? trackCTAClickAndOpenUrl(
-                        exclusive_offers?.id,
-                        exclusive_offers?.offer_cta?.label,
-                        exclusive_offers?.offer_cta?.url,
-                      )
-                    : trackCTAClickAndSave(exclusive_offers?.id, exclusive_offers?.offer_cta?.label)
-                }
+                onClick={buttonHandler}
                 style={{
                   background: exclusive_offers?.offer?.cta_background_color,
                   color: exclusive_offers?.offer?.cta_font_color,
