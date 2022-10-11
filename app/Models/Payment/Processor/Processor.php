@@ -2701,9 +2701,7 @@ class Processor
 
                 $this->trace->info(TraceCode::TRACK_TOKENISED_PAYMENT_VALIDATION, [
                     'token' => $token->getId(),
-                    'test' => $token->card->isNetworkTokenisedCard(),
-                    'token' => $token,
-                    'test' => $token->card->isTokenisationCompliant(),
+                    'isCompliant' => $token->card->isTokenisationCompliant(),
                 ]);
 
                 if ($token->card->isTokenisationCompliant() === false) {
