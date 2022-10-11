@@ -41,7 +41,7 @@ class Core extends Base\Core
 
             $elapsedTime = millitime() - $startTime;
 
-            $this->monitoring->traceResponseTime(Metric::UPDATE_WOOCOMMERCE_ORDER_STATUS_CALL_TIME, $elapsedTime, []);
+            $this->monitoring->traceResponseTime(Metric::WOOCOMMERCE_UPDATE_ORDER_STATUS_CALL_TIME, $elapsedTime, []);
 
             $this->trace->info(
                 TraceCode::WOOCOMMERCE_1CC_ORDER_STATUS_UPDATE_RES,

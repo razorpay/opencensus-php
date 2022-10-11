@@ -42,7 +42,7 @@ class Core extends Base\Core
 
             $elapsedTime = millitime() - $startTime;
 
-            $this->monitoring->traceResponseTime(Metric::UPDATE_NATIVE_ORDER_STATUS_CALL_TIME, $elapsedTime, []);
+            $this->monitoring->traceResponseTime(Metric::NATIVE_UPDATE_ORDER_STATUS_CALL_TIME, $elapsedTime, []);
 
             $this->trace->info(
                 TraceCode::NATIVE_1CC_ORDER_STATUS_UPDATE_RES,

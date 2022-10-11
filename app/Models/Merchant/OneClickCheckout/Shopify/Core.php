@@ -1318,7 +1318,7 @@ class Core extends Base\Core
         }
         catch (\Exception $exception)
         {
-            $this->monitoring->addTraceCount(Metric::SHOPIFY_ADD_TAG_ERROR_COUNT,['error_code' => TraceCode::SHOPIFY_1CC_ORDER_REMOVE_TAG_API_ERROR]);
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_REMOVE_TAG_ERROR_COUNT,['error_code' => TraceCode::SHOPIFY_1CC_ORDER_REMOVE_TAG_API_ERROR]);
 
             $this->trace->error(
                 TraceCode::SHOPIFY_1CC_ORDER_REMOVE_TAG_API_ERROR,
@@ -1334,7 +1334,7 @@ class Core extends Base\Core
             );
         }
 
-        $this->monitoring->traceResponseTime(Metric::SHOPIFY_ADD_TAG_CALL_TIME, $start, []);
+        $this->monitoring->traceResponseTime(Metric::SHOPIFY_REMOVE_TAG_CALL_TIME, $start, []);
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_ORDER_REMOVE_TAG_RES,
@@ -1346,7 +1346,7 @@ class Core extends Base\Core
             ]
         );
 
-        $this->monitoring->addTraceCount(Metric::SHOPIFY_ADD_TAG_SUCCESS_COUNT, []);
+        $this->monitoring->addTraceCount(Metric::SHOPIFY_REMOVE_TAG_SUCCESS_COUNT, []);
 
     }
 
@@ -1366,7 +1366,7 @@ class Core extends Base\Core
         }
         catch (\Exception $exception)
         {
-            $this->monitoring->addTraceCount(Metric::SHOPIFY_CANCEL_STATUS_ERROR_COUNT,['error_code' => TraceCode::SHOPIFY_1CC_ORDER_CANCEL_API_ERROR]);
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_CANCEL_ORDER_ERROR_COUNT,['error_code' => TraceCode::SHOPIFY_1CC_ORDER_CANCEL_API_ERROR]);
 
             $this->trace->error(
                 TraceCode::SHOPIFY_1CC_ORDER_CANCEL_API_ERROR,
@@ -1381,7 +1381,7 @@ class Core extends Base\Core
             );
         }
 
-        $this->monitoring->traceResponseTime(Metric::CANCEL_SHOPIFY_ORDER_STATUS_CALL_TIME, $requestStart, []);
+        $this->monitoring->traceResponseTime(Metric::SHOPIFY_CANCEL_ORDER_CALL_TIME, $requestStart, []);
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_ORDER_CANCEL_API_RES,
