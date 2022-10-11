@@ -1325,6 +1325,10 @@ export default class User {
     return this.isFeatureEnabled('loc_stage_2');
   }
 
+  get isLocCliOfferEnabled() {
+    return this.isFeatureEnabled('loc_cli_offer');
+  }
+
   get isWithdrawFeatureEnabled() {
     return this.isFeatureEnabled('withdraw_loc');
   }

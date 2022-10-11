@@ -58,6 +58,7 @@ function RemoteComponent({ project, history, showNotification, user, ...rest }) 
       ...externals,
       host: {
         user,
+        history,
         notifySuccess,
         notifyError,
         ...externals.host,
