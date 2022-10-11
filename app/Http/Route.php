@@ -1138,6 +1138,7 @@ class Route
         'customer_edit_global_address'             => ['put',      'customers/addresses',                            'CustomerController@editGlobalAddress'                            ],
         'customer_record_1cc_address_consent_view'     => ['put',      '1cc/consent/address/view',                   'CustomerController@recordAddressConsent1ccAudits'                  ],
         'customer_record_1cc_address_consent'          => ['put',      '1cc/address/consent',                        'CustomerController@recordAddressConsent1cc'                        ],
+        'record_1cc_customer_consent'              => ['post',     '1cc/customer/consent/marketing',                 'CustomerController@recordCustomerConsent1cc'                       ],
         'customer_one_cc_get_or_create_global'     => ['post',     'customers/1cc/global',                           'CustomerController@getOrCreateGlobalCustomer1cc'                   ],
         'customer_fetch_by_id_global'              => ['get',      'customers/1cc/global/{id}',                      'CustomerController@fetchGlobalCustomerByID' ],
         'customer_create_address'                  => ['post',     'customers/{id}/addresses',                       'CustomerController@postCreateAddress'                              ],
@@ -4029,6 +4030,7 @@ class Route
         'customer_edit_global_address',
         'customer_record_1cc_address_consent_view',
         'customer_record_1cc_address_consent',
+        'record_1cc_customer_consent',
         'order_update_customer_details_1cc',
         'order_reset_1cc',
         '1cc_pincode_get',
@@ -9497,6 +9499,7 @@ class Route
         'app_delete_tokens_v2',
         'customer_record_1cc_address_consent_view',
         'customer_record_1cc_address_consent',
+        'record_1cc_customer_consent',
         '1cc_shopify_checkout',
     ];
 

@@ -1120,6 +1120,10 @@ class Constants
 
     const ONE_CC_FB_ANALYTICS = 'one_cc_fb_analytics';
 
+    const ONE_CC_CONSENT_DEFAULT = 'one_cc_consent_default';
+
+    const ONE_CC_CONSENT_NOTDEFAULT = 'one_cc_consent_notdefault';
+
     const ONE_CC_COUPON_DISABLE_COD = 'one_cc_coupon_disable_cod';
 
     const ORG_EMAIL_UPDATE_2FA_ENABLED = 'email_update_2fa_enabled';
@@ -1644,7 +1648,10 @@ class Constants
         self::ONE_CLICK_OVERRIDE_THEME,
         self::ONE_CC_INPUT_ENGLISH,
         self::ONE_CC_STORE_ACCOUNT,
+        self::ONE_CC_CONSENT_DEFAULT,
+        self::ONE_CC_CONSENT_NOTDEFAULT,
         self::ONE_CC_COUPON_DISABLE_COD,
+
     ];
 
     const ONE_CC_FEATURES = [
@@ -1659,6 +1666,8 @@ class Constants
         self::ONE_CLICK_OVERRIDE_THEME,
         self::ONE_CC_INPUT_ENGLISH,
         self::ONE_CC_STORE_ACCOUNT,
+        self::ONE_CC_CONSENT_DEFAULT,
+        self::ONE_CC_CONSENT_NOTDEFAULT,
         self::ONE_CC_COUPON_DISABLE_COD,
     ];
 
@@ -2185,6 +2194,8 @@ class Constants
         self::BSE_MERCHANT_REPORT             => true,
         self::SHAADI_COM_NEW_CURRENCY         => true,
         self::CONSOLIDATED_ORG_REPORTS        => true,
+        self::ONE_CC_CONSENT_DEFAULT          => true,
+        self::ONE_CC_CONSENT_NOTDEFAULT       => true,
         self::EXPOSE_RRN                      => true,
         self::IMPORT_FLOW_OPEX_REPORT         => true,
         self::ENABLE_3DS2                     => true,
