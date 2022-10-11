@@ -16,6 +16,7 @@ use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Base\Traits\DualWrite;
 use RZP\Models\Admin\Role\TenantRoles;
 use RZP\Models\Base\Traits\ExternalOwner;
@@ -1226,6 +1227,11 @@ class Entity extends Base\PublicEntity
         return ($network === Card\Network::$fullName[Card\Network::VISA]);
     }
 
+    public function isLocal()
+    {
+        return ($this->getMerchantId() !== Account::SHARED_ACCOUNT);
+    }
+
     public function isRzpTokenisedCard()
     {
         $vault = $this->getVault();
@@ -1239,7 +1245,7 @@ class Entity extends Base\PublicEntity
         return (
             $this->isInternational() ||
             $this->isBajaj() ||
-            $this->isNetworkTokenisedCard()
+            ($this->isLocal() && $this->isNetworkTokenisedCard())
         );
     }
 
