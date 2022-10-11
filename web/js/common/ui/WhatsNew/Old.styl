@@ -1,50 +1,12 @@
+// stylelint-disable max-nesting-depth
+
 $bubble-red = #F54A2A;
 
 #whats-new-section
   position: static
 
 .whats-new-old
-  &.whats-new--active
-    .whats-new-slide-toggle
-      i,i.i.i-horn
-        color: #2B83EA
-        &:after
-          background: #F3F5F9
-
   .whats-new-slide-toggle
-    display: inline-block
-    color: inherit
-    cursor: pointer
-    padding: 15px 15px 12px
-    @media screen and (max-width: 767px) {
-      padding: 15px 10px 12px
-    }
-
-    &.slider-active
-      i,i.i.i-horn
-        color: #2B83EA
-
-        &:after
-          background: #0b70e70d
-
-    i.i.i-horn
-      font-size: 24px
-      position relative
-      top: 3px
-      @media screen and (max-width: 767px) {
-        color #FFFFFF
-      }
-
-      &:after
-        border-radius: 50%
-        height: 36px
-        width: 36px
-        position: absolute
-        content: ''
-        left: -6px
-        top: -6px
-        z-index -1
-
     .highlight
       font-weight: 600
 
@@ -56,7 +18,7 @@ $bubble-red = #F54A2A;
       border-radius: 50%
       background: $bubble-red
       margin-left: 4px
-      color: #fff
+      color: #FFF
       text-align: center
       font-size: 12px
       line-height: 18px
@@ -71,7 +33,7 @@ $bubble-red = #F54A2A;
       background: $bubble-red
       font-size: 12px;
       text-align: center
-      color: white
+      color: #FFF
       line-height: normal
 
   .whats-new__tooltip
@@ -87,13 +49,13 @@ $bubble-red = #F54A2A;
     .whats-new__content
       font-size: 12px
       padding: 20px 18px
-      color: rgba(255, 255, 255, 0.87)
+      color: rgb(255 255 255 / 0.87)
       position: relative
       background: #2F3344
       border-radius: 2px
 
-      &:after
-        content: ''
+      &::after
+        content: ""
         position: absolute
         top: 27%
         left: 100%
@@ -115,7 +77,7 @@ $bubble-red = #F54A2A;
     &.whats-new__tooltip--show
       visibility: visible
       opacity: 1
-      transform: translate(0,20%)
+      transform: translate(0, 20%)
 
 .content-wrapper.whats-new-old
   .panel.SliderPanel
@@ -127,7 +89,7 @@ $bubble-red = #F54A2A;
 
     .panel-heading
       border-bottom: none
-      background-color: #fff;
+      background-color: #FFF;
       vertical-align: middle;
       padding-top: 0;
       padding-bottom: 0;
@@ -148,7 +110,7 @@ $bubble-red = #F54A2A;
           overflow: visible
 
           .NotificationCard
-            background: white
+            background: #FFF
             padding-bottom: 0
 
             .NotificationCard-body
@@ -163,7 +125,6 @@ $bubble-red = #F54A2A;
 
                 .title
                   font-size: 16px
-                  font-family: Lato
                   font-weight: 500
                   width: fit-content
                   color: #404F6B
@@ -208,7 +169,7 @@ $bubble-red = #F54A2A;
                 width: 10px
                 height: 10px
                 border-radius: 50%
-                border: 1px solid #fff
+                border: 1px solid #FFF
                 background: $bubble-red
 
             &:hover
@@ -216,3 +177,57 @@ $bubble-red = #F54A2A;
 
           .media
             margin-top: 0
+
+.layout .whats-new-old
+  .whats-new-slide-toggle
+    display: inline-block
+    color: inherit
+    cursor: pointer
+    padding: 15px 15px 12px
+
+    @media screen and (max-width 767px) {
+      padding: 15px 10px 12px
+    }
+
+    i.i.i-horn
+      font-size: 24px
+      position relative
+      top: 3px
+
+      &::after
+        border-radius: 50%
+        height: 36px
+        width: 36px
+        position: absolute
+        content: ""
+        left: -6px
+        top: -6px
+        z-index -1
+
+    &.slider-active
+      i,
+      i.i.i-horn
+        color: #2B83EA
+
+        &::after
+          background: #0B70E70D
+
+  &.whats-new--active .whats-new-slide-toggle
+    i,
+    i.i.i-horn
+      color: #2B83EA
+
+      &::after
+        background: #F3F5F9
+
+.layout.rzp .whats-new-old
+  .whats-new-slide-toggle
+    i.i.i-horn
+      @media screen and (max-width 767px) {
+        color #FFF
+      }
+
+  &.whats-new--active .whats-new-slide-toggle
+    i,
+    i.i.i-horn
+      color: #2B83EA

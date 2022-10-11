@@ -12,6 +12,10 @@ export const MultiSlider__Component = styled.div.attrs((props) => ({
   width: ${(props) => props.width}px;
   background: white;
 
+  @media screen and (max-width: 768px) {
+    top: 60px;
+  }
+
   &.MultiSlider__Component--transition-enter {
     opacity: 0;
     transform: ${(props) =>
@@ -55,6 +59,10 @@ export const MultiSliderOverlay = styled.div`
   z-index: 1109;
   background: rgba(0, 0, 0, 0.6);
   transition: all 0.3s linear;
+
+  @media screen and (max-width: 768px) {
+    top: 60px;
+  }
 
   &.MultiSlider__Overlay--transition-enter {
     opacity: 0;
