@@ -35,6 +35,7 @@ const SET_METRICS_DATA = 'SET_METRICS_DATA';
 const FETCH_MERCHANT_ERRORS = 'FETCH_MERCHANT_ERRORS';
 const FETCH_INTERVALS = 'FETCH_INTERVALS';
 const SET_SELECTED_DROPDOWN_FILTER_OPTIONS = 'SET_SELECTED_DROPDOWN_FILTER_OPTIONS';
+const SET_CARD_TYPE_FILTER = 'SET_CARD_TYPE_FILTER';
 
 export const fetchSuccessRate = ({
   payload,
@@ -262,6 +263,10 @@ export const setSelectedDropdownFilterOptions = (option) => {
   };
 };
 
+export const setCardTypeFilter = (value) => {
+  return { type: SET_CARD_TYPE_FILTER, payload: value };
+};
+
 const getInitialState = () => {
   const state = {
     isLoading: true,
@@ -400,6 +405,12 @@ export default (state = getInitialState(), action) => {
     case SET_GROUP_TYPE_FILTER: {
       const stateClone = cloneDeep(state);
       lodashset(stateClone, `tabs.${state.activeTab}.group_by`, payload);
+      return stateClone;
+    }
+
+    case SET_CARD_TYPE_FILTER: {
+      const stateClone = cloneDeep(state);
+      lodashset(stateClone, `tabs.${state.activeTab}.selectedCardType`, payload);
       return stateClone;
     }
 

@@ -16,6 +16,7 @@ import {
   setGroupTypeFilter,
   setSelectedDropdownFilterOptions,
   setDefaultInterval,
+  setCardTypeFilter,
 } from 'merchant/reducers/successRate';
 import {
   queryFilters,
@@ -27,6 +28,7 @@ import {
   methodDropdownChange,
   trackSuccessRateEvents,
 } from 'merchant/views/Transactions/SuccessRate/trackEvents';
+import { INITIAL_SELECTED_CARD_TYPE } from 'merchant/views/Transactions/SuccessRate/constants';
 
 const GraphWidget = (props) => {
   const {
@@ -37,6 +39,7 @@ const GraphWidget = (props) => {
     setGroupTypeFilter,
     setSelectedDropdownFilterOptions,
     setDefaultInterval,
+    setCardTypeFilter,
   } = props;
   const {
     isLoading,
@@ -70,6 +73,10 @@ const GraphWidget = (props) => {
 
     setActiveTab(tab.name);
     setDefaultInterval(getBreakdownInterval(startDate, endDate));
+    if (tab.name === 'Card') {
+      setCardTypeFilter(INITIAL_SELECTED_CARD_TYPE);
+    }
+
     const updateDropdownOptions = tab.name != 'Overall';
     const payload = queryFilters(updateDropdownOptions);
     fetchSuccessRate({ payload, updateDropdownOptions });
@@ -149,6 +156,7 @@ const mapDispatchToProps = (dispatch) => {
       fetchMerchantErrors,
       setSelectedDropdownFilterOptions,
       setDefaultInterval,
+      setCardTypeFilter,
     },
     dispatch,
   );

@@ -212,7 +212,7 @@ export const getChartAreaConfig = ({ breakdown, xLabel, yLabel }) => {
 export const pieChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
-  layout: { padding: { top: 20, right: 0, bottom: 20, left: 0 } },
+  layout: { padding: { top: 40, right: 0, bottom: 40, left: 0 } },
   legend: { display: false },
   tooltips: { enabled: false },
   hover: { mode: null },
@@ -260,7 +260,7 @@ export const piePlugins = [
         point2Y = suitableY;
 
         // Added 15 to prevent overlapping of labels if they are on the same side and too close to each other.
-        const edgePointX = point2X + 15 < chartCenterPoint.x ? 20 : chart.width - 50;
+        const edgePointX = point2X + 40 < chartCenterPoint.x ? 20 : chart.width - 50;
 
         if (point2X < chartCenterPoint.x) leftLabelCoordinates.push(point2Y);
         else rightLabelCoordinates.push(point2Y);

@@ -1,6 +1,7 @@
 export const DEFAULT_PRESET = 0; // Last 6 Hours
 export const DEFAULT_INTERVAL = 60; // default 60 minutes
 export const DEFAULT_ACTIVE_TAB = 'Overall';
+export const INITIAL_SELECTED_CARD_TYPE = 'credit';
 
 export const PRESETS = [
   { label: 'Last 6 Hours', name: '6h', value: 6, unit: 'hours' },
@@ -23,7 +24,7 @@ export const DEFAULT_METHOD = {
 export const DEFAULT_GROUP_BY = {
   Overall: 'method',
   UPI: 'upi_type',
-  Card: 'type',
+  Card: 'network',
   Netbanking: 'bank',
 };
 
@@ -261,11 +262,6 @@ export const TOOLTIP_TEXT_VS_ERROR_CATEGORIES = {
 
 export const CARD_GROUPING_DATA = [
   {
-    value: 'type',
-    text: 'Card Types',
-    query: 'filter',
-  },
-  {
     value: 'network',
     text: 'Card Networks',
     query: 'filter',
@@ -347,3 +343,18 @@ export const fetchDefaultReturn = {
   selectedTags: [],
   histogram: { labels: [], datasets: [] },
 };
+
+export const CARD_TYPES = [
+  {
+    label: 'Credit',
+    name: 'credit',
+  },
+  {
+    label: 'Debit',
+    name: 'debit',
+  },
+  {
+    label: 'Prepaid',
+    name: 'prepaid',
+  },
+];

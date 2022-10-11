@@ -62,9 +62,11 @@ export const getDefaultOptimizerFilterValues = () =>
     [],
   );
 
-const getSelectedFilters = (selectedDropdownFilterOptions, user) => {
+const getSelectedFilters = ({ selectedDropdownFilterOptions, isOptimizerEnabled }) => {
   const defaultOptimizerFilters = getDefaultOptimizerFilterValues();
-  if (!user.isOptimizerEnabled) return {};
+
+  if (!isOptimizerEnabled) return {};
+
   return selectedDropdownFilterOptions?.reduce((acc, option) => {
     const { query, value } = option || {};
     if (!defaultOptimizerFilters?.includes(value)) {
@@ -74,24 +76,45 @@ const getSelectedFilters = (selectedDropdownFilterOptions, user) => {
   }, {});
 };
 
+const getSelectedCardType = ({
+  isOptimizerEnabled = false,
+  activeTab,
+  selectedCardType = 'credit',
+}) => {
+  if (!isOptimizerEnabled) {
+    if (activeTab === 'Card') {
+      return { type: [selectedCardType] };
+    }
+  }
+
+  return {};
+};
+
 export const queryFilters = (updateDropdownOptions, refreshMetricTabs = false) => {
   const { session, successRate } = store?.getState();
-  const user = session?.user;
+  const { isOptimizerEnabled = false } = session?.user ?? {};
   const { filters, activeTab: stateActiveTab, tabs } = successRate;
   const activeTab = refreshMetricTabs ? 'Overall' : stateActiveTab;
-  const mode = activeTab === 'Overall' || !user.isOptimizerEnabled ? 'razorpay' : 'optimizer';
+  const mode = activeTab === 'Overall' || !isOptimizerEnabled ? 'razorpay' : 'optimizer';
   const { startDate, endDate } = filters;
-  const { method, group_by, selectedDropdownFilterOptions = {}, selectedInterval } = tabs[
-    activeTab
-  ];
+  const {
+    method,
+    group_by,
+    selectedDropdownFilterOptions = {},
+    selectedInterval,
+    selectedCardType,
+  } = tabs[activeTab];
+
   let _group_by = [group_by];
+
   if (updateDropdownOptions) {
-    if (user.isOptimizerEnabled) {
+    if (isOptimizerEnabled) {
       _group_by = TABS_VS_OPTIMIZER_GROUP_BY?.[activeTab];
     } else {
       _group_by = [DEFAULT_GROUP_BY[activeTab]];
     }
   }
+
   const payload = {
     entity: 'payments',
     from: startDate.unix(),
@@ -100,13 +123,17 @@ export const queryFilters = (updateDropdownOptions, refreshMetricTabs = false) =
     mode,
     filters: {
       method,
-      ...(updateDropdownOptions ? {} : getSelectedFilters(selectedDropdownFilterOptions, user)),
+      ...(updateDropdownOptions
+        ? {}
+        : getSelectedFilters({
+            selectedDropdownFilterOptions,
+            isOptimizerEnabled,
+          })),
+      ...getSelectedCardType({ activeTab, selectedCardType, isOptimizerEnabled }),
     },
     group_by: {
       keys: _group_by,
-      limit: user.isOptimizerEnabled
-        ? 3
-        : GROUP_BY_KEY_VS_LIMIT[_group_by] || DEFAULT_GROUP_BY_LIMIT, // 3 for dropdown filters in case of optimizer merchant and other limits as per groupBy for graph pills in case of rzp merchant.
+      limit: isOptimizerEnabled ? 3 : GROUP_BY_KEY_VS_LIMIT[_group_by] || DEFAULT_GROUP_BY_LIMIT, // 3 for dropdown filters in case of optimizer merchant and other limits as per groupBy for graph pills in case of rzp merchant.
     },
   };
 
@@ -350,8 +377,8 @@ export const getPieChartData = (groupData = [], tags) => {
       // when total attempts is '0' there is no need to show on Pie Chart
       if (!datapoint?.total) return accumulator;
       const tagStyle = tags.find((tag) => tag.name === datapoint?.name);
-      const _backgroundColor = tagStyle.backgroundColor ?? backgroundColor;
-      const _borderColor = tagStyle.color ?? borderColor;
+      const _backgroundColor = tagStyle?.backgroundColor ?? backgroundColor;
+      const _borderColor = tagStyle?.color ?? borderColor;
       const percentage = (datapoint?.total / totalSum) * 100 || 0;
       const percentageValue = percentage.toFixed(2);
       const label = getTagLabel(datapoint?.name);
@@ -372,10 +399,11 @@ export const getPieChartData = (groupData = [], tags) => {
 
 export const getMerchantErrorsPayload = (updateDropdownOptions) => {
   const { session, successRate } = store?.getState();
-  const user = session?.user;
+  const { isOptimizerEnabled } = session?.user;
   const { tabs, activeTab, filters } = successRate;
-  const { method, selectedDropdownFilterOptions } = tabs[activeTab];
+  const { method, selectedDropdownFilterOptions, selectedCardType } = tabs[activeTab];
   const { startDate, endDate } = filters;
+
   const payload = {
     entity: 'payments',
     from: startDate.unix(),
@@ -383,7 +411,13 @@ export const getMerchantErrorsPayload = (updateDropdownOptions) => {
     mode: 'razorpay',
     filters: {
       method,
-      ...(updateDropdownOptions ? {} : getSelectedFilters(selectedDropdownFilterOptions, user)),
+      ...(updateDropdownOptions
+        ? {}
+        : getSelectedFilters({
+            selectedDropdownFilterOptions,
+            isOptimizerEnabled,
+          })),
+      ...getSelectedCardType({ activeTab, selectedCardType, isOptimizerEnabled }),
     },
     group_by: {
       limit: 6,

@@ -6,6 +6,7 @@ $font-color = #0A1D38
 $default-grey = #9FB1C7
 $border-grey = #A6B0BF
 $border-blue = #336CD5
+$bg-blue = #F3F8FE
 $widget-border = #E8EAEB
 $pill-color = #132644
 $btn-disabled-border = #CFDADD73
@@ -15,6 +16,16 @@ $spacer = 8px
 .sr-dashboard
   background-color: $bg-white
   padding: $spacer * 3
+
+  .panel-actions .panel-action-item
+    .btn-default
+      width: 78px
+      padding: 9px 10px
+      background-color: $bg-white
+      z-index: 0
+
+    .btn-default:active
+      box-shadow: none
 
 .sr-filter
   padding-bottom: $spacer * 3
@@ -68,11 +79,11 @@ $spacer = 8px
           pointer-events: auto
           cursor: pointer
 
-  .btn
+  .filter__actions .btn
     font-weight: bold
     border: none
 
-  .btn-text
+  .filter__actions .btn-text
     color: $text-blue
     background-color: transparent
     margin-left: $spacer
@@ -85,6 +96,16 @@ $spacer = 8px
     margin-right: 20px
 
 // *************** Tab Filter ***************
+.sr-method-filters
+  gap: $spacer * 3
+  flex-wrap: wrap
+
+  .panel-actions
+    .btn-default.active
+      background-color: $bg-blue;
+      box-shadow: none;
+      border-color: $border-blue;
+      z-index: 1;
 
 .sr-tab__filter
   /* stylelint-disable */

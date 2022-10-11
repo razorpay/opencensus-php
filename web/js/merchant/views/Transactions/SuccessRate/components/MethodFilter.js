@@ -1,9 +1,12 @@
 import React from 'react';
 
 import GroupingDropdown from 'merchant/containers/Home/GroupingDropdown';
+import CardTypes from './CardTypes';
+import { connect } from 'react-redux';
 
 const MethodFilter = (props) => {
-  const { filtersList, handleGroupingChange, disabled, selectedGrouping } = props;
+  const { filtersList, handleGroupingChange, disabled, selectedGrouping, user = {} } = props;
+  const { isOptimizerEnabled = false } = user;
 
   const renderGroupingDropdown = (groupingData = [], index) => {
     if (groupingData?.length > 0) {
@@ -22,9 +25,17 @@ const MethodFilter = (props) => {
 
   if (filtersList?.length > 0) {
     return (
-      <div className="sr-filter">
+      <div className="sr-filter sr-method-filters flex">
+        {!isOptimizerEnabled && (
+          <div>
+            <label>Card type:</label>
+            <div className="panel-actions">
+              <CardTypes />
+            </div>
+          </div>
+        )}
         <div>
-          <label>Filter Via:</label>
+          <label>Filter:</label>
           <div className="flex">{filtersList?.map(renderGroupingDropdown)}</div>
         </div>
       </div>
@@ -33,4 +44,10 @@ const MethodFilter = (props) => {
   return null;
 };
 
-export default MethodFilter;
+const mapStateToProps = (state) => {
+  return {
+    user: state.session.user,
+  };
+};
+
+export default connect(mapStateToProps)(MethodFilter);

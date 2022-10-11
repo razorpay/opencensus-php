@@ -8,6 +8,7 @@ import {
   fetchMerchantErrors,
   setDefaultInterval,
   setActiveTab,
+  setCardTypeFilter,
 } from 'merchant/reducers/successRate';
 import {
   getBreakdownInterval,
@@ -15,7 +16,11 @@ import {
   queryFilters,
   getMerchantErrorsPayload,
 } from 'merchant/views/Transactions/SuccessRate/helper';
-import { PRESETS, DEFAULT_INTERVAL } from 'merchant/views/Transactions/SuccessRate/constants';
+import {
+  PRESETS,
+  DEFAULT_INTERVAL,
+  INITIAL_SELECTED_CARD_TYPE,
+} from 'merchant/views/Transactions/SuccessRate/constants';
 import {
   clearFilterSuccessRate,
   filterSuccessRate,
@@ -59,6 +64,7 @@ const SuccessRateFilter = (props) => {
     setDefaultInterval,
     activeTab,
     setActiveTab,
+    setCardTypeFilter,
   } = props;
 
   const [dateRange, setDateRange] = useState({ startDate: '', endDate: '', preset: '' });
@@ -74,7 +80,7 @@ const SuccessRateFilter = (props) => {
   }, [dateRange]);
 
   const onSearch = async () => {
-    const updateDropdownOptions = activeTab !== 'Overall';
+    const isOverallTabActive = activeTab !== 'Overall';
     const { startDate, endDate } = dateRange;
 
     if (Object.keys(errors).length) {
@@ -83,31 +89,39 @@ const SuccessRateFilter = (props) => {
 
     updateDateRange(dateRange);
     setDefaultInterval(getBreakdownInterval(startDate, endDate));
-    const refreshMetricTabs = activeTab !== 'Overall';
-    if (refreshMetricTabs) {
+    if (activeTab === 'Card') {
+      setCardTypeFilter(INITIAL_SELECTED_CARD_TYPE);
+    }
+
+    if (isOverallTabActive) {
       await fetchSuccessRate({
-        payload: queryFilters(false, refreshMetricTabs),
-        refreshMetricTabs,
+        payload: queryFilters(false, isOverallTabActive),
+        refreshMetricTabs: isOverallTabActive,
         updateDropdownOptions: false,
       });
     }
-    const payload = queryFilters(updateDropdownOptions);
-    await fetchSuccessRate({ payload, updateDropdownOptions });
-    const errorsPaylod = getMerchantErrorsPayload(updateDropdownOptions);
+
+    const payload = queryFilters(isOverallTabActive);
+    await fetchSuccessRate({ payload, updateDropdownOptions: isOverallTabActive });
+    const errorsPaylod = getMerchantErrorsPayload(isOverallTabActive);
     fetchMerchantErrors(errorsPaylod);
+
     trackSuccessRateEvents(filterSuccessRate(payload));
   };
 
   const onReset = async () => {
     const initialValue = initialFilters();
     const updateDropdownOptions = false;
+
     updateDateRange(initialValue);
     setActiveTab('Overall');
     setDefaultInterval(DEFAULT_INTERVAL);
+
     const payload = queryFilters(updateDropdownOptions);
     await fetchSuccessRate({ payload, updateDropdownOptions });
     const errorsPaylod = getMerchantErrorsPayload(updateDropdownOptions);
     fetchMerchantErrors(errorsPaylod);
+
     trackSuccessRateEvents(clearFilterSuccessRate(payload));
   };
 
@@ -153,7 +167,14 @@ const mapStateToProps = ({ successRate }) => {
 
 const mapDispatchToProps = (dispatch) => {
   return bindActionCreators(
-    { updateDateRange, fetchSuccessRate, fetchMerchantErrors, setDefaultInterval, setActiveTab },
+    {
+      updateDateRange,
+      fetchSuccessRate,
+      fetchMerchantErrors,
+      setDefaultInterval,
+      setActiveTab,
+      setCardTypeFilter,
+    },
     dispatch,
   );
 };
