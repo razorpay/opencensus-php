@@ -2,6 +2,8 @@
 
 @include('partials/common')
 
+@include('partials/preload/merchantLA-preload')
+
 <!-- Hotjar Tracking Code for dashboard.razorpay.com -->
 @if(env('APP_ENV') === 'production')
   <script>

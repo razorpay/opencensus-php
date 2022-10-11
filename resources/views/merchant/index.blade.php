@@ -31,6 +31,8 @@
   </script>
 @endif
 
+@include('partials/preload/merchant-preload')
+
 @if ($newAuthFlow === true)
   @include('partials/new-auth')
 @else
@@ -71,8 +73,6 @@
   <!-- head tag ends here -->
   @include('partials/common')
 @endif
-
-
 
 <script>
 var _dcq = _dcq || [];
