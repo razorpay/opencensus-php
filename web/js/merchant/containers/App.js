@@ -1118,6 +1118,7 @@ const mapStateToProps = (state) => {
     config: state.config,
     windowWidth: state.app.windowWidth,
     merchant_gst: state.profile.merchant_gst,
+    isWebView: state.app.isWebView,
   };
 };
 
@@ -1149,7 +1150,7 @@ export default compose(
   connect(mapStateToProps, mapDispatchToProps),
   // eslint-disable-next-line babel/new-cap
   RTracking(
-    ({ user, mode }) => {
+    ({ user, mode, isWebView }) => {
       let utm = null;
       let gclid = null; //Google click id, analytics will try to capture and save to cookie if present.
       let browser_details = {};
@@ -1158,7 +1159,6 @@ export default compose(
       let u = {};
       if (user && user.user) {
         const device_type = isMobileDevice() ? 'mweb' : 'dweb';
-        const is_web_view = getMobileDetect().isWebView();
         u = {
           email_id: user.user.email,
           user_id: user.user.id,
@@ -1173,7 +1173,7 @@ export default compose(
           user_business_category: user.business_category,
           user_business_sub_category: user.business_subcategory,
           device_type,
-          is_web_view,
+          is_web_view: isWebView,
         };
       }
       if (query.merchant) {
