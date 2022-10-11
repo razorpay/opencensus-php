@@ -15,6 +15,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\EntityOrigin;
 use RZP\Models\Pricing\Plan;
+use RZP\Services\KafkaProducer;
 use RZP\Jobs\CommissionCapture;
 use RZP\Exception\LogicException;
 use RZP\Models\Partner\Commission;
@@ -768,7 +769,16 @@ class Calculator extends Base\Core
 
         list($commissionFee, $commissionTax, $commissionSplit) = $this->getExplicitCommissionFeeSplit();
 
-        $isCommissionFeeValid = $this->isExplicitCommissionValid($commissionFee, $commissionTax);
+        $commissionComponent = (new Component\Core)->getCommissionComponent(
+            $commissionSplit,
+            $this->merchantPricingComponents,
+            Constants::COMMISSION_BREAK_UP_PREFIX,
+            $this->getSource()->getEntity()
+        );
+
+        $commissionComponent->setPricingFeature($this->getSource()->getEntity());
+
+        $isCommissionFeeValid = $this->isExplicitCommissionValid($commissionFee, $commissionTax, $commissionComponent);
 
         if ($isCommissionFeeValid === false)
         {
@@ -788,10 +798,6 @@ class Calculator extends Base\Core
         $commission = $this->buildCommission($payload);
 
         $this->addCommission($commission);
-
-        $commissionComponent = (new Component\Core)->getCommissionComponent($commissionSplit, $this->merchantPricingComponents, Constants::COMMISSION_BREAK_UP_PREFIX, $this->getSource()->getEntity());
-
-        $commissionComponent->setPricingFeature($this->getSource()->getEntity());
 
         $this->addCommissionComponent($commissionComponent);
     }
@@ -814,7 +820,7 @@ class Calculator extends Base\Core
         $commissionFee = $feeDetails['total_fee'];
         $commissionTax = $feeDetails['total_tax'];
         $commissionSplit = $feeDetails['fee_split'];
-        
+
         $commissionComponent = (new Component\Core)->getCommissionComponent($commissionSplit, $this->merchantPricingComponents, '', $this->getSource()->getEntity());
 
         $commissionComponent->setPricingFeature($this->getSource()->getEntity());
@@ -904,7 +910,7 @@ class Calculator extends Base\Core
 
     protected function addImplicitCommission(int $commissionFee, $commissionTax, Component\Entity $commissionComponent)
     {
-        $isCommissionFeeValid = $this->isImplicitCommissionValid($commissionFee, $commissionTax);
+        $isCommissionFeeValid = $this->isImplicitCommissionValid($commissionFee, $commissionTax, $commissionComponent);
 
         if ($isCommissionFeeValid === false)
         {
@@ -949,14 +955,24 @@ class Calculator extends Base\Core
         return [$commissionFee, $commissionTax];
     }
 
-    protected function getTracePayloadData(int $commissionFee, int $commissionTax, string $type): array
+    protected function getTracePayloadData(int $commissionFee, int $commissionTax, Component\Entity $commissionComponent, string $type): array
     {
         $tracePayLoad = [
-            'commission_fees'   => $commissionFee,
-            'commission_tax'    => $commissionTax,
-            'context'           => $this->getTraceData(),
-            'pricingPlanType'   => $type,
-            'defaultPricingPlan'=> optional($this->getPartnerConfig())->getDefaultPlanId(),
+            'commission_fees'                 => $commissionFee,
+            'commission_tax'                  => $commissionTax,
+            'context'                         => $this->getTraceData(),
+            'pricingPlanType'                 => $type,
+            'defaultPricingPlan'              => optional($this->getPartnerConfig())->getDefaultPlanId(),
+            'merchant_pricing_plan_rule_id'   => $commissionComponent['merchant_pricing_plan_rule_id'],
+            'merchant_pricing_percentage'     => $commissionComponent['merchant_pricing_percentage'],
+            'merchant_pricing_fixed'          => $commissionComponent['merchant_pricing_fixed'],
+            'merchant_pricing_amount'         => $commissionComponent['merchant_pricing_amount'],
+            'commission_pricing_plan_rule_id' => $commissionComponent['commission_pricing_plan_rule_id'],
+            'commission_pricing_percentage'   => $commissionComponent['commission_pricing_percentage'],
+            'commission_pricing_fixed'        => $commissionComponent['commission_pricing_fixed'],
+            'commission_pricing_amount'       => $commissionComponent['commission_pricing_amount'],
+            'pricing_type'                    => $commissionComponent['pricing_type'],
+            'pricing_feature'                 => $commissionComponent['pricing_feature'],
         ];
 
         if ($type === Type::IMPLICIT)
@@ -979,16 +995,16 @@ class Calculator extends Base\Core
         return $tracePayLoad;
     }
 
-    protected function isExplicitCommissionValid(int $commissionFee, int $commissionTax): bool
+    protected function isExplicitCommissionValid(int $commissionFee, int $commissionTax, Component\Entity $commissionComponent): bool
     {
-        $tracePayLoad = $this->getTracePayloadData($commissionFee, $commissionTax, Type::EXPLICIT);
+        $tracePayLoad = $this->getTracePayloadData($commissionFee, $commissionTax, $commissionComponent, Type::EXPLICIT);
 
         return $this->isCommissionFeeValid($commissionFee, $tracePayLoad);
     }
 
-    protected function isImplicitCommissionValid(int $commissionFee, int $commissionTax): bool
+    protected function isImplicitCommissionValid(int $commissionFee, int $commissionTax, Component\Entity $commissionComponent): bool
     {
-        $tracePayLoad = $this->getTracePayloadData($commissionFee, $commissionTax, Type::IMPLICIT);
+        $tracePayLoad = $this->getTracePayloadData($commissionFee, $commissionTax, $commissionComponent, Type::IMPLICIT);
 
         $isValid = $this->isCommissionFeeValid($commissionFee, $tracePayLoad);
 
@@ -1009,21 +1025,87 @@ class Calculator extends Base\Core
 
     protected function isCommissionFeeValid(int $commissionFee, array $tracePayLoad): bool
     {
+        $isValid = true;
+
         if ($commissionFee < 0)
         {
+            $isValid = false;
+
+            $eventName = Constants::COMMISSION_COMPUTED_NEGATIVE_EVENT_NAME;
+
             $this->traceContext(TraceCode::COMMISSION_COMPUTED_NEGATIVE, $tracePayLoad,Trace::CRITICAL);
-
-            return false;
         }
-
-        if ($commissionFee === 0)
+        elseif ($commissionFee === 0)
         {
-            $this->traceContext(TraceCode::COMMISSION_COMPUTED_ZERO, $tracePayLoad);
+            $isValid = false;
 
-            return false;
+            $eventName = Constants::COMMISSION_COMPUTED_ZERO_EVENT_NAME;
+
+            $this->traceContext(TraceCode::COMMISSION_COMPUTED_ZERO, $tracePayLoad);
         }
 
-        return true;
+        if ($isValid === false)
+        {
+            $this->logEventForInvalidCommission($eventName, $tracePayLoad);
+        }
+
+        return $isValid;
+    }
+
+    /**
+     * Logs the commission event when commission calculator calculates an invalid commission
+     *
+     * @param  string   $eventName     The logic reason for which commission is invalid
+     * @param  array    $tracePayLoad  Metadata of commissions (pricing rules, and pricing type)
+     *
+     * @return  null
+     */
+    protected function logEventForInvalidCommission(string $eventName, array $tracePayLoad) {
+        try {
+            $now = Carbon::now()->timestamp;
+
+            $data = [
+                'source_type'                     => $tracePayLoad['context']['source_type'] ?? null,
+                'source_id'                       => $tracePayLoad['context']['source_id'] ?? null,
+                'submerchant_id'                  => $tracePayLoad['context']['submerchant_id'] ?? null,
+                'partner_id'                      => $tracePayLoad['context']['partner_id'] ?? null,
+                'partner_app_id'                  => $tracePayLoad['context']['partner_app_id'] ?? null,
+                'partner_config_id'               => $tracePayLoad['context']['partner_config_id'] ?? null,
+                'pricing_plan_type'               => $tracePayLoad['pricingPlanType'],
+                'merchant_pricing_plan_rule_id'   => $tracePayLoad['merchant_pricing_plan_rule_id'],
+                'merchant_pricing_percentage'     => $tracePayLoad['merchant_pricing_percentage'],
+                'merchant_pricing_fixed'          => $tracePayLoad['merchant_pricing_fixed'],
+                'merchant_pricing_amount'         => $tracePayLoad['merchant_pricing_amount'],
+                'commission_pricing_plan_rule_id' => $tracePayLoad['commission_pricing_plan_rule_id'],
+                'commission_pricing_percentage'   => $tracePayLoad['commission_pricing_percentage'],
+                'commission_pricing_fixed'        => $tracePayLoad['commission_pricing_fixed'],
+                'commission_pricing_amount'       => $tracePayLoad['commission_pricing_amount'],
+                'pricing_type'                    => $tracePayLoad['pricing_type'],
+                'pricing_feature'                 => $tracePayLoad['pricing_feature'],
+            ];
+
+            $event = [
+                'event_type'         => "commission-events",
+                'event_name'         => $eventName,
+                'version'            => "v1",
+                'event_timestamp'    => $now,
+                'producer_timestamp' => $now,
+                'source'             => "commission_calculator",
+                'mode'               => $this->mode,
+                'properties'         => $data,
+                'context'            => [
+                    'request_id' => $this->app['request']->getId(),
+                    'task_id' => $this->app['request']->getTaskId()
+                ],
+            ];
+
+            (new KafkaProducer(Constants::COMMISSIONS_EVENTS_TOPIC.$this->mode, stringify($event)))->Produce();
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::COMMISSION_FLUSH_TO_KAFKA_TOPIC_FAILED);
+            $this->trace->count(Metric::COMMISSION_FLUSH_TO_KAFKA_TOPIC_FAILED);
+        }
     }
 
     /**

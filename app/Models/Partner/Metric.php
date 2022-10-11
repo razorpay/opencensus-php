@@ -5,9 +5,10 @@ namespace RZP\Models\Partner;
 final class Metric
 {
     //commission metrics
-    const COMMISSION_CREATE_ATTEMPT_TOTAL = 'commission_create_attempt_total';
-    const COMMISSION_CREATED_TOTAL        = 'commission_created_total';
-    const COMMISSION_CAPTURE_TOTAL        = 'commission_capture_total';
+    const COMMISSION_CREATE_ATTEMPT_TOTAL        = 'commission_create_attempt_total';
+    const COMMISSION_CREATED_TOTAL               = 'commission_created_total';
+    const COMMISSION_CAPTURE_TOTAL               = 'commission_capture_total';
+    const COMMISSION_FLUSH_TO_KAFKA_TOPIC_FAILED = 'commission_flush_to_kafka_topic_failed';
 
     const SUBMERCHANT_CREATE_TOTAL              = 'submerchant_create_total';
     const SUBMERCHANT_USER_CREATE_TOTAL         = 'submerchant_user_create_total';

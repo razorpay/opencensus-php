@@ -53,6 +53,11 @@ class Constants
     const PARTNER_NEEDS_CLARIFICATION_TEMPLATE     = 'Partner_commission_invoice.Needs_clarification';
     const PARTNER_DEFAULT_TEMPLATE                 = 'Partner_commission_invoice.Null';
 
+    const COMMISSION_COMPUTED_ZERO_EVENT_NAME      =  'commission_computed_zero';
+    const COMMISSION_COMPUTED_NEGATIVE_EVENT_NAME  =  'commission_computed_negative';
+
+    const COMMISSIONS_EVENTS_TOPIC        =  'events.commission-events.v1.';
+
     const VALID_PARTNER_STATUS_EMAIL_TEMPLATES = [
         DetailStatus::ACTIVATED,
         DetailStatus::NEEDS_CLARIFICATION,
