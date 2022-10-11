@@ -69,6 +69,10 @@ import { addressBatchesReducer } from 'merchant/reducers/magicCheckout/bulk_addr
 import { orderStatusBatchesReducer } from 'merchant/reducers/magicCheckout/bulk_order_statuses';
 import magicRTOAnalyticsReducer from 'merchant/reducers/magicCheckout/rtoAnalytics/reducer';
 import { rtoHistoryUploadReducer } from 'merchant/reducers/magicCheckout/rtoHistoryUpload/reducer';
+import {
+  magicCODOrdersReducer,
+  magicCODOrderInfoReducer,
+} from 'merchant/reducers/magicCheckout/codOrders/reducer';
 
 import {
   paymentsReducer,
@@ -234,6 +238,8 @@ export default combineReducers({
   magicCheckout: magicCheckoutReducer,
   magic_settings: magicSettingsReducer,
   magicRTOAnalytics: magicRTOAnalyticsReducer,
+  magicCODOrders: magicCODOrdersReducer,
+  magicCODOrderInfo: magicCODOrderInfoReducer,
   magicBlocklist: blocklistReducer,
   magicAllowlist: allowlistReducer,
   rtoHistoryUpload: rtoHistoryUploadReducer,

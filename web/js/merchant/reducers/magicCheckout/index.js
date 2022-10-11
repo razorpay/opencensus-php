@@ -2,8 +2,8 @@ import { merge, set } from 'common/utils/immutable';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 export const REFRESH_MAGIC_CHECKOUT_STATUS = 'REFRESH_MAGIC_CHECKOUT_STATUS';
-const FETCH_COD_INTELLIGENCE_CONFIG = 'FETCH_COD_INTELLIGENCE_CONFIG';
-const RESET_COD_INTELLIGENCE_CONFIG = 'RESET_COD_INTELLIGENCE_CONFIG';
+const FETCH_INTELLIGENCE_CONFIG = 'FETCH_INTELLIGENCE_CONFIG';
+const RESET_INTELLIGENCE_CONFIG = 'RESET_INTELLIGENCE_CONFIG';
 
 export const fetchMagicCheckoutStatus = (params) => {
   const url = 'merchant/checkout_details';
@@ -19,9 +19,9 @@ export const fetchMagicCheckoutStatus = (params) => {
   };
 };
 
-export const fetchCODIntelligenceConfig = () => {
+export const fetchIntelligenceConfig = () => {
   return {
-    type: FETCH_COD_INTELLIGENCE_CONFIG,
+    type: FETCH_INTELLIGENCE_CONFIG,
     payload: merchantFetch({
       url: '1cc/merchant/configs',
     }),
@@ -47,8 +47,8 @@ export const updateMagicCheckoutStatus = (data, params) => {
   };
 };
 
-export const resetCODIntelligenceConfig = () => ({
-  type: RESET_COD_INTELLIGENCE_CONFIG,
+export const resetIntelligenceConfig = () => ({
+  type: RESET_INTELLIGENCE_CONFIG,
 });
 
 const initialState = {
@@ -56,6 +56,7 @@ const initialState = {
   status: 'available',
   error: null,
   cod_intelligence: null,
+  cod_order_control: null,
 };
 
 export default function magicCheckoutReducer(state = initialState, action) {
@@ -68,17 +69,18 @@ export default function magicCheckoutReducer(state = initialState, action) {
       });
     case `${REFRESH_MAGIC_CHECKOUT_STATUS}::PENDING`:
       return set(state, 'loading', true);
-    case `${FETCH_COD_INTELLIGENCE_CONFIG}::SUCCESS`:
+    case `${FETCH_INTELLIGENCE_CONFIG}::SUCCESS`:
       return merge(state, {
         loading: false,
         cod_intelligence: action.payload?.data?.cod_intelligence,
+        cod_order_control: action.payload?.data?.manual_control_cod_order,
       });
-    case `${FETCH_COD_INTELLIGENCE_CONFIG}::PENDING`:
+    case `${FETCH_INTELLIGENCE_CONFIG}::PENDING`:
       return set(state, 'loading', true);
-    case `${FETCH_COD_INTELLIGENCE_CONFIG}::ERROR`:
+    case `${FETCH_INTELLIGENCE_CONFIG}::ERROR`:
       return set(state, 'loading', false);
-    case RESET_COD_INTELLIGENCE_CONFIG:
-      return set(state, 'cod_intelligence', null);
+    case RESET_INTELLIGENCE_CONFIG:
+      return merge(state, { cod_intelligence: null, cod_order_control: null });
     default:
       return state;
   }

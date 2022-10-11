@@ -1,0 +1,241 @@
+.ModalSlider__Overlay.magic-order-info-slider
+  width: 820px
+  z-index: 100;
+
+.ModalSlider__Overlay.magic-order-info-slider > .ModalSlider__Content > .txn-details
+  .panel-heading
+    width: 100%
+
+  .SliderPanel__Body > .panel-body
+    padding: 24px
+    padding-top: 30px
+
+.loader-wrapper
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 36%;
+
+.risk-details-table
+  height: fit-content
+  border: 1px solid #ECEEF1
+
+  thead
+    background: #ECEEF1
+
+    &:first-child
+      th
+        padding: 12px 16px
+        border: none
+
+  tbody > tr
+    td
+      background-color: #FFF
+      padding: 20px 16px
+      border: none
+
+  .reason-box
+    background: #FFFAFA
+    border: 1px solid #BF28272B
+    display: flex
+    padding: 12px
+    margin-bottom: 16px
+
+    &:last-child
+      margin-bottom: 0
+
+    .warning-icon
+      padding: 0
+      margin-right: 4px
+      display: flex
+      justify-content: center
+      align-items: center
+      color: #F04F50
+      position: relative
+      top: 2px
+
+    .warning-info
+      padding: 0
+      display: flex
+      align-items: center
+      font-size: 12px
+      color: #58666E
+      font-weight: 600
+
+.table.order-info-table
+  border: 1px solid #ECEEF1
+  border-radius: 2px
+
+  thead
+    th
+      padding: 8px 12px
+
+  tbody
+    tr
+      height: 52px
+      border: 1px solid #ECEEF1
+      border: none
+
+    td
+      text-transform: capitalize
+      vertical-align: middle
+      background-color: #FFF
+      border: none
+      padding: 8px 12px
+
+  .action-toolbar
+    .action-btn
+      border: none
+      background: none
+      padding: 4px
+      margin-right: 14px
+
+      &:last-child
+        margin-right: 0
+
+      .i
+        font-size: 115%
+        vertical-align: middle
+
+      .i-approve
+        color: #1B74DB
+
+      .i-hold
+        color: #515978
+
+      .trash-outline
+        position: relative
+        top: -1px
+
+      .approve-action,
+      .cancel-action,
+      .hold-action,
+      &:hover
+        background-color: #ECEEF1
+
+      .magic-action-popover
+        // stylelint-disable-next-line
+        width: fit-content !important
+
+      .magic-action-popover > .rzp-tooltip-inner
+        padding: 8px
+        font-style: normal
+
+  .review-status-label
+    display: flex
+    align-items: center
+    justify-content: start
+    font-size: 14px
+    font-weight: 700
+    color: #858C9A
+    line-height: 18px
+
+.magic-recommendation
+  border: 1px solid #ECEEF1
+  border-radius: 2px;
+  margin: 0 20px;
+  padding: 10px 12px;
+  border-left: 3px solid #DE5C5C
+
+  .i-info-outline
+    margin-right: 4px
+    position: relative
+    top: 1px
+
+.low-risk
+  border-left-color: #32C052
+
+.medium-risk
+  border-left-color: #CD8214
+
+.order-details
+  margin-bottom: 36px
+
+  .order-info-table
+    width: 100%
+    margin-bottom: 0
+
+    .status-label
+      width: fit-content
+      height: 24px
+      padding: 3px 12px
+      display: flex
+      align-items: center
+      justify-content: center
+      font-size: 10px
+      line-height: 14px
+      letter-spacing: 0.5px
+      border-radius: 20px
+      font-weight: 700
+
+    .low-risk
+      background-color: #1F890E1A
+      color: #1F890E
+
+    .high-risk
+      background-color: #D12D2D1A
+      color: #D12D2D
+
+    .medium-risk
+      background-color: #CD82141A
+      color: #CD8214
+
+    .approved-label
+      background-color: #32C052
+      color: #FFF
+
+    .canceled-label
+      background-color: #E86250
+      color: #FFF
+
+.order-data-container
+  display: flex
+
+.order-data-container > .customer-details-container
+  padding-left: 0;
+  padding-right: 24px
+
+.order-data-container > .reasons-details-container
+  padding-left: 0
+  padding-right: 0
+
+.table.customer-details-table
+  tbody > tr
+    td
+      padding: 0
+      background-color: #FFF
+      border: none
+
+.table.customer-details-table
+  border: 1px solid #ECEEF1
+
+  thead
+    &:first-child
+      th
+        padding: 12px 16px
+        border: none
+
+  .customer-details
+    padding: 20px 16px
+
+    .row
+      margin-bottom: 20px
+
+      &:last-child
+        margin-bottom: 0
+
+      .column-title
+        padding: 0
+        color: #58666E
+        font-weight: 600
+        line-height: 16px
+
+      .column-value
+        padding: 0
+        color: #58666E
+
+      .info-text
+        line-height: 20px
+        font-weight: 400
+        word-wrap: break-word
+        width: 180px

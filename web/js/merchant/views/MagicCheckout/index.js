@@ -5,8 +5,8 @@ import { RZPFeatures } from 'merchant/helpers/data';
 import Slider, { SliderDots } from 'common/new-ui/Slider';
 import {
   fetchMagicCheckoutStatus,
-  fetchCODIntelligenceConfig,
-  resetCODIntelligenceConfig,
+  fetchIntelligenceConfig,
+  resetIntelligenceConfig,
 } from 'merchant/reducers/magicCheckout';
 import { FEATURES_DATA } from 'merchant/views/MagicCheckout/data';
 import MagicCheckoutLanding from 'merchant/views/MagicCheckout/components/Landing';
@@ -22,14 +22,14 @@ const MagicCheckout = ({
   user,
   fetchStatus,
   magicCheckout,
-  fetchCODIntelligenceConfig,
-  resetCODIntelligenceConfig,
+  fetchIntelligenceConfig,
+  resetIntelligenceConfig,
 }) => {
   useEffect(() => {
     fetchStatus();
-    fetchCODIntelligenceConfig();
+    fetchIntelligenceConfig();
 
-    return () => resetCODIntelligenceConfig();
+    return () => resetIntelligenceConfig();
   }, []);
 
   const getNextBtnProp = (sliderProps) => {
@@ -64,7 +64,13 @@ const MagicCheckout = ({
   };
 
   if (user.isMagicCheckoutLive && isMagicCheckoutTabsEnabled(user)) {
-    return <TabsContainer user={user} isCODIntelligenceEnabled={magicCheckout?.cod_intelligence} />;
+    return (
+      <TabsContainer
+        user={user}
+        isCODIntelligenceEnabled={magicCheckout?.cod_intelligence}
+        isCODOrderControlEnabled={magicCheckout?.cod_order_control}
+      />
+    );
   }
 
   return (
@@ -98,8 +104,8 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   fetchStatus: () => dispatch(fetchMagicCheckoutStatus()),
-  fetchCODIntelligenceConfig: () => dispatch(fetchCODIntelligenceConfig()),
-  resetCODIntelligenceConfig: () => dispatch(resetCODIntelligenceConfig()),
+  fetchIntelligenceConfig: () => dispatch(fetchIntelligenceConfig()),
+  resetIntelligenceConfig: () => dispatch(resetIntelligenceConfig()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(MagicCheckout);

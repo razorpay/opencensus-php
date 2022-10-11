@@ -93,7 +93,7 @@ class DateRangePicker extends Component {
   updatePresets(presets = this.props.presets, defaultPreset = this.props.defaultPreset) {
     const now = moment();
 
-    const { hideCustomPreset } = this.props;
+    const { hideCustomPreset, minStartDate } = this.props;
     let { startDate } = this.state;
     const { endDate } = this.state;
 
@@ -109,7 +109,12 @@ class DateRangePicker extends Component {
           .add(...rest)
           .unix();
 
-      const result = { name: text, value: timeStampDiff };
+      //to disable options if the timeStampDiff is before of the minStartDate
+      const disabled = minStartDate
+        ? getStartDateFromDiff(timeStampDiff, now) < minStartDate
+        : false;
+
+      const result = { name: text, value: timeStampDiff, disabled };
 
       // powerSelect compares by reference
       if (selectedPreset && selectedPreset.name === text) {
@@ -141,8 +146,16 @@ class DateRangePicker extends Component {
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
-    if (nextProps.presets !== this.props.presets) {
+    const { presets, selectedPresetFromParent } = this.props;
+
+    if (nextProps.presets !== presets) {
       this.updatePresets(nextProps.presets);
+    } else if (
+      nextProps.selectedPresetFromParent &&
+      nextProps.selectedPresetFromParent !== selectedPresetFromParent
+    ) {
+      /*this is required if the preset needs to be set from the parent component */
+      this.onPresetChange({ option: nextProps.selectedPresetFromParent });
     }
   }
 

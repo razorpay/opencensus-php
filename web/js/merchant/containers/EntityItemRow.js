@@ -3,12 +3,12 @@ import { connect } from 'react-redux';
 
 class EnityItemRow extends Component {
   render() {
-    const { id, luminateRowId, activeEntityId, activeSecEntityId } = this.props;
+    const { id, luminateRowId, activeEntityId, activeSecEntityId, rowClasses } = this.props;
     return (
       <tr
-        className={`${luminateRowId === id ? 'luminate' : null} ${
-          activeEntityId === id || activeSecEntityId === id ? 'active' : null
-        }`}
+        className={`${luminateRowId === id ? 'luminate' : null}${
+          activeEntityId === id || activeSecEntityId === id ? ' active' : null
+        }${rowClasses ?? ''}`}
       >
         {this.props.children}
       </tr>

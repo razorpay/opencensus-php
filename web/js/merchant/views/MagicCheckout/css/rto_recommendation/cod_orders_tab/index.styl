@@ -1,0 +1,274 @@
+.ReactModal__Content.approve-order-confirmation,
+.ReactModal__Content.cancel-order-confirmation,
+.ReactModal__Content.hold-order-confirmation
+  max-width: 390px
+  transform: translateY(-120px)
+
+  .modal-header
+    padding: 0
+
+    .modal-title
+      color: #262D3A
+      font-size: 16px
+      text-transform: capitalize
+      line-height: 20px
+
+  .confirmation-modal-desc
+    line-height: 20px
+
+.ReactModal__Content.cancel-order-confirmation
+  .confirmation-modal-ctas-container > .confirmation-modal-primary-cta
+    background-color: #F04F50
+
+.Notifications.magic-notification
+  width: fit-content
+  max-width: fit-content
+
+  .Notification--neutral
+    background-color: #162F56
+
+    .i-close
+      position: relative
+      top: 2px
+      left: 4px
+
+.orders-container
+  padding: 24px
+
+  .Input
+    margin: 0
+
+  .Input-el
+    height: 30px
+
+  .btn-toolbar
+    position: relative
+    top: -4px
+
+  .list-filter-container > .datepicker-group
+    .PowerSelect__TriggerLabel
+      top: 5px
+      position: relative
+
+    .PowerSelect__TriggerStatus
+      top: 11px
+
+.multi-select-header
+  background-color: #EAEFF0
+  padding: 18px
+  display: flex
+  align-items: center
+
+  .Input-elWrapper
+    width: fit-content
+
+    .Input-el
+      height: 0
+
+    .Input-checkbox
+      border: 1px solid #979797
+
+  .Input-desc
+    margin: 1px 0 0
+    color: #58666E
+    font-weight: 700
+    line-height: 17px
+
+  .multi-action-toolbar
+    display: flex
+    justify-content: flex-end
+    align-items: end
+    margin-left: 30px
+
+    .action-btn
+      border: none
+      background: none
+      padding: 4px
+      margin-right: 14px
+
+      &:last-child
+        margin-right: 0
+
+      .i
+        font-size: 115%
+
+      .i-approve
+        color: #1B74DB
+
+      .i-hold
+        color: #515978
+
+      .trash-outline
+        position: relative
+        top: -1px
+
+    .approve-action,
+    .cancel-action,
+    .hold-action
+      &:hover
+        background-color: #F9FBFF
+
+    .magic-action-popover
+      // stylelint-disable-next-line
+      width: fit-content !important
+
+    .magic-action-popover > .rzp-tooltip-inner
+      padding: 8px
+      font-style: normal
+
+.table.magic-cod-orders-table
+  th
+    max-width: fit-content
+    padding: 8px 18px
+    vertical-align: middle
+
+  td
+    max-width: fit-content
+    height: 48px
+    vertical-align: middle
+    text-transform: capitalize
+    font-weight: 500
+    padding: 8px 18px
+
+    &:last-child
+      text-align: end
+
+  td.reviewed-by-col
+    text-transform: lowercase
+
+  tr:nth-child(odd)
+    background-color: #FFF
+
+  tr:nth-child(even)
+    background-color: #FAFBFC
+
+  tr.selected
+    background-color: #157AEC4D
+
+  .orderId-container
+    display: flex
+
+    .Input-elWrapper
+      width: fit-content
+
+      .Input-el
+        height: 0
+
+      .Input-checkbox
+        border: 1px solid #979797
+
+    .Input-desc
+      margin: 1px 0 0
+      color: #528FF0
+
+    .disable-link
+      pointer-events: none
+
+  .date-container,
+  .risk-container
+    display: flex
+    align-items: center
+
+    .container-actions
+      display: flex
+      flex-direction: column
+
+      .i-arrow-up
+        position: relative
+        top: 5px
+        color: #9FA3AB
+
+      .i-arrow-down
+        color: #9FA3AB
+
+  .action-toolbar
+    display: flex
+    justify-content: flex-start
+
+    .action-btn
+      border: none
+      background: none
+      padding: 4px
+      margin-right: 14px
+
+      &:last-child
+        margin-right: 0
+
+      .i
+        font-size: 115%
+
+      .i-approve
+        color: #1B74DB
+
+      .i-hold
+        color: #515978
+
+      .trash-outline
+        position: relative
+        top: -1px
+
+    .approve-action,
+    .cancel-action,
+    .hold-action
+      &:hover
+        background-color: #ECEEF1
+
+    .magic-action-popover
+      // stylelint-disable-next-line
+      width: fit-content !important
+
+    .magic-action-popover > .rzp-tooltip-inner
+      padding: 8px
+      font-style: normal
+
+  .action-toolbar.disable >
+    .action-btn
+      opacity: 0.5
+
+    .approve-action,
+    .cancel-action,
+    .hold-action
+      &:hover
+        background: none
+
+  .review-status-label
+    display: flex
+    align-items: center
+    font-size: 14px
+    font-weight: 700
+    color: #858C9A
+    line-height: 18px
+    letter-spacing: 0.25px
+
+  .status-label
+    width: fit-content
+    height: 24px
+    padding: 3px 12px
+    display: flex
+    align-items: center
+    justify-content: center
+    font-size: 10px
+    line-height: 14px
+    letter-spacing: 0.5px
+    border-radius: 20px
+    font-weight: 700
+
+  .low-risk
+    background-color: #1F890E1A
+    color: #1F890E
+
+  .high-risk
+    background-color: #D12D2D1A
+    color: #D12D2D
+
+  .medium-risk
+    background-color: #CD82141A
+    color: #CD8214
+
+  .approved-label
+    background-color: #32C052
+    color: #FFF
+
+  .canceled-label
+    background-color: #E86250
+    color: #FFF

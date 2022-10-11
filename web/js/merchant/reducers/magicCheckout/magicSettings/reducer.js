@@ -29,6 +29,7 @@ const initialState = {
   nested_view_type: NESTED_VIEW_TYPE.PLATFORM_SELECTION,
   codSlabsSet: false,
   nestedTabsStatus: FETCH_STATUS.IDLE,
+  manualControlCodOrder: false,
 };
 
 export default function magicSettingsReducer(state = initialState, action) {
@@ -39,6 +40,7 @@ export default function magicSettingsReducer(state = initialState, action) {
       return merge(state, {
         status: FETCH_STATUS.IDLE,
         ...action.payload.data,
+        manualControlCodOrder: action.payload.data.manual_control_cod_order,
         platform: action.payload?.data?.platform || DEFAULT_SELECTED_PLATFORM,
         has_saved_config: !!action.payload.data?.platform,
         cod_slabs: transformToComponentFormat(action.payload.data?.cod_slabs),
@@ -59,6 +61,7 @@ export default function magicSettingsReducer(state = initialState, action) {
       return merge(state, {
         status: FETCH_STATUS.IDLE,
         ...action.data,
+        manualControlCodOrder: action.data.manual_control_cod_order,
         has_saved_config: true,
         cod_slabs: action.data?.cod_slabs ? transformToComponentFormat(action.data.cod_slabs) : [],
         nested_view_type: NESTED_VIEW_TYPE.SETTINGS,

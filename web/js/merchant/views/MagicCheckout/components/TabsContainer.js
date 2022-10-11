@@ -5,10 +5,11 @@ import magicCheckoutRoutes from 'merchant/views/MagicCheckout/MagicCheckoutRoute
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 
 let redirectPath;
-const RouteContainer = ({ user, isCODIntelligenceEnabled }) => {
+const RouteContainer = ({ user, isCODIntelligenceEnabled, isCODOrderControlEnabled }) => {
   const renderNav = useCallback(
     (item) => {
       if (item.tabName === 'RTO Analytics' && !isCODIntelligenceEnabled) return null;
+      if (item.tabName === 'COD Orders' && !isCODOrderControlEnabled) return null;
       if (item.condition && !item.condition(user)) return null;
       if (!redirectPath) {
         redirectPath = item.path;
@@ -19,11 +20,11 @@ const RouteContainer = ({ user, isCODIntelligenceEnabled }) => {
         </NavLink>
       );
     },
-    [redirectPath, user, isCODIntelligenceEnabled],
+    [redirectPath, user, isCODIntelligenceEnabled, isCODOrderControlEnabled],
   );
   return (
     <tabbed-container>
-      {isCODIntelligenceEnabled === null ? (
+      {isCODIntelligenceEnabled === null || isCODOrderControlEnabled === null ? (
         <div className="page-spinner-container">
           <Spinner />
         </div>

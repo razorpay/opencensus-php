@@ -1,0 +1,65 @@
+import { merge } from 'common/utils/immutable';
+import { ACTIONS } from 'merchant/reducers/magicCheckout/codOrders/action';
+import { REVIEW_STATUS_LABEL } from 'merchant/views/MagicCheckout/CODOrdersTab/constants';
+
+const initialState = {
+  id: '',
+  receipt: '',
+  riskTier: '',
+  from: '',
+  to: '',
+  count: 25,
+  skip: 0,
+  items: [],
+  loading: false,
+  error: null,
+  selectedPresetFromParent: null,
+};
+
+export const magicCODOrdersReducer = (state = initialState, action) => {
+  switch (action.type) {
+    case ACTIONS.UPDATE_FILTERS:
+      return merge(state, { ...action.payload });
+    case ACTIONS.FETCH_COD_ORDERS_PENDING:
+      return merge(state, { loading: true, items: [] });
+    case ACTIONS.FETCH_COD_ORDERS_SUCCESS:
+      return merge(state, {
+        loading: false,
+        items: action.payload?.data?.items,
+        error: null,
+        ...action.data,
+      });
+    case ACTIONS.FETCH_COD_ORDERS_ERROR:
+      return merge(state, { loading: false, error: action.payload?.error });
+    case ACTIONS.SET_TIME_RANGE:
+      return merge(state, { ...action.payload });
+    case ACTIONS.REVIEW_COD_ORDERS_PENDING:
+    case ACTIONS.REVIEW_COD_ORDERS_ERROR:
+      return state;
+    case ACTIONS.REVIEW_COD_ORDERS_SUCCESS: {
+      const res = action.payload.data;
+      const isSuccess = res.filter((item) => !item.hasOwnProperty('error')).map((item) => item.id);
+      const newArray = state.items.map((item) =>
+        isSuccess.includes(item.id)
+          ? { ...item, review_status: `${REVIEW_STATUS_LABEL[action.data.reviewType]}` }
+          : item,
+      );
+      return merge(state, { items: newArray });
+    }
+    default:
+      return state;
+  }
+};
+
+export const magicCODOrderInfoReducer = (state = initialState, action) => {
+  switch (action.type) {
+    case ACTIONS.FETCH_ORDER_INFO_PENDING:
+      return merge(state, { loading: true, items: [] });
+    case ACTIONS.FETCH_ORDER_INFO_SUCCESS:
+      return merge(state, { loading: false, items: action.payload?.data?.items, error: null });
+    case ACTIONS.FETCH_ORDER_INFO_ERROR:
+      return merge(state, { loading: false, error: action.payload?.error });
+    default:
+      return state;
+  }
+};

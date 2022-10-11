@@ -1,28 +1,208 @@
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { useState, useCallback } from 'react';
-import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
 import CodIntelligenceToggle from 'merchant/views/MagicCheckout/MagicSettings/components/common/CodIntelligenceToggle';
 import MagicIntelligence from 'merchant/views/MagicCheckout/MagicIntelligence';
-import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
+import ManualReviewToggle from 'merchant/views/MagicCheckout/MagicSettings/components/common/ManualReviewToggle';
+import ConfirmationModal, {
+  DisplayNotificationTxt,
+} from 'merchant/views/MagicCheckout/common/components/ConfirmationModal';
+import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { analyticsTrack } from 'common/utils/analytics';
+import {
+  PLATFORMS,
+  MANUAL_REVIEW_MODAL,
+} from 'merchant/views/MagicCheckout/MagicSettings/constants';
+import { SWITCH_TEXTS } from 'merchant/views/MagicCheckout/Settings/constants';
 
-const MagicIntelligenceTab = ({ settings, updateSettings }) => {
-  const [codIntelligence, setCodIntelligence] = useState(settings.cod_intelligence || false);
-  const switchMode = useCallback(() => {
-    setCodIntelligence((prevState) => {
-      const newState = !prevState;
+const MagicIntelligenceTab = ({
+  settings,
+  updateSettings,
+  openModal,
+  closeModal,
+  showNotification,
+  merchantId,
+  user,
+}) => {
+  const { cod_intelligence, platform, shop_id, manualControlCodOrder } = settings;
+  const [codIntelligence, setCodIntelligence] = useState(cod_intelligence || false);
+  const [codOrderControl, setCodOrderControl] = useState(manualControlCodOrder || false);
+
+  const ReviewModal = MANUAL_REVIEW_MODAL[platform]?.component;
+
+  const switchMode = useCallback(
+    (toggleState) => {
+      const modalAction = toggleState ? 'disabled' : 'enabled';
       const params = {
-        platform: settings.platform,
-        cod_intelligence: newState,
+        platform,
+        cod_intelligence: !codIntelligence,
+        manual_control_cod_order: false,
       };
-      if (settings.platform === PLATFORMS.VALUES.SHOPIFY) {
-        params.shop_id = settings.shop_id;
-      }
-      updateSettings(params, false);
-      return newState;
-    });
-  }, [codIntelligence, settings.platform, settings.shop_id]);
 
+      if (platform === PLATFORMS.VALUES.SHOPIFY) {
+        params.shop_id = shop_id;
+      }
+
+      updateSettings(params, false)
+        .then(() => {
+          showNotification({
+            type: 'success',
+            message: () => (
+              <DisplayNotificationTxt
+                notificationTxt={`COD Intelligence ${modalAction} successfully`}
+              />
+            ),
+          });
+
+          analyticsTrack({
+            objectName: `codIntelligence${codIntelligence ? 'Disabled' : 'Enabled'}`,
+            actionName: 'behav',
+            screen: 'platform settings l1',
+            properties: {
+              platform,
+              merchant_id: merchantId,
+              action_source: 'user',
+            },
+          });
+
+          manualControlCodOrder &&
+            analyticsTrack({
+              objectName: 'manualControlCodDisabled',
+              actionName: 'behav',
+              screen: 'platform settings l1',
+              properties: {
+                platform,
+                merchant_id: merchantId,
+                action_source: 'auto',
+              },
+            });
+
+          setCodIntelligence((prevState) => !prevState);
+          setCodOrderControl(false);
+          closeModal();
+        })
+        .catch(() => {
+          closeModal();
+        });
+    },
+    [codIntelligence, platform, shop_id, closeModal, showNotification],
+  );
+
+  const switchReviewMode = useCallback(
+    (toggleState, payload = {}) => {
+      const modalAction = toggleState ? 'disabled' : 'enabled';
+      const params = {
+        platform,
+        manual_control_cod_order: !codOrderControl,
+        cod_intelligence: false,
+        ...payload,
+      };
+
+      if (platform === PLATFORMS.VALUES.SHOPIFY) {
+        params.shop_id = shop_id;
+      }
+
+      updateSettings(params, false)
+        .then(() => {
+          showNotification({
+            type: 'success',
+            message: () => (
+              <DisplayNotificationTxt
+                notificationTxt={`Manual review ${modalAction} successfully`}
+              />
+            ),
+          });
+
+          analyticsTrack({
+            objectName: `manualControlCod${manualControlCodOrder ? 'Disabled' : 'Enabled'}`,
+            actionName: 'behav',
+            screen: 'platform settings l1',
+            properties: {
+              platform,
+              merchant_id: merchantId,
+              action_source: 'user',
+            },
+          });
+
+          codIntelligence &&
+            analyticsTrack({
+              objectName: 'codIntelligenceDisabled',
+              actionName: 'behav',
+              screen: 'platform settings l1',
+              properties: {
+                platform,
+                merchant_id: merchantId,
+                action_source: 'auto',
+              },
+            });
+
+          setCodOrderControl((prevState) => !prevState);
+          setCodIntelligence(false);
+          closeModal();
+        })
+        .catch(() => {
+          toggleState && closeModal();
+        });
+    },
+    [codOrderControl, platform, shop_id, closeModal, showNotification],
+  );
+
+  const switchReviewToggle = useCallback(
+    (modalState) => {
+      openModal({
+        size: 'large',
+        className: `${platform}ManualSettingModal`,
+        component: (
+          <ReviewModal
+            platform={platform}
+            setCodOrderControl={(payload) => switchReviewMode(modalState, payload)}
+          />
+        ),
+      });
+    },
+    [openModal, platform, codOrderControl],
+  );
+
+  const getAction = (toggleState) => {
+    return !toggleState && platform !== 'shopify'
+      ? () => switchReviewToggle(toggleState)
+      : () => switchReviewMode(toggleState);
+  };
+
+  const getConfimationModalType = (modalSource, toggleState) => {
+    const switchState = codIntelligence || codOrderControl ? 'Enabled' : 'Disabled';
+    return !toggleState ? `${modalSource}${switchState}` : modalSource;
+  };
+
+  const onToggleClick = useCallback(
+    (modalSource, toggleState) => {
+      const modalType = getConfimationModalType(modalSource, toggleState);
+      const modalAction =
+        modalSource === 'codIntelligence' ? () => switchMode(toggleState) : getAction(toggleState);
+      const modalState = !toggleState ? 'enable' : 'disable';
+      const { header, desc, subText, secondaryCtaLabel, primaryCtaLabel } = SWITCH_TEXTS[
+        modalState
+      ][modalType];
+
+      openModal({
+        size: 'small',
+        className: `magicToggleConfirmationModal`,
+        component: (
+          <ConfirmationModal
+            header={header}
+            subText={subText}
+            desc={desc}
+            affirmativeLabel={primaryCtaLabel}
+            abortLabel={secondaryCtaLabel}
+            onAffirm={modalAction}
+          />
+        ),
+      });
+    },
+    [openModal, codIntelligence, codOrderControl],
+  );
   return (
     <div className="magic-intelligence">
       <div className="header-wrapper">
@@ -31,7 +211,16 @@ const MagicIntelligenceTab = ({ settings, updateSettings }) => {
           Automatically turn off the cash on delivery (COD) payment option for high risk customers
         </div>
         <div className="magic-intelligence-toggle">
-          <CodIntelligenceToggle checked={codIntelligence} switchMode={switchMode} />
+          <CodIntelligenceToggle
+            checked={codIntelligence}
+            switchMode={() => onToggleClick('codIntelligence', codIntelligence)}
+          />
+          {user.isMagicRTORecommendationEnabled && (
+            <ManualReviewToggle
+              checked={codOrderControl}
+              switchMode={() => onToggleClick('manualReview', codOrderControl)}
+            />
+          )}
         </div>
       </div>
       <div className="magic-intelligence-shiprocket">
@@ -42,10 +231,20 @@ const MagicIntelligenceTab = ({ settings, updateSettings }) => {
 };
 
 const mapStateToProps = (state) => ({
+  user: state.session.user,
   settings: state.magic_settings,
+  merchantId: state.config?.config?.id,
 });
 
 const mapDispatchToProps = (dispatch) =>
-  bindActionCreators({ updateSettings: updateMagicSettings }, dispatch);
+  bindActionCreators(
+    {
+      updateSettings: updateMagicSettings,
+      openModal,
+      closeModal,
+      showNotification,
+    },
+    dispatch,
+  );
 
 export default connect(mapStateToProps, mapDispatchToProps)(MagicIntelligenceTab);

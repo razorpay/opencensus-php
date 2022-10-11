@@ -3,7 +3,7 @@ import SwitchField from 'common/ui/Forms/SwitchField';
 
 const CodIntelligenceToggle = ({ checked, switchMode }) => {
   return (
-    <div className="filter-item link-account-instruction display-flex c-fee-configuration">
+    <div className="filter-item link-account-instruction display-flex c-fee-configuration toggle-container">
       <div className="intelligence-label font-normal" for="cod-intelligence">
         <label>
           COD Intelligence

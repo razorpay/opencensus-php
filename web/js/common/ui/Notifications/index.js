@@ -2,22 +2,31 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import Notification from './Notification';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import { classList } from 'common/utils/rzp-utils';
 
-@connect(state => state.notifications, NotificationsActions)
+@connect((state) => state.notifications, NotificationsActions)
 export default class Notifications extends Component {
-  closeNotification = notification => {
+  closeNotification = (notification) => {
     this.props.hideNotification(notification);
   };
 
+  getExtraClass = (notifications) => {
+    const extraClasses = notifications
+      .filter((notification) => notification.hasOwnProperty('className'))
+      .map((item) => item.className);
+    const notifictaionClassName = classList(extraClasses);
+    return notifictaionClassName.length !== 0 ? ` ${notifictaionClassName}` : '';
+  };
+
   render() {
-    let { notifications, hidePrevious } = this.props;
+    const { notifications, hidePrevious } = this.props;
 
     if (!notifications.length) {
       return null;
     }
 
     return (
-      <div class="Notifications">
+      <div class={`Notifications${this.getExtraClass(notifications)}`}>
         {notifications.map((notification, idx) => (
           <Notification
             key={notification.id}

@@ -129,13 +129,13 @@ export const getTimedQuery = (startTime, endTime) => {
   return { ...queryBody, widgets };
 };
 
-export const calculateInitialDateRange = () => {
+export const calculateInitialDateRange = (duration = DEFAULT_DURATION) => {
   const endDate = moment();
   const defaultDiff =
     endDate.unix() -
     endDate
       .clone()
-      .add(...DEFAULT_DURATION)
+      .add(...duration)
       .unix();
   const startDate = getStartDateFromDiff(defaultDiff, endDate);
 

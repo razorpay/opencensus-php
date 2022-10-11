@@ -9,6 +9,11 @@ import NativePlatform from 'merchant/views/MagicCheckout/MagicSettings/component
 import ShopifySettingsForm from 'merchant/views/MagicCheckout/MagicSettings/containers/shopify/SettingsForm';
 import ShopifySettingsCard from 'merchant/views/MagicCheckout/MagicSettings/containers/shopify/SettingsCard';
 
+import WoocommerceModal from 'merchant/views/MagicCheckout/MagicSettings/manualReviewSettings/Woocommerce';
+import NativeModal from 'merchant/views/MagicCheckout/MagicSettings/manualReviewSettings/Native';
+
+const cdnBaseUrl = window.cdnBaseUrl || 'https://cdn.razorpay.com';
+
 export const PLATFORMS = {
   LABELS: {
     WOOCOMMERCE: 'WooCommerce',
@@ -189,8 +194,48 @@ export const SHOPIFY_MAGIC_CHECKOUT = {
   key: 'one_click_checkout',
 };
 
+export const MANUAL_REVIEW_MODAL = {
+  woocommerce: {
+    component: WoocommerceModal,
+    demoUrl: `${cdnBaseUrl}/static/assets/magic-checkout/woocommerce-manual-review-demo.mp4`,
+    icon: `${cdnBaseUrl}/static/assets/magic-checkout/platforms/wooc.png`,
+  },
+  native: {
+    component: NativeModal,
+    infoHeader: 'Prerequisites for manually review COD orders',
+    instructions: [
+      {
+        customPoints: true,
+        points: [
+          {
+            type: 'text',
+            text:
+              'To manually review COD orders, you will have to create a review order API. Please check ',
+          },
+          {
+            type: 'link',
+            text: 'instructions',
+            url:
+              'https://docs.google.com/document/d/1wmUFOful3w_Ga01dIwcAJsAuCDVUtWLtG9-6dWjGi54/edit#heading=h.hfjqmnxzy0c2',
+          },
+          {
+            type: 'text',
+            text: ' for the required API contract and response',
+          },
+        ],
+      },
+      {
+        point:
+          'Basic authentication is also mandatory for this API. Please enter the username and password set by you for authentication.',
+      },
+    ],
+  },
+};
 export const SHOPIFY_RECEIPT_PREFIX = 'shopify_1cc_receipt';
 
 export const ORDER_PENDING = 'Order Pending';
 
 export const SHOPIFY_BUY_NOW_BUTTON = 'one_cc_buy_now_button';
+
+export const WOOCOMMERCE_REST_API_URL =
+  'https://woocommerce.github.io/woocommerce-rest-api-docs/?shell#authentication';

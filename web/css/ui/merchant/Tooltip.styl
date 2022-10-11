@@ -4,7 +4,6 @@ $anchor-text-color-dark-hover = lighten($primary-color, 20%);
 $dark-bg-color = #2C3243;
 
 .rzp-tooltip {
-
   display: table;
   position: fixed;
   opacity: 0;
@@ -12,53 +11,46 @@ $dark-bg-color = #2C3243;
   z-index: -1;
   font-size: 14px;
   font-weight: normal;
-  color: #58666e;
+  color: #58666E;
   line-height: 1;
 
   &.show {
-
     opacity: 1;
     z-index: 9999;
     margin-top: 0;
   }
 
+  .rzp-tooltip-inner {
+    padding: 5px 10px;
+    background-color: #FFF;
+    box-shadow: 0 6px 15px rgb(0 0 0 / 0.13);
+    border-radius: 2px;
+
+    a {
+      color: $anchor-text-color;
+
+      &:hover {
+        color: $anchor-text-color-hover;
+      }
+    }
+  }
+
   &.theme-dark {
-    color: #fff
+    color: #FFF
 
     .rzp-tooltip-inner {
-
       background-color: $dark-bg-color;
 
       .rzp-popover-content {
-
         .rzp-popover-body {
           text-align: left;
-          color: #FFFFFF;
+          color: #FFF;
           word-break: normal;
         }
       }
 
       a:hover {
-
         color: $anchor-text-color-dark-hover;
-      }
-    }
-  }
-
-  .rzp-tooltip-inner {
-
-    padding: 5px 10px;
-    background-color: #FFFFFF;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.13);
-    border-radius: 2px;
-
-    a {
-
-      color: $anchor-text-color;
-
-      &:hover {
-
-        color: $anchor-text-color-hover;
       }
     }
   }

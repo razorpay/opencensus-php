@@ -60,9 +60,15 @@ export default class ModalSlider extends Component {
   };
 
   render() {
+    const { overlayCustomClass } = this.props;
+
     let className = 'ModalSlider__Overlay';
     if (this.props.expanded) {
       className += ' expanded';
+    }
+
+    if (overlayCustomClass) {
+      className = `${className} ${overlayCustomClass}`;
     }
     // Method to get the current mode of the merchant
     const mode = () => {

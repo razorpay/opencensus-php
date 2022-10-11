@@ -13,6 +13,7 @@ import {
 } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import NestedVerticalTab from 'merchant/views/MagicCheckout/Settings/containers/NestedVerticalTab';
 import PlatformSubText from 'merchant/views/MagicCheckout/Settings/components/PlatformSubText';
+import { DisplayNotificationTxt } from 'merchant/views/MagicCheckout/common/components/ConfirmationModal';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import Spinner from 'common/ui/Spinner';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -25,15 +26,16 @@ const PlatformSettings = ({
   displayNotification,
   user,
 }) => {
-  const { nested_view_type, status, has_saved_config } = settings;
+  const { nested_view_type, status, has_saved_config, platform } = settings;
 
   useEffect(() => {
     if (settings.status === FETCH_STATUS.ERROR) {
+      const notifTxt = settings.error.errors.length
+        ? settings.error.errors[0]
+        : 'Something went wrong. Please try again';
       displayNotification({
         type: 'error',
-        message: settings.error.errors.length
-          ? settings.error.errors[0]
-          : 'Something went wrong. Please try again',
+        message: <DisplayNotificationTxt notificationTxt={notifTxt} />,
       });
     }
   }, [settings.status]);
@@ -42,7 +44,7 @@ const PlatformSettings = ({
     if (fetchSettings) {
       fetchSettings();
     }
-  }, [fetchSettings]);
+  }, [fetchSettings, platform]);
 
   const getAnalyticsProperties = useCallback(
     (pageType) => {
@@ -85,7 +87,7 @@ const PlatformSettings = ({
   }, [status]);
 
   const getNestedVerticalTab = () => {
-    const { platform, one_click_checkout } = settings;
+    const { one_click_checkout } = settings;
     if (!(platform === PLATFORMS.VALUES.SHOPIFY && !one_click_checkout)) {
       return <NestedVerticalTab />;
     }

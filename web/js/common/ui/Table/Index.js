@@ -47,7 +47,7 @@ export default ({
         isMobileResolution && customMobileRow ? (
           customMobileRow(item)
         ) : (
-          <EntityItemRow key={`${item.id}_${index}`} id={item.id}>
+          <EntityItemRow key={`${item.id}_${index}`} id={item.id} rowClasses={item.rowClass}>
             {cols.map((column, index) => (
               <td class={column.columnClass ? column.columnClass : ''} key={index}>
                 {column.value(item, onCellClick)}
@@ -67,7 +67,7 @@ export default ({
             <tr>
               {cols.map((column, index) => (
                 <th class={column.columnClass} key={index}>
-                  {column.title}
+                  {typeof column.title === 'function' ? column.title() : column.title}
                 </th>
               ))}
             </tr>

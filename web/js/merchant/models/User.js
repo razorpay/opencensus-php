@@ -400,6 +400,10 @@ export default class User {
     return this.getExpStatus('magic_rto_analytics_live');
   }
 
+  get isMagicRTORecommendationEnabled() {
+    return this.getExpStatus('magic_rto_recommendation_live');
+  }
+
   get isShopifyMagicEnabled() {
     return this.getExpStatus('1cc_shopify_magic_enable');
   }

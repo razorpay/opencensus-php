@@ -2,6 +2,7 @@ import BulkAddressUpload from 'merchant/views/MagicCheckout/BulkAddressUpload';
 import MagicSettings from 'merchant/views/MagicCheckout/Settings';
 import RTOAnalytics from 'merchant/views/MagicCheckout/RTOAnalytics';
 import OrderStatusUpload from 'merchant/views/MagicCheckout/OrderStatusUpload';
+import CODOrdersTab from 'merchant/views/MagicCheckout/CODOrdersTab';
 /**
  * Order of tabs:
  * 1. Settings
@@ -35,6 +36,12 @@ const routes = [
     path: '/magic/analytics',
     condition: (_user) => _user.isMagicRTOAnalyticsEnabled,
     Component: RTOAnalytics,
+  },
+  {
+    tabName: 'COD Orders',
+    path: '/magic/cod-orders',
+    condition: (_user) => _user.isMagicRTORecommendationEnabled,
+    Component: CODOrdersTab,
   },
 ];
 
