@@ -10,6 +10,7 @@ const FormProvider = ({ children }) => {
   const [isLoading, setLoading] = useState(LOADING.INITIAL); //to handle form saving
   const [initialValues, setInitialValues] = useState(formInitialValues); //so set forms initialValues
   const [isPurposecodeSpecial, setIsPurposecodeSpecial] = useState(false); //to check if IEC input needs to be shown
+  const [ownerCount, setOwnerCount] = useState(0);
   const [activeOwner, setActiveOwner] = useState(0); //current owner in ownership form
   const [documents, setDocuments] = useState({}); //to track uploaded documents
   const [isUneditable, setIsUneditable] = useState({}); //to check if an input is editable or not
@@ -56,6 +57,8 @@ const FormProvider = ({ children }) => {
     setIsUneditable,
     purposeCode,
     setPurposeCode,
+    ownerCount,
+    setOwnerCount,
   };
 
   return <formContext.Provider value={value}>{children}</formContext.Provider>;

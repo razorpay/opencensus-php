@@ -31,6 +31,14 @@ export const INSTRUMENT_LIST = [
 
 export const SPECIAL_PURPOSE_CODES = ['P0103', 'P0807'];
 
+export const ownerCountList = [
+  { label: 'Select', name: 0 },
+  { label: '1', name: 1 },
+  { label: '2', name: 2 },
+  { label: '3', name: 3 },
+  { label: '4', name: 4 },
+];
+
 export const regex = {
   num: /^\d+$/,
   registrationNumber: /^[ulUL][0-9]{5}[A-Za-z]{2}[0-9]{4}[A-Za-z]{3}[0-9]{6}$/,
@@ -103,7 +111,7 @@ export const tabs = [
     name: 'Instruments / Details',
     description:
       'Select the payment instruments to enable on your checkout. These instruments will be included under the ‘Instant Bank Transfers’ section of the payment methods on checkout.',
-    errorMessage: 'Please select atleast one payment method to continue or switch tabs',
+    errorMessage: ['Please select atleast one payment method to continue or switch tabs'],
     component: Instruments,
     formValues: instrumentFormValues,
     dataKey: INSTRUMENTS,
@@ -112,7 +120,7 @@ export const tabs = [
     name: 'Details Required',
     description:
       'International payments are associated with a higher risk of frauds and chargeback, hence it is governed by strict risk evaluations policies laid down by our banking partners',
-    errorMessage: 'Please enter all the required and valid details to continue or switch tabs',
+    errorMessage: ['Please enter all the required and valid details to continue or switch tabs'],
     component: Details,
     formValues: detailsFormValues,
     dataKey: MERCHANT_INFO,
@@ -120,9 +128,11 @@ export const tabs = [
   {
     name: 'Management / Ownership',
     description:
-      'International payments are associated with a higher risk of frauds and chargeback, hence it is governed by strict risk evaluations policies laid down by our banking partners',
-    errorMessage:
-      'Please enter all the required and valid details to add owner or submit the form or switch tabs',
+      'The number of owners in your company with ownership greater than or equal to 25% must be selected below. Following this, the form would expand and the details of all those owners would need to be filled.',
+    errorMessage: [
+      'Razorpay will not be able to activate APMs if the details of any owner (with ≥25% ownership) is/are left out of the form',
+      'Please enter all the required and valid details to submit the form or switch tabs',
+    ],
     component: Ownership,
     formValues: ownershipFormValues,
     dataKey: OWNER_DETAILS,
@@ -362,9 +372,7 @@ export const detailsFormSchema = (isSpecialPurposecode) =>
         .required('This is a required field.'),
       country: Yup.string().required('This is a required field.'),
       date_of_incorporation: Yup.string().required('This is a required field.'),
-      registration_number: Yup.string()
-        .matches(regex.registrationNumber, 'This field is not in a valid format')
-        .required('This is a required field.'),
+      registration_number: Yup.string().required('This is a required field.'),
       gst_number: Yup.string()
         .min(15, 'This field must be exactly 15 character long')
         .max(15, 'This field must be exactly 15 character long')
@@ -391,7 +399,7 @@ export const ownershipFormSchema = Yup.object().shape({
         .max(45, 'This field cannot be more than 45 characters')
         .required('This is a required field.'),
       ownership_percentage: Yup.string()
-        .matches(regex.numDecimal, 'The field should have digits only')
+        .matches(regex.numDecimal, 'This field is not in valid format')
         .required('This is a required field.'),
       date_of_birth: Yup.string().required('This is a required field.'),
       passport_number: Yup.string()

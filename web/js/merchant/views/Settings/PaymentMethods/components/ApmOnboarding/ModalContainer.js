@@ -13,7 +13,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 
 //Helper functions and constants
 import { saveForm } from './services';
-import { INSTRUMENTS, OWNER_DETAILS, ownershipFormValues, tabs } from './constants';
+import { INSTRUMENTS, OWNER_DETAILS, tabs } from './constants';
 import { LOADING } from 'merchant/components/Activation/Constants';
 import {
   initializeForm,
@@ -21,14 +21,12 @@ import {
   transformPurposeCodeList,
   refreshEntries,
 } from './utils';
-import { scrollToTop } from 'common/utils/rzp-utils';
 
 //Analytics
 import {
   trackDataSaveError,
   trackDataSaveSuccess,
   trackDataSaving,
-  trackFormAddOwnerClicked,
   trackFormButtonClicked,
   trackInstrumentsRequested,
   trackModalClosed,
@@ -41,6 +39,9 @@ import { Modal, ModalContent } from 'common/new-ui/Modal';
 import Spinner from 'common/ui/Spinner';
 import Button from 'common/new-ui/Button';
 import Loader from 'merchant/components/Activation/components/Loader';
+
+//Styles
+import './ApmOnboarding.styl';
 
 const ModalContainer = ({
   closeModal,
@@ -57,7 +58,6 @@ const ModalContainer = ({
     initialValues,
     setInitialValues,
     activeOwner,
-    setActiveOwner,
     documents,
     setIsPurposecodeSpecial,
     setDocuments,
@@ -66,6 +66,8 @@ const ModalContainer = ({
     setIsUneditable,
     setPurposeCode,
     purposeCode,
+    ownerCount,
+    setOwnerCount,
   } = useContext(formContext);
   const { errors, values, dirty, validateForm } = useFormikContext();
   const containerRef = useRef(null);
@@ -73,11 +75,12 @@ const ModalContainer = ({
   const CurrentTab = tabs[selectedTab].component;
   const tabName = tabs[selectedTab].name;
   const isTabValid = !errors?.[tabs[selectedTab].dataKey];
+  const isOwnerInitialPage = ownerCount > 0 && selectedTab === 2;
 
   //common function to reinitialize form values to reset dirty
   const reinitializeValues = (data = values) => {
     setInitialValues({ ...data });
-    setTimeout(() => validateForm());
+    setTimeout(() => validateForm(), 100);
   };
 
   /**
@@ -198,33 +201,6 @@ const ModalContainer = ({
     }
   };
 
-  const onOwnerCreationSuccess = () => {
-    scrollToTop(containerRef);
-    setActiveOwner(activeOwner + 1);
-    trackFormAddOwnerClicked();
-  };
-
-  /**
-   * 1. Appends new owner object in the array with empty values if current
-   * owner details are valid
-   * 2. Saves data of current owner if dirty is true, reinitialize valus after that
-   */
-  const onAddOwner = async () => {
-    const newOwner = { ...ownershipFormValues };
-    const data = {
-      ...values,
-      [OWNER_DETAILS]: [...values.owner_details, newOwner],
-    };
-    if (dirty && !errors?.[OWNER_DETAILS]?.[activeOwner]) {
-      await saveData(data);
-      onOwnerCreationSuccess();
-    }
-    if (!dirty && !errors?.[OWNER_DETAILS]?.[activeOwner]) {
-      reinitializeValues(data);
-      onOwnerCreationSuccess();
-    }
-  };
-
   /**
    * 1. Calls save Data function if form is dirty & valid when closed
    * 2. Close modal in any case
@@ -249,6 +225,7 @@ const ModalContainer = ({
     setDocuments(documents);
     setIsUneditable(unEditable);
     setIsPurposecodeSpecial(isSpecialPurposecode);
+    setOwnerCount(formData?.[OWNER_DETAILS]?.length ?? 0);
     trackModalOpened(values?.[INSTRUMENTS]?.length);
   };
 
@@ -306,7 +283,9 @@ const ModalContainer = ({
                     {isTabValid ? <i className="i-check" /> : null}
                     {tabName}
                   </div>
-                  <div className="description">{tabs[selectedTab].description}</div>
+                  {isOwnerInitialPage ? null : (
+                    <div className="description">{tabs[selectedTab].description}</div>
+                  )}
                 </div>
                 <CurrentTab saveData={saveData} showNotification={showNotification} {...props} />
               </div>
@@ -314,21 +293,13 @@ const ModalContainer = ({
                 {errors?.[tabs[selectedTab].dataKey] ? (
                   <div className="bottom-notice">
                     <i className="i i-info-outline" />
-                    <p>{tabs[selectedTab].errorMessage}</p>
+                    <p>{tabs[selectedTab].errorMessage[isOwnerInitialPage ? 1 : 0]}</p>
                   </div>
                 ) : null}
                 <div className="left">
                   {isLoading !== LOADING.INITIAL ? <Loader isSaving={isLoading} /> : null}
                 </div>
                 <div className="button-list">
-                  {selectedTab === 2 ? (
-                    <Button.Secondary
-                      onClick={onAddOwner}
-                      disabled={errors?.[tabs[selectedTab].dataKey]}
-                    >
-                      Add Owner
-                    </Button.Secondary>
-                  ) : null}
                   <Button.Primary
                     iconAfter="chevron-right device--desktop"
                     disabled={errors?.[tabs[selectedTab].dataKey] || isLoading === LOADING.PENDING}

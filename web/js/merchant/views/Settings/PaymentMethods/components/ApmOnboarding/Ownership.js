@@ -10,9 +10,10 @@ import { OWNER_DETAILS, ownershipFormFields } from './constants';
 //Components
 import Input from 'common/new-ui/Input';
 import OwnerList from './OwnerList';
+import OwnerPrompt from './OwnerPrompt';
 
 const Ownership = ({ saveData, showNotification }) => {
-  const { activeOwner, updateDocuments, documents } = useContext(formContext);
+  const { activeOwner, ownerCount, updateDocuments, documents } = useContext(formContext);
   const { values, touched, errors, handleChange, handleBlur, setFieldValue } = useFormikContext();
 
   /**
@@ -117,12 +118,14 @@ const Ownership = ({ saveData, showNotification }) => {
 
   return (
     <div className="ownership-container">
+      <OwnerPrompt saveData={saveData} />
       <OwnerList saveData={saveData} />
-      {ownershipFormFields.map((field) => {
-        const { type, key } = field;
-        const InputField = type && Input[type] ? Input[type] : Input;
-        return <InputField key={key} {...getFieldProps(field)} />;
-      })}
+      {ownerCount > 0 &&
+        ownershipFormFields.map((field) => {
+          const { type, key } = field;
+          const InputField = type && Input[type] ? Input[type] : Input;
+          return <InputField key={key} {...getFieldProps(field)} />;
+        })}
     </div>
   );
 };

@@ -86,8 +86,9 @@ export const transformApiBody = (values, errors, documents, activeOwner, isSubmi
   const body = {};
   let apiBody = {};
   tabs.forEach(({ dataKey }) => {
-    if (errors?.[dataKey]) return;
     const isOwner = dataKey === OWNER_DETAILS;
+    if (errors?.[dataKey] && !isOwner) return;
+    if (errors?.[dataKey]?.[activeOwner] && isOwner) return;
     const tabValues = isOwner ? values?.[dataKey]?.[activeOwner] : values?.[dataKey];
     if (dataKey === INSTRUMENTS) apiBody = tabValues;
     else apiBody = sortDocuments(tabValues, { ...documents });

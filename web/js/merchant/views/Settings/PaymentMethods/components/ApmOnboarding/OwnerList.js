@@ -19,9 +19,15 @@ import { LOADING } from 'merchant/components/Activation/Constants';
 import { OWNER_DETAILS } from './constants';
 
 const OwnerList = ({ saveData }) => {
-  const { initialValues, setInitialValues, activeOwner, setActiveOwner, setLoading } = useContext(
-    formContext,
-  );
+  const {
+    initialValues,
+    setInitialValues,
+    activeOwner,
+    setActiveOwner,
+    setLoading,
+    ownerCount,
+    setOwnerCount,
+  } = useContext(formContext);
   const { values, errors, dirty, validateForm } = useFormikContext();
 
   const reinitializeValues = (data = values) => {
@@ -43,6 +49,7 @@ const OwnerList = ({ saveData }) => {
       [OWNER_DETAILS]: [...filteredOwners],
     };
     if (activeOwner === filteredOwners.length) setActiveOwner(activeOwner - 1);
+    setOwnerCount((prev) => prev - 1);
     reinitializeValues(data);
   };
 
@@ -82,6 +89,8 @@ const OwnerList = ({ saveData }) => {
       setActiveOwner(index);
     }
   };
+
+  if (!ownerCount) return null;
 
   return (
     <div className="owner-list">
