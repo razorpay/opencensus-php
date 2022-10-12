@@ -8284,6 +8284,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OFFER_ID_NOT_APPLICABLE_ON_CHECKOUT_ORDER                   = 'OFFER_ID_NOT_APPLICABLE_ON_CHECKOUT_ORDER';
     const TRACK_TOKENISED_PAYMENT_VALIDATION                          = 'TRACK_TOKENISED_PAYMENT_VALIDATION';
 
+
+    const SUB_MERCHANTS_USER_ATTACH_SUCCESSFUL                        = 'SUB_MERCHANTS_USER_ATTACH_SUCCESSFUL';
+    const SUB_MERCHANTS_USER_DETACH_SUCCESSFUL                        = 'SUB_MERCHANTS_USER_DETACH_SUCCESSFUL';
+
     const GET_SHOPIFY_CLIENT_ERROR                                    = 'GET_SHOPIFY_CLIENT_ERROR';
     const SHOPIFY_1CC_APPLY_COUPON_ERROR                              = 'SHOPIFY_1CC_APPLY_COUPON_ERROR';
 

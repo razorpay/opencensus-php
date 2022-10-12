@@ -5794,6 +5794,11 @@ IFSC Code  ICIC0001206
         $this->merchantEmailUpdateCreateNewOwner(true, true, false);
     }
 
+    public function testMerchantEmailUpdateCreateNewOwnerDetachOldOwnerForMerchantAndSubmerchants()
+    {
+        $this->merchantEmailUpdateCreateNewOwnerForMerchantAndSubmerchants(false, false, true);
+    }
+
     public function testMerchantEmailUpdateCreateNewOwnerTokenMismatchFail()
     {
         Mail::fake();
@@ -6121,6 +6126,173 @@ IFSC Code  ICIC0001206
         }
 
         $this->assertMerchantContactEmailForEmailUpdate($merchant['id'], $setContactEmail);
+    }
+
+    protected function merchantEmailUpdateCreateNewOwnerForMerchantAndSubmerchants($reAttachCurrentOwner, $setContactEmail, $isCurrentOwnerOnX)
+    {
+        Mail::fake();
+
+        $app = App::getFacadeRoot();
+
+        $merchant = $this->fixtures->create('merchant', ['email' => 'oldcontact@gmail.com', 'partner_type' => 'aggregator']);
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'contact_email' => 'oldcontact@gmail.com',
+            'merchant_id' => $merchant['id']
+        ]);
+
+        $appAttributes = [
+            'merchant_id' => $merchant['id'],
+            'partner_type'=> 'aggregator',
+        ];
+
+        $application = $this->fixtures->merchant->createDummyPartnerApp($appAttributes);
+
+        $token = str_random(50);
+
+        $oldOwnerUser = $this->fixtures->create('user',[
+            'email'                   => 'oldowner@gmail.com',
+            'contact_mobile'          => '8839106483',
+            'name'                    => 'ownername',
+            'contact_mobile_verified' => true,
+            'password_reset_token'    => $token,
+            'password_reset_expiry'   => Carbon::now()->timestamp + 86400,
+        ]);
+
+        // create owner role on pg
+        $this->createMerchantUserMapping($oldOwnerUser['id'], $merchant['id'], 'owner', 'test', 'primary');
+
+        // if current owner is owner for X: create owner role for banking product
+        if ($isCurrentOwnerOnX === true)
+        {
+            $this->createMerchantUserMapping($oldOwnerUser['id'], $merchant['id'], 'owner', 'test', 'banking');
+        }
+
+        $submerchantDetails1 = $this->createSubMerchant($merchant, $application, ['id' => '10000000000111']);
+
+        $this->fixtures->user->createUserMerchantMapping(
+            [
+                'merchant_id' => $submerchantDetails1[0]->getId(),
+                'user_id'     => $oldOwnerUser['id'],
+                'role'        => 'owner',
+                'product'     => 'primary'
+            ]);
+
+        $submerchantDetails2 = $this->createSubMerchant($merchant, $application, ['id' => '10000000000112']);
+
+        $this->fixtures->user->createUserMerchantMapping(
+            [
+                'merchant_id' => $submerchantDetails2[0]->getId(),
+                'user_id'     => $oldOwnerUser['id'],
+                'role'        => 'owner',
+                'product'     => 'primary'
+            ]);
+
+        $submerchantDetails3 = $this->createSubMerchant($merchant, $application, ['id' => '10000000000113']);
+
+        $this->fixtures->user->createUserMerchantMapping(
+            [
+                'merchant_id' => $submerchantDetails3[0]->getId(),
+                'user_id'     => $oldOwnerUser['id'],
+                'role'        => 'view_only',
+                'product'     => 'banking'
+            ]);
+
+        // put data in cache
+        $cacheData = [
+            'current_owner_email'    => 'oldowner@gmail.com',
+            'email'                  => 'newowner@gmail.com',
+            'merchant_id'            => $merchant['id'],
+            'reattach_current_owner' => $reAttachCurrentOwner,
+            'set_contact_email'      => $setContactEmail,
+        ];
+
+        $app['cache']->put('merchant_email_update_' . $merchant['id'], $cacheData, 60*60*24);
+
+        $oldOwnerUser = $this->getDbEntityById('user', $oldOwnerUser['id']);
+
+        $testData = $this->testData['testMerchantEmailUpdateCreateNewUser'];
+
+        $testData['request']['content']['token']       = $token;
+        $testData['request']['content']['merchant_id'] = $merchant['id'];
+
+        $testData['response']['content']['logout_sessions_for_users'] = [$oldOwnerUser->getId()];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        $newOwnerUser = $this->getLastEntity('user', true);
+
+        $this->assertOldAndNewOwnerAttributes($newOwnerUser['id'], $oldOwnerUser['id']);
+
+        $this->assertCacheDataForMerchantEmailUpdate($merchant['id'], null);
+
+        // assert roles for PG
+        $this->assertRolesOfOldAndNewOwnersForMerchantEmailUpdate(
+            $merchant['id'],
+            $oldOwnerUser['id'],
+            $newOwnerUser['id'],
+            $reAttachCurrentOwner,
+            'primary'
+        );
+
+        // if current owner is owner for X : assert Role for banking product
+        if ($isCurrentOwnerOnX === true)
+        {
+            $this->assertRolesOfOldAndNewOwnersForMerchantEmailUpdate(
+                $merchant['id'],
+                $oldOwnerUser['id'],
+                $newOwnerUser['id'],
+                $reAttachCurrentOwner,
+                'banking'
+            );
+        }
+
+        $this->assertMerchantContactEmailForEmailUpdate($merchant['id'], $setContactEmail);
+
+        $merchantUsers = DB::connection('test')->table('merchant_users')
+                           ->where('user_id', $newOwnerUser['id'])
+                           ->whereIn('role', ['owner', 'view_only'])
+                           ->whereIn('product', ['primary', 'banking'])
+                           ->get()
+                           ->toArray();
+
+        $merchantOwnersForPrimaryProduct = [];
+        $merchantOwnersForBankingProduct = [];
+        $viewOnlyMerchantUsersForBankingProduct = [];
+
+        foreach ($merchantUsers as $merchantUser)
+        {
+            if($merchantUser->product === 'primary' and $merchantUser->role === 'owner')
+            {
+                $merchantOwnersForPrimaryProduct[] = $merchantUser;
+            }
+            else if($merchantUser->product === 'banking' and $merchantUser->role === 'owner')
+            {
+                $merchantOwnersForBankingProduct[] = $merchantUser;
+            }
+            else if($merchantUser->product === 'banking' and $merchantUser->role === 'view_only')
+            {
+                $viewOnlyMerchantUsersForBankingProduct[] = $merchantUser;
+            }
+        }
+
+        $this->assertEquals(3, count($merchantOwnersForPrimaryProduct));
+        $this->assertEquals(1, count($merchantOwnersForBankingProduct));
+        $this->assertEquals(1, count($viewOnlyMerchantUsersForBankingProduct));
     }
 
     protected function merchantEmailUpdateForExistingEmailUser($userExistInTeam, $reAttachCurrentOwner, $setContactEmail, $isCurrentOwnerOnX)

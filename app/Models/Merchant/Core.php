@@ -3075,6 +3075,18 @@ class Core extends Base\Core
         {
             $this->transferOwnerShipToUser($merchant, $user, $currentOwner, Product::BANKING, $reAttachCurrentOwner);
         }
+
+        $properties = [
+            'id'            => $merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.submerchant_ownership_transfer_experiment_id'),
+        ];
+
+        $isExpEnabled = $this->isSplitzExperimentEnable($properties, 'enable');
+
+        if($isExpEnabled === true)
+        {
+            $this->detachAndAttachSubmerchantsOwnersForEmailUpdate($merchant, $currentOwner, $user);
+        }
     }
 
     protected function transferOwnerShipToUser($merchant, $user, $currentOwner, $product, $reAttachCurrentOwner)
@@ -8372,6 +8384,82 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    private function detachAndAttachSubmerchantsOwnersForEmailUpdate(Entity $merchant, $oldOwner, $newOwner)
+    {
+        if (!$merchant->isPartner())
+        {
+            return;
+        }
+
+        $lastProcessedId = null;
+        $submerchantAccessMappings = $this->repo->merchant_access_map->getSubMerchantsFromEntityOwnerId($merchant->getId(), 500, $lastProcessedId);
+
+        while ($submerchantAccessMappings->isEmpty() === false)
+        {
+            $submerchantIds = $submerchantAccessMappings->pluck(AccessMap\Entity::MERCHANT_ID)->toArray();
+
+            $submerchantsUsersForPrimary = $this->repo->merchant_user->fetchMerchantUsersForUserIdRoleAndProduct($oldOwner->getId(), [ROLE::OWNER], Product::PRIMARY, $submerchantIds);
+            $this->detachSubmerchantsOwnersForEmailUpdateForProduct($merchant->getId(), $oldOwner, $submerchantsUsersForPrimary, Product::PRIMARY);
+            $this->attachSubmerchantsOwnersForEmailUpdateForProduct($merchant->getId(), $newOwner, $submerchantsUsersForPrimary, Product::PRIMARY);
+
+            $submerchantsUsersForBanking = $this->repo->merchant_user->fetchMerchantUsersForUserIdRoleAndProduct($oldOwner->getId(), [ROLE::OWNER, ROLE::VIEW_ONLY], Product::BANKING, $submerchantIds);
+            $this->detachSubmerchantsOwnersForEmailUpdateForProduct($merchant->getId(), $oldOwner, $submerchantsUsersForBanking, Product::BANKING);
+            $this->attachSubmerchantsOwnersForEmailUpdateForProduct($merchant->getId(), $newOwner, $submerchantsUsersForBanking, Product::BANKING);
+
+            $lastProcessedId = $submerchantAccessMappings->last()->getId();
+
+            $submerchantAccessMappings = $this->repo->merchant_access_map->getSubMerchantsFromEntityOwnerId($merchant->getId(), 500, $lastProcessedId);
+        }
+    }
+
+    private function detachSubmerchantsOwnersForEmailUpdateForProduct($partnerId, $oldOwner, $submerchantsUser, $product)
+    {
+        if($submerchantsUser->isEmpty() === true)
+        {
+            return;
+        }
+
+        $submerchantIdsToDetach = array_pluck($submerchantsUser->toArray(), MerchantUser\Entity::MERCHANT_ID);
+        $this->repo->detach($oldOwner, $product . User\Entity::MERCHANTS, $submerchantIdsToDetach);
+
+        $this->trace->info(TraceCode::SUB_MERCHANTS_USER_DETACH_SUCCESSFUL, [
+            'partner_id'       => $partnerId,
+            'oldOwner'         => $oldOwner->getId(),
+            'product'          => $product,
+        ]);
+    }
+
+    private function attachSubmerchantsOwnersForEmailUpdateForProduct($partnerId, $newOwner, $submerchantsUser, $product)
+    {
+        if($submerchantsUser->isEmpty() === true)
+        {
+            return;
+        }
+
+        $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $submerchantsToAttach = [];
+        foreach ($submerchantsUser as $submerchantUser)
+        {
+            $mappingParams = [
+                'role'       => $submerchantUser->role,
+                'product'    => $submerchantUser->product,
+                'created_at' => $currentTimestamp,
+                'updated_at' => $currentTimestamp
+            ];
+
+            $submerchantsToAttach[$submerchantUser->merchant_id] = $mappingParams;
+        }
+
+        $this->repo->attach($newOwner, $product . User\Entity::MERCHANTS, $submerchantsToAttach);
+
+        $this->trace->info(TraceCode::SUB_MERCHANTS_USER_ATTACH_SUCCESSFUL, [
+            'partner_id'       => $partnerId,
+            'newOwner'         => $newOwner->getId(),
+            'product'          => $product,
+        ]);
     }
 
     private function detachAndAttachSubmerchantOwners(Entity $merchant, string $oldOwnerId, string $newOwnerId, string $product)

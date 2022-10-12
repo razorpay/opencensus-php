@@ -174,6 +174,16 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchMerchantUsersForUserIdRoleAndProduct(string $userId, array $roles, string $product, array $submerchantIds)
+    {
+        return $this->newQuery()
+                    ->where(Entity::USER_ID, $userId)
+                    ->where(Entity::PRODUCT, $product)
+                    ->whereIn(Entity::ROLE, $roles)
+                    ->whereIn(Entity::MERCHANT_ID, $submerchantIds)
+                    ->get();
+    }
+
     public function fetchMerchantIdForUserIdRoleAndProduct(string $userId, string $role, string $product) : array
     {
         return $this->newQuery()

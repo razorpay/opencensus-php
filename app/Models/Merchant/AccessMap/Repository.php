@@ -326,6 +326,26 @@ class Repository extends Base\Repository
                     ->where(Entity::ENTITY_OWNER_ID, $entityOwnerId)
                     ->get();
     }
+
+    public function getSubMerchantsFromEntityOwnerId(string $entityOwnerId, $limit = null, $lastProcessedId = null)
+    {
+        $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
+                    ->where(Entity::ENTITY_OWNER_ID, $entityOwnerId)
+                    ->orderBy(Entity::ID);
+
+        if (empty($limit) === false)
+        {
+            $query->take($limit);
+        }
+
+        if (empty($lastProcessedId) === false)
+        {
+            $query->where(Entity::ID, '>', $lastProcessedId);
+        }
+
+        return $query->get();
+    }
+
     /**
      * Returns all the  submerchants who had done their first payment after the timestamp.
      *
