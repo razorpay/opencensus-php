@@ -5157,7 +5157,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PASSPORT_ATTRS_MISMATCH                               = 'PASSPORT_ATTRS_MISMATCH';
     const EDGE_AUTHORIZATION_MISMATCH                           = 'EDGE_AUTHORIZATION_MISMATCH';
     const EDGE_AUTHENTICATION_MISMATCH                          = 'EDGE_AUTHENTICATION_MISMATCH';
-    const EDGE_IMPERSONATION_MISMATCH                           = 'EDGE_IMPERSONATION_MISMATCH';
     const EDGE_PROXY_REQUEST_ERROR                              = 'EDGE_PROXY_REQUEST_ERROR';
     const EDGE_RATE_LIMITER_ERROR                               = 'EDGE_RATE_LIMITER_ERROR';
     const EDGE_RATE_LIMITER_REQUEST                             = 'EDGE_RATE_LIMITER_REQUEST';
