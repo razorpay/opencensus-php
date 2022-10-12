@@ -131,7 +131,7 @@ class TestCase extends IlluminateTestCase
     }
 
 
-    protected function mockCardVault($callable = null)
+    protected function mockCardVault($callable = null, $generateTempToken = false, $cardMetaData = [])
     {
         $app = App::getFacadeRoot();
 
@@ -143,7 +143,7 @@ class TestCase extends IlluminateTestCase
 
         $this->app->instance('mpan.cardVault', $mpanVault);
 
-        $callable = $callable ?: function ($route, $method, $input)
+        $callable = $callable ?: function ($route, $method, $input) use ($generateTempToken, $cardMetaData)
         {
             $response = [
                 'error' => '',
@@ -157,6 +157,12 @@ class TestCase extends IlluminateTestCase
                     $response['token'] = base64_encode($input['secret']);
                     $response['fingerprint'] = strrev(base64_encode($input['secret']));
                     $response['scheme'] = '0';
+
+                    if ($generateTempToken === true)
+                    {
+                        $response['token'] = 'pay_44f3d176b38b4cd2a588f243e3ff7b20';
+                        $response['fingerprint'] = '';
+                    }
                     break;
 
                 case 'detokenize':
@@ -171,6 +177,16 @@ class TestCase extends IlluminateTestCase
                     break;
 
                 case 'cards/metadata/fetch':
+                    if (empty($cardMetaData) === false)
+                    {
+                        $cardMetaData['token']        = $cardMetaData['token'] ?? $input['token'];
+                        $cardMetaData['expiry_month'] = $cardMetaData['expiry_month'] ?? '02';
+                        $cardMetaData['expiry_year']  = $cardMetaData['expiry_year'] ?? '30';
+                        $cardMetaData['name']        = $cardMetaData['name'] ?? "cards";
+
+                        return $cardMetaData;
+                    }
+
                     $response['token'] = $input['token'];
                     $response['iin'] = $input['iin'];
                     $response['expiry_month'] = '02';

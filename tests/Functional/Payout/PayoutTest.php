@@ -161,6 +161,8 @@ class PayoutTest extends OAuthTestCase
         $this->mockStorkService();
 
         $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $this->mockCardVault(null, true);
     }
 
     public function testCreatePayoutAndCheckTransferredAtColumn()
@@ -6273,7 +6275,9 @@ class PayoutTest extends OAuthTestCase
             'entity_type' => 'merchant',
         ]);
 
-        $this->mockCardVault();
+        $this->mockCardVault(null, true, [
+            'iin'          => '340169',
+        ]);
 
         $this->startTest();
     }
@@ -6294,7 +6298,9 @@ class PayoutTest extends OAuthTestCase
             'entity_type' => 'merchant',
         ]);
 
-        $this->mockCardVault();
+        $this->mockCardVault(null, true, [
+            'iin'          => '340169',
+        ]);
 
         $testData = &$this->testData['testCreatePayoutWithVaultTokenAndDummyNameForRefundsApp'];
 
@@ -6319,7 +6325,9 @@ class PayoutTest extends OAuthTestCase
             'entity_type' => 'merchant',
         ]);
 
-        $this->mockCardVault();
+        $this->mockCardVault(null, true, [
+            'iin'          => '340169',
+        ]);
 
         $testData = &$this->testData['testCreatePayoutWithVaultTokenAndDummyNameForRefundsApp'];
 
@@ -6369,9 +6377,12 @@ class PayoutTest extends OAuthTestCase
             'entity_type' => 'merchant',
         ]);
 
-        $this->mockCardVault();
-
         $cardsCountBeforeRequest = count($this->getDbEntities('card'));
+
+        $this->mockCardVault(null, true, [
+            'iin'          => '340169',
+            'name'         => 'dummy card'
+        ]);
 
         $this->startTest();
 
@@ -6395,7 +6406,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertNotEmpty($card['vault_token']);
 
-        $this->assertNotEmpty($card['global_fingerprint']);
+        $this->assertEquals("", $card['global_fingerprint']);
     }
 
     public function testCreatePayoutWithVaultTokenAndNonDummyNameForRefundsApp()
@@ -6430,9 +6441,14 @@ class PayoutTest extends OAuthTestCase
             'vault_token'  => 'MzQwMTY5NTcwOTkwMTM3==',
         ]);
 
-        $this->mockCardVault();
-
         $cardsCountBeforeRequest = count($this->getDbEntities('card'));
+
+        $this->mockCardVault(null, true, [
+            'iin'          => '340169',
+            'name'         => 'name2',
+            'expiry_month' => '9',
+            'expiry_year'  => '2030',
+        ]);
 
         $this->startTest();
 
@@ -6454,7 +6470,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertNotEmpty($card['vault_token']);
 
-        $this->assertNotEmpty($card['global_fingerprint']);
+        $this->assertEquals("", $card['global_fingerprint']);
     }
 
     public function testPayoutSetStatusQueuePushForRefundsPayout()
@@ -8146,6 +8162,11 @@ class PayoutTest extends OAuthTestCase
             'free_payouts_consumed' => FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB1,
         ]);
 
+        $this->mockCardVault(null, true, [
+            'iin'          => '411111',
+            'name'         => 'Prashanth YV',
+        ]);
+
         $this->ba->privateAuth();
 
         $this->startTest();
@@ -9194,6 +9215,13 @@ class PayoutTest extends OAuthTestCase
 
         $this->mockRazorxTreatment('yesbank', 'on', 'off', 'off', 'off', 'on');
 
+        $this->mockCardVault(null, true, [
+            'iin'          => '340169',
+            'name'         => 'Prashanth YV',
+            'expiry_month' => '10',
+            'expiry_year'  => '29',
+        ]);
+
         $this->ba->privateAuth();
 
         $this->startTest();
@@ -9214,6 +9242,13 @@ class PayoutTest extends OAuthTestCase
         ]);
 
         $this->mockRazorxTreatment('yesbank', 'on', 'off', 'off', 'off', 'on');
+
+        $this->mockCardVault(null, true, [
+            'iin'          => '340169',
+            'name'         => 'Prashanth YV',
+            'expiry_month' => '10',
+            'expiry_year'  => '29',
+        ]);
 
         $this->ba->privateAuth();
 
@@ -9241,6 +9276,13 @@ class PayoutTest extends OAuthTestCase
             'entity_type' => 'merchant',
         ]);
 
+        $this->mockCardVault(null, true, [
+            'iin'          => '340169',
+            'name'         => 'Prashanth YV',
+            'expiry_month' => '10',
+            'expiry_year'  => '29',
+        ]);
+
         $this->ba->privateAuth();
 
         $this->startTest();
@@ -9265,6 +9307,13 @@ class PayoutTest extends OAuthTestCase
             'name'        => Feature\Constants::PAYOUT_TO_CARDS,
             'entity_id'   => 10000000000000,
             'entity_type' => 'merchant',
+        ]);
+
+        $this->mockCardVault(null, true, [
+            'iin'          => '340169',
+            'name'         => 'Prashanth YV',
+            'expiry_month' => '10',
+            'expiry_year'  => '29',
         ]);
 
         $this->ba->privateAuth();
@@ -18746,6 +18795,13 @@ class PayoutTest extends OAuthTestCase
             'entity_type' => 'merchant',
         ]);
 
+        $this->mockCardVault(null, true, [
+            'iin'          => '340169',
+            'name'         => 'Prashanth YV',
+            'expiry_month' => '10',
+            'expiry_year'  => '29',
+        ]);
+
         $this->ba->privateAuth();
 
         $this->startTest();
@@ -18824,6 +18880,13 @@ class PayoutTest extends OAuthTestCase
             'entity_type' => 'merchant',
         ]);
 
+        $this->mockCardVault(null, true, [
+            'iin'          => '340169',
+            'name'         => 'Prashanth YV',
+            'expiry_month' => '10',
+            'expiry_year'  => '29',
+        ]);
+
         $this->ba->privateAuth();
 
         $this->startTest();
@@ -18862,6 +18925,13 @@ class PayoutTest extends OAuthTestCase
         ]);
 
         $this->ba->privateAuth();
+
+        $this->mockCardVault(null, true, [
+            'iin'          => '340169',
+            'name'         => 'Prashanth YV',
+            'expiry_month' => '10',
+            'expiry_year'  => '29',
+        ]);
 
         $this->startTest();
 
@@ -18983,6 +19053,13 @@ class PayoutTest extends OAuthTestCase
             'entity_type' => 'merchant',
         ]);
 
+        $this->mockCardVault(null, true, [
+            'iin'          => '340169',
+            'name'         => 'Prashanth YV',
+            'expiry_month' => '08',
+            'expiry_year'  => '2025',
+        ]);
+
         $this->ba->privateAuth();
 
         $this->startTest();
@@ -19021,6 +19098,13 @@ class PayoutTest extends OAuthTestCase
             'name'        => Feature\Constants::PAYOUT_TO_CARDS,
             'entity_id'   => 10000000000000,
             'entity_type' => 'merchant',
+        ]);
+
+        $this->mockCardVault(null, true, [
+            'iin'          => '340169',
+            'name'         => 'Prashanth YV',
+            'expiry_month' => '08',
+            'expiry_year'  => '2025',
         ]);
 
         $this->ba->privateAuth();

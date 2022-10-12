@@ -671,6 +671,10 @@ class RblPayoutTest extends TestCase
             'entity_type' => 'merchant',
         ]);
 
+        $this->mockCardVault(null, true, [
+            'iin'          => '340169',
+        ]);
+
         $this->ba->privateAuth();
 
         $this->startTest();
@@ -880,6 +884,11 @@ class RblPayoutTest extends TestCase
         $this->fixtures->on('live')->merchant->addFeatures([Features::RBL_CA_UPI, Features::S2S, Features::PAYOUT_TO_CARDS]);
 
         $this->mockRazorxTreatment();
+
+        $this->mockCardVault(null, true, [
+            'iin' => '378282',
+            'name'=> 'Tester Test'
+        ]);
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 

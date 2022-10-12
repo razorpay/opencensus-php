@@ -40,6 +40,8 @@ class FundAccountsTest extends TestCase
         parent::setUp();
 
         $this->ba->privateAuth();
+
+        $this->mockCardVault(null, true);
     }
 
     public function testGetFundAccounts()
@@ -837,8 +839,6 @@ class FundAccountsTest extends TestCase
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
 
-        $this->mockCardVault();
-
         $response = $this->startTest();
 
         $card = $this->getLastEntity('card', true);
@@ -879,8 +879,6 @@ class FundAccountsTest extends TestCase
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
 
-        $this->mockCardVault();
-
         $this->startTest();
     }
 
@@ -889,8 +887,6 @@ class FundAccountsTest extends TestCase
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
-
-        $this->mockCardVault();
 
         $this->startTest();
 
@@ -910,8 +906,6 @@ class FundAccountsTest extends TestCase
         $this->fixtures->create('contact', ['id' => 'invalidcontact']);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
-
-        $this->mockCardVault();
 
         $this->startTest();
 
@@ -1400,8 +1394,7 @@ class FundAccountsTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
-                                                Feature\Constants::ALLOW_NON_SAVED_CARDS,
-                                                Feature\Constants::VAULT_COMPLIANCE_CHECK]);
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
 
         $this->setMockRazorxTreatment([RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION    => 'on']);
 
@@ -1444,8 +1437,7 @@ class FundAccountsTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
-                                                Feature\Constants::ALLOW_NON_SAVED_CARDS,
-                                                Feature\Constants::VAULT_COMPLIANCE_CHECK]);
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
 
         $this->setMockRazorxTreatment([RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION                     => 'on',
                                        RazorxTreatment::VAULT_BU_NAMESPACE_CARD_METADATA_VARIANT         => 'on',
@@ -1521,8 +1513,7 @@ class FundAccountsTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
-                                                Feature\Constants::ALLOW_NON_SAVED_CARDS,
-                                                Feature\Constants::VAULT_COMPLIANCE_CHECK]);
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
 
         $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Mr. John']);
 
@@ -1702,8 +1693,7 @@ class FundAccountsTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
-                                                Feature\Constants::ALLOW_NON_SAVED_CARDS,
-                                                Feature\Constants::VAULT_COMPLIANCE_CHECK]);
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
 
         $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Mr. John']);
 
@@ -1771,8 +1761,7 @@ class FundAccountsTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
-                                                Feature\Constants::ALLOW_NON_SAVED_CARDS,
-                                                Feature\Constants::VAULT_COMPLIANCE_CHECK]);
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
 
         $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Mr. John']);
 
@@ -1820,8 +1809,7 @@ class FundAccountsTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
-                                                Feature\Constants::ALLOW_NON_SAVED_CARDS,
-                                                Feature\Constants::VAULT_COMPLIANCE_CHECK]);
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
 
         $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Mr. John']);
 
@@ -2292,8 +2280,6 @@ class FundAccountsTest extends TestCase
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
 
-        $this->mockCardVault();
-
         $this->mockRazorxTreatment('payout_to_prepaid_cards');
 
         $this->startTest();
@@ -2408,8 +2394,6 @@ class FundAccountsTest extends TestCase
         ]);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
-
-        $this->mockCardVault();
 
         $this->startTest();
     }

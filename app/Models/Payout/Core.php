@@ -806,8 +806,7 @@ class Core extends Base\Core
     public function deleteCardMetaDataAndVaultTokenForTerminalStatePayout(string $status, $payout)
     {
         if ((in_array($status, self::STATUSES_FOR_CARD_VAULT_TOKEN_DELETION, true) === true) and
-            ($payout->fundAccount->getAccountType() === FundAccount\Type::CARD) and
-            ($payout->merchant->isFeatureEnabled(Feature\Constants::VAULT_COMPLIANCE_CHECK) === true))
+            ($payout->fundAccount->getAccountType() === FundAccount\Type::CARD))
         {
             $card = $payout->fundAccount->account;
 

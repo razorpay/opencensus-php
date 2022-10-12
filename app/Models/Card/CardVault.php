@@ -313,7 +313,12 @@ class CardVault extends Base\Core
                 ]
             );
 
-            $response = $e->getData();
+            $response = [];
+
+            if (method_exists($e, 'getData') === true)
+            {
+                $response = $e->getData();
+            }
 
             if ((isset($response['error']) === true) and
                 (in_array($response['error'], self::NON_RETRYABLE_CARD_META_DATA_FETCH_ERRORS, true) === true))

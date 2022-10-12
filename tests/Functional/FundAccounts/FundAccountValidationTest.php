@@ -1209,7 +1209,7 @@ class FundAccountValidationTest extends TestCase
 
         $this->setUpMerchantForBusinessBanking(false, 10000000);
 
-        $this->mockCardVault();
+        $this->mockCardVault(null, true);
 
         $fundAccountResponse = $this->createFundAccountCard();
 

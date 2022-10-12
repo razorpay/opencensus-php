@@ -90,7 +90,7 @@ class Core extends Base\Core
             {
                 $this->setVaultTokenAndFingerPrint($card, $input, $recurring, $isRzpX);
 
-                $this->checkIfCardHasProperVaultToken($card->getVaultToken(), $merchant, $input);
+                $this->checkIfCardHasProperVaultToken($card->getVaultToken(), $input);
             }
         }
 
@@ -360,10 +360,9 @@ class Core extends Base\Core
         return $card;
     }
 
-    public function checkIfCardHasProperVaultToken($vaultToken, $merchant, $input)
+    public function checkIfCardHasProperVaultToken($vaultToken, $input)
     {
-        if (($merchant->isFeatureEnabled(Feature\Constants::VAULT_COMPLIANCE_CHECK) === true) and
-            (isset($input[Card\Entity::TOKENISED]) === true) and
+        if ((isset($input[Card\Entity::TOKENISED]) === true) and
             (isset($vaultToken) === true))
         {
             $isTempVaultToken = $this->checkIfVaultTokenIsTemporary($vaultToken);

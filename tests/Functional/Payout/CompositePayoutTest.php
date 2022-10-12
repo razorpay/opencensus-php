@@ -43,6 +43,8 @@ class CompositePayoutTest extends TestCase
         $this->setUpMerchantForBusinessBanking(false, 10000000);
 
         $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $this->mockCardVault(null, true);
     }
 
     public function testCreateCompositePayout()
@@ -371,8 +373,7 @@ class CompositePayoutTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
-                                                Feature\Constants::ALLOW_NON_SAVED_CARDS,
-                                                Feature\Constants::VAULT_COMPLIANCE_CHECK]);
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
 
         $this->fixtures->create('iin', [
             'iin'     => 340169,
@@ -430,10 +431,6 @@ class CompositePayoutTest extends TestCase
 
         $this->app->instance('card.cardVault', $cardVault);
 
-        // expectations set to 9 times:
-        // During Fund Account Creation calls are made to vault service for : getTokenAndFingerprint, saveCardMetaData, create account FTS, Nodal bene detokenize
-        // During Payout Creation: getCardMetaData 3 times (During card account type validation, FTS request creation and toArrayPublic())
-        // During receiving webhook: getCardMetaData, deleteToken
         $cardVault->shouldReceive('sendRequest')
                   ->with(Mockery::type('string'), 'post', Mockery::type('array'))
                   ->andReturnUsing($callable);
@@ -511,8 +508,7 @@ class CompositePayoutTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
-                                                Feature\Constants::ALLOW_NON_SAVED_CARDS,
-                                                Feature\Constants::VAULT_COMPLIANCE_CHECK]);
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
 
         $this->fixtures->create('iin', [
             'iin'     => 340169,
@@ -605,8 +601,7 @@ class CompositePayoutTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
-                                                Feature\Constants::ALLOW_NON_SAVED_CARDS,
-                                                Feature\Constants::VAULT_COMPLIANCE_CHECK]);
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
 
         $this->fixtures->create('iin', [
             'iin'     => 416021,
@@ -775,6 +770,11 @@ class CompositePayoutTest extends TestCase
     public function testCreateCompositePayoutForCred()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
+
+        $this->mockCardVault(null, true, [
+            'iin'          => '411111',
+            'name'         => 'Prashanth YV',
+        ]);
 
         $response = $this->startTest();
 
@@ -1007,6 +1007,13 @@ class CompositePayoutTest extends TestCase
 
         $this->ba->privateAuth();
 
+        $this->mockCardVault(null, true, [
+            'iin'          => '340169',
+            'name'         => 'Prashanth YV',
+            'expiry_month' => '08',
+            'expiry_year'  => '2025',
+        ]);
+
         $this->startTest();
 
         $payout = $this->getLastEntity('payout', true);
@@ -1038,6 +1045,13 @@ class CompositePayoutTest extends TestCase
             'name'        => Feature\Constants::PAYOUT_TO_CARDS,
             'entity_id'   => 10000000000000,
             'entity_type' => 'merchant',
+        ]);
+
+        $this->mockCardVault(null, true, [
+            'iin'          => '340169',
+            'name'         => 'Prashanth YV',
+            'expiry_month' => '08',
+            'expiry_year'  => '2025',
         ]);
 
         $this->ba->privateAuth();
@@ -1113,6 +1127,12 @@ class CompositePayoutTest extends TestCase
                 'value'       => 'true',
             ]
         );
+        $this->mockCardVault(null, true, [
+            'iin'          => '340169',
+            'name'         => 'Prashanth YV',
+            'expiry_month' => '08',
+            'expiry_year'  => '2025',
+        ]);
 
         $this->startTest();
     }
@@ -1150,6 +1170,13 @@ class CompositePayoutTest extends TestCase
                 'value'       => 'true',
             ]
         );
+
+        $this->mockCardVault(null, true, [
+            'iin'          => '340169',
+            'name'         => 'Prashanth YV',
+            'expiry_month' => '08',
+            'expiry_year'  => '2025',
+        ]);
 
         $this->startTest();
     }
@@ -1307,8 +1334,7 @@ class CompositePayoutTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
-                                                Feature\Constants::ALLOW_NON_SAVED_CARDS,
-                                                Feature\Constants::VAULT_COMPLIANCE_CHECK]);
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
 
         $this->fixtures->create('iin', [
             'iin'     => 340169,
