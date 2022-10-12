@@ -75,6 +75,11 @@ class Processor extends Base\Core
         if ($this->qrCode->isCheckoutQrCode()) {
             // 3.1 Set Merchant in auth as it would be NULL in callback flow
             $this->app['basicauth']->setMerchant($this->merchant);
+            // 3.2 Fetch Key for this Merchant. It gets used in forming
+            //     signature for payment authorize response
+            $key = $this->repo->key->getLatestActiveKeyForMerchant($this->merchant->getId());
+            // 3.3 Set Key Entity in AuthCreds
+            $this->app['basicauth']->authCreds->setKeyEntity($key);
         }
 
         // 4. process payment
