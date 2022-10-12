@@ -128,7 +128,6 @@ class LedgerJournalBase extends Job
                     }
                     break;
 
-
                 case Entity::REVERSAL :
                     $response = (new ReversalCore)
                         ->createTransactionInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
@@ -142,14 +141,14 @@ class LedgerJournalBase extends Job
                     break;
 
                 case Entity::FUND_ACCOUNT_VALIDATION :
-                    $response = (new FavCore)
-                        ->createTransactionInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
-
+                    if ($transactorEvent === Ledger\FundAccountValidation::FAV_INITIATED) {
+                        $response = (new FavCore)
+                            ->createTransactionInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
+                    }
                     break;
 
                 default:
                     $response = [];
-
                     $this->trace->info(
                         TraceCode::LEDGER_JOURNAL_QUEUE_JOB_ENTITY_NAME_NOT_SUPPORTED,
                         $traceData
