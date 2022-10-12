@@ -92,7 +92,9 @@ class Leads extends Base
             ActivationDetail\Validator::SOLE_PROPRIETORSHIP               => 'Sole Proprietorship',
             ActivationDetail\Validator::LIMITED_LIABILITY_PARTNERSHIP     => 'Limited Liability Partnership',
             ActivationDetail\Validator::PARTNERSHIP                       => 'Partnership',
-            ActivationDetail\Validator::ONE_PERSON_COMPANY                => 'One Person Company'
+            ActivationDetail\Validator::ONE_PERSON_COMPANY                => 'One Person Company',
+            ActivationDetail\Validator::TRUST                             => 'Trust',
+            ActivationDetail\Validator::SOCIETY                           => 'Society'
         ],
         self::ACCOUNT_TYPE => [
             ActivationDetail\Validator::INSIGNIA      => 'Insignia',
