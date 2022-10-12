@@ -1685,6 +1685,15 @@ We look forward to transacting with you!
 
         $merchantDetail = $this->fixtures->create('merchant_detail', [Entity::CONTACT_MOBILE => '1234567890']);
 
+        $this->fixtures->create('merchant_attribute',
+                                [
+                                    'merchant_id' => $merchantDetail['merchant_id'],
+                                    'product'     => 'banking',
+                                    'group'       => 'x_merchant_current_accounts',
+                                    'type'        => 'ca_onboarding_flow',
+                                    'value'       => 'ONE_CA'
+                                ]);
+
         $testData = & $this->testData[__FUNCTION__];
         $testData['response']['content'][Entity::CONTACT_EMAIL] =  $merchantDetail[Entity::CONTACT_EMAIL];
         $testData['response']['content'][Entity::CONTACT_MOBILE] =  $merchantDetail[Entity::CONTACT_MOBILE];
@@ -1702,7 +1711,10 @@ We look forward to transacting with you!
                  ->withArgs(function($eventData, $merchant, $ex, $actualData) {
                      if ($eventData['name'] == EventCode::X_CA_ONBOARDING_LEAD_UPSERT['name'])
                      {
-                         $this->assertArraySelectiveEquals(['lead_progress' => 'Pre signup lead'], $actualData);
+                         $this->assertArraySelectiveEquals([
+                             'lead_progress' => 'Pre signup lead',
+                             'ca_onboarding_flow' => 'ONE_CA',
+                         ], $actualData);
                      }
                      return true;
                  })
@@ -1728,6 +1740,15 @@ We look forward to transacting with you!
                                     'value'       => 'ca_neostone'
                                 ]);
 
+        $this->fixtures->create('merchant_attribute',
+                                [
+                                    'merchant_id' => $merchantDetail['merchant_id'],
+                                    'product'     => 'banking',
+                                    'group'       => 'x_merchant_current_accounts',
+                                    'type'        => 'ca_onboarding_flow',
+                                    'value'       => 'ONE_CA'
+                                ]);
+
         $merchantUser = $this->fixtures->user->createBankingUserForMerchant($merchantDetail['merchant_id']);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
@@ -1743,7 +1764,10 @@ We look forward to transacting with you!
                  ->withArgs(function($eventData, $merchant, $ex, $actualData) {
                      if ($eventData['name'] == EventCode::X_CA_ONBOARDING_LEAD_UPSERT['name'])
                      {
-                         $this->assertArraySelectiveEquals(['lead_progress' => 'Pre signup lead'], $actualData);
+                         $this->assertArraySelectiveEquals([
+                             'lead_progress' => 'Pre signup lead',
+                             'ca_onboarding_flow' => 'ONE_CA',
+                             ], $actualData);
                      }
                      return true;
                  })
