@@ -8913,7 +8913,7 @@ class Route
         'fetch_merchant_balance_configs'               => '*',
         'balance_fetch'                                => '*',
         'setl_amount'                                  => '*',
-        'merchant_submit_support_call_request'         => '*',
+        'merchant_submit_support_call_request'         => Permission::CUSTOMER_SUPPORT_FULL_ACCESS,
         // Specific to Banking
         'payout_bulk_create'                           => Permission::CREATE_PAYOUT_BULK,
         // This is for batch service -- change name
@@ -9175,12 +9175,12 @@ class Route
         'payouts_bulk_amount_type_update'              => Permission::UPDATE_BULK_PAYOUT_AMOUNT_TYPE,
 
         //freshdesk ticket permissions
-        'fd_create_ticket'                             => '*',
-        'fd_fetch_tickets'                             => '*',
-        'fd_fetch_converations'                        => '*',
-        'fd_fetch_ticket'                              => '*',
-        'fd_post_ticket_reply'                         => '*',
-        'fd_post_ticket_grievance'                     => '*',
+        'fd_create_ticket'                             => Permission::CUSTOMER_SUPPORT_FULL_ACCESS,
+        'fd_fetch_tickets'                             => Permission::CUSTOMER_SUPPORT_FULL_ACCESS,
+        'fd_fetch_converations'                        => Permission::CUSTOMER_SUPPORT_FULL_ACCESS,
+        'fd_fetch_ticket'                              => Permission::CUSTOMER_SUPPORT_FULL_ACCESS,
+        'fd_post_ticket_reply'                         => Permission::CUSTOMER_SUPPORT_FULL_ACCESS,
+        'fd_post_ticket_grievance'                     => Permission::CUSTOMER_SUPPORT_FULL_ACCESS,
 
         //TPV - Third party validation
         //- validations on source accounts through which money gets loaded to va.
@@ -9189,7 +9189,7 @@ class Route
 
         //NPS
         'pending_survey_get'                           => '*',
-        'update_survey_tracker'                        => '*',
+        'update_survey_tracker'                        => Permission::CREATE_PAYOUT,
 
         //Banking account service
         'banking_account_service_routes'                             => '*',

@@ -2254,6 +2254,9 @@ return [
             Permission::VIEW_PRIVILEGES => [
                 'assignable'    => true,
             ],
+            Permission::CUSTOMER_SUPPORT_FULL_ACCESS => [
+                'assignable'    => true,
+            ],
         ],
     ],
 

@@ -1070,6 +1070,9 @@ class Name
 
     const VIEW_PRIVILEGES                       = 'view_privileges';
     const FETCH_MISSING_BAS                     = 'fetch_missing_bas';
+    
+    // Full access to all roles 
+    const CUSTOMER_SUPPORT_FULL_ACCESS          = 'customer_support_full_access';
 
     const MERCHANT_BULK_UPLOAD_MIQ              = 'merchant_batch_upload_miq';
 

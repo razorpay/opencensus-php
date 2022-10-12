@@ -184,7 +184,8 @@ class UserRolePermissionsMap
                  Permission::EDIT_ROLE,
                  Permission::VIEW_PRIVILEGES,
                  Permission::VIEW_ALL_ROLES,
-
+                 Permission::CUSTOMER_SUPPORT_FULL_ACCESS,
+                 
                  Permission::ACCOUNTS_RECEIVABLE_ADMIN,
                  Permission::BILL_PAYMENTS_VIEW,
                  Permission::BILL_PAYMENTS_CREATE_ACCOUNT,
@@ -325,6 +326,7 @@ class UserRolePermissionsMap
                  Permission::VIEW_PRIVILEGES,
                  Permission::VIEW_ROLE,
                  Permission::VIEW_ALL_ROLES,
+                 Permission::CUSTOMER_SUPPORT_FULL_ACCESS,
 
                  Permission::ACCOUNTS_RECEIVABLE_ADMIN,
                  Permission::BILL_PAYMENTS_VIEW,
@@ -444,6 +446,7 @@ class UserRolePermissionsMap
                  Permission::VIEW_PRIVILEGES,
                  Permission::VIEW_ROLE,
                  Permission::VIEW_ALL_ROLES,
+                 Permission::CUSTOMER_SUPPORT_FULL_ACCESS,
 
                  Permission::ACCOUNTS_RECEIVABLE_ADMIN,
                  Permission::BILL_PAYMENTS_VIEW,
@@ -516,6 +519,7 @@ class UserRolePermissionsMap
                  Permission::HAS_APP_ACCESS,
                  Permission::VIEW_PRIVILEGES,
                  Permission::VIEW_ALL_ROLES,
+                 Permission::CUSTOMER_SUPPORT_FULL_ACCESS,
 
                  Permission::ACCOUNTS_RECEIVABLE_ADMIN,
                  Permission::BILL_PAYMENTS_VIEW,
@@ -553,7 +557,8 @@ class UserRolePermissionsMap
                  Permission::VIEW_PAYOUTS_REPORT,
                  Permission::HAS_APP_ACCESS,
                  Permission::VIEW_PRIVILEGES,
-                 Permission::VIEW_ALL_ROLES
+                 Permission::VIEW_ALL_ROLES,
+                 Permission::CUSTOMER_SUPPORT_FULL_ACCESS
              ],
 
              BankingRole::VIEW_ONLY => [
@@ -605,6 +610,7 @@ class UserRolePermissionsMap
                  Permission::DOWNLOAD_REPORTING,
                  Permission::VIEW_PRIVILEGES,
                  Permission::VIEW_ALL_ROLES,
+                 Permission::CUSTOMER_SUPPORT_FULL_ACCESS,
 
                  Permission::BILL_PAYMENTS_VIEW
              ],
@@ -618,7 +624,8 @@ class UserRolePermissionsMap
                  Permission::HAS_APP_ACCESS,
                  Permission::DOWNLOAD_REPORTING,
                  Permission::VIEW_PRIVILEGES,
-                 Permission::VIEW_ALL_ROLES
+                 Permission::VIEW_ALL_ROLES,
+                 Permission::CUSTOMER_SUPPORT_FULL_ACCESS
              ],
         ];
 
