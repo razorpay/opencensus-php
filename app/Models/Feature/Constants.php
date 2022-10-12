@@ -1042,6 +1042,11 @@ class Constants
     const ORG_HIDE_RAZORPAY_TEXT_LINKS = 'hide_razorpay_text_link';
 
     /**
+     * Feature flag for controlling SI transaction CyberSource.
+     */
+    const CYBERSOURCE_SI_TXN_TEST    =   'cybersource_si_txn_test';
+
+    /**
      * Org level feature flag for sub merchant activation with MCC Pending status.
      */
     const ORG_SUB_MERCHANT_MCC_PENDING  =   'sub_merchant_mcc_pending';
@@ -2199,6 +2204,7 @@ class Constants
         self::EXPOSE_RRN                      => true,
         self::IMPORT_FLOW_OPEX_REPORT         => true,
         self::ENABLE_3DS2                     => true,
+        self::CYBERSOURCE_SI_TXN_TEST         => true,
     ];
 
     // Entity type constants
