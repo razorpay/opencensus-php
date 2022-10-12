@@ -828,10 +828,6 @@ class Checkout
                 $custData['addresses'] = $addresses;
                 $custData['1cc_consent_banner_views'] = $addressConsentView;
 
-                //fetch customer consent
-                $customerConsent =(new Customer\Core)->fetchCustomerConsentFor1CC($customer->getContact(), $merchant->getId());
-                $custData['1cc_customer_consent'] = $customerConsent;
-
             }
             //
             // TODO: Remove this later when we start handling the below case.
@@ -993,10 +989,6 @@ class Checkout
                 if ($response['saved_address'] === true)
                 {
                     $data['customer']['saved_address'] = true;
-                }
-                if(empty($response['1cc_customer_consent']) === false)
-                {
-                    $data['customer']['1cc_customer_consent'] = $response['1cc_customer_consent'];
                 }
             }
             $treatment = $this->app->razorx->getTreatment(

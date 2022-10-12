@@ -388,10 +388,6 @@ class Service extends Base\Service
             }
             $addressConsentView = $this->core->fetchAddressConsentViewsFor1CC($customer);
             $data['1cc_consent_banner_views'] = $addressConsentView;
-
-            //fetch customer consent
-            $customerConsent = $this->core->fetchCustomerConsentFor1CC($customer->getContact(), $this->merchant->getId());
-            $data['1cc_customer_consent'] = $customerConsent;
         }
 
         return $data;
@@ -876,13 +872,5 @@ class Service extends Base\Service
         $customerArr = $this->core->fetchGlobalCustomerByID($id);
 
         return $customerArr;
-    }
-
-    /**
-     * @throws BadRequestException
-     */
-    public function recordCustomerConsent1cc($input)
-    {
-        return $this->core->recordCustomerConsent1cc($input);
     }
 }

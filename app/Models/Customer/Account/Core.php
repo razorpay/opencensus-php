@@ -354,8 +354,6 @@ class Core extends Base\Core
 
                 $response['addresses'] = $addresses;
                 $response['1cc_consent_banner_views'] = $addressConsentView;
-                $customerConsent = (new Customer\Core)->fetchCustomerConsentFor1CC($customer->getContact(), $merchant->getId());
-                $response['1cc_customer_consent'] = $customerConsent;
             }
             return $response;
         } catch (\Throwable $e) {
@@ -457,14 +455,6 @@ class Core extends Base\Core
         return max(0, 2-$addressConsentAudits);
     }
 
-    public function fetchCustomerConsentFor1CC($contact, $merchantId)
-    {
-        $customerConsent = (new CustomerConsent1cc\Core())->fetchCustomerConsent1cc($contact, $merchantId);
-        if (empty($customerConsent) == false) {
-            return $customerConsent['status'];
-        }
-       return 0;
-    }
     /**
      * @throws Exception\BadRequestException
      */
@@ -1266,25 +1256,5 @@ class Core extends Base\Core
     {
         $duration = millitime() - $startTime;
         $this->trace->histogram($metric, $duration, $dimensions);
-    }
-
-    /**
-     * @throws Exception\BadRequestException
-     */
-    public function recordCustomerConsent1cc($input)
-    {
-        if(Session()->has($this->mode . '_app_token') === false)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
-        }
-
-        $appToken = Session()->get($this->mode . '_app_token');
-
-        list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp(
-            ['app_token' => $appToken],
-            $this->merchant,
-            true);
-
-        return (new CustomerConsent1cc\Core())->recordCustomerConsent1cc($input, $customer, $this->merchant);
     }
 }

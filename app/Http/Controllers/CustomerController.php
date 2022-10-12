@@ -466,13 +466,4 @@ class CustomerController extends Controller
 
         return ApiResponse::json($response);
     }
-
-    public function recordCustomerConsent1cc()
-    {
-        $input = Request::all();
-
-        $response = $this->service()->recordCustomerConsent1cc($input);
-
-        return ApiResponse::json($response);
-    }
 }
