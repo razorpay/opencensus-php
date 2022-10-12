@@ -78,8 +78,6 @@ class TokenTest extends TestCase
 
         $this->assertEquals('2023', $response['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
 
-        $this->assertEquals('1704047399', $response['expired_at']);
-
         $this->assertArrayNotHasKey('customer_id', $response);
 
         $response2 = $this->startTest();
@@ -433,8 +431,6 @@ class TokenTest extends TestCase
         $this->assertEquals('12', $response['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
 
         $this->assertEquals('2023', $response['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
-
-        $this->assertEquals('1704047399', $response['expired_at']);
 
         $this->assertArrayNotHasKey('customer_id', $response);
 

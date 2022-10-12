@@ -34,6 +34,8 @@ class CustomerTokenTest extends TestCase
 
     public function testGetTokenMaxAmount()
     {
+        $this->markTestSkipped('This test case is not applicable as we are not supporting rzp vault tokens');
+
         //max amount should be present only in method = emandate
         $token = $this->getTokenById('token_100000emandate');
         self::assertArrayHasKey(Token\Entity::MAX_AMOUNT, $token);
@@ -50,6 +52,8 @@ class CustomerTokenTest extends TestCase
 
     public function testGetTokenExpiredAt()
     {
+        $this->markTestSkipped('This test case is not applicable as we are not supporting rzp vault tokens');
+
         //expired at should be present only when method is emandate and card
         $token = $this->getTokenById('token_100000emandate');
         self::assertArrayHasKey(Token\Entity::EXPIRED_AT, $token);
@@ -226,6 +230,8 @@ class CustomerTokenTest extends TestCase
 
     public function testFetchTokenCardRecurring()
     {
+        $this->markTestSkipped('This test case is not applicable as we are not supporting rzp vault tokens');
+
         $token = $this->fixtures->create('token', ['method' => 'card', 'recurring' => true, 'card_id' => '100000001lcard']);
 
         $token = $this->getTokenById('token_' . $token['id']);
@@ -241,6 +247,8 @@ class CustomerTokenTest extends TestCase
 
     public function testFetchTokenCardWithFlows()
     {
+        $this->markTestSkipped('This test case is not applicable as we are not supporting rzp vault tokens');
+
         $token = $this->fixtures->create('token', [
             'method'  => 'card',
             'card_id' => '100000001lcard',
@@ -273,6 +281,8 @@ class CustomerTokenTest extends TestCase
 
     public function testFetchTokenCardRecurringWithStatus()
     {
+        $this->markTestSkipped('This test case is not applicable as we are not supporting rzp vault tokens');
+
         $token = $this->fixtures->create(
             'token',
             [
@@ -294,6 +304,8 @@ class CustomerTokenTest extends TestCase
 
     public function testFetchTokenCardNotRecurring()
     {
+        $this->markTestSkipped('This test case is not applicable as we are not supporting rzp vault tokens');
+
         $token = $this->fixtures->create('token', ['method' => 'card', 'recurring' => false, 'card_id' => '100000001lcard']);
 
         $token = $this->getTokenById('token_' . $token['id']);
@@ -405,6 +417,8 @@ class CustomerTokenTest extends TestCase
 
     public function testFetchTokenMrn()
     {
+        $this->markTestSkipped('This test case is not applicable as we are not supporting rzp vault tokens');
+
         $token = $this->fixtures->create(
             'token',
             [

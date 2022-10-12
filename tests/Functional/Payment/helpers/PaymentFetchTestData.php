@@ -459,7 +459,7 @@ return [
                     [
                         'entity' => 'payment',
                         'card' => [
-                            'name' => 'Test Name'
+                            'name' => ''
                         ],
                     ],
                 ],
@@ -481,7 +481,7 @@ return [
             'content' => [
                 'entity' => 'payment',
                 'card'   => [
-                    'name' => 'Test Name'
+                    'name' => ''
                 ],
             ],
         ],
@@ -909,7 +909,7 @@ return [
             'content' => [
                 'entity'  => 'payment',
                 'card' => [
-                    'name' => 'Test Name'
+                    'name' => ''
                 ],
             ],
         ],
@@ -928,7 +928,7 @@ return [
             'content' => [
                 'entity'  => 'payment',
                 'card'    => [
-                    'name' => 'test'
+                    'name' => ''
                 ],
             ],
         ],

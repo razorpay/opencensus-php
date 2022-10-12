@@ -3641,7 +3641,7 @@ return [
                             'tax'               => 0,
                             'card' => [
                                 'entity'        => 'card',
-                                'name'          => 'Harshil',
+                                'name'          => '',
                                 'last4'         => '3335',
                                 'network'       => 'Visa',
                                 'type'          => 'credit',

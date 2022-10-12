@@ -1340,19 +1340,7 @@ class Service extends Base\Service
 
         $card = $this->repo->card->fetchForPayment($payment);
 
-        $variant = $this->app->razorx->getTreatment($payment->getMerchantId(), Merchant\RazorxTreatment::DUMMY_CARD_NAME_POST_TOKENIZATION, $this->mode);
-
-        $this->trace->info(TraceCode::DUMMY_CARD_NAME_RAZORX_VARIANT, [
-            'payment_id'     => $payment->getId(),
-            'card '          => $card->getId(),
-            'merchant_id'    => $payment->getMerchantId(),
-            'razorx_variant' => $variant,
-        ]);
-
-        if (strtolower($variant) === 'on'){
-
-            $card->setDummyCardName();
-        }
+        $card->setDummyCardName();
 
         return $card->toArrayPublic();
     }
@@ -2109,15 +2097,7 @@ class Service extends Base\Service
             $this->addDashboardFlags($entity, $payment, $input);
         }
 
-        $variant = $this->app->razorx->getTreatment($payment->getMerchantId(), Merchant\RazorxTreatment::DUMMY_CARD_DETAILS_POST_TOKENIZATION, $this->mode);
-
-        $this->trace->info(TraceCode::DUMMY_CARD_DETAILS_RAZORX_VARIANT, [
-            'payment_id'     => $payment->getId(),
-            'merchant_id'    => $payment->getMerchantId(),
-            'razorx_variant' => $variant,
-        ]);
-
-        if ((isset($entity['card'])) && (strtolower($variant) === 'on'))
+        if (isset($entity['card']))
         {
             $entity['card']['name'] = "";
         }

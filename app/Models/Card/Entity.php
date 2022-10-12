@@ -952,13 +952,7 @@ class Entity extends Base\PublicEntity
             return;
         }
 
-        $app  = \App::getFacadeRoot();
-
-        $experimentVariable = UniqueIdEntity::generateUniqueId();
-
-        $variant = $app['razorx']->getTreatment($experimentVariable, Merchant\RazorxTreatment::DUMMY_VALUE_WHILE_EXPOSE_FEATURE_ENABLED, $app['rzp.mode'] ?? 'live');
-
-        if((($this->merchant->isFeatureEnabled(Feature\Constants::EXPOSE_CARD_IIN)) === true) && (strtolower($variant) === 'on') )
+        if(($this->merchant->isFeatureEnabled(Feature\Constants::EXPOSE_CARD_IIN)) === true)
         {
             $array[self::IIN] = self::DUMMY_IIN;
         }
@@ -967,13 +961,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicExpiryMonthAttribute(array & $array)
     {
-        $app  = \App::getFacadeRoot();
-
-        $experimentVariable = UniqueIdEntity::generateUniqueId();
-
-        $variant = $app['razorx']->getTreatment($experimentVariable, Merchant\RazorxTreatment::DUMMY_VALUE_WHILE_EXPOSE_FEATURE_ENABLED, $app['rzp.mode'] ?? 'live');
-
-        if((($this->merchant->isFeatureEnabled(Feature\Constants::EXPOSE_CARD_EXPIRY)) === true) && (strtolower($variant) === 'on') )
+        if(($this->merchant->isFeatureEnabled(Feature\Constants::EXPOSE_CARD_EXPIRY)) === true)
         {
             $array[self::EXPIRY_MONTH] = "01";
         }
@@ -996,13 +984,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicExpiryYearAttribute(array & $array)
     {
-        $app  = \App::getFacadeRoot();
-
-        $experimentVariable = UniqueIdEntity::generateUniqueId();
-
-        $variant = $app['razorx']->getTreatment($experimentVariable, Merchant\RazorxTreatment::DUMMY_VALUE_WHILE_EXPOSE_FEATURE_ENABLED, $app['rzp.mode'] ?? 'live');
-
-        if((($this->merchant->isFeatureEnabled(Feature\Constants::EXPOSE_CARD_EXPIRY)) === true) && (strtolower($variant) === 'on') )
+        if(($this->merchant->isFeatureEnabled(Feature\Constants::EXPOSE_CARD_EXPIRY)) === true)
         {
             $array[self::EXPIRY_YEAR] = self::DUMMY_EXPIRY_YEAR;
         }
@@ -1450,20 +1432,7 @@ class Entity extends Base\PublicEntity
     {
         $data = parent::toArrayPublic();
 
-           $experimentVariable = UniqueIdEntity::generateUniqueId();
-
-            $app  = \App::getFacadeRoot();
-
-            $variant = $app['razorx']->getTreatment($experimentVariable, Merchant\RazorxTreatment::SEND_DUMMY_CARD_DETAILS_POST_TOKENISATION, $app['rzp.mode'] ?? 'live');
-
-
-            $app['trace']->info(TraceCode::FETCH_CARD_DUMMY_CARD_DETAILS, [
-                'razorx_variant' => $variant,
-            ]);
-
-            if(strtolower($variant) === 'on') {
-                $this->setDummyCardData($data);
-            }
+        $this->setDummyCardData($data);
 
         return $data;
     }

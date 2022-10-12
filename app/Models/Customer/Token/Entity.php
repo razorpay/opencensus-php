@@ -1108,27 +1108,13 @@ class Entity extends Base\PublicEntity
                     $publicArray[self::COMPLIANT_WITH_TOKENISATION_GUIDELINES] = false;
                 }
 
-                $experimentVariable = UniqueIdEntity::generateUniqueId();
+               $publicArray['card']['expiry_month'] = "01";
 
-                $app  = \App::getFacadeRoot();
+               $publicArray['card']['expiry_year'] = "2099";
 
-                $variant = $app['razorx']->getTreatment($experimentVariable, Merchant\RazorxTreatment::SEND_DUMMY_CARD_DETAILS_POST_TOKENISATION, $app['rzp.mode'] ?? 'live');
+               $publicArray['expired_at'] = $card->getTokenExpiryTimestamp();
 
-                $app['trace']->info(TraceCode::FETCH_CARD_DUMMY_CARD_DETAILS, [
-                    'token'          => $publicArray,
-                    'razorx_variant' => $variant,
-                ]);
-
-                if(strtolower($variant) === 'on')
-                {
-                    $publicArray['card']['expiry_month'] = "01";
-
-                    $publicArray['card']['expiry_year'] = "2099";
-
-                    $publicArray['expired_at'] = $card->getTokenExpiryTimestamp();
-
-                    (new Card\Entity())->setDummyCardData($publicArray['card']);
-                }
+               (new Card\Entity())->setDummyCardData($publicArray['card']);
 
             }
             catch (\Throwable $e)

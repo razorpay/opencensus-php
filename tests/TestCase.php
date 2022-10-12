@@ -188,7 +188,7 @@ class TestCase extends IlluminateTestCase
                     }
 
                     $response['token'] = $input['token'];
-                    $response['iin'] = $input['iin'];
+                    $response['iin'] = '999999';
                     $response['expiry_month'] = '02';
                     $response['expiry_year'] = '30';
                     $response['name'] = 'cards';

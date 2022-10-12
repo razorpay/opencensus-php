@@ -4218,7 +4218,7 @@ return [
                     ],
                     "account_type"   =>  "card",
                     "card"   =>  [
-                        "iin"       =>  "340169",
+                        "iin"       =>  "999999",
                         "last4"     =>  "0137",
                         "network"   =>  "American Express",
                         "type"      =>  "credit",
@@ -4322,7 +4322,7 @@ return [
                     ],
                     "account_type"   =>  "card",
                     "card"   =>  [
-                        "iin"           =>  "340169",
+                        "iin"           =>  "999999",
                         "last4"         =>  "0137",
                         "network"       =>  "American Express",
                         "type"          =>  "credit",
@@ -4427,7 +4427,7 @@ return [
                     ],
                     "account_type"   =>  "card",
                     "card"   =>  [
-                        "iin"           =>  "340169",
+                        "iin"           =>  "999999",
                         "last4"         =>  "0137",
                         "network"       =>  "American Express",
                         "type"          =>  "credit",

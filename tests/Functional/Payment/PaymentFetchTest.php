@@ -544,7 +544,7 @@ class PaymentFetchTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $card = $this->fixtures->create('card', ['name' => 'Test Name']);
+        $card = $this->fixtures->create('card', ['name' => '']);
 
         $payment = $this->fixtures->create('payment', ['card_id' => $card->getId()]);
 
@@ -559,7 +559,7 @@ class PaymentFetchTest extends TestCase
     {
         $this->ba->privateAuth();
 
-        $card = $this->fixtures->create('card', ['name' => 'Test Name']);
+        $card = $this->fixtures->create('card', ['name' => '']);
 
         $payment = $this->fixtures->create('payment', ['card_id' => $card->getId()]);
 
@@ -1546,7 +1546,7 @@ class PaymentFetchTest extends TestCase
 
         $this->app->instance('pg_router', $pgService);
 
-        $this->fixtures->create('card', ['id' => 'GrClJNBzyquD7E', 'name' => 'Test Name']);
+        $this->fixtures->create('card', ['id' => 'GrClJNBzyquD7E', 'name' => '']);
 
         $pgService->shouldReceive('sendRequest')
             ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'), Mockery::type('bool'))
@@ -1711,11 +1711,11 @@ class PaymentFetchTest extends TestCase
                                 'auth_type'=>'3ds',
                                 'card' => [
                                     'merchant_id'       =>  '10000000000000',
-                                    'name'              =>  'test',
+                                    'name'              =>  '',
                                     'network'           =>  'RuPay',
-                                    'expiry_month'      =>  '12',
-                                    'expiry_year'       =>  '2100',
-                                    'iin'               =>  '607384',
+                                    'expiry_month'      =>  '01',
+                                    'expiry_year'       =>  '2099',
+                                    'iin'               =>  '999999',
                                     'last4'             =>  '1111',
                                     'vault_token'       => 'NjA3Mzg0OTcwMDAwNDk0Nw==',
                                     'vault'             => 'rzpvault',

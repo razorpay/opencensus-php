@@ -15,7 +15,7 @@ return [
         'response' => [
             'content' => [
                 'entity'        => 'card',
-                'name'          => 'Harshil',
+                'name'          => '',
                 'network'       => 'Visa',
                 'last4'         => '3335',
                 'international' => false,
