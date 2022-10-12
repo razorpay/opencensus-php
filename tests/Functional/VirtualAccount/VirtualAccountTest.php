@@ -225,6 +225,31 @@ class VirtualAccountTest extends TestCase
         $this->verifyEntityOrigin($response['id'], 'merchant', '10000000000000');
     }
 
+    public function testCreateVirtualAccountWithQrCodeReceiver() {
+
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if ($featureFlag === (RazorxTreatment::SC_STOP_QR_AS_RECEIVER_FOR_VIRTUAL_ACCOUNT))
+                {
+                    return 'on';
+                }
+                return 'control';
+            });
+
+        $nextTenDays =  Carbon::today(Timezone::IST)->addDays(10)->timestamp;
+
+        $virtualAccountFeature = $this->getDbLastEntity('feature');
+
+        $this->fixtures->edit('feature', $virtualAccountFeature->getId(), ['created_at' => $nextTenDays]);
+
+        $this->startTest();
+    }
+
     public function testCreateVirtualAccountRBLJSW()
     {
         $terminalAttributes = [

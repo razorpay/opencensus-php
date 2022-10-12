@@ -1837,6 +1837,34 @@ return [
         ],
     ],
 
+    'testCreateVirtualAccountWithQrCodeReceiver' => [
+        'request' => [
+            'url' => '/virtual_accounts',
+            'method' => 'post',
+            'content' => [
+                'description' => 'VA for qr as receiver',
+                'receivers'   => [
+                    'types' => [
+                        'qr_code',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'QR receiver type is not supported.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_QR_RECEIVER_TYPE_IS_NOT_SUPPORTED,
+        ],
+    ],
+
     'testUpdateVirtualAccountExpirySettingForHDFCLife' => [
         'request'  => [
             'url'     => '/virtual_accounts/setting/expiry',

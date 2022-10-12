@@ -265,6 +265,7 @@ class PublicErrorDescription
     const BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_LINKS          = 'Your payment could not be completed as this business accepts domestic (Indian) card payments only. Try another payment method.';
     const BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_PAGES          = 'Your payment could not be completed as this business accepts domestic (Indian) card payments only. Try another payment method.';
     const BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_INVOICES               = 'International cards are not allowed for this merchant on invoices';
+    const BAD_REQUEST_QR_RECEIVER_TYPE_IS_NOT_SUPPORTED                         = 'QR receiver type is not supported.';
 
     const BAD_REQUEST_MANDATE_EXECUTION_ATTEMPT_BEFORE_START_TIME               = 'Mandate execution attempted before the start time';
 

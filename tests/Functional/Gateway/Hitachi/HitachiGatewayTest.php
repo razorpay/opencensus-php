@@ -1464,6 +1464,20 @@ class HitachiGatewayTest extends TestCase
 
     public function testBqrPaymentAndRefund()
     {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if ($featureFlag === (RazorxTreatment::SC_STOP_QR_AS_RECEIVER_FOR_VIRTUAL_ACCOUNT))
+                {
+                    return 'control';
+                }
+                return 'control';
+            });
+
         $request = $this->testData['testBqrPayment'];
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);

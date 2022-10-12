@@ -4,6 +4,7 @@ namespace RZP\Models\VirtualAccount;
 
 use Carbon\Carbon;
 
+use RZP\Constants\Environment;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\Tracer;
@@ -355,6 +356,29 @@ class Core extends Base\Core
         $virtualAccount->getValidator()->validateReceiversForBanking($receivers);
 
         $receiverHelper = $virtualAccount->getReceiverBuilder();
+
+        if ($virtualAccount->isBalanceTypeBanking() === false)
+        {
+            $getFeatureList  = $virtualAccount->merchant->getEnabledFeatures();
+
+            $stopQrAsReciever = $this->app->razorx->getTreatment($virtualAccount->merchant->getId(),
+                                                                  RazorxTreatment::SC_STOP_QR_AS_RECEIVER_FOR_VIRTUAL_ACCOUNT,
+                                                                  $this->mode);
+
+            if (($stopQrAsReciever === 'on') and
+                (in_array(Receiver::QR_CODE, $receivers[Entity::TYPES]) === true) and
+                (in_array(Feature\Constants::VIRTUAL_ACCOUNTS, $getFeatureList) === true))
+            {
+                $feature = $this->repo->feature->findByEntityTypeEntityIdAndName(Constants::MERCHANT,
+                                                                                 $virtualAccount->merchant->getId(),
+                                                                                 Feature\Constants::VIRTUAL_ACCOUNTS);
+
+                if ($feature->getCreatedAt() > Constants::QR_RECEIVER_CREATATION_STOP_TIME_STAMP)
+                {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_QR_RECEIVER_TYPE_IS_NOT_SUPPORTED);
+                }
+            }
+        }
 
         foreach ($receivers[Entity::TYPES] as $receiverType)
         {
