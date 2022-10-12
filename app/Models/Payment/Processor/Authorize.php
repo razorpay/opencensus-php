@@ -6120,6 +6120,16 @@ trait Authorize
                 $saveMethodInput[Token\Entity::EXPIRED_AT] = $this->upiMandate->getEndTime() ?? null;
                 $saveMethodInput[Token\Entity::START_TIME] = $this->upiMandate->getStartTime() ?? null;
             }
+
+            if ($payment->isUpiRecurring() and
+               ($this->merchant->isTPVRequired() === true))
+            {
+                $order = $payment->getOrderAttribute();
+
+                $saveMethodInput[Token\Entity::ACCOUNT_NUMBER] = $order->bankAccount->getAccountNumber() ?? null;
+
+                $saveMethodInput[Token\Entity::IFSC] = $order->bankAccount->getIfscCode() ?? null;
+            }
         }
 
         $token = null;

@@ -188,16 +188,11 @@ class Core extends Base\Core
             if (empty($bankDetails[BankAccount\Entity::IFSC_CODE]) === false and
                 empty($bankDetails[BankAccount\Entity::ACCOUNT_NUMBER]) === false)
             {
-                $code = substr($bankDetails[BankAccount\Entity::IFSC_CODE], 0, 4);
+                $bankDetails[BankAccount\Entity::IFSC] = $bankDetails[BankAccount\Entity::IFSC_CODE];
 
-                if (isset(UpiPayment::$defaultInconsistentBankCodesMapping[$code]) === true)
-                {
-                    $code = UpiPayment::$defaultInconsistentBankCodesMapping[$code];
-                }
+                unset($bankDetails[BankAccount\Entity::IFSC_CODE]);
 
-                $orderPayLoad[Order\Entity::BANK] = $code;
-
-                $orderPayLoad[Order\Entity::ACCOUNT_NUMBER] = $bankDetails[BankAccount\Entity::ACCOUNT_NUMBER];
+                $orderPayLoad[Order\Entity::BANK_ACCOUNT] = $bankDetails;
             }
         }
 
@@ -637,6 +632,14 @@ class Core extends Base\Core
             Order\Entity::NOTES           => $input[Order\Entity::NOTES] ?? [],
             Order\Entity::PRODUCTS        => $input[Order\Entity::PRODUCTS] ?? [],
         ];
+
+        if(($this->merchant->isTPVRequired() === true) and
+           ($token->isUpiRecurringToken() === true))
+        {
+            $orderInput[Order\Entity::BANK_ACCOUNT] = [Order\Entity::ACCOUNT_NUMBER => $token->getAccountNumber() ?? null,
+                                                       BankAccount\Entity::NAME     => '',
+                                                       BankAccount\Entity::IFSC     => $token->getIfsc() ?? null];
+        }
 
         $this->trace->info(
             TraceCode::SUBSCRIPTION_REGISTRATION_CREATE_ORDER_FOR_CHARGE,
