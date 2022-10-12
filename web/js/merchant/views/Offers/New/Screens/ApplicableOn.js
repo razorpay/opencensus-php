@@ -54,6 +54,8 @@ export default class ApplicableOn extends React.Component {
       bankOptions = EMI_DEBIT_CARD_BANK_OPTIONS;
     }
 
+    const isAmex = payment_network === 'AMEX';
+
     return (
       <React.Fragment>
         <Input.Select
@@ -113,8 +115,9 @@ export default class ApplicableOn extends React.Component {
               name="max_payment_count"
               defaultValue={max_payment_count}
               placeholder="Max times a card can be used to avail this offer"
+              description={isAmex && 'Max Usage on Amex will not work post tokenisation'}
               validator={validateMaxPaymentCount}
-              disabled={isFormLocked}
+              disabled={isFormLocked || isAmex}
             />
 
             <Input
@@ -122,7 +125,14 @@ export default class ApplicableOn extends React.Component {
               label="IINs"
               defaultValue={iins}
               placeholder="6 digit IINs for cards. Separated by comma if more than one"
-              description={iins && iins.join(', ')}
+              description={
+                <>
+                  <p>
+                    {'Note: Bin based offers on Amex saved card will not work post tokenisation.'}
+                  </p>
+                  <p>{iins && iins.join(', ')}</p>
+                </>
+              }
               disabled={isFormLocked}
             />
           </React.Fragment>
