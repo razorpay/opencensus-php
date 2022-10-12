@@ -153,6 +153,11 @@ class SavedCardTokenisationJob extends Job
 
                 $serviceProviderTokens = (new Token\Core)->fetchToken($token, true);
 
+                unset($token['card']['iin']);
+                unset($token['card']['expiry_month']);
+                unset($token['card']['expiry_year']);
+                unset($token['card']['name']);
+
                 $eventPayload = [
                     ApiEventSubscriber::MAIN => $token,
                     ApiEventSubscriber::WITH => $serviceProviderTokens,

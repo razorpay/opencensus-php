@@ -14210,9 +14210,13 @@ class Route
         'customer_fetch_token',
         'customer_fetch_tokens',
         'otp_verify',
+        'payment_timeout',
         'payment_timeout_new',
         'merchant_checkout_preferences',
-        'payment_fetch_card_details'
+        'payment_fetch_card_details',
+        'payment_notify',
+        'token_fetch_card',
+        'token_fetch'
     ];
 
     protected static $rearchRoutes = [
