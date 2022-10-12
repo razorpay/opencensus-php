@@ -94,6 +94,7 @@ class Workflow
         Permission::PAYMENTS_BUY_PRICING_PLAN_RULE_ADD,
         Permission::PAYMENTS_BUY_PRICING_PLAN_RULE_FORCE_DELETE,
         Permission::ENABLE_NON_3DS_PROCESSING,
+        Permission::CREATE_CYBER_HELPDESK_WORKFLOW,
         Permission::EXECUTE_MERCHANT_MAX_PAYMENT_LIMIT_WORKFLOW,
     ];
 

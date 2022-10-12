@@ -414,6 +414,13 @@ class Authorization
         $this->proxy = false;
     }
 
+    public function cyberCrimeHelpDeskAppAuth()
+    {
+        $this->appAuth('rzp_test', \Config::get('applications.cyber_crime_helpdesk')['secret']);
+
+        $this->proxy = false;
+    }
+
     public function addProxyAuthHeaders($user)
     {
         if ($user === null)

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Detail;
 
+use RZP\lib\TemplateEngine;
 use DOMDocument;
 use RZP\Http\RequestHeader;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
@@ -91,6 +92,7 @@ use RZP\Notifications\Dashboard\Constants as DashboardNotificationConstants;
 use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
 use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
 use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient\BvsValidationClient;
+use RZP\Models\Transaction\Service as TransactionService;
 use GuzzleHttp\Client as HttpClient;
 use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\LegalDocumentBaseResponse;

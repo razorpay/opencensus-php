@@ -3602,6 +3602,10 @@ class Route
             'MerchantApmEnablementController@generateEmerchantpayMaf'
         ],
 
+        // CyberCrime Help Desk Api
+        'cyber_crime_helpdesk_send_mail_to_lea'   => ['post',    'cybercrime_helpdesk/send_mail_to_lea',   'CyberCrimeHelpDeskController@sendMailToLEAFromCyberCrimeHelpdesk'      ],
+        'cybercrime_helpdesk_workflow_action'     => ['post',    'cybercrime_helpdesk/workflow_action',    'CyberCrimeHelpDeskController@postCyberCrimeWorflowCreateAction'        ],
+
         //TPV - Third party validation
         //- validations on source accounts through which money gets loaded to va.
         'admin_tpv_create'                        => ['post',    'admin/tpv/create',                                        'BankingAccountTpvController@adminCreateTpv'                   ],
@@ -5067,6 +5071,10 @@ class Route
         'merchant_risk_alerts_dispute_details',
         'merchant_risk_alerts_set_dedupe_key',
 
+
+        'cyber_crime_helpdesk_send_mail_to_lea',
+        'cybercrime_helpdesk_workflow_action',
+
         // Mandate HQ
         'get_issuer_from_iin',
 
@@ -5309,6 +5317,9 @@ class Route
         'customer_fetch_by_id_global',
 
         'role_list_admins_internal',
+
+        'cyber_crime_helpdesk_send_mail_to_lea',
+        'cybercrime_helpdesk_workflow_action',
 
         // partnership service dependent routes
         'fetch_commission_configs',
@@ -14005,6 +14016,11 @@ class Route
             'merchant_risk_alerts_details',
             'merchant_risk_alerts_dispute_details',
             'merchant_risk_alerts_set_dedupe_key',
+        ],
+
+        'cyber_crime_helpdesk'  => [
+            'cyber_crime_helpdesk_send_mail_to_lea',
+            'cybercrime_helpdesk_workflow_action'
         ],
 
         'care' => [

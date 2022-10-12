@@ -252,7 +252,6 @@ class Constants
     const GSTIN_UPDATE_SELF_SERVE_WORKFLOW_CONTROLLER = 'RZP\Http\Controllers\MerchantController@postGstinUpdateWorkflow';
     const GSTIN_CERTIFICATE_WORKFLOW_COMMENT          = 'GstIn Certificate : %sadmin/entity/ufh.files/live/file_%s';
 
-
     // Kyc Events constant
     const RESPONSE_BODY             = 'response_body';
     const RESPONSE_TIME             = 'response_time';

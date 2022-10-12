@@ -754,6 +754,8 @@ class Entity
 
     const LINKED_ACCOUNT_REFERENCE_DATA = 'linked_account_reference_data';
 
+    const CYBER_CRIME_HELP_DESK         = 'cyber_crime_help_desk';
+
     /**
      * Defines a map of entites which are currently
      * being cached and associated cache version prefixes
@@ -1398,6 +1400,8 @@ class Entity
         self::SURVEY_RESPONSE   => \RZP\Models\Survey\Response::class,
 
         self::MERCHANT_RISK_ALERT => \RZP\Models\MerchantRiskAlert::class,
+
+        self::CYBER_CRIME_HELP_DESK => \RZP\Models\CyberCrimeHelpDesk::class,
 
         self::BANKING_ACCOUNT_TPV   => \RZP\Models\BankingAccountTpv::class,
 

@@ -7919,4 +7919,5 @@ class Core extends Base\Core
         return [[BusinessDetailConstants::DOMAIN_SCORE   => $domainLeadScore,
                 BusinessDetailConstants::WEBSITE_VISITS => $visits], ($visits > 0)];
     }
+
 }

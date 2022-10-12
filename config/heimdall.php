@@ -802,6 +802,10 @@ return [
                 'assignable'  => true,
                 'workflow'    => true,
             ],
+            Permission::CREATE_CYBER_HELPDESK_WORKFLOW => [
+                'assignable'  => true,
+                'workflow'    => true,
+            ]
         ],
 
         PermissionCategory::SETTLEMENT => [

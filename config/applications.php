@@ -457,8 +457,8 @@ return [
         ],
 
         'group_ids' => [
-            'merchant_risk' => env('FRESHDESK_GROUP_MERCHANT_RISK_ID'),
-            'plugin_merchant'=> env('FRESHDESK_GROUP_PLUGIN_MERCHANT'),
+            'merchant_risk'         => env('FRESHDESK_GROUP_MERCHANT_RISK_ID'),
+            'plugin_merchant'       => env('FRESHDESK_GROUP_PLUGIN_MERCHANT'),
             'rzpind' => [
                 'merchant_risk' => env('FRESHDESK_IND_GROUP_MERCHANT_RISK_ID'),
                 'foh'           => env('FRESHDESK_IND_GROUP_FOH_NOTIFICATION_ID'),
@@ -466,6 +466,10 @@ return [
                 'chargeback'    => env('FRESHDESK_IND_GROUP_CHARGEBACK_ID'),
                 'merchant_risk_transaction' => env('FRESHDESK_IND_GROUP_MERCHANT_RISK_TRANSACTION_ID'),
                 'debit_note'    => env('FRESHDESK_IND_GROUP_DEBIT_NOTE_ID')
+            ],
+            'cybercrime_helpdesk'   => [
+                'acknowledgement'   => env('FRESHDESK_GROUP_MERCHANT_CYBERCRIME_HELPDESK_ID'),
+                'reply_to_lea'      => env('FRESHDESK_GROUP_MERCHANT_CYBERCRIME_HELPDESK_ID'),
             ]
         ],
 
@@ -475,6 +479,10 @@ return [
                 'risk_notification'       => env('FRESHDESK_IND_EMAIL_CONFIG_RISK_NOTIFICATION_ID'),
                 'foh_notification'        => env('FRESHDESK_IND_EMAIL_CONFIG_FOH_NOTIFICATION_ID'),
                 'debit_note_notification' => env('FRESHDESK_IND_EMAIL_CONFIG_DEBIT_NOTE_NOTIFICATION_ID')
+            ],
+            'cybercrime_helpdesk'   => [
+                'acknowledgement'   => env('FRESHDESK_CYBERCRIME_HELPDESK_EMAIL_CONFIG_RISK_NOTIFICATION_ID'),
+                'reply_to_lea'      => env('FRESHDESK_CYBERCRIME_HELPDESK_EMAIL_CONFIG_RISK_NOTIFICATION_ID'),
             ]
         ],
     ],
@@ -1218,6 +1226,11 @@ return [
     'merchant_risk_alerts' => [
         'maker_email' => env('MERCHANT_RISK_ALERT_WORKFLOW_MAKER_EMAIL', 'shashank@razorpay.com'),
         'secret'      => env('MERCHANT_RISK_ALERTS_SECRET')
+    ],
+
+    'cyber_crime_helpdesk' => [
+        'secret'      => env('CYBER_CRIME_HELPDESK', 'cyber_crime_helpdesk_secret'),
+        'maker_email' => env('CYBER_CRIME_HELPDESK_WORKFLOW_MAKER_EMAIL', 'shashank@razorpay.com')
     ],
 
     'sms_sync'  =>  [

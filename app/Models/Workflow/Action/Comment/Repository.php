@@ -19,4 +19,13 @@ class Repository extends Base\Repository
                     ->with($relations)
                     ->get();
     }
+
+    public function fetchLatestCommentsByActionIdWithRelations(string $actionId, $relations = [])
+    {
+        return $this->newQuery()
+            ->where(Entity::ACTION_ID, '=', $actionId)
+            ->with($relations)
+            ->orderBy(Entity::UPDATED_AT, 'desc')
+            ->get();
+    }
 }

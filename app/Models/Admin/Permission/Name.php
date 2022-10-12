@@ -830,6 +830,8 @@ class Name
     const MERCHANT_RISK_ALERT_UPSERT_RULE   = 'merchant_risk_alert_upsert_rule';
     const MERCHANT_RISK_ALERT_DELETE_RULE   = 'merchant_risk_alert_delete_rule';
 
+    const CREATE_CYBER_HELPDESK_WORKFLOW    = 'create_cyber_helpdesk_workflow';
+
     // NPS survey create
     const NPS_SURVEY                          = 'nps_survey';
 
