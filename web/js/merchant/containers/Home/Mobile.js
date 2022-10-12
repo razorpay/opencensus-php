@@ -68,17 +68,44 @@ class AnalyticsMobile extends Component {
   state = {
     settlementExists: true,
     isWebsiteComplianceModalShown: false,
+    enableSticky: false,
   };
 
   constructor(props) {
     super(props);
     this.showOndemandSettlementForm = this.showOndemandSettlementForm.bind(this);
+    this.observerRef = null;
+    this.containerRef = React.createRef(null);
   }
 
   componentDidMount() {
     this.checkIfFirstEverSettlement();
     const holdFeature = false; // TODO: remove it once feature is live for prod
     if (holdFeature) this?.props?.fetchCarouselBanner({ fromWhere: window.location.pathname });
+    if (
+      'IntersectionObserver' in window &&
+      'IntersectionObserverEntry' in window &&
+      this.containerRef
+    ) {
+      this.observerRef = new IntersectionObserver(
+        ([entry]) => {
+          this.setState({
+            enableSticky: entry?.boundingClientRect?.top < 100,
+          });
+        },
+        {
+          rootMargin: '-100px',
+          threshold: [0.1, 1],
+        },
+      );
+      this.observerRef.observe(this.containerRef.current);
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.observerRef) {
+      this.observerRef.disconnect();
+    }
   }
 
   checkIfFirstEverSettlement = (callbackSettlementStatus) => {
@@ -163,7 +190,6 @@ class AnalyticsMobile extends Component {
       onExtraContentMount,
       isAdmin,
       onFetchPayments,
-      scrollAmountToStickHeader,
       dateRangePresets,
       onDatesChange,
       defaultPreset,
@@ -351,7 +377,10 @@ class AnalyticsMobile extends Component {
             </div>
           )}
         </div>
-        <Sticky stickWhen={scrollAmountToStickHeader} stickAt={50}>
+        <Sticky
+          stickAt={50}
+          {...(this.state.enableSticky ? { stickWhen: 0 } : { disableSticky: true })}
+        >
           <Header className="clearfix" title="" showMode={false}>
             <div id="analytics-daterange-picker" className="date-range-container">
               <DateRangePicker
@@ -377,6 +406,7 @@ class AnalyticsMobile extends Component {
           </Header>
         </Sticky>
         <div className="dashboard">
+          <div ref={this.containerRef} />
           <LazyLoad height={100} offset={50} once>
             <KeyMetrics
               startDate={startDate}

@@ -14,18 +14,18 @@ class Sticky extends Component {
   }
 
   layout(props = this.props) {
-    const node = this.node,
-      borderBox = node.getBoundingClientRect(),
-      styles = {
-        width: `${node.clientWidth}px`,
-        left: `${borderBox.left}px`,
-        top: `${props.stickAt}px`,
-      };
+    const node = this.node;
+    const borderBox = node.getBoundingClientRect();
+    const styles = {
+      width: `${node.clientWidth}px`,
+      left: `${borderBox.left}px`,
+      top: `${props.stickAt}px`,
+    };
 
     this.node.style.width = styles.width;
-    this.node.style.height = this.contentElement.clientHeight + 'px';
+    this.node.style.height = `${this.contentElement.clientHeight}px`;
 
-    Object.keys(styles).forEach(styleName => {
+    Object.keys(styles).forEach((styleName) => {
       this.contentElement.style[styleName] = styles[styleName];
     });
   }
@@ -68,6 +68,7 @@ class Sticky extends Component {
     return this.toggleSticky(container.scrollTop);
   }
 
+  // eslint-disable-next-line consistent-return
   UNSAFE_componentWillReceiveProps(nextProps) {
     const { stickWhen, stickAt } = this.props;
 
@@ -87,20 +88,17 @@ class Sticky extends Component {
   }
 
   render() {
-    const classNames = ['rzp-sticky'],
-      styles = {};
+    const classNames = ['rzp-sticky'];
+    const styles = {};
 
-    if (this.state.isSticky) {
+    if (this.state.isSticky && !this.props.disableSticky) {
       classNames.push('sticky');
       styles.width = this.node;
     }
 
     return (
-      <div className={classNames.join(' ')} ref={node => (this.node = node)}>
-        <div
-          ref={node => (this.contentElement = node)}
-          className="sticky-content"
-        >
+      <div className={classNames.join(' ')} ref={(node) => (this.node = node)}>
+        <div ref={(node) => (this.contentElement = node)} className="sticky-content">
           {this.props.children}
         </div>
       </div>
@@ -109,6 +107,7 @@ class Sticky extends Component {
 }
 
 Sticky.defaultProps = {
+  disableSticky: false,
   stickWhen: 0,
   stickAt: 0,
   container: document.documentElement,
