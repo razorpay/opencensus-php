@@ -6085,6 +6085,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const CMMA_ESCALATION_ATTEMPT                           = 'CMMA_ESCALATION_ATTEMPT';
     const CMMA_ESCALATION_ATTEMPT_FAILURE                   = 'CMMA_ESCALATION_ATTEMPT_FAILURE';
+    const CMMA_FETCH_AUTO_KYC_PASS_DATA                     = 'CMMA_FETCH_AUTO_KYC_PASS_DATA';
     const CMMA_ESCALATION_EXCLUDE                           = 'CMMA_ESCALATION_EXCLUDE';
     const CMMA_ESCALATION_NO_MERCHANTS                      = 'CMMA_ESCALATION_NO_MERCHANTS';
 

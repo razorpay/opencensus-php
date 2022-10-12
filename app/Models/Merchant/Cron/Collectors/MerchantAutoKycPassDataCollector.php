@@ -21,7 +21,7 @@ class MerchantAutoKycPassDataCollector extends DbDataCollector
 
         $this->app['trace']->info(TraceCode::SELF_SERVE_CRON, [
             'type' => Constants::AMP,
-            'total_mid_count' => count($merchantIdList)
+            'merchant_ids' => $merchantIdList
         ]);
 
         if (empty($merchantIdList) === true)
