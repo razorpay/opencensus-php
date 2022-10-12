@@ -54,7 +54,7 @@ class ConfigKey
     const CPS_SERVICE_ENABLED                   = self::PREFIX . 'cps_service_enabled';
     const PG_ROUTER_SERVICE_ENABLED             = self::PREFIX . 'pg_router_service_enabled';
     const CARD_ARCHIVAL_FALLBACK_ENABLED        = self::PREFIX . 'card_archival_fallback_enabled';
-    const CARD_DUAL_WRITE_ENABLED               = self::PREFIX . 'card_dual_write_enabled';
+    const UPI_DUAL_WRITE_ENABLED                = self::PREFIX . 'upi_dual_write_enabled';
     const SETTLEMENT_TRANSACTION_LIMIT          = self::PREFIX . 'settlement_transaction_limit';
     const ENABLE_PAYMENT_DOWNTIMES              = self::PREFIX . 'enable_payment_downtimes';
     const DOWNTIME_THROTTLE                     = self::PREFIX . 'downtime:throttle';
@@ -481,7 +481,7 @@ class ConfigKey
         self::PAYER_ACCOUNT_NAME_INVALID_REGEXES,
         self::SCROOGE_0LOC_ENABLED,
         self::CARD_ARCHIVAL_FALLBACK_ENABLED,
-        self::CARD_DUAL_WRITE_ENABLED,
+        self::UPI_DUAL_WRITE_ENABLED,
         self::PAYOUT_SERVICE_DATA_MIGRATION_LIMIT_PER_BATCH,
         self::PAYOUT_SERVICE_DATA_MIGRATION_BATCH_ATTEMPTS,
         self::ONDEMAND_SETTLEMENT_INTERNAL_MERCHANTS,

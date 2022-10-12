@@ -4,10 +4,13 @@ namespace RZP\Gateway\Upi\Base;
 
 use RZP\Gateway\Base;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Base\Traits\DualWrite;
 use RZP\Reconciliator\Base\Reconciliate;
 
 class Entity extends Base\Entity
 {
+    use DualWrite;
+
     const ID                    = 'id';
     const ACTION                = 'action';
     const TYPE                  = 'type';

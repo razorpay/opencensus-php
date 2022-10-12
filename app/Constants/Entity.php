@@ -1549,7 +1549,7 @@ class Entity
     ];
 
     public static $dualWriteConfigKey = [
-        self::CARD    => Models\Admin\ConfigKey::CARD_DUAL_WRITE_ENABLED,
+        self::UPI => Models\Admin\ConfigKey::UPI_DUAL_WRITE_ENABLED,
     ];
 
     protected static $externalServiceClass = [

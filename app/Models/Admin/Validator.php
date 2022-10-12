@@ -87,7 +87,7 @@ class Validator extends Base\Validator
         ConfigKey::NB_PLUS_SERVICE_ENABLED              => 'filled|boolean',
         ConfigKey::PG_ROUTER_SERVICE_ENABLED            => 'filled|boolean',
         ConfigKey::CARD_ARCHIVAL_FALLBACK_ENABLED       => 'filled|boolean',
-        ConfigKey::CARD_DUAL_WRITE_ENABLED              => 'filled|boolean',
+        ConfigKey::UPI_DUAL_WRITE_ENABLED               => 'filled|boolean',
         ConfigKey::PAYSECURE_BLACKLISTED_MCCS           => 'filled|array',
         ConfigKey::RX_SLA_FOR_IMPS_PAYOUT               => 'filled|integer',
         ConfigKey::FTS_PAYOUT_VPA                       => 'filled|string',

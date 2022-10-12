@@ -519,7 +519,12 @@ trait CommonGatewayTrait
 
         $entity->fill($attributes);
 
-        $this->upiGetRepository()->save($entity);
+        try
+        {
+            // Changed from save -> saveOrFail and ignoring exception as only saveOrFail is overridden as of now for dual write
+            $this->upiGetRepository()->saveOrFail($entity);
+        }
+        catch (\Throwable $exception){}
 
         return $entity;
     }
@@ -535,7 +540,12 @@ trait CommonGatewayTrait
 
         $gatewayPayment->generatePspData($attributes);
 
-        $this->upiGetRepository()->save($gatewayPayment);
+        try
+        {
+            // Changed from save -> saveOrFail and ignoring exception as only saveOrFail is overridden as of now for dual write
+            $this->upiGetRepository()->saveOrFail($gatewayPayment);
+        }
+        catch (\Throwable $exception){}
 
         return $gatewayPayment;
     }
