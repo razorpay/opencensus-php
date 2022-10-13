@@ -66,6 +66,58 @@ class FundAccountsTest extends TestCase
         $this->assertEquals($bankAccountId, $response['bank_account']['id']);
     }
 
+    public function testGetCardFundAccountForPayoutsService()
+    {
+        $this->ba->appAuthTest($this->config['applications.payouts_service.secret']);
+
+        $contact = $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Chirag']);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ALLOW_NON_SAVED_CARDS]);
+
+        $card = $this->fixtures->create('card', [
+            'merchant_id'  => '10000000000000',
+            'name'         => 'chirag',
+            'expiry_month' => 4,
+            'expiry_year'  => 2024,
+            'vault_token'  => 'MzQwMTY5NTcwOTkwMTM3==',
+        ]);
+
+        $this->fixtures->create('fund_account', [
+            'id'           => '100000000000fa',
+            'source_type'  => 'contact',
+            'source_id'    => '1000000contact',
+            'merchant_id'  => $contact->merchant->getId(),
+            'account_type' => 'card',
+            'account_id'   => $card->getId()
+        ]);
+
+        $response = $this->startTest();
+
+        $card = $this->getLastEntity('card', true);
+
+        $cardId = $card['id'];
+
+        $this->assertEquals($cardId, $response['card']['id']);
+
+        $cardResponseKeys = [
+            Entity::ID,
+            Entity::LAST4,
+            Entity::NETWORK,
+            Entity::TYPE,
+            Entity::SUBTYPE,
+            Entity::ISSUER,
+            Entity::INPUT_TYPE,
+            Entity::VAULT_TOKEN,
+            Entity::VAULT,
+            Entity::TRIVIA,
+            Entity::TOKEN_IIN,
+            Entity::TOKEN_LAST_4,
+        ];
+
+        $this->assertArrayKeysExist($response['card'], $cardResponseKeys);
+        $this->assertEquals(count($cardResponseKeys), count($response['card']));
+    }
+
     public function testFetchFundAccounts()
     {
         $this->fixtures->create('fund_account:bank_account', ['id' => '100000000001fa']);

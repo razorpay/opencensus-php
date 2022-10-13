@@ -229,6 +229,21 @@ class Entity extends Base\PublicEntity
         Card\Entity::INPUT_TYPE
     ];
 
+    protected $payoutServiceFundAccount = [
+        Card\Entity::ID,
+        Card\Entity::LAST4,
+        Card\Entity::NETWORK,
+        Card\Entity::TYPE,
+        Card\Entity::SUBTYPE,
+        Card\Entity::ISSUER,
+        Card\Entity::INPUT_TYPE,
+        Card\Entity::VAULT_TOKEN,
+        Card\Entity::VAULT,
+        Card\Entity::TRIVIA,
+        Card\Entity::TOKEN_IIN,
+        Card\Entity::TOKEN_LAST_4,
+    ];
+
     protected $appends = [self::NETWORK_CODE];
 
     protected $publicSetters = [
@@ -1509,7 +1524,18 @@ class Entity extends Base\PublicEntity
 
     public function toArrayFundAccount()
     {
-        $attributes = $this->toArrayPublic();
+        $isPayoutService = app('basicauth')->isPayoutService();
+
+        if ($isPayoutService === true)
+        {
+            $attributes = $this->toArray();
+
+            $attributes[self::ID] = $this->getPublicId();
+        }
+        else
+        {
+            $attributes = $this->toArrayPublic();
+        }
 
         if ((isset($attributes[self::NAME]) === true) and
             ($attributes[self::NAME] === self::DUMMY_NAME))
@@ -1541,7 +1567,8 @@ class Entity extends Base\PublicEntity
             }
         }
 
-        return array_only($attributes, $this->fundAccount);
+        return ($isPayoutService === true) ? array_only($attributes, $this->payoutServiceFundAccount) :
+            array_only($attributes, $this->fundAccount);
     }
 
     /**
@@ -1721,12 +1748,29 @@ class Entity extends Base\PublicEntity
 
         $skip = $app['api.route']->skipCardMetaCall($routeName);
 
-        if ( ($skip === false) and  (isset($this->cardMetadata[$key]) === false))
+        $isAllowedIfInternalApp = $this->isAllowedInternalAppForGetCardMetaData();
+
+        if (($skip === false) and
+            (isset($this->cardMetadata[$key]) === false) and
+            ($isAllowedIfInternalApp === true))
         {
             $this->cardMetadata = (new Card\CardVault)->getCardMetaData($this, $routeName);
         }
 
         return $this->cardMetadata[$key] ?? null;
+    }
+
+    public function isAllowedInternalAppForGetCardMetaData()
+    {
+        $app = \App::getFacadeRoot();
+        $auth    = $app['basicauth'];
+
+        if ($auth->isPayoutService() === true)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public function setCardMetaData($metaDataArray)
