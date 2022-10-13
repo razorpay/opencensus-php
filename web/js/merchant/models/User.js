@@ -700,6 +700,10 @@ export default class User {
     return this.findTag('Charge_at_will');
   }
 
+  get isTPVEnabled() {
+    return this.findTag('Tpv');
+  }
+
   get isEsignEnabled() {
     return this.findTag('Esign');
   }

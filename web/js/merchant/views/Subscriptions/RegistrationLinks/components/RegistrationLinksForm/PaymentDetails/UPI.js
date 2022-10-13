@@ -2,40 +2,62 @@ import React from 'react';
 import Input from 'common/new-ui/Input';
 
 import AmountScreen from './Amount';
-import { BankDetails } from './commonFields';
+import { BankDetails, AccountDetails } from './commonFields';
 
-export default function UPI(props) {
+export default function UPI({
+  amount,
+  showTPV,
+  handleTPV,
+  accountType,
+  isTPVEnabled,
+  onBlurElement,
+  beneficiaryName,
+  amountValidator,
+  bankAccountIFSC,
+  bankAccountNumber,
+  isTPVEnabledMerchant,
+}) {
   return (
     <>
       <AmountScreen
-        amount={props.amount}
-        onBlurElement={props.onBlurElement}
+        amount={amount}
+        onBlurElement={onBlurElement}
         placeholder="Max 200000"
-        amountValidator={props.amountValidator}
+        amountValidator={amountValidator}
       />
 
-      {props.showTPV && (
+      {showTPV && !isTPVEnabledMerchant && (
         <>
           <Input.Check
             fieldLabel="Enable Third Party Validation"
             class="Input--vTop"
-            onChange={props.handleTPV}
-            checked={props.isTPVEnabled}
+            onChange={handleTPV}
+            checked={isTPVEnabled}
           />
 
-          <BankDetails
-            hideBankName
-            disabled={!props.isTPVEnabled}
-            bankAccountIFSC={props.bankAccountIFSC}
-          />
+          <BankDetails hideBankName disabled={!isTPVEnabled} bankAccountIFSC={bankAccountIFSC} />
 
           <Input
-            disabled={!props.isTPVEnabled}
+            disabled={!isTPVEnabled}
             placeholder="Account Number"
             name="bankAccountNumber"
             data-name="account_number"
-            value={props.bankAccountNumber}
+            value={bankAccountNumber}
             description="Bank Account Number"
+          />
+        </>
+      )}
+
+      {/* IF Tpv feature is enabled, All UPI orders should have bank details associated with them */}
+      {isTPVEnabledMerchant && (
+        <>
+          <BankDetails hideBankName required bankAccountIFSC={bankAccountIFSC} />
+          <AccountDetails
+            accountType={accountType}
+            beneficiaryName={beneficiaryName}
+            bankAccountNumber={bankAccountNumber}
+            onBlurElement={onBlurElement}
+            required
           />
         </>
       )}

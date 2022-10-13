@@ -19,8 +19,14 @@ If your changes are regarding any home page widgets like announcements, banners,
 
 1. What is this PR about?
 
+- Jira/Asana
+-
+
 2. Write individual changes in points
-   [Screenshot with each point if necessary]
+
+3. Add Screenshot/Gifs covering what changed?
+   | Before | After |
+   |--------| ----- |
 
 ---
 

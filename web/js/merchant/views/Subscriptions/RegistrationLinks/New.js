@@ -29,10 +29,10 @@ import {
   trackSkipBankDetails,
   trackSubmitCreateForm,
   trackCloseCreateForm,
-} from './ga';
-import analytics from '../analytics';
+} from 'merchant/views/Subscriptions/RegistrationLinks/ga';
+import analytics from 'merchant/views/Subscriptions/analytics';
 import { isMobileDevice } from 'merchant/components/Home/data';
-import { isAmountLiesInRange } from '../utils';
+import { isAmountLiesInRange } from 'merchant/views/Subscriptions/utils';
 import {
   MAX_TOKEN_AMOUNT,
   GATEWAY_MAX_LIMIT,
@@ -101,6 +101,19 @@ const UPIMandatoryFields = [
     name: 'amount',
     validator: gatewayMaxLimitValidator,
   },
+];
+
+const UPITPVMandatoryFields = [
+  {
+    name: 'amount',
+    validator: gatewayMaxLimitValidator,
+  },
+  'bankAccountIFSC',
+  {
+    name: 'beneficiaryName',
+    validator: validateBeneficiaryName,
+  },
+  'bankAccountNumber',
 ];
 
 /* getTokenDetailFields fn validates tokendetails tab only for emandate & Nach payment methods
@@ -187,6 +200,10 @@ export default class NewRegistrationLink extends React.Component {
     }
 
     return isUPI && this.props.user.isUPICAWEnabled;
+  }
+
+  get isTPVEnabledMerchant() {
+    return this?.props?.user?.isTPVEnabled;
   }
 
   get isNACHPayment() {
@@ -449,6 +466,13 @@ export default class NewRegistrationLink extends React.Component {
         maxAmount = rupeesToPaise(data.mandateMaxAmount);
       }
       payload.subscription_registration.max_amount = maxAmount;
+
+      // For UPI TPV param name is different
+      if (this.isTPVEnabledMerchant) {
+        delete bankAccountDetails.account_type;
+        bankAccountDetails.name = bankAccountDetails.beneficiary_name;
+        delete bankAccountDetails.beneficiary_name;
+      }
       payload.subscription_registration.bank_account = bankAccountDetails;
     }
 
@@ -559,6 +583,9 @@ export default class NewRegistrationLink extends React.Component {
           mandatoryFields = CardMandatoryFields;
         } else if (this.isUPIPayment) {
           mandatoryFields = UPIMandatoryFields;
+          if (this.isTPVEnabledMerchant) {
+            mandatoryFields = UPITPVMandatoryFields;
+          }
         } else if (this.isNACHPayment) {
           mandatoryFields = NACHMandatoryFields;
         }
@@ -650,6 +677,7 @@ export default class NewRegistrationLink extends React.Component {
             handlePaymentMethod={this.handlePaymentMethod}
             isTPVEnabled={this.state.isTPVEnabled}
             showTPV={this.props.user.isCAWTPVEnabled}
+            isTPVEnabledMerchant={this.isTPVEnabledMerchant}
             handleTPV={this.handleTPV}
             notes={this.state.formFields.notes}
             isEsignEnabled={this.props.user.isEsignEnabled}

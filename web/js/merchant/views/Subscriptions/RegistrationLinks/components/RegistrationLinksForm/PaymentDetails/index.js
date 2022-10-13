@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-no-undef */
 /* eslint-disable react/jsx-pascal-case */
 import { PowerSelect } from 'react-power-select';
 import Input from 'common/new-ui/Input';
@@ -13,38 +12,47 @@ import { checkIfAmount, getPaymentMethodOptions, DOCUMENTATION_LINKS } from './u
 
 export default function PaymentDetailsForm(props) {
   const {
-    showNACHAccountTypes,
-    showAmountField,
+    notes,
     amount,
-    accountType,
-    isNachFormAval,
-    mandateMethod,
-    avlblMethods,
-    skipBankDetails,
-    emandateBanks,
-    handleNotesChange,
-    isEmandatePayment,
-    isCardPayment,
-    isNACHPayment,
-    bankAccountIFSC,
+    showTPV,
     bankName,
-    beneficiaryName,
-    bankAccountNumber,
-    trackReceivedNACHForm,
-    trackNACHToolTipHover,
+    handleTPV,
+    accountType,
+    avlblMethods,
+    isTPVEnabled,
+    isUPIPayment,
+    isCardPayment,
+    mandateMethod,
+    emandateBanks,
+    isNACHPayment,
+    onBlurElement,
+    isNachFormAval,
     formReference1,
     formReference2,
-    onBlurElement,
-    handlePaymentMethod,
-    isUPIPayment,
-    notes,
+    skipBankDetails,
     isEsignEnabled,
+    bankAccountIFSC,
+    showAmountField,
+    beneficiaryName,
+    isEmandatePayment,
+    handleNotesChange,
+    bankAccountNumber,
+    handlePaymentMethod,
+    showNACHAccountTypes,
+    isTPVEnabledMerchant,
+    trackReceivedNACHForm,
+    trackNACHToolTipHover,
   } = props;
+  let recurringMethods = avlblMethods;
+  // for TPV enabled Merchant, only emandate and UPI should be enabled
+  if (isTPVEnabledMerchant) {
+    recurringMethods = recurringMethods.filter((method) => ['emandate', 'upi'].includes(method));
+  }
   return (
     <>
       <PaymentMethod
         mandateMethod={mandateMethod}
-        avlblMethods={avlblMethods}
+        avlblMethods={recurringMethods}
         handlePaymentMethod={handlePaymentMethod}
         onBlurElement={onBlurElement}
         isEsignEnabled={isEsignEnabled}
@@ -76,15 +84,17 @@ export default function PaymentDetailsForm(props) {
 
       {isUPIPayment && (
         <UPI
-          showTPV={props.showTPV}
-          isTPVEnabled={props.isTPVEnabled}
           amount={amount}
-          onBlurElement={onBlurElement}
+          showTPV={showTPV}
+          handleTPV={handleTPV}
           placeholder="Max 200000"
+          isTPVEnabled={isTPVEnabled}
+          onBlurElement={onBlurElement}
           amountValidator={amountValidator}
-          handleTPV={props.handleTPV}
-          bankAccountNumber={props.bankAccountNumber}
-          bankAccountIFSC={props.bankAccountIFSC}
+          bankAccountIFSC={bankAccountIFSC}
+          beneficiaryName={beneficiaryName}
+          bankAccountNumber={bankAccountNumber}
+          isTPVEnabledMerchant={isTPVEnabledMerchant}
         />
       )}
 
@@ -130,10 +140,10 @@ function getDocLinkForSelectedPayment(method) {
 
 function PaymentMethod({
   avlblMethods,
-  mandateMethod,
-  handlePaymentMethod,
   onBlurElement,
+  mandateMethod,
   isEsignEnabled,
+  handlePaymentMethod,
 }) {
   if (avlblMethods.length) {
     const optionsList = getPaymentMethodOptions(isEsignEnabled);
