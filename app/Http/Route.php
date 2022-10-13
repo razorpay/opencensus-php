@@ -98,6 +98,7 @@ class Route
         'merchant_onboarding_escalations'          => ['post',     'merchants/onboarding/escalations',               'MerchantController@handleOnboardingEscalationsCron'  ],
         'merchant_onboarding_cron_jobs'            => ['post',     'merchants/onboarding/cron_jobs',                  'MerchantController@handleOnboardingCronjobs'  ],
         'merchant_onboarding_crons'                => ['post',     'merchants/onboarding/{cronType}/crons',          'MerchantController@handleOnboardingCrons'            ],
+        'xpress_onboarding_escalations'            => ['post',     'merchants/xp_onboarding/escalations',            'MerchantController@handleNoDocOnboardingEscalationsCron'  ],
         'fetch_merchant_escalation'                => ['get',      'merchants/onboarding/escalations',               'MerchantController@fetchOnboardingEscalations'       ],
         'merchant_card_networks_onboarding'        => ['post',     'merchants/onboarding/networks',                  'MerchantController@onboardMerchantOnNetworks'],
         'merchant_card_networks_onboarding_bulk'   => ['post',     'merchants/onboarding/networks/bulk',             'MerchantController@onboardMerchantOnNetworkBulk'],
@@ -4584,6 +4585,7 @@ class Route
         'merchant_report',
         'merchant_onboarding_escalations',
         'merchant_onboarding_cron_jobs',
+        'xpress_onboarding_escalations',
         'merchant_card_networks_onboarding_bulk',
         'settlement_ondemand_process',
         'settlement_ondemand_full_enable',
@@ -13203,6 +13205,7 @@ class Route
 
             'merchant_onboarding_escalations',
             'merchant_onboarding_cron_jobs',
+            'xpress_onboarding_escalations',
             'merchant_card_networks_onboarding_bulk',
             'setcronjob_webhook',
             // The rest are crons

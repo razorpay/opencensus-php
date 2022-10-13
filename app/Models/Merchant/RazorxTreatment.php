@@ -638,6 +638,12 @@ final class RazorxTreatment
     //Experiment used to control for the flow of create account API for performance analysis
     const CREATE_ACCOUNT_API_PERFORMANCE_ANALYSIS = 'create_account_api_performance_analysis';
 
+    const SKIP_OLD_XPRESS_ONBOARDING_ESCALATION = 'skip_old_xpress_onboarding_escalation';
+
+    const TRIGGER_NEW_XPRESS_ONBOARDING_ESCALATION = 'trigger_new_xpress_onboarding_escalation';
+
+    const TRIGGER_NEW_ONBOARDING_ESCALATION_FLOW = 'trigger_new_onboarding_escalation_flow';
+
     //Experiment used to control whether routes specified in $bankingDisabledRoutes should block banking requests or not
     const BLOCK_BANKING_REQUESTS = 'block_banking_requests';
 }

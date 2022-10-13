@@ -29,6 +29,7 @@ class Constants
     const TRANSACTION_CRON_CACHE_KEY                        = 'onboarding_transaction_cron_timestamp';
     const ESCALATION_CACHE_KEY                              = 'onboarding_escalation_timestamp';
     const SEGMENT_MTU_CACHE_KEY                             = 'onboarding_segment_mtu_timestamp';
+    const NO_DOC_ESCALATION_CACHE_KEY                       = 'no_doc_onboarding_escalation_timestamp';
     const START_TIME                                        = 'start_time';
     const END_TIME                                          = 'end_time';
     // request payload constants
@@ -62,6 +63,27 @@ class Constants
     //Escalation Types
     const PAYMENT_BREACH    = 'payment_breach';
     const SETTLEMENT_BREACH = 'settlement_breach';
+
+    const PAYMENTS_ESCALATION = 'payments_escalation';
+    const NO_DOC_PAYMENTS_ESCALATION = 'no_doc_payments_escalation';
+
+    const KEY = 'key';
+    const INTERVAL = 'interval';
+    const ALLOWED_OPEN_STATUSES = 'allowed_open_statuses';
+
+    const escalationsParamsMap = [
+        self::PAYMENTS_ESCALATION => [
+            self::KEY                       => self::ESCALATION_CACHE_KEY,
+            self::ALLOWED_OPEN_STATUSES     => Status::MERCHANT_OPEN_STATUSES,
+            self::INTERVAL                  => 300
+        ],
+        self::NO_DOC_PAYMENTS_ESCALATION => [
+            self::KEY                       => self::NO_DOC_ESCALATION_CACHE_KEY,
+            self::ALLOWED_OPEN_STATUSES     => Status::MERCHANT_NO_DOC_OPEN_STATUSES,
+            self::INTERVAL                  => 1800
+        ]
+    ];
+
 
     // This is required to optimise DB query. We ignore all merchants with GMV below this threshold
     const LOWEST_PAYMENTS_THRESHOLD = 00; // in paisa

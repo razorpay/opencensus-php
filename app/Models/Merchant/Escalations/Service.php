@@ -50,7 +50,25 @@ class Service extends Base\Service
         catch (\Exception $e)
         {
             $this->trace->info(TraceCode::ESCALATION_ATTEMPT_FAILED, [
-                'type'  => 'handleNoDocLimitBreach',
+                'type'  => 'noDocEscalations',
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function handleNoDocOnboardingEscalationsCron($input)
+    {
+        $timeBound = $input[Constants::TIME_BOUND] ?? false;
+        $core      = (new Core);
+
+        try
+        {
+            $core->handleNoDocGmvLimitBreach($timeBound);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::ESCALATION_ATTEMPT_FAILED, [
+                'type'  => 'no_doc_escalations',
                 'error' => $e->getMessage()
             ]);
         }

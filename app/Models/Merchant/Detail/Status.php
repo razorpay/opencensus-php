@@ -43,6 +43,10 @@ class Status
         self::ACTIVATED_KYC_PENDING
     ];
 
+    const MERCHANT_NO_DOC_OPEN_STATUSES = [
+        self::ACTIVATED_KYC_PENDING
+    ];
+
     const END_STATUSES = [
         self::ACTIVATED,
         self::REJECTED

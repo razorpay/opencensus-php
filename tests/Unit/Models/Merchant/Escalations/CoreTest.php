@@ -283,7 +283,7 @@ class CoreTest extends TestCase
 
         $this->createTransaction($merchant->getId(), 'payment', 55600);
 
-        (new Escalations\Core())->handleNoDocLimitBreach();
+        (new Escalations\Core())->handleNoDocGmvLimitBreach();
 
         $this->performAssertionsForNoDocTests($merchant, Escalations\Constants::HARD_LIMIT_NO_DOC,
             Escalations\Constants::HARD_LIMIT_KYC_PENDING_THRESHOLD_2_WAY, MerchantDetail\Status::NEEDS_CLARIFICATION);
@@ -312,7 +312,7 @@ class CoreTest extends TestCase
 
         $this->createTransaction($merchant->getId(), 'payment', 556000);
 
-        (new Escalations\Core())->handleNoDocLimitBreach();
+        (new Escalations\Core())->handleNoDocGmvLimitBreach();
 
         $this->performAssertionsForNoDocTests($merchant, Escalations\Constants::HARD_LIMIT_NO_DOC,
             Escalations\Constants::HARD_LIMIT_KYC_PENDING_THRESHOLD_3_WAY, MerchantDetail\Status::UNDER_REVIEW);
@@ -361,7 +361,7 @@ class CoreTest extends TestCase
 
         $this->createTransaction($merchant->getId(), 'payment', 10110000);
 
-        (new Escalations\Core())->handleNoDocLimitBreach();
+        (new Escalations\Core())->handleNoDocGmvLimitBreach();
 
         $this->performAssertionsForNoDocTests($merchant, Escalations\Constants::HARD_LIMIT_NO_DOC,
             10100000, MerchantDetail\Status::UNDER_REVIEW);
@@ -383,7 +383,7 @@ class CoreTest extends TestCase
 
         $this->createTransaction($merchant->getId(), 'payment', 45000);
 
-        (new Escalations\Core())->handleNoDocLimitBreach();
+        (new Escalations\Core())->handleNoDocGmvLimitBreach();
 
         $this->performAssertionsForNoDocTests($merchant, Escalations\Constants::NO_DOC_P90_GMV,
             Escalations\Constants::HARD_LIMIT_KYC_PENDING_THRESHOLD_2_WAY,
@@ -404,7 +404,7 @@ class CoreTest extends TestCase
 
         $this->createTransaction($merchant->getId(), 'payment', 47000);
 
-        (new Escalations\Core())->handleNoDocLimitBreach();
+        (new Escalations\Core())->handleNoDocGmvLimitBreach();
 
         $this->performAssertionsForNoDocTests($merchant, Escalations\Constants::NO_DOC_P91_GMV,
             Escalations\Constants::HARD_LIMIT_KYC_PENDING_THRESHOLD_2_WAY,
@@ -427,7 +427,7 @@ class CoreTest extends TestCase
 
         $this->createTransaction($merchant->getId(), 'payment', 40000);
 
-        (new Escalations\Core())->handleNoDocLimitBreach();
+        (new Escalations\Core())->handleNoDocGmvLimitBreach();
 
         $escalationV2 = $this->getDbLastEntity('merchant_onboarding_escalations', 'live');
         self::assertEmpty($escalationV2);
