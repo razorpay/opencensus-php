@@ -519,7 +519,7 @@ class Core extends Base\Core
 
                 $order = $client->sendRestApiRequest(
                     json_encode(['order' => $body]),
-                    Client::POST,
+                    'POST',
                     '/orders.json'
                 );
 
@@ -674,7 +674,7 @@ class Core extends Base\Core
 
             $order = $client->sendRestApiRequest(
                 json_encode(['order' => $body]),
-                Client::POST,
+                'POST',
                 '/orders.json'
             );
 
@@ -922,7 +922,7 @@ class Core extends Base\Core
 
           $order = $client->sendRestApiRequest(
               json_encode($body),
-              Client::POST,
+              'POST',
               '/orders/' . strval($merchantOrderId) . '/transactions.json'
           );
 
@@ -968,7 +968,7 @@ class Core extends Base\Core
 
                     $order = $client->sendRestApiRequest(
                         json_encode($body),
-                        Client::POST,
+                        'POST',
                         '/orders/' . strval($merchantOrderId) . '/transactions.json'
                     );
 
