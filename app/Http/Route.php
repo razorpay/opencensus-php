@@ -14208,6 +14208,14 @@ class Route
         'payment_create_checkout_json'
     ];
 
+    protected static $checkoutRoutes = [
+        'payment_create_checkout'
+    ];
+
+    protected static $ajaxRoutes = [
+        'payment_create_ajax'
+    ];
+
     protected static $skipCardMetaCallToVault = [
         'admin_fetch_entity_by_id',
         'admin_fetch_entity_multiple',
@@ -15943,6 +15951,20 @@ class Route
     public static function isJsonRoute($route)
     {
         $jsonpRoutes = self::$s2sJsonRoutes;
+
+        return (in_array($route, $jsonpRoutes, true) === true);
+    }
+
+    public static function isCheckoutPaymentCreateRoute($route)
+    {
+        $jsonpRoutes = self::$checkoutRoutes;
+
+        return (in_array($route, $jsonpRoutes, true) === true);
+    }
+
+    public static function isAjaxPaymentCreateRoute($route)
+    {
+        $jsonpRoutes = self::$ajaxRoutes;
 
         return (in_array($route, $jsonpRoutes, true) === true);
     }

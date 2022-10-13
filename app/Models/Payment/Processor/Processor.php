@@ -7271,7 +7271,7 @@ class Processor
      **/
     public function addBackupMethodForRetry(Payment\Entity $payment, Entity $merchant, Exception\BaseException &$e)
     {
-        $library = $payment->getMetadata(Payment\Analytics\Entity::LIBRARY);
+        $library = (new Payment\Service)->getLibraryFromPayment($payment);
         if(in_array($e->getError()->getInternalErrorCode(), self::$errorCodesToAllowPaypal)) {
             if ($payment->isCard() === true && $payment->isInternational() === true
                 && $merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::DISABLE_PAYPAL_AS_BACKUP) === false

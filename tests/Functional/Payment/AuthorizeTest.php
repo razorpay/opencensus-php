@@ -318,6 +318,12 @@ class AuthorizeTest extends TestCase
                 }
             });
 
+        Cache::shouldReceive('put')
+            ->andReturnUsing(function($key)
+            {
+                return true;
+            });
+
         $this->startTest();
     }
 

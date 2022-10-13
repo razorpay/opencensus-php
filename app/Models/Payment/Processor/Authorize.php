@@ -349,6 +349,8 @@ trait Authorize
             $this->authenticationChannel = $input['authentication'][PaymentConstants::AUTHENTICATION_CHANNEL];
         }
 
+        $this->set3ds2AuthenticationParams($input, $gatewayInput, $payment);
+
         $this->setSelectedTerminals($payment, $gatewayInput);
         $this->performFraudCheckRaasInternational($payment, $input);
         $this->setSelectedTerminalsForApplicationMethodsIfApplicable($payment);
@@ -490,6 +492,34 @@ trait Authorize
 
         return null;
 
+    }
+
+    protected function set3ds2AuthenticationParams(array $input, array & $gatewayInput, Payment\Entity $payment)
+    {
+        if(!($payment->isCard() === true)){
+            return;
+        }
+        if((isset($input['browser']) === true)){
+            $gatewayInput['browser'] = $input['browser'];
+        }
+
+        if((isset($input['authentication']['authentication_channel']) === true)){
+            $gatewayInput['authentication']['authentication_channel'] = $input['authentication']['authentication_channel'];
+        }else{
+            $gatewayInput['authentication']['authentication_channel'] = "browser";
+        }
+
+        if((isset($input['auth_step']) === true)){
+            $gatewayInput['authentication']['auth_step'] = $input['auth_step'];
+        }
+
+        if((isset($input['ip']) === true)){
+            $gatewayInput['ip'] = $input['ip'];
+        }
+
+        // URL for the second authenticate call of 3ds 2.0 payment
+        $redirectUrl = $this->route->getUrl('payment_redirect_to_authenticate_get', ['id' => $payment->getId()]);
+        $gatewayInput['notificationUrl'] = $redirectUrl;
     }
 
     protected function authorizeAcrossTerminals(Payment\Entity $payment, array $input, array & $gatewayInput)
@@ -10030,11 +10060,28 @@ trait Authorize
         return true;
     }
 
-    protected function shouldRedirectV2(Payment\Entity $payment, $gatewayInput)
+    protected function shouldRedirectPaymentCreateReq(Payment\Entity $payment, $gatewayInput)
     {
         $routeName = $this->app['request.ctx']->getRoute();
+        $this->isAjaxRoute = $this->app['api.route']->isAjaxPaymentCreateRoute($routeName);
         $this->isJsonRoute = $this->app['api.route']->isJsonRoute($routeName);
 
+        // In case of 3ds/non-headless card payments we return redirect response for /payments/create/ajax
+        if(($payment->isCard() === true) and ($this->isAjaxRoute === true) and (($this->canRunHeadlessOtpFlow($payment, $gatewayInput) === false))
+         and ($this->merchant->Is3dsDetailsRequiredEnabled() === true)){
+            return true;
+        }
+
+        // In case of s2s Route we send redirect response
+        if($this->isJsonRoute === true){
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function shouldRedirectV2(Payment\Entity $payment, $gatewayInput)
+    {
         /*
          * We don't use the redirect flow for the following scenarios
          * 1. Request is not an s2s route
@@ -10046,8 +10093,10 @@ trait Authorize
          * 7. Payment receiver is VPA
          * 8. Payment is of Google pay cards
          * 9. Payment is of Google pay provider
+         * 10. Request is not /payments/create/ajax for 3ds/non-headless card payment
          */
-        if (($this->isJsonRoute === false) or
+
+        if (($this->shouldRedirectPaymentCreateReq($payment, $gatewayInput) === false) or
             ($payment->isRecurringTypeAuto() === true) or
             ($payment->isBankTransfer() === true) or
             ($payment->isUpi() === true) or
@@ -10232,6 +10281,35 @@ trait Authorize
         return false;
     }
 
+    /* To support 3ds 2.0 payments on checkout route i.e. /payments/create/checkout
+     * the payment details need to be cached
+     * which will be required in the second authenticate call
+     * */
+    protected function cachePaymentDataIfApplicableForCheckout(Payment\Entity $payment)
+    {
+        $routeName = $this->app['request.ctx']->getRoute();
+        $this->isCheckoutRoute = $this->app['api.route']->isCheckoutPaymentCreateRoute($routeName);
+        if(($payment->isCard() === true) and ($this->isCheckoutRoute === true)){
+            $payload = [
+                'merchant_id' => $payment->getMerchantId(),
+                'payment_id' => $payment->getPublicId(),
+                'mode'  => $this->mode,
+                'public_key' => $this->app['basicauth']->getPublicKey(),
+                'account_id' => $this->app['basicauth']->authCreds->creds['account_id'],
+                'oauth_client_id' => $this->app['basicauth']->getOAuthClientId(),
+            ];
+            // encrypt with key
+            $encryptedPayload = Crypt::encrypt($payload);
+
+            $trackId = $payment->getId();
+
+            $key = Payment\Entity::getRedirectToAuthorizeTrackIdKey($trackId);
+
+            // Multiplying by 60 since cache put() expect ttl in seconds
+            $this->cache->put($key, $encryptedPayload, self::REDIRECT_CACHE_TTL * 60);
+        }
+    }
+
     // function accepts, $terminalGatewayInput to check whether we can return a redirect response or not
     // since it has auth terminal selection data and if we can return a redirect response, we are using
     // $gatewayInput to add selected terminalIds node which will be used in the redirect flow
@@ -10239,6 +10317,9 @@ trait Authorize
     {
         try
         {
+            //cache payment payload for 3ds2.0 cards payment create /checkout
+            $this->cachePaymentDataIfApplicableForCheckout($payment);
+
             $merchant = $payment->merchant;
 
             $redirectDcc = $this->shouldRedirectDCC($payment);
@@ -10296,6 +10377,9 @@ trait Authorize
 
             $redirectUrl = '';
             $httpMethod = '';
+            $routeName = $this->app['request.ctx']->getRoute();
+            $this->isAjaxRoute = $this->app['api.route']->isAjaxPaymentCreateRoute($routeName);
+            $library = $payment->getMetadata(Analytics\Entity::LIBRARY);
 
             if ($redirectDcc === true)
             {
@@ -10319,20 +10403,28 @@ trait Authorize
                     'flow'      => "validateAndReturnRedirectResponseIfApplicable"
                 ]);
 
-            $data['type'] = 'first';
-
             $data['payment_id'] = $payment->getPublicId();
-
             $data['redirect'] = true;
-
+            $data['type'] = 'first';
             $data['request'] = [
                 'url'      => $redirectUrl,
                 'method'   => 'redirect',
                 'task_id'  => $this->request->getTaskId()
             ];
 
+            // In case of 3ds/non-headless card payment on /payments/create/ajax route
+            // we return redirect response to support 3ds 2.0 payments
+            // applicable for 3ds 1.0 payments as well
+            if(($payment->isCard() === true) and ($this->isAjaxRoute === true) and ($this->canRunHeadlessOtpFlow($payment, $gatewayInput) === false) and empty($httpMethod)){
+                $data['type'] = 'redirect';
+                $data['request'] = [
+                    'url'      => $redirectUrl,
+                    'method'   => 'POST',
+                    'task_id'  => $this->request->getTaskId()
+                ];
+            }
+
             // Passing http-method additionally for custom checkout redirect
-            $library = $payment->getMetadata(Analytics\Entity::LIBRARY);
             if(($this->isLibrarySupportedForDCC($library) || $this->isLibrarySupportedForAVSHttpResponse($library))
                 && empty($httpMethod) !== true)
             {
@@ -10617,6 +10709,18 @@ trait Authorize
                     $gatewayInput = $inputDetails['gateway_input'];
                 }
 
+                if (isset($input['auth_step'])){
+                    $inputDetails['auth_step'] = $input['auth_step'];
+                }
+
+                if (isset($input['browser'])){
+                    $inputDetails['browser'] = $input['browser'];
+                }
+
+                if (isset($input['ip'])){
+                    $inputDetails['ip'] = $input['ip'];
+                }
+
                 /*
                  * In double redirect scenario terminal will be set
                  * we will use the same terminal and set auth type as null
@@ -10817,6 +10921,22 @@ trait Authorize
             ($ret['type'] === 'otp'))
         {
             return 'fallback';
+        }
+
+        // payment create /ajax for 3ds2.0
+        if (($payment->isCard() === true) and
+            (empty($ret['type']) === false) and
+            ($ret['type'] === 'redirect'))
+        {
+            return 'redirect';
+        }
+
+        // payment create /checkout for 3ds2.0
+        if (($payment->isCard() === true) and
+            (empty($ret['type']) === false) and
+            ($ret['type'] === 'first'))
+        {
+            return 'redirect';
         }
 
         if (($payment->isCardMandateRecurringInitialPayment() === true) and
@@ -11396,6 +11516,16 @@ trait Authorize
 
         if ($addressRequired === true || $addressRequiredWithName === true) {
             //TODO : Validate Address fields as well
+
+            // Skip the address check if address is set in first auth call
+            // for 3ds 2.0 payment
+            if(isset($input['auth_step']) and $input['auth_step'] == '3ds2Auth'){
+                $address = $payment->fetchBillingAddress();
+                if(isset($address)){
+                    return;
+                }
+            }
+
             if (isset($input[Payment\Entity::BILLING_ADDRESS]) === false) {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY,

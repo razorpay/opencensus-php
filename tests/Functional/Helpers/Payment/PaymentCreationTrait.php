@@ -309,6 +309,10 @@ trait PaymentCreationTrait
                         {
                             return $response;
                         }
+                        else if($content['type'] === 'redirect'){
+                            $content = $this->getJsonContentFromResponse($response);
+                            return $this->makeRedirectToAuthorize($content['request']['url']);
+                        }
                     }
                 }
                 else if (($request['url'] !== '/payments/create/json') or

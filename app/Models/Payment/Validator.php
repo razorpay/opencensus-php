@@ -147,6 +147,14 @@ class Validator extends Base\Validator
         'authentication.provider_data.auth_type'                     => 'required_if:application,visasafeclick|string|max:10',
         'authentication.provider_data.product_transaction_id'        => 'sometimes_if:application,visasafeclick|max:60|string',
         'authentication.provider_data.product_merchant_reference_id' => 'sometimes_if:application,visasafeclick|max:48|string',
+        'browser'                                                    => 'sometimes|array',
+        'browser.java_enabled'                                       => 'sometimes|boolean',
+        'browser.javascript_enabled'                                 => 'sometimes|boolean',
+        'browser.timezone_offset'                                    => 'sometimes|integer',
+        'browser.color_depth'                                        => 'sometimes|integer',
+        'browser.screen_width'                                       => 'sometimes|integer',
+        'browser.screen_height'                                      => 'sometimes|integer',
+
     ];
 
     protected static $editAcquirerRules = [

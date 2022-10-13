@@ -878,6 +878,22 @@ class Gateway extends Base\Gateway
             $content['encrypt'] = '1';
         }
 
+        // Adding for 3ds 2.0 first authentication call
+        if (($input['payment']['method'] === 'card') and (isset($input['payment']['notes']) === true)
+            and (isset($input['payment']['notes']['protocol']) === true) and (isset($input['browser']) === false) and
+            ($input['payment']['notes']['protocol'] === '3ds2'))
+        {
+            $request = [
+                'url' => $url,
+                'method' => $method,
+                'content' => $content,
+                'auth_step'=> '3ds2Auth',
+                'notificationUrl' => $this->route->getUrl('payment_redirect_to_authenticate_get', ['id' => $input['payment']['id']]),
+            ];
+
+            return $request;
+        }
+
         if ((($input['payment']['method'] === 'card') and
             ($input['card']['number'] === '4111111111111111')) or  ( ($input['payment']['method'] === 'wallet') and ($input['payment']['wallet'] === 'amazonpay')))
         {

@@ -16,6 +16,8 @@ try{
   }
 } catch(e){}
 </script>
+
+
 @if (isset($data['production']) and $data['production'] === true)
 <script>
   var events = {
@@ -36,7 +38,8 @@ try{
 @endif
 @include('partials.redirectStyles')
 </head>
-<body onload="document.form1.submit()">
+{{--<body onload="document.form3.submit()">--}}
+<body>
   <div id='bg'></div>
   <div style="display:inline-block;vertical-align:middle;height:100%"></div>
   <div id='cntnt'>
@@ -62,7 +65,7 @@ try{
     <div id="txt">
       <div style="display:inline-block;vertical-align:middle;white-space:normal;">
         <h2 id='title'>Loading Bank page&#x2026;</h2>
-        <p id='msg'>Please wait while we redirect you to your Bank page</p>
+        <p id='msg'>Please wait while we redirect you to your Bank page.</p>
       </div>
       <div style="display:inline-block;vertical-align:middle;height:100%"></div>
     </div>
@@ -78,19 +81,72 @@ try{
     </div>
     @endif
   </div>
-  <form id="form1" name="form1" action="{{$data['request']['url']}}" method="post" onsubmit="return true;">
-  @foreach ($data['request']['content'] as $key => $value)
-    <input type="hidden" name="{{$key}}" value="{{$value}}">
-  @endforeach
-  </form>
-  <form id="form2" name="form2">
-    <input type="hidden" name="type" value="{{$data['type']}}">
-    <input type="hidden" name="gateway" value="{{$data['gateway']}}">
-  </form>
+
+
+{{-- Continue authetication--}}
+  @if (isset($data['request']['auth_step']) && $data['request']['auth_step'] =="3ds2Auth")
+
+    <form id="form3" name="form3"
+        action= "{{$data['request']['notificationUrl']}}"
+        method="post" onsubmit="return true;">
+        <input type="hidden" id="java_enabled" name="browser[java_enabled]" value="false">
+        <input type="hidden" id="javascript_enabled" name="browser[javascript_enabled]" value="false">
+        <input type="hidden" id="timezone_offset" name="browser[timezone_offset]" value="0">
+        <input type="hidden" id="color_depth" name="browser[color_depth]" value="0">
+        <input type="hidden" id="screen_width" name="browser[screen_width]" value="0">
+        <input type="hidden" id="screen_height" name="browser[screen_height]" value="0">
+        <input type="hidden" id="auth_step" name="auth_step" value="{{$data['request']['auth_step']}}">
+    </form>
+{{--  Iframe--}}
+    <form id="form4" name="3dsMethodPostingForm" action="{{$data['request']['url']}}" method="post" target="hidden-form">
+      @foreach ($data['request']['content'] as $key => $value)
+          <input type="hidden" name="{{$key}}" value="{{$value}}">
+      @endforeach
+     </form>
+    <iframe style="display:none" name="hidden-form"></iframe>
+  @else
+{{--        3ds 1.0 or 3ds 2.0 OTP submission--}}
+        <form id="form1" name="form1" action="{{$data['request']['url']}}" method="post" onsubmit="return true;">
+        @foreach ($data['request']['content'] as $key => $value)
+          <input type="hidden" name="{{$key}}" value="{{$value}}">
+        @endforeach
+        </form>
+        <form id="form2" name="form2">
+          <input type="hidden" name="type" value="{{$data['type']}}">
+          <input type="hidden" name="gateway" value="{{$data['gateway']}}">
+        </form>
+  @endif
+
+
+  @if (isset($data['request']['auth_step']) && $data['request']['auth_step'] =="3ds2Auth")
+      <script>
+      document.getElementById("form4").submit();
+      setTimeout(function() {
+          const javaEnabled = navigator.javaEnabled();
+          const javascriptEnabled = true;
+          const date1 = new Date();
+          const timeZoneOffset = date1.getTimezoneOffset();
+          const colorDepth = screen.colorDepth;
+          const screenWidth = screen.width;
+          const screenHeight = screen.height;
+          document.getElementById("java_enabled").value = javaEnabled;
+          document.getElementById("javascript_enabled").value = javascriptEnabled;
+          document.getElementById("timezone_offset").value = timeZoneOffset;
+          document.getElementById("color_depth").value = colorDepth;
+          document.getElementById("screen_width").value = screenWidth;
+          document.getElementById("screen_height").value = screenHeight;
+          document.form3.submit();
+      }, 2000);
+      </script>
+  @endif
   <script>
-    setTimeout(function() {
+      setTimeout(function() {
       document.body.className = 'loaded';
     }, 10);
+
+    @if (!isset($data['request']['auth_step']) || $data['request']['auth_step'] !="3ds2Auth")
+        document.form1.submit();
+    @endif
 
     setTimeout(function(){
       document.getElementById('title').innerHTML = 'Still trying to load...';

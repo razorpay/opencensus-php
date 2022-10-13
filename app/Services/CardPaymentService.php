@@ -878,11 +878,13 @@ class CardPaymentService
         {
             $authentication = $data[self::INPUT]['authentication'];
 
-            $providerData = $authentication['provider_data'];
+            if((isset($authentication['provider_data']) === true)){
+                $providerData = $authentication['provider_data'];
 
-            unset($authentication['provider_data']);
+                unset($authentication['provider_data']);
 
-            $authentication = array_merge($authentication, $providerData);
+                $authentication = array_merge($authentication, $providerData);
+            }
 
             if (isset($data[self::INPUT]['authenticate']) === true)
             {

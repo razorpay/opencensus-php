@@ -260,9 +260,6 @@ class CaptureTest extends TestCase
             'message_type' => 'DMS',
             'flows'   => [
                 '3ds'          => '1',
-                'otp'          => '1',
-                'ivr'          => '1',
-                'headless_otp' => '1',
             ]
         ]);
 

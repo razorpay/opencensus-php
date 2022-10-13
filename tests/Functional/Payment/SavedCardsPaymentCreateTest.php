@@ -815,6 +815,8 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->payment[Payment::CUSTOMER_ID] = 'cust_100000customer';
 
+        $this->payment[Payment::TOKEN] = '10000cardtoken';
+
         // create payment 1
         $content = $this->doAuthAndCapturePayment($this->payment);
     }
@@ -1112,6 +1114,7 @@ class SavedCardsPaymentCreateTest extends TestCase
                         $response['token'] = strrev($input['token']);
                         $response['fingerprint'] = strrev($input['token']);
                         $response['providerReferenceId'] = "12345678911234";
+
                     break;
                 }
                 return $response;

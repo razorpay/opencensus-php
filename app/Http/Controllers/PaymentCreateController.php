@@ -791,6 +791,8 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
+        $input['ip'] = $this->app['request']->getClientIp();
+
         if (empty($input['rearch']) === false)
         {
             $data = $this->app['pg_router']->paymentAuthenticate($id, [], true);
@@ -804,13 +806,13 @@ class PaymentCreateController extends Controller
         }
 
         //This is to ensure nothing is breaking in existing flows
-        if (!((isset($input['provider']) === true) and ($input['provider'] === Payment\Gateway::GETSIMPL)))
+        //Adding check for 3ds 2.0 second authenticate POST call
+        if ((!((isset($input['provider']) === true) and ($input['provider'] === Payment\Gateway::GETSIMPL))) and (!((isset($input['browser']) === true) and (isset($input['auth_step']) === true))))
         {
             $input = [];
         }
 
         $data = $this->service(E::PAYMENT)->redirectToAuthorize($id, $input);
-
         if ((is_array($data)) and
             (isset($data['request']) === false))
         {
@@ -818,6 +820,15 @@ class PaymentCreateController extends Controller
             {
                 assertTrue ($data !== null);
 
+                return $this->returnCheckoutCallbackView($data);
+            }
+        }
+
+        //return callback view for Frictionless payments
+        if ((is_array($data)) and (isset($data['request']) === false))
+        {
+            if((isset($input['browser']) === true) and (isset($input['auth_step']) === true))
+            {
                 return $this->returnCheckoutCallbackView($data);
             }
         }
@@ -1621,7 +1632,6 @@ class PaymentCreateController extends Controller
         $postFormData['language_code'] = $data['language_code'];
         $postFormData += (new CheckoutView())->addOrgInformationInResponse($merchant, true);
         $postFormData['show_independence_image'] = $this->shouldShowIndependenceDayImage();
-
 
         $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
             [
