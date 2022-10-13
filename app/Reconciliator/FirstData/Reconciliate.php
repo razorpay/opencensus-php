@@ -87,71 +87,70 @@ class Reconciliate extends Base\Reconciliate
 
         }
 
-        if (count($capsPaymentIds) === 0)
-        {
-            return;
-        }
-        $this->trace->info(TraceCode::RECON_FIRST_DATA_CAPS_PID,
-            [
-                'message'   => 'Possible caps pids case for firstdata',
-                'capsPaymentIds'  =>  $capsPaymentIds,
-            ]);
-
-        // Get distinct entities, there will be multiple entries in case of a payment and
-        // refund row are encountered, since Firstdata sends caps pids for refunds as well.
-        $capsPaymentIds = array_unique($capsPaymentIds);
-
-        $responseFromCps = App::getFacadeRoot()['card.payments']->fetchPaymentIdFromCapsPIDs($capsPaymentIds);
-
-        $this->trace->info(TraceCode::RECON_INFO_ALERT,
-            [
-                'message'   => 'Response received from cps for request to fetch pid from caps pid',
-                'response'  =>  $responseFromCps,
-            ]);
-
-        foreach ($capsPaymentIds as $key => $value)
-        {
-            if (empty($responseFromCps[$value]) === false)
-            {
-                unset($capsPaymentIds[$key]);
-            }
-        }
-
-        $pIdsFromPaymentsRepoFd = [];
-        $pIdsFromPaymentsRepoMpgs = [];
-
         if (count($capsPaymentIds) > 0)
         {
-            $this->trace->info(TraceCode::RECON_INFO_ALERT,
+            $this->trace->info(TraceCode::RECON_FIRST_DATA_CAPS_PID,
                 [
-                    'message'   => 'Successful response not received for some caps pids',
-                    'capsPids'  =>  $capsPaymentIds,
+                    'message'   => 'Possible caps pids case for firstdata',
+                    'capsPaymentIds'  =>  $capsPaymentIds,
                 ]);
 
-            $pIdsFromPaymentsRepoFd = $this->repo->payment->fetchPaymentIdsbyCapsPaymentIds($capsPaymentIds, Gateway::FIRST_DATA);
+            // Get distinct entities, there will be multiple entries in case of a payment and
+            // refund row are encountered, since Firstdata sends caps pids for refunds as well.
+            $capsPaymentIds = array_unique($capsPaymentIds);
 
-            if (count($pIdsFromPaymentsRepoFd) !== count($capsPaymentIds))
+            $responseFromCps = App::getFacadeRoot()['card.payments']->fetchPaymentIdFromCapsPIDs($capsPaymentIds);
+
+            $this->trace->info(TraceCode::RECON_INFO_ALERT,
+                [
+                    'message' => 'Response received from cps for request to fetch pid from caps pid',
+                    'response' => $responseFromCps,
+                ]);
+
+            foreach ($capsPaymentIds as $key => $value)
             {
-                $capsPIdsFromPaymentsRepoFD = array_map('strtoupper', $pIdsFromPaymentsRepoFd);
-                $capsPIdsForMpgs = array_diff($capsPaymentIds, $capsPIdsFromPaymentsRepoFD);
-
-                $pIdsFromPaymentsRepoMpgs = $this->repo->payment->fetchPaymentIdsbyCapsPaymentIds($capsPIdsForMpgs, Gateway::MPGS);
+                if (empty($responseFromCps[$value]) === false)
+                {
+                    unset($capsPaymentIds[$key]);
+                }
             }
-        }
 
-        $pIdsFromPaymentsRepo = array_merge($pIdsFromPaymentsRepoFd, $pIdsFromPaymentsRepoMpgs);
+            $pIdsFromPaymentsRepoFd = [];
+            $pIdsFromPaymentsRepoMpgs = [];
 
-        foreach ($pIdsFromPaymentsRepo as $paymentId)
-        {
-            $responseFromCps[strtoupper($paymentId)]['authorization']['payment_id'] = $paymentId;
-        }
-
-        foreach ($fileContents as &$row)
-        {
-            if (empty($row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID]) === false)
+            if (count($capsPaymentIds) > 0)
             {
-                $capsPaymentId = $row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID];
-                $row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID] = $responseFromCps[$capsPaymentId]['authorization']['payment_id'] ?? $capsPaymentId;
+                $this->trace->info(TraceCode::RECON_INFO_ALERT,
+                    [
+                        'message'   => 'Successful response not received for some caps pids',
+                        'capsPids'  =>  $capsPaymentIds,
+                    ]);
+
+                $pIdsFromPaymentsRepoFd = $this->repo->payment->fetchPaymentIdsbyCapsPaymentIds($capsPaymentIds, Gateway::FIRST_DATA);
+
+                if (count($pIdsFromPaymentsRepoFd) !== count($capsPaymentIds))
+                {
+                    $capsPIdsFromPaymentsRepoFD = array_map('strtoupper', $pIdsFromPaymentsRepoFd);
+                    $capsPIdsForMpgs = array_diff($capsPaymentIds, $capsPIdsFromPaymentsRepoFD);
+
+                    $pIdsFromPaymentsRepoMpgs = $this->repo->payment->fetchPaymentIdsbyCapsPaymentIds($capsPIdsForMpgs, Gateway::MPGS);
+                }
+            }
+
+            $pIdsFromPaymentsRepo = array_merge($pIdsFromPaymentsRepoFd, $pIdsFromPaymentsRepoMpgs);
+
+            foreach ($pIdsFromPaymentsRepo as $paymentId)
+            {
+                $responseFromCps[strtoupper($paymentId)]['authorization']['payment_id'] = $paymentId;
+            }
+
+            foreach ($fileContents as &$row)
+            {
+                if (empty($row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID]) === false)
+                {
+                    $capsPaymentId = $row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID];
+                    $row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID] = $responseFromCps[$capsPaymentId]['authorization']['payment_id'] ?? $capsPaymentId;
+                }
             }
         }
 
