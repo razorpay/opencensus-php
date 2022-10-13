@@ -23,14 +23,14 @@ class PayoutSource extends Base
         /** @var PublicCollection $apiPayoutSources */
         $apiPayoutSources = $this->repo->payout_source->getPayoutSourcesByPayoutId($payoutId);
 
-        $apiPayoutSources->groupBy(Entity::ID);
-
         /**
          * @var  $id                    string
          * @var  $apiPayoutSource Entity
          */
-        foreach ($apiPayoutSources as $id => $apiPayoutSource)
+        foreach ($apiPayoutSources as $apiPayoutSource)
         {
+            $id = $apiPayoutSource->getId();
+
             if (array_key_exists($id, $psPayoutSources) === true)
             {
                 $apiPayoutSource->setRawAttributes($psPayoutSources[$id]->getAttributes());

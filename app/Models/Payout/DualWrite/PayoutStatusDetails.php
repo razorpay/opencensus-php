@@ -23,14 +23,14 @@ class PayoutStatusDetails extends Base
         /** @var PublicCollection $apiPayoutStatusDetails */
         $apiPayoutStatusDetails = $this->repo->payouts_status_details->fetchPayoutStatusDetailsByPayoutId($payoutId);
 
-        $apiPayoutStatusDetails->groupBy(Entity::ID);
-
         /**
          * @var  $id                    string
          * @var  $apiPayoutStatusDetail Entity
          */
-        foreach ($apiPayoutStatusDetails as $id => $apiPayoutStatusDetail)
+        foreach ($apiPayoutStatusDetails as $apiPayoutStatusDetail)
         {
+            $id = $apiPayoutStatusDetail->getId();
+
             if (array_key_exists($id, $psPayoutStatusDetails) === true)
             {
                 $apiPayoutStatusDetail->setRawAttributes($psPayoutStatusDetails[$id]->getAttributes());
