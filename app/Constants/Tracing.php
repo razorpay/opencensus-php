@@ -319,6 +319,7 @@ class Tracing
             'oauth_token_create',
             'oauth_token_fetch_multiple',
             'oauth_token_revoke',
+            'oauth_application_fetch_multiple',
 
             //Onboarding APIs
             'account_create_v2',
