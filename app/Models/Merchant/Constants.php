@@ -396,8 +396,8 @@ final class Constants
         BusinessCategory::OTHERS                    => 50000000,
     ];
 
-    //Will have to add MC value here, when we receive cert values from MasterCard
     const listOfNetworksSupportedOn3ds2 = [
+        self::MASTERCARD,
         self::VISA,
     ];
 
