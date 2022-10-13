@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\File\Processor\Combined;
 
 use Carbon\Carbon;
+
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 
@@ -79,6 +80,7 @@ class Srcb extends Base
             'amount'      => $amount,
             'count'       => $count,
             'refundsFile' => $refundsFile,
+            'claimsFile'  => $claimsFile,
             'emails'      => $this->gatewayFile->getRecipients(),
             'account'     => $account,
         ];

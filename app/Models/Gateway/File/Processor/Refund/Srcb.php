@@ -3,11 +3,11 @@
 namespace RZP\Models\Gateway\File\Processor\Refund;
 
 use Carbon\Carbon;
+
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
-use RZP\Services\NbPlus\Netbanking;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
 class Srcb extends Base
@@ -45,19 +45,19 @@ class Srcb extends Base
             ];
         }
 
-        $content = $this->getTextData($content, '', '|');
+        $content = $this->getTextData($content);
 
         return $content;
     }
 
-    protected function getFileToWriteNameWithoutExt()
+    protected function getFileToWriteNameWithoutExt(): string
     {
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
         return self::FILE_NAME . $date;
     }
 
-    protected function addGatewayEntitiesToDataWithPaymentIds(array $data, array $paymentIds)
+    protected function addGatewayEntitiesToDataWithPaymentIds(array $data, array $paymentIds): array
     {
         return $data;
     }
@@ -69,11 +69,6 @@ class Srcb extends Base
 
     protected function fetchBankPaymentId($row)
     {
-        if ($row['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
-        {
-            return $row['gateway']['bank_transaction_id']; // payment through nbplus service
-        }
-
-        return $row['gateway']['data']['bank_payment_id'];
+        return $row['gateway']['bank_transaction_id'];
     }
 }

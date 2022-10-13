@@ -2,15 +2,12 @@
 
 namespace RZP\Models\Gateway\File\Processor\Claim;
 
+use Carbon\Carbon;
+
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-use RZP\Base\RuntimeManager;
-use RZP\Services\NbPlus\Netbanking;
-use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Processor\FileHandler;
-
-use Carbon\Carbon;
 
 class Srcb extends NetbankingBase
 {
@@ -52,24 +49,19 @@ class Srcb extends NetbankingBase
                 $date
             ];
         }
-        $initialLine = $this->getInitialLine('|');
+        $initialLine = $this->getInitialLine();
 
-        $formattedData = $this->getTextData($formattedData, $initialLine, '|');
+        $formattedData = $this->getTextData($formattedData, $initialLine);
 
         return $formattedData;
     }
 
     protected function fetchBankPaymentId($data)
     {
-        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
-        {
-            return $data['gateway']['bank_transaction_id'];
-        }
-
-        return $data['gateway']['bank_payment_id'];
+        return $data['gateway']['bank_transaction_id'];
     }
 
-    protected function getFileToWriteNameWithoutExt()
+    protected function getFileToWriteNameWithoutExt(): string
     {
         $time = Carbon::now(Timezone::IST)->format('dmY');
 

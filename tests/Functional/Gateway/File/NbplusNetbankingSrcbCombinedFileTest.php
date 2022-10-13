@@ -5,8 +5,11 @@ namespace RZP\Tests\Functional\Gateway\File;
 use Mail;
 use Carbon\Carbon;
 
+use Razorpay\IFSC\Bank;
 use RZP\Constants\Timezone;
+use RZP\Mail\Base\Mailable;
 use RZP\Models\Gateway\File;
+use RZP\Models\Payment\Entity;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
@@ -19,7 +22,7 @@ class NbplusNetbankingSrcbCombinedFileTest extends NbPlusPaymentServiceNetbankin
 
         parent::setUp();
 
-        $this->bank = 'SRCB';
+        $this->bank = Bank::SRCB;
 
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_saraswat_terminal');
 
@@ -28,36 +31,35 @@ class NbplusNetbankingSrcbCombinedFileTest extends NbPlusPaymentServiceNetbankin
 
     public function testNetbankingSrcbCombinedFile()
     {
-
         Mail::fake();
 
         $this->doAuthAndCapturePayment($this->payment);
 
-        $transaction1 = $this->getLastEntity('transaction', true);
+        $paymentEntity1 = $this->getDbLastPayment();
 
-        $this->fixtures->edit('transaction', $transaction1['id'], [
+        $this->fixtures->edit('transaction', $paymentEntity1->getTransactionId(), [
             'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
         ]);
 
-        $this->refundPayment($transaction1['entity_id']);
-
-        $paymentEntity1 = $this->getDbLastPayment();
+        $this->refundPayment($paymentEntity1->getPublicId());
 
         $refundEntity1 = $this->getDbLastRefund();
 
+        $paymentEntity1 = $paymentEntity1->reload();
+
         $this->doAuthAndCapturePayment($this->payment);
-
-        $transaction2 = $this->getLastEntity('transaction', true);
-
-        $this->fixtures->edit('transaction', $transaction2['id'], [
-            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
-        ]);
-
-        $this->refundPayment($transaction2['entity_id'], 500);
 
         $paymentEntity2 = $this->getDbLastPayment();
 
+        $this->fixtures->edit('transaction', $paymentEntity2->getTransactionId(), [
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+        ]);
+
+        $this->refundPayment($paymentEntity2->getPublicId(), 500);
+
         $refundEntity2 = $this->getDbLastRefund();
+
+        $paymentEntity2 = $paymentEntity2->reload();
 
         $this->assertEquals('refunded', $paymentEntity1['status']);
         $this->assertEquals('captured', $paymentEntity2['status']);
@@ -76,35 +78,31 @@ class NbplusNetbankingSrcbCombinedFileTest extends NbPlusPaymentServiceNetbankin
 
         $content = $content['items'][0];
 
-        $refundTransaction1 = $this->getDbEntityById('transaction', $transaction1['id']);
-        $refundTransaction2 = $this->getDbEntityById('transaction', $transaction2['id']);
-        $this->assertNotNull($refundTransaction1['reconciled_at']);
-        $this->assertNotNull($refundTransaction2['reconciled_at']);
+        $this->assertTrue($paymentEntity1->transaction->isReconciled());
+        $this->assertTrue($paymentEntity2->transaction->isReconciled());
         $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
         $this->assertNotNull($content[File\Entity::SENT_AT]);
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-        $file = $this->getLastEntity(ConstantsEntity::FILE_STORE, true);
-
-
-        $files = $this->getEntities('file_store', [
-            'count' => 1
-        ], true);
+        $files = $this->getEntities(ConstantsEntity::FILE_STORE, ['count' => 2], true);
 
         $expectedFilesContent = [
             'entity' => 'collection',
-            'count' => 1,
+            'count' => 2,
             'items' => [
                 [
                     'type' => 'saraswat_netbanking_claims',
+                ],
+                [
+                    'type' => 'saraswat_netbanking_refund',
                 ],
             ],
         ];
 
         $this->assertArraySelectiveEquals($expectedFilesContent, $files);
 
-        Mail::assertSent(DailyFileMail::class, function ($mail) use ($refundEntity1, $refundEntity2, $paymentEntity1, $paymentEntity2)
+        Mail::assertSent(DailyFileMail::class, function (Mailable $mail) use ($refundEntity1, $refundEntity2, $paymentEntity1, $paymentEntity2)
         {
             $date = Carbon::today(Timezone::IST)->format('d-m-Y');
 
@@ -123,20 +121,22 @@ class NbplusNetbankingSrcbCombinedFileTest extends NbPlusPaymentServiceNetbankin
 
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
-            $this->assertCount(1, $mail->attachments);
+            $this->assertCount(2, $mail->attachments);
 
             $this->checkRefundsFile($mail->viewData['refundsFile'],
                 $paymentEntity1,
                 $refundEntity1,
                 $refundEntity2,
                 $paymentEntity2);
+            $this->checkClaimsFile($mail->viewData['claimsFile'],
+                $paymentEntity1,
+                $paymentEntity2);
 
             //
-            // Marking netbanking transaction as reconciled after sending in bank file
+            // Marking netbanking refund transaction as reconciled after sending in bank file
             //
-            $refundTransaction = $this->getLastEntity('transaction', true);
-
-            $this->assertNotNull($refundTransaction['reconciled_at']);
+            $this->assertTrue($refundEntity1->transaction->isReconciled());
+            $this->assertTrue($refundEntity2->transaction->isReconciled());
 
             return true;
         });
@@ -155,5 +155,25 @@ class NbplusNetbankingSrcbCombinedFileTest extends NbPlusPaymentServiceNetbankin
 
         $this->assertEquals(trim($partialRefundRowData1[0], '"'),$partialRefund['payment_id']);
         $this->assertEquals((int)number_format(trim(trim($partialRefundRowData1[2]),'"')*100, 0, '',''),$partialRefund['amount']);
+    }
+
+    protected function checkClaimsFile(array $claimsFileData, Entity $payment1, Entity $payment2)
+    {
+        $claimsFileContents = file($claimsFileData['url']);
+
+        $row1 = explode('|', $claimsFileContents[1]);
+
+        $this->assertEquals($row1[0], $payment1->getId());
+        $this->assertEquals($row1[2], $this->getFormattedAmount($payment1->getAmount()));
+
+        $row2 = explode('|', $claimsFileContents[2]);
+
+        $this->assertEquals($row2[0], $payment2->getId());
+        $this->assertEquals($row2[2], $this->getFormattedAmount($payment2->getAmount()));
+    }
+
+    protected function getFormattedAmount($amount): string
+    {
+        return number_format($amount / 100, 2, '.', '');
     }
 }
