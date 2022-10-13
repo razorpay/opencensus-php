@@ -287,6 +287,7 @@ class CardVault extends Base\Core
                     'card_id'               => $card->getId(),
                     'created_at'            => $createdtAt,
                     'difference'            => $diff,
+                    'route'                 => $routeName
                 ]);
 
                 $this->trace->count(Metric::CARD_METADATA_FETCH_AFTER_5_DAYS, ["route" => $routeName]);
