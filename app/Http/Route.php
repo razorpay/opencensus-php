@@ -293,7 +293,6 @@ class Route
         'scrooge_refund_create_bulk'               => ['post',     'refunds/scrooge_create/bulk',                    'RefundController@scroogeRefundCreateBulk'                          ],
         'scrooge_refund_verify_bulk'               => ['post',     'refunds/scrooge_verify/bulk',                    'RefundController@scroogeRefundVerifyBulk'                          ],
         'api_refunds_retry_without_verify'         => ['post',     'refunds/scrooge_retry_without_verify',           'RefundController@postRetryScroogeRefundsWithoutVerify'             ],
-        'scrooge_entities'                         => ['post',     'scrooge/entities',                               'RefundController@scroogeFetchEntities'                             ],
         'scrooge_entities_fetch'                   => ['post',     'scrooge/entities_fetch',                         'RefundController@scroogeFetchEntitiesV2'                           ],
         'scrooge_public_entities_fetch'            => ['post',     'scrooge/fetch/public_entities',                  'RefundController@scroogeFetchPublicEntities'                       ],
         'scrooge_refund_back_write'                => ['post',     'scrooge/back_write_refund',                      'RefundController@scroogeBackWriteRefund'                           ],
@@ -4732,7 +4731,6 @@ class Route
         'p2p_reminder_send',
         'merchant_international_enablement_reminder',
         'emerchantpay_apm_onboard_maf',
-        'scrooge_entities',
         'scrooge_entities_fetch',
         'scrooge_fetch_refund_email_data',
         'scrooge_public_entities_fetch',
@@ -13635,7 +13633,6 @@ class Route
             'refund_verify_call',
             'scrooge_verify_refund_call',
             'refund_fetch_status',
-            'scrooge_entities',
             'scrooge_entities_fetch',
             'scrooge_fetch_refund_email_data',
             'feature_get_multiple_internal',
@@ -15666,7 +15663,6 @@ class Route
      * scrooge microservice instead it will use from api Monolith
      */
     public static $forceRefundsLoadFromApiRoutes = [
-        'scrooge_entities',
         'scrooge_public_entities_fetch',
         'payment_fetch_refunds',
         'payment_fetch_refund_by_id',
