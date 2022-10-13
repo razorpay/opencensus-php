@@ -227,16 +227,16 @@ class SyncEventManager
                             'mock'       => false,
                             'metadata'   => $payloadMetadata,
                         ];
+                        //Commenting out the code if required can be again uncommented
 
-                        $isSynced = false;
-                        if ($this->isSplitzOn($asvSplitzExperimentId, $accountId) === true) {
-                            $isSynced = $this->syncAccountDeviation($acsSyncEnabled, $jobPayload, Mode::LIVE, $metadata);
-                        }
+                        //    $isSynced = false;
+                        //    if ($this->isSplitzOn($asvSplitzExperimentId, $accountId) === true) {
+                        //        $isSynced = $this->syncAccountDeviation($acsSyncEnabled, $jobPayload, Mode::LIVE, $metadata);
+                        //    }
 
-                        if($isSynced === false){
-                            $this->publishOutboxJob($acsSyncEnabled, SyncEventObserver::ACS_OUTBOX_JOB_NAME,
-                                $jobPayload, Mode::LIVE, $metadata);
-                        }
+                        $this->publishOutboxJob($acsSyncEnabled, SyncEventObserver::ACS_OUTBOX_JOB_NAME,
+                            $jobPayload, Mode::LIVE, $metadata);
+
 
                         break;
                     case SyncEventObserver::CREDCASE_OUTBOX_JOB_NAME:
