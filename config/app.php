@@ -476,6 +476,10 @@ return array(
 
     'checkout_reuse_upi_payment_id_splitz_experiment_id' => env('CHECKOUT_REUSE_UPI_PAYMENT_ID_SPLITZ_EXPERIMENT_ID'),
 
+    'checkout_recurring_upi_intent_qr_splitz_experiment_id' => env('CHECKOUT_RECURRING_UPI_INTENT_QR_SPLITZ_EXPERIMENT_ID'),
+
+    'checkout_recurring_upi_autopay_psp_splitz_experiment_id' => env('CHECKOUT_RECURRING_UPI_AUTOPAY_PSP_SPLITZ_EXPERIMENT_ID'),
+
     'send_submerchant_first_transaction_segment_event' => env('SEND_SUBMERCHANT_FIRST_TRANSACTION_SEGMENT_EVENT'),
 
     'dcc_recurring_on_auto_direct_experiment_id' => env('DCC_RECURRING_ON_AUTO_DIRECT_EXPERIMENT_ID'),

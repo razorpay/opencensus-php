@@ -48,6 +48,8 @@ class CheckoutExperiment
             'cb_redesign_v1_5'       => false,
             'recurring_redesign_v1_5' => false,
             'reuse_upi_paymentId'     => false,
+            'recurring_upi_intent_qr'=> false,
+            'recurring_upi_psp'      => false
         ];
 
         $this->input = $input;
@@ -154,6 +156,22 @@ class CheckoutExperiment
             'reuse_upi_paymentId',
             ['merchant_id' => $this->merchantId]
         );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.checkout_recurring_upi_intent_qr_splitz_experiment_id',
+            'RecurringUpiIntentQr',
+            'recurring_upi_intent_qr',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.checkout_recurring_upi_autopay_psp_splitz_experiment_id',
+            'RecurringUpiPsp',
+            'recurring_upi_psp',
+            ['merchant_id' => $this->merchantId]
+        );
     }
 
     private function fillExperimentData(
@@ -251,5 +269,45 @@ class CheckoutExperiment
         $variant = $response['variant']['name'] ?? '';
 
         return $variant === 'variant_on';
+    }
+
+    private function handleRecurringUpiIntentQrResponse($response): bool
+    {
+        $variant = $response['variant'] ?? '';
+
+        if($variant)
+        {
+            $variantArray =  $variant["variables"] ?? [];
+
+            foreach ($variantArray as $eachVariant)
+            {
+                if($eachVariant["value"] === "on")
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private function handleRecurringUpiPspResponse($response): bool
+    {
+        $variant = $response['variant'] ?? '';
+
+        if($variant)
+        {
+            $variantArray =  $variant["variables"] ?? [];
+
+            foreach ($variantArray as $eachVariant)
+            {
+                if($eachVariant["value"] === "on")
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
