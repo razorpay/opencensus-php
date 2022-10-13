@@ -11271,7 +11271,7 @@ trait Authorize
                 $this->trace->traceException(
                     $ex,
                     500,
-                    TraceCode::KAFKA_JOURNAL_ENTRY_PUSH_FAILED,
+                    TraceCode::CARDS_METADATA_KAFKA_PUSH_FAILED,
                     ["input" => $input]);
             }
         }
