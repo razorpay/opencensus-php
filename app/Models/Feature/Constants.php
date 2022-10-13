@@ -779,6 +779,12 @@ class Constants
     const ALLOW_B2B_ACTIVATION = 'allow_b2b_activation';
 
     /**
+     * Allows the dashboard to show the B2B account creation for merchants
+     * TODO: Remove allow_b2b_activation afterwards.
+     */
+    const ENABLE_INTL_BANK_TRANSFER = 'enable_intl_bank_transfer';
+
+    /**
      * Add 3ds merchant details to Authorize body
      */
     const ENABLE_3DS2 = 'enable_3ds2';
@@ -2169,6 +2175,7 @@ class Constants
         self::CART_API_AMOUNT_CHECK           => true,
         self::ENABLE_B2B_EXPORT               => true,
         self::ALLOW_B2B_ACTIVATION            => true,
+        self::ENABLE_INTL_BANK_TRANSFER       => true,
         self::ENABLE_SETTLEMENT_FOR_B2B       => true,
         self::ONE_CLICK_OVERRIDE_THEME        => true,
         self::PP_CUSTOM_DOMAIN                => true,
