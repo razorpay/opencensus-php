@@ -179,20 +179,9 @@ class Checkout extends Base\Core
     public function getNotesForCheckout(array $checkout, string $cartId, array $cartObj = []): array
     {
         $notes = [
-            "storefront_id" => $checkout['id'],
-            "cart_id" => $cartId
+            'storefront_id' => $checkout['id'],
+            'cart_id'       => $cartId
         ];
-
-        $lineItems = $checkout['lineItems']['edges'];
-
-        foreach ($lineItems as $lineItem)
-        {
-            $item = $lineItem['node'];
-
-            $title = $this->getVariantName($item);
-
-            $notes[$title] = 'Quantity: ' . strval($item['quantity']);
-        }
 
         // Store the script discount details in RZP notes
         if (empty($cartObj) === false)
@@ -218,12 +207,6 @@ class Checkout extends Base\Core
         }
 
         return $notes;
-    }
-
-    protected function getVariantName(array $item): string
-    {
-        $variantName = $item['variant']['title'] !== 'Default Title' ? ': ' . $item['variant']['title'] : '';
-        return mb_substr($item['title'] . $variantName, 0, 128, 'UTF-8');
     }
 
     // updates email for a storefront checkout
