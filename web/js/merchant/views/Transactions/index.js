@@ -249,9 +249,9 @@ class TransactionsContainer extends Component {
                 });
               }}
             >
-              Disputes{' '}
+              Disputes&nbsp;
               {openDisputes !== 0 ? (
-                <div class="open-disputes">
+                <div className="open-disputes">
                   <span>{openDisputes}</span>
                   <PopoverComponent theme="dark" align="bottom">
                     <PopoverBody>
@@ -262,10 +262,22 @@ class TransactionsContainer extends Component {
                     </PopoverBody>
                   </PopoverComponent>
                 </div>
-              ) : (
-                ''
-              )}
+              ) : null}
             </NavLink>
+            <ShowWhen additionalCondition={(usr) => mode === 'live' && usr.findTag('success_rate')}>
+              <NavLink
+                to="/success-rate"
+                onClick={() => {
+                  trackSuccessRateEvents(
+                    visitSuccessRate({
+                      tabName: 'success rate',
+                    }),
+                  );
+                }}
+              >
+                Success Rate
+              </NavLink>
+            </ShowWhen>
             <ShowWhen
               featureEnabled="allow_b2b_activation"
               additionalCondition={(usr) => usr.isAllowedView('b2b_payments')}
@@ -292,11 +304,11 @@ class TransactionsContainer extends Component {
             mode === 'live' &&
             this.props.payments &&
             this.props.payments.items.length > 0 ? (
-              <div class="text-right settlement-caption">
+              <div className="text-right settlement-caption">
                 {no_settlement.caption}
                 {no_settlement.reason && (
                   <span>
-                    <i class="i i-info-circle" />
+                    <i className="i i-info-circle" />
                     <PopoverComponent theme="dark" align="left">
                       <PopoverBody>
                         <div>{no_settlement.reason}</div>
@@ -310,7 +322,7 @@ class TransactionsContainer extends Component {
             !no_settlement &&
             !nextSettlement &&
             (pathname === '/payments' || pathname === '/refunds' || pathname === '/orders') ? (
-              <div class="text-right full-width no-margin">
+              <div className="inline-block text-right full-width no-margin">
                 <strong className="pr-5">
                   <Amount
                     value={this.props.settlement_amount.data.settlement_amount}
@@ -325,7 +337,7 @@ class TransactionsContainer extends Component {
                 />
                 {this.props.settlement_amount.data.reason_for_delay && (
                   <div style={{ display: 'inline' }}>
-                    <i class="i i-info-circle" />
+                    <i className="i i-info-circle" />
                     <PopoverComponent theme="dark" align="left">
                       <PopoverBody>
                         <div>{this.props.settlement_amount.data.reason_for_delay}</div>
@@ -334,7 +346,7 @@ class TransactionsContainer extends Component {
                   </div>
                 )}
                 <span
-                  class="btn-link"
+                  className="btn-link"
                   style={{ marginLeft: '5px' }}
                   onClick={() => {
                     this.props.openModal({
@@ -358,20 +370,6 @@ class TransactionsContainer extends Component {
                 </span>
               </div>
             ) : null}
-            <ShowWhen additionalCondition={(usr) => mode === 'live' && usr.findTag('success_rate')}>
-              <NavLink
-                to="/success-rate"
-                onClick={() => {
-                  trackSuccessRateEvents(
-                    visitSuccessRate({
-                      tabName: 'success rate',
-                    }),
-                  );
-                }}
-              >
-                Success Rate
-              </NavLink>
-            </ShowWhen>
           </header>
 
           <TestModeBanner />

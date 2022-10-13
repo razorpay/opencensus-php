@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -8,7 +8,6 @@ import MetricsCard from 'merchant/views/Transactions/SuccessRate/components/Metr
 import GraphPanel from 'merchant/views/Transactions/SuccessRate/components/GraphPanel';
 import MethodFilter from 'merchant/views/Transactions/SuccessRate/components/MethodFilter';
 
-import debounce from 'common/utils/debounce';
 import {
   setActiveTab,
   fetchSuccessRate,
@@ -50,20 +49,8 @@ const GraphWidget = (props) => {
     isDropdownFilterLoading,
     filters,
   } = successRate;
-  const tabContainerRef = useRef(null);
-  const [tabWidth, setTabWidth] = useState();
-  const tabPane = Object.values(metrics);
 
-  const handleTabWidth = useCallback(
-    debounce(() => {
-      if (tabContainerRef?.current) {
-        const containerWidth = tabContainerRef?.current?.clientWidth;
-        const newTabWidth = (containerWidth - 16 * (tabPane.length - 1)) / tabPane.length; // 16 - gutter space between Tabs
-        setTabWidth(newTabWidth);
-      }
-    }, 250),
-    [],
-  );
+  const tabPane = Object.values(metrics);
 
   const handleTabChange = (tabIndex) => {
     const { startDate, endDate } = filters || {};
@@ -99,16 +86,8 @@ const GraphWidget = (props) => {
     );
   };
 
-  useEffect(() => {
-    handleTabWidth();
-    window?.addEventListener('resize', handleTabWidth);
-    return () => {
-      window?.removeEventListener('resize', handleTabWidth);
-    };
-  }, [handleTabWidth]);
-
   return (
-    <div ref={tabContainerRef} className="metrics-container">
+    <div className="metrics-container">
       <Tabs
         className="sr-metrics"
         justified={true}
@@ -117,7 +96,7 @@ const GraphWidget = (props) => {
       >
         {tabPane.map((tab, idx) => {
           return (
-            <Tab key={`${tab.name}-${idx}`} style={{ width: tabWidth }}>
+            <Tab key={`${tab.name}-${idx}`}>
               <MetricsCard isLoading={isLoading} isActive={activeTab === tab.name} metric={tab} />
             </Tab>
           );
