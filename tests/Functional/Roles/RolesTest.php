@@ -6,14 +6,17 @@ use DB;
 use Mail;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Mail\Merchant\RazorpayX\RolePermissionChange;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class RolesTest extends TestCase
 {
     use DbEntityFetchTrait;
+    use HeimdallTrait;
 
     const DEFAULT_X_MERCHANT_ID = '100000merchant';
     const EXISTING_MERCHANT_FOR_INVITED_USER_ID = '10000000000001';
@@ -27,6 +30,15 @@ class RolesTest extends TestCase
         $this->testDataFilePath = __DIR__ . '/helpers/RolesTestData.php';
 
         parent::setUp();
+
+        $this->org = $this->fixtures->create('org', [
+            'email'         => 'random@rzp.com',
+            'email_domains' => 'rzp.com',
+        ]);
+
+        $this->addAssignablePermissionsToOrg($this->org);
+
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
 
         $this->ba->proxyAuth();
     }
@@ -516,5 +528,38 @@ class RolesTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_X_MERCHANT_ID, $user1->getId());
 
         $response = $this->startTest();
+    }
+
+    public function testGetRolesForPermissionName()
+    {
+        $role = $this->fixtures->create(
+            'role',
+            ['org_id' => $this->org->getId(), 'name' => 'test name']);
+
+        $merchant = $this->fixtures->create('merchant',[ 'id' => self::DEFAULT_X_MERCHANT_ID]);
+
+        $this->fixtures->create('merchant_detail', [
+            'activation_status' => 'activated',
+            'merchant_id'       => self::DEFAULT_X_MERCHANT_ID,
+            'business_type'     => '2',
+        ]);
+
+        $perms = ['create_payout'];
+
+        $perm = (new Permission\Repository)->retrieveIdsByNames($perms)[0];
+
+        $role->permissions()->attach($perm);
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = '100000merchant';
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
+
+        $result = $this->startTest();
+
+        $this->assertCount(2, $result);
     }
 }

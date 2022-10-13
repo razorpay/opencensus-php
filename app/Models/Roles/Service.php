@@ -4,9 +4,13 @@ namespace RZP\Models\Roles;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\User\BankingRole;
+use RZP\Models\Admin\Role as AdminRole;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Models\User\BankingRole;
 use RZP\Models\RoleAccessPolicyMap;
+use RZP\Models\Admin\Permission\Name;
+use RZP\Models\Merchant\RazorxTreatment;
 
 class Service extends Base\Service
 {
@@ -50,6 +54,34 @@ class Service extends Base\Service
         Entity::$rolesHiddenFromDashboard = [];
 
         return $this->listRolesForMerchant($input);
+    }
+
+    public function listRolesMapForAdmin($input)
+    {
+        $isCacEnabled = $this->app['razorx']->getTreatment($this->merchant->getId(),
+                RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED,
+                Mode::LIVE) === 'on';
+
+        if ($isCacEnabled === true)
+        {
+            $this->core->setInputParamForListRoles($input);
+
+            $roles = $this->core->listRoles($input);
+
+            $roles['items'] = $this->core->filterFinanceRoleForMerchant($this->merchant->getId(), $roles['items']);
+
+            return $roles['items'];
+        }
+        else
+        {
+            $orgId = $this->app['basicauth']->getAdminOrgId();
+
+            $name = Name::CREATE_PAYOUT;
+
+            $roles = (new AdminRole\Core())->getRolesForPermissionName($name, $orgId);
+
+            return $roles->toArray();
+        }
     }
 
     public function fetchSelfRole()

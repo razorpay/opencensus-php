@@ -23,6 +23,18 @@ class Core extends Base\Core
         // Check if the permissions given are enabled to have workflows
         $workflow->getValidator()->validatePermissionsForOrg($orgId, $permissions);
 
+        $isCacEnabled = false;
+
+        if (empty($merchant) === false)
+        {
+            $isCacEnabled = $this->app['razorx']->getTreatment($merchant->getId(),
+                    Merchant\RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED,
+                    'live') === 'on';
+        }
+
+        Step\Entity::setCacStatus($isCacEnabled);
+
+
         //
         // Check if passed permissions already have a workflow assigned to them
         // create_payout can have multiple workflows though, skip the validation for that.

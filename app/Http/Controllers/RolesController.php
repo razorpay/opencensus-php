@@ -26,6 +26,15 @@ class RolesController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function listRolesMapForAdmin()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->listRolesMapForAdmin($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function create()
     {
         $input = Request::all();

@@ -242,6 +242,11 @@ class Core extends Base\Core
         return $rolesGroupedByType;
     }
 
+    public function listRoles($input)
+    {
+        return $this->repo->roles->listRoles($input)->toArrayPublic();
+    }
+
     public function setInputParamForListRoles(& $input)
     {
         if (isset($input[Entity::TYPE]) === false)

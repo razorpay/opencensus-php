@@ -10,6 +10,7 @@ use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Models\Admin\Base;
+use RZP\Models\Admin\Permission;
 
 class Repository extends Base\Repository
 {
@@ -108,5 +109,29 @@ class Repository extends Base\Repository
                     ->where($pmMap . '.permission_id', '=', $id)
                     ->where($rOrgId, '=', $orgId)
                     ->get();
+    }
+
+    public function getRolesForPermissionName(string $name, string $orgId)
+    {
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        $pmMap = Table::PERMISSION_MAP;
+        $permissions = Table::PERMISSION;
+
+        $rId = $this->dbColumn(Entity::ID);
+        $rOrgId = $this->dbColumn(Entity::ORG_ID);
+
+        $pId = $this->repo->permission->dbColumn(Permission\Entity::ID);
+        $pName = $this->repo->permission->dbColumn(Permission\Entity::NAME);
+
+        return $this->newQuery()
+            ->selectRaw(Table::ROLE . '.*')
+            ->join($pmMap, $rId, '=', $pmMap . '.entity_id')
+            ->where($pmMap . '.entity_type', '=', 'role')
+            ->leftJoin($permissions, $pmMap . '.permission_id', '=',$pId)
+            ->product(Product::PRIMARY)
+            ->where($pName, '=', $name)
+            ->where($rOrgId, '=', $orgId)
+            ->get();
     }
 }

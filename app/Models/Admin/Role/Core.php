@@ -115,4 +115,9 @@ class Core extends Base\Core
     {
         return $this->repo->role->findByOrgIdAndName($orgId, $name);
     }
+
+    public function getRolesForPermissionName(string $name, string $orgId)
+    {
+        return $this->repo->role->getRolesForPermissionName($name, $orgId);
+    }
 }
