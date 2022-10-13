@@ -9446,4 +9446,38 @@ class BankingAccountTest extends TestCase
         return $bankingAccount;
     }
 
+    public function testFreshDeskTicketCreationForSalesLedFlowFromMOB()
+    {
+        $this->ba->mobAppAuthForProxyRoutes();
+
+        $admin = $this->fixtures->create('admin', ['org_id' => Org::RZP_ORG, 'email' => 'abc@razorpay.com']);
+
+        Mail::fake();
+
+        $dataToReplace = [
+            'request'  => [
+                'server'  => [
+                    'HTTP_X-Admin-Email' => $admin->getEmail(),
+                ]
+            ],
+        ];
+
+        $this->startTest($dataToReplace);
+
+        Mail::assertQueued(XProActivation::class);
+    }
+
+    public function testPreventFreshDeskTicketCreationForNonSalesLedFromMOB()
+    {
+        $this->ba->mobAppAuthForProxyRoutes();
+
+        $this->testData[__FUNCTION__] = $this->testData['testFreshDeskTicketCreationForSalesLedFlowFromMOB'];
+
+        Mail::fake();
+
+        $this->startTest();
+
+        Mail::assertNotQueued(XProActivation::class);
+    }
+
 }

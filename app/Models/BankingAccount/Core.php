@@ -2198,7 +2198,13 @@ class Core extends Base\Core
      */
     protected function shouldNotifyOpsAboutProActivation(string $validatorOP, Entity $bankingAccount, bool $clarityContextEnabled = false): void
     {
-        if ($validatorOP !== 'create_dashboard' && $validatorOP != 'create_co_created')
+        /*
+         * Freshdesk ticket must be created when banking_account is created from LMS through MOB (SALES_LED flow). And FD ticket should not be
+         * created in non SALES_LED flows
+         * If the MOB request contains AdminEmail header, the flow is SALES_LED
+         */
+        if (($validatorOP !== 'create_dashboard' && $validatorOP != 'create_co_created') or
+            $this->getAdminFromHeadersForMobApp() !== null)
         {
             if ($clarityContextEnabled === false)
             {

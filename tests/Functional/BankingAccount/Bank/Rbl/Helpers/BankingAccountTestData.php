@@ -4777,4 +4777,25 @@ return [
         ],
     ],
 
+    'testFreshDeskTicketCreationForSalesLedFlowFromMOB' => [
+        'request'  => [
+            'url'     => '/banking_accounts_dashboard',
+            'method'  => 'POST',
+            'content' => [
+                'channel' => 'rbl',
+                'pincode' => '560038',
+                'activation_detail' => [
+                    'business_category' => 'partnership',
+                    'sales_team' => 'self_serve'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'channel'     => 'rbl',
+                'status'      => 'created'
+            ],
+        ],
+    ]
+
 ];
