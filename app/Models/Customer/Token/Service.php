@@ -713,7 +713,7 @@ class Service extends Base\Service
                 return $response;
             }
 
-            if ($isPar)
+            if ($isPar && ($this->merchant->isTokenizationEnabled() === false ))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_ERROR, null, null, "network_tokenization_live feature is not enabled for this merchant");
