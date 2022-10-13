@@ -544,21 +544,23 @@ class Checker extends Base\Core
 
     protected function getParValue() {
 
-        $vaultToken = $this->payment->card->getVaultToken();
+        $card = $this->payment->card;
+        $vaultToken = $card->getVaultToken();
         $cardNumber = (new Card\CardVault)->getCardNumber($vaultToken);
 
-        $cardInput = (new Token\Core())->buildCardInputForPar($cardNumber, $this->payment->card);
+        $cardInput = (new Token\Core())->buildCardInputForPar($cardNumber, $card);
 
         // Fetches par value for given card number
         list($network, $data) = (new Token\Core())->fetchParValue($cardInput, true);
         $providerReferenceId = $data["fingerprint"];
 
-        $this->payment->card->setProviderReferenceId($providerReferenceId);
+
+        $card->setProviderReferenceId($providerReferenceId);
 
         // For dummy payment we will not persist the card entity
         if ($this->isDummyPayment === false)
         {
-            $this->payment->card->saveOrFail();
+            $this->repo->card->saveOrFail($card);
         }
         return $providerReferenceId;
     }
