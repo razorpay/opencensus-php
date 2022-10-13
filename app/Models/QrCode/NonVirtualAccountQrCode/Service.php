@@ -73,6 +73,8 @@ class Service extends QrCode\Service
 
         (new Validator())->validateInput('createForCheckout', $input);
 
+        $errorMessage = null;
+
         try
         {
             if (array_key_exists(Entity::ENTITY_TYPE, $input))
@@ -113,9 +115,19 @@ class Service extends QrCode\Service
         }
         catch (\Exception $ex)
         {
+            $errorMessage = $ex->getMessage();
+
             $this->trace->traceException($ex, Trace::CRITICAL, TraceCode::QR_CODE_CREATE_REQUEST_FAILED, $input);
 
             throw $ex;
+        } finally {
+            $input = array_merge($input, [
+                Entity::REQ_PROVIDER    => QrCode\Type::UPI_QR,
+                Entity::REQ_USAGE_TYPE  => UsageType::SINGLE_USE,
+                Entity::REQUEST_SOURCE  => RequestSource::CHECKOUT,
+            ]);
+
+            (new Metric())->pushCreateMetrics($input, $errorMessage);
         }
 
         $this->handleReminderForQrCode($qrCode);
@@ -259,7 +271,9 @@ class Service extends QrCode\Service
         }
         finally
         {
-            (new Metric())->pushCloseMetrics($closeReason, $errorMessage);
+            $requestSource = $qrCode ? $qrCode->getRequestSource() : null;
+
+            (new Metric())->pushCloseMetrics($closeReason, $errorMessage, $requestSource);
         }
     }
 

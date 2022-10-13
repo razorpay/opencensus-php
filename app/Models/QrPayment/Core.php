@@ -83,9 +83,11 @@ class Core extends Base\Core
 
             $gateway = $gatewayResponse['qr_data'][BharatQr\GatewayResponseParams::GATEWAY];
 
+            $requestSource = $qrPayment ? optional($qrPayment->qrCode)->getRequestSource() : null;
+
             (new QrPaymentRequest\Service())->update($qrPaymentRequest, $isExpected, $qrPayment, $errorMessage, QrPaymentRequest\Type::BHARAT_QR);
 
-            (new Metric())->pushQrV2PaymentsMetrics($isExpected, $valid, $gateway, $method, $errorMessage);
+            (new Metric())->pushQrV2PaymentsMetrics($isExpected, $valid, $gateway, $method, $errorMessage, $requestSource);
         }
 
         return $valid;
