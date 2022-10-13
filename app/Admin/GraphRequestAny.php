@@ -49,8 +49,9 @@ class GraphRequestAny
     private static function getWhitelistedHeaders(array $allHeaders): array
     {
         return array_intersect_key(
-            $allHeaders,
-            self::WHITELISTED_HEADERS_FOR_RESPONSE);
+            array_change_key_case($allHeaders),
+            array_change_key_case(self::WHITELISTED_HEADERS_FOR_RESPONSE)
+        );
     }
 
     function __construct(array $data)
