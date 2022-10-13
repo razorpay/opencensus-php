@@ -1,5 +1,5 @@
 </head>
-<body ng-controller="AppCtrl">
+<body>
   <div id="react-root" class="react-root"></div>
   <div id="splash" ng-if="flag" style="position: absolute;top: 50%;left: 50%;margin-left: -20px;margin-top: -40px;">
     <svg version='1.1' id='loader-1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' width='40px' height='40px' viewBox='0 0 50 50' style='enable-background:new 0 0 50 50;' xml:space='preserve'>
@@ -8,5 +8,5 @@
       </path>
     </svg>
   </div>
- <div class="app" id="app" ng-class="{'app-header-fixed':app.settings.headerFixed, 'app-aside-fixed':app.settings.asideFixed, 'app-aside-folded':app.settings.asideFolded}" ui-view></div>
+ <div class="app" id="app"></div>
 

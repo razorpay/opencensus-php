@@ -1,15 +1,3 @@
-@if ($newAuthRoute !== 'signup')
-    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-928471290"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){
-            dataLayer.push(arguments);
-        }
-        gtag('js', new Date());
-        gtag('config', 'AW-928471290');
-        gtag('config', 'DC-11482329');
-    </script>
-@endif
 </head>
 <style type="text/css">
     @font-face {

@@ -8,30 +8,7 @@
   <link rel="icon" type="image/png"  href="https://razorpay.com/favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   @include('partials/environment')
-  <script type="text/javascript">
-    // New signup flow: Redirect rule to pass extra URL params via Google Optimize
-    // Input: /signup?utm_expid=exp_id#/access/signup?email=email_id
-    // Output: /signup?utm_expid=exp_id&email=email_id
-    const regex = /#\/access\/signup\?/g;
-    if (location.pathname === "/signup" && location.hash.match(regex)) {
-        location.href = location.href.replace(regex, "&")
-    } else if (location.pathname === '//signup') {
-        // partner referral shortened url is wrongly translating links by adding extra slash in pathname
-        // Eg: https://rzp.io/i/TSvxo0WXs ==> https://dashboard.razorpay.com//signup?referral_code=bluehosti2lycr
-        // Since already there are huge number of links created and being used we can't just fix the translation from BE
-        // as issue will persist for existing links, hence adding a fallback redirect
-        location.href = location.href.replace('//signup', "/signup");
-    }
-    const resetRegex = /#\/access\/resetpassword\?/g;
-    const resetRegWithQ = /\?#\/access\/resetpassword\?/g; // this is useful in case of captcha redirect when captcha redirect changes the url to "/?#/access/resetpassword?"
-    if (location.pathname === '/' && location.hash.match(resetRegex)) {
-        if (location.href.match(resetRegWithQ)) {
-            location.href = location.href.replace(resetRegWithQ, "resetpassword?")
-        } else {
-            location.href = location.href.replace(resetRegex, "resetpassword?")
-        }
-    }
-  </script>
+  @include('partials/signup-redirect')
   @if(env('APP_ENV') === 'production')
     <script src="https://www.googleoptimize.com/optimize.js?id=GTM-NCWFQ39"></script>
   @else

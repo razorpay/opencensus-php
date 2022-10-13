@@ -5,7 +5,7 @@
 
 @include('partials/header')
 
-@if ($newAuthFlow === true and $newAuthRoute === 'signup')
+@if ($requestPath === 'signup')
   <title>Create your Razorpay Account - Razorpay</title>
   <meta name="description" content="Welcome to Razorpay! Create your free Razorpay account today. Sign up for free to join the millions of users that trust us with their payments, banking & working capital." />
 @else
@@ -13,141 +13,19 @@
   <meta name="description" content="Online payment gateway for India with the best in class API, integration procedure, robust security and powerful dashboard" />
 @endif
 
-@if (($isConfirmed || $isMobileConfirmed) and $isPreSignupComplete)
-  <link rel="preload" href="https://cdn.razorpay.com/dashboard/dist/merchant-entry.js" as="script">
-
-@elseif ($newAuthFlow === false)
-  <link rel='stylesheet' href="{{$cdnDashboardUrl}}/css/generated/signup.css" type='text/css' />
-
-@endif
-
-@if(env('APP_ENV') === 'production')
-  <script type="module">
-    import {Workbox} from 'https://storage.googleapis.com/workbox-cdn/releases/6.4.1/workbox-window.prod.mjs';
-      if ('serviceWorker' in navigator) {
-        const wb = new Workbox('/sw-merchant.js');
-        wb.register();
-      }
-  </script>
-@endif
-
-@include('partials/preload/merchant-preload')
-
-@if ($newAuthFlow === true)
-  @include('partials/new-auth')
-@else
-
-  <!-- Logged in user section -->
-
-  <!-- Preconnect to required domains  -->
-  <link rel="dns-prefetch" href="https://rzp-1415-prod-dashboard-activation.s3.amazonaws.com">
-  <link rel="dns-prefetch" href="https://maxcdn.bootstrapcdn.com">
-  <link rel="dns-prefetch" href="https://o515678.ingest.sentry.io">
-  <link rel="dns-prefetch" href="https://www.google-analytics.com">
-  <link rel="dns-prefetch" href="https://www.googleadservices.com">
-  <link rel="dns-prefetch" href="https://connect.facebook.net">
-  <link rel="dns-prefetch" href="https://www.youtube.com">
-  <link rel="dns-prefetch" href="https://googleads.g.doubleclick.net">
-  <link rel="dns-prefetch" href="https://www.facebook.com">
-  <link rel="dns-prefetch" href="https://www.google.com">
-  <link rel="dns-prefetch" href="https://www.google.co.in">
-  <link rel="dns-prefetch" href="https://api.refiner.io">
-  <link rel="dns-prefetch" href="https://js.refiner.io">
-  <link rel="dns-prefetch" href="https://d2r1yp2w7bby2u.cloudfront.net">
-  <link rel="dns-prefetch" href="https://vars.hotjar.com">
-  <link rel="dns-prefetch" href="https://static.hotjar.com">
-  <link rel="dns-prefetch" href="https://cdn.segment.com">
-  <link rel="dns-prefetch" href="https://script.hotjar.com">
-  <link rel="dns-prefetch" href="https://lumberjack.razorpay.com">
-
-  <!-- preconnect fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://www.gstatic.com">
-
-  <!-- Preload FA icons CSS -->
-  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" as="style">
-  @if(env('APP_ENV') === 'production')
-    <link rel="preload" href="https://cdn.razorpay.com/dashboard/dist/css/merchant-icons.woff2" as="style">
-    <link rel="preload" href="https://cdn.razorpay.com/dashboard/dist/css/merchant-icons.woff" as="style">
-  @endif
-  <!-- head tag ends here -->
-  @include('partials/common')
-@endif
-
 <script>
-var _dcq = _dcq || [];
-var _dcs = _dcs || {};
-_dcs.account = '9421167';
+  var _dcq = _dcq || [];
+  var _dcs = _dcs || {};
+  _dcs.account = '9421167';
 
-(function() {
-  var dc = document.createElement('script');
-  dc.type = 'text/javascript'; dc.async = true;
-  dc.src = '//tag.getdrip.com/9421167.js';
-  var s = document.getElementsByTagName('script')[0];
-  s.parentNode.insertBefore(dc, s);
-})();
-
+  (function() {
+    var dc = document.createElement('script');
+    dc.type = 'text/javascript'; dc.async = true;
+    dc.src = '//tag.getdrip.com/9421167.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(dc, s);
+  })();
 </script>
-@if ($newAuthRoute !== 'signup')
-  <script defer src="https://www.googletagmanager.com/gtag/js?id=AW-928471290"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'AW-928471290');
-  </script>
-@endif
-<script defer src="https://apis.google.com/js/api:client.js"></script>
-
-<script>
-  // @Todo: remove onload and onerror after debugging the missing display_google_auth event issue
-  function trackScriptEvent(eventName, type) {
-    try {
-      if (window.rzpQ) {
-        switch (type) {
-          case 'success':
-            window.rzpQ.push(
-              window.rzpQ.now().onbr().success(eventName, {
-                mode: 'live',
-              }),
-            );
-            break;
-          case 'failed':
-            window.rzpQ.push(
-              window.rzpQ.now().onbr().failed(eventName, {
-                mode: 'live',
-              }),
-            );
-            break;
-          default:
-            console.error("error script event");
-        }
-      } else {
-        var checkRzpqInterval = setInterval(() => {
-          if (window.rzpQ) {
-            trackScriptEvent(eventName, type);
-            clearInterval(checkRzpqInterval);
-          }
-        }, 200);
-      }
-    } catch (err) {
-      console.error("err::", err);
-    }
-  }
-
-  function oneTapError() {
-    window.isOneTapScriptFailed = true;
-    trackScriptEvent('signup.google_onetap_script_load', 'failed');
-  };
-  function oneTapSuccess() {
-    window.isOneTapScriptFailed = false;
-    trackScriptEvent('signup.google_onetap_script_load', 'success');
-  };
-  trackScriptEvent('signup.google_onetap_script_attach', 'success');
-</script>
-
-<script defer src="https://accounts.google.com/gsi/client" onerror="oneTapError()" onload="oneTapSuccess()"></script>
 
 <script>
   document.domain = window.location.hostname.split(".").slice(-2).join(".");
@@ -169,21 +47,70 @@ _dcs.account = '9421167';
     };
   }
 </script>
+
+@if(env('APP_ENV') === 'production')
+  <script type="module">
+    import {Workbox} from 'https://storage.googleapis.com/workbox-cdn/releases/6.4.1/workbox-window.prod.mjs';
+      if ('serviceWorker' in navigator) {
+        const wb = new Workbox('/sw-merchant.js');
+        wb.register();
+      }
+  </script>
+@endif
+
 <!-- Hotjar Tracking Code for dashboard.razorpay.com -->
 @if(env('APP_ENV') === 'production')
+  <link rel="dns-prefetch" href="https://static.hotjar.com">
+  <link rel="dns-prefetch" href="https://vars.hotjar.com">
+  <link rel="dns-prefetch" href="https://script.hotjar.com">
   @include('partials/hotjar')
 @endif
+@include('partials/preload/merchant-preload')
 
 <!-- Blank interface init before loading the project entry file -->
 @include('partials/rzpq-interface')
 
-@if ($newAuthFlow === true and (app('request')->input('auth_source') === 'website' || app('request')->input('auth_source') === 'website_homepage'))
-  <script type="text/javascript">
-      window.session_id = "{!! $session_id !!}"
-      window.isAuthPage = true;
+<!-- if logged in and not on website -->
+@if (($isConfirmed || $isMobileConfirmed) and $isPreSignupComplete and (app('request')->input('auth_source') !== 'website' || app('request')->input('auth_source') !== 'website_homepage'))
+  <!-- Preconnect to required domains  -->
+  <link rel="preload" href="https://cdn.razorpay.com/dashboard/dist/merchant-entry.js" as="script">
+  <link rel="dns-prefetch" href="https://rzp-1415-prod-dashboard-activation.s3.amazonaws.com">
+  <link rel="dns-prefetch" href="https://maxcdn.bootstrapcdn.com">
+  <link rel="dns-prefetch" href="https://o515678.ingest.sentry.io">
+  <link rel="dns-prefetch" href="https://www.google-analytics.com">
+  <link rel="dns-prefetch" href="https://www.googleadservices.com">
+  <link rel="dns-prefetch" href="https://connect.facebook.net">
+  <link rel="dns-prefetch" href="https://www.youtube.com">
+  <link rel="dns-prefetch" href="https://googleads.g.doubleclick.net">
+  <link rel="dns-prefetch" href="https://www.facebook.com">
+  <link rel="dns-prefetch" href="https://www.google.com">
+  <link rel="dns-prefetch" href="https://www.google.co.in">
+  <link rel="dns-prefetch" href="https://api.refiner.io">
+  <link rel="dns-prefetch" href="https://js.refiner.io">
+  <link rel="dns-prefetch" href="https://d2r1yp2w7bby2u.cloudfront.net">
+  <link rel="dns-prefetch" href="https://cdn.segment.com">
+  <link rel="dns-prefetch" href="https://lumberjack.razorpay.com">
+  <!-- preconnect fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://www.gstatic.com">
+
+  <!-- Preload FA icons CSS -->
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" as="style">
+  @if(env('APP_ENV') === 'production')
+    <link rel="preload" href="https://cdn.razorpay.com/dashboard/dist/css/merchant-icons.woff2" as="style">
+    <link rel="preload" href="https://cdn.razorpay.com/dashboard/dist/css/merchant-icons.woff" as="style">
+  @endif
+  <!-- head tag ends here -->
+  @include('partials/common')
+  <script defer src="https://www.googletagmanager.com/gtag/js?id=AW-928471290"></script>
+  <script defer src="https://apis.google.com/js/api:client.js"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'AW-928471290');
   </script>
-  <script src="{{$cdnDashboardUrl}}/dist/newAuth-entry.js"></script>
-@elseif (($isConfirmed || $isMobileConfirmed) and $isPreSignupComplete)
   <script type="text/javascript">
     window.rzp_user = {!! $user !!};
     window.rzp_org = {!! $org !!};
@@ -198,41 +125,63 @@ _dcs.account = '9421167';
     window.is_pl_customer_name_field_enabled = {!! $is_pl_customer_name_field_enabled !!};
     window.session_id = "{!! $session_id !!}";
   </script>
-
-
   <script src="https://www.recaptcha.net/recaptcha/api.js?render=explicit"></script>
   <script async src="{{$cdnDashboardUrl}}/dist/merchant-entry.js"></script>
 @else
+  <!-- head tag ends here -->
+  @include('partials/new-auth')
+  <script>
+    // @Todo: remove onload and onerror after debugging the missing display_google_auth event issue
+    function trackScriptEvent(eventName, type) {
+      try {
+        if (window.rzpQ) {
+          switch (type) {
+            case 'success':
+              window.rzpQ.push(
+                window.rzpQ.now().onbr().success(eventName, {
+                  mode: 'live',
+                }),
+              );
+              break;
+            case 'failed':
+              window.rzpQ.push(
+                window.rzpQ.now().onbr().failed(eventName, {
+                  mode: 'live',
+                }),
+              );
+              break;
+            default:
+              console.error("error script event");
+          }
+        } else {
+          var checkRzpqInterval = setInterval(() => {
+            if (window.rzpQ) {
+              trackScriptEvent(eventName, type);
+              clearInterval(checkRzpqInterval);
+            }
+          }, 200);
+        }
+      } catch (err) {
+        console.error("err::", err);
+      }
+    }
+
+    function oneTapError() {
+      window.isOneTapScriptFailed = true;
+      trackScriptEvent('signup.google_onetap_script_load', 'failed');
+    };
+    function oneTapSuccess() {
+      window.isOneTapScriptFailed = false;
+      trackScriptEvent('signup.google_onetap_script_load', 'success');
+    };
+    trackScriptEvent('signup.google_onetap_script_attach', 'success');
+  </script>
+  <script defer src="https://accounts.google.com/gsi/client" onerror="oneTapError()" onload="oneTapSuccess()"></script>
+  <script src="{{$cdnDashboardUrl}}/dist/newAuth-entry.js"></script>
   <script type="text/javascript">
       window.session_id = "{!! $session_id !!}"
       window.isAuthPage = true;
   </script>
-  @if($requestPath !== $rootPath and $newAuthFlow === false)
-    <script>
-      window.location.href = "{!! $redirectUrl !!}"
-    </script>
-  @endif
-
-  @if ($newAuthFlow === true)
-    <script src="{{$cdnDashboardUrl}}/dist/newAuth-entry.js"></script>
-  @else
-    <!-- loading sentry in older fashion for angular js codebase -->
-    @if(env('APP_ENV') === 'production')
-        @include('partials/sentry')
-    @endif
-    <script>
-      // redirect all old signin requests to /signin
-      var newUrl = location.href.replace('/#/access/signin', '');
-      var parserAnchor = document.createElement('a');
-      parserAnchor.href = newUrl;
-      if (location.hash.includes('#/access/signin') || location.hash === '') {
-        location.href = "/signin" + parserAnchor.search;
-      }
-    </script>
-    <script src='{{$cdnDashboardUrl}}/js/generated/signup.js'></script>
-  @endif
-
 @endif
-
 
 @include('partials/footer')

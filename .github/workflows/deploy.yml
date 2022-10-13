@@ -80,8 +80,6 @@ jobs:
           npm install multi-glob aws-sdk
           # Show what all will get synced
           ls -laR public/dist/
-          ls -laR public/js/generated/
-          ls -laR public/css/generated/
           ./s3sync.js
 
       # Non Prod deployments
@@ -102,8 +100,6 @@ jobs:
           npm install multi-glob aws-sdk
           # Show what all will get synced
           ls -laR public/dist/
-          ls -laR public/js/generated/
-          ls -laR public/css/generated/
           ./s3sync.js
 
       - name: Mark Deployment Success on GitHub

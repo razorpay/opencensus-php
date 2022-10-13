@@ -1,11 +1,11 @@
 import 'regenerator-runtime/runtime.js'; // eslint-disable-line
 import 'core-js/es/map';
 import 'core-js/es/set';
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { render } from 'react-dom';
 import { ThemeProvider, createGlobalStyle } from 'styled-components';
 import Size from '@razorpay/blade-old/src/atoms/Size';
-import { FullPageLoader } from '../common/components/Loader';
+import { FullPageLoader } from '../common/components/Loader'; // eslint-disable-line
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme';
 import { ROUTES } from './utils';
 
@@ -14,6 +14,8 @@ __webpack_public_path__ = `${window.cdnDashboardUrl || ''}/dist/`; // eslint-dis
 const SignIn = React.lazy(() => import('./signin'));
 const SignUp = React.lazy(() => import('./signup'));
 const ResetPassword = React.lazy(() => import('./resetPassword'));
+
+const isSupportedPath = (pathname) => ['', ...Object.values(ROUTES)].indexOf(pathname) > -1;
 
 const GlobalStyle = createGlobalStyle`
   * {
@@ -31,8 +33,15 @@ const GlobalStyle = createGlobalStyle`
 const App = () => {
   const route = window.location.pathname.substring(1);
 
+  useEffect(() => {
+    if (!isSupportedPath(route)) {
+      location.href = '/signin';
+    }
+  }, [route]);
+
   const getComponentBasedOnRoute = (route) => {
     switch (route) {
+      case '':
       case ROUTES.SIGNIN:
         return <SignIn />;
       case ROUTES.SIGNUP:
@@ -40,17 +49,19 @@ const App = () => {
       case ROUTES.RESETPASSWORD:
         return <ResetPassword />;
       default:
-        return '404';
+        return <div />;
     }
   };
 
-  return (
+  return isSupportedPath(route) ? (
     <ThemeProvider theme={theme}>
       <GlobalStyle />
       <Suspense fallback={<FullPageLoader />}>
         <Size height="100%">{getComponentBasedOnRoute(route)}</Size>
       </Suspense>
     </ThemeProvider>
+  ) : (
+    <div />
   );
 };
 

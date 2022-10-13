@@ -32,13 +32,7 @@ const ContentType = {
 };
 
 glob(
-  [
-    'public/dist/**/*',
-    'public/js/generated/*',
-    'public/css/generated/*',
-    'public/css/fonts/*',
-    'public/img/**/*',
-  ],
+  ['public/dist/**/*', 'public/css/fonts/*', 'public/img/**/*'],
   { nodir: true },
   (error, files) => {
     files.forEach((file) => {
@@ -56,13 +50,7 @@ glob(
 
       const ext = path.extname(file).slice(1);
 
-      if (
-        file.endsWith('-entry.js') ||
-        file.endsWith('.js.map') ||
-        file.endsWith('signup.css') ||
-        file.endsWith('signup.js') ||
-        ext.startsWith('woff')
-      ) {
+      if (file.endsWith('-entry.js') || file.endsWith('.js.map') || ext.startsWith('woff')) {
         fileParams.CacheControl = 'no-store,must-revalidate';
       }
 
