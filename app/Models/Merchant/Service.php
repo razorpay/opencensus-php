@@ -6359,10 +6359,23 @@ class Service extends Base\Service
         // dashboard access is true.
         if ((($enableDashboardAccess === true) and ($isLinkedAccount === true)) or ($isLinkedAccount === false))
         {
-            [$newUser, $createdNewUser] = Tracer::inspan(['name' => HyperTrace::CREATE_ADDITIONAL_USER_OR_FETCH_IF_APPLICABLE], function () use ($subMerchant, $merchant, $product) {
+            try
+            {
+                [$newUser, $createdNewUser] = Tracer::inspan(['name' => HyperTrace::CREATE_ADDITIONAL_USER_OR_FETCH_IF_APPLICABLE], function () use ($subMerchant, $merchant, $product) {
 
-                return $this->createAdditionalUserOrFetchIfApplicable($subMerchant, $merchant, $product);
-            });
+                    return $this->createAdditionalUserOrFetchIfApplicable($subMerchant, $merchant, $product);
+                });
+            }
+            catch (\Illuminate\Database\QueryException $ex)
+            {
+                // throw 4xx bad request exception instead of 5xx error in case email is duplicate. Issue thread: https://razorpay.slack.com/archives/C01G2BS6JTH/p1662794582254929
+                if ($ex->getCode() === "23000" and in_array(1062, $ex->errorInfo) === true and strpos($ex->errorInfo[2], "users_email_unique") !== false)
+                {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_ALREADY_EXISTS);
+                }
+
+                throw $ex;
+            }
         }
 
         if ($product === Product::BANKING)
