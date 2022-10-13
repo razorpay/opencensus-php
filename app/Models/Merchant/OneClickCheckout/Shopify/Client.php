@@ -59,7 +59,7 @@ class Client
         $resource = '/orders/' . strval($merchantOrderId) . '/transactions.json';
         return $this->sendRestApiRequest(
             null,
-            'get',
+            self::GET,
             $resource);
     }
 
@@ -99,7 +99,7 @@ class Client
     {
         $body = $this->sendRestApiRequest(
             [],
-            'GET',
+            self::GET,
             '/carts/' . strval($cartId) . '.json'
         );
         return $body;
@@ -127,7 +127,7 @@ class Client
             'headers' => $this->headers
         ];
 
-        if ($method != 'GET')
+        if ($method != self::GET)
         {
             $data['body'] = $body ?? [];
         }

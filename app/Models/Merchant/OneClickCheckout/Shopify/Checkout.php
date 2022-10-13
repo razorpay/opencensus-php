@@ -264,7 +264,7 @@ class Checkout extends Base\Core
         {
             $checkoutRes = $client->sendRestApiRequest(
                 null,
-                'GET',
+                Client::GET,
                 '/checkouts/' . $token . '.json');
 
             $checkout = json_decode($checkoutRes, true);
@@ -403,7 +403,7 @@ class Checkout extends Base\Core
         {
             $checkoutRes = $client->sendRestApiRequest(
                 json_encode($body),
-                'PUT',
+                Client::PUT,
                 '/checkouts/' . $token . '.json');
 
             $checkout = json_decode($checkoutRes, true);
