@@ -14,6 +14,8 @@ class BulkPayout extends Base
 
     const CREATE_BULK_PAYOUT_PAYOUT_SERVICE_URI = '/payouts/bulk';
 
+    const BATCH_SUBMITTED_CRON_PAYOUT_SERVICE_URI = '/payouts/batch/process';
+
     const PAYOUT_SERVICE_BULK_PAYOUTS = 'payout_service_bulk_payouts';
 
     /**
@@ -71,4 +73,22 @@ class BulkPayout extends Base
 
         return $response;
     }
+
+    public function initiateBatchSubmittedCronViaMicroservice()
+    {
+        $this->trace->info(TraceCode::INITIATE_BATCH_SUBMITTED_CRON_VIA_MICROSERVICE);
+
+        $response = $this->makeRequestAndGetContent(
+            [],
+            self::BATCH_SUBMITTED_CRON_PAYOUT_SERVICE_URI,
+            Requests::POST
+        );
+
+        $this->trace->info(
+            TraceCode::BATCH_SUBMITTED_CRON_VIA_MICROSERVICE_RESPONSE,
+            [
+                'payouts service response' => $response,
+            ]);
+    }
+
 }

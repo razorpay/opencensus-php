@@ -4403,6 +4403,58 @@ class PayoutServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testInitiateBatchSubmittedCron()
+    {
+        $this->ba->cronAuth();
+
+        $this->mockPayoutServiceInitiateBatchSubmittedCronCreate();
+
+        $this->startTest();
+    }
+
+    public function testInitiateBatchSubmittedCronFailure()
+    {
+        $this->ba->cronAuth();
+
+        $this->mockPayoutServiceInitiateBatchSubmittedCronCreate(true);
+
+        $this->startTest();
+    }
+
+    public function mockPayoutServiceInitiateBatchSubmittedCronCreate($fail = false)
+    {
+        $payoutServiceInitiateBatchSubmittedCronMock = Mockery::mock(
+            'RZP\Services\PayoutService\BulkPayout', [$this->app])->makePartial();
+
+        $payoutServiceInitiateBatchSubmittedCronMock->shouldReceive('sendRequest')
+                                                    ->andReturn(
+                                                        $this->initiateBatchSubmittedResponseForPayoutServiceMock($fail)
+                                                    );
+
+        $this->app->instance(BulkPayout::PAYOUT_SERVICE_BULK_PAYOUTS,
+                             $payoutServiceInitiateBatchSubmittedCronMock);
+    }
+
+    public function initiateBatchSubmittedResponseForPayoutServiceMock($fail)
+    {
+        $response = new Requests_Response();
+
+        if ($fail === true)
+        {
+            $response->body        = json_encode([]);
+            $response->status_code = 500;
+            $response->success     = true;
+        }
+        else
+        {
+            $response->body        = json_encode([]);
+            $response->status_code = 200;
+            $response->success     = true;
+        }
+
+        return $response;
+    }
+
     public function testPayoutServiceMerchantFeatureAddition()
     {
         $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');

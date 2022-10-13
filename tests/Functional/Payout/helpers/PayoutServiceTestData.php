@@ -2660,6 +2660,28 @@ return [
         ],
     ],
 
+    'testInitiateBatchSubmittedCron' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payouts/batch/process',
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testInitiateBatchSubmittedCronFailure' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payouts/batch/process',
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
     'testPayoutsServiceCreateFailureProcessingCron' => [
         'request'  => [
             'method' => 'POST',

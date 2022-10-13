@@ -1611,6 +1611,20 @@ class Service extends Base\Service
 
         $this->core->processInitiateForBatchSubmittedPayouts($merchantIds);
 
+        try
+        {
+            $this->payoutServiceBulkPayoutsClient->initiateBatchSubmittedCronViaMicroservice();
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->info(
+                TraceCode::INITIATE_BATCH_SUBMITTED_CRON_VIA_MICROSERVICE_FAILED,
+                [
+                    'exception' => $exception->getMessage(),
+                ]
+            );
+        }
+
         return $merchantIds;
     }
 
