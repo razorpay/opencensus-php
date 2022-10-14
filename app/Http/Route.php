@@ -14956,6 +14956,7 @@ class Route
         'fund_account_list',
         'fund_account_create',
         'fund_account_update',
+        'fund_account_create_public',
         'fund_account_bulk_create',
 
         'banking_account_statement_generate',
