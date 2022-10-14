@@ -347,7 +347,9 @@ return [
 
     'mastercard' => [
          'identifier_id'            => env('MASTERCARD_IDENTIFIER_ID','RAZ39520'),
-         'razorpay_requester_id'    => env('MASTERCARD_RZP_REQUESTER_ID','RAZ39520'),
+         'razorpay_requester_id'    => env('MASTERCARD_RZP_REQUESTER_ID','RAZ39520_100000Razorpay'),
+         'razorpay_requester_name'  => env('MASTERCARD_RZP_REQUESTER_NAME','Razorpay_Software Pvt Ltd'),
+         'identifier_name'          => env('MASTERCARD_IDENTIFIER_NAME','Razorpay')
     ],
 
     'axis_migs' => [

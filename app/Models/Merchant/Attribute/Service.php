@@ -397,10 +397,10 @@ class Service extends Base\Service
                     $merchant = $this->repo->merchant->find($merchantId);
                     foreach ($data['networks'] as $network)
                     {
-                        $networkAttributes = $this->entityRepo->getValueForProductGroupType($merchantId,Product::PRIMARY,$network,Type::REQUESTER_ID);
+                        $networkRequesterAttributes = $this->entityRepo->getValueForProductGroupType($merchantId,Product::PRIMARY,$network,Type::REQUESTER_ID);
 
                         //To skip already onboarded merchants except Mastercard default merchants
-                        if($networkAttributes && !($network === self::MASTERCARD && ($networkAttributes['value'] === $this->app['config']->get('gateway.mastercard.razorpay_requester_id'))))
+                        if($networkRequesterAttributes && !($network === self::MASTERCARD && ($networkRequesterAttributes['value'] === $this->app['config']->get('gateway.mastercard.razorpay_requester_id'))))
                         {
                             continue;
                         }
@@ -427,9 +427,12 @@ class Service extends Base\Service
 
                         if($requesterAttribute && $nameAttribute)
                         {
-                            if($networkAttributes && ($network === self::MASTERCARD && ($networkAttributes['value'] === $this->app['config']->get('gateway.mastercard.razorpay_requester_id'))))
+                            if($networkRequesterAttributes && ($network === self::MASTERCARD && ($networkRequesterAttributes['value'] === $this->app['config']->get('gateway.mastercard.razorpay_requester_id'))))
                             {
-                                $this->core->update($networkAttributes,$requesterAttribute);
+                                $this->core->update($networkRequesterAttributes,$requesterAttribute);
+                                $networkNameAttributes = $this->entityRepo->getValueForProductGroupType($merchantId,Product::PRIMARY,$network,Type::MERCHANT_NAME);
+                                $this->core->update($networkNameAttributes,$nameAttribute);
+
                             }
                             else{
                                 $this->core->create($requesterAttribute,$merchant);
@@ -479,13 +482,15 @@ class Service extends Base\Service
     {
 
         try {
-            $mcIdentifier = $this->app['config']->get('gateway.mastercard.identifier_id');
-            $input = $this->getRequestBodyForMCIdentifier($merchant,$mcIdentifier);
+            $mcIdentifierId = $this->app['config']->get('gateway.mastercard.identifier_id');
+            $mcIdentifierName = $this->app['config']->get('gateway.mastercard.identifier_name');
+            $input = $this->getRequestBodyForMCIdentifier($merchant,$mcIdentifierId,$mcIdentifierName);
             $response = $this->app->mozart->sendMozartRequest('onboarding',self::MASTERCARD,'merchant_enrollment',$input);
 
             if ($response['data']['merchantData'][0]['status'] === "Successful")
             {
                 $mcRequesterId = $input['merchantData']['merchantID'];
+                $mcNameId = $input['merchantData']['merchantName'];
             }
             else
             {
@@ -508,20 +513,20 @@ class Service extends Base\Service
             Entity::PRODUCT     => Product::PRIMARY,
             Entity::GROUP       => Group::MASTERCARD,
             Entity::TYPE        => Type::MERCHANT_NAME,
-            Entity::VALUE       => $input['merchantData']['merchantName'],
+            Entity::VALUE       => $mcNameId,
         ];
 
         return [$requesterAttribute, $nameAttribute];
 
     }
 
-    protected function getRequestBodyForMCIdentifier($merchant,$mcIdentifier)
+    protected function getRequestBodyForMCIdentifier($merchant,$mcIdentifierId, $mcIdentifierName)
     {
         $billingLabel = $merchant->getBillingLabel();
         $merchantName = (isset($billingLabel) ? $billingLabel : $merchant->getName());
         $merchantData = [
-            'merchantID'            => $mcIdentifier.'_'.$merchant->getId(),
-            'merchantName'          => $mcIdentifier.'_'.$merchantName,
+            'merchantID'            => $mcIdentifierId.'_'.$merchant->getId(),
+            'merchantName'          => $mcIdentifierName.'_'.$merchantName,
         ];
         $input = [
             'merchantData'  => $merchantData,
@@ -568,7 +573,7 @@ class Service extends Base\Service
 
         }elseif ($network === Group::MASTERCARD){
             $requestorIdValue = $this->app['config']->get('gateway.mastercard.razorpay_requester_id');
-            $merchantNameValue = $this->app['config']->get('gateway.mastercard.identifier_id').'_'.$merchantNameValue;
+            $merchantNameValue = $this->app['config']->get('gateway.mastercard.razorpay_requester_name');
         }
 
         return [$requestorIdValue, $merchantNameValue];
