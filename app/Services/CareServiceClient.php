@@ -87,6 +87,17 @@ class CareServiceClient
     {
         $input = $this->addMerchantDetails($input);
 
+        if (isset($input['attachments']) === true)
+        {
+            foreach ($input['attachments'] as $key => $attachment)
+            {
+                $input['attachments'][$key] = [
+                    'file_name' => $attachment->getClientOriginalName(),
+                    'file' => base64_encode(file_get_contents($attachment))
+                ];
+            }
+        }
+
         if ($path == CareProxyController::CREATE_INSTANT_CALLBACK)
         {
             $this->app['trace']->info(TraceCode::CLICK_TO_CALL_REQUEST, [
