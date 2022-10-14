@@ -239,9 +239,7 @@ class Service extends Base\Service
             throw $e;
         }
 
-        $traceInfo = ['success' => $result, 'errorMessage' => $result !== true ? "Invalid merchant for migration" :null];
-        $this->trace->info(TraceCode::MIGRATE_RESELLER_TO_AGGREGATOR_SUCCESS, $traceInfo);
-        return $traceInfo;
+        return ['success' => $result, 'errorMessage' => $result !== true ? "Invalid merchant for migration" :null];
     }
 
     /**

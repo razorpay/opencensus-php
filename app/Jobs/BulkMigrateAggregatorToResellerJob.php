@@ -8,21 +8,30 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 
-class AggregatorToResellerUpdateJob extends Job
+class BulkMigrateAggregatorToResellerJob extends Job
 {
     const RETRY_INTERVAL    = 300;
 
-    const MAX_RETRY_ATTEMPT = 2;
+    const MAX_RETRY_ATTEMPT = 1;
 
     protected $queueConfigKey = 'commission';
 
     protected $merchantIds;
+    protected $retry;
 
-    public function __construct(array $merchantIds)
+    /**
+     * Create a new job instance.
+     * @param $merchantIds    array      An array containing merchant Ids
+     * @param $retry          int|null   Number of retries attempted
+     *
+     * @return void
+     */
+    public function __construct(array $merchantIds, int $retry = null)
     {
         parent::__construct();
 
         $this->merchantIds = $merchantIds;
+        $this->retry       = $retry ?? 0;
     }
 
     public function handle()
@@ -43,7 +52,7 @@ class AggregatorToResellerUpdateJob extends Job
         foreach ($this->merchantIds as $merchantId) {
             try
             {
-                $core->migrateAggregatorToReseller($merchantId);
+                $core->migrateAggregatorToResellerPartner($merchantId);
             }
             catch (\Throwable $e) {
                 $this->trace->traceException(
@@ -57,29 +66,11 @@ class AggregatorToResellerUpdateJob extends Job
             }
         }
 
+        if (count($failedMerchantIds) > 0 && $this->retry < self::MAX_RETRY_ATTEMPT)
+        {
+            BulkMigrateAggregatorToResellerJob::dispatch($failedMerchantIds, $this->retry + 1);
+        }
+
         $this->delete();
-
-        if (count($failedMerchantIds) > 0)
-        {
-            $this->checkRetry($failedMerchantIds);
-        }
-    }
-
-    protected function checkRetry(array $failedMerchantIds)
-    {
-        if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
-        {
-            $this->trace->error(TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_JOB_DELETE, [
-                'id'           => $failedMerchantIds,
-                'job_attempts' => $this->attempts(),
-                'message'      => 'Deleting the job after configured number of tries. Still unsuccessful.'
-            ]);
-
-            $this->delete();
-        }
-        else
-        {
-            $this->release(self::RETRY_INTERVAL);
-        }
     }
 }

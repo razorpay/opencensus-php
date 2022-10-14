@@ -16,6 +16,7 @@ use RZP\Models\VirtualAccount;
 use RZP\Jobs\SyncStakeholder;
 use RZP\Mail\User as UserMail;
 use \RZP\Models\BankingAccount;
+use RZP\Exception\LogicException;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Exception\BadRequestValidationFailureException;
 use Razorpay\OAuth\Application as OAuthApp;
@@ -76,7 +77,6 @@ use RZP\Exception\BadRequestException;
 use RZP\Mail\Merchant\PartnerOnBoarded;
 use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Mail\Payout\Payout as PayoutMail;
-use RZP\Jobs\AggregatorToResellerUpdateJob;
 use RZP\Jobs\BackFillReferredApplication;
 use RZP\Jobs\BackFillMerchantApplications;
 use RZP\Models\Comment\Core as CommentCore;
@@ -87,6 +87,7 @@ use RZP\Models\Schedule\Task as ScheduleTask;
 use Razorpay\OAuth\Exception\DBQueryException;
 use RZP\Models\Comment\Entity as CommentEntity;
 use RZP\Models\Partner\Config as PartnerConfig;
+use RZP\Jobs\BulkMigrateAggregatorToResellerJob;
 use RZP\Models\Workflow\Action as WorkflowAction;
 use RZP\Jobs\MerchantSupportingEntitiesCreateJob;
 use RZP\Models\Merchant\Request as MerchantRequest;
@@ -7910,13 +7911,21 @@ class Core extends Base\Core
 
         foreach ($batches as $batch)
         {
-            AggregatorToResellerUpdateJob::dispatch($batch);
+            BulkMigrateAggregatorToResellerJob::dispatch($batch);
         }
 
         $this->trace->info(TraceCode::BULK_MIGRATE_AGGREGATOR_TO_RESELLER_SUCCESS, $traceInfo);
     }
 
-    public function migrateAggregatorToReseller(string $merchantId)
+    /**
+     * Acquires mutex lock on reseller partner's merchantID and migrates to aggregator partner
+     *
+     * @param   string   $merchantId        Merchant ID of partner
+     *
+     * @return  bool
+     * @throws  Throwable|LogicException    It will throw an error when updating of partner mapping fails.
+     */
+    public function migrateAggregatorToResellerPartner(string $merchantId) : bool
     {
 
         $mutex = App::getFacadeRoot()['api.mutex'];
@@ -7927,13 +7936,23 @@ class Core extends Base\Core
             $mutexKey,
             function() use ($merchantId)
             {
-                return $this->processMigrateAggregatorToReseller($merchantId);
+                return $this->updateAggregatorToReseller($merchantId);
             },
             Constants::AGGREGATOR_TO_RESELLER_UPDATE_LOCK_TIME_OUT,
             ErrorCode::BAD_REQUEST_AGGREGATOR_TO_RESELLER_MIGRATION_IN_PROGRESS);
     }
 
-    private function processMigrateAggregatorToReseller(string $merchantId)
+    /**
+     * Validates partner's existing details and creates supporting entities as required
+     *
+     * @param   string   $merchantId    The partner.
+     *
+     * @return  bool
+     *
+     * @throws  LogicException
+     * @throws  Throwable
+     */
+    private function updateAggregatorToReseller(string $merchantId) : bool
     {
         $this->trace->info(
             TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_PARTNER_REQUEST,
@@ -7945,12 +7964,31 @@ class Core extends Base\Core
         {
             $this->trace->info(
                 TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_INVALID_PARTNER,
-                ['merchant_id' => $merchantId]);
-            $this->trace->count(Metric::AGGREGATOR_TO_RESELLER_MIGRATION_FAILURE,['code' => TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_INVALID_PARTNER]);
-            return;
+                [ 'merchant_id' => $merchantId  ]
+            );
+            $this->trace->count(
+                Metric::AGGREGATOR_TO_RESELLER_MIGRATION_FAILURE,
+                [ 'code' => TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_INVALID_PARTNER ]
+            );
+
+            return false;
         }
 
-        return $this->validateAndUpdateAggregatorToResellerEntities($merchant);
+        $result = $this->validateAndUpdateAggregatorToResellerEntities($merchant);
+
+        if ($result === true)
+        {
+            $this->trace->info(TraceCode::MIGRATE_AGGREGATOR_TO_RESELLER_SUCCESS, ['merchant_id' => $merchant->getId()]);
+            $this->trace->count(Metric::AGGREGATOR_TO_RESELLER_MIGRATION_SUCCESS);
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_ERROR,
+                ['merchant_id' => $merchant->getId()]
+            );
+        }
+        return $result;
     }
 
     private function updateExistingApplicationMappings(string $existingAppId, string $updatedAppId, Base\PublicCollection $accessMaps, bool $managedApp = false )
@@ -7997,18 +8035,17 @@ class Core extends Base\Core
             }
             $managedAppId = $applications->where(MerchantApplicationsEntity::TYPE, MerchantApplicationsEntity::MANAGED)
                                          ->pluck(MerchantApplicationsEntity::APPLICATION_ID)->first();
-
             $existingAppIds = $applications->pluck(MerchantApplicationsEntity::APPLICATION_ID)->toArray();
 
             foreach ($existingAppIds as $existingAppId)
             {
                 $configs = $this->repo->partner_config->fetchAllConfigsInSyncOrFail([$existingAppId]);
-
                 $accessMaps[$existingAppId] = $this->repo->merchant_access_map->fetchAccessMapsInSyncOrFail(
                     $existingAppId, $partner->getId()
                 );
-
-                $subMerchants[$existingAppId] = $this->repo->merchant->getSubMerchantsForPartnerAndAppInSyncOrFail($existingAppId, $partner->getId());
+                $subMerchants[$existingAppId] = $this->repo->merchant->getSubMerchantsForPartnerAndAppInSyncOrFail(
+                    $existingAppId, $partner->getId()
+                );
             }
 
             return $this->createAndUpdateAggregatorToResellerEntities(
@@ -8018,7 +8055,10 @@ class Core extends Base\Core
         catch (Exception\LogicException $e)
         {
             $this->trace->error(TraceCode::AGGREGATOR_TO_RESELLER_DATA_MISMATCH);
-            $this->trace->count(Metric::AGGREGATOR_TO_RESELLER_MIGRATION_FAILURE,['code' => TraceCode::AGGREGATOR_TO_RESELLER_DATA_MISMATCH]);
+            $this->trace->count(
+                Metric::AGGREGATOR_TO_RESELLER_MIGRATION_FAILURE,
+                ['code' => TraceCode::AGGREGATOR_TO_RESELLER_DATA_MISMATCH]
+            );
             throw $e;
         }
     }
@@ -8049,8 +8089,9 @@ class Core extends Base\Core
         {
             $this->repo->transactionOnLiveAndTest(function() use ($partner, $app, $existingAppIds, $accessMaps, $subMerchants, $managedAppId)
             {
-                $this->createMerchantApplication($partner, $app[OAuthApp\Entity::ID], MerchantApplicationsEntity::REFERRED);
-
+                $this->createMerchantApplication(
+                    $partner, $app[OAuthApp\Entity::ID], MerchantApplicationsEntity::REFERRED
+                );
                 $this->trace->info(TraceCode::AGGREGATOR_TO_RESELLER_APPLICATION_CREATED, [
                         'old_application_ids' => $existingAppIds,
                         'new_application_id' => $app[OAuthApp\Entity::ID]
@@ -8059,16 +8100,15 @@ class Core extends Base\Core
 
                 foreach ($existingAppIds as $existingAppId)
                 {
-                    $managedApp = ($managedAppId === $existingAppId);
-
-                    $this->updateExistingApplicationMappings($existingAppId, $app[OAuthApp\Entity::ID], $accessMaps[$existingAppId], $managedApp);
-
+                    $isManagedApp = ($managedAppId === $existingAppId);
+                    $this->updateExistingApplicationMappings(
+                        $existingAppId, $app[OAuthApp\Entity::ID], $accessMaps[$existingAppId], $isManagedApp
+                    );
                     // delete merchant and application mapping
                     (new MerchantApplications\Core)->deleteByApplication($existingAppId);
                 }
 
                 $partner->setPartnerType(Constants::RESELLER);
-
                 $this->repo->merchant->saveOrFail($partner);
 
                 $this->deletePartnerDashboardAccessOnSubmerchants($partner, $subMerchants[$managedAppId]);
@@ -8081,7 +8121,8 @@ class Core extends Base\Core
 
             $this->trace->info(
                 TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_PARTNER_SUCCESS,
-                ['merchant_id' => $partner->getId()]);
+                ['merchant_id' => $partner->getId()]
+            );
         } catch (\Throwable $e)
         {
             app('authservice')->deleteApplication($app[OAuthApp\Entity::ID], $partner->getId(), false);
@@ -8090,7 +8131,10 @@ class Core extends Base\Core
                 TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_ERROR,
                 [ 'error' => $e ]
             );
-            $this->trace->count(Metric::AGGREGATOR_TO_RESELLER_MIGRATION_FAILURE,['code' => TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_ERROR]);
+            $this->trace->count(
+                Metric::AGGREGATOR_TO_RESELLER_MIGRATION_FAILURE,
+                ['code' => TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_ERROR]
+            );
             throw $e;
         }
         return true;

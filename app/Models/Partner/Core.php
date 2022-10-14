@@ -20,6 +20,7 @@ use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Error\ErrorCode;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Entity as E;
+use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\AutoKyc;
@@ -980,7 +981,7 @@ class Core extends Detail\Core
      * @throws  LogicException
      * @throws  Throwable
      */
-    private function updateResellerToAggregator(string $merchantId, bool $newAuthCreate)
+    private function updateResellerToAggregator(string $merchantId, bool $newAuthCreate) : bool
     {
         $merchant = $this->repo->merchant->find($merchantId);
         if ($merchant === null || $merchant->isResellerPartner() === false) {
@@ -988,6 +989,12 @@ class Core extends Detail\Core
                 TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_INVALID_PARTNER,
                 ['merchant_id' => $merchantId]
             );
+
+            $this->trace->count(
+                Metric::RESELLER_TO_AGGREGATOR_MIGRATION_FAILURE,
+                [ 'code' => TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_INVALID_PARTNER ]
+            );
+
             return false;
         }
 
@@ -1005,10 +1012,8 @@ class Core extends Detail\Core
 
         if ($result === true)
         {
-            $this->trace->info(
-                TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_PARTNER_SUCCESS,
-                ['merchant_id' => $merchant->getId()]
-            );
+            $this->trace->info(TraceCode::MIGRATE_RESELLER_TO_AGGREGATOR_SUCCESS, ['merchant_id' => $merchant->getId()]);
+            $this->trace->count(Metric::RESELLER_TO_AGGREGATOR_MIGRATION_SUCCESS, ['newAuthCreate' => $newAuthCreate]);
         }
         else
         {
@@ -1056,6 +1061,10 @@ class Core extends Detail\Core
         catch (Exception\LogicException $e)
         {
             $this->trace->error(TraceCode::RESELLER_TO_AGGREGATOR_DATA_MISMATCH);
+            $this->trace->count(
+                Metric::RESELLER_TO_AGGREGATOR_MIGRATION_FAILURE,
+                ['code' => TraceCode::RESELLER_TO_AGGREGATOR_DATA_MISMATCH]
+            );
             throw $e;
         }
     }
@@ -1101,6 +1110,10 @@ class Core extends Detail\Core
         catch (Exception\LogicException $e)
         {
             $this->trace->error(TraceCode::RESELLER_TO_AGGREGATOR_DATA_MISMATCH);
+            $this->trace->count(
+                Metric::RESELLER_TO_AGGREGATOR_MIGRATION_FAILURE,
+                ['code' => TraceCode::RESELLER_TO_AGGREGATOR_DATA_MISMATCH]
+            );
             throw $e;
         }
     }
@@ -1175,6 +1188,7 @@ class Core extends Detail\Core
         $newReferredAppId = $this->merchantCore->createPartnerApp(
             $partner, [OAuthApp\Entity::NAME => Merchant\Entity::REFERRED_APPLICATION]
         )[OAuthApp\Entity::ID];
+
         try
         {
             $this->repo->transactionOnLiveAndTest(function () use (
@@ -1187,6 +1201,11 @@ class Core extends Detail\Core
                 );
                 app('authservice')->deleteApplication($existingAppId, $partner->getId());
             });
+
+            $this->trace->info(
+                TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_PARTNER_SUCCESS,
+                ['merchant_id' => $partner->getId()]
+            );
         } catch (Throwable $e)
         {
             app('authservice')->deleteApplication($newManagedAppId, $partner->getId(), false);
@@ -1196,6 +1215,11 @@ class Core extends Detail\Core
                 TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_ERROR,
                 [ 'error' => $e ]
             );
+            $this->trace->count(
+                Metric::RESELLER_TO_AGGREGATOR_MIGRATION_FAILURE,
+                ['code' => TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_ERROR]
+            );
+
             throw $e;
         }
         return true;
@@ -1238,6 +1262,11 @@ class Core extends Detail\Core
 
                 $this->merchantAppCore->deleteMultipleApplications($existingAppIds);
             });
+
+            $this->trace->info(
+                TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_PARTNER_SUCCESS,
+                ['merchant_id' => $partner->getId()]
+            );
         } catch (Throwable $e)
         {
             // This is to restore the Auth Service changes if any DB change fails
@@ -1247,6 +1276,11 @@ class Core extends Detail\Core
                 TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_ERROR,
                 [ 'error' => $e ]
             );
+            $this->trace->count(
+                Metric::RESELLER_TO_AGGREGATOR_MIGRATION_FAILURE,
+                ['code' => TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_ERROR]
+            );
+
             throw $e;
         }
         return true;

@@ -12,24 +12,27 @@ class BulkMigrateResellerToAggregatorJob extends Job
 {
     const RETRY_INTERVAL    = 300;
 
-    const MAX_RETRY_ATTEMPT = 2;
+    const MAX_RETRY_ATTEMPT = 1;
 
     protected $queueConfigKey = 'commission';
 
     protected $requestParams;
+    protected $retry;
 
     /**
      * Create a new job instance.
      * @param $requestParams  array[ 'merchant_id' => string, 'new_auth_create' => bool ]  An associative array containing params to be set in
      *                                                                                     the requestParams instance variable that is required to run the job
+     * @param $retry          int|null   Number of retries attempted
      *
      * @return void
      */
-    public function __construct(array $requestParams)
+    public function __construct(array $requestParams, int $retry = null)
     {
         parent::__construct();
 
         $this->requestParams = $requestParams;
+        $this->retry         = $retry ?? 0;
     }
 
     public function handle()
@@ -37,24 +40,19 @@ class BulkMigrateResellerToAggregatorJob extends Job
         parent::handle();
 
         $traceInfo = ['request_params' => $this->requestParams];
-
         $this->trace->info(
             TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_JOB_REQUEST,
             $traceInfo
         );
 
-        $failedMerchantIds = [];
+        $failedParams = [];
 
         $core = new Partner\Core();
 
         foreach ($this->requestParams as $param) {
             try
             {
-                $success = $core->migrateResellerToAggregatorPartner($param);
-                if ($success === false)
-                {
-                    $failedMerchantIds[] = $param['merchant_id'];
-                }
+                $core->migrateResellerToAggregatorPartner($param);
             }
             catch (\Throwable $e)
             {
@@ -68,33 +66,15 @@ class BulkMigrateResellerToAggregatorJob extends Job
                     ]
                 );
 
-                $failedMerchantIds[] = $param['merchant_id'];
+                $failedParams[] = $param;
             }
         }
 
+        if (count($failedParams) > 0 && $this->retry < self::MAX_RETRY_ATTEMPT)
+        {
+            BulkMigrateResellerToAggregatorJob::dispatch($failedParams, $this->retry + 1);
+        }
+
         $this->delete();
-
-        if (count($failedMerchantIds) > 0)
-        {
-            $this->checkRetry($failedMerchantIds);
-        }
-    }
-
-    protected function checkRetry(array $failedMerchantIds)
-    {
-        if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
-        {
-            $this->trace->error(TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_JOB_DELETE, [
-                'id'           => $failedMerchantIds,
-                'job_attempts' => $this->attempts(),
-                'message'      => 'Deleting the job after configured number of tries. Still unsuccessful.'
-            ]);
-
-            $this->delete();
-        }
-        else
-        {
-            $this->release(self::RETRY_INTERVAL);
-        }
     }
 }

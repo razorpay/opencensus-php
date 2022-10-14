@@ -392,14 +392,18 @@ class Stork
     {
         $webhooks = $this->list($ownerId)['items'];
 
-        $this->trace->info(
-            TraceCode::STORK_INVALIDATE_AFFECTED_OWNERS_CACHE_REQ,
-            ['webhooks' => $webhooks]
-        );
-
-        foreach ($webhooks as $webhook)
+        while (count($webhooks) > 0)
         {
-            $this->delete($webhook['id'], $ownerId);
+            $this->trace->info(
+                TraceCode::STORK_INVALIDATE_AFFECTED_OWNERS_CACHE_REQ,
+                ['application_id' => $ownerId, 'webhooks' => $webhooks]
+            );
+
+            foreach ($webhooks as $webhook)
+            {
+                $this->delete($webhook['id'], $ownerId);
+            }
+            $webhooks = $this->list($ownerId)['items'];
         }
     }
 }

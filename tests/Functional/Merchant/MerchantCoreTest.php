@@ -49,7 +49,7 @@ class MerchantCoreTest extends OAuthTestCase
 
         $this->createCommissionForPartner($merchantId, $submerchantId, $newAppId);
 
-        $this->core->migrateAggregatorToReseller($merchantId);
+        $this->core->migrateAggregatorToResellerPartner($merchantId);
 
         // partner type should be updated as reseller
         $merchant = $this->getDbEntityById('merchant', $merchantId);
@@ -119,7 +119,7 @@ class MerchantCoreTest extends OAuthTestCase
 
         $this->expectErrorMessage("Data is not synced on Live and Test DB");
 
-        $this->core->migrateAggregatorToReseller($merchantId);
+        $this->core->migrateAggregatorToResellerPartner($merchantId);
     }
 
     public function testDeleteSwitchMerchantAccessForPartner()

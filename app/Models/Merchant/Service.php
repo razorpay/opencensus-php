@@ -10244,24 +10244,23 @@ class Service extends Base\Service
         {
             return ['success' => true, 'errorMessage' => "Merchant is not allowed for migration"];
         }
+
         $this->trace->info(TraceCode::MIGRATE_AGGREGATOR_TO_RESELLER_REQUEST, $input);
 
         (new Validator())->validateInput('aggregatorToResellerMigration', $input);
 
         $result = null;
 
-        try {
-            $result = $this->core()->migrateAggregatorToReseller($merchantId);
-
-            $this->trace->info(TraceCode::MIGRATE_AGGREGATOR_TO_RESELLER_SUCCESS, ['$input' => $input, '$result' => $result]);
-
-            $this->trace->count(Metric::AGGREGATOR_TO_RESELLER_MIGRATION_SUCCESS);
+        try
+        {
+            $result = $this->core()->migrateAggregatorToResellerPartner($merchantId);
         }
         catch (\Throwable $e)
         {
             $this->trace->traceException($e, Trace::ERROR, TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_ERROR, $input);
             throw $e;
         }
+
         return ['success' => $result, 'errorMessage' => $result !== true ? "Invalid merchant for migration" :null];
     }
 
