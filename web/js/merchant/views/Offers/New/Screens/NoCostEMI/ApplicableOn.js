@@ -4,7 +4,7 @@ import Amount from 'common/ui/Amount';
 
 import { PAYMENT_NETWORK_MAP, ISSUERS } from 'merchant/views/Offers/constants';
 import { rupeesToPaise } from 'common/utils/rzp-utils';
-import { DocLink } from 'merchant/components/DocsLink'
+import { DocLink } from 'merchant/components/DocsLink';
 
 const NetworksAndIssuers = { ...PAYMENT_NETWORK_MAP, ...ISSUERS };
 
@@ -19,9 +19,11 @@ export default class ApplicableOn extends React.Component {
         label: '--Select Issuer--',
       },
     ];
+    this.CO_BRANDING_PARTNERS = ['onecard'];
 
     Object.entries(props.emiData.emi_plans).forEach(([issuer, issuerData]) => {
-      if (issuerData.min_amount <= rupeesToPaise(props.minAmount)) {
+      const isCobrandingPartner = this.CO_BRANDING_PARTNERS.includes(issuer);
+      if (!isCobrandingPartner && issuerData.min_amount <= rupeesToPaise(props.minAmount)) {
         this.ISSUERS_OPTIONS.push({
           name: issuer,
           label: NetworksAndIssuers[issuer] || issuer,
