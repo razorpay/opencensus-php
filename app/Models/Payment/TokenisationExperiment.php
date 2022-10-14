@@ -169,6 +169,7 @@ class TokenisationExperiment
      */
     public function shouldProvisionGlobalToken(Card\Entity $card): bool
     {
+        return false;
         try
         {
             $variant = $this->app->razorx->getTreatment(
@@ -236,7 +237,7 @@ class TokenisationExperiment
             );
         }
 
-        return false;
+        return true;
     }
 
     /**
@@ -244,7 +245,7 @@ class TokenisationExperiment
      * non-compliant to RBI's tokenisation guidelines from the output.
      *
      * If exp fails, By default function will return true i.e, non-compliant cards will be removed.
-     * 
+     *
      * @param string $merchantId
      *
      * @return bool
