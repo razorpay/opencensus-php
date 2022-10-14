@@ -534,14 +534,6 @@ class Processor
                 return false;
             }
 
-            if ($this->isPaymentViaTokenisedCard($input))
-            {
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::NON_SAVED_TOKENISED_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-
-                return ($result === 'on');
-            }
-
-
             if (empty($input[Payment\Entity::ORDER_ID]) === false)
             {
                 $order = $this->fetchOrderFromInput($input);
@@ -632,6 +624,13 @@ class Processor
                 ((bool) Admin\ConfigKey::get(Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED, false) === false))
             {
                 return false;
+            }
+
+            if ($this->isPaymentViaTokenisedCard($input))
+            {
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::NON_SAVED_TOKENISED_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+                return ($result === 'on');
             }
 
             if ($merchant->isFeatureEnabled('raas') === true)
