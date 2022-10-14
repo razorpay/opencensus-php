@@ -140,8 +140,8 @@ class Repository extends Base\Repository
 
     public function getUserFromEmailCaseInsensitive(string $email)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
-                    ->whereRaw('LOWER('.Entity::EMAIL.') = (?)', [mb_strtolower($email)])
+        return $this->newQuery()
+                    ->whereRaw('lower('.Entity::EMAIL.') = (?)', [mb_strtolower($email)])
                     ->first();
     }
 
