@@ -77,8 +77,7 @@ class Service extends Base\Service
         }
 
         $orgId = $input[BankAccount\Entity::ENTITY_ID];
-
-        if ($sessionOrgId !== $input[BankAccount\Entity::ENTITY_ID])
+        if (($sessionOrgId !== $input[BankAccount\Entity::ENTITY_ID]) and ($sessionOrgId !== Constants::RZP))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
         }
@@ -108,7 +107,7 @@ class Service extends Base\Service
 
     public function updateOrgBankAccount($id, $input, $sessionOrgId)
     {
-        if ($sessionOrgId !== $id)
+        if (($sessionOrgId !== $id) and ($sessionOrgId !== Constants::RZP))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
         }
@@ -132,7 +131,7 @@ class Service extends Base\Service
 
     public function getOrgBankAccount($entity_id, $sessionOrgId)
     {
-        if ($sessionOrgId !== $entity_id)
+        if (($sessionOrgId !== $entity_id) and ($sessionOrgId !== Constants::RZP))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
         }

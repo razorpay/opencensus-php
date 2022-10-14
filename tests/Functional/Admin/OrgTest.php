@@ -57,13 +57,17 @@ class OrgTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateOrgBankAccountFailureWithSessionAuth()
+    public function testCreateOrgBankAccount2()
     {
         $this->mockSettlementsForOrgBankAccount();
 
+        $this->fixtures->create('org', [
+           'id' => '100001razorpay'
+        ]);
+
         $this->fixtures->create('feature', [
             'name' => Feature\Constants::ENABLE_ORG_ACCOUNT,
-            'entity_id' => '100000razorpay',
+            'entity_id' => '100001razorpay',
             'entity_type' => 'org',
         ]);
 
@@ -71,7 +75,6 @@ class OrgTest extends TestCase
 
         $this->startTest();
     }
-
 
     public function testCreateOrgBankAccountFailureWithFeatureFlag()
     {
@@ -93,17 +96,17 @@ class OrgTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetOrgBankAccounttFailureWithSessionAuth()
+
+    public function testGetOrgBankAccount2()
     {
         $this->mockSettlementsForOrgBankAccount();
 
-        $this->testCreateOrgBankAccount();
+        $this->testCreateOrgBankAccount2();
 
         $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
 
         $this->startTest();
     }
-
 
     public function testUpdateOrgBankAccount()
     {
@@ -114,15 +117,13 @@ class OrgTest extends TestCase
         $this->startTest();
     }
 
-    public function testUpdateOrgBankAccountWithSessionAuth()
+    public function testUpdateOrgBankAccount2()
     {
-        $this->mockSettlementsForOrgBankAccount();
-
-        $this->testCreateOrgBankAccount();
+        $this->testCreateOrgBankAccount2();
 
         $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
 
-        $this->startTest();
+       $this->startTest();
     }
 
     public function testCreateOrg()
