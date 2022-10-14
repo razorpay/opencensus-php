@@ -645,12 +645,25 @@ class PartnerActivationTest extends OAuthTestCase
 
         if ($registeredBusinessType === true)
         {
-            $promoterDetails = ['company_pan' => 'EBPCK8222K'];
+            $promoterDetails = [
+                'company_pan'                    => 'EBPCK8222K',
+                'business_registered_address'    => '507, Koramangala 1st block',
+                'business_registered_pin'        => '560034',
+                'business_registered_city'       => 'Bengaluru',
+                'business_registered_state'      => 'KA'
+            ];
             $payload         = array_merge($payload, $promoterDetails);
         }
         else
         {
-            $promoterDetails = ['promoter_pan' => 'EBPPK8222K', 'promoter_pan_name' => 'User 1'];
+            $promoterDetails = [
+                'promoter_pan'                  => 'EBPPK8222K',
+                'promoter_pan_name'             => 'User 1',
+                'business_operation_address'    => '507, Koramangala 1st block',
+                'business_operation_pin'        => '560034',
+                'business_operation_city'       => 'Bengaluru',
+                'business_operation_state'      => 'KA'
+            ];
             $payload         = array_merge($payload, $promoterDetails);
         }
 
@@ -678,6 +691,7 @@ class PartnerActivationTest extends OAuthTestCase
             $payload = [
                 'company_pan_verification_status'  => $status,
                 'bank_details_verification_status' => $status,
+                'poa_verification_status'          => $status,
             ];
         }
         else
@@ -685,6 +699,7 @@ class PartnerActivationTest extends OAuthTestCase
             $payload = [
                 'poi_verification_status'          => $status,
                 'bank_details_verification_status' => $status,
+                'poa_verification_status'          => $status,
             ];
         }
 

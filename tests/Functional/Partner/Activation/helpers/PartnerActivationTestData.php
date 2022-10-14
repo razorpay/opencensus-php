@@ -72,6 +72,10 @@ return [
             'content' => [
                 'promoter_pan'      => 'EBPPK8222K',
                 'promoter_pan_name' => 'User 1',
+                'business_operation_address'    => '507, Koramangala 1st block',
+                'business_operation_pin'        => '560034',
+                'business_operation_city'       => 'Bengaluru',
+                'business_operation_state'      => 'KA'
             ]
         ],
         'response' => [
@@ -80,7 +84,7 @@ return [
                     'merchant_id'  => '1cXSLlUU8V9sXl',
                     'hold_funds'   => false,
                     'verification' => [
-                        'activation_progress' => 60,
+                        'activation_progress' => 78,
                         'status'              => 'disabled',
                         'required_fields'     => ['bank_account_number', 'bank_branch_ifsc'],
                     ],
@@ -95,9 +99,13 @@ return [
             'url'     => '/partner/activation',
             'method'  => 'POST',
             'content' => [
-                'bank_account_name'   => 'User 1',
-                'bank_account_number' => '051610000039259',
-                'bank_branch_ifsc'    => 'UBIN0805165',
+                'bank_account_name'              => 'User 1',
+                'bank_account_number'            => '051610000039259',
+                'bank_branch_ifsc'               => 'UBIN0805165',
+                'business_registered_address'    => '507, Koramangala 1st block',
+                'business_registered_pin'        => '560034',
+                'business_registered_city'       => 'Bengaluru',
+                'business_registered_state'      => 'KA'
             ]
         ],
         'response' => [
@@ -106,7 +114,7 @@ return [
                     'merchant_id'  => '1cXSLlUU8V9sXl',
                     'hold_funds'   => false,
                     'verification' => [
-                        'activation_progress' => 80,
+                        'activation_progress' => 89,
                         'status'              => 'disabled',
                         'required_fields'     => ['company_pan'],
                     ],
@@ -268,11 +276,15 @@ return [
             'url'     => '/partner/activation',
             'method'  => 'POST',
             'content' => [
-                'bank_account_name'   => 'User 1',
-                'bank_account_number' => '051610000039259',
-                'bank_branch_ifsc'    => 'UBIN0805165',
-                'promoter_pan'        => 'EBPPK8222K',
-                'promoter_pan_name'   => 'User 1',
+                'bank_account_name'             => 'User 1',
+                'bank_account_number'           => '051610000039259',
+                'bank_branch_ifsc'              => 'UBIN0805165',
+                'promoter_pan'                  => 'EBPPK8222K',
+                'promoter_pan_name'             => 'User 1',
+                'business_operation_address'    => '507, Koramangala 1st block',
+                'business_operation_pin'        => '560034',
+                'business_operation_city'       => 'Bengaluru',
+                'business_operation_state'      => 'KA'
             ]
         ],
         'response' => [

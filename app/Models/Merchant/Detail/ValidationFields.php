@@ -450,9 +450,25 @@ class ValidationFields
             case BusinessType::INDIVIDUAL:
             case BusinessType::NOT_YET_REGISTERED:
             case BusinessType::PROPRIETORSHIP:
-                return [Entity::PROMOTER_PAN, Entity::PROMOTER_PAN_NAME, Entity::BANK_ACCOUNT_NAME, Entity::BANK_ACCOUNT_NUMBER, Entity::BANK_BRANCH_IFSC];
+                return [Entity::PROMOTER_PAN,
+                        Entity::PROMOTER_PAN_NAME,
+                        Entity::BANK_ACCOUNT_NAME,
+                        Entity::BANK_ACCOUNT_NUMBER,
+                        Entity::BANK_BRANCH_IFSC,
+                        Entity::BUSINESS_OPERATION_ADDRESS,
+                        Entity::BUSINESS_OPERATION_PIN,
+                        Entity::BUSINESS_OPERATION_CITY,
+                        Entity::BUSINESS_OPERATION_STATE];
             default:
-                return [Entity::COMPANY_PAN, Entity::BUSINESS_NAME, Entity::BANK_ACCOUNT_NAME, Entity::BANK_ACCOUNT_NUMBER, Entity::BANK_BRANCH_IFSC];
+                return [Entity::COMPANY_PAN,
+                        Entity::BUSINESS_NAME,
+                        Entity::BANK_ACCOUNT_NAME,
+                        Entity::BANK_ACCOUNT_NUMBER,
+                        Entity::BANK_BRANCH_IFSC,
+                        Entity::BUSINESS_REGISTERED_ADDRESS,
+                        Entity::BUSINESS_REGISTERED_PIN,
+                        Entity::BUSINESS_REGISTERED_CITY,
+                        Entity::BUSINESS_REGISTERED_STATE];
         }
     }
 

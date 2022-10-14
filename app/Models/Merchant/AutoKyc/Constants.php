@@ -217,7 +217,10 @@ class Constants
         BusinessType::NOT_YET_REGISTERED => [
             Operator:: AND => [
                 Entity::POI_VERIFICATION_STATUS => self::POI_CONDITION,
-                Operator:: AND                  => self::BANK_DETAILS_VERIFICATION_CONDITION
+                Operator:: AND                          => [
+                    Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION,
+                    Operator:: OR  => self::POA_VERIFICATION_CONDITION
+                ]
             ]
         ],
 
@@ -225,7 +228,10 @@ class Constants
             Operator:: AND => [
                 Entity::POI_VERIFICATION_STATUS   => self::POI_CONDITION,
                 Entity::GSTIN_VERIFICATION_STATUS => self::GSTIN_CONDITION,
-                Operator:: AND                    => self::BANK_DETAILS_VERIFICATION_CONDITION
+                Operator:: AND                          => [
+                    Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION,
+                    Operator:: OR  => self::POA_VERIFICATION_CONDITION
+                ]
             ]
         ],
 
@@ -233,7 +239,10 @@ class Constants
             Operator:: AND => [
                 Entity::COMPANY_PAN_VERIFICATION_STATUS => self::COMPANY_PAN_CONDITION,
                 Entity::GSTIN_VERIFICATION_STATUS       => self::GSTIN_CONDITION,
-                Operator:: AND                          => self::BANK_DETAILS_VERIFICATION_CONDITION
+                Operator:: AND                          => [
+                    Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION,
+                    Operator:: OR  => self::POA_VERIFICATION_CONDITION
+                ]
             ]
         ]
     ];
