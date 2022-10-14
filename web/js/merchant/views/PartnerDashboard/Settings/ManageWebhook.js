@@ -22,15 +22,15 @@ export default class ManageWebhook extends Component {
 
   render() {
     return (
-      <>
+      <div>
         {this.state.loading ? (
-          <div class="page-spinner-container">
+          <div>
             <Spinner />
           </div>
         ) : (
           <AddEditWebhook webhook={this.state.webhook} {...this.props} />
         )}
-      </>
+      </div>
     );
   }
 }

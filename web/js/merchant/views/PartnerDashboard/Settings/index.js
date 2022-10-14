@@ -11,7 +11,7 @@ import DetailRow from 'merchant/components/DetailRow';
 import ManageWebhook from './ManageWebhook';
 import ViewCredentials from './ViewCredentials';
 
-import { trackSettingsEvents } from '../ga';
+import { trackSettingsEvents } from 'merchant/views/PartnerDashboard/ga';
 
 @connect(
   (state) => ({
@@ -46,7 +46,6 @@ export default class SettingsContainer extends Component {
     const type = mode === 'test' ? 'dev' : 'prod';
     const { clientCredentials } = this.props.application;
     this.props.openModal({
-      size: 'small',
       component: <ViewCredentials mode={mode} credentials={clientCredentials[type]} />,
     });
   };
