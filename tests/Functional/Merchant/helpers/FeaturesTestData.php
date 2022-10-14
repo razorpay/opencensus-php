@@ -497,17 +497,17 @@ return [
                         'value'        => false,
                         'display_name' => 'Smart Collect'
                     ],
-                    148 => array (
+                    149 => array (
                         'feature' => 'view_opfin_sso_announcement',
                         'value' => true,
                         'display_name' => 'View opfin sso announcemnet',
                     ),
-                    149 => array (
+                    150 => array (
                         'feature' => 'view_ssl_banner',
                         'value' => true,
                         'display_name' => 'View SSL banner',
                     ),
-                    150 => array (
+                    151 => array (
                         'feature' => 'view_onboarding_cards',
                         'value' => true,
                         'display_name' => 'View onboarding cards',

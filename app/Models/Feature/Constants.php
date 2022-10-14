@@ -517,6 +517,11 @@ class Constants
     const WITHDRAWAL_ES_AMAZON = 'withdrawal_es_amazon';
 
     /**
+     * Gives access to loc cli offer
+     */
+    const LOC_CLI_OFFER = 'loc_cli_offer';
+
+    /**
      * Enables Cash Advance merchants to see lender migration specific details
      */
     const LOC_ESIGN = 'loc_esign';
@@ -1923,6 +1928,7 @@ class Constants
         self::WITHDRAW_LOC                    => true,
         self::CASH_ON_CARD                    => true,
         self::WITHDRAWAL_ES_AMAZON            => true,
+        self::LOC_CLI_OFFER                   => true,
         self::LOC_ESIGN                       => true,
         self::LOC_FIRST_WITHDRAWAL            => true,
         self::CAPITAL_CARDS                   => true,
@@ -2406,6 +2412,11 @@ class Constants
         self::WITHDRAWAL_ES_AMAZON              => [
             'feature'       => self::WITHDRAWAL_ES_AMAZON,
             'display_name'  => 'Withdraw Loc for ES Amazon',
+            'documentation' => '',
+        ],
+        self::LOC_CLI_OFFER              => [
+            'feature'       => self::LOC_CLI_OFFER,
+            'display_name'  => 'LOC CLI Offer',
             'documentation' => '',
         ],
         self::LOC_ESIGN              => [
