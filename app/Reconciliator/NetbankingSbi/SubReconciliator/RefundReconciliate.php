@@ -6,6 +6,8 @@ use RZP\Trace\TraceCode;
 use RZP\Gateway\Netbanking;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Payment\Gateway;
+use RZP\Reconciliator\Base\InfoCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ReconciliationException;
 use RZP\Gateway\Netbanking\Sbi\ReconFields\RefundReconFields;
@@ -216,11 +218,10 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
             [
                 'message'         => 'Set Gateway Refunded of refund',
                 'info_code'       => Base\InfoCode::RECON_GATEWAY_REFUNDED,
-                'payment_id'      => $this->payment->getId(),
-                'refund'          => $this->refund->getId(),
+                'payment_id'      => $refund->getPaymentId(),
+                'refund'          => $refund->getId(),
                 'status'          => $status,
-                'gateway'         => $this->gateway,
-
+                'gateway'         => Gateway::NETBANKING_SBI,
             ]);
 
         $refund->setGatewayRefunded($status);
@@ -270,5 +271,104 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         }
 
         return $rowDetails;
+    }
+
+    /**
+     * @param array $scroogeReconData
+     * @return array|null
+     */
+    public function handleGateway(array $scroogeReconData): array
+    {
+        $paymentId      = $scroogeReconData['payment_id'] ?? null;
+
+        $sequenceNumber = $scroogeReconData['gateway_keys']['sequence_no'] ?? null;
+
+        if ((empty($paymentId) === true) or (empty($sequenceNumber) === true))
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO,
+                [
+                    'message'         => 'Sequence number or payment id not found',
+                    'payment_id'      => $paymentId,
+                    'refund'          => $sequenceNumber,
+                    'gateway'         => Gateway::NETBANKING_SBI,
+                ]);
+            return [];
+        }
+
+        $sequenceNumber = (int) $sequenceNumber;
+
+        $refundId = null;
+
+        try
+        {
+            $refund = $this->repo->refund->findByPaymentIdAndReference3($paymentId, $sequenceNumber);
+
+            $refundId = $refund->getId();
+
+            $scroogeReconData['refund_id'] = $refundId;
+
+            return $this->handleStatus($scroogeReconData, $refund);
+        }
+        catch (BadRequestException $ex)
+        {
+            $this->trace->alert(
+                TraceCode::RECON_MISMATCH,
+                [
+                    'info_code'             => InfoCode::REFUND_ABSENT,
+                    'payment_id'            => $paymentId,
+                    'sequence_number'       => $sequenceNumber,
+                    'data'                  => $scroogeReconData
+                ]);
+
+        }
+        return [];
+    }
+
+    /**
+     * @param array $scroogeReconData
+     * @param $refundEntity
+     * @return array
+     * @throws \Throwable
+     */
+    private function handleStatus(array $scroogeReconData, $refundEntity): array
+    {
+        $status = strtolower($scroogeReconData['gateway_keys']['gateway_status']);
+
+        $this->trace->info(
+            TraceCode::RECON_INFO,
+            [
+                'message'         => 'Gateway status handle',
+                'gateway_status'  => $status,
+                'gateway'         => Gateway::NETBANKING_SBI,
+            ]);
+
+        if($status === self::SUCCESS)
+        {
+            unset($scroogeReconData['gateway_keys']['sequence_no']);
+
+            $scroogeReconData['status'] = Refund\Status::PROCESSED;
+
+            $this->setGatewayRefunded(true, $refundEntity);
+        }
+        else
+        {
+            $payment = $this->repo->payment->findOrFail($refundEntity->getPaymentId());
+
+            $newSeqNo = Refund\Core::getNewRefundSequenceNumberForPayment($payment);
+
+            $refundEntity->setReference3($newSeqNo);
+
+            $scroogeReconData['gateway_keys']['sequence_no'] = $newSeqNo;
+
+            if ($status == self::DECLINED)
+            {
+                $this->setGatewayRefunded(false, $refundEntity);
+            }
+
+            $scroogeReconData['status'] = null;
+        }
+
+        return $scroogeReconData;
     }
 }

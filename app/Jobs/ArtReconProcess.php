@@ -5,8 +5,11 @@ namespace RZP\Jobs;
 use App;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Service;
+use RZP\Models\Payment\Gateway;
+use RZP\Base\RepositoryManager;
 use RZP\Reconciliator\Validator;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Reconciliator\NetbankingSbi\SubReconciliator;
 
 // ArtReconProcess job asyncly calls scrooge for refund
 // updates and updates transaction entity for recon status
@@ -80,6 +83,21 @@ class ArtReconProcess extends Job
                     'gateway'        => $this->data['gateway'],
                 ]
             );
+
+            $scroogeReconData = $this->preprocessDataForRecon($scroogeReconData, $this->data['gateway']);
+
+            if(empty($scroogeReconData) === true)
+            {
+                $this->trace->info(
+                    TraceCode::ART_RECON_GATEWAY_VALIDATIONS_FAILED,
+                    [
+                        'refund_data'       => $traceData,
+                        'art_request_id'    => $this->data['art_request_id'],
+                        'gateway'           => $this->data['gateway'],
+                    ]
+                );
+                return;
+            }
 
             $response = $scrooge->initiateRefundRecon($scroogeReconData, true);
 
@@ -178,5 +196,25 @@ class ArtReconProcess extends Job
 
             $this->delete();
         }
+    }
+
+    private function preprocessDataForRecon(array $scroogeReconData, string $gateway): array
+    {
+        $refundsSize = count($scroogeReconData['refunds']);
+
+        if($gateway == Gateway::NETBANKING_SBI)
+        {
+            for ($i=0; $i<$refundsSize; $i++) {
+                $scroogeReconData['refunds'][$i] = (new SubReconciliator\RefundReconciliate())->handleGateway($scroogeReconData['refunds'][$i]);
+            }
+        }
+
+        for ($i=0; $i<$refundsSize; $i++) {
+            if(isset($scroogeReconData['refunds'][$i]['payment_id']))
+            {
+                unset($scroogeReconData['refunds'][$i]['payment_id']);
+            }
+        }
+        return $scroogeReconData;
     }
 }

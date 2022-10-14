@@ -92,7 +92,7 @@ class RefundReconEntityUpdateTest extends TestCase
 
          $updatedRefundEntity = $this->getLastEntity('refund',true);
 
-        $this->assertEquals('processed',$updatedRefundEntity['status']);
+         $this->assertEquals('processed',$updatedRefundEntity['status']);
     }
 
     /**
@@ -223,6 +223,60 @@ class RefundReconEntityUpdateTest extends TestCase
         $this->testRefundEntityUpdate('upi_sbi');
     }
 
+    public function testNetbankingSbiRefundEntityUpdate()
+    {
+        $reconJobData = $this->buildRefundReconData();
+
+        $this->fixtures->create('terminal:shared_netbanking_sbi_terminal');
+
+        $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
+
+        $paymentId = $this->doAuthPayment($payment);
+
+        $paymentId = substr($paymentId['razorpay_payment_id'], 4);
+
+        $this->refundAuthorizedPayment($paymentId);
+
+        $refund = $this->getDbLastEntityToArray('refund');
+
+        $reconJobData['gateway'] = 'netbanking_sbi';
+
+        $reconJobData['refunds'][0]['payment_id'] = $paymentId;
+
+        $reconJobData['refunds'][0]['gateway_keys'] = ["gateway_status" => "success", "sequence_no" => 1];
+
+        $this->job = $this->mockArtReconProcess($reconJobData);
+
+        $this->testRefundEntityUpdate('netbanking_sbi');
+    }
+
+    public function testNetbankingSbiFailedRefundEntityUpdate()
+    {
+        $reconJobData = $this->buildRefundReconData();
+
+        $this->fixtures->create('terminal:shared_netbanking_sbi_terminal');
+
+        $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
+
+        $paymentId = $this->doAuthPayment($payment);
+
+        $paymentId = substr($paymentId['razorpay_payment_id'], 4);
+
+        $this->refundAuthorizedPayment($paymentId);
+
+        $refund = $this->getDbLastEntityToArray('refund');
+
+        $reconJobData['gateway'] = 'netbanking_sbi';
+
+        $reconJobData['refunds'][0]['payment_id'] = $paymentId;
+
+        $reconJobData['refunds'][0]['gateway_keys'] = ["gateway_status" => "failed", "sequence_no" => 1];
+
+        $this->job = $this->mockArtReconProcess($reconJobData);
+
+        $this->testRefundEntityUpdate('netbanking_sbi');
+    }
+
     private function createUpiRefund(string $paymentId, string $amount, string $gateway)
     {
         $this->refundAuthorizedPayment($paymentId);
@@ -257,12 +311,15 @@ class RefundReconEntityUpdateTest extends TestCase
             'source'                   => 'art',
             'art_request_id'           => '112234134566',
             'refunds'                  => [
-                'refund_id'         => 'JvGbfizowfftSE',
-                'status'            => 'processed',
-                'gateway_keys'      => [],
-                'arn'               => '786355621232',
-                'gateway_settled_at'=> null,
-                'reconciled_at'     => null,
+                [
+                    'payment_id'        => 'JvGbfizowfftSf',
+                    'refund_id'         => 'JvGbfizowfftSE',
+                    'status'            => 'processed',
+                    'gateway_keys'      => [],
+                    'arn'               => '786355621232',
+                    'gateway_settled_at'=> null,
+                    'reconciled_at'     => null,
+                ]
             ],
         ];
     }
