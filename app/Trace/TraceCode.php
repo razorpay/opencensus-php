@@ -2559,6 +2559,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NOT_SUPPORTED_CARD_TOKEN_PAUSE_FAILED                 = 'NOT_SUPPORTED_CARD_TOKEN_PAUSE_FAILED';
     const CARD_TOKEN_PAUSE_PROCESSED                            = 'CARD_TOKEN_PAUSE_PROCESSED';
     const TRACE_EMPTY_PROVIDER_REFERENCE                        = 'TRACE_EMPTY_PROVIDER_REFERENCE';
+    const METHOD_NOT_SUPPORTED_FOR_RECON                        = 'METHOD_NOT_SUPPORTED_FOR_RECON';
 
     //Trace code for Transaction Migration
     const TRANSACTION_MIGRATION_TAX_MISTMATCH                   = 'TRANSACTION_MIGRATION_TAX_MISTMATCH';

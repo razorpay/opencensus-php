@@ -2060,6 +2060,22 @@ trait PaymentTrait
         ];
     }
 
+    protected function getDefaultNetbankingPostReconArray()
+    {
+        return [
+            'netbanking' => [
+                'gateway_transaction_id'    => '',
+                'bank_transaction_id'       => '222649038989',
+                'bank_payment_id'           => '00061330021110',
+            ],
+            'upi' => [],
+            'payment_id'      => 'KCweWA1oWlWWO2',
+            'reconciled_type' => 'mis',
+            'amount'          => 5000,
+            'reconciled_at'   => '1642476459',
+        ];
+    }
+
     protected function sendRequest($request, &$callback = null)
     {
         $this->checkAndSetUrl($request);

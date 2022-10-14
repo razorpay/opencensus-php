@@ -14,6 +14,7 @@ use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
 use RZP\Models\Transaction;
 use RZP\Metro\MetroHandler;
+use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Refund;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Reconciliator\Base\InfoCode;
@@ -21,7 +22,9 @@ use RZP\Reconciliator\Base\Constants;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Models\Batch\Processor\Reconciliation;
 use RZP\Reconciliator\Base\Foundation\SubReconciliate;
+use RZP\Services\NbPlus\Netbanking as NetbankingService;
 use RZP\Reconciliator\Base\Foundation\ScroogeReconciliate;
+use RZP\Reconciliator\Base\SubReconciliator\NbPlus\NbPlusServiceRecon;
 use RZP\Reconciliator\Base\SubReconciliator\Upi\Constants as UpsConstants;
 
 class Service extends Base\Service
@@ -742,18 +745,44 @@ class Service extends Base\Service
     }
 
     /**
+     * @throws \Throwable
+     */
+    public function updateReconciliationData(array $input): array
+    {
+        $paymentId = $input['payment_id'];
+
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        $method = $payment->getMethod();
+
+        if($method == Payment\Method::NETBANKING)
+        {
+            return $this->updateNetbankingReconciliationData($input, $payment);
+        }
+
+        else if($method == Payment\Method::UPI)
+        {
+            return $this->updateUpiReconciliationData($input, $payment);
+        }
+
+        $this->trace->info(
+            TraceCode::METHOD_NOT_SUPPORTED_FOR_RECON,
+            $input
+        );
+        return [];
+    }
+
+    /**
      * Update post reconciliation data from ART
      * @param array $input
      * @return array
      * @throws \Throwable
      */
-    public function updateUpiReconciliationData(array $input)
+    public function updateUpiReconciliationData(array $input, Payment\Entity $payment)
     {
         (new Validator)->validateUpdateUpiReconData($input);
 
         $paymentId = $input['payment_id'];
-
-        $payment = $this->repo->payment->findOrFail($paymentId);
 
         $transaction = $payment->transaction;
 
@@ -790,6 +819,69 @@ class Service extends Base\Service
                 'success'     => true,
                 'gateway'     => $payment->getGateway(),
 
+            ];
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::RECON_UPDATE_RECONCILIATION_DATA_FAILED,
+                [
+                    'paymentId' => $paymentId,
+                    'gateway'   => $payment->getGateway(),
+                ]
+            );
+            throw $ex;
+        }
+    }
+
+    /**
+     * Update post reconciliation data from ART
+     * @param array $input
+     * @return array
+     * @throws \Throwable
+     */
+    public function updateNetbankingReconciliationData(array $input, Payment\Entity $payment): array
+    {
+        (new Validator)->validateUpdateNetbankingReconData($input);
+
+        $paymentId = $input['payment_id'];
+
+        $transaction = $payment->transaction;
+
+        if ((empty($transaction) === false) and
+            ($transaction->isReconciled() === true))
+        {
+            return [
+                'success'        => false,
+                'gateway'        => $payment->getGateway(),
+                'error' => [
+                    'code'        => InfoCode::ALREADY_RECONCILED,
+                    'description' => 'Netbanking payment is already reconciled'
+                ],
+            ];
+        }
+
+        $this->trace->info(
+            TraceCode::RECON_UPDATE_RECONCILIATION_DATA_STARTED,
+            $input
+        );
+
+        try
+        {
+            $this->repo->transaction(function () use ($paymentId, $input, $payment)
+            {
+                $this->updateTransactionData($input, $payment);
+
+                $this->updateNetbankingGatewayData($input, $payment);
+            });
+
+            $this->core->pushSuccessPaymentReconMetrics($payment, "art");
+
+            return [
+                'success'     => true,
+                'gateway'     => $payment->getGateway(),
             ];
         }
         catch (\Exception $ex)
@@ -1005,7 +1097,7 @@ class Service extends Base\Service
         if (empty($transaction) === true)
         {
             throw new Exception\BadRequestException(
-                'Payment upi transaction not found',
+                'Payment transaction not found',
                 $input);
         }
 
@@ -1350,5 +1442,21 @@ class Service extends Base\Service
         {
             $gatewayRefund->setNpciTransactionId($gatewayData['npci_txn_id']);
         }
+    }
+
+    private function updateNetbankingGatewayData(array $input, Payment\Entity $payment)
+    {
+        $data = [
+            'payment_id' => $payment->getId(),
+            NetbankingService::GATEWAY_TRANSACTION_ID => $input['netbanking']['gateway_transaction_id'] ?? null,
+            NetbankingService::BANK_TRANSACTION_ID    => $input['netbanking']['bank_transaction_id'] ?? null,
+            NetbankingService::BANK_ACCOUNT_NUMBER    => $input['netbanking']['bank_account_number'] ?? null,
+            NetbankingService::ADDITIONAL_DATA        => [
+                NetbankingService::CREDIT_ACCOUNT_NUMBER  => $input['netbanking']['additional_data']['credit_account_number'] ?? null,
+                NetbankingService::CUSTOMER_ID            => $input['netbanking']['additional_data']['customer_id']  ?? null,
+            ]
+        ];
+
+        (New NbPlusServiceRecon)->dispatchToNbplusServiceQueue($data);
     }
 }

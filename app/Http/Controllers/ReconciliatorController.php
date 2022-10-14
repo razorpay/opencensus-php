@@ -69,7 +69,7 @@ class ReconciliatorController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->updateUpiReconciliationData($input);
+        $response = $this->service()->updateReconciliationData($input);
 
         return ApiResponse::generateResponse($response);
     }

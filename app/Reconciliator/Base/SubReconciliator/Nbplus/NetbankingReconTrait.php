@@ -50,7 +50,7 @@ trait NetbankingReconTrait
         $this->dispatchToNbplusServiceQueue($data);
     }
 
-    protected function dispatchToNbplusServiceQueue($data)
+    public function dispatchToNbplusServiceQueue($data)
     {
         $pushData['entity_name'] = Method::NETBANKING;
         $pushData['recon_data']  = $data;

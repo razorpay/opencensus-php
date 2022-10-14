@@ -237,6 +237,22 @@ class Validator extends Base\Core
         'reconciled_type'               => 'required|string',
         'amount'                        => 'required',
         'reconciled_at'                 => 'required|filled|epoch',
+        'netbanking'                    => 'sometimes'
+    ];
+
+    const UPDATE_NETBANKING_RECON_DATA_RULES = [
+        'payment_id'                                       => 'required|string|size:14',
+        'netbanking'                                       => 'required|array',
+        'upi'                                              => 'sometimes',
+        'netbanking.gateway_transaction_id'                => 'sometimes',
+        'netbanking.bank_transaction_id'                   => 'sometimes',
+        'netbanking.bank_account_number'                   => 'sometimes',
+        'netbanking.additional_data'                       => 'sometimes',
+        'netbanking.additional_data.credit_account_number' => 'sometimes',
+        'netbanking.additional_data.customer_id'           => 'sometimes',
+        'reconciled_type'                                  => 'required|string',
+        'amount'                                           => 'required',
+        'reconciled_at'                                    => 'required|filled|epoch',
     ];
 
     const UPDATE_REFUND_RECON_DATA_RULES = [
@@ -982,6 +998,14 @@ class Validator extends Base\Core
     public function validateUpdateUpiReconData(array $input)
     {
         (new JitValidator)->rules(self::UPDATE_UPI_RECON_DATA_RULES)
+            ->caller($this)
+            ->input($input)
+            ->validate();
+    }
+
+    public function validateUpdateNetbankingReconData(array $input)
+    {
+        (new JitValidator)->rules(self::UPDATE_NETBANKING_RECON_DATA_RULES)
             ->caller($this)
             ->input($input)
             ->validate();

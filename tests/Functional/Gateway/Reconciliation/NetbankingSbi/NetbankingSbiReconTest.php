@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\Reconciliation\NetbankingSbi;
 
 use Carbon\Carbon;
+use RZP\Exception;
 
 use RZP\Models\Payment;
 use RZP\Services\Scrooge;
@@ -161,6 +162,68 @@ class NetbankingSbiReconTest extends TestCase
         $this->assertEquals(1, $batch['success_count']);
         $this->assertEquals(0, $batch['failure_count']);
         $this->assertEquals(Status::PROCESSED, $batch['status']);
+    }
+
+    public function testInvalidNetbankingSbiUpdateReconData()
+    {
+        $paymentId = $this->makeSbiNbPaymentSince(1);
+
+        $content = $this->getDefaultNetbankingPostReconArray();
+
+        $content['payment_id'] = $paymentId[0];
+
+        unset($content['reconciled_at']);
+
+        $this->makeRequestAndCatchException(function() use ($content)
+        {
+            $request = [
+                'url' => '/reconciliate/data',
+                'method' => 'POST',
+                'content' => $content,
+            ];
+
+            $this->ba->appAuth();
+
+            $this->makeRequestAndGetContent($request);
+        }, Exception\BadRequestValidationFailureException::class);
+    }
+
+    public function testNetbankingSbiUpdateAlreadyReconciled()
+    {
+        $paymentId = $this->makeSbiNbPaymentSince(1);
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->fixtures->edit('transaction', $transaction['id'], ['reconciled_at' => Carbon::now(Timezone::IST)->getTimestamp()]);
+
+        $content = $this->getDefaultNetbankingPostReconArray();
+
+        $content['payment_id'] = $paymentId[0];
+
+        $response = $this->makeUpdatePostReconRequestAndGetContent($content);
+
+        $this->assertFalse($response['success']);
+
+        $this->assertEquals('ALREADY_RECONCILED', $response['error']['code']);
+    }
+
+    public function testNetbankingSbiUpdatePostReconData()
+    {
+        $paymentId = $this->makeSbiNbPaymentSince(1);
+
+        $content = $this->getDefaultNetbankingPostReconArray();
+
+        $content['payment_id'] = $paymentId[0];
+
+        $content['reconciled_at'] = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $response = $this->makeUpdatePostReconRequestAndGetContent($content);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotEmpty($transactionEntity['reconciled_at']);
+
+        $this->assertTrue($response['success']);
     }
 
     //----------------------------------------------- Refund Recon ----------------------------------------------------
@@ -564,5 +627,18 @@ class NetbankingSbiReconTest extends TestCase
             ]);
 
         return $payment->getId();
+    }
+
+    private function makeUpdatePostReconRequestAndGetContent(array $content)
+    {
+        $request = [
+            'method'  => 'POST',
+            'content' => $content,
+            'url'     => '/reconciliate/data',
+        ];
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
     }
 }
