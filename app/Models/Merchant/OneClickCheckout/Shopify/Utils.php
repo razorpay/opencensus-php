@@ -25,9 +25,12 @@ class Utils
 
             foreach ($properties as $key => $value)
             {
+                $keyType   = gettype($key);
+                $valueType = gettype($value);
+
                 $attributes[] = [
-                    'key'   => $key,
-                    'value' => $value
+                    'key'   => ($keyType != 'string') ?  json_encode($key) : $key,
+                    'value' => ($valueType != 'string') ?  json_encode($value) : $value
                 ];
             }
 
