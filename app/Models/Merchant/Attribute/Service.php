@@ -522,11 +522,10 @@ class Service extends Base\Service
 
     protected function getRequestBodyForMCIdentifier($merchant,$mcIdentifierId, $mcIdentifierName)
     {
-        $billingLabel = $merchant->getBillingLabel();
-        $merchantName = (isset($billingLabel) ? $billingLabel : $merchant->getName());
+        $merchantName = $merchant->getName();
         $merchantData = [
             'merchantID'            => $mcIdentifierId.'_'.$merchant->getId(),
-            'merchantName'          => $mcIdentifierName.'_'.$merchantName,
+            'merchantName'          => substr($mcIdentifierName.'_'.$merchantName,0,25),
         ];
         $input = [
             'merchantData'  => $merchantData,
@@ -564,8 +563,7 @@ class Service extends Base\Service
 
     public function getDefaultValuesForMerchantOnboarding($network,$merchant)
     {
-        $billingLabel = $merchant->getBillingLabel();
-        $merchantNameValue = isset($billingLabel) ? $billingLabel : $merchant->getName();
+        $merchantNameValue = $merchant->getName();
 
         if($network === Group::VISA)
         {
@@ -573,7 +571,7 @@ class Service extends Base\Service
 
         }elseif ($network === Group::MASTERCARD){
             $requestorIdValue = $this->app['config']->get('gateway.mastercard.razorpay_requester_id');
-            $merchantNameValue = $this->app['config']->get('gateway.mastercard.razorpay_requester_name');
+            $merchantNameValue = substr($this->app['config']->get('gateway.mastercard.razorpay_requester_name'),0,25);
         }
 
         return [$requestorIdValue, $merchantNameValue];
