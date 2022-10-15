@@ -447,6 +447,24 @@ class Validator extends Base\Validator
         'meta.version'                  => 'required',
     ];
 
+    protected static $authorizeFailedNetbankingPaymentRules = [
+        'payment'                              => 'required|array',
+        'payment.method'                       => 'required|string|in:netbanking',
+        'payment.id'                           => 'required|string|size:14',
+        'payment.amount'                       => 'required|integer',
+        'netbanking.status_code'               => 'required',
+        'netbanking'                           => 'required|array',
+        'netbanking.gateway_transaction_id'    => 'sometimes',
+        'netbanking.bank_transaction_id'       => 'sometimes',
+        'netbanking.bank_account_number'       => 'sometimes',
+        'netbanking.gateway_merchant_id'       => 'sometimes',
+        'netbanking.gateway'                   => 'required|string|in:netbanking_sbi',
+        'meta'                                 => 'required|array',
+        'meta.force_auth_payment'              => 'required|boolean',
+        'meta.art_request_id'                  => 'required',
+        'meta.version'                         => 'required',
+    ];
+
     protected static $updateB2BInvoiceDetailsRules = [
         'document_id'                       => 'required',
     ];

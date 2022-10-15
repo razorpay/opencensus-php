@@ -2026,6 +2026,9 @@ trait PaymentTrait
     protected function getDefaultUpiAuthorizeFailedPaymentArray()
     {
         return [
+            'netbanking' => [
+                'gateway'              => '',
+            ],
             'upi' => [
                 'npci_reference_id'     => '123456789013',
                 'gateway_payment_id'    => '4531245576',
@@ -2037,6 +2040,31 @@ trait PaymentTrait
             'payment' => [
                 'method'    => 'upi',
                 'amount'    => 50000,
+            ],
+            'meta' => [
+                'art_request_id' => '123423454',
+                'version'        => 'api_v2',
+            ]
+        ];
+    }
+
+    protected function getDefaultNetbankingAuthorizeFailedPaymentArray()
+    {
+        return [
+            'netbanking' => [
+                'status_code'            => 'Transaction_status field from MIS corresponds to status',
+                'gateway_transaction_id' => '',
+	            'bank_transaction_id'    => '222649038989',
+	            'bank_account_number'    => '00061330021110',
+                'gateway'                => 'netbanking_sbi'
+            ],
+            'upi' => [
+                'gateway'               => '',
+            ],
+            'payment' => [
+                'method'    => 'netbanking',
+                'amount'    => 50000,
+                'id'        => 'IShcnbF6tsOy'
             ],
             'meta' => [
                 'art_request_id' => '123423454',

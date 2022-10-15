@@ -1939,6 +1939,81 @@ EOT;
     }
 
     /**
+     * Successful farce auth of failed payment with input only containing upi, meta and payment fiedls, not netbanking.
+     */
+    public function testAuthorizeFailedPaymentWithOnlyUpiInput()
+    {
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $upiEntity = $this->getDbLastEntityToArray(Entity::UPI);
+
+        $this->assertSame('created', $payment['status']);
+
+        $callbackContent = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $callbackResponse = $this->makeS2SCallbackAndGetContent($callbackContent);
+
+        $this->fixtures->payment->edit($payment['id'],
+            [
+                'status'              => 'failed',
+                'authorized_At'       => null,
+                'error_code'          => 'BAD_REQUEST_ERROR',
+                'internal_error_code' => 'BAD_REQUEST_PAYMENT_TIMED_OUT',
+                'error_description'   => 'Payment was not completed on time.',
+            ]);
+
+        $this->fixtures->edit('upi', $upiEntity['id'], ['status_code' => '']);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $upiEntity = $this->getDbLastEntityToArray(Entity::UPI);
+
+        $this->assertNotEquals('S', $upiEntity['status_code']);
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $content = $this->getDefaultUpiAuthorizeFailedPaymentArray();
+
+        // remove netbanking block
+        unset($content['netbanking']);
+
+        unset($content['upi']['npci_txn_id']);
+
+        $content['upi']['gateway'] = 'upi_icici';
+
+        $content['payment']['id'] = $payment['id'];
+
+        $content['meta']['force_auth_payment'] = true;
+
+        $response = $this->makeAuthorizeFailedPaymentAndGetPayment($content);
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        $upiEntity = $this->getDbLastEntityToArray(Entity::UPI);
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
+
+        $this->assertNotNull($updatedPayment['reference16']);
+
+        $this->assertEquals('123456789013', $updatedPayment['reference16']);
+
+        $this->assertEquals('razor.pay@sbi', $updatedPayment['vpa']);
+
+        $this->assertEquals(true, $response['success']);
+
+        // explicitly capturing the payment to stimulate the auto capture in case DS merchants
+        $this->capturePayment('pay_'.$updatedPayment['id'], 50000);
+
+        $this->assertEquals(true, $response['success']);
+
+        $this->assertNotEmpty($updatedPayment['transaction_id']);
+    }
+
+    /**
      * Validate negative case of authorizing successful payment
      */
     public function testForceAuthorizeSuccessfulPayment()

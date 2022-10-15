@@ -62,6 +62,7 @@ use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\CardMandate\CardMandateNotification;
 use RZP\Models\Payment\Verify\Result as VerifyResult;
 use RZP\Services\Segment\Constants as SegmentConstants;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
@@ -5360,6 +5361,14 @@ class Service extends Base\Service
      */
     public function authorizeFailedUpiPayment(array $input)
     {
+        $fields = [
+            EntityConstants::UPI,
+            EntityConstants::PAYMENT,
+            Entity::META,
+        ];
+
+        $input = array_only($input, $fields);
+
         (new Payment\Validator)->validateInput('authorize_failed_upi_payment', $input);
 
         $paymentId = $input['payment']['id'];
@@ -5391,6 +5400,112 @@ class Service extends Base\Service
             return $this->verifyAuthorizeFailedPayment($payment, $input);
         }
 
+    }
+
+    /**
+     * Authorizes failed payment based on ART input
+     * [force_authorize_failed,verify_authorize_failed]
+     * @param array $input
+     * @return array
+     * @throws BadRequestException
+     * @throws BadRequestValidationFailureException
+     * @throws \Exception
+     */
+    public function authorizeFailedNetbankingPayment(array $input)
+    {
+        $fields = [
+            EntityConstants::NETBANKING,
+            EntityConstants::PAYMENT,
+            Entity::META,
+        ];
+
+        $input = array_only($input, $fields);
+
+        (new Payment\Validator)->validateInput('authorize_failed_netbanking_payment', $input);
+
+        $paymentId = $input['payment']['id'];
+
+        $gateway = $input['netbanking']['gateway'];
+
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        if (($payment !== null) and
+            ($payment->getAmount() !== (int) $input['payment']['amount']))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                Error\PublicErrorDescription::BAD_REQUEST_AMOUNT_MISMATCH,
+                Payment\Entity::AMOUNT,
+                [
+                    'payment_entity_amount' => $payment->getAmount(),
+                    'input_amount'          => $input['payment']['amount'],
+                    'payment_id'            => $payment->getId(),
+                ]);
+        }
+
+        if (($input['meta']['force_auth_payment'] === true) and
+            ($this->isForceAuthAllowed($gateway) === true))
+        {
+            return $this->forceAuthorizeNetbankingPayment($payment, $input);
+        }
+        else
+        {
+            return $this->verifyAuthorizeFailedPayment($payment, $input);
+        }
+
+    }
+
+    /**
+     * Force authorize failed payment
+     * @param Entity $payment
+     * @param array $input
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function forceAuthorizeNetbankingPayment(Payment\Entity $payment, array $input = [])
+    {
+        $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
+
+        $input['acquirer'] = $this->getAcquirerData($input);
+
+        $input['gateway_payment_id'] = $input['netbanking']['bank_transaction_id'];
+
+        $this->repo->transaction(function () use ($payment, $input, $merchant)
+        {
+            $processor = $this->getNewProcessor($merchant);
+
+            $response = $processor->forceAuthorizeFailedPayment($payment, $input);
+
+            if ((empty($response['status']) === false) and
+                ($response['status'] !== Payment\Status::FAILED))
+            {
+                $authResponse = $this->verifyPaymentTransaction($payment->getId());
+
+                //check if it's re-arch payment and send entity updates to respective payment service
+                if (($authResponse === true) and ($payment->isExternal() === true))
+                {
+                    (new Transaction\Core)->dispatchUpdatedTransactionToCPS($payment->transaction, $payment);
+                }
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::ART_PAYMENT_FORCE_AUTHORIZE_FAILED,
+                    [
+                        'payment_id' => $payment->getId(),
+                        'amount'     => $payment->getAmount(),
+                        'gateway'    => $payment->getGateway(),
+                    ]);
+            }
+        });
+
+        return [
+            'success'        => (($payment->getStatus() === Payment\Status::AUTHORIZED) or ($payment->getStatus() === Payment\Status::CAPTURED)),
+            'payment_id'     => $payment->getId(),
+            'amount'         => $payment->getAmount(),
+            'status'         => $payment->getStatus(),
+            'rrn'            => $payment->getReference16(),
+            'art_request_id' => $input['meta']['art_request_id'],
+        ];
     }
 
     /**
@@ -5501,7 +5616,7 @@ class Service extends Base\Service
 
         if ($payment->hasTransaction() === true)
         {
-            return;
+            return true;
         }
 
         try
@@ -5513,6 +5628,8 @@ class Service extends Base\Service
                 $this->repo->saveOrFail($txn);
                 // This is required to save the association of the transaction with the payment.
                 $this->repo->saveOrFail($payment);
+
+                return true;
             });
         }
         catch (\Exception $ex)
@@ -5536,10 +5653,18 @@ class Service extends Base\Service
      */
     protected function getAcquirerData(array $input)
     {
-        return [
-                Payment\Entity::VPA         => $input['upi']['vpa'],
+        if($input['payment']['method'] == Method::UPI) {
+            return [
+                Payment\Entity::VPA => $input['upi']['vpa'],
                 Payment\Entity::REFERENCE16 => $input['upi']['npci_reference_id'],
-        ];
+            ];
+        }
+        else if($input['payment']['method'] == Method::NETBANKING) {
+            return [
+                Payment\Entity::REFERENCE1 => $input['netbanking']['bank_transaction_id'],
+            ];
+        }
+        return [];
     }
 
     protected function isForceAuthAllowed(string $gateway)

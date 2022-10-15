@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Sbi;
 
 use Mail;
 
+use RZP\Exception;
 use RZP\Models\Payment\Entity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Netbanking\Sbi\Status;
@@ -326,6 +327,155 @@ class NetbankingSbiGatewayTest extends TestCase
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
         $this->assertEquals($gatewayPayment['bank_payment_id'], 100);
+    }
+
+    public function testAuthorizeFailedPayment()
+    {
+        $testData = $this->testData['testAuthFailed'];
+
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content[ResponseFields::STATUS] = 'Failed';
+            }
+        });
+
+        $this->runRequestResponseFlow($testData, function ()
+        {
+            $this->doNetbankingSbiAuthAndCapturePayment();
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $this->assertEmpty($payment['transaction_id']);
+
+        $content = $this->getDefaultNetbankingAuthorizeFailedPaymentArray();
+
+        $content['payment']['id'] = substr($payment['id'],4);
+
+        $content['meta']['force_auth_payment'] = true;
+
+        $response = $this->makeAuthorizeFailedPaymentAndGetPayment($content);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertNotEmpty($updatedPayment['transaction_id']);
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
+
+        $this->assertNotNull($updatedPayment['reference1']);
+    }
+
+    /**
+     * Validate negative case of authorizing succesfulpayment
+     */
+    public function testForceAuthorizeSucessfulPayment()
+    {
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $content = $this->getDefaultNetbankingAuthorizeFailedPaymentArray();
+
+        $content['payment']['id'] = substr($payment['id'],4);
+
+        $content['meta']['force_auth_payment'] = true;
+
+        $this->makeRequestAndCatchException(function() use ($content)
+        {
+            $request = [
+                'url'     => '/payments/authorize/nbplus/failed',
+                'method'  => 'POST',
+                'content' => $content,
+            ];
+
+            $this->ba->appAuth();
+
+            $this->makeRequestAndGetContent($request);
+        }, Exception\BadRequestValidationFailureException::class);
+    }
+
+    public function testForceAuthorizePaymentValidationFailure()
+    {
+        $content = $this->getDefaultNetbankingAuthorizeFailedPaymentArray();
+
+        unset($content['payment']['method']);
+
+        $this->makeRequestAndCatchException(function() use ($content)
+        {
+            $request = [
+                'url'     => '/payments/authorize/nbplus/failed',
+                'method'  => 'POST',
+                'content' => $content,
+            ];
+
+            $this->ba->appAuth();
+
+            $this->makeRequestAndGetContent($request);
+        }, Exception\BadRequestValidationFailureException::class);
+    }
+
+    /**
+     * Authorize the failed payment by verifying at gateway
+     */
+    public function testVerifyAuthorizeFailedPayment()
+    {
+        $testData = $this->testData['testAuthFailed'];
+
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content[ResponseFields::STATUS] = 'Failed';
+            }
+        });
+
+        $this->runRequestResponseFlow($testData, function ()
+        {
+            $this->doNetbankingSbiAuthAndCapturePayment();
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $content = $this->getDefaultNetbankingAuthorizeFailedPaymentArray();
+
+        $content['payment']['id'] = substr($payment['id'], 4);
+
+        $content['meta']['force_auth_payment'] = false;
+
+        $response = $this->makeAuthorizeFailedPaymentAndGetPayment($content);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        // asset the late authorized flag for authorizing via verify
+        $this->assertTrue($updatedPayment['late_authorized']);
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
+
+        $this->assertNotNull($updatedPayment['reference1']);
+
+        $this->assertNotEmpty($updatedPayment['transaction_id']);
+    }
+
+
+    protected function makeAuthorizeFailedPaymentAndGetPayment(array $content)
+    {
+        $request = [
+            'url'      => '/payments/authorize/nbplus/failed',
+            'method'   => 'POST',
+            'content'  => $content,
+        ];
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
     }
 
     protected function doNetbankingSbiAuthAndCapturePayment($bank = "SBIN")

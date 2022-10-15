@@ -744,6 +744,15 @@ class PaymentController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postAuthorizeFailedNetbankingPayment()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->authorizeFailedNetbankingPayment($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function internalPricingFetchForPayment($id)
     {
         $input = Request::all();

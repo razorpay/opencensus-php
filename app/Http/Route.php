@@ -221,6 +221,7 @@ class Route
         'payment_fetch_by_id'                      => ['get',      'payments/{id}',                                  'PaymentController@getPayment'                                      ],
         'payment_fetch_by_id_internal'             => ['get',      'payments_internal/{id}',                         'PaymentController@getPaymentById'                              ],
         'payment_upi_authorize_failed'             => ['post',     'payments/authorize/upi/failed',                  'PaymentController@postAuthorizeFailedUpiPayment'                   ],
+        'payment_nbplus_authorize_failed'          => ['post',     'payments/authorize/nbplus/failed',               'PaymentController@postAuthorizeFailedNetbankingPayment'            ],
         'subscription_payment_fetch_by_id'         => ['get',      'payments/{paymentId}/subscriptions/{subId}',     'PaymentController@getPaymentForSubscription'                       ],
         'subscription_fetch_by_id'                 => ['get',      'payments//subscriptions/{subId}',                 'PaymentController@getPaymentwithSubscription'                       ],
 
@@ -5325,6 +5326,8 @@ class Route
         'create_ledger_journal_batch',
 
         'merchant_upload_miq_admin',
+
+        'payment_nbplus_authorize_failed',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -14162,7 +14165,8 @@ class Route
             'internal_fail',
             'internal_reconcile',
             'internal_receive',
-            'recon_update_data'
+            'recon_update_data',
+            'payment_nbplus_authorize_failed'
         ],
 
         'smart_collect' => [
