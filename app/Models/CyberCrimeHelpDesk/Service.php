@@ -10,6 +10,7 @@ use RZP\Trace\TraceCode;
 use RZP\lib\TemplateEngine;
 use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\Admin\Org;
+use RZP\Models\BankAccount\Type;
 use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Models\Transaction\Service as TransactionService;
 use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
@@ -46,6 +47,7 @@ class Service extends Base\Service
             'subject'         => $mailSubject,
             'description'     => $mailBody,
             'email'           => $input['requester_mail'],
+            'status'          => 2, // Create ticket with open status
             'priority'        => 1,
             'type'            => 'Incident',
             'email_config_id' => (int)$freshDeskConfig['email_config_ids']['cybercrime_helpdesk']['acknowledgement'],
@@ -148,12 +150,10 @@ class Service extends Base\Service
 
             if ( empty($requestDetail[Constants::SHARE_BENEFICARY_ACCOUNT_DETAILS]) === false )
             {
-                $requesterMail      =   $inputs['requester_mail'];
-
                 $this->sendFreshdeskOutboundMailToMerchantAboutSharingMerchantDetails($payment);
-
-                $this->sendFreshdeskOutboundMailReplyToMerchantLEA($payment, $entityId, $requesterMail);
             }
+
+            $this->sendFreshdeskOutboundMailReplyToLEA($payment, $entityId, $requestDetail[Constants::SHARE_BENEFICARY_ACCOUNT_DETAILS]);
         }
 
         $this->app['trace']->info(TraceCode::CYBER_CRIME_PUT_PAYMENTS_ON_HOLD,
@@ -212,15 +212,15 @@ class Service extends Base\Service
             ]);
     }
 
-    protected function sendFreshdeskOutboundMailReplyToMerchantLEA($paymentDetails, $freshdeskTicketId, $requesterMail)
+    protected function sendFreshdeskOutboundMailReplyToLEA($paymentDetails, $freshdeskTicketId, $shareBeneficiaryAccountDetails)
     {
-        $merchant             = $paymentDetails->merchant;
+        $merchant                       = $paymentDetails->merchant;
 
-        $currentDateTime      = date('Y-m-d H:i:s');
+        $currentDateTime                = date('Y-m-d H:i:s');
 
-        $mailSubject          = sprintf(Constants::REPLY_MAIL_TO_LEA_SUBJECT, $freshdeskTicketId, $currentDateTime);
+        $paymentAnalytics               = $this->repo->payment_analytics->findForPayment($paymentDetails->getId());
 
-        $paymentAnalytics     = $this->repo->payment_analytics->findForPayment($paymentDetails->getId());
+        $beneficiaryBankAccountDetails  = $this->repo->bank_account->getBankAccount($merchant, Type::MERCHANT);
 
         $customerIpAddress    = '';
 
@@ -234,39 +234,24 @@ class Service extends Base\Service
         $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchant->getId());
 
         $mailBody = \View::make(Constants::REPLY_MAIL_TO_LEA_TEMPLATE, [
-            'payment_details'       => $paymentDetails,
-            'customer_ip_address'   => $customerIpAddress,
-            'merchant'              => $merchant,
-            'merchant_details'      => $merchantDetails,
-            'fd_ticket_id'          => $freshdeskTicketId,
-            'current_date_time'     => $currentDateTime
+            'payment_details'                  => $paymentDetails,
+            'customer_ip_address'              => $customerIpAddress,
+            'merchant'                         => $merchant,
+            'merchant_details'                 => $merchantDetails,
+            'fd_ticket_id'                     => $freshdeskTicketId,
+            'current_date_time'                => $currentDateTime,
+            'share_beneficary_account_details' => $shareBeneficiaryAccountDetails,
+            'beneficiary_bank_account_details' => $beneficiaryBankAccountDetails
         ])->render();
 
-        $freshDeskConfig = $this->app['config']->get('applications.freshdesk');
+        $replyInputs = ['body' => $mailBody];
 
-        $fdOutboundEmailRequest = [
-            'subject'         => $mailSubject,
-            'description'     => $mailBody,
-            'email'           => $requesterMail,
-            'priority'        => 1,
-            'type'            => 'Incident',
-            'email_config_id' => (int)$freshDeskConfig['email_config_ids']['cybercrime_helpdesk']['reply_to_lea'],
-            'group_id'        => (int)$freshDeskConfig['group_ids']['cybercrime_helpdesk']['reply_to_lea'],
-            'custom_fields'   => [
-                'cf_ticket_queue' => 'Thirdparty',
-                'cf_category'     =>  'Fraud',
-                'cf_subcategory'  =>  Constants::FRESHDESK_EMAIL_CYBER_CELL_SUB_CATEGORY,
-                'cf_product'      => 'Payment Gateway',
-            ]
-        ];
-
-        $response = $this->app['freshdesk_client']->sendOutboundEmail($fdOutboundEmailRequest);
+        $response    = $this->app['freshdesk_client']->postTicketReply((int)$freshdeskTicketId, $replyInputs);
 
         $this->app['trace']->info(
             TraceCode::MAIL_TO_MERCHANT_ABOUT_DETAILS_SHARED_TO_LEA_SENT,
             [
                 'freshdesk_response'  => $response,
-                'subject'             => $mailSubject,
                 'body'                => $mailBody
             ]);
     }

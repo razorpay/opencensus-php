@@ -6,7 +6,7 @@ class Constants
 {
     const CYBER_CRIME_HELPDESK_WORKFLOW_CONTROLLER                      = 'RZP\Http\Controllers\CyberCrimeHelpDeskController@postCyberCrimeWorkflowApproval';
 
-    const MAIL_TO_LEA_FROM_CYBRERSOURCE_HELPDESK_EMAIL_SUBJECT          = 'Razorpay Response to LEA: %s';
+    const MAIL_TO_LEA_FROM_CYBRERSOURCE_HELPDESK_EMAIL_SUBJECT          = 'Razorpay Acknowledgement to LEA: %s';
 
     const MAIL_TO_LEA_FROM_CYBRERSOURCE_HELPDESK_EMAIL_TEMPLATE         = 'emails.merchant.cyber_helpdesk';
 

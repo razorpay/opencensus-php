@@ -80,58 +80,75 @@
                 <div style="font-size: 14px; color: #7b8199">
                     <p>Thank You for reaching out to Razorpay. </p>
                     <p>We have escalated the issue to the merchant meanwhile please find below the beneficiary details as requested against the transaction details submitted by you:</p>
-                    <table>
-                        <tr>
-                            <th colspan="10">
-                                <p style="font-size: 14px; margin: 0">A) Transaction(s)  traced against the input received from the LEA</p>
-                            </th>
-                        </tr>
-                        <tr>
-                            <th>Date (DD/MM/YY)</th>
-                            <th>Card/ method</th>
-                            <th>Payment ID</th>
-                            <th>Status</th>
-                            <th>Amount</th>
-                            <th>Buyer's Email address</th>
-                            <th>Buyer's Phone #</th>
-                            <th>Buyer's IP address</th>
-                            <th>Merchant Website</th>
-                            <th>Merchant name</th>
-                        </tr>
-                        <tr>
-                            <td>{{$payment_details->getCreatedAt()}}</td>
-                            <td>{{$payment_details->getMethod()}}</td>
-                            <td>{{$payment_details->getId()}}</td>
-                            <td>{{$payment_details->getStatus()}}</td>
-                            <td>{{$payment_details->getBaseAmount()}}</td>
-                            <td>{{$payment_details->getEmail()}}</td>
-                            <td>{{$payment_details->getContact()}}</td>
-                            <td>{{$customer_ip_address}}</td>
-                            <td>{{$merchant->getWebsite()}}</td>
-                            <td>{{$merchant->getName()}}</td>
-                        </tr>
-                    </table>
+                    <div style="overflow: scroll">
+                        <table>
+                            <tr>
+                                <th colspan="10">
+                                    <p style="font-size: 14px; margin: 0">A) Transaction(s)  traced against the input received from the LEA</p>
+                                </th>
+                            </tr>
+                            <tr>
+                                <th>Date (DD/MM/YY)</th>
+                                <th>Card/ method</th>
+                                <th>Payment ID</th>
+                                <th>Status</th>
+                                <th>Amount</th>
+                                <th>Buyer's Email address</th>
+                                <th>Buyer's Phone #</th>
+                                <th>Buyer's IP address</th>
+                                <th>Merchant Website</th>
+                                <th>Merchant name</th>
+                            </tr>
+                            <tr>
+                                <td>{{date("Y-m-d H:i:s", $payment_details->getCreatedAt())}}</td>
+                                <td>{{$payment_details->getMethod()}}</td>
+                                <td>{{$payment_details->getId()}}</td>
+                                <td>{{$payment_details->getStatus()}}</td>
+                                <td>{{$payment_details->getBaseAmount()}}</td>
+                                <td>{{$payment_details->getEmail()}}</td>
+                                <td>{{$payment_details->getContact()}}</td>
+                                <td>{{$customer_ip_address}}</td>
+                                <td>{{$merchant->getWebsite()}}</td>
+                                <td>{{$merchant->getName()}}</td>
+                            </tr>
+                        </table>
+                    </div>
                     <p>(B) Beneficiary Contact Details</p>
-                    <table>
-                        <tr>
-                            <th colspan="3">
-                                <p style="font-size: 14px; margin: 0">(B) Beneficiary Contact Details</p>
-                            </th>
-                        </tr>
-                        <tr>
-                            <th>Merchant contact name
-                            </th>
-                            <th>Merchant contact number
-                            </th>
-                            <th>Merchant contact email
-                            </th>
-                        </tr>
-                        <tr>
-                            <td>{{$merchant_details->getContactName()}}</td>
-                            <td>{{$merchant_details->getContactMobile()}}</td>
-                            <td>{{$merchant_details->getContactEmail()}}</td>
-                        </tr>
-                    </table>
+                    <div style="overflow: scroll">
+                        <table>
+                            <tr>
+                                <th colspan="3">
+                                    <p style="font-size: 14px; margin: 0">(B) Beneficiary Contact Details</p>
+                                </th>
+                            </tr>
+                            <tr>
+                                <th>Merchant contact name
+                                </th>
+                                <th>Merchant contact number
+                                </th>
+                                <th>Merchant contact email
+                                </th>
+                                @if(empty($share_beneficary_account_details) === false)
+                                    <th>Beneficiary Name
+                                    </th>
+                                    <th>Bank Account No.
+                                    </th>
+                                    <th>IFSC Code
+                                    </th>
+                                @endif
+                            </tr>
+                            <tr>
+                                <td>{{$merchant_details->getContactName()}}</td>
+                                <td>{{$merchant_details->getContactMobile()}}</td>
+                                <td>{{$merchant_details->getContactEmail()}}</td>
+                                @if(empty($share_beneficary_account_details) === false)
+                                    <td>{{$beneficiary_bank_account_details->getBeneficiaryName()}}</td>
+                                    <td>{{$beneficiary_bank_account_details->getAccountNumber()}}</td>
+                                    <td>{{$beneficiary_bank_account_details->getIfscCode()}}</td>
+                                @endif
+                            </tr>
+                        </table>
+                    </div>
                     <p>Should you need any further details for your investigation in this regard, we request you to write back to us at "fraud.alerts@razorpay.com" along with the complaint / FIR copy and the ticket number in the subject line. Thank you for your cooperation.</p>
                     <p>We are available on call. You may reach out to us on +91 84476 40209. You may use the extension mentioned in the signature to connect with the agent handling the case.</p>
                     <p>हम कॉल्स पर उपलब्ध हैं। आप हमसे +91 8447640209 पर संपर्क कर सकते हैं। आप मामले को संभालने वाले एजेंट से जुड़ने के लिए निम्नलिखित एक्सटेंशन का उपयोग कर सकते हैं।</p>
@@ -150,7 +167,7 @@
                             The Future of Payments is Here
                         </h5>
                     </div>
-                    <div style="padding: 0 20px; font-weight: bold; font-size: 11px; color: #0d2366;">
+                    <div style="font-weight: 100; padding: 0 20px; font-weight: bold; font-size: 11px; color: #0d2366;">
                         <p style="margin-bottom: 0;">Risk Management Team</p>
                         <p style="margin: 0;">(Law Enforcement Liaison) </p>
                         <p style="margin-top: 5px">Contact : +91 +91 8447640209                </p>
