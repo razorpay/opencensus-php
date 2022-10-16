@@ -112,16 +112,17 @@ class PanStatusUpdater extends DefaultStatusUpdater
                $merchantDetailCore->processDedupeResponse([DetailEntity::GSTIN], $dedupeResponse, $noDocData);
            }
 
-           $noDocData[DEConstants::VERIFICATION][DetailEntity::GSTIN][DEConstants::VALUE] = array_merge($noDocData[DEConstants::VERIFICATION][DetailEntity::GSTIN][DEConstants::VALUE], $gstDetailsFromPan);
-
            $merchantDetailCore->updateNoDocOnboardingConfig($noDocData, $store);
        }
        else
        {
-           $noDocData[DEConstants::VERIFICATION][$artefact][DEConstants::RETRY_COUNT] = $noDocData[DEConstants::VERIFICATION][$artefact][DEConstants::RETRY_COUNT] + 1;
-           if ($noDocData[DEConstants::VERIFICATION][$artefact][DEConstants::RETRY_COUNT] > 1)
-           {
-               $noDocData[DEConstants::VERIFICATION][$artefact][DEConstants::STATUS] = Detail\RetryStatus::FAILED;
+           if (isset($noDocData[DEConstants::VERIFICATION][$artefact])  === true) {
+               $noDocData[DEConstants::VERIFICATION][$artefact][DEConstants::RETRY_COUNT] = $noDocData[DEConstants::VERIFICATION][$artefact][DEConstants::RETRY_COUNT] + 1;
+
+               if ( $noDocData[DEConstants::VERIFICATION][$artefact][DEConstants::RETRY_COUNT] > 1)
+               {
+                   $noDocData[DEConstants::VERIFICATION][$artefact][DEConstants::STATUS] = Detail\RetryStatus::FAILED;
+               }
            }
 
            $merchantDetailCore->updateNoDocOnboardingConfig($noDocData, $store);
