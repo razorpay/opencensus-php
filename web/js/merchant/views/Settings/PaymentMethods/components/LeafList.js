@@ -51,7 +51,7 @@ const LeafList = ({
    * merchant using feature flag status
    */
   const checkB2BFeatureFlag = async () => {
-    const response = await fetchFeatureStatus(user?.id, 'allow_b2b_activation');
+    const response = await fetchFeatureStatus(user?.id, 'enable_intl_bank_transfer');
     if (response?.success) {
       setFeatureFlag({ isB2BEnabled: response?.data?.status });
     }

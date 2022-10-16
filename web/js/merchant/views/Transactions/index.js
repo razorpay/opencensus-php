@@ -279,7 +279,7 @@ class TransactionsContainer extends Component {
               </NavLink>
             </ShowWhen>
             <ShowWhen
-              featureEnabled="allow_b2b_activation"
+              featureEnabled="enable_intl_bank_transfer"
               additionalCondition={(usr) => usr.isAllowedView('b2b_payments')}
             >
               <NavLink
