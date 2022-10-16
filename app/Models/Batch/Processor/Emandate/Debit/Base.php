@@ -297,6 +297,13 @@ class Base extends BaseProcessor
                  as per different formats of account number field
                 */
                 $this->removeCriticalDataFromTracePayload($entry);
+
+                /*
+                 Remove payment entry from redis which was added to ignore duplicate payments with same status received
+                 in partial and final files of banks. This will give chance to process the payment again if received in
+                 another file as it failed to process in current instance.
+                */
+                $this->deletePaymentFromRedis($entries);
             }
             catch (\Throwable $e)
             {
@@ -314,6 +321,13 @@ class Base extends BaseProcessor
                  as per different formats of account number field
                 */
                 $this->removeCriticalDataFromTracePayload($entry);
+
+                /*
+                 Remove payment entry from redis which was added to ignore duplicate payments with same status received
+                 in partial and final files of banks. This will give chance to process the payment again if received in
+                 another file as it failed to process in current instance.
+                */
+                $this->deletePaymentFromRedis($entries);
             }
         }
 
@@ -358,6 +372,36 @@ class Base extends BaseProcessor
         {
             $instrumentationData["response_description"]    = isset($content[self::GATEWAY_ERROR_MESSAGE]) ? $instrumentationData["response_description"] : $this->getGatewayErrorDesc($content);
             $instrumentationData["api_error_code"]          = $this->getApiErrorCode($content);
+        }
+    }
+
+    public function getRedisKey(array $entries){
+        foreach ($entries as &$entry)
+        {
+            $content = $this->getDataFromRow($entry);
+            return $content[self::PAYMENT_ID] . '_' . $this->getBankStatus($content[self::GATEWAY_RESPONSE_CODE]);
+        }
+    }
+
+    public function deletePaymentFromRedis(array $entries){
+        try
+        {
+            $redisKey = getRedisKey($entries);
+            $delResult = $this->app['redis']->del($redisKey);
+            $this->trace->info(
+                TraceCode::NACH_PROCESSING_REDIS_DELETE_KEY,
+                [
+                    'redisKey' => $redisKey,
+                    'delValue' => $delResult,
+                ]);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::NACH_PROCESSING_REDIS_FAILURE
+            );
         }
     }
 }

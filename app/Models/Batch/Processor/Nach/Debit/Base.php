@@ -341,4 +341,12 @@ class Base extends BaseProcessor
             return $this->getPayment($content);
         }
     }
+
+    public function getRedisKey(array $entries){
+        foreach ($entries as &$entry)
+        {
+            $content = $this->getDataFromRow($entry);
+            return $content[self::PAYMENT_ID] . '_' . $this->getBankStatus($content[self::GATEWAY_RESPONSE_CODE]);
+        }
+    }
 }
