@@ -58,6 +58,8 @@ class Tracing
             'user_session',
             'user_identity',
             'user_pre_signup',
+            'merchant_tags',
+            'merchants_switch',
             ]
         );
 

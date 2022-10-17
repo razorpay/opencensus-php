@@ -168,7 +168,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/{mode}/reports/invoice', 'TransactionController@getInvoiceReport')->name('reports_invoice');
         Route::get('/{mode}/reports/{entity}', 'TransactionController@getResourceReport')->name('reports_entity');
         // This is a sensitive route
-        Route::get('settings/merchants/switch/{id}', 'UserController@switchCurrentMerchant');
+        Route::get('settings/merchants/switch/{id}', 'UserController@switchCurrentMerchant')->name('merchants_switch');
         // Invitation related (User side)
         Route::post('settings/invitations/{invite}/accept', 'InvitationsController@postAcceptMerchantInvitation');
 
