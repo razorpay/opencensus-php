@@ -1365,7 +1365,7 @@ class Route
         'payment_links_create'                     => ['post',            'payment_links',                                  'PlinkController@sendRequest'                                       ],
         'payment_links_subscription_activate'      => ['post',            'payment_links/subscriptions',                    'PlinkController@sendRequest'                                       ],
         'payment_links_subscription_deactivate'    => ['post',            'payment_links/subscriptions/deactivate',         'PlinkController@sendRequest'                                       ],
-        'payment_links_subscription_details'       => ['get',             'payment_links/subscriptions',                    'PlinkController@sendRequest'                                       ],
+        'payment_links_subscription_fetch'         => ['get',             'payment_links/subscriptions',                    'PlinkController@sendRequest'                                       ],
         'payment_links_plans_fetch'                => ['get',             'payment_links/plans',                            'PlinkController@sendRequest'                                       ],
         'payment_links_insights'                   => ['get',             'payment_links/insights',                         'PlinkController@sendRequest'                                       ],
         'payment_links_update'                     => ['patch',           'payment_links/{id}',                             'PlinkController@sendRequest'                                       ],
@@ -5453,6 +5453,9 @@ class Route
     //
 
     public static $proxy = [
+        'payment_links_subscription_activate',
+        'payment_links_subscription_deactivate',
+        'payment_links_subscription_fetch',
         'payment_update_b2b_invoice',
         'fetch_international_virtual_accounts',
         'create_international_virtual_accounts',
@@ -9620,6 +9623,9 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'payment_links_subscription_activate',
+            'payment_links_subscription_deactivate',
+            'payment_links_subscription_fetch',
             'fetch_international_virtual_accounts',
             'create_international_virtual_accounts',
             'payment_update_b2b_invoice',
@@ -10316,9 +10322,6 @@ class Route
             'payment_links_service_hosted_page',
             'payment_links_sign_payload',
             'payment_links_switch_versions',
-            'payment_links_subscription_activate',
-            'payment_links_subscription_deactivate',
-            'payment_links_subscription_details',
             'payment_links_plans_fetch',
             'payment_links_insights',
             'payment_mandate_hq_redirect_authenticate',
@@ -12105,9 +12108,6 @@ class Route
             'payment_links_switch_versions',
             'payment_links_v2_admin',
             'payment_links_ops_batch_cancel',
-            'payment_links_subscription_activate',
-            'payment_links_subscription_deactivate',
-            'payment_links_subscription_details',
             'payment_links_plans_fetch',
             'payment_links_insights',
             'payment_mandate_hq_redirect_authenticate',
