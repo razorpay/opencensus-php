@@ -56,7 +56,8 @@ class CmmaEscalation
                     $this->trace->info(TraceCode::CMMA_ESCALATION_EXCLUDE, [
                         'merchant_id'   => $merchantId
                     ]);
-                    return;
+
+                    continue;
                 }
 
                 $merchantName = $merchant->getName() ?? "undefined";
