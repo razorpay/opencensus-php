@@ -1050,18 +1050,27 @@ class Core extends Base\Core
 
     private function createLedgerEntryForSettlement(Transaction\Entity $txn, Settlement\Entity $settlement)
     {
+        if($txn->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+        {
+            return;
+        }
+
+        $balance = $txn->accountBalance;
+
+        if ((isset($balance) === true) and
+            ($balance->getType() !== Balance\Type::PRIMARY))
+        {
+            return;
+        }
+
         try
         {
-            if($txn->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === true)
+            $transactionMessage = SettlementJournalEvents::createTransactionMessageForSettlement($settlement, $txn);
+
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($transactionMessage)
             {
-
-                $transactionMessage = SettlementJournalEvents::createTransactionMessageForSettlement($settlement, $txn);
-
-                \Event::dispatch(new TransactionalClosureEvent(function () use ($transactionMessage)
-                {
-                    LedgerEntryJob::dispatchNow($this->mode, $transactionMessage);
-                }));
-            }
+                LedgerEntryJob::dispatchNow($this->mode, $transactionMessage);
+            }));
         }
         catch (\Exception $e)
         {
