@@ -129,7 +129,7 @@ class Client
 
         if ($method != self::GET)
         {
-            $data['body'] = $body ?? [];
+            $data['body'] = $body;
         }
 
         $responseArr;
