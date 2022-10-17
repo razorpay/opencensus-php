@@ -838,6 +838,8 @@ class FundTransfer extends Base
     {
         $iin = $this->fta->card->iinRelation;
 
+        $this->trace->info(TraceCode::INSIDE_GET_PAYMENT_MODE_FOR_CARD);
+
         if (empty($iin) === true)
         {
             throw new BadRequestValidationFailureException("iin is not valid mode for issuer");

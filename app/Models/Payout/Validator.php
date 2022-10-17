@@ -11,6 +11,7 @@ use RZP\Models\Card;
 use RZP\Models\Batch;
 use RZP\Models\Payout;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
@@ -652,6 +653,25 @@ class Validator extends Base\Validator
             $cardType    = $fundAccount->account->getType();
             $cardIin     = $fundAccount->account->getIin();
             $cardNetwork = $fundAccount->account->getNetwork();
+            $tokenIin    = $fundAccount->account->getTokenIin();
+
+            // This check is needed since the tokenIIN <> card IIN mapping might have changed and earlier
+            // fund accounts created on saved card flow might not be supported any more
+            if ((empty($tokenIin) === false) and
+                ($cardIin === substr($tokenIin,0,6)))
+            {
+                $app['trace']->error(TraceCode::CARD_BIN_NOT_FOUND_FOR_TOKEN_PAN,
+                                    [
+                                        'token_iin'    => $tokenIin,
+                                        'is_tokenised' => true
+                                    ]);
+
+                throw new Exception\BadRequestValidationFailureException(
+                    "Fund account not supported for payout creation.",
+                    null,
+                    []
+                );
+            }
 
             if($mode === Mode::CARD)
             {

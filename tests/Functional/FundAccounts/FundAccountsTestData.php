@@ -2571,7 +2571,7 @@ return [
         ],
     ],
 
-    'testCreateNonSavedCardFundAccountWithInvalidVaultTokenAssociated' => [
+    'testCreateNonSavedCardFundAccountWithInvalidVaultTokenGenerated' => [
         'request'   => [
             'content' => [
                 'account_type' => 'card',
@@ -2626,7 +2626,7 @@ return [
         ],
     ],
 
-    'testCreateRzpSavedCardFundAccountWithDifferentMerchant' => [
+    'testCreateRzpSavedCardFundAccountWithTokenEntityOfDifferentMid' => [
         'request'  => [
             'content' => [
                 'account_type' => 'card',

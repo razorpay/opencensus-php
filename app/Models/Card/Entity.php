@@ -1553,12 +1553,16 @@ class Entity extends Base\PublicEntity
                 $attributes[self::LAST4]      = $this->attributes[self::TOKEN_LAST_4];
 
                 $attributes[self::INPUT_TYPE] = Card\InputType::SERVICE_PROVIDER_TOKEN;
+
+                unset($attributes[self::NAME]);
             }
             else
             {
                 if ($this->isNetworkTokenisedCard() === true)
                 {
                     $attributes[self::INPUT_TYPE] = Card\InputType::RAZORPAY_TOKEN;
+
+                    unset($attributes[self::NAME]);
                 }
                 else
                 {
@@ -1752,6 +1756,7 @@ class Entity extends Base\PublicEntity
 
         if (($skip === false) and
             (isset($this->cardMetadata[$key]) === false) and
+            (str_contains($this->getVaultToken(), self::TEMP_VAULT_TOKEN_PREFIX) === true) and
             ($isAllowedIfInternalApp === true))
         {
             $this->cardMetadata = (new Card\CardVault)->getCardMetaData($this, $routeName);

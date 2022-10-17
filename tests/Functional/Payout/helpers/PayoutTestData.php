@@ -16413,6 +16413,33 @@ return [
         ],
     ],
 
+    'testCreatePayoutToRzpTokenisedCardWithInvalidTokenIin' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'fund_account_id' => 'fa_100000000002fa',
+                'amount'          => 100,
+                'mode'            => 'card',
+                'currency'        => 'INR',
+                'account_number'  => '2224440041626905',
+                'purpose'         => 'payout'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'description' => 'Fund account not supported for payout creation.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreatePayoutToRzpTokenisedCardThroughBankRails' => [
         'request'   => [
             'method'  => 'POST',

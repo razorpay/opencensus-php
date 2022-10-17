@@ -421,6 +421,8 @@ class Core extends Base\Core
         $cardIssuer     = $card->getIssuer();
         $cardVaultToken = $card->getCardVaultToken();
         $cardNetwork    = $card->getNetwork();
+        $tokenIin       = $card->getTokenIin();
+        $cardIin        = $card->getIin();
 
         //experiment for fund account of prepaid card type creation
         $prepaidCardVariant = $this->app->razorx->getTreatment(
@@ -449,7 +451,7 @@ class Core extends Base\Core
         // Querying m2p supported modes here because m2p supports debit as well as credit card payouts.
         // If a credit card is not supported for IMPS, NEFT, we check if m2p supports it.
         // If it does, we allow FA creation.
-        $m2pSupportedModeConfigs = (new FundTransfer\Mode)->getM2PSupportedChannelModeConfig($cardIssuer, $cardNetwork, $cardType, $card->getIin());
+        $m2pSupportedModeConfigs = (new FundTransfer\Mode)->getM2PSupportedChannelModeConfig($cardIssuer, $cardNetwork, $cardType, $cardIin);
 
         if ($cardType === Card\Type::DEBIT)
         {
@@ -494,6 +496,25 @@ class Core extends Base\Core
                     'issuer'           => $cardIssuer,
                     'card_vault_token' => $cardVaultToken,
                 ]);
+        }
+
+        // This check is needed since the tokenIIN <> card IIN mapping might have changed and earlier
+        // cards created might not be supported any more
+        if ((empty($tokenIin) === false) and
+            ($cardIin === substr($tokenIin,0,6)))
+        {
+            $this->trace->error(TraceCode::CARD_BIN_NOT_FOUND_FOR_TOKEN_PAN,
+                                 [
+                                     'token_iin'    => $tokenIin,
+                                     'is_tokenised' => true
+                                 ]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
+                null,
+                [],
+                "Token not supported for fund account creation."
+            );
         }
 
         $isTokenised = ($card->isTokenPan() === true) ? true : $card->isNetworkTokenisedCard();

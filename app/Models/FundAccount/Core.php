@@ -502,11 +502,12 @@ class Core extends Base\Core
                 {
                     $token = $this->repo->token->findByPublicId($accountInput[Card\Entity::TOKEN_ID]);
 
-                    // For now, we are blocking the saved card flow if the token entity is created by a different merchant
-                    $this->checkIfTokenIdBelongsToDifferentMerchant($token, $merchant);
-
                     // token entity will always have an associated card entity because of foreign key constraint
                     $account = $token->card;
+
+                    // For now, we are blocking the saved card flow if the token entity is created by a different merchant
+                    // or if the card characteristics don't match with that of a networkTokenisedCard
+                    $this->checkIfSavedCardFlowWithTokenIdIsAllowed($token, $account, $merchant);
 
                     (new Card\Core)->checkIfCardIsSupportedAndEnqueueForBeneficiaryRegistration($account, $merchant);
 
@@ -604,14 +605,26 @@ class Core extends Base\Core
         }
     }
 
-    public function checkIfTokenIdBelongsToDifferentMerchant($token, $merchant)
+    public function checkIfSavedCardFlowWithTokenIdIsAllowed($token, $card, $merchant)
     {
-        if ($token->merchant->getId() !== $merchant->getId())
+        $isSavedCardAllowed = (($card->isNetworkTokenisedCard() === true) and
+                               (empty($card->getTokenIin()) === false) and
+                               (empty($card->getTrivia()) === true));
+
+        $isTokenEntityAllowed = ($token->merchant->getId() === $merchant->getId());
+
+        if (($isSavedCardAllowed === false) or
+            ($isTokenEntityAllowed === false))
         {
             $this->trace->error(TraceCode::TOKEN_ENTITY_BELONGS_TO_DIFFERENT_MERCHANT,
                                 [
-                                    'token_merchant_id'  => $token->merchant->getId(),
-                                    'payout_merchant_id' => $merchant->getId()
+                                    'merchant_match'               => $isTokenEntityAllowed,
+                                    'correct_card_characteristics' => $isSavedCardAllowed,
+                                    'token_merchant_id'            => $token->merchant->getId(),
+                                    'payout_merchant_id'           => $merchant->getId(),
+                                    'is_network_tokenised_card'    => $card->isNetworkTokenisedCard(),
+                                    'trivia'                       => $card->getTrivia(),
+                                    'token_iin'                    => $card->getTokenIin()
                                 ]);
 
             throw new Exception\BadRequestException(
@@ -1286,19 +1299,6 @@ class Core extends Base\Core
 
                 $accountDetails = [
                     Vpa\Entity::ADDRESS => $vpa->getAddress(),
-                ];
-
-                break;
-
-            case Type::CARD :
-                /** @var Card\Entity $card */
-                $card = $fundAccount->account;
-
-                $accountDetails = [
-                    Card\Entity::NAME         => $card->getName(),
-                    Card\Entity::NUMBER       => $card->getMaskedCardNumber(),
-                    Card\Entity::EXPIRY_MONTH => $card->getExpiryMonth(),
-                    Card\Entity::EXPIRY_YEAR  => $card->getExpiryYear(),
                 ];
 
                 break;

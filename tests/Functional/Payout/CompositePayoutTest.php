@@ -12,11 +12,13 @@ use RZP\Models\Card\Type;
 use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Entity;
 use RZP\Models\Card\Network;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payout\WorkflowFeature;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
@@ -375,6 +377,8 @@ class CompositePayoutTest extends TestCase
                                                 Feature\Constants::S2S,
                                                 Feature\Constants::ALLOW_NON_SAVED_CARDS]);
 
+        (new AdminService)->setConfigKeys([ConfigKey::SET_CARD_METADATA_NULL => true]);
+
         $this->fixtures->create('iin', [
             'iin'     => 340169,
             'network' => Network::$fullName[Network::MC],
@@ -393,7 +397,7 @@ class CompositePayoutTest extends TestCase
                 case 'tokenize':
                     $response['token']       = 'pay_44f3d176b38b4cd2a588f243e3ff7b20';
                     $response['fingerprint'] = null;
-                    $response['scheme']      = '2';
+                    $response['scheme']      = '0';
                     break;
 
                 case 'cards/metadata/fetch':
@@ -425,15 +429,7 @@ class CompositePayoutTest extends TestCase
             return $response;
         };
 
-        $app = App::getFacadeRoot();
-
-        $cardVault = Mockery::mock('RZP\Services\CardVault', [$app])->makePartial();
-
-        $this->app->instance('card.cardVault', $cardVault);
-
-        $cardVault->shouldReceive('sendRequest')
-                  ->with(Mockery::type('string'), 'post', Mockery::type('array'))
-                  ->andReturnUsing($callable);
+        $this->mockCardVault($callable);
 
         $this->app['rzp.mode'] = EnvMode::TEST;
 
@@ -452,7 +448,21 @@ class CompositePayoutTest extends TestCase
 
         $card = $this->getDbLastEntity('card');
 
+        $cardAttributes = $card->getAttributes();
+
+        // Assert that card meta data is '0' (default value in cards table)
+        $this->assertEquals('0', $cardAttributes['iin']);
+        $this->assertEquals('0', $cardAttributes['name']);
+        $this->assertEquals('0', $cardAttributes['expiry_month']);
+        $this->assertEquals('0', $cardAttributes['expiry_year']);
+
+        $this->assertNull($card['trivia']);
         $this->assertEquals('pay_44f3d176b38b4cd2a588f243e3ff7b20', $card['vault_token']);
+
+        // Assert Public facing response
+        $this->assertEquals('', $response['fund_account']['card']['name']);
+        $this->assertArrayNotHasKey('iin', $response['fund_account']['card']);
+        $this->assertEquals($response['fund_account']['card']['input_type'], 'card');
 
         $this->fixtures->stripSign($response['id']);
 
@@ -516,8 +526,6 @@ class CompositePayoutTest extends TestCase
             'type'    => Type::CREDIT,
             'issuer'  => Issuer::YESB
         ]);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION    => 'on']);
 
         $callable = function($route, $method, $input) {
             $response = [
@@ -610,8 +618,6 @@ class CompositePayoutTest extends TestCase
             'issuer'  => Issuer::YESB
         ]);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION    => 'on']);
-
         $callable = function($route, $method, $input) {
             $response = [
                 'error'   => '',
@@ -652,6 +658,75 @@ class CompositePayoutTest extends TestCase
         $this->assertEquals('0c0e7db24cce4512bc9c71f2dbec7075', $card['vault_token']);
     }
 
+    public function testCreateCompositePayoutWithTokenisedCardFromOtherTSPWithoutSavingCardMetadataInDB()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
+                                                Feature\Constants::S2S,
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
+
+        (new AdminService)->setConfigKeys([ConfigKey::SET_CARD_METADATA_NULL => true]);
+
+        $this->fixtures->create('iin', [
+            'iin'     => 416021,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => Type::CREDIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $callable = function($route, $method, $input) {
+            $response = [
+                'error'   => '',
+                'success' => true,
+            ];
+
+            switch ($route)
+            {
+                case 'tokenize':
+                    $response['token']       = '0c0e7db24cce4512bc9c71f2dbec7075';
+                    $response['fingerprint'] = '5707cebd2f17c9cb2154ecc42bd7e0c0';
+                    $response['scheme']      = '0';
+                    break;
+            }
+
+            return $response;
+        };
+
+        $this->mockCardVault($callable);
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $ftsMock = Mockery::mock('RZP\Services\FTS\FundTransfer', [$this->app])->makePartial();
+
+        $this->app->instance('fts_fund_transfer', $ftsMock);
+
+        $ftsMock->shouldReceive('shouldAllowTransfersViaFts')
+                ->andReturn([true, 'Dummy']);
+
+        $this->ba->privateAuth();
+
+        $testData = &$this->testData['testCreateCompositePayoutWithTokenisedCardFromOtherTSP'];
+
+        $response = $this->startTest($testData);
+
+        $card = $this->getDbLastEntity('card');
+
+        $cardAttributes = $card->getAttributes();
+
+        // Assert that card meta data is '0' (default value in cards table)
+        $this->assertEquals('0', $cardAttributes['iin']);
+        $this->assertEquals('0', $cardAttributes['name']);
+        $this->assertEquals('0', $cardAttributes['expiry_month']);
+        $this->assertEquals('0', $cardAttributes['expiry_year']);
+
+        $this->assertEquals("1", $card['trivia']);
+        $this->assertEquals('0c0e7db24cce4512bc9c71f2dbec7075', $card['vault_token']);
+
+        // Assert Public facing response
+        $this->assertArrayNotHasKey('name', $response['fund_account']['card']);
+        $this->assertArrayNotHasKey('iin', $response['fund_account']['card']);
+        $this->assertEquals('service_provider_token', $response['fund_account']['card']['input_type']);
+    }
+
     public function testCreateCompositePayoutForTokenisedRzpSavedCardFlow()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
@@ -661,27 +736,41 @@ class CompositePayoutTest extends TestCase
         $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Chirag']);
 
         $this->fixtures->create('card', [
-            'id'                 => '1000000010card',
-            'expiry_month'       => 12,
-            'expiry_year'        => 2028,
-            'iin'                => '416021',
+            'id'                 => $cardId ?? '1000000010card',
+            'name'               => '0',
+            'expiry_month'       => '0',
+            'expiry_year'        => '0',
+            'iin'                => '0',
             'last4'              => '3002',
             'length'             => '16',
             'network'            => 'Visa',
-            'type'               => 'debit',
-            'issuer'             => 'ICIC',
+            'type'               => 'credit',
+            'issuer'             => 'SBIN',
             'vault'              => 'visa',
+            'trivia'             => null,
             'vault_token'        => 'JDzXk6S3CAjUn8',
             'global_fingerprint' => 'V0010014618091560597265901338',
             'country'            => 'IN',
             'token_expiry_month' => 12,
             'token_expiry_year'  => 2028,
-            'token_iin'          => '461015172',
-            'sub_type'           => 'consumer',
-            'category'           => 'Platinum'
+            'token_iin'          => '448966524',
+            'merchant_id'        => '10000000000000'
         ]);
 
-        $this->fixtures->create('token', ['id' => '100000000token', 'method' => 'card', 'card_id' => '1000000010card']);
+        $this->fixtures->create('token', [
+            'id'          => '100000000token',
+            'method'      => 'card',
+            'recurring'   => false,
+            'card_id'     => '1000000010card',
+            'merchant_id' => '10000000000000'
+        ]);
+
+        $this->fixtures->create('iin', [
+            'iin'     => 437551,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => \RZP\Models\Card\Type::CREDIT,
+            'issuer'  => Issuer::YESB
+        ]);
 
         $app = App::getFacadeRoot();
 
@@ -698,6 +787,9 @@ class CompositePayoutTest extends TestCase
 
         $response = $this->startTest();
 
+        // Assert Public facing response
+        $this->assertArrayNotHasKey('name', $response['fund_account']['card']);
+        $this->assertArrayNotHasKey('iin', $response['fund_account']['card']);
         $this->assertEquals('razorpay_token', $response['fund_account']['card']['input_type']);
     }
 
@@ -714,25 +806,25 @@ class CompositePayoutTest extends TestCase
         $this->fixtures->create('merchant', ['id' => '100000merchant']);
 
         $this->fixtures->create('card', [
-            'id'                 => '1000000010card',
-            'expiry_month'       => 12,
-            'expiry_year'        => 2028,
-            'iin'                => '416021',
-            'merchant_id'        => '100000merchant',
+            'id'                 => $cardId ?? '1000000010card',
+            'name'               => '0',
+            'expiry_month'       => '0',
+            'expiry_year'        => '0',
+            'iin'                => '0',
             'last4'              => '3002',
             'length'             => '16',
             'network'            => 'Visa',
-            'type'               => 'debit',
-            'issuer'             => 'ICIC',
+            'type'               => 'credit',
+            'issuer'             => 'SBIN',
             'vault'              => 'visa',
+            'trivia'             => null,
             'vault_token'        => 'JDzXk6S3CAjUn8',
             'global_fingerprint' => 'V0010014618091560597265901338',
             'country'            => 'IN',
             'token_expiry_month' => 12,
             'token_expiry_year'  => 2028,
-            'token_iin'          => '461015172',
-            'sub_type'           => 'consumer',
-            'category'           => 'Platinum'
+            'token_iin'          => '448966524',
+            'merchant_id'        => '100000merchant'
         ]);
 
         $this->fixtures->create('token', [
