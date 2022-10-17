@@ -46,6 +46,7 @@ function push_to_sonar
                 -Dsonar.projectVersion="$GIT_COMMIT_ID" \
                 -Dsonar.login="$SONAR_TOKEN" \
                 -Dsonar.sources="$SOURCE_DIR" \
+                -Dsonar.exclusions="$EXCLUDE_FILES" \
                 -Dsonar.php.coverage.reportPaths="$dir"/"$file"
     fi
 }

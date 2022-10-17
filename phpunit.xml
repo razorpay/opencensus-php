@@ -248,6 +248,18 @@
         <testsuite name="ES Ondemand Test Suite">
             <directory>./tests/Functional/Settlement/SettlementOndemand</directory>
         </testsuite>
+        <testsuite name="Onboarding APIs Test Suite">
+            <directory>./tests/Functional/Merchant/Products/</directory>
+            <file>./tests/Functional/Merchant/AccountV2DocumentsTest.php</file>
+            <file>./tests/Functional/Merchant/AccountV2Test.php</file>
+            <file>./tests/Functional/Merchant/StakeholderTest.php</file>
+            <file>./tests/Functional/Merchant/WebhookV2Test.php</file>
+
+            <file>./tests/Unit/Models/Merchant/MerchantTest.php</file>
+            <file>./tests/Unit/Models/Merchant/Detail/CoreTest.php</file>
+            <file>./tests/Unit/Models/Merchant/Detail/NeedsClarificationTest.php</file>
+            <file>./tests/Unit/Models/Merchant/Escalations/CoreTest.php</file>
+        </testsuite>
     </testsuites>
     <listeners>
         <listener class="\Symfony\Bridge\PhpUnit\SymfonyTestsListener">
