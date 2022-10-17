@@ -160,10 +160,14 @@ export default function AddEditSegment(props) {
   };
 
   const checkForExistingSegmentName = (e) => {
+    const { value } = e.target;
+    if (!value) {
+      return;
+    }
     splitzFetch({
       url: 'segment.v1.SegmentAPI/GetByName',
       data: {
-        segmentName: e.target.value,
+        segmentName: value,
       },
     })
       .then((res) => {
