@@ -17,6 +17,17 @@ class Coupons extends Base\Core
         'Klaviyo',
     ];
 
+    const SHOPIFY_CHECKOUT_USER_ERROR_CODES_DUE_TO_USER_INPUT = [
+        'DISCOUNT_NOT_FOUND',
+        'HIGHER_VALUE_DISCOUNT_APPLIED', // TODO: Needs more product understanding.
+        'DISCOUNT_LIMIT_REACHED',
+        'CUSTOMER_ALREADY_USED_ONCE_PER_CUSTOMER_DISCOUNT_NOTICE',
+    ];
+
+    const APPLY_COUPON_API_ERROR               = 'apply_coupon_api_error';
+    const APPLY_COUPON_NOT_APPLICABLE          = 'apply_coupon_not_applicable';
+    const APPLY_COUPON_API_CHECKOUT_USER_ERROR = 'apply_coupon_api_checkout_user_error';
+
     protected $monitoring;
 
     public function __construct()
@@ -142,25 +153,28 @@ class Coupons extends Base\Core
 
         $response = json_decode($response, true);
 
+        // Unexpected errors that need to be fixed.
         if (empty($response['errors']) === false)
         {
-            return $this->getInvalidCouponApplicationResponse($input, $response, 'apply_coupon_api_error');
+            return $this->getInvalidCouponApplicationResponse($input, $response, self::APPLY_COUPON_API_ERROR);
         }
 
         $data = $response['data']['checkoutDiscountCodeApplyV2'];
 
         $checkout = $data['checkout'];
 
+        // Errors due to user input, we need to catalog the possible error codes returned.
         if (empty($data['checkoutUserErrors']) === false || empty($checkout['discountApplications']['edges']) === true)
         {
-            return $this->getInvalidCouponApplicationResponse($input, $response, 'apply_coupon_api_checkout_user_error');
+            return $this->getInvalidCouponApplicationResponse($input, $response, self::APPLY_COUPON_API_CHECKOUT_USER_ERROR);
         }
 
         $promotions = $checkout['discountApplications']['edges'][0]['node'];
 
+        // User entered valid code but cart item validation failed.
         if ($promotions['applicable'] !== true)
         {
-            return $this->getInvalidCouponApplicationResponse($input, $response, 'apply_coupon_not_applicable');
+            return $this->getInvalidCouponApplicationResponse($input, $response, self::APPLY_COUPON_NOT_APPLICABLE);
         }
 
         $value = (new Utils)->formatNumber($checkout['lineItemsSubtotalPrice']['amount'] - $checkout['subtotalPrice']) * 100;
@@ -253,10 +267,10 @@ class Coupons extends Base\Core
      * @param $response
      * @return array
      */
-    protected function getInvalidCouponApplicationResponse($input, $response, $errorType): array
+    protected function getInvalidCouponApplicationResponse(array $input, array $response, string $errorType): array
     {
-        $this->monitoring->addTraceCount(Metric::SHOPIFY_1CC_APPLY_COUPON_FAILURE_COUNT, ['error_type' => $errorType]);
-
+        $this->pushMetricIfApplicable($response, $errorType);
+        // TODO: Trim error logs after some time.
         $this->trace->error(
             TraceCode::SHOPIFY_1CC_APPLY_COUPON_ERROR,
             [
@@ -264,5 +278,36 @@ class Coupons extends Base\Core
                 'response' => $response,
             ]);
         return (new Errors)->getInvalidCouponApplicationResponse();
+    }
+
+    // Log critical errors or checkout user errors that are unknown to us (considered unsafe).
+    protected function pushMetricIfApplicable(array $response, string $errorType): void
+    {
+        if (
+            ($errorType === self::APPLY_COUPON_API_ERROR) ||
+            (
+                empty($checkoutDiscountCodeApplyV2['checkoutUserErrors']) === false &&
+                $this->isCheckoutUserErrorSafe($response) === false
+            )
+        )
+        {
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_1CC_APPLY_COUPON_FAILURE_COUNT, ['error_type' => $errorType]);
+        }
+        return;
+    }
+
+    // TODO: Missing discount edges is not checked. Need more data before we can add it to the safe error list.
+    protected function isCheckoutUserErrorSafe(array $response): bool
+    {
+        $isSafe = false;
+        $checkoutDiscountCodeApplyV2 = $response['data']['checkoutDiscountCodeApplyV2'];
+        $checkoutUserErrors = $checkoutDiscountCodeApplyV2['checkoutUserErrors'];
+        // As this is an array it may return an unsafe error code so we iterate over
+        // all codes instead of breaking in the middle.
+        foreach ($checkoutUserErrors as $index => $value)
+        {
+            $isSafe = in_array($value['code'], self::SHOPIFY_CHECKOUT_USER_ERROR_CODES_DUE_TO_USER_INPUT);
+        }
+        return $isSafe;
     }
 }
