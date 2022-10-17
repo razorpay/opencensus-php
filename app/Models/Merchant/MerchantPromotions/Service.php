@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Error\ErrorCode;
+use RZP\Exception\BaseException;
 use RZP\Trace\TraceCode;
 use RZP\Http\Request\Requests;
 use RZP\Models\Merchant\Metric;
@@ -54,7 +55,7 @@ class Service extends Base\Service
 
                 $merchantOrderId = $rzpOrder->getReceipt();
             }
-            catch (Throwable $e)
+            catch (\Throwable $e)
             {
                 $this->trace->count(Metric::FETCH_COUPONS_ERROR_COUNT, $dimensions);
                 $ex = new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
@@ -230,7 +231,7 @@ class Service extends Base\Service
             try {
                 $rzpOrder = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
                 $merchantOrderId = $rzpOrder->getReceipt();
-            } catch (Throwable $e) {
+            } catch (\Throwable $e) {
                 $ex = new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
                 throw $ex;
             }
@@ -304,7 +305,7 @@ class Service extends Base\Service
                         (new Validator)->setStrictFalse()->validateInput('applyCouponInvalidRequestResponse', $decodedResponse);
                         return ['status_code' => 400, 'data' => $decodedResponse];
                 }
-            } catch (Throwable $e) {
+            } catch (\Throwable $e) {
                 $this->trace->count(Metric::MERCHANT_EXTERNAL_COUPON_VALIDITY_REQUEST_INVALID_RESPONSE_COUNT, $dimensions);
                 $ex = $e;
                 throw $e;
@@ -413,11 +414,11 @@ class Service extends Base\Service
                 $request['method']
             );
         }
-        catch (Throwable $e)
+        catch (\Throwable $e)
         {
             throw new Exception\ServerErrorException(
                 'Error while calling Merchant URL',
-                ErrorCode::SERVER_ERROR,
+                ErrorCode::SERVER_ERROR_MERCHANT_FETCH_COUPONS_EXTERNAL_CALL_EXCEPTION,
                 null,
                 $e
             );
