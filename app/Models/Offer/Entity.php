@@ -77,7 +77,7 @@ class Entity extends Base\PublicEntity
 
     //Attribute lengths
     const NAME_LENGTH               = 50;
-    const PAYMENT_METHOD_LENGTH     = 10;
+    const PAYMENT_METHOD_LENGTH     = 30;
     const PAYMENT_METHOD_TYPE_LENTH = 10;
     const PAYMENT_NETWORK_LENGTH    = 20;
     const ISSUER_LENGTH             = 20;

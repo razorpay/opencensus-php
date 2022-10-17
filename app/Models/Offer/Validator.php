@@ -14,6 +14,7 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Network;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Processor\Wallet;
+use RZP\Models\Payment\Processor\CardlessEmi;
 
 class Validator extends Base\Validator
 {
@@ -22,6 +23,7 @@ class Validator extends Base\Validator
     const EMI_ISSUER        = 'emi_issuer';
     const MERCHANT_CATEGORY = 'merchant_category';
     const OFFER_FEATURE_BLOCK = 'offer_feature_block';
+    const MIN_AMOUNT_CARDLESS_EMI = 'min_amount_cardless_emi';
 
     const CASHBACK_CRITERIA_PARAMS = [
         Entity::PERCENT_RATE,
@@ -31,10 +33,10 @@ class Validator extends Base\Validator
 
     protected static $createRules = [
         Entity::NAME                => 'sometimes|filled|string|max:50',
-        Entity::PAYMENT_METHOD      => 'filled|alpha|custom',
+        Entity::PAYMENT_METHOD      => 'filled|string|custom',
         Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card,emi|in:debit,credit',
         Entity::PAYMENT_NETWORK     => 'filled|alpha',
-        Entity::ISSUER              => 'filled|string|custom',
+        Entity::ISSUER              => 'filled|string',
         Entity::INTERNATIONAL       => 'sometimes_if:payment_method,card,emi|boolean',
         Entity::IINS                => 'filled|array',
         Entity::PERCENT_RATE        => 'filled|integer|min:0|max:10000',
@@ -111,6 +113,7 @@ class Validator extends Base\Validator
         Entity::MAX_PAYMENT_COUNT,
         Entity::LINKED_OFFER_IDS,
         Entity::MAX_CASHBACK,
+        Entity::ISSUER,
     ];
 
     protected static $emiSubventionValidators = [
@@ -257,12 +260,43 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateIssuer(string $attribute, string $issuer)
+    protected function validateIssuer(array $input)
     {
-        if ((IFSC::exists($issuer) === false) and (Wallet::exists($issuer) === false))
+
+        if (empty($input[Entity::ISSUER]))
+        {
+            return;
+        }
+
+        if ((empty($input[Entity::PAYMENT_METHOD]) === false) and
+            ($input[Entity::PAYMENT_METHOD] === Payment\Method::CARDLESS_EMI))
+        {
+            // If issuer is set, it should be a valid cardless emi provider
+            if (CardlessEmi::exists(($input[Entity::ISSUER])) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Invalid issuer name : '. $input[Entity::ISSUER]);
+            }
+            // Validate minimum amount required at provider level
+            return $this->validateMinAmountCardlessEmi($input);
+        }
+
+        if ((IFSC::exists($input[Entity::ISSUER]) === false) and
+            (Wallet::exists($input[Entity::ISSUER]) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
-                "Invalid issuer name : $issuer", $attribute);
+                'Invalid issuer name : '. $input[Entity::ISSUER]);
+        }
+    }
+
+    protected function validateMinAmountCardlessEmi($input)
+    {
+        // If minimum amount field is set, each cardless_emi providers requires minimum order amount
+        if ((empty($input[Entity::MIN_AMOUNT]) === false) and (
+                $input[Entity::MIN_AMOUNT] < CardlessEmi::MIN_AMOUNTS[$input[Entity::ISSUER]]))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Minimum amount for cardless emi provider " . $input[Entity::ISSUER] ." should be greater than Rs. " . CardlessEmi::MIN_AMOUNTS[$input[Entity::ISSUER]]/100);
         }
     }
 

@@ -10,7 +10,7 @@ class Fetch extends BaseFetch
     const RULES = [
         self::DEFAULTS => [
             Entity::MERCHANT_ID         => 'sometimes|alpha_num',
-            Entity::PAYMENT_METHOD      => 'sometimes|alpha',
+            Entity::PAYMENT_METHOD      => 'sometimes|string',
             Entity::PAYMENT_METHOD_TYPE => 'sometimes|alpha',
             Entity::PAYMENT_NETWORK     => 'sometimes|alpha',
             Entity::ISSUER              => 'sometimes|alpha',

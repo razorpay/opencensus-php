@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Constants\Entity;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\DbMigrationMetricsObserver;
+use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Helpers\RazorxTrait;
@@ -517,5 +518,17 @@ class OffersTest extends TestCase
         $this->assertEquals('read', $actualData['db_requests_before_migration']['action']);
         $this->assertGreaterThanOrEqual(1, $actualData['db_requests_before_migration']['count']);
 
+    }
+
+    public function testCreateCardlessEmiOfferWithIssuer()
+    {
+        $this->fixtures->merchant->enableCardlessEmi(Account::TEST_ACCOUNT);
+        $this->startTest();
+    }
+
+    public function testCreateCardlessEmiOfferWithoutIssuer()
+    {
+        $this->fixtures->merchant->enableCardlessEmi(Account::TEST_ACCOUNT);
+        $this->startTest();
     }
 }

@@ -1920,4 +1920,72 @@ return [
             ]
         ]
     ],
+
+    'testCreateCardlessEmiOfferWithIssuer' => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer',
+                'payment_method'      => 'cardless_emi',
+                'issuer'              => 'zestmoney',
+                "min_amount"          =>  10000,
+                "flat_cashback"       =>  1000,
+                'starts_at'           =>  1641014736,
+                'ends_at'             =>  1704091568,
+                'display_text'        => 'Some more details',
+                'terms'               => 'Some more details',
+                'block'               =>  1,
+                'type'                =>  'instant'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'active'              => true,
+                'name'                => 'Test Offer',
+                'payment_method'      => 'cardless_emi',
+                'issuer'              => 'zestmoney',
+                'min_amount'          =>  10000,
+                'flat_cashback'       =>  1000,
+                'starts_at'           =>  1641014736,
+                'ends_at'             =>  1704091568,
+                'type'                =>  'instant',
+                'display_text'        => 'Some more details',
+                'terms'               => 'Some more details'
+            ]
+        ]
+    ],
+
+    'testCreateCardlessEmiOfferWithoutIssuer' => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer',
+                'payment_method'      => 'cardless_emi',
+                "min_amount"          =>  200000,
+                "flat_cashback"       =>  10000,
+                'starts_at'           =>  1641014736,
+                'ends_at'             =>  1704091568,
+                'display_text'        => 'Some more details',
+                'terms'               => 'Some more details',
+                'block'               =>  1,
+                'type'                =>  'instant'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'active'              => true,
+                'name'                => 'Test Offer',
+                'payment_method'      => 'cardless_emi',
+                'min_amount'          =>  200000,
+                'flat_cashback'       =>  10000,
+                'starts_at'           =>  1641014736,
+                'ends_at'             =>  1704091568,
+                'type'                =>  'instant',
+                'display_text'        => 'Some more details',
+                'terms'               => 'Some more details'
+            ]
+        ]
+    ],
 ];

@@ -1392,6 +1392,7 @@ class PublicErrorDescription
     const OFFER_ORDER_AMOUNT_GREATER_OFFER_MAX_AMOUNT                               = 'Order Amount is greater than Offer Maximum amount';
     const OFFER_NOT_ACTIVE                                                          = 'Offer is inactive';
     const OFFER_NOT_APPLICABLE_ON_ISSUER                                            = 'Offer not applicable on selected issuer';
+    const OFFER_ORDER_AMOUNT_LESS_PROVIDER_MIN_TRANSACTION_AMOUNT                   = 'Order amount is less than Provider Minimum Transaction Amount';
 
     const BAD_REQUEST_D2C_WRONG_OTP                                                 = 'Wrong OTP, Make sure to enter the correct OTP.';
     const BAD_REQUEST_D2C_NON_OWNER_USER_NOT_ALLOWED                                = 'Access denied.';

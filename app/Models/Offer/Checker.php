@@ -10,6 +10,7 @@ use RZP\Models\Card\CobrandingPartner;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Emi;
+use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Card;
@@ -31,6 +32,7 @@ class Checker extends Base\Core
     protected $verbose;
 
     const CARD_USAGE = 'card_usage';
+    const MIN_AMOUNT_CARDLESS_EMI = 'min_amount_cardless_emi';
 
     /**
      * Properties used to check if offer is applicable on payment
@@ -45,7 +47,8 @@ class Checker extends Base\Core
         Entity::EMI_DURATIONS,
         self::CARD_USAGE,
         Entity::MIN_AMOUNT,
-        Entity::MAX_ORDER_AMOUNT
+        Entity::MAX_ORDER_AMOUNT,
+        self::MIN_AMOUNT_CARDLESS_EMI,
     ];
 
     public function __construct(Entity $offer, bool $verbose = false)
@@ -696,6 +699,23 @@ class Checker extends Base\Core
         }
 
         return $result;
+    }
+
+    protected function checkMinAmountCardlessEmi(): bool
+    {
+        $issuer = $this->payment->getIssuer();
+        $orderAmount = $this->order->getAmount();
+
+        // Order amount should be greater or equals than minimum transaction amount of cardless emi provider
+        if (($this->payment->getMethod() === Payment\Method::CARDLESS_EMI) and
+            (CardlessEmi::exists($issuer) === true) and
+            ($orderAmount < CardlessEmi::MIN_AMOUNTS[$issuer]))
+        {
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_ORDER_AMOUNT_LESS_PROVIDER_MIN_TRANSACTION_AMOUNT);
+            return false;
+        }
+
+        return true;
     }
 
     protected function fetchCardIIN(): string
