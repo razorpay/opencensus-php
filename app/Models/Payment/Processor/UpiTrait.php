@@ -346,4 +346,22 @@ trait UpiTrait
 
         return $remark;
     }
+
+    /**
+     * Returns true if the request is in testing environment
+     * and is to be routed through upi payment service
+     *
+     * @param string $rzpTestCaseID
+     *
+     * @return bool
+     */
+    private function isRearchBVTRequestForUPI(?string $rzpTestCaseID): bool
+    {
+        if (empty($rzpTestCaseID) === true)
+        {
+            return false;
+        }
+
+        return ((app()->isEnvironmentQA() === true) and (str_ends_with($rzpTestCaseID,'_rearchUPS') === true));
+    }
 }

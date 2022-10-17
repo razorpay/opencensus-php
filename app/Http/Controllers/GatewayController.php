@@ -16,6 +16,7 @@ use RZP\Services\NbPlus;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
+use RZP\Http\RequestHeader;
 use RZP\Gateway\Base\Action;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Gateway\Rule;
@@ -30,6 +31,7 @@ use Illuminate\Http\RedirectResponse;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Jobs\DynamicNetBankingUrlUpdater;
+use RZP\Models\Payment\Processor\UpiTrait;
 use RZP\Gateway\Utility as GatewayUtility;
 use RZP\Gateway\Netbanking\Base\Repository;
 use RZP\Gateway\Enach\Npci\Netbanking as EnachNb;
@@ -41,6 +43,8 @@ use RZP\Models\Gateway\Downtime\Webhook\Constants\Vajra as VajraConstants;
 
 class GatewayController extends Controller
 {
+    use UpiTrait;
+
     /**
      * This is a health Check API for third party url.
      * It basically hits external services (like payment gateway) through api.
@@ -1668,6 +1672,11 @@ class GatewayController extends Controller
         if (Payment\Gateway::isUpiPaymentServiceGateway($gateway) === false)
         {
             return false;
+        }
+
+        if ($this->isRearchBVTRequestForUPI(Request::header(RequestHeader::X_RZP_TESTCASE_ID)) === true)
+        {
+            return true;
         }
 
         $feature = 'ups'. '_' . $gateway . '_' . UpiPaymentService::PRE_PROCESS . '_' . 'v1';

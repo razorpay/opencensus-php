@@ -2895,6 +2895,13 @@ class Processor
             return;
         }
 
+        // Check if request in testing environment and is to be routed through Upi Payment Service
+        if ($this->isRearchBVTRequestForUPI($this->app['request']->header(RequestHeader::X_RZP_TESTCASE_ID)) === true)
+        {
+            $this->setPaymentService($payment, 'upips');
+            return;
+        }
+
         $variant = $this->getRazorxVariantForUPS($payment);
 
         if ($variant !== 'upips')
