@@ -190,4 +190,54 @@ class Shipping extends Base\Core
         ];
         return $client->sendStorefrontRequest(json_encode($graphqlQuery));
     }
+
+    public function getValueForErrorTypeDimension(array $response, string $default): string
+    {
+        if (empty($response['errors']) === false)
+        {
+            $errors = $response['errors'];
+            if ($this->hasVirtualProducts($errors) === true)
+            {
+                return 'virtual_product_found';
+            }
+            elseif ($this->isShippingAddressBlank($errors) === true)
+            {
+                return 'invalid_shipping_address';
+            }
+        }
+
+        if (empty($response['data']['checkoutShippingAddressUpdateV2']['checkoutUserErrors']) === false)
+        {
+            $checkoutUserErrors = $response['data']['checkoutShippingAddressUpdateV2']['checkoutUserErrors'];
+            if ($this->isShippingAddressBlank($checkoutUserErrors) === true)
+            {
+                return 'invalid_shipping_address';
+            }
+        }
+        return $default;
+    }
+
+    protected function hasVirtualProducts(array $errors): bool
+    {
+        $hasVirtualProducts = false;
+        foreach ($errors as $key => $value)
+        {
+            // We iterate over the entire array instead of breaking so in case a 2nd error exists we do not
+            // ignore it silently.
+            $hasVirtualProducts = $value['message'] === "You don't have any items that require shipping";
+        }
+        return $hasVirtualProducts;
+    }
+
+    protected function isShippingAddressBlank(array $errors): bool
+    {
+        $isShippingAddressBlank = false;
+        foreach ($errors as $key => $value)
+        {
+            // We iterate over the entire array instead of breaking so in case another error exists we do not
+            // ignore it silently.
+            $isShippingAddressBlank = $value['message'] === "Shipping address can't be blank" || $value['code'] === 'BLANK';
+        }
+        return $isShippingAddressBlank;
+    }
 }

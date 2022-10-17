@@ -708,17 +708,17 @@ class Service extends Base\Service
         or empty($response['data']['checkoutShippingAddressUpdateV2']['checkoutUserErrors']) === false)
         {
           // address has pincode and state so we can log it (no PII)
+          $errorType = (new Shipping)->getValueForErrorTypeDimension($response, 'update_address_failed');
           $this->trace->info(
               TraceCode::SHOPIFY_1CC_API_SHIPPING_ERROR,
               [
-                  'type'        => 'update_address_failed',
+                  'type'        => $errorType,
                   'response'    => $response,
                   'checkout_id' => $checkoutId,
                   'address'     => $address
               ]
           );
-
-          $this->monitoring->addTraceCount(Metric::FETCH_SHIPPING_INFO_ERROR_COUNT, ['error_type' => TraceCode::SHOPIFY_1CC_API_SHIPPING_ERROR]);
+          $this->monitoring->addTraceCount(Metric::FETCH_SHIPPING_INFO_ERROR_COUNT, ['error_type' => $errorType]);
 
           return [
               'id'			     => $address['id'],

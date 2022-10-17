@@ -301,18 +301,18 @@ class Core extends Base\Core
               or $body['data'] === null
               or empty($body['checkoutUserErrors']) === false)
             {
+                $errorType = (new Shipping)->getValueForErrorTypeDimension($body, 'fetch_shipping_rates_failed');
                 $this->trace->info(
                      TraceCode::SHOPIFY_1CC_API_SHIPPING_ERROR,
                      [
-                         'type'       => 'invalid_response_fetching_rates',
+                         'type'       => $errorType,
                          'response'   => $body,
                          'checkout_id' => $checkoutId,
                          'retries'    => $currentTries,
                          'time'       => millitime() - $start,
                      ]
                 );
-
-                $this->monitoring->addTraceCount(Metric::FETCH_SHIPPING_INFO_ERROR_COUNT, ['error_type' => 'fetch_shipping_rates_failed']);
+                $this->monitoring->addTraceCount(Metric::FETCH_SHIPPING_INFO_ERROR_COUNT, ['error_type' => $errorType]);
 
                 return [
                     'serviceable'  => false,
@@ -358,7 +358,7 @@ class Core extends Base\Core
              ]
         );
 
-        $this->monitoring->addTraceCount(Metric::FETCH_SHIPPING_INFO_ERROR_COUNT,['error_type'=>'retry_limit_exceeded_fetching_rates'] );
+        $this->monitoring->addTraceCount(Metric::FETCH_SHIPPING_INFO_ERROR_COUNT, ['error_type '=> 'retry_limit_exceeded_fetching_rates']);
 
         return [
             'serviceable'  => false,
