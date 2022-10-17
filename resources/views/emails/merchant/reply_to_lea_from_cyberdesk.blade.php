@@ -104,7 +104,7 @@
                                 <td>{{$payment_details->getMethod()}}</td>
                                 <td>{{$payment_details->getId()}}</td>
                                 <td>{{$payment_details->getStatus()}}</td>
-                                <td>{{$payment_details->getBaseAmount()}}</td>
+                                <td>{{number_format((float)$payment_details->getBaseAmount()/100, 2, '.', '')}}</td>
                                 <td>{{$payment_details->getEmail()}}</td>
                                 <td>{{$payment_details->getContact()}}</td>
                                 <td>{{$customer_ip_address}}</td>
