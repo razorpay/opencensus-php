@@ -50,6 +50,7 @@ const PaymentSchedule = (props) => {
                         index !== otherMethods.length - 1 ? 'mb-6 ' : ''
                       }schedule-row other-methods-row`}
                       key={`${paymentType}:${method}`}
+                      aria-label="methods"
                     >
                       <div className="section capitalize">{method}</div>
                       <div className="section capitalize text-right">
