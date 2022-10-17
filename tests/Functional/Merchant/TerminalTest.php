@@ -1960,8 +1960,7 @@ class TerminalTest extends TestCase
                 'merchant_id' => '10000000000000',
                 'gateway' => 'billdesk_optimizer',
                 'gateway_merchant_id' => '250000003',
-                'gateway_secure_secret' => "1231424",
-                'gateway_access_code'   => "dummy",
+                'gateway_secure_secret2' => "1231424",
                 'mode' => 3,
                 'type'    => [
                     'direct_settlement_with_refund' => '1'

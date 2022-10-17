@@ -467,9 +467,7 @@ class Terminal extends Base
             'card'                   => 1,
             'netbanking'             => 0,
             'gateway_merchant_id'    => 'abcd',
-            'gateway_access_code'    => 'test_access_code',
-            'gateway_secure_secret'  => 'secret',
-            'gateway_access_code'    => 'dummy',
+            'gateway_secure_secret2'  => 'secret',
             'mode'                   => 2,
         ];
 

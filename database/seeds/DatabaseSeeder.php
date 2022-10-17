@@ -3064,8 +3064,7 @@ class DatabaseSeeder extends Seeder
                 'card'                  => '1',
                 'netbanking'            => '0',
                 'gateway_merchant_id'   => 'test_billdesk_optimizer_mid',
-                'gateway_secure_secret' => Crypt::encrypt('test_secure_secret'),
-                'gateway_access_code'   => Crypt::encrypt('test_access_code'),
+                'gateway_secure_secret2' => Crypt::encrypt('test_secure_secret'),
                 'created_at'            => time(),
                 'updated_at'            => time(),
             ]
