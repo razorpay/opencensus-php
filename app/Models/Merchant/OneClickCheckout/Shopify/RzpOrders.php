@@ -63,7 +63,7 @@ class RzpOrders extends Base\Core
     {
         try
         {
-            (new Order\Service)->update($orderId, $notes);
+            (new Order\Service)->update($orderId, ['notes' => $notes]);
         }
         catch (\Exception $e)
         {

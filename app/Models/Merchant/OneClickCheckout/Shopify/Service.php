@@ -520,7 +520,7 @@ class Service extends Base\Service
 
         $notes['shopify_order_id'] = strval($shopifyOrder['order']['id']);
 
-        (new RzpOrders())->updateOrderNotes($rzpOrderId, ['notes' => $notes]);
+        (new RzpOrders())->updateOrderNotes($rzpOrderId, $notes);
 
         $shopifyOrderName = strval($shopifyOrder['order']['name']);
 
