@@ -278,7 +278,7 @@ class Processor extends Base\Core
             }
         }
 
-        if ($this->checkoutOrder !== null)
+        if ($this->checkoutOrder !== null && $qrPayment->isExpected())
         {
             $paymentArrayFromCheckoutOrder = (new CheckoutOrder\Core())->getPaymentArrayFromCheckoutOrder($this->checkoutOrder);
 
