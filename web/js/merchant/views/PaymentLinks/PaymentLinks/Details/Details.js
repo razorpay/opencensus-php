@@ -58,9 +58,8 @@ export default (props) => {
   const isSmsOrEmailSent = paymentlink.sms_status === 'sent' || paymentlink.email_status === 'sent';
 
   const isRemindersEnabled =
-    paymentlink.reminder_status &&
-    !(paymentlink.reminder_status === 'disabled' || paymentlink.reminder_status === 'failed');
-
+    paymentlink.reminders?.status &&
+    !(paymentlink.reminders.status === 'disabled' || paymentlink.reminders.status === 'failed');
   const isPaymentLinkClosed = isPaid || isCancelled || isExpired;
 
   const isContactDetailsAvl =
