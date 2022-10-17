@@ -14,6 +14,7 @@ const initialState = {
   loading: false,
   error: null,
   selectedPresetFromParent: null,
+  hasMoreOrders: true,
 };
 
 export const magicCODOrdersReducer = (state = initialState, action) => {
@@ -27,6 +28,7 @@ export const magicCODOrdersReducer = (state = initialState, action) => {
         loading: false,
         items: action.payload?.data?.items,
         error: null,
+        hasMoreOrders: action.payload?.data?.has_more,
         ...action.data,
       });
     case ACTIONS.FETCH_COD_ORDERS_ERROR:

@@ -26,7 +26,7 @@ export default class Pager extends Component {
   }
 
   render() {
-    const { length } = this.props;
+    const { length, hasMoreData } = this.props;
     const count = +this.props.count;
     const skip = +this.props.skip;
     const nextDisabled = length < count;
@@ -58,7 +58,7 @@ export default class Pager extends Component {
             <button
               type="button"
               class="btn btn-default btn-sm i"
-              disabled={nextDisabled}
+              disabled={nextDisabled || !hasMoreData}
               onClick={this.onNext}
             >
               <i class="i i-chevron-right" />

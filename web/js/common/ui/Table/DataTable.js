@@ -34,6 +34,7 @@ export default function DataTable(props) {
     customMobileRow,
     mobileColumns,
     onCellClick,
+    hasMoreData = true,
   } = props;
 
   const classes = `${noStripe ? '' : 'table-striped'} ${columns ? customClass : ''}`;
@@ -78,7 +79,15 @@ export default function DataTable(props) {
           <h4 class="empty-table-message">{`No ${title} Found!`}</h4>
         ))}
 
-      {paginate && <Pager count={count} skip={skip} length={items.length} onClick={paginate} />}
+      {paginate && (
+        <Pager
+          count={count}
+          skip={skip}
+          length={items.length}
+          onClick={paginate}
+          hasMoreData={hasMoreData}
+        />
+      )}
     </div>
   );
 }

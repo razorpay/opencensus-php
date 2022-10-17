@@ -30,7 +30,18 @@ import {
 const CanceledOrdersTab = (props) => {
   const { codOrdersData, fetchCODOrders, setTimeRange, updateFilters } = props;
 
-  const { id, receipt, riskTier, count, from, to, items, loading, skip } = codOrdersData;
+  const {
+    id,
+    receipt,
+    riskTier,
+    count,
+    from,
+    to,
+    items,
+    loading,
+    skip,
+    hasMoreOrders,
+  } = codOrdersData;
 
   const [itemsArray, setItemsArray] = useState([]);
 
@@ -138,6 +149,7 @@ const CanceledOrdersTab = (props) => {
         count={count}
         paginate={paginate}
         EmptyComponent={EmptyComponent}
+        hasMoreData={hasMoreOrders}
       />
     </div>
   );

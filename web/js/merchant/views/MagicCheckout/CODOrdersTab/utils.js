@@ -20,7 +20,7 @@ export const sortRiskTierUtil = (itemsArray, sortType) => {
 };
 
 export const showResultNotification = (args) => {
-  const { promise, showNotification, closeModal, isChecked = [], reviewType } = args;
+  const { promise, showNotification, closeModal, isChecked = new Set(), reviewType } = args;
   promise
     .then((res) => {
       const isSuccess = res.data
