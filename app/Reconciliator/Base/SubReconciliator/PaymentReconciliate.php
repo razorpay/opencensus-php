@@ -1331,7 +1331,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         }
 
         if ((empty($rowDetails[BaseReconciliate::REFERENCE_NUMBER]) === false) and
-            (($this->payment->getMethod() === Payment\Method::UPI) or 
+            (($this->payment->getMethod() === Payment\Method::UPI) or
              ($this->payment->getMethod() === Payment\Method::CARD)))
         {
             $this->setPaymentReference16($rowDetails[BaseReconciliate::REFERENCE_NUMBER]);
@@ -1360,6 +1360,19 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         if ($this->paymentIin === null)
         {
+            if (empty($this->payment->card->getIin()) === true)
+            {
+                $this->trace->info(TraceCode::RECON_INFO_ALERT, [
+                    'message'             => 'Payment card iin is absent.',
+                    'info_code'           => TraceCode::PAYMENT_CARD_IIN_MISSING,
+                    'payment_id'          => $this->payment->getId(),
+                    'gateway'             => $this->gateway,
+                    'batch_id'            => $this->batchId,
+                ]);
+
+                return;
+            }
+
             $this->createMissingIin($cardDetails);
 
             return;
