@@ -425,6 +425,10 @@ class Tracing
             // recurring
             'subscription_registration_charge_token',
             'emandate_batch_process',
+
+            // p2p_routes
+            'p2p_merchant_devices_fetch_all',
+            'p2p_merchant_vpa_fetch_all',
         ]);
     }
 
