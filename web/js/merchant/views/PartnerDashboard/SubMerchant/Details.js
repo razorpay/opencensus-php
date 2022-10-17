@@ -11,7 +11,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import Details from 'merchant/views/PartnerDashboard/SubMerchant/components/Details';
 
 import InviteMerchant from './Invite';
-import { trackListEvents } from '../ga';
+import { trackListEvents } from 'merchant/views/PartnerDashboard/ga';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
 
@@ -130,7 +130,7 @@ export default class SubmerchantDetailsContainer extends Component {
         });
         this.props.showNotification({
           type: 'error',
-          message: errors,
+          message: errors[0],
         });
       });
   };

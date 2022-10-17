@@ -22,7 +22,7 @@ import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
 import BatchValidate from 'merchant/containers/BatchNew/Validate';
 import { withRouter } from 'react-router-dom';
 
-import { trackAddNewMerchantEvents } from '../ga';
+import { trackAddNewMerchantEvents } from 'merchant/views/PartnerDashboard/ga';
 import SelectBox from 'merchant/views/PartnerDashboard/SubMerchant/components/SelectBox';
 import Button from 'common/new-ui/Button';
 import SocialShareGroup from 'merchant/views/PartnerDashboard/SubMerchant/components/SocialShareGroup';
@@ -217,7 +217,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
         );
         showNotification?.({
           type: 'error',
-          message: errors,
+          message: errors[0],
         });
       });
   };

@@ -36,7 +36,7 @@ import {
   trackClearAnalytics,
   trackReferral,
   trackAddNewMerchantEvents,
-} from '../ga';
+} from 'merchant/views/PartnerDashboard/ga';
 import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
 import { mediaWindowUrl } from './components/SocialShare';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
@@ -48,7 +48,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import AddNewSubMerchants from 'assets/onboarding/add-new-sub-merchants.png';
 import ShareReferralLink from 'assets/onboarding/share-referral-link.png';
-import Image from '../../../../common/ui/Image';
+import Image from 'common/ui/Image';
 
 const email = {
   title: 'Registered Email',
@@ -329,10 +329,10 @@ class ProductSubMerchantsList extends ListContainer {
       .then(() => {
         window.location.reload();
       })
-      .catch((errors) => {
+      .catch(({ errors }) => {
         this.props.showNotification({
           type: 'error',
-          message: errors,
+          message: errors[0],
         });
       });
   };

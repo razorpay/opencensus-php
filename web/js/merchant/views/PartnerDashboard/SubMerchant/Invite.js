@@ -11,7 +11,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import ModalHeader from 'common/ui/ModalHeader';
 import InputField from 'common/ui/Forms/InputField';
 
-@connect(state => ({ ...state.submerchant.item }), {
+@connect((state) => ({ ...state.submerchant.item }), {
   closeModal,
   inviteSubmerchant,
   showNotification,
@@ -20,11 +20,11 @@ import InputField from 'common/ui/Forms/InputField';
   form: 'InviteMerchant',
 })
 export default class Invite extends Component {
-  save = data => {
+  save = (data) => {
     const submerchantId = this.props.id;
     return this.props
       .inviteSubmerchant(submerchantId, data)
-      .then(data => {
+      .then((data) => {
         if (data) {
           this.props.showNotification({
             type: 'success',
@@ -36,7 +36,7 @@ export default class Invite extends Component {
       .catch(({ errors }) => {
         this.props.showNotification({
           type: 'error',
-          message: errors,
+          message: errors[0],
         });
       });
   };
@@ -44,10 +44,7 @@ export default class Invite extends Component {
     const { handleSubmit } = this.props;
     return (
       <div>
-        <ModalHeader
-          title="Invite Merchant"
-          onCloseClick={this.props.closeModal}
-        />
+        <ModalHeader title="Invite Merchant" onCloseClick={this.props.closeModal} />
 
         <div class="modal-body">
           <form>
@@ -63,13 +60,11 @@ export default class Invite extends Component {
             </div>
 
             <span class="help-block">
-              By inviting the merchant to sign up on the dashboard, you both can
-              manage the account.
+              By inviting the merchant to sign up on the dashboard, you both can manage the account.
             </span>
 
             <div class="alert alert-warning custom-banner arrow-up">
-              To change the registered email ID please, you can{' '}
-              <a href="#ticket">write to us</a>
+              To change the registered email ID please, you can <a href="#ticket">write to us</a>
             </div>
 
             <div class="Modal__Actions clearfix">
