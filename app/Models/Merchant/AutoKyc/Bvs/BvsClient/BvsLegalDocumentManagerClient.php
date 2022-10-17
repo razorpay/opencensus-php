@@ -4,10 +4,12 @@
 namespace RZP\Models\Merchant\AutoKyc\Bvs\BvsClient;
 
 
+use Carbon\Carbon;
 use RZP\Exception\IntegrationException;
 use Platform\Bvs\Legaldocumentmanager\V1 as legalDocumentManagerV1;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Detail\Metric;
+use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Trace\TraceCode;
 use Twirp\Error;
 use Platform\Bvs\Legaldocumentmanager\V1\TwirpError;
@@ -43,7 +45,30 @@ class BvsLegalDocumentManagerClient extends BaseClient
 
         try
         {
+            if (empty($this->merchant) === false)
+            {
+                $eventAttributes = [
+                    'time_stamp'    => Carbon::now()->getTimestamp(),
+                    'merchant_id'   => $this->merchant->getMerchantId(),
+                    'ip'            => $_SERVER['HTTP_X_IP_ADDRESS'] ?? $this->app['request']->ip()
+                ];
+
+                $this->app['segment-analytics']->pushTrackEvent($this->merchant, $eventAttributes, SegmentEvent::AGREEMENT_CREATION_REQUEST);
+            }
+
             $response = $this->legalDocumentManagerApiClient->CreateLegalDocuments($this->apiClientCtx, $legalDocumentCreateRequest);
+
+            if (empty($this->merchant) === false)
+            {
+                $eventAttributes = [
+                    'time_stamp'    => Carbon::now()->getTimestamp(),
+                    'merchant_id'   => $this->merchant->getMerchantId(),
+                    'ip'            => $_SERVER['HTTP_X_IP_ADDRESS'] ?? $this->app['request']->ip(),
+                    'response'      => $response,
+                ];
+
+                $this->app['segment-analytics']->pushTrackEvent($this->merchant, $eventAttributes, SegmentEvent::AGREEMENT_CREATION_RESPONSE);
+            }
 
             $requestSuccess = true;
 

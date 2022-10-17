@@ -121,4 +121,8 @@ class EventCode
     const PARTNER_ADDED_FIRST_SUBMERCHANT =  "Partner Added First Submerchant";
 
     const OFFERMTU_TARGETED_MERCHANT = "OfferMtu Targeted Merchant";
+
+    //Legal Consents
+    const AGREEMENT_CREATION_REQUEST = "Clickwrap Agreement Creation Request";
+    const AGREEMENT_CREATION_RESPONSE = "Clickwrap Agreement Creation Response";
 }
