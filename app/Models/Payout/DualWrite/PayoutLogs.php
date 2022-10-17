@@ -11,49 +11,71 @@ class PayoutLogs extends Base
 {
     public function dualWritePSPayoutLogs(Entity & $payout)
     {
-        $payoutLogsData = $this->getPayoutLogsDataFromPayoutService($payout->getId());
+        list($payoutLogsData, $initialStatus) = $this->getPayoutLogsDataFromPayoutService($payout->getId());
 
         foreach ($payoutLogsData as $status => $timestamp)
         {
-            if (in_array($status, Status::$timestampedStatuses, true) === false)
-            {
-                continue;
-            }
+            $this->setTimestampForStatusInPayout($payout, $status, $timestamp);
+        }
 
-            $timestampKey = $status . '_at';
+        if (empty($initialStatus) == false)
+        {
+            $this->setTimestampForStatusInPayout($payout, $initialStatus, $payout->getCreatedAt());
+        }
 
-            if ($status === Status::CREATED)
-            {
-                $timestampKey = Entity::INITIATED_AT;
-            }
-
-            if ($status === Status::INITIATED)
-            {
-                $timestampKey = Entity::TRANSFERRED_AT;
-            }
-
-            $payout->setAttribute($timestampKey, $timestamp);
+        if (empty($payoutLogsData) === true)
+        {
+            $this->setTimestampForStatusInPayout($payout, $payout->getStatus(), $payout->getCreatedAt());
         }
 
         $this->repo->payout->saveOrFail($payout);
+    }
+
+    protected function setTimestampForStatusInPayout(Entity & $payout, string $status, $timestamp)
+    {
+        if (in_array($status, Status::$timestampedStatuses, true) === false)
+        {
+            return;
+        }
+
+        $timestampKey = $status . '_at';
+
+        if ($status === Status::CREATED)
+        {
+            $timestampKey = Entity::INITIATED_AT;
+        }
+
+        if ($status === Status::INITIATED)
+        {
+            $timestampKey = Entity::TRANSFERRED_AT;
+        }
+
+        $payout->setAttribute($timestampKey, $timestamp);
     }
 
     protected function getPayoutLogsDataFromPayoutService(string $payoutId)
     {
         $payoutServicePayoutLogs = $this->repo->payout->getPayoutServicePayoutLogs($payoutId);
 
+        $payoutLogsData = [];
+
+        $initialStatus = null;
+
         if (count($payoutServicePayoutLogs) === 0)
         {
-            return [];
+            return [$payoutLogsData, $initialStatus];
         }
-
-        $payoutLogsData = [];
 
         foreach ($payoutServicePayoutLogs as $payoutServicePayoutLog)
         {
+            if (empty($initialStatus) === true)
+            {
+                $initialStatus = $payoutServicePayoutLog->from;
+            }
+
             $payoutLogsData[$payoutServicePayoutLog->to] = $payoutServicePayoutLog->created_at;
         }
 
-        return $payoutLogsData;
+        return [$payoutLogsData, $initialStatus];
     }
 }

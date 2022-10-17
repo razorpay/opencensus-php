@@ -427,7 +427,7 @@ class PayoutTest extends OAuthTestCase
                 'id' => 'randomid111112',
                 'payout_id' => 'randomid111111',
                 'event' => 'abc',
-                'from' => 'abc',
+                'from' => 'pending',
                 'to' => 'create_request_submitted',
                 'mode' => 'SYSTEM',
                 'triggered_by' => 'SYSTEM',
@@ -577,6 +577,7 @@ class PayoutTest extends OAuthTestCase
         $payoutData[Payout\Entity::ORIGIN] = 'api';
         $this->assertArraySubset($payoutData, $payout->toArray());
 
+        $this->assertEquals($payout->getCreatedAt(), $payout->getPendingAt());
         $this->assertEquals(1000000000, $payout->getCreateRequestSubmittedAt());
         $this->assertEquals(1000000001, $payout->getInitiatedAt());
         $this->assertEquals(1000000002, $payout->getTransferredAt());
