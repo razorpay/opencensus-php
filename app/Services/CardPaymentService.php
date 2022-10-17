@@ -902,7 +902,7 @@ class CardPaymentService
     //Migrate it as part of rearch to send 3ds2 details as part of AREQ
     protected function addThreeDSDetailsIfApplicable(array & $data)
     {
-        if( $data['input'][Entity::MERCHANT]->Is3dsDetailsRequiredEnabled() && $data['input']['card']['international'])
+        if( $data['input'][Entity::MERCHANT]->Is3dsDetailsRequiredEnabled())
         {
             $merchantId = $data['input'][Entity::MERCHANT]->getId();
             $network =  strtolower($data['input']['iin']['network']);
