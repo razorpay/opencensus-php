@@ -143,6 +143,7 @@ class Client
                 $response = (new HttpClient)->request($method, $this->endpoint, $data);
 
                 $responseArr = $this->parseResponse($response);
+                $lastStatusCode = $responseArr['status_code'];
                 $delay = $this->getBackoffIfRetriableRequest($responseArr, $apiType, $attempts);
                 if ($delay === -1)
                 {
@@ -181,15 +182,19 @@ class Client
         $this->trace->error(
             TraceCode::SHOPIFY_1CC_API_RETRY_EXCEEDED_LIMIT,
             [
-               'type'             => 'retry_exceeded',
-               'api_type'         => $apiType,
-               'attempt_number'   => $attempts,
-               'last_status_code' => $lastStatusCode,
+               'type'           => 'retry_exceeded',
+               'api_type'       => $apiType,
+               'attempt_number' => $attempts,
+               'status_code'    => $lastStatusCode,
             ]);
-            $this->monitoring->addTraceCount(
-                Metric::SHOPIFY_1CC_API_RATE_LIMIT,
-                ['error_type' => 'retry_exceeded', 'api_type' => $apiType]
-            );
+        $this->monitoring->addTraceCount(
+            Metric::SHOPIFY_1CC_API_RATE_LIMIT,
+            [
+                'error_type'  => 'retry_exceeded',
+                'api_type'    => $apiType,
+                'status_code' => $lastStatusCode,
+            ]
+        );
 
         if ($lastStatusCode >= 500)
         {
@@ -250,20 +255,24 @@ class Client
 
             case OneClickCheckout\Constants::ADMIN_GRAPHQL:
                 $cost = $body['extensions']['cost'] ?? [];
+                // TODO: Trim the trace log once issue is identified.
                 $this->trace->info(
                     TraceCode::SHOPIFY_1CC_RATE_LIMIT,
                     [
-                        'type'     => $apiType,
-                        'cost'     => $cost,
+                        'api_type'   => $apiType,
+                        'rate_limit' => $this->getConsumptionCost($cost),
+                        'headers'    => $headers,
                     ]);
                 break;
 
             case OneClickCheckout\Constants::ADMIN_REST:
+                // TODO: Trim the trace log once issue is identified.
                 $this->trace->info(
                     TraceCode::SHOPIFY_1CC_RATE_LIMIT,
                     [
-                        'type'       => $apiType,
+                        'api_type'   => $apiType,
                         'rate_limit' => $headers['X-Shopify-Shop-Api-Call-Limit'] ?? 'Throttled',
+                        'headers'    => $headers,
                     ]);
                 break;
         }
@@ -283,7 +292,7 @@ class Client
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_API_RETRY,
             [
-               'type'           => 'api_retry',
+               'type'           => 'retry_triggered',
                'api_type'       => $apiType,
                'status_code'    => $response['status_code'],
                'backoff_millis' => $delay/1000,
@@ -291,7 +300,11 @@ class Client
             ]);
         $this->monitoring->addTraceCount(
             Metric::SHOPIFY_1CC_API_RATE_LIMIT,
-            ['status_code' => $response['status_code'], 'api_type' => $apiType]
+            [
+                'error_type'  => 'retry_triggered',
+                'api_type'    => $apiType,
+                'status_code' => $response['status_code'],
+            ]
         );
         return $delay;
     }
@@ -326,5 +339,12 @@ class Client
 
         // graphql requests always return 200 even if it gets throttled so we check the response body
         return ($response['body']['errors'][0]['message'] ?? '') === 'Throttled' || $isStatusCodeRetriable;
+    }
+
+    protected function getConsumptionCost(array $cost): string
+    {
+        // TODO: Trim the trace log once issue is identified.
+        $estimatedCostPending = $cost['requestedQueryCost'] - $cost['requestedQueryCost']['throttleStatus']['currentlyAvailable'];
+        return strval($estimatedCostPending);
     }
 }
