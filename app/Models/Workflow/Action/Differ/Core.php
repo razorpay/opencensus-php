@@ -168,6 +168,7 @@ class Core extends Base\Core
             Entity::ENTITY_ID               => $esObject[Entity::ENTITY_ID] ?? '',
             Entity::ENTITY_NAME             => $esObject[Entity::ENTITY_NAME] ?? '',
             Entity::PERMISSION              => $esObject[Entity::PERMISSION] ?? '',
+            Entity::DIFF                    => $esObject[Entity::DIFF] ?? null,
         ];
     }
 

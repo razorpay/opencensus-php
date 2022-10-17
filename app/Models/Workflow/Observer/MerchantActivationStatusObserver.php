@@ -6,6 +6,7 @@ namespace RZP\Models\Workflow\Observer;
 use App;
 use Monolog\Logger;
 use RZP\Trace\TraceCode;
+use function Complex\theta;
 use RZP\Models\Merchant\Entity;
 use RZP\Models\Merchant\Metric;
 use Razorpay\Trace\Logger as Trace;
@@ -53,6 +54,13 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
 
         $this->activationStatus   = $input[DifferEntity::PAYLOAD][MerchantDetailEntity::ACTIVATION_STATUS] ?? "";
 
+        if (is_null($input[DifferEntity::DIFF])===false)
+        {
+            $this->oldActivationStatus  =  $input[DifferEntity::DIFF][DifferEntity::OLD][MerchantDetailEntity::ACTIVATION_STATUS] ?? null;
+
+            $this->newActivationStatus  =  $input[DifferEntity::DIFF][DifferEntity::NEW][MerchantDetailEntity::ACTIVATION_STATUS] ?? null;
+        }
+
         if (key_exists(DifferEntity::PERMISSION, $input) === true) // permission at times might not be present
         {
             $this->permissionName   = $input[DifferEntity::PERMISSION];
@@ -97,19 +105,23 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
 
         $data = Constants::MERCHANT_ACTION_METRO_BODY;
 
-        $data[DifferEntity::ENTITY_ID] = $this->entityId;
+        if( $this->permissionName === PermissionName::EDIT_ACTIVATE_MERCHANT)
+        {
+            $data[DifferEntity::ENTITY_ID] = $this->entityId;
 
-        $data[Constants::WORKFLOW_ACTION_ID] = 'w_action_' . $observerData[DifferEntity::ACTION_ID];
+            $data[Constants::WORKFLOW_ACTION_ID] = 'w_action_' . $observerData[DifferEntity::ACTION_ID];
 
-        $data[Constants::PERMISSION_NAME] = PermissionName::EDIT_ACTIVATE_MERCHANT;
+            $data[Constants::PERMISSION_NAME] = $this->permissionName;
 
-        $data[Constants::OLD_DATA][Constants::ACTIVATION_STATUS] = Status::UNDER_REVIEW;
+            $data[Constants::OLD_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->oldActivationStatus)===true) ? Status::UNDER_REVIEW : $this->oldActivationStatus ;
 
-        $data[Constants::NEW_DATA][Constants::ACTIVATION_STATUS] = Status::REJECTED;
+            $data[Constants::NEW_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->newActivationStatus)===true) ? Status::REJECTED : $this->newActivationStatus ;
 
-        $data[Constants::STATUS] = Status::REJECTED;
+            $data[Constants::STATUS] = Status::REJECTED;
 
-        $this->publishToMetroTopic($data, Constants::CMMA_WORKFLOW_METRO_TOPIC);
+            $this->publishToMetroTopic($data, Constants::CMMA_WORKFLOW_METRO_TOPIC);
+        }
+
     }
 
     public function onCreate(array $observerData)
@@ -129,9 +141,9 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
 
             $data[Constants::PERMISSION_NAME] = PermissionName::NEEDS_CLARIFICATION_RESPONDED;
 
-            $data[Constants::OLD_DATA][Constants::ACTIVATION_STATUS] = Status::NEEDS_CLARIFICATION;
+            $data[Constants::OLD_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->oldActivationStatus)===true) ? Status::NEEDS_CLARIFICATION : $this->oldActivationStatus;
 
-            $data[Constants::NEW_DATA][Constants::ACTIVATION_STATUS] = Status::UNDER_REVIEW;
+            $data[Constants::NEW_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->newActivationStatus)===true) ? Status::UNDER_REVIEW : $this->newActivationStatus;
 
             $data[Constants::STATUS] = Constants::OPEN;
 
@@ -147,20 +159,22 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
 
         $data = Constants::MERCHANT_ACTION_METRO_BODY;
 
-        $data[DifferEntity::ENTITY_ID] = $this->entityId;
+        if ($this->permissionName === PermissionName::EDIT_ACTIVATE_MERCHANT)
+        {
+            $data[DifferEntity::ENTITY_ID] = $this->entityId;
 
-        $data[Constants::WORKFLOW_ACTION_ID] = 'w_action_' . $observerData[DifferEntity::ACTION_ID];
+            $data[Constants::WORKFLOW_ACTION_ID] = 'w_action_' . $observerData[DifferEntity::ACTION_ID];
 
-        $data[Constants::PERMISSION_NAME] = PermissionName::EDIT_ACTIVATE_MERCHANT;
+            $data[Constants::PERMISSION_NAME] = $this->permissionName;
 
-        $data[Constants::OLD_DATA][Constants::ACTIVATION_STATUS] = Status::UNDER_REVIEW;
+            $data[Constants::OLD_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->oldActivationStatus)===true) ? Status::UNDER_REVIEW : $this->oldActivationStatus;
 
-        $data[Constants::NEW_DATA][Constants::ACTIVATION_STATUS] = Status::ACTIVATED;
+            $data[Constants::NEW_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->newActivationStatus)===true) ? Status::ACTIVATED : $this->newActivationStatus;
 
-        $data[Constants::STATUS] = Constants::EXECUTED;
+            $data[Constants::STATUS] = Constants::EXECUTED;
 
-        $this->publishToMetroTopic($data, Constants::CMMA_WORKFLOW_METRO_TOPIC);
-
+            $this->publishToMetroTopic($data, Constants::CMMA_WORKFLOW_METRO_TOPIC);
+        }
     }
 
     public function getMerchantId()

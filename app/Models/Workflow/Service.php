@@ -214,6 +214,7 @@ class Service extends Base\Service
                     DifferEntity::ENTITY_ID               => $workflowData[DifferEntity::ENTITY_ID] ?? '',
                     DifferEntity::ENTITY_NAME             => $workflowData[DifferEntity::ENTITY_NAME] ?? '',
                     DifferEntity::PERMISSION              => $workflowData[DifferEntity::PERMISSION] ?? '',
+                    DifferEntity::DIFF                    => $workflowData[DifferEntity::DIFF],
                 ];
             }
         }
@@ -256,7 +257,7 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::ACTION_OBSERVER_TRACE, [
             'state' => $state
         ]);
-        
+
         $observerData = $workflowRequestData[DifferEntity::WORKFLOW_OBSERVER_DATA] ?? [];
         // action id at times is not present in $workflowRequestData, pass it explicitly
         $observerData[DifferEntity::ACTION_ID] = $actionId;
