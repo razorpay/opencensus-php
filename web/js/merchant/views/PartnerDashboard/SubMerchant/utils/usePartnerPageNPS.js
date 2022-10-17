@@ -3,7 +3,6 @@ import { createSidetab } from '@typeform/embed';
 import { getItem, setItem } from 'common/utils/localStorage';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { showNotification } from 'merchant_common/reducers/notifications';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import store from 'merchant/store';
@@ -27,6 +26,8 @@ export default function usePartnerPageNPS(surveyID, isUserPartner = false, isPar
 
   const loadFuxData = async () => {
     try {
+      const { isOwner } = user;
+      if (!isOwner) return false;
       const { data } = await merchantFetch({
         url: 'partner/first_user_experience',
         method: 'get',
@@ -35,11 +36,6 @@ export default function usePartnerPageNPS(surveyID, isUserPartner = false, isPar
       const partnerMTUCheck = isPartnerMTU ? first_earning_generated : true;
       return partnerMTUCheck && first_submerchant_added;
     } catch (_) {
-      showNotification({
-        type: 'error',
-        message: 'An error occurred in connecting to the server',
-        hidePrevious: true,
-      });
       return false;
     }
   };
