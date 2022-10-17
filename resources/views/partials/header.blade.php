@@ -7,6 +7,9 @@
   <meta name="author" content="Razorpay">
   <link rel="icon" type="image/png"  href="https://razorpay.com/favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  @if(env('APP_ENV') !== 'production')
+    <meta name="robots" content="noindex">
+  @endif
   @include('partials/environment')
   @include('partials/signup-redirect')
   @if(env('APP_ENV') === 'production')
