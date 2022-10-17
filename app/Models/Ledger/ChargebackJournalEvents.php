@@ -6,12 +6,12 @@ use RZP\Models\Adjustment\Entity;
 
 class ChargebackJournalEvents extends BaseJournalEvents
 {
-    public static function createTransactionMessageForRazorpayDisputeDeduct(Entity $adjustment): array
+    public static function createTransactionMessageForRazorpayDisputeDeduct(Entity $adjustment, $dispute_public_id): array
     {
         $adjustmentAmount = $adjustment->getAmount() != null ? abs($adjustment->getAmount()) : 0;
 
         return array(
-            Constants::TRANSACTOR_ID                => $adjustment->getEntityId(),
+            Constants::TRANSACTOR_ID                => $dispute_public_id,
             Constants::MERCHANT_ID                  => $adjustment->getMerchantId(),
             Constants::API_TRANSACTION_ID           => $adjustment->getTransactionId(),
             Constants::CURRENCY                     => $adjustment->getCurrency(),
@@ -25,12 +25,12 @@ class ChargebackJournalEvents extends BaseJournalEvents
         );
     }
 
-    public static function createTransactionMessageForRazorpayDisputeReversal(Entity $adjustment): array
+    public static function createTransactionMessageForRazorpayDisputeReversal(Entity $adjustment, $dispute_public_id): array
     {
         $adjustmentAmount = $adjustment->getAmount() != null ? abs($adjustment->getAmount()) : 0;
 
         return array(
-            Constants::TRANSACTOR_ID                => $adjustment->getEntityId(),
+            Constants::TRANSACTOR_ID                => $dispute_public_id,
             Constants::MERCHANT_ID                  => $adjustment->getMerchantId(),
             Constants::API_TRANSACTION_ID           => $adjustment->getTransactionId(),
             Constants::CURRENCY                     => $adjustment->getCurrency(),

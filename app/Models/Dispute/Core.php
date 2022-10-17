@@ -593,7 +593,9 @@ class Core extends Base\Core
 
             $this->updateDeductionSourceTypeAndId($dispute, $adjustment->getEntityName(), $adjustment->getId());
 
-            $this->createLedgerEntriesForRazorpayDisputeDeduct($adjustment);
+            $dispute_public_id = $dispute->getPublicId();
+            
+            $this->createLedgerEntriesForRazorpayDisputeDeduct($adjustment, $dispute_public_id);
         }
 
         $dispute->setAmountDeducted($amount);
@@ -616,7 +618,9 @@ class Core extends Base\Core
         {
             $adjustment = (new Adjustment\Core)->createAdjustmentForSource($input, $dispute);
 
-            $this->createLedgerEntriesForRazorpayDisputeReversal($adjustment);
+            $dispute_public_id = $dispute->getPublicId();
+
+            $this->createLedgerEntriesForRazorpayDisputeReversal($adjustment, $dispute_public_id);
         }
 
         $dispute->setAmountReversed($amount);
@@ -626,7 +630,7 @@ class Core extends Base\Core
         $dispute->resetDeductionSourceAttributes();
     }
 
-    private function createLedgerEntriesForRazorpayDisputeDeduct(Adjustment\Entity $adjustment)
+    private function createLedgerEntriesForRazorpayDisputeDeduct(Adjustment\Entity $adjustment, $dispute_public_id)
     {
         if($adjustment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
         {
@@ -635,7 +639,7 @@ class Core extends Base\Core
 
         try
         {
-            $transactionMessage = ChargebackJournalEvents::createTransactionMessageForRazorpayDisputeDeduct($adjustment);
+            $transactionMessage = ChargebackJournalEvents::createTransactionMessageForRazorpayDisputeDeduct($adjustment, $dispute_public_id);
 
             LedgerEntryJob::dispatchNow($this->mode, $transactionMessage);
 
@@ -660,7 +664,7 @@ class Core extends Base\Core
         }
     }
 
-    private function createLedgerEntriesForRazorpayDisputeReversal(Adjustment\Entity $adjustment)
+    private function createLedgerEntriesForRazorpayDisputeReversal(Adjustment\Entity $adjustment, $dispute_public_id)
     {
         if($adjustment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
         {
@@ -669,7 +673,7 @@ class Core extends Base\Core
 
         try
         {
-            $transactionMessage = ChargebackJournalEvents::createTransactionMessageForRazorpayDisputeReversal($adjustment);
+            $transactionMessage = ChargebackJournalEvents::createTransactionMessageForRazorpayDisputeReversal($adjustment, $dispute_public_id);
 
             \Event::dispatch(new TransactionalClosureEvent(function () use ($transactionMessage) {
                 // Job will be dispatched only if the transaction commits.
