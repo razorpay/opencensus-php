@@ -7128,11 +7128,17 @@ trait Authorize
             if ((empty($token) === true) or
                 ($payment->isMethodCardOrEmi() === false))
             {
+                $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
+                    'method'     => $payment->isMethodCardOrEmi()
+                ]);
                 return;
             }
 
             if (($token->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === false) && ($token->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION) === false))
             {
+                $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
+                    'featureEnabled'        => $token->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE)
+                ]);
                 return;
             }
 
@@ -7163,12 +7169,18 @@ trait Authorize
 
             if ($core->checkIfTokenisationApplicable($token) === false)
             {
+                $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
+                    'tokenApplicable'     => $core->checkIfTokenisationApplicable($token)
+                ]);
                 return;
             }
 
             if (($token->isGlobal() === true) &&
                 ((new Payment\TokenisationExperiment())->shouldProvisionGlobalToken($token->card) === false)
             ) {
+                $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
+                    'isGlobal'     => $token->isGlobal()
+                ]);
                 // Sync. provisioning of globals network tokens is controlled using a razorx contextramp experiment
                 // to control the amount of traffic we send to the networks & gradually ramp it up.
                 return;
@@ -7180,6 +7192,11 @@ trait Authorize
             {
                 if ($isTokenizationAllowed === false or $authReferenceNumber === '')
                 {
+                    $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
+                        'authReferenceNumber'  => $authReferenceNumber,
+                        'tokenizedAllowed'     => $isTokenizationAllowed
+                    ]);
+
                     return;
                 }
             }
@@ -7214,6 +7231,12 @@ trait Authorize
                 $asyncTokenisationJobId = "paymentmigrate";
 
                 SavedCardTokenisationJob::dispatch($this->mode, $token->getId(), $asyncTokenisationJobId,  $payment->getId());
+
+                $this->trace->info(TraceCode::TRACE_TOKEN_DISPATCH_LOG, [
+                    'tokenid'     =>  $token->getId(),
+                    'async'       =>  $asyncTokenisationJobId,
+                    'paymentId'    => $payment->getId()
+                ]);
 
                 return;
             }

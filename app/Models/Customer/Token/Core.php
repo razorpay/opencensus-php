@@ -2697,11 +2697,19 @@ class Core extends Base\Core
         if (($token->getMethod() !== Method::CARD) or
             ($token->hasBeenAcknowledged() === false))
         {
+            $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
+                'method'                => $this->payment->isMethodCardOrEmi(),
+                'hasBeenAcknowledged'   => $token->hasBeenAcknowledged()
+            ]);
             return false;
         }
 
         if ($token->isExpired() === true)
         {
+            $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
+                'expired'   => $token->isExpired()
+            ]);
+
             return false;
         }
 
@@ -2711,12 +2719,22 @@ class Core extends Base\Core
         if (($card->isRzpTokenisedCard() === false) or
             ($card->isInternational() === true))
         {
+            $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
+                'rzptokenizedcard'   => $card->isRzpTokenisedCard(),
+                'isInternational'    => $card->isInternational()
+            ]);
+
             return false;
         }
 
         if (($token->isRecurring() === true) and
             ($token->getRecurringStatus() !== Token\RecurringStatus::CONFIRMED))
         {
+            $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
+                'isRecurring'        => $token->isRecurring(),
+                'RecurringStatus'    => $token->getRecurringStatus()
+            ]);
+
             return false;
         }
 

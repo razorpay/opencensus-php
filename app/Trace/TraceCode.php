@@ -1324,6 +1324,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GLOBAL_CARD_TOKEN_PAYMENT_SHOULD_NOT_BE_ALLOWED       = 'GLOBAL_CARD_TOKEN_PAYMENT_SHOULD_NOT_BE_ALLOWED';
     const PAYMENT_SAVE_METHOD                                   = 'PAYMENT_SAVE_METHOD';
     const TRACE_MISC_CODE                                       = 'TRACE_MISC_CODE';
+    const TRACE_TOKEN_MIGRATION_FAILURE                         = 'TRACE_TOKEN_MIGRATION_FAILURE';
+    const TRACE_TOKEN_DISPATCH_LOG                              = 'TRACE_TOKEN_DISPATCH_LOG';
     const PAYMENT_APP_TOKEN_NOT_FOUND                           = 'PAYMENT_APP_TOKEN_NOT_FOUND';
     const PAYMENT_UPDATE_TOKEN                                  = 'PAYMENT_UPDATE_TOKEN';
     const SAVED_CARDS_UPDATED_WITH_IIN                          = 'SAVED_CARDS_UPDATED_WITH_IIN';
