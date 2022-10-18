@@ -71,7 +71,7 @@
 @include('partials/rzpq-interface')
 
 <!-- if logged in and not on website -->
-@if (($isConfirmed || $isMobileConfirmed) and $isPreSignupComplete and (app('request')->input('auth_source') !== 'website' || app('request')->input('auth_source') !== 'website_homepage'))
+@if (($isConfirmed || $isMobileConfirmed) and $isPreSignupComplete and (app('request')->input('auth_source') !== 'website' and app('request')->input('auth_source') !== 'website_homepage'))
   <!-- Preconnect to required domains  -->
   <link rel="preload" href="https://cdn.razorpay.com/dashboard/dist/merchant-entry.js" as="script">
   <link rel="dns-prefetch" href="https://rzp-1415-prod-dashboard-activation.s3.amazonaws.com">
