@@ -378,8 +378,6 @@ function StatusDetails(props) {
                                         src={`${window.cdnBaseUrl}/static/assets/downtimes/refresh-disabled.svg`}
                                         className="refresh-action"
                                         alt="Can't refresh"
-                                        height="48"
-                                        width="48"
                                       />
                                       <Popover align="bottom" theme="light">
                                         <PopoverBody>
