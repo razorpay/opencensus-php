@@ -408,6 +408,11 @@ class Axis extends Base
             {
                 try
                 {
+                    if(empty($settlementRefunds->payment->getCapturedAt()) === true)
+                    {
+                        continue;
+                    }
+
                     $totalTransactions++;
 
 //                    $gatewayRequestID = $cpsAuthData[$settlementRefunds->payment->getId()]['gateway_reference_id2'] ?? '';
@@ -594,7 +599,7 @@ class Axis extends Base
         $refundIds = array_key_exists('refunds',$data) === true ? array_pluck($data['refunds'], 'id'): [];
 
         $refundIds = array_values($refundIds);
-        
+
         $gatewayKeyNames = [
             'requestID',
         ];
