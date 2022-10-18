@@ -115,6 +115,7 @@ export const PaymentMethodsOptions = [
   { label: 'UPI', name: PAYMENT_METHODS.UPI },
   { label: 'EMI', name: PAYMENT_METHODS.EMI },
   { label: 'Pay Later', name: PAYMENT_METHODS.PayLater },
+  { label: 'Cardless EMI', name: PAYMENT_METHODS.CardLessEmi },
 ];
 
 export const SUBSCRIPTION_OFFERS_PAYMENT_METHODS = {
@@ -188,6 +189,20 @@ export const WalletIssuersOptions = [
   { label: 'M PESA', name: 'mpesa' },
   { label: 'Phone Pe', name: 'phonepe' },
   { label: 'Paypal', name: 'paypal' },
+];
+
+export const CardLessEmiIssuersOptions = [
+  { label: '--Select Issuers--', name: '', minAmount: 0 },
+  { label: 'Zestmoney', name: 'zestmoney', minAmount: 99 },
+  { label: 'Walnut 369', name: 'walnut369', minAmount: 900 },
+  { label: 'Earlysalary', name: 'earlysalary', minAmount: 3000 },
+  { label: 'HDFC Bank', name: 'hdfc', minAmount: 5000 },
+  { label: 'ICICI Bank', name: 'icic', minAmount: 7000 },
+  { label: 'Kotak Bank', name: 'kkbk', minAmount: 3000 },
+  { label: 'Federal Bank', name: 'fdrl', minAmount: 5000 },
+  { label: 'IDFC First Bank', name: 'idfb', minAmount: 5000 },
+  { label: 'Home Credit Bank', name: 'hcin', minAmount: 500 },
+  { label: 'Bank of Baroda', name: 'barb', minAmount: 5000 },
 ];
 
 export const DISCOUNT_TYPES = {

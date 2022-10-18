@@ -6,6 +6,7 @@ import {
   PaymentIssuersOptions,
   PaymentNetworksOptions,
   WalletIssuersOptions,
+  CardLessEmiIssuersOptions,
   CREDIT_DEBIT_CARDS_OPTIONS,
   EMI_CARDS_OPTIONS,
   EMI_DEBIT_CARD_BANK_OPTIONS,
@@ -45,10 +46,15 @@ export default class ApplicableOn extends React.Component {
       max_payment_count,
       iins,
     } = formData;
-    const { isEMI, isWallet, isCard, isNetBanking } = this.currentSelectedPaymentMethod;
+    const {
+      isEMI,
+      isWallet,
+      isCard,
+      isNetBanking,
+      isCardLessEmi,
+    } = this.currentSelectedPaymentMethod;
 
     const PaymentMethodTypeOptions = isEMI ? EMI_CARDS_OPTIONS : CREDIT_DEBIT_CARDS_OPTIONS;
-
     let bankOptions = PaymentIssuersOptions;
     if (isEMI && selectedPaymentMethodType === 'debit') {
       bankOptions = EMI_DEBIT_CARD_BANK_OPTIONS;
@@ -76,6 +82,16 @@ export default class ApplicableOn extends React.Component {
             defaultValue={issuer}
             placeholder="Select Bank"
             options={WalletIssuersOptions}
+            disabled={isFormLocked}
+          />
+        )}
+
+        {isCardLessEmi && (
+          <Input.Select
+            name="issuer"
+            label="Issuer"
+            defaultValue={issuer}
+            options={CardLessEmiIssuersOptions}
             disabled={isFormLocked}
           />
         )}
