@@ -78,10 +78,10 @@ class PaymentEvent extends Event
         $merchant = $this->entity->merchant;
 
         $properties['merchant'] = [
-                'id'        => $merchant->getId(),
-                'name'      => $merchant->getBillingLabel(),
-                'mcc'       => $merchant->getCategory(),
-                'category'  => $merchant->getCategory2(),
+            'id'        => $merchant->getId(),
+            'name'      => $merchant->getBillingLabel(),
+            'mcc'       => $merchant->getCategory(),
+            'category'  => $merchant->getCategory2(),
         ];
     }
 
@@ -90,18 +90,42 @@ class PaymentEvent extends Event
         $payment = $this->entity;
 
         $properties['payment'] = [
-                'id'             => $payment->getPublicId(),
-                'amount'         => $payment->getAmount(),
-                'base_amount'    => $payment->getBaseAmount(),
-                'currency'       => $payment->getCurrency(),
-                'method'         => $payment->getMethod(),
-                'issuer'         => $payment->getIssuer(),
-                'type'           => $payment->getTransactionType(),
-                'gateway'        => $payment->getGateway(),
-                'recurring'      => $payment->isRecurring(),
-                'recurring_type' => $payment->getRecurringType(),
-                'contact'      => $payment->getContact(),
-                'email'        => $payment->getEmail(),
+            'id'             => $payment->getPublicId(),
+            'amount'         => $payment->getAmount(),
+            'base_amount'    => $payment->getBaseAmount(),
+            'currency'       => $payment->getCurrency(),
+            'method'         => $payment->getMethod(),
+            'issuer'         => $payment->getIssuer(),
+            'type'           => $payment->getTransactionType(),
+            'gateway'        => $payment->getGateway(),
+            'recurring'      => $payment->isRecurring(),
+            'recurring_type' => $payment->getRecurringType(),
+            'contact'        => $payment->getContact(),
+            'email'          => $payment->getEmail(),
+        ];
+
+        $terminal_id = "";
+
+        $tag = "razorpay";
+
+        // updating terminal id if available and checking for optimizer payments
+        if (($payment->hasTerminal() === true) && ($payment->terminal !== null))
+        {
+            $terminal = $payment->terminal;
+
+            $terminal_id = $terminal->getId();
+
+            $terminalTypeArray = $terminal->getType();
+
+            if (($terminalTypeArray != null) && (in_array('optimizer', $terminalTypeArray) === true))
+            {
+                $tag = "optimizer";
+            }
+        }
+
+        $properties['payment'] += [
+            'terminal_id'   => $terminal_id,
+            'tag'           => $tag,
         ];
 
         // upi properties
@@ -111,20 +135,6 @@ class PaymentEvent extends Event
                 'vpa'   => $payment->getVpa()
             ];
         }
-
-
-        $terminal_id = "";
-
-        // updating terminal id if available
-        if (($payment->hasTerminal() === true) && ($payment->terminal !== null))
-        {
-            $terminal_id = $payment->terminal->getId();
-        }
-
-        $properties['payment'] += [
-            'terminal_id'       => $terminal_id,
-        ];
-
 
         // card properties
         if ($payment->hasCard() === true)
