@@ -18,7 +18,7 @@ use RZP\Models\Settlement\OndemandFundAccount;
 
 class RequestOndemandPayout extends Job
 {
-    const MAX_ALLOWED_ATTEMPTS = 100;
+    const MAX_ALLOWED_ATTEMPTS = 10;
 
     const DEFAULT_FAILURE_REASON = 'RequestOndemandPayout job failure';
 
