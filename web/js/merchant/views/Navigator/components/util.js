@@ -362,7 +362,7 @@ const eMandatePaymentMethod = getExpStatus('optimizer_emandate') ? [{ value: 'em
 const tokenAuthTypeParameter = getExpStatus('optimizer_emandate')
   ? [
       {
-        name: 'Payment Token Auth Type',
+        name: 'Emandate Authentication Type',
         value: '$payment.optimizer_token_auth_type',
         description: 'Netbanking, Debit Card, Aadhaar',
         id: 2,
