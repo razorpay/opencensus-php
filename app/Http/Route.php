@@ -2462,7 +2462,9 @@ class Route
         'settlement_ondemand_full_enable'          => ['post',      'settlements/ondemand/full',                     'SettlementOndemandController@enableFullESFromRestricted'           ],
         'settlement_ondemand_restricted_enable'    => ['post',      'settlements/ondemand/restricted',               'SettlementOndemandController@addOndemandRestrictedFeature'         ],
         'settlement_ondemand_blocked'              => ['get',       'settlements/ondemand/merchant/config',          'SettlementOndemandController@isOndemandBlocked'                    ],
-        'settlement_ondemand_linked_account'       => ['post',      'settlements/ondemand/linked_account_settlements','SettlementOndemandController@linkedAccountSettlement'              ],
+        'settlement_ondemand_linked_account'       => ['post',      'settlements/ondemand/linked_account_settlements','SettlementOndemandController@linkedAccountSettlement'             ],
+        'settlement_ondemand_reverse'              => ['post',      'settlements/ondemand/reverse',                   'SettlementOndemandController@reverseOndemandSettlement'           ],
+
 
         // OAuth routes
         'oauth_token_create'                       => ['post',     'oauth/tokens',                                   'OAuthTokenController@create'                                       ],
@@ -6351,6 +6353,7 @@ class Route
         'capital_marketplace_dev_admin',
         'capital_scorecard_dev_admin',
         'capital_lender_dev_admin',
+        'settlement_ondemand_reverse',
         'recon_service_request_proxy',
         'recon_service_file_upload_proxy',
         'recon_service_workflow_file_upload_proxy',
@@ -7514,6 +7517,7 @@ class Route
         'capital_marketplace_dev_admin'            => Permission::CAPITAL_DEVELOPER,
         'capital_scorecard_dev_admin'              => Permission::CAPITAL_DEVELOPER,
         'capital_lender_dev_admin'                 => Permission::CAPITAL_DEVELOPER,
+        'settlement_ondemand_reverse'              => Permission::CAPITAL_DEVELOPER,
         'admin_merchant_get_preferences'           => Permission::VIEW_MERCHANT,
         'recon_service_request_proxy'              => Permission::RECON_SERVICE_REQUEST,
         'recon_service_file_upload_proxy'          => Permission::RECON_FILE_UPLOAD,
@@ -11684,6 +11688,7 @@ class Route
             'capital_marketplace_dev_admin',
             'capital_scorecard_dev_admin',
             'capital_lender_dev_admin',
+            'settlement_ondemand_reverse',
             'los_service',
             'los_service_admin',
             'los_service_dev_admin',

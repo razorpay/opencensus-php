@@ -4981,4 +4981,67 @@ class SettlementOndemandTest extends TestCase
         ], $settlementOndemand);
 
     }
+
+    public function testReverseOndemandSettlement()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand',[
+            'id'                          => 'KQ8VzkjC27pS3v',
+            'merchant_id'                 => $this->merchantDetail['merchant_id'],
+            'amount'                      => 475857,
+            'total_amount_settled'        => 0,
+            'total_fees'                  => 112,
+            'total_tax'                   => 17,
+            'total_amount_reversed'       => 0,
+            'total_amount_pending'        => 475857,
+            'status'                      => 'initiated'
+        ]);
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_payout',[
+            'merchant_id'                 => $this->merchantDetail['merchant_id'],
+            'amount'                      => 475857,
+            'settlement_ondemand_id'      =>'KQ8VzkjC27pS3v',
+            'status'                      =>'created'
+        ]);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 100000]);
+
+
+        $this->startTest();
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'           => $this->merchantDetail['merchant_id'],
+            'amount'                => 475857,
+            'entity_type'           => 'settlement.ondemand',
+            'fee'                   => 0,
+            'tax'                   => 0,
+        ], $reversal);
+
+        $txn = $this->getLastEntity('transaction',true);
+
+        $this->assertArraySelectiveEquals([
+            'type'                  => 'reversal',
+            'merchant_id'           => '10000000000000',
+            'amount'                => 475857,
+            'fee'                   => 0,
+            'tax'                   => 0,
+            'debit'                 => 0,
+            'credit'                => 475857,
+            'currency'              => 'INR',
+        ], $txn);
+
+        $balance = $this->getDbEntity('balance',
+            [   'type'        => 'primary',
+                'merchant_id' => $this->merchantDetail['merchant_id'],
+
+            ],
+            'test');
+
+        $this->assertEquals($balance['balance'], 575857);
+
+
+    }
 }

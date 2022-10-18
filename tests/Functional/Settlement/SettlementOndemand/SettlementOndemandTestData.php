@@ -2087,4 +2087,21 @@ return [
         ],
     ],
 
+    'testReverseOndemandSettlement' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/reverse',
+            'method'  => 'post',
+            'content' => [
+                'merchant_id'                    => '10000000000000',
+                'settlement_ondemand_id'         => 'KQ8VzkjC27pS3v',
+                'reversal_reason'                => 'job failure'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ],
+        ],
+    ],
+
 ];

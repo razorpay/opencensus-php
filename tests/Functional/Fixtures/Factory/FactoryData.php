@@ -1864,6 +1864,14 @@ final class FactoryData
             'deleted_at'                      => null,
         ]);
 
+        $factory(\RZP\Models\Settlement\OndemandPayout\Entity::class,[
+            'id'                              => $faker->uniqueid,
+            'merchant_id'                     => '10000000000000',
+            'created_at'                      => $faker->timestamp,
+            'updated_at'                      => $faker->timestamp,
+            'deleted_at'                      => null,
+        ]);
+
         $factory(\RZP\Models\Reward\Entity::class, [
             'id'             => $faker->uniqueid,
             'advertiser_id'  => '100000Razorpay',

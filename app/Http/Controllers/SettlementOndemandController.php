@@ -213,4 +213,21 @@ class SettlementOndemandController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function reverseOndemandSettlement()
+    {
+        $input = Request::all();
+
+        try
+        {
+            $this->service(Entity::SETTLEMENT_ONDEMAND)->createSettlementOndemandReversal($input['settlement_ondemand_id'], $input['merchant_id'],$input['reversal_reason']);
+        }
+        catch (\Throwable $e)
+        {
+            return ApiResponse::json(['success' => false]);
+        }
+
+        return ApiResponse::json(['success' => true]);
+
+    }
 }
