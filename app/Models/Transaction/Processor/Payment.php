@@ -514,8 +514,8 @@ class Payment extends Base
                  * */
 
                 $discountAmount = $discount->getAmount();
-                $fee = $discountAmount * (1 + (self::CGST_PERCENTAGE / 10000));
-                $tax = $discountAmount * (self::CGST_PERCENTAGE / 10000);
+                $fee = ceil($discountAmount * (1 + (self::CGST_PERCENTAGE / 10000)));
+                $tax = ceil($discountAmount * (self::CGST_PERCENTAGE / 10000));
 
                 $this->fees = $fee;
                 $this->tax = $tax;

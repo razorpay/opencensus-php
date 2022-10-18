@@ -70,6 +70,21 @@ class CardlessEmi extends CardlessEmiBase
 
     public function callback($input): array
     {
+        $subvention = '3.0';
+        if(isset($input['input']) and isset($input['input']['payment']) and $input['input']['payment']['amount'])
+        {
+            $amount = $input['input']['payment']['amount'];
+
+            if($amount === 60000)
+            {
+                $subvention = '3.07';
+            }
+            else if($amount === 70000)
+            {
+                $subvention = '3.04';
+            }
+
+        }
         return [
             'response' => [
                 'data' => [
@@ -79,7 +94,7 @@ class CardlessEmi extends CardlessEmiBase
                     'status'                    => 'authorized',
                     'additional_data'           => [
                         'mdr'           => '0.0',
-                        'subvention'    => '3.0'
+                        'subvention'    => $subvention,
                     ]
                 ]
             ],
