@@ -169,7 +169,11 @@ const SettlementTimeline = ({
                 </div>
               </ShowWhen>
               <div className="mt-2">
-                <Link to={`/settlements/${settlement?.id}`} onClick={trackEvent}>
+                <Link
+                  to={`/settlements/${settlement?.id}`}
+                  aria-label="settlement link"
+                  onClick={trackEvent}
+                >
                   <code>{settlement?.id}</code>
                 </Link>
               </div>

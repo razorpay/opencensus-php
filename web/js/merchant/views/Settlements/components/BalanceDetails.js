@@ -53,7 +53,12 @@ const BalanceDetails = (props) => {
       <div>
         <strong>
           <span className="pr-5">Current Balance:</span>
-          <Amount value={balance} currency="INR" className={currentBalanceClassName} />
+          <Amount
+            aria-label="amount"
+            value={balance}
+            currency="INR"
+            className={currentBalanceClassName}
+          />
         </strong>
         <CashAdvanceNudge />
       </div>

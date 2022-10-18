@@ -266,7 +266,9 @@ class SettlementInfo extends Component {
             <p className="icon-para">
               <i className="i i-info-outline" />
             </p>
-            <p className="info-para">{info}</p>
+            <p aria-label="info" className="info-para">
+              {info}
+            </p>
           </div>
         </Fragment>
       );
