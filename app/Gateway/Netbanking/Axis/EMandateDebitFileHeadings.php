@@ -15,4 +15,7 @@ class EMandateDebitFileHeadings
     const ADDITIONAL_INFO_1           = 'Additional Info 1';
     const ADDITIONAL_INFO_2           = 'Additional Info 2';
     const UNDERLYING_REFERENCE_NUMBER = 'underlying reference no';
+    const CUSTOMER_UID_1              = 'CUSTOMER_UID_1';
+    const RAZORPAY_CODE               = 'RAZORPAY_CODE';
+    const RAZOR_DATE                  = 'RAZOR_DATE';
 }

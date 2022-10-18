@@ -74,6 +74,8 @@ class Constants
     const HDFC_CORP        = 'hdfc_corp';
     const UJVN             = 'ujjivan';
 
+    const AXIS_V2             = 'axis_v2';
+
     const ENACH_NPCI_NETBANKING             = 'enach_npci_netbanking';
     const ENACH_NPCI_NETBANKING_EARLY_DEBIT = 'enach_npci_netbanking_early_debit';
     const ENACH_NB_ICICI                    = 'enach_nb_icici';  // deprecated
@@ -196,6 +198,7 @@ class Constants
             self::SBI,
             self::ENACH_NPCI_NETBANKING,
             self::ENACH_NPCI_NETBANKING_EARLY_DEBIT,
+            self::AXIS_V2
             //self::ENACH_NB_ICICI,  deprecated
         ],
         Type::NACH_DEBIT => [

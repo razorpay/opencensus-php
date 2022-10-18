@@ -121,8 +121,8 @@ abstract class Base extends Core
 
         $fileData = [
             Constants::FILE_NAME        => $file->getName(),
-            Constants::FILE_SIZE        => $file->getId(),
-            Constants::FILE_ID          => $file->getSize(),
+            Constants::FILE_SIZE        => $file->getSize(),
+            Constants::FILE_ID          => $file->getId(),
             Constants::CREATED_AT       => $this->gatewayFile->getCreatedAt(),
             Constants::UPDATED_AT       => $this->gatewayFile->getUpdatedAt(),
             Constants::BEGIN            => $this->gatewayFile->getBegin(),
@@ -243,6 +243,11 @@ abstract class Base extends Core
         $rows = $spreadsheet->getActiveSheet()->toArray(null, false);
 
         $rows = array_slice($rows, $numRowsToSkip);
+
+        if($this->gatewayFile->getTarget() === 'axis_v2')
+        {
+            return $rows;
+        }
 
         $headers = array_values(array_shift($rows) ?? []);
 
