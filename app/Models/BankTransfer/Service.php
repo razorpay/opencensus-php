@@ -144,7 +144,7 @@ class Service extends Base\Service
         string $routeName = null
     )
     {
-        $response = $this->validateDuplicateRequest($input);
+        $response = $this->validateDuplicateRequest($input, $routeName);
 
         if (empty($response) === false)
         {
@@ -741,9 +741,12 @@ class Service extends Base\Service
         }
     }
 
-    private function validateDuplicateRequest(array $input)
+    private function validateDuplicateRequest(array $input, $routeName = null)
     {
-        $routeName = $this->app['api.route']->getCurrentRouteName();
+        if ($routeName === null)
+        {
+            $routeName = $this->app['api.route']->getCurrentRouteName();
+        }
 
         if (($routeName === 'bank_transfer_process_rbl_internal') or
             ($routeName === 'bank_transfer_process_icici_internal') or
@@ -1200,9 +1203,9 @@ class Service extends Base\Service
                 $request = [
                     "currency" => $currency,
                 ];
-                
+
                 $response = $this->app->mozart->sendMozartRequest('payments',Constants\Entity::CURRENCY_CLOUD,'get_balance',$request);
-    
+
                 if(!isset($response['data']['amount']) || $response['data']['amount'] < 1)
                 {
                     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR,null,[
@@ -1210,7 +1213,7 @@ class Service extends Base\Service
                         'data'    => $response['data'],
                     ]);
                 }
-    
+
                 $request = [
                     'currency'              => $currency,
                     'amount'                => $response['data']['amount'],
@@ -1219,7 +1222,7 @@ class Service extends Base\Service
                     'beneficiary_id'         => $this->getBeneficiaryIdForCurrency($currency),
                     'unique_request_id'     => UniqueIdEntity::generateUniqueId()
                 ];
-    
+
                 $response = $this->app->mozart->sendMozartRequest('payments',Constants\Entity::CURRENCY_CLOUD,'payment_create',$request);
             }
             catch(\Exception $ex)

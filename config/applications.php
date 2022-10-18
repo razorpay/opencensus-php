@@ -918,6 +918,7 @@ return [
         'mock'          => env('SMART_COLLECT_MOCK', false),
         'url'           => env('SMART_COLLECT_URL'),
         'username'      => 'api',
+        'password'      => env('SMART_COLLECT_PASSWORD'),
         'secret'        => env('SMART_COLLECT_SECRET'),
         'timeout'       => env('SMART_COLLECT_TIMEOUT_SECS'),
     ],

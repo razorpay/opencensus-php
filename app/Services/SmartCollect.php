@@ -52,7 +52,7 @@ class SmartCollect
         $this->baseUrl = $config['url'];
 
         $this->key     = $config['username'];
-        $this->secret  = $config['secret'];
+        $this->secret  = $config['password'];
         $this->timeOut = $config['timeout'];
         $this->ba      = $app['basicauth'];
         $this->mock    = $config['mock'];
