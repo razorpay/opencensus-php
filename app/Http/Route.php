@@ -7477,6 +7477,7 @@ class Route
     ];
 
     public static $routePermission = [
+        'merchant_razorx_evaluate'                        => Permission::ADMIN_GET_APP_AUTH,
         'merchant_create_lead_to_salesforce_admin'        => Permission::VIEW_ACTIVATION_FORM,
         'merchant_website_section_action'                 => Permission::EDIT_MERCHANT,
         'merchant_website_section_save'                   => Permission::EDIT_MERCHANT,
