@@ -3,7 +3,10 @@
 
 namespace RZP\Models\Merchant\Escalations;
 
+use RZP\Constants\Mode;
 use RZP\Models\Base;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
@@ -42,18 +45,6 @@ class Service extends Base\Service
                 'error' => $e->getMessage()
             ]);
         }
-
-        try
-        {
-            $core->handleNoDocLimitBreach();
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->info(TraceCode::ESCALATION_ATTEMPT_FAILED, [
-                'type'  => 'noDocEscalations',
-                'error' => $e->getMessage()
-            ]);
-        }
     }
 
     public function handleNoDocOnboardingEscalationsCron($input)
@@ -61,16 +52,39 @@ class Service extends Base\Service
         $timeBound = $input[Constants::TIME_BOUND] ?? false;
         $core      = (new Core);
 
-        try
+        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
+            RazorxTreatment::SKIP_OLD_XPRESS_ONBOARDING_ESCALATION,
+            Mode::LIVE);
+
+        $isOldXpressEscalationSkipped = ( $experimentResult === 'on' ) ? true : false;
+
+        if($isOldXpressEscalationSkipped === true)
         {
-            $core->handleNoDocGmvLimitBreach($timeBound);
+            try
+            {
+                $core->handleNoDocGmvLimitBreach($timeBound);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->info(TraceCode::ESCALATION_ATTEMPT_FAILED, [
+                    'type'  => 'new_no_doc_escalations',
+                    'error' => $e->getMessage()
+                ]);
+            }
         }
-        catch (\Exception $e)
+        else
         {
-            $this->trace->info(TraceCode::ESCALATION_ATTEMPT_FAILED, [
-                'type'  => 'no_doc_escalations',
-                'error' => $e->getMessage()
-            ]);
+            try
+            {
+                $core->handleNoDocLimitBreach();
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->info(TraceCode::ESCALATION_ATTEMPT_FAILED, [
+                    'type'  => 'no_doc_escalations',
+                    'error' => $e->getMessage()
+                ]);
+            }
         }
     }
 

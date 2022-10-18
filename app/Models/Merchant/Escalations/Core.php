@@ -965,17 +965,6 @@ class Core extends Base\Core
 
     public function handleNoDocGmvLimitBreach($timeBound = false)
     {
-        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
-            RazorxTreatment::TRIGGER_NEW_XPRESS_ONBOARDING_ESCALATION,
-            Mode::LIVE);
-
-        $triggerNewXpressEscalationFlow = ( $experimentResult === 'on' ) ? true : false;
-
-        if($triggerNewXpressEscalationFlow === false)
-        {
-            return;
-        }
-
         $startTime = microtime(true);
 
         [$merchantIdList, $merchantsGMVList] = $this->filterMerchantsWithGmvUsingEscalationType(Constants::NO_DOC_PAYMENTS_ESCALATION, $timeBound);
@@ -1260,17 +1249,6 @@ class Core extends Base\Core
 
     public function handleNoDocLimitBreach()
     {
-        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
-            RazorxTreatment::SKIP_OLD_XPRESS_ONBOARDING_ESCALATION,
-            Mode::LIVE);
-
-        $isOldXpressEscalationSkipped = ( $experimentResult === 'on' ) ? true : false;
-
-        if($isOldXpressEscalationSkipped === true)
-        {
-            return;
-        }
-
         $startTime = microtime(true);
 
         $thresholdToMerchantMapping = [];
