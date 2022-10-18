@@ -8114,8 +8114,6 @@ class PayoutTest extends OAuthTestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
 
-        $this->mockRazorxTreatment('payout_to_cards_via_rbl');
-
         $balanceAttributes = [
             'balance'     => 10000000,
             'balanceType' => 'direct',

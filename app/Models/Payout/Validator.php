@@ -1372,23 +1372,6 @@ class Validator extends Base\Validator
                                                      string $accountType = null) : bool
     {
         if (($channel === Settlement\Channel::RBL) and
-            ($destinationType === FundAccount\Type::CARD))
-            {
-                $app = App::getFacadeRoot();
-
-                $variant = $app->razorx->getTreatment(
-                    $merchantId,
-                    Merchant\RazorxTreatment::PAYOUT_TO_CARDS_VIA_RBL,
-                    $this->getMode()
-                );
-
-                if ($variant !== 'on')
-                {
-                    return false;
-                }
-            }
-
-        if (($channel === Settlement\Channel::RBL) and
             ($mode === PayoutMode::UPI))
         {
             if($this->isUpiModeEnabledOnRblDirectAccountForMerchantId($merchantId) === false)
