@@ -23,7 +23,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Something went wrong, please try again after sometime.',
+                    'description' => 'EMI plan does not exist.',
                 ],
             ],
             'status_code' => 400,
