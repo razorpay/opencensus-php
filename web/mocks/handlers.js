@@ -575,4 +575,16 @@ export const handlers = [
 
     return res(ctx.errors([{ message: 'Some error occurred' }]), ctx.delay(50));
   }),
+
+  // Payments
+  rest.put('*/merchant/api/test/account/config', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        success: true,
+      }),
+      ctx.delay(50),
+    );
+  }),
 ];
