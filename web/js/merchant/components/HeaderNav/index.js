@@ -25,7 +25,6 @@ import {
 import OnboardingCoupons from 'common/ui/OnboardingCoupons';
 import OffersForYou from 'common/ui/OffersForYou';
 import { isOrgFeatureExist } from 'merchant/models/User';
-import ShopifyMigrationPopUp from 'common/ui/ShopifyMigrationPopUp';
 import lazyLoader from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import PoweredByRzp from 'assets/branding/powered_by_rzp.png';
@@ -54,8 +53,6 @@ class HeaderNav extends Component {
     this.state = {
       isSuccessfullyCouponApplied: false,
       mtuOfferCount: null,
-      showPopup: true,
-      nextPopUp: false,
     };
 
     this.onToggleAppMenu = this.onToggleAppMenu.bind(this);
@@ -74,30 +71,10 @@ class HeaderNav extends Component {
     }
   };
 
-  //show shopify merchant Pop up
-
-  nextPopUpFunc = () => {
-    this.setState({ nextPopUp: true });
-  };
-
-  showShopifyPopUp = () => {
-    const { closeModals, openModals } = this.props;
-    openModals({
-      component: (
-        <ShopifyMigrationPopUp closeModal={closeModals} nextPopUpFunc={this.nextPopUpFunc} />
-      ),
-      size: 'xlarge',
-    });
-  };
-
   componentDidMount() {
     const hash = this.props.history.location.hash;
     if (hash === '#profile_dropdown') {
       toggleDropdown();
-    }
-
-    if (!this.props.user?.isShopifyMerchantPopUp) {
-      this.nextPopUpFunc();
     }
 
     if (this.props.user.isAppSwitcherEnabled) {
@@ -154,8 +131,7 @@ class HeaderNav extends Component {
         window.session_id !== prevSessionID &&
         typeof this.state.mtuOfferCount === 'number' &&
         this.state.mtuOfferCount < COUNT_TO_SHOW_MTU_OFFER &&
-        user.autoOpenOnboardingCoupon &&
-        this.state.nextPopUp;
+        user.autoOpenOnboardingCoupon;
 
       if (showMtu) {
         this.showMTUOffer();
@@ -178,7 +154,7 @@ class HeaderNav extends Component {
       org,
       referee,
     } = this.props;
-    const { isSuccessfullyCouponApplied, mtuOfferCount, showPopup } = this.state;
+    const { isSuccessfullyCouponApplied, mtuOfferCount } = this.state;
 
     const fragmentSpecificProps = {
       mode,
@@ -193,11 +169,6 @@ class HeaderNav extends Component {
       onSwitchMode,
       onSwitchMerchant,
     };
-
-    if (user?.isShopifyMerchantPopUp && showPopup) {
-      this.showShopifyPopUp();
-      this.setState({ showPopup: false });
-    }
 
     return (
       <div className="nav-wrapper">
