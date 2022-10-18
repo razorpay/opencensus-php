@@ -1602,7 +1602,7 @@ class Base extends BaseCore
                         $this->mode,
                         $this->fundTransferDestination);
 
-                    $downstreamProcessor->process();
+                    $downstreamProcessor->processIcici2FA();
 
                     $payout->setStatus(Payout\Status::PENDING_ON_OTP);
 

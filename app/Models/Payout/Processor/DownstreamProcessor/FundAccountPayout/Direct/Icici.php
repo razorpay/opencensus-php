@@ -6,6 +6,7 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Payout\Entity;
+use RZP\Models\Payout\Purpose;
 use RZP\Models\Payout\Status;
 use RZP\Trace\TraceCode;
 
@@ -18,38 +19,23 @@ class Icici extends Base
 
         $this->validateModeForChannelAndFundAccount($payout, $ftaAccount);
 
-        if ($payout->merchant->isFeatureEnabled(Features::ICICI_2FA) === false)
+        $holdPayout = $this->holdPayoutIfApplicableAndBeneBankDown($payout);
+
+        if ($holdPayout === true)
         {
-            $holdPayout = $this->holdPayoutIfApplicableAndBeneBankDown($payout);
-
-            if ($holdPayout === true)
-            {
-                return;
-            }
-
-            $queued = $this->queueIfLowBalance($payout);
-
-            if ($queued === true)
-            {
-                return;
-            }
-
-            $this->assignFreePayoutIfApplicable($payout);
-
-            $this->setFeeAndTaxForPayout($payout);
+            return;
         }
 
-        else
+        $queued = $this->queueIfLowBalance($payout);
+
+        if ($queued === true)
         {
-            //This is required because for icici ca transfer request is sent to bank,
-            // but fees and taxes will be set in a callback by when transfer can be successful.
-            //Any errors in pricing when we process callback will be an issue.
-            //So calculating this here and not setting it in payout right now to prevent unknown errors later
-            $this->calculateFeesAndTaxForPayouts($payout);
-
-            $payout->setSyncFtsFundTransferFlag(true);
-
+            return;
         }
+
+        $this->assignFreePayoutIfApplicable($payout);
+
+        $this->setFeeAndTaxForPayout($payout);
 
         $fta = $this->repo
                     ->fund_transfer_attempt
@@ -60,6 +46,32 @@ class Icici extends Base
         if($fta === null)
         {
           $this->createFundTransferAttempt($payout, $ftaAccount);
+        }
+    }
+
+    public function processIcici2FAPayout(Entity $payout, PublicEntity $ftaAccount)
+    {
+        $this->setChannel($payout);
+
+        $this->validateModeForChannelAndFundAccount($payout, $ftaAccount);
+
+        //This is required because for icici ca transfer request is sent to bank,
+        // but fees and taxes will be set in a callback by when transfer can be successful.
+        //Any errors in pricing when we process callback will be an issue.
+        //So calculating this here and not setting it in payout right now to prevent unknown errors later
+        $this->calculateFeesAndTaxForPayouts($payout);
+
+        $payout->setSyncFtsFundTransferFlag(true);
+
+        $fta = $this->repo
+            ->fund_transfer_attempt
+            ->getFTSAttemptBySourceId($payout->getId(),
+                'payout',
+                true);
+
+        if($fta === null)
+        {
+            $this->createFundTransferAttempt($payout, $ftaAccount);
         }
     }
 

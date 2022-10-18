@@ -47,6 +47,11 @@ class DownstreamProcessor
         $subProcessor->process($this->payout, $this->ftaAccount);
     }
 
+    public function processIcici2FA()
+    {
+        (new FundAccountPayout\Direct\Icici)->processIcici2FAPayout($this->payout, $this->ftaAccount);
+    }
+
     public function processTransaction()
     {
         $subProcessor = $this->getSubProcessorClass();

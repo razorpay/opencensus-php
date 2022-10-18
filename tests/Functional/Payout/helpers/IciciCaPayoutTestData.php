@@ -1237,8 +1237,8 @@ return [
                 'purpose'   => 'payout',
                 'status'    => 'processing',
                 'mode'      => 'IMPS',
-                'tax'       => 0,
-                'fees'      => 0,
+                'tax'       => 162,
+                'fees'      => 1062,
                 'notes'     => []
             ]
         ],
@@ -1276,8 +1276,8 @@ return [
                 'purpose'         => 'refund',
                 'status'          => 'processing',
                 'mode'            => 'IMPS',
-                'tax'             => 0,
-                'fees'            => 0,
+                'tax'             => 162,
+                'fees'            => 1062,
                 'notes'           => [
                     'abc' => 'xyz',
                 ],
@@ -1414,8 +1414,8 @@ return [
                 'purpose'   => 'refund',
                 'status'    => 'processing',
                 'mode'      => 'IMPS',
-                'tax'       => 0,
-                'fees'      => 0,
+                'tax'       => 162,
+                'fees'      => 1062,
                 'notes'     => [
                     'abc' => 'xyz',
                 ],
