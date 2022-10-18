@@ -29,7 +29,7 @@ export default ({ line_items }) => {
             <div key={index}>{row.map((item) => item.sku).join(',')}</div>
           ))}
       </div>
-      {skuList.length > 3 && (
+      {line_items.length > 3 && (
         <button
           type="button"
           class="magic-checkout-collapse-btn"
