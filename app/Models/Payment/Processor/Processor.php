@@ -573,6 +573,18 @@ class Processor
             }
 
             $iinId = substr($input[Payment\Entity::CARD][Card\Entity::NUMBER], 0, 6);
+            if ($this->isPaymentViaTokenisedCard($input))
+            {
+                $tokenIin = substr($input[Payment\Entity::CARD][Card\Entity::NUMBER], 0, 9);
+                $iinId = Card\IIN\IIN::getTransactingIinforRange($tokenIin) ?? $iinId;
+                $this->trace->info(
+                    TraceCode::DEBUG_LOGGING,
+                    [
+                       'isPaymentViaTokenisedCard' => 'true',
+                       'tokenised' => 'true' ,
+                       'merchant' =>  $merchant->getId()
+                    ]);
+            }
 
             $iin = $this->repo->iin->find($iinId);
 
