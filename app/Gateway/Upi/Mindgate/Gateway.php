@@ -20,6 +20,7 @@ use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\ScroogeResponse;
 use RZP\Gateway\Upi\Base\UpiErrorCodes;
 use RZP\Models\Payment\Processor\UpiTrait;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Terminal;
 
 class Gateway extends Base\Gateway
@@ -225,15 +226,29 @@ class Gateway extends Base\Gateway
 
     protected function getIntentRequest($input)
     {
+        if(isset($input['usage_type']) === true)
+        {
+            $usageType = $input['usage_type'];
+        }
+        else
+        {
+            $usageType = null;
+        }
+
         $content = [
             Base\IntentParams::PAYEE_ADDRESS => $input['terminal']->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA,
             Base\IntentParams::PAYEE_NAME    => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
-            Base\IntentParams::TXN_REF_ID    => $input['payment']['id'],
             Base\IntentParams::TXN_NOTE      => $this->getPaymentRemark($input),
             Base\IntentParams::TXN_AMOUNT    => $input['payment']['amount'] / 100,
             Base\IntentParams::TXN_CURRENCY  => $input['payment']['currency'],
             Base\IntentParams::MCC           => $this->getMerchantCategoryCode($input),
+            Base\IntentParams::TXN_REF_ID    => $input['payment']['id'],
         ];
+
+        if(($input['merchant']->isFeatureEnabled(Feature::UPIQR_V1_HDFC)) and $usageType === 'multiple_use')
+        {
+            $content[Base\IntentParams::TXN_REF_ID] = 'STQ'. $input['payment']['id'];
+        }
 
         if (isset($input['upi']['reference_url']) === true)
         {

@@ -3,6 +3,7 @@
 namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
 use Carbon\Carbon;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\QrCode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
@@ -352,6 +353,11 @@ class Entity extends QrCode\Entity
     public function getTaxInvoice()
     {
         return $this->getAttribute(self::TAX_INVOICE);
+    }
+
+    public function toArrayPublic()
+    {
+        return PublicEntity::toArrayPublic();
     }
 
     public function bankAccount()

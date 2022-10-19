@@ -149,8 +149,13 @@ class Generator extends Base\Core
                 Payment\Entity::RECEIVER_ID   => $qrCode->getId(),
             ],
             'merchant' => $qrCode->merchant,
-            'terminal' => $terminal,
+            'terminal' => $terminal
         ];
+
+        if($qrCode->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::UPIQR_V1_HDFC) === true)
+        {
+            $gatewayInput['usage_type'] = $qrCode->getUsageType() ;
+        }
 
         if ($qrCode->source !== null and $qrCode->source->hasOrder() === true)
         {

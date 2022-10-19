@@ -5,6 +5,7 @@ namespace RZP\Models\VirtualAccount;
 use App;
 
 use RZP\Error\ErrorCode;
+use RZP\Models\Feature\Constants;
 use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\QrCode;
@@ -119,6 +120,42 @@ class Receiver extends Base\Core
         if (isset($options[QrCode\Entity::REFERENCE]) === true)
         {
             $input[QrCode\Entity::REFERENCE] = $options[QrCode\Entity::REFERENCE];
+        }
+
+        if ($virtualAccount->merchant->isFeatureEnabled(Constants::UPIQR_V1_HDFC) === true)
+        {
+            if(isset($options[QrCode\Entity::STATUS]) === true)
+            {
+                $input[QrCode\Entity::STATUS] = $options[QrCode\Entity::STATUS];
+            }
+
+            if (isset($options[QrCode\Entity::REFERENCE]) === true) {
+                $input[QrCode\Entity::REFERENCE] = $options[QrCode\Entity::REFERENCE];
+            }
+
+            if (isset($options['usage']) === true) {
+                $input[QrCode\Entity::REQ_USAGE_TYPE] = $options['usage'];
+            }
+
+            if (isset($options[QrCode\Entity::DESCRIPTION]) === true) {
+                $input[QrCode\Entity::DESCRIPTION] = $options[QrCode\Entity::DESCRIPTION];
+            }
+
+            if (isset($options[QrCode\Entity::NAME]) === true) {
+                $input[QrCode\Entity::NAME] = $options[QrCode\Entity::NAME];
+            }
+
+            if (isset($options[QrCode\Entity::CLOSE_BY]) === true) {
+                $input[QrCode\Entity::CLOSE_BY] = $options[QrCode\Entity::CLOSE_BY];
+            }
+
+            if (isset($options[QrCode\Entity::NOTES]) === true) {
+                $input[QrCode\Entity::NOTES] = $options[QrCode\Entity::NOTES];
+            }
+
+            if (isset($options[QrCode\Entity::CUSTOMER_ID]) === true) {
+                $input[QrCode\Entity::CUSTOMER_ID] = $options[QrCode\Entity::CUSTOMER_ID];
+            }
         }
 
         return $input;

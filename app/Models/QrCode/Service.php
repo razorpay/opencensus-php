@@ -129,6 +129,11 @@ class Service extends Base\Service
             throw $ex;
         }
 
+        if ($qrCode->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::UPIQR_V1_HDFC) === true)
+        {
+            (new NonVirtualAccountQrCode\Service())->handleReminderForQrCode($qrCode);
+        }
+
         $this->trace->info(TraceCode::QR_CODE_CREATED, $qrCode->toArrayPublic());
 
         return $qrCode;

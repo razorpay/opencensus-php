@@ -7,6 +7,7 @@ use RZP\Base;
 use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -23,6 +24,7 @@ class Validator extends Base\Validator
         Entity::AMOUNT_EXPECTED                 => 'filled|integer|min:0',
         Entity::DESCRIPTION                     => 'sometimes|nullable|string|max:2048',
         Entity::CUSTOMER_ID                     => 'filled|public_id|size:19',
+        'usage'                                 => 'sometimes|in:single_use,multiple_use',
         Entity::ORDER_ID                        => 'filled|public_id|size:20',
         Entity::RECEIVERS                       => 'bail|required|array|custom',
         Entity::RECEIVERS . '.' . Entity::TYPES => 'present|array|min:1',
@@ -202,10 +204,13 @@ class Validator extends Base\Validator
                     'receiver_qr_code_method',
                     $method);
             }
+
+            $merchant = app('basicauth')->getMerchant();
             // Amount expected is required for UPI QR
-            if ((isset($input[Entity::AMOUNT_EXPECTED]) === false) and
+            if (((isset($input[Entity::AMOUNT_EXPECTED]) === false) and
                 // For more than one receivers, we will allow no amount_expected
-                (count($input[Entity::RECEIVERS][Entity::TYPES]) === 1))
+                    (count($input[Entity::RECEIVERS][Entity::TYPES]) === 1)) and
+                $merchant->isFeatureEnabled(Feature\Constants::UPIQR_V1_HDFC) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Amount expected is required for UPI QR receivers',

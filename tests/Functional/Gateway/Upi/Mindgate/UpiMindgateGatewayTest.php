@@ -1954,4 +1954,124 @@ class UpiMindgateGatewayTest extends TestCase
 
         $this->fixtures->merchant->disableTPV();
     }
+
+    public function createTestOrg()
+    {
+        $this->ba->adminAuth();
+
+        $org = $this->fixtures->create('org', [
+            'display_name'            => 'HDFC CollectNow',
+            'business_name'            => 'HDFC Bank',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => 'org_custom_upi_logo',
+            'entity_id'     => $org->getId(),
+            'entity_type'   => 'org',
+        ]);
+
+        return $org;
+    }
+
+    public function testCreateUpiQRVirtualAccountMultipleUsage()
+    {
+
+        $this->fixtures->merchant->addFeatures(['virtual_accounts','upiqr_v1_hdfc']);
+
+        $org = $this->createTestOrg();
+
+        $this->fixtures->edit('merchant','10000000000000',[
+            'name'=>'Test Name',
+            'org_id' => $org->getId(),
+        ]);
+
+        $this->fixtures->create('terminal', [
+            'id'                        => '10000000000112',
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'upi_mindgate',
+            'gateway_merchant_id'       => 'razorpay upi mindgate',
+            'gateway_terminal_id'       => 'nodal account upi hdfc',
+            'gateway_merchant_id2'      => 'razorpay@hdfcbank',
+            // Sample hex for aes encryption, not in used
+            'gateway_terminal_password' => '93158d5892188161a259db660ddb1d0b',
+            'upi'                       => 1,
+            'gateway_acquirer'          => 'hdfc',
+            'vpa'                       => 'unittest@hdfcbank',
+            'type'                      => [
+                'non_recurring' => '1',
+                'pay'           => '1',
+            ]
+        ]);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $qrCode = $this->getLastEntity('qr_code',true);
+
+        $qrString = $qrCode['qr_string'];
+
+        $status  = $qrCode['status'];
+
+        $usage   = $qrCode['usage_type'];
+
+        parse_str(str_replace('upi://pay?', '', $qrString), $params);
+
+        $this->assertTrue(str_starts_with($params['tr'],'STQ'));
+
+        $this->assertEquals('active', $status);
+
+        $this->assertEquals('multiple_use',$usage);
+    }
+
+    public function testCreateUpiQRVirtualAccountSingleUsage()
+    {
+
+        $this->fixtures->merchant->addFeatures(['virtual_accounts','upiqr_v1_hdfc']);
+
+        $org = $this->createTestOrg();
+
+        $this->fixtures->edit('merchant','10000000000000',[
+            'name'=>'Test Name',
+            'org_id' => $org->getId(),
+        ]);
+
+        $this->fixtures->create('terminal', [
+            'id'                        => '10000000000112',
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'upi_mindgate',
+            'gateway_merchant_id'       => 'razorpay upi mindgate',
+            'gateway_terminal_id'       => 'nodal account upi hdfc',
+            'gateway_merchant_id2'      => 'razorpay@hdfcbank',
+            // Sample hex for aes encryption, not in used
+            'gateway_terminal_password' => '93158d5892188161a259db660ddb1d0b',
+            'upi'                       => 1,
+            'gateway_acquirer'          => 'hdfc',
+            'vpa'                       => 'unittest@hdfcbank',
+            'type'                      => [
+                'non_recurring' => '1',
+                'pay'           => '1',
+            ]
+        ]);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $qrCode = $this->getLastEntity('qr_code',true);
+
+        $qrString = $qrCode['qr_string'];
+
+        $status  = $qrCode['status'];
+
+        $usage   = $qrCode['usage_type'];
+
+        parse_str(str_replace('upi://pay?', '', $qrString), $params);
+
+        $this->assertFalse(str_starts_with($params['tr'],'STQ'));
+
+        $this->assertEquals('active', $status);
+
+        $this->assertEquals('single_use',$usage);
+    }
 }

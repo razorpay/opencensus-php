@@ -183,6 +183,13 @@ class Core extends Base\Core
     {
         $qrCode = (new Entity)->build($input);
 
+        if($this->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::UPIQR_V1_HDFC) === true)
+        {
+            $customer = $this->getCustomerIfGiven($input);
+
+            $qrCode->customer()->associate($customer);
+        }
+
         $qrCode->merchant()->associate($this->merchant);
 
         $qrCode->source()->associate($this->virtualAccount);
@@ -238,7 +245,14 @@ class Core extends Base\Core
 
         if ($qrCode->getProvider() === Type::UPI_QR)
         {
-            $localFilePath = $this->generator->generateUpiQrCodeImage($qrCode);
+            if($this->merchant->org->isFeatureEnabled(\RZP\Models\Feature\Constants::ORG_CUSTOM_UPI_LOGO) === true)
+            {
+                $localFilePath = (new NonVirtualAccountQrCode\Generator())->generateUpiQrCodeImage($qrCode);
+            }
+            else
+            {
+                $localFilePath = $this->generator->generateUpiQrCodeImage($qrCode);
+            }
         }
         else
         {
@@ -325,5 +339,21 @@ class Core extends Base\Core
         $qrCodeLink = $this->baseQrCodeUrl . '/' . $shortMode . '/qrcode/' . $qrCodePublicId;
 
         return $qrCodeLink;
+    }
+
+    protected function getCustomerIfGiven(array $input)
+    {
+        $customer = null;
+
+        if (isset($input[Entity::CUSTOMER_ID]) === true)
+        {
+            $customerId = $input[Entity::CUSTOMER_ID];
+
+            $customer = $this->repo
+                ->customer
+                ->findByPublicIdAndMerchant($customerId, $this->merchant);
+        }
+
+        return $customer;
     }
 }

@@ -29,6 +29,9 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Jobs\RblVirtualAccountCreateProcess;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as QrEntity;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\Status as QrStatus;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\UsageType as QrUsage;
 
 class Core extends Base\Core
 {
@@ -275,6 +278,8 @@ class Core extends Base\Core
 
             $virtualAccount->balance()->associate($balance);
 
+            $input = $this->updateQrCodeInput($virtualAccount, $input);
+
             $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
 
             Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_CORE_SAVE], function() use($virtualAccount)
@@ -305,6 +310,40 @@ class Core extends Base\Core
         $this->eventVirtualAccountCreated($virtualAccount);
 
         return $virtualAccount;
+    }
+
+    protected function updateQrCodeInput($virtualAccount,$input): array
+    {
+        if(($virtualAccount->merchant->isFeatureEnabled(Feature\Constants::UPIQR_V1_HDFC) === true)
+            and (isset($input[Entity::RECEIVERS][Entity::QR_CODE]) === true))
+        {
+            $input[Entity::RECEIVERS][Entity::QR_CODE][QrEntity::STATUS] = QrStatus::ACTIVE;
+
+            if(isset($input['usage']) === true) {
+                $input[Entity::RECEIVERS][Entity::QR_CODE][QrEntity::REQ_USAGE_TYPE] = $input[QrEntity::REQ_USAGE_TYPE];
+            }
+            else {
+                $input[Entity::RECEIVERS][Entity::QR_CODE][QrEntity::REQ_USAGE_TYPE] = QrUsage::SINGLE_USE;
+            }
+
+            if(isset($input['description']) === true) {
+                $input[Entity::RECEIVERS][Entity::QR_CODE][QrEntity::DESCRIPTION] = $input[QrEntity::DESCRIPTION];
+            }
+            if(isset($input['close_by']) === true) {
+                $input[Entity::RECEIVERS][Entity::QR_CODE][QrEntity::CLOSE_BY] = $input[QrEntity::CLOSE_BY];
+            }
+            if(isset($input['name']) === true) {
+                $input[Entity::RECEIVERS][Entity::QR_CODE][QrEntity::NAME] = $input[QrEntity::NAME];
+            }
+            if(isset($input['notes']) === true) {
+                $input[Entity::RECEIVERS][Entity::QR_CODE][QrEntity::NOTES] = $input[QrEntity::NOTES];
+            }
+            if(isset($input['customer_id']) === true) {
+                $input[Entity::RECEIVERS][Entity::QR_CODE][QrEntity::CUSTOMER_ID] = $input[QrEntity::CUSTOMER_ID];
+            }
+        }
+
+        return $input;
     }
 
     protected function createSharedVirtualAccount(array $options = [])

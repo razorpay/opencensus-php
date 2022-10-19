@@ -1575,6 +1575,13 @@ class Constants
      */
     const KFIN_MERCHANT_REPORT = 'kfin_merchant_report';
 
+    /*
+     * Feature flag for HDFC QR Specification
+     * */
+    const UPIQR_V1_HDFC         = 'upiqr_v1_hdfc';
+
+    const ORG_CUSTOM_UPI_LOGO   = 'org_custom_upi_logo';
+
     /**
      * NB : Enable only for maker-checker corporate flow
      *
@@ -2195,6 +2202,8 @@ class Constants
         self::INSTANT_ACTIVATION_V2_API       => true,
         self::MISSED_ORDERS_PLINK             => true,
         self::KFIN_MERCHANT_REPORT            => true,
+        self::UPIQR_V1_HDFC                   => true,
+        self::ORG_CUSTOM_UPI_LOGO             => true,
         self::NETBANKING_CORPORATE_DELAY_REFUND => false,
         self::ONE_CC_STORE_ACCOUNT            => true,
         self::ONE_CC_COUPON_DISABLE_COD       => true,

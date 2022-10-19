@@ -129,7 +129,16 @@ class Generator extends QrCode\Generator
 
         $this->setMerchantLogoInQrImage($displayDetails['logo'], $qrCodeImage);
 
-        $logoImage = imagecreatefrompng(public_path() . '/img/new_upi_qr.png');
+        if($this->merchant->org->isFeatureEnabled(\RZP\Models\Feature\Constants::ORG_CUSTOM_UPI_LOGO) === true)
+        {
+            $path = $this->getImagePathFromOrg($this->merchant->org);
+        }
+        else
+        {
+            $path = '/img/new_upi_qr.png';
+        }
+
+        $logoImage = imagecreatefrompng(public_path() . $path);
 
         imageAlphaBlending($logoImage, true);
 
@@ -156,6 +165,20 @@ class Generator extends QrCode\Generator
         imagedestroy($qrCodeImage);
 
         return $localFilePath;
+    }
+
+    protected function getImagePathFromOrg($org)
+    {
+        $defaultPath = '/img/new_upi_qr.png';
+
+        $name = strtolower(str_replace(' ', '_',$org->getDisplayName()));
+
+        $path = '/img/new_upi_qr_' . $name . '.png';
+
+        if(file_exists(public_path().$path) === true)
+            return $path;
+        else
+            return $defaultPath;
     }
 
     public function generateBharatQrCodeImage($qrCode)

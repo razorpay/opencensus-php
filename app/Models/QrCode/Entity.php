@@ -3,19 +3,26 @@
 namespace RZP\Models\QrCode;
 
 use App;
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Checkout\Order\Repository as CheckoutOrderRepository;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\Customer;
 use RZP\Models\FileStore;
 use RZP\Models\VirtualAccount;
 use RZP\Models\BharatQr\Tags;
+use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Constants\Entity as Constants;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Order\Repository as OrderRepository;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\Status as QrStatus;
 
 class Entity extends Base\PublicEntity
 {
+
+    use NotesTrait;
+
     const ID          = 'id';
     const MERCHANT_ID = 'merchant_id';
     //
@@ -40,6 +47,13 @@ class Entity extends Base\PublicEntity
     const SHORT_URL       = 'short_url';
     const MPANS_TOKENIZED = 'mpans_tokenized';
     const MIME_TYPE       = 'image/jpeg';
+    const REQ_USAGE_TYPE  = 'usage_type';
+    const STATUS          = 'status';
+    const DESCRIPTION     = 'description';
+    const CLOSE_BY        = 'close_by';
+    const NAME            = 'name';
+    const NOTES           = 'notes';
+    const CUSTOMER_ID     = 'customer_id';
 
     protected static $sign = 'qr';
 
@@ -54,6 +68,16 @@ class Entity extends Base\PublicEntity
         self::QR_STRING,
         self::MPANS_TOKENIZED,
         self::AMOUNT,
+        self::REQ_USAGE_TYPE,
+        self::STATUS,
+        self::DESCRIPTION,
+        self::CLOSE_BY,
+        self::NAME,
+        self::NOTES,
+    ];
+
+    protected $defaults = [
+        self::CLOSE_BY                 => null,
     ];
 
     protected $visible = [
@@ -65,6 +89,13 @@ class Entity extends Base\PublicEntity
         self::QR_STRING,
         self::CREATED_AT,
         self::AMOUNT,
+        self::REQ_USAGE_TYPE,
+        self::STATUS,
+        self::DESCRIPTION,
+        self::CLOSE_BY,
+        self::NAME,
+        self::NOTES,
+        self::CUSTOMER_ID,
     ];
 
     protected $public = [
@@ -73,15 +104,37 @@ class Entity extends Base\PublicEntity
         self::REFERENCE,
         self::SHORT_URL,
         self::CREATED_AT,
+        self::REQ_USAGE_TYPE,
+        self::STATUS,
+        self::DESCRIPTION,
+        self::CLOSE_BY,
+        self::NAME,
+        self::NOTES,
+        self::CUSTOMER_ID,
     ];
 
     protected $casts = [
         self::AMOUNT => 'int',
+        self::CLOSE_BY => 'int',
     ];
 
     protected static $generators = [
         self::ID,
         self::REFERENCE,
+    ];
+
+    /*
+     * This contains parameters which needs to be removed from toArrayPublic() response
+    if the merchant level feature flag `upiqr_v1_hdfc` is absent
+    */
+
+    protected $params = [
+        self::REQ_USAGE_TYPE,
+        self::STATUS,
+        self::CLOSE_BY,
+        self::NAME,
+        self::NOTES,
+        self::CUSTOMER_ID
     ];
 
     protected $ignoredRelations = [
@@ -113,6 +166,11 @@ class Entity extends Base\PublicEntity
     public function virtualAccount()
     {
         return $this->hasOne(VirtualAccount\Entity::class);
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo('RZP\Models\Customer\Entity');
     }
 
     // --------------------- END RELATIONS ---------------------
@@ -174,6 +232,23 @@ class Entity extends Base\PublicEntity
         return null;
     }
 
+    public function toArrayPublic()
+    {
+
+        $publicArray = parent::toArrayPublic();
+
+        if($this->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::UPIQR_V1_HDFC) === false)
+        {
+            foreach ($this->params as $piiField)
+            {
+                unset($publicArray[$piiField]);
+            }
+
+        }
+
+        return $publicArray;
+    }
+
     // --------------------- GETTERS ---------------------
 
     /**
@@ -186,6 +261,11 @@ class Entity extends Base\PublicEntity
     public function getMorphClass()
     {
         return $this->entity;
+    }
+
+    public function getCloseBy()
+    {
+        return ($this->getAttribute(self::CLOSE_BY));
     }
 
     /**
@@ -214,6 +294,11 @@ class Entity extends Base\PublicEntity
     public function getOriginalQrString()
     {
         return $this->getAttribute(self::QR_STRING);
+    }
+
+    public function getUsageType()
+    {
+        return $this->getAttribute(self::REQ_USAGE_TYPE);
     }
 
     public function getQrString()
@@ -269,6 +354,13 @@ class Entity extends Base\PublicEntity
     public function isGeneratedByMerchant()
     {
         return ($this->getReference() !== $this->getId());
+    }
+
+    public function isClosed()
+    {
+        return ($this->getAttribute(self::STATUS) === QrStatus::CLOSED) or
+            (($this->getAttribute(self::CLOSE_BY) !== null) and
+                (Carbon::now()->getTimestamp() >= $this->getAttribute(self::CLOSE_BY)));
     }
 
     // returns true if mpans stored in qr_string are tokenized
@@ -337,6 +429,33 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::MPANS_TOKENIZED, $areMpansTokenized);
     }
 
+    public function setStatus(string $status)
+    {
+        NonVirtualAccountQrCode\Status::checkStatus($status);
+
+        $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setCloseBy(string $closeBy)
+    {
+        $this->setAttribute(self::CLOSE_BY, $closeBy);
+    }
+
+    public function setName(string $name)
+    {
+        $this->setAttribute(self::NAME, $name);
+    }
+
+    public function setReqUsageType(string $usageType)
+    {
+        $this->setAttribute(self::REQ_USAGE_TYPE, $usageType);
+    }
+
+    public function setDescription(string $description)
+    {
+        $this->setAttribute(self::DESCRIPTION, $description);
+    }
+
     public function generateQrString()
     {
         $qrString = (new Generator)->generateQrString($this);
@@ -378,6 +497,16 @@ class Entity extends Base\PublicEntity
         $qrStringWithTokenizedMpans = self::getQrStringFromTagValueMap($tagValueMap);
 
         return $qrStringWithTokenizedMpans;
+    }
+
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
+    }
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
     }
 
     public static function getQrStringWithDetokenizedMpans($qrString)
