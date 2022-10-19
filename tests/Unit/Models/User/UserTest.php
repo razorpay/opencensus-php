@@ -1023,6 +1023,8 @@ class UserTest extends TestCase
 
         $orgMock->shouldReceive('toArrayPublic')->withAnyArgs()->andReturn($orgData);
 
+        $orgMock->shouldReceive('isMerchant2FaEnabled')->withAnyArgs()->andReturn(false);
+
         Mail::fake();
 
         $mailMock = Mockery::mock('RZP\Mail');

@@ -3889,8 +3889,6 @@ class UserTest extends TestCase
 
     public function testFailedUserEnable2faOrg2faEnforced()
     {
-        $this->enableRazorXTreatmentForRazorXForOrgLevel2Fa();
-
         $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
             [
                 UserEntity::CONTACT_MOBILE_VERIFIED => 1,
@@ -3957,8 +3955,6 @@ class UserTest extends TestCase
 
     public function testFailedUserEnable2faOneOfMultipleOrgs2faEnforced()
     {
-        $this->enableRazorXTreatmentForRazorXForOrgLevel2Fa();
-
         $user = $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
             [
                 UserEntity::CONTACT_MOBILE_VERIFIED => 1,
@@ -7006,7 +7002,6 @@ class UserTest extends TestCase
 
     public function enableRazorXTreatmentForRazorXForOrgLevel2Fa()
     {
-
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
             ->setMethods(['getTreatment'])
@@ -8011,8 +8006,6 @@ class UserTest extends TestCase
 
     public function testOrg2faEnforced()
     {
-        $this->enableRazorXTreatmentForRazorXForOrgLevel2Fa();
-
         $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
             [
                 UserEntity::CONTACT_MOBILE_VERIFIED => 1,
@@ -8313,8 +8306,6 @@ class UserTest extends TestCase
     public function testResetPasswordUnlocksAccountForOwnerOrgLevel2FaEnabled()
     {
         Mail::fake();
-
-        $this->enableRazorXTreatmentForRazorXForOrgLevel2Fa();
 
         $this->fixtures->edit('org', '100000razorpay', [OrgEntity::MERCHANT_SECOND_FACTOR_AUTH => 1]);
 

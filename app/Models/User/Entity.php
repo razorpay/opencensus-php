@@ -484,12 +484,6 @@ class Entity extends Base\PublicEntity
 
     protected function getOrgEnforcedSecondFactorAuthAttribute(): bool
     {
-        if ((new Merchant\Core())->isRazorxExperimentEnable($this->getId(),
-            RazorxTreatment::ORG_LEVEL_2FA_ENFORCED_FUNCTIONALITY) === false)
-        {
-            return false;
-        }
-
         $merchants = $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
                           ->select(Table::MERCHANT . '.' . Merchant\Entity::ORG_ID)
                           ->get();

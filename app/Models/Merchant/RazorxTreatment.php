@@ -302,9 +302,6 @@ final class RazorxTreatment
     // experiment to enable axis wrapper feature
     const AXIS_WRAPPER_ENABLED = "AXIS_WRAPPER_ENABLED";
 
-    //
-    const ORG_LEVEL_2FA_ENFORCED_FUNCTIONALITY = 'org_level_2fa_enforced_functionality';
-
     // experiment to enable ipAddress-clientId dedupe functionality
     const DEDUPE_FUNCTIONALITY_FOR_CLIENT_IP_ID = 'DEDUPE_FUNCTIONALITY_FOR_CLIENT_IP_ID';
 

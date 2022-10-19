@@ -1997,17 +1997,10 @@ class Service extends Base\Service
             }
         }
 
-        $isOrg2FaEnforcedExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
-            $user->getId(),
-            RazorxTreatment::ORG_LEVEL_2FA_ENFORCED_FUNCTIONALITY);
-
         $orgId = $this->auth->getOrgId();
         $org = $this->repo->org->findByPublicId($orgId);
 
-        $isOrg2FaEnforced = (
-            ($isOrg2FaEnforcedExperimentEnabled === true)
-            AND ($org->isMerchant2FaEnabled() === true)
-        );
+        $isOrg2FaEnforced = ($org->isMerchant2FaEnabled() === true);
 
         $isUser2FaEnabled = (
             ($user->isSecondFactorAuth() === true) or
