@@ -66,7 +66,7 @@
 
                 <p>For any escalation, please write to</p><br>
                 <p>1st Level:- finances.recon@razorpay.com</p><br>
-                <p>2nd Level:- amit.mohanty@razorpay.com</p><br>
+                <p>2nd Level:- gurpreet.bhasin@razorpay.com</p><br>
                 <p>In case of any Reconciliation file & fund related issue, please write finances.recon@razorpay.com</p> <br>
 
                 <p>Thanks & Regards</p>
