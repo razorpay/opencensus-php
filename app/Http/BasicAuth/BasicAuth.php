@@ -2310,6 +2310,22 @@ class BasicAuth
 
             return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_PARTNER_ACCOUNT_ID_REQUIRED);
         }
+        else
+        {
+            // Added temporary logs to check if partner trying to access apis by passing account_id in req body
+            try
+            {
+                $this->trace->info(
+                    TraceCode::IMPACT_PARTNER_PASSING_ACCOUNT_ID_IN_BODY, ['partner_id' => $this->authCreds->getMerchant()->getId(),
+                                                             'accountId'  => $accountId]);
+            }
+            catch (\Exception $exception)
+            {
+                $this->trace->info(
+                    TraceCode::IMPACT_PARTNER_PASSING_ACCOUNT_ID_IN_BODY_FAILED, ['exception' => $exception,
+                                                             'accountId'  => $accountId]);
+            }
+        }
 
         $account = $this->repo
                         ->merchant

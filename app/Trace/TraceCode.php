@@ -8316,6 +8316,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GET_SHOPIFY_CLIENT_ERROR                                    = 'GET_SHOPIFY_CLIENT_ERROR';
     const SHOPIFY_1CC_APPLY_COUPON_ERROR                              = 'SHOPIFY_1CC_APPLY_COUPON_ERROR';
 
+    const IMPACT_PARTNER_PASSING_ACCOUNT_ID_IN_BODY                   = 'IMPACT_PARTNER_PASSING_ACCOUNT_ID_IN_BODY';
+
+    const IMPACT_PARTNER_PASSING_ACCOUNT_ID_IN_BODY_FAILED            = 'IMPACT_PARTNER_PASSING_ACCOUNT_ID_IN_BODY_FAILED';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
