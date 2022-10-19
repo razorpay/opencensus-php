@@ -3860,6 +3860,10 @@ class Processor
         {
             return;
         }
+        // To Avoide duplicate Verification
+        if ( $payment->isUpi() === true && $payment->getStatus() !== "authorized" ){
+            return;
+        }
         // Skip verify cll for BharatQr and UpiTransfer
         if (($payment->isBharatQr() === true)
             or ($payment->isUpiTransfer() === true))
@@ -3946,10 +3950,11 @@ class Processor
         $terminal = $payment->terminal;
 
         $data['terminal'] = [
-            'id'                  => $payment->terminal->getId(),
-            'gateway'             => $payment->terminal->getGateway(),
-            'vpa'                 => $payment->terminal->getVpa(),
+            'id'                  => $terminal->getId(),
+            'gateway'             => $terminal->getGateway(),
+            'vpa'                 => $terminal->getVpa(),
             'gateway_merchant_id' => $terminal->getGatewayMerchantId(),
+            'gateway_merchant_id2' => $terminal->getGatewayMerchantId2(),
             'gateway_terminal_id' => $terminal->getGatewayTerminalId(),
         ];
 
