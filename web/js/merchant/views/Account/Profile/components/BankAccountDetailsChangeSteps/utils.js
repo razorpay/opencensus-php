@@ -18,5 +18,5 @@ export const trackBankAccountDetailsChange = ({
   });
 };
 
-export const getResponseTime = (startedAt) =>
-  `${((new Date().getTime() - startedAt.getTime()) / 1000).toFixed(2)}s`;
+export const getResponseTime = (startedAt, endedAt = new Date()) =>
+  `${((endedAt.getTime() - startedAt.getTime()) / 1000).toFixed(2)}s`;

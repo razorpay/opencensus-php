@@ -1,4 +1,7 @@
-import { getResponseTime, trackBankAccountDetailsChange } from '../utils';
+import {
+  getResponseTime,
+  trackBankAccountDetailsChange,
+} from 'merchant/views/Account/Profile/components/BankAccountDetailsChangeSteps/utils';
 import * as analytics from 'common/utils/analytics';
 
 beforeAll(() => {
@@ -46,10 +49,9 @@ describe('Bank account update utils', () => {
 
   describe('getResponseTime', () => {
     test('should return difference between now and passed date in seconds', () => {
-      const testDate = new Date('2022-05-21');
-      expect(getResponseTime(testDate)).toBe(
-        `${((new Date().getTime() - testDate.getTime()) / 1000).toFixed(2)}s`,
-      );
+      const startedAt = new Date(new Date('2022-05-21').setHours(0, 0, 0, 0));
+      const endedAt = new Date(new Date('2022-05-21').setHours(0, 0, 5, 480));
+      expect(getResponseTime(startedAt, endedAt)).toBe('5.48s');
     });
   });
 });
