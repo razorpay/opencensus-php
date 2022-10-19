@@ -18684,6 +18684,17 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testDeleteCardMetaDataForPayoutService()
+    {
+        $this->ba->appAuthTest($this->config['applications.payouts_service.secret']);
+
+        $response = $this->startTest();
+
+        $this->assertArrayKeysExist($response, ['error', 'success']);
+        $this->assertTrue($response['success']);
+        $this->assertEquals("", $response['error']);
+    }
+
     public function testCreatePayoutToRzpTokenisedCardWithInvalidTokenIin()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::ALLOW_NON_SAVED_CARDS]);
@@ -18851,7 +18862,6 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest($testData);
     }
-
 
     // Following test depends on configs. Adding/removing configs defined in Models/FundTransfer/M2P/M2PConfigs file can fail these.
     // We need to make changes to the test sample data to pass them

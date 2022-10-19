@@ -894,6 +894,15 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function payoutServiceDeleteCardMetaData()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->payoutServiceDeleteCardMetaData($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function initiateDataMigration()
     {
         $input = Request::all();

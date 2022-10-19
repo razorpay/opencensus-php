@@ -4172,6 +4172,13 @@ class Service extends Base\Service
         return $this->core->payoutServiceDualWrite($input);
     }
 
+    public function payoutServiceDeleteCardMetaData($input)
+    {
+        (new Validator())->validateInput(Validator::DELETE_CARD_META_DATA_FOR_PAYOUT_SERVICE, $input);
+
+        return $this->core->payoutServiceDeleteCardMetaData($input);
+    }
+
     public function initiateDataMigration(array $input): array
     {
         $response = $this->core->initiateDataMigration($input);

@@ -16440,6 +16440,23 @@ return [
         ],
     ],
 
+    'testDeleteCardMetaDataForPayoutService' => [
+        'request'  => [
+            'method'  => 'DELETE',
+            'url'     => '/payouts_service/delete_card_metadata',
+            'content' => [
+                'vault_token' => 'pay_44f3d176b38b4cd2a588f243e3ff7b20',
+                'card_id'     => 'card_1000000000card'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "success" => true,
+                'error'   => "",
+            ],
+        ],
+    ],
+
     'testCreatePayoutToRzpTokenisedCardThroughBankRails' => [
         'request'   => [
             'method'  => 'POST',

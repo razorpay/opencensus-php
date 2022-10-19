@@ -3686,6 +3686,7 @@ class Route
         'payouts_service_mail_and_sms'            => ['post',     'payouts_service/mail_and_sms',                           'PayoutController@payoutServiceMailAndSms'                     ],
         'status_details_source_update'            => ['post',     'payouts_service/status_details_source_update',           'PayoutController@statusDetailsSourceUpdate'                   ],
         'payouts_service_dual_write'              => ['post',     'payouts_service/dual_write',                             'PayoutController@payoutServiceDualWrite'                      ],
+        'delete_card_meta_data_and_vault_token'   => ['delete',   'payouts_service/delete_card_metadata',                   'PayoutController@payoutServiceDeleteCardMetaData'             ],
 
         // Data Consistency Checker Routes
         'initiate_payouts_consistency_check'      => ['post',     'consistency_checker',                                    'PayoutController@initiatePayoutsConsistencyCheck'             ],
@@ -5136,6 +5137,7 @@ class Route
         // payout service
         'create_payout_entry',
         'payouts_service_dual_write',
+        'delete_card_meta_data_and_vault_token',
         'create_reversal_entry',
         'banking_account_fetch_by_account_number',
         'banking_account_fetch_by_balance_id',
@@ -14088,6 +14090,7 @@ class Route
         'payouts_service' => [
             'create_payout_entry',
             'payouts_service_dual_write',
+            'delete_card_meta_data_and_vault_token',
             'fund_account_get_internal',
             'banking_account_fetch_by_account_number',
             'banking_account_fetch_by_balance_id',

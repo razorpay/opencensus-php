@@ -800,7 +800,10 @@ class Core extends Base\Core
             );
         }
 
-        $this->deleteCardMetaDataAndVaultTokenForTerminalStatePayout($status, $payout);
+        if ($payout->getIsPayoutService() === false)
+        {
+            $this->deleteCardMetaDataAndVaultTokenForTerminalStatePayout($status, $payout);
+        }
     }
 
     public function deleteCardMetaDataAndVaultTokenForTerminalStatePayout(string $status, $payout)
@@ -849,7 +852,12 @@ class Core extends Base\Core
             }
             catch (\Exception $exception)
             {
-                $response = $exception->getData();
+                $response = [];
+
+                if (method_exists($exception, 'getData') === true)
+                {
+                    $response = $exception->getData();
+                }
 
                 if ((isset($response['error']) === true) and
                     (in_array($response['error'], self::NON_RETRYABLE_VAULT_TOKEN_DELETION_ERRORS, true) === true))
@@ -4645,7 +4653,10 @@ class Core extends Base\Core
                     $input);
         }
 
-        $this->deleteCardMetaDataAndVaultTokenForTerminalStatePayout($status, $payout);
+        if ($payout->getIsPayoutService() === false)
+        {
+            $this->deleteCardMetaDataAndVaultTokenForTerminalStatePayout($status, $payout);
+        }
 
         return $payout;
     }
@@ -7159,6 +7170,52 @@ class Core extends Base\Core
         );
 
         return ['status' => 'success'] ;
+    }
+
+    public function payoutServiceDeleteCardMetaData($input)
+    {
+        $this->trace->info(
+            TraceCode::DELETE_VAULT_TOKEN_AND_CARD_META_DATA_PAYOUT_SERVICE_REQUEST,
+            $input
+        );
+
+        $deleteCardMetaDataResponse = [];
+
+        try
+        {
+            $deleteCardMetaDataResponse = $this->app['card.cardVault']->deleteToken($input[Entity::VAULT_TOKEN]);
+
+            $this->trace->info(TraceCode::PAYOUT_TO_CARDS_VAULT_TOKEN_SUCCESSFULLY_DELETED_FOR_PAYOUT_SERVICE, $input);
+        }
+        catch (\Exception $exception)
+        {
+            $deleteCardMetaDataResponse['success'] = false;
+
+            $response = [];
+
+            if (method_exists($exception, 'getData') === true)
+            {
+                $response = $exception->getData();
+            }
+
+            if (isset($response['error']) === true)
+            {
+                $this->trace->info(
+                    TraceCode::PAYOUT_TO_CARDS_VAULT_TOKEN_DELETION_FAILED,
+                    [
+                        Entity::VAULT_TOKEN => $input[Entity::VAULT_TOKEN],
+                        Entity::CARD_ID     => $input[Entity::CARD_ID]
+                    ]);
+
+                $deleteCardMetaDataResponse['error'] = $response['error'];
+            }
+            else
+            {
+                $deleteCardMetaDataResponse['error'] = "";
+            }
+        }
+
+        return $deleteCardMetaDataResponse;
     }
 
     public function addMerchantForTestPayouts(string $merchantId)

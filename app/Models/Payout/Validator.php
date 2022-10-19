@@ -115,6 +115,7 @@ class Validator extends Base\Validator
     const MIGRATE_FREE_PAYOUT_PAYOUTS_SERVICE       = 'migrate_free_payout_payouts_service';
     const ROLLBACK_FREE_PAYOUT_PAYOUTS_SERVICE      = 'rollback_free_payout_payouts_service';
     const STATUS_DETAILS_SOURCE_UPDATE              = 'status_details_source_update';
+    const DELETE_CARD_META_DATA_FOR_PAYOUT_SERVICE  = 'delete_card_meta_data_payout_service';
 
     const PAYOUTS_SERVICE_CREATE_FAILURE_PROCESSING_CRON    = 'payouts_service_create_failure_processing_cron';
     const PAYOUTS_SERVICE_UPDATE_FAILURE_PROCESSING_CRON    = 'payouts_service_update_failure_processing_cron';
@@ -494,6 +495,11 @@ class Validator extends Base\Validator
         Entity::STATUS                      => 'required|string',
         Entity::MERCHANT_ID                 => 'required|alpha_num|size:14',
         Entity::BALANCE_ID                  => 'required|alpha_num|size:14',
+    ];
+
+    protected static $deleteCardMetaDataPayoutServiceRules = [
+        Entity::CARD_ID                     => 'required|string|size:19',
+        Entity::VAULT_TOKEN                 => 'required|string',
     ];
 
     protected static $payoutServiceFetchPricingInfoRules = [

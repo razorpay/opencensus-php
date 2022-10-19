@@ -261,6 +261,10 @@ class Entity extends Base\PublicEntity
     const CARD    = 'card';
     const NUMBER  = 'number';
 
+    // Used for delete card meta data route for Payout Service
+    const CARD_ID     = 'card_id';
+    const VAULT_TOKEN = 'vault_token';
+
     // internal
     const IS_INTERNAL = "is_internal";
 
