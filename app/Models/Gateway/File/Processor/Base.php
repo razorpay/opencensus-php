@@ -354,6 +354,49 @@ abstract class Base extends Core
         $this->gatewayFile->setFileSentAt(time());
     }
 
+    protected function fetchFilestoreIds()
+    {
+        $fileStoreEntities = $this->repo->file_store->getFilesBasedOnEntity($this->gatewayFile->getId());
+
+        $fileStoreIds = [];
+
+        foreach ($fileStoreEntities as $fileStoreEntity)
+        {
+            $fileStoreIds[] = $fileStoreEntity["id"];
+        }
+
+        return $fileStoreIds;
+    }
+
+    protected function getFileNames($files)
+    {
+        $fileInfo = [];
+
+        foreach ($files as $file)
+        {
+            $fullFileName = $file->getName() . '.' . $file->getExtension();
+
+            $fileInfo[] = $fullFileName;
+        }
+
+        return $fileInfo;
+    }
+
+    protected function getSingleFileName($file)
+    {
+        return $file->getName() . '.' . $file->getExtension();
+    }
+
+    protected function setFilesBeamStatus($fileList, $fileStatus)
+    {
+        foreach ($fileList as $eachFile)
+        {
+            $eachFile->setComments($fileStatus);
+
+            $this->repo->saveOrFail($eachFile);
+        }
+    }
+
     /**
      * Process the file_generation_instrumentation entity via queue
      *

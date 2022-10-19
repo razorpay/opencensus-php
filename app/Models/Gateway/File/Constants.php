@@ -426,4 +426,10 @@ class Constants
 
     // Actions
     const MULTIPLE_ENTITY_FETCH = 'multiple_entity_fetch';
+
+    // file constants
+    const FILE_SENT          = 'file_sent';
+    const FILE_FAILED        = 'file_failed';
+    const FILE_TIMEOUT       = 'file_timeout';
+    const FILE_UNKNOWN       = 'file_unknown';
 }

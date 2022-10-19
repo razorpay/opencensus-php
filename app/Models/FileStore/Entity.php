@@ -273,6 +273,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SIZE);
     }
 
+    public function getComments()
+    {
+        return $this->getAttribute(self::COMMENTS);
+    }
+
     /**
      * Returns local full file path
      *
@@ -323,6 +328,11 @@ class Entity extends Base\PublicEntity
     public function setDeletedAt()
     {
         $this->attributes[self::DELETED_AT] = Carbon::now()->timestamp;
+    }
+
+    public function setComments(string $comments)
+    {
+        $this->setAttribute(self::COMMENTS, $comments);
     }
 
 }

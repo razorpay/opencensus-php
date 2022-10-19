@@ -287,16 +287,66 @@ class PaperNachCiti extends Debit\Base
     }
 
     /**
+     * @param $data
      * @throws GatewayErrorException
      */
     public function sendFile($data)
     {
-        $fileInfo = [];
+        try {
+            $variant = $this->app['razorx']->getTreatment(
+                "SFTP_CITI",
+                'sftp_batches_and_retry',
+                $this->mode
+            );
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->info(TraceCode::RAZORX_REQUEST_FAILED,
+                [
+                    "razorx error" => $ex
+                ]);
 
-        $files = $this->gatewayFile
-                      ->files()
-                      ->whereIn(FileStore\Entity::ID, $this->fileStore)
-                      ->get();
+            $variant = 'off';
+        }
+
+        if (strtolower($variant) === 'on')
+        {
+            $fileStoreIds = $this->fetchFilestoreIds();
+
+            $files = $this->gatewayFile
+                ->files()
+                ->whereIn(FileStore\Entity::ID, $fileStoreIds)
+                ->get();
+
+            $this->sendFilesInBatches($files, 2);
+        }
+        else
+        {
+            $files = $this->gatewayFile
+                ->files()
+                ->whereIn(FileStore\Entity::ID, $this->fileStore)
+                ->get();
+
+            $this->sendFilesBulk($files);
+        }
+
+        $mailData = $this->formatDataForMail($files);
+
+        $type = static::GATEWAY . '_' . static::STEP;
+
+        $mailable = new NachMail($mailData, $type, $this->gatewayFile->getRecipients());
+
+        Mail::queue($mailable);
+    
+        if($this->gatewayFile->getTarget() === Constants::PAPER_NACH_CITI_V2)
+        {
+            $this->sendMail($files);
+        }
+    }
+
+    protected function sendFilesBulk($files)
+    {
+        $fileInfo = [];
 
         foreach ($files as $file)
         {
@@ -314,7 +364,6 @@ class PaperNachCiti extends Debit\Base
             BeamService::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
         ];
 
-        // In seconds
         $timelines = [];
 
         $mailInfo = [
@@ -342,27 +391,162 @@ class PaperNachCiti extends Debit\Base
                 ]
             );
         }
+    }
 
-        $mailData = $this->formatDataForMail($files);
+    protected function sendFilesInBatches($fileInfo, $batch_size = 1)
+    {
+        $attempts = 0;
 
-        $type = static::GATEWAY . '_' . static::STEP;
+        $pendingBatches = $fileInfo->chunk($batch_size);
 
-        $mailable = new NachMail($mailData, $type, $this->gatewayFile->getRecipients());
-
-        Mail::queue($mailable);
-
-        if($this->gatewayFile->getTarget() === Constants::PAPER_NACH_CITI_V2)
+        do
         {
-            $this->sendMail($files);
+            $sentFiles = $failedFiles = $timeoutFiles = [];
+
+            foreach($pendingBatches as $pendingBatch)
+            {
+                $response = $this->sendEachFileBatch($pendingBatch);
+
+                $sentFiles = array_merge($sentFiles, $response['sent_files']);
+
+                $failedFiles = array_merge($failedFiles, $response['failed_files']);
+
+                $timeoutFiles = array_merge($timeoutFiles, $response['timeout_files']);
+            }
+
+            $attempts = $attempts + 1;
         }
+        while(count($failedFiles) > 0 and $attempts < 2);
+
+        $response = [
+            'gateway_id' => $this->gatewayFile->getId(),
+            'gateway_target' => $this->gatewayFile->getTarget(),
+            "failed_files"  => $failedFiles,
+            "sent_files"    => $sentFiles,
+            "timeout_files" => $timeoutFiles
+        ];
+
+        if(count($sentFiles) !== count($fileInfo))
+        {
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+                null,
+                null,
+                $response
+            );
+        }
+
+        $this->trace->info(TraceCode::GATEWAY_FILE_BEAM_FILES_STATUS, [ $response ]);
+    }
+
+    protected function sendEachFileBatch($pendingFiles)
+    {
+        $sentFiles = $failedFiles = $timeoutFiles = [];
+
+        $this->trace->info(TraceCode::GATEWAY_FILE_BEAM_FILES_PENDING,
+            [
+                "pendingFiles" => $pendingFiles,
+                'gateway' => $this->gatewayFile->getTarget()
+            ]);
+
+        foreach ($pendingFiles as $index => $pendingFile)
+        {
+            if ($pendingFile->getComments() === Constants::FILE_SENT)
+            {
+                array_push($sentFiles, $this->getSingleFileName($pendingFile));
+
+                unset($pendingFiles[$index]);
+            }
+
+            if ($pendingFile->getComments() === Constants::FILE_TIMEOUT or
+                $pendingFile->getComments() === Constants::FILE_UNKNOWN)
+            {
+                array_push($timeoutFiles, $this->getSingleFileName($pendingFile));
+
+                unset($pendingFiles[$index]);
+            }
+        }
+
+        $this->trace->info(TraceCode::GATEWAY_FILE_BEAM_FILES_FILTERED,
+            [
+                "pendingFiles" => $pendingFiles,
+                'gateway' => $this->gatewayFile->getTarget()
+            ]);
+
+        if(count($pendingFiles) > 0)
+        {
+            $beamFiles = $this->getFileNames($pendingFiles);
+
+            $bucketConfig = $this->getBucketConfig(self::FILE_TYPE);
+
+            $data = [
+                BeamService::BEAM_PUSH_FILES         => $beamFiles,
+                BeamService::BEAM_PUSH_JOBNAME       => BeamConstants::CITIBANK_NACH_FILE_JOB_NAME,
+                BeamService::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
+                BeamService::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
+            ];
+
+            // In seconds
+            $timelines = [];
+
+            $mailInfo = [
+                'fileInfo'  => $beamFiles,
+                'channel'   => 'nach',
+                'filetype'  => FileStore\Type::CITI_NACH_DEBIT,
+                'subject'   => 'File Send failure',
+                'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::SUBSCRIPTIONS_APPS]
+            ];
+
+            $beamResponse = $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
+
+            $this->trace->info(TraceCode::GATEWAY_FILE_BEAM_RESPONSE,
+                [
+                    "beam_response" => $beamResponse,
+                    'gateway' => $this->gatewayFile->getTarget()
+                ]);
+
+            if($beamResponse === null)
+            {
+                $timeoutFiles = array_merge($timeoutFiles, $beamFiles);
+
+                $this->setFilesBeamStatus($pendingFiles, Constants::FILE_TIMEOUT);
+            }
+            elseif (isset($beamResponse['failed']) === true and
+                    ($beamResponse['failed'] !== null or $beamResponse['failed'] === true) or
+                    (isset($beamResponse['success']) === true and $beamResponse['success'] === false))
+            {
+                $failedFiles = array_merge($failedFiles, $beamFiles);
+
+                $this->setFilesBeamStatus($pendingFiles, Constants::FILE_FAILED);
+            }
+            elseif(isset($beamResponse['success']) == true and $beamResponse['success'] === true)
+            {
+                $sentFiles = array_merge($sentFiles, $beamFiles);
+
+                $this->setFilesBeamStatus($pendingFiles, Constants::FILE_SENT);
+            }
+            else
+            {
+                $timeoutFiles = array_merge($timeoutFiles, $beamFiles);
+
+                $this->setFilesBeamStatus($pendingFiles, Constants::FILE_UNKNOWN);
+            }
+        }
+
+        return [
+            "failed_files"  => $failedFiles,
+            "sent_files"    => $sentFiles,
+            "timeout_files" => $timeoutFiles
+        ];
     }
 
     protected function sendMail($files)
     {
-        try {
+        try
+        {
             foreach ($files as $file)
             {
-                if($file['extension'] === 'txt')
+                if ($file['extension'] === 'txt')
                 {
                     $fileName = $file->getName() . '.' . $file->getExtension();
 
