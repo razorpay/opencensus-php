@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\PublicEntity;
 use RZP\Error\PublicErrorDescription;
+use  RZP\Models\Workflow\Action\Checker\Entity as CheckerEntity;
 
 class Validator extends Base\Validator
 {
@@ -125,6 +126,34 @@ class Validator extends Base\Validator
                 null,
                 $data);
         }
+    }
+
+    public function validateMakerIsNotCheckerOrOwner(Entity $action, $checkerEntity, $checkerType = 'admin')
+    {
+        $makerId = $action->getMakerId();
+
+        $makerType = $action->getMakerType();
+
+        $permission = $action->permission->getName();
+
+        if ((($checkerType === CheckerEntity::ADMIN) and
+            ($checkerEntity->isSuperAdmin() === true)) or
+            (in_array($permission, Constants::WORKFLOWS_EXCLUDED_FOR_MAKER_IS_SAME_AS_CHECKER_OR_OWNER_VALIDATION) === true))
+        {
+            return false;
+        }
+
+        if (($makerType === CheckerEntity::ADMIN) and
+            ($checkerType === CheckerEntity::ADMIN) and
+            ($makerId === $checkerEntity->getId()))
+        {
+            return true;
+            /*
+            throw new Exception\BadRequestValidationFailureException(
+                'You cannot work on your own workflows');
+            */
+        }
+        return false;
     }
 
     public function validateActionIsOpen(Entity $action = null)

@@ -66,6 +66,16 @@ class Core extends Base\Core
             throw new Exception\LogicException('Checker null, unexpected', null, ['input' => $input]);
         }
 
+        $this->trace->info(TraceCode::WORKFLOW_MAKER_AND_CHECKER, [
+            Action\Entity::ACTION_ID            => $action->getPublicId(),
+            Action\Entity::MAKER                => $action->getMakerId(),
+            Action\Entity::MAKER_TYPE           =>  $action->getMakerType(),
+            Action\Checker\Entity::CHECKER_TYPE => $checkerType,
+            Action\Checker\Entity::CHECKER_ID   => $checkerEntity->getId(),
+            "validation_result"                 => (new Action\Validator)->validateMakerIsNotCheckerOrOwner($action, $checkerEntity, $checkerType)
+        ]);
+
+
         //
         // When a checker request is made, we need to first
         // verify whether the admin/user can check the action

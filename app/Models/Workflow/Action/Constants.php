@@ -50,6 +50,11 @@ class Constants
         Permission\Name::INCREASE_INTERNATIONAL_TRANSACTION_LIMIT,
     ];
 
+    const WORKFLOWS_EXCLUDED_FOR_MAKER_IS_SAME_AS_CHECKER_OR_OWNER_VALIDATION = [
+        Permission\Name::EDIT_MERCHANT_METHODS,
+        Permission\Name::EDIT_MERCHANT_PRICING,
+    ];
+
     const WORKFLOW_NEEDS_MERCHANT_CLARIFICATION_TAG      = 'Awaiting Customer Response';
     const WORKFLOW_MERCHANT_RESPONDED_TAG                = 'Customer Responded';
     const ADDED_TAG                                      = 'added_tag';
