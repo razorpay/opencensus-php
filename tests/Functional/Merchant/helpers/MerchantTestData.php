@@ -7898,6 +7898,22 @@ return [
         ]
     ],
 
+    'testInternalGetMerchantPayoutService'    =>  [
+        'request'       =>  [
+            'method'    =>  'GET',
+            'url'       =>  '/internal/merchants/{id}'
+        ],
+        'response'      =>  [
+            'content'   => [
+                'merchant' => [
+                    'id'        => '100ghi000ghi00',
+                    'entity'    =>  'merchant',
+                ],
+            ],
+            'status_code' => 200
+        ],
+    ],
+
     'testInternalGetMerchantBulk'    =>  [
         'request'       =>  [
             'method'    =>  'GET',

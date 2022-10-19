@@ -5509,6 +5509,13 @@ class Service extends Base\Service
             }
         }
 
+        $isPayoutService = app('basicauth')->isPayoutService();
+
+        if ($isPayoutService === true)
+        {
+            $data[EntityConstants::MERCHANT][EntityConstants::CREATED_AT] = $merchant->getCreatedAt();
+        }
+
         return $data;
     }
 

@@ -10855,6 +10855,21 @@ IFSC Code  ICIC0001206
         $this->startTest();
     }
 
+    public function testInternalGetMerchantPayoutService()
+    {
+        $this->ba->appAuthLive($this->config['applications.payouts_service.secret']);
+
+        $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '100ghi000ghi00', 'contact_email' => 'test@gmail.com']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/internal/merchants/100ghi000ghi00';
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('created_at', $response['merchant']);
+    }
+
     // Internal merchant_details route return merchant name and website
     public function testInternalGetMerchantBulk()
     {
