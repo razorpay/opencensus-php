@@ -10,10 +10,13 @@ import PropagationStatusModal from './PropagationStatus';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import { DocLink } from 'merchant/components/DocsLink';
 
-import { checkDNSPropogation, createCustomDomainEntry } from '../../../model';
+import {
+  checkDNSPropogation,
+  createCustomDomainEntry,
+} from 'merchant/views/PaymentPages/PaymentPages/model';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { updateCustomDomainDetails, updateSettings } from '../../../../../../reducers/wysiwyg';
-import track from '../../../Wysiwyg/track';
+import { updateCustomDomainDetails, updateSettings } from 'merchant/reducers/wysiwyg';
+import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
 
 const GENERIC_ERROR_MESSAGE = 'Something went wrong, please try again later';
 
@@ -58,6 +61,7 @@ const UpdateDNSModal = ({
   closeModal,
   domainName,
   isSubdomain,
+  planDetails,
   showNotification,
   updateCustomDomainDetails,
   updateSettings,
@@ -90,7 +94,7 @@ const UpdateDNSModal = ({
     return checkDNSPropogation(domainName)
       .then((response) => {
         if (response.data.propagated) {
-          return createCustomDomainEntry(domainName)
+          return createCustomDomainEntry(domainName, planDetails.id)
             .then((response) => {
               if (response.data.status === 'created') {
                 closeModal();
@@ -101,10 +105,10 @@ const UpdateDNSModal = ({
                   component: <PropagationStatusModal closeModal={closeModal} status="success" />,
                 });
 
-                updateCustomDomainDetails({ value: domainName });
+                updateCustomDomainDetails({ value: domainName, planDetails });
                 updateSettings({ custom_domain: domainName });
 
-                track.settings.domainPropagationSuccess(domainName);
+                track.settings.domainPropagationSuccess(domainName, planDetails);
               } else {
                 showNotification({
                   type: 'error',

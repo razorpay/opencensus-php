@@ -182,9 +182,29 @@ function _track() {
       clickShiprocketDashboard: () => {
         sendToSegment('settings', 'shiprocket dashboard');
       },
-      clickConnectDomain: () => {
-        sendToLumberjack('settings.custom_domain.connect_domain');
-        sendToSegment('settings connect domain', 'click');
+      clickConnectDomain: (isPlanActive) => {
+        sendToLumberjack('settings.custom_domain.connect_domain', { isPlanActive });
+        sendToSegment('settings connect domain', 'click', { isPlanActive });
+      },
+      selectDomainPlan: (planDetails) => {
+        sendToLumberjack('settings.custom_domain.select_plan', { planDetails });
+        sendToSegment('settings domain select plan', 'click', { planDetails });
+      },
+      exitSelectDomainPlan: () => {
+        sendToLumberjack('settings.custom_domain.exit_select_plan');
+        sendToSegment('settings domain exit select plan', 'click');
+      },
+      confirmDomainPlan: (planDetails) => {
+        sendToLumberjack('settings.custom_domain.confirm_plan', { planDetails });
+        sendToSegment('settings domain confirm plan', 'click', { planDetails });
+      },
+      exitConfirmDomainPlan: () => {
+        sendToLumberjack('settings.custom_domain.exit_confirm_plan');
+        sendToSegment('settings domain exit confirm plan', 'click');
+      },
+      goBackConfirmDomainPlan: () => {
+        sendToLumberjack('settings.custom_domain.go_back_confirm_plan');
+        sendToSegment('settings domain confirm plan', 'go back');
       },
       enterDomainAddress: () => {
         sendToLumberjack('settings.custom_domain.domain_address_input');
@@ -206,9 +226,9 @@ function _track() {
         sendToLumberjack('settings.custom_domain.verify_connection_click');
         sendToSegment('settings custom domain verify connection', 'click');
       },
-      domainPropagationSuccess: (domainName) => {
-        sendToLumberjack('settings.custom_domain.propagation_success', { domainName });
-        sendToSegment('settings custom domain propagation', 'success', { domainName });
+      domainPropagationSuccess: (domainName, planDetails) => {
+        sendToLumberjack('settings.custom_domain.propagation_success', { domainName, planDetails });
+        sendToSegment('settings custom domain propagation', 'success', { domainName, planDetails });
       },
       domainPropagationFailure: () => {
         sendToLumberjack('settings.custom_domain.propagation_failure');
@@ -225,6 +245,10 @@ function _track() {
       removeDomainConfirm: () => {
         sendToLumberjack('settings.custom_domain.remove_domain_confirm');
         sendToSegment('settings custom domain remove domain', 'confirm');
+      },
+      clickPlanDetails: () => {
+        sendToLumberjack('settings.custom_domain.view_plan_details');
+        sendToSegment('settings custom domain view plan details', 'click');
       },
     },
 

@@ -260,6 +260,18 @@ export function fetchCustomDomain() {
   });
 }
 
+export function fetchCustomDomainAvailablePlans() {
+  return merchantFetch({
+    url: 'payment_pages/cds/plans',
+  });
+}
+
+export function fetchCustomDomainCurrentPlan() {
+  return merchantFetch({
+    url: 'payment_pages/cds/plans/plan',
+  });
+}
+
 export function getIfDomainAlreadyLinked(domain_name) {
   return merchantFetch({
     url: 'payment_pages/cds/domains/exists',
@@ -281,11 +293,11 @@ export function checkDNSPropogation(domain_name) {
   });
 }
 
-export function createCustomDomainEntry(domain_name) {
+export function createCustomDomainEntry(domain_name, plan_id) {
   return merchantFetch({
     url: 'payment_pages/cds/domains',
     method: 'post',
-    data: { domain_name },
+    data: { domain_name, plan_id },
   });
 }
 

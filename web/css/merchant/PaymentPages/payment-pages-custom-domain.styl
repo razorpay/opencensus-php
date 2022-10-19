@@ -1,5 +1,4 @@
 .pp-custom-domain
-
   .main-title
     padding: 20px 24px
     display: flex
@@ -7,17 +6,18 @@
     justify-content: space-between
     font-size: 18px
     font-weight: bold
-    
+
     .heading
       display: flex
       align-items: center
 
-      img, i
-        margin-right: 10px
+      img,
+      i
+        margin-right: 8px
 
-    .i-close 
+    .i-close
       cursor: pointer
-      
+
   main
     padding: 0 24px
 
@@ -27,9 +27,9 @@
     .spacing
       margin: 24px 0
 
-  footer 
-    padding: 20px 24px 
-    background: #f6f6f6
+  footer
+    padding: 20px 24px
+    background: #F6F6F6
     text-align: right
 
     button
@@ -42,7 +42,6 @@
   .i-check-circle-outline
     color: #1F890E
 
-
   .i-warning-o
     color: #CD8214
 
@@ -54,17 +53,63 @@
     &--warning
       color: #8A6D6B
 
-  .ClipboardCustom 
+  .ClipboardCustom
     button
-      color: rgb(43, 131, 234)
-      border-color: rgb(43, 131, 234)
-      background: transparent 
+      color: rgb(43 131 234)
+      border-color: rgb(43 131 234)
+      background: transparent
       margin-bottom: 2px
       font-size: 10px
       font-weight: bold
+      padding: 0 5px
 
-      &:hover 
+      &:hover
+        // stylelint-disable-next-line color-function-notation
         background: rgba(43, 131, 234, 0.05)
 
+      // stylelint-disable-next-line no-descending-specificity
       i
         margin-right: 5px
+
+  .plan-card
+    background-color: #FAFCFF
+    border: 1px solid #0B70E71A
+    border-radius: 1px
+    padding: 12px
+
+    .highlight
+      font-size: 16px
+
+    .badge
+      background: #01B358
+      border-radius: 3px
+      padding: 4px
+      font-size: 10px
+      font-weight: 700
+
+    // for plan cards in the list view
+    &--option
+      display: flex
+      justify-content: space-between
+      align-items: center
+
+      > div
+        display: flex
+        flex-direction: column
+        gap: 8px
+
+      .Button--primary
+        padding: 8px 10px
+        border-radius: 4px
+        margin-right: 0
+
+    // for plan card selected
+    &--selected
+      display: flex
+      flex-direction: column
+      gap: 12px
+      border: 1px solid #608DE9
+
+      > div
+        display: flex
+        justify-content: space-between

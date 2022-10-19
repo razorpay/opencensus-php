@@ -1,20 +1,36 @@
 import { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import lazy from 'merchant/routes/LazyLoader';
 
 import Input from 'common/new-ui/Input';
-import DomainAddressModal from '../CustomDomain/DomainAddress';
-import RemoveDomainModal from '../CustomDomain/RemoveDomain';
 import Spinner from 'common/ui/Spinner';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
 import { validateSlug } from 'common/utils/validators';
-import track from '../../../Wysiwyg/track';
+import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
 
-import { fetchCustomDomainDetails } from '../../../../../../reducers/wysiwyg';
+import { fetchCustomDomainDetails, fetchCustomDomainPlanDetails } from 'merchant/reducers/wysiwyg';
+
+import LockImage from 'assets/payment_pages/lock-outline.svg';
+
+const PlansListModal = lazy(() =>
+  import(/* webpackChunkName: 'PaymentPagesPlansListModal' */ '../CustomDomain/PlansList'),
+);
+const RemoveDomainModal = lazy(() =>
+  import(/* webpackChunkName: 'PaymentPagesRemoveDomainModal' */ '../CustomDomain/RemoveDomain'),
+);
+const PlanDetailsModal = lazy(() =>
+  import(/* webpackChunkName: 'PaymentPagesPlanDetailsModal' */ '../CustomDomain/PlanDetails'),
+);
+const DomainAddress = lazy(() =>
+  import(/* webpackChunkName: 'PaymentPagesDomainAddress' */ '../CustomDomain/DomainAddress'),
+);
 
 const WRAPPER_CLASS = 'settings-section custom-url';
 const INPUT_NAME = 'slug';
-const LABEL = 'Choose custom URL for this page';
+const LABEL = 'Custom URL for this page';
 const RZP_PAGES_URL = 'https://pages.razorpay.com/';
 const INPUT_CLASS = 'Input--vTop';
 const MAX_LENGTH = '30';
@@ -33,17 +49,22 @@ const CustomURL = ({
   user,
   customDomainData,
   fetchCustomDomainDetails,
+  fetchCustomDomainPlanDetails,
   paymentPageCustomUrl,
 }) => {
+  const { value, planDetails } = customDomainData; // domain setup at a global level (redux)
+
   const isCustomDomainFeatureEnabled = user.isPaymentPageCustomDomainEnabled;
-  const { isLoading, isError, value } = customDomainData; // domain setup at a global level (redux)
   const isCustomDomainSetup = !!value;
+  const isPlanActive = !!planDetails.id;
 
   /* 
     setting as custom domain only when both settings.custom_domain
     and merchant level custom_domain setup exists
   */
   const [urlType, setUrlType] = useState(paymentPageCustomUrl && value ? 'custom' : 'rzp'); // paymentPageCustomUrl - if custom domain being used at page level
+  const [isLoading, setLoading] = useState(true);
+  const [isError, setError] = useState(false);
 
   useEffect(() => {
     setUrlType(paymentPageCustomUrl && value ? 'custom' : 'rzp');
@@ -51,30 +72,85 @@ const CustomURL = ({
 
   useEffect(() => {
     if (isCustomDomainFeatureEnabled) {
-      fetchCustomDomainDetails();
+      setLoading(true);
+
+      Promise.all([fetchCustomDomainDetails(), fetchCustomDomainPlanDetails()])
+        .then(() => {})
+        .catch(() => {
+          setError(true);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     }
-  }, [isCustomDomainFeatureEnabled, fetchCustomDomainDetails]);
+  }, [isCustomDomainFeatureEnabled, fetchCustomDomainDetails, fetchCustomDomainPlanDetails]);
 
-  const openCustomDomainModal = () => {
-    openModal({
-      size: 'medium',
-      className: 'pp-custom-domain',
-      component: <DomainAddressModal openModal={openModal} closeModal={closeModal} />,
-    });
+  const handleConnectDomain = () => {
+    /* 
+      if mx has an active plan, then directly open domain address 
+      modal else open the plans list modal so that they can choose a plan
+      and then continue setting up the custom domain
+    */
+    if (isPlanActive) {
+      openModal({
+        size: 'medium',
+        className: 'pp-custom-domain',
+        component: (
+          <SuspenseWithLoader>
+            <DomainAddress
+              openModal={openModal}
+              closeModal={closeModal}
+              planDetails={planDetails}
+            />
+          </SuspenseWithLoader>
+        ),
+      });
+    } else {
+      openModal({
+        size: 'medium',
+        className: 'pp-custom-domain',
+        component: (
+          <SuspenseWithLoader>
+            <PlansListModal openModal={openModal} closeModal={closeModal} />
+          </SuspenseWithLoader>
+        ),
+      });
+    }
 
-    track.settings.clickConnectDomain();
+    track.settings.clickConnectDomain(isPlanActive);
   };
 
-  const openRemoveModal = () => {
+  const handleRemoveDomain = () => {
     openModal({
       size: 'medium',
       className: 'pp-custom-domain',
       component: (
-        <RemoveDomainModal openModal={openModal} closeModal={closeModal} domainName={value} />
+        <SuspenseWithLoader>
+          <RemoveDomainModal
+            openModal={openModal}
+            closeModal={closeModal}
+            domainName={value}
+            nextBillingDate={planDetails.next_billing_at}
+          />
+        </SuspenseWithLoader>
       ),
     });
 
     track.settings.removeDomainClick();
+  };
+
+  const handlePlanDetails = () => {
+    openModal({
+      size: 'medium',
+      className: 'pp-custom-domain',
+      component: (
+        <SuspenseWithLoader>
+          <PlanDetailsModal planDetails={planDetails} closeModal={closeModal} />
+        </SuspenseWithLoader>
+      ),
+    });
+
+    track.settings.clickPlanDetails();
   };
 
   // logic to calculate left padding based on length of addonValueBefore
@@ -195,13 +271,26 @@ const CustomURL = ({
             (!isCustomDomainSetup ? (
               <div class="cta-section">
                 <div class="body">
-                  <span class="badge bg-success hidden-xs m-r">New</span>
-                  Use your domain in this URL
+                  <span>
+                    <img src={LockImage} alt="lock" width="24px" height="24px" />
+                    <Popover
+                      align="bottom"
+                      theme="dark"
+                      parentQuerySelector=".Modal-mask--paymentpages-settings .Modal-body"
+                    >
+                      <PopoverBody>
+                        - Charges apply - <br />
+                        This is a pro feature
+                      </PopoverBody>
+                    </Popover>
+                  </span>
+                  <b>Use your domain as URL</b>
+                  <span class="badge bg-success hidden-xs">New</span>
                 </div>
                 <span class="action">
                   <button
                     class="btn Button--primary--invert Button"
-                    onClick={openCustomDomainModal}
+                    onClick={handleConnectDomain}
                     type="button"
                   >
                     Connect Domain
@@ -210,9 +299,15 @@ const CustomURL = ({
               </div>
             ) : (
               urlType === 'custom' && (
-                <div class="remove-domain" onClick={openRemoveModal}>
-                  <i class="i i-delete" />
-                  Remove domain
+                <div class="custom-url-options">
+                  <div class="remove-domain" onClick={handleRemoveDomain}>
+                    <i class="i i-delete-outline" />
+                    Remove domain
+                  </div>
+                  <div onClick={handlePlanDetails}>
+                    <i class="i i-star-outline" />
+                    Plan details
+                  </div>
                 </div>
               )
             ))}
@@ -230,6 +325,7 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   fetchCustomDomainDetails: bindActionCreators(fetchCustomDomainDetails, dispatch),
+  fetchCustomDomainPlanDetails: bindActionCreators(fetchCustomDomainPlanDetails, dispatch),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(CustomURL);

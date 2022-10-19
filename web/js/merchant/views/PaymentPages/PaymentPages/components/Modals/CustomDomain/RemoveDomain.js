@@ -6,13 +6,14 @@ import Form from 'common/new-ui/Form';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Alert from 'common/new-ui/Alert';
 
-import { removeCustomDomainEntry } from '../../../model';
-import { updateCustomDomainDetails, updateSettings } from '../../../../../../reducers/wysiwyg';
+import { removeCustomDomainEntry } from 'merchant/views/PaymentPages/PaymentPages/model';
+import { updateCustomDomainDetails, updateSettings } from 'merchant/reducers/wysiwyg';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import track from '../../../Wysiwyg/track';
+import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
 
 const RemoveDomainModal = ({
   domainName,
+  nextBillingDate,
   closeModal,
   updateCustomDomainDetails,
   updateSettings,
@@ -61,9 +62,9 @@ const RemoveDomainModal = ({
             payment pages that are using this domain will be changed.
           </div>
           <br />
-          <Alert.Warning>
-            You will need to share the new URLs for these pages with your customers as current URLs
-            will stop working
+          <Alert.Warning iconBefore="i-info-outline">
+            Your plan will be active till <strong>{nextBillingDate}</strong> and cancelled on the
+            following day
           </Alert.Warning>
           <br />
         </main>

@@ -14,6 +14,7 @@ import { paiseToRupees, arrayMove } from 'common/utils/rzp-utils';
 import {
   fetchPaymentPageEntity,
   fetchCustomDomain,
+  fetchCustomDomainCurrentPlan,
 } from 'merchant/views/PaymentPages/PaymentPages/model';
 
 // TODO: Remove dependency from here
@@ -36,6 +37,7 @@ const UPDATE_RECEIPT_DETAILS = 'UPDATE_RECEIPT_DETAILS';
 const PREFILL_CONTACT_DETAILS = 'PREFILL_CONTACT_DETAILS';
 const FETCH_CUSTOM_DOMAIN = 'FETCH_CUSTOM_DOMAIN';
 const UPDATE_CUSTOM_DOMAIN = 'UPDATE_CUSTOM_DOMAIN';
+const FETCH_CUSTOM_DOMAIN_PLAN = 'FETCH_CUSTOM_DOMAIN_PLAN';
 
 export const updateTemplateType = (data, templateKey) => {
   const isPageDirty = false;
@@ -86,6 +88,13 @@ export const updateCustomDomainDetails = (payload = {}) => {
   return {
     type: UPDATE_CUSTOM_DOMAIN,
     payload,
+  };
+};
+
+export const fetchCustomDomainPlanDetails = () => {
+  return {
+    type: FETCH_CUSTOM_DOMAIN_PLAN,
+    payload: fetchCustomDomainCurrentPlan(),
   };
 };
 
@@ -174,8 +183,7 @@ const initialState = {
   isShiprocketOpened: false, // Modal used to enable Shiprocket
   customDomain: {
     value: '',
-    isLoading: false,
-    isError: false,
+    planDetails: {},
   }, // custom domain details at a merchant level
 };
 
@@ -302,15 +310,6 @@ export default (state = initialState, action) => {
     case `${FETCH_ENTITY}::ERROR`:
       return set(state, 'paymentPageEntity', null);
 
-    case `${FETCH_CUSTOM_DOMAIN}::PENDING`:
-      return {
-        ...state,
-        customDomain: merge(state.customDomain, {
-          isLoading: true,
-          isError: false,
-        }),
-      };
-
     case `${FETCH_CUSTOM_DOMAIN}::SUCCESS`: {
       let domainName = '';
 
@@ -321,9 +320,7 @@ export default (state = initialState, action) => {
       return {
         ...state,
         customDomain: merge(state.customDomain, {
-          isLoading: false,
           value: domainName,
-          isError: false,
         }),
       };
     }
@@ -332,9 +329,24 @@ export default (state = initialState, action) => {
       return {
         ...state,
         customDomain: merge(state.customDomain, {
-          isLoading: false,
-          isError: true,
           value: '',
+        }),
+      };
+
+    case `${FETCH_CUSTOM_DOMAIN_PLAN}::SUCCESS`: {
+      return {
+        ...state,
+        customDomain: merge(state.customDomain, {
+          planDetails: action.payload.data.plan,
+        }),
+      };
+    }
+
+    case `${FETCH_CUSTOM_DOMAIN_PLAN}::ERROR`:
+      return {
+        ...state,
+        customDomain: merge(state.customDomain, {
+          planDetails: {},
         }),
       };
 

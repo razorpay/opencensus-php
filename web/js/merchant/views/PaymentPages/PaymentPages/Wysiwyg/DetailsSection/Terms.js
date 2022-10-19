@@ -1,7 +1,7 @@
 import React from 'react';
 import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
-import Tooltip from 'common/ui/Tooltip';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
@@ -87,9 +87,11 @@ export default class extends React.PureComponent {
             You agree to share information entered on this page with {merchantName} (owner of this
             page) and Razorpay, adhering to applicable laws.
           </p>
-          <Tooltip theme="dark" align="top" className="rzp-tooltip-tnc">
-            These terms and conditions are mandatory and cannot be removed.
-          </Tooltip>
+          <Popover theme="dark" align="top" className="rzp-tooltip-tnc">
+            <PopoverBody>
+              These terms and conditions are mandatory and cannot be removed.
+            </PopoverBody>
+          </Popover>
         </div>
       </div>
     );

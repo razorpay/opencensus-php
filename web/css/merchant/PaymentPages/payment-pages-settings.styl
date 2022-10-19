@@ -1,0 +1,274 @@
+// stylelint-disable color-function-notation
+.Modal-mask--paymentpages-settings
+  background: #FFF
+
+  .main-title
+    font-weight: bold
+    padding: 16px 24px
+    font-size: 18px
+
+  .Modal-container
+    width: 400px
+    margin: 12px 0
+    overflow: visible // prevents tooltips from getting clipped
+    height: 600px
+
+    @media (max-width $screen-xs-max)
+      width: 100%
+      height: 100%
+      margin: 0
+      overflow: hidden
+
+  .Input
+    margin-bottom: 0
+
+  .settings-section
+    padding: 24px
+
+    .Input
+      margin-top: 0
+
+    &:not(:last-of-type)
+      border-bottom: 1px solid #ECECEC
+
+  .cta-section
+    display: flex
+
+    .body
+      flex: 1
+
+    .action
+      margin-left: 5px
+      display: flex
+      align-items: flex-end
+
+  .custom-success-msg
+    position: relative
+
+    .Input-el
+      margin-top: 0
+      margin-bottom: 0
+      padding: 4px 40px 4px 12px
+      max-height: 64px
+
+    .chars-pressed
+      position: absolute
+      opacity: 0.4
+      bottom: 2px
+      right: 8px
+
+  .Input .Input-valueBefore + .Input-el
+    padding-left: 190px
+
+  .Input-content
+    margin-top: 4px
+
+  .Input--theme
+    .Input-label,
+    .Input-content
+      display: inline-block
+
+    .Input-content
+      margin-left: 28px
+      margin-top: -4px
+      vertical-align: middle
+
+  .Input--expiryby
+    .Input--Calendar
+      .Input-content
+        margin-top: 6px
+
+  .Button--primary--invert
+    font-weight: bold
+    margin-right: 0
+    font-size: 12px
+    padding: 5px
+    color: rgb(11 112 231)
+    background: #FAFCFF
+    border: 1px solid #528FF0
+
+    &:not(:disabled):hover
+      background: rgba(11, 112, 231, 0.05)
+      color: rgb(11 112 231)
+
+  .Settings-form
+    @media (max-width $screen-xs-max)
+      height: 100vh
+
+    &--body
+      overflow: auto
+      height: 474px
+      // stylelint-disable-next-line max-line-length
+      background: linear-gradient(#FFF 33%, rgba(255, 255, 255, 0)), linear-gradient(rgba(255, 255, 255, 0), #FFF 66%) 0 100%, linear-gradient(rgba(209, 209, 209, 0.5), rgba(0, 0, 0, 0)), linear-gradient(rgba(0, 0, 0, 0), rgba(209, 209, 209, 0.5)) 0 100%;
+      background-color: #FFF;
+      background-repeat: no-repeat;
+      background-attachment: local, local, scroll, scroll;
+      background-size: 100% 21px, 100% 21px, 100% 7px, 100% 7px;
+
+      @media (max-width $screen-xs-max)
+        height: inherit
+        padding-bottom: 240px
+
+  footer
+    padding: 16px 24px
+    background: #F6F6F6
+    border-top: 1px solid #E0E0E0
+    text-align: right
+
+    @media (max-width $screen-xs-max)
+      position: fixed
+      bottom: 0
+      width: 100%
+      text-align: center
+
+    .Button--transparent
+      padding: 8px 20px
+
+    button:last-of-type
+      margin-right: 0
+
+  .custom-url
+    border: 3px solid #FFF
+    transition: border 1s
+    padding-top: 4px
+
+    &.fade-out
+      border: 3px solid #0B70E7
+
+    .cta-section
+      font-size: 13px
+      display: flex
+      align-items: center
+      margin: 10px 0
+
+      b
+        margin-left: 4px
+
+      .badge
+        margin-left: 4px
+        border-radius: 2px
+        padding: 2px 4px
+
+      .rzp-tooltip
+        // stylelint-disable-next-line declaration-no-important
+        width: 142px !important
+
+        .rzp-popover-body
+          text-align: center
+
+    &-options
+      display: flex
+      gap: 15px
+
+      > *
+        cursor: pointer
+        margin-top: 8px
+
+      i
+        margin-right: 5px
+        font-size: 100%
+
+      .remove-domain
+        color: #D12D2D
+
+    .Input--radio
+      .Input-content
+        margin: 10px 0
+
+  .Alert
+    color: #8A6D6B
+    border: 0
+
+  // shiprocket styles
+  .shiprocket-section
+    .Input-label
+      display: flex
+      align-items: center
+
+      img
+        margin-right: 2px
+
+      .badge.bg-success
+        margin-left: 8px
+
+    .Alert
+      margin-top: 12px
+
+.PluginsAndAddOns
+  margin: 15px auto
+
+  @media (max-width $screen-xs-max)
+    margin: 0
+    height: 100%
+    overflow: hidden
+
+  .main-title
+    padding: 20px 20px 0
+    font-size: 12px
+
+    .heading
+      font-size: 16px
+      font-weight: bold
+      margin-bottom: 4px
+
+  form
+    @media (max-width $screen-xs-max)
+      height: 100vh
+
+  .section-wrapper
+    @media (max-width $screen-xs-max)
+      height: inherit
+      overflow-y: auto
+      padding-bottom: 240px
+
+  .section
+    padding: 20px
+    border-bottom: 1px solid #D0D0D0
+
+    &:last-of-type
+      border-bottom: none;
+
+    .section-title
+      font-weight: bold
+      display: flex
+      align-items: center
+
+      img
+        margin-right: 6px
+
+    .section-body
+      padding-left: 28px
+
+      .help-text
+        font-size: 12px
+
+  // stylelint-disable-next-line no-descending-specificity
+  .Input-label
+    font-weight: normal
+
+  .InputGroup
+    margin-top: 8px
+
+    .Input
+      margin-bottom: 5px
+
+  .Input--checkbox
+    width: 50%
+    display: inline-block
+    // stylelint-disable-next-line declaration-no-important
+    margin: 10px 0 0 !important
+
+  footer
+    padding: 16px 24px
+    background: #F6F6F6;
+    border-top: 1px solid #E0E0E0
+    text-align: right
+
+    @media (max-width $screen-xs-max)
+      position: fixed
+      bottom: 0
+      width: 100%
+      text-align: center
+
+    .Button--transparent
+      padding: 8px 20px

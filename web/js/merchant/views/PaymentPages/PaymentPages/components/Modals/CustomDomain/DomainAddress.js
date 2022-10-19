@@ -9,9 +9,12 @@ import Input from 'common/new-ui/Input';
 import UpdateDNSModal from './UpdateDNSValues';
 import { DocLink } from 'merchant/components/DocsLink';
 
-import { getIfDomainAlreadyLinked, getIfSubDomain } from '../../../model';
+import {
+  getIfDomainAlreadyLinked,
+  getIfSubDomain,
+} from 'merchant/views/PaymentPages/PaymentPages/model';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import track from '../../../Wysiwyg/track';
+import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
 
 // allowing user to enter domain like https://mydomain.com/ for better UX, pruning later
 const DOMAIN_SUBDOMAIN_REGEX = new RegExp(
@@ -28,7 +31,7 @@ const validateDomainOrSubdomain = (value) => {
   return error;
 };
 
-const DomainAddressModal = ({ openModal, closeModal, showNotification }) => {
+const DomainAddressModal = ({ openModal, closeModal, showNotification, planDetails }) => {
   const [value, setValue] = useState();
 
   const handleInputChange = (e) => {
@@ -76,6 +79,7 @@ const DomainAddressModal = ({ openModal, closeModal, showNotification }) => {
                 closeModal={closeModal}
                 domainName={prunedDomainName}
                 isSubdomain={isSubdomain}
+                planDetails={planDetails}
               />
             ),
           });

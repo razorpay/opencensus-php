@@ -3,27 +3,30 @@ import { useEffect, useState } from 'react';
 import { ModalContent } from 'common/new-ui/Modal';
 import Form from 'common/new-ui/Form';
 import Button from 'common/new-ui/Button';
-import { DocLink } from 'merchant/components/DocsLink';
+import Alert from 'common/new-ui/Alert';
 
 const successBody = (
-  <div>You can now customize the URL of your payment pages to use your domain.</div>
+  <>
+    <div>You can now customize the URL of your payment pages to use your domain.</div>
+    <br />
+    <Alert.Warning iconBefore="i-info-outline">
+      The charges towards your plan will be deducted from your settlement balance
+    </Alert.Warning>
+  </>
 );
 
 const failureBody = (
   <div>
     <div>
       <b>Please wait for a few minutes and connect your domain again</b>. Do not undo the changes
-      that you've made on your domain provider yet.
+      that you've made on your domain provider yet. Sometimes, it can take us a few minutes to
+      receive your changes.
     </div>
     <br />
-    <div>
-      <DocLink href="https://razorpay.com/docs/payments/payment-pages/faqs#i-am-getting-a-message-that-my-domain">
-        {' '}
-        <b>
-          Why did this happen? <i class="i i-external-link" />
-        </b>
-      </DocLink>
-    </div>
+    <Alert.Warning iconBefore="i-info-outline">
+      You will <b>not be charged</b> as your domain was not connected
+    </Alert.Warning>
+    <br />
   </div>
 );
 
@@ -38,7 +41,7 @@ const statusMap = {
     iconClass: 'i-warning-o',
     title: 'Your domain was not connected',
     body: failureBody,
-    buttonText: "Okay, I'll try after an hour",
+    buttonText: 'Okay, I’ll try later',
   },
 };
 
@@ -76,7 +79,6 @@ const PropagationStatusModal = ({ status, closeModal }) => {
       <Form onSubmit={handleSubmit}>
         <main>
           {staticData.body}
-          <br />
           <br />
         </main>
         <footer>

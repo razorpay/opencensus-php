@@ -1,21 +1,11 @@
+// stylelint-disable no-descending-specificity
+// stylelint-disable max-nesting-depth
+// stylelint-disable declaration-no-important
+// stylelint-disable color-function-notation
 #paymentpage-container
   min-height: 100vh
-  font-family: "Mulish", "Lato", "Lato-Regular", "Helvetica Neue", Helvetica, Arial, sans-serif
+  font-family: Mulish, Lato, Lato-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif
 
-  // Increase the padding for tooltips & add pointed arrow
-  .rzp-tooltip-inner
-    padding: 16px 12px
-    position: relative
-    &:after
-      content: ""
-      position: absolute
-      top: 100%
-      left: 50%
-      margin-left: -10px
-      border-width: 5px
-      border-style: solid
-      border-color: black transparent transparent transparent
-    
   .rzp-whole
     font-weight: bold
 
@@ -25,8 +15,9 @@
     color: #528FF0
     line-height: 14px
     margin-top: 10px
-    cursor pointer
-    @media (max-width: $screen-xs-max)
+    cursor: pointer
+
+    @media (max-width $screen-xs-max)
       margin-top: -7px
 
     .rzp-tooltip
@@ -42,7 +33,7 @@
 
   // mweb changes particular to PP
   .TemplateCard
-    @media (max-width: $screen-xs-max)
+    @media (max-width $screen-xs-max)
       flex-direction: row
       width: calc(100% - 40px)
 
@@ -58,7 +49,7 @@
 // Caution: Not only being used in PP but other places also
 .TemplateCard
   border-radius: 4px
-  background: #fff
+  background: #FFF
   width: 220px
   overflow: hidden
   cursor: pointer
@@ -75,7 +66,7 @@
     transform: translateY(-16px)
 
     .link
-      border-top: 1px solid rgba(0,0,0,0.08)
+      border-top: 1px solid rgba(0, 0, 0, 0.08)
       padding: 8px 0 0
       max-height: 33px
       opacity: 1
@@ -87,11 +78,10 @@
     width: 100%
     height: 100%
     overflow: hidden
-  
+
   img
     width: 100%
     height: 132px
-
 
   &-list
     display: flex
@@ -103,8 +93,9 @@
     opacity: 0
     transform: translateX(40%)
     animation: 0.35s 0.24s slide-in cubic-bezier(0.16, 1.13, 1, 1) forwards
-    @media (max-width: $screen-xs-max)
-      margin-top: 0px
+
+    @media (max-width $screen-xs-max)
+      margin-top: 0
 
   &-details
     padding: 12px 16px
@@ -116,30 +107,31 @@
     font-weight: 700
     line-height: 24px
     text-align: left
-    width 100%
+    width: 100%
 
   &-desc
     font-weight: normal
-    margin: 8px 0 24px 0
+    margin: 8px 0 24px
     font-size: 13px
     line-height: 20px
     min-height: 80px
-    position relative
-    z-index 0
-    @media (max-width: $screen-xs-max)
+    position: relative
+    z-index: 0
+
+    @media (max-width $screen-xs-max)
       margin-bottom: 10px
 
   .hover-text
-    display none
-    position  absolute
-    z-index 1
-    top 0
-    background: white
+    display: none
+    position: absolute
+    z-index: 1
+    top: 0
+    background: #FFF
     font-weight: bold
 
   .link
     position: relative
-    margin: auto 0 -4px 0
+    margin: auto 0 -4px
     font-size: 14px;
     font-weight: bold
     color: $primary-color
@@ -151,7 +143,8 @@
     padding: 0
     opacity: 0
     transition: 0.19s cubic-bezier(0.42, 0, 0.35, 1)
-    @media (max-width: $screen-xs-max)
+
+    @media (max-width $screen-xs-max)
       opacity: 1
       max-height: unset
       justify-content: start
@@ -159,7 +152,8 @@
     i
       position: absolute
       right: 8px
-      @media (max-width: $screen-xs-max)
+
+      @media (max-width $screen-xs-max)
         position: static
         margin-left: 5px
         margin-top: 5px
@@ -173,7 +167,7 @@
     opacity: 1
 
 .Modal-mask.Modal-mask--payment-pages-v2-templates
-  background-color: rgba(0,0,0,0.8)
+  background-color: rgba(0, 0, 0, 0.8)
   text-align: center
   z-index: 999999 // Has to be highest
 
@@ -181,7 +175,8 @@
     animation: 0.35s 0.1s slide-in cubic-bezier(0.16, 1.13, 1, 1) forwards
     transform: translateX(240px)
     opacity: 0
-    @media (max-width: $screen-xs-max)
+
+    @media (max-width $screen-xs-max)
       max-width: 100vw
       padding: 10px 20px
       text-align: left
@@ -190,7 +185,7 @@
     position: absolute
     left: 20px
     top: 16px
-    color: #fff
+    color: #FFF
     z-index: 2
     padding: 0
     margin: 0
@@ -199,7 +194,7 @@
 
     &:hover
       opacity: 0.84
-      color: #fff
+      color: #FFF
 
   .Modal-container
     top: 40%
@@ -207,7 +202,7 @@
   .heading
     font-size: 24px
     font-weight: bold
-    color: #fff
+    color: #FFF
 
   button
     height: 40px
@@ -216,7 +211,7 @@
     font-weight: bold
 
   p
-    color: #fff
+    color: #FFF
     line-height: 24px
     font-size: 16px
     margin: 12px 0 16px
@@ -241,7 +236,6 @@
   .Modal-body
     margin-top: 80px
 
-
 .Modal-mask--payment-pages-v2-creator
   .Modal-container
     top: 40%
@@ -249,8 +243,8 @@
 
   footer
     padding: 16px
-    background: #f6f6f6
-    border-top: 1px solid #e0e0e0
+    background: #F6F6F6
+    border-top: 1px solid #E0E0E0
     overflow: auto
 
     .group-right
@@ -268,8 +262,8 @@
 #embed-btn-preview
   position: relative
   padding: 20px
-  background: #fff
-  border: 1px solid rgba(0,0,0,0.05)
+  background: #FFF
+  border: 1px solid rgba(0, 0, 0, 0.05)
   margin-top: 4px
   text-align: center
 
@@ -278,10 +272,10 @@
     top: -10px
     padding: 2px 6px
     font-size: 12px
-    background: #fff
+    background: #FFF
     border-radius: 3px
     font-weight: bold
-    color: #adadad
+    color: #ADADAD
     z-index: 2
 
 .embed-button-form
@@ -304,272 +298,28 @@
     .btn.btn-link i
       display: inline-block
 
-.Modal-mask--paymentpages-settings
-  background: #fff
-
-  .main-title
-    font-weight: bold
-    padding: 16px 24px
-    font-size: 18px
-
-  .Modal-container
-    width: 400px
-    margin: 12px 0
-    overflow: visible // prevents tooltips from getting clipped
-    height: 600px
-    @media (max-width: $screen-xs-max)
-      width: 100%
-      height: 100%
-      margin: 0
-      overflow: hidden
-
-  .settings-section
-    padding: 24px
-
-    .Input
-      margin-top: 0
-
-    &:not(:last-of-type)
-      border-bottom: 1px solid #ececec
-
-  .cta-section
-    display: flex
-
-    .body
-      flex: 1
-    
-    .action
-      margin-left: 5px
-      display: flex
-      align-items: flex-end
-
-  .Input .Input-valueBefore + .Input-el
-    padding-left: 190px
-
-  .Input
-    margin-bottom: 0
-
-  .Input-content
-    margin-top: 4px
-
-  .Input--theme
-    .Input-label, .Input-content
-      display: inline-block
-
-    .Input-content
-      margin-left: 28px
-      margin-top: -4px
-      vertical-align: middle
-
-  .Input--expiryby
-    .Input--Calendar
-      .Input-content
-        margin-top: 6px
-
-  .custom-success-msg
-    position: relative
-    .Input-el
-      margin-top: 0
-      margin-bottom: 0
-      padding: 4px 40px 4px 12px
-      max-height: 64px
-
-    .chars-pressed
-      position: absolute
-      opacity: 0.4
-      bottom: 2px
-      right: 8px
-
-  .Button--primary--invert
-    font-weight: bold
-    margin-right: 0
-    font-size: 13px
-    padding: 5px
-    color: rgb(11,112,231)
-    background: #FAFCFF
-
-    &:not(:disabled):hover
-      background: rgba(11,112,231,0.05)
-      color: rgb(11,112,231)
-
-  .Settings-form
-    @media (max-width: $screen-xs-max)
-      height: 100vh
-
-    &--body
-      overflow: auto
-      height: 474px
-      background: linear-gradient(#FFFFFF 33%, rgba(255,255,255, 0)), linear-gradient(rgba(255,255,255, 0), #FFFFFF 66%) 0 100%, linear-gradient(rgba(209,209,209, 0.5), rgba(0,0,0,0)), linear-gradient(rgba(0,0,0,0), rgba(209,209,209, 0.5)) 0 100%;
-      background-color: #FFFFFF;
-      background-repeat: no-repeat;
-      background-attachment: local, local, scroll, scroll;
-      background-size: 100% 21px, 100% 21px, 100% 7px, 100% 7px;
-      @media (max-width: $screen-xs-max)
-        height: inherit
-        padding-bottom: 240px
-
-  footer
-    padding: 16px 24px
-    background: #f6f6f6
-    border-top: 1px solid #e0e0e0
-    text-align: right
-    @media (max-width: $screen-xs-max)
-      position: fixed
-      bottom: 0
-      width: 100%
-      text-align: center
-
-    .Button--transparent
-      padding: 8px 20px
-
-    button:last-of-type
-      margin-right: 0
-  
-  .custom-url
-    border: 3px solid white
-    transition: border 1s
-    padding-top: 4px
-
-    &.fade-out
-      border: 3px solid #0B70E7
-
-    .cta-section
-      font-size: 13px
-      display: flex
-      align-items: center
-      margin: 10px 0
-
-      .badge
-        margin-right: 5px
-        border-radius: 2px
-        padding: 2px 4px
-
-    .remove-domain
-      color: #D12D2D
-      margin-top: 8px
-      cursor: pointer
-
-      i
-        margin-right: 5px
-
-    .Input--radio
-      .Input-content 
-        margin: 10px 0
-
-  // shiprocket styles
-  .shiprocket-section
-    .Input-label
-      display: flex
-      align-items: center
-
-      img
-        margin-right: 2px
-      
-      .badge.bg-success
-        margin-left: 8px
-      
-    .Alert
-      margin-top: 12px
-
-  .Alert
-    color: #8A6D6B
-    border: 0px
-
-.PluginsAndAddOns
-  margin: 15px auto
-  @media (max-width: $screen-xs-max)
-    margin: 0
-    height: 100%
-    overflow: hidden
-
-  .main-title
-    padding: 20px 20px 0
-    font-size: 12px
-
-    .heading 
-      font-size: 16px
-      font-weight: bold
-      margin-bottom: 4px
-
-  form
-    @media (max-width: $screen-xs-max)
-      height: 100vh
-
-  .section-wrapper
-    @media (max-width: $screen-xs-max)
-      height: inherit
-      overflow-y: auto
-      padding-bottom: 240px 
-
-  .section
-    padding: 20px
-    border-bottom: 1px solid #D0D0D0
-
-    &:last-of-type
-      border-bottom: none;
-
-    .section-title
-      font-weight: bold
-      display: flex
-      align-items: center
-
-      img
-        margin-right: 6px
-
-    .section-body
-      padding-left: 28px
-
-      .help-text
-        font-size: 12px
-
-  .Input-label
-    font-weight: normal
-
-  .InputGroup
-    margin-top: 8px
-
-    .Input
-      margin-bottom: 5px
-
-  .Input--checkbox
-    width: 50%
-    display: inline-block
-    margin: 10px 0 0 !important
-
-  footer
-    padding: 16px 24px
-    background: #f6f6f6;
-    border-top: 1px solid #e0e0e0
-    text-align: right
-    @media (max-width: $screen-xs-max)
-      position: fixed
-      bottom: 0
-      width: 100%
-      text-align: center
-    
-    .Button--transparent
-      padding: 8px 20px
-
 #wysiwyg-root
   padding-top: 50px
   animation: 0.3s fadein ease-in
-  @media (max-width: $screen-xs-max)
+
+  @media (max-width $screen-xs-max)
     padding-top: 73px
 
   .content-container
     min-width: 854px
-    @media (max-width: $screen-xs-max)
+
+    @media (max-width $screen-xs-max)
       min-width: 100vw
 
-  #mobile-container 
-    /* to hide the next button on mweb creation flow */
+  #mobile-container
+    // to hide the next button on mweb creation flow
     .content-scrollable > .btn-container
       display: none
 
     .content
       height: 90vh
 
-/* Paymentpages v2 styles*/
+// Paymentpages v2 styles
 .payment-pages-v2
   .spinner-container
     text-align: center
@@ -580,23 +330,24 @@
     z-index: 3
     width: 100%
 
-  /* 
-    on mobile, if base form is open 
+  /*
+    on mobile, if base form is open
     reducing z-index so that the the nav container
     doesn't come above the creator modal
   */
-  @media (max-width: $screen-xs-max)
+  @media (max-width $screen-xs-max)
     &.creator-modal-open
       .page-nav-container
         z-index: 2
 
   .page-nav
-    color: #fff
+    color: #FFF
     background-color: #2F3445
-    box-shadow: 0 2px 24px 0 rgba(0,0,0,0.24)
+    box-shadow: 0 2px 24px 0 rgba(0, 0, 0, 0.24)
     padding: 9px 12px
     min-width: 854px
-    @media (max-width: $screen-xs-max)
+
+    @media (max-width $screen-xs-max)
       min-width: 100vw
 
     .page-size
@@ -625,20 +376,22 @@
         > button
           line-height: 10px
           padding: 10px 8px
-          //height: 32px
+          // height: 32px
           vertical-align: middle
           margin-left: 20px
           font-weight: 700
           display: flex
           justify-content: center
           align-items: center
-          @media (max-width: $screen-xs-max)
+
+          @media (max-width $screen-xs-max)
             > span
               display: none
 
           i
             margin-right: 4px
-            @media (max-width: $screen-xs-max)
+
+            @media (max-width $screen-xs-max)
               margin-right: 0
               font-size: 20px
 
@@ -653,31 +406,30 @@
           min-width: 100vw
           justify-content: center
           padding: 12px
-          background: white
-          box-shadow: 0 2px 24px 0 rgba(0,0,0,0.24)
-          @media (max-width: $screen-xs-max)
+          background: #FFF
+          box-shadow: 0 2px 24px 0 rgba(0, 0, 0, 0.24)
+
+          @media (max-width $screen-xs-max)
             display: flex
 
           .Button
             width: 48%
-
 
     .close-btn
       font-size: 24px
       line-height: 14px
       position: absolute
       right: 4px
-      color: #fff
+      color: #FFF
       cursor: pointer
       padding: 4px
 
       &:hover
-        color: #fff
+        color: #FFF
         opacity: 0.7
 
   .btn-link
     padding-left: 0
-
 
   // Wysiwyg elements
   #details-section
@@ -687,7 +439,7 @@
       white-space: inherit
 
       #description
-        margin: 24px 0px 0px
+        margin: 24px 0 0
 
     label
       display: inherit
@@ -699,38 +451,40 @@
       visibility: hidden
       opacity: 0
       transition: 0.08s
-      @media (max-width: $screen-xs-max)
+
+      @media (max-width $screen-xs-max)
         visibility: visible
         opacity: 1
 
     > div
+      &:hover
+        .remove-btn
+          opacity: 1
+          visibility: visible
+
+      .Input-el
+        background: transparent
+        resize: none
+        border: 1px solid transparent
+        color: #6F7691
+
+      .Input-highlight .Input-el
+        &[name="title"],
+        &[name="description"]
+          border-color: #EEE
+
+      .Input-el.Input-el
         &:hover
-          .remove-btn
-            opacity: 1
-            visibility: visible
+          border-color: #E2E2E2
 
-        .Input-el
-          background: transparent
-          resize: none
-          border: 1px solid transparent
-          color: #6F7691
+        &:focus
+          background: #FFF
+          border-color: $primary-color
+          resize: vertical
 
-        .Input-highlight .Input-el
-          &[name="title"], &[name="description"]
-            border-color: #eee
-
-        .Input-el.Input-el
-          &:hover
-            border-color: #e2e2e2
-
-          &:focus
-            background: #fff
-            border-color: $primary-color
-            resize: vertical
-
-          @media (max-width: $screen-xs-max) // in mweb, show border as looks uneditable otherwise
-            border-color: #e2e2e2
-            background: #fff
+        @media (max-width $screen-xs-max) // in mweb, show border as looks uneditable otherwise
+          border-color: #E2E2E2
+          background: #FFF
 
     .Input
       .Input-error
@@ -742,7 +496,7 @@
 
     .title--big
       .Input
-        margin: -4px 0px -16px; // avoid left, right spacing, for alignment between sections
+        margin: -4px 0 -16px; // avoid left, right spacing, for alignment between sections
 
       .Input-el
         min-height: 42px
@@ -750,7 +504,7 @@
         line-height: 32px
         font-weight: bold
         padding: 1px 5px 2px // 1px less cuz of border
-        color: #0d2366
+        color: #0D2366
         max-height: 70px
 
       .Input-error
@@ -779,27 +533,30 @@
         padding: 3px 5px
         position: relative
 
-  #share-details, #support-details, #terms-details
+  #share-details,
+  #support-details,
+  #terms-details
     .wysiwyg-edit-layer
       margin-top: -8px
 
-  #share-details, #support-details
+  #share-details,
+  #support-details
     .share-icons
       span
         vertical-align: middle
 
       span:not(:last-of-type)
         margin-right: -8px
-  
+
   #terms-details
     p
       display: inline-block
-      color: #6f7691
+      color: #6F7691
       margin-top: 16px
       white-space: pre-line
       word-wrap: break-word
       cursor: pointer
-    
+
     .rzp-tooltip-tnc
       margin-left: 125px
       margin-top: 16px
@@ -821,7 +578,6 @@
     .Input-error
       margin: -2px 0 4px
 
-
   #form-section
     #form-footer
       .btn > div
@@ -841,6 +597,7 @@
 
     .i-fix-arrow-down
       font-size: 13px
+
       &::before
         border-radius: 50%
         border: 1px solid
@@ -859,25 +616,26 @@
       cursor: auto
 
     .i
-      position absolute
+      position: absolute
       top: 16px
       right: 4px
       font-size: 18px
       padding: 2px 8px
       cursor: pointer
       visibility: hidden
-      color: #528ff0
-      @media (max-width: $screen-xs-max) // to show edit button always in mobile
+      color: #528FF0
+
+      @media (max-width $screen-xs-max) // to show edit button always in mobile
         visibility: visible
         top: 43px
-        right: 30px 
+        right: 30px
 
       &:hover
-        color: #2371ec
+        color: #2371EC
 
     &:not(.disable-hover):hover
-      background-color: #fff
-      box-shadow: 0 5px 13px 0 rgba(0,0,0,0.14)
+      background-color: #FFF
+      box-shadow: 0 5px 13px 0 rgba(0, 0, 0, 0.14)
 
     &:hover
       .i
@@ -887,7 +645,7 @@
         transform: translateY(-50%)
         opacity: 1
 
-        @media (max-width: 1024px)
+        @media (max-width 1024px)
           transform: none
 
   .help-content
@@ -895,22 +653,23 @@
 
     .rzp-popover
       white-space: normal
-      @media (max-width: $screen-xs-max)
+
+      @media (max-width $screen-xs-max)
         display: none !important
 
-  //Override Styles
+  // Override Styles
   .Input-info
     left: 100%
-    color: #fff
-    background-color: #2c3243
+    color: #FFF
+    background-color: #2C3243
     line-height: 20px
     min-width: 180px
     white-space: pre-line
 
     &::before
-      border-right-color: #2c3243
+      border-right-color: #2C3243
 
-    @media (max-width: 1024px)
+    @media (max-width 1024px)
       left: 0
       top: -55px
       line-height: 1.2
@@ -918,7 +677,7 @@
       &::before
         border-right-color: transparent
         border-bottom-color: transparent
-        border-top-color: #2c3243
+        border-top-color: #2C3243
         bottom: -15px
         top: auto
         left: 46%
@@ -933,10 +692,11 @@
   .shiprocket-blank-preview
     height: 360px
     width: 100%
-    @media screen and (max-width: 767px)
+
+    @media screen and (max-width 767px)
       display: none
-    
-/* Overriding styles of UI-form */
+
+// Overriding styles of UI-form
 .payment-pages-v2 .UI-form
   .wysiwyg-edit-layer
     &.Field
@@ -948,31 +708,29 @@
         margin-bottom: 0
 
     .Field-wrapper
-      @media (max-width: $screen-xs-max)
+      @media (max-width $screen-xs-max)
         width: calc(100% - 20px); // to show edit button always in mobile
 
     &.Field--disabled .Field-el
       pointer-events: none
 
-
   .Input-info
-      left: calc(100% - 44px)
-      top: -4px
-      margin-left: 0
-      margin-top: 8px
-      transform: translate(-100%, -100%) !important
+    left: calc(100% - 44px)
+    top: -4px
+    margin-left: 0
+    margin-top: 8px
+    transform: translate(-100%, -100%) !important
 
-      &:before
-        border-right-color: transparent
-        border-bottom-color: transparent
-        border-top-color: #2c3243
-        left: 50%
-        transform: translateX(-50%)
-        top: unset
-        bottom: -16px
+    &::before
+      border-right-color: transparent
+      border-bottom-color: transparent
+      border-top-color: #2C3243
+      left: 50%
+      transform: translateX(-50%)
+      top: unset
+      bottom: -16px
 
-
-/* Styles for creator modal */
+// Styles for creator modal
 .paymentlinks-creator
   .section
     padding: 24px
@@ -985,11 +743,11 @@
     .Input-elWrapper.Select-elWrapper::before
       top: 3px
 
-    .Input-el:not([type=checkbox])
+    .Input-el:not([type="checkbox"])
       height: 32px
 
   .section-1
-    border-bottom: 1px solid #efefef
+    border-bottom: 1px solid #EFEFEF
 
     & > div:not(.dropdown-options)
       width: 50%
@@ -1020,13 +778,12 @@
         padding-right: 44px
         vertical-align: top
 
-      .Input-el:not([type=checkbox])
+      .Input-el:not([type="checkbox"])
         min-width: 200px
 
     .section-2
       .Input--description
         margin: 0 0 0 24px
-
 
   form[name="form_creator_amount"]
     .section-1
@@ -1039,10 +796,12 @@
       .PowerSelect__Trigger
         height: 30px
 
-        &Label, &Status
+        &Label,
+        &Status
           height: 30px
 
-      .Input-content, .Input-label
+      .Input-content,
+      .Input-label
         display: inline-block
 
       .Input-content
@@ -1059,6 +818,7 @@
 
         .Input-content
           margin-right: 0
+
         .Input-el
           width: 120px
 
@@ -1066,14 +826,14 @@
         width: 144px
 
     .section-2
-      .Input-el:not([type=checkbox])
+      .Input-el:not([type="checkbox"])
         height: 32px
         width: 80px
         padding: 0 8px
 
     .Input--Currency .value
       line-height: 32px
-      //height: 32px
+      // height: 32px
 
   .section-2
     > .Input:nth-of-type(1)
@@ -1081,11 +841,11 @@
 
     .Input .Input
       display: inline-block
+
     .checkbox-Input
       margin: -8px 4px
 
-
-/* Style for extendable-on-keypress text area */
+// Style for extendable-on-keypress text area
 .fake-textarea
   width: 100%
   height: 32px
@@ -1097,31 +857,33 @@
   visibility: hidden
   position: absolute
 
-@media (max-width: 1023px)
+@media (max-width 1023px)
   #desktop-container
     #form-section #fin-logo
       width: 160px
 
-@media (max-width: 960px)
+@media (max-width 960px)
   #desktop-container
     .content
       padding-left: 16px
 
       &::before
-        //left: 0
+        // left: 0
         min-width: 724px
         border-left-width: 8px
 
-    #details-view, #header-details
+    #details-view,
+    #header-details
       width: 45%
 
 // goal tracker main container
 .paymentpage-container-goal-tracker
   .rzp-tooltip-donation-tracking
     margin-top: 10px
-    @media (max-width: $screen-xs-max)
+
+    @media (max-width $screen-xs-max)
       display: none !important
-    
+
     .rzp-tooltip-title
       font-weight: 700
       margin-bottom: 4px
@@ -1130,10 +892,10 @@
     margin-top: 24px
     text-decoration: none
 
-    @media (max-width: $screen-xs-max) 
+    @media (max-width $screen-xs-max)
       .i-info-outline // hiding info icon as on mobile no hover
         display: none
-  
+
   .dropdown__trigger .bg-success
     background: #1F890E
     border-radius: 2px
@@ -1170,9 +932,9 @@
       min-height: 170px !important;
 
   #goal-tracker-details.is-active
-    margin: 0px -12px;
+    margin: 0 -12px;
     position: relative;
-    padding: 1px 0px;
+    padding: 1px 0;
 
     .goal--tracker-action-buttons
       display: none
@@ -1185,13 +947,13 @@
     &:hover
       box-shadow: 2px 4px 12px rgba(23, 31, 37, 0.25);
       border-radius: 4px;
-      padding: 1px 0px 18px;
+      padding: 1px 0 18px;
 
       .goal--tracker-action-buttons
         display: flex
 
-    @media (max-width: $screen-xs-max) // in mweb, always show as no hover
-      padding: 1px 0px 18px
+    @media (max-width $screen-xs-max) // in mweb, always show as no hover
+      padding: 1px 0 18px
 
       .goal--tracker-action-buttons
         display: flex
@@ -1207,7 +969,8 @@
     width: 375px;
     transform: translate(0%, -25%)
     overflow: visible
-    @media (max-width: $screen-xs-max)
+
+    @media (max-width $screen-xs-max)
       transform: none
 
     .main-title
@@ -1215,24 +978,24 @@
       padding: 16px 24px;
       font-size: 18px;
 
-    .end-date-picker 
+    .end-date-picker
       padding-top: 8px
-      
+
       & > .Input-content
         display: flex
 
         & > div.Input
           & > .Input-content
             margin-right: 12px
-      
+
         .Input-elWrapper
           width: 100% !important
 
     .modal-section
-      padding: 12px 0px
+      padding: 12px 0
 
       &:last-child
-        padding: 0px 0px 12px
+        padding: 0 0 12px
 
       .Input-desc
         font-size: 12px
@@ -1240,7 +1003,7 @@
     .Input--custom
       padding-left: 26px;
 
-      &:before
+      &::before
         left: 7px;
 
       .Input--stock-limit
@@ -1250,34 +1013,35 @@
           max-width: 175px
 
     form
-      padding: 0px 24px
+      padding: 0 24px
 
       .Input
-        margin: 0px !important
+        margin: 0 !important
 
       .supporter-checkbox
         margin-top: 12px !important
 
       .Input-el
-        background: #fff !important
-        border: 1px solid #e2e2e2 !important
-      
+        background: #FFF !important
+        border: 1px solid #E2E2E2 !important
+
       .Input-label
         margin-bottom: 8px
 
     footer
       padding: 16px 24px
-      background: #f6f6f6
-      border-top: 1px solid #e0e0e0
+      background: #F6F6F6
+      border-top: 1px solid #E0E0E0
       text-align: right
-      @media (max-width: $screen-xs-max)
+
+      @media (max-width $screen-xs-max)
         text-align: center
 
       .Button--transparent
         padding: 8px 20px;
-      
+
       .Button--primary
-        margin-right: 0px;
+        margin-right: 0;
 
   .goal-tracker--blank-preview
     min-height: 100px
@@ -1289,7 +1053,7 @@
     .Button--transparent
       text-transform: uppercase;
       font-weight: bold;
-      color: #2b83ea;
+      color: #2B83EA;
       font-size: 10px;
       display: flex;
       align-items: center;
@@ -1297,17 +1061,17 @@
       .i-edit-outline
         margin-right: 5px;
         padding-bottom: 2px;
-        border-bottom: 1px solid #2b83ea;
+        border-bottom: 1px solid #2B83EA;
 
       .i-delete-outline
         margin-right: 5px;
-    
+
     .vertical-divider
-      height: 0px;
+      height: 0;
       width: 18px;
-      border: 1px solid #58666e;
+      border: 1px solid #58666E;
       transform: rotate(90deg);
-  
+
   .goal-tracker--main
     margin: 12px;
     background: rgba(11, 112, 231, 0.05) !important;
@@ -1319,7 +1083,7 @@
   color: #515978
   padding: 12px
   background: none !important;
-  border: 0px !important;
+  border: 0 !important;
 
   .goal-tracker--amount-based-top
     font-weight: normal;
@@ -1351,7 +1115,7 @@
 .goal-tracker--supporter-based
   padding: 12px
   background: none !important;
-  border: 0px !important;
+  border: 0 !important;
 
   &.goal-tracker--supporter-based-noslider
     min-height: 75px;
@@ -1362,7 +1126,8 @@
     .goal-tracker--supporter-based-bottom
       justify-content: flex-start
 
-      .goal-tracker--supporter-count, .goal-tracker--sold-count
+      .goal-tracker--supporter-count,
+      .goal-tracker--sold-count
         margin-right: 32px
 
   .support-common-error
@@ -1406,10 +1171,10 @@
   z-index: 5
   left: 40% !important
 
-  @media (max-width: 1400px)
+  @media (max-width 1400px)
     left: 35% !important
 
-  @media screen and (max-width: 767px)
+  @media screen and (max-width 767px)
     left: 50% !important
 
   .modal-header
@@ -1425,13 +1190,13 @@
     padding: 16px 24px 24px
 
   .Alert
-    color: #8a6d6b
-    border: 0px
+    color: #8A6D6B
+    border: 0
     margin-top: 12px
     margin-bottom: 24px
     padding: 8px
 
-  .Modal__actions 
+  .Modal__actions
     & > .btn + .btn
       margin-left: 4%
 
@@ -1439,13 +1204,15 @@
       width: 48%
 
     .btn-outline
-      &:hover, &:focus
-        color: #528ff0
+      &:hover,
+      &:focus
+        color: #528FF0
 
 .Modal-container--Paymentpage-shiprocket-fields-preview
   transform: none !important
-  @media screen and (max-width: $screen-xs-max)
+
+  @media screen and (max-width $screen-xs-max)
     display: none
 
   .UI-form
-    padding: 0px 30px 24px
+    padding: 0 30px 24px
