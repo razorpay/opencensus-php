@@ -6188,39 +6188,14 @@ class Processor
             $manualTimeoutDuration = $lateAuthConfig['capture_options']['manual_expiry_period'];
         }
 
-        $defaultUpiAutoCaptureExpiry = Constants::AUTO_CAPTURE_DEFAULT_TIMEOUT_UPI_RECURRING_AUTO;
-
-        if(($autoTimeoutDuration < $defaultUpiAutoCaptureExpiry) or
-            ($manualTimeoutDuration < $defaultUpiAutoCaptureExpiry))
+        if (($payment->isRecurring()) and
+            ($payment->getRecurringType() === 'auto'))
         {
-            $variant = $this->app['razorx']->getTreatment($payment->merchant->getId(),
-                Merchant\RazorxTreatment::DEFAULT_CAPTURE_SETTING_CONFIG_UPI_AUTOPAY,
-                $this->app['rzp.mode']);
-
-            if (strtolower($variant) === 'on')
-            {
-                if(($payment->isRecurring()) and
-                    ($payment->getMethod() === Constants::UPI) and
-                    ($payment->getRecurringType() === 'auto'))
-                {
-                    if($autoTimeoutDuration < $defaultUpiAutoCaptureExpiry)
-                    {
-                        $autoTimeoutDuration = $defaultUpiAutoCaptureExpiry;
-                    }
-                    if($manualTimeoutDuration < $defaultUpiAutoCaptureExpiry)
-                    {
-                        $manualTimeoutDuration = $defaultUpiAutoCaptureExpiry;
-                    }
-                    $this->trace->info(
-                        TraceCode::DEFAULT_CAPTURE_SETTING_CONFIG_UPI_AUTOPAY,
-                        [
-                            'capture_settings'          => $lateAuthConfig,
-                            'payment'                   => $payment->toArrayTraceRelevant(),
-                            'auto_timeout_duration'     => $autoTimeoutDuration,
-                            'manual_timeout_duration'   => $manualTimeoutDuration,
-                        ]);
-                }
-            }
+            [$autoTimeoutDuration,
+                $manualTimeoutDuration] = $this->setCaptureTimeoutRecurringPayments($autoTimeoutDuration,
+                                                                                    $manualTimeoutDuration,
+                                                                                    $payment,
+                                                                                    $lateAuthConfig);
         }
 
         $captureValue = $lateAuthConfig['capture'];
@@ -6246,6 +6221,51 @@ class Processor
         }
 
         return [null, $lateAuthConfig];
+    }
+
+    protected function setCaptureTimeoutRecurringPayments($autoTimeoutDuration, $manualTimeoutDuration, $payment, $lateAuthConfig)
+    {
+            if ($payment->getMethod() === Constants::UPI)
+            {
+                $variant = $this->app['razorx']->getTreatment($payment->merchant->getId(),
+                    Merchant\RazorxTreatment::DEFAULT_CAPTURE_SETTING_CONFIG_UPI_AUTOPAY,
+                    $this->app['rzp.mode']);
+
+                if (strtolower($variant) === 'on')
+                {
+                    $defaultUpiAutoCaptureExpiry = Constants::AUTO_CAPTURE_DEFAULT_TIMEOUT_UPI_RECURRING_AUTO;
+
+                    if ($autoTimeoutDuration < $defaultUpiAutoCaptureExpiry) $autoTimeoutDuration = $defaultUpiAutoCaptureExpiry;
+                    if ($manualTimeoutDuration < $defaultUpiAutoCaptureExpiry) $manualTimeoutDuration = $defaultUpiAutoCaptureExpiry;
+                }
+
+            } elseif ($payment->getMethod() === Constants::CARD)
+            {
+                $variant = $this->app['razorx']->getTreatment($payment->merchant->getId(),
+                    Merchant\RazorxTreatment::DEFAULT_CAPTURE_SETTING_CONFIG_CARD_RECURRING,
+                    $this->app['rzp.mode']);
+
+                if (strtolower($variant) === 'on')
+                {
+                    $defaultCardAutoCaptureExpiry = Constants::AUTO_CAPTURE_DEFAULT_TIMEOUT_CARD_RECURRING_AUTO;
+
+                    if ($autoTimeoutDuration < $defaultCardAutoCaptureExpiry) $autoTimeoutDuration = $defaultCardAutoCaptureExpiry;
+                    if ($manualTimeoutDuration < $defaultCardAutoCaptureExpiry) $manualTimeoutDuration = $defaultCardAutoCaptureExpiry;
+                }
+            }
+
+            $this->trace->info(
+                TraceCode::DEFAULT_CAPTURE_SETTING_CONFIG_RECURRING,
+                [
+                    'capture_settings'          => $lateAuthConfig,
+                    'payment'                   => $payment->toArrayTraceRelevant(),
+                    'auto_timeout_duration'     => $autoTimeoutDuration,
+                    'manual_timeout_duration'   => $manualTimeoutDuration,
+                    'method'                    => $payment->getMethod(),
+                ]);
+
+
+        return [$autoTimeoutDuration, $manualTimeoutDuration];
     }
 
     private function setPaymentRefundAtForConfig($payment, $manualTimeoutDuration)

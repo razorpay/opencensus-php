@@ -109,6 +109,7 @@ class Constants
     const PAYMENT_METHOD_COD                        = 'Cannot auto capture cash on delivery payment.';
     const ORDER_PAYMENT_CAPTURE_TRUE                = 'Order payment capture flag is true.';
 
-    // default time out for upi subsequent payment
+    // default time out for upi and card subsequent payment
     const AUTO_CAPTURE_DEFAULT_TIMEOUT_UPI_RECURRING_AUTO = 2160;
+    const AUTO_CAPTURE_DEFAULT_TIMEOUT_CARD_RECURRING_AUTO = 4320;
 }
