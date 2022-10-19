@@ -218,11 +218,13 @@ const contactFields = [
         isEmailNonMandatoryOnL2Form,
         user,
       } = activation.props.user;
+      const { data } = activation.props;
       // if user email is verified disable the field
       return (
         !activation.isOnKYCTab() &&
         (isEmailMandatoryOnL1 || isEmailNonMandatoryOnL1 || isEmailNonMandatoryOnL2Form) &&
-        !!user?.signup_via_email
+        !!user?.signup_via_email &&
+        !!data.contact_email
       );
     },
     addonAfter: (activation) => {

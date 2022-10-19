@@ -173,6 +173,7 @@ const ContactDetails: React.FC<IContactDetailsProps> = ({ isFormLocked }) => {
                     isFormLocked ||
                     getFieldStatus('contact_email').isDisabled ||
                     (!!user.user?.signup_via_email &&
+                      !!contactDetails.contact_email.value &&
                       (experiments.isEmailMandatoryOnL1 ||
                         experiments.isEmailNonMandatoryOnL1 ||
                         experiments.isEmailNonMandatoryOnL2Form))
