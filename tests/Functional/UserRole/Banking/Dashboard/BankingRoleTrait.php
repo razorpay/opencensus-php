@@ -331,7 +331,6 @@ trait BankingRoleTrait
             ],
 
             BankingRole::FINANCE_L1 => [
-                Name::VIEW_FINANCEX_REPORT,
                 Name::ACCOUNTS_RECEIVABLE_ADMIN,
                 Name::BILL_PAYMENTS_VIEW,
                 Name::BILL_PAYMENTS_CREATE_ACCOUNT,
@@ -339,7 +338,6 @@ trait BankingRoleTrait
             ],
 
             BankingRole::FINANCE_L2 => [
-                Name::VIEW_FINANCEX_REPORT,
                 Name::ACCOUNTS_RECEIVABLE_ADMIN,
                 Name::BILL_PAYMENTS_VIEW,
                 Name::BILL_PAYMENTS_CREATE_ACCOUNT,
@@ -347,7 +345,6 @@ trait BankingRoleTrait
             ],
 
             BankingRole::FINANCE_L3 => [
-                Name::VIEW_FINANCEX_REPORT,
                 Name::ACCOUNTS_RECEIVABLE_ADMIN,
                 Name::BILL_PAYMENTS_VIEW,
                 Name::BILL_PAYMENTS_CREATE_ACCOUNT,
@@ -355,7 +352,6 @@ trait BankingRoleTrait
             ],
 
             BankingRole::OPERATIONS => [
-                Name::VIEW_FINANCEX_REPORT,
                 Name::ACCOUNTS_RECEIVABLE_ADMIN,
                 Name::BILL_PAYMENTS_VIEW,
                 Name::BILL_PAYMENTS_CREATE_ACCOUNT,
@@ -363,7 +359,6 @@ trait BankingRoleTrait
             ],
 
             BankingRole::VIEW_ONLY => [
-                Name::VIEW_FINANCEX_REPORT,
                 Name::BILL_PAYMENTS_VIEW,
             ],
 

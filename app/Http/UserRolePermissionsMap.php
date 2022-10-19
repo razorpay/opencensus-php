@@ -185,7 +185,7 @@ class UserRolePermissionsMap
                  Permission::VIEW_PRIVILEGES,
                  Permission::VIEW_ALL_ROLES,
                  Permission::CUSTOMER_SUPPORT_FULL_ACCESS,
-                 
+
                  Permission::ACCOUNTS_RECEIVABLE_ADMIN,
                  Permission::BILL_PAYMENTS_VIEW,
                  Permission::BILL_PAYMENTS_CREATE_ACCOUNT,
@@ -335,7 +335,6 @@ class UserRolePermissionsMap
              ],
 
              BankingRole::FINANCE_L1 => [
-                 Permission::VIEW_FINANCEX_REPORT,
                  Permission::CREATE_PAYOUT,
                  Permission::CREATE_PAYOUT_BULK,
                  Permission::APPROVE_PAYOUT_BULK,
@@ -455,7 +454,6 @@ class UserRolePermissionsMap
              ],
 
              BankingRole::OPERATIONS => [
-                 Permission::VIEW_FINANCEX_REPORT,
                  Permission::CREATE_USER_OTP,
                  Permission::UPDATE_USER_PROFILE,
                  Permission::VIEW_USER,
@@ -562,7 +560,6 @@ class UserRolePermissionsMap
              ],
 
              BankingRole::VIEW_ONLY => [
-                 Permission::VIEW_FINANCEX_REPORT,
                  Permission::VIEW_PAYOUT,
                  Permission::VIEW_PAYOUT_PURPOSE,
                  Permission::VIEW_PAYOUT_REVERSAL,
