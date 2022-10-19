@@ -11,6 +11,7 @@ use RZP\Models\Merchant\Webhook\Event;
 use RZP\Models\Payout\ViewDataSerializer;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Payout\Repository as PayoutRepository;
+use RZP\Models\FundAccount\Repository as FundAccountRepository;
 
 class Payout extends Transaction
 {
@@ -55,10 +56,19 @@ class Payout extends Transaction
     protected function addFundAccountAttributes()
     {
         $payout = (new PayoutRepository)->find($this->source[PayoutEntity::ID]);
-        $fundAccount = $payout->fundAccount;
 
-        $this->fundAccount = $fundAccount->toArrayPublic();
-        $this->fundAccount['destination'] = $fundAccount->getAccountDestinationAsText();
+        if ((empty($payout) === true) and
+            (array_key_exists('fund_account_id', $this->source) === true))
+        {
+            $fundAccount = (new FundAccountRepository)->find($this->source['fund_account_id']);
+        }
+        else
+        {
+            $fundAccount = $payout->fundAccount;
+        }
+
+        $this->fundAccount                           = $fundAccount->toArrayPublic();
+        $this->fundAccount['destination']            = $fundAccount->getAccountDestinationAsText();
         $this->fundAccount['account_type_formatted'] = $fundAccount->getAccountTypeAsText();
     }
 

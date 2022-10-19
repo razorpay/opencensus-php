@@ -100,6 +100,7 @@ class Validator extends Base\Validator
 
     const PAYOUT_SERVICE_DATA_MIGRATION_INPUT = 'payout_service_data_migration_input';
     const PAYOUT_SERVICE_MAIL_AND_SMS_INPUT   = 'payout_service_mail_and_sms_input';
+    const PAYOUT_SERVICE_TXN_MAIL_DATA        = 'payout_service_txn_mail_data';
 
     const PAYOUT_SERVICE_DUAL_WRITE_INPUT = 'payout_service_dual_write_input';
 
@@ -194,10 +195,16 @@ class Validator extends Base\Validator
     ];
 
     protected static $payoutServiceMailAndSmsInputRules = [
-        Entity::ENTITY => 'required|in:payout',
+        Entity::ENTITY => 'required|in:payout,transaction',
         Entity::TYPE   => 'required',
         'entity_id'    => 'required|size:14',
-        'metadata'     => 'sometimes|array'
+        'metadata'     => 'array',
+    ];
+
+    protected static $payoutServiceTxnMailDataRules = [
+        Entity::PAYOUT_ID  => 'required|size:14',
+        Entity::AMOUNT     => 'required',
+        Entity::CREATED_AT => 'required|epoch',
     ];
 
     protected static $payoutServiceDualWriteInputRules = [

@@ -14823,6 +14823,7 @@ class Route
         'payouts_summary',
         'payouts_workflow_summary',
         'payouts_workflow_config_get',
+        'payouts_service_mail_and_sms',
         'payout_links_fetch_multiple',
         'payout_links_fetch_by_id',
         'payout_links_create',

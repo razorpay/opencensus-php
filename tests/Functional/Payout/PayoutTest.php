@@ -22150,7 +22150,7 @@ class PayoutTest extends OAuthTestCase
         });
     }
 
-    public function testBeneNotificationOnPayoutServicePayoutAutoRejected()
+    public function testPayoutServiceEmailPayoutAutoRejected()
     {
         Mail::fake();
 
@@ -22185,6 +22185,7 @@ class PayoutTest extends OAuthTestCase
                                                 "entity"    => "payout",
                                                 "entity_id" => $id,
                                                 "type"      => Payout\Notifications\Type::PAYOUT_AUTO_REJECTED,
+                                                "metadata"  => [],
                                             ]
                                         ]);
 
@@ -22215,7 +22216,7 @@ class PayoutTest extends OAuthTestCase
         });
     }
 
-    public function testBeneNotificationOnPayoutServicePayoutFailed()
+    public function testPayoutServiceEmailPayoutFailed()
     {
         Mail::fake();
 
@@ -22250,6 +22251,7 @@ class PayoutTest extends OAuthTestCase
                                                 "entity"    => "payout",
                                                 "entity_id" => $id,
                                                 "type"      => "payout_failed",
+                                                "metadata"  => [],
                                             ]
                                         ]);
 
@@ -22362,6 +22364,7 @@ class PayoutTest extends OAuthTestCase
                                                             "entity"    => "payout",
                                                             "entity_id" => $id,
                                                             "type"      => "payout_danced",
+                                                            "metadata"  => [],
                                                         ]
                                                     ]);
 
@@ -22369,6 +22372,167 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals("The selected type is invalid.", $response['message']);
 
         Mail::assertNotQueued(PayoutMails\FailedPayout::class);
+    }
+
+    public function testPayoutServiceEmailForProcessedPayoutTransaction()
+    {
+        Mail::fake();
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'processed']);
+
+        (new PayoutServiceDataMigration('test', [
+            Payout\DataMigration\Processor::FROM => $payout->getCreatedAt(),
+            Payout\DataMigration\Processor::TO   => $payout->getCreatedAt(),
+            PayoutEntity::BALANCE_ID             => $payout->getBalanceId()
+        ]))->handle();
+
+        $id = $payout['id'];
+        $migratedPayout = \DB::connection('live')->select("select * from ps_payouts where id = '$id'")[0];
+
+        $this->assertEquals($payout[PayoutEntity::ID], $migratedPayout->id);
+
+        $this->fixtures->edit('payout', $payout['id'], ['id' => 'Gg7sgBZgvYjlSC']);
+
+        /** @var TransactionEntity $txn */
+        $txn = $payout->transaction;
+
+        $this->ba->payoutInternalAppAuth('test');
+
+        $response = $this->makeRequestAndGetContent([
+                                                        'method'  => 'POST',
+                                                        'url'     => '/payouts_service/mail_and_sms',
+                                                        'content' => [
+                                                            "entity"    => "transaction",
+                                                            "entity_id" => $txn->getId(),
+                                                            "type"      => "payout.processed",
+                                                            "metadata"  => [
+                                                                PayoutEntity::PAYOUT_ID       => $id,
+                                                                TransactionEntity::AMOUNT     => $txn->getAmount(),
+                                                                TransactionEntity::CREATED_AT => $txn->getCreatedAt()
+                                                            ]
+                                                        ]
+                                                    ]);
+
+        $this->assertArrayKeysExist($response, ['message']);
+        $this->assertEquals("success", $response['message']);
+
+        Mail::assertQueued(PayoutMail::class, function($mail) use ($payout){
+            $viewData = $mail->viewData;
+
+            $this->assertEquals($mail->subject, "[Test Mode] Your A/C ending with XXXXXXXXXXXX6905 has been debited by INR 20,010.62");
+
+            $this->assertEquals($mail->originProduct, 'banking');
+
+            $this->assertEquals('2001062', $viewData['txn']['amount']); // raw amount
+            $this->assertEquals('20,010.62', amount_format_IN($viewData['txn']['amount'])); // formatted amount
+
+            $this->assertEquals('pout_' . $payout->getId(), $viewData['source']['id']);
+            $this->assertEquals($payout->getFailureReason(), $viewData['source']['failure_reason']);
+
+            $expectedData = [
+                'txn' => [
+                    'entity_id' => $payout->getId(),
+                ]
+            ];
+
+            $this->assertArraySelectiveEquals($expectedData, $viewData);
+
+            $this->assertArrayHasKey('created_at_formatted', $viewData['txn']);
+
+            $this->assertEquals('emails.transaction.payout_processed', $mail->view);
+
+            $mail->hasFrom('no-reply@razorpay.com');
+            $mail->hasReplyTo('no-reply@razorpay.com');
+
+            return true;
+        });
+    }
+
+    public function testPayoutServiceEmailForReversedPayoutTransaction()
+    {
+        Mail::fake();
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            'status' => 'processed',
+            'failure_reason' => '21 din me paisa double nahi hua'
+        ]);
+
+        $payout->reload();
+
+        (new PayoutServiceDataMigration('test', [
+            Payout\DataMigration\Processor::FROM => $payout->getCreatedAt(),
+            Payout\DataMigration\Processor::TO   => $payout->getCreatedAt(),
+            PayoutEntity::BALANCE_ID             => $payout->getBalanceId()
+        ]))->handle();
+
+        $id = $payout['id'];
+        $migratedPayout = \DB::connection('live')->select("select * from ps_payouts where id = '$id'")[0];
+
+        $this->assertEquals($payout[PayoutEntity::ID], $migratedPayout->id);
+
+        $this->fixtures->edit('payout', $payout['id'], ['id' => 'Gg7sgBZgvYjlSC']);
+
+        /** @var TransactionEntity $txn */
+        $txn = $payout->transaction;
+
+        $this->ba->payoutInternalAppAuth('test');
+
+        $response = $this->makeRequestAndGetContent([
+                                                        'method'  => 'POST',
+                                                        'url'     => '/payouts_service/mail_and_sms',
+                                                        'content' => [
+                                                            "entity"    => "transaction",
+                                                            "entity_id" => $txn->getId(),
+                                                            "type"      => "payout.reversed",
+                                                            "metadata"  => [
+                                                                PayoutEntity::PAYOUT_ID       => $id,
+                                                                TransactionEntity::AMOUNT     => $txn->getAmount(),
+                                                                TransactionEntity::CREATED_AT => $txn->getCreatedAt()
+                                                            ]
+                                                        ]
+                                                    ]);
+
+        $this->assertArrayKeysExist($response, ['message']);
+        $this->assertEquals("success", $response['message']);
+
+        Mail::assertQueued(PayoutMail::class, function($mail) use ($payout){
+            $viewData = $mail->viewData;
+
+            $this->assertEquals("[Test Mode] Payout pout_" . $payout->getId() . " has been reversed", $mail->subject);
+
+            $this->assertEquals($mail->originProduct, 'banking');
+
+            $this->assertEquals('2001062', $viewData['txn']['amount']); // raw amount
+            $this->assertEquals('20,010.62', amount_format_IN($viewData['txn']['amount'])); // formatted amount
+
+            $this->assertEquals('pout_' . $payout->getId(), $viewData['source']['id']);
+            $this->assertEquals($payout->getFailureReason(), $viewData['source']['failure_reason']);
+
+            $expectedData = [
+                'txn' => [
+                    'entity_id' => $payout->getId(),
+                ]
+            ];
+
+            $this->assertArraySelectiveEquals($expectedData, $viewData);
+
+            $this->assertArrayHasKey('created_at_formatted', $viewData['txn']);
+
+            $this->assertEquals('emails.transaction.payout_reversed', $mail->view);
+
+            $mail->hasFrom('no-reply@razorpay.com');
+            $mail->hasReplyTo('no-reply@razorpay.com');
+
+            return true;
+        });
     }
 
     public function testBeneficiaryMailWithCorrectSupportDetailsOnPayoutProcessed()

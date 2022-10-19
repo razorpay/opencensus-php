@@ -7259,21 +7259,39 @@ class Core extends Base\Core
         (new Validator)->validateInput(Validator::PAYOUT_SERVICE_MAIL_AND_SMS_INPUT, $input);
 
         $entity = $input['entity'];
+        $type   = $input['type'];
 
         switch ($entity)
         {
             case Entity::PAYOUT:
-                $type     = $input['type'];
                 $payoutId = $input['entity_id'];
 
                 $payout = $this->getAPIModelPayoutFromPayoutService($payoutId);
 
-                if (array_key_exists('metadata', $input) === false)
-                {
-                    $input['metadata'] = [];
-                }
-
                 (new Notifications\Factory)->getNotifier($type, $payout, $input['metadata'])->notify();
+
+                break;
+
+            case Entity::TRANSACTION:
+                (new Validator)->validateInput(Validator::PAYOUT_SERVICE_TXN_MAIL_DATA, $input['metadata']);
+
+                $txnInput = $input['metadata'];
+                $payoutId = $txnInput[Entity::PAYOUT_ID];
+
+                $payout = $this->getAPIModelPayoutFromPayoutService($payoutId);
+
+                $txn = new Transaction\Entity;
+                $txn->setId($input[Transaction\Entity::ENTITY_ID]);
+                $txn->setAmount($txnInput[Entity::AMOUNT]);
+                $txn->setCreatedAt($txnInput[Transaction\Entity::CREATED_AT]);
+
+                $txn->source()->associate($payout);
+                $txn->accountBalance()->associate($payout->balance);
+                $txn->merchant()->associate($payout->merchant);
+
+                (new Transaction\Notifier($txn, $type))->notify();
+
+                break;
         }
 
         $this->trace->info(
