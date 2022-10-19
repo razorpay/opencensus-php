@@ -829,4 +829,21 @@ return [
             'content' => []
         ]
     ],
+
+    'testCheckIfInvoiceExistForVendor' => [
+        'request'  => [
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/check-invoice-exist',
+            'content' => [
+                'vendor_id' => 'cont_12345678912345',
+                'invoice_number' => 'bill123',
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
 ];

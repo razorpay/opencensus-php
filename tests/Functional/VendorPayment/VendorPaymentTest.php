@@ -733,4 +733,20 @@ class VendorPaymentTest extends TestCase
 
         $vpMock->shouldHaveReceived('getBusinessInfoStatus');
     }
+
+    public function testCheckIfInvoiceExistForVendor()
+    {
+        $this->ba->proxyAuth();
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('checkIfInvoiceExistForVendor')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('checkIfInvoiceExistForVendor');
+    }
+
 }

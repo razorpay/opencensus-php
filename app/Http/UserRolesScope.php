@@ -1056,6 +1056,7 @@ class UserRolesScope
             'vendor_payment_contact_list'                          => [Role::OWNER, Role::ADMIN],
             'vendor_payment_contact_update'                        => [Role::OWNER, Role::ADMIN],
             'vendor_payment_create'                                => [Role::OWNER, Role::ADMIN],
+            'vendor_payments_check_existing_invoice'               => [Role::OWNER, Role::ADMIN],
             'vendor_payment_create_email_mapping'                  => [Role::OWNER, Role::ADMIN],
             'vendor_payment_edit'                                  => [Role::OWNER, Role::ADMIN],
             'vendor_payment_execute'                               => [Role::OWNER, Role::ADMIN],

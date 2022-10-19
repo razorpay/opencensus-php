@@ -109,6 +109,7 @@ class Tracing
             'vendor_payment_contact_create',
             'vendor_payment_contact_update',
             'vendor_payment_create',
+            'vendor_payments_check_existing_invoice',
             'vendor_payment_list',
             'vendor_payment_get_by_id',
             'vendor_payment_verify_otp',

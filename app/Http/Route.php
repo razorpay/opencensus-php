@@ -1746,6 +1746,7 @@ class Route
         'workflow_state_callback_update'          => ['patch',   'wf-service/state/{id}/callback',                   'WorkflowServiceController@updateWorkflowStateMap'                  ],
 
         //Vendor Payments
+        'vendor_payments_check_existing_invoice'   => ['get',      'vendor-payments/check-invoice-exist',                                     'VendorPaymentController@checkIfInvoiceExistForVendor'              ],
         'vendor_payment_execute_bulk'              => ['post',     'vendor-payments/bulk/execute',                                            'VendorPaymentController@executeVendorPaymentBulk'                  ],
         'vendor_payment_upcoming_mail_cron'        => ['post',     'vendor-payments/sendUpcomingMailCron',                                    'VendorPaymentController@sendUpcomingMailCron'                      ],
         'vendor_payment_send_email_generic'        => ['post',     'vendor-payments/sendMailGeneric',                                         'VendorPaymentController@sendMailGeneric'                           ],
@@ -6000,6 +6001,7 @@ class Route
         'merchant_product_international_request',
 
         // Vendor Payment Routes
+        'vendor_payments_check_existing_invoice',
         'vendor_payment_send_vendor_invite_ei',
         'vendor_payment_disable_vendor_portal',
         'vendor_payment_enable_vendor_portal',
@@ -8988,6 +8990,7 @@ class Route
         'vendor_payment_contact_create'                => Permission::CREATE_CONTACT,
         'vendor_payment_contact_update'                => Permission::UPDATE_CONTACT,
         'vendor_payment_create'                        => Permission::CREATE_VENDOR_PAYMENTS,
+        'vendor_payments_check_existing_invoice'       => Permission::CREATE_VENDOR_PAYMENTS,
         'vendor_payment_list'                          => Permission::VIEW_VENDOR_PAYMENTS,
         'vendor_payment_get_by_id'                     => Permission::VIEW_VENDOR_PAYMENTS,
         'vendor_settlement_fund_accounts'              => Permission::VIEW_VENDOR_PAYMENTS,
@@ -10773,6 +10776,7 @@ class Route
             'vendor_payment_contact_list',
             'vendor_payment_contact_update',
             'vendor_payment_create',
+            'vendor_payments_check_existing_invoice',
             'vendor_payment_edit',
             'vendor_payment_execute',
             'vendor_payment_execute_2fa',
@@ -12835,6 +12839,7 @@ class Route
             'vendor_payment_contact_list',
             'vendor_payment_contact_update',
             'vendor_payment_create',
+            'vendor_payments_check_existing_invoice',
             'vendor_payment_edit',
             'vendor_payment_execute',
             'vendor_payment_execute_2fa',
@@ -14843,6 +14848,7 @@ class Route
         'vendor_payment_contact_create',
         'vendor_payment_contact_update',
         'vendor_payment_create',
+        'vendor_payments_check_existing_invoice',
         'vendor_payment_list',
         'vendor_payment_list_vendors',
         'vendor_sign_up_create_business_info',

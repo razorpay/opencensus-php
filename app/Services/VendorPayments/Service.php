@@ -76,6 +76,7 @@ class Service
     const LIST_VENDORS                  = 'ListVendors';
     const CREATE_BUSINESS_INFO          = 'CreateBusinessInfo';
     const GET_BUSINESS_INFO_STATUS      = 'GetBusinessInfoStatus';
+    const CHECK_IF_INVOICE_EXIST        = 'CheckIfInvoiceExist';
 
     const BASE_PATH = 'twirp/vendorpayments.Vendorpayments';
 
@@ -104,6 +105,7 @@ class Service
     const FILE_FORMAT = 'format';
     const FILE_SIZE   = 'size';
     const ATTACHMENTS = 'attachments';
+    const VENDOR_ID   = 'vendor_id';
 
     protected $app;
 
@@ -903,5 +905,15 @@ class Service
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_BUSINESS_INFO_STATUS);
 
         return $this->makeRequest($merchant, $url);
+    }
+
+    /*
+     * currently only supporting `vendor_id`, `invoice_number` as query params
+     */
+    public function checkIfInvoiceExistForVendor(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CHECK_IF_INVOICE_EXIST);
+
+        return $this->makeRequest($merchant, $url, $input);
     }
 }

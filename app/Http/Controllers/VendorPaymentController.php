@@ -332,4 +332,9 @@ class VendorPaymentController extends Controller
     {
         return $this->service->getBusinessInfoStatus($this->ba->getMerchant());
     }
+
+    public function checkIfInvoiceExistForVendor()
+    {
+        return $this->service->checkIfInvoiceExistForVendor($this->ba->getMerchant(), $this->input);
+    }
 }
