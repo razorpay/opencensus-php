@@ -47,6 +47,10 @@ class Service extends Base\Service
         'JCdhfzRcU0ymaX',   //LAMRIM LLP
     ];
 
+    const addCheckoutInfoMids = [
+        'G4ysrlrxfPzRqk',  //Nicobar Design
+    ];
+
     const farziEnabledMids = [
         'ChdCdGm7TvuVk6',   //boAt
     ];
@@ -457,6 +461,8 @@ class Service extends Base\Service
 
         $countryCode = $orderArray['customer_details']['shipping_address']['country'];
 
+        $merchantId = $this->merchant->getId();
+
         // NOTE: promotions is not set if the 1ccResetAPI call fails, until CX team fixes it
         // keep the null check here
         $response = [
@@ -470,6 +476,16 @@ class Service extends Base\Service
             'payment_id'       => $paymentId,
             'shipping_country' => Constants\Country::getCountryNameByCode($countryCode) ?? $countryCode
         ];
+
+        if (isset($merchantId) === true and in_array($merchantId, self::addCheckoutInfoMids) === true)
+        {
+            $checkoutId = $order['notes']['storefront_id'];
+
+            $checkout = (new Checkout)->getCheckoutFromAdminApi($checkoutId);
+
+            $response['checkout_id']    = isset($checkout['name']) ? str_replace('#', '', $checkout['name']) : '';
+            $response['checkout_token'] = isset($checkout['token']) ? $checkout['token'] : '';
+        }
 
         // NOTE: Logging the response to debug an issue where the FE is not receiving data
         // for analytics
