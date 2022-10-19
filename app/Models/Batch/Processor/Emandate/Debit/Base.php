@@ -386,7 +386,11 @@ class Base extends BaseProcessor
     public function deletePaymentFromRedis(array $entries){
         try
         {
-            $redisKey = getRedisKey($entries);
+            $handleDuplicatePayments = $this->isDuplicatePaymentsHandlingEnabled();
+            if($handleDuplicatePayments === false){
+                return false;
+            }
+            $redisKey = $this->getRedisKey($entries);
             $delResult = $this->app['redis']->del($redisKey);
             $this->trace->info(
                 TraceCode::NACH_PROCESSING_REDIS_DELETE_KEY,
@@ -403,5 +407,19 @@ class Base extends BaseProcessor
                 TraceCode::NACH_PROCESSING_REDIS_FAILURE
             );
         }
+    }
+
+    private function isDuplicatePaymentsHandlingEnabled(): bool
+    {
+        $key = Carbon::now()->getTimestamp();
+
+        $razorxTreatment = RazorxTreatment::EMANDATE_HANDLE_DUPLICATE_PAYMENTS;
+
+        $variant = $this->app->razorx->getTreatment($key,
+            $razorxTreatment,
+            $this->mode
+        );
+
+        return (strtolower($variant) === 'on');
     }
 }

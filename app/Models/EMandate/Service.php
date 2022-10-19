@@ -269,9 +269,10 @@ class Service extends Base\Service
     {
         try{
             $handleDuplicatePayments = $this->isDuplicatePaymentsHandlingEnabled();
-            if($handleDuplicatePayments === false)
+            if($handleDuplicatePayments === false){
                 return false;
-            $ttl = 20 * 20 * 60; // 20 hours in seconds
+            }
+            $ttl = 20 * 60 * 60; // 20 hours in seconds
             $redisKey = $processor->getRedisKey($input);
             $result = $this->app['redis']->set($redisKey, true, 'ex', $ttl, 'nx');
             if($result === null){
