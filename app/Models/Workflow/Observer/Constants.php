@@ -23,6 +23,8 @@ class Constants
 
     const MERCHANT_GSTIN_SELF_SERVE_UPDATE      = 'merchant_gstin_self_serve_update';
 
+    const MERCHANT_BANK_ACCOUNT_CREATE          = 'merchant_bank_account_create';
+
     const MERCHANT_BANK_ACCOUNT_UPDATE          = 'merchant_bank_account_update';
 
     const ADD_ADDITIONAL_WEBSITE_SELF_SERVE     = 'add_additional_website_self_serve';
