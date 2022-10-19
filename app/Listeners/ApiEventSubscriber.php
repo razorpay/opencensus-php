@@ -83,6 +83,8 @@ class ApiEventSubscriber extends Base\Core
 
     const WORKFLOW_SERVICE = 'workflow_service';
     const API_WORKFLOW     = 'api_workflow';
+    const BARRICADE_ACTION = 'merchant_integration_verify';
+    const BARRICADE_MERCHANT_INTEGRATION = 'merchant_integration';
 
     public function getMode()
     {
@@ -408,7 +410,7 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getPaymentPayload($payment);
 
-        if (($payment->hasSubscription() === true) and 
+        if (($payment->hasSubscription() === true) and
             ($payment->isApiBasedEmandateAsyncPayment() === false))
         {
             $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
@@ -610,12 +612,42 @@ class ApiEventSubscriber extends Base\Core
                     'payment_id' => $payment->getId(),
                 ]);
         }
+        $sqsPush = $this->app->razorx->getTreatment(self::BARRICADE_ACTION, self::BARRICADE_MERCHANT_INTEGRATION, $this->mode);
+
+        if ($sqsPush === 'on'){
+
+            $data = $this->getPaymentPayload($payment);
+            $data['action'] = [
+                'action'=>self::BARRICADE_ACTION
+            ];
+
+            try {
+
+                $queueName = $this->app['config']->get('queue.barricade_verify.' . $this->mode);
+                $this->app['queue']->connection('sqs')->later(0, "Barricade Queue Push", json_encode($data), $queueName);
+
+
+                $this->trace->info(TraceCode::BARRICADE_SQS_PUSH_SUCCESS,
+                    [
+                        'queueName' => $queueName,
+                        'data'      => $data,
+                    ]);
+
+            } catch (\Throwable $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::CRITICAL,
+                    TraceCode::BARRICADE_SQS_PUSH_FAILURE,
+                    [
+                        'payment_id' => $payment->getId(),
+                    ]);
+            }
+        }
 
         $payload = $this->getPaymentPayload($payment);
-
         $this->dispatchEventToStork($payload);
     }
-
     protected function pushForPaymentLinks(Payment\Entity $payment)
     {
 
@@ -2091,7 +2123,7 @@ class ApiEventSubscriber extends Base\Core
         {
             if ((empty($token) === false) and ($token->getMethod() === Payment\Method::EMANDATE))
             {
-                $payment = $this->repo->payment->getRecurringInitialPayment($token->getId(), 
+                $payment = $this->repo->payment->getRecurringInitialPayment($token->getId(),
                 $token->getMerchantId(), $token->getMethod());
                 $currentRecurringStatus = $token->getRecurringStatus();
 
@@ -2103,7 +2135,7 @@ class ApiEventSubscriber extends Base\Core
                     $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
                 }
             }
-        } 
+        }
         catch (\Throwable $e)
         {
             $this->trace->traceException(
@@ -2114,7 +2146,7 @@ class ApiEventSubscriber extends Base\Core
                     'payment_id'   => $payment->getId(),
                     'token_id'     => $token->getId(),
                     'notify_event' => $notifyEvent,
-                ]);  
+                ]);
         }
 
         return;

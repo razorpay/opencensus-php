@@ -8239,6 +8239,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const METRO_PUBLISH_FOR_CAPTURE_VERIFY                            = 'METRO_PUBLISH_FOR_CAPTURE_VERIFY';
 
     const BARRICADE_SQS_PUSH_SUCCESS                                  = 'BARRICADE_SQS_PUSH_SUCCESS';
+    const BARRICADE_SQS_PUSH_FAILURE                                  = 'BARRICADE_SQS_PUSH_FAILURE';
 
     const PAN_RETRY_STATUS                                            = 'PAN_RETRY_STATUS';
 
