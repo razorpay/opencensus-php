@@ -55,6 +55,7 @@ use RZP\Constants\Mode as EnvMode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\OnHoldPayoutsProcess;
 use RZP\Tests\Traits\TestsMetrics;
+use RZP\Mail\Payout as PayoutMails;
 use RZP\Jobs\PayoutServiceDualWrite;
 use RZP\Mail\Payout\PendingApprovals;
 use RZP\Models\FundTransfer\Attempt;
@@ -22035,6 +22036,339 @@ class PayoutTest extends OAuthTestCase
         });
 
         Mail::assertQueued(PayoutMail::class);
+    }
+
+    public function testBeneNotificationOnPayoutServicePayoutProcessed()
+    {
+        Mail::fake();
+
+        $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
+
+        $contact = $this->getDbEntityById('contact', '1000001contact');
+
+        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ENABLE_API_PAYOUT_BENE_SMS]);
+
+        $this->fixtures->merchant->removeFeatures([Feature\Constants::DISABLE_API_PAYOUT_BENE_EMAIL]);
+
+        $attributes = [
+            'bas_business_id' => '10000000000000',
+            'merchant_id'     => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_detail', $attributes);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $fta = $payout->fundTransferAttempts()->first();
+
+        // Assert that fta status was initiated (FTS sync call).
+        $this->assertEquals('initiated', $fta->getStatus());
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            'status'          => Payout\Status::PROCESSED,
+            PayoutEntity::UTR => '933815383814',
+            PayoutEntity::REFERENCE_ID => '12345'
+        ]);
+
+        (new PayoutServiceDataMigration('test', [
+            Payout\DataMigration\Processor::FROM => $payout->getCreatedAt(),
+            Payout\DataMigration\Processor::TO   => $payout->getCreatedAt(),
+            PayoutEntity::BALANCE_ID             => $payout->getBalanceId()
+        ]))->handle();
+
+        $id = $payout['id'];
+
+        $migratedPayout = \DB::connection('live')->select("select * from ps_payouts where id = '$id'")[0];
+
+        $this->assertEquals($payout[PayoutEntity::ID], $migratedPayout->id);
+
+        $this->fixtures->edit('payout', $payout['id'], ['id' => 'Gg7sgBZgvYjlSC']);
+
+        $this->mockPayoutLinksGetSettingsFlow();
+
+        $expectedSmsPayload = [
+            'merchant_display_name' => "Test Merchant",
+            'payout_reference_id'   => "12345",
+            'payout_utr'            => "933815383814",
+            'amount'                => "₹ 20000",
+        ];
+
+
+        $storkMock = Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $storkMock = $this->expectStorkSendSmsRequest($storkMock,
+                                                      PayoutProcessedNotification::SMS_TEMPLATE,
+                                                      $contact->getContact(),
+                                                      $expectedSmsPayload);
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->ba->payoutInternalAppAuth('test');
+
+        $this->makeRequestAndGetContent([
+                                            'method'  => 'POST',
+                                            'url'     => '/payouts_service/mail_and_sms',
+                                            'content' => [
+                                                "entity"    => "payout",
+                                                "entity_id" => $id,
+                                                "type"      => Payout\Notifications\Type::PAYOUT_PROCESSED_CONTACT_COMMUNICATION,
+                                                "metadata"  => [
+                                                    "is_vendor_payment" => false
+                                                ],
+                                            ]
+                                        ]);
+
+        Mail::assertQueued(PayoutProcessedContactCommunication::class, function($mail) {
+            $mail->build();
+            $this->assertEquals($mail->subject, 'Ka-Ching! Payment Received from Test Merchant');
+
+            $this->assertArrayHasKey('payout_amount', $mail->viewData);
+            $this->assertArrayHasKey('merchant_name', $mail->viewData);
+            $this->assertArrayHasKey('merchant_billing_label', $mail->viewData);
+            $this->assertArrayHasKey('merchant_brand_logo', $mail->viewData);
+            $this->assertArrayHasKey('merchant_brand_color', $mail->viewData);
+            $this->assertArrayHasKey('merchant_contrast_color', $mail->viewData);
+            $this->assertArrayHasKey('payout_status', $mail->viewData);
+            $this->assertArrayHasKey('payout_utr', $mail->viewData);
+            $this->assertArrayHasKey('payout_reference_id', $mail->viewData);
+            $this->assertArrayHasKey('payout_mode', $mail->viewData);
+            $this->assertArrayHasKey('payout_id', $mail->viewData);
+            $this->assertArrayHasKey('payout_narration', $mail->viewData);
+            $this->assertArrayHasKey('payout_processed_at', $mail->viewData);
+            $this->assertArrayHasKey('merchant_website', $mail->viewData);
+            $this->assertArrayHasKey('learn_more_url', $mail->viewData);
+
+            $mail->hasTo('naruto@gmail.com');
+            $mail->hasFrom('no-reply@razorpay.com');
+            $mail->hasReplyTo('no-reply@razorpay.com');
+
+            return true;
+        });
+    }
+
+    public function testBeneNotificationOnPayoutServicePayoutAutoRejected()
+    {
+        Mail::fake();
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            'status'       => Payout\Status::REJECTED,
+            'scheduled_at' => 1626698206,
+        ]);
+
+        (new PayoutServiceDataMigration('test', [
+            Payout\DataMigration\Processor::FROM => $payout->getCreatedAt(),
+            Payout\DataMigration\Processor::TO   => $payout->getCreatedAt(),
+            PayoutEntity::BALANCE_ID             => $payout->getBalanceId()
+        ]))->handle();
+
+        $id = $payout['id'];
+        $migratedPayout = \DB::connection('live')->select("select * from ps_payouts where id = '$id'")[0];
+
+        $this->assertEquals($payout[PayoutEntity::ID], $migratedPayout->id);
+
+        $this->fixtures->edit('payout', $payout['id'], ['id' => 'Gg7sgBZgvYjlSC']);
+
+        $this->ba->payoutInternalAppAuth('test');
+
+        $this->makeRequestAndGetContent([
+                                            'method'  => 'POST',
+                                            'url'     => '/payouts_service/mail_and_sms',
+                                            'content' => [
+                                                "entity"    => "payout",
+                                                "entity_id" => $id,
+                                                "type"      => Payout\Notifications\Type::PAYOUT_AUTO_REJECTED,
+                                            ]
+                                        ]);
+
+        Mail::assertQueued(PayoutMails\AutoRejectedPayout::class, function($mail) use ($id, $payout) {
+            $mail->build();
+            $this->assertEquals($mail->subject, "Scheduled Payout <pout_" . $id ."> for 19 July 2021, 6pm - 7pm  worth ₹ 20000 has been auto rejected");
+
+            $viewData = $mail->viewData;
+            $this->assertEquals("20,000", $viewData[PayoutEntity::AMOUNT][1]);
+            $this->assertEquals("00", $viewData[PayoutEntity::AMOUNT][2]);
+            $this->assertEquals("pout_" . $id, $viewData[PayoutEntity::PAYOUT_ID]);
+            $this->assertEquals("19 July 2021, 6pm - 7pm ", $viewData["scheduled_for"]);
+            $this->assertEquals($payout->balance->getAccountNumber(), $viewData["account_no"]);
+
+            $accountType = 'RazorpayX account';
+
+            if ($payout->getBalanceAccountType() === Balance\AccountType::DIRECT)
+            {
+                $accountType = 'RBL Current Account';
+            }
+            $this->assertEquals($accountType, $viewData[Balance\Entity::ACCOUNT_TYPE]);
+
+            $mail->hasTo('naruto@gmail.com');
+            $mail->hasFrom('no-reply@razorpay.com');
+            $mail->hasReplyTo('no-reply@razorpay.com');
+
+            return true;
+        });
+    }
+
+    public function testBeneNotificationOnPayoutServicePayoutFailed()
+    {
+        Mail::fake();
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            'status'       => Payout\Status::FAILED,
+            'scheduled_at' => 1626698206,
+        ]);
+
+        (new PayoutServiceDataMigration('test', [
+            Payout\DataMigration\Processor::FROM => $payout->getCreatedAt(),
+            Payout\DataMigration\Processor::TO   => $payout->getCreatedAt(),
+            PayoutEntity::BALANCE_ID             => $payout->getBalanceId()
+        ]))->handle();
+
+        $id = $payout['id'];
+        $migratedPayout = \DB::connection('live')->select("select * from ps_payouts where id = '$id'")[0];
+
+        $this->assertEquals($payout[PayoutEntity::ID], $migratedPayout->id);
+
+        $this->fixtures->edit('payout', $payout['id'], ['id' => 'Gg7sgBZgvYjlSC']);
+
+        $this->ba->payoutInternalAppAuth('test');
+
+        $response = $this->makeRequestAndGetContent([
+                                            'method'  => 'POST',
+                                            'url'     => '/payouts_service/mail_and_sms',
+                                            'content' => [
+                                                "entity"    => "payout",
+                                                "entity_id" => $id,
+                                                "type"      => "payout_failed",
+                                            ]
+                                        ]);
+
+        $this->assertArrayKeysExist($response, ['message']);
+        $this->assertEquals("success", $response['message']);
+
+        Mail::assertQueued(PayoutMails\FailedPayout::class, function($mail) use ($id, $payout) {
+            $mail->build();
+            $this->assertEquals($mail->subject, "Scheduled Payout <pout_" . $id ."> for 19 July 2021, 6pm - 7pm  worth ₹ 20000 is failed");
+
+            $viewData = $mail->viewData;
+            $this->assertEquals("20,000", $viewData[PayoutEntity::AMOUNT][1]);
+            $this->assertEquals("00", $viewData[PayoutEntity::AMOUNT][2]);
+            $this->assertEquals("pout_" . $id, $viewData[PayoutEntity::PAYOUT_ID]);
+            $this->assertEquals("19 July 2021, 6pm - 7pm ", $viewData["scheduled_for"]);
+            $this->assertEquals($payout->balance->getAccountNumber(), $viewData["account_no"]);
+
+            $accountType = 'RazorpayX account';
+
+            if ($payout->getBalanceAccountType() === Balance\AccountType::DIRECT)
+            {
+                $accountType = 'RBL Current Account';
+            }
+            $this->assertEquals($accountType, $viewData[Balance\Entity::ACCOUNT_TYPE]);
+
+            $mail->hasTo('naruto@gmail.com');
+            $mail->hasFrom('no-reply@razorpay.com');
+            $mail->hasReplyTo('no-reply@razorpay.com');
+
+            return true;
+        });
+    }
+
+    public function testBeneNotificationOnPayoutServiceIncorrectEntity()
+    {
+        Mail::fake();
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            'status'       => Payout\Status::FAILED,
+            'scheduled_at' => 1626698206,
+        ]);
+
+        (new PayoutServiceDataMigration('test', [
+            Payout\DataMigration\Processor::FROM => $payout->getCreatedAt(),
+            Payout\DataMigration\Processor::TO   => $payout->getCreatedAt(),
+            PayoutEntity::BALANCE_ID             => $payout->getBalanceId()
+        ]))->handle();
+
+        $id = $payout['id'];
+        $migratedPayout = \DB::connection('live')->select("select * from ps_payouts where id = '$id'")[0];
+
+        $this->assertEquals($payout[PayoutEntity::ID], $migratedPayout->id);
+
+        $this->fixtures->edit('payout', $payout['id'], ['id' => 'Gg7sgBZgvYjlSC']);
+
+        $this->ba->payoutInternalAppAuth('test');
+
+        $response = $this->makeRequestAndGetContent([
+                                            'method'  => 'POST',
+                                            'url'     => '/payouts_service/mail_and_sms',
+                                            'content' => [
+                                                "entity"    => "reversal",
+                                                "entity_id" => $id,
+                                                "type"      => "payout_failed",
+                                            ]
+                                        ]);
+
+        $this->assertArrayKeysExist($response, ['message']);
+        $this->assertEquals("The selected entity is invalid.", $response['message']);
+
+        Mail::assertNotQueued(PayoutMails\FailedPayout::class);
+    }
+
+    public function testBeneNotificationOnPayoutServiceIncorrectType()
+    {
+        Mail::fake();
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            'status'       => Payout\Status::FAILED,
+            'scheduled_at' => 1626698206,
+        ]);
+
+        (new PayoutServiceDataMigration('test', [
+            Payout\DataMigration\Processor::FROM => $payout->getCreatedAt(),
+            Payout\DataMigration\Processor::TO   => $payout->getCreatedAt(),
+            PayoutEntity::BALANCE_ID             => $payout->getBalanceId()
+        ]))->handle();
+
+        $id = $payout['id'];
+        $migratedPayout = \DB::connection('live')->select("select * from ps_payouts where id = '$id'")[0];
+
+        $this->assertEquals($payout[PayoutEntity::ID], $migratedPayout->id);
+
+        $this->fixtures->edit('payout', $payout['id'], ['id' => 'Gg7sgBZgvYjlSC']);
+
+        $this->ba->payoutInternalAppAuth('test');
+
+        $response = $this->makeRequestAndGetContent([
+                                                        'method'  => 'POST',
+                                                        'url'     => '/payouts_service/mail_and_sms',
+                                                        'content' => [
+                                                            "entity"    => "payout",
+                                                            "entity_id" => $id,
+                                                            "type"      => "payout_danced",
+                                                        ]
+                                                    ]);
+
+        $this->assertArrayKeysExist($response, ['message']);
+        $this->assertEquals("The selected type is invalid.", $response['message']);
+
+        Mail::assertNotQueued(PayoutMails\FailedPayout::class);
     }
 
     public function testBeneficiaryMailWithCorrectSupportDetailsOnPayoutProcessed()

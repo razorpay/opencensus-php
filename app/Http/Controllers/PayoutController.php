@@ -875,6 +875,16 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function payoutServiceMailAndSms()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->payoutServiceMailAndSms($input);
+
+        return ApiResponse::json($data);
+
+    }
+
     public function payoutServiceDualWrite()
     {
         $input = Request::all();

@@ -40,6 +40,11 @@ class PayoutProcessedContactCommunication extends Base
 
     const EMAIL_ID = 'email_id';
 
+    const IS_VENDOR_PAYMENT = 'is_vendor_payment';
+    const IS_VANILLA_PAYOUT = 'is_vanilla_payout';
+
+    public $metadata = [];
+
     public function __construct(Entity $payout)
     {
         parent::__construct();
@@ -47,6 +52,26 @@ class PayoutProcessedContactCommunication extends Base
         $this->payout = $payout;
 
         $this->payoutMerchant = $this->payout->merchant;
+    }
+
+    protected function isVendorPayment()
+    {
+        if (array_key_exists(self::IS_VENDOR_PAYMENT, $this->metadata) === true)
+        {
+            return $this->metadata[self::IS_VENDOR_PAYMENT];
+        }
+
+        return $this->payout->isVendorPayment();
+    }
+
+    protected function isVanillaPayout()
+    {
+        if (array_key_exists(self::IS_VANILLA_PAYOUT, $this->metadata) === true)
+        {
+            return $this->metadata[self::IS_VANILLA_PAYOUT];
+        }
+
+        return $this->payout->isVanillaPayout();
     }
 
     public function notify()
@@ -58,7 +83,7 @@ class PayoutProcessedContactCommunication extends Base
         {
             if ($this->payout->merchant->isFeatureEnabled(
                     Feature\Constants::BENE_EMAIL_NOTIFICATION) === true &&
-                $this->payout->isVendorPayment() === false)
+                $this->isVendorPayment() === false)
             {
                 $this->sendEmail();
             }
@@ -84,7 +109,7 @@ class PayoutProcessedContactCommunication extends Base
 
         if ($this->payout->getOrigin() === Entity::API &&
             $enableApiPayoutBeneEmail === true &&
-            $this->payout->isVanillaPayout() === true)
+            $this->isVanillaPayout() === true)
         {
             $this->sendEmail();
         }
@@ -121,7 +146,7 @@ class PayoutProcessedContactCommunication extends Base
                 'merchant_id'               => $this->payout->merchant->getId(),
                 'payout_id'                 => $this->payout->getPublicId(),
                 'payout_origin'             => $this->payout->getOrigin(),
-                'is_vendor_payout'          => $this->payout->isVendorPayment(),
+                'is_vendor_payout'          => $this->isVendorPayment(),
                 'enable_api_payout_email'   => $enableApiPayoutBeneEmail,
                 'enable_db_payout_email'    => $enableDbPayoutBeneEmail,
                 'enable_api_payout_sms'     => $enableApiPayoutBeneSms,

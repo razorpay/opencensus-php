@@ -11,12 +11,14 @@ class Factory
     /**
      * NOTE : Ensure that the returning class implements the notify() method!
      *
-     * @param $type
+     * @param        $type
      * @param Entity $payout
+     * @param array  $metadata
+     *
      * @return AutoRejected|Failed|PayoutProcessedContactCommunication
      * @throws BadRequestException
      */
-    public static function getNotifier($type, Entity $payout)
+    public static function getNotifier($type, Entity $payout, array $metadata = [])
     {
         if (Type::isValidType($type) === false)
         {
@@ -37,7 +39,11 @@ class Factory
                 return (new Failed($payout));
 
             case Type::PAYOUT_PROCESSED_CONTACT_COMMUNICATION:
-                return (new PayoutProcessedContactCommunication($payout));
+                $notifier = (new PayoutProcessedContactCommunication($payout));
+
+                $notifier->metadata = $metadata;
+
+                return $notifier;
         }
     }
 }

@@ -4186,6 +4186,32 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function payoutServiceMailAndSms(array $input)
+    {
+        try
+        {
+            $this->core->payoutServiceMailAndSms($input);
+        }
+        catch (\throwable $exception)
+        {
+            $this->trace->traceException($exception);
+
+            if ($exception->getMessage() === "The selected entity is invalid.")
+            {
+                return ['message' => $exception->getMessage()];
+            }
+
+            if ($exception->getCode() === ErrorCode::BAD_REQUEST_INVALID_PAYOUT_NOTIFICATION_TYPE)
+            {
+                return ['message' => 'The selected type is invalid.'];
+            }
+
+            throw $exception;
+        }
+
+        return ['message' => 'success'];
+    }
+
     protected function getUsersDataForPendingPayoutLinks(array $merchantPendingPayoutLinksMeta): Base\PublicCollection
     {
         $merchantIdToRolesMapping = array(); // [M1 => [Role1, Role2], M2 => [Role1, Role2], M3 => [Role1, Role2]]

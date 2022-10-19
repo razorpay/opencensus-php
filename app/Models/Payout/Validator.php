@@ -99,6 +99,7 @@ class Validator extends Base\Validator
     const PAYOUT_BULK_STATUS_UPDATE_MANUAL = 'payout_bulk_status_update_manual';
 
     const PAYOUT_SERVICE_DATA_MIGRATION_INPUT = 'payout_service_data_migration_input';
+    const PAYOUT_SERVICE_MAIL_AND_SMS_INPUT   = 'payout_service_mail_and_sms_input';
 
     const PAYOUT_SERVICE_DUAL_WRITE_INPUT = 'payout_service_dual_write_input';
 
@@ -190,6 +191,13 @@ class Validator extends Base\Validator
         Entity::BALANCE_ID  => 'required|string|size:14',
         'from'              => 'required|epoch',
         'to'                => 'required|epoch',
+    ];
+
+    protected static $payoutServiceMailAndSmsInputRules = [
+        Entity::ENTITY => 'required|in:payout',
+        Entity::TYPE   => 'required',
+        'entity_id'    => 'required|size:14',
+        'metadata'     => 'sometimes|array'
     ];
 
     protected static $payoutServiceDualWriteInputRules = [

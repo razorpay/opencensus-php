@@ -3,13 +3,14 @@
 namespace RZP\Mail\Payout;
 
 use App;
-
 use Carbon\Carbon;
+
 use RZP\Models\Merchant;
 use RZP\Mail\Base\Mailable;
 use RZP\Constants\Timezone;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
+use RZP\Models\Payout\Core;
 use RZP\Models\Payout\Entity;
 
 class PayoutProcessedContactCommunication extends Mailable
@@ -59,7 +60,24 @@ class PayoutProcessedContactCommunication extends Mailable
         {
             $repo = App::getFacadeRoot()['repo'];
 
-            $this->payout = $repo->payout->findOrFail($this->payoutId);
+            try
+            {
+                $this->payout = $repo->payout->findOrFail($this->payoutId);
+
+                if ($this->payout->getIsPayoutService() === true)
+                {
+                    $this->payout = (new Core)->getAPIModelPayoutFromPayoutService($this->payoutId);
+                }
+            }
+            catch (\Throwable $exception)
+            {
+                $this->payout = (new Core)->getAPIModelPayoutFromPayoutService($this->payoutId);
+
+                if (empty($this->payout) === true)
+                {
+                    throw $exception;
+                }
+            }
         }
     }
 

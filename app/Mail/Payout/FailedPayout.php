@@ -3,7 +3,9 @@
 namespace RZP\Mail\Payout;
 
 use App;
+
 use RZP\Mail\Base\Mailable;
+use RZP\Models\Payout\Core;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Merchant\Balance;
@@ -45,7 +47,24 @@ class FailedPayout extends Mailable
         {
             $repo = App::getFacadeRoot()['repo'];
 
-            $this->payout = $repo->payout->findOrFail($this->payoutId);
+            try
+            {
+                $this->payout = $repo->payout->findOrFail($this->payoutId);
+
+                if ($this->payout->getIsPayoutService() === true)
+                {
+                    $this->payout = (new Core)->getAPIModelPayoutFromPayoutService($this->payoutId);
+                }
+            }
+            catch (\Throwable $exception)
+            {
+                $this->payout = (new Core)->getAPIModelPayoutFromPayoutService($this->payoutId);
+
+                if (empty($this->payout) === true)
+                {
+                    throw $exception;
+                }
+            }
         }
 
         return $this->payout;

@@ -7249,6 +7249,39 @@ class Core extends Base\Core
         return ['dispatch_count' => $count];
     }
 
+    public function payoutServiceMailAndSms($input)
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_SERVICE_MAIL_AND_SMS_REQUEST,
+            $input
+        );
+
+        (new Validator)->validateInput(Validator::PAYOUT_SERVICE_MAIL_AND_SMS_INPUT, $input);
+
+        $entity = $input['entity'];
+
+        switch ($entity)
+        {
+            case Entity::PAYOUT:
+                $type     = $input['type'];
+                $payoutId = $input['entity_id'];
+
+                $payout = $this->getAPIModelPayoutFromPayoutService($payoutId);
+
+                if (array_key_exists('metadata', $input) === false)
+                {
+                    $input['metadata'] = [];
+                }
+
+                (new Notifications\Factory)->getNotifier($type, $payout, $input['metadata'])->notify();
+        }
+
+        $this->trace->info(
+            TraceCode::PAYOUT_SERVICE_MAIL_AND_SMS_SUCCESS,
+            $input
+        );
+    }
+
     public function psDataMigrationRedisCleanUp(array $input)
     {
         $count = 0;
