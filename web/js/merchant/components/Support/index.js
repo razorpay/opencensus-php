@@ -151,6 +151,9 @@ export default class Support extends Component {
         window.fcWidget.on('message:received', (payload) => {
           this.handleChatbotMessage(payload);
         });
+        window.fcWidget.on('csat:updated', (payload) => {
+          this.handleChatbotMessage(payload, true);
+        });
       }
     }
 
@@ -199,12 +202,15 @@ export default class Support extends Component {
     this.bindEvents();
   };
 
-  handleChatbotMessage = (payload = {}) => {
+  handleChatbotMessage = (payload = {}, isCsatUpdated = false) => {
     const message = payload?.message?.messageFragments?.[0]?.content || '';
-    if (CHATBOT_CLOSING_TEXTS.includes(message)) {
+    if (CHATBOT_CLOSING_TEXTS.includes(message) || isCsatUpdated) {
       window.fcWidget.destroy();
       window.fcWidget.on('widget:destroyed', () => {
         this.handleInitChat();
+        setTimeout(() => {
+          this.handleChat();
+        }, 100);
       });
     } else if (message.includes('Please wait while we connect you to a live agent.')) {
       analyticsTrack({

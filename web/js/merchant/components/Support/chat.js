@@ -56,6 +56,7 @@ function initScript(data, onLoad) {
 export default function initChat(data, onLoad) {
   if (isScriptLoaded) {
     initFreshchat(data);
+    onLoad();
   } else {
     initScript(data, onLoad);
   }
