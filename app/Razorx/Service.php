@@ -260,7 +260,8 @@ class Service extends Base\Service
             'rx_todo_v1',
             'optimizer_emandate',
             'rx_bill_payments',
-            'batch_service_recurring_charge_bulk'
+            'batch_service_recurring_charge_bulk',
+            'rx_finance_x'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
