@@ -57,6 +57,7 @@ class Validator extends BankingAccount\Validator
         Constants::LEAD_RECEIVED_FROM_DATE       => 'required_with:lead_received_to_date|integer',
         Constants::LEAD_RECEIVED_TO_DATE         => 'required_with:lead_received_from_date|integer',
         Constants::IS_GREEN_CHANNEL              => 'sometimes|in:yes,no',
+        Constants::FEET_ON_STREET                => 'sometimes|in:yes,no',
     ];
 
     protected static $partnerLmsEditRules = [

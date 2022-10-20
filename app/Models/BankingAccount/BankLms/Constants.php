@@ -14,4 +14,5 @@ class Constants
 
     const IS_GREEN_CHANNEL              = 'is_green_channel';
     const SORT_SENT_TO_BANK_DATE        = 'sort_sent_to_bank_date';
+    const FEET_ON_STREET = 'feet_on_street';
 }

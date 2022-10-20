@@ -268,6 +268,26 @@ class Repository extends Base\Repository
     }
 
     /**
+     * Filter to search whether lead is feet on street or not
+     */
+    public function addQueryParamFeetOnStreet(Base\BuilderEx $query, $params)
+    {
+        $feetOnStreet = $params[BankLms\Constants::FEET_ON_STREET];
+
+        if ($feetOnStreet === 'yes') {
+            $feetOnStreet = 'true';
+        } else {
+            $feetOnStreet = 'false';
+        }
+
+        $this->joinQueryActivationDetail($query);
+
+        $query->select($this->dbColumn('*'));
+
+        $query->whereRaw('json_unquote(json_extract(additional_details, \'$."feet_on_street"\')) = \''.$feetOnStreet.'\'');
+    }
+
+    /**
      * Filter to search when lead was sent to bank - start date
      * Sent from Partner Bank LMS
      * Defined here becuase it is used by the Download MIS
