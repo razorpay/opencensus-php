@@ -70,7 +70,9 @@ class TncActivationTest extends TestCase
 
         $this->app['basicauth']->setMerchant($merchant);
 
-        (new Merchant\Activate)->activate($merchant);
+        $this->app['repo']->transaction(function() use ($merchant) {
+            (new Merchant\Activate)->activate($merchant);
+        });
 
         $merchant = $this->getDbLastEntity('merchant');
 
@@ -113,7 +115,9 @@ class TncActivationTest extends TestCase
 
         $this->app['basicauth']->setMerchant($merchant);
 
-        (new Merchant\Activate)->activate($merchant);
+        $this->app['repo']->transaction(function() use ($merchant) {
+            (new Merchant\Activate)->activate($merchant);
+        });
 
         $merchant = $this->getDbLastEntity('merchant');
 
@@ -144,7 +148,10 @@ class TncActivationTest extends TestCase
 
         $this->app['basicauth']->setMerchant($merchant);
 
-        (new Merchant\Activate)->activate($merchant);
+        $this->app['repo']->transaction(function() use ($merchant) {
+        
+            (new Merchant\Activate)->activate($merchant);
+        });
 
         $merchant = $this->getDbLastEntity('merchant');
 

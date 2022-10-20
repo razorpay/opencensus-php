@@ -24,6 +24,8 @@ use RZP\Models\BankingAccountTpv;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Merchant\AxisActivation;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Feature\Core as FeatureCore;
+use RZP\Models\Feature\Entity as FeatureEntity;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
@@ -398,25 +400,33 @@ class Activate extends Base\Core
 
         if($isExperimentEnabledForLedgerPGMerchant === true) {
 
-            $balance = $this->repo->balance->getMerchantBalanceByType(
-                $merchant->getId(),
-                BalanceType::PRIMARY,
-                $this->mode);
+            $balance = $this->repo->balance->getBalanceLockForUpdate(
+                $merchant->getId());
 
             //fetches fee and amount credits from credits table
-            $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCredits($merchant->getId());
+            $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCreditsLockForUpdate($merchant->getId());
 
-            (new LedgerCore())->createPGLedgerAccount(
+            $isPgLedgerAccountCreated = (new LedgerCore())->createPGLedgerAccount(
                 $merchant,
                 $this->mode,
                 $balance->getBalance(),
                 $creditBalances
             );
 
+            if($isPgLedgerAccountCreated === true and $merchant->isFeatureEnabled(Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+            {
+                (new FeatureCore)->create(
+                    [
+                        FeatureEntity::ENTITY_TYPE  => EntityConstants::MERCHANT,
+                        FeatureEntity::ENTITY_ID    => $merchant->getId(),
+                        FeatureEntity::NAME         => Constants::PG_LEDGER_JOURNAL_WRITES,
+                    ]);
+            }
+
             $this->trace->info(TraceCode::LEDGER_ONBOARDING_PG_MERCHANT,[
                 "merchantId"                  => $merchantDetail->getMerchantId(),
                 "isExpEnable"                 => $isExperimentEnabledForLedgerPGMerchant,
-                "businessType"                => $merchantDetail->getBusinessType()
+                "isPgLedgerAccountCreated"    => $isPgLedgerAccountCreated
             ]);
 
         }
