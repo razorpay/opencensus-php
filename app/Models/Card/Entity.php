@@ -7,7 +7,6 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Constants\Timezone;
 
-use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
@@ -17,10 +16,10 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Merchant\Account;
-use RZP\Models\Base\Traits\DualWrite;
 use RZP\Models\Admin\Role\TenantRoles;
 use RZP\Models\Base\Traits\ExternalOwner;
 use RZP\Models\Base\Traits\ExternalEntity;
+use RZP\Models\Base\Traits\ArchivedEntity;
 
 /**
  * @property Merchant\Entity $merchant
@@ -28,7 +27,7 @@ use RZP\Models\Base\Traits\ExternalEntity;
  */
 class Entity extends Base\PublicEntity
 {
-    use ExternalOwner, ExternalEntity, DualWrite;
+    use ExternalOwner, ExternalEntity, ArchivedEntity;
 
     const ID                                    = 'id';
     const MERCHANT_ID                           = 'merchant_id';

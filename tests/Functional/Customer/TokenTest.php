@@ -2115,6 +2115,8 @@ class TokenTest extends TestCase
 
     public function testTokenStatusDualWrite()
     {
+        $this->markTestSkipped("Dual write trait removed on card");
+
         $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
 
         $this->app->instance('mpan.cardVault', $cardVault);

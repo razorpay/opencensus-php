@@ -292,7 +292,6 @@
     </filter>
     <php>
         <ini name="memory_limit" value="4096M"/>
-        <env name="ENABLE_DUAL_WRITE_CARDS" value="true" force="true" />
         <env name="ENABLE_QUERY_FALLBACK_ON_ARCHIVED_CARD" value="true" force="true" />
     </php>
 </phpunit>

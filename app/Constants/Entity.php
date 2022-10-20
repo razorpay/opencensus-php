@@ -1005,6 +1005,10 @@ class Entity
         self::CHECKOUT_ORDER,
     ];
 
+    const ARCHIVED_ENTITIES = [
+        self::CARD
+    ];
+
     public static $namespace = [
         self::TOKENISED_IIN             => \RZP\Models\Card\TokenisedIIN::class,
         self::IIN                       => \RZP\Models\Card\IIN::class,
@@ -1880,6 +1884,16 @@ class Entity
     public static function validateExternalRepoEntity(string $entity)
     {
         return (isset(self::$externalRepoSingleton[$entity]) === true);
+    }
+
+    public static function archivedEntityDbFallbackEnabled(string $entity) : bool
+    {
+        if (in_array($entity, self::ARCHIVED_ENTITIES, true) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public static function getExternalConfigKeyName(string $entity)

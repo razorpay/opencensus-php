@@ -662,6 +662,8 @@ class SavedCardsPaymentCreateTest extends TestCase
 
     public function testPaymentCreateAndSaveCardGlobalDualWrite()
     {
+        $this->markTestSkipped("Dual write trait removed on card");
+
         // set payment data
         $this->mockSession();
 

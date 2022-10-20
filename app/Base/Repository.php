@@ -221,9 +221,24 @@ class Repository extends \Razorpay\Spine\Repository
         return $this->newQuery()->whereIn(Common::MERCHANT_ID, $mids)->get();
     }
 
-    public function existsInTable($tableName, $id, $columns = ['*']): bool
+    /**
+     * @throws \Throwable
+     */
+    public function existsInTable($tableName, $id, $throwException = false): bool
     {
-        $model =  $this->newQuery()->from($tableName)->where(Common::ID, '=', $id)->first();
+        $model = null;
+
+        try
+        {
+            $model = $this->newQuery()->from($tableName)->where(Common::ID, '=', $id)->first();
+        }
+        catch (\Throwable $exception)
+        {
+            if ($throwException === true)
+            {
+                throw $exception;
+            }
+        }
 
         return ($model !== null);
     }

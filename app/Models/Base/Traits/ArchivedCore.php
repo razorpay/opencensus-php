@@ -272,65 +272,45 @@ trait ArchivedCore
 
     private function isArchivalFallbackEnabledViaEnv() : bool
     {
-        $app = App::getFacadeRoot();
-
         $entityName = $this->entity;
 
-        if (empty($entityName) === false)
+        if (empty($entityName) === true)
         {
-            $archivalFallbackEnvKey = 'ENABLE_QUERY_FALLBACK_ON_ARCHIVED_' . strtoupper($entityName);
-
-            $archivalFallbackEnvValue = getenv($archivalFallbackEnvKey);
-
-            // Note : Explicitly setting `==` to handle env datatype conversions. Do not change to `===`
-            if ($archivalFallbackEnvValue == true)
-            {
-                // enabling trace only for cards table to reduce log footprint and debug in case of any issues
-                // this trace be altogether removed post gaining enough confidence
-                if ($entityName === 'card')
-                {
-                    $app['trace']->info(TraceCode::ARCHIVAL_FALLBACK_ENABLEMENT_CONFIG, [
-                        'key'         => $archivalFallbackEnvKey,
-                        'value'       => $archivalFallbackEnvValue,
-                        'source'      => 'ENV',
-                        'enabled'     => true,
-                        'entity_name' => $entityName,
-                    ]);
-                }
-
-                return true;
-            }
-
-            $archivalFallbackConfigEnabled = false;
-
-            $isWorkerPod = (($app->runningInQueue() === true) or
-                            ((isset($app['worker.ctx']) === true) and
-                                (empty($app['worker.ctx']) === false)));
-
-            // Loading from config key in workers
-            if ($isWorkerPod === true)
-            {
-                $archivalFallbackConfigEnabled = $this->isArchivalFallbackConfigKeyEnabled($entityName);
-            }
-
-            // enabling trace only for cards table to reduce log footprint and debug in case of any issues
-            // this trace be altogether removed post gaining enough confidence
-            if ($entityName === 'card')
-            {
-                $app['trace']->info(TraceCode::ARCHIVAL_FALLBACK_ENABLEMENT_CONFIG, [
-                    'key'         => $archivalFallbackEnvKey,
-                    'value'       => $archivalFallbackEnvValue,
-                    'source'      => 'CONFIG',
-                    'enabled'     => $archivalFallbackConfigEnabled,
-                    'worker_pod'  => $isWorkerPod,
-                    'entity_name' => $entityName,
-                ]);
-            }
-
-            return $archivalFallbackConfigEnabled;
+            return false;
         }
 
-        return false;
+        // Use this post archival and gaining confidence of all flows working fine
+        // Else use this flow via ENV key for easier reverts
+        if (Entity::archivedEntityDbFallbackEnabled($entityName) === true)
+        {
+            return true;
+        }
+
+        $archivalFallbackEnvKey = 'ENABLE_QUERY_FALLBACK_ON_ARCHIVED_' . strtoupper($entityName);
+
+        $archivalFallbackEnvValue = getenv($archivalFallbackEnvKey);
+
+        // Note : Explicitly setting `==` to handle env datatype conversions. Do not change to `===`
+        if ($archivalFallbackEnvValue == true)
+        {
+            return true;
+        }
+
+        $archivalFallbackConfigEnabled = false;
+
+        $app = App::getFacadeRoot();
+
+        $isWorkerPod = (($app->runningInQueue() === true) or
+                        ((isset($app['worker.ctx']) === true) and
+                            (empty($app['worker.ctx']) === false)));
+
+        // Loading from config key in workers
+        if ($isWorkerPod === true)
+        {
+            $archivalFallbackConfigEnabled = $this->isArchivalFallbackConfigKeyEnabled($entityName);
+        }
+
+        return $archivalFallbackConfigEnabled;
     }
 
     private function isArchivalFallbackConfigKeyEnabled($entityName): bool

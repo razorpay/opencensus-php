@@ -1546,11 +1546,11 @@ class FundAccountsTest extends TestCase
 
         $cardAttributes = $card->getAttributes();
 
-        // Assert that card meta data is '0' (default value in cards table)
-        $this->assertEquals('0', $cardAttributes['iin']);
-        $this->assertEquals('0', $cardAttributes['name']);
-        $this->assertEquals('0', $cardAttributes['expiry_month']);
-        $this->assertEquals('0', $cardAttributes['expiry_year']);
+        // Assert that card meta data is null (default value in cards table)
+        $this->assertNull($cardAttributes['iin']);
+        $this->assertNull($cardAttributes['name']);
+        $this->assertNull($cardAttributes['expiry_month']);
+        $this->assertNull($cardAttributes['expiry_year']);
 
         $this->assertNull($card['trivia']);
         $this->assertEquals('pay_44f3d176b38b4cd2a588f243e3ff7b20', $card['vault_token']);
@@ -1793,11 +1793,11 @@ class FundAccountsTest extends TestCase
 
         $cardAttributes = $card->getAttributes();
 
-        // Assert that card meta data is '0' (default value in cards table)
-        $this->assertEquals('0', $cardAttributes['iin']);
-        $this->assertEquals('0', $cardAttributes['name']);
-        $this->assertEquals('0', $cardAttributes['expiry_month']);
-        $this->assertEquals('0', $cardAttributes['expiry_year']);
+        // Assert that card meta data is null (default value in cards table)
+        $this->assertNull($cardAttributes['iin']);
+        $this->assertNull($cardAttributes['name']);
+        $this->assertNull($cardAttributes['expiry_month']);
+        $this->assertNull($cardAttributes['expiry_year']);
 
         // Assert card characteristics
         $this->assertEquals('1', $card['trivia']);
