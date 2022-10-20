@@ -58,6 +58,16 @@ export const ISSUERS = {
   mpesa: 'M PESA',
   phonepe: 'Phone Pe',
   paypal: 'Paypal',
+  zestmoney: 'Zestmoney',
+  walnut369: 'Walnut 369',
+  earlysalary: 'Earlysalary',
+  hdfc: 'HDFC Bank',
+  icic: 'ICICI Bank',
+  kkbk: 'Kotak Bank',
+  fdrl: 'Federal Bank',
+  idfb: 'IDFC First Bank',
+  hcin: 'Home Credit Bank',
+  barb: 'Bank of Baroda',
 };
 
 export const BANK_MAP = {
