@@ -1460,7 +1460,7 @@ class Entity extends Base\PublicEntity
 
         $auth = $app['basicauth'];
 
-        if ($auth->isAdminAuth() === true)
+        if (($auth->isAdminAuth() === true) && ($data[Card\Entity::COUNTRY] === 'IN') )
         {
             $this->setDummyCardData($data);
         }

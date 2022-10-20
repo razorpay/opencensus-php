@@ -437,9 +437,9 @@ class AuthorizeTest extends TestCase
 
         $card = $this->getLastEntity('card', true);
 
-        $this->assertEquals('01', $card['expiry_month']);
+        $this->assertEquals('12', $card['expiry_month']);
 
-        $this->assertEquals('2099', $card['expiry_year']);
+        $this->assertEquals('2049', $card['expiry_year']);
     }
 
     public function testPaymentCardAsString()

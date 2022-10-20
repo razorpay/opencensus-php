@@ -2107,8 +2107,8 @@ class TokenTest extends TestCase
         //assert card
         $card = $this->getLastEntity('card', true);
 
-        $this->assertEquals('01', $card['expiry_month']);
-        $this->assertEquals('2099', $card['expiry_year']);
+        $this->assertEquals('12', $card['expiry_month']);
+        $this->assertEquals('2023', $card['expiry_year']);
         $this->assertEquals('12', $card['token_expiry_month']);
         $this->assertEquals('2021', $card['token_expiry_year']);
     }

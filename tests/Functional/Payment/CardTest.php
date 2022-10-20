@@ -145,7 +145,7 @@ class CardTest extends TestCase
             $number = $cardData[0];
 
             $cardInfo = [
-                'iin' => "999999",
+                //'iin' => "554619",
                 'last4' => substr($number, -4, 4),
                 'network' => $cardData[1],
                 // 'international' => null,

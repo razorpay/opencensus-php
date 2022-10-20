@@ -917,7 +917,7 @@ class BharatQrPaymentTest extends TestCase
 
         $card = $this->getLastEntity('card', true);
 
-        $this->assertEquals('', $card['name']);
+        $this->assertEquals('Random Name', $card['name']);
     }
 
     public function testQrPaymentWithMerchantDetails()
