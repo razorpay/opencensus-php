@@ -129,7 +129,6 @@ import { b2bReducers } from 'merchant/reducers/b2bExports';
 import non3dsCardsActivationReducer from 'merchant/reducers/non3dsCardsActivation';
 import apiLogsReducer from 'merchant/reducers/developers/apiLogs';
 import apiStatsReducer from 'merchant/reducers/developers/apiStats';
-import apiListReducer from 'merchant/reducers/developers/apiList';
 import websiteComplianceReducer from 'merchant/reducers/websitecompliance';
 
 export default combineReducers({
@@ -254,6 +253,5 @@ export default combineReducers({
   non3dsCardsActivation: non3dsCardsActivationReducer,
   apiLogs: apiLogsReducer,
   apiStats: apiStatsReducer,
-  appList: apiListReducer,
   websiteCompliance: websiteComplianceReducer,
 });

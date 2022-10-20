@@ -24,7 +24,7 @@ export const fetchApiLogs = (params) => {
   return {
     type: `${API_LOGS}_FETCH`,
     payload: merchantFetch({
-      url: 'developer_console/incoming/fetch/search',
+      url: 'developer_console/merchant/incoming/search',
       method: 'post',
       data: {
         range: {

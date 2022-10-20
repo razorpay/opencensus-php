@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import moment from 'moment';
-import { connect } from 'react-redux';
-import { compose } from 'redux';
 import DateRangePicker from 'common/ui/DateRangePicker';
-import * as ApiListActions from 'merchant/reducers/developers/apiList';
 import RequestLogs from './RequestLogs/RequestLogs';
 import RequestChart from './RequestChart/RequestChart';
 import ApiKeys from './ApiKeys';
@@ -28,10 +25,9 @@ const dateRangePresets = [
 const endDate = moment();
 const startDate = endDate.clone().subtract(10800, 'seconds');
 
-const Api = ({ items, fetchApiList }) => {
+const Api = () => {
   const [dateRange, setDateRange] = useState();
   const [selectedFilters, setSelectedFilter] = useState({
-    endPoint: items[0],
     dateRange: PAST_3_HOURS,
     duration: {
       from: startDate.valueOf(),
@@ -40,10 +36,6 @@ const Api = ({ items, fetchApiList }) => {
   });
 
   useEffect(() => {
-    fetchApiList({
-      from: selectedFilters.duration.from,
-      to: selectedFilters.duration.to,
-    });
     trackApiTabOpened();
   }, []);
 
@@ -75,10 +67,6 @@ const Api = ({ items, fetchApiList }) => {
       },
     }));
 
-    fetchApiList({
-      from: fromTimeStamp.valueOf(),
-      to: toTimeStamp.valueOf(),
-    });
     trackDateChange();
     trackApiLogsSearched();
   };
@@ -120,13 +108,4 @@ const Api = ({ items, fetchApiList }) => {
   );
 };
 
-export default compose(
-  connect(
-    (state) => ({
-      ...state.appList,
-    }),
-    {
-      ...ApiListActions,
-    },
-  ),
-)(Api);
+export default Api;

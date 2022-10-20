@@ -3,7 +3,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import moment from 'moment';
 import { merge } from 'common/utils/immutable';
 
-const requestURI = 'developer_console/incoming/fetch/stats';
+const requestURI = 'developer_console/merchant/incoming/stats';
 
 const API_STATS = 'API_STATS';
 

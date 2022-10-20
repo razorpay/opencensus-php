@@ -4,9 +4,12 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import arta from 'react-syntax-highlighter/dist/esm/styles/hljs/arta';
 import * as ApiLogsActions from 'merchant/reducers/developers/apiLogs';
-import RequestResponseDetails from '../../components/RequestResponseDetails';
-import { trackApiLogDetailsOpened, trackApiLogRequestResponseDetailsOpened } from '../events';
-import StatusLabel from '../../components/StatusLabel';
+import RequestResponseDetails from 'merchant/views/Developers/components/RequestResponseDetails';
+import {
+  trackApiLogDetailsOpened,
+  trackApiLogRequestResponseDetailsOpened,
+} from 'merchant/views/Developers/Api/events';
+import StatusLabel from 'merchant/views/Developers/components/StatusLabel';
 
 const syntaxHighlighterCustomStyles = {
   background: '#1E222E',
@@ -56,7 +59,7 @@ export default class RequestDetails extends Component {
                   <EntityDetailRow
                     label="Status"
                     pairClass="description"
-                    value={<StatusLabel statusCode={apiLog.response.http_status_code} />}
+                    value={() => <StatusLabel statusCode={apiLog.response.http_status_code} />}
                   />
                   <hr />
                   <div className="request-response-data">
