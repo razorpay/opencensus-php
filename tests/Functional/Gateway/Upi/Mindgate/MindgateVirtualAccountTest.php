@@ -851,15 +851,182 @@ class MindgateVirtualAccountTest extends TestCase
             $this->va->toArray());
     }
 
+    public function createTestOrg()
+    {
+        $this->ba->adminAuth();
+
+        $org = $this->fixtures->create('org', [
+            'display_name'            => 'HDFC CollectNow',
+            'business_name'            => 'HDFC Bank',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => 'org_custom_upi_logo',
+            'entity_id'     => $org->getId(),
+            'entity_type'   => 'org',
+        ]);
+
+        return $org;
+    }
+
+
+    public function testCallbackSuccessUpiQrHdfc()
+    {
+        $this->fixtures->merchant->setCategory('1111');
+
+        $this->fixtures->merchant->addFeatures(['upiqr_v1_hdfc']);
+        
+        $org = $this->createTestOrg();
+
+        $this->fixtures->edit('merchant','10000000000000',[
+            'name'=>'Test Name',
+            'org_id' => $org->getId(),
+        ]);
+
+        $terminal = $this->fixtures->create('terminal', [
+            'id'                        => '10000000000112',
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'upi_mindgate',
+            'gateway_merchant_id'       => 'razorpay upi mindgate',
+            'gateway_terminal_id'       => 'nodal account upi hdfc',
+            'gateway_merchant_id2'      => 'razorpay@hdfcbank',
+            // Sample hex for aes encryption, not in used
+            'gateway_terminal_password' => '93158d5892188161a259db660ddb1d0b',
+            'upi'                       => 1,
+            'gateway_acquirer'          => 'hdfc',
+            'vpa'                       => 'unittest@hdfcbank',
+            'type'                      => [
+                'non_recurring' => '1',
+                'pay'           => '1',
+            ]
+        ]);
+
+        $input = [
+            "usage"=> "multiple_use",
+            "description"=> "QR Description",
+            'amount_expected' => 1 ,
+            "name"=> "TestName",
+            "notes"=> [
+                "test"=> "Notes",
+                "test2"=> "Notes2"
+            ],
+            "receivers"=> [
+                "types"=> [
+                    "qr_code"
+                ],
+                "qr_code"=> [
+                    "method"=> [
+                        "card"=> false,
+                        "upi"=> true,
+                    ]
+                ]
+            ]
+        ];
+
+        $response = $this->createVirtualAccount($input);
+
+        $this->va = $this->getDbLastEntity('virtual_account');
+
+        $content = $this->getMockServer()->getAsyncCallbackContent(
+            [
+                // Any random string, why not va id
+                'gateway_payment_id'    => $this->va->getId(),
+                'payment_id'            => 'STQ'.$this->va->qrCode->getId(),
+            ],
+            [
+                // This is customer VPA
+                'vpa'                   => 'random@upi',
+                'amount'                => $this->va->getAmountExpected(),
+            ]);
+
+        $content['pgMerchantId'] = $this->terminal->getGatewayMerchantId();
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $this->assertTrue($response['success']);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset(
+            [
+                Payment\Entity::MERCHANT_ID         => Merchant\Account::TEST_ACCOUNT,
+                Payment\Entity::AMOUNT              => 1,
+                Payment\Entity::METHOD              => Payment\Method::UPI,
+                Payment\Entity::STATUS              => Payment\Status::CAPTURED,
+                Payment\Entity::RECEIVER_ID         => $this->va->qrCode->getId(),
+                Payment\Entity::RECEIVER_TYPE       => Receiver::QR_CODE,
+                Payment\Entity::AMOUNT_AUTHORIZED   => 1,
+                Payment\Entity::VPA                 => 'random@upi',
+                Payment\Entity::EMAIL               => 'void@razorpay.com',
+                Payment\Entity::CONTACT             => '+919999999999',
+                Payment\Entity::GATEWAY             => Payment\Gateway::UPI_MINDGATE,
+                Payment\Entity::TERMINAL_ID         => $terminal['id'],
+                Payment\Entity::GATEWAY_CAPTURED    => true,
+                Payment\Entity::LATE_AUTHORIZED     => false,
+            ],
+            $payment->toArray());
+
+        $upi = $this->getDbLastEntity(Payment\Method::UPI);
+
+        $this->assertArraySubset(
+            [
+                UpiEntity::GATEWAY                  => Payment\Gateway::UPI_MINDGATE,
+                UpiEntity::PAYMENT_ID               => $payment->getId(),
+                UpiEntity::ACTION                   => Payment\Action::AUTHORIZE,
+                UpiEntity::TYPE                     => 'pay',
+                UpiEntity::AMOUNT                   => 1,
+                UpiEntity::ACQUIRER                 => 'hdfc',
+                UpiEntity::BANK                     => 'NPCI',
+                UpiEntity::PROVIDER                 => 'upi',
+                UpiEntity::VPA                      => 'random@upi',
+                UpiEntity::ACCOUNT_NUMBER           => '10000000000',
+                UpiEntity::IFSC                     => 'PNBI1111111',
+                UpiEntity::RECEIVED                 => 1,
+                UpiEntity::MERCHANT_REFERENCE       => 'STQ'.$this->va->qrCode->getId(),
+                UpiEntity::NPCI_REFERENCE_ID        => '910000123456',
+            ],
+            $upi->toArray());
+
+        $this->va->refresh();
+
+        $this->assertArraySubset(
+            [
+                Entity::AMOUNT_EXPECTED => 1,
+                Entity::AMOUNT_RECEIVED => 1,
+                Entity::AMOUNT_PAID     => 1,
+            ],
+            $this->va->toArray());
+
+        $this->runQrPaymentRequestAssertions(true, true,'910000123456', null, $upi->getId());
+
+        $this->assertQrString($this->va->qrCode->qr_string, $this->va,'multiple_use');
+
+        $qrPayment = $this->getDbLastEntity('qr_payment');
+
+        $qrCode = $this->getDbLastEntity('qr_code');
+
+        $this->assertEquals($qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals($qrCode['id'], $qrPayment['qr_code_id']);
+
+        $this->assertEquals(1, $qrPayment['expected']);
+
+        $this->assertEquals('910000123456', $payment['acquirer_data']['rrn']);
+        $this->assertEquals('910000123456', $payment['reference16']);
+
+    }
+
     //*************************** Helpers ******************************//
 
-    protected function assertQrString(string $string, Entity $va)
+    protected function assertQrString(string $string, Entity $va,string $usageType = 'single_use')
     {
         parse_str(str_replace('upi://pay?', '', $string), $params);
 
         $this->assertSame($this->terminal->getGatewayMerchantId2(), $params['pa']);
         $this->assertSame('TestMerchant', $params['pn']);
-        $this->assertSame($va->qrCode->getId(), $params['tr']);
+        if($usageType === 'multiple_use')
+            $this->assertSame('STQ'.$va->qrCode->getId(), $params['tr']);
+        else
+            $this->assertSame($va->qrCode->getId(), $params['tr']);
         $this->assertSame('TestMerchant' . str_replace(' ', '', $va->description), $params['tn']);
         $this->assertSame(amount_format_IN($va->getAmountExpected()), $params['am']);
         $this->assertSame('INR', $params['cu']);

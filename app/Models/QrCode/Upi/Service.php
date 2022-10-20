@@ -2,6 +2,7 @@
 
 namespace RZP\Models\QrCode\Upi;
 
+use Razorpay\Trace\Logger;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\QrCode;
@@ -19,6 +20,16 @@ class Service extends Base\Service
         $gatewayClass = $this->app['gateway']->gateway($gateway);
 
         $data = $gatewayClass->getParsedDataFromUnexpectedCallback($input);
+
+        try {
+            $qrCode = (new QrCode\Repository())->findByMerchantReference($referenceId);
+
+            $data['payment']['notes'] = $qrCode->getNotes()->toArray();
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex,Logger::ERROR,TraceCode::QR_FETCH_BY_REFERENCE_FAILED);
+        }
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_S2S_CALLBACK, [
             'data'          => $data,

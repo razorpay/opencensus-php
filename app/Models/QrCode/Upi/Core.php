@@ -77,6 +77,19 @@ class Core extends Base\Core
             if ($upiQr !== null and $upiQr->getPayment() !== null)
             {
                 $upi = $this->repo->upi->fetchByPaymentId($upiQr->getPayment()->getId());
+
+                if($terminal->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::UPIQR_V1_HDFC) === true)
+                {
+                    $gatewayResponse['qr_data'] = $this->getQrPaymentParams($input,$data['payment'],
+                        $terminal->getGateway(),$upiQr->getPayment()->getId());
+                }
+            }
+
+            if($terminal->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::UPIQR_V1_HDFC) === true)
+            {
+                $gatewayResponse['callback_data'] = [];
+
+                (new \RZP\Models\QrPayment\Core())->processPayment($gatewayResponse, $terminal, $qrPaymentRequest);
             }
 
             (new QrPaymentRequestService())->update($qrPaymentRequest, true, $upi, $errorMessage, QrType::UPI_QR);
@@ -88,5 +101,19 @@ class Core extends Base\Core
         }
 
         return $valid;
+    }
+
+
+    private function getQrPaymentParams($input,$payment,$gateway,$paymentId): array
+    {
+        return [
+            'provider_reference_id' => $input['npci_upi_txn_id'],
+            'payer_vpa' => $payment['vpa'],
+            'amount' => $payment['amount'],
+            'method' => 'upi',
+            'gateway' => $gateway,
+            'merchant_reference' => $input['payment_id'],
+            'payment_id'   =>  $paymentId,
+        ];
     }
 }

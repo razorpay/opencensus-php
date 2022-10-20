@@ -9,6 +9,7 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
 use RZP\Models\VirtualAccount;
@@ -126,7 +127,7 @@ class Processor extends VirtualAccount\Processor
                 return $payment;
             });
 
-        if ($this->shouldCapturePayment === true)
+        if ($this->shouldCapturePayment === true and $this->merchant->isFeatureEnabled(Feature\Constants::UPIQR_V1_HDFC) === false)
         {
             $paymentProcessor->autoCapturePayment($payment);
         }
@@ -205,6 +206,11 @@ class Processor extends VirtualAccount\Processor
         if ($this->virtualAccount->isActive() === false)
         {
             return true;
+        }
+
+        if($this->merchant->isFeatureEnabled(Feature\Constants::UPIQR_V1_HDFC) === true)
+        {
+            return false;
         }
 
         if ($this->isVirtualAccountDueToBeClosed($entity) === true)

@@ -18,6 +18,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Exception\BadRequestException;
 use RZP\Constants\Entity as ConstantEntity;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Trace\Tracer;
 
 class Service extends QrCode\Service
@@ -295,6 +296,11 @@ class Service extends QrCode\Service
 
         $input[Entity::ENTITY_TYPE] = 'qr_code';
 
+        if($this->merchant->isFeatureEnabled(FeatureConstants::UPIQR_V1_HDFC) === false)
+        {
+            unset($input[Entity::ENTITY_TYPE]);
+        }
+
         $qrCodes = Tracer::inspan(['name' => HyperTrace::QR_CODES_FETCH_MULTIPLE_FETCH_ALL], function () use ($input) {
             return (new Repository)->fetch($input, $this->merchant->getId());
         });
@@ -308,7 +314,8 @@ class Service extends QrCode\Service
             return (new Repository)->findByPublicIdAndMerchant($id, $this->merchant);
         });
 
-        if ($qrCode->source !== null)
+        if ($this->merchant->isFeatureEnabled(FeatureConstants::UPIQR_V1_HDFC) !== true
+            and $qrCode->source !== null )
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_NON_EXISTING_QR_CODE_ID, Entity::ID, [$id]);
         }

@@ -12,10 +12,12 @@ use RZP\Models\BankAccount;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Feature\Constants;
 use RZP\Exception\LogicException;
 use RZP\Gateway\Upi\Icici\Fields;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\QrCode\Repository as QrRepo;
 use RZP\Models\BharatQr\GatewayResponseParams;
 use RZP\Models\QrCode\NonVirtualAccountQrCode;
 use RZP\Models\QrCodeConfig\Keys as QrCodeConfigKeys;
@@ -118,18 +120,27 @@ class Processor extends Base\Core
 
         $this->repo->transaction(
             function() use ($qrPayment, $paymentProcessor) {
-                $paymentInput = $this->getPaymentArray($qrPayment);
 
-                // This is being done because we want
-                // to skip terminal selection on payment
-                // creation and use this terminal instead
-                // as the payment has already gone through
-                // this terminal.
-                $this->callbackData[Payment\Entity::TERMINAL_ID] = $this->getTerminal()->getId();
+                if($this->merchant->isFeatureEnabled(Constants::UPIQR_V1_HDFC) === false
+                    and isset($this->gatewayInput['payment_id']) === false)
+                {
+                    $paymentInput = $this->getPaymentArray($qrPayment);
 
-                $this->createPayment($paymentInput, $this->callbackData);
+                    // This is being done because we want
+                    // to skip terminal selection on payment
+                    // creation and use this terminal instead
+                    // as the payment has already gone through
+                    // this terminal.
+                    $this->callbackData[Payment\Entity::TERMINAL_ID] = $this->getTerminal()->getId();
 
-                $payment = $paymentProcessor->getPayment();
+                    $this->createPayment($paymentInput, $this->callbackData);
+
+                    $payment = $paymentProcessor->getPayment();
+                }
+                else
+                {
+                    $payment = $this->repo->payment->find($this->gatewayInput['payment_id']);
+                }
 
                 $qrPayment->payment()->associate($payment);
 
@@ -171,12 +182,21 @@ class Processor extends Base\Core
     {
         $paymentProcessor = $this->getPaymentProcessor();
 
+        if($this->merchant->isFeatureEnabled(Constants::UPIQR_V1_HDFC) === true)
+        {
+            $payment = $this->repo->payment->find($entity->payment_id);
+        }
+        else
+        {
+            $payment = $paymentProcessor->getPayment();
+        }
+
         if ($entity->isExpected() === true)
         {
             if ((! $this->qrCode->isCheckoutQrCode()) &&
                 ($entity->payment->hasBeenCaptured() === false))
             {
-                $paymentProcessor->autoCapturePayment($paymentProcessor->getPayment());
+                $paymentProcessor->autoCapturePayment($payment);
             }
         }
         else
@@ -190,7 +210,7 @@ class Processor extends Base\Core
             ];
 
             // based on experiment, refund request will be routed to Scrooge
-            $paymentProcessor->refundAuthorizedPayment($paymentProcessor->getPayment(), $refundNotes);
+            $paymentProcessor->refundAuthorizedPayment($payment, $refundNotes);
         }
 
         $this->repo->qr_payment->syncToEs($entity, EsRepository::UPDATE);
@@ -493,7 +513,16 @@ class Processor extends Base\Core
     {
         $merchantReference = $qrPayment->getMerchantReference();
 
-        $this->qrCode = (new NonVirtualAccountQrCode\Repository())->find($merchantReference);
+        if (strlen($merchantReference)>14 and starts_with($merchantReference,'STQ') === true )
+        {
+            $this->qrCode = (new QrRepo)->findByMerchantReference(substr($merchantReference,3,14));
+        }
+    else
+        {
+            $this->qrCode = (new NonVirtualAccountQrCode\Repository())->find($merchantReference);
+        }
+
+
     }
 
     public function isDuplicatePayment(Entity $qrPayment)

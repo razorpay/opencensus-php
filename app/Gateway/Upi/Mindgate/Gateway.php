@@ -9,6 +9,7 @@ use phpseclib\Crypt\AES;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\BharatQr;
+use RZP\Models\Terminal;
 use RZP\Gateway\Upi\Base;
 use RZP\Models\UpiTransfer;
 use RZP\Gateway\Base\Verify;
@@ -21,7 +22,7 @@ use RZP\Gateway\Base\ScroogeResponse;
 use RZP\Gateway\Upi\Base\UpiErrorCodes;
 use RZP\Models\Payment\Processor\UpiTrait;
 use RZP\Models\Feature\Constants as Feature;
-use RZP\Models\Terminal;
+use RZP\Models\Merchant\Repository as MerchantRepository;
 
 class Gateway extends Base\Gateway
 {
@@ -1111,6 +1112,16 @@ class Gateway extends Base\Gateway
             self::PAY,
         ];
 
+        $merchant = (new MerchantRepository())->find($input['merchant']['id']);
+
+        if($merchant->isFeatureEnabled(Feature::UPIQR_V1_HDFC) === true)
+        {
+            for ($i = 1 ; $i <=8 ;$i++)
+            {
+                $data[] = '';
+            }
+        }
+
         $content = $this->transformRequestArrayToContent($data);
 
         $request = $this->getStandardRequestArray($content);
@@ -1328,6 +1339,13 @@ class Gateway extends Base\Gateway
         if (isset($response['requestInfo']['pspRefNo']) === true)
         {
             return $response['requestInfo']['pspRefNo'];
+        }
+
+        $paymentId = $response[ResponseFields::PAYMENT_ID];
+
+        if(strlen($paymentId)>14 and starts_with($paymentId,'STQ') === true and
+            ($this->action) !== Action::VALIDATE_PUSH and $this->action !== Action::VERIFY) {
+            return substr($paymentId, 3, 14);
         }
 
         return $response[ResponseFields::PAYMENT_ID];

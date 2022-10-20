@@ -85,7 +85,15 @@ class Core extends Base\Core
 
             $requestSource = $qrPayment ? optional($qrPayment->qrCode)->getRequestSource() : null;
 
-            (new QrPaymentRequest\Service())->update($qrPaymentRequest, $isExpected, $qrPayment, $errorMessage, QrPaymentRequest\Type::BHARAT_QR);
+            $type = QrPaymentRequest\Type::BHARAT_QR;
+
+            if(isset($qrPayment->qrCode->merchant) === true)
+            {
+                if($qrPayment->qrCode->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::UPIQR_V1_HDFC) === true)
+                    $type = QrPaymentRequest\Type::UPI_QR;
+            }
+
+            (new QrPaymentRequest\Service())->update($qrPaymentRequest, $isExpected, $qrPayment, $errorMessage, $type);
 
             (new Metric())->pushQrV2PaymentsMetrics($isExpected, $valid, $gateway, $method, $errorMessage, $requestSource);
         }
