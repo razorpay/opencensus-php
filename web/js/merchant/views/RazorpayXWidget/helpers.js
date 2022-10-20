@@ -1,3 +1,5 @@
+import { salesforceBusinessTypeMapping } from 'merchant/constants/businessTypeMapping';
+
 export const getKycAnalyticsProperties = () => {
   const {
     user: { signup_via_email },
@@ -12,4 +14,10 @@ export const getKycAnalyticsProperties = () => {
     PG_KYC_Activated: !!pgKycActivated,
     signupMethod: signup_via_email ? 'email' : 'mobile',
   };
+};
+
+export const getSfBusinessTypeOfUser = () => {
+  const businessTypeNumber = window.rzp_user.business_type;
+  const businessType = salesforceBusinessTypeMapping[businessTypeNumber];
+  return businessType;
 };

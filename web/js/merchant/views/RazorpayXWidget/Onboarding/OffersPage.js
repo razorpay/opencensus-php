@@ -1,11 +1,14 @@
 import Button from 'common/new-ui/Button';
 import { getUser } from 'merchant/store';
-import { OFFER_DETAILS } from '../../ConnectedBanking/data';
-import FeaturesList from '../../ConnectedBanking/components/FeaturesList';
+import { OFFER_DETAILS } from 'merchant/views/ConnectedBanking/data';
+import FeaturesList from 'merchant/views/ConnectedBanking/components/FeaturesList';
 import { analyticsTrack } from 'common/utils/analytics';
 import { sendDataToSalesForce } from 'common/utils/common-api';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { getKycAnalyticsProperties } from 'merchant/views/RazorpayXWidget/helpers';
+import {
+  getKycAnalyticsProperties,
+  getSfBusinessTypeOfUser,
+} from 'merchant/views/RazorpayXWidget/helpers';
 import {
   updateUtmParams,
   utmCampaignMap,
@@ -25,6 +28,7 @@ const OffersPage = ({ prev }) => {
   };
 
   const handleGetStartedButton = () => {
+    const businessType = getSfBusinessTypeOfUser();
     updateUtmParams({
       utm_campaign: utmCampaignMap.BANKING_WIDGET,
       utm_source: utmSourceMap.PG,
@@ -45,6 +49,7 @@ const OffersPage = ({ prev }) => {
       {
         Campaign_ID: 'PG_X_Banking_Widget',
         product_name: 'Current_Account',
+        Business_Type: businessType,
       },
       user,
     );
