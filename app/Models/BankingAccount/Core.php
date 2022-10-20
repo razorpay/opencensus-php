@@ -55,6 +55,7 @@ use RZP\PushNotifications\CurrentAccount\StatusUpdate as StatusUpdatePN;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantNotAvailable;
 use RZP\Mail\BankingAccount\StatusNotifications\Factory as StatusUpdateMailerFactory;
 use RZP\Models\BankingAccountStatement\Details\Core as BankingAccountStatementDetailsCore;
+use RZP\Models\BankingAccount\Activation as Activation;
 
 class Core extends Base\Core
 {
@@ -384,25 +385,27 @@ class Core extends Base\Core
         }
     }
 
-    public function extractAndValidateActivationDetailInput(array &$input, $entity = null)
+    public function extractAndValidateActivationDetailInput(array &$input, $entity = null, bool $fromPartnerDashboard = false)
     {
         if (isset($input['activation_detail']) === true)
         {
             $auth = $this->app['basicauth'];
 
             // if comment is passed and updater entity is merchant, can't add comment as
-            // commenter is figured out from admin.
+            // commenter is figured out from admin, except from Partner LMS.
             // If the caller is master-onboarding, we allow addition of comment
             if ((empty($entity) === false)
                 and (isset($input['activation_detail'][ActivationDetail\Entity::COMMENT]) === true)
-                and ($entity->getEntity() !== 'admin')
+                and ($fromPartnerDashboard !== true && $entity->getEntity() !== 'admin')
                 and $this->app['basicauth']->isMobApp() === false)
             {
                 throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_DETAILS_ONLY_ON_ADMIN_AUTH);
             }
 
-            return array_pull($input, 'activation_detail');
+            $activationDetailInput = array_pull($input, 'activation_detail');
+
+            return $activationDetailInput;
         }
 
         return null;
@@ -675,7 +678,14 @@ class Core extends Base\Core
      * @throws BadRequestException
      * @throws LogicException
      */
-    public function updateBankingAccount(Entity $bankingAccount, array $input, Base\PublicEntity $entity = null, bool $isAutomatedUpdate = false, bool $fromDashboard = false)
+    public function updateBankingAccount(
+        Entity $bankingAccount,
+        array $input,
+        Base\PublicEntity $entity = null,
+        bool $isAutomatedUpdate = false,
+        bool $fromDashboard = false,
+        bool $fromPartnerDashboard = false
+    )
     {
         $channel = $bankingAccount->getChannel();
 
@@ -696,7 +706,11 @@ class Core extends Base\Core
                 'input'   => $traceRequest,
             ]);
 
-        $activationDetailInput = $this->extractAndValidateActivationDetailInput($input, $entity);
+        $this->updateInputAssigneeTeamBasedOnStatusOrSubStatusChange($bankingAccount, $input, $isAutomatedUpdate);
+
+        $activationDetailInput = $this->extractAndValidateActivationDetailInput($input, $entity, $fromPartnerDashboard);
+
+        $this->validateAndSetDropOffDate($bankingAccount, $activationDetailInput, $input);
 
         $processor = $this->getProcessor($channel);
 
@@ -714,6 +728,8 @@ class Core extends Base\Core
         {
             $bankingAccount->edit($input);
         }
+
+        $this->setBankDueDateIfApplicable($bankingAccount, $activationDetailInput, $input);
 
         // we need to store change log only when the
         // status has changed.
@@ -769,7 +785,8 @@ class Core extends Base\Core
                 $bankInternalStatusChanged,
                 $bankingAccountSubStatusChanged,
                 $isAutomatedUpdate,
-                $fromDashboard)
+                $fromDashboard,
+                $fromPartnerDashboard)
         {
             // Updating BankingAccount
             $this->repo->saveOrFail($bankingAccount);
@@ -795,14 +812,40 @@ class Core extends Base\Core
                                                                              $processor);
             }
 
+
+            $isAssigneeChanged = $this->isAssigneeTeamChanged($activationDetailInput, $bankingAccount->getId());
+
+            // Updating BankingAccountActivation Details
+            if (empty($activationDetailInput) === false)
+            {
+                // if ActivationDetail is passed with comment in input, entity will always be admin, not merchant.
+                $this->activationDetailService->updateForBankingAccount($bankingAccount->getPublicId(), $activationDetailInput, $isAutomatedUpdate, $entity,false);
+            }
+
+
+            if (($bankInternalStatusChanged === true) or
+                ($bankingAccountStatusChanged === true) or
+                ($bankingAccountSubStatusChanged === true) or 
+                ($isAssigneeChanged === true))
+            {
+                $stateCore = new State\Core;
+
+                $stateCore->captureNewBankingAccountState($bankingAccount, $entity);
+
+                if($isAssigneeChanged === true)
+                {
+
+                    $this->notifier->notify($bankingAccount, Event::ASSIGNEE_CHANGE, Event::ALERT);
+                }
+            }
+
+            $this->notifyIfStatusChanged($bankingAccount, $bankingAccountStatusChanged, $bankingAccountSubStatusChanged);
+
             // storing state change
             if (($bankInternalStatusChanged === true) or
                 ($bankingAccountStatusChanged === true) or
                 ($bankingAccountSubStatusChanged === true))
             {
-                $stateCore = new State\Core;
-
-                $stateCore->captureNewBankingAccountState($bankingAccount, $entity);
 
                 // This block of code changes status and substatus to
                 // to next status and default sub-status in normal sequence
@@ -836,20 +879,12 @@ class Core extends Base\Core
                                 Entity::SUB_STATUS => $subStatus,
                             ];
 
-                            $bankingAccount = $this->updateBankingAccount($bankingAccount, $nextInput, $entity, $isAutomatedUpdate, $fromDashboard);
+                            $bankingAccount = $this->updateBankingAccount($bankingAccount, $nextInput, $entity, $isAutomatedUpdate, $fromDashboard, $fromPartnerDashboard);
                         }
                     }
                 }
             }
 
-            $this->notifyIfStatusChanged($bankingAccount, $bankingAccountStatusChanged, $bankingAccountSubStatusChanged);
-
-            // Updating BankingAccountActivation Details
-            if (empty($activationDetailInput) === false)
-            {
-                // if ActivationDetail is passed with comment in input, entity will always be admin, not merchant.
-                $this->activationDetailService->updateForBankingAccount($bankingAccount->getPublicId(), $activationDetailInput, $isAutomatedUpdate, $entity);
-            }
         });
 
         // re-fetch banking-account to handle case where it is updated during freshdeskticket creation
@@ -863,6 +898,73 @@ class Core extends Base\Core
         $bankingAccount->load('bankingAccountActivationDetails');
 
         return $bankingAccount;
+    }
+
+    private function isAssigneeTeamChanged($activationDetailInput, $bankingAccountId): bool
+    {
+
+        if (empty($activationDetailInput) === true)
+            return false;
+
+        $isAssigneeChanged = false;
+
+        $activationDetail = $this->repo->banking_account_activation_detail->findByBankingAccountId($bankingAccountId);
+
+        $inputHasAssigneeTeam = isset($activationDetailInput[ActivationDetail\Entity::ASSIGNEE_TEAM]);
+
+        // if input has assignee team and no assignee team was there previously
+        if ($activationDetail == null) {
+            if ($inputHasAssigneeTeam) {
+
+                $isAssigneeChanged = true;
+            }
+        } else if ($inputHasAssigneeTeam) {
+
+            $newAssigneeTeam = $activationDetailInput[ActivationDetail\Entity::ASSIGNEE_TEAM];
+            // input has assignee team and is different from the previous one
+            if ($newAssigneeTeam != $activationDetail->getAssigneeTeam()) {
+
+                $isAssigneeChanged = true;
+            }
+        }
+
+        return $isAssigneeChanged;
+
+    }
+
+    /**
+     * Inject assignee team into input automatically on status or sub-status change
+     *
+     * @param array $input
+     */
+    private function updateInputAssigneeTeamBasedOnStatusOrSubStatusChange(Entity $bankingAccount, array & $input, bool & $isAutomatedUpdate)
+    {
+        // skip if manually changing assignee team
+        if (empty($input[Entity::ASSIGNEE_TEAM]) === false)
+        {
+            return;
+        }
+
+        $changingStatus = empty($input[Entity::STATUS]) === false;
+        $changingSubstatus = empty($input[Entity::SUB_STATUS]) === false;
+
+        // automatic assignee change happens only on status or sub-status change
+        if ($changingStatus === false && $changingSubstatus ===  false)
+        {
+            return;
+        }
+
+        $newStatus = array_key_exists(Entity::STATUS, $input) ? $input[Entity::STATUS] : $bankingAccount->getStatus();
+        $newSubStatus = array_key_exists(Entity::SUB_STATUS, $input) ? $input[Entity::SUB_STATUS] : Status::getInitialSubStatus($newStatus);
+
+        $newAssigneeTeam = Status::getDefaultAssigneeTeam($newStatus, $newSubStatus);
+        $activationDetail = $this->repo->banking_account_activation_detail->findByBankingAccountId($bankingAccount->getId());
+
+        if ($newAssigneeTeam != null && $newAssigneeTeam != $activationDetail[Entity::ASSIGNEE_TEAM])
+        {
+            $input[Entity::ACTIVATION_DETAIL][Entity::ASSIGNEE_TEAM] = $newAssigneeTeam;
+            $isAutomatedUpdate = true;
+        }
     }
 
     public function checkAndSendFreshDeskEmailIfFormIsSubmitted(Entity $bankingAccount, array $activationDetailInput)
@@ -2367,5 +2469,84 @@ class Core extends Base\Core
         }
 
         return null;
+    }
+
+    /**
+     * Update Drop Off Date in activationDetailInput if changing status and/or sub-status
+     */
+    public function validateAndSetDropOffDate(Entity $bankingAccount, array &$activationDetailInput = null, $input)
+    {
+        $status = $bankingAccount->getStatus();
+
+        if (isset($input[Entity::STATUS]) === true)
+        {
+            $status = $input[Entity::STATUS];
+        }
+
+        if ($status === Status::ARCHIVED)
+        {
+
+            if (isset($input[Entity::SUB_STATUS]) == true)
+            {
+                $subStatus = $input[Entity::SUB_STATUS];
+
+                // Bank can't set any other sub-status in archived
+                if ($subStatus !== Status::IN_PROCESS && $this->app['basicauth']->isBankLms() === true)
+                {
+                    throw new BadRequestValidationFailureException('Sub-status should be In Process for Drop off leads.');
+                }
+
+                $activationDetails = $bankingAccount->bankingAccountActivationDetails;
+                // If already set, no need to update
+                if (empty($activationDetails[Activation\Detail\Entity::DROP_OFF_DATE]) === false)
+                {
+                    return;
+                }
+
+                // if changing sub-status to anything other than in_process
+                if ($subStatus !== Status::IN_PROCESS)
+                {
+                    $activationDetailInput[Activation\Detail\Entity::DROP_OFF_DATE] = Carbon::now()->timestamp;
+                }
+            }
+
+        }
+        else
+        {
+            $activationDetailInput[Activation\Detail\Entity::DROP_OFF_DATE] = null;
+        }
+    }
+
+    /**
+     * Update Bank LMS Due Date in activationDetailInput->rbl_activation_details  
+     * We recalculate this on every update as it could change  
+     * due to changing any of the dates or status/sub-status
+     */
+    public function setBankDueDateIfApplicable(Entity $bankingAccount, array &$activationDetailInput = null, $input)
+    {
+        $status = $bankingAccount->getStatus();
+
+        if (isset($input[Entity::STATUS]) === true)
+        {
+            $status = $input[Entity::STATUS];
+        }
+
+        $bankDueDate = null;
+
+        if (in_array($status, [
+            Status::VERIFICATION_CALL,
+            Status::DOC_COLLECTION,
+            Status::ACCOUNT_OPENING,
+            Status::API_ONBOARDING,
+            Status::ACCOUNT_ACTIVATION,
+            Status::ARCHIVED,
+        ]))
+        {
+            $followUpDate = $bankingAccount->getReferenceDateForStatus();
+
+            $bankDueDate = Status::getBankDueDate($status, $followUpDate);
+        }
+
+        $activationDetailInput[Activation\Detail\Entity::RBL_ACTIVATION_DETAILS][Activation\Detail\Entity::BANK_DUE_DATE] = $bankDueDate;
     }
 }

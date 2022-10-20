@@ -14,6 +14,7 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\BankingAccount\State;
 use RZP\Models\Base\PublicCollection;
 use Illuminate\Database\Eloquent\Model;
+use RZP\Models\BankingAccount\Activation\Detail\Entity as ActivationDetails;
 
 /**
  * @property Merchant\Entity            $merchant
@@ -936,4 +937,60 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::STATUS, $status);
     }
+
+    public function getReferenceDateForStatus()
+    {
+        $bankingAccountStatus = $this->getStatus();
+        $activationDetails = $this->bankingAccountActivationDetails;
+
+        $followUpDate = null;
+
+        switch ($bankingAccountStatus) {
+            case Status::VERIFICATION_CALL:
+
+                $rblActivationDetails = $activationDetails->getRblActivationDetails();
+
+                if (isset($rblActivationDetails) === true)
+                {
+                    $rblActivationDetails = json_decode($rblActivationDetails, true);
+                    if (empty($rblActivationDetails[ActivationDetails::BANK_POC_ASSIGNED_DATE]) === false)
+                    {
+                        $followUpDate = $rblActivationDetails[ActivationDetails::BANK_POC_ASSIGNED_DATE];
+                    }
+                }
+
+                break;
+
+            case Status::DOC_COLLECTION:
+
+                $followUpDate = $activationDetails[ActivationDetails::CUSTOMER_APPOINTMENT_DATE];
+                break;
+
+            case Status::ACCOUNT_OPENING:
+
+                $followUpDate = $activationDetails[ActivationDetails::DOC_COLLECTION_DATE];
+                break;
+
+            case Status::API_ONBOARDING:
+
+                $followUpDate = $activationDetails[ActivationDetails::ACCOUNT_OPEN_DATE];
+                break;
+
+            case Status::ACCOUNT_ACTIVATION:
+
+                $followUpDate = $activationDetails[ActivationDetails::API_IR_CLOSED_DATE];
+                break;
+
+            case Status::ACTIVATED:
+
+                $followUpDate = $activationDetails[ActivationDetails::API_IR_CLOSED_DATE];
+                break;
+
+            default:
+                break;
+        }
+
+        return $followUpDate;
+    }
+
 }

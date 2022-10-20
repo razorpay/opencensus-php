@@ -225,6 +225,7 @@ class Validator extends Base\Validator
         Entity::API_ONBOARDING_FTNR_REASONS             => 'sometimes|string',
         Entity::UPI_CREDENTIAL_RECEIVED_DATE            => 'sometimes|epoch|nullable',
         Entity::RZP_CA_ACTIVATED_DATE                   => 'sometimes|epoch|nullable',
+        Entity::DROP_OFF_DATE                           => 'sometimes|epoch|nullable',
 
         Entity::MERCHANT_POC_NAME                   => 'sometimes|string|max:255',
         Entity::MERCHANT_POC_DESIGNATION            => 'sometimes|string|max:255',
@@ -243,7 +244,7 @@ class Validator extends Base\Validator
         Entity::ADDITIONAL_DETAILS                  => 'sometimes|json',
         Entity::SALES_TEAM                          => 'sometimes|string|max:255|custom',
         Entity::SALES_POC_PHONE_NUMBER              => 'sometimes|string|max:255',
-        Entity::ASSIGNEE_TEAM                       => 'sometimes|string|nullable|in:ops,bank,sales',
+        Entity::ASSIGNEE_TEAM                       => 'sometimes|string|nullable|in:ops,bank,sales,bank_ops',
         Entity::RM_NAME                             => 'sometimes|string|max:255',
         Entity::RM_PHONE_NUMBER                     => 'sometimes|string|max:255',
         Entity::BOOKING_DATE_AND_TIME               => 'sometimes|epoch',

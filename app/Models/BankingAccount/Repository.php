@@ -228,7 +228,7 @@ class Repository extends Base\Repository
                 ->where('admin_id', '=', $params[Entity::PENDING_ON])
                 ->where(Table::BANKING_ACCOUNT.'.'.Entity::STATUS, '!=', Status::ARCHIVED)
                 ->where('entity_type','=','banking_account')
-                ->whereRaw("((".Table::ADMIN_AUDIT_MAP.'.'.Entity::AUDITOR_TYPE." = 'spoc' AND ".Table::BANKING_ACCOUNT_ACTIVATION_DETAIL.'.'.Entity::ASSIGNEE_TEAM." = 'sales' ) OR ( ".Table::ADMIN_AUDIT_MAP.'.'.Entity::AUDITOR_TYPE." = 'reviewer' AND ".Table::BANKING_ACCOUNT_ACTIVATION_DETAIL.'.'.Entity::ASSIGNEE_TEAM." = 'ops' ))")
+                ->whereRaw("((".Table::ADMIN_AUDIT_MAP.'.'.Entity::AUDITOR_TYPE." = 'spoc' AND ".Table::BANKING_ACCOUNT_ACTIVATION_DETAIL.'.'.Entity::ASSIGNEE_TEAM." = 'sales' ) OR ( ".Table::ADMIN_AUDIT_MAP.'.'.Entity::AUDITOR_TYPE." = 'reviewer' AND ".Table::BANKING_ACCOUNT_ACTIVATION_DETAIL.'.'.Entity::ASSIGNEE_TEAM." like '%ops' ))")
                 ->whereRaw(Table::BANKING_ACCOUNT.'.'.Entity::ID.' = '.Table::ADMIN_AUDIT_MAP.'.'.Entity::ENTITY_ID);
         });
     }
@@ -345,7 +345,17 @@ class Repository extends Base\Repository
         // case insensitive exact match for merchant email
         $assigneeTeam = $params[ActivationDetail\Entity::ASSIGNEE_TEAM];
 
-        $query->where($assigneeTeamColumn, '=', $assigneeTeam);
+        // this value will be coming from Partner LMS
+        if ($assigneeTeam == 'rzp')
+        {
+            $assigneeTeam = [ActivationDetail\Entity::OPS, ActivationDetail\Entity::SALES];
+        }
+        else
+        {
+            $assigneeTeam = [$assigneeTeam];
+        }
+
+        $query->whereIn($assigneeTeamColumn, $assigneeTeam);
     }
 
     public function addQueryParamApplicationType($query, $params)

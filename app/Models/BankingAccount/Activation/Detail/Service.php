@@ -185,7 +185,7 @@ class Service extends Base\Service
     public function updateForBankingAccount(string $bankingAccountId,
                                             array $input,
                                             bool $isAutomatedUpdate = false,
-                                            Base\PublicEntity $entity = null)
+                                            Base\PublicEntity $entity = null, bool $captureState = true)
     {
         /** @var BankingAccount\Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
@@ -224,6 +224,8 @@ class Service extends Base\Service
             $activationDetail = $this->core->create([Entity::BANKING_ACCOUNT_ID => $bankingAccount->getId()], 'create_null');
         }
 
+        $this->validateAndUpdateAssigneeTeam($activationDetail, $bankingAccount, $input, $isAutomatedUpdate);
+
         if ($isAutomatedUpdate === false)
         {
             (new Validator())->validateCommentOnAssigneeTeamChange($activationDetail, $input, $commentInput);
@@ -251,7 +253,8 @@ class Service extends Base\Service
             $commentInput,
             $callDateAndTime,
             $admin,
-            $entity)
+            $entity,
+            $captureState)
         {
             // Adding Sales POC to admin_audit_map table
             $this->addSalesPOCToBankingAccountIfApplicable($bankingAccount, $input);
@@ -270,7 +273,7 @@ class Service extends Base\Service
 
             $this->checkAndPushEventForRmAssigned($bankingAccount, $input, $activationDetail, $isRmNotAssigned);
 
-            if ($activationDetail->isAssigneeTeamUpdated() === true)
+            if ($activationDetail->isAssigneeTeamUpdated() === true  && $captureState === true)
             {
                 // if entity is passed, use that, else use admin.
                 $entity = $entity ?? $admin;
@@ -282,9 +285,10 @@ class Service extends Base\Service
 
             $comment = null;
 
-            if (empty($commentInput) === false
-                and empty($admin) === false)
+            if (empty($commentInput) === false)
             {
+                $entity = $entity ?? $admin;
+
                 // Hack because MOB uses this route to create the comment once, even though it is an update
                 if ($this->app['basicauth']->isMobApp() === true)
                 {
@@ -297,7 +301,7 @@ class Service extends Base\Service
                     ];
                     $commentInput = $commentPayload;
                 }
-                $comment = (new Comment\Core())->create($bankingAccount, $admin, $commentInput);
+                $comment = (new Comment\Core())->create($bankingAccount, $entity, $commentInput);
             }
 
             if (empty($callDateAndTime) === false)
@@ -311,6 +315,41 @@ class Service extends Base\Service
         });
 
         return $updatedActivationDetail->toArrayPublic();
+    }
+
+    /**
+     * Handle assignee for API Registration i.e bank_ops
+     */
+    public function validateAndUpdateAssigneeTeam(Entity $activationDetail, BankingAccount\Entity $bankingAccount, array & $input, &$isAutomatedUpdate)
+    {
+
+        $ldapIDMailDate = empty($input[Entity::LDAP_ID_MAIL_DATE]) ? 
+            $activationDetail->getLDAPIDMailDate() : 
+            $input[Entity::LDAP_ID_MAIL_DATE];
+
+        $assigneeTeam = empty($input[Entity::ASSIGNEE_TEAM]) ? 
+            $activationDetail->getAssigneeTeam() : 
+            $input[Entity::ASSIGNEE_TEAM];
+
+        // Parallel assignees required until LDAP ID Mail date is not filled
+        // This should work only in Account Opening & API Onboarding Stages
+        if (
+            empty($ldapIDMailDate) && 
+            BankingAccount\Status::isStatusUnderParallelAssignee($bankingAccount->getStatus())
+        )
+        {
+            $isAutomatedUpdate = true;
+            $input[Entity::ASSIGNEE_TEAM] = Entity::BANK_OPS;
+
+            $isAutomatedUpdate = true;
+        }
+        else if (
+            empty($ldapIDMailDate) === false && 
+            BankingAccount\Status::isStatusUnderParallelAssignee($bankingAccount->getStatus()))
+        {
+            $input[Entity::ASSIGNEE_TEAM] = Entity::BANK;
+            $isAutomatedUpdate = true;
+        }
     }
 
     protected function addSalesPOCToBankingAccountIfApplicable(BankingAccount\Entity $bankingAccount, array &$input)

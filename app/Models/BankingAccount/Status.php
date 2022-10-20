@@ -2,6 +2,7 @@
 
 namespace RZP\Models\BankingAccount;
 
+use Carbon;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Status
@@ -187,15 +188,16 @@ class Status
     const CLIENT_NOT_INTERESTED_DUE_TO_LONGER_TAT = 'client_not_interested_-_due_to_longer_tat';
     const ON_HOLD_BY_CLIENT = 'on_hold_by_client';
     const BUSINESS_IS_NOT_OPERATIONAL = 'business_is_not_operational';
-    const NEGATIVE_PROFILE_SVR_ISSUE = 'negative_profile/_svr_issue';
+    const NEGATIVE_PROFILE_SVR_ISSUE = 'negative_profile/svr_issue';
     const INCOMPLETE_KYC = 'incomplete_kyc';
-    const NOT_SERVICEABLE = 'not_serviceable';
+    const NOT_SERVICEABLE = 'unserviceable_pincode';
     const UNSUPPORTED_RZP_BUSINESS_TYPE_MODEL = 'unsupported_rzp_business_type/model';
     const ENTITY_CHANGE_IN_PROGRESS = 'entity_change_in_progress';
     const CC_OD_WITH_OTHER_BANK = 'cc/od_with_other_bank';
     const CLIENT_PROCEEDING_WITH_DIFFERENT_RZP_MID = 'client_proceeding_with_different_rzp_mid';
     const CA_OPENED_ORGANICALLY = 'ca_opened_organically';
     const RM_DELAYS_IN_ACCOUNT_OPENING = 'rm_delays_in_account_opening';
+
 
     // Shortening the string value for the following substatuses as they exceed the allowed length in DB
     const PENDING_ON_SALES_DWT_NOT_COMPLETED_MX_NOT_RESPONDING_SPOC_TO_RESCHEDULE         = self::PENDING_ON_SALES_SUB_STRING.'dwt_not_completed_-_mx_not_responding'; // DWT Not Completed - MX Not Responding - SPOC to Reschedule
@@ -522,6 +524,7 @@ class Status
         self::ACCOUNT_OPENING => self::IN_REVIEW,
         self::API_ONBOARDING => self::IN_REVIEW,
         self::ACCOUNT_ACTIVATION => self::IN_PROCESS,
+        self::ACTIVATED => self::UPI_CREDS_PENDING,
         self::ARCHIVED => self::IN_PROCESS,
     ];
 
@@ -701,6 +704,67 @@ class Status
             self::CLIENT_PROCEEDING_WITH_DIFFERENT_RZP_MID,
             self::CA_OPENED_ORGANICALLY,
             self::RM_DELAYS_IN_ACCOUNT_OPENING,
+            self::OTHER,
+        ]
+    ];
+
+
+    /**
+     * @var array
+     * This contains the allowed set of status substatus <-> assignee team mappings
+     */
+    public static $statusAndSubStatusToAssigneeMap = [
+
+        self::VERIFICATION_CALL => [
+            self::IN_PROCESSING => Activation\Detail\Entity::BANK,
+            self::CUSTOMER_CALL_ATTEMPTED => Activation\Detail\Entity::BANK,
+            self::CUSTOMER_NOT_RESPONDING => Activation\Detail\Entity::SALES,
+            self::CUSTOMER_NOT_INTERESTED => Activation\Detail\Entity::SALES,
+            self::NEEDS_CLARIFICATION_FROM_RZP => Activation\Detail\Entity::SALES,
+            self::FOLLOW_UP_REQUESTED_BY_MERCHANT => Activation\Detail\Entity::BANK,
+            self::API_DOCKET_NOT_RECEIVED => Activation\Detail\Entity::OPS,
+            self::KYC_ISSUE_WITH_CLIENT => Activation\Detail\Entity::SALES,
+            self::ASSIGNED_TO_INSIGNIA => Activation\Detail\Entity::BANK,
+            self::ASSIGNED_TO_PCARM => Activation\Detail\Entity::BANK,
+            self::ASSIGNED_TO_BRANCH => Activation\Detail\Entity::BANK,
+        ],
+        self::DOC_COLLECTION => [
+            self::VISIT_DUE => Activation\Detail\Entity::BANK,
+            self::CUSTOMER_NOT_RESPONDING => Activation\Detail\Entity::SALES,
+            self::VISIT_RESCHEDULED => Activation\Detail\Entity::BANK,
+            self::FOLLOW_UP_REQUESTED_BY_MERCHANT => Activation\Detail\Entity::BANK,
+            self::FOLLOW_UP_PARTIAL_AC_DOCS_AVAILABLE => Activation\Detail\Entity::BANK,
+            self::FOLLOW_UP_API_DOCS_UNAVAILABLE => Activation\Detail\Entity::BANK,
+            self::PICKED_UP_DOCS => Activation\Detail\Entity::BANK,
+        ],
+        self::ACCOUNT_OPENING => [
+            self::IN_REVIEW => Activation\Detail\Entity::BANK,
+            self::IR_RAISED => Activation\Detail\Entity::BANK,
+            self::IR_IN_DISCREPANCY => Activation\Detail\Entity::BANK,
+            self::IR_IN_REWORK => Activation\Detail\Entity::BANK,
+            self::DOCS_VERIFIED => Activation\Detail\Entity::BANK,
+            self::CA_OPENED_SUB_STATUS => Activation\Detail\Entity::BANK,
+        ],
+        self::API_ONBOARDING => [
+            self::IN_REVIEW => Activation\Detail\Entity::BANK,
+            self::API_REGISTRATION_NOT_COMPLETE => Activation\Detail\Entity::OPS,
+            self::IR_RAISED => Activation\Detail\Entity::BANK,
+            self::IR_IN_DISCREPANCY => Activation\Detail\Entity::BANK,
+            self::IR_IN_REWORK => Activation\Detail\Entity::BANK,
+            self::DOCS_VERIFIED => Activation\Detail\Entity::BANK,
+            self::API_IR_CLOSED => Activation\Detail\Entity::BANK,
+        ],
+        self::ACCOUNT_ACTIVATION => [
+            self::IN_PROCESS => Activation\Detail\Entity::BANK,
+            self::CORP_ID_SENT => Activation\Detail\Entity::OPS,
+            self::CA_ACTIVATED_SUB_STATUS => Activation\Detail\Entity::OPS,
+        ],
+        self::ACTIVATED => [
+            self::UPI_CREDS_PENDING => Activation\Detail\Entity::OPS,
+            self::UPI_ACTIVATED => Activation\Detail\Entity::OPS,
+        ],
+        self::ARCHIVED => [
+            self::IN_PROCESS => Activation\Detail\Entity::OPS,
         ]
     ];
 
@@ -795,7 +859,7 @@ class Status
             self::PICKED_UP_DOCS,
         ],
         self::ACCOUNT_OPENING => [
-            // self::CA_OPENED_SUB_STATUS,
+            self::CA_OPENED_SUB_STATUS,
         ],
         self::API_ONBOARDING => [
             self::API_IR_CLOSED,
@@ -820,6 +884,47 @@ class Status
         self::ACCOUNT_ACTIVATION,
         self::ACTIVATED,
     ];
+
+    /**
+     * Used to calculate default assignee when moving from one state to another
+     */
+    public static function getDefaultAssigneeTeam(?string $status, ?string $subStatus)
+    {
+        if($status == null || $subStatus == null)
+        {
+            return null;
+        }
+        
+        if(array_key_exists($status, self::$statusAndSubStatusToAssigneeMap) === false)
+        {
+            return null;
+        }
+
+        $subStatuses = self::$statusAndSubStatusToAssigneeMap[$status];
+
+        if(array_key_exists($subStatus, $subStatuses) === false)
+        {
+            return null;
+        }
+
+        return  self::$statusAndSubStatusToAssigneeMap[$status][$subStatus];
+    }
+
+    /**
+     * Criteria for Parallel assignees for API Registeration
+     */
+    public static function isStatusUnderParallelAssignee(?string $status) : bool
+    {
+        if(in_array($status, [
+            self::ACCOUNT_OPENING,
+            self::API_ONBOARDING,
+        ]) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
 
     public static function hasReachedTerminalSubStatus(string $status, string $subStatus): bool
     {
@@ -855,6 +960,11 @@ class Status
     public static function getCompletedStages(string $status)
     {
         $completedStages = [];
+
+        if (in_array($status, self::$statusSequence) === false)
+        {
+            return $completedStages;
+        }
 
         foreach (self::$statusSequence as $stage)
         {
@@ -940,7 +1050,7 @@ class Status
         }
     }
 
-    // This function is not working properly 
+    // This function is not working properly
     // but so many tests are written based on the flawed implementation
     // We can change these tests later, for now writing correct implementation below
     public static function getDetaultSubStatus(string $status)
@@ -1095,5 +1205,57 @@ class Status
     public static function getActivatedStatuses(): array
     {
         return self::$activatedStatuses;
+    }
+
+    /**
+     * Calculated lead's due date for a given status and follow-up date for that status
+     */
+    public static function getBankDueDate($status, $followUpDate)
+    {
+        if (empty($followUpDate) === true)
+        {
+            return null;
+        }
+
+        $hours = -1;
+        switch ($status) {
+            case self::VERIFICATION_CALL:
+                $hours = 4; // 4 Hours
+                break;
+
+            case self::DOC_COLLECTION:
+                $hours = 24 * 1; // 1 Day
+                break;
+
+            case self::ACCOUNT_OPENING:
+                $hours = 24 * 2; // 2 Days
+                break;
+
+            case self::API_ONBOARDING:
+                $hours = 24 * 2; // 2 Days
+                break;
+
+            case self::ACCOUNT_ACTIVATION:
+                $hours = 24 * 1; // 1 Day
+                break;
+
+            case self::ACTIVATED:
+                $hours = 24 * 2; // 2 Days
+                break;
+        }
+
+        if ($hours == -1)
+        {
+            return null;
+        } 
+        else 
+        {
+            $followUpDate = new Carbon\Carbon($followUpDate + $hours * 60 * 60);
+            if ($followUpDate->isWeekend())
+            {
+                $followUpDate = $followUpDate->next('Monday');
+            }
+            return $followUpDate->timestamp;
+        }
     }
 }

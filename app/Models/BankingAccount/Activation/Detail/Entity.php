@@ -102,6 +102,9 @@ class Entity extends Base\PublicEntity
 
     const ADDITIONAL_DETAILS = 'additional_details';
 
+    // Additional details fields
+    const ACCOUNT_OPENING_WEBHOOK_DATE = 'account_opening_webhook_date';
+
     const SALES_PITCH_COMPLETED = 'sales_pitch_completed';
 
     const COMMENT = 'comment'; //Latest comment. This is to support backward compatibility
@@ -129,8 +132,6 @@ class Entity extends Base\PublicEntity
     const BANK_POC_USER_ID = 'bank_poc_user_id';
     const BANK_POC_ASSIGNED_DATE = 'bank_poc_assigned_date';
 
-    const COMPLETED_STAGES = 'completed_stages';
-
     const RBL_ACTIVATION_DETAILS = 'rbl_activation_details';
     // Following fields will be part of rbl_activation_details
     const IR_NUMBER             = 'ir_number';
@@ -150,6 +151,7 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_OPENING_TAT_EXCEPTION_REASON = 'account_opening_tat_exception_reason';
     const API_ONBOARDING_TAT_EXCEPTION = 'api_onboarding_tat_exception';
     const API_ONBOARDING_TAT_EXCEPTION_REASON = 'api_onboarding_tat_exception_reason';
+    const BANK_DUE_DATE = 'bank_due_date';
 
 
     const CUSTOMER_APPOINTMENT_DATE = 'customer_appointment_date';
@@ -207,6 +209,13 @@ class Entity extends Base\PublicEntity
     // Application Types
     const CO_CREATED = 'co_created';
 
+    // assignee team
+    const BANK = "bank";
+    const OPS = "ops";
+    const SALES = "sales";
+    const BANK_OPS = "bank_ops";
+
+
     protected $entity = 'banking_account_activation_detail';
 
     protected $table  = Table::BANKING_ACCOUNT_ACTIVATION_DETAIL;
@@ -254,6 +263,7 @@ class Entity extends Base\PublicEntity
         self::API_ONBOARDING_FTNR_REASONS,
         self::UPI_CREDENTIAL_RECEIVED_DATE,
         self::RZP_CA_ACTIVATED_DATE,
+        self::DROP_OFF_DATE,
         self::ACCOUNT_OPEN_DATE,
         self::ACCOUNT_LOGIN_DATE,
         self::BUSINESS_NAME,
@@ -299,7 +309,6 @@ class Entity extends Base\PublicEntity
         self::APPLICATION_TYPE,
         self::BUSINESS_PAN_VALIDATION,
         self::BANK_POC_USER_ID,
-        self::COMPLETED_STAGES,
         self::RBL_ACTIVATION_DETAILS,
         self::CUSTOMER_APPOINTMENT_DATE,
         self::BRANCH_CODE,
@@ -366,7 +375,6 @@ class Entity extends Base\PublicEntity
         self::RM_NAME,
         self::RM_PHONE_NUMBER,
         self::BANK_POC_USER_ID,
-        self::COMPLETED_STAGES,
         self::RBL_ACTIVATION_DETAILS,
         self::CUSTOMER_APPOINTMENT_DATE,
         self::BRANCH_CODE,
@@ -402,6 +410,7 @@ class Entity extends Base\PublicEntity
     protected $publicSetters = [
         self::ADDITIONAL_DETAILS,
         self::RBL_ACTIVATION_DETAILS,
+        self::ASSIGNEE_TEAM,
         self::VERIFICATION_COMPLETION_DATE,
         self::VERIFICATION_TAT,
         self::DOC_COLLECTION_COMPLETION_DATE,
@@ -532,6 +541,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BANK_POC_USER_ID);
     }
 
+    public function getLDAPIDMailDate()
+    {
+        return $this->getAttribute(self::LDAP_ID_MAIL_DATE);
+    }
+
     public function getAssigneeName()
     {
         $assigneeTeam = $this->getAssigneeTeam();
@@ -589,7 +603,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicRblActivationDetailsAttribute(array &$array)
     {
-        if (isset($array[self::RBL_ACTIVATION_DETAILS]) === true) 
+        if (isset($array[self::RBL_ACTIVATION_DETAILS]) === true)
         {
             if (is_string($array[self::RBL_ACTIVATION_DETAILS]) === true)
             {
@@ -610,6 +624,31 @@ class Entity extends Base\PublicEntity
 
             $array[self::ADDITIONAL_DETAILS] = json_decode($array[self::ADDITIONAL_DETAILS], true);
 
+        }
+    }
+
+    /**
+     * Handle paralle assignee for different auth
+     */
+    public function setPublicAssigneeTeamAttribute(array &$array)
+    {
+        if(array_key_exists(self::ASSIGNEE_TEAM, $array) === false)
+        {
+            return;
+        }
+
+        if($array[self::ASSIGNEE_TEAM] != self::BANK_OPS)
+        {
+            return;
+        }
+
+        if (app('basicauth')->isAdminAuth() === true)
+        {
+            $array[self::ASSIGNEE_TEAM] = self::OPS;
+        }
+        else
+        {
+            $array[self::ASSIGNEE_TEAM] = self::BANK;
         }
     }
 

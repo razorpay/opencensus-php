@@ -20,6 +20,11 @@ class Service extends Base\Service
         /** @var BankingAccount\Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
 
+        if ($this->app['basicauth']->isAdminAuth() === true)
+        {
+            $input[Fetch::FOR_SOURCE_TEAM_TYPE] = 'internal';
+        }
+
         $input[Entity::BANKING_ACCOUNT_ID] = $bankingAccount->getId();
 
         $comments = $this->repo->banking_account_comment->fetch($input);
@@ -45,13 +50,13 @@ class Service extends Base\Service
         /** @var BankingAccount\Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
 
-        $admin = $this->app['basicauth']->getAdmin();
+        $maker = ($this->app['basicauth']->isAdminAuth() === true) ? $this->app['basicauth']->getAdmin() : $this->app['basicauth']->getUser();
 
         // Note: A lot of code flows use Core create instead of this service method for comments
         // because of requiring admin entity. In Batch service admin_id is sent via request body,
         // and not set in middleware.
         // Make any common changes in core method rather than here.
-        $newComment = (new Core)->create($bankingAccount, $admin, $input);
+        $newComment = (new Core)->create($bankingAccount, $maker, $input);
 
         return $newComment->toArrayPublic();
     }

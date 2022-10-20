@@ -42,4 +42,14 @@ class Repository extends Base\Repository
                     ->get()
                     ->first();
     }
+
+    public function getBankingAccountsStateByUserIds(string $bankingAccountId, array $userIds, array $expands = ['user'])
+    {
+        return $this->newQuery()
+                    ->with($expands)
+                    ->where(Entity::BANKING_ACCOUNT_ID, '=', $bankingAccountId)
+                    ->whereIn(Entity::USER_ID, $userIds)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->get();
+    }
 }

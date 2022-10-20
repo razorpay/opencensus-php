@@ -3,12 +3,10 @@
 
 namespace RZP\Models\BankingAccount\Activation\Comment;
 
+use RZP\Base;
+use RZP\Models\Base as BaseModels;
 
-use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
-use RZP\Models\Base;
-use Illuminate\Database\Query\JoinClause;
-
-class Repository extends Base\Repository
+class Repository extends BaseModels\Repository
 {
     protected $entity = 'banking_account_comment';
 
@@ -77,5 +75,40 @@ class Repository extends Base\Repository
         );
 
         return $spocGroupedData;
+    }
+
+    /**
+     * Filter to fetch all internal comments for a source team (eg, external for bank)
+     * and comments shared with that source team by other team (eg, comments added by RZP to share with bank)
+     *
+     * SQL:
+     *
+     * selet * from banking_account_comments
+     * where banking_account_id = 'bankingAccountId' AND
+     * (source_team_type = 'external' OR (source_team_type = 'internal' AND 'type' = 'external' ))
+     *
+     *
+     */
+    public function addQueryParamForSourceTeamType(Base\BuilderEx $query, $params)
+    {
+        $commentSourceTeamTypeCol = $this->repo->banking_account_comment->dbColumn(Entity::SOURCE_TEAM_TYPE);
+        $commentTypeCol = $this->repo->banking_account_comment->dbColumn(Entity::TYPE);
+
+        $sourceTeamType = $params[Fetch::FOR_SOURCE_TEAM_TYPE];
+
+        $otherSourceTeamType = 'external';
+
+        if ($sourceTeamType === 'external')
+        {
+            $otherSourceTeamType = 'internal';
+        }
+
+        $query->where(
+            function ($query) use ($commentSourceTeamTypeCol, $sourceTeamType, $otherSourceTeamType, $commentTypeCol) {
+                $query->where($commentSourceTeamTypeCol, $sourceTeamType)
+                ->orWhereRaw('( '.$commentSourceTeamTypeCol.' = \''.$otherSourceTeamType.'\' AND '.$commentTypeCol.' IN (\'external\', \'external_resolved\') )');
+            }
+        );
+
     }
 }

@@ -4,9 +4,12 @@ namespace RZP\Models\BankingAccount\BankLms;
 
 use RZP\Exception\LogicException;
 use RZP\Models\BankingAccount;
+use RZP\Models\BankingAccount\Activation\Comment;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Exception\BadRequestValidationFailureException;
+use \RZP\Models\Merchant;
+use \RZP\Models\User;
 use RZP\Trace\TraceCode;
 
 class Service extends BankingAccount\Service
@@ -23,6 +26,10 @@ class Service extends BankingAccount\Service
     protected $branchMaster;
     /** @var RmMaster $rmMaster*/
     protected $rmMaster;
+
+    const ACTIVITY_TYPE = 'activity_type';
+    const COMMENT = 'comment';
+    const STATE_CHANGE = 'state_change';
 
     /**
      * @throws BadRequestException
@@ -223,7 +230,7 @@ class Service extends BankingAccount\Service
 
         $this->validator->validateMerchantIsAttachedToPartner($bankingAccount->merchant, $this->partnerBankMerchant);
 
-        $this->validator->validateInput('partner_lms_edit', $input);
+        $this->validator->validateInput(Validator::PARTNER_LMS_EDIT, $input);
 
         if (array_key_exists('activation_detail', $input)) 
         {
@@ -231,11 +238,86 @@ class Service extends BankingAccount\Service
             $this->validator->validateInput('edit_activation_detail_by_bank', $activationDetail);
         }
 
-        $this->update($bankingAccountId, $input);
+        $this->update($bankingAccountId, $input, true);
 
         $entity = $this->core->fetchBankingAccountById($bankingAccountId, $input);
 
         return $entity->toArrayCaPartnerBankPoc();
+    }
+
+    /**
+     * @throws BadRequestException
+     * @throws InvalidArgumentException|BadRequestValidationFailureException
+     */
+    public function fetchBankingAccountsActivationActivityById(string $bankingAccountId, array $input): array
+    {
+        $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
+        
+        $this->validator->validateMerchantIsAttachedToPartner($bankingAccount->merchant, $this->partnerBankMerchant);
+
+        $activity = [];
+
+        $comments = $this->core->fetchBankingAccountsActivationCommentById($bankingAccount, [
+            Comment\Fetch::FOR_SOURCE_TEAM_TYPE => 'external',
+            Comment\Fetch::EXPAND => [Comment\Entity::USER, Comment\Entity::ADMIN],
+        ]);
+
+        $comments = $comments->toArrayPublicWithExpand();
+
+        foreach ($comments['items'] as $comment)
+        {
+            $comment[self::ACTIVITY_TYPE] = self::COMMENT;
+            array_push($activity, $comment);
+        }
+
+        $users = (new Merchant\Service())->getUsersWithFilters([
+            Merchant\Entity::MERCHANT_ID => $this->partnerBankMerchant->getId(),
+        ]);
+
+        $userIds = array_map(function($user) {
+            return $user[User\Entity::ID];
+        }, $users);
+
+        $states = (new BankingAccount\State\Repository())->getBankingAccountsStateByUserIds($bankingAccount->getId(), $userIds);
+
+        $states = $states->toArrayPublicWithExpand();
+
+        foreach ($states['items'] as $state)
+        {
+            $state[self::ACTIVITY_TYPE] = self::STATE_CHANGE;
+            array_push($activity, $state);
+        }
+
+        usort($activity, function ($a, $b) use ($input) {
+            $a_createdAt = $a[Comment\Entity::CREATED_AT];
+            $b_createdAt = $a[Comment\Entity::CREATED_AT];
+
+            if ($a[self::ACTIVITY_TYPE] === self::COMMENT)
+            {
+                $a_createdAt = $a[Comment\Entity::ADDED_AT];
+            }
+
+            if ($b[self::ACTIVITY_TYPE] === self::COMMENT)
+            {
+                $b_createdAt = $b[Comment\Entity::ADDED_AT];
+            }
+
+            if (array_key_exists('sort', $input) && $input['sort'] === 'asc')
+            {
+                return $a_createdAt - $b_createdAt;
+            } 
+            else // default
+            {
+                return $b_createdAt - $a_createdAt;
+            }
+        });
+
+        $response = [
+            'count' => count($activity),
+            'items' => $activity,
+        ];
+
+        return $response;
     }
 
     /**
@@ -248,9 +330,29 @@ class Service extends BankingAccount\Service
 
         $this->validator->validateMerchantIsAttachedToPartner($bankingAccount->merchant, $this->partnerBankMerchant);
 
+        // Necessary filters
+        $input[Comment\Fetch::FOR_SOURCE_TEAM_TYPE] = 'external';
+
         $entities = $this->core->fetchBankingAccountsActivationCommentById($bankingAccount, $input);
 
-        return $entities->toArrayCaPartnerBankPoc();
+        return $entities->toArrayPublicWithExpand();
+    }
+
+    /**
+     * @throws BadRequestException
+     * @throws InvalidArgumentException|BadRequestValidationFailureException
+     */
+    public function createBankingAccountsActivationComment(string $bankingAccountId, array $input)
+    {
+        $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
+
+        $this->validator->validateMerchantIsAttachedToPartner($bankingAccount->merchant, $this->partnerBankMerchant);
+
+        // Necessary filters
+        $input[Comment\Entity::SOURCE_TEAM] = 'bank';
+        $input[Comment\Entity::SOURCE_TEAM_TYPE] = 'external';
+
+        return $this->core->createBankingAccountsActivationComment($bankingAccount, $input);
     }
 
     /**

@@ -92,7 +92,7 @@ class BankingAccountController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function udpateBankingAccountLeadByBank(string $id)
+    public function updateBankingAccountLeadByBank(string $id)
     {
         $input = Request::all();
 
@@ -110,11 +110,29 @@ class BankingAccountController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchBankingAccountActivationActivityById(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->bankLmsService->fetchBankingAccountsActivationActivityById($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function fetchBankingAccountActivationCommentsById(string $id)
     {
         $input = Request::all();
 
         $data = $this->bankLmsService->fetchBankingAccountsActivationCommentById($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function createBankingAccountActivationComment(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->bankLmsService->createBankingAccountsActivationComment($id, $input);
 
         return ApiResponse::json($data);
     }

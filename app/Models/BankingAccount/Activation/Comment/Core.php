@@ -3,17 +3,41 @@
 
 namespace RZP\Models\BankingAccount\Activation\Comment;
 
-
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankingAccount as BA;
-use RZP\Models\Admin\Admin;
+use RZP\Models\Base\PublicEntity;
+use RZP\Exception\LogicException;
 
 class Core extends Base\Core
 {
-    public function create(BA\Entity $bankingAccount, Admin\Entity $admin, array $input): Entity
+    public function create(BA\Entity $bankingAccount, PublicEntity $maker, array $input): Entity
     {
-        $input[Entity::ADMIN_ID] = $admin->getId();
+        $makerEntityName = $maker->getEntity();
+
+        if ($makerEntityName === Entity::ADMIN)
+        {
+            $input[Entity::ADMIN_ID] = $maker->getId();
+        }
+        else if ($makerEntityName === Entity::USER)
+        {
+            $input[Entity::USER_ID] = $maker->getId();
+            $input[Entity::ADMIN_ID] = ""; // to address db constraint
+        }
+        else
+        {
+            $this->trace->error(
+                TraceCode::BANKING_ACCOUNT_COMMENT_CREATE_ERROR,
+                [
+                    'banking_account_id'    => $bankingAccount->getId(),
+                    'input' => $input,
+                ]);
+
+            throw new LogicException(
+                'Maker must either be an admin or a user',
+                null,
+                ['banking_account_id' => $bankingAccount->getId()]);
+        }
 
         $input[Entity::BANKING_ACCOUNT_ID] = $bankingAccount->getId();
 
@@ -26,7 +50,7 @@ class Core extends Base\Core
 
         $newComment = $newCommentEntity->build($input);
 
-        $newComment->admin()->associate($admin);
+        $newComment->$makerEntityName()->associate($maker);
 
         $newComment->bankingAccount()->associate($bankingAccount);
 

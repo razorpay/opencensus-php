@@ -13,7 +13,8 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::BANKING_ACCOUNT_ID  => 'required|string|size:14',
-        Entity::ADMIN_ID            => 'required|string|size:14',
+        Entity::ADMIN_ID            => 'required_without:user_id|string|size:14',
+        Entity::USER_ID             => 'required_without:admin_id|string|size:14',
         Entity::COMMENT             => 'required|filled|string',
         Entity::NOTES               => 'sometimes|array|max:3',
         Entity::SOURCE_TEAM_TYPE    => 'required|max:255|in:internal,external',

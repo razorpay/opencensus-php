@@ -30,6 +30,8 @@ class Validator extends BankingAccount\Validator
 
     const DOWNLOAD_MIS_FROM_PARTNER_BANK = 'download_mis_from_partner_bank';
 
+    const PARTNER_LMS_EDIT = 'partner_lms_edit';
+
     protected static $createBankCaOnboardingPartnerTypeRules = [
         PublicEntity::MERCHANT_ID                 => 'required|alpha_num|size:14',
         \RZP\Models\Merchant\Entity::PARTNER_TYPE => 'required|string|in:bank_ca_onboarding_partner',
@@ -61,13 +63,13 @@ class Validator extends BankingAccount\Validator
     ];
 
     protected static $partnerLmsEditRules = [
-        Entity::STATUS                          => 'filled|string',
+        Entity::STATUS                          => 'filled|string|in:initiated,verification_call,doc_collection,account_opening,api_onboarding,account_activation,archived',
         Entity::SUB_STATUS                      => 'string|nullable|custom',
         Entity::ACTIVATION_DETAIL               => 'sometimes|array',
     ];
 
     protected static $editActivationDetailByBankRules = [
-        
+
         ActivationDetail::RBL_ACTIVATION_DETAILS                  => 'sometimes',
         ActivationDetail::CUSTOMER_APPOINTMENT_DATE               => 'sometimes|epoch|nullable',
         ActivationDetail::BRANCH_CODE                             => 'sometimes|string|max:6',
@@ -80,7 +82,8 @@ class Validator extends BankingAccount\Validator
         ActivationDetail::API_IR_CLOSED_DATE                      => 'sometimes|epoch|nullable',
         ActivationDetail::API_ONBOARDING_FTNR                     => 'sometimes|boolean',
         ActivationDetail::API_ONBOARDING_FTNR_REASONS             => 'sometimes|string',
-        
+        ActivationDetail::ASSIGNEE_TEAM                           => 'sometimes|string|in:ops,bank',
+        ActivationDetail::COMMENT                                 => 'sometimes|array',
         ActivationDetail::ADDITIONAL_DETAILS                      => 'sometimes',
         ActivationDetail::ACCOUNT_OPEN_DATE                       => 'sometimes|epoch|nullable',
         ActivationDetail::ACCOUNT_LOGIN_DATE                      => 'sometimes|epoch|nullable',

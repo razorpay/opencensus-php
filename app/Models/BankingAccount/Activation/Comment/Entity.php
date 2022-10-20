@@ -46,6 +46,8 @@ class Entity extends Base\PublicEntity
     // relations
     const ADMIN = 'admin';
 
+    const USER = 'user';
+
     //other constants
     const ADMIN_EMAIL = 'admin_email';
 
@@ -100,7 +102,8 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::ADDED_AT,
         self::CREATED_AT,
-        self::ADMIN
+        self::ADMIN,
+        self::USER,
     ];
 
     public $public = [
@@ -115,7 +118,8 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::ADDED_AT,
         self::CREATED_AT,
-        self::ADMIN
+        self::ADMIN,
+        self::USER,
     ];
 
     /**
@@ -133,7 +137,8 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::ADDED_AT,
         self::CREATED_AT,
-        self::ADMIN
+        self::ADMIN,
+        self::USER,
     ];
 
     /**
@@ -151,7 +156,8 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::ADDED_AT,
         self::CREATED_AT,
-        self::ADMIN
+        self::ADMIN,
+        self::USER,
     ];
 
     protected $defaults = [

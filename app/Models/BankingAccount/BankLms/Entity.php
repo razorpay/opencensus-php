@@ -19,6 +19,7 @@ class Entity extends BankingAccount\Entity
     const SENT_TO_BANK_DATE = 'sent_to_bank_date';
     const BANK_POC_NAME = 'bank_poc_name';
     const COMPLETED_STAGES = 'completed_stages';
+    const LEAD_FOLLOW_UP_DATE = 'lead_follow_up_date';
 
     protected $public = [
         self::ID,
@@ -44,6 +45,7 @@ class Entity extends BankingAccount\Entity
         self::SENT_TO_BANK_DATE,
         self::BANK_POC_NAME,
         self::COMPLETED_STAGES,
+        self::LEAD_FOLLOW_UP_DATE,
         self::STATUS_LAST_UPDATED_AT,
         self::BANKING_ACCOUNT_CA_SPOC_DETAILS,
         self::SPOCS,
@@ -59,6 +61,7 @@ class Entity extends BankingAccount\Entity
         self::SENT_TO_BANK_DATE,
         self::BANK_POC_NAME,
         self::COMPLETED_STAGES,
+        self::LEAD_FOLLOW_UP_DATE,
         self::SPOCS,
         self::REVIEWERS,
     ];
@@ -91,6 +94,7 @@ class Entity extends BankingAccount\Entity
         self::SENT_TO_BANK_DATE,
         self::BANK_POC_NAME,
         self::COMPLETED_STAGES,
+        self::LEAD_FOLLOW_UP_DATE,
         self::STATUS_LAST_UPDATED_AT,
         self::BANKING_ACCOUNT_CA_SPOC_DETAILS,
         self::SPOCS,
@@ -125,6 +129,7 @@ class Entity extends BankingAccount\Entity
         self::SENT_TO_BANK_DATE,
         self::BANK_POC_NAME,
         self::COMPLETED_STAGES,
+        self::LEAD_FOLLOW_UP_DATE,
         self::STATUS_LAST_UPDATED_AT,
         self::BANKING_ACCOUNT_CA_SPOC_DETAILS,
         self::SPOCS,
@@ -188,6 +193,12 @@ class Entity extends BankingAccount\Entity
         {
             $array[self::COMPLETED_STAGES] = Status::getCompletedStages($bankingAccountStatus);
         }
+    }
+
+    public function setPublicLeadFollowUpDateAttribute(array & $array)
+    {
+        $followUpDate = $this->getReferenceDateForStatus();
+        $array[self::LEAD_FOLLOW_UP_DATE] = $followUpDate;
     }
 
     public function setPublicSpocsAttribute(array & $array)

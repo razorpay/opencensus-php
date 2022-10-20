@@ -132,7 +132,14 @@ class Leads extends Base
             return null;
         }
 
-        return self::$toPublicMap[$header][$value];
+        $values = self::$toPublicMap[$header];
+
+        if (array_key_exists($value, $values))
+        {
+            return self::$toPublicMap[$header][$value];
+        }
+
+        return $value;
     }
 
 

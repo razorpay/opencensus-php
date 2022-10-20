@@ -3253,6 +3253,31 @@ return [
         ],
     ],
 
+    'testBankLmsEndToEndCommentsCreate' => [
+        'request' => [
+            'url'     => '/banking_accounts/rbl/lms/activation/{id}/comments',
+            'method'  => 'POST',
+            'content' => [
+                'comment'           => 'this is a comment from RBL team',
+                'source_team_type'  => 'external',
+                'source_team'       => 'bank',
+                'added_at'          => '1593567500',
+                'type'              => 'external'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'comment'           => 'this is a comment from RBL team',
+                'source_team_type'  => 'external',
+                'source_team'       => 'bank',
+                'added_at'          => 1593567500,
+                'user'             => [
+                    'email' => 'random@rbl.com'
+                ]
+            ],
+        ],
+    ],
+
     'testUpdateActivationDetail' => [
         'request'  => [
             'url'     => '/banking_accounts/activation/{id}/details',
@@ -4284,6 +4309,38 @@ return [
         ],
     ],
 
+    'testBankLmsEndToEndPartnerChangeAssignee' => [
+        'request' => [
+            'url' => '/banking_accounts/rbl/lms/banking_account',
+            'method' => 'PATCH',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'content' => [
+                'activation_detail' => [
+                    'assignee_team' => 'bank',
+                    'comment' => [
+                        'source_team' => 'bank',
+                        'added_at' => '1663065060',
+                        'comment' => '<p>something</p>',
+                        'source_team_type' => 'external',
+                        'type' => 'external'
+                    ]
+                ]
+            ],
+
+        ],
+        'response' => [
+            'content' => [
+                'banking_account_activation_details' => [
+                    'assignee_team' => 'bank',
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+
     'testBankLmsEndToEndPatchLead' => [
         'request' => [
             'url'     => '/banking_accounts/rbl/lms/banking_account',
@@ -4474,7 +4531,7 @@ return [
             ],
     ],
 
-    'testBankLmsEndToEndForFetchCommentsById' => [
+    'testBankLmsEndToEndCommentsFetch' => [
         'request'  => [
             'url'     => '/banking_accounts/rbl/lms/activation/{id}/comments',
             'method'  => 'GET',
@@ -4486,7 +4543,25 @@ return [
         'response' => [
             'content'     => [
                 'entity' => 'collection',
-                'count'  => 1,
+                'count'  => 2,
+                'items'  => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testBankLmsEndToEndActivity' => [
+        'request'  => [
+            'url'     => '/banking_accounts/rbl/lms/activation/{id}/activity',
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'content' => [],
+        ],
+        'response' => [
+            'content'     => [
+                'count'  => 2, // only comments for now
                 'items'  => [],
             ],
             'status_code' => 200,

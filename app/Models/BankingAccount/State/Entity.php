@@ -24,6 +24,8 @@ class Entity extends Base\PublicEntity
 
     const USER_ID = 'user_id';
 
+    const USER = 'user';
+
     const BANKING_ACCOUNT_ID = 'banking_account_id';
 
     protected $entity = 'banking_account_state';
@@ -40,6 +42,7 @@ class Entity extends Base\PublicEntity
         self::ADMIN_ID,
         self::USER_ID,
         self::BANKING_ACCOUNT_ID,
+        self::USER,
     ];
 
     protected $visible = [
@@ -53,6 +56,7 @@ class Entity extends Base\PublicEntity
         self::USER_ID,
         self::BANKING_ACCOUNT_ID,
         self::CREATED_AT,
+        self::USER,
     ];
 
     public $public = [
@@ -66,8 +70,8 @@ class Entity extends Base\PublicEntity
         self::USER_ID,
         self::BANKING_ACCOUNT_ID,
         self::CREATED_AT,
+        self::USER,
     ];
-
     public function bankingAccount()
     {
         return $this->belongsTo(BankingAccount\Entity::class);
@@ -78,9 +82,7 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Admin\Entity::class);
     }
 
-    // TODO: 
     // Request coming from RBL Partner LMS
-    // Discuss how to implement this
     public function user()
     {
         return $this->belongsTo(User\Entity::class);

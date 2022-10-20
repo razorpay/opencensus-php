@@ -75,6 +75,9 @@ class BankingAccountTest extends TestCase
 
     protected $storkMock;
 
+    protected $bankLMSSetupComplete;
+    protected $bankLMSSetupResponse;
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/BankingAccountTestData.php';
@@ -8352,7 +8355,6 @@ class BankingAccountTest extends TestCase
         $state_timestamp = $this->getDbLastEntity('banking_account_state');
 
         sleep(3);
-
         // Attach Sub-merchant to RBl Merchant
         $this->assertUpdateBankingAccountStatusFromTo(
             Status::INITIATED, Status::INITIATED,
@@ -8379,7 +8381,206 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
+    public function testBankLmsEndToEndChangeAssigneeByStatusSubStatusChange()
+    {
+
+        $response = $this->setupBankLMSTest();
+        $response = $response['bankingAccount'];
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::DOC_COLLECTION, Status::DOC_COLLECTION,
+            Status::VISIT_DUE, Status::CUSTOMER_NOT_RESPONDING,
+            null, null,
+            $response);
+
+        $activationDetailId = $response[BankingAccount\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS]['id'];
+
+        $result = $this->getDbEntityById(RZP\Constants\Entity::BANKING_ACCOUNT_ACTIVATION_DETAIL ,
+            $activationDetailId
+        );
+        $this->assertEquals(ActivationDetail\Entity::SALES, $result[ActivationDetail\Entity::ASSIGNEE_TEAM]);
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::DOC_COLLECTION, Status::DOC_COLLECTION,
+            null, Status::VISIT_RESCHEDULED,
+            null, null,
+            $response);
+
+        $result = $this->getDbEntityById(RZP\Constants\Entity::BANKING_ACCOUNT_ACTIVATION_DETAIL ,
+            $activationDetailId
+        );
+        $this->assertEquals(ActivationDetail\Entity::BANK, $result[ActivationDetail\Entity::ASSIGNEE_TEAM]);
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::DOC_COLLECTION, Status::DOC_COLLECTION,
+            Status::CUSTOMER_NOT_RESPONDING, Status::VISIT_RESCHEDULED,
+            null, null,
+            $response);
+
+        $result = $this->getDbEntityById(RZP\Constants\Entity::BANKING_ACCOUNT_ACTIVATION_DETAIL ,
+            $activationDetailId
+        );
+        $this->assertEquals(ActivationDetail\Entity::BANK, $result[ActivationDetail\Entity::ASSIGNEE_TEAM]);
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::API_ONBOARDING, Status::API_ONBOARDING,
+            Status::IN_REVIEW, Status::API_REGISTRATION_NOT_COMPLETE,
+            null, null,
+            $response);
+
+        $result = $this->getDbEntityById(RZP\Constants\Entity::BANKING_ACCOUNT_ACTIVATION_DETAIL ,
+            $activationDetailId
+        );
+        $this->assertEquals(ActivationDetail\Entity::BANK_OPS, $result[ActivationDetail\Entity::ASSIGNEE_TEAM]);
+
+    }
+
     public function testBankLmsEndToEndPatchLead()
+    {
+        $response = $this->setupBankLMSTest();
+        $response = $response['bankingAccount'];
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/banking_accounts/rbl/lms/banking_account/'. $response['id'],
+                'method'  => 'PATCH',
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testBankLmsStageWise()
+    {
+        $response = $this->setupBankLMSTest();
+        $bankPocUser = $response['user'];
+        $bankingAccount = $response['bankingAccount'];
+        $bankingAccountId = $bankingAccount['id'];
+
+        $partnerMerchant = $this->getDbEntityById('merchant', self::DefaultPartnerMerchantId);
+
+        $this->assignBankPocUserToApplication($partnerMerchant, $bankPocUser, $bankingAccountId);
+
+        // Status should be moved to verification_call after assignment
+        // but currently disabled that part since we will support that by experimentation
+
+        $verificationCallRequest = [
+            'url'     => '/banking_accounts/rbl/lms/banking_account/'. $bankingAccountId,
+            'method'  => 'PATCH',
+            'content' => [
+                Entity::STATUS => Status::VERIFICATION_CALL,
+                Entity::SUB_STATUS => Status::ASSIGNED_TO_PCARM,
+                Entity::ACTIVATION_DETAIL => [
+                    ActivationDetail\Entity::CUSTOMER_APPOINTMENT_DATE => '1666204200',
+                    ActivationDetail\Entity::BRANCH_CODE => '4',
+                    ActivationDetail\Entity::RM_EMPLOYEE_CODE => '32326',
+                    ActivationDetail\Entity::RM_ASSIGNMENT_TYPE => 'pcarm',
+                    ActivationDetail\Entity::RM_NAME => 'Amit Chopra',
+                    ActivationDetail\Entity::RM_PHONE_NUMBER => '8872581146',
+                    ActivationDetail\Entity::RBL_ACTIVATION_DETAILS => [
+                        ActivationDetail\Entity::LEAD_IR_NUMBER => 'IR 1234 ABCD',
+                        ActivationDetail\Entity::OFFICE_DIFFERENT_LOCATIONS => true,
+                    ]
+                ]
+            ],
+        ];
+
+        $bankingAccountResponse = $this->makeRequestAndGetContent($verificationCallRequest);
+
+        $this->assertEquals(Status::DOC_COLLECTION, $bankingAccountResponse[Entity::STATUS]);
+        $this->assertEquals(Status::VISIT_DUE, $bankingAccountResponse[Entity::SUB_STATUS]);
+
+        $docCollectionRequest = [
+            'url'     => '/banking_accounts/rbl/lms/banking_account/'. $bankingAccountId,
+            'method'  => 'PATCH',
+            'content' => [
+                Entity::SUB_STATUS => Status::CUSTOMER_NOT_RESPONDING,
+            ],
+        ];
+
+        $bankingAccountResponse = $this->makeRequestAndGetContent($docCollectionRequest);
+
+        $this->assertEquals(Status::DOC_COLLECTION, $bankingAccountResponse[Entity::STATUS]);
+        $this->assertEquals(Status::CUSTOMER_NOT_RESPONDING, $bankingAccountResponse[Entity::SUB_STATUS]);
+
+        // Automatic Assignee Team change
+        $this->assertEquals(ActivationDetail\Entity::SALES, 
+            $bankingAccountResponse[Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::ASSIGNEE_TEAM]);
+
+
+        $docCollectionRequest = [
+            'url'     => '/banking_accounts/rbl/lms/banking_account/'. $bankingAccountId,
+            'method'  => 'PATCH',
+            'content' => [
+                Entity::SUB_STATUS => Status::PICKED_UP_DOCS,
+                Entity::ACTIVATION_DETAIL => [
+                    ActivationDetail\Entity::DOC_COLLECTION_DATE => "1666290600",
+                    ActivationDetail\Entity::RBL_ACTIVATION_DETAILS => [
+                        ActivationDetail\Entity::IP_CHEQUE_VALUE => 34000,
+                        ActivationDetail\Entity::API_DOCS_DELAY_REASON => "Reason for CA Docs delay",
+                        ActivationDetail\Entity::API_DOCS_RECEIVED_WITH_CA_DOCS => false,
+                    ]
+                ],
+            ],
+        ];
+
+        $bankingAccountResponse = $this->makeRequestAndGetContent($docCollectionRequest);
+
+        $this->assertEquals(Status::ACCOUNT_OPENING, $bankingAccountResponse[Entity::STATUS]);
+        $this->assertEquals(Status::IN_REVIEW, $bankingAccountResponse[Entity::SUB_STATUS]);
+
+        $accountOpeningRequest = [
+            'url'     => '/banking_accounts/rbl/lms/banking_account/'. $bankingAccountId,
+            'method'  => 'PATCH',
+            'content' => [
+                Entity::SUB_STATUS => Status::CA_OPENED_SUB_STATUS,
+                Entity::ACTIVATION_DETAIL => [
+                    ActivationDetail\Entity::ACCOUNT_LOGIN_DATE => '1666290600',
+                    ActivationDetail\Entity::ACCOUNT_OPEN_DATE => '1666290600',
+                    ActivationDetail\Entity::ACCOUNT_OPENING_IR_CLOSE_DATE => '1666290600',
+                    ActivationDetail\Entity::ACCOUNT_OPENING_FTNR => false,
+                    ActivationDetail\Entity::ACCOUNT_OPENING_FTNR_REASONS => 'AO RRT/Attachment/Details Issue,AO Scanning Issue',
+                    ActivationDetail\Entity::RBL_ACTIVATION_DETAILS => [
+                        ActivationDetail\Entity::ACCOUNT_OPENING_IR_NUMBER => 'IR 1212 PQRS',
+                        ActivationDetail\Entity::SR_NUMBER => '0989766',
+                        ActivationDetail\Entity::CASE_LOGIN_DIFFERENT_LOCATIONS => 'YES',
+                        ActivationDetail\Entity::REVISED_DECLARATION => 'NO'
+                    ]
+                ],
+            ]
+        ];
+
+        $bankingAccountResponse = $this->makeRequestAndGetContent($accountOpeningRequest);
+
+        $this->assertEquals(Status::API_ONBOARDING, $bankingAccountResponse[Entity::STATUS]);
+        $this->assertEquals(Status::IN_REVIEW, $bankingAccountResponse[Entity::SUB_STATUS]);
+
+        $apiOnboardingRequest = [
+            'url'     => '/banking_accounts/rbl/lms/banking_account/'. $bankingAccountId,
+            'method'  => 'PATCH',
+            'content' => [
+                Entity::SUB_STATUS => Status::API_IR_CLOSED,
+                Entity::ACTIVATION_DETAIL => [
+                    ActivationDetail\Entity::API_IR_CLOSED_DATE => '1666549800',
+                    ActivationDetail\Entity::API_ONBOARDING_FTNR => false,
+                    ActivationDetail\Entity::API_ONBOARDING_FTNR_REASONS => '',
+                    ActivationDetail\Entity::RBL_ACTIVATION_DETAILS => [
+                        ActivationDetail\Entity::API_IR_NUMBER => 'IR 090909'
+                    ],
+                    ActivationDetail\Entity::ADDITIONAL_DETAILS => [
+                        ActivationDetail\Entity::API_ONBOARDING_LOGIN_DATE => '1666549800'
+                    ]
+                ]
+            ]
+        ];
+
+        $bankingAccountResponse = $this->makeRequestAndGetContent($apiOnboardingRequest);
+
+        $this->assertEquals(Status::ACCOUNT_ACTIVATION, $bankingAccountResponse[Entity::STATUS]);
+        $this->assertEquals(Status::IN_PROCESS, $bankingAccountResponse[Entity::SUB_STATUS]);
+    }
+
+    public function testBankLmsEndToEndPartnerChangeAssignee()
     {
         // Make merchant as Bank CA Onboarding Partner
         $response = $this->makeMerchantAsBankCAOnboardingPartner();
@@ -8410,13 +8611,27 @@ class BankingAccountTest extends TestCase
         $this->ba->addXBankLMSOriginHeader();
 
         $dataToReplace = [
-            'request' => [
-                'url'     => '/banking_accounts/rbl/lms/banking_account/'. $response['id'],
-                'method'  => 'PATCH',
+            'url' => '/banking_accounts/rbl/lms/banking_account/' . $response['id'],
+            'method' => 'PATCH',
+            'content' => [
+                'activation_detail' => [
+                    'assignee_team' => 'bank',
+                    'comment' => [
+                        'source_team' => 'bank',
+                        'added_at' => '1663065060',
+                        'comment' => '<p>something</p>',
+                        'source_team_type' => 'external',
+                        'type' => 'external'
+                    ]
+                ]
             ]
         ];
 
-        $this->startTest($dataToReplace);
+        $response = $this->makeRequestAndGetContent($dataToReplace);
+        $expectedComment = $this->getDbLastEntity('banking_account_comment');
+
+        $this->assertEquals($response[ActivationDetail\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::ASSIGNEE_TEAM], ActivationDetail\Entity::BANK);
+        $this->assertEquals($expectedComment->comment, "<p>something</p>");
     }
 
     public function testBankLmsEndToEndForLeadReceivedDateFiltersNegativecase()
@@ -8689,38 +8904,105 @@ class BankingAccountTest extends TestCase
         $this->assertEquals(sizeof($expected), $response['count']);
     }
 
-    public function testBankLmsEndToEndForFetchCommentsById()
+    public function testBankLmsEndToEndParallelAssigneePartnerSide()
     {
-        // Make merchant as Bank CA Onboarding Partner
-        $response = $this->makeMerchantAsBankCAOnboardingPartner();
 
-        // Add Feature to the Merchant
-        $response = $this->addBankLmsFeatureToTheMerchant();
+        $response = $this->setupBankLMSTest();
+        $user = $response['user'];
+        $response = $response['bankingAccount'];
 
-        // Invite new user to join RBL merchant
-        $this->inviteNewUserToJoinRBLMerchantAdmin();
 
-        // Accept invitation
-        $response = $this->acceptInvitation();
-
-        // New Merchant Apply for Current Account
-        $response = $this->MerchantApplyForCurrentAccount('10000000000000');
-
-        $this->testCreateBankingAccountActivationComment($response);
-
-        // Attach Submerchant to RBl Merchant
         $this->assertUpdateBankingAccountStatusFromTo(
-            Status::PICKED, Status::INITIATED,
+            Status::DOC_COLLECTION, Status::DOC_COLLECTION,
+            Status::VISIT_DUE, Status::CUSTOMER_NOT_RESPONDING,
             null, null,
-            null, null,
-            $response, '10000000000000'
-        );
+            $response);
 
-        $user = $this->getDbEntity('user', ['email' => 'random@rbl.com']);
+        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
+
+        $this->ba->addXBankLMSOriginHeader();
+
+        $dataToReplace = [
+            'url' => '/banking_accounts/rbl/lms/banking_account/' . $response['id'],
+            'method' => 'PATCH',
+            'content' => [
+                'status' => 'account_opening',
+                'sub_status' => 'ir_raised',
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($dataToReplace);
+        $this->assertEquals(ActivationDetail\Entity::BANK, $response[ActivationDetail\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::ASSIGNEE_TEAM]);
+    }
+
+    public function testBankLmsEndToEndParallelAssigneeRZPSide()
+    {
+
+        $attribute = ['activation_status' => 'activated'];
+        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+        $this->ba->addXOriginHeader();
+        $bankingAccount =  $this->createBankingAccount();
+        $this->ba->adminAuth();
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::DOC_COLLECTION, Status::DOC_COLLECTION,
+            Status::VISIT_DUE, Status::CUSTOMER_NOT_RESPONDING,
+            null, null,
+            $bankingAccount);
+
+        $dataToReplace = [
+                'url'     => '/banking_accounts/'. $bankingAccount['id'],
+                'method'  => 'PATCH',
+                'content' => [
+                    'status' => 'account_opening',
+                    'sub_status' => 'ir_raised',
+                ],
+        ];
+        $response = $this->makeRequestAndGetContent($dataToReplace);
+        $this->assertEquals(ActivationDetail\Entity::OPS, $response[ActivationDetail\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::ASSIGNEE_TEAM]);
+    }
+
+    public function testBankLmsEndToEndParallelAssigneeLDAPIDFilledRZPSide()
+    {
+
+        $attribute = ['activation_status' => 'activated'];
+        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+        $this->ba->addXOriginHeader();
+        $bankingAccount =  $this->createBankingAccount();
+        $this->ba->adminAuth();
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::ACCOUNT_OPENING, Status::ACCOUNT_OPENING,
+            Status::IN_REVIEW, Status::IR_RAISED,
+            null, null,
+            $bankingAccount);
+
+        $dataToReplace = [
+            'url'     => '/banking_accounts/'. $bankingAccount['id'],
+            'method'  => 'PATCH',
+            'content' => [
+                'activation_detail' => [
+                    'ldap_id_mail_date' => 1661845404,
+                ]
+            ],
+        ];
+        $response = $this->makeRequestAndGetContent($dataToReplace);
+        $this->assertEquals(ActivationDetail\Entity::BANK, $response[ActivationDetail\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::ASSIGNEE_TEAM]);
+    }
+
+    public function testBankLmsEndToEndCommentsCreate()
+    {
+        $response = $this->setupBankLMSTest();
+
+        $bankingAccount = $response['bankingAccount'];
+
+        $user = $response['user'];
 
         $dataToReplace = [
             'request' => [
-                'url'     => '/banking_accounts/rbl/lms/activation/'. $response['id'].'/comments',
+                'url'     => '/banking_accounts/rbl/lms/activation/'. $bankingAccount['id'].'/comments',
             ]
         ];
 
@@ -8729,6 +9011,57 @@ class BankingAccountTest extends TestCase
         $this->ba->addXBankLMSOriginHeader();
 
         $this->startTest($dataToReplace);
+    }
+
+    public function testBankLmsEndToEndCommentsFetch()
+    {
+        $response = $this->setupBankLMSTest();
+
+        $bankingAccount = $response['bankingAccount'];
+
+        $user = $response['user'];
+
+        $this->testCreateBankingAccountActivationComment($bankingAccount);
+
+        $this->testBankLmsEndToEndCommentsCreate();
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/banking_accounts/rbl/lms/activation/'. $bankingAccount['id'].'/comments',
+            ]
+        ];
+
+        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
+
+        $this->ba->addXBankLMSOriginHeader();
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testBankLmsEndToEndActivity()
+    {
+        $response = $this->setupBankLMSTest();
+
+        $bankingAccount = $response['bankingAccount'];
+
+        $user = $response['user'];
+
+        $this->testCreateBankingAccountActivationComment($bankingAccount);
+
+        $this->testBankLmsEndToEndCommentsCreate();
+
+        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
+
+        $this->ba->addXBankLMSOriginHeader();
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/banking_accounts/rbl/lms/activation/'. $bankingAccount['id'].'/activity',
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+
     }
 
     public function testAssignPartnerBulk()
@@ -8756,6 +9089,50 @@ class BankingAccountTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest($dataToReplace);
+    }
+
+    public function setupBankLMSTest(): array
+    {
+        if ($this->bankLMSSetupComplete === true)
+        {
+            return $this->bankLMSSetupResponse;
+        }
+
+        // Make merchant as Bank CA Onboarding Partner
+        $response = $this->makeMerchantAsBankCAOnboardingPartner();
+
+        // Add Feature to the Merchant
+        $response = $this->addBankLmsFeatureToTheMerchant();
+
+        // Invite new user to join RBL merchant
+        $this->inviteNewUserToJoinRBLMerchant(self::DefaultPartnerMerchantId, 'random@rbl.com', BankingRole::BANK_MID_OFFICE_MANAGER);
+
+        // Accept invitation
+        $response = $this->acceptInvitation();
+
+        // New Merchant Apply for Current Account
+        $response = $this->MerchantApplyForCurrentAccount();
+
+        $user = $this->getDbEntity('user', ['email' => 'random@rbl.com']);
+
+        // Attach Submerchant to RBl Merchant
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED, Status::INITIATED,
+            null, null,
+            null, null,
+            $response);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
+
+        $setupResponse = [
+            'bankingAccount' => $response,
+            'user' => $user,
+        ];
+
+        $this->bankLMSSetupComplete = true;
+        $this->bankLMSSetupResponse = $setupResponse;
+
+        return $setupResponse;
     }
 
     public function testBankingAccountLeadsMISDownloadByBank()
@@ -9251,9 +9628,9 @@ class BankingAccountTest extends TestCase
      * @param $user
      * @param $bankingAccountId
      *
-     * @return void
+     * @return array
      */
-    private function assignBankPocUserToApplication($merchant, $user, $bankingAccountId): void
+    private function assignBankPocUserToApplication($merchant, $user, $bankingAccountId): array
     {
         $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $user->getId());
 
@@ -9274,6 +9651,8 @@ class BankingAccountTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertEquals($user->getId(), $response["banking_account_activation_details"]["bank_poc_user_id"]);
+
+        return $response;
     }
 
     public function testCreateBankingAccountWithActivationDetailFromMOB()

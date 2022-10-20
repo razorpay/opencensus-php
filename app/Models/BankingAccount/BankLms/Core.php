@@ -51,9 +51,20 @@ class Core extends BankingAccount\Core
      */
     public function fetchBankingAccountsActivationCommentById(BankingAccount\Entity $bankingAccount, array $params): PublicCollection
     {
-        // Todo: Add necessary Filters
-
         return (new BankingAccount\Activation\Comment\Service())->fetchMultipleEntity($bankingAccount, $params);
+    }
+
+    /**
+     * @param BankingAccount\Entity $bankingAccount
+     * @param array                 $params
+     *
+     * @return PublicCollection
+     * @throws BadRequestValidationFailureException
+     * @throws InvalidArgumentException
+     */
+    public function createBankingAccountsActivationComment(BankingAccount\Entity $bankingAccount, array $input): array
+    {
+        return (new BankingAccount\Activation\Comment\Service())->createForBankingAccount($bankingAccount->getPublicId(), $input);
     }
 
     /**
@@ -147,7 +158,8 @@ class Core extends BankingAccount\Core
 
             $user = $this->app['basicauth']->getUser();
 
-            // (new BankingAccount\Core())->updateBankingAccount($bankingAccount, $input, $user, false, false);
+            // Will be used with experimentation changes
+            // (new BankingAccount\Core())->updateBankingAccount($bankingAccount, $input, $user, false, false, true);
         }
 
         $this->notifier->notify($bankingAccount, Event::BANK_PARTNER_POC_ASSIGNED);

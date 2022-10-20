@@ -247,7 +247,7 @@ class Service extends Base\Service
      * @throws BadRequestException
      * @throws Exception\LogicException
      */
-    public function update(string $id, array $input): array
+    public function update(string $id, array $input, bool $fromPartnerDashboard = false): array
     {
         /** @var Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByPublicId($id);
@@ -277,7 +277,7 @@ class Service extends Base\Service
             $admin = $this->app['basicauth']->getUser();
         }
 
-        $account = $this->core->updateBankingAccount($bankingAccount, $input, $admin);
+        $account = $this->core->updateBankingAccount($bankingAccount, $input, $admin, false, false, $fromPartnerDashboard);
 
         $currentStatus = $bankingAccount->getStatus();
 
