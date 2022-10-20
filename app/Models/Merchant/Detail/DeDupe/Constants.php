@@ -248,7 +248,6 @@ class Constants
                     'matchType'=> self::EXACT_MATCH,
                 ]
             ],
-            self::ACTION => self::DEACTIVATE
         ],
         [
             'keysToCheck' => [
