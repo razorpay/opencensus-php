@@ -94,19 +94,6 @@ class Service extends Base\Service
                                 ]);
                         break;
 
-                    case 'ps_merchant_onboard':
-                        // first sending the request to ledger because if anything fails we don't add the feature
-                        $this->ledgerAccountCreateRequest($merchant);
-
-                        // Add LEDGER_JOURNAL_READS feature to merchant
-                        (new Core)->create(
-                            [
-                                Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
-                                Entity::ENTITY_ID => $merchant->getId(),
-                                Entity::NAME => Constants::LEDGER_JOURNAL_READS,
-                            ]);
-                        break;
-
                     case 'reverse_shadow':
                         // Add `ledger_journal_reads` feature flag
                         (new Core)->create(
@@ -153,6 +140,21 @@ class Service extends Base\Service
                         break;
 
                     case 'reverse_shadow_offboard':
+
+                        //Check if payout_service_enabled flag is assigned to the merchant or not.
+                        //As payout_service_enabled is dependent on ledger_reverse_shadow so we can't remove it blindly
+                        //before removing payout_service_enabled otherwise it will lead to inconsistency.
+                        if ((empty($merchant) === false) and
+                            ($merchant->isFeatureEnabled(Constants::PAYOUT_SERVICE_ENABLED) === true))
+                        {
+                            throw new Exception\ServerErrorException(
+                                'ledger_reverse_shadow can not be removed if payout_service_enabled is assigned to the merchant.',
+                                ErrorCode::SERVER_ERROR,
+                                [
+                                    Entity::MERCHANT_ID => $merchant->getId(),
+                                ]);
+                        }
+
                         //Delete `ledger_journal_reads` feature flag
                         //Delete `ledger_reverse_shadow` feature flag
                         $featureFlags = [

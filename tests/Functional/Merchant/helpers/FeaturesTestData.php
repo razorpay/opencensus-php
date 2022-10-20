@@ -3125,6 +3125,63 @@ return [
         ]
     ],
 
+    'testOnboardOldAccountsToLedgerAndRemoveReverseShadowWhenPSEnabled' => [
+        'request'  => [
+            'content' => [
+                [
+                    'idempotency_key' => 'idempotency_key',
+                    'merchant_id'     => '10000000000000',
+                    'action'          => 'reverse_shadow_offboard',
+                ]
+            ],
+            'url'     => '/onboarding/feature/ledger/onboard_old_accounts',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 1,
+                'items'     =>  [
+                    [
+                        'idempotency_key'   => 'idempotency_key',
+                        'merchant_id'       => '10000000000000',
+                        'status'            => 'failed',
+                        'error'             => [
+                            'description'   => 'ledger_reverse_shadow can not be removed if payout_service_enabled is assigned to the merchant.'
+                        ]
+                    ],
+                ],
+            ]
+        ]
+    ],
+
+    'testOnboardOldAccountsToLedgerAndRemoveReverseShadowWhenPSNotEnabled' => [
+        'request'  => [
+            'content' => [
+                [
+                    'idempotency_key' => 'idempotency_key',
+                    'merchant_id'     => '10000000000000',
+                    'action'          => 'reverse_shadow_offboard',
+                ]
+            ],
+            'url'     => '/onboarding/feature/ledger/onboard_old_accounts',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 1,
+                'items'     =>  [
+                    [
+                        'idempotency_key'   => 'idempotency_key',
+                        'merchant_id'       => '10000000000000',
+                        'status'            => 'success',
+                    ],
+                ],
+            ]
+        ]
+    ],
+
     'testOnboardMerchantOnPGSuccess' => [
         'request'  => [
             'content' => [

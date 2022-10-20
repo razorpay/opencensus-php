@@ -3221,6 +3221,52 @@ Regards,
         $this->assertNotContains('ledger_journal_writes', $featuresArray);
     }
 
+    public function testOnboardOldAccountsToLedgerAndRemoveReverseShadowWhenPSEnabled()
+    {
+        $this->fixtures->merchant->addFeatures(['ledger_journal_reads']);
+        $this->fixtures->merchant->addFeatures(['ledger_reverse_shadow']);
+        $this->fixtures->merchant->addFeatures(['payout_service_enabled']);
+
+        $this->ba->appAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->startTest($testData);
+
+        $featuresArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
+
+        $this->assertContains('ledger_journal_reads', $featuresArray);
+        $this->assertContains('ledger_reverse_shadow', $featuresArray);
+        $this->assertContains('payout_service_enabled', $featuresArray);
+    }
+
+    public function testOnboardOldAccountsToLedgerAndRemoveReverseShadowWhenPSNotEnabled()
+    {
+        $this->fixtures->merchant->addFeatures(['ledger_journal_reads']);
+        $this->fixtures->merchant->addFeatures(['ledger_reverse_shadow']);
+        $this->fixtures->merchant->addFeatures(['some_random_feature']);
+
+        $this->ba->appAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->startTest($testData);
+
+        $featuresArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
+
+        $this->assertNotContains('ledger_journal_reads', $featuresArray);
+        $this->assertNotContains('ledger_reverse_shadow', $featuresArray);
+        $this->assertNotContains('payout_service_enabled', $featuresArray);
+    }
+
     public function testOnboardMerchantOnPGSuccess()
     {
         $this->app['config']->set('applications.ledger.enabled', true);
