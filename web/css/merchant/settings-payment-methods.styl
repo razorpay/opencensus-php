@@ -1,23 +1,25 @@
+// stylelint-disable max-nesting-depth,  no-descending-specificity
+// stylelint-disable font-family-no-missing-generic-family-keyword, declaration-no-important
 $checkout-modal-width = 400px
 $side-width = 240px
 $side-width-desktop-lg = 220px
-$color-white = #ffffff
-$color-mustard = #cd82141a
-$color-offwhite = #e8ebef52
-$blue-highlight = #0b70e70d
-$secondary-blue = #528ff0
+$color-white = #FFF
+$color-mustard = #CD82141A
+$color-offwhite = #E8EBEF52
+$blue-highlight = #0B70E70D
+$secondary-blue = #528FF0
 $text-default = #5D666D
 $secondary-color = #C4C4C4
 $background-white = #F6F6F6
 $details-white = #F3F6F8
-$desc-white = #162f568a
+$desc-white = #162F568A
 $border-blue = #2B83EA
 $border-grey = #E6E7E8
 $text-blue = #2A86F3
 $text-grey = #828282
 $text-darkgrey = #7B8199
 $color-grey = #515978
-$tat-text-color = #162f5661
+$tat-text-color = #162F5661
 
 .flex-end
   display: flex
@@ -30,17 +32,23 @@ $tat-text-color = #162f5661
 #settings-payment-methods
   .mr-25
     margin-right: 25px
+
   .ml-5
     margin-left: 5px
+
   .spacer-20
     height: 20px
+
   .spacer-10
     height: 10px
+
   .panel-heading
     padding: 15px 20px 15px 0
+
     .title
       font-size: 18px
       font-weight: 600
+
   .methods-view
     height: 491px
     display: flex
@@ -48,30 +56,41 @@ $tat-text-color = #162f5661
     border-bottom: none
     border-left: none
     width: 100%
-    background: #eeeeee1a
+    background: #EEEEEE1A
     overflow-x: auto
     overflow-y: hidden
-    .level-1, .level-2
+
+    .level-1,
+    .level-2
       width: 320px
-      flex-shrink:0
+      flex-shrink: 0
       border-right: 1px solid $border-grey
+
     .level-1
-      background: white
+      background: $color-white
+
       .icon
         margin-left: 22px
+
       ul
         border-left: 1px solid $border-grey
+
     .level-2
-        ul > li
-          height: 69px
-    .level-2, .level-3
+      ul > li
+        height: 69px
+
+    .level-2,
+    .level-3
       border-bottom: 1px solid $border-grey
-    ul  
+
+    ul
       list-style-type: none
       padding: 0
       margin-bottom: 0
+
       li:hover
         background: $blue-highlight
+
         .show-expand
           visibility: visible
           cursor: pointer
@@ -84,41 +103,50 @@ $tat-text-color = #162f5661
         margin: 0
         border-bottom: 1px solid $border-grey
         background: $color-white
+
         .icon
           width: 30px
+
         .detail
-          flex:5
+          flex: 5
           padding-left: 15px
+
           strong
             user-select: none
             color: $text-default
             font-size: 14px
             line-height: 17px
+
           p
             user-select: none
             color: $text-grey
             font-size: 12px
             line-height: 20px
+
         .expand
           margin-right: 10px
           color: #0B70E7
           font-size: 20px
+
         .show-expand
           visibility: hidden
+
         .highlight-expand
           visibility: visible
           cursor: pointer
+
       .highlight
         background: $blue-highlight
 
-        
     .overflowY
       overflow-y: auto
-    .level-3 
+
+    .level-3
       width: 100%
       padding: 32px
       background: $color-white
       position: relative
+
       .heading
         display: flex
         width: 420px
@@ -127,26 +155,28 @@ $tat-text-color = #162f5661
         color: $text-default
         margin-bottom: 16px
         padding: 0 2px
-      .filter 
+
+      .filter
         margin: 0 0 20px
+
         button:not(:last-child)
           margin-right: 16px
 
       .filter-btn
         outline: none
-        background: #162f5605
-        border: 1px solid #162f561a
+        background: #162F5605
+        border: 1px solid #162F561A
         border-radius: 2px
         font-size: 14px
         line-height: 20px
         padding: 4px 12px
-        color: #162f56bd
-      
+        color: #162F56BD
+
       .filter-active
         background: #E7F1FD
         color: $border-blue
         border: 1px solid #E7F1FD
-      
+
       li:first-child
         border-top: 1px solid $border-grey
 
@@ -154,37 +184,50 @@ $tat-text-color = #162f5661
         height: auto
         display: block
         padding: 20px
+
         &:hover
           background: unset
+
         &.alert-info
           background: #FBF8E3
+
           p
             font-weight: bold
+
         .toggler-btn
           display: inline-flex
           align-items: center
           float: right
+
           button
             &::after
-              background: #5e90e9
+              background: #5E90E9
+
             &.checked::after
               background: $color-white
+
           b
             padding-left: 5px
+
         .detail
           padding-left: 0
+
         .status-label
           text-transform: uppercase
           padding: 5px 12px
+
           .rzp-popover
             text-transform: none
+
         .detail + .status-label
           align-self: flex-start
+
         .product-info
           display: block
           border-radius: 4px
           padding: 20px 10px
           background: $color-offwhite
+
           .product-title
             display: flex
             justify-content: space-between
@@ -193,14 +236,17 @@ $tat-text-color = #162f5661
         display: block
         height: auto
         padding: 20px
+
         .status-bar
           display: flex
           justify-content: space-between
           align-items: center
+
           .instrument
             display: flex
             align-items: center
             width: 100%
+
           .status
             text-transform: none
             background: $color-offwhite
@@ -209,44 +255,59 @@ $tat-text-color = #162f5661
             height: auto
             margin-top: 15px
             border-radius: 4px
+
           .status-pill-warning
             width: auto
+
           .change-account
             width: 100%
+
           .change-account-action
             display: flex;
             justify-content: space-between
             align-items: center
             margin-top: 10px
+
             .merchant-id
               margin-left: 5px
               color: #4F4F4F
               font-size: 12px
+
               .i-user-circle
                 margin-right: 20px
+
         .bar-wrap
           flex-wrap: wrap
+
         .bar-nowrap
           flex-wrap: nowrap
+
         .disabled-text
           text-align: left
           text-transform: none
+
         .detail
           padding: 0
+
         &:hover
           background: unset
+
         .icon
           margin: 0
+
         .detail
           padding: 0
+
         .desc
           width: 80%
           font-size: 12px
           line-height: 16px
           color: $desc-white
+
         .status-pill
           font-size: 12px
           pointer-events: none
+
         .paypal-info
           display: block
           background: #F2F4FE
@@ -267,25 +328,31 @@ $tat-text-color = #162f5661
         justify-content: center
         align-items: center
         padding: 10px 15px
+
         > div
           width: 100%
           display: flex
           align-items: center
+
           .icon
-            flex:1
+            flex: 1
+
           .detail
             width: 180px
             padding-left: 15px
+
             strong
               user-select: none
               color: $text-default
               font-size: 14px
               line-height: 17px
+
             p
               user-select: none
               color: $text-grey
               font-size: 12px
               line-height: 20px
+
           .raise-request
             display: flex
             align-items: center
@@ -294,41 +361,49 @@ $tat-text-color = #162f5661
 
         .instrument-description
           padding: 15px 0
+
           .description-strong
             font-weight: 600
+
           .instrument-description-container
             display: flex
             flex-grow: 1
-            flex-direction: row
             align-items: center
             justify-content: space-evenly
-            flex-wrap: wrap
+            flex-flow: row wrap
             background: $color-offwhite
             padding: 10px
             width: auto
-            .est-date-para:
-              fontSize: 14px
+
+            .est-date-para
+              font-size: 14px
+
             i
               font-size: 20px
               margin-right: 10px
+
             .detail
               display: flex
               justify-content: space-between
               align-items: center
               width: auto
+
               #status
                 margin-top: 14px
+
           .disclaimer
-            color: #000000
+            color: #000
             opacity: 0.3
             padding-top: 8px
-            &:before
-              content: '*'
+
+            &::before
+              content: "*"
               margin-right: 2px
 
       li.action-required-list-item
         height: auto
         padding: 15px
+
         .comment
           display: flex
           margin: 12px 0
@@ -337,71 +412,100 @@ $tat-text-color = #162f5661
           font-size: 14px
           border-radius: 2px
           align-items: flex-start
+
           i
             padding: 5px 10px 2px 0
             font-size: 20px
+
           p
             margin: 5px 10px
+
           img
             margin: 8px 0
+
       li.activated-action-required-list-item
         height: auto
         padding: 15px
+
         .comment
           margin-top: 10px
           background: $color-mustard
+
           details
             padding: 0 10px
             width: 100%
+
             summary
               display: flex
               align-items: center
               justify-content: space-between
               font-size: 14px
-              line-height: 20px            
+              line-height: 20px
               color: #CD8214
               padding: 10px 0
               cursor: pointer
+
               img
                 margin-right: 10px
+
             .description
               padding-bottom: 10px
+
             .action
               padding-bottom: 10px
+
           details[open]
             .toggle
               transform: rotate(180deg)
-            summary ~ * 
-              animation: sweep .5s ease-in-out
+
+            summary ~ *
+              animation: sweep 0.5s ease-in-out
 
           @keyframes sweep {
-            0%    {opacity: 0; transform: translateX(0)}
-            100%  {opacity: 1; transform: translateX(0)}
+            0% {
+              opacity: 0;
+              transform: translateX(0)
+            }
+
+            100% {
+              opacity: 1;
+              transform: translateX(0)
+            }
           }
 
-      li.list-item-has-description 
+      li.list-item-has-description
         height: auto
         padding: 10px 15px
+
         > div
           flex-wrap: wrap
+
         .detail
           padding: 0
+
         .requested-list-item
           width: 100%
           display: flex
           align-items: center
+
           i
             margin: 5px 10px 2px 0
+
           p
             font-size: 14px
             margin: 5px 10px
+
       li.list-item-has-long-description
         min-height: 105px
+
         p
           max-width: 250px
-      li.list-item, li.list-item-disabled
+
+      li.list-item,
+      li.list-item-disabled
         min-height 56px
         height auto
+
         details
           width 100%
           border-radius 4px
@@ -409,8 +513,10 @@ $tat-text-color = #162f5661
           margin-top 17px
           background $color-mustard
           font-size 14px
+
           p
-           margin-top 4px
+            margin-top 4px
+
           .details-field
             display flex
             justify-content space-between
@@ -418,22 +524,28 @@ $tat-text-color = #162f5661
             background $color-white
             padding 12px
             margin-top 12px
+
             .text-muted
               margin-top 4px
+
             .popover-text
               text-align left
               text-transform none
+
           summary
-           font-weight 700
-           font-size 14px
-           cursor pointer
-           p
-            display flex
-            align-items center
-            justify-content space-between
-            margin 0
-            .i-chevron-up
-              transform rotate(180deg)
+            font-weight 700
+            font-size 14px
+            cursor pointer
+
+            p
+              display flex
+              align-items center
+              justify-content space-between
+              margin 0
+
+              .i-chevron-up
+                transform rotate(180deg)
+
         details[open]
           .i-chevron-up
             transform rotate(0deg)
@@ -444,35 +556,43 @@ $tat-text-color = #162f5661
       .instruments-methods-container
         border: 1px solid $border-grey
         padding: 14px 0 0
+
         .status-label
           padding: 5px 12px
           text-transform: uppercase
           min-width: unset
+
         button
           margin-right: 0
+
         .top-container
           padding: 0 20px
-          display: flex 
+          display: flex
           flex-direction: row
           align-items: center
           justify-content: space-between
           margin-bottom: 14px
+
           .left-text-wrapper
             margin-right: 20px
+
             h4
               font-size: 14px
               color: $text-default
               margin: 0 0 5px
               line-height: 17px
               font-weight: 500
+
             p
               font-weight: 400
               font-size: 12px
               line-height: 16px
               color: $text-grey
+
         .bottom-container
           margin-bottom: 20px
           padding: 0 20px
+
           .error-message
             display: flex
             flex-direction: row
@@ -481,63 +601,76 @@ $tat-text-color = #162f5661
             background: $color-offwhite
             border-radius: 4px
             margin-bottom: 7px
+
             i
               margin-top: 1px
+
             .message
               font-size: 12px
               color: $text-default
               line-height: 14px
               margin-left: 5px
+
           .action
             font-weight: 400;
             font-size: 12px;
             line-height: 14px;
-            color: $text-default  
+            color: $text-default
+
         .method-list-container
-          border-top: 1px solid $border-grey 
+          border-top: 1px solid $border-grey
+
           button
             margin-left: auto
+
           .instrument-row
-            display: flex 
+            display: flex
             flex-direction: row
             align-items: center
             padding: 14px 0
             border-bottom: 1px dashed $border-grey;
+
             &:last-child
               border-bottom: unset
+
             img
               width: 22px
               height: auto
               margin-right: 17px
               font-size: 10px
+
             .text-wraper
               margin-right: auto
+
               .name
                 font-size: 14px
                 font-weight: 500
                 color: $text-default
                 line-height: 17px
+
               .description
                 font-size: 12px
                 line-height: 16px
                 font-weight: 400
                 margin-top: 5px
                 color: $text-grey
+
             .status-wrapper
               display: flex
               flex-direction: column
               align-items: center
+
               .tat-text
                 font-size: 10px
                 color: $tat-text-color
                 border-bottom: 0.5px solid $tat-text-color
                 margin-top: 5px
-                font-weight: 600    
+                font-weight: 600
 
       .instant-bank-transfer
         .instrument-row
           padding-left: 20px !important
-          padding-right: 20px !important     
+          padding-right: 20px !important
 
     .status
       text-transform: uppercase
@@ -549,40 +682,47 @@ $tat-text-color = #162f5661
       height: 25px
       user-select: none
       text-align center
-    .activated, .activated-action-required
+
+    .activated,
+    .activated-action-required
       min-width: 80px
       color: #1F890E
-      background: #1f890e1a
+      background: #1F890E1A
+
     .pending
       min-width: 80px
-      color: #162f56de
-      background: #162f561a
+      color: #162F56DE
+      background: #162F561A
+
     .requested
       min-width: 80px
       color: #2A8CFF
-      background: #0b70e71a
+      background: #0B70E71A
+
     .rejected
       min-width: 80px
       color: #D12D2D
-      background: #d12d2d1a
+      background: #D12D2D1A
+
     .action-required
       min-width: 80px
       color: #CD8214
       border-radius: 15px
       background: $color-mustard
+
     .under-review
       margin-top 10px
       opacity 1
-    
+
     .notify-badge
       cursor: pointer
       background: #CD8214
-      color: white
+      color: $color-white
       padding: 1px 4px
       border-radius: 20px
       font-size: 10px
       margin-left: 10px
-    
+
     .foot-note
       margin-top: 40px
       width: 420px
@@ -592,11 +732,12 @@ $tat-text-color = #162f5661
       background: #FBF8E3
       color: $text-grey
       height: 85px
+
       i
         font-size: 18px
         padding-top: 5px
         margin-right: 10px
-    
+
     .all-active
       display: flex
       height: 36px
@@ -621,36 +762,40 @@ $tat-text-color = #162f5661
       padding-left: 10px
       align-items: center
 
-.checkout-modal 
+.checkout-modal
   width: $checkout-modal-width
+
   .wizard-header
     z-index: 1
     position: absolute
     top: -40px
-    color: white
+    color: $color-white
     font-size: 16px
     font-weight: 700
     display: flex
     align-items: center
     justify-content: space-between
     width: 100%
+
     .close
       display: flex
       flex-direction: column
       justify-content: space-between
       opacity: 1
+
       span:nth-of-type(1)
         display: block
         height: 2px
         width: 15px
-        background: white
+        background: $color-white
         transform: rotate(45deg)
+
       span:nth-of-type(2)
         display: block
         height: 2px
         width: 15px
         margin-top: -2px
-        background: white
+        background: $color-white
         transform: rotate(-45deg)
 
 .missinginfo-modal
@@ -658,14 +803,18 @@ $tat-text-color = #162f5661
   max-width 720px
   display flex
   flex-direction column
+
   .header
     border-bottom 0
-    background-color #fafafa
+    background-color #FAFAFA
+
     .modal-header
       padding 0
+
       h1
         font-size 18px
         font-weight 700
+
   .form-container
     padding 40px
     display flex
@@ -673,43 +822,63 @@ $tat-text-color = #162f5661
     gap 24px
     max-height 450px
     overflow-y scroll
+
     .form-container-item
       display grid
       grid-template-columns 1fr 2fr
       align-items center
       grid-auto-rows minmax(40px, auto)
+
       label
         text-align right
         margin-right 20px
-      input[type="text"], input[type="number"]
-       height 36px
-       border 1px solid #E2E2E2
-       padding 12px
-       width 300px
+
+      input[type="text"],
+      input[type="number"],
+      textarea
+        height 36px
+        border 1px solid #E2E2E2
+        padding 12px
+        width 300px
+
       .Input
         margin: 24px 0
+
+      .missing-info-textarea
+        height 100px
+        resize none
+
+      p
+        color #D13821
+
   .tat
     padding 30px
+
     .primary-text
       font-size 14px
       color #58666E
       margin-bottom 24px
-      a 
+
+      a
         font-weight bold
+
     .secondary-text
       font-weight 400
       font-size 14px
       color $secondary-color
+
   .disclaimer
     padding 12px
     background #FEF6DD
     display flex
     align-items baseline
     margin 0 20px
+
     .i-info-outline
       margin-right 10px
       position relative
       top 3px
+
   .footer
     position fixed
     bottom 0
@@ -719,56 +888,72 @@ $tat-text-color = #162f5661
     justify-content flex-end
     gap 24px
     background $background-white
+
     .btn-secondary
       border 1px solid #E5E5E5
       background $background-white
       border-radius 2px
       color $secondary-blue
+
     i.i-chevron-right
       color $color-white
       font-family merchant-icons
+
 .clarifications-modal
   height 620px
   max-width 70%
-  @media screen and (max-width: 1024px)
+
+  @media screen and (max-width 1024px)
     max-width 80%
+
   .container
     padding 0
+
     .sidebar
       width $side-width
       background $color-white
       left 0
-      @media screen and (max-width: 1024px)
+
+      @media screen and (max-width 1024px)
         width $side-width-desktop-lg
+
       .header
         padding 24px
         background $color-white
         border 0
+
       h3
         font-weight bold
         font-size 16px
+
       .subtitle
         margin 24px 0
+
       ul
         list-style none
         padding 0
+
         a
           height 40px
           display flex
           justify-content space-between
           align-items center
           margin 2px 0
+
           li
             color #6A757A
             padding-left 24px
             margin 0 2px
             align-self center
+
           .i-chevron-right
             color: $color-white
             margin-top 5px
             margin-right 16px
+
         a.active
           background #5D90E9
+
           li
             color $color-white
             padding-right 0
@@ -779,20 +964,25 @@ $tat-text-color = #162f5661
       width calc(100% - 240px)
       margin-left $side-width
       padding 30px
-      @media screen and (max-width: 1024px)
+
+      @media screen and (max-width 1024px)
         width calc(100% - 220px)
         margin-left $side-width-desktop-lg
+
       .form
         max-height 470px
         overflow-y scroll
         scroll-behavior smooth
+
       h3
         font-weight bold
         font-size 18px
         margin: 10px
+
       .modal-header
         margin-bottom 30px
         padding 0
+
     .footer
       position fixed
       bottom 0
@@ -802,30 +992,36 @@ $tat-text-color = #162f5661
       width 100%
       display flex
       justify-content flex-end
+
   .clarification-input
     display flex
-    border 1px solid #0000000d
+    border 1px solid #0000000D
     background $background-white
     padding 12px 16px 24px 13px
     margin-bottom 32px
+
     .i-info-circle
       display inline-block
       margin-top 5px
       margin-right 10px
       color #E9BE17
       font-size 20px
+
     .input-container
       width 100%
-      .input-label 
+
+      .input-label
         padding-bottom 12px
 
-      .textarea-container 
+      .textarea-container
         position relative
         width 100%
+
         textarea
           width 100%
           padding-top 8px
           padding-left 8px
+
         .i-file-attach
           transform rotate(90deg)
           display inline-block
@@ -833,27 +1029,34 @@ $tat-text-color = #162f5661
           position absolute
           right 15px
           top 15px
-          @media screen and (max-width: 1024px) 
+
+          @media screen and (max-width 1024px)
             top 10px
+
     .file-upload
       margin-top: 24px
       display flex
       align-items center
+
       .upload-label
         margin-left 40px
         font-weight 700
         width: 140px
-      .Dropzone-cavity 
-        width 300px 
-        .small 
+
+      .Dropzone-cavity
+        width 300px
+
+        .small
           margin 12px
-        @media screen and (max-width: 1024px) 
+
+        @media screen and (max-width 1024px)
           .Dropzone-content-desc
-            font-size 14px 
+            font-size 14px
 
 .paytm-wallet-integration
   position: relative
-  box-shadow: 0 0 8px #0000004d
+  box-shadow: 0 0 8px #0000004D
+
   #white-background
     background: $color-white
     margin-top: 60px
@@ -876,17 +1079,21 @@ $tat-text-color = #162f5661
     bottom: 30px
     padding: 15px
     z-index: -1
-    img 
+
+    img
       height: 177px
       width: 222px
       margin: 10px 20px
+
     .drawer-header
       font-size: 14px
       font-weight: 700
       margin: 26px 0
+
     .drawer-list-item
       color: $text-darkgrey
       font-size: 14px
+
     .drawer-list
       color: $color-grey
       font-size: 14px
@@ -894,6 +1101,7 @@ $tat-text-color = #162f5661
   .wizard
     min-height: 527px
     background: $color-white
+
     .register-account
       display: flex
       justify-content: space-between
@@ -902,6 +1110,7 @@ $tat-text-color = #162f5661
       padding: 10px
       background: $details-white
       border-radius: 2px
+
       .blue-bar
         width: 5px
         height: 36px
@@ -909,8 +1118,10 @@ $tat-text-color = #162f5661
         opacity: 0.9
         border-radius: 2px
         margin-right: 15px
+
     .form-container
-      padding: 20px 
+      padding: 20px
+
     .form-title
       padding: 24px
       font-weight: 600
@@ -918,46 +1129,58 @@ $tat-text-color = #162f5661
       position: absolute
       top: 0
       left: 0
-      background: white
+      background: $color-white
       width: 100%
+
     .form-subtitle
       margin-top: 50px
       font-size: 14px
+
       i
-        color: black
+        color: #000
+
     .form-radio > div.form-control-radio:nth-of-type(1)
       border-bottom: 1px solid #ADBCC9
+
     .form-description
-      background: #fafafa
+      background: #FAFAFA
       padding: 0 12px
-      border: 1px solid #ffffff78
+      border: 1px solid #FFFFFF78
       margin-top: 10px
+
       .form-control-input
         margin: 10px 0
+
       .form-control-radio
         padding: 26px 0
+
       label
         display: flex
         justify-content: flex-start
 
-        span 
+        span
           color: $text-darkgrey
-          font-size: 12px  
+          font-size: 12px
+
       input[type="radio"]
-        margin-right: 10px    
+        margin-right: 10px
+
     .Input
       margin: 0
+
       .Input-content
         margin-top: 12px
+
       ul
         margin: 30px 0
         padding: 0
+
       li
         cursor: pointer
         list-style: none
         padding: 10px 24px
         margin: 4px 0
-        color: #57666d
+        color: #57666D
         position: relative
 
         .li--broad
@@ -984,7 +1207,6 @@ $tat-text-color = #162f5661
           line-height: initial
           vertical-align: middle
 
-
         i.i-chevron-right
           color: $color-white
           position: absolute
@@ -996,9 +1218,11 @@ $tat-text-color = #162f5661
           transition: 0.35s
 
         &:hover
-          background: #fafbfc
+          background: #FAFBFC
+
         &.text-success
-          color: #27c24c
+          color: #27C24C
+
         &.active
           background: $secondary-blue
           color: $color-white
@@ -1011,37 +1235,44 @@ $tat-text-color = #162f5661
 
         &.disabled
           cursor: not-allowed
-          color: #b6c0c4
+          color: #B6C0C4
 
-      & ~ main, & ~ footer
+      & ~ main,
+      & ~ footer
         left: $side-width
 
       & ~ footer .help-text
-          width: 320px
+        width: 320px
+
   .footer
-    border-top: 1px solid #adbcc978
+    border-top: 1px solid #ADBCC978
     padding: 22px 24px
     background: #EBEFF0
+
     .stepper
       position: relative
       width: 50px
       display: flex
       align-items: center
       justify-content: space-around
+
       .inactive
         width: 6px
         height: 6px
         border-radius: 50%
         background: $secondary-color
+
       .active
         display: block
         width: 6px
         height: 6px
         border-radius: 50%
         background: $secondary-blue
+
     .action-buttons
       display: flex
       gap: 1.5rem
+
       .btn-link
         color: $border-blue
         font-weight: 700
@@ -1058,47 +1289,62 @@ $tat-text-color = #162f5661
   padding: 20px 15px
   display: flex
   justify-content: space-between
-  .instrument-firc-content 
+
+  .instrument-firc-content
     width: 230px
     padding-left: 10px
 
 .missing-info-form
   &:not(.disable-past-year)
     .rc-calendar-year-panel-tbody
-      .rc-calendar-year-panel-last-decade-cell .rc-calendar-year-panel-year, .rc-calendar-year-panel-next-decade-cell .rc-calendar-year-panel-year
+      .rc-calendar-year-panel-last-decade-cell .rc-calendar-year-panel-year,
+      .rc-calendar-year-panel-next-decade-cell .rc-calendar-year-panel-year
         color #00000040
+
       td
-        &:not([title="2015"]):not([title="2016"]):not([title="2017"]):not([title="2018"]) > a 
-          color #565a5c
+        &:not([title="2015"]):not([title="2016"]):not([title="2017"]):not([title="2018"]) > a
+          color #565A5C
+
         &:hover
           background $secondary-blue
           border 1px solid $secondary-blue
           cursor pointer
           position relative
           z-index 4
-      td:not([title="2015"]):not([title="2016"]):not([title="2017"]):not([title="2018"]) 
+
+      td:not([title="2015"]):not([title="2016"]):not([title="2017"]):not([title="2018"])
         cursor pointer
+
     .rc-calendar-year-panel-header
-        margin 0 20px
-      .rc-calendar-year-panel-next-decade-btn
-        transform rotate(180deg)
-      .rc-calendar-year-panel-header > a:not(.rc-calendar-year-panel-decade-select)
-        display block
-    .rc-calendar-year-panel-prev-decade-btn, .rc-calendar-year-panel-next-decade-btn
-        display block
-        border 1px solid #e4e4e4
-        padding 3px 8px 0
-      
-    .rc-calendar-year-panel-next-decade-cell, .rc-calendar-year-panel-last-decade-cell
+      margin 0 20px
+
+    .rc-calendar-year-panel-next-decade-btn
+      transform rotate(180deg)
+
+    .rc-calendar-year-panel-header > a:not(.rc-calendar-year-panel-decade-select)
+      display block
+
+    .rc-calendar-year-panel-prev-decade-btn,
+    .rc-calendar-year-panel-next-decade-btn
+      display block
+      border 1px solid #E4E4E4
+      padding 3px 8px 0
+
+    .rc-calendar-year-panel-next-decade-cell,
+    .rc-calendar-year-panel-last-decade-cell
       pointer-events none
+
       .rc-calendar-year-panel-year
-        background #66666633
+        background #6663
 
 .payment-method-confirm-message
   margin-bottom -5px
+
   .i-external-link
     margin-left 2px
+
   .confirm-list
-      padding: 1rem 2rem 0rem
+    padding: 1rem 2rem 0
+
   .Input
     padding-right: 3rem

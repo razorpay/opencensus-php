@@ -1,4 +1,4 @@
-import React, { useReducer, useEffect } from 'react';
+import React, { useReducer, useEffect, useState } from 'react';
 import moment from 'moment';
 import Input from 'common/new-ui/Input';
 import ModalHeader from 'common/ui/ModalHeader';
@@ -18,9 +18,10 @@ const TOGGLE_CHECKBOX = 'TOGGLE_CHECKBOX';
 
 const LAST_PAGE = 2;
 
-const MissingInfoForm = ({ fields, values, onChange }) => (
+const MissingInfoForm = ({ fields, values, onChange, fieldError }) => (
   <div className="form-container">
     {fields?.map(({ display_name, name, type, placeholder, format }) => {
+      const InputField = type === 'textarea' ? 'textarea' : 'input';
       return (
         <div className="form-container-item" key={name}>
           <label htmlFor={name}>{display_name}</label>
@@ -42,14 +43,19 @@ const MissingInfoForm = ({ fields, values, onChange }) => (
               className="missing-info-form"
             />
           ) : (
-            <input
-              type={type}
-              name={name}
-              pattern={format}
-              placeholder={placeholder}
-              onChange={(e) => onChange(name, e.target.value, type)}
-              value={values[name] || ''}
-            />
+            <div>
+              <InputField
+                type={type}
+                className={type === 'textarea' ? 'missing-info-textarea' : ''}
+                name={name}
+                pattern={format}
+                placeholder={placeholder}
+                onChange={(e) => onChange(name, e.target.value, type)}
+                value={values[name] || ''}
+                maxLength={500}
+              />
+              {type === 'textarea' && <p>{fieldError}</p>}
+            </div>
           )}
         </div>
       );
@@ -117,6 +123,7 @@ const MissingInfoModal = (props) => {
     disabled: true,
     isChecked: false,
   });
+  const [fieldError, setFieldError] = useState('');
   const {
     tat,
     instrument: { name, collect_info, path },
@@ -179,6 +186,9 @@ const MissingInfoModal = (props) => {
 
   const onChange = (name, value, type) => {
     const updatedValue = type === 'date' ? moment(value).format('YYYY-MM-DD') : value;
+    if (name === 'merchant_business_detail|pg_use_case' && value.length < 50) {
+      setFieldError('Please write at least 50 letters');
+    } else setFieldError('');
     return dispatch({
       type: SET_VALUE,
       payload: {
@@ -196,7 +206,13 @@ const MissingInfoModal = (props) => {
   };
 
   useEffect(() => {
-    if (Object.values(values)?.every((v) => v.length > 0)) {
+    if (
+      Object.entries(values)?.every((v) => {
+        return v[0] === 'merchant_business_detail|pg_use_case'
+          ? v[1].length >= 50
+          : v[1].length > 0;
+      })
+    ) {
       dispatch({ type: SET_DISABLED, payload: false });
     } else {
       dispatch({ type: SET_DISABLED, payload: true });
@@ -227,7 +243,12 @@ const MissingInfoModal = (props) => {
         </div>
       )}
       {page === 1 ? (
-        <MissingInfoForm values={values} fields={collect_info} onChange={onChange} />
+        <MissingInfoForm
+          values={values}
+          fields={collect_info}
+          onChange={onChange}
+          fieldError={fieldError}
+        />
       ) : (
         <InstrumentTat
           tat={tat}
