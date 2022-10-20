@@ -337,7 +337,10 @@ class FundTransfer extends Base
 
         $sourceType = $this->fta->getSourceType();
 
-        $sourceBalanceAccountType = $source->balance->getAccountType();
+        /**
+         * Checking for refunds use case where balance is not associated with source entity
+         */
+        $sourceBalanceAccountType = optional($source->balance)->getAccountType();
 
         // Ref: https://razorpay.slack.com/archives/CNXASR0H3/p1586861024155400
         if (($sourceType === Entity::PAYOUT) and
