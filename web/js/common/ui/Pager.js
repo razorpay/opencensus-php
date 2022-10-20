@@ -26,7 +26,7 @@ export default class Pager extends Component {
   }
 
   render() {
-    const { length, hasMoreData } = this.props;
+    const { length, hasMoreData = true } = this.props;
     const count = +this.props.count;
     const skip = +this.props.skip;
     const nextDisabled = length < count;
