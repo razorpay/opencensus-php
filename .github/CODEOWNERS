@@ -107,6 +107,7 @@ app/Models/Upi/                                        nemo@razorpay.com        
 app/Models/User/                                       @razorpay/acquisition-be                                vivek.kumar@razorpay.com
 app/Models/VirtualAccount/                             @razorpay/TechVirtualAccounts
 app/Models/Workflow/                                   praveen.patlola@razorpay.com
+app/Models/FundTransfer/M2P/M2PConfigs.php             chirag.chiranjib@razorpay.com
 
 #
 # Database
