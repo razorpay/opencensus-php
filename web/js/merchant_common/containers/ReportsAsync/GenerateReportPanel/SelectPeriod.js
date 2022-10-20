@@ -6,7 +6,10 @@ import { analyticsTrack } from 'common/utils/analytics';
 import Input from 'common/new-ui/Input';
 import { isNone, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
-import { getTimeUnix, getStartAndEndUnixTimeStampsForDaysFrom } from '../utils';
+import {
+  getTimeUnix,
+  getStartAndEndUnixTimeStampsForDaysFrom,
+} from 'merchant_common/containers/ReportsAsync/utils';
 import errorService from '@razorpay/universe-utils/errorService';
 import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 
@@ -212,6 +215,7 @@ export default class SelectPeriod extends React.Component {
               disabled={isFormDisabled}
               defaultValue={defaultPeriod}
               value={values?.selectedPeriod}
+              aria-label="Select Period"
             />
             {!isFormDisabled && <PredefinedPeriodDurations selectedPeriod={selectedPeriod} />}
 
@@ -314,6 +318,7 @@ function SelectSingleDay({ selectedDate, ...props }) {
       placeholder="Select Day"
       defaultValue={selectedDate}
       label="Select Date"
+      aria-label="Select Date"
       {...props}
     />
   );
@@ -334,6 +339,7 @@ function SelectDate({ withTime, onDateChange, ...props }) {
         <div class="m-t">
           <Input.TimePicker
             name={`${props.name}Time`}
+            data-testid={`${props.name}Time`}
             placeholder="HH:MM A"
             addonAfter={<i class="i i-time" />}
             defaultValue={props.defaultValue}
@@ -353,6 +359,7 @@ export function SelectRange({ selectedStartAt, selectedEndAt, ...props }) {
         placeholder="Start At"
         defaultValue={selectedStartAt}
         label="Start At"
+        aria-label="Start At"
         allowToday={true}
         {...props}
       />
@@ -362,6 +369,7 @@ export function SelectRange({ selectedStartAt, selectedEndAt, ...props }) {
         placeholder="End At"
         defaultValue={selectedEndAt}
         label="End At"
+        aria-label="End At"
         allowToday={true}
         {...props}
       />
@@ -397,7 +405,7 @@ function PredefinedPeriodDurations({ selectedPeriod }) {
   }
 
   return (
-    <div className="m-t">
+    <div className="m-t" data-testid="selected-period-text">
       <small class="text-warning">
         {fromDate} {toDate && ` to ${toDate}`}
       </small>
