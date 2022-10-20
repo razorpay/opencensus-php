@@ -12,6 +12,7 @@ class Api extends Base
     const PAYMENT_URL  = '/v1/payment';
     const RECHARGE_URL = '/v1/recharge';
     const TRANSFER_URL = '/v1/transfer';
+    const CAPTURE_URL  = '/v1/payment/:PAYMENT_ID/capture';
 
     public function __construct($app)
     {
@@ -102,5 +103,18 @@ class Api extends Base
         ];
 
         return $this->makeRequest(Requests::POST, self::TRANSFER_URL, $body, self::USER);
+    }
+
+    public function capture(array $data) : array
+    {
+        (new Validator)->validateInput('capture', $data);
+
+        $body = [
+            'amount'           => $data['amount'],
+        ];
+
+        $captureUrl = str_replace(":PAYMENT_ID",$data['payment_id'],self::CAPTURE_URL);
+
+        return $this->makeRequest(Requests::POST, $captureUrl, $body, self::USER);
     }
 }

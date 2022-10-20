@@ -41,4 +41,9 @@ class Validator extends Base\Validator
         'amount'            => 'required|integer|min:0',
         'notes'             => 'sometimes|string',
     ];
+
+    protected static $captureRules = [
+        'payment_id'        => 'required|alpha_num|size:14',
+        'amount'            => 'required|integer|min:0',
+    ];
 }

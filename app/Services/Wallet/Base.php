@@ -219,7 +219,7 @@ class Base
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_RAZORPAY_WALLET_ERROR,null,
-                ['method'=>'wallet'],$body[self::MESSAGE]);
+                ['method'=>'wallet'],$body['error']['description']);
         }
         else if ($code >= 500)
         {

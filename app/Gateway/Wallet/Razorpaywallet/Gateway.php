@@ -128,4 +128,33 @@ class Gateway extends Base\Gateway
 
         return [];
     }
+
+    public function capture(array $input)
+    {
+        $this->trace->info(
+            TraceCode::GATEWAY_CAPTURE_REQUEST,
+            [
+                'gateway'           => $this->gateway,
+                'payment_id'        => $input['payment']['id'],
+            ]
+        );
+
+        parent::capture($input);
+
+        $data = [
+            'payment_id'    => $input['payment']['id'],
+            'amount'        => $input['payment']['amount'],
+        ];
+
+        $response = App::getFacadeRoot()['wallet_api']->capture($data);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_AUTHORIZE_RESPONSE,
+            [
+                'gateway'       => $this->gateway,
+                'payment_id'    => $input['payment']['id'],
+                'response'      => $response,
+            ]
+        );
+    }
 }
