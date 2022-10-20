@@ -126,6 +126,7 @@ class Route
         'payment_create_wallet'                    => ['post',     'payments/create/wallet',                         'PaymentCreateController@postCreateWalletPayment'                   ],
         'payment_create_upi'                       => ['post',     'payments/create/upi',                            'PaymentCreateController@postCreateUpiPayment'                      ],
         'payment_create_openwallet'                => ['post',     'payments/create/openwallet',                     'PaymentCreateController@postCreateS2SPayment'                      ],
+        'payment_create_razorpaywallet'            => ['post',     'payments/razorpaywallet',                        'PaymentCreateController@postCreateRazorpayWalletPayment'           ],
         'payment_create_upi_unexpected'            => ['post',     'payments/create/upi/unexpected',                 'PaymentCreateController@postCreateUpiUnexpectedPayment'            ],
         'payment_update_and_redirect'              => ['post',     'payments/{id}/updateAndRedirect',                'PaymentCreateController@postUpdateAndRedirectToAuthorize'          ],
         'payment_redirect_to_dcc_info'             => ['get',      'payments/{id}/dcc_info',                         'PaymentCreateController@getRedirectToDCCInfo'                     ],
@@ -4170,6 +4171,7 @@ class Route
         'payment_create_wallet',
         'payment_create_upi',
         'payment_create_openwallet',
+        'payment_create_razorpaywallet',
         'payment_create_aeps',
         'payment_otp_submit_private',
         'payment_otp_resend_private',
@@ -14286,6 +14288,7 @@ class Route
         'payment_create_wallet'                => [Feature::S2SWALLET, Feature::S2S],
         'payment_create_upi'                   => [Feature::S2SUPI, Feature::S2S],
         'payment_create_openwallet'            => [Feature::OPENWALLET],
+        'payment_create_razorpaywallet'        => [Feature::RAZORPAY_WALLET],
         'payment_create_recurring'             => [Feature::CHARGE_AT_WILL],
         'payment_create_nach_register'         => [Feature::CHARGE_AT_WILL],
         'payment_create_private_old'           => [Feature::S2S],
@@ -14568,6 +14571,7 @@ class Route
         'payment_calculate_fees',
         'payment_create_wallet',
         'payment_create_openwallet',
+        'payment_create_razorpaywallet',
         'payment_create_upi',
         'payment_callback_post',
         'payment_callback_get',
@@ -14600,6 +14604,7 @@ class Route
         'payment_create_nach_register',
         'payment_create_aeps',
         'payment_create_openwallet',
+        'payment_create_razorpaywallet'
     ];
 
     const SUBSCRIPTION_PROXY_ROUTES = [
@@ -15226,6 +15231,7 @@ class Route
         'payment_create_wallet'                             => HeartbeatLagChecker::MASTER,
         'payment_create_upi'                                => HeartbeatLagChecker::MASTER,
         'payment_create_openwallet'                         => HeartbeatLagChecker::MASTER,
+        'payment_create_razorpaywallet'                     => HeartbeatLagChecker::MASTER,
         'payment_redirect_to_authorize'                     => HeartbeatLagChecker::MASTER,
         'payment_redirect_to_authorize_get'                 => HeartbeatLagChecker::MASTER,
         'payment_redirect_to_authorize_post'                => HeartbeatLagChecker::MASTER,

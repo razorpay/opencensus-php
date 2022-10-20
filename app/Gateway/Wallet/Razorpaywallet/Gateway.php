@@ -33,7 +33,6 @@ class Gateway extends Base\Gateway
 
         $data = [
             'merchant_id'   => $input['merchant']->getId(),
-            'user_id'       => $input['payment']['reference14'] ?? null,
             'payment_id'    => $input['payment']['id'],
             'amount'        => $input['payment']['amount'],
             'customer_consent' => true,
@@ -43,6 +42,14 @@ class Gateway extends Base\Gateway
             ($input['payment']['notes'] !== []))
         {
             $data['notes'] = json_encode($input['payment']['notes']);
+        }
+
+        if ((isset($input['payment']['reference14']) === true)) {
+            $data['user_id']  = $input['payment']['reference14'];
+        }
+
+        if ((isset($input['payment']['contact']) === true)) {
+            $data['contact']  = $input['payment']['contact'];
         }
 
         $response = App::getFacadeRoot()['wallet_api']->payment($data);

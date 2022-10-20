@@ -133,7 +133,7 @@ class Validator extends Base\Validator
         'meta'                          => 'sometimes|array',
         'authentication'                => 'required_if:application,visasafeclick|array',
         'reward_ids'                    => 'sometimes|array',
-        'wallet_user_id'                => 'filled|unsigned_id|custom',
+        'wallet_user_id'                => 'filled|unsigned_id',
         'user_consent_for_tokenisation' => 'sometimes|in:0,1', // temporary - for taking saved card consent till Dec 31st 2021
         'consent_to_save_card'          => 'sometimes|in:0,1',
         'authentication.cavv'                                        => 'required_if:application,visasafeclick|size:28|string',
@@ -383,6 +383,7 @@ class Validator extends Base\Validator
         'upi_block',
         'charge_account',
         'cod',
+        'wallet_user_id',
     ];
 
     protected static $minAmountCheckRules = [
@@ -1309,15 +1310,6 @@ class Validator extends Base\Validator
             return;
         }
 
-        //
-        // When razorpay_wallet feature is enabled, payment request has
-        // only the wallet_user_id which is sent over to wallet service.
-        //
-        if ($this->entity->merchant->hasRazorpaywalletFeature() === true)
-        {
-            return;
-        }
-
         $allowedPaymentMethods = [
             Payment\Method::AEPS,
             Payment\Method::TRANSFER,
@@ -1329,8 +1321,18 @@ class Validator extends Base\Validator
         if ((in_array($input[Entity::METHOD], $allowedPaymentMethods, true) === false) and
             ((empty($input[Entity::CONTACT]) === true) and (empty($input[Entity::UPI_PROVIDER]) === true)))
         {
-            throw new Exception\BadRequestValidationFailureException(
+            //For Razorpay wallet payment if contact is not present
+            //throw error if wallet_user_id is also not present
+            if (($input['method'] === Payment\Method::WALLET) and ($input['wallet'] === Wallet::RAZORPAYWALLET) and
+                (empty($input['wallet_user_id']) === false))
+            {
+                return;
+            }
+            else
+            {
+                throw new Exception\BadRequestValidationFailureException(
                 'The contact field is required.', Entity::CONTACT);
+            }
         }
 
         if ($input['method'] === Payment\Method::WALLET)
@@ -1860,14 +1862,25 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateWalletUserId()
+    protected function validateWalletUserId($input)
     {
-        if ($this->entity->merchant->hasRazorpaywalletFeature() === false)
+
+        if ($this->entity->merchant->hasRazorpaywalletFeature() === false and  (empty($input['wallet_user_id']) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'wallet_user_id is not required and should not be sent.',
                 'wallet_user_id'
             );
+        }
+        if (($input['method'] === Payment\Method::WALLET) and ($input['wallet'] === Wallet::RAZORPAYWALLET))
+        {
+            if (empty($input['wallet_user_id']) === true)
+            {
+                if (empty($input['contact']) === true) {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'The wallet_user_id field is required when contact is not present.', Entity::REFERENCE14);
+                }
+            }
         }
     }
 

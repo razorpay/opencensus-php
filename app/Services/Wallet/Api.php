@@ -51,10 +51,11 @@ class Api extends Base
 
         $body = [
             'merchant_id'   => $data['merchant_id'],
-            'user_id'       => $data['user_id'],
+            'user_id'       => isset($data['user_id']) ? $data['user_id'] : null,
             'reference_id'  => $data['payment_id'],
             'amount'        => $data['amount'],
             'customer_consent' => $data['customer_consent'],
+            'contact'       => isset($data['contact']) ? $data['contact'] : null,
             'notes'         => isset($data['notes']) ? $data['notes'] : null,
         ];
 

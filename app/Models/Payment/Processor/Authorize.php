@@ -2191,6 +2191,10 @@ trait Authorize
         {
             $this->verifyFeatureForMerchant($merchant, Feature\Constants::OPENWALLET);
         }
+        else if ($payment->isRazorpaywalletPayment() === true)
+        {
+            $this->verifyFeatureForMerchant($merchant, Feature\Constants::RAZORPAY_WALLET);
+        }
         else if ($payment->isWallet() === true)
         {
             $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2SWALLET);
@@ -4573,7 +4577,14 @@ trait Authorize
         else if (($customer === null) and
                  ($payment->isRazorpaywalletPayment() === true))
         {
-            $payment->setReference14($input['wallet_user_id']);
+            if (!isset($input['wallet_user_id']) and isset($input['contact'])){
+                $payment->setContact($input['contact']);
+            }
+            else
+            {
+                $payment->setReference14($input['wallet_user_id']);
+            }
+
         }
         else if ($customer === null)
         {

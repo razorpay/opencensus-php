@@ -1673,6 +1673,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::REFERENCE17, $reference17);
     }
 
+    public function setContact($contact)
+    {
+        $this->setAttribute(self::CONTACT, $contact);
+    }
+
     public function enableCpsRoute()
     {
         $this->setAttribute(self::CPS_ROUTE, 1);

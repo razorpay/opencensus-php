@@ -79,6 +79,18 @@ class PaymentCreateController extends Controller
 
         return $ret;
     }
+    public function postCreateRazorpayWalletPayment()
+    {
+        $ret = $this->createPayment();
+
+        if ((is_array($ret)) and
+            (isset($ret['request']) === false))
+        {
+            return ApiResponse::json($ret);
+        }
+
+        return $ret;
+    }
 
     /**
      * Creates an S2S Nach register payment

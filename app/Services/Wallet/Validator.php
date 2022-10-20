@@ -16,11 +16,12 @@ class Validator extends Base\Validator
 
     protected static $paymentRules = [
         'merchant_id'       => 'required|alpha_num|size:14',
-        'user_id'           => 'required|alpha_num|size:14',
+        'user_id'           => 'sometimes|alpha_num|size:14',
         'payment_id'        => 'required|alpha_num|size:14',
         'amount'            => 'required|integer|min:0',
         'customer_consent'  => 'required|bool',
         'notes'             => 'sometimes|string',
+        'contact'           => 'sometimes|contact_syntax',
     ];
 
     protected static $refundRules = [
