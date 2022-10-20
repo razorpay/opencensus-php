@@ -16,6 +16,15 @@ const initFreshchat = (data) => {
       host: FRESHCHAT_HOST,
       config: {
         headerProperty: { hideChatButton: true, backgroundColor: '#2E3345' },
+        content: {
+          actions: {
+            csat_yes: 'Satisfied',
+            csat_no: 'Not satisfied',
+          },
+          headers: {
+            csat_question: 'How was your conversation with the agent?',
+          },
+        },
       },
       ...(isFreshChatbotLive ? { tags: ['enablefreshchatBot'] } : {}),
     });
