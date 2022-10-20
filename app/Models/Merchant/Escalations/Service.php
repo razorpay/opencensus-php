@@ -19,6 +19,8 @@ class Service extends Base\Service
         try
         {
             $core->triggerPaymentEscalations($timeBound);
+
+            $this->trace->count(Metric::PAYMENT_ESCALATION_SUCCESS_TOTAL);
         }
         catch (\Exception $e)
         {
@@ -26,6 +28,8 @@ class Service extends Base\Service
                 'type'  => 'PaymentEscalations',
                 'error' => $e->getMessage()
             ]);
+
+            $this->trace->count(Metric::PAYMENT_ESCALATION_FAIL_TOTAL);
         }
     }
 
@@ -63,6 +67,8 @@ class Service extends Base\Service
             try
             {
                 $core->handleNoDocGmvLimitBreach($timeBound);
+
+                $this->trace->count(Metric::NEW_XPRESS_ESCALATIONS_SUCCESS_TOTAL);
             }
             catch (\Exception $e)
             {
@@ -70,6 +76,8 @@ class Service extends Base\Service
                     'type'  => 'new_no_doc_escalations',
                     'error' => $e->getMessage()
                 ]);
+
+                $this->trace->count(Metric::NEW_XPRESS_ESCALATIONS_FAIL_TOTAL);
             }
         }
         else
@@ -77,6 +85,8 @@ class Service extends Base\Service
             try
             {
                 $core->handleNoDocLimitBreach();
+
+                $this->trace->count(Metric::XPRESS_ESCALATIONS_SUCCESS_TOTAL);
             }
             catch (\Exception $e)
             {
@@ -84,6 +94,8 @@ class Service extends Base\Service
                     'type'  => 'no_doc_escalations',
                     'error' => $e->getMessage()
                 ]);
+
+                $this->trace->count(Metric::XPRESS_ESCALATIONS_FAIL_TOTAL);
             }
         }
     }
