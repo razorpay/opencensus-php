@@ -120,9 +120,11 @@ class UserController extends Controller
         $data['redirectUrl']    = $baseUrl . '?next=' . $requestPath;
         $data['requestPath']    = $requestPath;
         $data['rootPath']       = self::ROOT_PATH;
+        $data['isAuthPath']     = false;
 
         if (empty($currentRouteName) === false and ($currentRouteName === "signup" || $currentRouteName === "signin" || $currentRouteName === "resetpassword"))
         {
+            $data['isAuthPath'] = true;
             if ($currentRouteName === 'signup')
             {
                 if ($this->redirectionApplicableForGuest() === true)

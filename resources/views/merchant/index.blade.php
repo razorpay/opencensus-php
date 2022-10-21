@@ -130,6 +130,15 @@
 @else
   <!-- head tag ends here -->
   @include('partials/new-auth')
+  <script type="text/javascript">
+      window.session_id = "{!! $session_id !!}"
+      window.isAuthPage = true;
+  </script>
+  @if($requestPath !== $rootPath && !$isAuthPath)
+    <script>
+      window.location.href = "{!! $redirectUrl !!}";
+    </script>
+  @endif
   <script>
     // @Todo: remove onload and onerror after debugging the missing display_google_auth event issue
     function trackScriptEvent(eventName, type) {
@@ -178,10 +187,6 @@
   </script>
   <script defer src="https://accounts.google.com/gsi/client" onerror="oneTapError()" onload="oneTapSuccess()"></script>
   <script src="{{$cdnDashboardUrl}}/dist/newAuth-entry.js"></script>
-  <script type="text/javascript">
-      window.session_id = "{!! $session_id !!}"
-      window.isAuthPage = true;
-  </script>
 @endif
 
 @include('partials/footer')
