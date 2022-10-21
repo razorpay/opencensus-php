@@ -859,9 +859,8 @@ class Selector extends Base\Core
 
             $paymentData[PaymentConstants::AUTHENTICATION_CHANNEL] = $this->input[PaymentConstants::AUTHENTICATION_CHANNEL];
 
-            if(($payment->getMethod() === Method::PAYLATER || $payment->getMethod() === Method::CARDLESS_EMI) and
-                (in_array($payment['wallet'], CardlessEmi::$fullNameForSupportedBanks, true) ||
-                    (in_array($payment['wallet'], PayLater::$fullNameForSupportedBanks, true))))
+            if(($payment->getMethod() === Method::PAYLATER and (in_array($payment['wallet'], PayLater::$fullNameForSupportedBanks, true))) ||
+                ($payment->getMethod() === Method::CARDLESS_EMI and (in_array($payment['wallet'], CardlessEmi::$fullNameForSupportedBanks, true))))
             {
                 $paymentData['wallet'] = strtoupper($payment['wallet']);
             }
