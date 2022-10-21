@@ -24,9 +24,9 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
     }
 
 
-    public function read($sessionId)
+    public function read($sessionId):string
     {
-        $connection = $this->cache->connection();
+        $connection = $this->cache->connection()->client();
 
         $key = $this->sessionNamespace.':'.$sessionId;
 
@@ -38,11 +38,12 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
 
             return $payload;
         }
+        return '';
     }
 
-    public function write($sessionId, $data)
+    public function write($sessionId, $data):bool
     {
-        $connection = $this->cache->connection();
+        $connection = $this->cache->connection()->client();
 
         $data = $this->getDefaultPayload($data, app());
 
@@ -117,9 +118,9 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
         return $payload;
     }
 
-    public function destroy($sessionId)
+    public function destroy($sessionId):bool
     {
-        $connection = $this->cache->connection();
+        $connection = $this->cache->connection()->client();
 
         $key = $this->getSessionKey($sessionId);
 

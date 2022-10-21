@@ -103,7 +103,7 @@ class ApiGuard implements Guard
      * @param  array  $credentials
      * @return bool
      */
-    public function validate(array $credentials = [])
+    public function validate(array $credentials = []): bool
     {
         // $user = $this->provider->retrieveByCredentials($credentials);
         //

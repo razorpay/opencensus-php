@@ -66,8 +66,7 @@ class Entity extends Base\Entity
         'netbanking'        =>  self::NETBANKING,
         'wallet'            =>  self::WALLET,
         'emi'               =>  self::EMI,
-        'upi'               =>  self::UPI,
-        'Unknown'           =>  self::UNKNOWN
+        'upi'               =>  self::UPI
     );
 
     public static function getAggregations($data, $mode)

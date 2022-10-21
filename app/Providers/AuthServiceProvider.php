@@ -6,6 +6,7 @@ use Illuminate\Contracts\Auth\Access\Gate as GateContract;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as BaseAuthServiceProvider;
 use Config;
 use Auth;
+use Gate;
 
 class AuthServiceProvider extends BaseAuthServiceProvider
 {
@@ -23,15 +24,15 @@ class AuthServiceProvider extends BaseAuthServiceProvider
      * @param  \Illuminate\Contracts\Auth\Access\Gate  $gate
      * @return void
      */
-    public function boot(GateContract $gate)
+    public function boot(): void
     {
-        $this->registerPolicies($gate);
+        $this->registerPolicies();
 
         $userRoles = Config::get('user-roles');
 
         foreach ($userRoles as $route => $roles)
         {
-            $gate->define($route, function($user) use ($roles)
+            Gate::define($route, function($user) use ($roles)
             {
                 $currentMerchant = $user->currentMerchant();
 

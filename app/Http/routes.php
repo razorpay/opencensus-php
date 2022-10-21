@@ -238,9 +238,9 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/admin/org/{org_id}/bg_img', 'AdminController@postUploadOrgBackgroundImage');
         Route::get('/admin/emaillogs', 'AdminController@getEmailLogs')->name('email_logs_get');
 
-        Route::get('/admin/{mode}/reports/broking', 'TransactionController@getTransactionBrokingReport')->name('reports_broking');
-        Route::get('/admin/{mode}/reports/invoice/{merchant_id}', 'TransactionController@getInvoiceReport')->name('reports_invoice');
-        Route::get('/admin/{mode}/reports/{entity}', 'TransactionController@getResourceReport')->name('reports_entity');
+        Route::get('/admin/{mode}/reports/broking', 'TransactionController@getTransactionBrokingReport')->name('admin_reports_broking');
+        Route::get('/admin/{mode}/reports/invoice/{merchant_id}', 'TransactionController@getInvoiceReport')->name('admin_reports_invoice');
+        Route::get('/admin/{mode}/reports/{entity}', 'TransactionController@getResourceReport')->name('admin_reports_entity');
 
         Route::get('/admin/admin_reports/{log_id}', 'MerchantController@downloadReport');
 

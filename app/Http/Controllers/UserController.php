@@ -16,13 +16,17 @@ use App\User\Constants;
 use App\Trace\TraceCode;
 use App\Http\AppResponse;
 use App\Base\UniqueIdEntity;
+use Illuminate\Http\Response;
 use App\User\RecoverableException;
+use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Http\RedirectResponse;
 use Razorpay\Api\Errors\BadRequestError;
 use App\Splitz\Service as SplitzService;
 use App\Metrics\Constants as MetricConstants;
 use App\Merchant\Constants as MerchantConstants;
 use App\User\Constants as UserConstants;
+use Illuminate\Contracts\Foundation\Application;
 
 const EVENT_TRIGGER_COUNT = 1;
 class UserController extends Controller
@@ -148,8 +152,11 @@ class UserController extends Controller
                 //TODO: Remove this in next release
                 $data['notifications']     = json_encode(array_merge($oldNotification,$newNotification));
             }
+            /*
+             * Null case is strict in laravel >= 6
+             * */
+            $currentMerchantId = $details['current'] ?? null;
 
-            $currentMerchantId = $details['current'];
 
             if(is_null($currentMerchantId) === false)
             {
@@ -324,7 +331,7 @@ class UserController extends Controller
     /**
      * Returns an empty success to keep the user session active..
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function getKeepAlive()
     {
@@ -606,7 +613,7 @@ class UserController extends Controller
     /**
      * Handle the authentication request from the user.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function postSignin()
     {
@@ -647,7 +654,7 @@ class UserController extends Controller
     /**
      * Handle demoLogin for X Demo Account
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function postDemoSignin()
     {
@@ -661,7 +668,7 @@ class UserController extends Controller
     /**
      * Handle the authentication request from the user for OTP logins and send OTP.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function postSendLoginOtp()
     {
@@ -695,7 +702,7 @@ class UserController extends Controller
     /**
      * Handle the request to verify the user and send OTP.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function postSendVerifyUserOtp()
     {
@@ -738,7 +745,7 @@ class UserController extends Controller
     /**
      * Handle the authentication request from the user for OTP logins and send OTP.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function postVerifyLoginOtp()
     {
@@ -768,7 +775,7 @@ class UserController extends Controller
     /**
      * Handle the 2FA with password on OTP based login
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function postOtpLogin2faPassword()
     {
@@ -791,7 +798,7 @@ class UserController extends Controller
     /**
      * Handle the authentication request from the user for OTP logins and send OTP.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function postVerifyUserOtp()
     {
@@ -874,7 +881,7 @@ class UserController extends Controller
     /**
      * Handle the authentication request from the user.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function postSetup2faVerifyOtp()
     {
@@ -921,7 +928,7 @@ class UserController extends Controller
     }
 
     /**
-     * @return \Illuminate\Http\Response
+     * @return Response
     */
     public function postUpdate2faContact()
     {
@@ -971,7 +978,7 @@ class UserController extends Controller
     /**
      * Log out the currently authenticated user.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function getLogout()
     {
@@ -1014,7 +1021,7 @@ class UserController extends Controller
     /**
      * Handle the request from user to change his current password.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function postPassword()
     {
@@ -1029,7 +1036,7 @@ class UserController extends Controller
      * Switch the merchant the user is currently viewing.
      *
      * @param  string  $merchantId
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function switchCurrentMerchant($merchantId)
     {
@@ -1157,7 +1164,7 @@ class UserController extends Controller
      *
      * @param string $token
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function getDetailsFromToken(string $token)
     {
@@ -1171,7 +1178,7 @@ class UserController extends Controller
     /**
      * Return base template for browser extensions
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
      public function getBrowserExtensionIndex()
      {

@@ -13,9 +13,9 @@ class EnvProcessor
      * @param  array $record
      * @return array
      */
-    public function __invoke(array $record)
+    public function __invoke(array $record): array
     {
-        $record['environment'] = App::environment();
+        $record['environment'] = \App::environment();
 
         return $record;
     }

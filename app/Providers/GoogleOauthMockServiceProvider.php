@@ -6,14 +6,12 @@ use Illuminate\Support\ServiceProvider;
 
 class GoogleOauthMockServiceProvider extends ServiceProvider
 {
-    protected $defer = false;
-
     /**
      * Bootstrap any application services.
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         if (config('oauth.mock') === true)
         {

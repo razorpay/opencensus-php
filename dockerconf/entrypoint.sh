@@ -30,11 +30,15 @@ else
   alohomora cast --region ap-south-1 --env $APP_MODE --app dashboard "environment/.env.vault.j2" "environment/env.php.j2"
 fi
 
+#export APP_ENV=$APP_MODE
+#echo "running optimize in {$APP_ENV}"
+php artisan optimize
+
 echo "$(date) Copy dashboard vhost"
 cp dockerconf/nginx.conf /etc/nginx/conf.d/default.conf
 
 echo "setting max_input_vars to 2000"
-sed -ie "s/; max_input_vars =.*/max_input_vars = 2000/g" /etc/php7/php.ini
+sed -ie "s/; max_input_vars =.*/max_input_vars = 2000/g" /etc/php81/php.ini
 
 export PATH=$PATH:/app/
 
@@ -46,6 +50,6 @@ chown -R nginx:nginx /app/storage/logs
 # /tmp needs to writable by all processes.
 chmod 777 /tmp
 
-/usr/sbin/php-fpm7
+/usr/sbin/php-fpm81
 
 /usr/sbin/nginx -g 'daemon off;'

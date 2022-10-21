@@ -11,13 +11,15 @@ use Session;
 use Request;
 use App\Http\Headers;
 use App\Trace\SpanTrace;
-use GuzzleHttp\Post\PostFile;
+use GuzzleHttp\Psr7\Utils;
 use GuzzleHttp\Client as Guzzle;
 use Razorpay\Api\Errors as RZPErrors;
 use Lcobucci\JWT\Parser as JWTParser;
 use App\Admin\Service as AdminService;
 use Razorpay\Api\Errors\BadRequestError;
 use App\User\Constants as UserConstants;
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\ConnectException;
 use OpenCensus\Trace\Propagator\ArrayHeaders;
 
 use App\Http\ApiUrl;
@@ -50,7 +52,7 @@ class ApiRequestAny
 
     const CONTENT_TYPE_FORM             = 'application/x-www-form-urlencoded';
 
-    const CONTENT_TYPE_MULTIPART_PREFIX = 'multipart/form-data;';
+    const CONTENT_TYPE_MULTIPART_PREFIX = 'multipart/form-data';
 
     const ADMIN_AS_MERCHANT             = 'admin_as_merchant';
 
@@ -186,7 +188,7 @@ class ApiRequestAny
         // === Guzzle client
 
         $this->client = new Guzzle([
-            'base_url' => ApiUrl::getApiBaseUrl(),
+            'base_uri' => ApiUrl::getApiBaseUrl(),
             'defaults' => [
                 'timeout' => Config::get('api.request_timeout'),
             ]
@@ -439,8 +441,10 @@ class ApiRequestAny
         }
 
         // auth check just for precaution, so that guests do not upload files
-        if (strpos($contentType, self::CONTENT_TYPE_MULTIPART_PREFIX) === 0)
+        if (str_starts_with($contentType, self::CONTENT_TYPE_MULTIPART_PREFIX) === true)
         {
+            $data = [];
+
             foreach ($input as $key => $val)
             {
                 if (is_array($val))
@@ -453,6 +457,11 @@ class ApiRequestAny
 
             foreach ($input as $key => $val)
             {
+                if(is_int($key) === true)
+                {
+                    $key = strval($key);
+                }
+
                 if ($val instanceof \SplFileInfo)
                 {
                     $fileName = $val->getClientOriginalName();
@@ -467,12 +476,32 @@ class ApiRequestAny
                         unset($input[$oldKey]);
                     }
 
-                    $input[$key] = new PostFile($key, fopen($val, 'r'), $fileName);
+                    $data[] =
+                    [
+                        'name'     => $key,
+                        'contents' => Utils::tryFopen($val, 'r'),
+                        'filename' => $fileName
+                    ];
+
+                }
+                else
+                {
+                    $data[] =
+                        [
+                            'name'     => $key,
+                            'contents' => $val,
+                        ];
                 }
             }
+
+            $this->options['multipart'] = $data;
         }
 
-        if ($contentType === self::CONTENT_TYPE_JSON)
+        else if (str_starts_with($contentType, self::CONTENT_TYPE_FORM) === true)
+        {
+            $this->options['form_params'] = $input;
+        }
+        else if (str_starts_with($contentType, self::CONTENT_TYPE_JSON) === true)
         {
             $this->options['json'] = $input;
         }
@@ -555,13 +584,13 @@ class ApiRequestAny
                 ]);
             }
 
-            $response = $client->json();
+            $response = json_decode($client->getBody(), true);
 
             try
             {
-                $apiRouteName     = $client->getHeader(self::API_ROUTE_NAME_HEADER);
+                $apiRouteName     = $client->getHeaderLine(self::API_ROUTE_NAME_HEADER);
 
-                $apiPathPattern   = $client->getHeader(self::API_ROUTE_PATH_PATTERN_HEADER);
+                $apiPathPattern   = $client->getHeaderLine(self::API_ROUTE_PATH_PATTERN_HEADER);
 
                 $apiRouteCircuitBreaker->saveApiRouteDetails($apiRouteName, $apiPathPattern);
 
@@ -579,39 +608,9 @@ class ApiRequestAny
 
             return [null, $response, $httpCode];
         }
-        // This captures all the errors that might happen for now
-        catch(\GuzzleHttp\Exception\ConnectException $e)
-        {
-            $exception = $e;
-            $errors = ["Error in connecting to API"];
-
-            Trace::error(
-                TraceCode::API_CONNECTION_EXCEPTION,
-                [
-                    'message'           => $e->getMessage(),
-                    'path'              => $path,
-                    '$method'           => $method,
-                ]);
-        }
-        catch(\GuzzleHttp\Exception\GuzzleException $e)
-        {
-            $exception = $e;
-            $json = $e->getResponse()->json();
-            $httpCode = $e->getResponse()->getStatusCode();
-            $errors = [ $this->getApiErrorDescription($json), "Status Code: {$httpCode}"];
-
-            Trace::error(
-                TraceCode::API_GUZZLE_EXCEPTION,
-                [
-                    'message'           => $e->getMessage(),
-                    'api_status_code'   => $httpCode,
-                    'path'              => $path,
-                    '$method'           => $method,
-                ]);
-        }
         catch(\GuzzleHttp\Exception\ClientException $e)
         {
-            $json = $e->getResponse()->json();
+            $json = json_decode($e->getResponse()->getBody(), true);
             $httpCode = $e->getResponse()->getStatusCode();
             $errors = [ $this->getApiErrorDescription($json), "Status Code: {$httpCode}"];
 
@@ -649,6 +648,34 @@ class ApiRequestAny
 
             Trace::error(
                 TraceCode::API_SERVER_EXCEPTION,
+                [
+                    'message'           => $e->getMessage(),
+                    'api_status_code'   => $httpCode,
+                    'path'              => $path,
+                    '$method'           => $method,
+                ]);
+        }
+        // This captures all the errors that might happen for now
+        catch(ConnectException $e)
+        {
+            $exception = $e;
+            $errors = ["Error in connecting to API"];
+
+            app('trace')->error(
+                TraceCode::API_CONNECTION_EXCEPTION,
+                [
+                    'message'           => $e->getMessage(),
+                    'path'              => $path,
+                    '$method'           => $method,
+                ]);
+        }
+        catch(GuzzleException $e)
+        {
+            $exception = $e;
+            $errors = [$e->getMessage()];
+
+            Trace::error(
+                TraceCode::API_GUZZLE_EXCEPTION,
                 [
                     'message'           => $e->getMessage(),
                     'api_status_code'   => $httpCode,

@@ -4,7 +4,7 @@ set -euo pipefail
 cd /app/
 
 cp environment/.env.dev_docker environment/.env.dev
-  
+
 echo "$(TZ=Asia/Pacific date) copy nginx config"
 cp dockerconf/dashboard-dev.conf /etc/nginx/conf.d/default.conf
 
@@ -25,5 +25,5 @@ chown 0775 /tmp/run/
 # Any volume mounts must be chown-ed again
 chown -R nginx:nginx /app/storage/logs
 
-/usr/sbin/php-fpm7
+/usr/sbin/php-fpm81
 /usr/sbin/nginx -g 'daemon off;'

@@ -11,7 +11,7 @@ class Trace extends TraceWriter
         parent::__construct();
     }
 
-    public function addRecord($level, $message, array $context = array())
+    public function addRecord($level, $message, array $context = array()): bool
     {
         $traceCode = $message;
 
@@ -19,7 +19,7 @@ class Trace extends TraceWriter
 
         $context = $this->getContext($traceCode, $context);
 
-        parent::addRecord($level, $traceCode, $context);
+        return parent::addRecord($level, $traceCode, $context);
     }
 
     /**
@@ -27,7 +27,7 @@ class Trace extends TraceWriter
      *
      * @param array $record
      */
-    protected function getContext($code, $record)
+    protected function getContext($code, array $record): array
     {
         $values = array();
 

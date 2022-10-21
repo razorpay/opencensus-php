@@ -1,13 +1,14 @@
-ARG ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.3-nginx
+ARG ONGGI_IMAGE=c.rzp.io/razorpay/onggi_testing:php81-fpm-nginxphp-8.1-nginx
 
-FROM $ONGGI_IMAGE
+FROM c.rzp.io/razorpay/onggi:php-8.1-api-web as opencensus-ext
+
 
 FROM $ONGGI_IMAGE as opencensus-ext
 WORKDIR /
-ARG OPENCENSUS_VERSION_TAG=v0.7.6.4
+ARG OPENCENSUS_VERSION_TAG=v0.8.0-beta
 RUN set -eux && \
     wget -O - https://github.com/razorpay/opencensus-php/tarball/"${OPENCENSUS_VERSION_TAG}" | tar zx --strip=1
-RUN cd /ext && phpize && ./configure --enable-opencensus && make install
+RUN cd /ext && phpize81 && ./configure --enable-opencensus --with-php-config=/usr/bin/php-config81 && make install
 
 FROM $ONGGI_IMAGE
 
@@ -26,13 +27,13 @@ RUN --mount=type=secret,id=git_token set -eu && \
     composer install --no-dev --no-interaction --no-autoloader --no-scripts && \
     rm -rf /root/.composer && \
     composer clear-cache && \
-    pear config-set php_ini /etc/php7/php.ini && \
-    pecl install opencensus-alpha
+    pear81 config-set php_ini /etc/php81/php.ini && \
+    pecl81 install opencensus-alpha
 
 RUN mkdir -p public && \
     echo ${GIT_COMMIT_HASH} > public/commit.txt
 
-COPY --from=opencensus-ext /usr/lib/php7/modules/opencensus.so /usr/lib/php7/modules
+COPY --from=opencensus-ext /usr/lib/php81/modules/opencensus.so /usr/lib/php81/modules
 
 COPY --chown=nginx:nginx . /app/
 

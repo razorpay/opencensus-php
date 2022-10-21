@@ -4,16 +4,16 @@ namespace App\Http;
 
 final class RequestContext
 {
-    public $merchantId;
+    public ?string $merchantId = null;
 
-    public $userId;
+    public ?string $userId = null;
 
-    public $oauthRequest = false;
+    public ?bool $oauthRequest = false;
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getMerchantId()
+    public function getMerchantId(): string|null
     {
         return $this->merchantId;
     }
@@ -21,15 +21,15 @@ final class RequestContext
     /**
      * @param string $merchantId
      */
-    public function setMerchantId($merchantId)
+    public function setMerchantId(string $merchantId): void
     {
         $this->merchantId = $merchantId;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getUserId()
+    public function getUserId(): string|null
     {
         return $this->userId;
     }
@@ -37,7 +37,7 @@ final class RequestContext
     /**
      * @param string $userId
      */
-    public function setUserId($userId)
+    public function setUserId(string $userId): void
     {
         $this->userId = $userId;
     }
@@ -45,7 +45,7 @@ final class RequestContext
     /**
      * @return bool
      */
-    public function isOauthRequest()
+    public function isOauthRequest(): bool
     {
         return $this->oauthRequest;
     }
@@ -53,7 +53,7 @@ final class RequestContext
     /**
      * @param bool $oauthRequest
      */
-    public function setOauthRequest($oauthRequest)
+    public function setOauthRequest(bool $oauthRequest): void
     {
         $this->oauthRequest = $oauthRequest;
     }

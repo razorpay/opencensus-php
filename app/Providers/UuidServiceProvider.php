@@ -14,7 +14,7 @@ class UuidServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app['uuid.generator'] = $this->app->share(function ($app) {
+        $this->app->singleton('uuid.generator', function ($app) {
             return new Generator;
         });
     }

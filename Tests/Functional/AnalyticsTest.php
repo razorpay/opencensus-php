@@ -12,7 +12,7 @@ class AnalyticsTest extends TestCase
 
     protected $merchant_details;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

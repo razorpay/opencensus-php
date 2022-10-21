@@ -67,7 +67,7 @@ class Entity extends \Razorpay\Spine\Entity
         return array();
     }
 
-    protected function getDateFormat()
+    public function getDateFormat()
     {
         return 'U';
     }

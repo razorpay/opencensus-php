@@ -20,9 +20,6 @@ class OpenCensusProvider extends ServiceProvider
     {
         if (Tracing::isEnabled($this->app) === false)
         {
-            Trace::info(TraceCode::JAEGER_INFO, [
-                'jaeger_app_enabled' => false,
-            ]);
             return;
         }
 
@@ -32,18 +29,9 @@ class OpenCensusProvider extends ServiceProvider
 
             if (Tracing::shouldTraceRoute($currentRoute) === false)
             {
-                Trace::info(TraceCode::JAEGER_INFO, [
-                    'jaeger_app_route' => false,
-                    'route_name'       => $currentRoute->getName(),
-                ]);
-
                 return;
             }
 
-            Trace::info(TraceCode::JAEGER_INFO, [
-                'jaeger_app_route' => true,
-                'route_name'       => $currentRoute->getName(),
-            ]);
             // Load all useful extensions
             // PDO is loaded while connecting in MySqlConnector.php
             Redis::load();

@@ -156,7 +156,7 @@ return array(
         App\Providers\CustomSessionServiceProvider::class,
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
-        Artdarek\OAuth\OAuthServiceProvider::class,
+        App\Providers\OAuthServiceProvider::class,
 
         /*
          * Application Service Providers...
@@ -181,11 +181,11 @@ return array(
         // Package providers follow
         Aws\Laravel\AwsServiceProvider::class,
         'Barryvdh\Debugbar\ServiceProvider',
-        Bogardo\Mailgun\MailgunServiceProvider::class,
         'Maatwebsite\Excel\ExcelServiceProvider',
         Razorpay\Slack\Laravel\ServiceProviderLaravel5::class,
         Illuminate\Validation\ValidationServiceProvider::class,
         Razorpay\Metrics\ServiceProvider::class,
+        Razorpay\Trace\ServiceProvider::class,
     ],
 
     /*
@@ -229,7 +229,7 @@ return array(
         'File'            => Illuminate\Support\Facades\File::class,
         'Gate'            => Illuminate\Support\Facades\Gate::class,
         'Hash'            => Illuminate\Support\Facades\Hash::class,
-        'Input'           => Illuminate\Support\Facades\Input::class,
+        'Input'           => Illuminate\Support\Facades\Request::class,
         'Inspiring'       => Illuminate\Foundation\Inspiring::class,
         'Lang'            => Illuminate\Support\Facades\Lang::class,
         'Log'             => Illuminate\Support\Facades\Log::class,
@@ -254,10 +254,8 @@ return array(
 
         // Don't name it OAuth (http://php.net/manual/en/book.oauth.php)
         'OAuthFacade'     => Artdarek\OAuth\Facade\OAuth::class,
-
-        'Mailgun'         => Bogardo\Mailgun\Facades\Mailgun::class,
         'Slack'           => Razorpay\Slack\Laravel\Facade::class,
-        'Trace'           => App\Trace\Facade::class,
+        'Trace'           => Razorpay\Trace\Facades\Trace::class,
         'Uuid'            => App\Facades\Uuid::class,
         'Metrics'         => Razorpay\Metrics\Facade::class,
     ),

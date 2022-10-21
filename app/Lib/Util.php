@@ -6,14 +6,14 @@ use App\Http\ApiUrl;
 
 class Util
 {
-    public static function random_alpha_string($length = 1)
+    public static function random_alpha_string($length = 1): string
     {
         $chars = 'abcdefghijklmnopqrstuvwxyz';
 
         return substr(str_shuffle($chars), 0, $length);
     }
 
-    public static function array_recursive_diff($aArray1, $aArray2)
+    public static function array_recursive_diff($aArray1, $aArray2): array
     {
         $aReturn = array();
 
@@ -47,7 +47,7 @@ class Util
         return $aReturn;
     }
 
-    public function debugLogsEnable()
+    public function debugLogsEnable(): bool
     {
         $baseUrl = ApiUrl::getApiBaseUrl();
 

@@ -32,6 +32,10 @@ class SessionInActivity
 
     const CACHE_STORE_TIMEOUT_FOR_ORG_FEATURES = 10; // 10 minutes
 
+    // value stored in this session key contains the last used at timestamp
+    // its used to decided the duration for which this session is inactive
+    const SESSION_LAST_USED_AT = 'session_last_used_at';
+
     /**
      * Create a new filter instance.
      *
@@ -66,11 +70,9 @@ class SessionInActivity
         }
 
         // Meta data is stored in session with the key _sf2_meta with keys c,u,l as keys (created, updated, lifetime)
-        $metaDataBag = Session::getMetadataBag();
-
         $user = Auth::guard('api');
 
-        $lastUsed = $metaDataBag->getLastUsed();
+        $lastUsed = $this->getSessionLastUsedAt();
 
         $sessionConfig = $this->app['config']['session'];
 
@@ -108,7 +110,11 @@ class SessionInActivity
             return $response;
         }
 
-        return $next($request);
+        $response = $next($request);
+
+        $this->updateSessionLastUsedAt();
+
+        return $response;
     }
 
     protected function isAdminUserAndOrgFeatureEnabledForLogout()
@@ -132,6 +138,22 @@ class SessionInActivity
         $features = (new Admin\Service)->getOrgFeatures();
 
         return in_array($featureName, $features);
+    }
+
+    protected function getSessionLastUsedAt()
+    {
+        $lastUsedAtFromSession = Session::get(self::SESSION_LAST_USED_AT);
+
+        $this->trace->info(TraceCode::SESSION_LAST_USED_AT, [
+            'session'        => $lastUsedAtFromSession,
+        ]);
+
+        return $lastUsedAtFromSession;
+    }
+
+    protected function updateSessionLastUsedAt()
+    {
+        Session::put(self::SESSION_LAST_USED_AT, time());
     }
 }
 

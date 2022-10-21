@@ -60,7 +60,7 @@ if (! function_exists('read_env_file'))
                 return;
             }
 
-            $dotenv = new Dotenv($envDir, $fileName);
+            $dotenv = Dotenv::createImmutable($envDir, $fileName);
 
             $dotenv->load();
         }

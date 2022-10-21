@@ -7,6 +7,7 @@ use Response;
 use App\Trace\Trace;
 use App\Trace\TraceCode;
 use GraphQL\Language\Parser;
+use Illuminate\Http\Request;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as BaseVerifier;
 
@@ -56,8 +57,9 @@ class VerifyCsrfToken extends BaseVerifier
 
     /**
      * Handle an incoming request.
+     * shouldPassThrough and inExceptArray is same
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      * @param \Closure                 $next
      *
      * @return mixed
@@ -94,7 +96,7 @@ class VerifyCsrfToken extends BaseVerifier
                 if (
                     $this->isReading($request) or
                     $this->runningUnitTests() or
-                    $this->shouldPassThrough($request) or
+                    $this->inExceptArray($request) or
                     $this->tokensMatch($request)
                 )
                 {
@@ -117,7 +119,7 @@ class VerifyCsrfToken extends BaseVerifier
             if (
                 $this->isReading($request) ||
                 $this->runningUnitTests() ||
-                $this->shouldPassThrough($request) ||
+                $this->inExceptArray($request) ||
                 $this->tokensMatch($request) ||
                 $this->tokensMatchCookie($request)
             )
@@ -125,7 +127,7 @@ class VerifyCsrfToken extends BaseVerifier
                 return $this->addCookieToResponse($request, $next($request));
             }
 
-            throw new TokenMismatchException;
+            throw new TokenMismatchException('CSRF token mismatch.');
         }
     }
 
@@ -192,17 +194,17 @@ class VerifyCsrfToken extends BaseVerifier
      * receive
      * Laravel session tokens are wacky in the implementation of csrf when concurrent requests are there.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      *
      * @return bool
      */
-    private function tokensMatchCookie($request)
+    private function tokensMatchCookie($request): bool
     {
         $sessionToken = $request->session()->token();
 
         $token = $request->header('X-CSRF-TOKEN');
 
-        if (empty($token) == true && $header = $request->header('X-XSRF-TOKEN')) {
+        if (empty($token) === true && $header = $request->header('X-XSRF-TOKEN')) {
             $token = $this->encrypter->decrypt($header);
         }
 
@@ -226,7 +228,7 @@ class VerifyCsrfToken extends BaseVerifier
         }
 
         if ((is_string($xsrfCookieToken) === true) and (is_string($token) === true) and
-            hash_equals($xsrfCookieToken, $token) == true) {
+            hash_equals($xsrfCookieToken, $token) === true) {
 
             return true;
         }

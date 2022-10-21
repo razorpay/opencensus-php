@@ -43,19 +43,19 @@ class TestCase extends BaseTestCase
         return Factory::build($entity, $attributes);
     }
 
-    protected static function generateRandomString($length = 6)
+    protected static function generateRandomString($length = 6): string
     {
         return bin2hex(openssl_random_pseudo_bytes($length/2));
     }
 
-    protected static function generateRandomInteger($digits)
+    protected static function generateRandomInteger($digits): int
     {
         $min = pow(10, $digits-1);
         $max = pow(10, $digits) -1;
         return rand($min, $max);
     }
 
-    protected static function generateMerchantEmail()
+    protected static function generateMerchantEmail(): string
     {
         return static::generateRandomString()."@".static::generateRandomString().".com";
     }
@@ -72,12 +72,12 @@ class TestCase extends BaseTestCase
         DB::statement("SET foreign_key_checks=1");
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         $this->listener->addError($this, new \Exception(), NULL);
     }
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

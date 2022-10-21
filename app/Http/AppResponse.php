@@ -81,7 +81,7 @@ class AppResponse
         }
         catch (\Throwable $t)
         {
-            $app['trace']->warn(TraceCode::PUSH_METRICS_FAILED, [
+            $app['trace']->warning(TraceCode::PUSH_METRICS_FAILED, [
                 'message' => $t->getMessage() ?? 'unknown_message',
             ]);
         }

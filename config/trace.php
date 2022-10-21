@@ -34,4 +34,8 @@ return array(
     'logpath' => storage_path() . '/logs/' . $hostname . '-trace.log',
 
     'instance_data_file' => storage_path().'/logs/instance.json',
+
+    'trace_code_class' => \App\Trace\TraceCode::class,
+
+    'fallback_email' => 'developers@razorpay.com'
 );

@@ -3,14 +3,14 @@
 namespace App\Exceptions;
 
 use Response;
-use Exception;
+Use Throwable;
+use Monolog\Logger;
 use App\Trace\Trace;
 use App\Trace\TraceCode;
 use App\Http\AppResponse;
 use UnexpectedValueException;
 use Razorpay\Api\Errors\Error;
 use Razorpay\Api\Errors\BadRequestError;
-use App\Exceptions\EntityNotFoundException;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Encryption\DecryptException;
@@ -55,7 +55,7 @@ class Handler extends ExceptionHandler
      *
      * @var  array
      */
-    protected $infoReport = [
+    protected array $infoReport = [
         BadRequestError::class,
         AuthorizationException::class,
     ];
@@ -65,10 +65,9 @@ class Handler extends ExceptionHandler
      *
      * This is a great spot to send exceptions to Sentry, Bugsnag, etc.
      *
-     * @param  \Exception  $e
-     * @return void
+     * @throws \Throwable
      */
-    public function report(Exception $e)
+    public function report(Throwable $e)
     {
         parent::report($e);
 
@@ -100,10 +99,10 @@ class Handler extends ExceptionHandler
      * Render an exception into an HTTP response.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \Exception  $e
+     * @param  \Throwable  $e
      * @return \Illuminate\Http\Response
      */
-    public function render($request, Exception $e)
+    public function render($request, Throwable $e)
     {
         $app = \App::getFacadeRoot();
 
@@ -127,6 +126,7 @@ class Handler extends ExceptionHandler
         {
             $response = Response::json(self::RESPONSE_404, 404);
         }
+
         else if ($e instanceof MethodNotAllowedHttpException)
         {
             $response = Response::json(['success' => false, 'errors' => [self::METHOD_NOT_ALLOWED]], 405);
@@ -186,7 +186,7 @@ class Handler extends ExceptionHandler
         return $response;
     }
 
-    protected function getStatusCodeForUnhandledException(Exception $e)
+    protected function getStatusCodeForUnhandledException(Throwable $e)
     {
         if ($e->getMessage() === 'Unauthorized Access')
         {
@@ -205,7 +205,7 @@ class Handler extends ExceptionHandler
         return config('app.debug');
     }
 
-    protected function getExceptionDetails(Exception $exception, $level = 0)
+    protected function getExceptionDetails(Throwable $exception, $level = 0)
     {
         $previousException = $exception->getPrevious();
 
@@ -305,7 +305,7 @@ class Handler extends ExceptionHandler
         return $data;
     }
 
-    protected function isCritical(Exception $e)
+    protected function isCritical(Throwable $e)
     {
         foreach ($this->dontReport as $type)
         {
@@ -320,10 +320,9 @@ class Handler extends ExceptionHandler
 
     /**
      * isInfo will classify weather a exception should be traced as info/not
-     * @param  Exception $e
      * @return boolean      true/false
      */
-    protected function isInfo(Exception $e)
+    protected function isInfo(Throwable $e)
     {
         foreach ($this->infoReport as $exceptionClass)
         {

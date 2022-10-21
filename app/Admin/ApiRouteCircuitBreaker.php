@@ -366,7 +366,7 @@ class ApiRouteCircuitBreaker
 
     protected function getCircuitBreaker()
     {
-        $adapter = new CircuitBreaker\Storage\Adapter\RedisStore($this->app['redis']->connection());
+        $adapter = new CircuitBreaker\Storage\Adapter\RedisStore($this->app['redis']->client());
 
         return CircuitBreaker\Builder::withRateStrategy()
             // The interval in time (seconds) that evaluate the thresholds.

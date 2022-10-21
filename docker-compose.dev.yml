@@ -25,38 +25,21 @@ services:
      - api_default
      - default
     links:
-      - dashboard_db
       - dashboard_cache
       - jaeger
     ports:
       - 38080:80
     depends_on:
-      - dashboard_db
       - dashboard_cache
     environment:
-     DB_MYSQL_HOST: dashboard_db
-     DB_MYSQL_PORT: 3306
-     DB_MYSQL_DATABASE: dashboard
-     DB_MYSQL_USERNAME: dashboard_user
-     DB_MYSQL_PASSWORD: 123
+
      REDIS_HOST: dashboard_cache
      BASE_URL: http://dashboard.razorpay.in:38080
      API_URL: "http://razorpay-api/v1/"
      APP_CONTEXT: dev
      APP_MODE: dev
-  dashboard_db:
-    image: mysql:5.6
-    ports:
-      - 33306:3306
-    networks:
-      - default
-    environment:
-      MYSQL_ROOT_PASSWORD: 123
-      MYSQL_DATABASE: dashboard
-      MYSQL_USER: dashboard_user
-      MYSQL_PASSWORD: 123
   dashboard_cache:
-    image: redis:2.8
+    image: redis:7.0.4
     networks:
      - default
     ports:

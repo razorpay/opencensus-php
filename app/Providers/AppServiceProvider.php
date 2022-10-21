@@ -7,18 +7,19 @@ use Auth;
 use Blade;
 use Request;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Artisan;
 
 class AppServiceProvider extends ServiceProvider
 {
-    protected $defer = false;
-
     /**
      * Bootstrap any application services.
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
+        Artisan::call('config:clear');
+
         $this->setupBlade();
 
         $this->registerValidatorResolver();

@@ -9,6 +9,7 @@ use Request;
 use Session;
 use SplFileInfo;
 use App\Trace\TraceCode;
+use GuzzleHttp\Psr7\Utils;
 use GuzzleHttp\Client as Guzzle;
 use GuzzleHttp\Post\PostFile;
 use GuzzleHttp\Exception\RequestException;
@@ -20,6 +21,7 @@ class GraphRequestAny
     const COOKIE_HEADER = 'Set-Cookie';
     const CONTENT_TYPE_JSON = 'application/json';
     const CONTENT_TYPE_MULTIPART = 'multipart/form-data';
+    const CONTENT_TYPE_FORM = 'application/x-www-form-urlencoded';
 
     const SERVER_ERROR       = 'Internal Server Error';
 
@@ -61,7 +63,7 @@ class GraphRequestAny
         $graphQlServerUrl = Config::get('razorpay.graphql.server_url');
 
         $this->request = new Guzzle([
-            'base_url'  => $graphQlServerUrl,
+            'base_uri'  => $graphQlServerUrl,
         ]);
 
         $this->data = $data;
@@ -79,11 +81,13 @@ class GraphRequestAny
 
         $options = array_merge($options, $this->getDataForOutgoingRequest($this->data));
         $spanOptions = (new ApiRequestSpan($this->request))::getRequestSpanOptions(Config::get('razorpay.graphql.server_url'));
+        $graphQlPath = Config::get('razorpay.graphql.server_path');
+
         try
         {
             $response = (new ApiRequestSpan($this->request))->wrapRequestInSpan(
                 'POST',
-                null,
+                $graphQlPath,
                 [
                     'options' => $options,
                     'headers' => $options['headers'],
@@ -93,7 +97,9 @@ class GraphRequestAny
 
             $headersToBeAppended = $this->getWhitelistedHeaders($response->getheaders());
 
-            return [$response->json(), $headersToBeAppended];
+            $response = json_decode($response->getBody(), true);
+
+            return [$response, $headersToBeAppended];
 
         }
         catch(RequestException $exception)
@@ -197,36 +203,51 @@ class GraphRequestAny
 
         $incomingContentType = Request::header('content-type');
 
-        if (strpos($incomingContentType, self::CONTENT_TYPE_JSON) === 0)
+        if (str_starts_with($incomingContentType, self::CONTENT_TYPE_JSON) === true)
         {
-            return [ 'json'  => $data ];
+            return ['json' => $data];
         }
-        else if(strpos($incomingContentType, self::CONTENT_TYPE_MULTIPART) === 0)
+        if (str_starts_with($incomingContentType, self::CONTENT_TYPE_FORM) === true)
         {
-            return ['body' => $this->getOutGoingMultipartData($data) ];
+            return ['form_params' => $data];
+        }
+        else if(str_starts_with($incomingContentType, self::CONTENT_TYPE_MULTIPART) === true)
+        {
+            return ['multipart' => $this->getOutGoingMultipartData($data)];
         }
 
         return [];
     }
 
-    private function getOutGoingMultipartData($data)
+    private function getOutGoingMultipartData($data): array
     {
         $outGoingData = [];
 
         foreach ($data as $key => $value)
         {
+            if(is_int($key) === true)
+            {
+                $key = strval($key);
+            }
+
             if ($value instanceof SplFileInfo)
             {
                 $fileName = $value->getClientOriginalName();
 
-                $outGoingData[$key] = new PostFile(
-                    $key,
-                    fopen($value, 'r'),
-                    $fileName);
+                $outGoingData[] =
+                    [
+                        'name'     => $key,
+                        'contents' => Utils::tryFopen($value, 'r'),
+                        'filename' => $fileName
+                    ];
             }
             else
             {
-                $outGoingData[$key] = $value;
+                $outGoingData[] =
+                    [
+                        'name'     => $key,
+                        'contents' => $value,
+                    ];
             }
         }
 
@@ -268,6 +289,9 @@ class GraphRequestAny
 
     }
 
+    /**
+     * @throws \Exception
+     */
     private function appendMerchantHeaderIfValid($user)
     {
         $merchantIdInHeader = Request::header('x-dashboard-merchant-id');

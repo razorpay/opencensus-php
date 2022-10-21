@@ -179,10 +179,12 @@ class Service extends Base\Service
     }
 
     /**
-    * Called when admin performs merchant actions like suspend
-    * @param  string  $id   Merchant Id
-    * @return merchant obj
-    **/
+     * Called when admin performs merchant actions like suspend
+     *
+     * @param string $merchantId
+     *
+     * @return array obj
+     */
     public function action(string $merchantId) : array
     {
         try
@@ -266,7 +268,7 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::ADMIN_LOGIN, $traceData);
 
-        return $error[0];
+        return $error;
     }
 
     /**
@@ -1667,7 +1669,7 @@ class Service extends Base\Service
 
             $start_time = microtime(true);
 
-            $APIConnection = Requests::request($apiURL, array(), array(), array(), $options);
+            $APIConnection = Requests::request($apiURL, array(), array(), Requests::GET, $options);
 
             $end_time = microtime(true);
 
@@ -1727,27 +1729,28 @@ class Service extends Base\Service
 
         $response = [
             'redis' => $redisStatus['statusMessage'],
-            'api'   => $apiStatus['statusMessage']
+            'api'   => $apiStatus['statusMessage'],
+            'version' => app()->version(),
         ];
 
         return [$response, $statusCode];
     }
 
-    public function getEmailLogs($input)
-    {
-        $error = $data = null;
-
-        try
-        {
-            $data = (new Admin\Mailgun)->getLogs($input);
-        }
-        catch (\Exception $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
-    }
+    //public function getEmailLogs($input)
+    //{
+    //    $error = $data = null;
+    //
+    //    try
+    //    {
+    //        $data = (new Admin\Mailgun)->getLogs($input);
+    //    }
+    //    catch (\Exception $e)
+    //    {
+    //        $error = [$e->getMessage()];
+    //    }
+    //
+    //    return [$error, $data];
+    //}
 
     protected function getOrgDataFromCache($domain)
     {

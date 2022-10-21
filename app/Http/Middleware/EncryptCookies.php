@@ -9,23 +9,44 @@ use Illuminate\Contracts\Encryption\DecryptException;
 
 class EncryptCookies extends BaseEncrypter
 {
+    /*
+     * Adding user session cookie in except array as cookie encryption is breaking in graphql api's for laravel 6 and above
+     *
+     * Csrf mismatch in case of Graphql Request flow for encryption-decryption:
+
+     * Request(graph org) -> decryption(graph org) -> Request(/org) -> decryption(/org) -> encryption(/org) ->
+     *  encryption(graph org) -> request(graph login) -> decryption(graph login) -> Request(/user/login) ->
+     *  decryption(/user/login) -> encryption(/user/login) ->  encryption(graph login).
+     *
+     * Marking rzp_usr_session cookie disabled until alternative is found.
+     * */
     protected $except = [
         'rzp_merchant_id',
         'rzp_user_id',
         'rzp_ab_uuid',
+        'rzp_usr_session'
     ];
 
+
+    /**
+     * Decrypt the cookies on the request.
+     *
+     * @param Request $request
+     *
+     * @return Request
+     */
     protected function decrypt(Request $request)
     {
-        foreach ($request->cookies as $key => $c) {
-
+        foreach ($request->cookies as $key => $cookie) {
             if ($this->isDisabled($key)) {
                 continue;
             }
 
             try {
-                $request->cookies->set($key, $this->decryptCookie($c));
-            } catch (DecryptException $e)  {
+                $value = $this->decryptCookie($key, $cookie);
+
+                $request->cookies->set($key, $this->validateValue($key, $value));
+            } catch (DecryptException $e) {
                 $request->cookies->set($key, null);
             } catch (\Throwable $e) {
                 $request->cookies->remove($key);

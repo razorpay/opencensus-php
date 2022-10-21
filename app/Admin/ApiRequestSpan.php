@@ -6,6 +6,7 @@ use Trace;
 use App\Trace\SpanTrace;
 use App\Trace\TraceCode;
 use App\Constants\Tracing;
+use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\Client as Guzzle;
 use OpenCensus\Trace\Propagator\ArrayHeaders;
 
@@ -73,6 +74,14 @@ class ApiRequestSpan
 
         $span->addAttribute('http.method', $methodTag);
 
+        /*
+         * send cookies in cookie jar format
+         * */
+        if(isset($methodArgs['options']['cookies']) === true)
+        {
+            $methodArgs['options']['cookies'] = new CookieJar(true, [$methodArgs['options']['cookies']]);
+        }
+
         // handle actual request
         try {
             $client = $this->client
@@ -94,7 +103,9 @@ class ApiRequestSpan
             $scope->close();
         }
 
-        if (!is_null($client->json()))
+        $response = json_decode($client->getBody(), true);
+
+        if (is_null($response) === false)
         {
             // add response status as a span tags
             $httpCode = $client->getStatusCode();

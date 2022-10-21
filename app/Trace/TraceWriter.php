@@ -10,6 +10,7 @@ use Monolog\Handler;
 use Monolog\Formatter;
 use Request;
 use Queue;
+use App\Trace\JsonFormatter;
 
 class TraceWriter extends Logger
 {

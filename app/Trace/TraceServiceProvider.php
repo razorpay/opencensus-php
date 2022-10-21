@@ -2,29 +2,25 @@
 
 namespace App\Trace;
 
+use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
-class TraceServiceProvider extends BaseServiceProvider
+class TraceServiceProvider extends BaseServiceProvider implements DeferrableProvider
 {
-    /**
-     * Indicates if loading of the provider is deferred.
-     *
-     * @var bool
-     */
-    protected $defer = true;
+    protected string $requestId;
 
     /**
      * Register the service provider.
      *
      * @return void
      */
-    public function register()
+    public function register(): void
     {
         $this->registerRequestGetIdMacro();
 
-        $this->app->singleton('trace', function($app)
+        $this->app->singleton('trace', function()
         {
-            return new Trace($app);
+            return new Trace();
         });
     }
 

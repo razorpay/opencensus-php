@@ -1,4 +1,7 @@
 <?php
+
+use App\Http\Middleware\TrustedProxy;
+
 return [
     /*
      * Set trusted proxy IP addresses.
@@ -33,9 +36,9 @@ return [
      * \Symfony\Component\HttpFoundation\Request::$trustedHeaders
      */
     'headers' => [
-        Symfony\Component\HttpFoundation\Request::HEADER_CLIENT_IP => 'X_FORWARDED_FOR',
-        Symfony\Component\HttpFoundation\Request::HEADER_CLIENT_PROTO => 'X_FORWARDED_PROTO',
-        Symfony\Component\HttpFoundation\Request::HEADER_CLIENT_PORT => 'X_FORWARDED_PORT',
+        TrustedProxy::HEADER_CLIENT_IP => 'X_FORWARDED_FOR',
+        TrustedProxy::HEADER_CLIENT_PROTO => 'X_FORWARDED_PROTO',
+        TrustedProxy::HEADER_CLIENT_PORT => 'X_FORWARDED_PORT',
         Symfony\Component\HttpFoundation\Request::HEADER_FORWARDED => null,
     ]
 ];

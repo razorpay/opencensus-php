@@ -8,7 +8,7 @@ use Trace;
 class SlackResponse
 {
 
-    protected static $filteredKeys = [
+    protected static array $filteredKeys = [
         'admin',
     ];
 
@@ -25,7 +25,11 @@ class SlackResponse
             $response['attachments'] = [static::makeAttachments($data)];
         }
 
-        Trace::debug('SLACK_QUERY_RESPONSE', $response);
+        $app = \App::getFacadeRoot();
+
+        $trace = $app['trace'];
+
+        $trace->debug('SLACK_QUERY_RESPONSE', $response);
 
         return Response::json($response);
     }

@@ -13,7 +13,7 @@ class Service extends Base\Service
      * @param string $currentMerchantId Current selected merchant id
      *
      */
-    public function getDefaultExpiryTimeForPaymentLinksForMerchant(string $currentMerchantId)
+    public function getDefaultExpiryTimeForPaymentLinksForMerchant(string $currentMerchantId): ?int
     {
         $defaultExpiryTime = Constants::getDefaultExpiryTimeForPaymentLinksByMID($currentMerchantId);
 
@@ -26,7 +26,7 @@ class Service extends Base\Service
      * @param string $currentMerchantId Current selected merchant id
      *
      */
-    public function getExtraFormFieldsByMID(string $currentMerchantId)
+    public function getExtraFormFieldsByMID(string $currentMerchantId): array
     {
         $extraFields = Constants::getExtraFormFieldsByMID($currentMerchantId);
 
@@ -39,7 +39,7 @@ class Service extends Base\Service
      * @param string $currentMerchantId Current selected merchant id
      *
      */
-    public function getCustomizedFormFieldsByMID(string $currentMerchantId)
+    public function getCustomizedFormFieldsByMID(string $currentMerchantId): array
     {
         $fields = Constants::getCustomizedFormFieldsByMID($currentMerchantId);
 
@@ -52,7 +52,7 @@ class Service extends Base\Service
      * @param string $currentMerchantId Current selected merchant id
      *
      */
-    public function getIsCustomerNameFieldEnabledByMID(string $currentMerchantId)
+    public function getIsCustomerNameFieldEnabledByMID(string $currentMerchantId): ?bool
     {
         $isEnabled = Constants::getIsCustomerNameFieldEnabledByMID($currentMerchantId);
 

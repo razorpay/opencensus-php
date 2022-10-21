@@ -17,7 +17,7 @@ class TestCase extends BaseTestCase
         'admin'             => 'App\Admin\Entity'
     ];
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -26,7 +26,7 @@ class TestCase extends BaseTestCase
         DB::beginTransaction();
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         DB::rollback();
     }
@@ -51,17 +51,17 @@ class TestCase extends BaseTestCase
         return Factory::build($entity, $attributes);
     }
 
-    protected static function generateRandomString($length = 6)
+    protected static function generateRandomString($length = 6): string
     {
         return bin2hex(openssl_random_pseudo_bytes($length/2));
     }
 
-    protected static function generateRandomEmail()
+    protected static function generateRandomEmail(): string
     {
         return static::generateRandomString()."@".static::generateRandomString().".com";
     }
 
-    protected static function generateMerchantEmail()
+    protected static function generateMerchantEmail(): string
     {
         return static::generateRandomString()."@".static::generateRandomString().".com";
     }

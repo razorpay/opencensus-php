@@ -47,7 +47,7 @@ class Metrics
         }
         catch (\Throwable $throwable)
         {
-            $this->app['trace']->warn(TraceCode::PUSH_METRICS_FAILED, [
+            $this->app['trace']->warning(TraceCode::PUSH_METRICS_FAILED, [
                 'message' => $throwable->getMessage() ?? 'unknown_message',
             ]);
         }

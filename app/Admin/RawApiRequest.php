@@ -16,6 +16,10 @@ use GuzzleHttp\Post\PostFile;
 use GuzzleHttp\Client as Guzzle;
 use Razorpay\Api\Errors as RZPErrors;
 use Razorpay\Api\Request as ApiRequest;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\ServerException;
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\ConnectException;
 use OpenCensus\Trace\Propagator\ArrayHeaders;
 
 
@@ -44,7 +48,7 @@ class RawApiRequest
         set_time_limit(600);
 
         $options = [
-            'base_url' => ApiUrl::getApiBaseUrl(),
+            'base_uri' => ApiUrl::getApiBaseUrl(),
             // We already have a few headers initialized for this class
             // including the X-Dashboard and Razorpay-API Header
             'defaults' => [
@@ -387,7 +391,9 @@ class RawApiRequest
                     'headers' => $this->params['headers'] ?? [],
                 ],
                 $spanOptions
-            )->json();
+            );
+
+            $response = json_decode($response->getBody(), true);
 
             $end_time = microtime(true);
 
@@ -404,27 +410,28 @@ class RawApiRequest
             return [null, $response];
         }
         // This captures all the errors that might happen for now
-        catch(\GuzzleHttp\Exception\ConnectException $e)
+        catch(ClientException $e)
         {
-            $exception = $e;
-            $errors = ["Error in connecting to API"];
-        }
-        catch(\GuzzleHttp\Exception\GuzzleException $e)
-        {
-            $exception = $e;
-            $json = $e->getResponse()->json();
+            $json = json_decode($e->getResponse()->getBody(), true);
             $errors = [$json['error']['description'], "Status Code: {$e->getResponse()->getStatusCode()}"];
         }
-        catch(\GuzzleHttp\Exception\ClientException $e)
-        {
-            $json = $e->getResponse()->json();
-            $errors = [$json['error']['description'], "Status Code: {$e->getResponse()->getStatusCode()}"];
-        }
-        catch(\GuzzleHttp\Exception\ServerException $e)
+        catch(ServerException $e)
         {
             $exception = $e;
             $errors = [$e->getMessage()];
         }
+        catch(ConnectException $e)
+        {
+            $exception = $e;
+            $errors = ["Error in connecting to API"];
+        }
+        catch(GuzzleException $e)
+        {
+            $exception = $e;
+            $json = json_decode($e->getResponse()->getBody(), true);
+            $errors = [$json['error']['description'], "Status Code: {$e->getResponse()->getStatusCode()}"];
+        }
+
         catch(RZPErrors\Error $e)
         {
             $exception = $e;
@@ -527,7 +534,9 @@ class RawApiRequest
             $scope->close();
         }
 
-        if (!is_null($client->json()))
+        $response = json_decode($client->getBody(), true);
+
+        if (is_null($response) === true)
         {
             // add response status as a span tags
             $httpCode = $client->getStatusCode();
@@ -540,6 +549,6 @@ class RawApiRequest
             }
         }
 
-        return $client->json;
+        return $response;
     }
 }

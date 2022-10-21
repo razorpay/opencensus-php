@@ -33,7 +33,7 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
      * @param  array $record
      * @return array
      */
-    public function __invoke(array $record)
+    public function __invoke(array $record) : array
     {
         if (isset($this->serverData) === false)
         {

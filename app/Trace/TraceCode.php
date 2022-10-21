@@ -169,6 +169,7 @@ class TraceCode
     const GET_PAYOUT_ROUTE_INFO                  = 'GET_PAYOUT_ROUTE_INFO';
     const PRODUCT_SWITCH_ROUTE_INFO              = 'PRODUCT_SWITCH_ROUTE_INFO';
     const FIRE_EVENT_TO_HUBSPOT_ROUTE_INFO       = 'FIRE_EVENT_TO_HUBSPOT_ROUTE_INFO';
+    const SESSION_LAST_USED_AT                   = 'SESSION_LAST_USED_AT';
 
     const OPENCENSUS_ERROR                       = 'OPENCENSUS_ERROR';
     const JAEGER_SPAN_EXCEPTION                  = 'JAEGER_SPAN_EXCEPTION';

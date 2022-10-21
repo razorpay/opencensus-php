@@ -175,6 +175,7 @@ return array(
 
     'secure' => env('SECURE_SESSION', true),
 
+    'same_site' => "none",
     'http_only' => true,
 
 );

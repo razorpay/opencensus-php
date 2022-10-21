@@ -5,7 +5,7 @@ jobs:
     name: Validate PHP Syntax
     runs-on: [ self-hosted ]
     container:
-      image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v2
+      image: c.rzp.io/razorpay/onggi_testing:php81-fpm-nginxphp-8.1-nginx
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}

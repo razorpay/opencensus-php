@@ -3,16 +3,14 @@
 namespace App\RZP;
 
 use Trace;
+use Config;
 use App\Http\ApiUrl;
 use App\Trace\TraceCode;
-use GuzzleHttp\Post\PostFile;
 use GuzzleHttp\Client as Guzzle;
-
-use Config;
 use Razorpay\Api\Entity as ApiEntity;
 use Razorpay\Api\Request as ApiRequest;
-use Razorpay\Api\Errors\BadRequestError as BadRequestError;
 use Razorpay\Api\Errors\ServerError as ServerError;
+use Razorpay\Api\Errors\BadRequestError as BadRequestError;
 
 class Admin extends Entity
 {
@@ -45,7 +43,7 @@ class Admin extends Entity
     {
         // Creates a new Guzzle client
         $client = new Guzzle([
-            'base_url' => ApiUrl::getApiBaseUrl(),
+            'base_uri' => ApiUrl::getApiBaseUrl(),
             'defaults' => [
                 'timeout' => Config::get('api.request_timeout'),
             ]

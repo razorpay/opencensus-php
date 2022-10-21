@@ -13,7 +13,7 @@ use Monolog\Formatter;
  */
 class JsonFormatter extends Formatter\JsonFormatter
 {
-    public function format(array $record)
+    public function format(array $record)  : string
     {
         return json_encode($record) . ($this->appendNewline ? "\n" : '');
     }
@@ -24,7 +24,7 @@ class JsonFormatter extends Formatter\JsonFormatter
      * @param  array  $records
      * @return string
      */
-    protected function formatBatchJson(array $records)
+    protected function formatBatchJson(array $records) : string
     {
         return json_encode($records);
     }
