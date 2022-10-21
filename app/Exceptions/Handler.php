@@ -27,6 +27,8 @@ class Handler extends ExceptionHandler
     const METHOD_NOT_ALLOWED = 'Method not allowed';
     const ENTITY_NOT_FOUND   = 'Not Found';
 
+    const UNAUTHORIZED = 'Unauthorized';
+
     const RESPONSE_404 = [
         'success' => false,
         'errors' => [
@@ -35,6 +37,15 @@ class Handler extends ExceptionHandler
     ];
 
     const RESPONSE_403 = 'Invalid Host Detected';
+
+    const HEADERS = [
+        'Accept'        =>  'text/html'
+    ];
+
+    protected $errorPageData = [
+        'error_message'    => self::SERVER_ERROR,
+        'http_status_code' => 500
+    ];
 
     /**
      * A list of the exception types that should not be reported.
@@ -106,11 +117,12 @@ class Handler extends ExceptionHandler
     {
         $app = \App::getFacadeRoot();
 
+        $requestAcceptType = $request->getAcceptableContentTypes();
+
         $data = [
             'success' => false,
             'errors'  => [self::SERVER_ERROR]
         ];
-
         // For Debugging exceptions
         $app['trace']->info(TraceCode::ERROR_EXCEPTION, [
             'context' => $this->getExceptionDetails($e)
@@ -125,18 +137,24 @@ class Handler extends ExceptionHandler
         else if ($e instanceof NotFoundHttpException)
         {
             $response = Response::json(self::RESPONSE_404, 404);
+
+            $this->setErrorPageMessageAndHttpStatusCode(self::ENTITY_NOT_FOUND, 404);
         }
 
         else if ($e instanceof MethodNotAllowedHttpException)
         {
             $response = Response::json(['success' => false, 'errors' => [self::METHOD_NOT_ALLOWED]], 405);
+
+            $this->setErrorPageMessageAndHttpStatusCode(self::METHOD_NOT_ALLOWED, 405);
         }
         else if ($e instanceof AuthorizationException)
         {
             $response = Response::json(['success' => false, 'errors' => [$e->getMessage()]], 403);
+
+            $this->setErrorPageMessageAndHttpStatusCode($e->getMessage(), 403);
         }
         else if (($e instanceof TokenMismatchException) or
-                 ($e instanceof DecryptException))
+            ($e instanceof DecryptException))
         {
             $routeName = $request->route()->getName();
 
@@ -145,16 +163,26 @@ class Handler extends ExceptionHandler
             // Debugging Unauthorized exception
             $app['trace']->info(TraceCode::USER_UNAUTHORIZED_EXCEPTION, ['context' => $context]);
 
+            $this->setErrorPageMessageAndHttpStatusCode( self::UNAUTHORIZED, 401);
+
+            if(in_array(self::HEADERS['Accept'],$requestAcceptType)){
+                return Response::view('errors.page',$this->errorPageData);
+            }
+
             return AppResponse::unauthorizedResponse('Unauthorized.', $routeName);
         }
         else if ($e instanceof EntityNotFoundException)
         {
             $response = Response::json(self::RESPONSE_404, 404);
+
+            $this->setErrorPageMessageAndHttpStatusCode( self::ENTITY_NOT_FOUND, 404);
         }
         else if ($e instanceof UnexpectedValueException and preg_match('/Untrusted Host/', $e->getMessage()))
         {
             $response = response(self::RESPONSE_403, 403)
-                ->header('Content-Type', 'text/plain');
+                    ->header('Content-Type', 'text/plain');
+
+            $this->setErrorPageMessageAndHttpStatusCode( self::RESPONSE_403, 403);
         }
         else if ($e instanceof BadRequestError)
         {
@@ -163,6 +191,8 @@ class Handler extends ExceptionHandler
                 'success'          => false,
                 'errors'           => [$e->getMessage()]]
             );
+
+            $this->setErrorPageMessageAndHttpStatusCode($e->getMessage(), $e->getHttpStatusCode());
         }
         else
         {
@@ -181,9 +211,21 @@ class Handler extends ExceptionHandler
 
             $response = Response::json($data);
             AppResponse::pushDownstreamMetrics($data);
+
+            $this->setErrorPageMessageAndHttpStatusCode(self::SERVER_ERROR, $data['http_status_code']);
+        }
+
+        if(in_array(self::HEADERS['Accept'],$requestAcceptType)){
+            return Response::view('errors.page',$this->errorPageData);
         }
 
         return $response;
+    }
+
+    protected function setErrorPageMessageAndHttpStatusCode($errorMessage, $httpStatusCode){
+
+        $this->errorPageData['error_message']    = $errorMessage;
+        $this->errorPageData['http_status_code'] = $httpStatusCode;
     }
 
     protected function getStatusCodeForUnhandledException(Throwable $e)
