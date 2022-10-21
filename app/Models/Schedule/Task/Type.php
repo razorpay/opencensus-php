@@ -14,6 +14,8 @@ class Type
     // Used for fee recovery payouts for RX Current Accounts
     const FEE_RECOVERY = 'fee_recovery';
 
+    const CDS_PRICING  = 'cds_pricing';
+
     const LOG          = 'log';
 
     const SYNC_LIVE_TEST = [
@@ -25,7 +27,8 @@ class Type
         self::SUBSCRIPTION,
         self::PROMOTION,
         self::REPORTING,
-        self::FEE_RECOVERY
+        self::FEE_RECOVERY,
+        self::CDS_PRICING,
     ];
 
     const EXTERNAL_SERVICES = [

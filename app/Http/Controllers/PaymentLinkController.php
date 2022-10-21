@@ -18,6 +18,7 @@ use RZP\Models\PaymentLink\ViewType;
 use RZP\Exception\BadRequestException;
 use RZP\Http\Controllers\Traits\HasCrudMethods;
 use RZP\Models\PaymentLink\CustomDomain;
+use RZP\Models\PaymentLink\CustomDomain\Plans;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class PaymentLinkController extends Controller
@@ -531,6 +532,74 @@ class PaymentLinkController extends Controller
         $input = Request::all();
 
         $response = $this->service()->cdsIsSubDomain($input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function cdsCreatePlans()
+    {
+        $input = Request::all();
+
+        $response = (new Plans\Service())->createMany($input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function cdsFetchPlans()
+    {
+        $response = (new Plans\Service())->fetchPlans();
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function cdsDeletePlans()
+    {
+        $input = Request::all();
+
+        $response = (new Plans\Service())->deletePlans($input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function cdsFetchPlanForMerchant()
+    {
+        $response = (new Plans\Service())->fetchPlanForMerchant();
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function cdsUpdatePlanForMerchants()
+    {
+        $input = Request::all();
+
+        $response = (new Plans\Service())->updatePlanForMerchants($input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function cdsPlansBillingDateUpdate()
+    {
+        $input = Request::all();
+
+        $response = (new Plans\Service())->cdsPlansBillingDateUpdate($input);
 
         return ApiResponse::json($response);
     }

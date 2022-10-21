@@ -1293,12 +1293,19 @@ class Route
         'payment_handle_amount_encryption'         => ['post',     'payment_handle/custom_amount',                            'PaymentLinkController@encryptAmountForPaymentHandle'      ],
 
         // Payment page Custom domain service integration
-        'payment_page_cds_domain_create'            => ['post',     'payment_pages/cds/domains',        'PaymentLinkController@cdsDomainCreate' ],
-        'payment_page_cds_domain_list'              => ['get',      'payment_pages/cds/domains',        'PaymentLinkController@cdsDomainList'   ],
-        'payment_page_cds_domain_delete'            => ['delete',   'payment_pages/cds/domains',        'PaymentLinkController@cdsDomainDelete' ],
-        'payment_page_cds_check_propagation'        => ['get',      'payment_pages/cds/propagation',    'PaymentLinkController@cdsPropagation'  ],
-        'payment_page_cds_domain_exists'            => ['get',      'payment_pages/cds/domains/exists', 'PaymentLinkController@cdsDomainExists' ],
-        'payment_page_cds_subdomain'                => ['get',      'payment_pages/cds/subdomain',      'PaymentLinkController@cdsIsSubDomain' ],
+        'payment_page_cds_domain_create'            => ['post',     'payment_pages/cds/domains',                     'PaymentLinkController@cdsDomainCreate' ],
+        'payment_page_cds_domain_list'              => ['get',      'payment_pages/cds/domains',                     'PaymentLinkController@cdsDomainList'   ],
+        'payment_page_cds_domain_delete'            => ['delete',   'payment_pages/cds/domains',                     'PaymentLinkController@cdsDomainDelete' ],
+        'payment_page_cds_check_propagation'        => ['get',      'payment_pages/cds/propagation',                 'PaymentLinkController@cdsPropagation'  ],
+        'payment_page_cds_domain_exists'            => ['get',      'payment_pages/cds/domains/exists',              'PaymentLinkController@cdsDomainExists' ],
+        'payment_page_cds_subdomain'                => ['get',      'payment_pages/cds/subdomain',                   'PaymentLinkController@cdsIsSubDomain'  ],
+        'payment_page_cds_create_plans'             => ['post',     'payment_pages/cds/plans',                       'PaymentLinkController@cdsCreatePlans'  ],
+        'payment_page_cds_fetch_plans'              => ['get',      'payment_pages/cds/plans',                       'PaymentLinkController@cdsFetchPlans'   ],
+        'payment_page_cds_delete_plans'             => ['delete',   'payment_pages/cds/plans',                       'PaymentLinkController@cdsDeletePlans'  ],
+        'payment_page_cds_fetch_plan'               => ['get',      'payment_pages/cds/plans/plan',                  'PaymentLinkController@cdsFetchPlanForMerchant'   ],
+        'payment_page_cds_update_plans'             => ['patch',    'payment_pages/cds/plans/plan',                  'PaymentLinkController@cdsUpdatePlanForMerchants' ],
+        'payment_page_cds_billing_update_cron'      => ['patch',    'payment_pages/cds/plans/billing_date',          'PaymentLinkController@cdsPlansBillingDateUpdate' ],
+
 
         // Debugging route: needs permission to access this route
         'nocode_debugging_route'                    => ['post',     'nocode/debug',                                            'PaymentLinkController@nocodeDebugHandler'                ],
@@ -4522,6 +4529,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'payment_page_cds_billing_update_cron',
         'banking_accounts_get_internal',
         'banking_account_activation_detail_update_internal',
         'merchant_onboarding_crons',
@@ -5779,6 +5787,8 @@ class Route
         'payment_page_cds_check_propagation',
         'payment_page_cds_domain_exists',
         'payment_page_cds_subdomain',
+        'payment_page_cds_fetch_plans',
+        'payment_page_cds_fetch_plan',
         'payment_page_update',
         'payment_page_notify',
         'payment_page_deactivate',
@@ -6315,6 +6325,9 @@ class Route
     public static $admin = [
         'salesforce_event_admin',
         'merchant_create_lead_to_salesforce_admin',
+        'payment_page_cds_create_plans',
+        'payment_page_cds_update_plans',
+        'payment_page_cds_delete_plans',
         'org_bank_account_create',
         'org_fetch_bank_account',
         'org_update_bank_account',
@@ -7511,6 +7524,9 @@ class Route
         'linked_account_reference_data_create'      => Permission::LINKED_ACCOUNT_REFERENCE_DATA_CREATE,
         'amc_linked_account_create'                 => Permission::AMC_LINKED_ACCOUNT_CREATION,
         'nocode_debugging_route'                    => Permission::DEBUG_NOCODE_ROUTES,
+        'payment_page_cds_create_plans'             => Permission::DEBUG_NOCODE_ROUTES,
+        'payment_page_cds_update_plans'             => Permission::DEBUG_NOCODE_ROUTES,
+        'payment_page_cds_delete_plans'             => Permission::DEBUG_NOCODE_ROUTES,
         'merchant_enhanced_activation_details'     => Permission::VIEW_MERCHANT,
         'mob_admin_routes'                          => Permission::MOB_ADMIN,
         'mob_migration'                             => Permission::MOB_ADMIN,
@@ -10361,7 +10377,9 @@ class Route
             'payment_page_cds_check_propagation',
             'payment_page_cds_domain_exists',
             'payment_page_cds_subdomain',
+            'payment_page_cds_fetch_plans',
             'payment_page_create_order',
+            'payment_page_cds_fetch_plan',
             'store_create_order' ,
             'payment_page_create_order_option',
             'store_create_order_options',
@@ -12150,6 +12168,11 @@ class Route
             'payment_page_cds_check_propagation',
             'payment_page_cds_domain_exists',
             'payment_page_cds_subdomain',
+            'payment_page_cds_fetch_plans',
+            'payment_page_cds_fetch_plan',
+            'payment_page_cds_create_plans',
+            'payment_page_cds_update_plans',
+            'payment_page_cds_delete_plans',
             'payment_page_create_order',
             'store_create_order',
             'payment_page_create_order_option',
@@ -13193,6 +13216,7 @@ class Route
         ],
 
         'cron' => [
+            'payment_page_cds_billing_update_cron',
             'capture_cron_for_b2b_payments',
             'settlement_cron_for_b2b_payments',
             'merchant_onboarding_crons',

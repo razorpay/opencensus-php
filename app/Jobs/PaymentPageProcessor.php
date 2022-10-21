@@ -4,10 +4,12 @@ namespace RZP\Jobs;
 
 use App;
 use RZP\Models\Payment;
+use RZP\Models\Pricing\Plan;
 use RZP\Trace\TraceCode;
 use RZP\Models\PaymentLink;
 use Illuminate\Support\Str;
 use RZP\Models\Merchant;
+use Rzp\Models\PaymentLink\CustomDomain\Plans as CDSPlan;
 
 /**
  * - Asynchronously update payment page, generate receipt etc after a successful payment
@@ -23,6 +25,9 @@ class PaymentPageProcessor extends Job
 
     const PAYMENT_PAGE_CREATE_DEDUPE    = 'PAYMENT_PAGE_CREATE_DEDUPE';
     const PAYMENT_PAGE_HOSTED_CACHE     = 'PAYMENT_PAGE_HOSTED_CACHE';
+
+    const CDS_UPDATE_PLAN_IDS_FOR_MERCHANTS  = 'CDS_UPDATE_PLAN_IDS_FOR_MERCHANTS';
+    const CDS_PLANS_BILLING_DATE_UPDATE      = 'CDS_PLANS_BILLING_DATE_UPDATE';
 
     // Once all slugs are migrated this const will be removed
     const NOCODE_CUSTOM_URL_UPSERT_FROM_HOSTED_FLOW = 'NOCODE_CUSTOM_URL_UPSERT_FROM_HOSTED_FLOW';
@@ -404,5 +409,43 @@ class PaymentPageProcessor extends Job
         ]);
 
         $this->delete();
+    }
+
+    protected function handleCdsUpdatePlanIdsForMerchants()
+    {
+        $oldPlanId = $this->params[CDSPlan\Constants::OLD_PLAN_ID];
+
+        $newPlanId = $this->params[CDSPlan\Constants::NEW_PLAN_ID];
+
+        $this->trace->info(TraceCode::CDS_PLAN_UPDATE_JOB_TRIGGERED, [
+            CDSPlan\Constants::NEW_PLAN_ID  => $newPlanId,
+            CDSPlan\Constants::OLD_PLAN_ID  => $oldPlanId
+        ]);
+
+        try
+        {
+            (new CDSPlan\Core())->updatePlansForMerchants($oldPlanId, $newPlanId);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::CDS_PLAN_UPDATE_JOB_FAILED, [
+                CDSPlan\Constants::NEW_PLAN_ID  => $newPlanId,
+                CDSPlan\Constants::OLD_PLAN_ID  => $oldPlanId
+            ]);
+        }
+    }
+
+    protected function handleCdsPlansBillingDateUpdate()
+    {
+        $this->trace->info(TraceCode::CDS_PLAN_BILLING_DATE_UPDATE_TRIGGERED);
+
+        try
+        {
+            (new CDSPlan\Core())->cdsPlansBillingDateUpdate();
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::CDS_PLAN_BILLING_DATE_UPDATE_FAILED);
+        }
     }
 }

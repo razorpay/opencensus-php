@@ -7,11 +7,13 @@ use Carbon\Carbon;
 
 use Illuminate\Http\UploadedFile;
 use RZP\Constants\Mode;
+use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Item;
 use RZP\Models\Order;
 use RZP\Models\Currency\Currency;
 use RZP\Models\PaymentLink\Entity;
+use RZP\Models\Schedule;
 use RZP\Services\Elfin\Impl\Gimli;
 use RZP\Jobs\PaymentPageProcessor;
 use Illuminate\Support\Facades\Bus;
@@ -38,9 +40,11 @@ use RZP\Exception\BadRequestException;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Traits\PaymentLinkTestTrait;
 use RZP\Models\PaymentLink as PaymentLinkModel;
+use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\PaymentLink\CustomDomain\Plans as CDSPlans;
 use RZP\Services\RazorXClient;
 
 class PaymentLinkTest extends TestCase
@@ -3167,14 +3171,21 @@ class PaymentLinkTest extends TestCase
      */
     public function testCreatePaymentPageWithCustomDomain()
     {
+
         $this->ba->proxyAuthLive();
+
         Config::set('app.nocode.cache.custom_url_ttl', 0);
+
         $this->startTest();
+
         $pl     = $this->getDbLastEntity("payment_link", Mode::LIVE);
+
         $ncu    = $this->getDbLastEntity("nocode_custom_url", Mode::LIVE);
 
         $this->assertEquals("https://cds.razorpay.in/myslug", $pl->getShortUrl());
+
         $this->assertEquals("cds.razorpay.in", $ncu->getDomain());
+
         $this->assertEquals("myslug", $ncu->getSlug());
     }
 
@@ -3447,7 +3458,16 @@ class PaymentLinkTest extends TestCase
     {
         $domain = "subdomain.razorpay.com";
 
-        $this->startTest(['request' => ['content' => ["domain_name" => $domain]]]);
+        $plans = $this->createCDSPlan();
+
+        $planId = $plans[0]->getId();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest(['request' => ['content' => [
+            "domain_name" => $domain,
+            'plan_id'     => $planId
+        ]]]);
 
         /**
          * @var $merchant \RZP\Models\Merchant\Entity
@@ -3465,6 +3485,10 @@ class PaymentLinkTest extends TestCase
             }
         }
 
+        $plan = $this->getDbLastEntity('schedule_task', MODE::TEST);
+
+        $this->assertEquals($planId, $plan['schedule_id']);
+
         $this->assertTrue($found);
     }
 
@@ -3475,16 +3499,22 @@ class PaymentLinkTest extends TestCase
     {
         $domain = "subdomain.razorpay.com";
 
-        /**
-         * @var $merchant \RZP\Models\Merchant\Entity
-         */
+        $plans = $this->createCDSPlan();
+
+        $planId = $plans[0]->getId();
+
+        $this->createCustomDomainForMerchantWithPlan($planId, '10000000000000' ,$domain);
+
         $merchant = $this->getDbEntityById("merchant", self::TEST_MID);
+
         $merchant->setWhitelistedDomains([$domain]);
+
         $merchant->saveOrFail();
 
         $this->startTest(['request' => ['content' => ["domain_name" => $domain]]]);
 
         $merchant = $this->getDbEntityById("merchant", self::TEST_MID);
+
         $found = false;
 
         foreach ($merchant->getWhitelistedDomains() as $dm)
@@ -3499,7 +3529,292 @@ class PaymentLinkTest extends TestCase
         $this->assertFalse($found);
     }
 
+    /**
+     * @group nocode_cds
+     */
+    public function testCustomDomainServiceCreatePlans()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * @group nocode_cds
+     */
+    public function testCustomDomainServiceCreatePlansDuplicateAlias()
+    {
+        $this->testCustomDomainServiceCreatePlans();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * @group nocode_cds
+     */
+    public function testCustomDomainServicePlansGet()
+    {
+        $this->createCDSPlan();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * @group nocode_cds
+     */
+    public function testCustomDomainServiceDeletePlans()
+    {
+        $plans =  $this->createCDSPlan();
+
+        $planId = $plans[0]->getId();
+
+        $this->ba->adminAuth();
+
+        $this->startTest(
+            [
+                'request' => [
+                    'content' => [
+                        "plan_ids" => [
+                            $planId
+                        ]
+                    ]
+                ],
+                'response' => [
+                    'content' => [
+                        'successful' => [
+                            $planId
+                        ]
+                    ]
+                ]
+            ]);
+    }
+
+    /**
+     * @group nocode_cds
+     */
+    public function testCustomDomainFetchPlanForMerchant()
+    {
+        $this->testOnCreateCustomDomainShouldWhitelistDomain();
+
+        $this->ba->proxyAuth();
+
+        $request = [
+            "url"       => "/v1/payment_pages/cds/plans/plan",
+            "method"    => "get",
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $plan = array_get($response, 'plan');
+
+        $this->assertArrayKeysExist($plan, ['id','alias','name','period','interval','next_billing_at', 'metadata']);
+
+        $this->assertArrayKeysExist($plan['metadata'], ['per_month_amount', 'plan_amount','discount']);
+    }
+
+    /**
+     * @group nocode_cds
+     */
+    public function testCustomDomainFetchPlanForMerchantWhenPlanDoesNotExist()
+    {
+        $this->ba->proxyAuth();
+
+        $request = [
+            "url"       => "/v1/payment_pages/cds/plans/plan",
+            "method"    => "get",
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $plan = array_get($response, 'plan');
+
+        $this->assertEquals([], $plan);
+    }
+
+    /**
+     * @group nocode_cds
+     */
+    public function testCustomDomainFetchValidPlanAfterDeletion()
+    {
+        $this->testCustomDomainPlanDeletionWithDomainDeletionForMerchant();
+
+        $this->ba->proxyAuth();
+
+        $request = [
+            "url"       => "/v1/payment_pages/cds/plans/plan",
+            "method"    => "get",
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $plan = array_get($response, 'plan');
+
+        $this->assertArrayKeysExist($plan, ['id','alias','name','period','interval','next_billing_at', 'metadata']);
+
+        $this->assertArrayKeysExist($plan['metadata'], ['per_month_amount', 'plan_amount','discount']);
+    }
+
+    /**
+     * @group nocode_cds
+     */
+    public function testCustomDomainPlanDeletionWithDomainDeletionForMerchant()
+    {
+        $plans =  $this->createCDSPlan();
+
+        $planId = $plans[0]->getId();
+
+        $this->createCustomDomainForMerchantWithPlan($planId);
+
+        $this->ba->proxyAuth();
+
+        $request = [
+            'url' => '/v1/payment_pages/cds/domains',
+            'method' => 'delete',
+            'content' => [
+                'domain_name'      => 'https://subdomain.razorpay.com'
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('domain_name', $response );
+
+        $this->assertArrayHasKey('status', $response);
+
+        $this->assertEquals($response['status'], 'deleted');
+
+        $this->assertEquals($response['domain_name'], 'https://subdomain.razorpay.com');
+
+        $plan = $this->getTrashedDbEntity('schedule_task', ['type' => 'cds_pricing']);
+
+        $this->assertNotNull($plan->deleted_at);
+    }
+
+    public function testCustomDomainPlanIdUpdate()
+    {
+        $plans = $this->createCDSPlan();
+
+        $domainCreateRequest = [
+            'url' => '/v1/payment_pages/cds/domains',
+            'method' => 'post',
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'domain_name' => 'mydomain-123.com',
+                'plan_id'     => $plans[0]->getId()
+            ]
+        ];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->makeRequestAndGetContent($domainCreateRequest);
+
+        $this->assertArrayKeysExist($response, ['id', 'domain_name', 'merchant_id', 'status']);
+
+        $updatePlanIdRequest = [
+            'url' => '/payment_pages/cds/plans/plan',
+            'method' => 'patch',
+            'content' => [
+                CDSPlans\Constants::NEW_PLAN_ID   => $plans[1]->getId(),
+                CDSPlans\Constants::OLD_PLAN_ID   => $plans[0]->getId()
+            ]
+        ];
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => PermissionName::DEBUG_NOCODE_ROUTES]);
+
+        $role->permissions()->attach($perm->getId());
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($updatePlanIdRequest);
+
+        $this->assertArrayKeysExist($response, ['response']);
+
+        $planForMerchant = $this->getDbLastEntity('schedule_task');
+
+        $this->assertEquals($plans[1]->getId(), $planForMerchant->getScheduleId());
+    }
+
+    public function testCustomDomainPlanIdUpdateWhenIdNotValid()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     // -------------------- Protected methods --------------------
+
+    protected function createCDSPlan()
+    {
+        $request = [
+            'method'    => 'POST',
+            'url'       => '/payment_pages/cds/plans',
+            'content'   => [
+                'plans' => [
+                    [
+                        'alias'    => CDSPlans\Aliases::MONTHLY_ALIAS,
+                        'period'   => 'monthly',
+                        'interval' => '1'
+                    ],
+                    [
+                        'alias'    => CDSPlans\Aliases::QUARTERLY_ALIAS,
+                        'period'   => 'monthly',
+                        'interval' => '3',
+                    ],
+                    [
+                        'alias'    => CDSPlans\Aliases::BIYEARLY_ALIAS,
+                        'period'   => 'monthly',
+                        'interval' => '6'
+                    ],
+                ],
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('plans', $response);
+
+        $plans = $this->getDbEntities('schedule', [
+            Schedule\Entity::TYPE => Schedule\Type::CDS_PRICING
+        ]);
+
+        $this->assertEquals(3, count($plans));
+
+        return $plans;
+    }
+
+    protected function createCustomDomainForMerchantWithPlan(
+        string $planId,
+        string $merchantId = '10000000000000',
+        string $domain = "mydomain-121.com"
+    )
+    {
+        $request = [
+            'url'     => '/payment_pages/cds/domains',
+            'method'  => 'post',
+            'content' => [
+                'merchant_id' => $merchantId,
+                'domain_name' => $domain,
+                'plan_id'     => $planId
+            ]
+        ];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayKeysExist($response, ['id', 'domain_name', 'merchant_id', 'status']);
+
+    }
 
     protected function assertManipulateOrderItemAndMakePayment(
         string $exceptionMessage = "",

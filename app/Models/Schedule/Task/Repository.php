@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Schedule\Task;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 
@@ -122,5 +123,60 @@ class Repository extends Base\Repository
                     ->where(Entity::TYPE, '=', $type)
                     ->with('schedule')
                     ->get();
+    }
+
+    public function fetchActiveByMerchantWithTrashed(Merchant\Entity $merchant, $type, bool $trashed)
+    {
+        $currTimestamp = Carbon::now()->getTimestamp();
+
+        $query = $this->newQuery()
+            ->merchantId($merchant->getId())
+            ->where(Entity::TYPE, '=', $type)
+            ->where(Entity::NEXT_RUN_AT, '>', $currTimestamp)
+            ->with('schedule');
+
+        if($trashed)
+        {
+            $query = $query->withTrashed();
+        }
+
+        return $query->first();
+    }
+
+    /**
+     * @param $oldScheduleId
+     * @param $newScheduleId
+     * @return mixed
+     *
+     * This function will update the schedule id
+     * of a schedule from old id to the new one.
+     *
+     * Validate new id is a valid one.
+     */
+    public function updateScheduleId($oldScheduleId, $newScheduleId, bool $trashed)
+    {
+        $currTimestamp = Carbon::now()->getTimestamp();
+
+        $query = $this->newQuery()
+            ->where(Entity::TYPE, '=', Type::CDS_PRICING)
+            ->where(Entity::NEXT_RUN_AT, '>', $currTimestamp)
+            ->where(Entity::SCHEDULE_ID, '=', $oldScheduleId);
+
+        if($trashed === true)
+        {
+            $query = $query->withTrashed();
+        }
+
+        return $query->update([Entity::SCHEDULE_ID => $newScheduleId]);
+    }
+
+    public function getScheduleTasksToRun(string $type, string $startTimestamp, string $endTimestamp)
+    {
+        $query = $this->newQuery()
+            ->where(Entity::TYPE, '=', $type)
+            ->where(Entity::NEXT_RUN_AT, '>=', $startTimestamp)
+            ->where(Entity::NEXT_RUN_AT, '<=', $endTimestamp);
+
+        return  $query->get();
     }
 }

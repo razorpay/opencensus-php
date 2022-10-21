@@ -7,6 +7,7 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Fixtures\Entity\User;
+use RZP\Models\PaymentLink\CustomDomain\Plans as CDSPlans;
 
 return [
     'testCreatePaymentLinkWithSinglePaymentPageItem' => [
@@ -5495,6 +5496,133 @@ return [
         ],
         "response" => [
             "content" => []
+        ],
+    ],
+
+    "testCustomDomainServiceCreatePlans" => [
+        "request"   => [
+            "url"       => "/v1/payment_pages/cds/plans",
+            "method"    => "post",
+            "content"   => [
+                "plans" => [
+                    [
+                        "alias"    => "cds_pricing_monthly",
+                        "period"   => "monthly",
+                        "interval" => "1"
+                    ],
+                    [
+                        "alias"    => "cds_pricing_quarterly",
+                        "period"   => "monthly",
+                        "interval" => "3"
+                    ]
+                ]
+            ]
+        ],
+        "response"    => [
+            "content" => [
+                "plans"   => [
+                    [
+                        "alias"         => "cds_pricing_monthly",
+                        "period"        => "monthly",
+                        "interval"      => "1"
+                    ],
+                    [
+                        "alias"         => "cds_pricing_quarterly",
+                        "period"        => "monthly",
+                        "interval"      => "3"
+                    ]
+                ]
+            ]
+        ]
+    ],
+    "testCustomDomainServiceCreatePlansDuplicateAlias" => [
+        "request"   => [
+            "url"       => "/v1/payment_pages/cds/plans",
+            "method"    => "post",
+            "content"   => [
+                "plans" => [
+                    [
+                        "alias"    => "cds_pricing_monthly",
+                        "period"   => "monthly",
+                        "interval" => "1"
+                    ]
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    "testCustomDomainServicePlansGet" => [
+        "request"   => [
+            "url"       => "/v1/payment_pages/cds/plans",
+            "method"    => "get"
+        ],
+        "response"    => [
+            "content" => [
+                "plans"   => [
+                    [
+                        "alias"         => CDSPlans\Aliases::MONTHLY_ALIAS,
+                        "name"          => "1 Month",
+                        "period"        => "monthly",
+                        "interval"      => 1,
+                        "metadata"      => []
+                    ],
+                    [
+                        "alias"         => CDSPlans\Aliases::QUARTERLY_ALIAS,
+                        "name"          => "3 Months",
+                        "period"        => "monthly",
+                        "interval"      => 3,
+                        "metadata"      => []
+                    ],
+                    [
+                        "alias"         => CDSPlans\Aliases::BIYEARLY_ALIAS,
+                        "name"          => "6 Months",
+                        "period"        => "monthly",
+                        "interval"      => 6,
+                        "metadata"      => []
+                    ]
+                ],
+            ]
+        ]
+    ],
+
+    'testCustomDomainServiceDeletePlans' => [
+        "request"   => [
+            "url"       => "/v1/payment_pages/cds/plans",
+            "method"    => "delete",
+            "content"   => []
+        ],
+        "response"    => [
+            "status"  => 200,
+            "content" => [
+                'total_plans' => 1,
+                'failed'      => []
+            ]
+        ]
+    ],
+
+    "testCustomDomainPlanIdUpdateWhenIdNotValid" => [
+        "request"   => [
+            "url"       => "/v1/payment_pages/cds/plans/plan",
+            "method"    => "patch",
+            "content"   => [
+                "old_plan_id"  => "abcde",
+                "new_plan_id"  => "abcde"
+            ]
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 ];

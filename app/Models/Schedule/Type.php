@@ -14,12 +14,15 @@ class Type
 
     const FEE_RECOVERY     = 'fee_recovery';
 
+    const CDS_PRICING      = 'cds_pricing';
+
     const TYPE_LIST = [
         self::PROMOTION,
         self::REPORTING,
         self::SETTLEMENT,
         self::SUBSCRIPTION,
         self::FEE_RECOVERY,
+        self::CDS_PRICING,
     ];
 
     public static function isTypeValid(string $type):bool

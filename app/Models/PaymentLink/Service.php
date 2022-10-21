@@ -25,6 +25,8 @@ use RZP\Constants\Entity as E;
 use RZP\Exception\BadRequestException;
 use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Models\PaymentLink\PaymentPageItem as PPI;
+use RZP\Models\PaymentLink\CustomDomain\Plans as CDS_PLANS;
+
 
 class Service extends Base\Service
 {
@@ -798,6 +800,8 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::CDS_DOMAIN_CREATE_RECIEVED, $input);
 
+        (new CDS_PLANS\Validator())->validatePlanIdPresent($input);
+
         $input['merchant_id'] = $this->merchant->getId();
 
         $domainClient = CustomDomain\Factory::getDomainClient();
@@ -812,6 +816,8 @@ class Service extends Base\Service
         $merchantCore->addDomainInWhitelistedDomain($this->merchant, $domain);
 
         $this->merchant->saveOrFail();
+
+        (new CustomDomain\Plans\Core)->createOrUpdatePlanForMerchant($input);
 
         return $res;
     }
@@ -858,6 +864,8 @@ class Service extends Base\Service
         $merchantCore->removeDomainFromWhitelistedDomain($this->merchant, $domain);
 
         $this->merchant->saveOrFail();
+
+        (new CustomDomain\Plans\Service())->deletePlanForMerchant();
 
         return $res;
     }

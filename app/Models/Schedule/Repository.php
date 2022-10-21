@@ -82,4 +82,19 @@ class Repository extends Base\Repository
                      ->where(Entity::TYPE, '=', $type)
                      ->first();
     }
+
+    public function fetchSchedulesByType(string $type)
+    {
+        return $this->newQuery()
+            ->where(Entity::TYPE, '=', $type)
+            ->orderBy(Entity::NAME)
+            ->get();
+    }
+
+    public function fetchScheduleById(string $id)
+    {
+        return $this->newQuery()
+            ->where(Entity::ID, '=', $id)
+            ->firstOrFail();
+    }
 }
