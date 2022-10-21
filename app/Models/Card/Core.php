@@ -1319,4 +1319,20 @@ class Core extends Base\Core
         return false;
     }
 
+    public function getCobrandingPartner($vaultToken, $tokenIin)
+    {
+
+        $card = [
+            'token_iin'     => $tokenIin,
+            'vault_token'   => $vaultToken,
+        ];
+
+        $card = (new Card\Entity)->fill($card);
+
+        $cardActualIin = $card->getIin();
+
+        $iinEntity = $this->repo->iin->find($cardActualIin);
+
+        return $iinEntity->getCobrandingPartner();
+    }
 }

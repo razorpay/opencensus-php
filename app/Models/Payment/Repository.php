@@ -42,6 +42,7 @@ use RZP\Models\Offer\EntityOffer;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Pricing\Calculator;
 
+use RZP\Models\Bank\IFSC;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Base\Traits\ExternalCore;
@@ -626,19 +627,11 @@ EOT;
 
         $cardTableName = $this->repo->card->getTableName();
 
-        $iinTableName = $this->repo->iin->getTableName();
-
         $terminalEmi = $tRepo->dbColumn(Terminal\Entity::EMI);
 
         $paymentTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
 
         $paymentCardId = $this->dbColumn(Entity::CARD_ID);
-
-        $cardIin = $this->repo->card->dbColumn(Card\Entity::IIN);
-
-        $iin = $this->repo->iin->dbColumn(Card\IIN\Entity::IIN);
-
-        $iinCobrandingPartner = $this->repo->iin->dbColumn(Card\IIN\Entity::COBRANDING_PARTNER);
 
         $paymentData = $this->dbColumn('*');
 
@@ -648,18 +641,42 @@ EOT;
 
         $paymentStatus = $this->dbColumn(Entity::STATUS);
 
-        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+        $network = $this->repo->card->dbColumn(Card\Entity::NETWORK);
+
+        $issuer = $this->repo->card->dbColumn(Card\Entity::ISSUER);
+
+        $tokenIin = $this->repo->card->dbColumn(Card\Entity::TOKEN_IIN);
+
+        $vaultToken = $this->repo->card->dbColumn(Card\Entity::VAULT_TOKEN);
+
+        $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
             ->join($tTableName, $paymentTerminalId, '=', $terminalId)
             ->join($cardTableName, $paymentCardId, '=', $cardId)
-            ->join($iinTableName, $cardIin, '=', $iin)
             ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
             ->where($paymentStatus, '=', Status::CAPTURED)
-            ->where($iinCobrandingPartner, '=', $cobrandingPartner)
+            ->where($network, '=', Card\Network::$fullName[Card\Network::VISA])
+            ->whereIn($issuer, Card\Issuer::getAllOnecardIssuers())
             ->where(Entity::METHOD, '=', Method::EMI)
             ->where($terminalEmi, '=', false)
             ->with($relations)
-            ->select($paymentData)
-            ->get();
+            ->select([$paymentData, $tokenIin, $vaultToken]);
+
+        $entities = $query->get();
+
+        $filteredEntities = new Base\PublicCollection();
+
+        if (!$entities->isEmpty())
+        {
+            $filteredEntities = $entities->reject(function($entity) use ($cobrandingPartner) {
+
+                $cardCobrandingPartner = (new Card\Core)->getCobrandingPartner($entity['vault_token'], $entity['token_iin']);
+
+                return $cobrandingPartner != $cardCobrandingPartner;
+
+            });
+        }
+
+        return $filteredEntities;
     }
 
     public function fetchEmiPaymentsOfCobrandingPartnerAndBankWithRelationsBetween($from, $to, $cobrandingPartner, $bank, $relations)
@@ -670,19 +687,11 @@ EOT;
 
         $cardTableName = $this->repo->card->getTableName();
 
-        $iinTableName = $this->repo->iin->getTableName();
-
         $terminalEmi = $tRepo->dbColumn(Terminal\Entity::EMI);
 
         $paymentTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
 
         $paymentCardId = $this->dbColumn(Entity::CARD_ID);
-
-        $cardIin = $this->repo->card->dbColumn(Card\Entity::IIN);
-
-        $iin = $this->repo->iin->dbColumn(Card\IIN\Entity::IIN);
-
-        $iinCobrandingPartner = $this->repo->iin->dbColumn(Card\IIN\Entity::COBRANDING_PARTNER);
 
         $paymentData = $this->dbColumn('*');
 
@@ -692,19 +701,36 @@ EOT;
 
         $paymentStatus = $this->dbColumn(Entity::STATUS);
 
-        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+        $tokenIin = $this->repo->card->dbColumn(Card\Entity::TOKEN_IIN);
+
+        $vaultToken = $this->repo->card->dbColumn(Card\Entity::VAULT_TOKEN);
+
+        $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
             ->join($tTableName, $paymentTerminalId, '=', $terminalId)
             ->join($cardTableName, $paymentCardId, '=', $cardId)
-            ->join($iinTableName, $cardIin, '=', $iin)
             ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
             ->where($paymentStatus, '=', Status::CAPTURED)
-            ->where($iinCobrandingPartner, '=', $cobrandingPartner)
             ->where(Entity::METHOD, '=', Method::EMI)
             ->where(Entity::BANK, '=', $bank)
             ->where($terminalEmi, '=', false)
             ->with($relations)
-            ->select($paymentData)
-            ->get();
+            ->select([$paymentData, $tokenIin, $vaultToken]);
+
+        $entities = $query->get();
+
+        $filteredEntities = new Base\PublicCollection();
+
+        if (!$entities->isEmpty())
+        {
+            $filteredEntities = $entities->reject(function($entity) use ($cobrandingPartner) {
+
+                $cardCobrandingPartner = (new Card\Core)->getCobrandingPartner($entity['vault_token'], $entity['token_iin']);
+
+                return $cobrandingPartner != $cardCobrandingPartner;
+            });
+        }
+
+        return $filteredEntities;
     }
 
     public function fetchCreatedPaymentsWithInternalError($timestamp)

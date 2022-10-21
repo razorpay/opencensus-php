@@ -763,33 +763,7 @@ class GatewayEmiFileTest extends TestCase
     {
         Mail::fake();
 
-        $this->fixtures->create('iin',
-            [
-                'iin'           => '554637',
-                'category'      => 'STANDARD',
-                'network'       => 'Visa',
-                'type'          => 'credit',
-                'country'       => 'IN',
-                'issuer_name'   => 'Bank of Baroda',
-                'issuer'        => 'BARB',
-                'emi'           => 1,
-                'trivia'        => 'random trivia'
-            ]);
-
-        $this->fixtures->create('emi_plan',
-            [
-                'id'                => '90101010101011',
-                'duration'          => '9',
-                'rate'              => '1400',
-                'methods'           => 'creditcard',
-                'bank'              => 'BARB',
-                'min_amount'        => '300000',
-                'merchant_id'       => '100000Razorpay',
-            ]);
-
-        $this->ba->publicAuth();
-
-        $this->makeEmiPaymentOnCard('5546370000099413', 9);
+        $this->createDependentEntities(null);
 
         $this->ba->adminAuth();
 
@@ -821,50 +795,9 @@ class GatewayEmiFileTest extends TestCase
     {
         Mail::fake();
 
-        $this->fixtures->emiPlan->createMerchantSpecificEmiPlans();
-
-        // Enable EMI on iin
-        $this->fixtures->create('iin',
-            [
-                'iin'                => '402275',
-                'category'           => 'STANDARD',
-                'network'            => 'MasterCard',
-                'type'               => 'credit',
-                'country'            => 'IN',
-                'issuer_name'        => 'SBM Bank',
-                'issuer'             => 'STCB',
-                'cobranding_partner' => 'onecard',
-                'emi'                => 1,
-                'trivia'             => 'random trivia'
-            ]);
-
-        $this->fixtures->merchant->enableEmi();
-
-        $this->ba->publicAuth();
-
-        $this->makeEmiPaymentOnCard('4022750600094037', 3);
-
-        $payment = $this->getDbLastEntityToArray('payment');
-
-        $this->assertArraySelectiveEquals(
-            [
-                'status' => 'captured',
-                'method' => 'emi',
-            ],
-            $payment
-        );
+        $this->createDependentEntities('onecard');
 
         $this->ba->adminAuth();
-
-        $payment = $this->getDbLastEntityToArray('payment');
-
-        $this->setCardPaymentMockResponse(
-            [
-                $payment['id'] => [
-                    'rrn' => '654321',
-                ],
-            ]
-        );
 
         $content = $this->startTest();
 
@@ -874,6 +807,80 @@ class GatewayEmiFileTest extends TestCase
         $this->assertNotNull(File\Entity::SENT_AT);
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+    }
+
+    protected function createDependentEntities($cobrandingPartner)
+    {
+        $this->fixtures->emiPlan->createMerchantSpecificEmiPlans();
+
+        $terminal = $this->fixtures->create('terminal', [
+            'merchant_id'           => '10000000000000',
+            'gateway'               => Payment\Gateway::EMI_SBI,
+            'gateway_merchant_id'   => '250000002',
+            'gateway_terminal_id'   => '38R00001',
+            'enabled'               => 0,
+            'emi'                   => 0,
+        ]);
+
+        $this->fixtures->create('emi_plan',
+            [
+                'id'                => '90101010101011',
+                'duration'          => '9',
+                'rate'              => '1400',
+                'methods'           => 'creditcard',
+                'bank'              => 'BARB',
+                'min_amount'        => '300000',
+                'issuer_plan_id'    => '85009',
+                'merchant_id'       => '100000Razorpay',
+            ]);
+
+        // Enable EMI on iin
+        $this->fixtures->create('iin',
+            [
+                'iin'                => '999999',
+                'category'           => 'STANDARD',
+                'network'            => 'Visa',
+                'type'               => 'credit',
+                'country'            => 'IN',
+                'issuer_name'        => 'SBM Bank',
+                'issuer'             => 'STCB',
+                'cobranding_partner' => $cobrandingPartner,
+                'emi'                => 1,
+                'trivia'             => 'random trivia'
+            ]);
+
+        $card = $this->fixtures->card->create(
+            [
+                'id'                =>  '100000003lcard',
+                'name'              =>  'test',
+                'expiry_month'      =>  '12',
+                'expiry_year'       =>  '2100',
+                'issuer'            =>  'STCB',
+                'network'           =>  'Visa',
+                'last4'             =>  '1111',
+                'type'              =>  'credit',
+                'vault'             =>  'visa',
+                'iin'               =>  '0',
+                'vault_token'       =>  'pay_sampletoken',
+            ]
+        );
+
+        $this->fixtures->payment->create(
+            [
+                'merchant_id'      => '10000000000000',
+                'amount'           => 1000,
+                'currency'         => 'INR',
+                'method'           => 'emi',
+                'status'           => 'captured',
+                'bank'             => 'BARB',
+                'gateway'          => 'hdfc_debit_emi',
+                'terminal_id'      => $terminal['id'],
+                'card_id'          => $card['id'],
+                'emi_plan_id'      => '90101010101011',
+                'captured_at'      => Carbon::now(Timezone::IST)->getTimestamp(),
+                'reference2'       => '1038203',
+            ]
+        );
     }
 
     protected function makeEmiPaymentOnCard($card, $emiDuration,

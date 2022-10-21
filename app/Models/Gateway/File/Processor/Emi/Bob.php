@@ -18,26 +18,25 @@ class Bob extends Base
     const FILE_NAME   = 'Bob_Emi_File';
     const DATE_FORMAT = 'd/m/Y h:i:s A';
 
-    // uncomment this after fixing dependency on iin entity for cobranding partner check
-//    public function fetchEntities(): PublicCollection
-//    {
-//        $begin = $this->gatewayFile->getBegin();
-//        $end = $this->gatewayFile->getEnd();
-//
-//        return $this->repo
-//            ->payment
-//            ->fetchEmiPaymentsOfCobrandingPartnerAndBankWithRelationsBetween(
-//                $begin,
-//                $end,
-//                null,
-//                static::BANK_CODE,
-//                [
-//                    'card.globalCard',
-//                    'emiPlan',
-//                    'merchant.merchantDetail',
-//                    'terminal'
-//                ]);
-//    }
+    public function fetchEntities(): PublicCollection
+    {
+        $begin = $this->gatewayFile->getBegin();
+        $end = $this->gatewayFile->getEnd();
+
+        return $this->repo
+            ->payment
+            ->fetchEmiPaymentsOfCobrandingPartnerAndBankWithRelationsBetween(
+                $begin,
+                $end,
+                null,
+                static::BANK_CODE,
+                [
+                    'card.globalCard',
+                    'emiPlan',
+                    'merchant.merchantDetail',
+                    'terminal'
+                ]);
+    }
 
     protected function formatDataForFile($data)
     {

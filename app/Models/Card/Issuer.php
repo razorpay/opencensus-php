@@ -39,6 +39,7 @@ class Issuer
     const JAKA = 'JAKA';    // Jammu And Kashmir Bank Ltd
     const LAVB = 'LAVB';    // Laxmi Vilas Bank Ltd
     const AUBL = 'AUBL';    // AU small finance bank
+    const STCB = 'STCB';
 
     protected static $issuers = [
         self::ALLA,
@@ -79,8 +80,21 @@ class Issuer
         self::AUBL,
     ];
 
+    protected static $onecardIssuers = [
+        self::STCB,
+        self::BARB,
+        self::IDFB,
+        self::FDRL,
+        self::SIBL,
+    ];
+
     public static function getAllIssuers():array
     {
         return self::$issuers;
+    }
+
+    public static function getAllOnecardIssuers():array
+    {
+        return self::$onecardIssuers;
     }
 }
