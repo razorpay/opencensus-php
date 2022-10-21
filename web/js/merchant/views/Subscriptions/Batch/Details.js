@@ -82,6 +82,14 @@ function getDownloadReportText(props) {
 
 function getBatchType(batch) {
   const { type } = batch;
-  const linkType = type.includes('auth') ? type.replace('auth', 'registration') : type;
+
+  let linkType = type;
+  if (type.includes('auth')) {
+    linkType = type.replace('auth', 'registration');
+  }
+  if (type.includes('recurring_charge_bulk')) {
+    linkType = type.replace('recurring_charge_bulk', 'recurring_charge');
+  }
+
   return titleCase(linkType);
 }

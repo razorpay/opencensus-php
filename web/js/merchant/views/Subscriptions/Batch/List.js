@@ -12,7 +12,6 @@ import {
 } from 'merchant/reducers/batches';
 
 import CreateBatch from './CreateBatch';
-import { getRecurringChargeAPILabel } from 'merchant/views/Subscriptions/utils';
 
 const gaEvents = setGaTrack('Dashboard - Subscriptions - BU');
 
@@ -20,7 +19,8 @@ const renderBatchOptions = (openUploadModal) => <CreateBatch openUploadModal={op
 
 const LINK_TYPE_MAP = {
   auth_link: 'Registration Link',
-  [getRecurringChargeAPILabel()]: 'Recurring Charge',
+  recurring_charge: 'Recurring Charge',
+  recurring_charge_bulk: 'Recurring Charge',
 };
 
 const typeColumn = {
@@ -34,7 +34,7 @@ const BatchTypeFilterField = () => (
     <Field name="type" component="select" class="form-control input-sm">
       <option value="">Both</option>
       <option value="auth_link">Registration Link</option>
-      <option value={getRecurringChargeAPILabel()}>Recurring Charge</option>
+      <option value="recurring_charge">Recurring Charge</option>
     </Field>
   </div>
 );

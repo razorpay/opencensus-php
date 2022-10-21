@@ -23,8 +23,16 @@ export function isAmountLiesInRange(amount, maxAmountInPaisa = Infinity, minAmou
   return isValidAmount && amountInPaisa >= minAmountInPaisa && amountInPaisa <= maxAmountInPaisa;
 }
 
+function isRecurringChargeBulkEnabled() {
+  return window.rzp_user?.experiments.batch_service_recurring_charge_bulk?.result === 'on';
+}
+
 export function getRecurringChargeAPILabel() {
-  const isRecurringChargeBulkEnabled =
-    window?.rzp_user?.experiments?.batch_service_recurring_charge_bulk?.result === 'on';
-  return isRecurringChargeBulkEnabled ? 'recurring_charge_bulk' : 'recurring_charge';
+  return isRecurringChargeBulkEnabled() ? 'recurring_charge_bulk' : 'recurring_charge';
+}
+
+export function getLabelsForBatchList() {
+  return isRecurringChargeBulkEnabled()
+    ? ['recurring_charge', 'recurring_charge_bulk']
+    : ['recurring_charge'];
 }
