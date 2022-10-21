@@ -1145,6 +1145,8 @@ class Checkout
 
         $data['merchant_name'] = $merchant->getName();
 
+        $data['merchant_brand_name'] = $merchant->getFilteredDba();
+
         if(empty($data['merchant_key']) === true)
         {
             $data['merchant_key'] = (new key\Core)->getLatestActiveKeyForMerchant($merchant->getId());

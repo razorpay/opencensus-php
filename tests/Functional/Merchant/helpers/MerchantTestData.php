@@ -3481,6 +3481,22 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferences' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'merchant_name' => 'Test Name',
+                'merchant_brand_name' => 'Test Brand Name',
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithNetbankingDisabled' => [
         'request' => [
             'url' => '/preferences',

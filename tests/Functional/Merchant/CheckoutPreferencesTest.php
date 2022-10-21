@@ -187,6 +187,18 @@ class CheckoutPreferencesTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetCheckoutPreferences(): void
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'name' => 'Test Name',
+            'billing_label' => 'Test Brand Name',
+        ]);
+
+        $this->startTest();
+    }
+
     public function testGetCheckoutPreferencesWithNetbankingDisabled()
     {
         $this->ba->publicLiveAuth();
