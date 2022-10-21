@@ -5116,8 +5116,6 @@ class Core extends Base\Core
                     Entity::MERCHANT_ID    => $merchantId,
                     EntityConstant::ACTION => $action,
                 ]);
-
-                throw $e;
             }
 
             $this->trace->info(TraceCode::MIGRATE_FREE_PAYOUT_TO_PAYOUTS_SERVICE_DISPATCH_COMPLETE, $traceInfo);
@@ -5126,6 +5124,100 @@ class Core extends Base\Core
         return [
             'total_count' => $totalCount,
         ];
+    }
+
+    public function freePayoutMigrationFeatureChecks(string $action, string $merchantId)
+    {
+        /** @var Merchant\Entity $merchant */
+        $merchant = $this->repo->merchant->find($merchantId);
+
+        if (empty($merchant) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ID_DOES_NOT_EXIST);
+        }
+
+        switch ($action)
+        {
+            case EntityConstant::ENABLE:
+
+                // We can only process free payout migration if ledger_reverse_shadow is enabled.
+                if ($merchant->isFeatureEnabled(FeatureConstants::LEDGER_REVERSE_SHADOW) === false)
+                {
+                    $this->trace->error(TraceCode::LEDGER_REVERSE_SHADOW_NOT_ENABLED_FOR_THE_MERCHANT, [
+                        Entity::MERCHANT_ID     => $merchant->getId(),
+                        EntityConstant::ACTION  => $action,
+                    ]);
+
+                    throw new ServerErrorException(
+                        'ledger_reverse_shadow feature is not enabled for the merchant',
+                        ErrorCode::SERVER_ERROR,
+                        [
+                            Entity::MERCHANT_ID => $merchant->getId(),
+                        ]);
+                }
+
+                // If merchant is already migrated to payout service then we don't process it again.
+                if ($merchant->isFeatureEnabled(FeatureConstants::PAYOUT_SERVICE_ENABLED) === true)
+                {
+                    $this->trace->error(TraceCode::PAYOUT_SERVICE_ENABLED_FEATURE_EXISTS, [
+                        Entity::MERCHANT_ID     => $merchant->getId(),
+                        EntityConstant::ACTION  => $action,
+                    ]);
+
+                    throw new ServerErrorException(
+                        'payout_service_enabled feature is assigned already to the merchant',
+                        ErrorCode::SERVER_ERROR,
+                        [
+                            Entity::MERCHANT_ID => $merchant->getId(),
+                        ]);
+                }
+
+                break;
+
+            case EntityConstant::DISABLE:
+
+                if ($merchant->isFeatureEnabled(FeatureConstants::LEDGER_REVERSE_SHADOW) === false)
+                {
+                    $this->trace->error(TraceCode::LEDGER_REVERSE_SHADOW_NOT_ENABLED_FOR_THE_MERCHANT, [
+                        Entity::MERCHANT_ID     => $merchant->getId(),
+                        EntityConstant::ACTION => $action,
+                    ]);
+
+                    throw new ServerErrorException(
+                        'ledger_reverse_shadow feature is not assigned to the merchant',
+                        ErrorCode::SERVER_ERROR,
+                        [
+                            Entity::MERCHANT_ID => $merchant->getId(),
+                        ]);
+                }
+
+                if ($merchant->isFeatureEnabled(FeatureConstants::PAYOUT_SERVICE_ENABLED) === false)
+                {
+                    $this->trace->error(TraceCode::PAYOUT_SERVICE_NOT_ENABLED_FOR_THE_MERCHANT, [
+                        Entity::MERCHANT_ID     => $merchant->getId(),
+                        EntityConstant::ACTION => $action,
+                    ]);
+
+                    throw new ServerErrorException(
+                        'payout_service_enabled feature is not assigned to the merchant',
+                        ErrorCode::SERVER_ERROR,
+                        [
+                            Entity::MERCHANT_ID => $merchant->getId(),
+                        ]);
+                }
+
+                break;
+
+            default:
+                throw new ServerErrorException(
+                    "Invalid action for free payout migration",
+                    ErrorCode::SERVER_ERROR,
+                    [
+                        EntityConstant::ACTION => $action,
+                    ]
+                );
+        }
     }
 
     public function performFreePayoutMigration(string $action,
@@ -5179,6 +5271,8 @@ class Core extends Base\Core
             throw $e;
         }
 
+        $this->freePayoutMigrationFeatureChecks(EntityConstant::DISABLE, $merchant->getId());
+
         $balance = (new Balance\Service)->getBankingTypeBalanceEntity($balanceId);
 
         $response = $this->repo->counter->transaction(
@@ -5195,7 +5289,7 @@ class Core extends Base\Core
 
                 $this->rollbackFreePayoutsCountAndSupportedModes($balance, $request);
 
-                $this->deleteFreePayoutLedgerViaPSFeature($merchant->getId());
+                $this->deletePayoutServiceEnabledFeature($merchant->getId());
 
                 return [
                     Entity::BALANCE_ID                => $balance->getId(),
@@ -5252,21 +5346,21 @@ class Core extends Base\Core
         }
     }
 
-    protected function deleteFreePayoutLedgerViaPSFeature($merchantId)
+    protected function deletePayoutServiceEnabledFeature($merchantId)
     {
         $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
             EntityConstant::MERCHANT,
             $merchantId,
-            Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS);
+            Feature\Constants::PAYOUT_SERVICE_ENABLED);
 
         if (empty($feature))
         {
-            $this->trace->error(TraceCode::FREE_PAYOUT_LEDGER_VIA_PS_FEATURE_NOT_ASSIGNED, [
+            $this->trace->error(TraceCode::PAYOUT_SERVICE_NOT_ENABLED_FOR_THE_MERCHANT, [
                 Entity::MERCHANT_ID    => $merchantId,
             ]);
 
             throw new ServerErrorException(
-                'free_payout_ledger_via_ps feature is not assigned to the merchant',
+                'payout_service_enabled feature is not assigned to the merchant',
                 ErrorCode::SERVER_ERROR,
                 [
                     Entity::MERCHANT_ID => $merchantId,

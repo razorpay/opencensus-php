@@ -2269,7 +2269,28 @@ return [
         ],
     ],
 
-    'testFreePayoutMigrationAdminActionWithoutPayoutServiceEnabledFeature' => [
+    'testFreePayoutMigrationAdminActionWithLedgerReverseShadowNotAssigned' => [
+        'request'  => [
+            'url'     => '/admin/payouts/free_payout_migration',
+            'method'  => 'post',
+            'content' => [
+                EntityConstants::ACTION           => EntityConstants::ENABLE,
+                'ids' => [
+                    [
+                        Entity::MERCHANT_ID => '10000000000000'
+                    ]
+                ],
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'total_count' => 1,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFreePayoutMigrationAdminActionWithPayoutServiceEnabledFeature' => [
         'request'  => [
             'url'     => '/admin/payouts/free_payout_migration',
             'method'  => 'post',
@@ -2426,6 +2447,58 @@ return [
                 EntityConstants::SETTINGS_ROLLBACK  => true
             ],
             'status_code' => 200,
+        ],
+    ],
+
+    'testFreePayoutRollbackWithoutLedgerReverseShadowFeatureAssigned' => [
+        'request'  => [
+            'url'     => '/payouts_service/free_payout_rollback',
+            'method'  => 'post',
+            'content' => [
+                Entity::MERCHANT_ID                                => '10000000000000',
+                EntityConstants::BALANCE_TYPE                      => 'shared',
+                CounterEntity::FREE_PAYOUTS_CONSUMED               => 200,
+                CounterEntity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT => 1656613800,
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => 'We are facing some trouble completing your request at the moment. Please try again shortly.',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ServerErrorException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR
+        ],
+    ],
+
+    'testFreePayoutRollbackWithoutPayoutServiceEnabledFeatureAssigned' => [
+        'request'  => [
+            'url'     => '/payouts_service/free_payout_rollback',
+            'method'  => 'post',
+            'content' => [
+                Entity::MERCHANT_ID                                => '10000000000000',
+                EntityConstants::BALANCE_TYPE                      => 'shared',
+                CounterEntity::FREE_PAYOUTS_CONSUMED               => 200,
+                CounterEntity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT => 1656613800,
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => 'We are facing some trouble completing your request at the moment. Please try again shortly.',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ServerErrorException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR
         ],
     ],
 

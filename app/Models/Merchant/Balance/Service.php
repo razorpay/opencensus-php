@@ -253,37 +253,7 @@ class Service extends Base\Service
     {
         $counter = (new Payout\CounterHelper)->getCounterForBalance($balance);
 
-        // We don't want to enable free_payout_ledger_via_ps when payout_service_enabled
-        // is not enabled
-        if ($merchant->isFeatureEnabled(FeatureConstants::PAYOUT_SERVICE_ENABLED) === false)
-        {
-            $this->trace->error(TraceCode::PAYOUT_SERVICE_NOT_ENABLED_FOR_THE_MERCHANT, [
-                Entity::MERCHANT_ID     => $merchant->getId(),
-                EntityConstants::ACTION => $action,
-            ]);
-
-            throw new ServerErrorException(
-                'payout_service_enabled feature is not enabled for the merchant',
-                ErrorCode::SERVER_ERROR,
-                [
-                    Entity::MERCHANT_ID => $merchant->getId(),
-                ]);
-        }
-
-        if ($merchant->isFeatureEnabled(FeatureConstants::FREE_PAYOUT_LEDGER_VIA_PS) === true)
-        {
-            $this->trace->error(TraceCode::FREE_PAYOUT_LEDGER_VIA_PS_FEATURE_ASSIGNED_ALREADY, [
-                Entity::MERCHANT_ID     => $merchant->getId(),
-                EntityConstants::ACTION => $action,
-            ]);
-
-            throw new ServerErrorException(
-                'free_payout_ledger_via_ps feature is assigned already to the merchant',
-                ErrorCode::SERVER_ERROR,
-                [
-                    Entity::MERCHANT_ID => $merchant->getId(),
-                ]);
-        }
+        (new Payout\Core)->freePayoutMigrationFeatureChecks($action, $merchant->getId());
 
         $response = $this->repo->counter->transaction(
             function() use ($counter, $balance, $merchant, $action)
@@ -300,24 +270,13 @@ class Service extends Base\Service
                 EntityConstants::RESPONSE => $response,
                 EntityConstants::ACTION   => $action,
             ]);
+
+        return $response;
     }
 
     protected function handleFreePayoutDisable($merchant, $balance, $action)
     {
-        if ($merchant->isFeatureEnabled(FeatureConstants::FREE_PAYOUT_LEDGER_VIA_PS) === false)
-        {
-            $this->trace->error(TraceCode::FREE_PAYOUT_LEDGER_VIA_PS_FEATURE_NOT_ASSIGNED, [
-                Entity::MERCHANT_ID     => $merchant->getId(),
-                EntityConstants::ACTION => $action,
-            ]);
-
-            throw new ServerErrorException(
-                'free_payout_ledger_via_ps feature is not assigned to the merchant',
-                ErrorCode::SERVER_ERROR,
-                [
-                    Entity::MERCHANT_ID => $merchant->getId(),
-                ]);
-        }
+        (new Payout\Core)->freePayoutMigrationFeatureChecks($action, $merchant->getId());
 
         $input = [
             Entity::MERCHANT_ID     => $merchant->getId(),
@@ -378,7 +337,7 @@ class Service extends Base\Service
         if (($response[EntityConstants::COUNTER_MIGRATED] === true) and
             ($response[EntityConstants::SETTINGS_MIGRATED] === true))
         {
-            $this->addFreePayoutLedgerViaPSFeature($merchant);
+            $this->addPayoutServiceEnabledFeature($merchant);
         }
         else
         {
@@ -401,7 +360,7 @@ class Service extends Base\Service
         return $response;
     }
 
-    protected function addFreePayoutLedgerViaPSFeature($merchant)
+    protected function addPayoutServiceEnabledFeature($merchant)
     {
         try
         {
@@ -409,11 +368,11 @@ class Service extends Base\Service
                 [
                     Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
                     Feature\Entity::ENTITY_ID   => $merchant->getId(),
-                    Feature\Entity::NAME        => Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS,
+                    Feature\Entity::NAME        => Feature\Constants::PAYOUT_SERVICE_ENABLED,
                 ]);
 
             $this->trace->info(
-                TraceCode::FREE_PAYOUT_LEDGER_VIA_PS_ASSIGNED,
+                TraceCode::PAYOUT_SERVICE_ENABLED_FEATURE_ASSIGNED,
                 [
                     Entity::MERCHANT_ID      => $merchant->getId(),
                     EntityConstants::FEATURE => $feature,
@@ -421,9 +380,9 @@ class Service extends Base\Service
         }
         catch (\Exception $exception)
         {
-            $this->trace->error(TraceCode::FREE_PAYOUT_LEDGER_VIA_PS_FEATURE_ASSIGN_FAILED, [
+            $this->trace->error(TraceCode::PAYOUT_SERVICE_ENABLED_FEATURE_ASSIGN_FAILED, [
                 Entity::MERCHANT_ID           => $merchant->getId(),
-                EntityConstants::FEATURE_NAME => Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS,
+                EntityConstants::FEATURE_NAME => Feature\Constants::PAYOUT_SERVICE_ENABLED,
             ]);
 
             throw $exception;

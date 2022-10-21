@@ -168,7 +168,6 @@ class Core extends Base\Core
         if ($entityType === Constants::MERCHANT and
             in_array($feature->getName(),
                      [
-                         Constants::PAYOUT_SERVICE_ENABLED,
                          Constants::HIGH_TPS_COMPOSITE_PAYOUT,
                          Constants::HIGH_TPS_PAYOUT_EGRESS,
                          Constants::LEDGER_JOURNAL_READS,
@@ -1305,7 +1304,7 @@ class Core extends Base\Core
      */
     protected function controlFeatureAssignmentForLedger(string $newFeatureName, array $assignedFeatureNames)
     {
-        if (in_array($newFeatureName,[Constants::PAYOUT_SERVICE_ENABLED, Constants::HIGH_TPS_COMPOSITE_PAYOUT, Constants::HIGH_TPS_PAYOUT_EGRESS], true) === true and
+        if (in_array($newFeatureName,[Constants::HIGH_TPS_COMPOSITE_PAYOUT, Constants::HIGH_TPS_PAYOUT_EGRESS], true) === true and
             in_array(Constants::LEDGER_REVERSE_SHADOW, $assignedFeatureNames, true) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -1313,7 +1312,7 @@ class Core extends Base\Core
             );
         }
 
-        if (in_array($newFeatureName,[Constants::PAYOUT_SERVICE_ENABLED, Constants::HIGH_TPS_COMPOSITE_PAYOUT], true) === true and
+        if (in_array($newFeatureName,[Constants::HIGH_TPS_COMPOSITE_PAYOUT], true) === true and
             in_array(Constants::LEDGER_JOURNAL_READS, $assignedFeatureNames, true) === true)
         {
             throw new Exception\BadRequestValidationFailureException(

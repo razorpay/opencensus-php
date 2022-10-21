@@ -3879,20 +3879,122 @@ class PayoutServiceTest extends TestCase
             SettingsEntity::VALUE       => 'IMPS,NEFT',
         ]);
 
+        $this->fixtures->on('live')->create('feature', [
+            'name'        => Feature\Constants::LEDGER_REVERSE_SHADOW,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $feature = $this->getDbEntity('feature',
+            [
+                'entity_id'   => '10000000000000',
+                'entity_type' => EntityConstants::MERCHANT,
+                'name'        => Feature\Constants::PAYOUT_SERVICE_ENABLED,
+            ],
+            'live')->toArray();
+
+        $this->fixtures->on('live')->edit(
+            'feature',
+            $feature['id'],
+            [
+                'name' => 'random_feature',
+            ]
+        );
+
+        $liveFeaturesArrayBeforeTest = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'live')->pluck('name')->toArray();
+
+        $this->assertNotContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayBeforeTest);
+
         $this->testData[__FUNCTION__]['request']['content']['ids'][0][Entity::BALANCE_ID] = $balance->getId();
 
         $this->ba->adminAuth('live');
 
         $this->startTest();
 
-        $feature = $this->getDbLastEntity('feature', 'live')->toArray();
+        $liveFeaturesArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'live')->pluck('name')->toArray();
 
-        self::assertNotEmpty($feature);
-
-        $this->assertEquals(Constants::FREE_PAYOUT_LEDGER_VIA_PS, $feature['name']);
+        $this->assertContains(Feature\Constants::LEDGER_REVERSE_SHADOW, $liveFeaturesArray);
+        $this->assertContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArray);
     }
 
-    public function testFreePayoutMigrationAdminActionWithoutPayoutServiceEnabledFeature()
+    public function testFreePayoutMigrationAdminActionWithLedgerReverseShadowNotAssigned()
+    {
+        $this->mockPayoutServiceFreePayoutMigration();
+
+        $balance = $this->getDbEntities('balance',
+            [
+                'account_number'   => '2224440041626905',
+            ], 'live')->first();
+
+        $this->fixtures->on('live')->create('settings', [
+            SettingsEntity::ENTITY_ID   => $balance->getId(),
+            SettingsEntity::ENTITY_TYPE => EntityConstants::BALANCE,
+            SettingsEntity::MODULE      => FreePayout::FREE_PAYOUT,
+            SettingsEntity::KEY         => FreePayout::FREE_PAYOUTS_COUNT,
+            SettingsEntity::VALUE       => '250',
+        ]);
+
+        $this->fixtures->on('live')->create('settings', [
+            SettingsEntity::ENTITY_ID   => $balance->getId(),
+            SettingsEntity::ENTITY_TYPE => EntityConstants::BALANCE,
+            SettingsEntity::MODULE      => FreePayout::FREE_PAYOUT,
+            SettingsEntity::KEY         => FreePayout::FREE_PAYOUTS_SUPPORTED_MODES,
+            SettingsEntity::VALUE       => 'IMPS,NEFT',
+        ]);
+
+        $feature = $this->getDbEntity('feature',
+            [
+                'entity_id'   => '10000000000000',
+                'entity_type' => EntityConstants::MERCHANT,
+                'name'        => Feature\Constants::PAYOUT_SERVICE_ENABLED,
+            ],
+            'live')->toArray();
+
+        $this->fixtures->on('live')->edit(
+            'feature',
+            $feature['id'],
+            [
+                'name' => 'random_feature',
+            ]
+        );
+
+        $liveFeaturesArrayBeforeTest = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'live')->pluck('name')->toArray();
+
+        $this->assertNotContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayBeforeTest);
+
+        $this->testData[__FUNCTION__]['request']['content']['ids'][0][Entity::BALANCE_ID] = $balance->getId();
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+
+        $liveFeaturesArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'live')->pluck('name')->toArray();
+
+        $this->assertNotContains(Feature\Constants::LEDGER_REVERSE_SHADOW, $liveFeaturesArray);
+        $this->assertNotContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArray);
+    }
+
+    public function testFreePayoutMigrationAdminActionWithPayoutServiceEnabledFeature()
     {
         $balance = $this->getDbEntities('balance',
                                         [
@@ -3901,21 +4003,9 @@ class PayoutServiceTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['ids'][0][Entity::BALANCE_ID] = $balance->getId();
 
-        $this->fixtures->merchant->removeFeatures([Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS]);
-
         $this->ba->adminAuth('live');
 
         $this->startTest();
-
-        $features = $this->getDbEntities('feature',
-                                         [
-                                             'entity_id'   => '10000000000000',
-                                             'entity_type' => EntityConstants::MERCHANT,
-                                             'name'        => Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS,
-                                         ],
-                                         'live')->toArray();
-
-        self::assertEmpty($features);
     }
 
     public function testFreePayoutMigrationAdminActionDisableAction()
@@ -3968,21 +4058,34 @@ class PayoutServiceTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content'][Entity::BALANCE_ID] = $balance->getId();
 
-        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS]);
+        $this->fixtures->on('live')->create('feature', [
+            'name'        => Feature\Constants::LEDGER_REVERSE_SHADOW,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $liveFeaturesArrayBeforeTest = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'live')->pluck('name')->toArray();
+
+        $this->assertContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayBeforeTest);
 
         $this->ba->appAuthLive();
 
         $this->startTest();
 
-        $features = $this->getDbEntities('feature',
-                                         [
-                                             'entity_id'   => '10000000000000',
-                                             'entity_type' => EntityConstants::MERCHANT,
-                                             'name'        => Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS,
-                                         ],
-                                         'live')->toArray();
+        $liveFeaturesArrayAfterTest = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'live')->pluck('name')->toArray();
 
-        self::assertEmpty($features);
+        $this->assertContains(Feature\Constants::LEDGER_REVERSE_SHADOW, $liveFeaturesArrayAfterTest);
+        $this->assertNotContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayAfterTest);
     }
 
     public function testFreePayoutRollbackValidationFailure()
@@ -4008,21 +4111,114 @@ class PayoutServiceTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content'][Entity::BALANCE_ID] = $balance->getId();
 
-        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS]);
+        $this->fixtures->on('live')->create('feature', [
+            'name'        => Feature\Constants::LEDGER_REVERSE_SHADOW,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $liveFeaturesArrayBeforeTest = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'live')->pluck('name')->toArray();
+
+        $this->assertContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayBeforeTest);
 
         $this->ba->appAuthLive();
 
         $this->startTest();
 
-        $features = $this->getDbEntities('feature',
-                                         [
-                                             'entity_id'   => '10000000000000',
-                                             'entity_type' => EntityConstants::MERCHANT,
-                                             'name'        => Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS,
-                                         ],
-                                         'live')->toArray();
+        $liveFeaturesArrayAfterTest = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'live')->pluck('name')->toArray();
 
-        self::assertEmpty($features);
+        $this->assertContains(Feature\Constants::LEDGER_REVERSE_SHADOW, $liveFeaturesArrayAfterTest);
+        $this->assertNotContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayAfterTest);
+    }
+
+    public function testFreePayoutRollbackWithoutLedgerReverseShadowFeatureAssigned()
+    {
+        $balance = $this->getDbEntities('balance',
+            [
+                'account_number'   => '2224440041626905',
+            ], 'live')->first();
+
+        $this->testData[__FUNCTION__]['request']['content'][Entity::BALANCE_ID] = $balance->getId();
+
+        $liveFeaturesArrayBeforeTest = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'live')->pluck('name')->toArray();
+
+        $this->assertContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayBeforeTest);
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+
+        $liveFeaturesArrayAfterTest = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'live')->pluck('name')->toArray();
+
+        $this->assertContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayAfterTest);
+    }
+
+    public function testFreePayoutRollbackWithoutPayoutServiceEnabledFeatureAssigned()
+    {
+        $balance = $this->getDbEntities('balance',
+            [
+                'account_number'   => '2224440041626905',
+            ], 'live')->first();
+
+        $this->testData[__FUNCTION__]['request']['content'][Entity::BALANCE_ID] = $balance->getId();
+
+        $feature = $this->getDbEntity('feature',
+            [
+                'entity_id'   => '10000000000000',
+                'entity_type' => EntityConstants::MERCHANT,
+                'name'        => Feature\Constants::PAYOUT_SERVICE_ENABLED,
+            ],
+            'live')->toArray();
+
+        $this->fixtures->on('live')->edit(
+            'feature',
+            $feature['id'],
+                [
+                'name' => 'random_feature',
+                ]
+        );
+
+        $liveFeaturesArrayBeforeTest = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'live')->pluck('name')->toArray();
+
+        $this->assertNotContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayBeforeTest);
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+
+        $liveFeaturesArrayAfterTest = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'live')->pluck('name')->toArray();
+
+        $this->assertNotContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayAfterTest);
     }
 
     public function testUpdateFreePayoutsCountAndMode()

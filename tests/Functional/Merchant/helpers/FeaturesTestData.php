@@ -2719,18 +2719,14 @@ return [
                 'HTTP_X-Dashboard-Admin-Username' => 'admin',
             ],
         ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Enabling payout_service_enabled is not allowed when ledger_reverse_shadow is already enabled.'
+        'response' => [
+            'content' => [
+                [
+                    'name' => 'payout_service_enabled',
+                    'entity_id' => '10000000000000',
+                    'entity_type' => 'merchant',
                 ]
-            ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ]
         ]
     ],
 
@@ -2777,18 +2773,14 @@ return [
                 'HTTP_X-Dashboard-Admin-Username' => 'admin',
             ],
         ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Enabling payout_service_enabled is not allowed when ledger_journal_reads is already enabled.'
+        'response' => [
+            'content' => [
+                [
+                    'name' => 'payout_service_enabled',
+                    'entity_id' => '10000000000000',
+                    'entity_type' => 'merchant',
                 ]
-            ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ]
         ]
     ],
 
