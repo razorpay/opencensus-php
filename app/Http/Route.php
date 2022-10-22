@@ -1248,6 +1248,7 @@ class Route
         'item_delete'                              => ['delete',   'items/{id}',                                     'ItemController@deleteItem'                                         ],
         'send_email_for_pl_service'                => ['post',     'invoices/send_email',                            'InvoiceController@sendEmailForPaymentLinkService'                  ],
         //payment page section
+        'pages_robots_txt'                         => ['get',       'v1/pages/robots.txt',                           'RobotsController@nocodeRobots'                                    ],
         'pages_view_by_slug_empty'                 => ['get,post', 'pages',                                          'PaymentLinkController@viewByEmptySlug'                            ],
         'pages_view'                               => ['get,post', 'pages/{x_entity_id}/view',                       'PaymentLinkController@view'                                        ],
         'pages_view_by_slug'                       => ['get,post', 'pages/{slug}',                                   'PaymentLinkController@viewBySlug'                                  ],
@@ -15759,6 +15760,10 @@ class Route
 
     ];
 
+    public static $robotRoutes = [
+        "pages_robots_txt"
+    ];
+
     /**
      * @var Router
      */
@@ -16220,6 +16225,26 @@ class Route
                     'as'   => 'api_root',
                     'uses' => '\RZP\Http\Controllers\PublicController@getRoot'
                 ]);
+    }
+
+    public function defineRobotsSubRoutes()
+    {
+        $robotRouteNames = self::$robotRoutes;
+
+        foreach ($robotRouteNames as $robotRouteName)
+        {
+            $info = self::$apiRoutes[$robotRouteName];
+
+            $uri    = $info[1];
+            $action = $info[2];
+
+            $this->router
+                ->get($uri, [
+                    'as' => $robotRouteName,
+                    'uses' => '\\RZP\\Http\\Controllers\\'. $action
+                ])
+                ->middleware('throttle');
+        }
     }
 
     public function defineStatusApiRoute()
