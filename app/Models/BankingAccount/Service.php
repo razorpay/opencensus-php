@@ -818,6 +818,19 @@ class Service extends Base\Service
         {
             $updateInput = $this->prepareInputForUpdate($input, $input[Entity::CHANNEL]);
 
+            $newBankingAccountStatus = $updateInput[Entity::STATUS] ?? null;
+
+            // Archiving an already activated banking_account should not be allowed by Batch
+            if ($newBankingAccountStatus == Status::ARCHIVED and
+                $bankingAccount->getStatus() == Status::ACTIVATED)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_ALREADY_ACTIVATED,
+                    null,
+                    ['id' => $bankingAccount->getId()]
+                );
+            }
+
             $this->update($bankingAccount->getPublicId(), $updateInput);
         }
         catch (Throwable $e)

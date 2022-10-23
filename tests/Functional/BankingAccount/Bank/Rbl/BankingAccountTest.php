@@ -6712,6 +6712,47 @@ class BankingAccountTest extends TestCase
         $this->testCreateBankingAccountActivationCommentAndUpdateStatusViaBatch('Sample comment','BankProcessing');
     }
 
+    public function testCreateBankingAccountCommentArchiveActivatedAccountViaBatch()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $this->fixtures->edit('merchant_detail', self::DefaultMerchantId, $attribute);
+
+        $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => self::DefaultMerchantId,
+            'channel'               => 'rbl',
+            'status'                => 'activated',
+            'pincode'               => '560038',
+            'bank_reference_number' => '191919',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreateBankingAccountActivationCommentAndUpdateStatusViaBatch'];
+
+        $admin = $this->getDbLastEntity('admin');
+
+        $dataToReplace = [
+            'request'  => [
+                'content' => [
+                    'bank_reference_number' => '191919',
+                    'admin_id'          => $admin['id'],
+                    'comment'           => 'This is a comment',
+                    'status'            => 'Archived',
+                ]
+            ],
+        ];
+
+        $this->ba->batchAppAuth();
+
+        $this->expectException(\RZP\Exception\BadRequestException::class);
+
+        $this->expectExceptionMessage(\RZP\Error\PublicErrorDescription::BAD_REQUEST_BANKING_ACCOUNT_ALREADY_ACTIVATED);
+
+        $this->startTest($dataToReplace);
+    }
+
     public function testGetBankingAccountActivationComment()
     {
         $bankingAccount =$this->testCreateBankingAccountActivationComment();
