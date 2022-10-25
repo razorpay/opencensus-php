@@ -1,5 +1,5 @@
 import React from 'react';
-import { REPAYMENT_STATUES } from '../CashAdvance/constants';
+import { REPAYMENT_STATUES } from 'merchant/views/Capital/CashAdvance/constants';
 
 export const BUSINESS_TYPES = {
   1: 'PROPRIETORSHIP',
@@ -289,6 +289,7 @@ export const TENURE_UNIT_LABELS = {
 export const CAPITAL_PRODUCT_CODES = {
   LOAN: 'LOAN',
   CASH_ADVANCE: 'LOC',
+  CARDS: 'CARDS',
 };
 
 export const CAPITAL_PRODUCT_NAME_CODE_MAP = {

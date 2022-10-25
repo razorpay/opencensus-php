@@ -1,6 +1,8 @@
 import {
   APPLICATION_STATES,
   DOCUMENT_STATUSES,
+  SIGNATORY_STATUS,
+  APPLICATION_NOT_SUBMITTED,
 } from 'merchant/views/Capital/CashAdvanceV2/constants';
 
 // import { APPLICATION_NOT_SUBMITTED } from 'merchant/views/Capital/Loans/constants';
@@ -91,9 +93,12 @@ export const checkApplicationReviewStatus = (application = {}) => {
 };
 
 export const checkOfflineDocumentStatus = (application = {}) => {
-  const checkIfDocsUnApproved = application.documents.some(
-    (item) =>
-      item.status === DOCUMENT_STATUSES.UPLOAD_PENDING || item.status === DOCUMENT_STATUSES.FAILED,
+  const checkIfDocsUnApproved = application.documents.some((item) =>
+    [
+      DOCUMENT_STATUSES.UPLOAD_PENDING,
+      DOCUMENT_STATUSES.APPROVAL_PENDING,
+      DOCUMENT_STATUSES.FAILED,
+    ].includes(item?.status),
   );
 
   const response = {
@@ -120,30 +125,29 @@ export const checkApplicationActiveState = (status) => {
   return status !== APPLICATION_STATES.CLOSED && status !== APPLICATION_STATES.STATE_REJECTED;
 };
 
-//Note: To be used in the flow when esign is introduced
-// export const checkEsignStatus = (application = {}) => {
-//   const singnatories = application.esign_invitees || [];
+export const isEsignCompleted = (signatories) =>
+  signatories?.every((signatory) => signatory?.status === SIGNATORY_STATUS.COMPLETED);
 
-//   const response = {
-//     pending: true,
-//     completed: false,
-//     status: CARDS_APPLICATION_STATES.ESIGN_PENDING,
-//   };
+export const isEsignExpired = (signatories) =>
+  signatories?.some((signatory) => signatory?.status === SIGNATORY_STATUS.FAILED);
 
-//   if (!singnatories.length || singnatories === APPLICATION_NOT_SUBMITTED) return response;
+export const checkEsignStatus = (application = {}) => {
+  const singnatories = application.esign_invitees || [];
 
-//   if (isEsignExpired(singnatories)) {
-//     response.status = CARDS_APPLICATION_STATES.ESIGN_EXPIRED;
-//   } else if (isEsignCompleted(singnatories)) {
-//     response.pending = false;
-//     response.completed = true;
-//   }
+  const response = {
+    pending: true,
+    completed: false,
+    status: APPLICATION_STATES.ESIGN_PENDING,
+  };
 
-//   return response;
-// };
+  if (!singnatories.length || singnatories === APPLICATION_NOT_SUBMITTED) return response;
 
-// export const isEsignCompleted = (signatories) =>
-//   signatories.every((signatory) => signatory.status === SIGNATORY_STATUS.completed);
+  if (isEsignExpired(singnatories)) {
+    response.status = APPLICATION_STATES.ESIGN_EXPIRED;
+  } else if (isEsignCompleted(singnatories)) {
+    response.pending = false;
+    response.completed = true;
+  }
 
-// export const isEsignExpired = (signatories) =>
-//   signatories.some((signatory) => signatory.status === SIGNATORY_STATUS.failed);
+  return response;
+};

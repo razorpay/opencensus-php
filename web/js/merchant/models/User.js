@@ -590,6 +590,12 @@ export default class User {
     return getSplitzExperimentVariant('whats_new_lazy_experiment')?.variables?.result === 'on';
   }
 
+  get isXCCStatusTrackerEnabled() {
+    return (
+      getSplitzExperimentVariant('x_corporate_card_status_tracker')?.variables?.result === 'on'
+    );
+  }
+
   get isPartOfNeostone() {
     return getSplitzExperimentVariant('neostone_experiment')?.variables?.result === 'on';
   }

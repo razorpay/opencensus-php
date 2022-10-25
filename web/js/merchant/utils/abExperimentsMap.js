@@ -401,7 +401,13 @@ export default {
     // prod
     'JyimKdpm7rIDOw',
   ],
+  x_corporate_card_status_tracker: [
+    // beta
+    'KJhJGHB1XCV1zB',
 
+    // prod
+    'KK3XCFGhaiLw8J',
+  ],
   invoice_currentFY: [
     //beta
     'K6HEHeGcb6D2IL',

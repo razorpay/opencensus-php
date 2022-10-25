@@ -220,5 +220,14 @@ export const INITIAL_APPLICATION_STATE = {
   creditOffers: [],
 };
 
+export const SIGNATORY_STATUS = {
+  PENDING: 'PENDING',
+  SIGNED: 'SIGNED',
+  FAILED: 'FAILED',
+  COMPLETED: 'COMPLETED',
+};
+
+export const APPLICATION_NOT_SUBMITTED = 'record not found';
+
 export const CASH_ADVANCE_LINK = `https://x.razorpay.com/cash-advance`;
 export const CASH_ADVANCE_WITHDRAWAL_ROUTE = '/capital/cash-advance/withdrawals';

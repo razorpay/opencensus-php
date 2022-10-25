@@ -7,7 +7,9 @@ import {
   checkPreverificationStatus,
   checkApplicationReviewStatus,
   checkOfflineDocumentStatus,
+  checkEsignStatus,
 } from 'merchant/views/Capital/utils/common';
+import cloneDeep from 'lodash/cloneDeep';
 
 export const getProductId = (products = [], productCode) => {
   return products.find((d) => d.name === productCode)?.id;
@@ -56,8 +58,70 @@ export const computeCashAdvanceApplicationStatus = ({ application, applicant }) 
   return APPLICATION_STATES.STATE_COMPLETED;
 };
 
+export const computeCorporateCardApplicationStatus = ({
+  application: originApplication,
+  applicant,
+}) => {
+  const application = cloneDeep(originApplication);
+
+  if (application?.id) {
+    const esignDocIndex = application?.documents?.findIndex(
+      (document) => document?.document_group?.name === 'esign_document',
+    );
+
+    if (esignDocIndex >= 0) {
+      application.post_offer_documents = application?.post_offer_documents?.filter(
+        (postDocId) => postDocId !== application?.documents?.[esignDocIndex]?.id,
+      );
+      application?.documents?.splice(esignDocIndex, 1);
+    }
+  }
+
+  const hasApplicationData = !!(
+    application &&
+    typeof application === 'object' &&
+    Object.keys(application).length
+  );
+
+  if (!hasApplicationData) return APPLICATION_STATES.BUSINESS_DETAILS_PENDING;
+
+  if (
+    [
+      APPLICATION_STATES.STATE_REJECTED,
+      APPLICATION_STATES.RZP_REJECTED,
+      APPLICATION_STATES.STATE_CLOSED,
+    ]?.includes(application?.state)
+  ) {
+    return application?.state;
+  }
+
+  const businessDetails = checkBusinessDetailsStatus(application, applicant);
+  if (businessDetails?.pending) return APPLICATION_STATES.BUSINESS_DETAILS_PENDING;
+
+  const personalDetails = checkPersonalDetailsStatus(application, applicant);
+  if (personalDetails?.pending) return APPLICATION_STATES.PERSONAL_DETAILS_PENDING;
+
+  const creditPull = checkCreditPullStatus(application);
+  if (creditPull?.pending) return APPLICATION_STATES.CREDIT_PULL_PENDING;
+
+  const preverification = checkPreverificationStatus(application);
+  if (preverification?.pending) return APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING;
+
+  const applicationReview = checkApplicationReviewStatus(application);
+  if (applicationReview?.pending) return applicationReview.status;
+
+  const offlineDocuments = checkOfflineDocumentStatus(application);
+  if (offlineDocuments?.pending) return offlineDocuments.status;
+
+  const esignStatus = checkEsignStatus(application);
+  if (esignStatus?.pending) return esignStatus.status;
+
+  return APPLICATION_STATES.STATE_COMPLETED;
+};
+
 const statusFnMap = {
   LOC: computeCashAdvanceApplicationStatus,
+  CARDS: computeCorporateCardApplicationStatus,
 };
 
 const updateNavigation = (previousNavigation, updateApplicationStatus) => {

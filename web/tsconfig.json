@@ -43,7 +43,8 @@
     "js/common/ui/GrowthCustomizeModal",
     "js/common/ui/GrowthAssetEB.tsx",
     "js/common/ui/MwebExOfferCampaign",
-    "js/merchant/views/Settings/PaymentMethods"
+    "js/merchant/views/Settings/PaymentMethods",
+    "js/merchant/components/StatusTracker"
   ],
   "exclude": ["node_modules", "js/common/utils"]
 }

@@ -87,6 +87,7 @@ import { shouldShowWebsiteComplianceModal } from 'merchant/views/Account/Website
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
+import { XCorporateCardStatusTracker } from 'merchant/components/StatusTracker';
 import * as LocalStorageService from 'common/utils/localStorage';
 
 class AnalyticsDesktop extends Component {
@@ -776,7 +777,7 @@ class AnalyticsDesktop extends Component {
               internationalSettingStatus={this.props.internationalSettingStatus}
             />
           </ShowWhen>
-
+          <XCorporateCardStatusTracker />
           {showNitroStatusTracker && (
             <div className="nss-tracker-wrapper">
               <NeoStoneTracker proceededBank={proceededBank} user={user} />

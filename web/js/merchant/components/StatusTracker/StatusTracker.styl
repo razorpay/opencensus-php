@@ -1,0 +1,102 @@
+.status-tracker {
+  border-radius: 4px
+  border-top: 4px solid
+  border-top-color: #4662EE
+  flexProp(row, flex-start, flex-start)
+
+  background-color: #FFF
+  margin: 20px
+  display: flex
+  justify-content: space-between
+
+  .status-tracker__left {
+    margin: 20px 32px
+
+    &--title {
+      font-style: normal
+      font-weight: 700
+      font-size: 20px
+      line-height: 30px
+      width: 147px
+    }
+
+    &--desc {
+      img {
+        padding-left: 10px
+      }
+    }
+  }
+
+  .status-tracker__center {
+    flex-basis: 100%
+    display: flex
+
+    .timeline {
+      flex: 1
+      margin-top: 20px
+      padding-bottom: 20px
+
+      &__status {
+        display: flex
+        padding-bottom: 20px
+        padding-left: 20px
+        position: relative
+
+        &--icon {
+          position: absolute
+          width: 16px
+          height: 16px
+          left: -9px
+          top: 0
+          border-radius: 100%
+          display: flex
+          justify-content: center
+          align-items: center
+        }
+
+        &--header {
+          margin-right: 30px
+          flex-basis: 600px
+        }
+
+        &--header > h5 {
+          font-size: 16px
+          margin-top: 0
+        }
+
+        &--header > .timeline__status--subText {
+          font-weight: 400
+          font-size: 14px
+          line-height: 20px
+          max-width: 430px
+        }
+
+        &--header > .multipleButton {
+          display: flex
+          column-gap: 10px
+          margin-top: 10px
+        }
+
+        .button {
+          width: 380px
+        }
+
+        .button > button {
+          font-weight: 700
+          font-size: 14px
+          line-height: 20px
+        }
+      }
+    }
+
+    .view-more {
+      padding-left: 20px
+      font-weight: bold
+      font-size: 14px
+      line-height: 20px
+      text-transform: capitalize
+      color: #5A99E8
+      cursor: pointer
+    }
+  }
+}
