@@ -145,7 +145,11 @@ function PaymentDetails(props) {
   };
 
   return (
-    <div className="content-wrapper content-sm txn-details" ref={scroller}>
+    <div
+      className="content-wrapper content-sm txn-details"
+      data-testid="payment-details"
+      ref={scroller}
+    >
       {isLoading ? (
         <div className="page-spinner-container">
           <Spinner />
