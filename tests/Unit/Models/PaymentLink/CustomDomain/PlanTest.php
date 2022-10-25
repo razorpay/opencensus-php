@@ -3,6 +3,7 @@
 namespace Unit\Models\PaymentLink\CustomDomain;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\PaymentLink\CustomDomain;
 use RZP\Models\PaymentLink\CustomDomain\Plans;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -67,7 +68,7 @@ class PlanTest extends BaseTest
     {
         $plans = $this->createPlans();
 
-        $current = Carbon::now();
+        $current = Carbon::now(Timezone::IST);
 
         foreach($plans as $plan)
         {
@@ -75,7 +76,7 @@ class PlanTest extends BaseTest
 
             $interval = $plan->getInterval();
 
-            $this->assertEquals(Carbon::createFromTimestamp($newBillingTimestamp)->day, $current->day);
+            $this->assertContains(Carbon::createFromTimestamp($newBillingTimestamp)->day, array($current->day, $current->subDay()->day));
 
             $this->assertEquals(Carbon::createFromTimestamp($newBillingTimestamp)->month, $current->addMonths($interval)->month);
         }
