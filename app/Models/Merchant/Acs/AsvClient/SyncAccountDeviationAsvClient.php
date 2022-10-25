@@ -38,13 +38,17 @@ class SyncAccountDeviationAsvClient extends BaseClient
      */
     public function syncAccountDeviation(array $payload = [])
     {
+        // Set Timeout for Sync Deviation
+        $syncDeviationTimeout = floatval($this->asvConfig[Constant::SYNC_DEVIATION_ROUTE_HTTP_TIMEOUT_SEC]);
+        $this->SyncAccountDeviationAsvClient->setTimeout($syncDeviationTimeout);
+
         $this->trace->info(TraceCode::ASV_SYNC_ACCOUNT_DEVIATION_REQUEST, $payload);
 
-        if(!$this->isInputPayloadValid($payload)){
+        if (!$this->isInputPayloadValid($payload)) {
             throw new ValidationException(' some of account_id, mode, mock or metadata fields are not present or contains invalid values');
         }
 
-        $accountId = $payload[Constant::ACCOUNT_ID] ;
+        $accountId = $payload[Constant::ACCOUNT_ID];
         $mock = $payload[Constant::MOCK];
         $mode = $payload[Constant::MODE];
         $metadata = $payload[Constant::METADATA];

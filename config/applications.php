@@ -1315,7 +1315,8 @@ return [
         'host' => env('ASV_HOST', 'https://acs-web.razorpay.com'),
         'user' => env('ASV_USERNAME'),
         'password' => env('ASV_PASSWORD'),
-        'asv_http_client_timeout' => env('ASV_HTTP_CLIENT_TIMEOUT', 5)
+        'asv_http_client_timeout' => env('ASV_HTTP_CLIENT_TIMEOUT', 5),
+        'sync_deviation_route_http_timeout_sec' => env('ASV_SYNC_DEVIATION_ROUTE_HTTP_TIMEOUT_SEC', 4)
     ],
 
     'recon'         => [

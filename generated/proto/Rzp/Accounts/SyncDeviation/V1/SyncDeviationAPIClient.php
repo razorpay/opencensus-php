@@ -17,9 +17,17 @@ use Google\Protobuf\Internal\Message;
  */
 class SyncDeviationAPIClient extends SyncDeviationAPIAbstractClient implements SyncDeviationAPI
 {
+    protected $timeout = 5;
+
     /**
      * @inheritDoc
      */
+
+    public function setTimeout($timeout)
+    {
+        $this->timeout = $timeout;
+    }
+
     protected function doRequest(array $ctx, string $url, Message $in, Message $out): void
     {
         $body = $in->serializeToString();
@@ -27,7 +35,7 @@ class SyncDeviationAPIClient extends SyncDeviationAPIAbstractClient implements S
         $req = $this->newRequest($ctx, $url, $body, 'application/protobuf');
 
         try {
-            $resp = $this->httpClient->sendRequest($req);
+            $resp = $this->httpClient->sendRequest($req, ["timeout" => $this->timeout]);
         } catch (\Throwable $e) {
             throw $this->clientError('failed to send request', $e);
         }

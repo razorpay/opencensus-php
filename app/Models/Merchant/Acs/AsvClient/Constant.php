@@ -27,4 +27,6 @@ class Constant
 
     const X_TASK_ID = 'X-Task-ID';
 
+    // Route Level Timeout
+    const SYNC_DEVIATION_ROUTE_HTTP_TIMEOUT_SEC = 'sync_deviation_route_http_timeout_sec';
 }
