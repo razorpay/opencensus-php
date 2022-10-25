@@ -4712,7 +4712,7 @@ return [
         'response' => [
             'content' => [
                 'channel'     => 'rbl',
-                'status'      => 'created'
+                'status'      => 'picked'
             ],
         ],
     ],
@@ -4887,7 +4887,7 @@ return [
         'response' => [
             'content' => [
                 'channel'     => 'rbl',
-                'status'      => 'created'
+                'status'      => 'picked'
             ],
         ],
     ]

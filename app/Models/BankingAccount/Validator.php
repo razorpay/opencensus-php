@@ -391,6 +391,17 @@ class Validator extends Base\Validator
         // Admin auth or Batch auth with $admin entity passed
         $isAdminUpdate = ($admin !== null);
 
+        $core = new Core();
+
+        if ($core->isAdminRequestFromMOB())
+        {
+            // This check is not required in Admin request from master-onboarding-service (MOB)
+            // Execution comes here only in 1 scenario: banking_account status is moved from created to picked
+            // after FreshDesk ticket is created in RBL CA onboarding
+            // Admins invoking this flow are not expected to have banking_update_account permission.
+            return;
+        }
+
         if ($isAdminUpdate === true)
         {
             $adminPermissions = $admin->getPermissionsList();

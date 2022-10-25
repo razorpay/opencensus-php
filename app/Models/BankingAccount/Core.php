@@ -825,7 +825,7 @@ class Core extends Base\Core
 
             if (($bankInternalStatusChanged === true) or
                 ($bankingAccountStatusChanged === true) or
-                ($bankingAccountSubStatusChanged === true) or 
+                ($bankingAccountSubStatusChanged === true) or
                 ($isAssigneeChanged === true))
             {
                 $stateCore = new State\Core;
@@ -1024,14 +1024,7 @@ class Core extends Base\Core
         if (($readyToBePickedForRazorpayProcessing === true) and
             ($formWasAlreadySubmittedEarlier === false))
         {
-            $this->updateBankingAccount($bankingAccount,
-                                        [
-                                            Entity::STATUS      => Status::PICKED,
-                                            Entity::SUB_STATUS  => Status::NONE
-                                        ],
-                                        $bankingAccount->merchant);
-
-            $this->notifyOpsAboutProActivation($bankingAccount);
+            $this->sendFreshDeskTicketAndMoveApplicationToPicked($bankingAccount);
         }
     }
 
@@ -2305,12 +2298,20 @@ class Core extends Base\Core
          * created in non SALES_LED flows
          * If the MOB request contains AdminEmail header, the flow is SALES_LED
          */
+        $isAdminRequestFromMob = $this->isAdminRequestFromMOB();
         if (($validatorOP !== 'create_dashboard' && $validatorOP != 'create_co_created') or
-            $this->getAdminFromHeadersForMobApp() !== null)
+            $isAdminRequestFromMob)
         {
             if ($clarityContextEnabled === false)
             {
-                $this->notifyOpsAboutProActivation($bankingAccount);
+                if ($isAdminRequestFromMob)
+                {
+                    $this->sendFreshDeskTicketAndMoveApplicationToPicked($bankingAccount);
+                }
+                else
+                {
+                    $this->notifyOpsAboutProActivation($bankingAccount);
+                }
             }
 
             $this->notifyMerchantAboutUpdatedStatus($bankingAccount);
@@ -2460,8 +2461,7 @@ class Core extends Base\Core
     {
         $adminEmailHeader = $this->app['request']->header('X-Admin-Email');
 
-        if ($this->app['basicauth']->isMobApp()
-            && empty($adminEmailHeader) === false)
+        if ($this->isAdminRequestFromMOB())
         {
             $adminRepo = new \RZP\Models\Admin\Admin\Repository();
 
@@ -2469,6 +2469,38 @@ class Core extends Base\Core
         }
 
         return null;
+    }
+
+    public function isAdminRequestFromMOB()
+    {
+        $adminEmailHeader = $this->app['request']->header('X-Admin-Email');
+
+        if ($this->app['basicauth']->isMobApp() and
+             empty($adminEmailHeader) === false)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    // TODO: Move events related to banking_account status change to a central location
+    public function sendFreshDeskTicketAndMoveApplicationToPicked(Entity $bankingAccount)
+    {
+        if ($bankingAccount->getStatus() == Status::CREATED)
+        {
+            $this->repo->transaction(function() use ($bankingAccount) {
+
+                $this->updateBankingAccount($bankingAccount,
+                    [
+                        Entity::STATUS => Status::PICKED,
+                        Entity::SUB_STATUS => Status::NONE
+                    ],
+                    $bankingAccount->merchant);
+
+                $this->notifyOpsAboutProActivation($bankingAccount);
+            });
+        }
     }
 
     /**
@@ -2518,8 +2550,8 @@ class Core extends Base\Core
     }
 
     /**
-     * Update Bank LMS Due Date in activationDetailInput->rbl_activation_details  
-     * We recalculate this on every update as it could change  
+     * Update Bank LMS Due Date in activationDetailInput->rbl_activation_details
+     * We recalculate this on every update as it could change
      * due to changing any of the dates or status/sub-status
      */
     public function setBankDueDateIfApplicable(Entity $bankingAccount, array &$activationDetailInput = null, $input)

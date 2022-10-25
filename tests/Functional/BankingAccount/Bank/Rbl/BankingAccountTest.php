@@ -9943,9 +9943,18 @@ class BankingAccountTest extends TestCase
 
         $this->testData[__FUNCTION__] = $this->testData['testFreshDeskTicketCreationForSalesLedFlowFromMOB'];
 
+        $dataToReplace = [
+            'response' => [
+                'content' => [
+                    'channel'     => 'rbl',
+                    'status'      => 'created'
+                ],
+            ],
+        ];
+
         Mail::fake();
 
-        $this->startTest();
+        $this->startTest($dataToReplace);
 
         Mail::assertNotQueued(XProActivation::class);
     }
