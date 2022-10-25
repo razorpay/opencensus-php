@@ -48,7 +48,7 @@ export default ({ payment, card = {}, bankTransfer = {}, upiTransfer = {}, onUPI
       </Definition>
     );
   } else if (['card', 'emi'].indexOf(paymentMethod) !== -1) {
-    if (Object.keys(card) === 0 || card.loading) {
+    if (Object.keys(card).length === 0 || card.loading) {
       return <PlaceholderLoader />;
     }
 
