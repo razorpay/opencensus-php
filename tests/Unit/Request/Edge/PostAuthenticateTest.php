@@ -120,7 +120,7 @@ class PostAuthenticateTest extends TestCase
     {
         $mock = $this->getMockBuilder(BasicAuth::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getMode', 'getMerchantId', 'getAuthType', 'isProxyAuth', 'getPartnerMerchantId', 'getOAuthClientId', 'getOAuthApplicationId', 'getPublicKey'])
+            ->setMethods(['getMode', 'getMerchantId', 'getAuthType', 'isProxyAuth', 'getPartnerMerchantId', 'getOAuthClientId', 'getOAuthApplicationId', 'getPublicKey', 'getPassport'])
             ->getMock();
         $this->app->instance('basicauth', $mock);
 
@@ -314,6 +314,167 @@ class PostAuthenticateTest extends TestCase
         (new PostAuthenticate)->handle($apiAuthenticated, $request);
         $this->assertSame($passport->mode, "live");
         Mockery::close();
+    }
+
+    /**
+     * @dataProvider getImpersonationMismatchesCases
+     *
+     * @param Passport\Passport $passport
+     * @param                   $consumerId
+     * @param                   $consumerType
+     * @param                   $publicKey
+     * @param                   $mode
+     * @param                   $edgeImpersonated
+     * @param                   $apiAuthenticated
+     * @param                   $impersonationType
+     * @param                   $subMerchant
+     */
+    public function testImpersonationMismatchesWithImpersonation(Passport\Passport $passport,
+                                                $consumerId, $consumerType,
+                                                $publicKey, $mode,
+                                                $edgeImpersonated, $apiAuthenticated,
+                                                $impersonationType, $subMerchant)
+    {
+
+        $edgeImpersonatedBool = $edgeImpersonated === 'true';
+        $passport->mode=$mode;
+        $passport->consumer->id = $consumerId;
+        $passport->consumer->type = $consumerType;
+        $passport->credential->username = $publicKey;
+        $passport->impersonation->type = $impersonationType;
+        $passport->impersonation->consumer->id = $subMerchant;
+        $passport->impersonation->consumer->type = $consumerType;
+        $passport->authenticated = $edgeImpersonatedBool;
+        $passport->identified = true;
+
+        $request = $this->mockPrivateRouteWithLiveMode();
+
+        $request->headers->set('X-IMPERSONATION-RESULT', $edgeImpersonated);
+
+        app('request.ctx')->init();
+        app('request.ctx')->resolveKeyIdIfApplicable();
+
+        $reqCtx = app('request.ctx.v2');
+        $reqCtx->passport = $passport;
+
+        $svc = Mockery::mock('Razorpay\Trace\Logger');
+
+
+        $count = $edgeImpersonatedBool !== $apiAuthenticated ? 1:0;
+
+        $svc->shouldReceive('warning')->times($count);
+
+        $svc->shouldReceive('histogram')->times(1);
+
+        $this->app->instance("trace", $svc);
+
+        $ba = $this->mockBasicAuth();
+
+        $ba->expects($this->any())->method('getMode')->willReturn($mode);
+
+        if ($edgeImpersonatedBool !== $apiAuthenticated) {
+            $ba->expects($this->atLeastOnce())->method('getMerchantId')->willReturn($consumerId);
+            $ba->expects($this->atLeastOnce())->method('getPublicKey')->willReturn($publicKey);
+            $ba->expects($this->any())->method('getPassport')->willReturn([
+                'impersonation' => [
+                    'type'      => $impersonationType,
+                    'consumer'  => [
+                        'type'  => $consumerType,
+                        'id'    => $subMerchant
+                    ]
+                ]
+            ]);
+        }
+
+
+        (new PostAuthenticate)->handle($apiAuthenticated, $request);
+        $this->assertSame($passport->mode, "live");
+        Mockery::close();
+    }
+
+    /**
+     * @dataProvider getImpersonationMismatchesCases
+     *
+     * @param Passport\Passport $passport
+     * @param                   $consumerId
+     * @param                   $consumerType
+     * @param                   $publicKey
+     * @param                   $mode
+     * @param                   $edgeImpersonated
+     * @param                   $apiAuthenticated
+     * @param                   $impersonationType
+     * @param                   $subMerchant
+     */
+    public function testImpersonationMismatchesWithoutImpersonation(Passport\Passport $passport,
+                                                                                   $consumerId, $consumerType,
+                                                                                   $publicKey, $mode,
+                                                                                   $edgeImpersonated, $apiAuthenticated,
+                                                                                   $impersonationType, $subMerchant)
+    {
+
+        $edgeImpersonatedBool = $edgeImpersonated === 'true';
+        $passport->mode=$mode;
+        $passport->consumer->id = $consumerId;
+        $passport->consumer->type = $consumerType;
+        $passport->credential->username = $publicKey;
+        $passport->impersonation->type = $impersonationType;
+        $passport->impersonation->consumer->id = $subMerchant;
+        $passport->impersonation->consumer->type = $consumerType;
+        $passport->authenticated = $edgeImpersonatedBool;
+        $passport->identified = true;
+
+        $request = $this->mockPrivateRouteWithLiveMode();
+
+        $request->headers->set('X-IMPERSONATION-RESULT', $edgeImpersonated);
+
+        app('request.ctx')->init();
+        app('request.ctx')->resolveKeyIdIfApplicable();
+
+        $reqCtx = app('request.ctx.v2');
+        $reqCtx->passport = $passport;
+
+        $svc = Mockery::mock('Razorpay\Trace\Logger');
+
+
+        $count = $edgeImpersonatedBool !== $apiAuthenticated ? 1:0;
+
+        $svc->shouldReceive('warning')->times($count);
+
+        $svc->shouldReceive('histogram')->times(1);
+
+        $this->app->instance("trace", $svc);
+
+        $ba = $this->mockBasicAuth();
+
+        $ba->expects($this->any())->method('getMode')->willReturn($mode);
+
+        if ($edgeImpersonatedBool !== $apiAuthenticated) {
+            $ba->expects($this->atLeastOnce())->method('getMerchantId')->willReturn($consumerId);
+            $ba->expects($this->atLeastOnce())->method('getPublicKey')->willReturn($publicKey);
+            $ba->expects($this->any())->method('getPassport')->willReturn([]);
+        }
+
+
+        (new PostAuthenticate)->handle($apiAuthenticated, $request);
+        $this->assertSame($passport->mode, "live");
+        Mockery::close();
+    }
+
+    public function getImpersonationMismatchesCases()
+    {
+        $passport = new Passport\Passport;
+        $passport->identified = true;
+        $passport->consumer = new Passport\ConsumerClaims;
+        $passport->credential = new Passport\CredentialClaims;
+        $passport->impersonation = new Passport\ImpersonationClaims;
+        $passport->impersonation->consumer = new Passport\ConsumerClaims;
+        return [
+            // Case 1 - Successful case.
+            [$passport, "merchant_id", "merchant", "rzp_live_partner_TheLiveAuthKey","live", "true", false, "partner", "account_id"],
+            [$passport, "merchant_id", "merchant", "rzp_live_partner_TheLiveAuthKey","live", "false", true, "partner", "account_id"],
+            [$passport, "merchant_id", "merchant", "rzp_live_partner_TheLiveAuthKey","live", "true", true, "partner", "account_id"],
+            [$passport, "merchant_id", "merchant", "rzp_live_partner_TheLiveAuthKey","live", "false", false, "partner", "account_id"]
+        ];
     }
 
     public function getAuthenticationMismatchesCases()

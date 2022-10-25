@@ -5175,10 +5175,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USER_ACCESS_AUTHZ_FAILED               = 'USER_ACCESS_AUTHZ_FAILED';
 
     // Edge<>api integration.
+    const POST_AUTHENTICATE_MIDDLEWARE_FAILED                   = 'POST_AUTHENTICATE_MIDDLEWARE_FAILED';
     const PASSPORT_JWT_PARSE_FAILED                             = 'PASSPORT_JWT_PARSE_FAILED';
     const PASSPORT_ATTRS_MISMATCH                               = 'PASSPORT_ATTRS_MISMATCH';
     const EDGE_AUTHORIZATION_MISMATCH                           = 'EDGE_AUTHORIZATION_MISMATCH';
     const EDGE_AUTHENTICATION_MISMATCH                          = 'EDGE_AUTHENTICATION_MISMATCH';
+    const EDGE_IMPERSONATION_MISMATCH                           = 'EDGE_IMPERSONATION_MISMATCH';
     const EDGE_PROXY_REQUEST_ERROR                              = 'EDGE_PROXY_REQUEST_ERROR';
     const EDGE_RATE_LIMITER_ERROR                               = 'EDGE_RATE_LIMITER_ERROR';
     const EDGE_RATE_LIMITER_REQUEST                             = 'EDGE_RATE_LIMITER_REQUEST';
