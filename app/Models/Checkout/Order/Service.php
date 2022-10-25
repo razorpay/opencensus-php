@@ -12,6 +12,7 @@ use RZP\Models\QrCode\NonVirtualAccountQrCode\CloseReason as NonVAQrCodeCloseRea
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Core as NonVAQrCodeCore;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as NonVAQrCodeEntity;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Service as NonVAQrCodeService;
+use RZP\Trace\TraceCode;
 use RZP\Trace\Tracer;
 
 class Service extends BaseService
@@ -33,6 +34,8 @@ class Service extends BaseService
      */
     public function create(array $input): array
     {
+        $this->traceRequest(TraceCode::CREATE_CHECKOUT_ORDER_REQUEST, $input);
+
         $checkoutOrder = $this->core()->create($input);
 
         $receiverArray = $this->handleReceiver($checkoutOrder, $input);
@@ -47,6 +50,11 @@ class Service extends BaseService
      */
     public function close(array $input, string $checkoutOrderId): void
     {
+        $this->traceRequest(
+            TraceCode::CLOSE_CHECKOUT_ORDER_REQUEST,
+            array_merge($input, ['checkout_order_id' => $checkoutOrderId])
+        );
+
         (new Validator())->validateInput('close', $input);
 
         /** @var Entity $checkoutOrder */
@@ -138,5 +146,12 @@ class Service extends BaseService
                 return (new NonVAQrCodeService())->createForCheckout($input);
             }
         );
+    }
+
+    protected function traceRequest(string $traceCode, array $input): void
+    {
+        $this->trace->info($traceCode, [
+            'input' => $input,
+        ]);
     }
 }
