@@ -417,10 +417,49 @@ class Core extends Base\Core
 
             $this->trace->count(Metric::COMMISSION_CAPTURE_TOTAL, $commission->getMetricDimensions());
 
+            $this->syncCommissionsToPartnershipService($commission);
+
             return $commission;
         });
     }
 
+    private function syncCommissionsToPartnershipService(Entity $commission)
+    {
+        $properties = [
+            'id'            => $commission->getAttribute(Entity::PARTNER_ID),
+            'experiment_id' => $this->app['config']->get('app.partnership_service_commission_sync_exp_id'),
+        ];
+
+        $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable($properties, 'enable', TraceCode::PARTNERSHIP_SERVICE_COMMISSION_SYNC_SPLITZ_ERROR);
+
+        $input=[
+            'partner_id' => $commission->getAttribute(Entity::PARTNER_ID)
+        ];
+
+        if($isExpEnabled == false)
+        {
+            return;
+        }
+        try
+        {
+            $commissionComponent = $this->repo->commission_component->findByCommissionId($commission->getId());
+            $outboxPayload       = [
+                'commission'          => $commission->attributesToArray(),
+                'commissionComponent' => $commissionComponent->toArray()
+            ];
+            app('outbox')->send(Constants::COMMISSION_SYNC_OUTBOX_JOB, $outboxPayload, $this->mode, false);
+            $this->trace->count(Metric::PARTNERSHIP_COMMISSION_SYNC_SUCCESS, $input);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PARTNERSHIP_SERVICE_COMMISSION_SYNC_FAILED,
+                [$commission->toArrayPublic()]);
+            $this->trace->count(Metric::PARTNERSHIP_COMMISSION_SYNC_FAILURE, $input);
+        }
+    }
     /**
      * @param Merchant\Entity $partner
      *

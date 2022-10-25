@@ -58,6 +58,8 @@ class Constants
 
     const COMMISSIONS_EVENTS_TOPIC        =  'events.commission-events.v1.';
 
+    const COMMISSION_SYNC_OUTBOX_JOB      = 'partnerships.commission_sync.v1';
+
     const VALID_PARTNER_STATUS_EMAIL_TEMPLATES = [
         DetailStatus::ACTIVATED,
         DetailStatus::NEEDS_CLARIFICATION,

@@ -45,4 +45,8 @@ final class Metric
     const PARTNER_CONFIG_AUDIT_LATENCY_IN_MS = 'partner_config_audit_latency_in_ms';
 
     const SUBMERCHANT_FIRST_TRANSACTION_LATENCY_IN_MS = 'submerchant_first_transaction_latency_in_ms';
+
+    const PARTNERSHIP_COMMISSION_SYNC_SUCCESS   = 'partnership_commission_sync_success';
+
+    const PARTNERSHIP_COMMISSION_SYNC_FAILURE   = 'partnership_commission_sync_failure';
 }

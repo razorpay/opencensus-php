@@ -488,6 +488,7 @@ return array(
 
     'shaadi_com_new_currency_support_experiment_id' => env('SHAADI_COM_NEW_CURRENCY_SUPPORT_EXPERIMENT_ID'),
 
-    'partner_independent_kyc_exp_id' => env('PARTNER_INDEPENDENT_KYC_EXP_ID')
+    'partner_independent_kyc_exp_id' => env('PARTNER_INDEPENDENT_KYC_EXP_ID'),
 
+    'partnership_service_commission_sync_exp_id' => env('PARTNERSHIP_SERVICE_COMMISSION_SYNC_EXP_ID'),
 );

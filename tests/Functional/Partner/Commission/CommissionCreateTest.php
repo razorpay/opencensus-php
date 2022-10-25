@@ -607,6 +607,55 @@ class CommissionCreateTest extends TestCase
         $this->assertEquals('invoices',$file->getBucket());
     }
 
+    public function testCaptureCommissionWithCommissionSyncEnabled()
+    {
+        list($partner, $subMerchant, $payment, $config, $commission) = $this->createSampleCommission();
+
+        $outbox = \Mockery::mock(Outbox::class);
+        $this->app->instance('outbox', $outbox);
+
+        $outbox->shouldReceive('send')->andReturn();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData['testCaptureCommission'];
+
+        $testData['request']['url'] = '/commissions/'.$commission->getPublicId().'/capture';
+
+        $this->runRequestResponseFlow($testData);
+
+        $outbox->shouldHaveReceived('send');
+    }
+
+    public function testCaptureCommissionWithCommissionSyncDisabled()
+    {
+        list($partner, $subMerchant, $payment, $config, $commission) = $this->createSampleCommission();
+
+        $outbox = \Mockery::mock(Outbox::class);
+
+        $this->app->instance('outbox', $outbox);
+
+        $outbox->shouldReceive('send')->andReturn();
+
+        $this->mockSplitzTreatment([
+                                       "experiment_id" => "Jrx3ffnqavDK7U",
+                                       "id" => "DefaultPartner",
+                                   ], []);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData['testCaptureCommission'];
+
+        $testData['request']['url'] = '/commissions/'.$commission->getPublicId().'/capture';
+
+        $this->runRequestResponseFlow($testData);
+
+        // should not send outbox event with feature disabled
+        $outbox->shouldNotHaveReceived('send');
+    }
+
     public function createCommissionInvoice()
     {
         list($partner, $subMerchant, $payment, $config, $commission) = $this->createSampleCommission([],[],[],[
