@@ -49,7 +49,7 @@ class CheckoutExperiment
             'recurring_redesign_v1_5' => false,
             'reuse_upi_paymentId'     => false,
             'recurring_upi_intent_qr'=> false,
-            'recurring_upi_psp'      => false
+            'recurring_upi_all_psp'      => false
         ];
 
         $this->input = $input;
@@ -169,7 +169,7 @@ class CheckoutExperiment
             UniqueIdEntity::generateUniqueId(),
             'app.checkout_recurring_upi_autopay_psp_splitz_experiment_id',
             'RecurringUpiPsp',
-            'recurring_upi_psp',
+            'recurring_upi_all_psp',
             ['merchant_id' => $this->merchantId]
         );
     }
