@@ -714,7 +714,10 @@ class Status
      * This contains the allowed set of status substatus <-> assignee team mappings
      */
     public static $statusAndSubStatusToAssigneeMap = [
-
+        self::INITIATED => [
+            self::NONE => Activation\Detail\Entity::BANK,
+            null => Activation\Detail\Entity::BANK,
+        ],
         self::VERIFICATION_CALL => [
             self::IN_PROCESSING => Activation\Detail\Entity::BANK,
             self::CUSTOMER_CALL_ATTEMPTED => Activation\Detail\Entity::BANK,
@@ -890,11 +893,11 @@ class Status
      */
     public static function getDefaultAssigneeTeam(?string $status, ?string $subStatus)
     {
-        if($status == null || $subStatus == null)
+        if($status == null)
         {
             return null;
         }
-        
+
         if(array_key_exists($status, self::$statusAndSubStatusToAssigneeMap) === false)
         {
             return null;
@@ -1253,7 +1256,7 @@ class Status
             $followUpDate = new Carbon\Carbon($followUpDate + $hours * 60 * 60);
             if ($followUpDate->isWeekend())
             {
-                $followUpDate = $followUpDate->next('Monday');
+                $followUpDate = $followUpDate->next('Monday')->startOf('Day');
             }
             return $followUpDate->timestamp;
         }

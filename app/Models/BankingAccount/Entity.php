@@ -938,21 +938,36 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
-    public function getReferenceDateForStatus()
+    /**
+     * Returns the reference date for banking account based on the current status
+     * 
+     * By default ActivationDetail is extracted from banking account.
+     * But since activation detail can be changing with banking account,
+     * we can pass the latest activation detail from which reference date will be taken
+     */
+    public function getReferenceDateForStatus(array $activationDetails = null)
     {
         $bankingAccountStatus = $this->getStatus();
-        $activationDetails = $this->bankingAccountActivationDetails;
+
+        if ($activationDetails === null)
+        {
+            $activationDetails = $this->bankingAccountActivationDetails;
+        }
 
         $followUpDate = null;
 
         switch ($bankingAccountStatus) {
             case Status::VERIFICATION_CALL:
 
-                $rblActivationDetails = $activationDetails->getRblActivationDetails();
+                $rblActivationDetails = $activationDetails[ActivationDetails::RBL_ACTIVATION_DETAILS];
 
                 if (isset($rblActivationDetails) === true)
                 {
-                    $rblActivationDetails = json_decode($rblActivationDetails, true);
+                    if (is_array($rblActivationDetails) === false)
+                    {
+                        $rblActivationDetails = json_decode($rblActivationDetails, true);
+                    }
+
                     if (empty($rblActivationDetails[ActivationDetails::BANK_POC_ASSIGNED_DATE]) === false)
                     {
                         $followUpDate = $rblActivationDetails[ActivationDetails::BANK_POC_ASSIGNED_DATE];

@@ -516,11 +516,13 @@ class Entity extends Base\PublicEntity
         {
             $rblActivationDetails = json_decode($rblActivationDetails, true);
             $rblActivationDetails[self::BANK_POC_ASSIGNED_DATE] = Carbon::now()->timestamp;
+            $rblActivationDetails[self::BANK_DUE_DATE] = Carbon::now()->addHours(4)->timestamp;
         }
         else
         {
             $rblActivationDetails = [
-                self::BANK_POC_ASSIGNED_DATE => Carbon::now()->timestamp
+                self::BANK_POC_ASSIGNED_DATE => Carbon::now()->timestamp,
+                self::BANK_DUE_DATE => Carbon::now()->addHours(4)->timestamp,
             ];
         }
         $this->setAttribute(self::RBL_ACTIVATION_DETAILS, $rblActivationDetails);

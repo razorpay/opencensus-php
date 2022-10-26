@@ -4157,7 +4157,7 @@ return [
         ],
     ],
 
-    'testBankLmsEndToEndForAssigningPOC' => [
+    'testBankLmsEndToEndForFilters' => [
         'request' => [
             'url'     => '/banking_accounts/rbl/lms/banking_account',
             'method'  => 'GET',

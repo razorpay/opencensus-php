@@ -51,7 +51,7 @@ class Validator extends BankingAccount\Validator
 
     protected static $downloadMisFromPartnerBankRules = [
         Constants::MIS_TYPE => 'required|string|in:leads',
-        BankingAccount\Entity::STATUS => 'sometimes|string|in:initiated,processing,processed,cancelled,unserviceable,rejected,archived',
+        BankingAccount\Entity::STATUS => 'sometimes|string',
         BankingAccount\Entity::SUB_STATUS => 'sometimes|string',
         BankingAccount\Activation\Detail\Entity::BANK_POC_USER_ID => 'sometimes|alpha_num|size:14',
         Entity::BUSINESS_CATEGORY                => 'sometimes|string',
@@ -59,6 +59,14 @@ class Validator extends BankingAccount\Validator
         Constants::LEAD_RECEIVED_FROM_DATE       => 'required_with:lead_received_to_date|integer',
         Constants::LEAD_RECEIVED_TO_DATE         => 'required_with:lead_received_from_date|integer',
         Constants::IS_GREEN_CHANNEL              => 'sometimes|in:yes,no',
+        BankingAccount\Entity::BANK_REFERENCE_NUMBER     => 'sometimes|string',
+        BankingAccount\Entity::MERCHANT_BUSINESS_NAME    => 'sometimes|string',
+        BankingAccount\ENTITY::ASSIGNEE_TEAM                => 'sometimes|in:rzp,bank',
+        BankingAccount\Activation\Detail\Entity::RM_NAME    => 'sometimes|string',
+        BankingAccount\Activation\Detail\Entity::API_ONBOARDING_FTNR     => 'sometimes|in:0,1',
+        BankingAccount\Activation\Detail\Entity::ACCOUNT_OPENING_FTNR    => 'sometimes|in:0,1',
+        Constants::DUE_ON               => 'sometimes|epoch',
+        Constants::IS_OVERDUE           => 'sometimes|epoch',
         Constants::FEET_ON_STREET                => 'sometimes|in:yes,no',
     ];
 

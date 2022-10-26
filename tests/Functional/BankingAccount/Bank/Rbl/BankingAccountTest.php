@@ -8076,50 +8076,39 @@ class BankingAccountTest extends TestCase
         $this->assertEquals('activated', $response['status']);
     }
 
-//    public function testBankLmsEndToEndForAssigningPOC()
-//    {
-//        // Make merchant as Bank CA Onboarding Partner
-//        $response = $this->makeMerchantAsBankCAOnboardingPartner();
-//
-//        // Add Feature to the Merchant
-//        $response = $this->addBankLmsFeatureToTheMerchant();
-//
-//        // Invite new user to join RBL merchant
-//        $this->inviteNewUserToJoinRBLMerchant();
-//
-//        // Accept invitation
-//        $response = $this->acceptInvitation();
-//
-//        $user = $this->getDbEntity('user', ['email' => 'random@rbl.com']);
-//
-//        $partnerMerchant = $this->getDbEntityById('merchant', self::DefaultPartnerMerchantId);
-//
-//        // New Merchant Apply for Current Account
-//        $response = $this->MerchantApplyForCurrentAccount('10000000000000');
-//
-//        // Attach Submerchant to RBl Merchant
-//        $this->assertUpdateBankingAccountStatusFromTo(
-//            Status::PICKED, Status::INITIATED,
-//            null, null,
-//            null, null,
-//            $response, '10000000000000'
-//        );
-//
-//        // Assign Bank Poc User to Application
-//        $this->assignBankPocUserToApplication($partnerMerchant, $user, $response['id']);
-//
-//        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
-//
-//        $this->ba->addXBankLMSOriginHeader();
-//
-//        $dataToReplace = [
-//            'request' => [
-//                'url'     => '/banking_accounts/rbl/lms/banking_account?bank_poc_user_id='. $user->getId(),
-//            ]
-//        ];
-//
-//        $this->startTest($dataToReplace);
-//    }
+   public function testBankLmsEndToEndForFilters()
+   {
+        $response = $this->setupBankLMSTest();
+
+        $user = $response['user'];
+
+        $bankingAccount = $response['bankingAccount'];
+
+        $partnerMerchant = $this->getDbEntityById('merchant', self::DefaultPartnerMerchantId);
+
+        $this->assignBankPocUserToApplication($partnerMerchant, $user, $bankingAccount['id']);
+
+        $this->testBankLmsEndToEndPatchLead($bankingAccount);
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/banking_accounts/rbl/lms/banking_account',
+                'content' => [
+                    'status'                => 'doc_collection',
+                    'sub_status'            => 'visit_due',
+                    'assignee_team'         => 'bank',
+                    'bank_poc_user_id'      => $user->getId(),
+                    'api_onboarding_ftnr'   => 0,
+                    'account_opening_ftnr'  => 0,
+                    'branch_code'           => '202',
+                    'rm_name'               => 'Gopal',
+                    'due_on'                => '1660847460',
+                ]
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+   }
 
     public function testBankLmsEndToEndForFilterByBankPoc()
     {
@@ -8476,14 +8465,17 @@ class BankingAccountTest extends TestCase
 
     }
 
-    public function testBankLmsEndToEndPatchLead()
+    public function testBankLmsEndToEndPatchLead(array $bankingAccount = null)
     {
-        $response = $this->setupBankLMSTest();
-        $response = $response['bankingAccount'];
+        if ($bankingAccount === null)
+        {
+            $response = $this->setupBankLMSTest();
+            $bankingAccount = $response['bankingAccount'];
+        }
 
         $dataToReplace = [
             'request' => [
-                'url'     => '/banking_accounts/rbl/lms/banking_account/'. $response['id'],
+                'url'     => '/banking_accounts/rbl/lms/banking_account/'. $bankingAccount['id'],
                 'method'  => 'PATCH',
             ]
         ];
@@ -8500,7 +8492,7 @@ class BankingAccountTest extends TestCase
 
         $partnerMerchant = $this->getDbEntityById('merchant', self::DefaultPartnerMerchantId);
 
-        $this->assignBankPocUserToApplication($partnerMerchant, $bankPocUser, $bankingAccountId);
+        $bankingAccountResponse = $this->assignBankPocUserToApplication($partnerMerchant, $bankPocUser, $bankingAccountId);
 
         // Status should be moved to verification_call after assignment
         // but currently disabled that part since we will support that by experimentation
@@ -8531,6 +8523,11 @@ class BankingAccountTest extends TestCase
         $this->assertEquals(Status::DOC_COLLECTION, $bankingAccountResponse[Entity::STATUS]);
         $this->assertEquals(Status::VISIT_DUE, $bankingAccountResponse[Entity::SUB_STATUS]);
 
+        // Bank Due date based on Customer Appointment Date for Doc Collection Stage
+        $activationDetailsResponse = $bankingAccountResponse[Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS];
+        $bankDueDate = Status::getBankDueDate(Status::DOC_COLLECTION, $activationDetailsResponse[ActivationDetail\Entity::CUSTOMER_APPOINTMENT_DATE]);
+        $this->assertEquals($bankDueDate, $activationDetailsResponse[ActivationDetail\Entity::RBL_ACTIVATION_DETAILS][ActivationDetail\Entity::BANK_DUE_DATE]);
+
         $docCollectionRequest = [
             'url'     => '/banking_accounts/rbl/lms/banking_account/'. $bankingAccountId,
             'method'  => 'PATCH',
@@ -8543,6 +8540,11 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals(Status::DOC_COLLECTION, $bankingAccountResponse[Entity::STATUS]);
         $this->assertEquals(Status::CUSTOMER_NOT_RESPONDING, $bankingAccountResponse[Entity::SUB_STATUS]);
+
+        // Bank Due date does not change since there is only sub-status change
+        $activationDetailsResponse = $bankingAccountResponse[Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS];
+        $bankDueDate = Status::getBankDueDate(Status::DOC_COLLECTION, $activationDetailsResponse[ActivationDetail\Entity::CUSTOMER_APPOINTMENT_DATE]);
+        $this->assertEquals($bankDueDate, $activationDetailsResponse[ActivationDetail\Entity::RBL_ACTIVATION_DETAILS][ActivationDetail\Entity::BANK_DUE_DATE]);
 
         // Automatic Assignee Team change
         $this->assertEquals(ActivationDetail\Entity::SALES, 
@@ -8570,6 +8572,12 @@ class BankingAccountTest extends TestCase
         $this->assertEquals(Status::ACCOUNT_OPENING, $bankingAccountResponse[Entity::STATUS]);
         $this->assertEquals(Status::IN_REVIEW, $bankingAccountResponse[Entity::SUB_STATUS]);
 
+        // Bank Due date based on Doc Collection Date for Account Opening Stage
+        // Doc Collection Date + 2 days = Sunday. 23rd Oct therefore due date will be 24th Oct, Monday
+        $activationDetailsResponse = $bankingAccountResponse[Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS];
+        $bankDueDate = Status::getBankDueDate(Status::ACCOUNT_OPENING, $activationDetailsResponse[ActivationDetail\Entity::DOC_COLLECTION_DATE]);
+        $this->assertEquals($bankDueDate, $activationDetailsResponse[ActivationDetail\Entity::RBL_ACTIVATION_DETAILS][ActivationDetail\Entity::BANK_DUE_DATE]);
+
         $accountOpeningRequest = [
             'url'     => '/banking_accounts/rbl/lms/banking_account/'. $bankingAccountId,
             'method'  => 'PATCH',
@@ -8577,8 +8585,8 @@ class BankingAccountTest extends TestCase
                 Entity::SUB_STATUS => Status::CA_OPENED_SUB_STATUS,
                 Entity::ACTIVATION_DETAIL => [
                     ActivationDetail\Entity::ACCOUNT_LOGIN_DATE => '1666290600',
-                    ActivationDetail\Entity::ACCOUNT_OPEN_DATE => '1666290600',
-                    ActivationDetail\Entity::ACCOUNT_OPENING_IR_CLOSE_DATE => '1666290600',
+                    ActivationDetail\Entity::ACCOUNT_OPEN_DATE => '1666549800',
+                    ActivationDetail\Entity::ACCOUNT_OPENING_IR_CLOSE_DATE => '1666549800',
                     ActivationDetail\Entity::ACCOUNT_OPENING_FTNR => false,
                     ActivationDetail\Entity::ACCOUNT_OPENING_FTNR_REASONS => 'AO RRT/Attachment/Details Issue,AO Scanning Issue',
                     ActivationDetail\Entity::RBL_ACTIVATION_DETAILS => [
@@ -8596,13 +8604,18 @@ class BankingAccountTest extends TestCase
         $this->assertEquals(Status::API_ONBOARDING, $bankingAccountResponse[Entity::STATUS]);
         $this->assertEquals(Status::IN_REVIEW, $bankingAccountResponse[Entity::SUB_STATUS]);
 
+        // Bank Due date based on Account Open Date for API Onboarding Stage
+        $activationDetailsResponse = $bankingAccountResponse[Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS];
+        $bankDueDate = Status::getBankDueDate(Status::API_ONBOARDING, $activationDetailsResponse[ActivationDetail\Entity::ACCOUNT_OPEN_DATE]);
+        $this->assertEquals($bankDueDate, $activationDetailsResponse[ActivationDetail\Entity::RBL_ACTIVATION_DETAILS][ActivationDetail\Entity::BANK_DUE_DATE]);
+
         $apiOnboardingRequest = [
             'url'     => '/banking_accounts/rbl/lms/banking_account/'. $bankingAccountId,
             'method'  => 'PATCH',
             'content' => [
                 Entity::SUB_STATUS => Status::API_IR_CLOSED,
                 Entity::ACTIVATION_DETAIL => [
-                    ActivationDetail\Entity::API_IR_CLOSED_DATE => '1666549800',
+                    ActivationDetail\Entity::API_IR_CLOSED_DATE => '1666722600',
                     ActivationDetail\Entity::API_ONBOARDING_FTNR => false,
                     ActivationDetail\Entity::API_ONBOARDING_FTNR_REASONS => '',
                     ActivationDetail\Entity::RBL_ACTIVATION_DETAILS => [
@@ -8619,6 +8632,12 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals(Status::ACCOUNT_ACTIVATION, $bankingAccountResponse[Entity::STATUS]);
         $this->assertEquals(Status::IN_PROCESS, $bankingAccountResponse[Entity::SUB_STATUS]);
+
+        // Bank Due date based on API IR Closed Date for Account Activation Stage
+        $activationDetailsResponse = $bankingAccountResponse[Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS];
+        $bankDueDate = Status::getBankDueDate(Status::ACCOUNT_ACTIVATION, $activationDetailsResponse[ActivationDetail\Entity::API_IR_CLOSED_DATE]);
+        $this->assertEquals($bankDueDate, $activationDetailsResponse[ActivationDetail\Entity::RBL_ACTIVATION_DETAILS][ActivationDetail\Entity::BANK_DUE_DATE]);
+
     }
 
     public function testBankLmsEndToEndPartnerChangeAssignee()

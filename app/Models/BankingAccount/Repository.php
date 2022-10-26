@@ -358,6 +358,108 @@ class Repository extends Base\Repository
         $query->whereIn($assigneeTeamColumn, $assigneeTeam);
     }
 
+    public function addQueryParamRmName($query, $params)
+    {
+        $rmNameColumn = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::RM_NAME);
+
+        $this->joinQueryActivationDetail($query);
+
+        $query->select($this->dbColumn('*'));
+
+        $rmName = mb_strtolower($params[ActivationDetail\Entity::RM_NAME]);
+
+        // case insensitive partial match for rm name
+        $query->whereRaw("LOWER(".$rmNameColumn.") LIKE '%".$rmName."%'");
+    }
+
+    public function addQueryParamBranchCode($query, $params)
+    {
+        $branchCodeColumn = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::BRANCH_CODE);
+
+        $this->joinQueryActivationDetail($query);
+
+        $query->select($this->dbColumn('*'));
+
+        $branchCode = $params[ActivationDetail\Entity::BRANCH_CODE];
+
+        $query->where($branchCodeColumn, '=', $branchCode);
+    }
+
+    public function addQueryParamApiOnboardingFtnr($query, $params)
+    {
+        $apiOnboardingFtnrColumn = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::API_ONBOARDING_FTNR);
+
+        $this->joinQueryActivationDetail($query);
+
+        $query->select($this->dbColumn('*'));
+
+        $apiOnboardingFtnr = $params[ActivationDetail\Entity::API_ONBOARDING_FTNR];
+
+        $query->where($apiOnboardingFtnrColumn, '=', $apiOnboardingFtnr);
+    }
+
+    public function addQueryParamAccountOpeningFtnr($query, $params)
+    {
+        $accountOpeningFtnrColumn = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::ACCOUNT_OPENING_FTNR);
+
+        $this->joinQueryActivationDetail($query);
+
+        $query->select($this->dbColumn('*'));
+
+        $accountOpeningFtnr = $params[ActivationDetail\Entity::ACCOUNT_OPENING_FTNR];
+
+        $query->where($accountOpeningFtnrColumn, '=', $accountOpeningFtnr);
+    }
+
+    /**
+     * Filter to search due leads using bank due date in banking_account_activation_detail->rbl_activation_details
+     */
+    public function addQueryParamDueOn(Base\BuilderEx $query, $params)
+    {
+        $dueDate = $params[BankLms\Constants::DUE_ON];
+
+        $dueDate = (int)$dueDate;
+
+        $date = new Carbon($dueDate);
+        $start = $date->copy()->startOfDay()->timestamp;
+        $end = $date->copy()->endOfDay()->timestamp;
+
+        $this->joinQueryActivationDetail($query);
+
+        $query->select($this->dbColumn('*'));
+
+        $query->whereRaw('json_unquote(json_extract(rbl_activation_details, \'$."bank_due_date"\')) BETWEEN '.$start.' AND '.$end);
+    }
+
+    /**
+     * Filter to search overdue leads using due date
+     * 
+     * If is_overdue is 1, bank_due_date should be less than today start
+     * If is_overdue is 0, bank_due_date should be more than today end
+     */
+    public function addQueryParamIsOverdue(Base\BuilderEx $query, $params)
+    {
+        $overdue = $params[BankLms\Constants::IS_OVERDUE];
+
+        $date = new Carbon();
+        
+        // default for is_overdue = 1
+        $symbol = '<';
+        $compare = $date->copy()->startOfDay()->timestamp;
+
+        if ($overdue === '0') {
+            $symbol = '>';
+            $compare = $date->copy()->endOfDay()->timestamp;
+        }
+
+
+        $this->joinQueryActivationDetail($query);
+
+        $query->select($this->dbColumn('*'));
+
+        $query->whereRaw('json_unquote(json_extract(rbl_activation_details, \'$."bank_due_date"\')) '.$symbol.' '.$compare);
+    }
+
     public function addQueryParamApplicationType($query, $params)
     {
         $applicationTypeColumn = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::APPLICATION_TYPE);

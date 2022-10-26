@@ -729,8 +729,6 @@ class Core extends Base\Core
             $bankingAccount->edit($input);
         }
 
-        $this->setBankDueDateIfApplicable($bankingAccount, $activationDetailInput, $input);
-
         // we need to store change log only when the
         // status has changed.
         $bankInternalStatusChanged = $bankingAccount->isDirty(Entity::BANK_INTERNAL_STATUS);
@@ -885,6 +883,10 @@ class Core extends Base\Core
                 }
             }
 
+            $activationDetailInput = $this->setBankDueDateIfApplicable($bankingAccount);
+
+            // Again updating since the calculation of due date is dependent on banking account's latest data
+            $this->activationDetailService->updateForBankingAccount($bankingAccount->getPublicId(), $activationDetailInput, $isAutomatedUpdate, $entity,false);
         });
 
         // re-fetch banking-account to handle case where it is updated during freshdeskticket creation
@@ -2554,14 +2556,12 @@ class Core extends Base\Core
      * We recalculate this on every update as it could change
      * due to changing any of the dates or status/sub-status
      */
-    public function setBankDueDateIfApplicable(Entity $bankingAccount, array &$activationDetailInput = null, $input)
+    public function setBankDueDateIfApplicable(Entity $bankingAccount)
     {
-        $status = $bankingAccount->getStatus();
+        // re-fetching to get the updated data after update for activation details
+        $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccount->getPublicId());
 
-        if (isset($input[Entity::STATUS]) === true)
-        {
-            $status = $input[Entity::STATUS];
-        }
+        $status = $bankingAccount->getStatus();
 
         $bankDueDate = null;
 
@@ -2579,6 +2579,12 @@ class Core extends Base\Core
             $bankDueDate = Status::getBankDueDate($status, $followUpDate);
         }
 
-        $activationDetailInput[Activation\Detail\Entity::RBL_ACTIVATION_DETAILS][Activation\Detail\Entity::BANK_DUE_DATE] = $bankDueDate;
+        $activationDetailInput = [
+            Activation\Detail\Entity::RBL_ACTIVATION_DETAILS => [
+                Activation\Detail\Entity::BANK_DUE_DATE => $bankDueDate
+            ]
+        ];
+
+        return $activationDetailInput;
     }
 }

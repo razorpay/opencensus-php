@@ -3,6 +3,7 @@
 namespace RZP\Models\BankingAccount\BankLms;
 
 use RZP\Models\BankingAccount;
+use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 use RZP\Models\Base\PublicEntity;
 use RZP\Http\BasicAuth\Type as AuthType;
 
@@ -27,15 +28,25 @@ class Fetch extends BankingAccount\Fetch
             self::EXPAND_EACH                   => 'filled|string|in:banking_account_details,banking_account_activation_details,activationCallLog',
             BankingAccount\Entity::ACCOUNT_TYPE => 'sometimes|string',
             BankingAccount\Entity::CHANNEL      => 'sometimes|string|custom',
+            BankingAccount\Entity::BANK_REFERENCE_NUMBER     => 'sometimes|string',
+            BankingAccount\Entity::MERCHANT_BUSINESS_NAME    => 'sometimes|string',
             Entity::FILTER_MERCHANTS            => 'sometimes|array',
             Entity::BANK_POC_USER_ID            => 'sometimes|string|size:14',
             Entity::BUSINESS_CATEGORY           => 'sometimes|string',
             Constants::LEAD_RECEIVED_FROM_DATE       => 'required_with:lead_received_to_date|integer',
             Constants::LEAD_RECEIVED_TO_DATE         => 'required_with:lead_received_from_date|integer',
             Constants::IS_GREEN_CHANNEL              => 'sometimes|in:yes,no',
+            ENTITY::ASSIGNEE_TEAM                    => 'sometimes|in:rzp,bank',
+            ActivationDetail\Entity::RM_NAME         => 'sometimes|string',
             Constants::ACTIVATION_ACCOUNT_TYPE       => 'sometimes|string',
             BankingAccount\Entity::BANK_ACCOUNT_TYPE => 'sometimes|string',
             Constants::SORT_SENT_TO_BANK_DATE        => 'sometimes|in:asc,desc',
+            BankingAccount\Entity::PINCODE           => 'sometimes|string',
+            ActivationDetail\Entity::BRANCH_CODE     => 'sometimes|string',
+            ActivationDetail\Entity::API_ONBOARDING_FTNR     => 'sometimes|in:0,1',
+            ActivationDetail\Entity::ACCOUNT_OPENING_FTNR    => 'sometimes|in:0,1',
+            Constants::DUE_ON               => 'sometimes|epoch',
+            Constants::IS_OVERDUE           => 'sometimes|in:0,1',
             Constants::FEET_ON_STREET                => 'sometimes|in:yes,no',
         ],
         AuthType::PRIVILEGE_AUTH => [
@@ -102,14 +113,26 @@ class Fetch extends BankingAccount\Fetch
         AuthType::PROXY_AUTH     => [
             BankingAccount\Entity::ACCOUNT_TYPE,
             BankingAccount\Entity::CHANNEL,
+            BankingAccount\Entity::BANK_REFERENCE_NUMBER,
+            BankingAccount\Entity::MERCHANT_BUSINESS_NAME,
             Entity::FILTER_MERCHANTS,
             Entity::BANK_POC_USER_ID,
             Entity::BUSINESS_CATEGORY,
+            ENTITY::PINCODE,
+            ENTITY::STATUS,
+            ENTITY::SUB_STATUS,
+            ENTITY::ASSIGNEE_TEAM,
+            ActivationDetail\Entity::BRANCH_CODE,
+            ActivationDetail\Entity::RM_NAME,
+            ActivationDetail\Entity::API_ONBOARDING_FTNR,
+            ActivationDetail\Entity::ACCOUNT_OPENING_FTNR,
             Constants::LEAD_RECEIVED_FROM_DATE,
             Constants::IS_GREEN_CHANNEL,
             Constants::LEAD_RECEIVED_TO_DATE,
             Constants::SORT_SENT_TO_BANK_DATE,
             Constants::ACTIVATION_ACCOUNT_TYPE,
+            Constants::DUE_ON,
+            Constants::IS_OVERDUE,
             BankingAccount\Entity::BANK_ACCOUNT_TYPE,
             Constants::FEET_ON_STREET,
             self::EXPAND_EACH,

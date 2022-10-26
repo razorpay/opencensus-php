@@ -327,10 +327,6 @@ class Service extends Base\Service
             $activationDetail->getLDAPIDMailDate() : 
             $input[Entity::LDAP_ID_MAIL_DATE];
 
-        $assigneeTeam = empty($input[Entity::ASSIGNEE_TEAM]) ? 
-            $activationDetail->getAssigneeTeam() : 
-            $input[Entity::ASSIGNEE_TEAM];
-
         // Parallel assignees required until LDAP ID Mail date is not filled
         // This should work only in Account Opening & API Onboarding Stages
         if (
