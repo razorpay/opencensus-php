@@ -355,6 +355,9 @@ trait Authorize
         $this->performFraudCheckRaasInternational($payment, $input);
         $this->setSelectedTerminalsForApplicationMethodsIfApplicable($payment);
 
+        // we are doing this after terminal selection since we might reject payemnt if there are no terminals found
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATION_PROCESSED, $payment);
+
         if ($this->shouldHitGatewayForPayment($payment, $gatewayInput) === false)
         {
             $currentTerminal = $this->selectedTerminals[0];
@@ -364,9 +367,6 @@ trait Authorize
             // the terminal id stored in token used for the first payment
             //
             $payment->associateTerminal($currentTerminal);
-
-            // we are doing this after terminal selection since we might reject payemnt if there are no terminals found
-            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATION_PROCESSED, $payment);
 
             // Fees validation can only happen after terminal selection has gone through
             // otherwise can cause issues with procurer and international pricing rule being
