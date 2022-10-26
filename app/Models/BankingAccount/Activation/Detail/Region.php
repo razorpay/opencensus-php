@@ -7,43 +7,43 @@ use Illuminate\Support\Str;
 
 class Region
 {
-    const Andhra_Pradesh	 = 'Andhra Pradesh';
-    const Arunachal_Pradesh  = 'Arunachal Pradesh';
-    const Assam              = 'Assam';
-    const Bihar              = 'Bihar';
-    const Chhattisgarh       = 'Chhattisgarh';
-    const Chattisgarh        = 'Chattisgarh'; // Indian Pincode finder returns this
-    const Goa                = 'Goa';
-    const Gujarat            = 'Gujarat';
-    const Haryana            = 'Haryana';
-    const Himachal_Pradesh   = 'Himachal Pradesh';
-    const Jharkhand          = 'Jharkhand';
-    const Karnataka          = 'Karnataka';
-    const Kerala             = 'Kerala';
-    const Madhya_Pradesh     = 'Madhya Pradesh';
-    const Maharashtra        = 'Maharashtra';
-    const Manipur            = 'Manipur';
-    const Meghalaya          = 'Meghalaya';
-    const Mizoram            = 'Mizoram';
-    const Nagaland           = 'Nagaland';
-    const Odisha             = 'Odisha';
-    const Punjab             = 'Punjab';
-    const Rajasthan          = 'Rajasthan';
-    const Sikkim             = 'Sikkim';
-    const Tamil_Nadu         = 'Tamilnadu';
-    const Telangana          = 'Telangana';
-    const Tripura            = 'Tripura';
-    const Uttar_Pradesh      = 'Uttar Pradesh';
-    const Uttarakhand        = 'Uttarakhand';
-    const West_Bengal        = 'West Bengal';
-    const Andaman_And_Nicobar_Islands = 'Andaman and Nicobar Islands';
-    const Chandigarh         = 'Chandigarh';
-    const Dadra_And_Nagar_Haveli_And_Daman_and_Diu = 'Dadra & Nagar Haveli and Daman & Diu';
-    const Delhi              = 'Delhi';
-    const Jammu_And_Kashmir  = 'Jammukashmir';
-    const Lakshadweep        = 'Lakshadweep';
-    const Puducherry         = 'Puducherry';
-    const Ladakh             = 'Ladakh';
+    const Andhra_Pradesh	 = 'andhra pradesh';
+    const Arunachal_Pradesh  = 'arunachal pradesh';
+    const Assam              = 'assam';
+    const Bihar              = 'bihar';
+    const Chhattisgarh       = 'chhattisgarh';
+    const Chattisgarh        = 'chattisgarh';
+    const Goa                = 'goa';
+    const Gujarat            = 'gujarat';
+    const Haryana            = 'haryana';
+    const Himachal_Pradesh   = 'himachal pradesh';
+    const Jharkhand          = 'jharkhand';
+    const Karnataka          = 'karnataka';
+    const Kerala             = 'kerala';
+    const Madhya_Pradesh     = 'madhya pradesh';
+    const Maharashtra        = 'maharashtra';
+    const Manipur            = 'manipur';
+    const Meghalaya          = 'meghalaya';
+    const Mizoram            = 'mizoram';
+    const Nagaland           = 'nagaland';
+    const Odisha             = 'odisha';
+    const Punjab             = 'punjab';
+    const Rajasthan          = 'rajasthan';
+    const Sikkim             = 'sikkim';
+    const Tamil_Nadu         = 'tamilnadu';
+    const Telangana          = 'telangana';
+    const Tripura            = 'tripura';
+    const Uttar_Pradesh      = 'uttar pradesh';
+    const Uttarakhand        = 'uttarakhand';
+    const West_Bengal        = 'west bengal';
+    const Andaman_And_Nicobar_Islands = 'andaman and nicobar islands';
+    const Chandigarh         = 'chandigarh';
+    const Dadra_And_Nagar_Haveli_And_Daman_and_Diu = 'dadra & nagar haveli and daman & diu';
+    const Delhi              = 'delhi';
+    const Jammu_And_Kashmir  = 'jammukashmir';
+    const Lakshadweep        = 'lakshadweep';
+    const Puducherry         = 'puducherry';
+    const Ladakh             = 'ladakh';
 
     const NORTH              = 'north';
     const EAST               = 'east';
@@ -93,7 +93,11 @@ class Region
 
     public function getRegionFromState(string $state): string
     {
-        return self::$stateToRegionMap[$state];
+        // Convert state to lower before mapping since in some scenarios, pincode get API
+        // returns state with in lower case instead of capitalised format.
+        $stateLower = strtolower($state);
+
+        return self::$stateToRegionMap[$stateLower];
     }
 
 }

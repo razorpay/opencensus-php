@@ -63,10 +63,16 @@ class BankingAccountServiceTest extends TestCase
         $this->assertTrue($response['serviceability']);
     }
 
-    public function testStateToRegionMapping($state = Region::Chattisgarh, $expectedRegion = Region::CENTRAL)
+    public function testStateToRegionMapping()
     {
-        $region = (new Region)->getRegionFromState($state);
+        // case-sensitive check
+        $region = (new Region)->getRegionFromState(Region::Maharashtra);
 
-        $this->assertEquals($expectedRegion, $region);
+        $this->assertEquals(Region::WEST, $region);
+
+        // case-insensitive check
+        $region = (new Region)->getRegionFromState('maHarasHTrA');
+
+        $this->assertEquals(Region::WEST, $region);
     }
 }
