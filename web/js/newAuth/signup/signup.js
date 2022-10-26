@@ -5,7 +5,7 @@ import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme';
 import Auth from '@razorpay/commander-shield/src/bootstrap/SignUpWrapper';
 import Size from '@razorpay/blade-old/src/atoms/Size';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
-import { ContentContainer } from '../commonStyles';
+import { ContentContainer } from 'newAuth/commonStyles';
 import { AbsoluteView, RelativeView, Container } from './styles';
 import Header from './components/Header';
 import InfoContainer from './components/InfoContainer';
@@ -14,8 +14,7 @@ import {
   getURLQueryParams,
   isPasswordUXImprovementEnabled,
   isTestEnvironment,
-  isAutoReadOtpSignup,
-} from '../utils';
+} from 'newAuth/utils';
 import { setCookie } from 'common/utils/cookies';
 
 const SignUp = () => {
@@ -117,7 +116,7 @@ const SignUp = () => {
                       oneTapInfo={oneTapInfo}
                       showPasswordRules={isPasswordUXImprovementEnabled()}
                       skipCaptcha={isTestEnvironment()}
-                      autoReadOtpSignup={isAutoReadOtpSignup()}
+                      autoReadOtpSignup
                       showMobileSignup
                     />
                   </AbsoluteView>
