@@ -4897,11 +4897,7 @@ class Processor
             ];
 
             $order = $this->order;
-
-            \Event::dispatch(new TransactionalClosureEvent(function () use ($input, $order)
-            {
-                OrderUpdate::dispatchNow($this->mode, $input, $order);
-            }));
+            $this->app['pg_router']->updateInternalOrder($input,$order->getId(),$order->getMerchantId(), true);
         }
     }
 
