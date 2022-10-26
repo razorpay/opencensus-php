@@ -268,10 +268,6 @@ class Service extends Base\Service
     private function checkDuplicatePayment($processor, $input): bool
     {
         try{
-            $handleDuplicatePayments = $this->isDuplicatePaymentsHandlingEnabled();
-            if($handleDuplicatePayments === false){
-                return false;
-            }
             $ttl = 20 * 60 * 60; // 20 hours in seconds
             $redisKey = $processor->getRedisKey($input);
             $result = $this->app['redis']->set($redisKey, true, 'ex', $ttl, 'nx');
@@ -328,20 +324,6 @@ class Service extends Base\Service
             RazorxTreatment::EMANDATE_ASYNC_PAYMENT_WITH_ASYNC_BAL_ENABLED, $mode);
 
         return (strtolower($status) === 'on');
-    }
-
-    private function isDuplicatePaymentsHandlingEnabled(): bool
-    {
-        $key = Carbon::now()->getTimestamp();
-
-        $razorxTreatment = RazorxTreatment::EMANDATE_HANDLE_DUPLICATE_PAYMENTS;
-
-        $variant = $this->app->razorx->getTreatment($key,
-            $razorxTreatment,
-            $this->mode
-        );
-
-        return (strtolower($variant) === 'on');
     }
 
     private function setResponseFields(array & $input)
