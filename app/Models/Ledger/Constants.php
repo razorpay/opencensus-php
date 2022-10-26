@@ -27,6 +27,7 @@ class Constants
     const WITHOUT_REFUND                                    = 'without_refund';
     const ZERO_AMOUNT_PAYMENT                               = 'zero_amount_payment';
     const ZERO_AMOUNT_ACCOUNTING                            = 'zero_amount_accounting';
+    const CUSTOMER_WALLET_LOADING                           = "customer_wallet_loading";
 
     //Refund events
     const REFUND_REVERSAL                                   = "refund_reversed";
@@ -58,6 +59,7 @@ class Constants
     const MERCHANT_BALANCE_AMOUNT                           = "merchant_balance_amount";
     const MERCHANT_RECEIVABLE_AMOUNT                        = "merchant_receivable_amount";
     const MERCHANT_PAYABLE_AMOUNT                           = "merchant_payable_amount";
+    const CUSTOMER_WALLET_AMOUNT                            = "customer_wallet_amount";
     const GATEWAY_REVERSED_AMOUNT                           = "gateway_reversed_amount";
     const MERCHANT_REFUND_CREDITS_ADDITION                  = "merchant_refund_credits_addition";
     const MERCHANT_SETTLEMENT_AMOUNT                        = "merchant_settlement_amount";

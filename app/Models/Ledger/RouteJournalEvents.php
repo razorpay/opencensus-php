@@ -134,4 +134,60 @@ class RouteJournalEvents extends BaseJournalEvents
 
     }
 
+    public static function generateMoneyParamsForCustomerWalletLoadingDebit(Transaction\Entity  $transaction): array
+    {
+        $moneyParams = [];
+
+        $amount = $transaction->getAmount();
+        $tax = $transaction->getTax() !== null ? $transaction->getTax() : 0;
+        $fee = $transaction->getFee() != null ? $transaction->getFee() - $tax : 0;
+
+        $moneyParams[Constants::AMOUNT]                         = strval($amount);
+        $moneyParams[Constants::BASE_AMOUNT]                    = strval($amount);
+
+        if($transaction->isFeeCredits() === true)
+        {
+            $moneyParams[Constants::CUSTOMER_WALLET_AMOUNT]     = strval($amount);
+            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
+            $moneyParams[Constants::TAX]                        = strval($tax);
+            $moneyParams[Constants::TRANSFER_COMMISSION]        = strval($fee);
+            $moneyParams[Constants::FEE_CREDITS]                = strval($tax + $fee);
+        }
+        else if ($transaction->isGratis() === true)
+        {
+            $moneyParams[Constants::CUSTOMER_WALLET_AMOUNT]     = strval($amount);
+            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
+        }
+        // Normal transfer debit scenario (commissions considered)
+        else
+        {
+            $moneyParams[Constants::CUSTOMER_WALLET_AMOUNT]     = strval($amount);
+            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount + $fee + $tax);
+            $moneyParams[Constants::TAX]                        = strval($tax);
+            $moneyParams[Constants::TRANSFER_COMMISSION]        = strval($fee);
+        }
+
+        return $moneyParams;
+    }
+
+    public static function createTransactionMessageForCustomerWalletLoading($transfer): array
+    {
+        $debitTransaction = $transfer->transaction;
+        $transactionMessage = BaseJournalEvents::generateBaseForJournalEntry($debitTransaction);
+        unset($transactionMessage[Constants::BASE_AMOUNT]);
+
+        $additionalParams = self::fetchRulesForTransferCredits($debitTransaction);
+        $moneyParams = self::generateMoneyParamsForCustomerWalletLoadingDebit($debitTransaction);
+
+        $transferData = [
+            Constants::TRANSACTOR_EVENT             => Constants::CUSTOMER_WALLET_LOADING,
+            Constants::TRANSACTOR_ID                => $transfer->getPublicId(),
+            Constants::ADDITIONAL_PARAMS            => $additionalParams,
+            Constants::MONEY_PARAMS                 => $moneyParams
+        ];
+
+        return array_merge($transactionMessage, $transferData);
+    }
+
+
 }
