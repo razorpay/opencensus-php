@@ -46,7 +46,7 @@ class Core extends Base\Core
         }
         catch (\Exception $e)
         {
-            $this->handleNotificationFailed($cardMandateNotification, $payment);
+            $this->handlePreDebitNotificationToHubFailed($cardMandateNotification, $payment, $e);
             throw $e;
         }
 
@@ -409,6 +409,13 @@ class Core extends Base\Core
         }
 
         return $time->unix();
+    }
+
+    protected function handlePreDebitNotificationToHubFailed(Entity $notification, Payment\Entity $payment, \Exception $e)
+    {
+        $processor = new Payment\Processor\Processor($notification->merchant);
+
+        $processor->failPreDebitNotificationDeliveryToHubFailedCardAutoRecurringPayment($payment, $e);
     }
 
     protected function handleNotificationFailed(Entity $notification, Payment\Entity $payment)

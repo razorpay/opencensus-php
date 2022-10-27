@@ -4123,6 +4123,15 @@ class Processor
         $this->updatePaymentFailed($exception, $traceCode);
     }
 
+    public function failPreDebitNotificationDeliveryToHubFailedCardAutoRecurringPayment(Payment\Entity $payment, $exception)
+    {
+        $this->payment = $payment;
+
+        $traceCode = TraceCode::PAYMENT_CARD_MANDATE_NOTIFICATION_NOT_SENT;
+
+        $this->updatePaymentFailed($exception, $traceCode);
+    }
+
     public function failNotificationVerifyFailedCardAutoRecurringPayment(Payment\Entity $payment, $exception)
     {
         $this->payment = $payment;
