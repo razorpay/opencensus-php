@@ -22084,6 +22084,8 @@ class PayoutTest extends OAuthTestCase
             PayoutEntity::REFERENCE_ID => '12345'
         ]);
 
+        $payout->reload();
+
         (new PayoutServiceDataMigration('test', [
             Payout\DataMigration\Processor::FROM => $payout->getCreatedAt(),
             Payout\DataMigration\Processor::TO   => $payout->getCreatedAt(),
@@ -22132,7 +22134,7 @@ class PayoutTest extends OAuthTestCase
                                             ]
                                         ]);
 
-        Mail::assertQueued(PayoutProcessedContactCommunication::class, function($mail) {
+        Mail::assertQueued(PayoutProcessedContactCommunication::class, function($mail) use ($payout) {
             $mail->build();
             $this->assertEquals($mail->subject, 'Ka-Ching! Payment Received from Test Merchant');
 
@@ -22151,6 +22153,10 @@ class PayoutTest extends OAuthTestCase
             $this->assertArrayHasKey('payout_processed_at', $mail->viewData);
             $this->assertArrayHasKey('merchant_website', $mail->viewData);
             $this->assertArrayHasKey('learn_more_url', $mail->viewData);
+
+            $expectedProcessedAt = Carbon::createFromTimeStamp($payout->getProcessedAt(), Timezone::IST)
+                                         ->format('d M Y g:i A');
+            $this->assertEquals($expectedProcessedAt, $mail->viewData['payout_processed_at']);
 
             $mail->hasTo('naruto@gmail.com');
             $mail->hasFrom('no-reply@razorpay.com');

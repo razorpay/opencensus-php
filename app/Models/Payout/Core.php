@@ -5838,6 +5838,8 @@ class Core extends Base\Core
             $payout->unsetRelation('transaction');
         }
 
+        (new DualWrite\PayoutLogs)->dualWritePSPayoutLogs($payout);
+
         // This is need to showcase $payout as freshly fetched entity and not like a variable on which many
         // setters are called. After doing this isDirty will give false.
         $payout->syncOriginal();

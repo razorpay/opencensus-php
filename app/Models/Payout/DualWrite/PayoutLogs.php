@@ -27,8 +27,6 @@ class PayoutLogs extends Base
         {
             $this->setTimestampForStatusInPayout($payout, $payout->getStatus(), $payout->getCreatedAt());
         }
-
-        $this->repo->payout->saveOrFail($payout);
     }
 
     protected function setTimestampForStatusInPayout(Entity & $payout, string $status, $timestamp)
