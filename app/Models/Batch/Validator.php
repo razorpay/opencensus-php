@@ -1841,7 +1841,7 @@ class Validator extends Base\Validator
             $totalPayoutAmount = array_sum(array_column($entries, Header::PAYOUT_AMOUNT_RUPEES)) * 100;
         }
 
-        $bankingBalance = $merchant->sharedBankingBalance->getBalanceWithLockedBalance();
+        $bankingBalance = $merchant->sharedBankingBalance->getBalanceWithLockedBalanceFromLedger();
 
         if ($totalPayoutAmount > $bankingBalance)
         {

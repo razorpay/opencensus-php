@@ -2926,6 +2926,97 @@ class PayoutTest extends TestCase
         $this->assertEquals($payout->getAmount(), $txn->getAmount() - $txn->getFee());
     }
 
+    /**
+     * This test asserts that balance is fetched from Ledger instead of using balance present in API DB
+     * for bulk payout amount validation for merchant with the feature ledger_reverse_shadow enabled
+     */
+    public function testBalanceFetchedFromLedgerForBulkPayoutAmountValidationOnReverseShadow()
+    {
+        $this->fixtures->merchant->addFeatures([Feature::LEDGER_REVERSE_SHADOW]);
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        //Make balance low so that bulk validation fails if API balance is used
+        $this->fixtures->edit('balance', $this->bankingBalance->getId(), ['balance' => 100]);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        //Mock ledger to return sufficient balance to pass amount validation.
+        $mockLedger->shouldReceive('fetchMerchantAccounts')
+                   ->andReturn([
+                                   'code' => 200,
+                                   'body' => [
+                                       "merchant_id"      => "10000000000000",
+                                       "merchant_balance" => [
+                                           "balance"      => "6000.000000",
+                                           "min_balance"  => "10000.000000"
+                                       ],
+                                       "reward_balance"  => [
+                                           "balance"     => "20.000000",
+                                           "min_balance" => "-20.000000"
+                                       ],
+                                   ],
+                               ]);
+
+        $entries = [
+            [
+                Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                Batch\Header::PAYOUT_AMOUNT_RUPEES      => 10,
+                Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                Batch\Header::PAYOUT_MODE               => 'NEFT',
+                Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                Batch\Header::FUND_ACCOUNT_ID           => '',
+                Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                Batch\Header::FUND_ACCOUNT_NAME         => 'Sagnik Saha',
+                Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
+                Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
+                Batch\Header::FUND_ACCOUNT_VPA          => '',
+                Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
+                Batch\Header::CONTACT_NAME_2            => "Sagnik Saha",
+                Batch\Header::PAYOUT_NARRATION          => 'NarrationTest',
+                Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                Batch\Header::FUND_ACCOUNT_EMAIL        => '',
+                Batch\Header::CONTACT_TYPE              => 'employee',
+                Batch\Header::CONTACT_EMAIL_2           => "sagnik.saha@razorpay.com",
+                Batch\Header::CONTACT_MOBILE_2          => '',
+                Batch\Header::CONTACT_REFERENCE_ID      => '',
+                Batch\Header::NOTES_CODE                => 'test',
+                Batch\Header::NOTES_PLACE               => 'Kolkata'
+            ],
+            [
+                Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                Batch\Header::PAYOUT_AMOUNT_RUPEES      => 40,
+                Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                Batch\Header::PAYOUT_MODE               => 'NEFT',
+                Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                Batch\Header::FUND_ACCOUNT_ID           => '',
+                Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                Batch\Header::FUND_ACCOUNT_NAME         => 'Sagnik S',
+                Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
+                Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
+                Batch\Header::FUND_ACCOUNT_VPA          => '',
+                Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
+                Batch\Header::CONTACT_NAME_2            => "Sagnik Saha",
+                Batch\Header::PAYOUT_NARRATION          => 'NarrationTest',
+                Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                Batch\Header::FUND_ACCOUNT_EMAIL        => '',
+                Batch\Header::CONTACT_TYPE              => 'employee',
+                Batch\Header::CONTACT_EMAIL_2           => "sagnik.s@razorpay.com",
+                Batch\Header::CONTACT_MOBILE_2          => '',
+                Batch\Header::CONTACT_REFERENCE_ID      => '',
+                Batch\Header::NOTES_CODE                => 'test',
+                Batch\Header::NOTES_PLACE               => 'Kolkata'
+            ],
+        ];
+        $this->createAndPutCsvFileInRequest($entries, __FUNCTION__);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(5000, $response['total_payout_amount']);
+    }
 
     protected function changeMerchantToExistingBulkRupeesType()
     {
