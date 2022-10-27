@@ -240,7 +240,9 @@ export default class SelectPeriod extends React.Component {
             />
           </div>
           {!!dateRangeError && selectedPeriod === 'dateRange' && (
-            <div class="m-t text-danger text-small">{dateRangeError}</div>
+            <div class="m-t text-danger text-small" data-testid="date-range-error-message">
+              {dateRangeError}
+            </div>
           )}
           {selectedConfig && selectedConfig.name === 'Monthly Invoice Report' && (
             <div class="m-t text-small">
