@@ -85,6 +85,11 @@ class CreateLedgerJournal extends Job
                     "message" => $message
                 ]);
 
+            $dimensions = [
+                'transactor_event' => $this->transactionMessage[LedgerConstants::TRANSACTOR_EVENT],
+            ];
+            $this->trace->count(TraceCode::PG_LEDGER_KAFKA_PUSH_FAILURE, $dimensions);
+
             $this->checkRetry();
         }
     }

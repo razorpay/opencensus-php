@@ -88,7 +88,11 @@ class CaptureJournalEvents
         }
         else if ($transaction->getAmount() === 0)
         {
-            $rule[Constants::ZERO_AMOUNT_ACCOUNTING] = Constants::ZERO_AMOUNT_PAYMENT;
+            $rule[Constants::MERCHANT_BALANCE_ACCOUNTING] = Constants::ZERO_AMOUNT_PAYMENT;
+        }
+        else if($transaction->getAmount() < $transaction->getFee())
+        {
+            $rule[Constants::MERCHANT_BALANCE_ACCOUNTING] = Constants::BALANCE_DEDUCT;
         }
 
         return $rule;
@@ -150,13 +154,22 @@ class CaptureJournalEvents
         // Normal merchant captured scenario (commissions considered)
         else
         {
-            if ($amount !== 0)
+            // Use case where amount is less than fee charged, hence we need to deduct more money from merchant balance
+            // Use case has method as bank transfer
+            if($amount < ($fee + $tax))
             {
-                $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount - $fee - $tax);
+                $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT] = strval($fee + $tax - $amount);
             }
-            else
+            // Use case where amount is 0, happens for first payment in emandate subscriptions
+            else if($amount == 0)
             {
                 $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($fee + $tax);
+            }
+            // Normal use case, amount is greater than (commission and tax)
+            // We credit merchant balance in this case after deducting the fee.
+            else
+            {
+                $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount - $fee - $tax);
             }
 
             $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);

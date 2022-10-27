@@ -854,13 +854,18 @@ trait Capture
                 $this->handleLateBalanceUpdate($txn, $merchantBalance);
             }
 
-            $this->trace->info(
-                TraceCode::PAYMENT_MERCHANT_CAPTURED,
-                [
-                    'payment_id'        => $payment->getId(),
-                ]);
+            // We will create ledger entries in central ledger only if async_txn_fill_details feature is not set.
+            // If it is set then fee and tax get updated later and we will create ledger entries at that point.
+            if ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false)
+            {
+                $this->trace->info(
+                    TraceCode::PAYMENT_MERCHANT_CAPTURED,
+                    [
+                        'payment_id' => $payment->getId(),
+                    ]);
 
-            $this->createLedgerEntriesForMerchantCapture($payment, $txn);
+                $this->createLedgerEntriesForMerchantCapture($payment, $txn);
+            }
 
             // Please keep this function at the end of transaction block, as
             // we are updating orders which lies in PG Router service now.
@@ -972,6 +977,14 @@ trait Capture
                 $this->repo->saveOrFail($payment);
 
                 $this->repo->saveOrFail($txn);
+
+                $this->trace->info(
+                    TraceCode::PAYMENT_MERCHANT_CAPTURED_ASYNC_TXN_FILL_DETAILS,
+                    [
+                        'payment_id' => $payment->getId(),
+                    ]);
+
+                $this->createLedgerEntriesForMerchantCapture($payment, $txn);
 
                 $this->processTransferIfApplicable($payment);
 

@@ -27,6 +27,8 @@ class Constants
     const WITHOUT_REFUND                                    = 'without_refund';
     const ZERO_AMOUNT_PAYMENT                               = 'zero_amount_payment';
     const ZERO_AMOUNT_ACCOUNTING                            = 'zero_amount_accounting';
+    const MERCHANT_BALANCE_ACCOUNTING                       = 'merchant_balance_accounting';
+    const BALANCE_DEDUCT                                    = 'balance_deduct';
     const CUSTOMER_WALLET_LOADING                           = "customer_wallet_loading";
 
     //Refund events
