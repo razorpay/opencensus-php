@@ -4,14 +4,14 @@ namespace RZP\Models\Gateway\File\Processor\Refund;
 
 use Carbon\Carbon;
 
+use Razorpay\IFSC\Bank;
 use RZP\Models\Payment;
-use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-use RZP\Services\NbPlus\Netbanking;
 use RZP\Models\Base\PublicCollection;
+use RZP\Exception\GatewayFileException;
+use RZP\Models\Payment\Refund\Constants;
 use RZP\Models\Gateway\File\Processor\FileHandler;
-use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 //This code is not being used to generate refund file go to app/Gateway/Netbanking/Kotak/RefundFile.php
 
@@ -24,130 +24,47 @@ class Kotak extends Base
     const EXTENSION              = FileStore\Format::TXT;
     const FILE_TYPE              = FileStore\Type::KOTAK_NETBANKING_REFUND;
     const GATEWAY                = Payment\Gateway::NETBANKING_KOTAK;
-    const GATEWAY_CODE           = IFSC::KKBK;
+    const GATEWAY_CODE           = Bank::KKBK;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
     const BASE_STORAGE_DIRECTORY = 'Kotak/Refund/Netbanking/';
-
-    protected $type = Payment\Entity::BANK;
-
-    /**
-     * @param int $begin
-     * @param int $end
-     * @return PublicCollection
-     */
-    protected function fetchRefundsFromAPI(int $begin, int $end): PublicCollection
-    {
-        //
-        // Regular flow - fetching refunds from API DB
-        //
-
-        $tpv = $this->gatewayFile->getTpv();
-
-        $refunds = $this->repo->refund->fetchRefundsForTpvBetweenTimestamps(
-            static::PAYMENT_TYPE_ATTRIBUTE,
-            static::GATEWAY_CODE,
-            $begin,
-            $end,
-            static::GATEWAY,
-            $tpv
-        );
-
-        return $refunds;
-    }
 
     /**
      * Fetches all necessary refund related data required for generating the file
      * $entities - since it can either be payments or refunds based on whether we fetch from scrooge or not
      *
-     * @param  PublicCollection $entities
+     * @param PublicCollection $entities
      *
      * @return array
+     * @throws GatewayFileException
      */
-    public function generateData(PublicCollection $entities)
+    public function generateData(PublicCollection $entities): array
     {
         $data = [];
         $isTpv = $this->gatewayFile->getTpv();
 
         // Refunds were fetched from scrooge
-        if ($this->fetchRefundsFromScrooge === true)
+        foreach ($this->scroogeRefundsData as $refund)
         {
-            foreach ($this->scroogeRefundsData as $refund)
+            $payment = $entities->where(Payment\Entity::ID, '=', $refund[Constants::PAYMENT_ID])->first();
+
+            if ($payment->terminal->isTpv() == $isTpv)
             {
-                $payment = $entities->where(Payment\Entity::ID, '=', $refund[RefundConstants::PAYMENT_ID])->first();
+                $col = $this->collectPaymentData($payment);
 
-                if ($payment->terminal->isTpv() == $isTpv)
-                {
-                    $col = $this->collectPaymentData($payment);
+                $col['refund'] = $refund;
 
-                    $col['refund'] = $refund;
-
-                    $data[] = $col;
-                }
+                $data[] = $col;
             }
-
-            $data = $this->addGatewayEntitiesToDataWithPaymentIds($data, $this->scroogeRefundPaymentIds);
         }
-        else
-        {
-            $scroogeRefundIds = [];
 
-            // Is file based refund gateway for which refunds data need to be fetched from Scrooge
-            $fileBasedRefundGateway = in_array(
-                static::GATEWAY,
-                array_keys(Payment\Gateway::$scroogeFileBasedRefundGatewaysWithTimestamps), true
-            );
-
-            if ($fileBasedRefundGateway === true)
-            {
-                $scroogeRefundIds = $entities->where(Payment\Refund\Entity::IS_SCROOGE, '=', 1)->getIds();
-
-                if (count($scroogeRefundIds) > 0)
-                {
-                    $this->populateScroogeRefundsGivenIds($scroogeRefundIds);
-                }
-
-                $scroogeRefundIds = array_unique(array_column($this->scroogeRefundsData, RefundConstants::SCROOGE_ID));
-            }
-
-            // regular API flow
-            foreach ($entities as $refund)
-            {
-                //
-                // The following checks are being made to ensure these conditions
-                // If a refund belongs to scrooge - Scrooge is the single source of truth -
-                // whether the refund is to be sent in the file or not, there are various flows in which Scrooge
-                // could process these refunds - Instant Refunds, FTAs, TPV, etc.
-                // Hence, if a refund belongs to scrooge and it is of a file based gateway -
-                // whose refunds data is fetched from Scrooge - we need to ensure that the refund must be present
-                // in the response from Scrooge.
-                //
-                // Therefore, the only case where the following conditions don't evaluate to true is the following:
-                // The refund was processed on scrooge, belonging to a file based refunds gateway via Scrooge,
-                // by tpv or instant refunds so it should not be included in the file
-                //
-                if (($refund->isScrooge() === false) or
-                    ($fileBasedRefundGateway === false) or
-                    (in_array($refund->getId(), $scroogeRefundIds, true) === true))
-                {
-                    $payment = $refund->payment;
-
-                    $col = $this->collectPaymentData($payment);
-
-                    $col['refund'] = $refund->toArray();
-
-                    $data[] = $col;
-                }
-            }
-
-            $data = $this->addGatewayEntitiesToData($data, $entities);
-        }
+        $data = $this->addGatewayEntitiesToDataWithPaymentIds($data, $this->scroogeRefundPaymentIds);
 
         $this->checkIfRefundsAreInValidDateRange($data);
 
         return $data;
     }
 
-    protected function formatDataForFile(array $data)
+    protected function formatDataForFile(array $data): string
     {
         $formattedData = [];
 
@@ -180,7 +97,8 @@ class Kotak extends Base
     }
     protected function fetchBankPaymentId($data)
     {
-        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        if (($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE) or
+            ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE_PAYMENTS))
         {
             return $data['payment']['transaction_id']; // payment through nbplus service
         }
@@ -188,7 +106,8 @@ class Kotak extends Base
     }
     protected function fetchBankVerificationId($data)
     {
-        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        if (($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE) or
+            ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE_PAYMENTS))
         {
             return $data['payment']['id']; // payment through nbplus service
         }
@@ -197,7 +116,8 @@ class Kotak extends Base
     }
     protected function fetchGatewayMerchantId($data)
     {
-        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        if (($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE) or
+            ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE_PAYMENTS))
         {
             return $data['terminal']['gateway_merchant_id']; // payment through nbplus service
         }
@@ -205,18 +125,12 @@ class Kotak extends Base
         return $data['gateway']['merchant_code'];
     }
 
-    public function sendFile($data)
-    {
-        return;
-    }
-
-
-    protected function getFileToWriteName($ext = FileStore\Format::TXT)
+    protected function getFileToWriteName($ext = FileStore\Format::TXT): string
     {
         return $this->getFileToWriteNameWithoutExt() . '.' . $ext;
     }
 
-    protected function getFileToWriteNameWithoutExt()
+    protected function getFileToWriteNameWithoutExt(): string
     {
         $time = Carbon::now(Timezone::IST)->format('d-m-Y');
 

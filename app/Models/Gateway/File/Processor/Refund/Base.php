@@ -68,6 +68,8 @@ class Base extends BaseProcessor
      */
     protected $fetchRefundsFromScrooge = false;
 
+    const FETCH_REFUNDS_DATA_FROM_SCROOGE = 'fetch_refunds_data_from_scrooge';
+
     /**
      * Resetting all the global variables before use -
      * since this is being used as a singleton class
@@ -633,7 +635,7 @@ class Base extends BaseProcessor
      *
      * @return bool
      */
-    protected function shouldRefundsBeFetchedFromScrooge()
+    protected function shouldRefundsBeFetchedFromScrooge(): bool
     {
         if (in_array(static::GATEWAY, array_keys(Payment\Gateway::$scroogeFileBasedRefundGatewaysWithTimestamps), true) === true)
         {
@@ -649,7 +651,16 @@ class Base extends BaseProcessor
             }
         }
 
-        return false;
+        $variant = $this->app->razorx->getTreatment(static::GATEWAY, self::FETCH_REFUNDS_DATA_FROM_SCROOGE, $this->mode);
+
+        $this->trace->info(TraceCode::RAZORX_EXPERIMENT_RESULT, [
+            'gateway'    => static::GATEWAY,
+            'variant'    => $variant,
+            'experiment' => self::FETCH_REFUNDS_DATA_FROM_SCROOGE,
+            'mode'       => $this->mode,
+        ]);
+
+        return $variant === 'on';
     }
 
     /**
