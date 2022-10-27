@@ -2,18 +2,26 @@ import React from 'react';
 import RTracking from 'react-tracking';
 
 import Button from 'common/new-ui/Button';
-import FieldsDropdownWrapper from '../FieldsDropdown';
+import FieldsDropdownWrapper from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/FieldsDropdown';
 import CreatorManager from './CreatorManager';
 
-import track from '../../track';
-import { getFieldTypes } from '../UDF/helpers';
+import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
+import {
+  getFieldTypes,
+  checkIsMagicCheckoutField,
+} from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers';
 
 @RTracking(() => window.rzpQ.component('AddUDFButton'))
 class AddUDFButton extends React.PureComponent {
   onSelectFieldType = (field) => {
     track.wysiwyg.chosenInputField();
 
-    this.props.openBaseForm(field.schema);
+    const { openBaseForm, isMagicCheckoutEnabled, updateMagicData } = this.props;
+    if (isMagicCheckoutEnabled && checkIsMagicCheckoutField(field.label)) {
+      updateMagicData({ formModalOpen: true });
+    } else {
+      openBaseForm(field.schema);
+    }
   };
 
   trackInputField = () => {

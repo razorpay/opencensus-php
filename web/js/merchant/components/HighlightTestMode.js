@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import useLocalStorage from 'merchant/utils/useLocalStorage';
-import SwitchField from 'common/ui/Forms/SwitchField';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
+import useLocalStorage from 'merchant/utils/useLocalStorage';
+import SwitchField from 'common/ui/Forms/SwitchField';
 
 function HighlightTestMode(props) {
-  const { user, highlightMode, location, onSwitchMode } = props;
+  const { user, highlightMode, location, onSwitchMode, paymentPageId } = props;
 
   const [isTestModeFirstTime, setisTestModeFirstTime] = useLocalStorage(
     `isTestModeFirstTime_${user.current}`,
@@ -33,34 +33,34 @@ function HighlightTestMode(props) {
 
   if (highlightMode === false || ['/activation', '/kyc'].includes(location.pathname)) return null;
 
-  const isPaymentPages = location.pathname === '/paymentpages/new';
+  const isPaymentPages = location.pathname === '/paymentpages/new' || paymentPageId;
 
   return (
-    <div class={`highlight-test-mode-container${!testModeToggle ? ' hide-test-mode' : ''}`}>
-      <div class={`horizontal-line${isPaymentPages ? ' shift-line' : ''}`} />
-      <div class="content">
+    <div className={`highlight-test-mode-container${!testModeToggle ? ' hide-test-mode' : ''}`}>
+      <div className={`horizontal-line${isPaymentPages ? ' shift-line' : ''}`} />
+      <div className="content">
         <div
-          class={`trapezoid${isPaymentPages ? ' shift-trapezoid' : ''}`}
+          className={`trapezoid${isPaymentPages ? ' shift-trapezoid' : ''}`}
           onMouseEnter={handleShowTooltip}
           onMouseLeave={handleShowTooltip}
         >
           YOU&apos;RE IN TEST MODE
           {/* added Toggle switch to switch between Test and Live Mode */}
-          <span class="test-mode-switch">
+          <span className="test-mode-switch">
             <SwitchField type="prime round" checked={testModeToggle} onChange={onToggleTestMode} />
           </span>
-          <div class={`info${isPaymentPages ? ' shift-info' : ''}`}>
+          <div className={`info${isPaymentPages ? ' shift-info' : ''}`}>
             <i className="i i-info-circle text-fade" />
           </div>
         </div>
         {showTooltip === true && (
-          <div class={`info-content${isPaymentPages ? ' shift-info-content' : ''}`}>
+          <div className={`info-content${isPaymentPages ? ' shift-info-content' : ''}`}>
             <div>
               Payments in test mode are sample payments, <strong>no real money</strong> is involved
               in these payments.
             </div>
             {isTestModeFirstTime && (
-              <div class="clickable">
+              <div className="clickable">
                 <strong onClick={handleGotItClick}>GOT IT</strong>
               </div>
             )}
@@ -73,7 +73,11 @@ function HighlightTestMode(props) {
 
 export default withRouter(
   connect(
-    (state) => ({ user: state.session.user, highlightMode: state.session.highlightMode }),
+    (state) => ({
+      user: state.session.user,
+      highlightMode: state.session.highlightMode,
+      paymentPageId: state.wysiwyg.payment_page_id,
+    }),
     null,
   )(HighlightTestMode),
 );

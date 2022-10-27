@@ -12,7 +12,7 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import ShareView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Share';
 import PageSettingsModal from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Settings';
 import PaymentReceiptModal from 'merchant/views/PaymentPages/PaymentPages/components/Modals/PaymentReceipt';
-import Header from '../Success/Header';
+import Header from 'merchant/views/PaymentPages/PaymentPages/Success/Header';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -22,9 +22,13 @@ import RoundTickImage from '../../../../../../icons/merchant/tick-round.svg';
 import ShiprocketImage from '../../../../../../css/assets/payment_pages/shiprocket.svg';
 
 import { autoPrefixUrls, getErrorMessageFromResponse } from 'common/utils/rzp-utils';
-import { sendLink, editPaymentPage, setReceiptDetails } from '../model';
+import {
+  sendLink,
+  editPaymentPage,
+  setReceiptDetails,
+} from 'merchant/views/PaymentPages/PaymentPages/model';
 import { dispatchWebViewEvent } from 'common/utils/reactNativeWebView';
-import track from '../Wysiwyg/track';
+import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
 
 @connect(
   (state) => ({
@@ -241,9 +245,16 @@ class Success extends React.Component {
       });
   };
 
+  handleShiprocket = () => {
+    const { paymentPageEntity, history } = this.props;
+    history.push(`/paymentpages/${paymentPageEntity.id}/edit?modal=shiprocket`);
+  };
+
   render() {
     const { paymentPageEntity, FORM_ITEMS } = this.props;
     const { isLoaded, isPageLoadError } = this.state;
+    const isShiprocket =
+      paymentPageEntity.settings?.partner_webhook_settings?.partner_shiprocket === '1';
 
     let content;
 
@@ -264,6 +275,8 @@ class Success extends React.Component {
               isNew={this.props.id}
               isTestMode={this.props.mode.toLowerCase() === 'test'}
               customDomain={this.props.customDomain}
+              handleShiprocket={this.handleShiprocket}
+              isShiprocket={isShiprocket}
             />
           )}
 

@@ -12,7 +12,7 @@ import QuickGuide from './QuickGuide';
 import PaymentPagesList from 'merchant/views/PaymentPages/PaymentPages/List';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import DashboardBanner from '../../../common/ui/DashboardBanner';
+import DashboardBanner from 'common/ui/DashboardBanner';
 
 @connect((state) => {
   return {

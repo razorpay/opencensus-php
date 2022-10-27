@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
+import { sortableContainer, sortableElement } from 'react-sortable-hoc';
 import AmountDisplayField from './Amount/AmountDisplayField';
 import UDFDisplayField from './UDF/UDFDisplayField';
 import AddUDFButton from './UDF/AddUDFButton';
@@ -12,13 +13,20 @@ import {
   updateInFormItems,
   reorderFormItems,
   updateReceiptDetails,
+  updateMagicData,
 } from 'merchant/reducers/wysiwyg';
-import { checkIsShiprocketField, constructFieldSchema } from './UDF/helpers';
-import { constructAmountField, isFormItemOfTypeAmount } from './Amount/helpers';
-import { sortableContainer, sortableElement } from 'react-sortable-hoc';
+import {
+  checkIsMagicCheckoutField,
+  checkIsShiprocketField,
+  constructFieldSchema,
+} from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers';
+import {
+  constructAmountField,
+  isFormItemOfTypeAmount,
+} from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 
 import { showNotification } from 'merchant_common/reducers/notifications';
-import track from '../track';
+import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
 import { isMobileDevice } from 'merchant/components/Home/data';
 
 const SortableUDFDisplayField = sortableElement(UDFDisplayField);
@@ -94,6 +102,7 @@ class SortableFormItemsList extends React.Component {
   reorderFormItems,
   updateReceiptDetails,
   showNotification,
+  updateMagicData,
 })
 @RTracking(() => window.rzpQ.component('wysiwyg_view'))
 export default class View extends React.PureComponent {
@@ -211,6 +220,11 @@ export default class View extends React.PureComponent {
       formItem: fieldSchema,
       index: indexInFormItems,
     });
+
+    const { magicCheckout, updateMagicData } = this.props;
+    if (magicCheckout?.enabled && checkIsMagicCheckoutField(fieldSchema.name)) {
+      updateMagicData({ formModalOpen: true });
+    }
   };
 
   setUDFTouched() {
@@ -256,7 +270,7 @@ export default class View extends React.PureComponent {
   }
 
   render() {
-    const { paymentPageEntity, FORM_ITEMS } = this.props;
+    const { paymentPageEntity, FORM_ITEMS, magicCheckout, updateMagicData } = this.props;
 
     if (!paymentPageEntity) {
       return null;
@@ -332,6 +346,8 @@ export default class View extends React.PureComponent {
               onDeleteFormItem={this.onDeleteUDFItem}
               onSubmitUDFField={this.onSubmitUDFField}
               validateSameTitleExists={this.validateSameTitleExists}
+              isMagicCheckoutEnabled={magicCheckout?.enabled}
+              updateMagicData={updateMagicData}
             />
             <AddAmountButton
               currency={paymentPageEntity.currency}

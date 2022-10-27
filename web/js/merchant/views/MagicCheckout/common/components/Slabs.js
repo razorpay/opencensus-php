@@ -3,9 +3,10 @@ import { useCallback, useState } from 'react';
 import { FEE_RULES } from 'merchant/views/MagicCheckout/constants';
 import validators from 'merchant/views/MagicCheckout/common/feeUtils';
 
-const Slabs = ({ type, slabs, updateSlabs }) => {
+const Slabs = ({ type, slabs, updateSlabs, isPaymentPage }) => {
   const heading = type === FEE_RULES.COD_FEE_RULE ? 'COD' : 'Shipping';
-  const [slabsClass, setSlabsClass] = useState('slabs-close');
+  const defaultSlabsClass = ' slabs-close';
+  const [slabsClass, setSlabsClass] = useState(defaultSlabsClass);
   if (!slabs || slabs.length === 0) {
     slabs = [{ gte: 0, lte: 0, fee: 0 }];
   }
@@ -73,16 +74,19 @@ const Slabs = ({ type, slabs, updateSlabs }) => {
 
   return (
     <>
-      <div className="display-flex slabs-input-container">
-        <SlabsHeader label="Min Order Value" />
-        <SlabsHeader label="Max Order Value" />
-        <SlabsHeader label={`${heading} Charge`} className="slabs-charge" />
-      </div>
+      {!isPaymentPage && (
+        <div className="display-flex slabs-input-container">
+          <SlabsHeader label="Min Order Value" />
+          <SlabsHeader label="Max Order Value" />
+          <SlabsHeader label={`${heading} Charge`} className="slabs-charge" />
+        </div>
+      )}
       {slabs.map((item, index) => {
         return (
           <div key={index} className="display-flex slabs-form-wrapper">
             <div className="display-flex">
               <div className="slabs-input-container">
+                {isPaymentPage && <SlabsHeader label="Min Order Value" />}
                 <Input
                   addonBefore="₹"
                   className="slabs-input"
@@ -95,6 +99,7 @@ const Slabs = ({ type, slabs, updateSlabs }) => {
                 />
               </div>
               <div className="slabs-input-container">
+                {isPaymentPage && <SlabsHeader label="Max Order Value" />}
                 <Input
                   addonBefore="₹"
                   type="number"
@@ -109,6 +114,7 @@ const Slabs = ({ type, slabs, updateSlabs }) => {
               </div>
             </div>
             <div className="slabs-charge slabs-input-container">
+              {isPaymentPage && <SlabsHeader label="Delivery amount" className="slabs-charge" />}
               <Input
                 addonBefore="₹"
                 className="slabs-input"
@@ -125,8 +131,7 @@ const Slabs = ({ type, slabs, updateSlabs }) => {
                 data-arr-ind={index}
                 onClick={removeSlab}
               >
-                {' '}
-                X{' '}
+                X
               </div>
             ) : null}
           </div>
@@ -136,7 +141,7 @@ const Slabs = ({ type, slabs, updateSlabs }) => {
         className="add-slabs-cta font-12 font-bold pointer display-inline"
         onClick={addMoreSlabs}
       >
-        + Add More Slabs
+        {`+ Add ${isPaymentPage ? 'delivery amount' : 'More Slabs'}`}
       </div>
     </>
   );

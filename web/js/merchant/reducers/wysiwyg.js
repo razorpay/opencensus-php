@@ -16,6 +16,8 @@ import {
   fetchCustomDomain,
   fetchCustomDomainCurrentPlan,
 } from 'merchant/views/PaymentPages/PaymentPages/model';
+import { DEFAULT_RULE } from 'merchant/views/MagicCheckout/constants';
+import { transfeeRuleToNormalFormat } from 'merchant/views/PaymentPages/PaymentPages/helpers';
 
 // TODO: Remove dependency from here
 import { FIXED_FIELDS } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers/preAddedFields';
@@ -37,6 +39,7 @@ const UPDATE_RECEIPT_DETAILS = 'UPDATE_RECEIPT_DETAILS';
 const PREFILL_CONTACT_DETAILS = 'PREFILL_CONTACT_DETAILS';
 const FETCH_CUSTOM_DOMAIN = 'FETCH_CUSTOM_DOMAIN';
 const UPDATE_CUSTOM_DOMAIN = 'UPDATE_CUSTOM_DOMAIN';
+const UPDATE_MAGIC_CHECKOUT_DATA = 'UPDATE_MAGIC_CHECKOUT_DATA';
 const FETCH_CUSTOM_DOMAIN_PLAN = 'FETCH_CUSTOM_DOMAIN_PLAN';
 
 export const updateTemplateType = (data, templateKey) => {
@@ -107,6 +110,11 @@ export const setShiprocketModal = (status) => (dispatch) => {
   dispatch({ type: SHIPROCKET_MODAL, isShiprocketOpened: status });
   return Promise.resolve();
 };
+
+export const updateMagicData = (data) => ({
+  type: UPDATE_MAGIC_CHECKOUT_DATA,
+  data,
+});
 
 export const updateData = (formItem, isPageDirty) => ({
   type: UPDATE_DATA,
@@ -181,6 +189,17 @@ const initialState = {
   isPageDirty: false,
   isSettingsOpened: false,
   isShiprocketOpened: false, // Modal used to enable Shiprocket
+  magicCheckout: {
+    enabled: false,
+    formModalOpen: false,
+    feeRule: { ...DEFAULT_RULE },
+    /*
+     * After enabling magic checkout, we are removing address related fields.
+     * prevAddedFields used to store the removed address fields.
+     * It will be used to add those fields again if magic checkout is disabled.
+     */
+    prevAddedFields: [],
+  },
   customDomain: {
     value: '',
     planDetails: {},
@@ -295,6 +314,13 @@ export default (state = initialState, action) => {
 
       const storeState = {
         ...initialState,
+        magicCheckout: {
+          ...initialState.magicCheckout,
+          enabled: entityData.settings.one_click_checkout,
+          feeRule: entityData.settings.shipping_fee_rule
+            ? transfeeRuleToNormalFormat(JSON.parse(entityData.settings.shipping_fee_rule))
+            : { ...DEFAULT_RULE },
+        },
         paymentPageEntity: entityData,
         FORM_ITEMS: formItems, // Sorted items having udf_schema and amount items mixed
       };
@@ -471,7 +497,13 @@ export default (state = initialState, action) => {
         ...state,
         isShiprocketOpened: action.isShiprocketOpened,
       };
-
+    case UPDATE_MAGIC_CHECKOUT_DATA:
+      return {
+        ...state,
+        magicCheckout: merge(state.magicCheckout, {
+          ...action.data,
+        }),
+      };
     default:
       return state;
   }

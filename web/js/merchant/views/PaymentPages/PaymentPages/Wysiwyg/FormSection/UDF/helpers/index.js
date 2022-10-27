@@ -359,3 +359,44 @@ export const checkIsShiprocketField = (isShiprocket, key) => {
 
   return false;
 };
+
+export const checkIsMagicCheckoutField = (key) => {
+  if (!key) {
+    return false;
+  }
+  const MAGIC_CHECKOUT_FORM_ITEMS = [
+    'name',
+    'email',
+    'phone',
+    'zipcode',
+    'pincode',
+    'city',
+    'state',
+    'country',
+    'address',
+    'flat',
+    'area',
+    'street',
+    'house number',
+    'colony',
+    'town',
+    'village',
+    'panchayat',
+    'post office',
+    'building',
+    'apartment',
+    'society',
+    'district',
+    'mobile',
+    'h. no.',
+    'pin code',
+    'zip code',
+  ];
+
+  /*
+   * As per the product requirement, once magic checkout is enabled,
+   * we should not allow the fields labelled with reserved words to be placed in prefixes.
+   * eg: "Email optional" label is not allowed. "Alternate Email" label is allowed
+   */
+  return MAGIC_CHECKOUT_FORM_ITEMS.find((item) => key.toLowerCase().startsWith(item));
+};

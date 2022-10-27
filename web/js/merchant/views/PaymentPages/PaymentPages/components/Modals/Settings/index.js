@@ -9,13 +9,14 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import Alert from 'common/new-ui/Alert';
 import { lenientUrl } from 'common/utils/validators';
 import { DocLink } from 'merchant/components/DocsLink';
-import { trackPageSettingsData } from '../../../ga';
-import track from '../../../Wysiwyg/track';
+import { trackPageSettingsData } from 'merchant/views/PaymentPages/PaymentPages/ga';
+import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
 
 import CreateEmbedButton from 'merchant/views/PaymentPages/PaymentPages/components/Modals/CreateEmbedButton';
-import PluginsAndAddOns from '../PluginsAndAddOns';
+import PluginsAndAddOns from 'merchant/views/PaymentPages/PaymentPages/components/Modals/PluginsAndAddOns';
 import ShiprocketImage from '../../../../../../../../css/assets/payment_pages/shiprocket.svg';
 import CustomURL from './CustomUrl';
+import { SHIPROCKET_DASHBOARD_LINK } from 'merchant/views/PaymentPages/PaymentPages/constants';
 
 export default class PaymentPageSettings extends React.Component {
   state = this.initState();
@@ -393,7 +394,7 @@ export default class PaymentPageSettings extends React.Component {
                   <Alert.Warning>
                     Note - you also need to add <b>Razorpay Payment pages</b> channel on your{' '}
                     <a
-                      href="https://app.shiprocket.in/register?utm_source=Razorpay&utm_medium=In-Product&utm_campaign=PaymentPages&utm_content=Razorpay-In-product"
+                      href={SHIPROCKET_DASHBOARD_LINK}
                       target="_blank"
                       rel="noreferrer noopener"
                       onClick={track.settings.clickShiprocketDashboard}

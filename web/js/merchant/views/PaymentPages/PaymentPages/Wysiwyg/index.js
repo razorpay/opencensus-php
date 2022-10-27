@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unsafe */
-import React from 'react';
+import React, { Suspense } from 'react';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
@@ -8,6 +8,8 @@ import ReactDOM from 'react-dom';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
+import Loader from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/components/Loader';
+import lazy from 'merchant/routes/LazyLoader';
 import Svelte from './Svelte';
 import DetailsSection from './DetailsSection';
 import FormSection from './FormSection';
@@ -18,7 +20,11 @@ import ShiprocketConfirmation from 'merchant/views/PaymentPages/PaymentPages/com
 import MerchantLogoTooltip from 'merchant/views/PaymentPages/PaymentPages/components/MerchantLogoTooltip';
 import MobileActionButtons from './components/MobileActionButtons';
 
-import { createPaymentPage, editPaymentPage, setReceiptDetails } from '../model';
+import {
+  createPaymentPage,
+  editPaymentPage,
+  setReceiptDetails,
+} from 'merchant/views/PaymentPages/PaymentPages/model';
 import track from './track';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import debounce from 'common/utils/debounce';
@@ -43,21 +49,53 @@ import {
   setSettingsModal,
   replaceInFormItems,
   setShiprocketModal,
+  updateMagicData,
 } from 'merchant/reducers/wysiwyg';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/style.styl';
 
 // TODO: Change validation logic as per V2 / V3. (Ensure that "settings" is not considered in comparison of keys)
 import {
   validateUISchema,
   SHIPROCKET_FORM_ITEMS,
+  checkIsMagicCheckoutField,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers';
 
-import { trackWYSIWYGCloseIntent, trackConfirmWYSIWYGCloseIntent } from '../ga';
+import {
+  trackWYSIWYGCloseIntent,
+  trackConfirmWYSIWYGCloseIntent,
+} from 'merchant/views/PaymentPages/PaymentPages/ga';
 import {
   convertSinglePriceFieldToMandatory,
   isFormItemOfTypeAmount,
 } from './FormSection/Amount/helpers';
+import { transfeeRuleToApiFormat } from 'merchant/views/PaymentPages/PaymentPages/helpers';
+import { DEFAULT_RULE } from 'merchant/views/MagicCheckout/constants';
+
+const MagicCheckoutEnabledModal = lazy(() =>
+  import(
+    /* webpackChunkName: "MagicCheckoutEnabledModal" */ 'merchant/views/PaymentPages/PaymentPages/components/Modals/MagicCheckout/MagicCheckoutEnabledModal'
+  ),
+);
+
+const MagicCheckoutFormModal = lazy(() =>
+  import(
+    /* webpackChunkName: "MagicCheckoutFormModal" */ 'merchant/views/PaymentPages/PaymentPages/components/Modals/MagicCheckout/MagicCheckoutFormModal'
+  ),
+);
+
+const MagicShiprocketModal = lazy(() =>
+  import(
+    /* webpackChunkName: "MagicShiprocketModal" */ 'merchant/views/PaymentPages/PaymentPages/components/Modals/MagicCheckout/MagicShiprocketModal'
+  ),
+);
+
+const MagicSettingsModal = lazy(() =>
+  import(
+    /* webpackChunkName: "MagicSettingsModal" */ 'merchant/views/PaymentPages/PaymentPages/components/Modals/MagicCheckout/MagicSettingsModal'
+  ),
+);
 
 const ERROR = {
   SCRIPT: 1,
@@ -88,6 +126,7 @@ const ERROR = {
     replaceInFormItems,
     setSettingsModal,
     setShiprocketModal,
+    updateMagicData,
   },
 )
 @RTracking(() => window.rzpQ.component('PaymentPagesWysiwyg'))
@@ -108,6 +147,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     isMerchantDataLoaded: false,
     formItemsBackup: [],
     isEntityLoaded: false,
+    isMagicSettingsModalOpen: false,
+    magicFeeRule: { ...DEFAULT_RULE },
+    isMagicCheckoutEnabled: false,
   };
 
   UNSAFE_componentWillMount() {
@@ -153,6 +195,19 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       ) {
         this.fetchIfIntentDuplicate(searchQueryNext.duplicate_id);
       }
+    }
+    const { isMagicCheckoutEnabled } = this.state;
+    if (
+      this.props.magicCheckout?.enabled !== nextProps.magicCheckout?.enabled ||
+      (nextProps.magicCheckout?.enabled === '1' && !isMagicCheckoutEnabled) ||
+      (nextProps.magicCheckout?.enabled === '0' && isMagicCheckoutEnabled)
+    ) {
+      const { magicCheckout } = nextProps;
+      const { enabled, feeRule } = magicCheckout;
+      this.setState({
+        isMagicCheckoutEnabled: !!Number(enabled),
+        magicFeeRule: { ...feeRule },
+      });
     }
   }
 
@@ -219,7 +274,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
               this.togglePageReceiptModal();
             } else if (searchParams.modal === 'page') {
               this.togglePageSettings();
-            } else if (searchParams.modal === 'disableShiprocket') {
+            } else if (searchParams.modal === 'shiprocket') {
               this.handleShiprocket();
             }
           }
@@ -561,6 +616,12 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       slug,
     };
 
+    const { magicCheckout } = this.props;
+    const { enabled, feeRule } = magicCheckout;
+    if (enabled || isEditExistingId) {
+      reqPayload.settings.one_click_checkout = enabled ? '1' : '0';
+      reqPayload.settings.shipping_fee_rule = transfeeRuleToApiFormat(feeRule);
+    }
     // Send template type in while creation
     if (!isEditExistingId) {
       reqPayload.template_type = template_type;
@@ -719,6 +780,31 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     }));
   };
 
+  removeMagicCheckoutFields = () => {
+    const { FORM_ITEMS, replaceInFormItems, updateMagicData, magicCheckout } = this.props;
+    const { prevAddedFields } = magicCheckout;
+    const magicFields = [];
+    const modifiedFormFields = [];
+
+    FORM_ITEMS.forEach((item) => {
+      if (item?.name && checkIsMagicCheckoutField(item.name)) {
+        magicFields.push(item);
+      } else {
+        modifiedFormFields.push(item);
+      }
+    });
+
+    /*
+     * when magic checkout is enabled, we need to remove magic checkout(address, email, phone)
+     * related fields if they are already present.
+     */
+    if (magicFields.length && !prevAddedFields?.length) {
+      updateMagicData({ prevAddedFields: magicFields });
+    }
+
+    replaceInFormItems(modifiedFormFields);
+  };
+
   openShiprocketModal = (cb) => {
     // on open, filter any form items that are same as the shiprocket fields
     let MODIFIED_FORM_ITEMS = [...this.props.FORM_ITEMS];
@@ -745,42 +831,86 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     this.props.setShiprocketModal(false);
   };
 
+  openMagicShiprocketModal = (isEnabled) => {
+    const { closeModal, openModal } = this.props;
+    openModal({
+      size: 'small',
+      component: (
+        <Suspense fallback={<Loader />}>
+          <MagicShiprocketModal onClose={closeModal} isEnabled={isEnabled} />
+        </Suspense>
+      ),
+    });
+  };
+
   handleShiprocketEnable = () => {
     // close modal & add Shiprocket fields to the filtered FORM_ITEMS [update store] & update SR field in redux
     window.removeEventListener('resize', this.debouncedHandleModalPosition);
 
+    const {
+      setShiprocketModal,
+      updateData,
+      FORM_ITEMS,
+      replaceInFormItems,
+      magicCheckout,
+    } = this.props;
     this.setState({ formItemsBackup: [] });
-    this.props.setShiprocketModal(false);
+    setShiprocketModal(false);
 
-    const MODIFIED_FORM_ITEMS = [...this.props.FORM_ITEMS, ...SHIPROCKET_FORM_ITEMS];
-    this.props.updateData({
+    updateData({
       settings: {
         partner_webhook_settings: {
           partner_shiprocket: '1',
         },
       },
     });
-    this.props.replaceInFormItems(MODIFIED_FORM_ITEMS);
+    if (magicCheckout?.enabled) {
+      this.openMagicShiprocketModal(true);
+    } else {
+      const MODIFIED_FORM_ITEMS = [...FORM_ITEMS, ...SHIPROCKET_FORM_ITEMS];
+      replaceInFormItems(MODIFIED_FORM_ITEMS);
+    }
 
     track.settings.clickShiprocketEnableConfirm();
   };
 
   removeShiprocket = () => {
+    const {
+      FORM_ITEMS,
+      replaceInFormItems,
+      updateData,
+      updateMagicData,
+      magicCheckout,
+    } = this.props;
+    const { prevAddedFields: magicPrevAddedFields } = magicCheckout;
     // remove shiprocket fields from form items & update SR field in redux
-    let MODIFIED_FORM_ITEMS = [...this.props.FORM_ITEMS];
+    let MODIFIED_FORM_ITEMS = [...FORM_ITEMS];
     const shiprocketFieldKeys = SHIPROCKET_FORM_ITEMS.map((item) => item.name);
 
+    /*
+     * when magic checkout & shiprocket are both enabled and user tries to disable
+     * shiprocket only, then we need to remove shiprocket related fields from prevAddedFields.
+     */
+    if (magicPrevAddedFields.length) {
+      const prevAddedFields = [];
+      magicPrevAddedFields.forEach((item) => {
+        if (item?.name && !shiprocketFieldKeys.includes(item.name)) {
+          prevAddedFields.push(item);
+        }
+      });
+      updateMagicData({ prevAddedFields });
+    }
     MODIFIED_FORM_ITEMS = MODIFIED_FORM_ITEMS.filter(
       (item) => shiprocketFieldKeys.indexOf(item.name) === -1,
     );
-    this.props.updateData({
+    updateData({
       settings: {
         partner_webhook_settings: {
           partner_shiprocket: '0',
         },
       },
     });
-    this.props.replaceInFormItems(MODIFIED_FORM_ITEMS);
+    replaceInFormItems(MODIFIED_FORM_ITEMS);
     this.closeShiprocketModal();
 
     track.settings.clickShiprocketDisableConfirm();
@@ -807,7 +937,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
   handleShiprocket = (enablePPClose) => {
     // if PP Settings modal is going to remain closed after SR modal is open, the SR modal code needs to be in Wysiwyg file
-    const { paymentPageEntity } = this.props;
+    const { paymentPageEntity, magicCheckout } = this.props;
 
     const isShiprocket =
       paymentPageEntity.settings?.partner_webhook_settings?.partner_shiprocket === '1';
@@ -816,22 +946,28 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     if (isShiprocket) {
       // turning SR off
-      this.context.confirm({
-        header: 'Address fields will be removed from this page',
-        className: 'shiprocket-confirm-modal',
-        message:
-          'If you proceed, a few fields that were previously added to collect customer’s shipping address will be removed.',
-        affirmativeLabel: 'Continue',
-        action: () => {
-          this.removeShiprocket();
-        },
-        abort: () => {
-          this.closeShiprocketModal();
-        },
-      });
+
+      if (magicCheckout?.enabled) {
+        this.removeShiprocket();
+        this.openMagicShiprocketModal();
+      } else {
+        this.context.confirm({
+          header: 'Address fields will be removed from this page',
+          className: 'shiprocket-confirm-modal',
+          message:
+            'If you proceed, a few fields that were previously added to collect customer’s shipping address will be removed.',
+          affirmativeLabel: 'Continue',
+          action: () => {
+            this.removeShiprocket();
+          },
+          abort: () => {
+            this.closeShiprocketModal();
+          },
+        });
+      }
 
       track.settings.clickShiprocketDisable();
-    } else {
+    } else if (!magicCheckout?.enabled) {
       // turning SR on
 
       // open modal & modify layout to show SR form fields
@@ -843,7 +979,138 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         window.addEventListener('resize', this.debouncedHandleModalPosition);
       });
       track.settings.clickShiprocketEnable();
+    } else {
+      this.handleShiprocketEnable();
     }
+  };
+
+  resetMagicCheckout = () => {
+    const { updateMagicData } = this.props;
+    const rule = { ...DEFAULT_RULE };
+    updateMagicData({
+      enabled: false,
+      feeRule: rule,
+    });
+    this.setState({
+      magicFeeRule: rule,
+      isMagicCheckoutEnabled: false,
+    });
+  };
+
+  getModifiedFormItems = () => {
+    const { FORM_ITEMS, magicCheckout, updateMagicData } = this.props;
+    const { prevAddedFields } = magicCheckout;
+    const fieldNameList = prevAddedFields.map(({ name }) => name);
+
+    // After magic checkout enabled, if user adds a field with address related field label, we will be removing that field.
+    let duplicateFieldInd;
+    FORM_ITEMS?.forEach(({ name }, index) => {
+      if (fieldNameList.includes(name)) {
+        duplicateFieldInd = index;
+      }
+    });
+    if (typeof duplicateFieldInd !== 'undefined') {
+      FORM_ITEMS.splice(duplicateFieldInd, 1);
+    }
+    const modifiedFormItems = [...FORM_ITEMS, ...prevAddedFields];
+    updateMagicData({ prevAddedFields: [] });
+    return modifiedFormItems;
+  };
+
+  addPrevMagicFormItems = () => {
+    const { replaceInFormItems } = this.props;
+    replaceInFormItems(this.getModifiedFormItems());
+  };
+
+  closeMagicEnabledModal = () => {
+    const { closeModal } = this.props;
+    this.resetMagicCheckout();
+    closeModal();
+  };
+
+  onMagicEnabledModalContinue = () => {
+    const { closeModal } = this.props;
+    this.removeMagicCheckoutFields();
+    closeModal();
+  };
+
+  onMagicFormModalContinue = () => {
+    this.removeMagicCheckoutFields();
+    this.props.updateMagicData({ formModalOpen: false });
+  };
+
+  toggleMagicCheckout = () => {
+    this.setState((prevState) => ({
+      isMagicCheckoutEnabled: !prevState.isMagicCheckoutEnabled,
+    }));
+  };
+
+  toggleMagicSettingsModal = () => {
+    this.setState((prevState) => ({
+      isMagicSettingsModalOpen: !prevState.isMagicSettingsModalOpen,
+    }));
+  };
+
+  saveMagicSettings = () => {
+    const { paymentPageEntity, replaceInFormItems, updateMagicData } = this.props;
+    const { magicFeeRule, isMagicCheckoutEnabled } = this.state;
+
+    updateMagicData({
+      enabled: isMagicCheckoutEnabled,
+      feeRule: { ...magicFeeRule },
+    });
+    this.toggleMagicSettingsModal();
+
+    if (isMagicCheckoutEnabled) {
+      const { FORM_ITEMS, openModal } = this.props;
+
+      // When we enable magic checkout for the first time, MagicCheckoutEnabledModal will be shown.
+      openModal({
+        size: 'small',
+        component: (
+          <Suspense fallback={<Loader />}>
+            <MagicCheckoutEnabledModal
+              formField={FORM_ITEMS}
+              onContinue={this.onMagicEnabledModalContinue}
+              closeModal={this.closeMagicEnabledModal}
+            />
+          </Suspense>
+        ),
+      });
+    }
+    if (
+      paymentPageEntity?.settings?.partner_webhook_settings?.partner_shiprocket === '1' &&
+      !isMagicCheckoutEnabled
+    ) {
+      const MODIFIED_FORM_ITEMS = this.getModifiedFormItems();
+      const formFieldKeys = MODIFIED_FORM_ITEMS.map((item) => item?.name);
+      SHIPROCKET_FORM_ITEMS.forEach((item) => {
+        if (!formFieldKeys.includes(item.name)) {
+          MODIFIED_FORM_ITEMS.push(item);
+        }
+      });
+      replaceInFormItems(MODIFIED_FORM_ITEMS);
+    } else if (!isMagicCheckoutEnabled) {
+      this.addPrevMagicFormItems();
+    }
+  };
+
+  cancelMagicSettings = () => {
+    const { magicCheckout } = this.props;
+    const { enabled, feeRule } = magicCheckout;
+    this.setState({
+      magicFeeRule: { ...feeRule },
+      isMagicCheckoutEnabled: enabled,
+    });
+    this.toggleMagicSettingsModal();
+  };
+
+  updateRule = (_, value) => {
+    const rule = {
+      ...DEFAULT_RULE,
+      ...value,
+    };
+    this.setState({ magicFeeRule: rule });
   };
 
   render() {
@@ -854,9 +1121,14 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       merchant_tnc,
       isMerchantDataLoaded,
       isEntityLoaded,
+      isMagicSettingsModalOpen,
+      magicFeeRule,
+      isMagicCheckoutEnabled,
     } = this.state;
-    const { paymentPageEntity, id: payment_page_id, user, FORM_ITEMS } = this.props;
 
+    const { paymentPageEntity, id: payment_page_id, user, FORM_ITEMS, magicCheckout } = this.props;
+
+    const { isMagicCheckoutLive, isPaymentPageMagicEnabled } = user;
     const isShiprocket =
       paymentPageEntity?.settings?.partner_webhook_settings?.partner_shiprocket === '1';
 
@@ -875,6 +1147,19 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
       actionBtns = (
         <React.Fragment>
+          {isMagicCheckoutLive && isPaymentPageMagicEnabled && (
+            <Button.Transparent
+              type="button"
+              style={{ color: '#fff' }}
+              onClick={this.toggleMagicSettingsModal}
+              className="Button--header magic-link"
+              disabled={!isEntityLoaded}
+            >
+              <i className="i i-magic-checkout" />
+              <span>Magic Checkout Settings</span>
+              <span className="new-label">New</span>
+            </Button.Transparent>
+          )}
           {user.isPaymentPageReceiptsEnabled && (
             <Button.Transparent
               type="button"
@@ -961,7 +1246,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         </React.Fragment>
       );
     }
-
     return (
       <div
         id="paymentpage-container"
@@ -978,6 +1262,26 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             onClose={this.handleIntroClose}
             selectTemplate={this.props.updateTemplateType}
           />
+        )}
+
+        {isMagicSettingsModalOpen && (
+          <Suspense fallback={<Loader />}>
+            <MagicSettingsModal
+              closeModal={this.cancelMagicSettings}
+              magicFeeRule={magicFeeRule}
+              updateRule={this.updateRule}
+              isMagicCheckoutEnabled={isMagicCheckoutEnabled}
+              toggleMagicCheckout={this.toggleMagicCheckout}
+              handleSubmit={this.saveMagicSettings}
+              isEditPaymentPage={payment_page_id}
+            />
+          </Suspense>
+        )}
+
+        {magicCheckout?.formModalOpen && (
+          <Suspense fallback={<Loader />}>
+            <MagicCheckoutFormModal onClose={this.onMagicFormModalContinue} />
+          </Suspense>
         )}
 
         {this.props.isSettingsOpened && (

@@ -35,7 +35,7 @@ class AnnouncementBar extends Component {
           <p>Get a current Account with RazorpayX</p>
         </div>
         <a
-          class="Button--secondary Button scheduled-btn-act btn-border"
+          class="Button--secondary Button scheduled-btn-act"
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => {

@@ -1,0 +1,301 @@
+$white = #FFF
+$cyanBlue = #58666E
+$lightBrown = #FEF6DD
+$darkGray = #8A6D6B
+$lightGray = #F6F6F6
+
+.Modal-container--magic-settings-modal
+  width: 365px
+  z-index: 5
+
+  .header
+    padding: 21px 16px;
+    border-bottom: 1px solid $white;
+    background-color: $white;
+    box-shadow: 0 4px 10px #0000001A;
+    align-items: center
+
+    .i-magic-checkout
+      margin-top: 2px
+      font-size: 18px
+
+    .header-text
+      font-weight: 700;
+      font-size: 18px;
+      color: $cyanBlue;
+      padding-left: 8px;
+      margin: 0;
+
+  .body
+    max-height: 480px;
+    overflow-y: scroll;
+
+    .separator
+      margin-top: 24px;
+
+  .magic-switch
+    padding: 24px 24px 15px;
+    justify-content: space-between;
+    align-items: center;
+
+    .switch-label
+      font-weight: 700;
+      font-size: 14px;
+      color: $cyanBlue;
+
+      .new-label
+        background-color: #26C24B;
+        color: $white;
+        padding: 2px 4px;
+        border-radius: 4px;
+        font-size: 12px;
+        margin-left: 12px;
+
+    .setting-toggle
+      align-items: center;
+
+      .toggle-status
+        padding-left: 12px;
+
+  .content
+    padding: 0 24px;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 19px;
+
+    .know-more-label
+      color: #2B83EA;
+      cursor: pointer;
+      padding-left: 5px
+      display: inline-flex
+      align-items: center
+
+  .note
+    background-color: $lightBrown;
+    color: $darkGray;
+    margin: 24px;
+    padding: 8px;
+    font-size: 13px;
+
+  .i-external-redirect
+    font-size: 11px
+    padding-left: 4px
+    position: relative
+    top: 1px
+
+  .rzp-popover.rzp-tooltip
+    top: inherit !important; // stylelint-disable-line declaration-no-important
+    left: 167px !important; // stylelint-disable-line declaration-no-important
+    padding: 10px 0 0;
+    width: 192px !important; // stylelint-disable-line declaration-no-important
+    font-style: initial;
+
+    .rzp-tooltip-inner
+      &::after
+        display: none;
+
+      .rzp-popover-arrow
+        margin-left: 0 !important; // stylelint-disable-line declaration-no-important
+        margin-top: 0 !important; // stylelint-disable-line declaration-no-important
+        left: 80% !important; // stylelint-disable-line declaration-no-important
+
+  hr
+    margin: 0;
+
+  .c-fee-configuration
+    flex-direction: column;
+    padding: 24px 0
+
+    .serviceability-setting-label,
+    .slabs-container
+      padding: 0 24px
+
+    .rules-payment-page
+      padding: 24px 24px 0
+
+      .fee-block
+        padding: 0;
+        width: 100%;
+        background: $white;
+        margin-top: 0;
+
+        .mandatory-symbol
+          font-size: 14px;
+          padding-left: 2px;
+
+        .slabs-heading
+          padding-bottom: 16px
+
+        .slabs-charge
+          margin-left: 0;
+
+  .link-account-instruction
+    margin-top: 0;
+
+    .serviceability-setting-label
+      margin-bottom: 8px;
+
+    .Input
+      margin: 8px 0;
+
+      .Input--radioLabels
+        display: flex;
+        flex-direction: column;
+
+        label
+          margin-bottom: 8px;
+
+      .Input-radio
+        width: 14px;
+        height: 14px;
+
+  .btn-section
+    align-items: center;
+    justify-content: end;
+    padding: 16px 12px;
+    border: 1px solid $lightGray;
+    background: $lightGray;
+    border-top-color: #E0E0E0;
+
+    .sec-btn
+      color: #528FF0;
+      padding-right: 26px;
+      cursor: pointer;
+
+  .slabs-sec
+    .slabs-form-wrapper
+      flex-wrap: wrap;
+      padding: 16px;
+      background-color: #FAFAFA;
+      margin-bottom: 16px;
+      position: relative;
+
+    .slabs-input-container
+      .Input-content
+        width: 146px;
+        padding-right: 16px;
+
+    .add-slabs-cta
+      color: #528FF0;
+      font-weight: 700;
+
+    .slabs-close
+      position: absolute;
+      right: -5px;
+      top: -11px;
+      font-weight: 700;
+      font-size: 16px;
+
+      .i-close-red
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 18px;
+        width: 18px;
+
+.Modal-container--magic-checkout-fields-modal,
+.Modal-container--magic-checkout-enabled-modal
+  width: 325px
+  z-index: 5
+  padding: 18px 24px
+
+  .header
+    border-bottom: 1px solid $white;
+    background-color: $white;
+    padding: 0;
+
+    .header-text
+      font-weight: 700;
+      font-size: 18px;
+      color: $cyanBlue;
+      line-height: 25px;
+
+      .shiprocket-logo
+        padding-right: 4px;
+
+  .migration-content
+    padding-bottom: 10px;
+    line-height: 20px;
+
+  .content
+    padding-top: 16px;
+    line-height: 20px;
+
+  .field-list-header
+    padding-top: 16px;
+    padding-bottom: 24px;
+    color: $cyanBlue;
+    font-weight: 700;
+    cursor: pointer;
+
+    .i-chevron-down,
+    .i-chevron-up
+      font-size: 22px;
+      font-weight: bold;
+      line-height: 0.4;
+
+  .expanded
+    padding-bottom: 0;
+
+  .field-list
+    margin: 0;
+    padding: 10px 20px;
+    line-height: 25px;
+
+    li
+      line-height: 25px;
+
+  .disable-info
+    padding-bottom: 10px;
+    line-height: 20px;
+
+  .delivery-info
+    padding: 8px;
+    color: $darkGray;
+    background: $lightBrown;
+    border-radius: 2px
+    line-height: 19px;
+
+  .order-info
+    padding-top: 16px;
+    margin: 0;
+
+  .shipping-delivery-info
+    margin-top: 24px
+    line-height: 20px
+
+    .know-more-label
+      padding-right: 5px;
+
+      .i-external-redirect
+        font-size: 13px;
+        position: relative;
+        bottom: 2px;
+
+  .btn-section
+    padding-top: 16px;
+
+    .modal-btn
+      width: 132px
+      padding: 10px 5px
+
+      &:nth-of-type(2)
+        margin-right: 0;
+
+.ReactModal__Content,
+#paymentpage-container
+  .Modal-container--magic-checkout-fields-modal
+    .header-text
+      display: flex;
+      align-items: center;
+      font-size: 15px;
+      margin-top: 0;
+
+      .i-triangle-alert
+        font-size: 18px;
+        color: #CD8214;
+
+    .btn-section
+      .modal-btn
+        width: 100%;

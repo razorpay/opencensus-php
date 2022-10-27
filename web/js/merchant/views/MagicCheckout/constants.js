@@ -22,3 +22,6 @@ export const DEFAULT_RULE = {
   flat: 0,
   slabs: [{ gte: 0, lte: 0, fee: 0 }],
 };
+
+export const MAGIC_DOC_LINK =
+  'https://razorpay.com/docs/payments/payment-pages/plugins-add-ons/magic-checkout/';

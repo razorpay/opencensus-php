@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
+import moment from 'moment';
 
 import { classList } from 'common/utils/rzp-utils';
 import { dispatchWebViewEvent } from 'common/utils/reactNativeWebView';
@@ -18,8 +19,11 @@ import CopyLink from 'merchant/components/CopyLink';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { addPollInstance, saveReportConfigs } from 'merchant/reducers/reports';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { trackDetailViewEdits, trackShareActions } from '../ga';
-import { sendLink, exportReportCSV } from '../model';
+import {
+  trackDetailViewEdits,
+  trackShareActions,
+} from 'merchant/views/PaymentPages/PaymentPages/ga';
+import { sendLink, exportReportCSV } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { reportFormatOptions } from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/SelectFormat';
 import track from './track';
 
@@ -37,9 +41,9 @@ import PaymentsList from './PaymentsList';
 import Button from 'common/new-ui/Button';
 import Tooltip from 'common/ui/Tooltip';
 import DropdownSettings from './DropdownSettings';
-import DonationGoalTrackerPreview from '../Wysiwyg/DetailsSection/DonationGoalTrackerPreview';
-import moment from 'moment';
-import { parseGoalTrackerAmountValues } from '../Wysiwyg/DetailsSection/helpers';
+import DonationGoalTrackerPreview from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/DetailsSection/DonationGoalTrackerPreview';
+import { parseGoalTrackerAmountValues } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/DetailsSection/helpers';
+import MagicCheckoutLabel from 'merchant/components/MagicCheckout/MagicCheckoutLabel';
 
 // import mockPaymentPage from '../../Wysiwyg/data-mock';
 
@@ -287,6 +291,7 @@ export default class PaymentPagesV3Entity extends React.Component {
 
     const isActive = status === 'active';
     const isExpired = !isActive && statusReason.toLowerCase() === 'expired';
+    const isMagicCheckoutOrder = paymentPageEntity?.settings?.one_click_checkout;
 
     return (
       <React.Fragment>
@@ -379,6 +384,10 @@ export default class PaymentPagesV3Entity extends React.Component {
 
                 <EntityDetailRow label="Payment Page ID" value={paymentPageEntity.id} />
 
+                {isMagicCheckoutOrder && (
+                  <EntityDetailRow label="Checkout Type" value={MagicCheckoutLabel} />
+                )}
+
                 <EntityDetailRow label="Created by">
                   {!!createdByUser ? (
                     <Definition>
@@ -433,7 +442,7 @@ export default class PaymentPagesV3Entity extends React.Component {
                         <div class="status-label label label-success">Enabled</div>
                         <Link
                           style={{ marginLeft: 12 }}
-                          to={`/paymentpages/${paymentPageEntity.id}/edit?modal=disableShiprocket`}
+                          to={`/paymentpages/${paymentPageEntity.id}/edit?modal=shiprocket`}
                         >
                           Disable
                         </Link>

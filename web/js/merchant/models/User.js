@@ -476,6 +476,10 @@ export default class User {
     return this.isFeatureEnabled('pp_custom_domain');
   }
 
+  get isPaymentPageMagicEnabled() {
+    return this.getExpStatus('pp_magic_setting');
+  }
+
   get isPaymentPageOnboardingRedirectionEnabled() {
     return this.getExpStatus('pp_onboarding_redirection_exp');
   }

@@ -1,11 +1,15 @@
-import Slabs from 'merchant/views/MagicCheckout/common/components/Slabs';
-import { RULE_TYPES_RADIO_INPUT } from 'merchant/views/MagicCheckout/ShippingServices/constants';
-import { FEE_RULES, RULE_TYPES } from 'merchant/views/MagicCheckout/constants';
-import Input from 'common/new-ui/Input';
 import { useState, useCallback, useEffect } from 'react';
+import Input from 'common/new-ui/Input';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import Slabs from 'merchant/views/MagicCheckout/common/components/Slabs';
 import validators from 'merchant/views/MagicCheckout/common/feeUtils';
+import {
+  RULE_TYPES_RADIO_INPUT,
+  PAYMENT_PAGE_RULE_TYPES,
+} from 'merchant/views/MagicCheckout/ShippingServices/constants';
+import { FEE_RULES, RULE_TYPES } from 'merchant/views/MagicCheckout/constants';
 
-const FeeConfiguration = ({ feeRule, updateUserFeeRule, type, required = true }) => {
+const FeeConfiguration = ({ feeRule, updateUserFeeRule, type, required = true, isPaymentPage }) => {
   const [slabs, setSlabs] = useState([]);
 
   useEffect(() => {
@@ -14,7 +18,13 @@ const FeeConfiguration = ({ feeRule, updateUserFeeRule, type, required = true })
     }
   }, [feeRule.slabs]);
 
-  const label = type === FEE_RULES.COD_FEE_RULE ? 'COD Charge' : 'Shipping Charge';
+  const getPaymentPageLabel = (magicPPValue, defaultValue) =>
+    isPaymentPage ? magicPPValue : defaultValue;
+
+  const label =
+    type === FEE_RULES.COD_FEE_RULE
+      ? 'COD Charge'
+      : getPaymentPageLabel('Do you charge anything extra for delivery?', 'Shipping Charge');
   const flatLabel =
     type === FEE_RULES.COD_FEE_RULE
       ? 'COD flat charge for all orders'
@@ -63,48 +73,72 @@ const FeeConfiguration = ({ feeRule, updateUserFeeRule, type, required = true })
   );
 
   return (
-    <>
-      <div className="filter-item link-account-instruction display-flex c-fee-configuration">
-        <div className="serviceability-setting-label font-bold" for="cod-availability">
-          {label} {required && <sup className="magic-checkout-color-red">*</sup>}
+    <div className="filter-item link-account-instruction display-flex c-fee-configuration">
+      <div className="serviceability-setting-label font-bold" for="cod-availability">
+        {label} {required && <sup className="magic-checkout-color-red">*</sup>}
+        {isPaymentPage && (
+          <i className="i i-info-outline">
+            <Popover align="bottom" theme="dark">
+              <PopoverBody>
+                <div>We’ll add this to your total order amount automatically during payment</div>
+              </PopoverBody>
+            </Popover>
+          </i>
+        )}
+      </div>
+      <div className="width-full">
+        <div className="display-flex justify-space-between slabs-container">
+          <Input.Radio
+            key={feeRule.rule_type}
+            name={`${type}fee`}
+            defaultValue={feeRule.rule_type}
+            options={getPaymentPageLabel(PAYMENT_PAGE_RULE_TYPES, RULE_TYPES_RADIO_INPUT)}
+            onChange={handleRuleTypeChange}
+            className="c-rule-type"
+          />
         </div>
-        <div className="width-full">
-          <div className="display-flex justify-space-between slabs-container">
-            <Input.Radio
-              key={feeRule.rule_type}
-              name={`${type}fee`}
-              defaultValue={feeRule.rule_type}
-              options={RULE_TYPES_RADIO_INPUT}
-              onChange={handleRuleTypeChange}
-              className="c-rule-type"
-            />
-          </div>
-          <div>
-            {feeRule.rule_type === RULE_TYPES.FLAT ? (
-              <div className="fee-block">
-                <div className="font-bold font-12">{flatLabel}</div>
-                <div className="slabs-input-container">
-                  <Input
-                    addonBefore="₹"
-                    id="warehouse-pincode"
-                    value={feeRule.flat}
-                    type="number"
-                    onChange={updateFlatFeeChange}
-                    className="slabs-flat-charge-input"
-                    validator={validators.flat}
-                  />
+        {isPaymentPage && <hr />}
+        <div className={isPaymentPage ? 'rules-payment-page' : ''}>
+          {feeRule.rule_type === RULE_TYPES.FLAT ? (
+            <div className="fee-block">
+              <div className={`font-bold font-${isPaymentPage ? '14' : '12'}`}>
+                {getPaymentPageLabel('Add delivery amount', flatLabel)}
+                {isPaymentPage && (
+                  <span className="magic-checkout-color-red mandatory-symbol">*</span>
+                )}
+              </div>
+              <div className="slabs-input-container">
+                <Input
+                  addonBefore="₹"
+                  id="warehouse-pincode"
+                  value={feeRule.flat}
+                  type="number"
+                  onChange={updateFlatFeeChange}
+                  className="slabs-flat-charge-input"
+                  validator={validators.flat}
+                />
+              </div>
+            </div>
+          ) : null}
+          {feeRule.rule_type === RULE_TYPES.SLABS ? (
+            <div className="fee-block slabs-sec">
+              {isPaymentPage && (
+                <div className="font-bold font-14 slabs-heading">
+                  Add delivery amount
+                  <span className="magic-checkout-color-red mandatory-symbol">*</span>
                 </div>
-              </div>
-            ) : null}
-            {feeRule.rule_type === RULE_TYPES.SLABS ? (
-              <div className="fee-block">
-                <Slabs type={type} slabs={slabs} updateSlabs={updateSlabs} />
-              </div>
-            ) : null}
-          </div>
+              )}
+              <Slabs
+                type={type}
+                slabs={slabs}
+                updateSlabs={updateSlabs}
+                isPaymentPage={isPaymentPage}
+              />
+            </div>
+          ) : null}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
