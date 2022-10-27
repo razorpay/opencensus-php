@@ -671,6 +671,17 @@ class MerchantDetailTest extends OAuthTestCase
                 ]
             ]
         ], $response[MerchantConstants::WEBSITE_DETAILS][7]);
+
+        $this->assertArraySelectiveEquals([
+            'subcategory' => MerchantConstants::PG_USE_CASE,
+            'fields'      => [
+                [
+                    'name'     => 'merchant_details|merchant_business_detail|pg_use_case',
+                    'value'    => 'we have very good business use case, but we are in loss right now',
+                    'editable' => true
+                ]
+            ]
+        ], $response[MerchantConstants::MERCHANT_DETAILS][18]);
     }
 
     public function testMerchantDetailsFetchAccountService()
@@ -1440,7 +1451,8 @@ We look forward to transacting with you!
             'app_urls' => [
                 'playstore_url' => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app.dummy',
                 'appstore_url' => 'https://play.google.com/store/apps/details?id=com.dummy123123',
-            ]
+            ],
+            'pg_use_case' => 'we have very good business use case, but we are in loss right now'
         ]);
 
         $this->fixtures->create('merchant_document', [
@@ -1511,6 +1523,17 @@ We look forward to transacting with you!
                 ]
             ]
         ], $response[MerchantConstants::MERCHANT_DETAILS][18]);
+
+        $this->assertArraySelectiveEquals([
+            'subcategory' => MerchantConstants::PG_USE_CASE,
+            'fields'      => [
+                [
+                    'name'     => 'merchant_business_detail|pg_use_case',
+                    'value'    => 'we have very good business use case, but we are in loss right now',
+                    'editable' => false
+                ]
+            ]
+        ], $response[MerchantConstants::MERCHANT_DETAILS][19]);
 
         $this->assertArraySelectiveEquals([
             'subcategory' => MerchantConstants::PLAYSTORE_URL,

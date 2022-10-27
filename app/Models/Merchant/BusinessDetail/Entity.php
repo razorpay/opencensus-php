@@ -29,6 +29,7 @@ class Entity extends Base\PublicEntity
     const AUDIT_ID                      = 'audit_id';
     const LEAD_SCORE_COMPONENTS         = 'lead_score_components';
     const ONBOARDING_SOURCE             = 'onboarding_source';
+    const PG_USE_CASE                   = 'pg_use_case';
 
     protected $entity = 'merchant_business_detail';
 
@@ -44,7 +45,8 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::LEAD_SCORE_COMPONENTS,
-        self::ONBOARDING_SOURCE
+        self::ONBOARDING_SOURCE,
+        self::PG_USE_CASE
     ];
 
     protected $fillable = [
@@ -57,7 +59,8 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::BUSINESS_PARENT_CATEGORY,
         self::AUDIT_ID,
-        self::ONBOARDING_SOURCE
+        self::ONBOARDING_SOURCE,
+        self::PG_USE_CASE
     ];
 
     protected $casts = [
@@ -73,7 +76,8 @@ class Entity extends Base\PublicEntity
         self::BLACKLISTED_PRODUCTS_CATEGORY  => null,
         self::PLUGIN_DETAILS                 => null,
         self::LEAD_SCORE_COMPONENTS          => [],
-        self::ONBOARDING_SOURCE              => null
+        self::ONBOARDING_SOURCE              => null,
+        self::PG_USE_CASE                    => null
     ];
 
     public function getId()
@@ -84,6 +88,16 @@ class Entity extends Base\PublicEntity
     public function getAppUrls()
     {
         return $this->getAttribute(self::APP_URLS);
+    }
+
+    public function getPgUseCase()
+    {
+        return $this->getAttribute(self::PG_USE_CASE);
+    }
+
+    public function setPgUseCase(string $pgUseCase)
+    {
+        return $this->setAttribute(self::PG_USE_CASE, $pgUseCase);
     }
 
     public static function getDefaultAppUrls()
@@ -223,7 +237,7 @@ class Entity extends Base\PublicEntity
     {
         return ($this->getValueFromLeadScoreComponents(Constants::GSTIN_SCORE) ?? 0 ) + ($this->getValueFromLeadScoreComponents(Constants::DOMAIN_SCORE) ?? 0);
     }
-    
+
     public function setOnboardingSource(string $onboardingSource)
     {
         return $this->setAttribute(self::ONBOARDING_SOURCE, $onboardingSource);

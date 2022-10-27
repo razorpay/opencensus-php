@@ -41,6 +41,8 @@ class Constants
     //app_urls
     const PLAYSTORE_URL    = 'playstore_url';
     const APPSTORE_URL     = 'appstore_url';
+    //payment gateway use case
+    const PG_USE_CASE      = 'pg_use_case';
 
     // transaction app url constants
     const TXN_URL = 'txn_url';

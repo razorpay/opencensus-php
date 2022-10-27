@@ -42,6 +42,7 @@ class Validator extends Base\Validator
         Entity::LEAD_SCORE_COMPONENTS . '.' . Constants::AGGREGATED_TURNOVER_SLAB   => 'sometimes|string|nullable',
         Entity::LEAD_SCORE_COMPONENTS . '.' . Constants::WEBSITE_VISITS       => 'sometimes|numeric|nullable',
         Entity::ONBOARDING_SOURCE                                             => ['filled', 'in:xpress_onboarding'],
+        Entity::PG_USE_CASE                                                   => 'sometimes|string|max:500|min:50|nullable',
     ];
 
     protected static $editRules   = [
@@ -75,5 +76,6 @@ class Validator extends Base\Validator
         Entity::LEAD_SCORE_COMPONENTS . '.' . Constants::GSTIN_SCORE          => 'sometimes|numeric|digits_between:1,3|nullable',
         Entity::LEAD_SCORE_COMPONENTS . '.' . Constants::DOMAIN_SCORE         => 'sometimes|numeric|digits_between:1,3|nullable',
         Entity::ONBOARDING_SOURCE                                             => ['filled', 'in:xpress_onboarding'],
+        Entity::PG_USE_CASE                                                   => 'sometimes|string|nullable|max:500|min:50',
     ];
 }

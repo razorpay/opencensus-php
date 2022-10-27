@@ -541,7 +541,11 @@ class Service extends Base\Service
                     $merchantEditInput[$attribute] = $value;
                     break;
                 case 'merchant_business_detail':
-                    $merchantBusinessDetailEditInput[$attribute] = [$keyString[2] => $value];
+                    if(count($keyString)==2){
+                        $merchantBusinessDetailEditInput[$attribute] =  $value;
+                    }else{
+                        $merchantBusinessDetailEditInput[$attribute] = [$keyString[2] => $value];
+                    }
                     break;
                 case 'documents':
                     $merchantDocumentEditInput[$attribute] = $value;

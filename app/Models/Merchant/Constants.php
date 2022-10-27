@@ -1075,6 +1075,7 @@ final class Constants
     const PLAYSTORE_URL     = 'Playstore URL';
     const APPSTORE_URL      = 'Appstore URL';
     const WEBSITE           = 'website';
+    CONST PG_USE_CASE       = 'pg_use_case';
 
     const BUSINESS_DESCRIPTION = 'Business Description';
     const BUSINESS_MODEL       = 'Business Model';
@@ -1292,6 +1293,12 @@ final class Constants
                 self::SUBCATEGORY => self::AVG_ORDER_VALUE,
                 self::FIELDS      => [
                     'merchant_details|avg_order_max',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => self::PG_USE_CASE,
+                self::FIELDS      => [
+                    'merchant_business_detail|pg_use_case',
                 ]
             ],
         ],

@@ -615,7 +615,8 @@ return [
                 'merchant_details|business_operation_city'                         => 'Bengaluru',
                 'merchant_details|business_operation_pin'                          => '560030',
                 'merchant_details|merchant|website'                                => 'https://www.test.com',
-                'merchant_details|merchant_business_detail|app_urls|playstore_url' => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app.dummy'
+                'merchant_details|merchant_business_detail|app_urls|playstore_url' => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app.dummy',
+                'merchant_business_detail|pg_use_case' => 'we have very good business use case, but we are in loss right now'
             ],
             'url'     => '/smart_dashboard/merchants/details',
             'method'  => 'POST',

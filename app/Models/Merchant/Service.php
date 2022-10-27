@@ -5498,6 +5498,8 @@ class Service extends Base\Service
 
         $data[EntityConstants::MERCHANT_DETAIL][BusinessDetailConstants::APPSTORE_URL] = $businessDetails->getAppstoreUrl();
 
+        $data[EntityConstants::MERCHANT_DETAIL][BusinessDetailConstants::PG_USE_CASE] = $businessDetails->getPgUseCase();
+
         if($merchantDetail != null) {
 
             $merchantAov = $merchantDetail->avgOrderValue;
