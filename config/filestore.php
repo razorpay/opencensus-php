@@ -47,6 +47,10 @@ return [
             'name'   => env('AWS_S3_RECON_BUCKET'),
             'region' => env('AWS_RECON_BUCKET_REGION', 'ap-south-1'),
         ],
+        'recon_art_bucket_config' => [
+            'name'   => env('AWS_S3_RECON_ART_BUCKET'),
+            'region' => env('AWS_RECON_BUCKET_REGION', 'ap-south-1'),
+        ],
         'analytics_bucket_config' => [
             'name'   => env('AWS_S3_ANALYTICS_BUCKET'),
             'region' => env('AWS_ANALYTICS_BUCKET_REGION', 'ap-south-1'),

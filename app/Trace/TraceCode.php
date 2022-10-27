@@ -67,6 +67,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAR_ASYNC_JOB                                         = 'PAR_ASYNC_JOB';
 
     const GATEWAY_HEALTH_CHECK_REQUEST                          = 'GATEWAY_HEALTH_CHECK_REQUEST';
+    const GATEWAY_EMAIL_CONFIG_NOT_ENABLED                      = 'GATEWAY_EMAIL_CONFIG_NOT_ENABLED';
     const PAYMENT_CREATION_STARTED                              = 'PAYMENT_CREATION_STARTED';
     const PAYMENT_NEW_REQUEST                                   = 'PAYMENT_NEW_REQUEST';
     const PAYMENT_CREATED                                       = 'PAYMENT_CREATED';
@@ -121,6 +122,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ART_RECON_UPDATE_GATEWAY_ENTITY_NOT_FOUND             = 'ART_RECON_UPDATE_GATEWAY_ENTITY_NOT_FOUND';
     const ART_RECON_UPDATE_GATEWAY_DATA_FAILED                  = 'ART_RECON_UPDATE_GATEWAY_DATA_FAILED';
     const ART_RECON_GATEWAY_VALIDATIONS_FAILED                  = 'ART_RECON_GATEWAY_VALIDATIONS_FAILED';
+    const ART_RECON_BUCKET_UPLOAD_DETAILS                       = 'ART_RECON_BUCKET_UPLOAD_DETAILS';
 
 
     // Activation Emails
@@ -2533,6 +2535,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_INFO_SUMMARY                                    = 'RECON_INFO_SUMMARY';
     const RECON_FILE_LINK                                       = 'RECON_FILE_LINK';
     const RECON_REARCH_PAYMENT_CAPTURED                         = 'RECON_REARCH_PAYMENT_CAPTURED';
+    const RECON_FILE_UPLOAD_FAILURE                             = 'RECON_FILE_UPLOAD_FAILURE';
     const IIN_INSERT_FAILED                                     = 'IIN_INSERT_FAILED';
     const IIN_UPDATE_BULK                                       = 'IIN_UPDATE_BULK';
     const IIN_UPDATE_FAILED                                     = 'IIN_UPDATE_FAILED';

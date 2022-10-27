@@ -263,6 +263,7 @@ class Type
     const ONECARD_EMI_FILE                  = 'onecard_emi_file';
     const CITI_EMI_FILE                     = 'citi_emi_file';
     const BOB_EMI_FILE                      = 'bob_emi_file';
+    const RECON_AUTOMATIC_FILE_FETCH        = 'recon_automatic_file_fetch';
 
     const AXIS_CARD_SETTLEMENT_FILE         = 'axis_cardsettlement_file';
     const AXIS_CARD_SETTLEMENT_OUTPUT_FILE  = 'axis_cardsettlement_output_file';
@@ -285,6 +286,7 @@ class Type
     const ACTIVATION_BUCKET_CONFIG              = 'activation_bucket_config';
     const H2H_BUCKET_CONFIG                     = 'h2h_bucket_config';
     const RECON_BUCKET_CONFIG                   = 'recon_bucket_config';
+    const RECON_ART_BUCKET_CONFIG               = 'recon_art_bucket_config';
     const ANALYTICS_BUCKET_CONFIG               = 'analytics_bucket_config';
     const MOCK_RECONCILIATION_FILE              = 'mock_reconciliation_file';
     const CUSTOMER_BUCKET_CONFIG                = 'customer_bucket_config';
@@ -472,6 +474,7 @@ class Type
             self::HDFC_COLLECT_NOW_SETTLEMENT_FILE,
             self::NIUM_SETTLEMENT_FILE,
             self::APM_ONBOARD_REQUEST_FILE,
+            self::RECON_AUTOMATIC_FILE_FETCH
         ],
 
         Constants\Entity::BATCH => [
@@ -675,6 +678,7 @@ class Type
         self::NIUM_SETTLEMENT_FILE,
         self::APM_ONBOARD_REQUEST_FILE,
         self::PAYMENT_LIMIT,
+        self::RECON_AUTOMATIC_FILE_FETCH
     ];
 
     /**
@@ -773,6 +777,10 @@ class Type
         self::FUND_TRANSFER_SFTP_BUCKET_CONFIG => [
             self::FUND_TRANSFER_H2H,
             self::BENEFICIARY_FILE,
+        ],
+
+        self::RECON_ART_BUCKET_CONFIG => [
+            self::RECON_AUTOMATIC_FILE_FETCH
         ],
 
         self::RECON_SFTP_INPUT_BUCKET_CONFIG => [

@@ -5,6 +5,10 @@ namespace RZP\Reconciliator\RequestProcessor;
 use RZP\Exception;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\FileProcessor;
+use RZP\Models\FileStore\Storage\AwsS3\Handler;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Trace\TraceCode;
+use RZP\Models\FileStore;
 
 class Mailgun extends Base
 {
@@ -77,6 +81,28 @@ class Mailgun extends Base
         self::FREECHARGE,
     ];
 
+    /**
+     * GATEWAY_EMAIL_DETAILS is used to fetch information which is used to upload files in s3
+     * This information is provided on gateway level
+     * "from" => sender of the mail
+     * "subject_pattern" => regex for subject of the mail
+     * "filename_pattern" => regex for name of the attachment received
+     * "destination" => path on s3 where it will be uploaded
+     * "bucket_config_type" => type config that matches to s3 bucket name and region
+     */
+
+    const GATEWAY_EMAIL_DETAILS = [
+        self::NETBANKING_SBI  => [
+            [
+                "from" => "donotreply.inb@alerts.sbi.co.in",
+                "subject_pattern" => "/^RAZORPAY Recon File/",
+                "filename_pattern" => "/RAZORPAY_[\d]+\.txt/",
+                "destination" => "recon/input/nb_sbi/txn_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
+        ]
+    ];
+
     protected $inputDetails;
 
     /**
@@ -120,10 +146,95 @@ class Mailgun extends Base
         $allFilesDetails = $this->getFileDetailsFromInput(
             $this->inputDetails, $input, $fileLocationType);
 
+        $gateway = $this->gateway;
+
+        /**
+         * if gateway is added in the config then fetch details of file and call the s3 bucket upload flow
+         */
+
+        if($this->validator->isAutomaticFetchingEnabledForGateway($gateway)){
+
+            foreach($allFilesDetails as $fileDetails){
+                $fileName = $fileDetails['file_name'];
+                $filePath = $fileDetails['file_path'];
+                $extension = $fileDetails['extension'];
+                
+                $gatewayDetails = self::GATEWAY_EMAIL_DETAILS[$gateway] ?? null;
+                if(is_null($gatewayDetails)){
+                    $this->trace->info(TraceCode::GATEWAY_EMAIL_CONFIG_NOT_ENABLED, [
+                        "message" => "Email config details not found for gateway"
+                    ]);
+                    continue;
+                }
+                foreach($gatewayDetails as $detail){
+                    if(preg_match($detail['subject_pattern'], $input['subject']) && preg_match($detail['filename_pattern'], $fileName)){
+                        $destinationPath = $detail['destination'].$fileName;
+                        $bucketConfigType = $detail['bucket_config_type'];
+                        $this->automaticFileFetchUpload($filePath, $destinationPath, $extension, $fileName, $bucketConfigType);
+                        break;
+                    }
+                }
+                
+            }
+
+        }
+
         return [
             self::FILE_DETAILS  => $allFilesDetails,
             self::INPUT_DETAILS => $this->inputDetails,
         ];
+    }
+
+    public function automaticFileFetchUpload($filePath, $destinationPath, $extension, $fileName, $bucketConfigType) 
+    {
+        $creator = new FileStore\Creator;
+
+        $this->trace->info(TraceCode::ART_RECON_BUCKET_UPLOAD_DETAILS,[
+            'filePath' => $filePath,
+            '$destinationPath' => $destinationPath,
+            'extension' => $extension,
+            '$fileName' => $fileName,
+            'bucketConfigType' => $bucketConfigType
+        ]);
+
+        try
+        {
+            $creator->localFilePath($filePath)
+                    ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$extension][0])
+                    ->name($destinationPath) 
+                    ->type($bucketConfigType)
+                    ->additionalParameters(['ACL' => 'bucket-owner-full-control']);
+
+            $fileStoreEntity = $creator->save()->get();
+
+            $this->trace->info(TraceCode::RECON_FILE_DETAILS, $fileStoreEntity);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->info(
+                TraceCode::RECON_FILE_UPLOAD_FAILURE,
+                [
+                    'file_name' => $fileName,
+                    'gateway'   => $this->gateway,
+                    'exception' => $ex
+                ]);
+
+            // Delete local file and return.
+            (new FileProcessor)->deleteFileLocally($filePath);
+            return;
+        }
+
+        $traceData = [
+            'file_id'   => $fileStoreEntity['id'],
+            'file_name' => $fileStoreEntity['name'],
+            'gateway'   => $this->gateway,
+        ];
+
+        $this->trace->info(TraceCode::RECON_FILE_DETAILS, $traceData);
+
+        // Delete local file, as it has been upload to filestore (s3) now.
+        (new FileProcessor)->deleteFileLocally($filePath);
+        return;
     }
 
     public function processForVa(array $input): array
@@ -256,4 +367,5 @@ class Mailgun extends Base
 
         return $valid;
     }
+
 }

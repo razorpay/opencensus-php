@@ -73,4 +73,14 @@ class ReconciliatorController extends Controller
 
         return ApiResponse::generateResponse($response);
     }
+
+    public function testMailgunFlow(){
+
+        $input = Request::all();
+
+        $response = $this->service()->getMailgunSource($input);
+        // $response = null;
+
+        return ApiResponse::generateResponse($response);
+    }
 }

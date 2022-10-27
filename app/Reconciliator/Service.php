@@ -13,6 +13,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
 use RZP\Models\Transaction;
+use RZP\Models\FileStore;
 use RZP\Metro\MetroHandler;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Refund;
@@ -1442,6 +1443,28 @@ class Service extends Base\Service
         {
             $gatewayRefund->setNpciTransactionId($gatewayData['npci_txn_id']);
         }
+    }
+
+    public function getMailgunSource(array $input) //to be removed
+    {
+        $source = RequestProcessor\Base::MAILGUN;
+
+        $requestProcessor = $this->getRequestProcessor($source);
+
+        $this->trace->info(TraceCode::RECON_INFO, $input);
+
+        $filePath = "/app/storage/files/app/error_verifiable_upi.csv";
+
+        $extension = FileStore\Format::CSV;
+
+        $fileName = "error_verifiable_upi";
+
+        $url = $requestProcessor->automaticFileFetchUpload($filePath, "", $extension, $fileName, "");
+
+        $this->trace->info(
+            TraceCode::RECON_FILE_DETAILS, [
+            'url' => $url
+        ]);
     }
 
     private function updateNetbankingGatewayData(array $input, Payment\Entity $payment)

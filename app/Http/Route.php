@@ -1052,6 +1052,8 @@ class Route
         'nach_batch_process'                       => ['post',     'nach/batch_service',                             'EMandateController@postProcessNachDebit'                                       ],
         'emandate_batch_process'                   => ['post',     'emandate/batch_service',                         'EMandateController@postProcessEmandateDebit'                       ],
 
+        'test_mailgun'                             => ['post',     'test_mailgun',                                   'ReconciliatorController@testMailgunFlow'                        ],
+
         'reconciliate'                             => ['post',     'reconciliate',                                   'ReconciliatorController@postReconciliation'                        ],
         'reconciliate_via_batch_service'           => ['post',     'reconciliate/batch_service/bulk',                'ReconciliatorController@postBulkReconciliationViaBatchService'     ],
         'recon_fetch_batchs_files_multiple'        => ['get',      'reconciliate/batches',                           'ReconciliatorController@getReconBatches'],
@@ -3925,6 +3927,7 @@ class Route
     ];
 
     public static $public = [
+        'test_mailgun',
         'fetch_international_virtual_account_by_vacurrency',
         '1cc_shopify_checkout',
         '1cc_shopify_checkout_preflight',
@@ -14210,6 +14213,7 @@ class Route
         ],
 
         'recon' => [
+            'test_mailgun',
             'payment_create_upi_unexpected',
             'upi_transfer_process_internal',
             'payment_callback_bharatqr_internal',

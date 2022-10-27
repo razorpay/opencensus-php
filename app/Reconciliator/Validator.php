@@ -203,6 +203,8 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_UCO           => 1,
     ];
 
+    const AUTOMATIC_FETCHING_ENABLED_GATEWAYS = [RequestProcessor\Base::NETBANKING_SBI];
+
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
     const SUPPORTED_ZIP_EXTENSIONS = ['zip', '7z'];
 
@@ -523,6 +525,7 @@ class Validator extends Base\Core
 
     public function validateNetbankingSbiEmail(array $emailDetails)
     {
+        
         $validSubject = $this->validateEmailSubject(
             $emailDetails[RequestProcessor\Mailgun::SUBJECT],
             RequestProcessor\Base::NETBANKING_SBI);
@@ -530,6 +533,7 @@ class Validator extends Base\Core
         $validBody = $this->validateEmailBody(
             $emailDetails[RequestProcessor\Mailgun::BODY],
             RequestProcessor\Base::NETBANKING_SBI);
+        
 
         //
         // There isn't a need to validate the attachment count because
@@ -1141,5 +1145,12 @@ class Validator extends Base\Core
         assertTrue (strpos($func, 'validate') === 0, $message);
 
         $this->$func($attribute, $value, $parameters);
+    }
+
+    public function isAutomaticFetchingEnabledForGateway($gateway){
+        if(in_array($gateway, self::AUTOMATIC_FETCHING_ENABLED_GATEWAYS)){
+            return true;
+        }
+        return false;
     }
 }
