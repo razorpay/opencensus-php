@@ -236,7 +236,7 @@ class PartnershipsService extends Base\Service
         ];
 
         $jwt = null;
-        if ($this->skipPassport == false) {
+        if ($this->skipPassport === false) {
             $jwt = $this->auth->getPassportJwt($this->baseUrl);
         }
         if ($jwt == null) {
@@ -244,7 +244,7 @@ class PartnershipsService extends Base\Service
         }
         $headers[self::X_PASSPORT_JWT_V1] = $jwt;
 
-        $this->trace->info(TraceCode::PARTNERSHIPS_REQUEST, ['url' => $url, 'parameters' => $parameters,'options' => $options]);
+        $this->trace->info(TraceCode::PARTNERSHIPS_REQUEST, ['url' => $url, 'parameters' => $parameters]);
 
         return [
             'url'       => $url,
