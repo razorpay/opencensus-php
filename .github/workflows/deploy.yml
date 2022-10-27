@@ -1,8 +1,8 @@
 name: Run Unit Coverage
-on: [ deployment ]
+on: [deployment]
 jobs:
   Smart-collect:
-    runs-on: [ self-hosted ]
+    runs-on: [api-public]
     if: github.event.deployment.environment == 'smartcollectUT'
     container:
       image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
@@ -86,7 +86,7 @@ jobs:
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
   Route:
-    runs-on: [ self-hosted ]
+    runs-on: [api-public]
     if: github.event.deployment.environment == 'routeUT'
     container:
       image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
@@ -170,7 +170,7 @@ jobs:
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
   PaymentPage:
-    runs-on: [ self-hosted ]
+    runs-on: [ api-public ]
     if: github.event.deployment.environment == 'paymentPageUT'
     container:
       image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
@@ -254,7 +254,7 @@ jobs:
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
   RxPayouts:
-    runs-on: [ self-hosted ]
+    runs-on: [api-public]
     if: github.event.deployment.environment == 'RX_PAYOUTS'
     container:
       image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
@@ -338,7 +338,7 @@ jobs:
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
   RxCore:
-    runs-on: [self-hosted]
+    runs-on: [api-public]
     if: github.event.deployment.environment == 'RX_CORE'
     container:
       image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
@@ -422,7 +422,7 @@ jobs:
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
   EsOndemand:
-    runs-on: [ self-hosted ]
+    runs-on: [ api-public ]
     if: github.event.deployment.environment == 'ES_ONDEMAND'
     container:
       image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
@@ -499,7 +499,7 @@ jobs:
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
   OnboardingAPIs:
-    runs-on: [ self-hosted ]
+    runs-on: [ api-public ]
     if: github.event.deployment.environment == 'OnboardingAPIsUT'
     container:
       image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v3

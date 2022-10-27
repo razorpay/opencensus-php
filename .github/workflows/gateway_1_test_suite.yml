@@ -1,7 +1,7 @@
 on: [push]
 jobs:
   cancel:
-    runs-on: [self-hosted, api]
+    runs-on: [api-public]
     name: Cancel Previous Runs
     if: always()
     timeout-minutes: 1
@@ -20,7 +20,7 @@ jobs:
         run: |
           echo "Don't cancel old workflow"
   gateway_1_test_suite:
-    runs-on: [self-hosted, api]
+    runs-on: [api-public]
     needs: [cancel]
     container:
       image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
@@ -68,6 +68,8 @@ jobs:
           ES_AUDIT_HOST: elasticsearch
           LQEXT_TESTING_TXN_SKIP_COUNT: 3
           API_DOCS_FILE_NAME: gateway_1_test_suite.json
+          GIT_COMMIT_HASH: ${{ github.sha }}
+          API_UI_TEST_SUMO_COLLECTION_URL_TEMP: ${{ secrets.API_UI_TEST_SUMO_COLLECTION_URL_TEMP }}
       - name: Push UT Metrics
         if: always()
         run: ci-assets/ut_metrics.sh

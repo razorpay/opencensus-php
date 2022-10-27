@@ -311,7 +311,7 @@ return [
                         E::META_DATA       => [
                             E::DISPLAY_SUPPORTER_COUNT  => "1",
                             E::DISPLAY_DAYS_LEFT        => "1",
-                            E::GOAL_END_TIMESTAMP       => (string) Carbon::now(Timezone::IST)->addHours(1)->getTimestamp(),
+                            E::GOAL_END_TIMESTAMP       => (string) Carbon::now(Timezone::IST)->addHours(3)->getTimestamp(),
                             E::GOAL_AMOUNT              => "1000"
                         ]
                     ]

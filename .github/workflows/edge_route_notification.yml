@@ -9,7 +9,7 @@ on:
 jobs:
   slack-notify:
     name: Notify Edge team
-    runs-on: [ self-hosted ]
+    runs-on: [ api-public ]
     if: ${{ github.event.pull_request.merged }}
     steps:
       - uses: rtCamp/action-slack-notify@v2.2.0
@@ -22,7 +22,7 @@ jobs:
           SLACK_ICON: https://avatars2.githubusercontent.com/u/2181346?s=200&v=4 # Optional. can be (repository, sender, an URL) (defaults to webhook app avatar)
   user-notify:
     name: Notify change maker
-    runs-on: [ self-hosted ]
+    runs-on: [ api-public ]
     steps:
       - uses: mshick/add-pr-comment@v1
         with:
@@ -46,5 +46,5 @@ jobs:
             Ignore this notification.
 
             ### 😕 Confused?
-            Reach out to us at [#platform_spine_edge](https://razorpay.slack.com/archives/C012ZGQQFDJ). 
+            Reach out to us at [#platform_spine_edge](https://razorpay.slack.com/archives/C012ZGQQFDJ).
           repo-token: ${{ secrets.GITHUB_TOKEN }}

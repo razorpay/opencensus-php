@@ -7,7 +7,7 @@ jobs:
 
   Find-Jira-Id:
     name: Find-Jira-Id
-    runs-on: [self-hosted]
+    runs-on: [api-public]
 
     steps:
       - name: Checkout

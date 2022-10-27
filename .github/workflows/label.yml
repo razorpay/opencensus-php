@@ -11,7 +11,7 @@ on: [pull_request_target]
 jobs:
   label:
 
-    runs-on: [self-hosted]
+    runs-on: [api-public]
     permissions:
       contents: read
       pull-requests: write
