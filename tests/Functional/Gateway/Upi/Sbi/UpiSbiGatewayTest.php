@@ -1563,34 +1563,24 @@ class UpiSbiGatewayTest extends TestCase
      */
     public function testDuplicateUnexpectedPaymentForAmountMismatch()
     {
-        $this->payment[Payment\Entity::VPA] = 'unexpectedPayment@sbi';
-
-        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
-
-        $payment = $this->getDbLastPayment();
-
-        $upi = $this->getDbLastUpi();
-
-        $this->assertSame(Payment\Status::CREATED, $payment->getStatus());
-
-        $content = $this->mockServer()->getAsyncCallbackContent($upi->toArray());
-
-        $this->makeS2SCallbackAndGetContent($content);
-
         $content = $this->getDefaultUpiUnexpectedPaymentArray();
 
-        $content['upi']['merchant_reference'] = $upi->getPaymentId();
+        $response = $this->makeUnexpectedPaymentAndGetContent($content);
 
-        $content['upi']['vpa'] = $upi->getVpa();
+        $this->assertNotEmpty($response['payment_id']);
+
+        $this->assertTrue($response['success']);
 
         //Setting amount to different amount for validating payment creation for amount mismatch
         $content['payment']['amount'] = 10000;
+        $content['upi']['vpa'] = 'unexpectedPayment@sbi';
         //First occurence of amount mismatch payment request with matching rrn, paymentId, differing in amount
         $response = $this->makeUnexpectedPaymentAndGetContent($content);
 
         $this->assertNotEmpty($response['payment_id']);
 
         $this->assertTrue($response['success']);
+
         // Hitting the payment create again for same amount mismatch request
         $this->makeRequestAndCatchException(function() use ($content) {
             $request = [
@@ -1602,7 +1592,49 @@ class UpiSbiGatewayTest extends TestCase
             $this->makeRequestAndGetContent($request);
 
         }, Exception\BadRequestException::class,
-           'Duplicate Unexpected payment with same amount');
+           'Multiple payments with same RRN');
+    }
+
+    /**
+     * Tests the payment create for multiple payments with same RRN
+     */
+    public function testUnexpectedPaymentForDuplicateRRN()
+    {
+        $content = $this->getDefaultUpiUnexpectedPaymentArray();
+
+        //First occurence of amount mismatch payment request with matching rrn, paymentId, differing in amount
+        $response = $this->makeUnexpectedPaymentAndGetContent($content);
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $this->assertTrue($response['success']);
+
+        $this->payment[Payment\Entity::VPA] = 'unexpectedPayment@sbi';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $upi = $this->getDbLastUpi();
+
+        $this->assertSame(Payment\Status::CREATED, $payment->getStatus());
+
+        $callbackContent = $this->mockServer()->getAsyncCallbackContent($upi->toArray());
+
+        $this->makeS2SCallbackAndGetContent($callbackContent,'upi_sbi');
+
+        // Hitting the payment create again for same amount mismatch request
+        $this->makeRequestAndCatchException(function() use ($content) {
+            $request = [
+                'url'     => '/payments/create/upi/unexpected',
+                'method'  => 'POST',
+                'content' => $content,
+            ];
+            $this->ba->appAuth();
+            $this->makeRequestAndGetContent($request);
+
+        }, Exception\BadRequestException::class,
+            'Multiple payments with same RRN');
     }
 
     /**

@@ -1310,40 +1310,7 @@ class Gateway extends Base\Gateway
 
         $attributes = array_merge($attributes, $callbackData['upi']);
 
-        $rrn = $callbackData['upi']['npci_reference_id'];
-
-        $gateway = $callbackData['terminal']['gateway'];
-
-        $upiEntity = $this->repo->fetchByNpciReferenceIdAndGateway($rrn, $gateway);
-
-        $gatewayPayment = $this->repo->transaction(function () use ($upiEntity, $callbackData, $attributes)
-        {
-            if (empty($upiEntity) === false)
-            {
-                // Checking this for duplicate payment
-                if ($upiEntity->getAmount() === (int)($callbackData['payment']['amount']))
-                {
-                    throw new Exception\LogicException(
-                        'Duplicate Unexpected payment with same amount',
-                        null,
-                        [
-                            'gateway'           => $callbackData['terminal']['gateway'],
-                            'npci_reference_id' => $callbackData['upi']['npci_reference_id'],
-                        ]
-                    );
-                }
-                // When upi entity is not empty and
-                // rrn already already exists with different payment amount
-                //Its a case of amount mismatch.
-                //Unsetting the rrn since amount tampered is a failed payment and creating new payment with recon rrn,
-                //so system will hold unique rrn per payment
-                $upiEntity->setNpciReferenceId('');
-
-                $this->repo->saveOrFail($upiEntity);
-            }
-
-            return $this->createGatewayPaymentEntity($attributes, null, false);
-        });
+        $gatewayPayment = $this->createGatewayPaymentEntity($attributes, null, false);
 
         return [
             'acquirer' => [

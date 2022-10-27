@@ -5241,13 +5241,27 @@ class Service extends Base\Service
             TODO : Revisit this logic against isDuplicateUnexpectedPaymentV2
             */
 
-            $upiEntity = $this->repo->upi->fetchByNpciReferenceIdAndGateway($npciReferenceId, $gateway);
+            $upiEntity = $this->repo->upi->findAllByNpciReferenceIdAndGateway($npciReferenceId, $gateway);
 
-            if (empty($upiEntity) === false)
+            if ((empty($upiEntity) === false) and ($upiEntity->count() > 1))
             {
-                if ($upiEntity->getAmount() === (int) ($input['payment']['amount']))
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR,
+                    null,
+                    [
+                        'payment_id'        => null,
+                        'npci_reference_id' => $npciReferenceId,
+                        'gateway'           => $gateway,
+                    ],
+                    'Multiple payments with same RRN'
+                );
+            }
+
+            if ((empty($upiEntity) === false) and ($upiEntity->count() === 1))
+            {
+                if ($upiEntity->first()->getAmount() === (int) ($input['payment']['amount']))
                 {
-                    $unexpectedPaymentId = $upiEntity->getPaymentId();
+                    $unexpectedPaymentId = $upiEntity->first()->getPaymentId();
 
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_ERROR,

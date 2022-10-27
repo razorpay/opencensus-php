@@ -169,4 +169,13 @@ class Repository extends Base\Repository
                     ->orWhere(Entity::GATEWAY_PAYMENT_ID, '=', $arn)
                     ->first();
     }
+
+    public function findAllByNpciReferenceIdAndGateway(string $npciReferenceId, string $gateway, string $action = Action::AUTHORIZE)
+    {
+        return $this->newQuery()
+            ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
+            ->where('action', '=', $action)
+            ->where('gateway', '=', $gateway)
+            ->get();
+    }
 }

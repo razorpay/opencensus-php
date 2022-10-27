@@ -1824,20 +1824,11 @@ EOT;
     {
         $content = $this->buildUnexpectedPaymentRequest();
 
-        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+        $response = $this->makeUnexpectedPaymentAndGetContent($content);
 
-        $payment = $this->getDbLastPayment();
+        $this->assertNotEmpty($response['payment_id']);
 
-        $upi = $this->getDbLastUpi();
-
-        $this->assertSame('created', $payment->getStatus());
-
-        $callbackResponse = $this->mockServer()->getAsyncCallbackContent($upi->toArray(), $payment->toArray());
-
-        $this->makeS2SCallbackAndGetContent($callbackResponse);
-
-        $content['upi']['merchant_reference'] = $upi->getPaymentId();
-        $content['upi']['npci_reference_id'] = $upi->getNpciReferenceId();
+        $this->assertTrue($response['success']);
 
         //Setting amount to different amount for validating payment creation for amount mismatch
         $content['payment']['amount'] = 10000;
@@ -1863,7 +1854,50 @@ EOT;
             $this->makeRequestAndGetContent($request);
 
         }, Exception\BadRequestException::class,
-           'Duplicate Unexpected payment with same amount');
+           'Multiple payments with same RRN');
+    }
+
+    /**
+     * Tests the payment create for multiple payments with same RRN
+     */
+    public function testUnexpectedPaymentForDuplicateRRN()
+    {
+        $content = $this->buildUnexpectedPaymentRequest();
+
+        //First occurence of unexpected payment request with matching rrn, paymentId, differing in amount
+        $response = $this->makeUnexpectedPaymentAndGetContent($content);
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $this->assertTrue($response['success']);
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $upi = $this->getDbLastUpi();
+
+        $this->assertSame('created', $payment->getStatus());
+
+        $callbackResponse = $this->mockServer()->getAsyncCallbackContent($upi->toArray(), $payment->toArray());
+
+        $this->makeS2SCallbackAndGetContent($callbackResponse);
+
+        $upiEntity = $this->getDbLastUpi();
+
+        $this->fixtures->edit('upi', $upiEntity['id'], ['npci_reference_id' => '123456789012']);
+
+        $this->makeRequestAndCatchException(function() use ($content) {
+            $request = [
+                'url'     => '/payments/create/upi/unexpected',
+                'method'  => 'POST',
+                'content' => $content,
+            ];
+            $this->ba->appAuth();
+            $this->makeRequestAndGetContent($request);
+
+        }, Exception\BadRequestException::class,
+            'Multiple payments with same RRN');
     }
 
     /**
