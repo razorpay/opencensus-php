@@ -71,12 +71,17 @@ class DefaultStatusUpdater extends BaseStatusUpdater
             switch ($this->entity)
             {
                 case E::MERCHANT_DETAIL:
+
                     $this->merchantDetails->setAttribute(
                         $this->documentTypeStatusKey, $documentValidationStatus);
                     $this->updateStakeholderStatusIfApplicable($documentValidationStatus);
+
                     break;
 
                 case E::STAKEHOLDER:
+
+                    $this->merchantDetails->load('stakeholder');
+
                     $this->merchantDetails->stakeholder->setAttribute(
                         $this->documentTypeStatusKey, $documentValidationStatus);
                     break;
