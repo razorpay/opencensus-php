@@ -411,7 +411,7 @@ class Repository extends Base\Repository
 
         $selectCols = $this->dbColumn('*');
 
-        return $this->newQueryOnSlave(600000)
+        return $this->newQueryOnPaymentFetchReplica(600000)
                     ->select($selectCols,
                              'payments.id as payment_id',
                              'payments.amount as payment_amount',
@@ -489,7 +489,7 @@ class Repository extends Base\Repository
 
         $selectCols = $this->dbColumn('*');
 
-        return $this->newQueryOnSlave(600000)
+        return $this->newQueryOnPaymentFetchReplica(600000)
                     ->select($selectCols,
                             'payments.id as payment_id',
                             'payments.amount as payment_amount',
@@ -610,6 +610,7 @@ class Repository extends Base\Repository
      */
     public function fetchPendingNachOrMandateDebit($gateways, $from, $to, $acquirer)
     {
+
         $paymentRecurringTypeColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING_TYPE);
 
         $paymentRecurringColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING);
@@ -630,7 +631,7 @@ class Repository extends Base\Repository
 
         $tokenTerminalIdColumn = $this->repo->token->dbColumn(Entity::TERMINAL_ID);
 
-        return $this->newQueryOnSlave(600000)
+        return $this->newQueryOnPaymentFetchReplica(600000)
               ->select('tokens.' . Entity::ACCOUNT_TYPE,
                        'tokens.' . Entity::BENEFICIARY_NAME,
                        'tokens.' . Entity::IFSC,
