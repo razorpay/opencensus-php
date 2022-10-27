@@ -477,9 +477,15 @@ const isFromEasyL1 =
   (window.rzp_user?.activation_form_milestone === 'L1' ||
     !window.rzp_user?.activation_form_milestone);
 
+// check if the request is came from x-dashboard
+const SOURCE_RAZORPAY_X = 'x';
+const urlSearchParams = new URLSearchParams(window.location.search);
+const queryParams = Object.fromEntries(urlSearchParams.entries());
+const isSourceRX = !!(queryParams?.merchant === SOURCE_RAZORPAY_X);
+
 const entityModalsMap = {
   '/activation': {
-    component: isFromEasyL1 ? routeEasyOnboarding : ActivationContainer,
+    component: isFromEasyL1 && !isSourceRX ? routeEasyOnboarding : ActivationContainer,
     additionalCondition: (user) => user.isAllowedEdit('activation'),
   },
   '/offers/new': {
