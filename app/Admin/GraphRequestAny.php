@@ -310,11 +310,6 @@ class GraphRequestAny
                     $this->headers['X-Dashboard-Merchant-Id'] = $merchantInSession->id;
                 }
             }
-            else
-            {
-                throw new \Exception('Unauthorized Access');
-            }
-
         }
         else
         {

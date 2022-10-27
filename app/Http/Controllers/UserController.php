@@ -337,6 +337,24 @@ class UserController extends Controller
      */
     public function getKeepAlive()
     {
+        $queryParams = Input::all();
+
+        $sendMidUid = filter_var($queryParams['send_mid_uid'] ?? null, FILTER_VALIDATE_BOOLEAN);
+
+        if ($sendMidUid === true)
+        {
+            $user = Auth::user();
+
+            $currentMerchantId = $user->currentMerchant() ? $user->currentMerchant()->id : null;
+
+            $response = [
+                'merchant_id' => $currentMerchantId,
+                'user_id' => $user->id
+            ];
+
+            return AppResponse::jsonResponse([], $response);
+        }
+
         return AppResponse::jsonResponse([]);
     }
 

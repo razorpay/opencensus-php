@@ -3,18 +3,15 @@ namespace App\Http\Controllers;
 
 use Request;
 use Response;
-
-use App\Admin\GraphRequestAny;
+use App\Graph;
 
 class GraphController extends Controller
 {
     public function handleRequestForGraph()
     {
-        $data = Request::all();
+        $input = Request::all();
 
-        $request = new GraphRequestAny($data);
-
-        list($response, $headersIncoming) = $request->send();
+        list($response, $headersIncoming) = (new Graph\Service)->handleGraphqlRequest($input);
 
         return Response::json($response, 200, $headersIncoming);
     }
