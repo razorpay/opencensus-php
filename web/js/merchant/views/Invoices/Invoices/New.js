@@ -29,8 +29,8 @@ import ShowWhen from 'merchant/components/ShowWhen';
 
 import LineItemsList from 'merchant/views/Invoices/Invoices/components/LineItems/List';
 import CustomerCreation from 'merchant/views/Customers/New';
-import IssueConfirmModal from './components/IssueConfirmModal';
-import AddInternalNoteModal from './components/AddInternalNoteModal';
+import IssueConfirmModal from 'merchant/views/Invoices/Invoices/components/IssueConfirmModal';
+import AddInternalNoteModal from 'merchant/views/Invoices/Invoices/components/AddInternalNoteModal';
 import InvoiceBreadcrumbNav from 'merchant/views/Invoices/Invoices/components/InvoiceBreadcrumbNav';
 import InvoiceInfo from 'merchant/views/Invoices/Invoices/components//InvoiceInfo';
 import InvoiceNotes from 'merchant/views/Invoices/Invoices/components/InvoiceNotes';
@@ -51,8 +51,8 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { SingleDatePicker } from 'react-dates';
 import BillingAddress from 'merchant/views/Invoices/Invoices/components/BillingAddress';
 import ShippingAddress from 'merchant/views/Invoices/Invoices/components/ShippingAddress';
-import AddressSelectionModal from './components/AddressSelectionModal/index';
-import EditInvoiceLabelModal from './components/EditInvoiceLabel';
+import AddressSelectionModal from 'merchant/views/Invoices/Invoices/components/AddressSelectionModal/index';
+import EditInvoiceLabelModal from 'merchant/views/Invoices/Invoices/components/EditInvoiceLabel';
 import AddressDisplay from 'merchant/views/Invoices/Invoices/components/AddressDisplay';
 import { states } from 'merchant/helpers/data';
 import InvoicesConfiguration from 'merchant/views/Invoices/Invoices/components/InvoicesConfiguration';
@@ -64,7 +64,7 @@ import {
   trackChangeCurrencySettings,
   trackSelectBillingAddress,
   trackSelectShippingAddress,
-} from '../ga';
+} from 'merchant/views/Invoices/ga';
 import AddGST from 'merchant/views/Account/Profile/components/AddGST';
 import PickCurrency from 'merchant/views/Invoices/Invoices/components/PickCurrency';
 import debounce from 'common/utils/debounce';
@@ -264,7 +264,9 @@ export default class InvoicesNewContainer extends Component {
    */
   _initialize(invoice) {
     this.props.initialize(invoice);
-    this.props.appendCustomerInList(invoice.customer_details);
+    invoice.customer &&
+      invoice.customer.id &&
+      this.props.appendCustomerInList(invoice.customer_details);
     // Set issue date.
     if (invoice.date) {
       this.pickIssueDate(moment(invoice.date * 1000), false);
@@ -276,7 +278,7 @@ export default class InvoicesNewContainer extends Component {
     }
 
     // Set Customer.
-    invoice.customer && this.setCustomerData(invoice.customer);
+    invoice.customer && invoice.customer.id && this.setCustomerData(invoice.customer);
 
     // Set State of Supply
     if (invoice.supply_state_code && this.state.states) {
