@@ -534,19 +534,6 @@ class Core extends Base\Core
 
         $ba->setConnection($mode);
 
-        // if live mode and input does not already contain notes, copy test mode notes
-        if (($mode === Mode::LIVE) and (empty($input[Entity::NOTES]) === true))
-        {
-            $testBankAccount = $this->repo->bank_account->getBankAccountOnConnection($merchant, Mode::TEST);
-
-            if (empty($testBankAccount) === false)
-            {
-                $notes = $testBankAccount->getNotes();
-
-                $input[Entity::NOTES] = $notes->toArray();
-            }
-        }
-
         $ba = $ba->build($input);
 
         $ba->getValidator()->validateIfscCode($input, $mode);
