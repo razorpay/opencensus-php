@@ -8,6 +8,7 @@ FROM $ONGGI_IMAGE
 ARG GIT_COMMIT_HASH
 ARG GIT_TOKEN
 ARG GIT_USERNAME
+ARG CACHEBUST
 
 WORKDIR /app
 
@@ -33,7 +34,7 @@ RUN composer dump-autoload -o
 RUN apk add make git
 ADD Makefile /app
 ADD error_modules /app
-ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
+RUN echo ${CACHEBUST}
 RUN make error-module-clean
 RUN make error-module-fetch
 

@@ -15,6 +15,7 @@ FROM $ONGGI_IMAGE
 ARG GIT_COMMIT_HASH
 ARG GIT_TOKEN
 ARG GIT_USERNAME
+ARG CACHEBUST
 ENV GIT_COMMIT_HASH=${GIT_COMMIT_HASH}
 
 WORKDIR /app
@@ -45,7 +46,7 @@ RUN cp dockerconf/default.conf dockerconf/mpm.conf /etc/apache2/conf.d/ && \
 RUN apk add make git
 ADD Makefile /app
 ADD error_modules /app
-ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
+RUN echo ${CACHEBUST}
 RUN make error-module-clean
 RUN make error-module-fetch
 

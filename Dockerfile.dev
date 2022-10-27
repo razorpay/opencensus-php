@@ -21,11 +21,12 @@ VOLUME ['/app']
 WORKDIR /app
 
 ARG GIT_TOKEN
+ARG CACHEBUST
 
 RUN apk add make git
 ADD Makefile /app
 ADD error_modules /app
-ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
+RUN echo ${CACHEBUST}
 RUN make error-module-clean
 RUN make error-module-fetch
 
