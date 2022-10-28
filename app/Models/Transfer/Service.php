@@ -365,7 +365,7 @@ class Service extends Base\Service
 
     public function processPendingOrderTransfers(array $input)
     {
-        $orderIds = $this->repo->transfer->fetchPendingTransfersToRetry(EntityConstant::ORDER, $input['limit'] ?? 300);
+        $orderIds = $this->repo->transfer->fetchPendingOrderTransfersToRetry($input['limit'] ?? 300);
 
         $this->trace->info(
             TraceCode::PENDING_ORDER_TRANSFER_PROCESS,

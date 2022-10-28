@@ -125,6 +125,28 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
+    public function fetchPendingOrderTransfersToRetry(int $count = 100, int $hours = -3)
+    {
+        $orderId        = $this->repo->payment->dbColumn(Payment\Entity::ORDER_ID);
+        $paymentStatus  = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
+        $sourceId       = $this->repo->transfer->dbColumn(Entity::SOURCE_ID);
+        $transferStatus = $this->repo->transfer->dbColumn(Entity::STATUS);
+        $updatedAt      = $this->repo->transfer->dbColumn(Entity::UPDATED_AT);
+
+        return $this->newQueryOnSlave()
+                    ->join(Table::PAYMENT, $sourceId, '=', $orderId)
+                    ->select(Entity::SOURCE_ID)
+                    ->where(Entity::SOURCE_TYPE, Constant::ORDER)
+                    ->where($transferStatus, Status::PENDING)
+                    ->where($paymentStatus, Payment\Status::CAPTURED)
+                    ->where($updatedAt, '<', Carbon::now()->addHours($hours)->getTimestamp())
+                    ->limit($count)
+                    ->distinct()
+                    ->get()
+                    ->pluck(Entity::SOURCE_ID)
+                    ->toArray();
+    }
+
     //update transfers set recipient_settlement_id = 'ES69iARhvUoyCo' where id in
     //  (
     //  select tr.id from transactions t inner join payments p
