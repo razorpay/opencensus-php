@@ -787,6 +787,39 @@ class Repository extends Base\Repository
         $query->where($promotionNameColumn, '=', $source);
     }
 
+    public function addQueryParamFosCity(Base\BuilderEx $query, array $params)
+    {
+        $merchantCityColumn = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::MERCHANT_CITY);
+
+        $this->joinQueryActivationDetail($query);
+
+        // selecting only banking_accounts columns so that
+        // clashes between field names do not result in corrputed data
+        // For example, both merchants and banking_accounts have field 'channel'
+        $query->select($this->dbColumn('*'));
+
+        // case insensitive exact match for merchant email
+        $fosCity = $params[Entity::FOS_CITY];
+
+        // Temporarily the Documentation process (in terms of delivering)
+        // is different for Bangalore and Non-Bangalore. Hence, this temporary provision
+        // to allow not check.
+        // In future, once processes get streamlined, this may be unnecessary.
+
+        // if in feet on street cities // otherwise Non_FOS will give all non fos cities
+
+        if (!((new Validator())->checkFosLeadCities($fosCity)))
+        {
+            $query->whereNotIn($merchantCityColumn, Constants::FOS_CITIES);
+        }
+        else
+        {
+            $query->where($merchantCityColumn, '=', $fosCity);
+        }
+    }
+
+
+
     public function addQueryParamMerchantPocCity(Base\BuilderEx $query, array $params)
     {
         $merchantCityColumn = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::MERCHANT_CITY);
@@ -805,14 +838,8 @@ class Repository extends Base\Repository
         // is different for Bangalore and Non-Bangalore. Hence, this temporary provision
         // to allow not check.
         // In future, once processes get streamlined, this may be unnecessary.
-        if ($merchantCity[0] === '!')
-        {
-            $query->where($merchantCityColumn, '!=', substr($merchantCity, 1));
-        }
-        else
-        {
-            $query->where($merchantCityColumn, '=', $merchantCity);
-        }
+        $query->where($merchantCityColumn, '=', $merchantCity);
+
     }
 
     public function addQueryParamBankAccountType(Base\BuilderEx $query, array $params)

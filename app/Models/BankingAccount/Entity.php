@@ -169,6 +169,7 @@ class Entity extends Base\PublicEntity
     const SORT_FOLLOW_UP_DATE = 'sort_follow_up_date';
     const LATEST_FOLLOW_UP_DATE = 'latest_follow_up_date';
     const CLARITY_CONTEXT       = 'clarity_context'; // used for filtering banking accounts
+    const FOS_CITY = 'fos_city';
 
     // Response attributes
     const BALANCE_TYPE       = 'balance_type';

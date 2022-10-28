@@ -386,6 +386,11 @@ class Validator extends Base\Validator
         }
     }
 
+    public function checkFosLeadCities(string $merchantCity)
+    {
+        return in_array($merchantCity, Constants::FOS_CITIES);
+    }
+
     public function validateUpdatePermissions(Entity $bankingAccount, $admin)
     {
         // Admin auth or Batch auth with $admin entity passed

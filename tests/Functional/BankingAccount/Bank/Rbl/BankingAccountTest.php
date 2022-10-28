@@ -4494,6 +4494,30 @@ class BankingAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testBankingAccountFetchForFOSCities()
+    {
+
+        $this->testCreateActivationDetail([
+            ActivationDetail\Entity::MERCHANT_CITY => 'Bengaluru'
+        ]);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testBankingAccountFetchForNonFOSCities()
+    {
+
+        $this->testCreateActivationDetail([
+            ActivationDetail\Entity::MERCHANT_CITY => 'Delhi'
+        ]);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testBankingAccountFetchForDocsWalkthrough(bool $dbValue = true, bool $searchValue = true)
     {
         $ba = $this->testCreateActivationDetail([

@@ -2769,6 +2769,50 @@ return [
         ],
     ],
 
+    'testBankingAccountFetchForFOSCities' => [
+        'request' => [
+            'url' => '/admin/banking_account?fos_city=Bengaluru',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'banking_account_activation_details' => [
+                            'merchant_city' => 'Bengaluru'
+                        ]
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testBankingAccountFetchForNonFOSCities' => [
+        'request' => [
+            'url' => '/admin/banking_account?fos_city=Non_FOS',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'banking_account_activation_details' => [
+                            'merchant_city' => 'Delhi'
+                        ]
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testBankingAccountFetchForDocsWalkthrough' => [
         'request' => [
             'url'     => '/admin/banking_account',
