@@ -386,7 +386,7 @@ class Service extends Base\Service
                     Trace::INFO,
                     TraceCode::BATCH_SERVICE_BULK_BAD_REQUEST);
                 $exceptionData = [
-                    Entity::IDEMPOTENCY_KEY => $idempotency_key,
+                    'idempotency_key' => $idempotency_key,
                     'error'                 => [
                         Error::DESCRIPTION       => $exception->getError()->getDescription(),
                         Error::PUBLIC_ERROR_CODE => $exception->getError()->getPublicErrorCode(),
@@ -415,7 +415,7 @@ class Service extends Base\Service
             }
         }
 
-        return $chargeTokenBatch->toArrayWithItems();
+        return $chargeTokenBatch;
     }
 
     public function processAutoCharges(array $input)

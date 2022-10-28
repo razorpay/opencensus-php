@@ -617,6 +617,7 @@ class Repository extends Base\Repository
 
         $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
 
+        
         $paymentStatusColumn = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
 
         $paymentGatewayColumn = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);

@@ -493,6 +493,7 @@ class Type
         self::EZETAP_SETTLEMENT,
         self::LOC_WITHDRAWAL,
         self::RECURRING_CHARGE,
+        self::RECURRING_CHARGE_BULK,
         self::AUTH_LINK,
         self::VIRTUAL_BANK_ACCOUNT,
         self::PARTNER_SUBMERCHANTS,
