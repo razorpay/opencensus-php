@@ -151,6 +151,7 @@ class Validator extends Base\Validator
         'cc_emails'                                              => 'sometimes|array',
         'custom_fields'                                          => 'required|array',
         'custom_fields.cf_requestor_subcategory'                 => 'sometimes',
+        'custom_fields.cf_new_requester_sub_category'            => 'sometimes',
         'custom_fields.cf_merchant_id_dashboard'                 => 'required',
         'fd_instance'                                            => 'sometimes',
         'custom_fields.cf_category'                              => 'sometimes|string|custom:custom_field_category',
@@ -255,15 +256,18 @@ class Validator extends Base\Validator
     ];
 
     protected static $getSupportDashboardTicketsRules = [
-        Constants::PAGE                     => 'required|integer|min:1',
-        'per_page'                          => 'sometimes|integer|max:100',
-        'status'                            => 'sometimes|integer|min:2|max:5|nullable',
-        Constants::CF_REQUESTOR_CATEGORY    => 'sometimes',
-        Constants::CF_REQUESTOR_SUBCATEGORY => 'sometimes',
-        Constants::CF_REQUESTOR_ITEM        => 'sometimes',
-        Constants::CF_CREATED_BY            => 'sometimes',
-        Constants::CF_WORKFLOW_ID           => 'sometimes',
-        Constants::TICKET_TAGS              => 'sometimes|array',
+        Constants::PAGE                         => 'required|integer|min:1',
+        'per_page'                              => 'sometimes|integer|max:100',
+        'status'                                => 'sometimes|integer|min:2|max:5|nullable',
+        Constants::CF_REQUESTOR_CATEGORY        => 'sometimes',
+        Constants::CF_REQUESTOR_SUBCATEGORY     => 'sometimes',
+        Constants::CF_REQUESTOR_ITEM            => 'sometimes',
+        Constants::CF_NEW_REQUESTOR_CATEGORY    => 'sometimes',
+        Constants::CF_NEW_REQUESTOR_SUBCATEGORY => 'sometimes',
+        Constants::CF_NEW_REQUESTOR_ITEM        => 'sometimes',
+        Constants::CF_CREATED_BY                => 'sometimes',
+        Constants::CF_WORKFLOW_ID               => 'sometimes',
+        Constants::TICKET_TAGS                  => 'sometimes|array',
     ];
 
     protected static $getSupportDashboardXTicketsRules = [

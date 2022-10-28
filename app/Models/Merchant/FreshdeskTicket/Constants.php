@@ -29,6 +29,9 @@ class Constants
     const CF_SUBCATEGORY                       = 'cf_subcategory';
     const CF_REQUESTOR_ITEM                    = 'cf_requester_item';
     const CF_CATEGORY                          = 'cf_category';
+    const CF_NEW_REQUESTOR_CATEGORY            = 'cf_new_requester_category';
+    const CF_NEW_REQUESTOR_SUBCATEGORY         = 'cf_new_requester_sub_category';
+    const CF_NEW_REQUESTOR_ITEM                = 'cf_new_requester_item';
     const TRANSACTION_ID                       = 'cf_transaction_id';
     const PAYMENT_ID                           = 'cf_razorpay_payment_id';
     const REFUND_ID                            = 'cf_refund_id';
@@ -137,7 +140,8 @@ class Constants
     // workflow constant
     const AUTOMATED_WORKFLOW_RESOLVE_TAGS   = ['automated_workflow_response'];
     // All custom fields allowed to be queried
-    const CUSTOM_FIELDS_LIST_FOR_QUERY = [self::CF_REQUESTOR_CATEGORY, self::CF_REQUESTOR_SUBCATEGORY , self::CF_REQUESTOR_ITEM, self::CF_CREATED_BY, self::CF_WORKFLOW_ID];
+    const CUSTOM_FIELDS_LIST_FOR_QUERY = [self::CF_REQUESTOR_CATEGORY, self::CF_REQUESTOR_SUBCATEGORY , self::CF_REQUESTOR_ITEM, self::CF_CREATED_BY, self::CF_WORKFLOW_ID,
+                                          self::CF_NEW_REQUESTOR_CATEGORY, self::CF_NEW_REQUESTOR_SUBCATEGORY, self::CF_NEW_REQUESTOR_ITEM];
     // Fd instances to find ticket details
     const FD_INSTANCES_LIST_FOR_FETCHING_CUSTOMER_TICKETS = [self::RZPIND];
 

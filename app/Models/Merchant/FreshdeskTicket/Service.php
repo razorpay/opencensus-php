@@ -837,20 +837,7 @@ class Service extends Base\Service
 
         $log = [Constants::FD_INSTANCE => $fdInstance];
 
-        if (array_key_exists(Constants::CF_REQUESTOR_CATEGORY, $input[Constants::CUSTOM_FIELDS]))
-        {
-            $log[Constants::CF_REQUESTOR_CATEGORY] = $input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_CATEGORY];
-        }
-
-        if (array_key_exists(Constants::CF_REQUESTOR_SUBCATEGORY, $input[Constants::CUSTOM_FIELDS]))
-        {
-            $log[Constants::CF_REQUESTOR_SUBCATEGORY] = $input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY];
-        }
-
-        if (array_key_exists(Constants::CF_REQUESTOR_ITEM, $input[Constants::CUSTOM_FIELDS]))
-        {
-            $log[Constants::CF_REQUESTOR_ITEM] = $input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_ITEM];
-        }
+        $log = $this->freshdeskCreateTicketInputLog($log, $input);
 
         $this->trace->info(TraceCode::FRESHDESK_CREATE_TICKET_INPUT_LOG, $log);
 
@@ -888,6 +875,40 @@ class Service extends Base\Service
 
 
         return $this->rewriteFreshdeskTicket($ticketCreateResponse, $ticketEntity, $type);
+    }
+
+    protected function freshdeskCreateTicketInputLog($log, $input)
+    {
+        if (array_key_exists(Constants::CF_REQUESTOR_CATEGORY, $input[Constants::CUSTOM_FIELDS]))
+        {
+            $log[Constants::CF_REQUESTOR_CATEGORY] = $input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_CATEGORY];
+        }
+
+        if (array_key_exists(Constants::CF_REQUESTOR_SUBCATEGORY, $input[Constants::CUSTOM_FIELDS]))
+        {
+            $log[Constants::CF_REQUESTOR_SUBCATEGORY] = $input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY];
+        }
+
+        if (array_key_exists(Constants::CF_REQUESTOR_ITEM, $input[Constants::CUSTOM_FIELDS]))
+        {
+            $log[Constants::CF_REQUESTOR_ITEM] = $input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_ITEM];
+        }
+
+        if (array_key_exists(Constants::CF_NEW_REQUESTOR_CATEGORY, $input[Constants::CUSTOM_FIELDS]))
+        {
+            $log[Constants::CF_NEW_REQUESTOR_CATEGORY] = $input[Constants::CUSTOM_FIELDS][Constants::CF_NEW_REQUESTOR_CATEGORY];
+        }
+
+        if (array_key_exists(Constants::CF_NEW_REQUESTOR_SUBCATEGORY, $input[Constants::CUSTOM_FIELDS])) {
+            $log[Constants::CF_NEW_REQUESTOR_SUBCATEGORY] = $input[Constants::CUSTOM_FIELDS][Constants::CF_NEW_REQUESTOR_SUBCATEGORY];
+        }
+
+        if (array_key_exists(Constants::CF_NEW_REQUESTOR_ITEM, $input[Constants::CUSTOM_FIELDS]))
+        {
+            $log[Constants::CF_NEW_REQUESTOR_ITEM] = $input[Constants::CUSTOM_FIELDS][Constants::CF_NEW_REQUESTOR_ITEM];
+        }
+
+        return $log;
     }
 
     public function getTicketRzpEnitity($ticketId, $type, $merchantId, $fdInstance)
@@ -971,11 +992,7 @@ class Service extends Base\Service
 
         $allTickets = $this->getTicketsFromTypeOrFdInstances($queryParams, $type);
 
-        // Filter on category
-        $allTickets = $this->additionalFilterOnKey($allTickets, $input[Constants::CF_REQUESTOR_CATEGORY] ?? "",Constants::CUSTOM_FIELDS.'.'.Constants::CF_REQUESTOR_CATEGORY);
-
-        // Filter on subcategory
-        $allTickets = $this->additionalFilterOnKey($allTickets, $input[Constants::CF_REQUESTOR_SUBCATEGORY] ?? "", Constants::CUSTOM_FIELDS.'.'.Constants::CF_REQUESTOR_SUBCATEGORY);
+        $allTickets = $this->applyAdditionalFilter($allTickets, $input);
 
         // Sorting the tickets in descending order of created_at
         $this->sortTicketsInDescendingOrderOfCreatedAt($allTickets);
@@ -996,6 +1013,23 @@ class Service extends Base\Service
         ];
 
         return $ticketsResponse;
+    }
+
+    protected function applyAdditionalFilter($allTickets, $input)
+    {
+        // Filter on category
+        $allTickets = $this->additionalFilterOnKey($allTickets, $input[Constants::CF_REQUESTOR_CATEGORY] ?? "", Constants::CUSTOM_FIELDS . '.' . Constants::CF_REQUESTOR_CATEGORY);
+
+        // Filter on subcategory
+        $allTickets = $this->additionalFilterOnKey($allTickets, $input[Constants::CF_REQUESTOR_SUBCATEGORY] ?? "", Constants::CUSTOM_FIELDS . '.' . Constants::CF_REQUESTOR_SUBCATEGORY);
+
+        // Filter on new_category
+        $allTickets = $this->additionalFilterOnKey($allTickets, $input[Constants::CF_NEW_REQUESTOR_CATEGORY] ?? "", Constants::CUSTOM_FIELDS . '.' . Constants::CF_NEW_REQUESTOR_CATEGORY);
+
+        // Filter on new_subcategory
+        $allTickets = $this->additionalFilterOnKey($allTickets, $input[Constants::CF_NEW_REQUESTOR_SUBCATEGORY] ?? "", Constants::CUSTOM_FIELDS . '.' . Constants::CF_NEW_REQUESTOR_SUBCATEGORY);
+
+        return $allTickets;
     }
 
     public function getConversations($id, array $input, $type): array
