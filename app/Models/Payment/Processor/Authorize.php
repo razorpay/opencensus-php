@@ -11551,13 +11551,10 @@ trait Authorize
         if ($addressRequired === true || $addressRequiredWithName === true) {
             //TODO : Validate Address fields as well
 
-            // Skip the address check if address is set in first auth call
-            // for 3ds 2.0 payment
-            if(isset($input['auth_step']) and $input['auth_step'] == '3ds2Auth'){
-                $address = $payment->fetchBillingAddress();
-                if(isset($address)){
-                    return;
-                }
+            // Skip the address check if address is already set for the payment
+            $address = $payment->fetchBillingAddress();
+            if(isset($address)){
+                return;
             }
 
             if (isset($input[Payment\Entity::BILLING_ADDRESS]) === false) {

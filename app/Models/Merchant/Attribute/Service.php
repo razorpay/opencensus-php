@@ -563,7 +563,7 @@ class Service extends Base\Service
 
     public function getDefaultValuesForMerchantOnboarding($network,$merchant)
     {
-        $merchantNameValue = $merchant->getName();
+        $merchantNameValue = substr($merchant->getName(),0,40);
 
         if($network === Group::VISA)
         {

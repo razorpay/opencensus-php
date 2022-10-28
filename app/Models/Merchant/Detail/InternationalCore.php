@@ -28,8 +28,8 @@ class InternationalCore extends Base\Core
 
         $merchant->enableInternational();
 
-        //Will be added back when we test e2e flow for onboarding all the merchants
-        //(new Core)->checkAndPushMessageToMetroForNetworkOnboard($merchant->getId());
+        // Onboarding merchants to 3ds2 flow when international is activated
+        (new Core)->checkAndPushMessageToMetroForNetworkOnboard($merchant->getId());
 
         if ($this->getInternationalActivationFlow($merchant) === InternationalActivationFlow::WHITELIST
             and ($merchant->getOrgId() === Org::RAZORPAY_ORG_ID))
