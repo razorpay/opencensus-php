@@ -1280,9 +1280,9 @@ class Core extends Base\Core
      *
      * @throws Exception\BadRequestValidationFailureException if ledger integration can break
      */
-    public function checkAndDisableFeatureChangesForLedgerFeatures(string $featureToAssign)
+    public function checkAndDisableRxLedgerAndPayoutFeatureChanges(string $featureToAssign)
     {
-        if (in_array($featureToAssign, Constants::LEDGER_FEATURES, true) === true)
+        if (in_array($featureToAssign, array_merge(Constants::LEDGER_FEATURES, Constants::PAYOUT_SERVICE_FEATURES), true) === true)
         {
             $this->trace->info(TraceCode::MANUAL_LEDGER_FEATURE_ASSIGNMENT_ATTEMPTED,
                 [

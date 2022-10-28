@@ -5325,4 +5325,45 @@ class PayoutServiceTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testEnablePayoutServiceFeature()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $feature = $this->getDbEntity('feature',
+            [
+                'entity_id'   => '10000000000000',
+                'entity_type' => EntityConstants::MERCHANT,
+                'name'        => Feature\Constants::PAYOUT_SERVICE_ENABLED,
+            ],
+            'live')->toArray();
+
+        $this->fixtures->on('live')->edit(
+            'feature',
+            $feature['id'],
+            [
+                'name' => 'random_feature',
+            ]
+        );
+
+        $liveFeaturesArrayBeforeTest = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'live')->pluck('name')->toArray();
+
+        $this->assertNotContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayBeforeTest);
+
+        $this->startTest();
+
+        $liveFeaturesArrayAfterTest = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'live')->pluck('name')->toArray();
+
+        $this->assertNotContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayAfterTest);
+    }
 }

@@ -3144,6 +3144,11 @@ class Constants
         self::DA_LEDGER_REVERSE_SHADOW
     ];
 
+    // Payout service related features
+    const PAYOUT_SERVICE_FEATURES = [
+        self::PAYOUT_SERVICE_ENABLED
+    ];
+
     /**
      * Note: If the RESPONSE_TYPE is file, then,
      * a corresponding entry should be made in the class 'Models/Filestore/Type'

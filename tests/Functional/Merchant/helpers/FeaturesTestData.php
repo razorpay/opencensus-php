@@ -2719,14 +2719,18 @@ return [
                 'HTTP_X-Dashboard-Admin-Username' => 'admin',
             ],
         ],
-        'response' => [
-            'content' => [
-                [
-                    'name' => 'payout_service_enabled',
-                    'entity_id' => '10000000000000',
-                    'entity_type' => 'merchant',
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Manually enabling/disabling ledger feature payout_service_enabled is not allowed.'
                 ]
-            ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
 
@@ -2773,14 +2777,18 @@ return [
                 'HTTP_X-Dashboard-Admin-Username' => 'admin',
             ],
         ],
-        'response' => [
-            'content' => [
-                [
-                    'name' => 'payout_service_enabled',
-                    'entity_id' => '10000000000000',
-                    'entity_type' => 'merchant',
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Manually enabling/disabling ledger feature payout_service_enabled is not allowed.'
                 ]
-            ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
 

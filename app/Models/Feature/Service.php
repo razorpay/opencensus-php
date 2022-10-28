@@ -42,7 +42,7 @@ class Service extends Base\Service
         $features = $featureParams->map(function ($item) use ($featureCore, $shouldSync)
         {
             $featureToAssign = (new Entity)->build($item);
-            $featureCore->checkAndDisableFeatureChangesForLedgerFeatures($featureToAssign->getName());
+            $featureCore->checkAndDisableRxLedgerAndPayoutFeatureChanges($featureToAssign->getName());
 
             return $featureCore->create($item, $shouldSync);
         });
@@ -525,7 +525,7 @@ class Service extends Base\Service
 
         $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
 
-        (new Core)->checkAndDisableFeatureChangesForLedgerFeatures($feature->getName());
+        (new Core)->checkAndDisableRxLedgerAndPayoutFeatureChanges($feature->getName());
 
         (new Core)->delete($feature, $shouldSync);
 
@@ -594,7 +594,7 @@ class Service extends Base\Service
 
                 try
                 {
-                    (new Core())->checkAndDisableFeatureChangesForLedgerFeatures($featureName);
+                    (new Core())->checkAndDisableRxLedgerAndPayoutFeatureChanges($featureName);
 
                     $feature = (new Core())->create($featureParam, $shouldSync);
 
@@ -672,7 +672,7 @@ class Service extends Base\Service
             {
                 try
                 {
-                    (new Core())->checkAndDisableFeatureChangesForLedgerFeatures($featureName);
+                    (new Core())->checkAndDisableRxLedgerAndPayoutFeatureChanges($featureName);
 
                     $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
                         $entityType,
