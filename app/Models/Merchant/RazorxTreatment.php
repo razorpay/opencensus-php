@@ -551,10 +551,6 @@ final class RazorxTreatment
     // Experiment to control recurring auto payment process through actual card number/tokenised card number for tokenised cards
     const RECURRING_SUBSEQUENT_THROUGH_TOKENISED_CARD = 'recurring_subsequent_through_tokenised_card';
 
-    // Emandate bank response file instrumentation
-    const EMANDATE_DEBIT_RESPONSE_FILE_INSTRUMENTATION_BANK = 'emandate_debit_response_file_instrumentation_bank';
-    const EMANDATE_DEBIT_RESPONSE_FILE_INSTRUMENTATION_RAMP = 'emandate_debit_response_file_instrumentation_ramp';
-
     /** @var string Experiment to deprecate tos_acceptance field from /accounts api */
     const IGNORE_TOS_ACCEPTANCE = 'ignore_tos_acceptance';
 

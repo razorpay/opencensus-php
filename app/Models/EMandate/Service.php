@@ -46,18 +46,13 @@ class Service extends Base\Service
         }
 
         // This is for the instrumentation of nach/emandate debit response file
-        if (($this->isExperimentEnabledForInstrumentationBank($input['gateway']) === true) and
-            ($this->isExperimentEnabledForInstrumentationRamp() === true))
+        try
         {
-            try
-            {
-                ResposeFileBatchInstrumentation::dispatch($this->mode, $batchId, $input);
-
-            }
-            catch (\Throwable $ex)
-            {
-                $this->trace->traceException($ex, Logger::ERROR, TraceCode::EMANDATE_INSTRUMENTATION_ERROR_SQS_PUSH_FAILED);
-            }
+            ResposeFileBatchInstrumentation::dispatch($this->mode, $batchId, $input);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, Logger::ERROR, TraceCode::EMANDATE_INSTRUMENTATION_ERROR_SQS_PUSH_FAILED);
         }
 
         $namespaceKeys = [
@@ -163,18 +158,14 @@ class Service extends Base\Service
             $this->deletePaymentFromRedis($input);
         }
 
-        if (($this->isExperimentEnabledForInstrumentationBank($input['gateway']) === true) and
-            ($this->isExperimentEnabledForInstrumentationRamp() === true))
+        try
         {
-            try
-            {
-                ResposeFileBatchInstrumentation::dispatch($this->mode, $batchId, $input);
+            ResposeFileBatchInstrumentation::dispatch($this->mode, $batchId, $input);
 
-            }
-            catch (\Throwable $ex)
-            {
-                $this->trace->traceException($ex, Logger::ERROR, TraceCode::EMANDATE_INSTRUMENTATION_ERROR_SQS_PUSH_FAILED);
-            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, Logger::ERROR, TraceCode::EMANDATE_INSTRUMENTATION_ERROR_SQS_PUSH_FAILED);
         }
 
         return $data;
@@ -381,59 +372,4 @@ class Service extends Base\Service
         return $processor;
     }
 
-    public function isExperimentEnabledForInstrumentationBank($key): bool
-    {
-        try
-        {
-            $variant = $this->app['razorx']->getTreatment(
-                $key,
-                RazorxTreatment::EMANDATE_DEBIT_RESPONSE_FILE_INSTRUMENTATION_BANK,
-                $this->mode
-            );
-
-            if (strtolower($variant) === 'on')
-            {
-                return true;
-            }
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException(
-                $e,
-                null,
-                TraceCode::EMANDATE_INSTRUMENTATION_RESPONSE_RAZORX_FAIL
-            );
-        }
-
-        return false;
-    }
-
-    public function isExperimentEnabledForInstrumentationRamp(): bool
-    {
-        try
-        {
-            $key = Carbon::now()->getTimestamp();
-
-            $variant = $this->app['razorx']->getTreatment(
-                $key,
-                RazorxTreatment::EMANDATE_DEBIT_RESPONSE_FILE_INSTRUMENTATION_RAMP,
-                $this->mode
-            );
-
-            if (strtolower($variant) === 'on')
-            {
-                return true;
-            }
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException(
-                $e,
-                null,
-                TraceCode::EMANDATE_INSTRUMENTATION_RESPONSE_RAZORX_FAIL
-            );
-        }
-
-        return false;
-    }
 }
