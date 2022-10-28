@@ -79,15 +79,14 @@ const SuccessRateFilter = (props) => {
     setErrors(errors);
   }, [dateRange]);
 
-  const onSearch = async () => {
+  const onSearch = async (dateRangeParam = dateRange, errorsParam = errors) => {
     const isOverallTabActive = activeTab !== 'Overall';
-    const { startDate, endDate } = dateRange;
-
-    if (Object.keys(errors).length) {
+    const { startDate, endDate } = dateRangeParam;
+    if (Object.keys(errorsParam).length) {
       return;
     }
 
-    updateDateRange(dateRange);
+    updateDateRange(dateRangeParam);
     setDefaultInterval(getBreakdownInterval(startDate, endDate));
     if (activeTab === 'Card') {
       setCardTypeFilter(INITIAL_SELECTED_CARD_TYPE);
@@ -125,6 +124,20 @@ const SuccessRateFilter = (props) => {
     trackSuccessRateEvents(clearFilterSuccessRate(payload));
   };
 
+  const onPresetChange = ({ option, start, end }) => {
+    const dateRange = {
+      preset: option,
+      startDate: start,
+      endDate: end,
+    };
+    const errors = validateDateRange(dateRange);
+    setDateRange(dateRange);
+    setErrors(errors);
+    if (option?.name !== 'custom') {
+      onSearch(dateRange, errors);
+    }
+  };
+
   return (
     <div className="sr-filter">
       <label>Date Range</label>
@@ -135,12 +148,13 @@ const SuccessRateFilter = (props) => {
           dateRange={dateRange}
           setDateRange={setDateRange}
           setErrors={setErrors}
+          onPresetChange={onPresetChange}
         />
 
         <div className="filter__actions">
           <AsyncButton
             className="btn btn-primary btn-sm"
-            onClick={onSearch}
+            onClick={() => onSearch()}
             disabled={Object.keys(errors).length > 0}
             text="Search"
           />

@@ -30,12 +30,7 @@ function DateRangePreset(props) {
       end = moment().endOf('hour');
       start = end.clone().subtract(value, unit).startOf('hour');
     }
-
-    setDateRange({
-      preset: option,
-      startDate: start,
-      endDate: end,
-    });
+    props?.onPresetChange?.({ option, start, end });
   };
 
   const handleDateChange = ({ date, name }) => {

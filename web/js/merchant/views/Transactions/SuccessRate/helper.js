@@ -1,6 +1,6 @@
 import moment from 'moment';
 import isObject from 'is-object';
-import { reduce, head, map, unionBy, filter, cloneDeep, upperFirst } from 'lodash';
+import { reduce, head, map, unionBy, filter, cloneDeep, upperFirst, uniqBy } from 'lodash';
 import store, { getUser } from 'merchant/store';
 import {
   DEFAULT_PRESET,
@@ -12,6 +12,7 @@ import {
   breakdownInterval,
   TAG_MAP,
   DEFAULT_OPTIMIZER_FILTERS,
+  STATIC_OPTIMIZER_FILTERS,
   TABS_WITH_OPTIMIZER_DROPDOWN_FILTERS,
   TABS_VS_OPTIMIZER_GROUP_BY,
   DEFAULT_GROUP_BY,
@@ -434,17 +435,23 @@ export const getFormattedFilters = (filters) =>
   reduce(
     filters,
     (acc, values, key) => {
-      acc.push([
-        ...(DEFAULT_OPTIMIZER_FILTERS?.[key] || []),
-        ...values?.map((filterDetails) => {
-          const { code, name } = filterDetails || {};
-          return {
-            value: code || name,
-            text: FILTERS_VS_DISPLAY_NAMES?.[name] || upperFirst(name),
-            query: key,
-          };
-        }),
-      ]);
+      acc.push(
+        uniqBy(
+          [
+            ...(DEFAULT_OPTIMIZER_FILTERS?.[key] || []),
+            ...(STATIC_OPTIMIZER_FILTERS?.[key] || []),
+            ...values?.map((filterDetails) => {
+              const { code, name } = filterDetails || {};
+              return {
+                value: code || name,
+                text: FILTERS_VS_DISPLAY_NAMES?.[name] || upperFirst(name),
+                query: key,
+              };
+            }),
+          ],
+          'value',
+        ),
+      );
       return acc;
     },
     [],

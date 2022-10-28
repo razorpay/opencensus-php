@@ -311,6 +311,37 @@ export const DEFAULT_OPTIMIZER_FILTERS = {
   ],
 };
 
+const OPTIMIZER_CARD_TYPE_GROUPING_DATA = [
+  {
+    value: 'credit',
+    text: 'Credit',
+    query: 'type',
+  },
+  {
+    value: 'debit',
+    text: 'Debit',
+    query: 'type',
+  },
+];
+
+const OPTIMIZER_UPI_TYPE_GROUPING_DATA = [
+  {
+    value: 'intent',
+    text: 'Intent Only',
+    query: 'upi_type',
+  },
+  {
+    value: 'collect',
+    text: 'Collect Only',
+    query: 'upi_type',
+  },
+];
+
+export const STATIC_OPTIMIZER_FILTERS = {
+  type: OPTIMIZER_CARD_TYPE_GROUPING_DATA,
+  upi_type: OPTIMIZER_UPI_TYPE_GROUPING_DATA,
+};
+
 export const SR_FILTERS = {
   UPI: [],
   Card: [CARD_GROUPING_DATA],
