@@ -6305,20 +6305,21 @@ return [
         ]
     ],
 
-    'testMerchantFetchTpvsRouteViaBankingProductWithBlockingFeatureEnabled' => [
+    'testMerchantFetchTpvsRouteViaBankingProductForViewOnlyRole' => [
         'request' => [
             'url'     => '/merchant/tpvs',
             'method'  => 'GET',
             'content' => [],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
-                    'description' => PublicErrorDescription::BAD_REQUEST_ROUTE_NOT_ACCESSIBLE_VIA_BANKING,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Authentication failed',
                 ],
             ],
             'status_code' => 400,
-        ]
+        ],
     ],
 
     'testMerchantTpvCreateRouteViaBankingProductWithBlockingFeatureEnabled' => [

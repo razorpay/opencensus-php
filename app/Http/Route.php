@@ -9230,7 +9230,7 @@ class Route
 
         //TPV - Third party validation
         //- validations on source accounts through which money gets loaded to va.
-        'merchant_fetch_tpvs'                          => '*',
+        'merchant_fetch_tpvs'                          => Permission::VIEW_BANKING,
         'merchant_tpv_create'                          => '*',
 
         //NPS
@@ -15217,7 +15217,6 @@ class Route
         'merchant_partner_configs_fetch',
         'setl_holidays',
         'setl_amount',
-        'merchant_fetch_tpvs',
         'merchant_tpv_create',
         'user_fetch_purpose_code'
     ];

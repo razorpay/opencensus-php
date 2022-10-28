@@ -7000,6 +7000,27 @@ class UserTest extends TestCase
                               }));
     }
 
+    protected function enableRazorXTreatmentForRxAclDenyUnauthorized()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function($mid, $feature, $mode) {
+                                  if ($feature === 'razorpay_x_acl_deny_unauthorised')
+                                  {
+                                      return 'on';
+                                  }
+
+                                  return 'off';
+                              }));
+    }
+
     public function enableRazorXTreatmentForRazorXForOrgLevel2Fa()
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -9935,7 +9956,7 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testMerchantFetchTpvsRouteViaBankingProductWithBlockingFeatureEnabled()
+    public function testMerchantTpvCreateRouteViaBankingProductWithBlockingFeatureEnabled()
     {
         $this->enableRazorXTreatmentForBlockBankingRoutes();
 
@@ -9948,11 +9969,11 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testMerchantTpvCreateRouteViaBankingProductWithBlockingFeatureEnabled()
+    public function testMerchantFetchTpvsRouteViaBankingProductForViewOnlyRole()
     {
-        $this->enableRazorXTreatmentForBlockBankingRoutes();
+        $this->enableRazorXTreatmentForRxAclDenyUnauthorized();
 
-        $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000');
+        $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'view_only');
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
 
