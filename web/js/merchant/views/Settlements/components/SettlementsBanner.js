@@ -110,7 +110,7 @@ const SettlementsBanner = (props) => {
 
   return title ? (
     <div className="banner-wrapper">
-      <div className={`settlements-banner ${className}`}>
+      <div className={`settlements-banner ${className}`} aria-label="settlement-banner">
         <div className="title-section">
           {icon}
           <span className="title">{title}</span>
@@ -121,18 +121,16 @@ const SettlementsBanner = (props) => {
         </div>
       </div>
     </div>
-  ) : (
-    user.isOndemandSettlementEnabled && (
-      <div className="banner-wrapper">
-        <SettlementMessage
-          user={user}
-          holidayList={holidayList}
-          openModal={openModal}
-          balance={balance}
-        />
-      </div>
-    )
-  );
+  ) : user.isOndemandSettlementEnabled ? (
+    <div className="banner-wrapper">
+      <SettlementMessage
+        user={user}
+        holidayList={holidayList}
+        openModal={openModal}
+        balance={balance}
+      />
+    </div>
+  ) : null;
 };
 
 const mapStateToProps = (state) => {

@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import SettlementScheduleV2 from 'merchant/views/Settlements/components/SettlementScheduleV2';
@@ -111,7 +112,14 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default connect(mapStateToProps, {
-  openModal: fnOpenModal,
-  fetchOnDemandBlocked: fnFetchOnDemandBlocked,
-})(SettlementsHeader);
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators(
+    {
+      openModal: fnOpenModal,
+      fetchOnDemandBlocked: fnFetchOnDemandBlocked,
+    },
+    dispatch,
+  );
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(SettlementsHeader);
