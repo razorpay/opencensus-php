@@ -3051,7 +3051,8 @@ class Core extends Base\Core
         // This will do nothing for reverse shadow
         $this->processLedgerPayout($payout, null, $ftsSourceAccountInformation);
 
-        if (self::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === true) {
+        if (($payout->getIsPayoutService() === false) and
+            (self::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === true)) {
             try
             {
                 $response = (new PayoutsLedgerProcessor($payout))
@@ -3090,6 +3091,11 @@ class Core extends Base\Core
             ($payout->getBalanceAccountType() === AccountType::DIRECT) or
             ($payout->isBalanceTypePrimary() === true))
         {
+            return;
+        }
+
+        // If merchant is enabled on payout service then we return.
+        if ($payout->getIsPayoutService() === true) {
             return;
         }
 
@@ -3677,7 +3683,8 @@ class Core extends Base\Core
          * If fta status is Status::REVERSED, we have to send reversed event to ledger,
          * so we first send a processed event to make sure correct ledger entries are recorded
          */
-        if (($ftaStatus === null) || ($ftaStatus === Attempt\Status::REVERSED)) {
+        if (($payout->getIsPayoutService() === false) and
+            (($ftaStatus === null) || ($ftaStatus === Attempt\Status::REVERSED))) {
 
             // If a payout goes from initiated to directly reversed, we will still wish to move the status
             // from initiated -> processed -> reversed for proper journal writes,
@@ -4561,6 +4568,12 @@ class Core extends Base\Core
         // transaction or FTA. We do it later when we actually process that payout.
         //
         if ($payout->isStatusBeforeCreate() === true)
+        {
+            return;
+        }
+
+        // No need to trigger FTA for payout service payouts.
+        if ($payout->getIsPayoutService() === true)
         {
             return;
         }
@@ -6635,13 +6648,12 @@ class Core extends Base\Core
     {
         /* API transaction Dual write should happen only if one of the below is true
         1. merchant is on API<>Ledger reverse shadow integration - LEDGER_REVERSE_SHADOW
-        2. merchant is on Payout MS<>Ledger integration which is always reverse shadow - FREE_PAYOUT_LEDGER_VIA_PS
+        2. merchant is on Payout MS<>Ledger integration which is always reverse shadow - PAYOUT_SERVICE_ENABLED
 
         Note: In case of point 2, we should ensure merchant is not on ledger shadow mode via API<>Ledger integration
         */
         $featureChecks = (($payout->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true) or
-                         (($payout->merchant->isFeatureEnabled(Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS) === true) and
-                          ($payout->merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_WRITES) === false)));
+                          ($payout->merchant->isFeatureEnabled(Feature\Constants::PAYOUT_SERVICE_ENABLED) === true));
 
         if ($featureChecks and
             ($payout->getBalanceType() === Merchant\Balance\Type::BANKING) and
@@ -6929,6 +6941,20 @@ class Core extends Base\Core
         {
             try
             {
+                // If merchant is onboarded on payout service then we skip cron processing.
+                // Any intermittent failures are handled at payout service end.
+                if ($payout->merchant->isFeatureEnabled(FeatureConstants::PAYOUT_SERVICE_ENABLED) === true)
+                {
+                    $this->trace->info(
+                        TraceCode::LEDGER_STATUS_CRON_SKIP_MERCHANT_ON_PAYOUT_SERVICE,
+                        [
+                            'payout_id'   => $payout->getPublicId(),
+                            'merchant_id' => $payout->getMerchantId(),
+                        ]
+                    );
+                    continue;
+                }
+
                 /*
                  * If merchant is not on reverse shadow, and is not present in $forcedMerchantIds array,
                  * only then skip the merchant.

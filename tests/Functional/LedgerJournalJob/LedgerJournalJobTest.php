@@ -97,7 +97,16 @@ class LedgerJournalJobTest extends TestCase
 
         $this->fixtures->edit('payout', $id, ['id' => 'Gg7sgBZgvYjlSC']);
 
-        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::PAYOUT_SERVICE_ENABLED]);
+
+        $featuresArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
+
+        $this->assertNotContains('ledger_reverse_shadow', $featuresArray);
+        $this->assertContains('payout_service_enabled', $featuresArray);
 
         $testData = &$this->testData['testPayoutTransactionCreation'];
         $ledgerJournalJob = new LedgerJournalTest($testData['payload']);

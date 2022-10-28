@@ -1243,8 +1243,7 @@ class Core extends Base\Core
         }
 
         $featureChecks = (($reversal->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true) or
-                         (($reversal->merchant->isFeatureEnabled(Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS) === true) and
-                          ($reversal->merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_WRITES) === false)));
+                            ($reversal->merchant->isFeatureEnabled(Feature\Constants::PAYOUT_SERVICE_ENABLED) === true));
 
         if ($featureChecks === false)
         {
@@ -1336,6 +1335,21 @@ class Core extends Base\Core
 
             try
             {
+                // If merchant is onboarded on payout service then we skip cron processing.
+                // Any intermittent failures are handled at payout service end.
+                if (($sourceType === E::PAYOUT) and
+                    ($rev->merchant->isFeatureEnabled(Feature\Constants::PAYOUT_SERVICE_ENABLED) === true))
+                {
+                    $this->trace->info(
+                        TraceCode::LEDGER_STATUS_CRON_SKIP_MERCHANT_ON_PAYOUT_SERVICE,
+                        [
+                            'payout_id'   => $rev->getPublicId(),
+                            'merchant_id' => $rev->getMerchantId(),
+                        ]
+                    );
+                    continue;
+                }
+
                 /*
                  * If merchant is not on reverse shadow, and is not present in $forcedMerchantIds array,
                  * only then skip the merchant.

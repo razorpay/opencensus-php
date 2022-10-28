@@ -62,7 +62,7 @@ class FundAccountPayout extends Base
             if (($payout->isStatusBeforeCreate() === false) and
                 ($payout->getBalanceAccountType() === AccountType::SHARED) and
                 ($payout->merchant->isFeatureEnabled(Features::LEDGER_REVERSE_SHADOW) === false) and
-                ($payout->merchant->isFeatureEnabled(Features::FREE_PAYOUT_LEDGER_VIA_PS) === false))
+                ($payout->getIsPayoutService() === false))
             {
                 (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
             }
