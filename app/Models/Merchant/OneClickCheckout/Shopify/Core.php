@@ -769,6 +769,9 @@ class Core extends Base\Core
         }
         $body = $this->getOrderFromCheckout($checkout['data']['node']);
 
+        // We override the subtotal price to account for the Re 1 payment in case of 100% discount coupons
+        $body['current_subtotal_price'] = strval($rzpOrder['amount']/100);
+
         $codFee = $rzpOrder['cod_fee']/100;
         $shippingFee = $rzpOrder['shipping_fee']/100;
         $customerDetails = $rzpOrder['customer_details'];
@@ -813,16 +816,23 @@ class Core extends Base\Core
             'phone' => $customerDetails['contact'],
         ];
 
+        $discountAmountPaise = 0;
         if (empty($rzpOrder['promotions']) === false)
         {
             $promotions = $rzpOrder['promotions'];
 
+            // We do not support Rs 0 orders so if a 100% discount coupon is applied
+            // we hardcode the order amount to Re 1. To maintain consistency, we subtract
+            // Re 1 from the discount applied so Shopify reflects the Re 1 payment even for 100% discount
+            // We chose amount as amount_paid for cod orders is Re 0.
+            $discountAmountPaise = $rzpOrder['line_items_total'] + $rzpOrder['shipping_fee'] - $rzpOrder['amount'];
+
             $body['discount_codes'][] = [
                 'code'   => $promotions[0]['code'],
-                'amount' => $promotions[0]['value']/100
+                'amount' => $discountAmountPaise/100,
             ];
 
-            $body['current_total_discounts'] = $promotions[0]['value'];
+            $body['current_total_discounts'] = $discountAmountPaise/100;
         }
 
         // Add script discount as coupon
@@ -859,7 +869,15 @@ class Core extends Base\Core
                 'title' => 'Standard Shipping'
             ]
         ];
-
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_PLACE_ORDER_RES,
+            [
+                'body'                  => $body,
+                'discount_amount_paise' => $discountAmountPaise,
+                'rzp_order'             => $rzpOrder,
+                'payment_method'        => $paymentMethod,
+            ]
+        );
         return $body;
     }
 
@@ -888,18 +906,6 @@ class Core extends Base\Core
 
     protected function updateShopifyTransaction(string $merchantOrderId, array $payment): array
     {
-        if ($payment['amount'] <= 100)
-        {
-            $this->trace->info(
-              TraceCode::SHOPIFY_1CC_UPDATE_TRANSACTION_BODY,
-                [
-                    'type'    => 'update_transaction_skipped',
-                    'payment' => $payment,
-                ]
-            );
-            return [];
-        }
-
         $start = millitime();
 
         $body = $this->getTransactionBody($merchantOrderId, $payment);
