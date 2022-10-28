@@ -1,9 +1,11 @@
 import React from 'react';
+import useLocalStorage from 'merchant/utils/useLocalStorage';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import { getUser } from 'merchant/store';
 import Tabs, { Tab, TabPane } from 'common/ui/ReactTabs';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import MetricsCard from 'merchant/views/Transactions/SuccessRate/components/MetricsCard';
 import GraphPanel from 'merchant/views/Transactions/SuccessRate/components/GraphPanel';
 import MethodFilter from 'merchant/views/Transactions/SuccessRate/components/MethodFilter';
@@ -39,6 +41,7 @@ const GraphWidget = (props) => {
     setSelectedDropdownFilterOptions,
     setDefaultInterval,
     setCardTypeFilter,
+    user,
   } = props;
   const {
     isLoading,
@@ -51,6 +54,13 @@ const GraphWidget = (props) => {
   } = successRate;
 
   const tabPane = Object.values(metrics);
+  const [isSRDashboardFirstTime, setIsSRDashboardFirstTime] = useLocalStorage(
+    `isSRDashboardFirstTime_${user?.current}`,
+    true,
+  );
+  const handleGotItClick = () => {
+    setIsSRDashboardFirstTime(false);
+  };
 
   const handleTabChange = (tabIndex) => {
     const { startDate, endDate } = filters || {};
@@ -98,6 +108,21 @@ const GraphWidget = (props) => {
           return (
             <Tab key={`${tab.name}-${idx}`}>
               <MetricsCard isLoading={isLoading} isActive={activeTab === tab.name} metric={tab} />
+              {!isLoading && isSRDashboardFirstTime && tab?.name === 'Card' && (
+                <Popover persistent={true} theme="dark" align="bottom">
+                  <PopoverBody>
+                    <p>
+                      To filter via various payment gateways, click on any of the above payment
+                      methods - UPI, Netbanking or Cards.
+                    </p>
+                    <div className="clearfix">
+                      <b className="pull-right" onClick={handleGotItClick}>
+                        Got it
+                      </b>
+                    </div>
+                  </PopoverBody>
+                </Popover>
+              )}
             </Tab>
           );
         })}
@@ -124,7 +149,7 @@ const GraphWidget = (props) => {
   );
 };
 
-const mapStateToProps = ({ successRate }) => ({ successRate });
+const mapStateToProps = ({ successRate, session }) => ({ successRate, user: session?.user });
 
 const mapDispatchToProps = (dispatch) => {
   return bindActionCreators(
