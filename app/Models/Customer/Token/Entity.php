@@ -30,6 +30,7 @@ use RZP\Models\PaperMandate\FileUploader;
 use RZP\Models\PaperMandate\PaperMandateUpload\Entity as PaperMandateUploadEntity;
 use RZP\Models\SubscriptionRegistration\Entity as SubscriptionRegistrationEntity;
 use RZP\Models\Customer;
+use RZP\Constants\Mode;
 
 /**
  * @property Vpa\Entity  $vpa
@@ -1102,7 +1103,7 @@ class Entity extends Base\PublicEntity
             try {
                 $card = $app['repo']->card->fetchForToken($this);
 
-                if ($card->isNetworkTokenisedCard() === true) {
+                if ($card->isNetworkTokenisedCard() === true || ($app['rzp.mode'] === Mode::TEST)) {
                     $publicArray[self::COMPLIANT_WITH_TOKENISATION_GUIDELINES] = true;
                 } else {
                     $publicArray[self::COMPLIANT_WITH_TOKENISATION_GUIDELINES] = false;

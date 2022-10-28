@@ -268,7 +268,10 @@ class Service extends Base\Service
 
         $tokens = $this->repo->token->getByCustomer($customer, $withVpas, $this->merchant->getId(), $this->mode);
 
-        $tokens = $this->core->removeNonCompliantCardTokens($tokens,$this->merchant->getId());
+        if ($this->mode !== "test")
+        {
+            $tokens = $this->core->removeNonCompliantCardTokens($tokens,$this->merchant->getId());
+        }
 
         return $tokens->toArrayPublic();
     }
