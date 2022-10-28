@@ -124,6 +124,9 @@ class EventServiceProvider extends ServiceProvider
         Acs\RecordSyncEvent::class => [
             Acs\RecordSyncListener::class,
         ],
+        Acs\RollbackEvent::class => [
+            Acs\RollbackEventListener::class,
+        ],
         KafkaEvents\JobProcessed::class => [
             Acs\TriggerSyncListener::class,
         ],

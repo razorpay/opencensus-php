@@ -241,6 +241,8 @@ class DedupeTest extends OAuthTestCase
         $request = Mockery::mock('Illuminate\Http\Request')->makePartial();
 
         $request->shouldReceive('getClientIp')->withAnyArgs()->andReturn("127.0.0.0");
+        $request->shouldReceive('getId')->withAnyArgs()->andReturn("8bde38291fc32cf7af535d062c18f0f8");
+        $request->shouldReceive('getTaskId')->withAnyArgs()->andReturn("8bde38291fc32cf7af535d062c18f0f8");
 
         $this->app->instance('request', $request);
 
@@ -263,6 +265,8 @@ class DedupeTest extends OAuthTestCase
         $request = Mockery::mock('Illuminate\Http\Request')->makePartial();
 
         $request->shouldReceive('cookie')->withAnyArgs()->andReturn("iamClient_id");
+        $request->shouldReceive('getId')->withAnyArgs()->andReturn("8bde38291fc32cf7af535d062c18f0f8");
+        $request->shouldReceive('getTaskId')->withAnyArgs()->andReturn("8bde38291fc32cf7af535d062c18f0f8");
 
         $this->app->instance('request', $request);
 

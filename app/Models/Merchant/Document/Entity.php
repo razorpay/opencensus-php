@@ -6,10 +6,12 @@ use RZP\Models\Merchant;
 use RZP\Models\FileStore;
 use RZP\Models\Merchant\BvsValidation;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
 
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
+    use TransactionalModelEvents\TransactionalAwareEvents;
 
     const FILE_STORE_ID      = 'file_store_id';
     const DOCUMENT_TYPE      = 'document_type';

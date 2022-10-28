@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Detail\BusinessType;
+use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
 
 /**
  * Class Entity
@@ -18,6 +19,8 @@ use RZP\Models\Merchant\Detail\BusinessType;
  */
 class Entity extends Base\PublicEntity
 {
+    use TransactionalModelEvents\TransactionalAwareEvents;
+
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
     const DELIVERABLE_TYPE      = 'deliverable_type';

@@ -14,6 +14,7 @@ use RZP\Models\Merchant\AutoKyc;
 use RZP\Exception\InvalidPermissionException;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
+use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
 
 /**
  * Class Entity
@@ -30,6 +31,8 @@ use RZP\Models\Merchant\Document\OcrVerificationStatus;
  */
 class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 {
+    use TransactionalModelEvents\TransactionalAwareEvents;
+
     const MERCHANT_ID                        = 'merchant_id';
     const CONTACT_NAME                       = 'contact_name';
     const CONTACT_EMAIL                      = 'contact_email';

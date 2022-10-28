@@ -34,6 +34,17 @@ class SyncEventObserver
     }
 
     /**
+     * Listen to the Rollback Event on created operation
+     * @param PublicEntity $entity
+     * @return void
+     */
+    public function afterRollbackCreated(PublicEntity $entity)
+    {
+        event(new RollbackEvent($entity, 'afterRollback.created'));
+    }
+
+
+    /**
      * Listen to the updated event.
      *
      * @param  PublicEntity $entity
@@ -45,6 +56,16 @@ class SyncEventObserver
     }
 
     /**
+     * Listen to the Rollback Event on updated operation
+     * @param PublicEntity $entity
+     * @return void
+     */
+    public function afterRollbackUpdated(PublicEntity $entity)
+    {
+        event(new RollbackEvent($entity, 'afterRollback.updated'));
+    }
+
+    /**
      * Listen to the deleted event.
      *
      * @param  PublicEntity $entity
@@ -53,5 +74,15 @@ class SyncEventObserver
     public function deleted(PublicEntity $entity)
     {
         event(new RecordSyncEvent($entity, [self::ACS_OUTBOX_JOB_NAME]));
+    }
+
+    /**
+     * Listen to the Rollback Event on deleted operation
+     * @param PublicEntity $entity
+     * @return void
+     */
+    public function afterRollbackDeleted(PublicEntity $entity)
+    {
+        event(new RollbackEvent($entity, 'afterRollback.deleted'));
     }
 }

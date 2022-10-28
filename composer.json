@@ -84,7 +84,8 @@
         "ext-libxml": "*",
         "p3k/emoji-detector": "^0.3.1",
         "jakeasmith/http_build_url": "^1",
-        "ext-curl": "*"
+        "ext-curl": "*",
+        "mvanduijker/laravel-transactional-model-events": "^2.3"
     },
     "repositories": [
         {

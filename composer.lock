@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "68af20fc09a007fc35dfd18d368361b4",
+    "content-hash": "0f4aa9b2c3acbe81b240ca9c89fc4405",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -1951,12 +1951,12 @@
             },
             "type": "library",
             "autoload": {
-                "files": [
-                    "library/HTMLPurifier.composer.php"
-                ],
                 "psr-0": {
                     "HTMLPurifier": "library/"
                 },
+                "files": [
+                    "library/HTMLPurifier.composer.php"
+                ],
                 "exclude-from-classmap": [
                     "/library/HTMLPurifier/Language/"
                 ]
@@ -2998,12 +2998,12 @@
                 }
             },
             "autoload": {
-                "files": [
-                    "src/functions_include.php"
-                ],
                 "psr-4": {
                     "GuzzleHttp\\Promise\\": "src/"
-                }
+                },
+                "files": [
+                    "src/functions_include.php"
+                ]
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -3255,12 +3255,12 @@
             },
             "type": "library",
             "autoload": {
-                "files": [
-                    "src/functions.php"
-                ],
                 "psr-4": {
                     "JsonMachine\\": "src/"
-                }
+                },
+                "files": [
+                    "src/functions.php"
+                ]
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -5393,7 +5393,7 @@
             "time": "2021-03-01T19:41:06+00:00"
         },
         {
-            "name": "mikey179/vfsstream",
+            "name": "mikey179/vfsStream",
             "version": "v1.3.0",
             "source": {
                 "type": "git",
@@ -5713,6 +5713,59 @@
                 "templating"
             ],
             "time": "2022-01-21T06:08:36+00:00"
+        },
+        {
+            "name": "mvanduijker/laravel-transactional-model-events",
+            "version": "2.3.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mvanduijker/laravel-transactional-model-events.git",
+                "reference": "b8e18c5ca0d27952762c3f4cf7e7dc15f7857b98"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mvanduijker/laravel-transactional-model-events/zipball/b8e18c5ca0d27952762c3f4cf7e7dc15f7857b98",
+                "reference": "b8e18c5ca0d27952762c3f4cf7e7dc15f7857b98",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/database": "~5.7.0|~5.8.0|~6.0,!=6.9.0|~7.0",
+                "php": "^7.2"
+            },
+            "require-dev": {
+                "larapack/dd": "^1.0",
+                "orchestra/testbench": "~3.0|~4.0|~5.0",
+                "phpunit/phpunit": "^8.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "MVanDuijker\\TransactionalModelEvents\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Mark van Duijker",
+                    "email": "mark@duyker.nl",
+                    "homepage": "https://github.com/mvanduijker",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Add eloquent model events fired after a transaction is committed or rolled back",
+            "homepage": "https://github.com/mvanduijker/laravel-transactional-model-events",
+            "keywords": [
+                "database",
+                "eloquent",
+                "events",
+                "laravel",
+                "laravel-transactional-model-events",
+                "transaction"
+            ],
+            "time": "2020-08-27T19:29:32+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -6072,6 +6125,12 @@
                 "reference": "e9d6a5446104b3583c6b6ed02a34bf64b59e9969",
                 "shasum": ""
             },
+            "archive": {
+                "exclude": [
+                    "ext/",
+                    "scripts/"
+                ]
+            },
             "require": {
                 "cache/adapter-common": "^1.0",
                 "php": ">=7.0",
@@ -6104,12 +6163,6 @@
                 "psr-4": {
                     "OpenCensus\\": "src/"
                 }
-            },
-            "archive": {
-                "exclude": [
-                    "ext/",
-                    "scripts/"
-                ]
             },
             "scripts": {
                 "tests": [
@@ -8207,10 +8260,6 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "support": {
-                "issues": "https://github.com/razorpay/ifsc/issues",
-                "source": "https://github.com/razorpay/ifsc/tree/v2.0.10"
-            },
             "time": "2022-08-11T07:54:54+00:00"
         },
         {
@@ -8350,10 +8399,6 @@
                 "razorpay",
                 "service"
             ],
-            "support": {
-                "source": "https://github.com/razorpay/oauth/tree/2.4.0",
-                "issues": "https://github.com/razorpay/oauth/issues"
-            },
             "time": "2022-08-24T07:46:30+00:00"
         },
         {
@@ -8743,6 +8788,11 @@
                 "reference": "bcefdc6b5c2e970d8a0095448f6b1d8674609bfb",
                 "shasum": ""
             },
+            "archive": {
+                "exclude": [
+                    "/xsd/"
+                ]
+            },
             "require": {
                 "goetas-webservices/xsd2php-runtime": "^0.2.2"
             },
@@ -8755,11 +8805,6 @@
                 "psr-4": {
                     "Razorpay\\UPI\\": "src"
                 }
-            },
-            "archive": {
-                "exclude": [
-                    "/xsd/"
-                ]
             },
             "authors": [
                 {
@@ -15060,8 +15105,9 @@
         "ext-zip": "*",
         "ext-json": "*",
         "ext-dom": "*",
-        "ext-libxml": "*"
+        "ext-libxml": "*",
+        "ext-curl": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.1.0"
+    "plugin-api-version": "1.1.0"
 }

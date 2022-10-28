@@ -48,6 +48,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Methods\Core as MethodCore;
 use RZP\Models\Payment\Config as PaymentConfig;
 use RZP\Models\Partner\Activation as PartnerActivation;
+use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
 /**
  * @property Org\Entity               $org
  * @property Detail\Entity            $merchantDetail
@@ -71,6 +72,7 @@ class Entity extends Base\PublicEntity
     use Taggable;
     use NotesTrait;
     use Cacheable;
+    use TransactionalModelEvents\TransactionalAwareEvents;
 
     const ID_LENGTH = 14;
 

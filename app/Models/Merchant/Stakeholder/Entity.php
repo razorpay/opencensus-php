@@ -8,6 +8,7 @@ use RZP\Models\Merchant\Detail;
 use RZP\Models\Base\Traits\NotesTrait;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
+use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
 
 /**
  * Class Entity
@@ -21,6 +22,7 @@ class Entity extends Base\PublicEntity
 {
     use NotesTrait;
     use SoftDeletes;
+    use TransactionalModelEvents\TransactionalAwareEvents;
 
     protected $entity = 'stakeholder';
 
