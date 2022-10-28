@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\Product\Util;
 
+use App;
+
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Trace\TraceCode;
@@ -145,6 +147,24 @@ class PaymentGatewayRequestHandler
 
         if (isset($input[Constants::ACCOUNT_NUMBER]) === true)
         {
+            $app = App::getFacadeRoot();
+
+            try
+            {
+                if(is_int($input[Constants::ACCOUNT_NUMBER]) === true)
+                {
+                    $input[Constants::ACCOUNT_NUMBER] = strval($input[Constants::ACCOUNT_NUMBER]);
+
+                    $app['trace']->info(TraceCode::MERCHANT_BANK_DETAIL_PROVIDED_AS_INTEGER,
+                        [
+                            'message'                => 'bank account number was of integer type',
+                        ]);
+                }
+            }
+            catch (\Exception $e)
+            {
+                $app['trace']->traceException($e);
+            }
             $request[Detail\Entity::BANK_ACCOUNT_NUMBER] = $input[Constants::ACCOUNT_NUMBER];
         }
 

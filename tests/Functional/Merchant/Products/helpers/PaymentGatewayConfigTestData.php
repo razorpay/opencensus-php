@@ -271,6 +271,55 @@ return [
         ]
     ],
 
+    'testNonStringAccNumberAsInputWithPatchProductConfig' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products/{merchantProductId}',
+            'method'  => 'PATCH',
+            'content' => [
+                'notifications'   => [
+                    'sms' => true,
+                    'whatsapp' => true
+                ],
+                'settlements'     => [
+                    'account_number' => 51610100039258,
+                    'ifsc_code'      => 'UBIN0805165'
+                ],
+                'checkout'        => [
+                    'flash_checkout' => false,
+                    'logo'           => __DIR__ . '/sample_valid_logo.jpg'
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'requested_configuration' => [
+                ],
+                'active_configuration'    => [
+                    'payment_capture' => [
+                        'mode'                    => 'automatic',
+                        'refund_speed'            => 'normal',
+                        'automatic_expiry_period' => 7200
+                    ],
+                    'notifications'   => [
+                        'sms'      => true,
+                        'whatsapp' => false
+                    ],
+                    'checkout'        => [
+                        'theme_color'    => '#000000',
+                        'flash_checkout' => false,
+                    ],
+                    'refund'          => [
+                        'default_refund_speed' => 'normal'
+                    ],
+                    'settlements'     => [
+                        'account_number' => '51610100039258',
+                        'ifsc_code'      => 'UBIN0805165'
+                    ],
+                ]
+            ],
+        ]
+    ],
+
     'testUpdatePaymentGatewayConfigWithCardsInstrument' => [
         'request'  => [
             'url'     => '/v2/accounts/{accountId}/products/{merchantProductId}',

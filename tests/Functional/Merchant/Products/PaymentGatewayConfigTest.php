@@ -1693,6 +1693,38 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $this->assertEquals($testData['request']['content']['otp']['contact_mobile'], $contactMobile[0]);
     }
 
+    //This test need to be updated later, since passing acc number as Integer as input should be restricted
+    public function testNonStringAccNumberAsInputWithPatchProductConfig()
+    {
+        Mail::fake();
+
+        $this->setupPrivateAuthForPartner();
+
+        $this->mockTerminalServiceResponse();
+
+        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData['testCreateDefaultPaymentGatewayConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $this->storkMock->shouldReceive('optOutForWhatsapp')->once();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $merchantProductId = $response['id'];
+
+        $testData = $this->testData['testNonStringAccNumberAsInputWithPatchProductConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     protected function mockRazorxTreatment(string $returnValue = 'on')
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
