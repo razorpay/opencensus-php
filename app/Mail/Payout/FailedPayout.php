@@ -113,7 +113,7 @@ class FailedPayout extends Mailable
 
         if ($this->payout->getBalanceAccountType() === Balance\AccountType::DIRECT)
         {
-            $accountType = 'RBL Current Account';
+            $accountType = strtoupper($this->payout->getChannel()) . ' Current Account';
         }
 
         $data = [

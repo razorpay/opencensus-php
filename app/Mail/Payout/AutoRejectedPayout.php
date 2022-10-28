@@ -19,7 +19,10 @@ class AutoRejectedPayout extends Mailable
 
     protected $payoutId;
 
-    protected $payout = null;
+    /**
+     * @var Entity
+     */
+    protected $payout   = null;
 
     protected $merchant = null;
 
@@ -113,7 +116,7 @@ class AutoRejectedPayout extends Mailable
 
         if ($this->payout->getBalanceAccountType() === Balance\AccountType::DIRECT)
         {
-            $accountType = 'RBL Current Account';
+            $accountType = strtoupper($this->payout->getChannel()) . ' Current Account';
         }
 
         $data = [

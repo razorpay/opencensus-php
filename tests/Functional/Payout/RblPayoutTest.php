@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Payout;
 
+use Mail;
 use Queue;
 use Mockery;
 use Carbon\Carbon;
@@ -17,13 +18,18 @@ use RZP\Models\Pricing\Fee;
 use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Network;
 use RZP\Services\Mock\Mozart;
+use RZP\Models\Payout\Status;
 use RZP\Models\BankingAccount;
+use RZP\Models\Merchant\Balance;
+use RZP\Mail\Payout\FailedPayout;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
+use RZP\Mail\Payout\AutoRejectedPayout;
 use RZP\Services\Mozart as MozartService;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Models\BankingAccountStatement\Details;
 use RZP\Jobs\RblBankingAccountGatewayBalanceUpdate;
@@ -1086,5 +1092,87 @@ class RblPayoutTest extends TestCase
         ];
 
         return $response;
+    }
+
+    public function testScheduledPayoutProcessingAutoRejectForRbl()
+    {
+        Mail::fake();
+
+        // Timestamp of 9 AM, 2 months from current time
+        $scheduledAtTime = Carbon::now(Timezone::IST)->hour(9)->addMonths(2)->getTimestamp();
+        $scheduledAtStartOfHour = Carbon::createFromTimestamp($scheduledAtTime, Timezone::IST)->startOfHour()->getTimestamp();
+
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->createPayoutWithOtpWithWorkflow(
+            [
+                'scheduled_at' => $scheduledAtTime
+            ],
+            'rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        // Calling this scheduled payout but it hasn't been approved yet
+        $scheduledPayout = $this->getDbLastEntity('payout', 'live');
+
+        $this->assertEquals(Status::PENDING, $scheduledPayout['status']);
+
+        $this->fixtures->edit('balance', $this->bankingBalance->getId(), ['balance' => 0]);
+
+        // Setting this to 1 second after the start of the time slot
+        Carbon::setTestNow(Carbon::createFromTimestamp($scheduledAtStartOfHour+1, Timezone::IST));
+
+        $this->ba->cronAuth('live');
+
+        $this->testData[__FUNCTION__] = $this->testData['testScheduledPayoutProcessingAutoReject'];
+
+        $result = $this->startTest();
+
+        $expectedResponse = [
+            $this->bankingBalance['id'] => [
+                'total_payout_count'        => 1,
+                'dispatched_payout_count'   => 1,
+                'dispatched_payout_amount'  => 10000
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $result);
+
+        $updatedScheduledPayout = $this->getDbEntityById('payout', $scheduledPayout['id'], 'live');
+
+        $id = $updatedScheduledPayout['id'];
+
+        $payout = $updatedScheduledPayout;
+
+        // Assert that the scheduled payout has now gone to the processing state
+        $this->assertEquals(Status::REJECTED, $updatedScheduledPayout['status']);
+
+        Mail::assertQueued(AutoRejectedPayout::class, function($mail) use ($id, $payout) {
+            $mail->build();
+
+            $formattedScheduledFor = $payout->getFormattedScheduledFor();
+            $formattedAmount = $payout->getFormattedAmount();
+
+            $this->assertEquals($mail->subject, "Scheduled Payout <pout_" . $id ."> for " .
+                                                $formattedScheduledFor . " worth " .
+                                                $formattedAmount . " has been auto rejected");
+
+            $viewData = $mail->viewData;
+            $this->assertEquals("100", $viewData[PayoutEntity::AMOUNT][1]);
+            $this->assertEquals("00", $viewData[PayoutEntity::AMOUNT][2]);
+            $this->assertEquals("pout_" . $id, $viewData[PayoutEntity::PAYOUT_ID]);
+            $this->assertEquals($formattedScheduledFor, $viewData["scheduled_for"]);
+            $this->assertEquals($payout->balance->getAccountNumber(), $viewData["account_no"]);
+
+            $accountType = 'RBL Current Account';
+
+            $this->assertEquals($accountType, $viewData[Balance\Entity::ACCOUNT_TYPE]);
+
+            $mail->hasTo('naruto@gmail.com');
+            $mail->hasFrom('no-reply@razorpay.com');
+            $mail->hasReplyTo('no-reply@razorpay.com');
+
+            return true;
+        });
     }
 }

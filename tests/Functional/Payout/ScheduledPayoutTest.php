@@ -13,13 +13,12 @@ use RZP\Models\Pricing\Fee;
 use RZP\Constants\Timezone;
 use RZP\Models\Payout\Status;
 use RZP\Models\Payout\Entity;
+use RZP\Models\Merchant\Balance;
 use RZP\Mail\Payout\FailedPayout;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Webhook\Event;
 use RZP\Mail\Payout\AutoRejectedPayout;
 use RZP\Tests\Traits\TestsWebhookEvents;
-use RZP\Models\Merchant\Balance\AccountType;
-use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -784,12 +783,42 @@ class ScheduledPayoutTest extends TestCase
 
         $updatedScheduledPayoutArray = $updatedScheduledPayout->toArray();
 
+        $id = $updatedScheduledPayout['id'];
+
+        $payout = $updatedScheduledPayout;
+
         // Assert that the scheduled payout has now gone to the processing state
         $this->assertEquals(Status::FAILED, $updatedScheduledPayoutArray['status']);
 
         $this->assertEquals(ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING, $updatedScheduledPayoutArray['status_code']);
 
-        Mail::assertQueued(FailedPayout::class);
+        Mail::assertQueued(FailedPayout::class, function($mail) use ($id, $payout) {
+            $mail->build();
+
+            $formattedScheduledFor = $payout->getFormattedScheduledFor();
+            $formattedAmount = $payout->getFormattedAmount();
+
+            $this->assertEquals($mail->subject, "Scheduled Payout <pout_" . $id ."> for " .
+                                                $formattedScheduledFor . " worth " .
+                                                $formattedAmount . " is failed");
+
+            $viewData = $mail->viewData;
+            $this->assertEquals("100", $viewData[Entity::AMOUNT][1]);
+            $this->assertEquals("00", $viewData[Entity::AMOUNT][2]);
+            $this->assertEquals("pout_" . $id, $viewData[Entity::PAYOUT_ID]);
+            $this->assertEquals($formattedScheduledFor, $viewData["scheduled_for"]);
+            $this->assertEquals($payout->balance->getAccountNumber(), $viewData["account_no"]);
+
+            $accountType = 'RazorpayX account';
+
+            $this->assertEquals($accountType, $viewData[Balance\Entity::ACCOUNT_TYPE]);
+
+            $mail->hasTo('naruto@gmail.com');
+            $mail->hasFrom('no-reply@razorpay.com');
+            $mail->hasReplyTo('no-reply@razorpay.com');
+
+            return true;
+        });
 
         return $updatedScheduledPayout;
     }
@@ -838,10 +867,40 @@ class ScheduledPayoutTest extends TestCase
 
         $updatedScheduledPayout = $this->getDbEntityById('payout', $scheduledPayout['id'], 'live');
 
+        $id = $updatedScheduledPayout['id'];
+
+        $payout = $updatedScheduledPayout;
+
         // Assert that the scheduled payout has now gone to the processing state
         $this->assertEquals(Status::REJECTED, $updatedScheduledPayout['status']);
 
-        Mail::assertQueued(AutoRejectedPayout::class);
+        Mail::assertQueued(AutoRejectedPayout::class, function($mail) use ($id, $payout) {
+            $mail->build();
+
+            $formattedScheduledFor = $payout->getFormattedScheduledFor();
+            $formattedAmount = $payout->getFormattedAmount();
+
+            $this->assertEquals($mail->subject, "Scheduled Payout <pout_" . $id ."> for " .
+                                                $formattedScheduledFor . " worth " .
+                                                $formattedAmount . " has been auto rejected");
+
+            $viewData = $mail->viewData;
+            $this->assertEquals("100", $viewData[Entity::AMOUNT][1]);
+            $this->assertEquals("00", $viewData[Entity::AMOUNT][2]);
+            $this->assertEquals("pout_" . $id, $viewData[Entity::PAYOUT_ID]);
+            $this->assertEquals($formattedScheduledFor, $viewData["scheduled_for"]);
+            $this->assertEquals($payout->balance->getAccountNumber(), $viewData["account_no"]);
+
+            $accountType = 'RazorpayX account';
+
+            $this->assertEquals($accountType, $viewData[Balance\Entity::ACCOUNT_TYPE]);
+
+            $mail->hasTo('naruto@gmail.com');
+            $mail->hasFrom('no-reply@razorpay.com');
+            $mail->hasReplyTo('no-reply@razorpay.com');
+
+            return true;
+        });
     }
 
     public function testScheduledPayoutProcessingAutoRejectWithWfs()

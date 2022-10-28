@@ -22218,10 +22218,6 @@ class PayoutTest extends OAuthTestCase
 
             $accountType = 'RazorpayX account';
 
-            if ($payout->getBalanceAccountType() === Balance\AccountType::DIRECT)
-            {
-                $accountType = 'RBL Current Account';
-            }
             $this->assertEquals($accountType, $viewData[Balance\Entity::ACCOUNT_TYPE]);
 
             $mail->hasTo('naruto@gmail.com');
@@ -22287,10 +22283,6 @@ class PayoutTest extends OAuthTestCase
 
             $accountType = 'RazorpayX account';
 
-            if ($payout->getBalanceAccountType() === Balance\AccountType::DIRECT)
-            {
-                $accountType = 'RBL Current Account';
-            }
             $this->assertEquals($accountType, $viewData[Balance\Entity::ACCOUNT_TYPE]);
 
             $mail->hasTo('naruto@gmail.com');

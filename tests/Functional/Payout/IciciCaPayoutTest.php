@@ -2,6 +2,7 @@
 
 namespace Functional\Payout;
 
+use Mail;
 use Queue;
 use Carbon\Carbon;
 
@@ -17,27 +18,27 @@ use RZP\Models\Card\Network;
 use RZP\Models\FeeRecovery;
 use Rzp\Models\FundTransfer;
 use RZP\Services\Mock\Mozart;
-use RZP\Error\PublicErrorCode;
+use RZP\Models\Payout\Status;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Merchant\Balance;
 use RZP\Tests\Functional\TestCase;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Models\Settlement\Channel;
 Use RZP\Models\FundTransfer\Attempt;
+use RZP\Mail\Payout\AutoRejectedPayout;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\Mock\BankingAccountService;
 use RZP\Models\BankingAccount\Gateway\Icici;
 use RZP\Models\Merchant\Balance\AccountType;
-use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Admin\Service as AdminService;
-use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Models\BankingAccountStatement\Details;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Jobs\IciciBankingAccountGatewayBalanceUpdate;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Jobs\IciciBankingAccountStatement as IciciBankingAccountStatementJob;
@@ -2950,5 +2951,85 @@ class IciciCaPayoutTest extends TestCase
                                                       ['account_number' => 2224440041626905]);
 
         $this->assertEquals(0, $basDetailsAfterCronRuns->getBalanceLastFetchedAt());
+    }
+
+    public function testScheduledPayoutProcessingAutoRejectForIcici()
+    {
+        Mail::fake();
+
+        // Timestamp of 9 AM, 2 months from current time
+        $scheduledAtTime = Carbon::now(Timezone::IST)->hour(9)->addMonths(2)->getTimestamp();
+        $scheduledAtStartOfHour = Carbon::createFromTimestamp($scheduledAtTime, Timezone::IST)->startOfHour()->getTimestamp();
+
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->createPayoutWithOtpWithWorkflow(
+            [
+                'scheduled_at' => $scheduledAtTime
+            ],
+            'rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        // Calling this scheduled payout but it hasn't been approved yet
+        $scheduledPayout = $this->getDbLastEntity('payout', 'live');
+
+        $this->assertEquals(Status::PENDING, $scheduledPayout['status']);
+
+        $this->fixtures->edit('balance', $this->bankingBalance->getId(), ['balance' => 0]);
+
+        // Setting this to 1 second after the start of the time slot
+        Carbon::setTestNow(Carbon::createFromTimestamp($scheduledAtStartOfHour+1, Timezone::IST));
+
+        $this->ba->cronAuth('live');
+
+        $result = $this->startTest();
+
+        $expectedResponse = [
+            $this->bankingBalance['id'] => [
+                'total_payout_count'        => 1,
+                'dispatched_payout_count'   => 1,
+                'dispatched_payout_amount'  => 10000
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $result);
+
+        $updatedScheduledPayout = $this->getDbEntityById('payout', $scheduledPayout['id'], 'live');
+
+        $id = $updatedScheduledPayout['id'];
+
+        $payout = $updatedScheduledPayout;
+
+        // Assert that the scheduled payout has now gone to the processing state
+        $this->assertEquals(Status::REJECTED, $updatedScheduledPayout['status']);
+
+        Mail::assertQueued(AutoRejectedPayout::class, function($mail) use ($id, $payout) {
+            $mail->build();
+
+            $formattedScheduledFor = $payout->getFormattedScheduledFor();
+            $formattedAmount = $payout->getFormattedAmount();
+
+            $this->assertEquals($mail->subject, "Scheduled Payout <pout_" . $id ."> for " .
+                                                $formattedScheduledFor . " worth " .
+                                                $formattedAmount . " has been auto rejected");
+
+            $viewData = $mail->viewData;
+            $this->assertEquals("100", $viewData[PayoutEntity::AMOUNT][1]);
+            $this->assertEquals("00", $viewData[PayoutEntity::AMOUNT][2]);
+            $this->assertEquals("pout_" . $id, $viewData[PayoutEntity::PAYOUT_ID]);
+            $this->assertEquals($formattedScheduledFor, $viewData["scheduled_for"]);
+            $this->assertEquals($payout->balance->getAccountNumber(), $viewData["account_no"]);
+
+            $accountType = 'ICICI Current Account';
+
+            $this->assertEquals($accountType, $viewData[Balance\Entity::ACCOUNT_TYPE]);
+
+            $mail->hasTo('naruto@gmail.com');
+            $mail->hasFrom('no-reply@razorpay.com');
+            $mail->hasReplyTo('no-reply@razorpay.com');
+
+            return true;
+        });
     }
 }

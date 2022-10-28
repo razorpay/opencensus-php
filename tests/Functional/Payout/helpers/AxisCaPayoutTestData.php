@@ -440,4 +440,18 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED,
         ],
     ],
+
+    'testScheduledPayoutProcessingAutoRejectForAxis' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/scheduled/process',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+        ],
+        'response'  => [
+            'content' => [
+            ],
+        ],
+    ],
 ];
