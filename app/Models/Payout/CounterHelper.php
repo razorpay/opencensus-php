@@ -40,7 +40,7 @@ class CounterHelper extends Base\Core
     public function updateFreePayoutConsumedIfApplicable(Balance\Entity $balance)
     {
         if ($balance->getType() !== Balance\Type::BANKING ||
-            $balance->merchant->isFeatureEnabled(Constants::FREE_PAYOUT_LEDGER_VIA_PS) === true)
+            $balance->merchant->isFeatureEnabled(Constants::PAYOUT_SERVICE_ENABLED) === true)
         {
             return null;
         }
@@ -95,7 +95,7 @@ class CounterHelper extends Base\Core
      */
     public function decreaseFreePayoutsConsumedIfApplicable(Entity $payout, string $criteria)
     {
-        if ($payout->merchant->isFeatureEnabled(Constants::FREE_PAYOUT_LEDGER_VIA_PS) == true)
+        if ($payout->getIsPayoutService() == true)
         {
             return false;
         }

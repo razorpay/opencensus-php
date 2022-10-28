@@ -992,12 +992,6 @@ class Constants
     const PAYOUTS_ON_HOLD = 'payouts_on_hold';
 
     /**
-     * This feature flag is used for payouts microservice for pricing, free payouts
-     * and ledger integration
-     */
-    const FREE_PAYOUT_LEDGER_VIA_PS = 'free_payout_ledger_via_ps';
-
-    /**
      * Used to manage on_hold feature(Holding payout for a certain sla) in case of bene/NPCI downtime for payout requests
      * If this flag is enabled the payout will be not be hold for the merchant even if bene or NPCI or partner_bank is down
      */
@@ -2034,7 +2028,6 @@ class Constants
         self::BENE_NAME_IN_PAYOUT             => true,
         self::PAYOUTS_ON_HOLD                 => true,
         self::SKIP_EXPOSE_FEE_RECOVERY        => true,
-        self::FREE_PAYOUT_LEDGER_VIA_PS       => true,
         self::SKIP_HOLD_PAYOUTS               => true,
         self::SKIP_TEST_TXN_FOR_DMT           => true,
         self::AXIS_SETTLEMENT_FILE            => true,

@@ -423,7 +423,7 @@ class Base extends FundAccountPayout\Base
         if (($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT) === false) and
             ($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_PAYOUT_EGRESS) === false) and
             ($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_PAYOUT_INGRESS) === false) and
-            ($payout->merchant->isFeatureEnabled(Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS) === false))
+            ($payout->merchant->isFeatureEnabled(Feature\Constants::PAYOUT_SERVICE_ENABLED) === false))
         {
             $this->adjustMerchantFeesThroughRewardFeeCreditsForPayout($payout, $fees, $tax);
         }

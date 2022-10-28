@@ -1655,8 +1655,7 @@ class Service extends Base\Service
      */
     public function createBulkPayout(array $input): array
     {
-        if (($this->merchant->isFeatureEnabled(Features::PAYOUT_SERVICE_ENABLED) === true) and
-            ($this->merchant->isFeatureEnabled(Features::FREE_PAYOUT_LEDGER_VIA_PS) === true))
+        if ($this->merchant->isFeatureEnabled(Features::PAYOUT_SERVICE_ENABLED) === true)
         {
             return $this->payoutServiceBulkPayoutsClient->createBulkPayoutViaMicroservice($input);
         }

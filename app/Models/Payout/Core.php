@@ -5080,7 +5080,7 @@ class Core extends Base\Core
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        if ($merchant->isFeatureEnabled(FeatureConstants::FREE_PAYOUT_LEDGER_VIA_PS))
+        if ($merchant->isFeatureEnabled(FeatureConstants::PAYOUT_SERVICE_ENABLED))
         {
             return $this->payoutGetApiServiceClient->getFreePayoutAttributesViaMicroservice($balanceId);
         }
@@ -6643,7 +6643,7 @@ class Core extends Base\Core
         return $response;
     }
 
-    // payout transaction dual write is required for ledger_reverse_shadow and free_payout_ledger_via_ps merchant
+    // payout transaction dual write is required for ledger_reverse_shadow and payout_service_enabled merchant
     public static function isPayoutTransactionDualWriteEnabled($payout)
     {
         /* API transaction Dual write should happen only if one of the below is true

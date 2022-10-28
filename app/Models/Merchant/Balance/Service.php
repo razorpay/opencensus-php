@@ -149,7 +149,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        if ($merchant->isFeatureEnabled(Constants::FREE_PAYOUT_LEDGER_VIA_PS))
+        if ($merchant->isFeatureEnabled(Constants::PAYOUT_SERVICE_ENABLED))
         {
             return $this->payoutServiceFreePayoutClient->updateFreePayoutAttributesViaMicroservice($balanceId, $input);
         }
@@ -288,7 +288,7 @@ class Service extends Base\Service
     }
 
     // migrateFreePayoutToMicroservice sends counters and balance records to Payouts Service
-    // and assigns free_payout_ledger_via_ps feature to the merchant
+    // and assigns payout_service_enabled feature to the merchant
     public function migrateFreePayoutToMicroservice($counter, $balance, $merchant, $action)
     {
         $counter = $this->repo->counter->lockForUpdate($counter->getId());
