@@ -56,7 +56,7 @@ build: clean
 	@echo "Installing necessary composer packages"
 	$(COMPOSER) install
 	@echo "Building docker containers"
-	$(DOCKER_COMPOSE) -f $(DOCKER_DEV_COMPOSE_FILE) up -d --build --build-arg CACHEBUST=$(date +%s)
+	$(DOCKER_COMPOSE) -f $(DOCKER_DEV_COMPOSE_FILE) up -d --build
 	$(SHELL) $(DOCKER_STATUS_CHECKER)
 	@echo "Seeding elasticsearch indexes"
 	@echo "===================="
