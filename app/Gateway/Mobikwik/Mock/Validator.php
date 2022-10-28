@@ -18,6 +18,7 @@ class Validator extends Base\Validator
         'version'       => 'sometimes|numeric',
         'checksum'      => 'required',
         'merchantAlias' => 'sometimes',
+        'mccCode'       => 'sometimes'
     );
 
     protected static $refundRules = array(

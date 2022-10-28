@@ -540,6 +540,11 @@ class Gateway extends Base\Gateway
             $this->addTerminalDetailsInTest($content);
         }
 
+        if(isset($input['merchant']['category']))
+        {
+            $content['mccCode'] = $input['merchant']['category'];
+        }
+
         $payment = $this->createGatewayPaymentEntity($content);
         $content['checksum'] = $this->getHashForAuthorizeRequest($content);
         $content['merchantAlias'] = $this->getMobikwikMerchantName($input['merchant']);
