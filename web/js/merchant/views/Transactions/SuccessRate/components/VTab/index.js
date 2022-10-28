@@ -12,7 +12,7 @@ import {
 } from 'merchant/views/Transactions/SuccessRate/trackEvents';
 
 function VTab(props) {
-  const { selectedTab, isLoading, onTabChange, ariaLabel, tabData } = props;
+  const { selectedTab, isLoading, onTabChange, ariaLabel, tabData, tab } = props;
   const selectedKey = Object.values(ERROR_CATEGORIES)[selectedTab];
   const title = ERROR_CATEGORIES_VS_DISPLAY_TEXT[selectedKey] ?? '--';
   const content = tabData?.[selectedKey] ?? [];
@@ -37,6 +37,7 @@ function VTab(props) {
         <ReasonsPanel
           isLoading={isLoading}
           title={title}
+          tab={tab}
           heading={`Top payment failure reasons: ${title}`}
           data={content}
         />

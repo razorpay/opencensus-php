@@ -3,16 +3,27 @@ import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { getFixedNumber } from 'common/utils/rzp-utils';
 import OverviewGraph from './OverviewGraph';
-import { METHOD_HELP_TEXT } from 'merchant/views/Transactions/SuccessRate/constants';
+import {
+  METHOD_HELP_TEXT,
+  PAYMENT_METHOD_VS_CALLOUT_DISPLAY_TEXT,
+} from 'merchant/views/Transactions/SuccessRate/constants';
 
 const MetricsCard = ({ isLoading, metric, isActive }) => {
-  const { title = '', sr = '', overviewHistogram = {}, total } = metric;
+  const { title = '', sr = '', overviewHistogram = {}, total, name } = metric;
   const { datasets = [] } = overviewHistogram;
   const noData = !isLoading && datasets?.length === 0;
 
-  return (
-    <div className={`metrics-card ${isActive ? 'active' : ''}`}>
-      {!isLoading ? (
+  const renderCardDetails = () => {
+    if (isLoading) {
+      return (
+        <div>
+          <PlaceholderLoader />
+          <PlaceholderLoader className="placeholder-loader" />
+        </div>
+      );
+    }
+    return (
+      <div>
         <div className="metrics-card__title">
           <p className="display-text">{title}</p>
           {isActive && (
@@ -26,16 +37,22 @@ const MetricsCard = ({ isLoading, metric, isActive }) => {
             </small>
           )}
         </div>
-      ) : (
-        <PlaceholderLoader />
-      )}
-      {!isLoading ? (
-        <h1>
-          <span>{total ? `${getFixedNumber(sr || 0)}%` : '--'}</span>
-        </h1>
-      ) : (
-        <PlaceholderLoader style={{ width: '60%', height: '16px', margin: '16px 0' }} />
-      )}
+        {total ? (
+          <h1>
+            <span>{`${getFixedNumber(sr || 0)}%`}</span>
+          </h1>
+        ) : (
+          <p className="callout-text">{`No payments were made via ${
+            PAYMENT_METHOD_VS_CALLOUT_DISPLAY_TEXT[name] || title
+          } in the selected date range`}</p>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className={`metrics-card ${isActive ? 'active' : ''}`}>
+      {renderCardDetails()}
       <div className={`mini-chart ${noData ? 'no-data' : ''} ${isActive ? 'active' : ''}`}>
         <div className="min-chart-content">
           {!isLoading && <OverviewGraph histogram={datasets} isActive={isActive} />}

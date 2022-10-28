@@ -129,15 +129,19 @@ $spacer = 8px
           background-color: #FAFBFC
 
 .sr-metrics .metrics-card
-  padding: $spacer * 2
-  padding-bottom: $spacer
+  padding: 12px
   background-color: $bg-white
   border: 1px solid $border-grey
   border-radius: 2px
+  height: 140px
+  display: flex
+  flex-direction: column
+  justify-content: space-between
 
   &__title
     display: flex
     align-items: center
+    padding-bottom: 4px
 
     p.display-text
       margin: 0
@@ -150,11 +154,19 @@ $spacer = 8px
         font-size: 14px
         vertical-align: middle
 
-  > h1
+  h1
     color: $font-color
     margin: $spacer 0
     font-size: 24px
     line-height: 36px
+
+  p.callout-text
+    color: #8895A8
+
+  .placeholder-loader
+    width: 60%
+    height: 16px
+    margin: 16px 0
 
   div.mini-chart
     width: 100%
@@ -171,11 +183,19 @@ $spacer = 8px
     &.active
       transition: margin 0.1s ease-out
 
+    &.no-data
+      height: 20px
+
     &.no-data .min-chart-content
-      border-bottom-color: $default-grey
+      border-top: 1px solid transparent
+      border-top-color: $default-grey
+      border-bottom: 0
+      background: linear-gradient(180deg, #A6B0BF -370.45%, rgba(166 176 191 0) 63.64%)
+      height: 20px
 
     &.no-data.active .min-chart-content
-      border-bottom-color: $border-blue
+      border-top-color: $border-blue
+      background: linear-gradient(180deg, #518FF0 -370.45%, rgba(81 143 240 0) 63.64%)
 
 .sr-metrics
   .nav.nav-tabs
@@ -377,11 +397,26 @@ $spacer = 8px
     height: 100%
 
     div.no-data
-      padding-inline: 0
       text-align: start
+      color: #8991AE
+      padding: 0
+      padding-top: 16px
 
-      &__title
-        font-size: 16px
+      svg
+        display: inline-block
+        width: 21px
+        height: 18px
+
+        > path
+          fill: #FFA665
+
+      .no-data__title
+        font-size: 18px
+        margin-bottom: 6px
+
+      .no-data__subtitle
+        color: #6F758A
+        font-size: 15px
 
     .rp-grid
       margin-top: $spacer * 4

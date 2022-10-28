@@ -6,7 +6,7 @@ const DEFAULT_ACTIVE_TAB = 0;
 
 const FailureReasonsWidget = (props) => {
   const [activeTab, setActiveTab] = React.useState(DEFAULT_ACTIVE_TAB);
-  const { isLoadingMerchantErrors, merchantErrors } = props;
+  const { isLoadingMerchantErrors, merchantErrors, tab } = props;
 
   useEffect(() => setActiveTab(DEFAULT_ACTIVE_TAB), [isLoadingMerchantErrors]);
 
@@ -20,14 +20,15 @@ const FailureReasonsWidget = (props) => {
         isLoading={isLoadingMerchantErrors}
         onTabChange={handleTabChange}
         tabData={merchantErrors}
+        tab={tab}
       />
     </div>
   );
 };
 
 const mapStateToProps = ({ successRate }) => {
-  const { isLoadingMerchantErrors, merchantErrors } = successRate;
-  return { isLoadingMerchantErrors, merchantErrors };
+  const { isLoadingMerchantErrors, merchantErrors, activeTab, tabs } = successRate;
+  return { isLoadingMerchantErrors, merchantErrors, tab: tabs[activeTab] };
 };
 
 export default connect(mapStateToProps, null)(FailureReasonsWidget);

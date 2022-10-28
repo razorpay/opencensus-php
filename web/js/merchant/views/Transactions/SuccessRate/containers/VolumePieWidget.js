@@ -7,7 +7,7 @@ import { getUser } from 'merchant/store';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import Spinner from 'common/ui/Spinner';
 import StyledHeader from 'merchant/views/Transactions/SuccessRate/components/StyledHeader';
-import NoDataMessage from 'merchant/views/Transactions/SuccessRate/components/NoDataMessage';
+import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
 import {
   pieChartOptions as options,
   piePlugins as plugins,
@@ -16,6 +16,8 @@ import {
   getPieChartData,
   getTagLabel,
   getFormattedNumber,
+  getNoDataTitle,
+  getNoDataSubTitle,
 } from 'merchant/views/Transactions/SuccessRate/helper';
 import { TAG_OVERALL_MAP } from 'merchant/views/Transactions/SuccessRate/constants';
 
@@ -107,7 +109,11 @@ const VolumePieWidget = (props) => {
           {!isEmpty(groupData) && groupData?.map(renderInfoCard)}
         </div>
       </div>
-      {isEmpty(compactData) && <NoDataMessage title="No data available." />}
+      {isEmpty(compactData) && (
+        <GenericPanel hasNoData={isEmpty(compactData)}>
+          <PanelBody customTitle={getNoDataTitle(tab)} customSubtitle={getNoDataSubTitle(tab)} />
+        </GenericPanel>
+      )}
     </div>
   );
 };

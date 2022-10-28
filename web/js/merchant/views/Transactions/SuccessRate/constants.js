@@ -65,6 +65,13 @@ export const tabsTitleMap = {
 export const METHOD_HELP_TEXT =
   'The percentage of attempted transactions that ended with a successful payment transfer for all payment methods. Calculated as successful payments/total attempted transactions.';
 
+export const PAYMENT_METHOD_VS_CALLOUT_DISPLAY_TEXT = {
+  Overall: 'any payment method',
+  Card: 'Cards',
+  UPI: 'UPI',
+  Netbanking: 'Netbanking',
+};
+
 export const tabMeta = {
   name: '',
   data: null,

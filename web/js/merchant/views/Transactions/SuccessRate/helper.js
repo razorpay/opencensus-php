@@ -21,6 +21,7 @@ import {
   PRESETS,
   DEFAULT_GROUP_BY_LIMIT,
   GROUP_BY_KEY_VS_LIMIT,
+  PAYMENT_METHOD_VS_CALLOUT_DISPLAY_TEXT,
 } from './constants';
 
 export const getBreakdownInterval = (from, to) => {
@@ -507,3 +508,25 @@ export function reArrange({ arr = [], sortKey = '' }) {
 
   return res;
 }
+
+const areFiltersSelected = (selectedDropdownFilterOptions) =>
+  selectedDropdownFilterOptions?.some(
+    (option) =>
+      !DEFAULT_OPTIMIZER_FILTERS?.[option?.query]
+        ?.map((item) => item?.value)
+        ?.includes(option?.value),
+  );
+
+export const getNoDataTitle = (tab) => {
+  const { name = '', selectedDropdownFilterOptions } = tab;
+  return `No payments were made via${
+    areFiltersSelected(selectedDropdownFilterOptions) ? ` selected filters for` : ''
+  } ${PAYMENT_METHOD_VS_CALLOUT_DISPLAY_TEXT[name] || name} in the selected date range.`;
+};
+
+export const getNoDataSubTitle = (tab) => {
+  const { name = '', selectedDropdownFilterOptions } = tab;
+  return `Tip: You could try again by selecting a different${
+    areFiltersSelected(selectedDropdownFilterOptions) ? ' filter,' : ''
+  }${name !== 'Overall' ? ' payment method or' : ''} date range`;
+};

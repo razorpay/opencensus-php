@@ -19,6 +19,8 @@ import {
   generateDatasets,
   getIntervals,
   getTagLabelWithOverallTag,
+  getNoDataTitle,
+  getNoDataSubTitle,
 } from 'merchant/views/Transactions/SuccessRate/helper';
 import {
   methodIntervalClick,
@@ -116,7 +118,7 @@ const GraphPanel = (props) => {
           />
         </div>
       </PanelTopbar>
-      <PanelBody>
+      <PanelBody customTitle={getNoDataTitle(tab)} customSubtitle={getNoDataSubTitle(tab)}>
         <div className="panel-body-content">
           <div className="chart-container">
             <ErrorBoundary
