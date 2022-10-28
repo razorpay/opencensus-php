@@ -214,11 +214,22 @@ class Base extends DSBase
             return true;
         }
 
-        $random = mt_rand(0, 100);
-
-        if ($random <= 10)
+        try
         {
-            return false;
+            $random = random_int(0, 100);
+
+            if ($random <= 10)
+            {
+                return false;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::ON_HOLD_PAYOUT_RANDOM_NUMBER_GENERATE_FAILED
+            );
         }
 
         return true;

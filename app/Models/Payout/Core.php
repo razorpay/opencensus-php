@@ -1730,7 +1730,19 @@ class Core extends Base\Core
         catch (\Throwable $exception)
         {
             // If redis in round robin fails then randomly a sub balance is picked.
-            $balanceNumber = rand(0,count($subBalances)-1);
+            try
+            {
+                $balanceNumber = random_int(0, count($subBalances) - 1);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::SUB_BALANCE_MAP_RANDOM_GENERATE_FAILURE,
+                    []);
+                $balanceNumber = 0;
+            }
 
             $this->trace->traceException(
                 $exception,

@@ -726,6 +726,7 @@ class Repository extends Base\Repository
         catch (Exception\UserWorkflowNotApplicableException $exception)
         {
             // If user role is not a workflow role
+            $userRoleId = [];
         }
 
         $this->filterByRoleIds($query, $userRoleId, [$user->getId()]);
@@ -1253,6 +1254,7 @@ class Repository extends Base\Repository
         catch(Exception\UserWorkflowNotApplicableException $exception)
         {
             // If user role is not a workflow role
+            $userRoleId = [];
         }
 
         $this->filterByRoleIds($query, $userRoleId);
