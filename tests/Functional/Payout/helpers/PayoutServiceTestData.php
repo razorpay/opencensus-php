@@ -2874,7 +2874,7 @@ return [
     'testPayoutServiceMerchantFeatureAddition' => [
         'request'   => [
             'content' => [
-                'names'       => ['payout_service_enabled'],
+                'names'       => ['new_banking_error'],
                 'entity_type' => 'merchant',
                 'entity_id'   => '10000000000000'
             ],
@@ -2894,7 +2894,7 @@ return [
     'testPayoutServiceMerchantFeatureAdditionServiceRequestFailure' => [
         'request'   => [
             'content' => [
-                'names'       => ['payout_service_enabled'],
+                'names'       => ['new_banking_error'],
                 'entity_type' => 'merchant',
                 'entity_id'   => '10000000000000'
             ],
