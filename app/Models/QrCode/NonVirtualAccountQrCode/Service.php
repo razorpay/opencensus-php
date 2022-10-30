@@ -296,7 +296,7 @@ class Service extends QrCode\Service
 
         $input[Entity::ENTITY_TYPE] = 'qr_code';
 
-        if($this->merchant->isFeatureEnabled(FeatureConstants::UPIQR_V1_HDFC) === false)
+        if($this->merchant->isFeatureEnabled(FeatureConstants::UPIQR_V1_HDFC) === true)
         {
             unset($input[Entity::ENTITY_TYPE]);
         }
