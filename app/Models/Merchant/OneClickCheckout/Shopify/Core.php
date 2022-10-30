@@ -445,7 +445,7 @@ class Core extends Base\Core
         }
     }
 
-    public function exceptionPlaceShopifyOrderAPI($e, array $rzpOrder, array $rzpPayment, array $body): array
+    public function exceptionPlaceShopifyOrderAPI($client, $e, array $rzpOrder, array $rzpPayment, array $body): array
     {
         $start = millitime();
 
@@ -504,64 +504,14 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::SHOPIFY_1CC_PLACE_ORDER_RETRY,
                 [
-                    'type'          => 'order_place_api_retry_initiated',
+                    'type'          => 'order_place_api_retry_initiated_from_api',
                     'order_id'      => $orderId,
                     'strategy'      => 'retry',
                     'error_message' => $message
                 ]
             );
 
-            try
-            {
-                $this->monitoring->addTraceCount(Metric::PLACE_SHOPIFY_ORDER_REQUEST_COUNT, []);
-
-                $placeOrderStart = millitime();
-
-                $order = $client->sendRestApiRequest(
-                    json_encode(['order' => $body]),
-                    Client::POST,
-                    '/orders.json'
-                );
-
-                $this->monitoring->traceResponseTime(Metric::PLACE_SHOPIFY_ORDER_CALL_TIME, $placeOrderStart, []);
-
-            }
-            catch (\Exception $e)
-            {
-                $this->monitoring->addTraceCount(Metric::PLACE_SHOPIFY_ORDER_ERROR_COUNT, ['error_type' => TraceCode::SHOPIFY_1CC_API_ORDER_RETRY_ERROR]);
-
-                $this->trace->info(
-                    TraceCode::SHOPIFY_1CC_API_ORDER_RETRY_ERROR,
-                    [
-                        'type'     => 'order_place_api_retry_failed',
-                        'order_id' => $orderId,
-                        'error'    => $e->getMessage()
-                    ]
-                );
-
-                $this->monitoring->addTraceCount(Metric::SHOPIFY_COMPLETE_CHECKOUT_ERROR_COUNT, ['error_type' => TraceCode::SHOPIFY_1CC_API_ORDER_RETRY_ERROR]);
-
-                throw new Exception\BadRequestException(
-                  ErrorCode::BAD_REQUEST_ERROR,
-                  null,
-                  null,
-                  'RETRY_FAILED'
-                );
-            }
-
-            $order = json_decode($order, true);
-
-            $this->updateShopifyTransaction($order['order']['id'], $rzpPayment);
-
-            $this->trace->info(
-                TraceCode::SHOPIFY_1CC_PLACE_ORDER_RETRY_RES,
-                [
-                    'type'             => 'order_place_api_retry_success',
-                    'order_id'         => $orderId,
-                    'shopify_order_id' => $order['order']['id'],
-                    'time'             => millitime() - $start
-                ]
-            );
+            $order = $this->retryPlaceShopifyOrder($client, $orderId, $body, $rzpPayment, true);
 
             return $order;
         }
@@ -569,7 +519,7 @@ class Core extends Base\Core
         return [];
     }
 
-    public function exceptionPlaceShopifyOrderSQS($e, array $rzpOrder, array $rzpPayment): array
+    public function exceptionPlaceShopifyOrderSQS($client, $e, array $rzpOrder, array $rzpPayment, array $body): array
     {
         $orderId = $rzpOrder['id'];
 
@@ -578,6 +528,41 @@ class Core extends Base\Core
         $message = strtolower($e->getMessage());
 
         $errorInventory = "unable to reserve inventory";
+
+        $errorPhone = "phone has already been taken";
+
+        $errorCustomer = "has already been taken";
+
+        $retry = false;
+
+        if(strpos($message, $errorPhone) !== false || strpos($message, $errorCustomer) !== false)
+        {
+            $body['customer']['phone'] = null;
+
+            //New check for retry is made in case we want to add additional retry logic in the future
+            $retry = true;
+        }
+
+        if ($retry === true)
+        {
+            $this->trace->info(
+                TraceCode::SHOPIFY_1CC_PLACE_ORDER_RETRY,
+                [
+                    'type'          => 'order_place_api_retry_initiated_from_SQS',
+                    'order_id'      => $orderId,
+                    'strategy'      => 'retry',
+                    'error_message' => $message
+                ]
+            );
+
+            $retryOrderResponse = $this->retryPlaceShopifyOrder($client, $orderId, $body, $rzpPayment, false);
+
+            if (is_array($retryOrderResponse) === true)
+            {
+                return [];
+            }
+            $message = $retryOrderResponse;
+        }
 
         // For SQS, we will refund the money back to the customer when we have an error
         // We need to refund in SQS backend job if not, the customers money would be held with no order with Merchant
@@ -652,6 +637,69 @@ class Core extends Base\Core
         return [];
     }
 
+    protected function retryPlaceShopifyOrder($client, string $orderId, array $body, $rzpPayment, bool $fromShopifyApi)
+    {
+        try
+        {
+            $this->monitoring->addTraceCount(Metric::PLACE_SHOPIFY_ORDER_REQUEST_COUNT, []);
+
+            $placeOrderStart = millitime();
+
+            $order = $client->sendRestApiRequest(
+                json_encode(['order' => $body]),
+                Client::POST,
+                '/orders.json'
+            );
+
+            $this->monitoring->traceResponseTime(Metric::PLACE_SHOPIFY_ORDER_CALL_TIME, $placeOrderStart, []);
+
+            $order = json_decode($order, true);
+
+            $this->updateShopifyTransaction($order['order']['id'], $rzpPayment);
+
+            $this->trace->info(
+                TraceCode::SHOPIFY_1CC_PLACE_ORDER_RETRY_RES,
+                [
+                    'type'             => $fromShopifyApi === true ? 'order_place_api_retry_success' : 'order_place_sqs_retry_success',
+                    'order_id'         => $orderId,
+                    'shopify_order_id' => $order['order']['id'],
+                    'time'             => millitime() - $placeOrderStart
+                ]
+            );
+
+            return $order;
+        }
+        catch (\Exception $e)
+        {
+            $this->monitoring->addTraceCount(Metric::PLACE_SHOPIFY_ORDER_ERROR_COUNT, ['error_type' => TraceCode::SHOPIFY_1CC_API_ORDER_RETRY_ERROR]);
+
+            $message = $e->getMessage();
+
+            $this->trace->info(
+                TraceCode::SHOPIFY_1CC_API_ORDER_RETRY_ERROR,
+                [
+                    'type'     => $fromShopifyApi === true ? 'order_place_api_retry_failed' : 'order_place_sqs_retry_failed',
+                    'order_id' => $orderId,
+                    'error'    => $message
+                ]
+            );
+
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_COMPLETE_CHECKOUT_ERROR_COUNT, ['error_type' => TraceCode::SHOPIFY_1CC_API_ORDER_RETRY_ERROR]);
+
+            if ($fromShopifyApi === false)
+            {
+                return $message;
+            }
+
+            throw new Exception\BadRequestException(
+              ErrorCode::BAD_REQUEST_ERROR,
+              null,
+              null,
+              'RETRY_FAILED'
+            );
+        }
+    }
+
     public function placeShopifyOrder(array $rzpOrder, array $rzpPayment, $fromShopifyApi): array
     {
         $start = millitime();
@@ -688,7 +736,7 @@ class Core extends Base\Core
             {
                 $this->monitoring->addTraceCount(Metric::PLACE_SHOPIFY_ORDER_ERROR_COUNT, ['error_type' => 'DELEGATED_TO_SQS']);
 
-                $exceptionHandlerResponse = $this->exceptionPlaceShopifyOrderAPI($e, $rzpOrder, $rzpPayment, $body);
+                $exceptionHandlerResponse = $this->exceptionPlaceShopifyOrderAPI($client, $e, $rzpOrder, $rzpPayment, $body);
 
                 $finalErrorCode = "DELEGATED_TO_SQS";
             }
@@ -696,7 +744,7 @@ class Core extends Base\Core
             {
                 $this->monitoring->addTraceCount(Metric::PLACE_SHOPIFY_ORDER_ERROR_COUNT, ['error_type' => 'SQS_TOO_FAILED']);
 
-                $exceptionHandlerResponse = $this->exceptionPlaceShopifyOrderSQS($e, $rzpOrder, $rzpPayment);
+                $exceptionHandlerResponse = $this->exceptionPlaceShopifyOrderSQS($client, $e, $rzpOrder, $rzpPayment, $body);
 
                 $finalErrorCode = "SQS_TOO_FAILED";
             }
