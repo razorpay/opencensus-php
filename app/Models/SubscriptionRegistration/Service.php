@@ -377,6 +377,12 @@ class Service extends Base\Service
 
                 $response = $this->chargeToken($token_id, $item, $idempotency_key);
 
+                $successResponseMap = [
+                    'idempotency_key' => $idempotency_key,
+                ];
+
+                $response = array_merge($response, $successResponseMap);
+
                 $chargeTokenBatch->push($response);
 
             }
@@ -415,7 +421,7 @@ class Service extends Base\Service
             }
         }
 
-        return $chargeTokenBatch;
+        return $chargeTokenBatch->toArrayWithItems();
     }
 
     public function processAutoCharges(array $input)
