@@ -2073,6 +2073,7 @@ class CardMandateTest extends TestCase
 
             return [
                 'validation_id' => 'ttttttttttttt',
+                'afa_required'  => false
             ];
         };
 

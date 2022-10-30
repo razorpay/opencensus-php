@@ -227,7 +227,7 @@ class Core extends Base\Core
                         'status'                       => $cardMandateNotification->getStatus(),
                         'response'                     => $validationResponse,
                     ]);
-
+                    $cardMandateNotification['validate_payment'] = $validationResponse;
                     return $cardMandateNotification;
                 }
                 catch (\Exception $e)
@@ -276,6 +276,7 @@ class Core extends Base\Core
             'status'                       => $cardMandateNotification->getStatus(),
             'response'                     => $validationResponse,
         ]);
+        $cardMandateNotification['validate_payment'] = $validationResponse;
 
         return $cardMandateNotification;
     }

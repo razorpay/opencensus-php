@@ -377,6 +377,8 @@ trait PaymentTrait
     protected function doAuthPayment($payment = null, $server = null, $key = null)
     {
         $request = $this->buildAuthPaymentRequest($payment, $server);
+        $request['content']['validate_payment']['afa_required'] = false;
+        $request['content']['acs_afa_authentication'] = array();
 
         $this->ba->publicAuth($key);
 
@@ -493,6 +495,9 @@ trait PaymentTrait
             $payment = $this->getDefaultPaymentArray();
         }
 
+        $payment['acs_afa_authentication'] = array();
+        $payment['validate_payment']['afa_required'] = false;
+
         $request = [
             'method'  => 'POST',
             'url'     => '/payments/create/recurring',
@@ -505,7 +510,7 @@ trait PaymentTrait
         }
 
         $this->ba->privateAuth();
-
+//        $this->mockValidatePayment();
         $content = $this->makeRequestAndGetContent($request);
 
         return $content;
@@ -1643,6 +1648,7 @@ trait PaymentTrait
             'cvv'               => '566',
         );
 
+
         return $payment;
     }
 
@@ -1653,6 +1659,8 @@ trait PaymentTrait
         $payment['recurring'] = true;
 
         $payment['customer_id'] = 'cust_100000customer';
+        $payment['acs_afa_authentication'] = array();
+        $payment['validate_payment']['afa_required'] = false;
 
         return $payment;
     }

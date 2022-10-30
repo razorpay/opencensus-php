@@ -54,6 +54,9 @@ class Validator extends Base\Validator
      **/
 
     protected static $createRules = [
+        'validate_payment'              => 'sometimes|associative_array',
+        'validate_payment.afa_required' => 'sometimes|boolean',
+        'acs_afa_authentication'        => 'sometimes|associative_array',
         'amount'                        => 'required|integer',
         'currency'                      => 'required|string|size:3|custom',
         'method'                        => 'required|string',

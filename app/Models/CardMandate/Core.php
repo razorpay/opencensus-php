@@ -159,7 +159,6 @@ class Core extends Base\Core
             $cardMandateNotification->payment()->associate($payment);
 
             $cardMandateNotification->saveOrFail();
-
             $this->trace->info(TraceCode::CARD_MANDATE_PRE_DEBIT_NOTIFICATION_CREATED, [
                 'payment_id'                   => $payment->getId(),
                 'card_mandate_notification_id' => $cardMandateNotification->getId(),

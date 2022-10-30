@@ -341,7 +341,7 @@ class CardPaymentService
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED, null, null,
-            ['method'=> $payment['method']]);
+                ['method'=> $payment['method']]);
         }
     }
 
@@ -459,6 +459,11 @@ class CardPaymentService
         $this->addCardIin($content);
 
         $this->addAuthenticationDataIfApplicable($content);
+
+        if ($this->action != Action::AUTHORIZE || empty($input['acs_afa_authentication']))
+        {
+            unset($input['acs_afa_authentication']);
+        }
 
         // Should migrate merchant_attribute table also as part of rearch to accomodate 3ds2 flow.
         if($action === Action::AUTHORIZE)

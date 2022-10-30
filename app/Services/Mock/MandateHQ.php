@@ -21,7 +21,15 @@ class MandateHQ
     public function validatePayment($mandateId, $input)
     {
         return [
-            'validation_id' => 'validateid123',
+            'validation_id' => 'KYteGki9M1GQIV',
+            'mandate_id'    => 'ICn1KwWfZCcpVf',
+            'afa_required'  => true,
+            'time'          => '1666010496',
+            'xid'           => 'MDAwMDAwMDAwMDFVdS1qMF9WZFM=',
+            'cavv2'         => 'AAABCRgAACBQV2dVAgAAAAAAAAA=',
+            'eci'           => '05',
+            'version'       => 'protocol_version',
+            'success'       => 'true'
         ];
     }
 

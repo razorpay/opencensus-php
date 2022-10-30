@@ -25,7 +25,7 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
 
         try
         {
-            (new CardMandateNotification\Core)->verifyNotification($payment);
+            $validatePayment = (new CardMandateNotification\Core)->verifyNotification($payment);
 
             $verified = true;
         }
@@ -69,6 +69,13 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
         }
 
         $gatewayInput = $this->getGatewayInputForPayment($payment, $processor);
+        $gatewayInput['acs_afa_authentication'] = array();
+        if ($gatewayInput['card']['network_code'] == "VISA" && $validatePayment['validate_payment']['afa_required'] == true) {
+            $gatewayInput['acs_afa_authentication'] = array(
+                'xid'   => $validatePayment['validate_payment']['xid'],
+                'cavv2' => $validatePayment['validate_payment']['cavv2']
+            );
+        }
 
         $processor->gatewayRelatedProcessing($payment, [], $gatewayInput);
 
