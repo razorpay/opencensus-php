@@ -1141,7 +1141,7 @@ class UserRolesScope
             'update_coupon_validity_url'                          => [Role::OWNER, Role::ADMIN],
             'update_fetch_coupons_url'                            => [Role::OWNER, Role::ADMIN],
             '1cc_configs_update'                                  => [Role::OWNER, Role::ADMIN],
-            '1cc_configs_get'                                     => [Role::OWNER, Role::ADMIN],
+            '1cc_configs_get'                                     => Role::ALL_ROLES,
             '1cc_disable_magic'                                   => [Role::OWNER, Role::ADMIN],
             'update_merchant_platform'                            => [Role::OWNER, Role::ADMIN],
             '1cc_cod_eligibility_attribute_list'                  => [Role::OWNER, Role::ADMIN],

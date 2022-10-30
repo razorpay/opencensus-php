@@ -13098,6 +13098,9 @@ class Route
             'workflow_config_update_admin',
             'workflow_config_delete_admin',
             'workflow_config_create_bulk_admin',
+
+            '1cc_configs_update',
+            '1cc_configs_get',
         ],
 
         //
