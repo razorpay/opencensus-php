@@ -49,6 +49,13 @@ class Core extends Base\Core
     const AMOUNT                            = 'amount';
     const REFUND                            = 'refund';
     const GATEWAY                           = 'gateway';
+    const MERCHANT_FEE_CREDITS              = 'merchant_fee_credits';
+    const MERCHANT_AMOUNT_CREDITS           = 'merchant_amount_credits';
+    const REWARD                            = 'reward';
+    const MERCHANT_REFUND_CREDITS           = 'merchant_refund_credits';
+    const PAYLOAD                           = 'payload';
+    const LEDGER_RESPONSE                   = 'LEDGER_RESPONSE';
+    const NOT_UPDATED                       = "not updated";
 
     const MERCHANT_BALANCE_OPENING_BALANCE  = 'merchant_balance_opening_balance';
     const MERCHANT_REWARD_OPENING_BALANCE   = 'merchant_reward_opening_balance';
@@ -169,6 +176,177 @@ class Core extends Base\Core
                     self::TENANT      => self::PG
                 ]);
             return false;
+        }
+    }
+
+    public function updatePGMerchantBalance(Merchant $merchant, int $balanceAmount)
+    {
+        try
+        {
+            $payload = [
+                self::MERCHANT_ID => $merchant->getId(),
+                self::ENTITIES => [
+                    self::ACCOUNT_TYPE => [self::PAYABLE],
+                    self::FUND_ACCOUNT_TYPE => [self::MERCHANT_BALANCE]
+                ],
+                self::BALANCE => strval($balanceAmount)
+            ];
+
+            $requestHeaders = [
+                LedgerService::LEDGER_TENANT_HEADER => self::PG,
+                LedgerService::IDEMPOTENCY_KEY_HEADER => Uuid::uuid1()->toString()
+            ];
+
+            $ledgerService = $this->app['ledger'];
+            $ledgerResponse = $ledgerService->updateAccountByEntitiesAndMerchantID($payload, $requestHeaders);
+
+            if(isset($ledgerResponse["code"]) and $ledgerResponse["code"] == 200 and isset($ledgerResponse["body"]["balance"]))
+            {
+                $response[self::MERCHANT_BALANCE] = $ledgerResponse["body"]["balance"];
+            }
+            else
+            {
+                $response[self::MERCHANT_BALANCE] = self::NOT_UPDATED;
+
+                $this->trace->debug(TraceCode::MERCHANT_BALANCE_SYNC_FAILED, [
+                    self::MERCHANT_ID       => $merchant->getId(),
+                    self::PAYLOAD           => $payload,
+                    self::LEDGER_RESPONSE   => $ledgerResponse
+                ]);
+            }
+            return $response;
+        }
+        catch(\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                500,
+                TraceCode::MERCHANT_BALANCE_SYNC_FAILED,
+                [
+                    "exception_message"     => $ex->getMessage(),
+                    "exception"             => $ex,
+                    "merchant_id"           => $merchant->getId()
+                ]);
+            return [
+                "exception" => $ex->getMessage()
+            ];
+        }
+    }
+
+    public function updatePGLedgerMerchantCreditBalances(Merchant $merchant, array $creditBalances): array
+    {
+        try {
+            $requestHeaders = [
+                LedgerService::LEDGER_TENANT_HEADER => self::PG,
+                LedgerService::IDEMPOTENCY_KEY_HEADER => Uuid::uuid1()->toString()
+            ];
+
+            $response = [];
+
+            $ledgerService = $this->app['ledger'];
+            if (isset($creditBalances[self::FEE]) === true)
+            {
+                $feeCredits = (string)$creditBalances[self::FEE];
+
+                $payload = [
+                    self::MERCHANT_ID => $merchant->getId(),
+                    self::ENTITIES => [
+                        self::ACCOUNT_TYPE => [self::PAYABLE],
+                        self::FUND_ACCOUNT_TYPE => [self::MERCHANT_FEE_CREDITS]
+                    ],
+                    self::BALANCE => $feeCredits
+                ];
+                $feeCreditsResponse = $ledgerService->updateAccountByEntitiesAndMerchantID($payload, $requestHeaders);
+
+                if(isset($feeCreditsResponse["code"]) and $feeCreditsResponse["code"] == 200 and isset($feeCreditsResponse["body"]["balance"]))
+                {
+                    $response[self::MERCHANT_FEE_CREDITS] = $feeCreditsResponse["body"]["balance"];
+                }
+                else
+                {
+                    $response[self::MERCHANT_FEE_CREDITS] = self::NOT_UPDATED;
+
+                    $this->trace->debug(TraceCode::MERCHANT_BALANCE_SYNC_FAILED, [
+                        self::MERCHANT_ID => $merchant->getId(),
+                        self::PAYLOAD => $payload,
+                        self::LEDGER_RESPONSE => $feeCreditsResponse
+                    ]);
+                }
+            }
+
+            if (isset($creditBalances[self::AMOUNT]) === true)
+            {
+                $amountCredits = (string)$creditBalances[self::AMOUNT];
+                $payload = [
+                    self::MERCHANT_ID => $merchant->getId(),
+                    self::ENTITIES => [
+                        self::ACCOUNT_TYPE => [self::PAYABLE],
+                        self::FUND_ACCOUNT_TYPE => [self::REWARD]
+                    ],
+                    self::BALANCE => $amountCredits
+                ];
+                $amountCreditsResponse = $ledgerService->updateAccountByEntitiesAndMerchantID($payload, $requestHeaders);
+
+                if(isset($amountCreditsResponse["code"]) and $amountCreditsResponse["code"] == 200 and isset($amountCreditsResponse["body"]["balance"]))
+                {
+                    $response[self::MERCHANT_AMOUNT_CREDITS] = $amountCreditsResponse["body"]["balance"];
+                }
+                else
+                {
+                    $response[self::MERCHANT_AMOUNT_CREDITS] = self::NOT_UPDATED;
+
+                    $this->trace->debug(TraceCode::MERCHANT_BALANCE_SYNC_FAILED, [
+                        self::MERCHANT_ID => $merchant->getId(),
+                        self::PAYLOAD => $payload,
+                        self::LEDGER_RESPONSE => $amountCreditsResponse
+                    ]);
+                }
+            }
+
+            if (isset($creditBalances[self::REFUND]) === true) {
+                $refundCredits = (string)$creditBalances[self::REFUND];
+                $payload = [
+                    self::MERCHANT_ID => $merchant->getId(),
+                    self::ENTITIES => [
+                        self::ACCOUNT_TYPE => [self::PAYABLE],
+                        self::FUND_ACCOUNT_TYPE => [self::MERCHANT_REFUND_CREDITS]
+                    ],
+                    self::BALANCE => $refundCredits
+                ];
+                $refundCreditsResponse = $ledgerService->updateAccountByEntitiesAndMerchantID($payload, $requestHeaders);
+
+                if(isset($refundCreditsResponse["code"]) and $refundCreditsResponse["code"] == 200 and isset($refundCreditsResponse["body"]["balance"]))
+                {
+                    $response[self::MERCHANT_REFUND_CREDITS] = $refundCreditsResponse["body"]["balance"];
+                }
+                else
+                {
+                    $response[self::MERCHANT_REFUND_CREDITS] = self::NOT_UPDATED;
+
+                    $this->trace->debug(TraceCode::MERCHANT_BALANCE_SYNC_FAILED, [
+                        self::MERCHANT_ID => $merchant->getId(),
+                        self::PAYLOAD => $payload,
+                        self::LEDGER_RESPONSE => $refundCreditsResponse
+                    ]);
+                }
+            }
+
+            return $response;
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                500,
+                TraceCode::MERCHANT_BALANCE_SYNC_FAILED,
+                [
+                    "exception_message"     => $ex->getMessage(),
+                    "exception"             => $ex,
+                    "merchant_id"           => $merchant->getId()
+                ]);
+            return [
+                "exception" => $ex->getMessage()
+            ];
         }
     }
 

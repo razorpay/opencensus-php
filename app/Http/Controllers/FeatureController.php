@@ -73,6 +73,21 @@ class FeatureController extends Controller
         return ApiResponse::json($data->toArrayWithItems());
     }
 
+
+    /**
+     * Syncs balances of merchants on ledger service
+     *
+     * @return ApiResponse
+     */
+    public function syncMerchantBalancesOnPgLedger()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->syncMerchantBalancesOnPgLedger($input);
+
+        return ApiResponse::json($data->toArrayWithItems());
+    }
+
     /**
      * Adds features to entities
      *

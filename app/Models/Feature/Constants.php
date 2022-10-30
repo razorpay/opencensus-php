@@ -227,6 +227,8 @@ class Constants
     const MERCHANT_FEATURE_ALREADY_ENABLED  = 'merchant feature already enabled';
     const MERCHANT_FEATURE_ALREADY_DISABLED = 'merchant feature already disabled';
     const ACCOUNT_CREATION_FAILED           = 'account creation failed';
+    const BALANCE_RESPONSE                  = 'balance_response';
+    const CREDITS_RESPONSE                  = 'credits_response';
 
     const PAYMENT_STATUS_AGGREGATE        = 'payment_status_aggregate';
     const VISA_SAFE_CLICK                 = 'vsc_authorization';
@@ -1544,6 +1546,7 @@ class Constants
     const BODY                           = 'body';
     const BAD_REQUEST_MERCHANT_ID_ABSENT = "BAD_REQUEST_MERCHANT_ID_ABSENT";
     const MERCHANT_OFFBOARDED            = 'merchant offboarded';
+    const ALL_MERCHANT_BALANCES_SYNCED      = 'ALL_MERCHANT_BALANCES_SYNCED';
 
 
     const ORG_POOL_ACCOUNT_SETTLEMENT = 'org_pool_settlement';

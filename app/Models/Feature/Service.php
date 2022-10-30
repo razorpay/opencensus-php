@@ -304,6 +304,26 @@ class Service extends Base\Service
 
     }
 
+    private function updatePGMerchantBalanceAccount($merchant): array
+    {
+        $merchantId = $merchant->getId();
+
+        // Taking lock on balance table
+        $balance = $this->repo->balance->getBalanceLockForUpdate($merchantId);
+
+        return (new Merchant\Balance\Ledger\Core)->updatePGMerchantBalance($merchant, $balance->getBalance());
+    }
+
+    private function updatePGMerchantCreditsAccounts($merchant): array
+    {
+        $merchantId = $merchant->getId();
+
+        //fetches fee, amount and refund credits from credits table
+        $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCreditsLockForUpdate($merchantId);
+
+        return (new Merchant\Balance\Ledger\Core)->updatePGLedgerMerchantCreditBalances($merchant, $creditBalances);
+    }
+
     private function ledgerPGGatewayAccountCreateRequest(string $merchantId, string $gateway)
     {
 
@@ -1194,6 +1214,66 @@ class Service extends Base\Service
                 $result[Constants::MESSAGE] = $e->getMessage();
             }
 
+            $response->add($result);
+        }
+        return $response;
+    }
+
+
+    /**
+     *
+     * Syncs api balances of merchant with ledger balance
+     *
+     * @param array $input
+     */
+    public function syncMerchantBalancesOnPgLedger(array $input)
+    {
+        $response = new Base\PublicCollection;
+        $merchantIds = $input["merchant_ids"];
+
+        if(empty($merchantIds))
+        {
+            return [
+                Constants::MESSAGE => Constants::BAD_REQUEST_MERCHANT_ID_ABSENT
+            ];
+        }
+
+        foreach ($merchantIds as $merchantId)
+        {
+
+            $result = [
+                Constants::MERCHANT_ID     => $merchantId,
+                Constants::STATUS          => Constants::SUCCESS
+            ];
+
+            try
+            {
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                $this->repo->transaction(function () use ($merchant, $merchantId, &$result)
+                {
+                   $result[Constants::BALANCE_RESPONSE] = $this->updatePGMerchantBalanceAccount($merchant);
+                });
+
+                $this->repo->transaction(function () use ($merchant, $merchantId, &$result)
+                {
+                    $result[Constants::CREDITS_RESPONSE] = $this->updatePGMerchantCreditsAccounts($merchant);
+                });
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->error(
+                    TraceCode::MERCHANT_BALANCE_SYNC_FAILED,
+                    [
+                        "exception"             => $e,
+                        "message"               => $e->getMessage(),
+                        Constants::MERCHANT_ID  => $merchantId
+                    ]
+                );
+
+                $result[Constants::STATUS] = Constants::FAILURE;
+                $result[Constants::MESSAGE] = $e->getMessage();
+            }
             $response->add($result);
         }
         return $response;

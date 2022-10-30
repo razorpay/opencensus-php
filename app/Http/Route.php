@@ -3749,6 +3749,7 @@ class Route
         //PG Ledger Routes
         'pg_onboard_merchant'                           => ['post',     'pg_ledger/merchant/onboard',           'FeatureController@onboardMerchantsOnPgLedger'],
         'pg_offboard_merchant'                          => ['post',      'pg_ledger/merchant/offboard', 'FeatureController@offboardMerchantsOnPgLedger'],
+        'pg_sync_balances_merchant'                     => ['post', 'pg_ledger/merchant/sync_balances', 'FeatureController@syncMerchantBalancesOnPgLedger'],
 
         // Recon service proxy route
         'recon_service_request_proxy'             => ['any',        'recon/service/common/{path?}',                         'ReconServiceController@handleAny'                             ],
@@ -6588,6 +6589,7 @@ class Route
         //PG Ledger Routes
         'pg_onboard_merchant',
         'pg_offboard_merchant',
+        'pg_sync_balances_merchant',
         'merchant_tag_add',
         'merchant_tag_delete',
         'merchant_update_key_access',
@@ -8768,6 +8770,7 @@ class Route
         // PG Ledger Routes
         'pg_onboard_merchant'                               => Permission::PG_LEDGER_ACTIONS,
         'pg_offboard_merchant'                              => Permission::PG_LEDGER_ACTIONS,
+        'pg_sync_balances_merchant'                         => Permission::PG_LEDGER_ACTIONS,
 
         // Metro service Route
         'metro_project_create'                            => Permission::METRO_PROJECT_CREATE,
@@ -12323,6 +12326,7 @@ class Route
             'permission_get_roles',
             'pg_onboard_merchant',
             'pg_offboard_merchant',
+            'pg_sync_balances_merchant',
             'pincode_get',
             'plan_create',
             'plan_fetch',
