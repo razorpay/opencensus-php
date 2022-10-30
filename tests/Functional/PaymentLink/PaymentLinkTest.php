@@ -1479,6 +1479,33 @@ class PaymentLinkTest extends TestCase
         $this->makePaymentForPaymentLinkWithOrderAndAssert($paymentLink, $order);
     }
 
+    public function testShiprocketPaymentPagePaid1CCWebhookEnabled()
+    {
+        $notes = $this->getNotes();
+
+        $customerDetials = $this->getCustomerDetails();
+
+        $data = $this->createPaymentLinkAndOrderForThat(['view_type' => 'page'],
+            [Order\Entity::NOTES => $notes,'one_click_checkout' => '1', 'customer_details' => $customerDetials]);
+
+        $paymentLink = $data['payment_link'];
+
+        $settings = [
+            "one_click_checkout" => '1',
+            'partner_webhook_settings' => [
+                'partner_shiprocket' => "1",
+            ]
+        ];
+
+        $paymentLink->getSettingsAccessor()->upsert($settings)->save();
+
+        $order = $data['payment_link_order']['order'];
+
+        $this->expectWebhookEventWithContents('shiprocket.payment_page.paid.v1', 'testShiprocketPaymentPagePaid1CCWebhookEventData');
+
+        $this->makePaymentForPaymentLinkWithOrderAndAssert($paymentLink, $order, Payment\Status::CAPTURED, $notes);
+    }
+
     public function testFetchPaymentsForPaymentPage()
     {
         $data = $this->createPaymentLinkAndOrderForThat(['view_type' => 'page']);
@@ -4150,5 +4177,10 @@ class PaymentLinkTest extends TestCase
         ]);
 
         $this->app->instance('elfin', $elfin);
+    }
+
+    public function testCreate1CCPaymentLink()
+    {
+        $this->startTest();
     }
 }

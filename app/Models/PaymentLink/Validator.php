@@ -1050,6 +1050,14 @@ class Validator extends Base\Validator
      */
     public function validatePartnerWebhookSettings(array $input)
     {
+        $settings = $input[Entity::SETTINGS] ?? [];
+
+        $oneCCEnabled = $settings[Entity::ONE_CLICK_CHECKOUT] ?? '0';
+
+        if($oneCCEnabled === '1'){
+            return;
+        }
+
         $partnerWebhooksettings = array_get($input, Entity::SETTINGS . '.' . Entity::PARTNER_WEBHOOK_SETTINGS, []);
 
         if (count($partnerWebhooksettings) <= 0) {

@@ -48,6 +48,8 @@ use RZP\Models\PaymentLink\PaymentPageItem as PPI;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\PaymentLink\Template\Hosted as HostedTemplate;
+use RZP\Models\Order\OrderMeta\Order1cc\Fields as Fields;
+use \RZP\Models\Address\Entity as AddressEntity;
 
 class Core extends Base\Core
 {
@@ -73,6 +75,8 @@ class Core extends Base\Core
     const REQUIRED_AMOUNT           = 'required_amount';
     const REQUIRED_MIN_AMOUNT       = 'required_min_amount';
     const REQUIRED_MIN_QUANTITY     = 'required_min_quantity';
+    const PHONE                     = 'phone';
+    const ADDRESS                   = 'address';
 
     public function __construct()
     {
@@ -952,19 +956,27 @@ class Core extends Base\Core
             return $this->modifyAndValidateInputToCreateLineItems($input, $paymentLink);
         });
 
+        $setting =  $paymentLink->getSettings()->toArray();
+
+        $oneCCEnabled = $setting[Entity::ONE_CLICK_CHECKOUT] ?? '0';
+
         $totalAmount = $this->getTotalAmountForOrder($input[Entity::LINE_ITEMS]);
 
-        $order = Tracer::inSpan(['name' => 'payment_page.order.create.create_order'], function() use($totalAmount, $paymentLink, $input)
+        $order = Tracer::inSpan(['name' => 'payment_page.order.create.create_order'], function() use($oneCCEnabled, $totalAmount, $paymentLink, $input)
         {
+            $orderReq = [
+                Order\Entity::AMOUNT => $totalAmount,
+                Order\Entity::CURRENCY => $paymentLink->getCurrency(),
+                Order\Entity::PAYMENT_CAPTURE => true,
+                Order\Entity::NOTES => $input[Order\Entity::NOTES] ?? [],
+                Order\Entity::PRODUCT_TYPE => $paymentLink->getProductType(),
+                Order\Entity::PRODUCT_ID => $paymentLink->getId(),
+            ];
+            if ($oneCCEnabled === '1'){
+                $orderReq = array_merge($orderReq, [Fields::LINE_ITEMS_TOTAL => $totalAmount]);
+            }
             return (new Order\Core)->create(
-                [
-                    Order\Entity::AMOUNT => $totalAmount,
-                    Order\Entity::CURRENCY => $paymentLink->getCurrency(),
-                    Order\Entity::PAYMENT_CAPTURE => true,
-                    Order\Entity::NOTES => $input[Order\Entity::NOTES] ?? [],
-                    Order\Entity::PRODUCT_TYPE => $paymentLink->getProductType(),
-                    Order\Entity::PRODUCT_ID => $paymentLink->getId(),
-                ],
+                $orderReq,
                 $paymentLink->merchant
             );
         });
@@ -1755,6 +1767,11 @@ class Core extends Base\Core
         // represents the computed amount of the order WRT line items.
         $orderRequiredFieldsAmount = 0;
 
+        $orderMeta = $this->repo->order_meta->findByOrderIdAndType($order->getId(), \RZP\Models\Feature\Constants::ONE_CLICK_CHECKOUT);
+        $shippingFee = 0;
+        if($orderMeta != null){
+            $shippingFee = $orderMeta->getValue()[Fields::SHIPPING_FEE];
+        }
         foreach ($order->lineItems as $lineItem)
         {
             $refId = $lineItem->getAttribute(\RZP\Models\LineItem\Entity::REF_ID);
@@ -1778,7 +1795,9 @@ class Core extends Base\Core
 
             $orderRequiredFieldsAmount += $lineItem->getQuantity() * $lineItem->getAmount();
         }
-
+        if($shippingFee !== 0){
+            $orderRequiredFieldsAmount += $shippingFee;
+        }
         return $orderRequiredFieldsAmount >= $minimumPageAmount
             && $order->getAmount() === $orderRequiredFieldsAmount
             && $order->getAmount() >= $minimumPageAmount;
@@ -2506,6 +2525,10 @@ class Core extends Base\Core
     {
         if (empty($settings) === false)
         {
+            $shippingInfo = $settings[Entity::SHIPPING_FEE_RULE] ?? null;
+            if ($shippingInfo != null){
+                $settings[Entity::SHIPPING_FEE_RULE] = json_encode($shippingInfo);
+            }
             $paymentLink->getSettingsAccessor()->upsert($settings)->save();
         }
     }
@@ -2852,19 +2875,40 @@ class Core extends Base\Core
     public function constructPayloadForPartnerWebhook(Payment\Entity $payment): array
     {
         $payload = [];
+        $paymentPage = $payment->paymentLink;
 
         $payload[E::PAYMENT] = $payment->toArrayPublic();
-
-        $paymentPage = $payment->paymentLink;
 
         if ($paymentPage === null)
         {
             return $payload;
         }
 
-        $payload[E::PAYMENT_PAGE] = $paymentPage->toArrayPublic();
-
         $order = $payment->order;
+
+        $setting = $paymentPage->getSettings()->toArray();
+
+        $oneCCEnabled = $setting[Entity::ONE_CLICK_CHECKOUT] ?? '0';
+
+        if ($oneCCEnabled === '1') {
+            if ($order != null) {
+                $customerDetails = $order->toArrayPublic()[Fields::CUSTOMER_DETAILS] ?? null;
+                $shippingAddress = $customerDetails[Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS];
+                $note = [
+                    Fields::CUSTOMER_DETAILS_EMAIL => $customerDetails[Fields::CUSTOMER_DETAILS_EMAIL],
+                    self::PHONE => $shippingAddress[Fields::CUSTOMER_DETAILS_CONTACT],
+                    Fields::CUSTOMER_DETAILS_NAME => $shippingAddress[Fields::CUSTOMER_DETAILS_NAME],
+                    self::ADDRESS => $shippingAddress[AddressEntity::LINE1] . $shippingAddress[AddressEntity::LINE2],
+                    AddressEntity::CITY => $shippingAddress[AddressEntity::CITY],
+                    AddressEntity::STATE => $shippingAddress[AddressEntity::STATE],
+                    AddressEntity::PINCODE => $shippingAddress[AddressEntity::ZIPCODE],
+                ];
+                $payment->setNotes($note);
+                $order->setNotes($note);
+            }
+        }
+
+        $payload[E::PAYMENT_PAGE] = $paymentPage->toArrayPublic();
 
         $payload[E::ORDER] = $order->toArrayPublic();
 

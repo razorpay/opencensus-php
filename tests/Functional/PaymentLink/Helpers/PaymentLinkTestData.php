@@ -2487,6 +2487,242 @@ return [
         ]
     ],
 
+    'testShiprocketPaymentPagePaid1CCWebhookEventData' =>  [
+        "entity" => "event",
+        "account_id" => "acc_10000000000000",
+        "event" => "shiprocket.payment_page.paid.v1",
+        "contains" => [
+            "payment",
+            "payment_page",
+            "order"
+        ],
+        "payload" => [
+            "payment" => [
+                "entity" => "payment",
+                "amount" => 15000,
+                "currency" => "INR",
+                "status" => "captured",
+                "invoice_id" => null,
+                "international" => false,
+                "method" => "card",
+                "amount_refunded" => 0,
+                "refund_status" => null,
+                "captured" => true,
+                "description" => "random description",
+                "card" => [
+                    "entity" => "card",
+                    "last4" => "3335",
+                    "network" => "Visa",
+                    "type" => "credit",
+                    "issuer" => "HDFC",
+                    "international" => false,
+                    "emi" => true,
+                    "sub_type" => "consumer"
+                ],
+                "bank" => null,
+                "wallet" => null,
+                "vpa" => null,
+                "email" => "a@b.com",
+                "contact" => "+919918899029",
+                "notes" => [
+                    "email"  => "a@b.com",
+                    "phone"  => "+919918899029",
+                    "name"    =>  "demo name",
+                    "address" => "xyz 1xyz 2",
+                    "city" => "Bengaluru",
+                    "state" => "Karnataka",
+                    "pincode"=> "560001"
+                ],
+                "fee" => 300,
+                "tax" => 0,
+                "error_code" => null,
+                "error_description" => null,
+                "error_source" => null,
+                "error_step" => null,
+                "error_reason" => null,
+                "acquirer_data" => [
+                    "auth_code" => null
+                ],
+            ],
+            "payment_page" => [
+                "id" => "pl_100000000000pl",
+                "amount" => null,
+                "currency" => "INR",
+                "currency_symbol" => "₹",
+                "expire_by" => null,
+                "times_payable" => null,
+                "times_paid" => 0,
+                "total_amount_paid" => 15000,
+                "status" => "active",
+                "status_reason" => null,
+                "short_url" => null,
+                "user_id" => "MerchantUser01",
+                "title" => "Sample title",
+                "notes" => [],
+                "support_contact" => null,
+                "support_email" => null,
+                "terms" => null,
+                "type" => "payment",
+                "payment_page_items" => [
+                    [
+                        "id" => "ppi_10000000000ppi",
+                        "entity" => "payment_page_item",
+                        "payment_link_id" => "pl_100000000000pl",
+                        "item" => [
+                            "id" => "item_10000000000ppi",
+                            "active" => true,
+                            "name" => "amount",
+                            "description" => "Some item description",
+                            "amount" => 5000,
+                            "unit_amount" => 5000,
+                            "currency" => "INR",
+                            "type" => "payment_page",
+                            "unit" => null,
+                            "tax_inclusive" => false,
+                            "hsn_code" => null,
+                            "sac_code" => null,
+                            "tax_rate" => null,
+                            "tax_id" => null,
+                            "tax_group_id" => null,
+                        ],
+                        "mandatory" => true,
+                        "image_url" => null,
+                        "stock" => null,
+                        "quantity_sold" => 0,
+                        "total_amount_paid" => 0,
+                        "min_purchase" => null,
+                        "max_purchase" => null,
+                        "min_amount" => null,
+                        "max_amount" => null,
+                        "plan_id" => null,
+                        "product_config" => null
+                    ],
+                    [
+                        "id" => "ppi_10000000001ppi",
+                        "entity" => "payment_page_item",
+                        "payment_link_id" => "pl_100000000000pl",
+                        "item" => [
+                            "active" => true,
+                            "name" => "amount",
+                            "description" => "Some item description",
+                            "amount" => 10000,
+                            "unit_amount" => 10000,
+                            "currency" => "INR",
+                            "type" => "payment_page",
+                            "unit" => null,
+                            "tax_inclusive" => false,
+                            "hsn_code" => null,
+                            "sac_code" => null,
+                            "tax_rate" => null,
+                            "tax_id" => null,
+                            "tax_group_id" => null,
+                        ],
+                        "mandatory" => true,
+                        "image_url" => null,
+                        "stock" => null,
+                        "quantity_sold" => 0,
+                        "total_amount_paid" => 0,
+                        "min_purchase" => null,
+                        "max_purchase" => null,
+                        "min_amount" => null,
+                        "max_amount" => null,
+                        "plan_id" => null,
+                        "product_config" => null
+                    ]
+                ],
+            ],
+            "order" => [
+                "entity" => "order",
+                "amount" => 15000,
+                "amount_paid" => 15000,
+                "amount_due" => 0,
+                "currency" => "INR",
+                "offer_id" => null,
+                "offers" => [
+                    "entity" => "collection",
+                    "count" => 0,
+                    "items" => []
+                ],
+                "status" => "paid",
+                "attempts" => 1,
+                "notes" => [
+                    "email"  => "a@b.com",
+                    "phone"  => "+919918899029",
+                    "name"    =>  "demo name",
+                    "address" => "xyz 1xyz 2",
+                    "city" => "Bengaluru",
+                    "state" => "Karnataka",
+                    "pincode"=> "560001"
+                ],
+                "customer_details" => [
+                    "email"  => "a@b.com",
+                    "phone"  => "+919918899029",
+                    "shipping_address" => [
+                        "name" => "demo name",
+                        "type" => "shipping_address",
+                        "line1"=> "xyz 1",
+                        "line2"=> "xyz 2",
+                        "zipcode"=> "560001",
+                        "city"=> "Bengaluru",
+                        "state"=> "Karnataka",
+                        "country"=> "in",
+                        "contact"=> "+919918899029"
+                    ],
+                    "billing_address" => [
+                        "name" => "demo name",
+                        "line1"=> "xyz 1",
+                        "line2"=> "xyz 2",
+                        "zipcode"=> "560001",
+                        "city"=> "Bengaluru",
+                        "state"=> "Karnataka",
+                        "country"=> "in",
+                        "contact"=> "+919918899029"
+                    ],
+                ],
+                "items" => [
+                    [
+                        "ref_type" => "payment_page_item",
+                        "name" => "Some item name",
+                        "description" => "Some item description",
+                        "amount" => 5000,
+                        "unit_amount" => 5000,
+                        "gross_amount" => 100000,
+                        "tax_amount" => 0,
+                        "taxable_amount" => 100000,
+                        "net_amount" => 100000,
+                        "currency" => "INR",
+                        "type" => "invoice",
+                        "tax_inclusive" => false,
+                        "hsn_code" => null,
+                        "sac_code" => null,
+                        "tax_rate" => null,
+                        "unit" => null,
+                        "quantity" => 1
+                    ],
+                    [
+                        "ref_type" => "payment_page_item",
+                        "name" => "Some item name",
+                        "description" => "Some item description",
+                        "amount" => 10000,
+                        "unit_amount" => 10000,
+                        "gross_amount" => 100000,
+                        "tax_amount" => 0,
+                        "taxable_amount" => 100000,
+                        "net_amount" => 100000,
+                        "currency" => "INR",
+                        "type" => "invoice",
+                        "tax_inclusive" => false,
+                        "hsn_code" => null,
+                        "sac_code" => null,
+                        "tax_rate" => null,
+                        "unit" => null,
+                        "quantity" => 1
+                    ]
+                ]
+            ]
+        ]
+    ],
+
     'testFetchPaymentsForPaymentPage' => [
         'request'  => [
             'url'     => '/payment_pages/pl_100000000000pl/payments',
@@ -5498,7 +5734,6 @@ return [
             "content" => []
         ],
     ],
-
     "testCustomDomainServiceCreatePlans" => [
         "request"   => [
             "url"       => "/v1/payment_pages/cds/plans",
@@ -5623,6 +5858,80 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testCreate1CCPaymentLink' => [
+        'request' => [
+            'url' => '/payment_pages',
+            'method' => 'post',
+            'content' => [
+                'receipt' => '00000000000001',
+                'title' => 'Sample title',
+                'description' => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes' => [
+                    'sample_key' => 'Sample notes',
+                ],
+                "settings" => [
+                    "one_click_checkout" => '1',
+                    "shipping_fee_rule" => [
+                        "rule_type" => "free",
+                        "fee" => 0,
+                        "slabs" => [],
+                    ],
+
+                    "udf_schema" => "[{\"name\":\"email\",\"required\":false,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":0}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":false,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":1}}, {\"name\":\"name\",\"title\":\"Name\",\"required\":false,\"type\":\"string\", \"options\":{},\"settings\":{\"position\":2}}]",
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name' => 'amount',
+                            'description' => NULL,
+                            'amount' => 100000,
+                            'currency' => 'INR',
+                        ],
+                        'mandatory' => TRUE,
+                        'image_url' => 'dummy',
+                        'stock' => 10000,
+                        'min_purchase' => 2,
+                        'max_purchase' => 10000,
+                        'min_amount' => NULL,
+                        'max_amount' => NULL,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'user_id' => User::MERCHANT_USER_ID,
+                'receipt' => '00000000000001',
+                'amount' => NULL,
+                'currency' => 'INR',
+                'title' => 'Sample title',
+                'description' => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes' => [
+                    'sample_key' => 'Sample notes',
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name' => 'amount',
+                            'description' => NULL,
+                            'amount' => 100000,
+                            'currency' => 'INR',
+                            'type' => 'payment_page',
+                        ],
+                        'mandatory' => TRUE,
+                        'image_url' => 'dummy',
+                        'stock' => 10000,
+                        'quantity_sold' => 0,
+                        'total_amount_paid' => 0,
+                        'min_purchase' => 2,
+                        'max_purchase' => 10000,
+                        'min_amount' => NULL,
+                        'max_amount' => NULL,
+                    ]
+                ],
+            ],
         ],
     ],
 ];

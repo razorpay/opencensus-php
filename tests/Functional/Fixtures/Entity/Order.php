@@ -2,7 +2,9 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
+use Illuminate\Support\Facades\App;
 use RZP\Models\Order\Entity as OrderEntity;
+use RZP\Models\Order\OrderMeta\Order1cc\Fields as Fields;
 
 class Order extends Base
 {
@@ -186,7 +188,13 @@ class Order extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
+        $customerDetails = array_get($attributes, 'customer_details', []);
+
+        unset($attributes['customer_details']);
+
         $order = parent::create($attributes);
+
+        $app = App::getFacadeRoot();
 
         $orderMetaAttributes = [
             'order_id' => $order->getId(),
@@ -200,7 +208,10 @@ class Order extends Base
                         'quantity'    => 1,
                     ],
                 ],
+                Fields::SHIPPING_FEE => 0,
+                Fields::COD_FEE => 0,
                 'line_items_total' => 100000,
+                'customer_details' => $app['encrypter']->encrypt($customerDetails)
             ],
         ];
 

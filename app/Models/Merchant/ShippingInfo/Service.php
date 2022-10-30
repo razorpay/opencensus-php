@@ -2,6 +2,9 @@
 
 namespace RZP\Models\Merchant\ShippingInfo;
 
+use RZP\Models\Merchant\OneClickCheckout\ShippingMethodProvider\FeeRule;
+use RZP\Models\Order\OrderMeta\Order1cc\Fields;
+use RZP\Models\Order\ProductType;
 use Throwable;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -31,7 +34,8 @@ class Service extends Base\Service
     const SHIPPING_INFO_ADDRESS          = 'address';
     const SHIPPING_INFO_CACHE_KEY_PREFIX = 'SHIPPING_INFO_';
     const SHIPPING_INFO_CACHE_VALIDITY   = 30 * self::MINUTE; // 30 minutes
-
+    const SERVICEABLE = 'serviceable';
+    const COD =  'cod';
 
     /**
      * Get Merchant Serviceability and COD Serviceability for a given Address
@@ -91,7 +95,9 @@ class Service extends Base\Service
             }
 
             $merchantOrderId = null;
-
+            $productType = $order->getProductType();
+            if ($productType == null || $productType !== ProductType::PAYMENT_PAGE)
+            {
             try
             {
                 $merchantOrderId = $order->getReceipt();
@@ -111,7 +117,7 @@ class Service extends Base\Service
             }
 
             $input['order_id'] = $merchantOrderId;
-
+            }
             // Leaving the bulk contract for backward compatibility
             $addresses = $input[self::SHIPPING_INFO_ADDRESSES];
             if (count($addresses) !== 1)
@@ -146,9 +152,21 @@ class Service extends Base\Service
                     self::SHIPPING_INFO_ADDRESSES => [$cachedResponse],
                 ];
             }
-
+            //Temporary fix for PP Shipping Fee(Once Shipping Provider is built for PP this can be removed)
+            if ($productType != null && $productType === ProductType::PAYMENT_PAGE)
+            {
+                $productId = $order->getProductId();
+                $paymentPage = $this->repo->payment_link->findByIdAndMerchant($productId, $this->merchant);
+                $settings = $paymentPage->getSettings()->toArray();
+                $shippingFeeRule = $settings[Constants::SHIPPING_FEE_RULE] ?? null;
+                $address[Fields::SHIPPING_FEE] = $this->getFees($shippingFeeRule, $orderMeta->getValue()[Fields::LINE_ITEMS_TOTAL]);
+                $address[self::SERVICEABLE] = true;
+                $address[self::COD] = false;
+                $address[Fields::COD_FEE] = 0;
+            }
+            else
+            {
             $platformConfig = $this->merchant->getMerchantPlatformConfig();
-
             // shopify configs take priority over all Rzp serviceability features
             if ($platformConfig !== null and $platformConfig->getValue() === Merchant1ccConfig\Type::SHOPIFY)
             {
@@ -310,6 +328,7 @@ class Service extends Base\Service
                 $address['cod'] = $this->getCodServiceabilityFromSlabs($orderMeta->getValue()['line_items_total']);
             }
 
+            }
             $this->cacheMerchantShippingInfo($orderId, $address);
 
             return [self::SHIPPING_INFO_ADDRESSES => [$address]];
@@ -541,6 +560,19 @@ class Service extends Base\Service
             $this->getShippingInfoCacheKey($orderId, $address));
     }
 
+    protected function getFeeFromSlabs(int $amount, $slabs)
+    {
+        $fee = 0;
+        foreach ($slabs as $slab)
+        {
+            if ($slab['lte'] >= $amount && $slab['gte'] < $amount)
+            {
+                $fee = $slab['fee'];
+            }
+        }
+        return $fee;
+    }
+
     /**
      * @param string $merchantOrderId
      * @param array $addresses
@@ -646,6 +678,37 @@ class Service extends Base\Service
             return $a;
         }
         return array_merge(...array_map($pairfunc, $a));
+    }
+
+    /**
+     * @param $settings
+     * @param $amount
+     * @return void
+     * @throws Exception\BadRequestException
+     */
+    public function getFees($settings, $amount): int
+    {
+        $feeSetting = $settings ?? null;
+        $feeRule = null;
+        $fee = 0;
+        if ($feeSetting !== null)
+        {
+            $feeRule = new FeeRule(json_decode($feeSetting, true));
+            $feeRule->validate();
+        }
+        if ($feeRule === null)
+        {
+            return $fee;
+        }
+        if ($feeRule->data[Constants::FEE_RULE_TYPE] === 'slabs')
+        {
+           $fee = $this->getFeeFromSlabs($amount, $feeRule->data['slabs']);
+        }
+        else
+        {
+            $fee = $feeRule->getFee();
+        }
+        return $fee;
     }
 
     /**

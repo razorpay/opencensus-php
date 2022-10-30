@@ -4,6 +4,7 @@ namespace RZP\Tests\Traits;
 
 use RZP\Models\Item;
 use RZP\Models\Order;
+use RZP\Models\Order\OrderMeta\Order1cc\Fields as Fields;
 use RZP\Models\Payment;
 use RZP\Models\LineItem;
 use RZP\Models\Base\PublicEntity;
@@ -214,7 +215,7 @@ trait PaymentLinkTestTrait
             $orderAttribute
         );
 
-        $order = $this->fixtures->create('order', $orderAttribute);
+        $order = $this->getOrder($orderAttribute);
 
         $data['order'] = $order;
 
@@ -243,5 +244,20 @@ trait PaymentLinkTestTrait
         }
 
         return $data;
+    }
+
+    /**
+     * @param array $orderAttribute
+     * @return array|mixed
+     */
+    protected function getOrder(array $orderAttribute)
+    {
+        if (array_get($orderAttribute, 'one_click_checkout', '0') === '1')
+        {
+            unset($orderAttribute['one_click_checkout']);
+
+            return $this->fixtures->order->create1ccOrderWithLineItems($orderAttribute);
+        }
+        return $this->fixtures->create('order', $orderAttribute);
     }
 }

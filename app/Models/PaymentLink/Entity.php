@@ -111,6 +111,8 @@ class Entity extends Base\PublicEntity
     const PAYMENT_SUCCESS_REDIRECT_URL = 'payment_success_redirect_url';
     const PAYMENT_SUCCESS_MESSAGE      = 'payment_success_message';
     const CHECKOUT_OPTIONS             = 'checkout_options';
+    const ONE_CLICK_CHECKOUT           = 'one_click_checkout';
+    const SHIPPING_FEE_RULE            = 'shipping_fee_rule';
     const PAYMENT_BUTTON_LABEL         = 'payment_button_label';
     const VERSION                      = 'version';
     const TEXT_80G_12A                 = 'text_80g_12a';
@@ -206,6 +208,8 @@ class Entity extends Base\PublicEntity
         self::GOAL_TRACKER,
         self::PARTNER_WEBHOOK_SETTINGS,
         self::CUSTOM_DOMAIN,
+        self::ONE_CLICK_CHECKOUT,
+        self::SHIPPING_FEE_RULE,
     ];
 
     const INVOICE_DETAILS_KEYS          = [

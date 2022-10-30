@@ -6,6 +6,7 @@ use Mockery;
 use Requests_Response;
 use RZP\Models\Base\UniqueIdEntity;
 use PHPUnit\Framework\ExpectationFailedException;
+use RZP\Models\Order\OrderMeta\Order1cc\Fields as Fields;
 
 trait TestsWebhookEvents
 {
@@ -91,6 +92,48 @@ trait TestsWebhookEvents
         };
 
         return $this->expectWebhookEvent($name, $matcher);
+    }
+
+    protected function getCustomerDetails(): array
+    {
+        return [
+            "email"  => "a@b.com",
+            "phone"  => "+919918899029",
+            "shipping_address" => [
+                "name" => "demo name",
+                "type" => "shipping_address",
+                "line1"=> "xyz 1",
+                "line2"=> "xyz 2",
+                "zipcode"=> "560001",
+                "city"=> "Bengaluru",
+                "state"=> "Karnataka",
+                "country"=> "in",
+                "contact"=> "+919918899029"
+            ],
+            "billing_address" => [
+                "name" => "demo name",
+                "line1"=> "xyz 1",
+                "line2"=> "xyz 2",
+                "zipcode"=> "560001",
+                "city"=> "Bengaluru",
+                "state"=> "Karnataka",
+                "country"=> "in",
+                "contact"=> "+919918899029"
+            ],
+        ];
+    }
+
+    protected function getNotes(): array
+    {
+        return [
+            "email"  => "a@b.com",
+            "phone"  => "+919918899029",
+            "name"    =>  "demo name",
+            "address" => "xyz 1xyz 2",
+            "city" => "Bengaluru",
+            "state" => "Karnataka",
+            "pincode"=> "560001"
+        ];
     }
 
     /**
