@@ -1,4 +1,4 @@
-import { salesforceBusinessTypeMapping } from 'merchant/constants/businessTypeMapping';
+import { businessTypeMapping } from 'merchant/constants/businessTypeMapping';
 
 export const getKycAnalyticsProperties = () => {
   const {
@@ -18,6 +18,6 @@ export const getKycAnalyticsProperties = () => {
 
 export const getSfBusinessTypeOfUser = () => {
   const businessTypeNumber = window.rzp_user.business_type;
-  const businessType = salesforceBusinessTypeMapping[businessTypeNumber];
+  const businessType = businessTypeMapping[businessTypeNumber];
   return businessType;
 };
