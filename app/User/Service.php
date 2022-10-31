@@ -2,34 +2,40 @@
 
 namespace App\User;
 
-use App\Http\Headers;
-use App\Merchant\Constants as MerchantConstants;
 use Auth;
 use Trace;
 use Cookie;
 use Session;
 use Request;
 use App\Base;
+use DateTimeZone;
 use App\Merchant;
 use App\Lib\Util;
 use App\Http\ApiUrl;
-use App\Trace\TraceCode;
+use App\Http\Headers;
+use Lcobucci\JWT\Token;
 use App\MerchantDetails;
+use App\Trace\TraceCode;
+use Lcobucci\JWT\Signer\Key;
 use App\Admin\ApiRequestAny;
 use App\Providers\GenericUser;
+use Lcobucci\JWT\Token\Parser;
+use Lcobucci\JWT\Token\Builder;
+use Lcobucci\JWT\Configuration;
+use Lcobucci\Clock\SystemClock;
 use App\Session as SessionTable;
 use App\Merchant\GenericMerchant;
 use Razorpay\Api\Errors\ErrorCode;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Illuminate\Contracts\Cache\Store;
+use Lcobucci\JWT\Encoding\JoseEncoder;
 use Illuminate\Foundation\Application;
-use Lcobucci\JWT\Builder as JWTBuilder;
+use Lcobucci\JWT\Validation\Constraint;
 use Razorpay\Api\Errors\BadRequestError;
-use Lcobucci\JWT\Parser as JWTParser;
-use Illuminate\Support\Facades\Crypt;
 use App\Splitz\Service as SplitzService;
+use Lcobucci\JWT\Encoding\ChainedFormatter;
 use App\Metrics\Constants as MetricConstants;
-use Lcobucci\JWT\ValidationData as JWTValidation;
+use App\Merchant\Constants as MerchantConstants;
 use Illuminate\Auth\Access\AuthorizationException;
 use hisorange\BrowserDetect\Parser as BrowserDetect;
 
@@ -1849,6 +1855,11 @@ class Service extends Base\Service
             );
         }
 
+        $this->trace->info(TraceCode::GENERATE_JWT_DASHBOARD, [
+            'merchant_id' => $currentMerchantId,
+            'user_id'     => $user->id
+        ]);
+
         $merchant = $user->currentMerchant();
 
         $merchantData = $merchant->toArray();
@@ -1873,34 +1884,47 @@ class Service extends Base\Service
 
         $issuer = parse_url(config('app.url'), PHP_URL_HOST);
 
-        $token = (new JWTBuilder())->setIssuer($issuer)
-                                   ->setAudience(self::EXTENSION)
-                                   ->setIssuedAt(time())
-                                   ->setExpiration(time() + $tokenExpiry)
-                                   ->set(self::MERCHANT_ID, $currentMerchantId)
-                                   ->set(self::USER_ID, $user->id)
-                                   ->set(self::MERCHANT_ACTIVATED, $merchantActivated)
-                                   ->set('merchant_international', $merchantInternational)
-                                   ->set(self::MERCHANT_LOGO, $merchantLogo)
-                                   ->set(self::MERCHANT_NAME, $merchantName)
-                                   ->sign($signer, $jwtEncryptionKey)
-                                   ->getToken();
+        $tokenBuilder = (new Builder(new JoseEncoder(), ChainedFormatter::withUnixTimestampDates()));
 
-        return [[], ["token" => (string) $token]];
+        $config = Configuration::forSymmetricSigner($signer, Key\InMemory::plainText($jwtEncryptionKey));
+
+        $sysClock = new SystemClock(new DateTimeZone('UTC'));
+
+        /*
+         * $tokenExpiry is of 1day
+         * */
+        $tokenExpiry_ttl = 'PT' . $tokenExpiry . 'S';
+
+        $token = $tokenBuilder->issuedBy($issuer)
+                              ->permittedFor(self::EXTENSION)
+                              ->issuedAt($sysClock->now())
+                              ->expiresAt($sysClock->now()->add(new \DateInterval($tokenExpiry_ttl)))
+                              ->withClaim(self::MERCHANT_ID, $currentMerchantId)
+                              ->withClaim(self::USER_ID, $user->id)
+                              ->withClaim(self::MERCHANT_ACTIVATED, $merchantActivated)
+                              ->withClaim('merchant_international', $merchantInternational)
+                              ->withClaim(self::MERCHANT_LOGO, $merchantLogo)
+                              ->withClaim(self::MERCHANT_NAME, $merchantName)
+                              ->getToken($config->signer(), $config->signingKey());
+
+        return [[], ["token" => $token->toString()]];
     }
 
-    public function validateJWT($token)
+    /**
+     * @throws AuthorizationException
+     */
+    public function validateJWT(string $token): Token
     {
         if (empty($token) === true)
         {
             throw new AuthorizationException('Token context not present in the request');
         }
 
-        $token = (new JWTParser())->parse((string) $token);
+        $this->trace->info(TraceCode::VERIFY_JWT_DASHBOARD);
+
+        $token = (new Parser(new JoseEncoder()))->parse($token);
 
         $signer = new Sha256();
-
-        $validationData = new JWTValidation();
 
         $issuer = parse_url(config('app.url'), PHP_URL_HOST);
 
@@ -1908,17 +1932,20 @@ class Service extends Base\Service
 
         $jwtEncryptionKey = $sessionConfig['jwt_encryption_key'];
 
-        $validationData->setIssuer($issuer);
+        $config = Configuration::forSymmetricSigner(
+            $signer,
+            Key\InMemory::plainText($jwtEncryptionKey)
+        );
 
-        $validationData->setAudience(self::EXTENSION);
+        $config->setValidationConstraints(
+            new Constraint\SignedWith($config->signer(), $config->signingKey()),
+            new Constraint\PermittedFor(self::EXTENSION),
+            new Constraint\IssuedBy($issuer)
+        );
 
-        $validToken = $token->validate($validationData);
-
-        $validSignature = $token->verify($signer, $jwtEncryptionKey);
-
-        if (($validToken === false) or ($validSignature === false))
+        if (!$config->validator()->validate($token, ...$config->validationConstraints()))
         {
-            throw new AuthorizationException('Invalid Token');
+            throw new AuthorizationException('Invalid token provided');
         }
 
         $this->validateMerchantUserIfLoggedIn($token);
@@ -1934,11 +1961,16 @@ class Service extends Base\Service
         {
             $currentMerchantId = $user->currentMerchant() ? $user->currentMerchant()->id : null;
 
-            if (($user->id !== $token->getClaim(self::USER_ID)) or
-                ($currentMerchantId !== $token->getClaim(self::MERCHANT_ID)))
+            if (($user->id !== $token->claims()->get(self::USER_ID)) or
+                ($currentMerchantId !== $token->claims()->get(self::MERCHANT_ID)))
             {
                 throw new AuthorizationException('Different user/merchant is loggedin to the dashboard');
             }
+
+            $this->trace->info(TraceCode::VALIDATE_JWT_USER_DASHBOARD, [
+                'merchant_id' => $currentMerchantId,
+                'user_id'     => $user->id
+            ]);
         }
     }
 

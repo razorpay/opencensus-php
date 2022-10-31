@@ -4,10 +4,16 @@ namespace App\User;
 
 use Auth;
 
+use App\Trace\TraceCode;
+use Lcobucci\JWT\Signer\Key;
+use Lcobucci\JWT\Token\Builder;
+use Lcobucci\JWT\Configuration;
+use Lcobucci\Clock\SystemClock;
 use Razorpay\Api\Errors\ErrorCode;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
-use Lcobucci\JWT\Builder as JWTBuilder;
+use Lcobucci\JWT\Encoding\JoseEncoder;
 use Razorpay\Api\Errors\BadRequestError;
+use Lcobucci\JWT\Encoding\ChainedFormatter;
 
 class Identity {
 
@@ -25,10 +31,10 @@ class Identity {
     const USER_EMAIL          = 'user_email';
 
     //
-    // this is seconds. This number will be added to the current time
-    // to derive the the token expiry time at the time of creation
+    // this is 30 seconds. This number will be added to the current time
+    // to derive the token expiry time at the time of creation
     //
-    const IDENTITY_TOKEN_TTL = 30;
+    const IDENTITY_TOKEN_TTL = "PT30S";
 
     /**
      * it'll generate the user identity token from for the logged in user
@@ -48,17 +54,27 @@ class Identity {
 
         $user = Auth::user();
 
+        $sysClock = new SystemClock(new \DateTimeZone('UTC'));
+
         $providerDetails = app('config')['auth']['service_provider'][$serviceProvider];
 
         $issuer = parse_url(config('app.url'), PHP_URL_HOST);
 
-        $token = (new JWTBuilder())->setIssuer($issuer)
-                                   ->setAudience($serviceProvider)
-                                   ->setIssuedAt(time())
-                                   ->setExpiration(time() + self::IDENTITY_TOKEN_TTL)
-                                   ->set(self::USER_EMAIL, $user->email)
-                                   ->sign(new Sha256(), $providerDetails['signing_secret'])
-                                   ->getToken();
+        $tokenBuilder = new Builder(new JoseEncoder(), ChainedFormatter::withUnixTimestampDates());
+
+        $config = Configuration::forSymmetricSigner(new Sha256(), Key\InMemory::plainText($providerDetails['signing_secret']));
+
+        $token =  $tokenBuilder->issuedBy($issuer)
+                               ->permittedFor($serviceProvider)
+                               ->issuedAt($sysClock->now())
+                               ->expiresAt($sysClock->now()->add(new \DateInterval(self::IDENTITY_TOKEN_TTL)))
+                               ->withClaim(self::USER_EMAIL, $user->email)
+                               ->getToken($config->signer(), $config->signingKey());
+
+        app('trace')->info(TraceCode::GENERATE_JWT_DASHBOARD, [
+            'user_email'  => $user->email,
+            'user_id'     => $user->id
+        ]);
 
         return [
             $providerDetails['redirect_url'],

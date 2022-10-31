@@ -10,12 +10,14 @@ use Config;
 use Session;
 use Request;
 use App\Http\Headers;
+use App\User\Identity;
 use App\Trace\SpanTrace;
 use GuzzleHttp\Psr7\Utils;
+use Lcobucci\JWT\Token\Parser;
 use GuzzleHttp\Client as Guzzle;
 use Razorpay\Api\Errors as RZPErrors;
-use Lcobucci\JWT\Parser as JWTParser;
 use App\Admin\Service as AdminService;
+use Lcobucci\JWT\Encoding\JoseEncoder;
 use Razorpay\Api\Errors\BadRequestError;
 use App\User\Constants as UserConstants;
 use GuzzleHttp\Exception\GuzzleException;
@@ -386,15 +388,25 @@ class ApiRequestAny
         return $this;
     }
 
-    public function processExtensionAuthHeaders()
+    public function processExtensionAuthHeaders(): void
     {
         $jwtToken = Request::header(Headers::JWT_TOKEN);
 
-        $token = (new JWTParser())->parse((string) $jwtToken);
+        if(is_string($jwtToken) === false)
+        {
+            $jwtToken = $jwtToken->toString();
+        }
 
-        $merchantId = $token->getClaim('merchant_id');
+        $token = (new Parser(new JoseEncoder()))->parse($jwtToken);
 
-        $userId = $token->getClaim('user_id');
+        $merchantId = $token->claims()->get('merchant_id');
+
+        $userId = $token->claims()->get('user_id');
+
+        app('trace')->info(TraceCode::VERIFY_JWT_EXTENSION_AUTH_HEADER, [
+            'merchant_id' => $merchantId,
+            'user_id'     => $userId
+        ]);
 
         $baUser = null;
 
