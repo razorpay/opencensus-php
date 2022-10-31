@@ -13,10 +13,11 @@ class Service extends Base\Service
     {
         $merchantIdInHeader = Request::header('x-dashboard-merchant-id');
 
-        if ($merchantIdInHeader !== null)
-        {
-            $user = Auth::guard('user')->user();
+        $user = Auth::guard('user')->user();
 
+        if (($merchantIdInHeader !== null) and
+            ($user !== null))
+        {
             $merchantInSession = $user
                 ->merchants
                 ->where('id', $merchantIdInHeader)

@@ -351,6 +351,30 @@ class Service extends Base\Service
 
         $logged_in_via = Session::get('logged_in_via', null);
 
+        if ($userIdFromSession === "")
+        {
+            $userDetails = $this->cache->get(Session::getId());
+
+            if ($userDetails !== null)
+            {
+                $userIdFromSession = $userDetails['user_id'];
+
+                $logged_in_via = $userDetails['logged_in_via'];
+
+                Session::put('user_id', $userIdFromSession);
+
+                Session::put('logged_in_via', $logged_in_via);
+
+                /*
+                * if not present in session check in cache
+                * */
+                $this->trace->info(TraceCode::USER_VERIFY_LOGIN_VIA_2FA_DATA_FROM_CACHE, [
+                    'user_id'      => $userIdFromSession,
+                    'login_in_via' => $logged_in_via,
+                ]);
+            }
+        }
+
         if (empty($userFromGuard) === false)
         {
             $options['headers']['X-Dashboard-User-Id'] = $userFromGuard->id;
@@ -365,6 +389,12 @@ class Service extends Base\Service
         }
 
         $options['headers']['X-Dashboard-User-Session-Id'] = Session::getId();
+
+        $this->trace->info(TraceCode::USER_VERIFY_LOGIN_VIA_2FA, [
+            'user_id'      => $userIdFromSession,
+            'login_in_via' => $logged_in_via,
+            'mode'         => $mode
+        ]);
 
         switch ($mode)
         {
@@ -672,6 +702,13 @@ class Service extends Base\Service
                 {
                     Session::put('user_id', $userId);
                     Session::put('logged_in_via', $logged_in_via);
+                    /*
+                     * store in cache if missed on graph request
+                     * */
+                    $this->cache->put(Session::getId(), [
+                        'user_id'       => $userId,
+                        'logged_in_via' => $logged_in_via
+                    ],                5 * 60);
                 }
                 else
                 {
