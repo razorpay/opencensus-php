@@ -1,3 +1,4 @@
+import './styles/error-alert.styl';
 import React from 'react';
 import { connect } from 'react-redux';
 import { NavLink, withRouter, Redirect } from 'react-router-dom';
@@ -32,6 +33,7 @@ import { triggerHotjarRecording } from 'common/utils/hotjar';
 import moment from 'moment';
 import Settings from './views/Settings';
 import { showSettings } from './utils';
+import Alert from 'common/new-ui/Alert';
 
 const Loader = () => {
   return (
@@ -384,7 +386,13 @@ class CashAdvance extends React.Component {
           {showLoader ? (
             <Loader />
           ) : (
-            <content className="cash-advance-body">{this.renderSection()}</content>
+            <content className="cash-advance-body">
+              <Alert.Error iconBefore="i-triangle-alert">
+                The withdrawals are temporarily unavailable due to technical downtime, we are
+                working to fix this and will reach out to you once this is resolved
+              </Alert.Error>
+              {this.renderSection()}
+            </content>
           )}
         </tabbed-container>
       </div>

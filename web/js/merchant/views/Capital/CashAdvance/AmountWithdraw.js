@@ -970,7 +970,8 @@ export default class AmountWithdraw extends React.Component {
           <React.Fragment>
             <AsyncBtn.Primary
               className={withdrawNowClass}
-              disabled={!canWithdraw}
+              // TODO: remove once payouts issue is fixed
+              disabled={true}
               onClick={this.confirmWithdraw}
             >
               Withdraw Now
