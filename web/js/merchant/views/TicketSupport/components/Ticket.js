@@ -54,8 +54,14 @@ export default class Ticket extends React.Component {
       img = <img className="img-round" src={RAZORPAY_LOGO} alt="ticket-user-logo" />;
     }
 
-    const category = workflow?.sub_category || ticket?.custom_fields?.cf_requestor_subcategory;
-    const subCategory = workflow?.item || ticket?.custom_fields?.cf_requester_item;
+    const category =
+      workflow?.sub_category ||
+      ticket?.custom_fields?.cf_requestor_subcategory ||
+      ticket?.custom_fields?.cf_new_requester_sub_category;
+    const subCategory =
+      workflow?.item ||
+      ticket?.custom_fields?.cf_new_requester_item ||
+      ticket?.custom_fields?.cf_requester_item;
     const ticketConversationsLength = totalConversations?.length;
 
     const description =

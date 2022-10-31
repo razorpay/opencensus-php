@@ -754,6 +754,9 @@ export default class User {
   get isFrontendCareActive() {
     return this.getExpStatus('frontend_care_active');
   }
+  get isNewCategoriesEnable() {
+    return this.getExpStatus('new_categories_enable');
+  }
   get showOpenTicketStatus() {
     return this.getExpStatus('open_ticket_status');
   }

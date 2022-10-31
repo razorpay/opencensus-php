@@ -128,9 +128,15 @@ export const createWorkFlowTicket = (workflow, user) => {
   ticketData.set('custom_fields[cf_workflow_id]', workflow.id);
   ticketData.set('custom_fields[cf_merchant_id]', user.id);
   ticketData.set('custom_fields[cf_merchant_id_dashboard]', `merchant_dashboard_${user.id}`);
-  ticketData.set('custom_fields[cf_requester_category]', 'Merchant');
-  ticketData.set('custom_fields[cf_requestor_subcategory]', workflow?.sub_category || '');
-  ticketData.set('custom_fields[cf_requester_item]', workflow?.item || '');
+  if (user?.isNewCategoriesEnable) {
+    ticketData.set('custom_fields[cf_new_requester_category]', 'Merchant');
+    ticketData.set('custom_fields[cf_new_requester_sub_category]', workflow?.sub_category || '');
+    ticketData.set('custom_fields[cf_new_requester_item]', workflow?.item || '');
+  } else {
+    ticketData.set('custom_fields[cf_requester_category]', 'Merchant');
+    ticketData.set('custom_fields[cf_requestor_subcategory]', workflow?.sub_category || '');
+    ticketData.set('custom_fields[cf_requester_item]', workflow?.item || '');
+  }
   ticketData.set('custom_fields[cf_creation_source]', getDeviceSource());
 
   return merchantFetch({
