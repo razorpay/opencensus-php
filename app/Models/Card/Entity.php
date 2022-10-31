@@ -611,6 +611,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LENGTH);
     }
 
+    public function getReference4()
+    {
+        return $this->getAttribute(self::REFERENCE4);
+    }
+
     public function getMaskedCardNumber()
     {
         // $this->getIin() returns the first 6 digits
@@ -834,6 +839,11 @@ class Entity extends Base\PublicEntity
     public function setVault($vault)
     {
         $this->setAttribute(self::VAULT, $vault);
+    }
+
+    public function setReference4($reference4)
+    {
+        $this->setAttribute(self::REFERENCE4, $reference4);
     }
 
     public function setTrivia($trivia)

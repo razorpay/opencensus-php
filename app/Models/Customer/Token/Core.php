@@ -2752,7 +2752,7 @@ class Core extends Base\Core
     /**
      * builds card input for tokenisation
      *
-     * @param  Card\Entity $card
+     * @param Card\Entity $card
      * @return array
      */
     public function buildCardInputForTokenisation(Card\Entity $card): array
@@ -2765,6 +2765,7 @@ class Core extends Base\Core
             'emi'          => $card->getEmi() ?? false,
             'iin'          => $card->getIin() ?? "",
             'name'         => $card->getName(),
+            'authentication_reference_number' => $card->getReference4()
         ];
     }
 

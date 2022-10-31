@@ -464,6 +464,25 @@ class CardVault extends Base\Core
         }
     }
 
+    public function shouldPanSourceChangeForMigration($cardInput, $merchant, $card)
+    {
+        if($card->isRupay() === false)
+        {
+            return false;
+        }
+            $variant = $this->app->razorx->getTreatment($merchant->getId(), RazorxTreatment::PANSOURCE_CHANGE_MIGRATION_RUPAY, $this->mode);
+
+            $this->trace->info(TraceCode::PANSOURCE_CHANGE_MIGRATION_RAZORX_VARIANT, [
+                'authentication_reference_number'     => $cardInput['authentication_reference_number'],
+                'razorx_variant' => $variant,
+                'mode' => $this->mode,
+                'merchant_id' => $merchant->getId(),
+            ]);
+
+        return (strtolower($variant) === 'on');
+    }
+
+
     public function migrateToTokenizedCard($card, $merchant, $iinInfo, $cardInput)
     {
         $input['card'] = [
@@ -475,8 +494,8 @@ class CardVault extends Base\Core
 
         $input['async'] = isset($cardInput['async']) ? $cardInput['async'] : null;
 
-        if ((empty($cardInput['authentication_reference_number']) === false) && (empty($input['async']) == true)
-            && ($this->shouldPanSourceChange($input, $merchant)==true))
+        if ((empty($cardInput['authentication_reference_number']) === false)
+            && ($this->shouldPanSourceChangeForMigration($cardInput, $merchant, $card)==true))
         {
             $input['authentication_data'] = [
                 'authentication_reference_number' => $cardInput['authentication_reference_number'],

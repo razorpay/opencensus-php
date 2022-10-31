@@ -1094,6 +1094,8 @@ class PaymentFetchTest extends TestCase
             ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'), Mockery::type('bool'))
             ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout, bool $retry)
             {
+                $card = $this->fixtures->create('card', ['name' => 'Test Name']);
+
                 return [
                     'body' => [
                         "data" => [
@@ -1110,7 +1112,7 @@ class PaymentFetchTest extends TestCase
                                 'refund_status' => NULL,
                                 'captured' => TRUE,
                                 'description' => 'random description',
-                                'card_id' => 'GfnBMH2PXyCDVZ',
+                                'card_id' => $card->getId(),
                                 'bank' => NULL,
                                 'wallet' => NULL,
                                 'vpa' => NULL,
@@ -1319,6 +1321,7 @@ class PaymentFetchTest extends TestCase
     public function testFetchPaymentFromPgRouterWithPrivateAuth()
     {
         $this->enablePgRouterConfig();
+
         $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
 
         $this->app->instance('pg_router', $pgService);
@@ -1326,8 +1329,9 @@ class PaymentFetchTest extends TestCase
         $pgService->shouldReceive('sendRequest')
             ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'), Mockery::type('bool'))
             ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout, bool $retry)
-            {
-                return [
+                {
+                    $card = $this->fixtures->create('card', ['name' => 'Test Name']);
+                    return [
                     'body' => [
                         'data'=>[
                             'payment'=>[
@@ -1352,7 +1356,7 @@ class PaymentFetchTest extends TestCase
                                 'currency'=>'INR',
                                 'method'=>'card',
                                 'auth_type'=>'3ds',
-                                'card_id'=>'GrClJNBzyquD7E',
+                                'card_id'=> $card->getId(),
                                 'base_amount'=>null,
                                 'authorized_amount'=>1,
                                 'settled_by'=>'',
@@ -1437,6 +1441,8 @@ class PaymentFetchTest extends TestCase
                 ];
             });
 
+
+
         $this->ba->privateAuth();
 
         $testData = & $this->testData[__FUNCTION__];
@@ -1483,6 +1489,8 @@ class PaymentFetchTest extends TestCase
             ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'), Mockery::type('bool'))
             ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout, bool $retry)
             {
+                $card = $this->fixtures->create('card', ['name' => 'Test Name']);
+
                 return [
                     'body' => [
                         'data' => [
@@ -1499,7 +1507,7 @@ class PaymentFetchTest extends TestCase
                                 'refund_status' => NULL,
                                 'captured' => TRUE,
                                 'description' => 'random description',
-                                'card_id' => 'GfnBMH2PXyCDVZ',
+                                'card_id' => $card->getId(),
                                 'bank' => NULL,
                                 'wallet' => NULL,
                                 'vpa' => NULL,

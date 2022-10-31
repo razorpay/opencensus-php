@@ -587,6 +587,8 @@ final class RazorxTreatment
 
     public const PANSOURCE_CHANGE_RUPAY = 'pansource_change_rupay';
 
+    public const PANSOURCE_CHANGE_MIGRATION_RUPAY = 'pansource_change_migration_rupay';
+
     public const  SMARTCOLLECT_SERVICE_BANK_TRANSFER = 'smartcollect_service_bank_transfer';
 
     public const SMARTCOLLECT_SERVICE_QR_PAYMENTS_CALLBACK = 'smartcollect_service_qr_payments_callback';

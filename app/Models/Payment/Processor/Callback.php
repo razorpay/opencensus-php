@@ -200,8 +200,8 @@ trait Callback
                     }
 
                     // If gateways like Payu did not retun a terminal status
-                    // for emandate payment from webhooks, then we skip all post processing. 
-                    if (($payment->isEmandateAutoRecurring() === true) and 
+                    // for emandate payment from webhooks, then we skip all post processing.
+                    if (($payment->isEmandateAutoRecurring() === true) and
                         ($payment->hasBeenAuthorized() === false) and
                         (Gateway::isApiBasedAsyncEMandateGateway($payment->getGateway()) === true))
                     {
@@ -314,18 +314,18 @@ trait Callback
         }
 
         // Following conditions should be true to accept webhooks
-        // 1. gateway can accept webhooks 
+        // 1. gateway can accept webhooks
         // 2. gateway is an async status gateway
         // 3. token and payment status check
         // 4. did gateway send webhook too soon
-        if ((Gateway::isWebhookEnabledGateway($payment->getGateway())) and 
-            (Gateway::isApiBasedAsyncEMandateGateway($payment->getGateway())) and 
+        if ((Gateway::isWebhookEnabledGateway($payment->getGateway())) and
+            (Gateway::isApiBasedAsyncEMandateGateway($payment->getGateway())) and
             (   // if authorized and token not updated
-                (($payment->hasBeenAuthorized() === true) and 
+                (($payment->hasBeenAuthorized() === true) and
                  ($payment->isRecurringTypeInitial() === true) and
                  ($payment->isCaptured() === false)) or
-                // if second recurring and async payment update flow 
-                (($payment->hasBeenAuthorized() === false) and 
+                // if second recurring and async payment update flow
+                (($payment->hasBeenAuthorized() === false) and
                  ($payment->isCreated() === true) and
                  ($payment->isSecondRecurring() === true)) or
                 // if initial or auto payment is failed
@@ -507,6 +507,9 @@ trait Callback
 
                 //For Cred we receive the discount in the callback event.
                 $this->addDiscountToPaymentIfApplicable($payment, $payData);
+
+                // set auth ref no. in case of a Rupay card
+                $this->setAuthenticationReferenceNumberIfApplicable($payment->card, $data);
 
                 if (isset($payData[Payment\Entity::TWO_FACTOR_AUTH]) === true)
                 {
@@ -1206,5 +1209,22 @@ trait Callback
         }
 
         return true;
+    }
+
+    protected function setAuthenticationReferenceNumberIfApplicable($card, $callbackData)
+    {
+        if ($card->isRupay() === false)
+        {
+            return;
+        }
+
+        if (isset($callbackData['authentication_reference_number']) === true)
+        {
+            $authReferenceNumber = $callbackData['authentication_reference_number'];
+
+            $card->setReference4($authReferenceNumber);
+
+            $this->repo->saveOrFail($card);
+        }
     }
 }

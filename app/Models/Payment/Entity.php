@@ -1967,14 +1967,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                     $acquirerData['product_enrollment_id'] = $productEnrollmentId;
                 }
 
-                if(($this->getCardId() === true) && ($this->card->isRuPay() ==true))
+                //return authentication_reference_number for Rupay cards
+                if(isset($this->card) && ($this->card->isRuPay() ==true))
                 {
-                    $authenticationData = (new Payment\Service)->getAuthenticationEntityForAcquirerData($this->getId());
-                }
-
-                if ((isset($authenticationData) == true) &&
-                    (empty($authenticationData['gateway_reference_id2']) == false)) {
-                    $acquirerData['authentication_reference_number'] = $authenticationData['gateway_reference_id2'];
+                    $acquirerData['authentication_reference_number'] = $this->card->getReference4();
                 }
 
                 break;

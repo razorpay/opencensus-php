@@ -2371,6 +2371,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MISC_TOSTRING_ERROR                                   = 'MISC_TOSTRING_ERROR';
 
     const PANSOURCE_CHANGE_RAZORX_VARIANT                       = 'PANSOURCE_CHANGE_RAZORX_VARIANT';
+    const PANSOURCE_CHANGE_MIGRATION_RAZORX_VARIANT             = 'PANSOURCE_CHANGE_MIGRATION_RAZORX_VARIANT';
     const OTPELF_REQUEST                                        = 'OTPELF_REQUEST';
     const OTPELF_RESPONSE                                       = 'OTPELF_RESPONSE';
     const TOKENEX_REQUEST                                       = 'TOKENEX_REQUEST';
