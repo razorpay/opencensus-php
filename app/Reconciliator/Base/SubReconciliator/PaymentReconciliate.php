@@ -2266,6 +2266,15 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         // This is required to save the association of the transaction with the payment.
         $this->repo->saveOrFail($this->payment);
 
+        $paymentProcessor = new Payment\Processor\Processor($this->merchant);
+
+        $paymentProcessor->createLedgerEntriesForGatewayCapture($this->payment);
+
+        if ($this->payment->hasBeenCaptured() === true)
+        {
+            $paymentProcessor->createLedgerEntriesForMerchantCapture($this->payment, $txn);
+        }
+
         $this->saveFeeDetails($txn, $feesSplit);
 
         if ($this->payment->isExternal() === true)

@@ -23,6 +23,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\GatewayTimeoutException;
 use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Models\Settlement\SlackNotification;
+use RZP\Models\Ledger\AdjustmentJournalEvents;
 use RZP\Models\Merchant\Invoice as MerchantInvoice;
 use RZP\Models\Settlement\Channel as BankingChannel;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -169,6 +170,11 @@ class Core extends Base\Core
             }
         }
 
+        if ($adj->isBalanceTypePrimary() === true)
+        {
+            $this->createLedgerEntriesForManualAdjustment($adj, $merchant);
+        }
+
         if ($balanceType === Balance\Type::RESERVE_PRIMARY)
         {
             $this->createLedgerEntriesForMerchantReserveBalanceLoading($adj, $merchant, $payment);
@@ -198,6 +204,40 @@ class Core extends Base\Core
                     'merchant' => $merchant->getId(),
                     'transactionMessage' => $transactionMessage,
                     'payment' => $payment,
+                ]);
+
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PG_LEDGER_ENTRY_FAILED,
+                ['adjustment_id'             => $adj->getId()]);
+        }
+    }
+
+    private function createLedgerEntriesForManualAdjustment(Adjustment\Entity $adj, Merchant\Entity $merchant)
+    {
+        try
+        {
+            if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+            {
+                return;
+            }
+
+            $transactionMessage= AdjustmentJournalEvents::createTransactionMessageForManualAdjustment($adj);
+
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($transactionMessage)
+            {
+                LedgerEntryJob::dispatchNow($this->mode, $transactionMessage, false);
+            }));
+
+            $this->trace->info(
+                TraceCode::ADJUSTMENT_JOURNAL_EVENT,
+                [
+                    'merchant' => $merchant->getId(),
+                    'transactionMessage' => $transactionMessage,
                 ]);
 
         }

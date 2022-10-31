@@ -48,6 +48,10 @@ class Constants
     const RAZORPAY_DISPUTE_DEDUCT                           = "razorpay_dispute_deduct";
     const RAZORPAY_DISPUTE_REVERSAL                         = "razorpay_dispute_reversal";
 
+    //Adjustment Events
+    const POSITIVE_ADJUSTMENT                           = "positive_adjustment";
+    const NEGATIVE_ADJUSTMENT                           = "negative_adjustment";
+
     //Money Params Fields
     const FEE_CREDITS_DEDUCTIBLE                            = "fee_credits_deductible";
     const REFUND_AMOUNT                                     = "refund_amount";
@@ -55,6 +59,7 @@ class Constants
     const MERCHANT_DEDUCTIBLE_REFUND_CREDITS                = "merchant_deductible_refund_credits";
     const GATEWAY_AMOUNT                                    = "gateway_amount";
     const GATEWAY_DISPUTE_PAYABLE_AMOUNT                    = "gateway_dispute_payable_amount";
+    const ADJUSTMENT_AMOUNT                                 = "adjustment_amount";
     const GMV_AMOUNT                                        = "gmv_amount";
     const DS_GMV_AMOUNT                                     = "ds_gmv_amount";
     const DS_CONTROL_AMOUNT                                 = "ds_control_amount";

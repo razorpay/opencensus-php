@@ -350,7 +350,7 @@ trait Capture
         }
     }
 
-    private function createLedgerEntriesForGatewayCapture(Payment\Entity $payment)
+    public function createLedgerEntriesForGatewayCapture(Payment\Entity $payment)
     {
         if($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
         {
@@ -884,7 +884,7 @@ trait Capture
     }
 
 
-    private function createLedgerEntriesForMerchantCapture(Payment\Entity $payment, Transaction\Entity $txn)
+    public function createLedgerEntriesForMerchantCapture(Payment\Entity $payment, Transaction\Entity $txn)
     {
         try
         {
