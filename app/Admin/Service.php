@@ -1734,21 +1734,25 @@ class Service extends Base\Service
         return [$response, $statusCode];
     }
 
-    //public function getEmailLogs($input)
-    //{
-    //    $error = $data = null;
-    //
-    //    try
-    //    {
-    //        $data = (new Admin\Mailgun)->getLogs($input);
-    //    }
-    //    catch (\Exception $e)
-    //    {
-    //        $error = [$e->getMessage()];
-    //    }
-    //
-    //    return [$error, $data];
-    //}
+    public function getEmailLogs($input)
+    {
+        $error = $data = null;
+
+        $this->trace->info(TraceCode::MAILGUN_GET_EMAIL_LOGS, [
+            'recipient' => $input['recipient']
+        ]);
+
+        try
+        {
+            $data = (new Admin\Mailgun)->getLogs($input);
+        }
+        catch (\Exception $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
+    }
 
     protected function getOrgDataFromCache($domain)
     {

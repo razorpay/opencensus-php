@@ -679,14 +679,14 @@ class AdminController extends Controller
         return Response::json($response, $statusCode);
     }
 
-    //public function getEmailLogs()
-    //{
-    //    $input = Input::all();
-    //
-    //    list($error, $response) = (new Admin\Service)->getEmailLogs($input);
-    //
-    //    return AppResponse::jsonResponse($error, $response);
-    //}
+    public function getEmailLogs()
+    {
+        $input = Input::all();
+
+        list($error, $response) = (new Admin\Service)->getEmailLogs($input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
 
 
     private function putSessionValue($input)
