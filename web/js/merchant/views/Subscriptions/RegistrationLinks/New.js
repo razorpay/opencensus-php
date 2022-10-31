@@ -86,8 +86,7 @@ let DEFAULT_MAX_AMOUNT = DEFAULT_EMANDATE_LIMIT;
 const DEFAULT_FIRST_CHARGE = 0; // in Paisa
 
 // gatewayMaxLimitValidator fn restrics the max gateway amount to be not greater than GATEWAY_MAX_LIMIT.
-const gatewayMaxLimitValidator = (value) =>
-  isAmountLiesInRange(value, rupeesToPaise(GATEWAY_MAX_LIMIT));
+const gatewayMaxLimitValidator = (value) => isAmountLiesInRange(value, GATEWAY_MAX_LIMIT);
 
 const CardMandatoryFields = [
   {
@@ -596,11 +595,12 @@ export default class NewRegistrationLink extends React.Component {
       case 2: {
         let tokenDetailFields = [];
         const { formFields: fields = {} } = this.state;
-        const maxAmount = fields.mandateMaxAmount;
+        const maxAmount = +fields.mandateMaxAmount;
+        const amount = +fields.amount;
         const maxAmountInPaisa = rupeesToPaise(maxAmount);
 
         if (this.isUPIPayment) {
-          if (maxAmount > GATEWAY_MAX_LIMIT || maxAmount < fields.amount) {
+          if (maxAmount > GATEWAY_MAX_LIMIT || maxAmount < amount) {
             return false;
           }
         }
