@@ -1090,13 +1090,10 @@ class Service extends Base\Service
         $this->traceRawApiCall($input, $path);
 
         $validator = (new Admin\Validator);
-        $validator->setStrictFalse();
-        $error = $validator->validateInput('api_call', $input)->messages();
 
-        if ($error)
-        {
-            return [$error, []];
-        }
+        $validator->setStrictFalse();
+
+        $validator->validateInput('api_call', $input);
 
         $disableAPI = $this->disallowAPIFromMakeRawAPICall($path);
 
@@ -1117,6 +1114,7 @@ class Service extends Base\Service
         }
 
         $request = new RawApiRequest($input, $path, $headersToBeAppended);
+
         return $request->send();
     }
 

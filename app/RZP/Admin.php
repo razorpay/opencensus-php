@@ -6,9 +6,11 @@ use Trace;
 use Config;
 use App\Http\ApiUrl;
 use App\Trace\TraceCode;
+use GuzzleHttp\Psr7\Utils;
 use GuzzleHttp\Client as Guzzle;
 use Razorpay\Api\Entity as ApiEntity;
 use Razorpay\Api\Request as ApiRequest;
+use GuzzleHttp\Exception\GuzzleException;
 use Razorpay\Api\Errors\ServerError as ServerError;
 use Razorpay\Api\Errors\BadRequestError as BadRequestError;
 
@@ -32,6 +34,11 @@ class Admin extends Entity
 
     public function makeReconciliateRequest($input, $mode = 'live')
     {
+        Trace::error(TraceCode::MAKE_RECONCILIATION_REQUEST, [
+                         'mode'             => $mode,
+                         'attachment-count' => $input['attachment-count'],
+                     ]);
+
         // Makes a guzzle file request
         $response = $this->makeGuzzleFileRequest($input, $mode);
 
@@ -50,61 +57,98 @@ class Admin extends Entity
         ]);
 
         // Sets the options for the request. Auth should be part of this.
-        $options = array(
+        $options = [
             // For reconciliation route, auth is not required.
             // But, sending it just for the sake of it.
-            'auth'      => $this->getApiCredentials($mode),
-            'headers'   => ApiRequest::getHeaders(),
-            // TODO: Check if $postBody->setField() can be used, instead.
-            'body'      => [
-                $input
-            ]
-        );
+            'auth'    => $this->getApiCredentials($mode),
+            'headers' => ApiRequest::getHeaders(),
+        ];
 
-        // Creates a request instance
-        $request = $client->createRequest("POST", self::RECONCILIATION_URL, $options);
+        $options['multipart'] = $this->getOutGoingMultipartData($input);
 
-        // Creates an object to insert post body data
-        $postBody = $request->getBody();
-
-        $filePaths = $this->addFilesToRequest($postBody, $input);
-
-        return $this->sendGuzzleFileRequest($client, $request, $filePaths);
+        return $this->sendGuzzleFileRequest($client, self::RECONCILIATION_URL, $options);
     }
 
-    protected function addFilesToRequest($postBody, $input)
+    private function getOutGoingMultipartData($data): array
     {
-        $filePaths = [];
+        $outGoingData = [];
 
-        foreach (range(1, $input['attachment-count']) as $attachmentNumber)
+        foreach ($data as $key => $val)
         {
-            $inputFileName = 'attachment-' . $attachmentNumber;
+            if (is_array($val))
+            {
+                $data = $this->flatten($data, $val, $key);
 
-            $filePath = $this->moveAndGetFilePath($input[$inputFileName]);
-
-            $postFile = new PostFile($inputFileName, fopen($filePath, 'r'));
-
-            $postBody->addFile($postFile);
-
-            $filePaths[] = $filePath;
+                unset($data[$key]);
+            }
         }
 
-        return $filePaths;
+        foreach ($data as $key => $value)
+        {
+            if (is_int($key) === true)
+            {
+                $key = strval($key);
+            }
+
+            if ($value instanceof \SplFileInfo)
+            {
+                $fileName = $value->getClientOriginalName();
+
+                $outGoingData[] =
+                    [
+                        'name'     => $key,
+                        'contents' => Utils::tryFopen($value, 'r'),
+                        'filename' => $fileName
+                    ];
+            }
+            else
+            {
+                $outGoingData[] =
+                    [
+                        'name'     => $key,
+                        'contents' => $value,
+                    ];
+            }
+        }
+
+        return $outGoingData;
     }
 
-    protected function sendGuzzleFileRequest($client, $request, $filePaths)
+    protected function flatten($parent, $array, $prefix)
+    {
+
+        foreach ($array as $key => $value)
+        {
+            if (is_array($value))
+            {
+                $parent = $this->flatten($parent, $value, $prefix . '[' . $key . ']');
+            }
+            else
+            {
+                $parent[$prefix . '[' . $key . ']'] = $value;
+            }
+        }
+
+        return $parent;
+    }
+
+    /**
+     * @throws BadRequestError
+     * @throws ServerError
+     */
+    protected function sendGuzzleFileRequest($client, $path, $methodArgs)
     {
         try
         {
             $start_time = microtime(true);
 
-            $response = $client->send($request);
+            $response = $client->post($path, $methodArgs);
 
             $end_time = microtime(true);
 
             $time_taken = $end_time - $start_time;
 
-            // log if response time is more then 180 seconds
+            // log if response time is more than 180 seconds
             if ($time_taken > 180)
             {
                 Trace::info(TraceCode::API_SLOW_RESPONSE_CALL, [
@@ -112,18 +156,31 @@ class Admin extends Entity
                 ]);
             }
 
-            // json() gets the response body
-            $jsonResponse = $response->json();
-
-            return $jsonResponse;
+            // gets the response body
+            return json_decode($response->getBody(), true);
         }
-        catch (\Exception $ex)
+        catch (GuzzleException $ex)
+        {
+
+            Trace::error(
+                TraceCode::API_GUZZLE_EXCEPTION,
+                [
+                    'message'         => $ex->getMessage(),
+                    'api_status_code' => $ex->getCode(),
+                ]);
+
+            throw new BadRequestError(
+                $ex->getMessage(), $ex->getCode(),
+                $ex->getCode(),
+            );
+        }
+        catch (\Throwable $ex)
         {
 
             Trace::error(
                 TraceCode::API_REQUEST_FAILURE,
                 [
-                    'message'           => $ex->getMessage(),
+                    'message' => $ex->getMessage(),
                 ]);
 
             $exceptionResponse = $ex->getResponse();
@@ -143,13 +200,6 @@ class Admin extends Entity
                     $exceptionResponse->getStatusCode());
             }
         }
-        finally
-        {
-            // Delete the local file created after the request is made.
-            $this->deleteFilesLocally($filePaths);
-        }
-
-        return null;
     }
 
     public function deleteFilesLocally($filePaths)

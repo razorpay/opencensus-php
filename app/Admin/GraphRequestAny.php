@@ -11,7 +11,6 @@ use SplFileInfo;
 use App\Trace\TraceCode;
 use GuzzleHttp\Psr7\Utils;
 use GuzzleHttp\Client as Guzzle;
-use GuzzleHttp\Post\PostFile;
 use GuzzleHttp\Exception\RequestException;
 
 use App\Http\ApiUrl;

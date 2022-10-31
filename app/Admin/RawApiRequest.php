@@ -10,12 +10,14 @@ use Session;
 use Request;
 
 use App\Http\ApiUrl;
+use App\Http\Headers;
 use App\Trace\TraceCode;
 use App\Trace\SpanTrace;
-use GuzzleHttp\Post\PostFile;
+use GuzzleHttp\Psr7\Utils;
 use GuzzleHttp\Client as Guzzle;
 use Razorpay\Api\Errors as RZPErrors;
 use Razorpay\Api\Request as ApiRequest;
+use Razorpay\Api\Errors\BadRequestError;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Exception\GuzzleException;
@@ -51,13 +53,14 @@ class RawApiRequest
             'base_uri' => ApiUrl::getApiBaseUrl(),
             // We already have a few headers initialized for this class
             // including the X-Dashboard and Razorpay-API Header
-            'defaults' => [
-                'headers'   =>  ApiRequest::getHeaders() + $headers + [
-                        'X-Dashboard'                 => 'true',
-                        'X-User-Agent'                => Request::header('User-Agent'),
-                        'X-IP-Address'                => Request::ip(),
-                        'X-Dashboard-User-Session-Id' => Session::getId(),
+            'headers'  => ApiRequest::getHeaders() + $headers + [
+                    'X-Dashboard'                 => 'true',
+                    'X-User-Agent'                => Request::header('User-Agent'),
+                    'X-IP-Address'                => Request::ip(),
+                    'X-Dashboard-User-Session-Id' => Session::getId(),
+                    Headers::DEV_SERVE_USER       => Request::header(Headers::DEV_SERVE_USER),
                 ],
+            'defaults' => [
                 'timeout' => Config::get('api.request_timeout'),
             ]
         ];
@@ -196,7 +199,7 @@ class RawApiRequest
 
         if ($contentType === "application/json")
         {
-            // To check if the the content is already a JSON, we decode the content
+            // To check if the content is already a JSON, we decode the content
             // and check for any JSON error. If no error then it is already a valid JSON
             // and there is no need to do a json_encode
             $bodyIsArray = is_array($this->params['body']);
@@ -239,7 +242,11 @@ class RawApiRequest
 
         foreach ($postArray as $key => $value)
         {
-            $body[$key] = $value;
+            $body[] =
+                [
+                    'name'     => $key,
+                    'contents' => $value,
+                ];
         }
 
         return $body;
@@ -261,10 +268,13 @@ class RawApiRequest
                 );
             }
 
-            // This is as per guzzle 5, will need to get changed for 6
-            $postFile = new PostFile($fileFieldName, fopen($file, 'r'), $fileName);
+            $postfile = [
+                'name'     => $fileFieldName,
+                'contents' => Utils::tryFopen($file, 'r'),
+                'filename' => $fileName
+            ];
 
-            return $postFile;
+            return $postfile;
         }
 
         return null;
@@ -273,7 +283,9 @@ class RawApiRequest
     /**
      * Sets the body and content type of the request as
      * per the guzzle input format
+     *
      * @return null
+     * @throws BadRequestError
      */
     protected function prepareRequest()
     {
@@ -285,13 +297,13 @@ class RawApiRequest
             {
                 $files = $this->input['file'];
 
-                $this->params['body'] = array_merge($this->parseBody(), $this->parseFiles($files));
+                $this->params['multipart'] = array_merge($this->parseBody(), $this->parseFiles($files));
             }
             else
             {
                 $file = $this->input['file'];
 
-                $this->params['body'] = $this->parseBody();
+                $this->params['multipart'] = $this->parseBody();
 
                 // Now that we have added all POST params, we add the file itself
                 // This contains the field name to be used for the file field
@@ -299,9 +311,9 @@ class RawApiRequest
 
                 $postFile = $this->getFileBodyFromFileInput($fileFieldName, $file);
 
-                if (isset($postFile))
+                if (isset($postFile) === true)
                 {
-                    $this->params['body'][$fileFieldName] = $postFile;
+                    $this->params['multipart'][] =  $postFile;
                 }
             }
         }
@@ -316,6 +328,9 @@ class RawApiRequest
         }
     }
 
+    /**
+     * @throws BadRequestError
+     */
     protected function parseFiles($files)
     {
         $fileBody = [];
@@ -327,7 +342,7 @@ class RawApiRequest
         {
             if ($val instanceof \SplFileInfo)
             {
-                $fileBody[$key] = $this->getFileBodyFromFileInput($key, $val);
+                $fileBody[] = $this->getFileBodyFromFileInput($key, $val);
             }
         }
 
@@ -399,7 +414,7 @@ class RawApiRequest
 
             $time_taken = $end_time - $start_time;
 
-            // log if response time is more then 180 seconds
+            // log if response time is more than 180 seconds
             if ($time_taken > 180)
             {
                 Trace::info(TraceCode::API_SLOW_RESPONSE_CALL, [
@@ -412,10 +427,11 @@ class RawApiRequest
         // This captures all the errors that might happen for now
         catch(ClientException $e)
         {
+            $exception = $e;
             $json = json_decode($e->getResponse()->getBody(), true);
             $errors = [$json['error']['description'], "Status Code: {$e->getResponse()->getStatusCode()}"];
         }
-        catch(ServerException $e)
+        catch(ServerException|RZPErrors\Error $e)
         {
             $exception = $e;
             $errors = [$e->getMessage()];
@@ -428,13 +444,6 @@ class RawApiRequest
         catch(GuzzleException $e)
         {
             $exception = $e;
-            $json = json_decode($e->getResponse()->getBody(), true);
-            $errors = [$json['error']['description'], "Status Code: {$e->getResponse()->getStatusCode()}"];
-        }
-
-        catch(RZPErrors\Error $e)
-        {
-            $exception = $e;
             $errors = [$e->getMessage()];
         }
 
@@ -442,14 +451,12 @@ class RawApiRequest
         // Use case: Request didn't reach API, or failed with 5xx before API made
         // a log of it. In such case we don't know what happened. Dashboard as a
         // client should at least log for all server errors received from API.
-        if ($exception !== null)
-        {
-            Trace::error(
-                TraceCode::API_REQUEST_FAILURE,
-                [
-                    'message' => $e->getMessage(),
-                ]);
-        }
+
+        Trace::error(
+            TraceCode::API_REQUEST_FAILURE,
+            [
+                'message' => $exception->getMessage()
+            ]);
 
         return [$errors, null];
     }
