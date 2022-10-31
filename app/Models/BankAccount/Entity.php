@@ -220,7 +220,8 @@ class Entity extends Base\PublicEntity
 
     protected function generateBeneficiaryCountry($input)
     {
-        $this->setAttribute(self::BENEFICIARY_COUNTRY, 'IN');
+        $benificiaryCountry = $input[self::BENEFICIARY_COUNTRY] ?? 'IN';
+        $this->setAttribute(self::BENEFICIARY_COUNTRY, $benificiaryCountry);
     }
 
     public function merchant()

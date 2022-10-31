@@ -75,7 +75,8 @@ class Core extends Base\Core
 
         if((isset($input[Entity::TYPE]) === true) and
             ($input[Entity::TYPE] === Type::ORG_SETTLEMENT) and
-            ($merchant->org->isFeatureEnabled(Feature\Constants::ORG_POOL_ACCOUNT_SETTLEMENT) === false))
+            (($merchant->org->isFeatureEnabled(Feature\Constants::ORG_POOL_ACCOUNT_SETTLEMENT) === false) and
+                $merchant->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === false))
         {
           throw new BadRequestException(ErrorCode::BAD_REQUEST_REQUIRED_PERMISSION_NOT_FOUND);
         }
@@ -534,9 +535,32 @@ class Core extends Base\Core
 
         $ba->setConnection($mode);
 
-        $ba = $ba->build($input);
+        $bankValidator = 'addBankAccount';
 
-        $ba->getValidator()->validateIfscCode($input, $mode);
+        if ($merchant->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === true){
+            $bankValidator = 'addInternationalBankAccount';
+            $notes = [];
+            $notes[Entity::BANK_NAME] = $input[Entity::BANK_NAME];
+            $input[Entity::NOTES] = $notes;
+        }
+        // if live mode and input does not already contain notes, copy test mode notes
+        if (($mode === Mode::LIVE) and (empty($input[Entity::NOTES]) === true))
+        {
+            $testBankAccount = $this->repo->bank_account->getBankAccountOnConnection($merchant, Mode::TEST);
+
+            if (empty($testBankAccount) === false)
+            {
+                $notes = $testBankAccount->getNotes();
+
+                $input[Entity::NOTES] = $notes->toArray();
+            }
+        }
+
+            $ba = $ba->build($input,$bankValidator);
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === false){
+            $ba->getValidator()->validateIfscCode($input, $mode);
+        }
 
         $ba->merchant()->associate($merchant);
 
@@ -800,7 +824,9 @@ class Core extends Base\Core
             $this->validateFeatureForAccountUpdate($merchant);
         }
 
-        if ($merchant->org->isFeatureEnabled(Feature\Constants::ORG_POOL_ACCOUNT_SETTLEMENT) === true)
+        if (($merchant->org->isFeatureEnabled(Feature\Constants::ORG_POOL_ACCOUNT_SETTLEMENT) === true) or
+            ($merchant->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === true))
+
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ACCOUNT_ACTION_NOT_SUPPORTED);
         }

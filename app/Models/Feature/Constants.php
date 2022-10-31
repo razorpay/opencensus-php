@@ -786,6 +786,11 @@ class Constants
     const ALLOW_B2B_ACTIVATION = 'allow_b2b_activation';
 
     /**
+     * Enables OPGSP import flow on merchant
+     */
+    const OPGSP_IMPORT_FLOW = 'opgsp_import_flow';
+
+    /**
      * Allows the dashboard to show the B2B account creation for merchants
      * TODO: Remove allow_b2b_activation afterwards.
      */
@@ -795,6 +800,7 @@ class Constants
      * Add 3ds merchant details to Authorize body
      */
     const ENABLE_3DS2 = 'enable_3ds2';
+
     /*
      * Enable feature to appear/disappear support url at org level
     */
@@ -2186,6 +2192,7 @@ class Constants
         self::ALLOW_B2B_ACTIVATION            => true,
         self::ENABLE_INTL_BANK_TRANSFER       => true,
         self::ENABLE_SETTLEMENT_FOR_B2B       => true,
+        self::OPGSP_IMPORT_FLOW               => true,
         self::ONE_CLICK_OVERRIDE_THEME        => true,
         self::PP_CUSTOM_DOMAIN                => true,
         self::TOKEN_INTEROPERABILITY          => true,

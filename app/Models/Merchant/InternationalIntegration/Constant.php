@@ -16,6 +16,9 @@ final class Constant
     const APM_REQUEST_NAMESPACE = 'merchant_international_onboard_reminder';
     const APM_REQUEST_ENTITY = 'emerchantpay_apm_request';
 
+    const INTEGRATION_ENTITY_OPGSP_IMPORT = 'icici_opgsp_import';
+    const HS_CODE = 'hs_code';
+
     const DOCUMENT_ID_SIGN = 'doc_';
     const FILE_ID_SIGN     = 'file_';
 

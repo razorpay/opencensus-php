@@ -36,6 +36,7 @@ class Service extends Base\Service
 
     const EMERCHANTPAY_APM_MUTEX = "EMERCHANTPAY_APM_ONBOARDING_REQUEST_";
     const SHARED_MERCHANT_ID = '100000razorpay';
+    const HS_CODE_MUTEX = "HS_CODE_REQUEST_";
 
     public function __construct()
     {
@@ -543,5 +544,80 @@ class Service extends Base\Service
         (new Validator)->validateInput('getInternationalVirtualAccountByVACurrency',$input);
 
         return (new Core())->getInternationalVirtualAccountByVACurrency($input, $merchantId, $va_currency);
+    }
+
+    public function patchHsCode($input)
+    {
+
+        $merchant = $this->merchant;
+        if($merchant !== null){
+            $mid = $this->merchant->getId();
+        }else{
+            $mid = $input[Entity::MERCHANT_ID];
+        }
+
+        $acquired = $this->app['api.mutex']->acquire(self::HS_CODE_MUTEX . $mid);
+        if($acquired === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS);
+        }
+
+        $mii_notes = [];
+        $mii_notes[Constant::HS_CODE] = $input['hs_code'];
+
+        $mii = $this->repo->merchant_international_integrations
+            ->getByMerchantIdAndIntegrationEntity($mid, Constant::INTEGRATION_ENTITY_OPGSP_IMPORT);
+
+        if(isset($mii))
+        {
+            $mii->setNotes(array_merge($mii->getNotes()->toArray(), $mii_notes));
+        }
+        else
+        {
+            $mii_input = [];
+            $mii_input[Entity::MERCHANT_ID] = $mid;
+            $mii_input[Entity::INTEGRATION_ENTITY] = Constant::INTEGRATION_ENTITY_OPGSP_IMPORT;
+            $mii_input[Entity::INTEGRATION_KEY] = Constant::INTEGRATION_ENTITY_OPGSP_IMPORT;
+            $mii_input[Entity::NOTES] = $mii_notes;
+
+            $mii = new Entity;
+            $mii->generateId();
+            $mii->build($mii_input);
+        }
+
+        $this->repo->merchant_international_integrations->saveOrFail($mii);
+
+        $this->trace->info(TraceCode::MERCHANT_INTERNATIONAL_INTEGRATION_CREATE, [
+            'merchant_id'             => $mid,
+            'integration_entity'      => $mii,
+        ]);
+
+        $this->app['api.mutex']->release(self::HS_CODE_MUTEX . $mid);
+
+        return ['success' => true];
+    }
+
+    public function getMerchantHsCode(string $merchantId = null)
+    {
+        $merchant = $this->merchant;
+        
+        if($merchant !== null){
+            $mid = $this->merchant->getId();
+        }else{
+            $mid = $merchantId;
+        }
+
+        $mii_notes = [];
+
+        $mii = $this->repo->merchant_international_integrations
+            ->getByMerchantIdAndIntegrationEntity($mid, Constant::INTEGRATION_ENTITY_OPGSP_IMPORT);
+
+        if(isset($mii))
+        {
+            $mii->setNotes(array_merge($mii->getNotes()->toArray(), $mii_notes));
+            $mii_notes[Constant::HS_CODE] = $mii->getNotes()[Constant::HS_CODE];
+        }
+
+        return $mii_notes;
     }
 }

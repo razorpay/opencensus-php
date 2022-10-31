@@ -177,6 +177,7 @@ class PurposeCodeList
     const P0007 = 'P0007';
     const P0008 = 'P0008';
     const S0101 = 'S0101';
+    const S0102 = 'S0102';
     const S0301 = 'S0301';
     const S0303 = 'S0303';
     const S0304 = 'S0304';
@@ -348,6 +349,7 @@ class PurposeCodeList
     const P0007_DESC = "Foreign Direct Investment made by overseas Investors in India in debt instruments.";
     const P0008_DESC = "Foreign Direct Investment made by overseas Investors in India in real estate";
     const S0101_DESC = "Advance Payment against Imports";
+    const S0102_DESC = "Payment towards imports – settlement of the invoice";
     const S0301_DESC = "Business travel";
     const S0303_DESC = "Travel for pilgrimage";
     const S0304_DESC = "Travel for medical treatment";
@@ -520,6 +522,7 @@ class PurposeCodeList
         self::P0007 => self::P0007_DESC,
         self::P0008 => self::P0008_DESC,
         self::S0101 => self::S0101_DESC,
+        self::S0102 => self::S0102_DESC,
         self::S0301 => self::S0301_DESC,
         self::S0303 => self::S0303_DESC,
         self::S0304 => self::S0304_DESC,
@@ -792,6 +795,7 @@ class PurposeCodeList
 
     const ADVANCE_PAYMENT_CODES = [
         self::S0101,
+        self::S0102,
     ];
 
     const ROYALTIES_CODES = [

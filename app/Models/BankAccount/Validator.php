@@ -74,6 +74,30 @@ class Validator extends Base\Validator
         Entity::TYPE                            => 'sometimes|string',
     ];
 
+    protected static $addInternationalBankAccountRules = [
+        Detail\Entity::ADDRESS_PROOF_URL        => 'sometimes',
+        Entity::ENTITY_ID                       => 'sometimes',
+        Entity::IFSC_CODE                       => 'required|alpha_num|between:8,11',
+        Entity::ACCOUNT_NUMBER                  => 'required|regex:/^[a-zA-Z0-9]+$/|between:5,35|custom',
+        Entity::BENEFICIARY_NAME                => 'required|regex:/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]+/|between:4,120|string',
+        Entity::ACCOUNT_TYPE                    => 'sometimes|nullable|string|custom',
+        Entity::BENEFICIARY_ADDRESS1            => 'sometimes|max:30',
+        Entity::BENEFICIARY_ADDRESS2            => 'sometimes|max:30',
+        Entity::BENEFICIARY_ADDRESS3            => 'sometimes|max:30',
+        Entity::BENEFICIARY_ADDRESS4            => 'sometimes|max:30',
+        Entity::MOBILE_BANKING_ENABLED          => 'sometimes|in:0,1',
+        Entity::MPIN                            => 'sometimes|max:6',
+        Entity::BENEFICIARY_CITY                => 'sometimes|max:30|alpha_space',
+        Entity::BENEFICIARY_STATE               => 'sometimes|max:2',
+        Entity::BENEFICIARY_PIN                 => 'sometimes|max:6',
+        Entity::BENEFICIARY_COUNTRY             => 'required',
+        Entity::BENEFICIARY_EMAIL               => 'sometimes|email',
+        Entity::BENEFICIARY_MOBILE              => 'sometimes|max:15|contact_syntax',
+        Entity::NOTES                           => 'sometimes|notes',
+        Entity::TYPE                            => 'sometimes|string',
+        Entity::BANK_NAME                       => 'sometimes|string',
+    ];
+
     protected static $editRules = [
         Entity::ACCOUNT_NUMBER      => 'sometimes|regex:/^[a-zA-Z0-9]+$/|between:5,35|custom',
         Entity::BENEFICIARY_NAME    => 'sometimes|between:4,120|string|custom',

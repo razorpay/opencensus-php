@@ -10,6 +10,8 @@ use Redis;
 use Crypt;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Constants\Table;
+use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Models\Merchant\Repository as MerchantRepository;
 use RZP\Services\Mock;
 use RZP\Models\Comment;
@@ -16976,5 +16978,144 @@ The same has been enabled for the account.
         $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
 
         $this->assertNotEquals('risk_review_watchlist_tag', $merchantDetails['fraud_type']);
+    }
+
+
+    public function testHsCodeDetails(){
+        $hsCode = '1234567890';
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->testData[__FUNCTION__] = [
+            'request' => [
+                'method'    => 'PATCH',
+                'url'       => '/merchant/hscode',
+                'content'   => [
+                    'hs_code'     => $hsCode,
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'success' => true,
+                ],
+                'status_code' => 200,
+            ]
+        ];
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+
+        $merchantInternationalIntegration = DB::table(Table::MERCHANT_INTERNATIONAL_INTEGRATIONS)
+            ->where('merchant_id', '=', $merchantDetail['merchant_id'])
+            ->first();
+
+        $notesContent = json_decode($merchantInternationalIntegration->notes, true);
+
+        self::assertEquals('icici_opgsp_import', $merchantInternationalIntegration->integration_entity);
+        self::assertEquals($hsCode, $notesContent['hs_code']);
+    }
+
+    public function testGetHsCodeDetails(){
+        $hsCode = '1234567890';
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->testData[__FUNCTION__] = [
+            'request' => [
+                'method'    => 'PATCH',
+                'url'       => '/merchant/hscode',
+                'content'   => [
+                    'hs_code'     => $hsCode,
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'success' => true,
+                ],
+                'status_code' => 200,
+            ]
+        ];
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+
+        $this->testData[__FUNCTION__] = [
+            'request' => [
+                'method'    => 'GET',
+                'url'       => '/merchant/hs/code',
+            ],
+            'response' => [
+                'content' => [
+                    'hs_code' => $hsCode,
+                ],
+                'status_code' => 200,
+            ]
+        ];
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testAddBankAccountOpgspSettlement()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->fixtures->merchant->addFeatures(['opgsp_import_flow']);
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth('10000000000000', 'rzp_test_' . '10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testEditBankAccountOpgspSettlement()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->fixtures->merchant->addFeatures(['opgsp_import_flow']);
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth('10000000000000', 'rzp_test_' . '10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testBankAccountOpgspSettlementWithoutAdmin()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant(10000000000000);
+
+        $this->fixtures->merchant->addFeatures(['opgsp_import_flow']);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testEditBankAccountInternationalBankWithoutFeatureFlag()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth('10000000000000', 'rzp_test_' . '10000000000000');
+
+        $this->startTest();
     }
 }

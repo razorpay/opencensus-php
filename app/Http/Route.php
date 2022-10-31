@@ -2214,6 +2214,15 @@ class Route
         'purpose_code_admin'                       => ['get',      'purpose/code',                                    'MerchantController@getPurposeCodeDetails'],
         'admin_patch_purpose_code'                 => ['patch',    'purpose/code',                                    'MerchantController@patchAdminPurposeCode'],
 
+        // HS Code routes
+        'hs_code_fetch'                            => ['get',      'merchant/hscode',                                    'MerchantController@getHsCodeDetails'                          ],
+        'merchant_patch_hs_code'                   => ['patch',    'merchant/hscode',                         'MerchantController@patchHsCode'                       ],
+        'fetch_hs_code'                            => ['get',      'merchant/hs/code',                             'MerchantController@getMerchantHsCode'                                     ],
+
+        'hs_code_admin_fetch'                      => ['get',      'hscode',                                    'MerchantController@getHsCodeDetails'                          ],
+        'admin_patch_hs_code'                      => ['patch',    'hscode',                                    'MerchantController@patchHsCode'],
+        'fetch_admin_hs_code'                      => ['get',      'merchant/{id}/hs/code',                             'MerchantController@getAdminMerchantHsCode'                                     ],
+
         //Location Route
         'country_fetch'                            => ['get',      'countries',                                       'LocationController@getCountryDetails'                              ],
         'state_fetch'                              => ['get',      'states/{id}',                                     'LocationController@getstateDetailsFromCountryCode'                              ],
@@ -5663,6 +5672,9 @@ class Route
         'purpose_code_fetch',
         'merchant_patch_purpose_code',
         'user_fetch_purpose_code',
+        'hs_code_fetch',
+        'merchant_patch_hs_code',
+        'fetch_hs_code',
         'firs_document_fetch',
         'firs_document_download',
         'emerchantpay_get_request_data',
@@ -7490,6 +7502,10 @@ class Route
         'save_payment_fraud',
         'admin_patch_purpose_code',
         'purpose_code_admin',
+        // HS Code
+        'hs_code_admin_fetch',
+        'admin_patch_hs_code',
+        'fetch_admin_hs_code',
 
         'update_merchant_sla_for_on_hold_payouts',
 
@@ -8826,6 +8842,10 @@ class Route
         'purpose_code_admin'                  => Permission::VIEW_MERCHANT,
         'admin_patch_purpose_code'            => Permission::EDIT_MERCHANT,
 
+        'hs_code_admin_fetch'                 => Permission::VIEW_MERCHANT,
+        'admin_patch_hs_code'                 => Permission::EDIT_MERCHANT,
+        'fetch_admin_hs_code'                 => Permission::VIEW_MERCHANT,
+
         'update_merchant_sla_for_on_hold_payouts'           => Permission::SET_MERCHANT_SLA_FOR_ON_HOLD_PAYOUTS,
 
         //Merchant International Integrations
@@ -9275,6 +9295,11 @@ class Route
         'user_fetch_purpose_code'             => '*',
         'oauth_token_create_for_apple_watch' => '*',
         'oauth_token_fetch_multiple'          => Permission::MERCHANT_GET_OAUTH_TOKEN,
+
+        // HS code
+        'hs_code_fetch'                     => Permission::VIEW_MERCHANT,
+        'merchant_patch_hs_code'            => Permission::EDIT_MERCHANT,
+        'fetch_hs_code'                     => '*',
 
         //CAC
         'cac_privileges_fetch'                         => Permission::VIEW_PRIVILEGES,
@@ -10148,6 +10173,9 @@ class Route
             'emerchantpay_get_request_data',
             'emerchantpay_create_request_data',
             'emerchantpay_owner_delete',
+            'hs_code_fetch',
+            'merchant_patch_hs_code',
+            'fetch_hs_code',
             'merchant_checkout_preferences',
             'merchant_create_key',
             'merchant_create_key_with_otp',
@@ -13020,6 +13048,13 @@ class Route
             'purpose_code_admin',
             'admin_patch_purpose_code',
 
+            // HS code
+            'hs_code_fetch',
+            'merchant_patch_hs_code',
+            'fetch_hs_code',
+            'hs_code_admin_fetch',
+            'admin_patch_hs_code',
+            'fetch_admin_hs_code',
             // metro
             'metro_project_create',
             'metro_project_credentials_create',

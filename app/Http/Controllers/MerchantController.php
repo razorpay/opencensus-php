@@ -2979,6 +2979,13 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getHsCodeDetails()
+    {
+        $data = $this->service()->getHsCodeDetails();
+
+        return ApiResponse::json($data);
+    }
+
     public function putMerchantContact(string $id)
     {
         $input = Request::all();
@@ -3436,6 +3443,32 @@ class MerchantController extends Controller
 
         $response = $this->service(E::MERCHANT_INTERNATIONAL_INTEGRATIONS)
             ->deleteMerchantInternationalIntegrations($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function patchHsCode()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_INTERNATIONAL_INTEGRATIONS)
+            ->patchHsCode($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getMerchantHsCode()
+    {
+        $response = $this->service(E::MERCHANT_INTERNATIONAL_INTEGRATIONS)
+            ->getMerchantHsCode(null);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getAdminMerchantHsCode($merchantId)
+    {
+        $response = $this->service(E::MERCHANT_INTERNATIONAL_INTEGRATIONS)
+            ->getMerchantHsCode($merchantId);
 
         return ApiResponse::json($response);
     }

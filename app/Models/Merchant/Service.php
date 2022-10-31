@@ -144,6 +144,7 @@ use RZP\Models\TrustedBadge;
 use RZP\Models\Partner\Commission\Core as PartnerCommissionCore;
 use RZP\Models\EntityOrigin\Core as EntityOriginCore;
 use \RZP\Models\Workflow\Action\Entity as ActionEntity;
+use RZP\Models\Merchant\HsCode\HsCodeList;
 use RZP\Models\Merchant\Consent as Consent;
 
 class Service extends Base\Service
@@ -2537,7 +2538,8 @@ class Service extends Base\Service
         $merchant = app('basicauth')->getMerchant();
 
         if(($this->app['basicauth']->isAdminAuth() === false) and
-            ($merchant->org->isFeatureEnabled(Feature\Constants::ORG_POOL_ACCOUNT_SETTLEMENT) === true))
+            (($merchant->org->isFeatureEnabled(Feature\Constants::ORG_POOL_ACCOUNT_SETTLEMENT) === true) or
+            $merchant->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === true))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ACCOUNT_ACTION_NOT_SUPPORTED);
 
@@ -9351,6 +9353,15 @@ class Service extends Base\Service
         $data = [];
 
         $data = PurposeCodeList::getPurposeCode();
+
+        return $data;
+    }
+
+    public function getHsCodeDetails(): array
+    {
+        $data = [];
+
+        $data = HsCodeList::getHsCode();
 
         return $data;
     }
