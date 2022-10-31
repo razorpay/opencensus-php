@@ -229,5 +229,5 @@ export const SIGNATORY_STATUS = {
 
 export const APPLICATION_NOT_SUBMITTED = 'record not found';
 
-export const CASH_ADVANCE_LINK = `https://x.razorpay.com/cash-advance`;
+export const CASH_ADVANCE_LINK = `https://x.razorpay.com/cash-advance?from=dashboard`;
 export const CASH_ADVANCE_WITHDRAWAL_ROUTE = '/capital/cash-advance/withdrawals';
