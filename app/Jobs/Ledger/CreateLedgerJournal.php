@@ -44,7 +44,7 @@ class CreateLedgerJournal extends Job
            return;
        }
 
-        $producerKey =  $this->transactionMessage[LedgerConstants::TRANSACTOR_ID];
+        $producerKey =  $this->transactionMessage[LedgerConstants::TRANSACTOR_ID].'_'.$this->transactionMessage[LedgerConstants::TRANSACTOR_EVENT];
 
         $message = [
             LedgerConstants::KAFKA_MESSAGE_DATA      => $this->transactionMessage,

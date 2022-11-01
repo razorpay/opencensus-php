@@ -170,7 +170,8 @@ class Core extends Base\Core
             }
         }
 
-        if ($adj->isBalanceTypePrimary() === true)
+        if (($adj->isBalanceTypePrimary() === true) and
+            ($adj->getEntityType() !== DefaultConstants\Entity::DISPUTE))
         {
             $this->createLedgerEntriesForManualAdjustment($adj, $merchant);
         }
