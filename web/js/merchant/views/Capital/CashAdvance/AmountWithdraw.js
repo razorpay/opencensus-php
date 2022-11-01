@@ -76,7 +76,7 @@ import ReducingRepaymentTooltip from './components/ReducingRepaymentTooltip';
 import FirstWithdrawalView from './components/FirstWithdrawal/FirstWithdrawalView';
 import CardsDashboardRedirectionModal from './components/CardsDashboardRedirectionModal';
 import { getCurrentOutstandingBreakup } from './OverviewFooter/utils';
-import { getFirstTimeRepaymentPreference, showSettings } from './utils';
+import { getFirstTimeRepaymentPreference, isMerchantNew, showSettings } from './utils';
 import RepaymentPreferenceBanner from './components/RepaymentPreferenceBanner';
 import StaticTenureSelector from './components/StaticTenureSelector';
 
@@ -149,6 +149,7 @@ const checkIfFirstCashAdvanceLogin = () => {
     haveWithdrawals: state.withdrawals.list.data,
     merchantGromorEsignDetails: state.migrations.merchantGromorEsignDetails,
     fungibleData: state.withdrawals.cash_on_card.data,
+    productConfig: state.productConfig.productConfig,
   }),
   {
     fetchWithdrawalConfiguration,
@@ -940,6 +941,10 @@ export default class AmountWithdraw extends React.Component {
     }
   };
 
+  isMerchantNew = () => {
+    return isMerchantNew(this.props.productConfig?.data?.configuration?.live_by_date);
+  };
+
   getWithdrawCTA = () => {
     const {
       seedData,
@@ -962,6 +967,7 @@ export default class AmountWithdraw extends React.Component {
     const withdrawNowClass = `btn btn-primary withdraw-now${
       this.state.showRepaymentInfoTooltip ? ' animation-wrapper' : ''
     }`;
+    const isMerchantNew = this.isMerchantNew();
 
     return (
       /*eslint-disable */
@@ -970,8 +976,7 @@ export default class AmountWithdraw extends React.Component {
           <React.Fragment>
             <AsyncBtn.Primary
               className={withdrawNowClass}
-              // TODO: remove once payouts issue is fixed
-              disabled={true}
+              disabled={isMerchantNew ? true : !canWithdraw}
               onClick={this.confirmWithdraw}
             >
               Withdraw Now

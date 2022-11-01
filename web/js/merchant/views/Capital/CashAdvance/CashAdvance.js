@@ -32,7 +32,7 @@ import { checkifDateExpired, getProductType } from 'merchant/views/Capital/utils
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import moment from 'moment';
 import Settings from './views/Settings';
-import { showSettings } from './utils';
+import { isMerchantNew, showSettings } from './utils';
 import Alert from 'common/new-ui/Alert';
 
 const Loader = () => {
@@ -282,6 +282,10 @@ class CashAdvance extends React.Component {
     return showSettings(this.props.user, this.getRepaymentFrequency());
   };
 
+  isMerchantNew = () => {
+    return isMerchantNew(this.props.productConfig?.data?.configuration?.live_by_date);
+  };
+
   renderSection() {
     //Hotjar Events
     if (this.getIsMerchantNew() && this.getIsNWithdrawalsCompleted(0)) {
@@ -387,10 +391,12 @@ class CashAdvance extends React.Component {
             <Loader />
           ) : (
             <content className="cash-advance-body">
-              <Alert.Error iconBefore="i-triangle-alert">
-                The withdrawals are temporarily unavailable due to technical downtime, we are
-                working to fix this and will reach out to you once this is resolved
-              </Alert.Error>
+              {this.isMerchantNew() && (
+                <Alert.Error iconBefore="i-triangle-alert">
+                  The withdrawals are temporarily unavailable due to technical downtime, we are
+                  working to fix this and will reach out to you once this is resolved
+                </Alert.Error>
+              )}
               {this.renderSection()}
             </content>
           )}

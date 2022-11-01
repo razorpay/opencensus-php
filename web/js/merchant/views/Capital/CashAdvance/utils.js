@@ -233,3 +233,10 @@ export const showSettings = (user, repaymentFrequency) => {
     !user?.isCashOnCardEnabled && repaymentFrequency === REPAYMENT_FREQUENCY_TYPES.CUSTOM,
   );
 };
+
+const NEW_MERCHANT_TIMESTAMP = 1661970600;
+
+export const isMerchantNew = (liveByDate) => {
+  if (!liveByDate) return false;
+  return moment(liveByDate).unix().valueOf() > NEW_MERCHANT_TIMESTAMP;
+};
