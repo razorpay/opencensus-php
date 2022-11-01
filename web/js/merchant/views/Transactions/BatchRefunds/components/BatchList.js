@@ -23,7 +23,7 @@ import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 const gaEvents = setGaTrack('Dashboard - Instant Refunds - BU');
 
-const STATUS_VALUES = ['created'];
+export const STATUS_VALUES = ['created'];
 
 const batchName = {
   title: 'Name',
@@ -193,7 +193,7 @@ class BatchList extends Component {
     const items = this.props.items;
 
     return (
-      <div class="content-wrapper">
+      <div class="content-wrapper" data-testid="batchrefunds-batchlist">
         {/* passing the new props to the HeaderAction component to support the m-web view */}
         <HeaderAction responsive>
           <div class="btn-toolbar pull-right">
@@ -202,6 +202,7 @@ class BatchList extends Component {
                 class="btn btn-link"
                 href={sampleUrl}
                 onClick={this.props.gaEvents.trackSampleFileDownload('From List View')}
+                role="link"
               >
                 Download Sample File
               </a>
@@ -210,7 +211,13 @@ class BatchList extends Component {
               additionalCondition={(usr) => usr.isOrgAllowedFunctionality('external_links')}
             >
               {docUrl && (
-                <a class="btn btn-link" href={docUrl} target="_blank" rel="noopener noreferrer">
+                <a
+                  class="btn btn-link"
+                  href={docUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  role="link"
+                >
                   Documentation &nbsp;
                   <i class="i i-external-link" />
                 </a>
@@ -341,6 +348,6 @@ class CancelConfirmation extends Component {
   }
 }
 
-const ConnectedCancelConfirmation = connect(null, (dispatch) =>
+export const ConnectedCancelConfirmation = connect(null, (dispatch) =>
   bindActionCreators({ ...NotificationsActions }, dispatch),
 )(CancelConfirmation);

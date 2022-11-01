@@ -60,7 +60,10 @@ class BatchUpload extends Component {
 
   render() {
     return (
-      <div class="content-wrapper content-sm upload-container">
+      <div
+        class="content-wrapper content-sm upload-container"
+        data-testid="batchrefunds-batchupload"
+      >
         <div class="panel panel-default">
           <div class="panel-heading">
             {titleCase(this.props.title)} File Upload - {this.props.modeFormatted} Mode
@@ -68,7 +71,7 @@ class BatchUpload extends Component {
               <ShowWhen
                 additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
               >
-                <a href={this.props.docUrl} target="_blank" rel="noopener noreferrer">
+                <a href={this.props.docUrl} target="_blank" rel="noopener noreferrer" role="link">
                   DOCUMENTATION &nbsp;
                   <i class="i i-external-link" />
                 </a>
@@ -85,6 +88,7 @@ class BatchUpload extends Component {
                 href={this.props.sampleUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                role="link"
               >
                 click here
               </a>{' '}
