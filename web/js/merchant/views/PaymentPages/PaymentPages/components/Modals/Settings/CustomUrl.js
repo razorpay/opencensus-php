@@ -30,7 +30,7 @@ const DomainAddress = lazy(() =>
 
 const WRAPPER_CLASS = 'settings-section custom-url';
 const INPUT_NAME = 'slug';
-const LABEL = 'Custom URL for this page';
+const LABEL = 'URL of this page';
 const RZP_PAGES_URL = 'https://pages.razorpay.com/';
 const INPUT_CLASS = 'Input--vTop';
 const MAX_LENGTH = '30';
@@ -269,34 +269,36 @@ const CustomURL = ({
           />
           {!isTestMode &&
             (!isCustomDomainSetup ? (
-              <div class="cta-section">
-                <div class="body">
-                  <span>
-                    <img src={LockImage} alt="lock" width="24px" height="24px" />
-                    <Popover
-                      align="bottom"
-                      theme="dark"
-                      parentQuerySelector=".Modal-mask--paymentpages-settings .Modal-body"
+              <>
+                <div class="or-separator">- OR -</div>
+                <div class="cta-section">
+                  <div class="body">
+                    <span class="lock-wrapper">
+                      <img src={LockImage} alt="lock" width="24px" height="24px" />
+                      <Popover
+                        align="bottom"
+                        theme="dark"
+                        parentQuerySelector=".Modal-mask--paymentpages-settings .Modal-body"
+                      >
+                        <PopoverBody>
+                          - Charges apply - <br />
+                          This is a pro feature
+                        </PopoverBody>
+                      </Popover>
+                    </span>
+                    <span>Already have a domain?</span>
+                  </div>
+                  <span class="action">
+                    <button
+                      class="btn Button--primary--invert Button"
+                      onClick={handleConnectDomain}
+                      type="button"
                     >
-                      <PopoverBody>
-                        - Charges apply - <br />
-                        This is a pro feature
-                      </PopoverBody>
-                    </Popover>
+                      Connect Domain
+                    </button>
                   </span>
-                  <b>Use your domain as URL</b>
-                  <span class="badge bg-success hidden-xs">New</span>
                 </div>
-                <span class="action">
-                  <button
-                    class="btn Button--primary--invert Button"
-                    onClick={handleConnectDomain}
-                    type="button"
-                  >
-                    Connect Domain
-                  </button>
-                </span>
-              </div>
+              </>
             ) : (
               urlType === 'custom' && (
                 <div class="custom-url-options">

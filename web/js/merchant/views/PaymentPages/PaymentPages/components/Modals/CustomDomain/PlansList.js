@@ -74,10 +74,10 @@ const PlansListModal = ({ openModal, closeModal }) => {
           <div class="plan-card plan-card--option">
             <div>
               <div class="highlight">
-                <b>{plan.name}</b>
+                <b>Pay for {plan.name}</b>
               </div>
-              <div>
-                <b>Pay ₹{getFormattedNumber(plan.metadata.plan_amount)}</b>{' '}
+              <div class="text-grey">
+                <b>₹{getFormattedNumber(plan.metadata.plan_amount)}</b>{' '}
                 {plan.metadata.per_month_amount !== plan.metadata.plan_amount && (
                   <span>&nbsp;(₹{getFormattedNumber(plan.metadata.per_month_amount)}/month)</span>
                 )}
