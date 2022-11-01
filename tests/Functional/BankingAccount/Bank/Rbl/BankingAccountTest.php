@@ -6880,8 +6880,6 @@ class BankingAccountTest extends TestCase
 
     public function testUpdateBankingAccountAssignee(array $content = null)
     {
-//        $this->createMerchantDetail();
-
         $bankingAccount = $this->testCreateBankingAccountWithActivationDetail();
 
         if ($content === null)

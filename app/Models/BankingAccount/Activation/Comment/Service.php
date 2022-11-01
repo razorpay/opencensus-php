@@ -20,10 +20,13 @@ class Service extends Base\Service
         /** @var BankingAccount\Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
 
-        if ($this->app['basicauth']->isAdminAuth() === true)
-        {
-            $input[Fetch::FOR_SOURCE_TEAM_TYPE] = 'internal';
-        }
+        // Disable for now
+        // In batch upload: we are adding comments with type: 'internal' 
+        // even with source_team_type: external which don't get reflected on LMS because of this filter
+        // if ($this->app['basicauth']->isAdminAuth() === true)
+        // {
+        //     $input[Fetch::FOR_SOURCE_TEAM_TYPE] = 'internal';
+        // }
 
         $input[Entity::BANKING_ACCOUNT_ID] = $bankingAccount->getId();
 
