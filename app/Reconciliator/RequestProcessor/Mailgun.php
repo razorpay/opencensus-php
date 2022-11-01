@@ -96,7 +96,7 @@ class Mailgun extends Base
             [
                 "from" => "donotreply.inb@alerts.sbi.co.in",
                 "subject_pattern" => "/^RAZORPAY Recon File/",
-                "filename_pattern" => "/RAZORPAY_[\d]+\.txt/",
+                "filename_pattern" => "/razorpay_[\d]+\.txt/",
                 "destination" => "recon/input/nb_sbi/txn_report/",
                 "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
             ]
