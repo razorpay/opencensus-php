@@ -20,6 +20,9 @@ use Http\Discovery\Exception\NotFoundException;
 use function GuzzleHttp\json_encode;
 use GuzzleHttp\Exception\InvalidArgumentException;
 
+use RZP\Models\FileStore\Storage\AwsS3\Handler;
+use RZP\Models\FileStore\Type;
+
 class EdgeThrottleController extends Controller
 {
     /**
@@ -31,6 +34,7 @@ class EdgeThrottleController extends Controller
     CONST ENTITY_RATE_LIMITER_LIMIT_CREATE  = 'rate_limiter_limit_create';
     CONST ENTITY_RATE_LIMITER_LIMIT_UPDATE  = 'rate_limiter_limit_update';
     CONST ENTITY_RATE_LIMITER_LIMIT_DELETE  = 'rate_limiter_limit_delete';
+    CONST WAF_RULES_KEY                     = 'ddos-visibility/raw/raw_waf.csv';
 
     /**
      * @var ClientInterface
@@ -646,4 +650,22 @@ class EdgeThrottleController extends Controller
 
         return $input;
     }
+
+    /**
+     * returns signed URL of WAF Rules csv file
+     * @return array
+     * @throws \Exception
+     */
+    public function getWAFRulesSignedURL()
+    {
+        $handler = new Handler();
+        $env = $this->app['env'];
+        $bucketConfig = $handler->getBucketConfig(Type::WAF_RULES_FILE, $env, null, false);
+        $signedURL = $handler->getSignedUrl($bucketConfig, self::WAF_RULES_KEY);
+        $data = [
+            'signed_url' => $signedURL,
+        ];
+        return $data;
+    }
+
 }

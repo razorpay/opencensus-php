@@ -128,6 +128,10 @@ return [
             'name'   => env('AWS_HDFC_COLLECT_NOW_SETTLEMENT_BUCKET'),
             'region' => env('AWS_BUCKET_REGION', 'ap-south-1')
         ],
+        'security_alert_bucket_config' => [
+            'name'   => env('AWS_SECURITY_ALERT_BUCKET'),
+            'region' => env('AWS_SECURITY_ALERT_BUCKET_REGION', 'ap-south-1')
+        ],
     ],
 
     'local' => [

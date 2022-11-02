@@ -489,4 +489,5 @@ class DashboardProxy extends TestCase
             $this->assertExceptionClass($e, BadRequestException::class);
         }
     }
+
 }

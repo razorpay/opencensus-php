@@ -316,6 +316,11 @@ class Type
 
     const PAYMENT_LIMIT               = 'payment_limit';
 
+    const SECURITY_ALERT_BUCKET_CONFIG          = 'security_alert_bucket_config';
+
+    const WAF_RULES_FILE                        = 'waf_rules_file';
+
+
     // File contants required for merchant feature onboarding
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
     const MARKETPLACE_VENDOR_AGREEMENT      = FeatureConstants::MARKETPLACE . '.' . FeatureConstants::VENDOR_AGREEMENT;
@@ -905,6 +910,10 @@ class Type
 
         self::CROSS_BORDER_BUCKET_CONFIG => [
             self::APM_ONBOARD_REQUEST_FILE,
+        ],
+
+        self::SECURITY_ALERT_BUCKET_CONFIG => [
+            self::WAF_RULES_FILE,
         ]
     ];
 

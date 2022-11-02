@@ -15,10 +15,11 @@ class Bucket
     /**
      * @param string $type File Type
      * @param string $env  Environment
-     *
+     * @param bool $shouldCheckEnv This boolean value mentions whether to check for testing or production environment
+     *                             to assign default non-prod bucket name
      * @return string Bucket config Name
      */
-    public static function getBucketConfigName($type, $env = 'production')
+    public static function getBucketConfigName($type, $env = 'production', $shouldCheckEnv = true)
     {
         $bucketConfigName = static::DEFAULT_CONFIG_NAME;
 
@@ -33,7 +34,7 @@ class Bucket
             }
         }
 
-        if (($env !== 'production') and ($env !== 'testing'))
+        if (($shouldCheckEnv == true) and ($env !== 'production') and ($env !== 'testing'))
         {
             $bucketConfigName = static::TEST_BUCKET_NAME;
         }
