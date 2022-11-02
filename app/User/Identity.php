@@ -73,7 +73,8 @@ class Identity {
 
         app('trace')->info(TraceCode::GENERATE_JWT_DASHBOARD, [
             'user_email'  => $user->email,
-            'user_id'     => $user->id
+            'user_id'     => $user->id,
+            'client'      => $clientId
         ]);
 
         return [

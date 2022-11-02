@@ -1855,7 +1855,7 @@ class Service extends Base\Service
         {
             list($redirectURL, $token) = (new Identity())->generateIdentityToken($clientId, $params);
 
-            $url = $redirectURL . '?token=' . (string) $token;
+            $url = $redirectURL . '?token=' . $token->toString();
         }
         catch (BadRequestError $e)
         {
