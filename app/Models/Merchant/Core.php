@@ -1542,21 +1542,37 @@ class Core extends Base\Core
         $subMerchant->setPricingPlan($pricingPlan);
     }
 
-    public function updateSubMerhantPricingPlanBasedOnFeeBearerAndSubcategory($subMerchant, $feeBearer = FeeBearer::PLATFORM, $businessCategory = BusinessCategory::ECOMMERCE, $useCategory2 = false)
+    public function updateSubMerhantPricingPlanBasedOnFeeBearerAndSubcategory($subMerchant, $useCategory2 = false)
     {
+        if ($useCategory2 === true)
+        {
+            $businessCategory = $subMerchant->getCategory2();
+        }
+        else {
+            $subMerchantDetails = (new Detail\Core)->getMerchantDetails($subMerchant);
+
+            $businessCategory = $subMerchantDetails->getBusinessCategory();
+        }
+
+        $feeBearer = $subMerchant->getFeeBearer();
+
+        $feeBearer = strtolower($feeBearer);
+
         if ($feeBearer === FeeBearer::DYNAMIC)
         {
             return;
         }
 
+        $pricingPlanName = Pricing\DefaultPlan::SUB_MERCHANT_DEFAULT_PRICING_PLAN_MAP_CAT2[$feeBearer][Category::ECOMMERCE];
+
         //In edit, use category2, in bulk upload - use business category
         if ($useCategory2 === true)
         {
-            $pricingPlanName = Pricing\DefaultPlan::SUB_MERCHANT_DEFAULT_PRICING_PLAN_MAP_CAT2[$feeBearer][$businessCategory] ?? Pricing\DefaultPlan::SUB_MERCHANT_DEFAULT_PRICING_PLAN_MAP_CAT2[FeeBearer::PLATFORM][Category::ECOMMERCE];
+            $pricingPlanName = Pricing\DefaultPlan::SUB_MERCHANT_DEFAULT_PRICING_PLAN_MAP_CAT2[$feeBearer][$businessCategory] ?? $pricingPlanName;
         }
         else
         {
-            $pricingPlanName = Pricing\DefaultPlan::SUB_MERCHANT_DEFAULT_PRICING_PLAN_MAP_BUS_CAT[$feeBearer][$businessCategory] ?? Pricing\DefaultPlan::SUB_MERCHANT_DEFAULT_PRICING_PLAN_MAP_BUS_CAT[FeeBearer::PLATFORM][BusinessCategory::ECOMMERCE];
+            $pricingPlanName = Pricing\DefaultPlan::SUB_MERCHANT_DEFAULT_PRICING_PLAN_MAP_BUS_CAT[$feeBearer][$businessCategory] ?? $pricingPlanName;
         }
 
         $pricingPlans = (new Pricing\Repository)->getPlanByName($pricingPlanName);
@@ -1579,14 +1595,16 @@ class Core extends Base\Core
 
     public function updateSubMerchantFeeBearer($subMerchant, $feeBearer = FeeBearer::PLATFORM)
     {
+        $feeBearer = strtolower($feeBearer);
+
         if ($feeBearer === FeeBearer::DYNAMIC)
         {
             return;
         }
 
-        if (in_array(strtolower($feeBearer), array_keys(FeeBearer::FEE_BEARER_TYPE_MAP)))
+        if (in_array($feeBearer, array_keys(FeeBearer::FEE_BEARER_TYPE_MAP)))
         {
-            $feeBearer = FeeBearer::FEE_BEARER_TYPE_MAP[strtolower($feeBearer)];
+            $feeBearer = FeeBearer::FEE_BEARER_TYPE_MAP[$feeBearer];
         }
 
         $subMerchant->setFeeBearer($feeBearer);
@@ -2157,7 +2175,7 @@ class Core extends Base\Core
                 {
                     if ((isset($input[Entity::FEE_BEARER]) === true) or (isset($input[Entity::CATEGORY2]) === true))
                     {
-                        $this->updateSubMerhantPricingPlanBasedOnFeeBearerAndSubcategory($merchant,$input[Entity::FEE_BEARER] ?? FeeBearer::PLATFORM, $input[Entity::CATEGORY2] ?? BusinessCategory::ECOMMERCE, true);
+                        $this->updateSubMerhantPricingPlanBasedOnFeeBearerAndSubcategory($merchant, true);
                     }
                 }
             }

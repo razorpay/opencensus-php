@@ -482,11 +482,7 @@ class SubMerchantBatchUtility extends Base\Core
                 $this->merchantCore->updateSubMerchantFeeBearer($subMerchant, $entry[Header::FEE_BEARER]);
             }
 
-            $subMerchantDetails = (new MerchantDetailCore)->getMerchantDetails($subMerchant);
-
-            $businessCategory = $subMerchantDetails->getBusinessCategory();
-
-            $this->merchantCore->updateSubMerhantPricingPlanBasedOnFeeBearerAndSubcategory($subMerchant, $subMerchant->getFeeBearer() ?? FeeBearer::PLATFORM, $businessCategory ?? BusinessCategory::ECOMMERCE);
+            $this->merchantCore->updateSubMerhantPricingPlanBasedOnFeeBearerAndSubcategory($subMerchant);
         }
 
         if (($this->useMerchantEmailAsDummy === true) and (empty($entry[Header::MERCHANT_EMAIL]) === false))

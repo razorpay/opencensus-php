@@ -1418,6 +1418,35 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals('customer', $submerchant['fee_bearer']);
     }
 
+    public function testCreateSubMerchantWithAutoFeeBearerDynamicByAdminBatch()
+    {
+        $this->fixtures->create('feature', [
+            'name' => FeatureConstants::SUB_MERCHANT_PRICING_AUTOMATION,
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+        ]);
+
+        Mail::fake();
+
+        $app = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
+
+        $configAttributes = [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
+
+        $this->ba->batchAppAuth();
+
+        $this->fixtures->pricing->createPricingPlanForICICISubMerchant();
+
+        $this->startTest();
+
+        $submerchant = $this->getLastEntity('merchant', true);
+
+        $this->assertEquals('platform', $submerchant['fee_bearer']);
+    }
+
     public function testCaptchaValidationForCreateSubMerchantByAdminForAggregatorBatch()
     {
         Mail::fake();

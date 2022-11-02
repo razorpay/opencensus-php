@@ -720,11 +720,18 @@ class Pricing extends Base
 
     public function createPricingPlanForICICISubMerchant($feeBearer = 'platform')
     {
+        $planName = 'EcomPLATnewINTMAIN';
+
+        if ($feeBearer === 'customer')
+        {
+            $planName = 'EcomCustNewINT';
+        }
+
         $rows = [
             [
                 'id'                  => '1GuENK6Hl2BWGg',
                 'plan_id'             => '1ycviEdCgurrFI',
-                'plan_name'           => 'EcomPLATnewINTMAIN',
+                'plan_name'           => $planName,
                 'feature'             => 'icici_pricing_automation',
                 'payment_method'      => 'fund_transfer',
                 'percent_rate'        => 200,
