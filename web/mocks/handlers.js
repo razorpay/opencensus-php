@@ -588,21 +588,104 @@ export const handlers = [
     );
   }),
 
-  // Add Email
-  rest.post('*/merchant/api/live/users/email/update', (req, res, ctx) => {
-    const email = req.body.email;
-    if (email.includes('incorrect-email') || email.includes('no-error-message')) {
+  // Verify Email
+  rest.post('*/merchant/api/live/users/email/update/verify', (req, res, ctx) => {
+    if (req.body.otp === '000000' || req.body.otp === '111111') {
       return res(
         ctx.status(200),
         ctx.json({
           status_code: 200,
           success: false,
-          errors: email.includes('incorrect-email') ? ['incorrect-email'] : '',
+          errors: req.body.otp === '000000' ? ['incorrect-otp'] : '',
         }),
         ctx.delay(50),
       );
-      // return res(ctx.errors([{ message: 'Some error occurred' }]), ctx.delay(50))
     }
+
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        success: true,
+      }),
+      ctx.delay(50),
+    );
+  }),
+
+  // Verify Mobile
+  rest.post('*/merchant/api/live/users/verify/mode/sms', (req, res, ctx) => {
+    if (req.body.otp === '000000' || req.body.otp === '111111') {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status_code: 200,
+          success: false,
+          errors: req.body.otp === '000000' ? ['incorrect-otp'] : '',
+        }),
+        ctx.delay(50),
+      );
+    }
+
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        success: true,
+        data: { otp_auth_token: 'test' },
+      }),
+      ctx.delay(50),
+    );
+  }),
+
+  // Send OTP to mobile
+  rest.post('*/merchant/api/live/users/otp/send', (req, res, ctx) => {
+    if (req.body.otp === '000000' || req.body.otp === '111111') {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status_code: 200,
+          success: false,
+          errors: req.body.otp === '000000' ? ['incorrect-otp'] : '',
+        }),
+        ctx.delay(50),
+      );
+    }
+
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        success: true,
+        data: { token: 'test' },
+      }),
+      ctx.delay(50),
+    );
+  }),
+
+  // Send OTP to email and Add Email
+  rest.post('*/merchant/api/live/users/email/update', (req, res, ctx) => {
+    const email = req.body.email;
+    if (
+      email === 'error@razorpay.com' ||
+      email.includes('incorrect-email') ||
+      email.includes('no-error-message')
+    ) {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status_code: 200,
+          success: false,
+          errors:
+            email === 'error@razorpay.com'
+              ? ['error-email']
+              : email.includes('incorrect-email')
+              ? ['incorrect-email']
+              : '',
+        }),
+        ctx.delay(50),
+      );
+    }
+
     return res(
       ctx.status(200),
       ctx.json({

@@ -210,7 +210,7 @@ const OTPModal = ({
           : otpMethod === OTPMETHOD.EMAIL
           ? 'Confirm your Email'
           : 'Verify your Phone Number'}
-        <button type="button" className="close" onClick={onPopupClose}>
+        <button type="button" className="close" onClick={onPopupClose} aria-label="Close">
           <i className="i i-close" />
         </button>
       </div>
