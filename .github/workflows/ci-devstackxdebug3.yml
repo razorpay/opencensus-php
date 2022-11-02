@@ -8,6 +8,7 @@ on:
       - 'Dockerfile.devstackxdebug3'
       - 'environment/**'
       - 'config/**'
+      - 'composer.json'
 
 jobs:
   cancel:
