@@ -199,7 +199,7 @@ describe('GenerateReportPanel', () => {
       fireEvent.change(selectPeriodElement, { target: { value: period.name } });
     };
 
-    test('should render start at date error when end date is greater than start date', async () => {
+    test.skip('should render start at date error when end date is greater than start date', async () => {
       render(<App />);
       await selectConfig(settlementOption);
       selectPeriod(DEFAULT_PERIOD_OPTIONS[7]);
@@ -214,7 +214,7 @@ describe('GenerateReportPanel', () => {
       });
     });
 
-    test('should render 31 days message when range difference is more than 31 days', async () => {
+    test.skip('should render 31 days message when range difference is more than 31 days', async () => {
       render(<App />);
 
       await selectConfig(configForAggregratedReport);
