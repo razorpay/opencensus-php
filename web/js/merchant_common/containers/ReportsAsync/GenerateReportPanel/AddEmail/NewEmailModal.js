@@ -84,7 +84,12 @@ const EmailModal = ({
     <div className="add-email-modal-content">
       <div className="merchant-heading">
         {'Add your email address'}
-        <button type="button" className="close" onClick={onPopupClose}>
+        <button
+          type="button"
+          className="close"
+          onClick={onPopupClose}
+          aria-label="Close Add Email Modal"
+        >
           <i className="i i-close" />
         </button>
       </div>
@@ -101,6 +106,7 @@ const EmailModal = ({
             name="email"
             className="form-control"
             validate={required()}
+            aria-label="Email Address"
           />
         </div>
         <AsyncButton

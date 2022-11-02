@@ -587,4 +587,59 @@ export const handlers = [
       ctx.delay(50),
     );
   }),
+
+  // Add Email
+  rest.post('*/merchant/api/live/users/email/update', (req, res, ctx) => {
+    const email = req.body.email;
+    if (email.includes('incorrect-email') || email.includes('no-error-message')) {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status_code: 200,
+          success: false,
+          errors: email.includes('incorrect-email') ? ['incorrect-email'] : '',
+        }),
+        ctx.delay(50),
+      );
+      // return res(ctx.errors([{ message: 'Some error occurred' }]), ctx.delay(50))
+    }
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        success: true,
+      }),
+      ctx.delay(50),
+    );
+  }),
+
+  // Fetch User info
+  rest.get('*/user', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        success: true,
+        data: {
+          current: '',
+        },
+      }),
+      ctx.delay(50),
+    );
+  }),
+
+  // Fetch merchant features
+  rest.get('*/merchants/me/features', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        success: true,
+        data: {
+          features: [],
+        },
+      }),
+      ctx.delay(50),
+    );
+  }),
 ];
