@@ -333,12 +333,12 @@ class Client
         // where payouts layer trigger workflow approve call for Owner state
         if (count($optional_input) > 0)
         {
-            $input[Constants::ACTOR_ID] = $optional_input[Constants::ACTOR_ID];
-            $input[Constants::ACTOR_TYPE] = $optional_input[Constants::ACTOR_TYPE];
-            $input[Constants::ACTOR_PROPERTY_KEY] = $optional_input[Constants::ACTOR_PROPERTY_KEY];
-            $input[Constants::ACTOR_PROPERTY_VALUE] = $optional_input[Constants::ACTOR_PROPERTY_VALUE];
-            $input[Constants::SERVICE] = Constants::SERVICE_RX_LIVE;
-            $input[Constants::ACTOR_META] =
+            $actionPayload[Constants::ACTOR_ID] = $optional_input[Constants::ACTOR_ID];
+            $actionPayload[Constants::ACTOR_TYPE] = $optional_input[Constants::ACTOR_TYPE];
+            $actionPayload[Constants::ACTOR_PROPERTY_KEY] = $optional_input[Constants::ACTOR_PROPERTY_KEY];
+            $actionPayload[Constants::ACTOR_PROPERTY_VALUE] = $optional_input[Constants::ACTOR_PROPERTY_VALUE];
+            $actionPayload[Constants::SERVICE] = Constants::SERVICE_RX_LIVE;
+            $actionPayload[Constants::ACTOR_META] =
                 [
                     Constants::EMAIL => $optional_input[Constants::ACTOR_EMAIL],
                     Constants::NAME => $optional_input[Constants::ACTOR_NAME]

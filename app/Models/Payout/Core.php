@@ -5469,7 +5469,7 @@ class Core extends Base\Core
         $optional_input[WorkflowConstants::ACTOR_ID] = $owner->getUserId();
         $optional_input[WorkflowConstants::ACTOR_TYPE] = WorkflowConstants::USER;
         $optional_input[WorkflowConstants::ACTOR_PROPERTY_KEY] = WorkflowConstants::ROLE;
-        $optional_input[WorkflowConstants::ACTOR_PROPERTY_KEY] = WorkflowConstants::OWNER;
+        $optional_input[WorkflowConstants::ACTOR_PROPERTY_VALUE] = WorkflowConstants::OWNER;
         $optional_input[WorkflowConstants::ACTOR_EMAIL] = $user->getEmail();
         $optional_input[WorkflowConstants::ACTOR_NAME] = $user->getName();
 
@@ -5489,6 +5489,12 @@ class Core extends Base\Core
 
 
             $this->workflowService->createActionOnEntity($payout, $input, $optional_input);
+
+            $this->trace->error(TraceCode::PAYOUT_WORKFLOW_OWNER_APPROVE_SUCCESS_ICICI_CA, [
+                'payout_id'     => $payout_id,
+                'action'        => WorkflowConstants::APPROVED,
+                'merchant_id'   => $merchant_id,
+            ]);
         }
         catch (\Throwable $e)
         {
