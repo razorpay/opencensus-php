@@ -437,6 +437,10 @@ class CardPaymentService
         {
             unset($input['gateway']);
         }
+        if ($this->action != Action::AUTHORIZE || empty($input['acs_afa_authentication']))
+        {
+            unset($input['acs_afa_authentication']);
+        }
 
         $content = [
             self::ACTION  => $action,
@@ -460,10 +464,6 @@ class CardPaymentService
 
         $this->addAuthenticationDataIfApplicable($content);
 
-        if ($this->action != Action::AUTHORIZE || empty($input['acs_afa_authentication']))
-        {
-            unset($input['acs_afa_authentication']);
-        }
 
         // Should migrate merchant_attribute table also as part of rearch to accomodate 3ds2 flow.
         if($action === Action::AUTHORIZE)
