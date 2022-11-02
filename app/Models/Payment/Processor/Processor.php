@@ -304,6 +304,7 @@ class Processor
     const BARRICADE_PAYMENT_METHOD = 'barricade_payment_method';
     const BARRICADE_SQS_PUSH       = 'barricade_sqs_push';
     const BARRICADE_PAYMENT_GATEWAY = 'barricade_supported_gateway';
+    const BARRICADE_AUTHORIZE_VERIFY_CARD_GATEWAY = 'barricade_authorize_verify_card_gateway';
     const DEMO_MERCHANT            = 'demo_merchants';
 
 
@@ -3856,16 +3857,18 @@ class Processor
 
         $sqsPush = $this->app->razorx->getTreatment($payment->getMethod(), self::BARRICADE_SQS_PUSH, $this->mode);
 
+        $authorizeVerifyCardGateways = $this->app->razorx->getTreatment($payment->getGateway(),self::BARRICADE_AUTHORIZE_VERIFY_CARD_GATEWAY, $this->mode);
+
         if  ($methodResult !== 'on')
         {
             return;
         }
-
-        if ( $payment->isCard() === true && $payment->isGatewayCaptured() === false)
+        // Skip if payment is not gateway captured and gateway is not Authorize Verify
+        if ( $payment->isCard() === true && $authorizeVerifyCardGateways === 'control' && $payment->isGatewayCaptured() === false )
         {
             return;
         }
-        // To Avoide duplicate Verification
+        // To Avoid duplicate Verification
         if ( $payment->isUpi() === true && $payment->getStatus() !== "authorized" ){
             return;
         }
@@ -3889,6 +3892,10 @@ class Processor
             return;
         }
 
+        // Skip push on capture for AuthorizeVerify Gateways
+        if ($payment->isCard() === true && $authorizeVerifyCardGateways === 'on' && $payment->getStatus() !== "authorized" ){
+            return;
+        }
         try
         {
             if ($payment->isUpi() === true)
