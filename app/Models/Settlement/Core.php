@@ -343,6 +343,7 @@ class Core extends Base\Core
      */
     public function triggerSettlementsMail(Entity $settlement, $bankAccountNumber = null, $merchant = null)
     {
+
         try
         {
             $setlDetails  = (new SetlDetails\Core)->getSettlementDetails($settlement->getId(), $merchant);
@@ -350,17 +351,27 @@ class Core extends Base\Core
                 ->format('d/m/Y h:i A');
 
             $email = null;
+            $txnReportEmail = null;
+            $toMail = null;
 
             if ($merchant->isLinkedAccount() === true)
             {
-                $email = $merchant->parent->getEmail();
+                $email = $merchant->parent->getEmail()??'';
+                $txnReportEmail = $merchant->parent->getTransactionReportEmail()??[];
             }
             else
             {
-                $email = $merchant->getEmail();
+                $email = $merchant->parent->getEmail()??'';
+                $txnReportEmail = $merchant->parent->getTransactionReportEmail()??[];
             }
 
-            if(empty($email) === true or $email === "")
+            if($email!=='' && in_array($email,$txnReportEmail) === false)
+            {
+                $txnReportEmail[]=$email;
+            }
+            $toMail = $txnReportEmail;
+
+            if(empty($toMail) === true)
             {
                 $this->trace->info(
                     TraceCode::SETTLEMENT_NOTIFICATION_SKIPPED,
