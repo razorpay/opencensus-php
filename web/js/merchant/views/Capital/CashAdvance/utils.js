@@ -234,9 +234,16 @@ export const showSettings = (user, repaymentFrequency) => {
   );
 };
 
-const NEW_MERCHANT_TIMESTAMP = 1661970600;
+// const NEW_MERCHANT_TIMESTAMP = 1661970600;
 
-export const isMerchantNew = (liveByDate) => {
-  if (!liveByDate) return false;
-  return moment(liveByDate).unix().valueOf() > NEW_MERCHANT_TIMESTAMP;
+export const isMerchantNew = () => {
+  /**
+   * Hardcoding this to false to enable withdrawals for
+   * all merchants
+   *
+   * TODO: do this based on splitz experiment
+   */
+  return false;
+  // if (!liveByDate) return false;
+  // return moment(liveByDate).unix().valueOf() > NEW_MERCHANT_TIMESTAMP;
 };
