@@ -3834,7 +3834,7 @@ trait PaymentTrait
                 'merchant_id'     => $merchantId,
                 'acknowledged_at' => $acknowledgedAt,
                 'expired_at'      => $inputFields['expired_at'] ?? '9999999999',
-                'status'          => $inputFields['status'] ?? NULL,
+                'status'          => $inputFields['status'] ?? 'active',
             ]
         );
     }

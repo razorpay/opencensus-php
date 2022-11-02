@@ -650,6 +650,62 @@ return [
             ],
     ],
 
+    'testFetchSavedTokensStatusWhenNoCustomerTokensArePresentOnMerchantExpectsOtpGettingSkipped' => [
+        'request' => [
+                'url' => '/customers/status/9988776655',
+                'method' => 'get',
+                'content' => [
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'saved' => false,
+                ],
+            ],
+    ],
+
+    'testFetchSavedTokensStatusWhenCustomerDoesNotExistsExpectsOtpGettingSkipped' => [
+        'request' => [
+                'url' => '/customers/status/9988776656',
+                'method' => 'get',
+                'content' => [
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'saved' => false,
+                ],
+            ],
+    ],
+
+    'testFetchSavedTokensStatusWhenCustomerTokensArePresentOnDifferentMerchantExpectsOtpGettingSkipped' => [
+        'request' => [
+                'url' => '/customers/status/9988776655',
+                'method' => 'get',
+                'content' => [
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'saved' => false,
+                ],
+            ],
+    ],
+
+    'testFetchSavedTokensStatusWhenInvalidCustomerTokensArePresentExpectsOtpGettingSkipped' => [
+        'request' => [
+                'url' => '/customers/status/9988776655',
+                'method' => 'get',
+                'content' => [
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'saved' => false,
+                ],
+            ],
+    ],
+
     'testFetchSavedTokensStatusSavedSkipOTPSend'   => [
         'request' => [
                 'url' => '/customers/status/9988776655',

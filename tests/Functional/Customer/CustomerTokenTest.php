@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\CustomerToken;
 
+use Mockery;
 use Carbon\Carbon;
 use RZP\Models\Customer\Token;
 use RZP\Tests\Functional\TestCase;
@@ -160,12 +161,14 @@ class CustomerTokenTest extends TestCase
 
         $this->ba->publicAuth();
 
+        $this->fixturesToCreateToken('100022xytoken1', '100000003card1', '411140', '10000000000000', '10000gcustomer', ['vault' => 'visa']);
+
         $response = $this->startTest();
 
         $this->assertEquals(isset($response['email']), false);
     }
 
-    public function testFetchSavedTokensStatusSavedSkipOTPSend()
+    public function testFetchSavedTokensStatusWhenNoCustomerTokensArePresentOnMerchantExpectsOtpGettingSkipped()
     {
         $this->mockSession();
 
@@ -174,11 +177,67 @@ class CustomerTokenTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchSavedTokensStatusWhenCustomerTokensArePresentOnDifferentMerchantExpectsOtpGettingSkipped()
+    {
+        $this->mockSession();
+
+        $this->fixtures->merchant->create(['id' => '10000merchant1']);
+
+        $this->fixturesToCreateToken('100022xytoken1', '100000003card1', '411140', '10000merchant1', '10000gcustomer', ['vault' => 'visa']);
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchSavedTokensStatusWhenInvalidCustomerTokensArePresentExpectsOtpGettingSkipped()
+    {
+        $this->mockSession();
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variant_on',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $this->fixturesToCreateToken('100022xytoken1', '100000003card1', '411140', '100000Razorpay', '10000gcustomer', ['vault' => 'visa']);
+
+        $this->fixturesToCreateToken('100022xytoken2', '100000003card2', '411140', '10000000000000', '10000gcustomer', ['vault' => 'rzpvault', 'token' => '1001lcardtoken']);
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchSavedTokensStatusWhenCustomerDoesNotExistsExpectsOtpGettingSkipped()
+    {
+        $this->mockSession();
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchSavedTokensStatusSavedSkipOTPSend()
+    {
+        $this->mockSession();
+
+        $this->ba->publicAuth();
+
+        $this->fixturesToCreateToken('100022xytoken1', '100000003card1', '411140', '10000000000000', '10000gcustomer', ['vault' => 'visa']);
+
+        $this->startTest();
+    }
+
     public function testFetchSavedCustomerStatusWithDeviceToken()
     {
         $this->mockSession();
 
-        $this->fixturesToCreateToken('100022xtokenl1', '100000003card1', '411140', '10000000000000');
+        $this->fixturesToCreateToken('100022xtokenl1', '100000003card1', '411140', '10000000000000', '10000gcustomer', ['vault' => 'visa']);
 
         $this->ba->publicAuth();
 
@@ -1348,15 +1407,26 @@ class CustomerTokenTest extends TestCase
             [
                 'id'              => $tokenId,
                 'customer_id'     => $customerId,
-                'token'           => '1000lcardtoken',
+                'token'           => $inputFields['token'] ?? '1000lcardtoken',
                 'method'          => 'card',
                 'card_id'         => $cardId,
                 'used_at'         => 10,
                 'merchant_id'     => $merchantId,
                 'acknowledged_at' => Carbon::now()->getTimestamp(),
                 'expired_at'      => $inputFields['expired_at'] ?? '9999999999',
-                'status'          => $inputFields['status'] ?? NULL,
+                'status'          => $inputFields['status'] ?? 'active',
             ]
         );
+    }
+
+    protected function mockSplitzTreatment($output)
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturn($output);
     }
 }

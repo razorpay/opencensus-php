@@ -14,6 +14,7 @@ use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 
 class Service extends Base\Service
@@ -357,6 +358,30 @@ class Service extends Base\Service
                 }
             }
 
+            // check for saved addresses
+            $rzpAddressCount = $this->repo->address->fetchRzpAddressCountFor1cc($customer);
+            if ($rzpAddressCount !== 0)
+            {
+                $data['saved_address'] = true;
+            }
+            $addressConsentView = $this->core->fetchAddressConsentViewsFor1CC($customer);
+            $data['1cc_consent_banner_views'] = $addressConsentView;
+
+            // Check tokens count only when the device token is not present or not valid.
+            // rzpAddressCount check is added as 1cc is also using this api for triggering otp for showing addresses.
+            // Todo: rzpAddressCount check will be removed once we have ability to find the request is from 1cc/std checkout.
+            if ($sendOtp === true && $rzpAddressCount === 0)
+            {
+                $customerTokensCount = $this->getTokensCountByCustomer($customer, $this->merchant);
+
+                if ($customerTokensCount === 0)
+                {
+                    $sendOtp = false;
+                    
+                    $data['saved'] = false;
+                }
+            }
+
             if ($sendOtp === true)
             {
                 $otpInput = ['contact' => $contact];
@@ -380,17 +405,31 @@ class Service extends Base\Service
 
                 $this->sendOtp($otpInput);
             }
-            // check for saved addresses
-            $rzpAddressCount = $this->repo->address->fetchRzpAddressCountFor1cc($customer);
-            if ($rzpAddressCount !== 0)
-            {
-                $data['saved_address'] = true;
-            }
-            $addressConsentView = $this->core->fetchAddressConsentViewsFor1CC($customer);
-            $data['1cc_consent_banner_views'] = $addressConsentView;
         }
 
         return $data;
+    }
+
+    /**
+     * Calculates count of all merchant tokens associated to the customer
+     *
+     * @param Customer\Entity $customer
+     * @param MerchantEntity $merchant
+     * @return integer
+     */
+    public function getTokensCountByCustomer(Customer\Entity $customer, MerchantEntity $merchant): int
+    {
+        $tokenCore = (new Token\Core());
+
+        $tokens = $tokenCore->fetchTokensByCustomerForCheckout($customer, $merchant);
+
+        $tokens = $tokenCore->removeDisabledNetworkTokens($tokens, $merchant->methods->getCardNetworks());
+
+        $tokens = $tokenCore->removeNonCompliantCardTokens($tokens, $merchant->getId());
+
+        $tokens = $tokenCore->removeNonActiveTokenisedCardTokens($tokens);
+
+        return count($tokens);
     }
 
     /**
@@ -425,8 +464,14 @@ class Service extends Base\Service
 
             $this->core->putAppTokenInSession($app);
 
+            $tokenCore = new Token\Core();
+
             // Fetch existing tokens if exists
-            $tokens = (new Customer\Token\Core)->fetchTokensByCustomerForCheckout($customer, $this->merchant);
+            $tokens = $tokenCore->fetchTokensByCustomerForCheckout($customer, $this->merchant);
+
+            $tokens = $tokenCore->removeNonCompliantCardTokens($tokens, $this->merchant->getId());
+
+            $tokens = $tokenCore->removeNonActiveTokenisedCardTokens($tokens);
 
             if (($tokens !== null) and ($tokens->count() > 0))
             {

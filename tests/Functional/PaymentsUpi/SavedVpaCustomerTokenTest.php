@@ -50,7 +50,7 @@ class SavedVpaCustomerTokenTest extends TestCase
     {
         $this->fixtures->merchant->removeFeatures(['save_vpa']);
 
-        $this->fixturesToCreateToken('100gcustltoken', '100000003card1', '411140', '10000000000000');
+        $this->fixturesToCreateToken('100gcustltoken', '100000003card1', '411140', '10000000000000', '10000gcustomer', ['vault' => 'visa']);
 
         $this->mockSession();
 
@@ -214,7 +214,7 @@ class SavedVpaCustomerTokenTest extends TestCase
                 'merchant_id'     => $merchantId,
                 'acknowledged_at' => Carbon::now()->getTimestamp(),
                 'expired_at'      => $inputFields['expired_at'] ?? '9999999999',
-                'status'          => $inputFields['status'] ?? NULL,
+                'status'          => $inputFields['status'] ?? 'active',
             ]
         );
     }

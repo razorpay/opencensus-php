@@ -5109,6 +5109,8 @@ IFSC Code  ICIC0001206
     {
         $this->ba->publicAuth();
 
+        $this->fixturesToCreateToken('100022xytoken1', '100000003card1', '411140', '10000000000000', '10000gcustomer', ['vault' => 'visa']);
+                
         $this->fixtures->merchant->activate('10000000000000');
 
         $response = $this->startTest();
@@ -5119,6 +5121,8 @@ IFSC Code  ICIC0001206
     public function testGetCheckoutRouteWithDeviceToken()
     {
         $this->ba->publicAuth();
+
+        $this->fixturesToCreateToken('100022xytoken1', '100000003card1', '411140', '10000000000000', '10000gcustomer', ['vault' => 'visa']);
 
         $this->fixtures->merchant->activate('10000000000000');
 
@@ -5157,6 +5161,8 @@ IFSC Code  ICIC0001206
     public function testGetCheckoutRouteWithAndroidMetadataNoSession()
     {
         $this->ba->publicAuth();
+
+        $this->fixturesToCreateToken('100022xytoken1', '100000003card1', '411140', '10000000000000', '10000gcustomer', ['vault' => 'visa']);
 
         $this->fixtures->merchant->addFeatures(['cardsaving']);
 
