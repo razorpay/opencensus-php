@@ -387,7 +387,10 @@ class Core extends Base\Core
                        ->setInternal($isInternal)
                        ->createPayout($input);
 
-        $this->postCreationForPayouts($payout);
+        if ($payout->getIsPayoutService() === false)
+        {
+            $this->postCreationForPayouts($payout);
+        }
 
         return $payout;
     }

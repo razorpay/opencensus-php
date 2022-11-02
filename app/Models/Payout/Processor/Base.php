@@ -3946,13 +3946,12 @@ class Base extends BaseCore
                 $id = $response[Entity::ID];
                 $id = Entity::verifyIdAndStripSign($id);
 
-                $payout = (new Payout\Core)->getAPIModelPayoutFromPayoutService($id);
+                $payout = new Payout\Entity;
 
-                if (($this->merchant->isFeatureEnabled(Features::NEW_BANKING_ERROR) === true) and
-                    (isset($response[Payout\Entity::ERROR]) === true))
-                {
-                    $payout[Payout\Entity::ERROR] = $response[Payout\Entity::ERROR];
-                }
+                $payout->setId($id);
+                $payout->setIsPayoutService(1);
+
+                $payout->payoutServiceResponse = $response;
 
                 return $payout;
             }

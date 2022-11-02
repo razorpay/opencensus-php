@@ -95,7 +95,7 @@ class PayoutServiceTest extends TestCase
         $this->app['config']->set('applications.banking_account_service.mock', true);
     }
 
-    public function mockPayoutServiceCreate($fail = false, $request = [], $status = 'created', $insufficient_balance = false, $newBankingError = false)
+    public function mockPayoutServiceCreate($fail = false, $metadata = [], $request = [], $status = 'processing', $insufficient_balance = false, $newBankingError = false)
     {
         // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request headers that
         // are going to be sent to payout service.
@@ -127,7 +127,7 @@ class PayoutServiceTest extends TestCase
                                 // We are returning this response only as we don't have a use case of supporting
                                 // response based on $request, if needed, that can also be added here using
                                 // andReturnUsing method instead of andReturn
-                                    $this->createResponseForPayoutServiceMock($fail, $status, $insufficient_balance, $newBankingError)
+                                    $this->createResponseForPayoutServiceMock($fail, $status, $insufficient_balance, $newBankingError, $metadata)
                                 );
 
         $this->app->instance(PayoutServiceCreate::PAYOUT_SERVICE_CREATE, $payoutServiceCreateMock);
@@ -414,7 +414,7 @@ class PayoutServiceTest extends TestCase
                                                                                                 Status::CANCELLED));
     }
 
-    public function createResponseForPayoutServiceMock($fail, $status = 'created', $insufficient_balance = false, $newBankingError = false)
+    public function createResponseForPayoutServiceMock($fail, $status = 'processing', $insufficient_balance = false, $newBankingError = false, $metadata = [])
     {
         $response = new Requests_Response();
 
@@ -452,65 +452,79 @@ class PayoutServiceTest extends TestCase
         }
         elseif ($newBankingError === true)
         {
-            $response->body = json_encode(
-                [
-                    "id"                =>   "pout_Gg7sgBZgvYjlSB",
-                    "entity"            =>   "payout",
-                    "fund_account_id"   =>   "fa_100000000000fa",
-                    "amount"            =>   100,
-                    "currency"          =>   "INR",
-                    "merchant_id"       =>   "10000000000000",
-                    "notes"             =>   "",
-                    "fees"              =>   0,
-                    "tax"               =>   0,
-                    "status"            =>   $status,
-                    "purpose"           =>   "refund",
-                    "utr"               =>   "",
-                    "reference_id"      =>   null,
-                    "narration"         =>   "test Merchant Fund Transfer",
-                    "batch_id"          =>   "",
-                    "initiated_at"      =>   1614325830,
-                    "failure_reason"    =>   null,
-                    "created_at"        =>   1614325826,
-                    "fee_type"          =>   null,
-                    "error"   =>
-                        [
-                            "code"        => '',
-                            "description" => '',
-                            "field"       => '',
-                            "source"      => '',
-                            "step"        => '',
-                            "reason"      => '',
-                            "metadata"    => [],
-                        ]
-                ]);
+            $content = [
+                "id"                =>   "pout_Gg7sgBZgvYjlSB",
+                "entity"            =>   "payout",
+                "fund_account_id"   =>   "fa_100000000000fa",
+                "amount"            =>   100,
+                "currency"          =>   "INR",
+                "merchant_id"       =>   "10000000000000",
+                "notes"             =>   "",
+                "fees"              =>   590,
+                "tax"               =>   90,
+                "status"            =>   $status,
+                "purpose"           =>   "refund",
+                "utr"               =>   "",
+                "reference_id"      =>   null,
+                "narration"         =>   "test Merchant Fund Transfer",
+                "batch_id"          =>   "",
+                "initiated_at"      =>   1614325830,
+                "failure_reason"    =>   null,
+                "created_at"        =>   1614325826,
+                "fee_type"          =>   null,
+                "mode"              =>   'IMPS',
+                "error"   =>
+                    [
+                        "code"        => '',
+                        "description" => '',
+                        "field"       => '',
+                        "source"      => '',
+                        "step"        => '',
+                        "reason"      => '',
+                        "metadata"    => [],
+                    ]
+            ];
+
+            foreach ($metadata as $key => $value)
+            {
+                $content[$key] = $value;
+            }
+
+            $response->body = json_encode($content);
             $response->status_code = 200;
             $response->success = true;
         }
         else
         {
-            $response->body = json_encode(
-                [
-                    "id"                =>   "pout_Gg7sgBZgvYjlSB",
-                    "entity"            =>   "payout",
-                    "fund_account_id"   =>   "fa_100000000000fa",
-                    "amount"            =>   100,
-                    "currency"          =>   "INR",
-                    "merchant_id"       =>   "10000000000000",
-                    "notes"             =>   "",
-                    "fees"              =>   0,
-                    "tax"               =>   0,
-                    "status"            =>   $status,
-                    "purpose"           =>   "refund",
-                    "utr"               =>   "",
-                    "reference_id"      =>   null,
-                    "narration"         =>   "test Merchant Fund Transfer",
-                    "batch_id"          =>   "",
-                    "initiated_at"      =>   1614325830,
-                    "failure_reason"    =>   null,
-                    "created_at"        =>   1614325826,
-                    "fee_type"          =>   null
-                ]);
+            $content = [
+                "id"                =>   "pout_Gg7sgBZgvYjlSB",
+                "entity"            =>   "payout",
+                "fund_account_id"   =>   "fa_100000000000fa",
+                "amount"            =>   100,
+                "currency"          =>   "INR",
+                "merchant_id"       =>   "10000000000000",
+                "notes"             =>   "",
+                "fees"              =>   590,
+                "tax"               =>   90,
+                "status"            =>   $status,
+                "purpose"           =>   "refund",
+                "utr"               =>   "",
+                "reference_id"      =>   null,
+                "narration"         =>   "test Merchant Fund Transfer",
+                "batch_id"          =>   "",
+                "initiated_at"      =>   1614325830,
+                "failure_reason"    =>   null,
+                "created_at"        =>   1614325826,
+                "fee_type"          =>   null,
+                "mode"              =>   'IMPS',
+            ];
+
+            foreach ($metadata as $key => $value)
+            {
+                $content[$key] = $value;
+            }
+
+            $response->body = json_encode($content);
             $response->status_code = 200;
             $response->success = true;
         }
@@ -1778,7 +1792,7 @@ class PayoutServiceTest extends TestCase
             'entity_type' => 'merchant',
         ]);
 
-        $this->mockPayoutServiceCreate(false, [], 'created', false, true);
+        $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, true);
 
         $payout = $this->testCreatePayoutServiceFtaCreation();
 
@@ -1824,7 +1838,7 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutInsufficientBalance()
     {
-        $this->mockPayoutServiceCreate(false, [], 'created', true);
+        $this->mockPayoutServiceCreate(false, [], [], 'created', true);
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
@@ -1885,7 +1899,17 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutWithFeeRewards(): array
     {
-        $this->mockPayoutServiceCreate();
+        $metadata = [
+            'entity'          => 'payout',
+            'amount'          => 100,
+            'purpose'         => 'refund',
+            'status'          => 'processing',
+            'mode'            => 'IMPS',
+            'tax'             => 0,
+            'fees'            => 500,
+        ];
+
+        $this->mockPayoutServiceCreate(false, $metadata);
 
         $this->testCreatePayoutServiceFtaCreationWithFeeRewards();
 
@@ -1952,7 +1976,13 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutInternalContact()
     {
-        $this->mockPayoutServiceCreate();
+        $metadata = [
+            'tax'             => 0,
+            'fees'            => 0,
+            'origin'          => 'api',
+        ];
+
+        $this->mockPayoutServiceCreate(false, $metadata);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::INTERNAL_CONTACT_VIA_PS]);
 
@@ -1976,7 +2006,13 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutInternalContactWithoutWorkflowsFlag()
     {
-        $this->mockPayoutServiceCreate();
+        $metadata = [
+            'tax'             => 0,
+            'fees'            => 0,
+            'origin'          => 'api',
+        ];
+
+        $this->mockPayoutServiceCreate(false, $metadata);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::INTERNAL_CONTACT_VIA_PS]);
 
@@ -2011,7 +2047,13 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutInternalContactWithWorkflows()
     {
-        $this->mockPayoutServiceCreate();
+        $metadata = [
+            'tax'             => 0,
+            'fees'            => 0,
+            'origin'          => 'api',
+        ];
+
+        $this->mockPayoutServiceCreate(false, $metadata);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::WORKFLOW_VIA_PAYOUTS_MS]);
         $this->fixtures->merchant->addFeatures([Feature\Constants::INTERNAL_CONTACT_VIA_PS]);
@@ -2454,7 +2496,13 @@ class PayoutServiceTest extends TestCase
             'on'
         );
 
-        $this->mockPayoutServiceCreate(false, [], 'on_hold');
+        $metadata = [
+            'status' => 'queued',
+            'tax'    => 0,
+            'fees'   => 0,
+        ];
+
+        $this->mockPayoutServiceCreate(false, $metadata);
 
         // Doing this because we fetch payout from the db before returning response from api.
         $this->testCreatePayoutEntry('IMPS', false);
@@ -2522,7 +2570,13 @@ class PayoutServiceTest extends TestCase
 
         Carbon::setTestNow($currentTime);
 
-        $this->mockPayoutServiceCreate(false, [], 'scheduled');
+        $metadata = [
+            'status' => 'scheduled',
+            'tax'    => 0,
+            'fees'   => 0,
+        ];
+
+        $this->mockPayoutServiceCreate(false, $metadata);
 
         // Doing this because we fetch payout from the db before returning response from api.
         $this->testCreatePayoutEntry('IMPS', false);
@@ -2756,7 +2810,16 @@ class PayoutServiceTest extends TestCase
 
         $testData['request']['content']['account_number'] = $balance->getAccountNumber();
 
-        $this->mockPayoutServiceCreate();
+        $metadata = [
+            'amount'          => 500,
+            'purpose'         => 'refund',
+            'status'          => 'queued',
+            'mode'            => 'NEFT',
+            'tax'             => 0,
+            'fees'            => 0,
+        ];
+
+        $this->mockPayoutServiceCreate(false, $metadata);
 
         // Doing this because we fetch payout from the db before returning response from api.
         $this->testCreatePayoutEntry('NEFT', false);

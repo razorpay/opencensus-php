@@ -799,6 +799,8 @@ class Entity extends Base\PublicEntity
         'destination',
     ];
 
+    public $payoutServiceResponse;
+
     // ============================= RELATIONS =============================
 
     public function merchant()

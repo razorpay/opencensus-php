@@ -428,7 +428,25 @@ class Service extends Base\Service
 
         if ($isCompositePayout === true)
         {
-            $payout = $this->postCreationProcessingForCompositePayout($payout);
+            if ($payout->getIsPayoutService() === true)
+            {
+                if (array_key_exists(Entity::FUND_ACCOUNT_ID, $payout->payoutServiceResponse) === true)
+                {
+                    $fundAccountId = $payout->payoutServiceResponse[Entity::FUND_ACCOUNT_ID];
+
+                    $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
+
+                    $payout->fundAccount()->associate($fundAccount);
+
+                    $payout = $this->postCreationProcessingForCompositePayout($payout);
+
+                    $payout->payoutServiceResponse[Entity::FUND_ACCOUNT] = $payout->fundAccount->toArrayPublic();
+                }
+            }
+            else
+            {
+                $payout = $this->postCreationProcessingForCompositePayout($payout);
+            }
         }
 
         $responseTime = microtime(true);
@@ -443,10 +461,9 @@ class Service extends Base\Service
                 'response_time' => $responseTime - $requestTime
             ]);
 
-        if (($payout->getIsPayoutService() === true) and
-            ($this->merchant->isFeatureEnabled(Features::NEW_BANKING_ERROR)))
+        if ($payout->getIsPayoutService() === true)
         {
-            return $payout->toArrayPublicPayoutServiceWithNewBankingError();
+            return $payout->payoutServiceResponse;
         }
 
         return $payout->toArrayPublic();
