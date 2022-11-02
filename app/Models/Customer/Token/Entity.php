@@ -1063,9 +1063,10 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    //disabled dcc for optimiser merchants because of money leak incidents
     public function isDCCEnabled()
     {
-        return $this->hasCard() and (new Payment\Service)->isDccEnabledIIN($this->card->iinRelation);
+        return $this->hasCard() and (new Payment\Service)->isDccEnabledIIN($this->card->iinRelation) and ($this->merchant->isFeatureEnabled(Feature\Constants::RAAS) === false);
     }
 
     public function getBillingAddress()

@@ -2036,4 +2036,17 @@ class PaymentCreateDCCTest extends TestCase
         self::assertTrue(empty($data['merchant_currency']));
         self::assertEquals('EUR',$data['currency']);
     }
+    public function testPaymentFlowsDccForRaasMerchants()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::RAAS]);
+        $this->fixtures->merchant->enableInternational();
+
+        $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertTrue(array_key_exists('currency_request_id', $responseContent) === false);
+        $this->assertTrue(array_key_exists('all_currencies', $responseContent) === false);
+        $this->fixtures->merchant->removeFeatures([Constants::RAAS]);
+        $this->fixtures->merchant->disableInternational();
+    }
 }

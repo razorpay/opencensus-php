@@ -1016,9 +1016,10 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::FTS_REQUEST_NOTES) === true);
     }
 
+    //disabled dcc for optimiser merchants because of money leak incidents
     public function isDCCEnabled(): bool
     {
-        return ($this->isFeatureEnabled(Feature\Constants::DISABLE_NATIVE_CURRENCY) === false);
+        return ($this->isFeatureEnabled(Feature\Constants::DISABLE_NATIVE_CURRENCY) === false) && ($this->isFeatureEnabled(Feature\Constants::RAAS) === false);
     }
 
     /**
