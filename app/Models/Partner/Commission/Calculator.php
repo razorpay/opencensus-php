@@ -471,6 +471,12 @@ class Calculator extends Base\Core
             return false;
         }
 
+        if($this->getPartner()->getPartnerType() ===  Merchant\Constants::FULLY_MANAGED)
+        {
+            // If the partner is of type fully managed then they are not eligible for commissions, no need to add a log for each source entity.
+            return false;
+        }
+
         if ($this->getPartnerConfig() === null)
         {
             $this->traceContext(TraceCode::COMMISSION_NOT_APPLICABLE_CONFIG_NOT_DEFINED);

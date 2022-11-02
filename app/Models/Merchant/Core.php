@@ -3800,6 +3800,12 @@ class Core extends Base\Core
             PartnerConfig\Constants::PARTNER_ID         => $partner->getId(),
         ];
 
+        //If partner type is fully managed then commissions are disabled.
+        if($partner->getPartnerType() === Constants::FULLY_MANAGED)
+        {
+            $defaultConfig [PartnerConfig\Entity::COMMISSIONS_ENABLED] = false;
+        }
+
         $config = array_merge($defaultConfig, $config);
 
         (new PartnerConfig\Core)->create($application, $config);

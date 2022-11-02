@@ -34,6 +34,11 @@ class Action
         $this->instantiateCalculator($postSetupData, $postActionData);
     }
 
+    public function testFullyManagedPartnerTypeCommission(array $postSetupData, array & $postActionData)
+    {
+        $this->instantiateCalculator($postSetupData, $postActionData);
+    }
+
     public function testImplicitExplicitPricingDoesNotExist(array $postSetupData, array & $postActionData)
     {
         $this->instantiateCalculator($postSetupData, $postActionData);
