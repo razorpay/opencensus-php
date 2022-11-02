@@ -642,4 +642,7 @@ final class RazorxTreatment
 
     //Experiment used to control whether routes specified in $bankingDisabledRoutes should block banking requests or not
     const BLOCK_BANKING_REQUESTS = 'block_banking_requests';
+
+    const PP_MAGIC_SETTING = 'pp_magic_setting';
+
 }
