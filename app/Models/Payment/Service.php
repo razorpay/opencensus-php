@@ -2105,7 +2105,7 @@ class Service extends Base\Service
 
         if(isset($entity['token']))
         {
-            if($payment->card->isInternational() === false)
+            if($payment->card->isInternational() === false && $entity['token']['status'] === 'active')
             {
                 $data['id'] = $entity['token_id'];
                 $network_token_data = (new Token\Service())->fetchNetworkToken($data);

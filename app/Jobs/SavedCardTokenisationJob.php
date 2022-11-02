@@ -213,12 +213,7 @@ class SavedCardTokenisationJob extends Job
                 'asyncTokenisationJobId' => $this->asyncTokenisationJobId,
             ]);
 
-            $updateData[Token\Entity::STATUS] = "suspended";
-
-            if(in_array($e->getCode(), self::TOKENISATION_NO_RETRY_ERROR_CODES, true))
-            {
-                $updateData[Token\Entity::STATUS] = "expired";
-            }
+            $updateData[Token\Entity::STATUS] = "failed";
 
             $rowsAffected = (new Token\Repository)->updateById($this->tokenId, $updateData);
 
