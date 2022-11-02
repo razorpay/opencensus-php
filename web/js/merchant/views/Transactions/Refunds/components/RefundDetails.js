@@ -186,14 +186,6 @@ class PaymentDetailsContainer extends Component {
       </div>
     );
   }
-
-  enableInstantRefunds = () => {
-    window.rzpAnalytics?.({
-      eventCategory: 'Dashboard - Instant Refund',
-      eventAction: 'Enable Now',
-      eventLabel: `Refund detail page | Enable Now`,
-    });
-  };
 }
 
 const mapStateToProps = (state) => {

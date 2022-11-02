@@ -122,7 +122,7 @@ export default class RefundStatusTimeline extends React.Component {
     const mileStones = this.getMilestones(refund);
 
     return (
-      <ul className="refund-timeline">
+      <ul className="refund-timeline" data-testid="refund-timeline">
         {mileStones.map((item, idx) => {
           if (item.status) {
             const showProcessingTooltip =
