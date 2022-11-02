@@ -3857,14 +3857,13 @@ class Processor
 
         $sqsPush = $this->app->razorx->getTreatment($payment->getMethod(), self::BARRICADE_SQS_PUSH, $this->mode);
 
-        $authorizeVerifyCardGateways = $this->app->razorx->getTreatment($payment->getGateway(),self::BARRICADE_AUTHORIZE_VERIFY_CARD_GATEWAY, $this->mode);
 
         if  ($methodResult !== 'on')
         {
             return;
         }
         // Skip if payment is not gateway captured and gateway is not Authorize Verify
-        if ( $payment->isCard() === true && $authorizeVerifyCardGateways === 'control' && $payment->isGatewayCaptured() === false )
+        if ( $payment->isCard() === true && $payment->isGatewayCaptured() === false )
         {
             return;
         }
@@ -3879,8 +3878,15 @@ class Processor
             return;
         }
 
+
+        $authorizeVerifyCardGateways = $this->app->razorx->getTreatment($payment->terminal->getGateway(),self::BARRICADE_AUTHORIZE_VERIFY_CARD_GATEWAY, $this->mode);
         $gatewayResult = $this->app->razorx->getTreatment($payment->terminal->getGateway(), self::BARRICADE_PAYMENT_GATEWAY, $this->mode);
         $demoMerchant  = $this->app->razorx->getTreatment($payment->getMerchantId(),self::DEMO_MERCHANT, $this->mode);
+
+        if ( $payment->isCard() === true && $authorizeVerifyCardGateways === 'control' && $payment->isGatewayCaptured() === false )
+        {
+            return;
+        }
 
         if ( $gatewayResult !== 'on' || $demoMerchant !== 'control')
         {
