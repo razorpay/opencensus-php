@@ -155,6 +155,12 @@ export const routeToChannelIDMap = {
       stage: 'IUaR9YPtVKsZCa',
       production: 'IUaYlo9q0VNBiQ',
     },
+    '/app/partners': {
+      dev: 'KYvkH86N9Sy9A1',
+      beta: 'KYvkH86N9Sy9A1',
+      stage: 'KYvkH86N9Sy9A1',
+      production: 'KYvhzKIY0r6zhJ',
+    },
     '/app/reminders': {
       dev: 'IUaRTtAP1X04ub',
       beta: 'IUaRTtAP1X04ub',
@@ -333,6 +339,12 @@ export const routeToChannelIDMap = {
       stage: 'IUbFX1AMs3qcqC',
       production: 'IUbcXRg6xj117A',
     },
+    '/app/partners': {
+      dev: 'KYvkH86N9Sy9A1',
+      beta: 'KYvkH86N9Sy9A1',
+      stage: 'KYvkH86N9Sy9A1',
+      production: 'KYvhzKIY0r6zhJ',
+    },
     '/app/payment-methods': {
       dev: 'IUbFrNg7pJxXMN',
       beta: 'IUbFrNg7pJxXMN',
@@ -375,6 +387,7 @@ export const routeToRouteNameMap = {
   '/app/reports': 'reports',
   '/app/config': 'settings-config',
   '/app/webhooks': 'settings-webhooks',
+  '/app/partners': 'partners',
   '/app/keys': 'settings-keys',
   '/app/reminders': 'settings-reminders',
   '/app/payment-methods': 'settings-payment-methods',

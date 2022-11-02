@@ -17,9 +17,10 @@ import AddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/AddMerchant
 import ActivationGuide from 'merchant/views/PartnerDashboard/Home/Components/ActivationGuide';
 import ReferralGuide from 'merchant/views/PartnerDashboard/Home/Components/ReferralGuide/index';
 import { showActivationConfetti } from 'merchant/views/PartnerDashboard/Home/Components/utils';
-import './home.styl';
+import 'merchant/views/PartnerDashboard/Home/home.styl';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
 import Loader from 'common/ui/Loader';
+import DashboardBanner from 'common/ui/DashboardBanner';
 
 const AggregatorFormLazy = React.lazy(() =>
   import('merchant/views/PartnerDashboard/Home/Components/ReferralGuide/AggregatorForm'),
@@ -179,6 +180,7 @@ const Home = ({ user, showNotification, openModal, closeModal, tracking }: Partn
   const isUserOwner = user?.role === 'owner';
   return (
     <div className="partner-dashboard-home">
+      <DashboardBanner />
       <h2 className="page-heading">{`Welcome to Partner dashboard, ${partnerName}!`}</h2>
       <ShowWhen
         additionalCondition={(currentUser) =>
