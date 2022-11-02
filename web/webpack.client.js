@@ -225,7 +225,7 @@ module.exports = ({ config, project }) => {
         },
         include: [/\.(js|css)?$/, /\.(woff|woff2)?$/],
         exclude: [/(merchant-entry|merchantLA-entry).js$/],
-        swSrc: './utils/customWorkbox.js',
+        swSrc: './sw/workbox.js',
         swDest: `sw-utils/sw-${project}.js`,
       }),
     );
