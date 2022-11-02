@@ -3,6 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
+use Illuminate\Support\Arr;
 use Redirect;
 use Response;
 use Request;
@@ -1857,9 +1858,13 @@ class PaymentCreateController extends Controller
 
         if (in_array($library, $allowedLibraries, true) === true)
         {
-            if (!$merchant->isCustomCheckoutNetworkTokenisationEnabled())
-            {
-                if (isset($input['save']) || isset($input['consent_to_save_card']))
+            // If it is 'Add New Card' flow & network tokenisation isn't enabled
+            // on custom checkout merchant then ignore save input & do not save cards.
+            if (
+                Arr::hasAny($input, ['card.number', 'card.cvv']) &&
+                !$merchant->isCustomCheckoutNetworkTokenisationEnabled()
+            ) {
+                if (Arr::hasAny($input, ['save', 'consent_to_save_card']))
                 {
                     $this->trace->warning(
                         TraceCode::NETWORK_TOKENIZATION_PAID_FLAG_NOT_ENABLED,
@@ -1870,8 +1875,7 @@ class PaymentCreateController extends Controller
                         ]
                     );
 
-                    unset($input['save']);
-                    unset($input['consent_to_save_card']);
+                    unset($input['save'], $input['consent_to_save_card']);
                 }
             }
             elseif (isset($input['consent_to_save_card']) === true)
