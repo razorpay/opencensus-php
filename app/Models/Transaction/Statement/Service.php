@@ -135,9 +135,25 @@ class Service extends Transaction\Service
             ($this->isExperimentEnabled(Merchant\RazorxTreatment::RX_REARCH_TIDB_EXPERIMENT) === true) and
             ($balance->isAccountTypeShared() === true))
         {
-            $ledger = $this->repo->ledger_statement->fetch($input, $this->merchant->getId(), ConnectionType::RX_DATA_WAREHOUSE_MERCHANT);
+            $ledger = $this->repo->ledger_statement->fetch($input,
+                                                           $this->merchant->getId(),
+                                                           ConnectionType::RX_DATA_WAREHOUSE_MERCHANT);
 
-            return $ledger->toArrayPublic();
+            $response = $ledger->toArrayPublic();
+
+            $this->trace->info(
+                TraceCode::FETCH_MULTIPLE_FOR_TRANSACTIONS_RESPONSE,
+                [
+                    'merchant_id'          => $this->merchant->getId(),
+                    'balance_id'           => $balance->getId(),
+                    'balance_type'         => $balance->getType(),
+                    'balance_account_type' => $balance->getAccountType(),
+                    'connection'           => 'ledger-tidb',
+                    'response'             => $response,
+                ]
+            );
+
+            return $response;
         }
 
         // Route request to BAS if DA ledger feature is enabled and acc is of type direct
@@ -147,21 +163,52 @@ class Service extends Transaction\Service
             $this->trace->info(
                 TraceCode::DRIVING_ACCOUNT_STATEMENT_FOR_DA_VIA_BAS,
                 [
-                    'merchant_id' => $this->merchant->getId(),
-                    'balance_id' => $balance->getId(),
-                    'balance_type' => $balance->getType(),
+                    'merchant_id'          => $this->merchant->getId(),
+                    'balance_id'           => $balance->getId(),
+                    'balance_type'         => $balance->getType(),
                     'balance_account_type' => $balance->getAccountType(),
                 ]
             );
 
-            return $this->repo->direct_account_statement
+            $response = $this->repo->direct_account_statement
                 ->fetch($input, $this->merchant->getId(), ConnectionType::SLAVE)->toArrayPublic();
+
+            $this->trace->info(
+                TraceCode::FETCH_MULTIPLE_FOR_TRANSACTIONS_RESPONSE,
+                [
+                    'merchant_id'          => $this->merchant->getId(),
+                    'balance_id'           => $balance->getId(),
+                    'balance_type'         => $balance->getType(),
+                    'balance_account_type' => $balance->getAccountType(),
+                    'connection'           => 'mysql-slave',
+                    'response'             => $response,
+                ]
+            );
+
+            return $response;
         }
 
         /** @var PublicCollection $transactions */
-        $transactions = $this->repo->statement->setBaseQueryAndFetchForBanking($input, $this->merchant->getId(), null, $balance);
+        $transactions = $this->repo->statement->setBaseQueryAndFetchForBanking($input,
+                                                                               $this->merchant->getId(),
+                                                                               null,
+                                                                               $balance);
 
-        return $transactions->toArrayPublic();
+        $response = $transactions->toArrayPublic();
+
+        $this->trace->info(
+            TraceCode::FETCH_MULTIPLE_FOR_TRANSACTIONS_RESPONSE,
+            [
+                'merchant_id'          => $this->merchant->getId(),
+                'balance_id'           => $balance->getId(),
+                'balance_type'         => $balance->getType(),
+                'balance_account_type' => $balance->getAccountType(),
+                'connection'           => 'default',
+                'response'             => $response,
+            ]
+        );
+
+        return $response;
     }
 
     protected function isExperimentEnabled($experiment)
