@@ -95,7 +95,7 @@ trait PaymentTrait
 
     protected $mandateHqTerminal = null;
 
-    protected function doAuthAndCapturePayment($payment = null, $amount = 0, $currency = 'INR')
+    protected function doAuthAndCapturePayment($payment = null, $amount = 0, $currency = 'INR', $discountedPrice = 0)
     {
         if ($payment === null)
         {
@@ -103,6 +103,13 @@ trait PaymentTrait
         }
 
         $paymentAuth = $this->doJsonpAuthPayment($payment);
+
+        if($discountedPrice != 0)
+        {
+            return $this->capturePayment(
+                $paymentAuth['razorpay_payment_id'],
+                $payment['amount'], $currency, $discountedPrice);
+        }
 
         if ($amount !== 0)
         {

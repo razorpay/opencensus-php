@@ -362,6 +362,7 @@ class Sbi extends Base
             ',',
             '[',
             ']',
+            '®',
         ];
 
         $name = str_replace($replaceArray, " ", $merchantDetails[Detail\Entity::BUSINESS_NAME]);

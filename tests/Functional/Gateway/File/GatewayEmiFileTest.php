@@ -452,7 +452,16 @@ class GatewayEmiFileTest extends TestCase
 
     public function testGenerateEmiFileForSbi()
     {
-        $this->prerequisitesForSbiEmi();
+        $input = [
+            [
+                'emi_duration' => 9,
+            ],
+            [
+                'emi_duration' => 12,
+            ]
+        ];
+
+        $this->prerequisitesForSbiEmi($input);
 
         $content = $this->startTest();
 
@@ -464,11 +473,83 @@ class GatewayEmiFileTest extends TestCase
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
         $amountData = [58846,44894];
-        $merchantNames = ['A WEIRD MERCH NT NAME  W TH SPECIAL CHAR'];
+
+        $merchantNames = ['A WEIRD MERCH NT NAME W TH S PECIAL CHAR'];
 
         $cardNumbers = ['0000000000000006709'];
 
-        $this->assertSbiEmiFileData($content, 3, $amountData, $merchantNames, $cardNumbers);
+        $this->assertSbiEmiFileData($content, 3, $amountData, $merchantNames, $cardNumbers, 0, 1, 325, 166, 57, 450, 'sbi_emi_file');
+
+        Mail::assertQueued(EmiMail\File::class, function ($mail)
+        {
+            $this->assertEmpty($mail->attachments);
+
+            return $mail->hasTo('emi.ops@sbicard.com');
+        });
+    }
+
+    public function testGenerateEmiFileForSbiNce()
+    {
+        $input = [
+            [
+                'emi_duration'      => 3,
+                'merchant_payback'  => 518,
+                'order_amount'      => 500000,
+                'discounted_amount' => 474100,
+            ],
+            [
+                'emi_duration'      => 6,
+                'merchant_payback'  => 600,
+                'order_amount'      => 500000,
+                'discounted_amount' => 470000,
+            ]
+        ];
+
+        $this->fixtures->create('emi_plan',
+            [
+                'id'                => '30101010101013',
+                'duration'          => $input[0]['emi_duration'],
+                'rate'              => '1400',
+                'methods'           => 'creditcard',
+                'bank'              => 'SBIN',
+                'min_amount'        => '300000',
+                'merchant_id'       => '100000Razorpay',
+                'merchant_payback'  => $input[0]['merchant_payback'],
+            ]);
+
+        $this->fixtures->create('emi_plan',
+            [
+                'id'                => '30101010101012',
+                'duration'          => $input[1]['emi_duration'],
+                'rate'              => '1400',
+                'methods'           => 'creditcard',
+                'bank'              => 'SBIN',
+                'min_amount'        => '300000',
+                'merchant_id'       => '100000Razorpay',
+                'merchant_payback'  => $input[1]['merchant_payback'],
+            ]);
+
+        $this->prerequisitesForSbiNce($input);
+
+        // trigger emi file before nce file
+        $this->runRequestResponseFlow($this->testData['testGenerateEmiFileForSbi']);
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $amountData = array_column($input, 'discounted_amount');
+
+        $merchantNames = ['A WEIRD MERCH NT NAME W TH S PECIAL CHAR'];
+
+        $cardNumbers = ['0000000000000006709'];
+
+        $this->assertSbiEmiFileData($content, 3, $amountData, $merchantNames, $cardNumbers, 2, 3, 36, 67, 17, 200, 'sbi_nc_emi_file');
 
         Mail::assertQueued(EmiMail\File::class, function ($mail)
         {
@@ -480,7 +561,16 @@ class GatewayEmiFileTest extends TestCase
 
     public function testGenerateEmiFileForSbiSecondFile()
     {
-        $this->prerequisitesForSbiEmi();
+        $input = [
+            [
+                'emi_duration' => 9,
+            ],
+            [
+                'emi_duration' => 12,
+            ]
+        ];
+
+        $this->prerequisitesForSbiEmi($input);
 
         $testData = $this->testData['testGenerateEmiFileForSbi'];
 
@@ -507,7 +597,16 @@ class GatewayEmiFileTest extends TestCase
 
     public function testGenerateEmiFileForSbiWithBeamFailure()
     {
-        $this->prerequisitesForSbiEmi();
+        $input = [
+            [
+                'emi_duration' => 9,
+            ],
+            [
+                'emi_duration' => 12,
+            ]
+        ];
+
+        $this->prerequisitesForSbiEmi($input);
 
         $this->mockBeamContentFunction(
             function (&$content, $action = '')
@@ -578,15 +677,15 @@ class GatewayEmiFileTest extends TestCase
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-        $this->assertSbiEmiFileData($content, 1);
+        $this->assertSbiEmiFileData($content, 1, [], [], [], 0, 1, null, null, null, null, "sbi_emi_file");
     }
 
     // One file would be encrypted and the other not encrypted
-    protected function assertSbiEmiFileData($content, $rowCount, $amountData = [], $merchantNames = [], $cardNumbers = [])
+    protected function assertSbiEmiFileData($content, $rowCount, $amountData = [], $merchantNames = [], $cardNumbers = [], $emiFileIndex = 0, $outputFileIndex = 1, $amountOffset = null, $nameOffset = null, $cardOffset = null, $rowLength = null, $emiFileName = null)
     {
         $files = $this->getDbEntities('file_store')->toArray();
 
-        $file = $files[0];
+        $file = $files[$emiFileIndex];
 
         $fileContent = file_get_contents('storage/files/filestore/' . $file['location']);
 
@@ -600,9 +699,9 @@ class GatewayEmiFileTest extends TestCase
 
         $fileContent = $encryptor->decrypt($fileContent);
 
-        $this->checkSbiEmiFileContents($file, $fileContent, $content, $rowCount, $amountData, $merchantNames, $cardNumbers);
+        $this->checkSbiEmiFileContents($file, $fileContent, $content, $rowCount, $amountData, $merchantNames, $cardNumbers, false, $amountOffset, $nameOffset, $cardOffset, $rowLength, $emiFileName);
 
-        $outputFile = $files[1];
+        $outputFile = $files[$outputFileIndex];
 
         $fileContent = file_get_contents('storage/files/filestore/' . $outputFile['location']);
 
@@ -612,10 +711,10 @@ class GatewayEmiFileTest extends TestCase
             $cardNumbers = ['0000000000000006709'];
         }
 
-        $this->checkSbiEmiFileContents($outputFile, $fileContent, $content, $rowCount, $amountData, $merchantNames, $cardNumbers, true);
+        $this->checkSbiEmiFileContents($outputFile, $fileContent, $content, $rowCount, $amountData, $merchantNames, $cardNumbers, true, $amountOffset, $nameOffset, $cardOffset, $rowLength, 'sbi_emi_output_file');
     }
 
-    protected function checkSbiEmiFileContents($file, $fileContent, $content, $rowCount, $amountData = [], $merchantNames = [], $cardNumbers = [], $outputFile = false)
+    protected function checkSbiEmiFileContents($file, $fileContent, $content, $rowCount, $amountData = [], $merchantNames = [], $cardNumbers = [], $outputFile = false, $amountOffset, $nameOffset, $cardOffset, $rowLength, $emiFileName)
     {
         $fileRows = explode("\r\n", $fileContent);
 
@@ -631,13 +730,13 @@ class GatewayEmiFileTest extends TestCase
 
         foreach ($fileRows as $key => $row)
         {
-            $amount = (int)substr($row, 325, 17);
+            $amount = (int)substr($row, $amountOffset, 17);
 
             $amounts[] = $amount;
-            $names[] = substr($row, 166, 40);
-            $cards[] = substr($row, 57, 19);
+            $names[] = substr($row, $nameOffset, 40);
+            $cards[] = substr($row, $cardOffset, 19);
 
-            $this->assertEquals(450, strlen($row));
+            $this->assertEquals($rowLength, strlen($row));
         }
 
         // Assert that the amounts in each rows are correct
@@ -667,7 +766,7 @@ class GatewayEmiFileTest extends TestCase
         }
 
         $expectedFileContent = [
-            'type'        => (($outputFile === true) ? 'sbi_emi_output_file' : 'sbi_emi_file'),
+            'type'        => $emiFileName,
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'txt',
@@ -884,7 +983,7 @@ class GatewayEmiFileTest extends TestCase
     }
 
     protected function makeEmiPaymentOnCard($card, $emiDuration,
-        $save = 0, $appToken = null, $customerId = null, $merchantSubvention = false)
+        $save = 0, $appToken = null, $customerId = null, $merchantSubvention = false, $orderId = null, $discountedPrice = 0)
     {
         $this->mockSession($appToken);
 
@@ -896,12 +995,25 @@ class GatewayEmiFileTest extends TestCase
         $payment['save'] = $save;
         $payment['customer_id'] = $customerId;
 
+        if(isset($orderId))
+        {
+            $payment['order_id'] = $orderId;
+        }
+
         if ($merchantSubvention === true)
         {
             $this->fixtures->merchant->addFeatures(['emi_merchant_subvention']);
         }
 
-        $this->doAuthAndCapturePayment($payment);
+        if($discountedPrice != 0)
+        {
+            $this->doAuthAndCapturePayment($payment, $payment['amount'], 'INR', $discountedPrice);
+        }
+        else
+        {
+            $this->doAuthAndCapturePayment($payment);
+        }
+
     }
 
     protected function mockSession($appToken = null)
@@ -950,8 +1062,29 @@ class GatewayEmiFileTest extends TestCase
 
         $this->ba->adminAuth();
     }
+    protected function prerequisitesForSbiNce($input)
+    {
+        $offer = $this->fixtures->create('offer:emi_subvention', [
+            'issuer'          => 'SBIN',
+            'payment_network' => null,
+            'type'            => 'instant',
+            'emi_durations'   => array_column($input, 'emi_duration'),
+        ]);
 
-    protected function prerequisitesForSbiEmi()
+        for($idx = 0; $idx < 2; $idx++ )
+        {
+            $order = $this->fixtures->order->createWithOffers($offer, [
+                'amount'      => $input[0]['order_amount'],
+                'force_offer' => true,
+            ]);
+
+            $input[$idx]['order_id'] = $order->getPublicId();
+        }
+
+        $this->prerequisitesForSbiEmi($input);
+    }
+
+    protected function prerequisitesForSbiEmi($input)
     {
         Mail::fake();
 
@@ -959,7 +1092,9 @@ class GatewayEmiFileTest extends TestCase
 
         $merchantId = $this->fixtures->create(
             'merchant_detail:valid_fields',
-            ['business_name' => 'A weird merch@nt name\' w!th special chars and > 40 chars']
+            [
+                'business_name' => 'A weird merch@nt name\'w!th s®pecial chars and > 40 chars'
+            ]
         )['merchant_id'];
 
         $this->fixtures->create('terminal:shared_hitachi_terminal');
@@ -1008,14 +1143,22 @@ class GatewayEmiFileTest extends TestCase
 
         $this->ba->publicAuth();
 
+        $order_id = isset($input[0]['order_id']) ? $input[0]['order_id'] : null;
+
+        $discounted_amount = isset($input[0]['discounted_amount']) ? $input[0]['discounted_amount'] : 0;
+
         // Generated using luhn generator
-        $this->makeEmiPaymentOnCard('4006660000086709', 9);
+        $this->makeEmiPaymentOnCard('4006660000086709', $input[0]['emi_duration'], 0 , null, null, false, $order_id, $discounted_amount);
 
         $payment = $this->getLastPayment(true);
 
         $this->assertEquals('hitachi', $payment['gateway']);
 
-        $this->makeEmiPaymentOnCard('4006660000086709', 12);
+        $order_id = isset($input[1]['order_id']) ? $input[1]['order_id'] : null;
+
+        $discounted_amount = isset($input[1]['discounted_amount']) ? $input[1]['discounted_amount'] : 0;
+
+        $this->makeEmiPaymentOnCard('4006660000086709', $input[1]['emi_duration'], 0 , null, null, false, $order_id, $discounted_amount);
 
         $this->ba->adminAuth();
     }
