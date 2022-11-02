@@ -41,8 +41,9 @@ final class Metric
     const PARTNER_SUBMERCHANT_CONFIG_CREATE_FAILURE = 'partner_sub_merchant_config_create_failure';
     const PARTNER_SUBMERCHANT_CONFIG_UPDATE_FAILURE = 'partner_sub_merchant_config_update_failure';
 
-    const PARTNER_CONFIG_AUDIT_LOGGER_JOB_FAILURE_TOTAL = 'partner_config_audit_logger_job_failure_total';
-    const PARTNER_CONFIG_AUDIT_LATENCY_IN_MS = 'partner_config_audit_latency_in_ms';
+    const PARTNER_CONFIG_AUDIT_LOGGER_JOB_FAILURE_TOTAL     = 'partner_config_audit_logger_job_failure_total';
+    const PARTNER_CONFIG_AUDIT_LATENCY_IN_MS                = 'partner_config_audit_latency_in_ms';
+    const PARTNER_CONFIG_AUDIT_SUCCESS                      = 'partner_config_audit_success';
 
     const SUBMERCHANT_FIRST_TRANSACTION_LATENCY_IN_MS = 'submerchant_first_transaction_latency_in_ms';
 

@@ -500,9 +500,18 @@ class Core extends Base\Core
 
     /**
      * This function is used to audit partner config entity
-     * @param array $params
+     * @param   array   $params     associative array of format
+     *  [
+     *      'entity'        => Array,
+     *      'entity_name'   => String,
+     *      'actor_id'      => String,
+     *      'actor_email'   => String
+     *  ]
+     *
+     * @return  array | null        array is an associative array of the format ['status_code' => Int, 'response' => Object];
      */
-    public function auditPartnerConfig(array $params) {
+    public function auditPartnerConfig(array $params)
+    {
 
         $entity = $params['entity'];
 
@@ -523,8 +532,10 @@ class Core extends Base\Core
                ]);
 
             $request = $this->getAuditData($entity, $params);
-            $this->app->partnerships->createAuditLog($request);
+            return $this->app->partnerships->createAuditLog($request);
         }
+
+        return null;
     }
 
     private function getAuditData($entity, $params) {
