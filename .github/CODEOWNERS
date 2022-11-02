@@ -1,1 +1,12 @@
 * @razorpay/merchant-dashboard
+
+web/js/merchant/components/Announcements          @shivamrazorpay @Rozamo @AnshulNautiyal
+web/js/merchant/models/GrowthService              @shivamrazorpay @Rozamo @AnshulNautiyal
+web/js/common/ui/AnnouncementBanner               @shivamrazorpay @Rozamo @AnshulNautiyal
+web/js/common/ui/NotificationsDropdown            @shivamrazorpay @Rozamo @AnshulNautiyal
+web/js/common/ui/OffersForYou                     @shivamrazorpay @Rozamo @AnshulNautiyal
+web/js/common/ui/WhatsNew                         @shivamrazorpay @Rozamo @AnshulNautiyal
+web/js/common/ui/DashboardBanner                  @shivamrazorpay @Rozamo @AnshulNautiyal
+web/js/common/ui/GrowthServiceModal               @shivamrazorpay @Rozamo @AnshulNautiyal
+web/js/common/ui/ExclusiveOffer                   @shivamrazorpay @Rozamo @AnshulNautiyal
+web/js/common/ui/MultiSlider                      @shivamrazorpay @Rozamo @AnshulNautiyal
