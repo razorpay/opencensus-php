@@ -105,7 +105,7 @@ module.exports = ({ config, project }) => {
             classPrefix: 'i-',
             files: [`icons/${fontsToProjectMap[project] || project}/*.svg`],
             fontName: `${project}-icons`,
-            fileName: 'css/[fontname].[ext]',
+            fileName: isProd ? 'css/[fontname].[hash].[ext]' : 'css/[fontname].[ext]',
             htmlDest: `css/[fontname].html`,
             html: true,
           },
@@ -177,13 +177,24 @@ module.exports = ({ config, project }) => {
         cache: false,
         chunks: [project],
         version: JSON.stringify(process.env.VERSION),
-        templateContent: ({ htmlWebpackPlugin }) => {
+        templateContent: ({ htmlWebpackPlugin, compilation: { assets } }) => {
           return `
             ${htmlWebpackPlugin.files.css
               .map((css) => `<link rel="preload" href='{{$cdnDashboardUrl}}${css}' as="style" />\n`)
               .join('')}
             ${htmlWebpackPlugin.files.js
               .map((js) => `<link rel="preload" href='{{$cdnDashboardUrl}}${js}' as="script" />\n`)
+              .join('')}
+            ${Object.keys(assets)
+              .reduce((accumulator, asset) => {
+                if (/\.(woff|woff2)?$/.test(asset)) {
+                  const type = asset.match(/\.(woff|woff2)?$/);
+                  accumulator.push(
+                    `<link rel="preload" href='{{$cdnDashboardUrl}}/dist/${asset}' as="font" type="font/${type[1]}" crossorigin >\n`,
+                  );
+                }
+                return accumulator;
+              }, [])
               .join('')}`;
         },
       }),
