@@ -5,7 +5,10 @@ import { storeWithInitialState } from 'merchant/store';
 import { render as reactRender } from '@testing-library/react';
 import { Router } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
-import { refund, refundTransaction } from 'merchant/views/Transactions/Refunds/__test__/mockData';
+import {
+  refund,
+  refundTransaction,
+} from 'merchant/views/Transactions/Refunds/__test__/mocks/fixtures';
 import { analyticsTrack } from 'common/utils/analytics';
 
 jest.mock('merchant/views/Transactions/Payments/components/OptimizerDetails', () => ({

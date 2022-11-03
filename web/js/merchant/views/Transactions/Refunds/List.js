@@ -14,6 +14,7 @@ import { selfServerTrack } from 'merchant/views/Transactions/AnalyticsTrack';
 
 class RefundsListContainer extends ListContainer {
   componentDidMount() {
+    /* istanbul ignore else */
     if (window.rzpAnalytics) {
       window.rzpAnalytics?.({
         eventCategory: 'Dashboard - Refunds',
@@ -34,6 +35,7 @@ class RefundsListContainer extends ListContainer {
   };
 
   onClearAnalytics = () => {
+    /* istanbul ignore else */
     if (window.rzpAnalytics) {
       window.rzpAnalytics?.({
         eventCategory: 'Dashboard - Refunds',
@@ -63,7 +65,7 @@ class RefundsListContainer extends ListContainer {
     }
 
     return (
-      <div class="content-wrapper">
+      <div class="content-wrapper" data-testid="refunds-list">
         <RefundsListFilter
           form="refundListFilter"
           count={this.state.count}

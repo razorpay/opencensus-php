@@ -1,7 +1,10 @@
 import RefundTimeline from 'merchant/views/Transactions/Refunds/components/RefundTimeline';
 import { render, screen } from 'test-utils';
 import { RefundStatusLabel } from 'merchant/components/StatusLabel';
-import { refund, RefundMilestones } from 'merchant/views/Transactions/Refunds/__test__/mockData';
+import {
+  refund,
+  RefundMilestones,
+} from 'merchant/views/Transactions/Refunds/__test__/mocks/fixtures';
 
 jest.mock('merchant/components/StatusLabel', () => ({
   ...jest.requireActual('merchant/components/StatusLabel'),

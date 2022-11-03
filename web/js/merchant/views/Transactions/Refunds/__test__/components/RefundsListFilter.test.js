@@ -2,7 +2,7 @@ import RefundsListFilter from 'merchant/views/Transactions/Refunds/components/Re
 import { render, screen, fireEvent } from 'test-utils';
 import { Provider } from 'react-redux';
 import { storeWithInitialState } from 'merchant/store';
-import { refundFilterInitState } from 'merchant/views/Transactions/Refunds/__test__/mockData';
+import { refundFilterInitState } from 'merchant/views/Transactions/Refunds/__test__/mocks/fixtures';
 
 const mockTrack = jest.fn();
 

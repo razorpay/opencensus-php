@@ -112,3 +112,14 @@ export const RefundMilestones = {
     },
   },
 };
+
+export const MockListPayload = {
+  status_code: 200,
+  success: true,
+  data: {
+    entity: 'collection',
+    count: 1,
+    has_more: true,
+    items: [refund],
+  },
+};
