@@ -1543,6 +1543,11 @@ class Core extends Base\Core
                 /** @var Entity $payout */
                 $payout = $this->repo->payout->findOrFail($payoutId);
 
+                if ($payout->getIsPayoutService() === true)
+                {
+                    return null;
+                }
+
                 $payout->getValidator()->validateProcessingBatchProcessingPayout();
 
                 //

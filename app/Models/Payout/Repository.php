@@ -1874,10 +1874,12 @@ class Repository extends Base\Repository
     {
         $statusColumn = $this->repo->payout->dbColumn(Entity::STATUS);
         $merchantIdColumn = $this->repo->payout->dbColumn(Entity::MERCHANT_ID);
+        $isPayoutService = $this->repo->payout->dbColumn(Entity::IS_PAYOUT_SERVICE);
 
         return $this->newQuery()
                     ->select($merchantIdColumn)
                     ->where($statusColumn, '=', Status::BATCH_SUBMITTED)
+                    ->where($isPayoutService, '=', 0)
                     ->distinct()
                     ->get()
                     ->pluck(Entity::MERCHANT_ID)

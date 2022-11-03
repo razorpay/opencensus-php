@@ -20,6 +20,7 @@ use RZP\Models\Payout\Status;
 use RZP\Services\RazorXClient;
 use RZP\Models\Payout\Validator;
 use RZP\Models\Feature\Constants;
+use RZP\Jobs\BatchPayoutsProcess;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payout\DataMigration;
 use RZP\Error\PublicErrorDescription;
@@ -1451,6 +1452,58 @@ class PayoutServiceTest extends TestCase
         $this->ba->appAuthLive();
 
         $this->startTest();
+    }
+
+    public function testProcessBulkPayoutDelayedInitiationForPayoutsService($mode = 'IMPS')
+    {
+        $this->testCreatePayoutEntry();
+
+        $payout = $this->getDbLastEntity('payout','live');
+
+        $this->assertTrue($payout->getIsPayoutService());
+
+        $payoutID = $payout->getId();
+
+        $this->fixtures->on('live')->edit(
+            'payout',
+            $payoutID,
+            [
+                Entity::STATUS => Status::BATCH_SUBMITTED,
+            ]
+        );
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout','live');
+
+        $this->assertEquals($payoutID, $payout->getId());
+
+        // Payout Should not have been processed and should remain in BATCH_SUBMITTED state only
+        $this->assertEquals(Status::BATCH_SUBMITTED, $payout->getStatus());
+    }
+
+    public function testProcessBatchSubmittedPayoutForPayoutsService()
+    {
+        $this->testCreatePayoutEntry();
+
+        $payout = $this->getDbLastEntity('payout','live');
+
+        $this->fixtures->on('live')->edit(
+            'payout',
+            $payout->getId(),
+            [
+                Entity::STATUS => Status::BATCH_SUBMITTED,
+            ]
+        );
+
+        (new BatchPayoutsProcess('live', $payout[Entity::MERCHANT_ID]))->handle();
+
+        $payout = $this->getDbEntityById('payout', $payout->getId(), 'live');
+
+        // Payout Should not have been processed and should remain in BATCH_SUBMITTED state only
+        $this->assertEquals(Status::BATCH_SUBMITTED, $payout->getStatus());
     }
 
     public function testCreatePayoutServiceTransactionWithFeeRewards($mode = 'IMPS')

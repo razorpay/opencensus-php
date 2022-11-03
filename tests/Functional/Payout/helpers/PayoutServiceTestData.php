@@ -2698,6 +2698,17 @@ return [
         ],
     ],
 
+    'testProcessBulkPayoutDelayedInitiationForPayoutsService' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/batch/process',
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
     'testDccPayoutsDetailsFetch' => [
         'request'  => [
             'method' => 'POST',
