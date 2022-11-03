@@ -158,6 +158,21 @@ class NeedsClarificationMetaData
         ]
     ];
 
+    const LINKED_ACCOUNT_RELATED_FIELDS_METADATA = [
+        Constants::BANK_ACCOUNT_NUMBER => [
+            Constants::RELATED_FIELDS => [
+                [
+                    Constants::FIELD_NAME                          => Entity::BANK_ACCOUNT_NAME,
+                    Constants::CAN_RF_EXIST_INDEPENDENTLY          => false,
+                ],
+                [
+                    Constants::FIELD_NAME                          => Entity::BANK_BRANCH_IFSC,
+                    Constants::CAN_RF_EXIST_INDEPENDENTLY          => false,
+                ],
+            ],
+        ],
+    ];
+
     const SYSTEM_BASED_NEEDS_CLARIFICATION_METADATA = [
         Constants::PERSONAL_PAN_IDENTIFIER  => [
             self::NEEDS_CLARIFICATION_VERSION              => self::VERSION_V2,
@@ -263,6 +278,31 @@ class NeedsClarificationMetaData
         ]
     ];
 
+    const LINKED_ACCOUNT_SYSTEM_BASED_NEEDS_CLARIFICATION_METADATA = [
+        Constants::BANK_ACCOUNT_NUMBER => [
+            self::NEEDS_CLARIFICATION_VERSION              => self::VERSION_V1,
+            self::FIELD_ARTEFACT_DETAILS_MAP_REFERENCE_KEY => Constant::BANK_ACCOUNT,
+            Constants::FIELD_NAME                          => Entity::BANK_ACCOUNT_NUMBER,
+            Constants::FIELD_TYPE                          => Constants::TEXT,
+            Constants::ADDITIONAL_DETAILS => [
+                Constants::FIELDS => [
+                    [
+                        Constants::FIELD_NAME                          => Entity::BANK_ACCOUNT_NAME,
+                        Constants::FIELD_TYPE                          => Constants::TEXT,
+                    ],
+                    [
+                        Constants::FIELD_NAME                          => Entity::BANK_ACCOUNT_NUMBER,
+                        Constants::FIELD_TYPE                          => Constants::TEXT,
+                    ],
+                    [
+                        Constants::FIELD_NAME                          => Entity::BANK_BRANCH_IFSC,
+                        Constants::FIELD_TYPE                          => Constants::TEXT,
+                    ],
+                ],
+            ],
+        ],
+    ];
+
     // Supported additional text fields from merchants
     const TEXT_BUSINESS_DESCRIPTION = 'business_description';
 
@@ -276,5 +316,15 @@ class NeedsClarificationMetaData
         $key = __CLASS__ . '::' . 'TEXT_' . strtoupper($textField);
 
         return ((defined($key) === true) and (constant($key) === $textField));
+    }
+
+    public static function getLinkedAccountSystemBasedNeedsClarificationMetaData(): array
+    {
+        return array_merge(self::SYSTEM_BASED_NEEDS_CLARIFICATION_METADATA, self::LINKED_ACCOUNT_SYSTEM_BASED_NEEDS_CLARIFICATION_METADATA);
+    }
+
+    public static function getLinkedAccountRelatedFieldsMetaData(): array
+    {
+        return array_merge(self::RELATED_FIELDS_METADATA, self::LINKED_ACCOUNT_RELATED_FIELDS_METADATA);
     }
 }

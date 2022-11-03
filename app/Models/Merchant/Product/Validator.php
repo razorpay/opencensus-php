@@ -37,6 +37,12 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PRODUCT_NAME, null, ['valid_product_names' => Name::ENABLED]);
         }
+
+        if (($this->merchant->isLinkedAccount() === true) and
+            ($value !== Name::ROUTE))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PRODUCT_NAME);
+        }
     }
 
     public function validateTncInputCheck($input)

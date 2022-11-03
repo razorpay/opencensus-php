@@ -233,9 +233,11 @@ class Merchant extends Base
     {
         $accountId = $data['id'] ?? '10000000000001';
 
+        $parentId = $data['parent_id'] ?? '10000000000000';
+
         $merchantData = [
             MerchantEntity::ID              => $accountId,
-            MerchantEntity::PARENT_ID       => '10000000000000',
+            MerchantEntity::PARENT_ID       => $parentId,
             MerchantEntity::PRICING_PLAN_ID => '1hDYlICobzOCYt'
         ];
 

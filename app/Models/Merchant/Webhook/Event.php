@@ -136,7 +136,11 @@ class Event
     const PAYMENT_LINKS_PRODUCT_REJECTED              = 'product.payment_links.rejected';
     const PAYMENT_LINKS_PRODUCT_INSTANTLY_ACTIVATED   = 'product.payment_links.instantly_activated';
     const PAYMENT_GATEWAY_PRODUCT_ACTIVATED_KYC_PENDING = 'product.payment_gateway.activated_kyc_pending';
-    const PAYMENT_LINKS_PRODUCT_ACTIVATED_KYC_PENDING   = 'product.payment_links.activated_kyc_pending';
+    const PAYMENT_LINKS_PRODUCT_ACTIVATED_KYC_PENDING   = 'product.route.activated_kyc_pending';
+    const ROUTE_PRODUCT_UNDER_REVIEW                    = 'product.route.under_review';
+    const ROUTE_PRODUCT_ACTIVATED                       = 'product.route.activated';
+    const ROUTE_PRODUCT_NEEDS_CLARIFICATION             = 'product.route.needs_clarification';
+    const ROUTE_PRODUCT_REJECTED                        = 'product.route.rejected';
 
     const NO_DOC_ONBOARDING_GMV_LIMIT_WARNING           = 'account.no_doc_onboarding_gmv_limit_warning';
     const INSTANT_ACTIVATION_GMV_LIMIT_WARNING          = 'account.instant_activation_gmv_limit_warning';
@@ -273,6 +277,10 @@ class Event
         self::TOKEN_SERVICE_PROVIDER_DEACTIVATED,
         self::TOKEN_SERVICE_PROVIDER_EXPIRY_UPDATED,
         self::INSTANT_ACTIVATION_GMV_LIMIT_WARNING,
+        self::ROUTE_PRODUCT_UNDER_REVIEW,
+        self::ROUTE_PRODUCT_ACTIVATED,
+        self::ROUTE_PRODUCT_NEEDS_CLARIFICATION,
+        self::ROUTE_PRODUCT_REJECTED,
     ];
 
     /**
@@ -406,6 +414,10 @@ class Event
         self::TOKEN_SERVICE_PROVIDER_DEACTIVATED,
         self::TOKEN_SERVICE_PROVIDER_EXPIRY_UPDATED,
         self::INSTANT_ACTIVATION_GMV_LIMIT_WARNING,
+        self::ROUTE_PRODUCT_UNDER_REVIEW,
+        self::ROUTE_PRODUCT_ACTIVATED,
+        self::ROUTE_PRODUCT_NEEDS_CLARIFICATION,
+        self::ROUTE_PRODUCT_REJECTED,
     ];
 
     // We have exhausted all the below bits for webhook events, add in $bitPosition2 for any new events
@@ -538,6 +550,10 @@ class Event
         self::NO_DOC_ONBOARDING_GMV_LIMIT_WARNING         => 54,
         self::ACCOUNT_UPDATED                             => 55,
         self::INSTANT_ACTIVATION_GMV_LIMIT_WARNING        => 56,
+        self::ROUTE_PRODUCT_UNDER_REVIEW                  => 57,
+        self::ROUTE_PRODUCT_ACTIVATED                     => 58,
+        self::ROUTE_PRODUCT_NEEDS_CLARIFICATION           => 59,
+        self::ROUTE_PRODUCT_REJECTED                      => 60,
     ];
 
     /**
@@ -658,6 +674,10 @@ class Event
         self::PAYMENT_LINKS_PRODUCT_NEEDS_CLARIFICATION   => [Product::PRIMARY],
         self::PAYMENT_LINKS_PRODUCT_REJECTED              => [Product::PRIMARY],
         self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW          => [Product::PRIMARY],
+        self::ROUTE_PRODUCT_UNDER_REVIEW                  => [Product::PRIMARY],
+        self::ROUTE_PRODUCT_ACTIVATED                     => [Product::PRIMARY],
+        self::ROUTE_PRODUCT_NEEDS_CLARIFICATION           => [Product::PRIMARY],
+        self::ROUTE_PRODUCT_REJECTED                      => [Product::PRIMARY],
         self::TOKEN_SERVICE_PROVIDER_ACTIVATED            => [Product::PRIMARY],
         self::TOKEN_SERVICE_PROVIDER_SUSPENDED            => [Product::PRIMARY],
         self::TOKEN_SERVICE_PROVIDER_DEACTIVATED          => [Product::PRIMARY],
@@ -783,6 +803,10 @@ class Event
         self::PAYMENT_LINKS_PRODUCT_NEEDS_CLARIFICATION   => Entity::MERCHANT_PRODUCT,
         self::PAYMENT_LINKS_PRODUCT_REJECTED              => Entity::MERCHANT_PRODUCT,
         self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW          => Entity::MERCHANT_PRODUCT,
+        self::ROUTE_PRODUCT_UNDER_REVIEW                  => Entity::MERCHANT_PRODUCT,
+        self::ROUTE_PRODUCT_ACTIVATED                     => Entity::MERCHANT_PRODUCT,
+        self::ROUTE_PRODUCT_NEEDS_CLARIFICATION           => Entity::MERCHANT_PRODUCT,
+        self::ROUTE_PRODUCT_REJECTED                      => Entity::MERCHANT_PRODUCT,
         self::TOKEN_SERVICE_PROVIDER_ACTIVATED            => Entity::TOKEN,
         self::TOKEN_SERVICE_PROVIDER_SUSPENDED            => Entity::TOKEN,
         self::TOKEN_SERVICE_PROVIDER_DEACTIVATED          => Entity::TOKEN,
@@ -872,6 +896,10 @@ class Event
         self::PAYMENT_LINKS_PRODUCT_NEEDS_CLARIFICATION   => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
         self::PAYMENT_LINKS_PRODUCT_REJECTED              => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
         self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW          => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
+        self::ROUTE_PRODUCT_UNDER_REVIEW                  => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
+        self::ROUTE_PRODUCT_ACTIVATED                     => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
+        self::ROUTE_PRODUCT_NEEDS_CLARIFICATION           => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
+        self::ROUTE_PRODUCT_REJECTED                      => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
         self::TOKEN_SERVICE_PROVIDER_ACTIVATED            => Feature\Constants::NETWORK_TOKENIZATION_LIVE,
         self::TOKEN_SERVICE_PROVIDER_SUSPENDED            => Feature\Constants::NETWORK_TOKENIZATION_LIVE,
         self::TOKEN_SERVICE_PROVIDER_DEACTIVATED          => Feature\Constants::NETWORK_TOKENIZATION_LIVE,

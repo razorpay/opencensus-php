@@ -32,6 +32,11 @@ class Core extends Base\Core
     private $paymentsGeneralConfig;
 
     /**
+     * @var Config\RouteGeneralConfig
+     */
+    private $routeGeneralConfig;
+
+    /**
      * @var Config\PaymentMethods
      */
     private $paymentMethods;
@@ -49,6 +54,8 @@ class Core extends Base\Core
         parent::__construct();
 
         $this->paymentsGeneralConfig = new Config\PaymentsGeneralConfig();
+
+        $this->routeGeneralConfig    = new Config\RouteGeneralConfig();
 
         $this->paymentMethods        = new Config\PaymentMethods();
 
@@ -79,6 +86,16 @@ class Core extends Base\Core
 
                 break;
             }
+            case Name::ROUTE:
+            {
+                $response = $this->createRouteConfig($merchant, $merchantProduct, $input);
+
+                if((new AccountV2\Core())->isInstantActivationTagEnabled($merchant->getId()) === true)
+                {
+                    AutoUpdateMerchantProducts::dispatch(Status::ACCOUNT_SOURCE, $merchant->getId());
+                }
+                break;
+            }
         }
 
         return $response;
@@ -95,6 +112,9 @@ class Core extends Base\Core
             case Name::PAYMENT_GATEWAY :
             case Name::PAYMENT_LINKS:
                 $response = $this->getPaymentGatewayConfig($merchant, $merchantProduct);
+                break;
+            case Name::ROUTE:
+                $response = $this->getRouteProductConfig($merchant, $merchantProduct);
                 break;
         }
 
@@ -137,6 +157,36 @@ class Core extends Base\Core
         {
             $response[Util\Constants::OTP] = $otpLog;
         }
+
+        return $response;
+    }
+
+    private function getRouteProductConfig(Merchant\Entity $merchant, Entity $merchantProduct): array
+    {
+        $response = [];
+
+        $response = Tracer::inspan(['name' => HyperTrace::GET_CONFIG], function () use ($response, $merchant) {
+
+            return array_merge($response, $this->routeGeneralConfig->getConfig($merchant));
+        });
+
+        $response[Util\Constants::REQUIREMENTS] = Tracer::inspan(['name' => HyperTrace::FETCH_REQUIREMENTS], function () use ($merchant, $merchantProduct) {
+
+            $requirementService = Requirements\Factory::getInstance($merchantProduct->getProduct());
+
+            return $requirementService->fetchRequirements($merchant, $merchantProduct);
+        });
+
+        $response = Tracer::inspan(['name' => HyperTrace::FETCH_ACCEPTED_TNC_DETAILS], function () use ($merchant, $merchantProduct, $response) {
+
+            $hasAcceptedTnc = $this->tncCore->hasAcceptedBusinessUnitTnc($merchant, BusinessUnit::PRODUCT_BU_MAPPING[$merchantProduct->getProduct()]);
+
+            if ($hasAcceptedTnc === true)
+            {
+                $response[Util\Constants::TNC] = $this->tnc->fetchProductConfigTnc($merchantProduct->getProduct(), $merchant);
+            }
+            return $response;
+        });
 
         return $response;
     }
@@ -188,6 +238,53 @@ class Core extends Base\Core
         return $response;
     }
 
+    private function createRouteGeneralConfig(Merchant\Entity $merchant, Entity $merchantProduct, array $input): array
+    {
+        $response = [];
+
+        $response = Tracer::inspan(['name' => HyperTrace::CREATE_CONFIG], function () use ($response, $input, $merchant) {
+
+            return array_merge($response, $this->routeGeneralConfig->createConfig($merchant, $input));
+        });
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $merchantStatus = $merchantDetails->getActivationStatus();
+
+        if (in_array($merchantStatus, Status::PAYMENT_GATEWAY_TERMINAL_STATUS) === true)
+        {
+            $response[Util\Constants::REQUIREMENTS] = [];
+
+            $merchantProduct->setActivationStatus(Status::PAYMENT_GATEWAY_PRODUCT_STATUS_MAPPING[$merchantStatus]);
+        }
+        else
+        {
+            $response[Util\Constants::REQUIREMENTS] = Tracer::inspan(['name' => HyperTrace::FETCH_REQUIREMENTS], function () use ($merchant, $merchantProduct) {
+
+                $requirementService = Requirements\Factory::getInstance($merchantProduct->getProduct());
+
+                return $requirementService->fetchRequirements($merchant, $merchantProduct);
+            });
+
+            if (count($response[Util\Constants::REQUIREMENTS]) > 0)
+            {
+                $merchantProduct->setActivationStatus(Status::NEEDS_CLARIFICATION);
+            }
+        }
+
+        $this->repo->merchant_product->saveOrFail($merchantProduct);
+
+        $this->trace->info(TraceCode::ROUTE_GENERAL_CONFIG_CREATE_RESPONSE, [
+                'merchant_id'           => $merchant->getId(),
+                'merchant_product'      => $merchantProduct
+            ]
+        );
+
+        $this->audit($input, $merchantProduct->getId(), Util\Constants::COMPLETED, Util\Constants::GENERAL);
+
+        return $response;
+    }
+
     private function createPaymentMethodsConfig(Merchant\Entity $merchant, Entity $merchantProduct, array $input) : array
     {
         if(array_key_exists(Util\Constants::PAYMENT_METHODS, $input) === false)
@@ -227,6 +324,9 @@ class Core extends Base\Core
             case Name::PAYMENT_GATEWAY :
             case Name::PAYMENT_LINKS:
                 $response = $this->updatePaymentGatewayConfig($merchant, $merchantProduct, $input);
+                break;
+            case Name::ROUTE:
+                $response = $this->updateRouteConfig($merchant, $merchantProduct, $input);
                 break;
         }
 
@@ -311,6 +411,58 @@ class Core extends Base\Core
         return $response;
     }
 
+    private function updateRouteConfig(Merchant\Entity $merchant, Entity $merchantProduct, array $input): array
+    {
+        $response = [];
+
+
+        list($input, $response) = Tracer::inspan(['name' => HyperTrace::ACCEPT_OR_FETCH_PRODUCT_TNC], function () use ($input, $response, $merchantProduct, $merchant) {
+
+            $hasAcceptedTnc = $this->tncCore->hasAcceptedBusinessUnitTnc($merchant, BusinessUnit::PRODUCT_BU_MAPPING[$merchantProduct->getProduct()]);
+
+            if (isset($input[Util\Constants::TNC_ACCEPTED]) === true)
+            {
+                unset($input[Util\Constants::TNC_ACCEPTED]);
+
+                $ip = null;
+
+                if(isset($input[Util\Constants::IP]) === true)
+                {
+                    $ip = $input[Util\Constants::IP];
+
+                    unset($input[Util\Constants::IP]);
+                }
+
+                $response[Util\Constants::TNC] = $this->tnc->acceptProductConfigTnc($merchantProduct->getProduct(), $merchant, $ip);
+            }
+            else if ($hasAcceptedTnc === true)
+            {
+                $response[Util\Constants::TNC] = $this->tnc->fetchProductConfigTnc($merchantProduct->getProduct(), $merchant);
+
+                if(isset($input[Util\Constants::IP]) === true)
+                {
+                    unset($input[Util\Constants::IP]);
+                }
+            }
+            return [$input, $response];
+        });
+
+        $response = Tracer::inspan(['name' => HyperTrace::UPDATE_CONFIG], function () use ($response, $merchant, $input) {
+
+            return array_merge($response, $this->routeGeneralConfig->updateConfig($merchant, $input));
+        });
+
+        $this->audit($input, $merchantProduct->getId(), Util\Constants::COMPLETED, Util\Constants::GENERAL);
+
+        $response[Util\Constants::REQUIREMENTS] = Tracer::inspan(['name' => HyperTrace::FETCH_REQUIREMENTS], function () use ($merchant, $merchantProduct) {
+
+            $requirementService = Requirements\Factory::getInstance($merchantProduct->getProduct());
+
+            return $requirementService->fetchRequirements($merchant, $merchantProduct);
+        });
+
+        return $response;
+    }
     /**
      * This function syncs all product status with merchant activation status which are inclined with merchant activation status
      *
@@ -450,6 +602,11 @@ class Core extends Base\Core
         $this->submitMerchantActivation($merchant, $merchantDetails, $merchantProduct);
     }
 
+    private function updateRouteProductIfApplicable(Merchant\Entity $merchant, Detail\Entity $merchantDetails, Entity $merchantProduct)
+    {
+        $this->submitMerchantActivation($merchant, $merchantDetails, $merchantProduct);
+    }
+
     private function submitMerchantActivation(Merchant\Entity $merchant, Detail\Entity $merchantDetails, Entity $merchantProduct)
     {
         $merchantDetailCore = new Detail\Core;
@@ -461,11 +618,12 @@ class Core extends Base\Core
             Detail\Entity::SUBMIT => '1',
         ];
 
-        // Two payment merchant products(payment_gateway, payment_links) can be requested parallely.
+        // Three payment merchant products(payment_gateway, payment_links, route) can be requested parallely.
         // So form submission needs to be done only once to avoid form lock validation exception
         // For example upon 0 requirements (would be same for payment_links, payment_gateway product)
         // 1. payment_gateway - submitted the form
         // 2. payment_links - skip form submission
+        // 3. route - skip form submission
         if (empty($merchantDetails) === true || $merchantDetails->isLocked() === true)
         {
             return;
@@ -568,6 +726,26 @@ class Core extends Base\Core
             return $response;
         });
 
+        return $response;
+    }
+
+    private function createRouteConfig(Merchant\Entity $merchant, Entity $merchantProduct, array $input): array
+    {
+        $input = Util\PaymentGatewayRequestHandler::handleRequest($input);
+
+        $response = Tracer::inspan(['name' => HyperTrace::CREATE_ROUTE_CONFIG], function () use ($merchant, $merchantProduct, $input) {
+
+            return $this->createRouteGeneralConfig($merchant, $merchantProduct, $input);
+        });
+
+        $response = Tracer::inspan(['name' => HyperTrace::FETCH_ACCEPTED_TNC_DETAILS], function () use ($merchant, $merchantProduct, $response) {
+            $hasAcceptedTnc = $this->tncCore->hasAcceptedBusinessUnitTnc($merchant, BusinessUnit::PRODUCT_BU_MAPPING[$merchantProduct->getProduct()]);
+
+            if ($hasAcceptedTnc === true) {
+                $response[Util\Constants::TNC] = $this->tnc->fetchProductConfigTnc($merchantProduct->getProduct(), $merchant);
+            }
+            return $response;
+        });
         return $response;
     }
 

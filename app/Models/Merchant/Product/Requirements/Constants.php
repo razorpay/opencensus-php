@@ -59,6 +59,10 @@ class Constants
         Detail\Entity::BUSINESS_TYPE
     ];
 
+    const LINKED_ACCOUNT_BUSINESS_REQUIREMENT_FIELDS = [
+        Detail\Entity::BUSINESS_TYPE
+    ];
+
     const REQUIRED_OTP_FIELDS = [
         Util\Constants::CONTACT_MOBILE
     ];

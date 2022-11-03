@@ -15,7 +15,7 @@ class ProductResponseHandler
         {
             case Product\Name::PAYMENT_GATEWAY:
             case Product\Name::PAYMENT_LINKS:
-
+            case Product\Name::ROUTE:
                 $response = self::getPaymentGatewayResponse($merchantProduct, $response);
 
                 break;

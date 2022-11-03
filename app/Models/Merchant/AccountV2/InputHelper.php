@@ -33,6 +33,12 @@ class InputHelper
             $data[Detail\Entity::BUSINESS_TYPE] = $businessType;
         }
 
+        if ((isset($input[Constants::TYPE]) === true) and
+            ($input[Constants::TYPE] === Type::ROUTE))
+        {
+            $data[Constants::ACCOUNT] = true;
+        }
+
         return $data;
     }
 

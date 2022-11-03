@@ -27,6 +27,11 @@ class Validator extends Base\Validator
         Util\Constants::IP              => 'sometimes|ip',
     ];
 
+    protected static $routeProductRules   = [
+        Util\Constants::SETTLEMENTS     => 'sometimes|array',
+        Util\Constants::TNC_ACCEPTED    => 'sometimes|boolean|in:1',
+    ];
+
     protected static $notificationsRules  = [
         Util\Constants::WHATSAPP => 'sometimes|boolean',
         Util\Constants::SMS      => 'sometimes|boolean',

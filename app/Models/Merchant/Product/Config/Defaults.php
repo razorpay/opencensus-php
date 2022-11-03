@@ -21,6 +21,8 @@ class Defaults
         ]
     ];
 
+    const ROUTE = [];
+
     const PRODUCT_CONFIG_MERCHANT_FIELD_MAPPING = [
         Constants::THEME_COLOR => Entity::BRAND_COLOR
     ];

@@ -365,6 +365,13 @@ class Entity extends Merchant\Entity
             return null;
         }
 
+        switch ($activationStatus)
+        {
+            case MerchantDetail\Status::NEEDS_CLARIFICATION:
+                return Constants::VERIFICATION_FAILED;
+            case MerchantDetail\Status::UNDER_REVIEW:
+                return Constants::VERIFICATION_PENDING;
+        }
         switch ([$activationStatus , $bankDetailsVerificationStatus])
         {
             case [MerchantDetail\Status::ACTIVATED , Merchant\BvsValidation\Constants::VERIFIED]:

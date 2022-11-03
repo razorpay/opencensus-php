@@ -516,6 +516,20 @@ class Activate extends Base\Core
         $merchant->setDefaultMethodsBasedOnCategory();
 
         $merchant->activate();
+
+        // - merchant funds will be set on hold when the linked account details are updated after activation.
+        // - the $merchant->deactivate() method will be called upon receiving a update request which will deactivates account, disables live mode and
+        // - sets funds on hold.
+        if($merchant->isLinkedAccount() === true and $merchant->getHoldFunds() === true)
+        {
+            $this->trace->info(
+                TraceCode::LINKED_ACCOUNT_RELEASE_FUNDS_WHILE_ACTIVATING,
+                [
+                    'linked_account_id'    => $merchant->getId()
+                ]
+            );
+            $merchant->releaseFunds();
+        }
         //Will be added back when we test e2e flow for onboarding all the merchants
         //(new Core)->checkAndPushMessageToMetroForNetworkOnboard($merchant->getId());
 

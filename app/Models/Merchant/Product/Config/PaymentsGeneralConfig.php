@@ -150,7 +150,7 @@ class PaymentsGeneralConfig extends Base\Service
         return $response;
     }
 
-    private function getBankDetails(Merchant\Entity $merchant)
+    protected function getBankDetails(Merchant\Entity $merchant)
     {
         $merchantDetails = $merchant->merchantDetail->toArrayPublic();
 

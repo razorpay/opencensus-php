@@ -1892,4 +1892,107 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
         ],
     ],
+
+    'testCreateLinkedAccountWithMarketplaceFeature'  => [
+        'request'   => [
+            'url'       => '/v2/accounts',
+            'method'    => 'POST',
+            'content'   => [
+                "email"                     => "testaccount@email.com",
+                "type"                      => "route",
+                "reference_id"              => "route-account-test",
+                "phone"                     => "1234567890",
+                "legal_business_name"       => "Acme Corp",
+                "business_type"             => "private_limited",
+                "profile"                   => [
+                    "category"      => "healthcare",
+                    "subcategory"   => "clinic",
+                    "addresses"     => [
+                        "registered"    => [
+                                "street1"       => "507, Koramangala 1st block",
+                                "street2"       => "MG Road",
+                                "city"          => "Bengaluru",
+                                "state"         => "Karnataka",
+                                "postal_code"   => 560034,
+                                "country"       => "IN"
+                        ]
+                    ],
+                    "business_model"    => "Healthcare E-commerce platform"
+                ],
+                "contact_name"              => "Test Account"
+            ],
+        ],
+        'response'  =>  [
+            'content'   => [
+                 "type"             => "route",
+                 "status"           => "created",
+                 "email"            => "testaccount@email.com",
+                 "profile"          => [
+                     "category"     => "healthcare",
+                     "subcategory"  => "clinic",
+                     "addresses"    => [
+                         "registered"   => [
+                             "street1"      => "507, Koramangala 1st block",
+                             "street2"      => "MG Road",
+                             "city"         => "Bengaluru",
+                             "state"        => "KARNATAKA",
+                             "postal_code"  => 560034,
+                             "country"      => "IN"
+                         ]
+                     ],
+                     "business_model" => "Healthcare E-commerce platform"
+                 ],
+                 "phone"                         => "1234567890",
+                 "contact_name"                  => "Test Account",
+                 "reference_id"                  => "route-account-test",
+                 "business_type"                 => "private_limited",
+                 "legal_business_name"           => "Acme Corp",
+                 "customer_facing_business_name" => "Acme Corp"
+            ],
+        ],
+    ],
+
+    'testCreateLinkedAccountWithOutMarketplaceFeature'  => [
+        'request'   => [
+            'url'       => '/v2/accounts',
+            'method'    => 'POST',
+            'content'   => [
+                "email"             => "testaccount@email.com",
+                "type"              => "route",
+                "reference_id"      => "route-account-test",
+                "phone"             => "1234567890",
+                "legal_business_name" => "Acme Corp",
+                "business_type"     => "private_limited",
+                "profile"           => [
+                    "category"              => "healthcare",
+                    "subcategory"           => "clinic",
+                    "addresses"             => [
+                        "registered"            => [
+                            "street1"               => "507, Koramangala 1st block",
+                            "street2"               => "MG Road",
+                            "city"                  => "Bengaluru",
+                            "state"                 => "Karnataka",
+                            "postal_code"           => 560034,
+                            "country"               => "IN"
+                        ]
+                    ],
+                    "business_model" => "Healthcare E-commerce platform"
+                ],
+                "contact_name" => "Test Account"
+            ],
+        ],
+        'response'  =>  [
+            'content'   => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Route feature not enabled for the merchant'
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' =>  [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR_NOT_MARKETPLACE_MERCHANT,
+        ],
+    ],
 ];

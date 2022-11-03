@@ -33,7 +33,9 @@ class Core extends Merchant\Core
 
         $accountCoreV1 = new Merchant\Account\Core();
 
-        $accountCoreV1->validatePartnerAccess($partner);
+        $accountType = $input['type'] ?? null;
+
+        $accountCoreV1->validatePartnerAccess($partner,null, $accountType);
 
         (new Validator)->validateInput('create_account', $input);
 
@@ -167,7 +169,7 @@ class Core extends Merchant\Core
             return (new Merchant\Service)->createSubMerchant($subMerchantCreateInput, $partner, PartnerConstants::ADD_ACCOUNT_V2_ONBOARDING_API, true);
         });
 
-        $subMerchantId    = Entity::verifyIdAndStripSign($subMerchantArray[Entity::ID]);
+        $subMerchantId = Entity::verifyIdAndSilentlyStripSign($subMerchantArray[Entity::ID]);
 
         $subMerchant = Tracer::inspan(['name' => HyperTrace::FILL_SUBMERCHANT_DETAILS], function () use ($input, $subMerchantId) {
 
@@ -459,10 +461,14 @@ class Core extends Merchant\Core
         {
             $subMerchantUser = $this->repo->user->getUserFromEmail($subMerchantEmail);
 
-            $payload = [Detail\Entity::CONTACT_MOBILE => $input[Detail\Entity::CONTACT_MOBILE]];
+            // In case of Linked Accounts Submerchant user can be null sometimes.
+            // Submerchant user is onlu created when dashboard_access is given.
+            if (empty($subMerchantUser) === false)
+            {
+                $payload = [Detail\Entity::CONTACT_MOBILE => $input[Detail\Entity::CONTACT_MOBILE]];
 
-            (new User\Core)->edit($subMerchantUser, $payload);
-
+                (new User\Core)->edit($subMerchantUser, $payload);
+            }
         }
     }
 
@@ -470,6 +476,7 @@ class Core extends Merchant\Core
     {
         $dimensions = [
             'partner_type'              => $partner->getPartnerType(),
+            'account_type'              => ($merchantDetails->merchant->isLinkedAccount() === true) ? Type::ROUTE : Type::STANDARD,
             'submerchant_business_type' => $merchantDetails->getBusinessType()
         ];
 

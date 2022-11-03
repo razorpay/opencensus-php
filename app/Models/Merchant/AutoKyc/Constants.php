@@ -67,6 +67,12 @@ class Constants
         ]
     ];
 
+    const LINKED_ACCOUNT_VERIFICATION_CONDITIONS = [
+        Operator:: AND => [
+            Entity::BANK_DETAILS_VERIFICATION_STATUS => self::DEFAULT_CONDITION,
+        ]
+    ];
+
     const AUTO_KYC_VERIFICATION_CONDITIONS = [
         BusinessType::NOT_YET_REGISTERED => [
             Operator:: AND => [

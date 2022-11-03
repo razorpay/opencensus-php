@@ -20,7 +20,7 @@ class Response extends Core
 
         $data = [
             Constants::ID           => Entity::getSignedId($account->getId()),
-            Constants::TYPE         => Constants::STANDARD,
+            Constants::TYPE         => ($account->isLinkedAccount() === true) ? Type::ROUTE : Type::STANDARD,
             Constants::STATUS       => $status,
             Constants::EMAIL        => $account->getEmail(),
             Constants::PROFILE      => $this->getProfileData($account),

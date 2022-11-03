@@ -39,6 +39,9 @@ class DefaultConfigurationHelper
             case Name::PAYMENT_LINKS:
                 $data = Defaults::PAYMENT_GATEWAY;
                 break;
+            case Name::ROUTE:
+                $data = Defaults::ROUTE;
+                break;
         }
 
         return $data;

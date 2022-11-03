@@ -16,7 +16,10 @@ class ProductRequestHandler
                 (new Config\Validator)->validateInput('pg', $request);
                 $request = PaymentGatewayRequestHandler::handleRequest($request);
                 break;
-
+            case Name::ROUTE:
+                (new Config\Validator)->validateInput('route_product', $request);
+                $request = PaymentGatewayRequestHandler::handleRequest($request);
+                break;
         }
 
         return $request;

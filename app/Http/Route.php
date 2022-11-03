@@ -16118,6 +16118,19 @@ class Route
         }
     }
 
+    /**
+     * Checks if current route is a route public api.
+     * Currently we check if the route is in $routesWithV2Prefix array.
+     * @return bool
+     */
+    public function isRoutePublicApi()
+    {
+        $routeName = $this->getCurrentRouteName();
+
+        //TODO: When v3 version of public onboarding routes are created, include them here.
+        return (in_array($routeName, self::$routesWithV2Prefix, true) === true);
+    }
+
     public function isApplicableForMerchantIdempotency(): bool
     {
         $routeName = $this->getCurrentRouteName();

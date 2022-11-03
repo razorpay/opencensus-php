@@ -13,8 +13,11 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Trace\TraceCode;
 use RZP\Trace\Tracer;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\AccountV2\Type;
 use RZP\Models\Merchant\LinkedAccountReferenceData;
 use RZP\Models\Partner\Constants as PartnerConstants;
+use RZP\Models\Merchant\Validator as MerchantValidator;
 
 class Core extends Merchant\Core
 {
@@ -203,27 +206,83 @@ class Core extends Merchant\Core
         return $account;
     }
 
-    public function validatePartnerAccess(Merchant\Entity $partner, $accountId = null)
+    public function validatePartnerAccess(Merchant\Entity $partner, $accountId = null, $accountType = Type::STANDARD)
     {
-        Tracer::inspan(['name' => HyperTrace::VALIDATE_PARTNER_ACCESS], function () use ($partner, $accountId) {
-            $partner->getValidator()->validateIsAggregatorPartner($partner);
+        $isRouteAccount = $this->checkIfRouteAccount($accountId, $accountType);
 
-            if ($accountId !== null) {
+        // As part of making Partnership api's available for Route product,
+        //for linked accounts don't want to check parent merchant access with merchant_access_map but instead using parent id attribute on linked account entity.
+        if ($isRouteAccount === true)
+        {
+            $this->validateLinkedAccountAccess($partner, $accountId);
+        }
+        else
+        {
+            Tracer::inspan(['name' => HyperTrace::VALIDATE_PARTNER_ACCESS], function () use ($partner, $accountId) {
+                $partner->getValidator()->validateIsAggregatorPartner($partner);
+
+                if ($accountId !== null) {
+                    Entity::verifyIdAndSilentlyStripSign($accountId);
+
+                    $isMapped = $this->isMerchantManagedByPartner($accountId, $partner->getId());
+
+                    if ($isMapped === false) {
+                        throw new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER,
+                            null,
+                            [
+                                'account_id' => $accountId,
+                                'partner_id' => $partner->getId(),
+                            ]);
+                    }
+                }
+            });
+        }
+    }
+
+    public function validateLinkedAccountAccess(Merchant\Entity $partner,string $accountId = null)
+    {
+        Tracer::inspan(['name' => HyperTrace::VALIDATE_LINKED_ACCOUNT_ACCESS], function () use ($partner, $accountId) {
+            (new MerchantValidator())->validateMerchantMarketplaceFeature($partner);
+
+            if($accountId !== null)
+            {
                 Entity::verifyIdAndSilentlyStripSign($accountId);
 
-                $isMapped = $this->isMerchantManagedByPartner($accountId, $partner->getId());
+                $account = $this->repo->merchant->findOrFail($accountId);
 
-                if ($isMapped === false) {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER,
-                        null,
+                if ($account->getParentId() !== $partner->getId())
+                {
+                    throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_ID_DOES_NOT_EXIST,
+                        'linked_account_id',
                         [
-                            'account_id' => $accountId,
-                            'partner_id' => $partner->getId(),
-                        ]);
+                            'linked_account_id'     => $accountId,
+                            'la.parent_id'          => $account->getParentId(),
+                            'parent_merchant_id'    => $this->merchant->getId(),
+                        ]
+                    );
                 }
             }
         });
+    }
+
+    public function checkIfRouteAccount(string $accountId=null,string $accountType=null)
+    {
+        if ($accountType === Type::ROUTE)
+        {
+            return true;
+        }
+
+        if($accountId !== null)
+        {
+            Entity::verifyIdAndSilentlyStripSign($accountId);
+
+            $account = $this->repo->merchant->findOrFail($accountId);
+
+            return ($account->isLinkedAccount() === true);
+        }
+        return false;
     }
 
     /**

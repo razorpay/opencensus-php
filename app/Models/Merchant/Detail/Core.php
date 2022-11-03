@@ -261,6 +261,8 @@ class Core extends Base\Core
 
         $this->convertStatesToStatesCode($input);
 
+        $this->unlockLinkedAccountFormIfApplicable($merchant, $merchantDetails);
+
         $merchantDetails->getValidator()->validateIsNotLocked($merchant);
 
         $merchantDetails->getValidator()->validatePartnerActivationStatus($merchant, $partnerKycFlow);
@@ -997,7 +999,18 @@ class Core extends Base\Core
 
         $this->fireActivationTrigger($merchantDetails, $merchant);
 
-        $autoActivated = $this->autoActivateMerchantIfApplicable($merchant);
+        $autoActivated = false;
+
+        //
+        // - Skip auto activation of Linked Accounts if form submitteed via public api
+        // - This auto activation function is then called from UpdateMerchantsContextJob when kyc details are verified
+        // - and new account status 'activated'.
+        // - TODO:: Remove this check  once we migrate the Dasboard flows to this in future.
+        //
+        if ($this->isSubmittedViaProductConfigApi() === false)
+        {
+            $autoActivated = $this->autoActivateMerchantIfApplicable($merchant);
+        }
 
         $response = $this->updateActivationProgress($merchant);
 
@@ -2125,9 +2138,14 @@ class Core extends Base\Core
     protected function getFieldsWhichCannotExistIndependently(array $fieldsWhichAreQueriedUpon)
     {
         $fieldsWhichCannotExistIndependently = [];
+
+        $isLinkedAccount = (is_null($this->merchant) === false) ? $this->merchant->isLinkedAccount() : false;
+
+        $relatedFieldsMetadata = ( $isLinkedAccount === true) ? NeedsClarificationMetaData::getLinkedAccountRelatedFieldsMetaData() :
+                                                                NeedsClarificationMetaData::RELATED_FIELDS_METADATA;
         foreach ($fieldsWhichAreQueriedUpon as $field)
         {
-            $related_fields_data = NeedsClarificationMetaData::RELATED_FIELDS_METADATA[$field][NCConstants::RELATED_FIELDS] ?? null;
+            $related_fields_data = $relatedFieldsMetadata[$field][NCConstants::RELATED_FIELDS] ?? null;
             if (empty($related_fields_data) === false)
             {
                 foreach ($related_fields_data as $related_field_data)
@@ -2180,9 +2198,14 @@ class Core extends Base\Core
 
     protected function addRelatedFieldsInV2(array $clarification_reasons_v2)
     {
+        $isLinkedAccount = (is_null($this->merchant) === false) ? $this->merchant->isLinkedAccount() : false;
+
+        $relatedFieldsMetadata = ($isLinkedAccount === true) ? NeedsClarificationMetaData::getLinkedAccountRelatedFieldsMetaData() :
+                                                               NeedsClarificationMetaData::RELATED_FIELDS_METADATA;
+
         foreach ($clarification_reasons_v2 as $clarification_reason_v2 => $values)
         {
-            $related_fields_data = NeedsClarificationMetaData::RELATED_FIELDS_METADATA[$clarification_reason_v2][NCConstants::RELATED_FIELDS] ?? null;
+            $related_fields_data = $relatedFieldsMetadata[$clarification_reason_v2][NCConstants::RELATED_FIELDS] ?? null;
             if (empty($related_fields_data) === false)
             {
                 $ncCountReferenceArray = $this->getNcCountRefernceArray($clarification_reasons_v2, $related_fields_data);
@@ -3052,6 +3075,19 @@ class Core extends Base\Core
                 }
             }
 
+            //
+            // - Linked Account details are updated even after activation by merchant.
+            // - In this case the activation status will move from 'activated' to 'under_review'
+            // - We also call deactivate method on merchant entity which will disable live mode and mark merchant as deactivated.
+            // - Jira EPA-168
+            //
+            if(($input[Entity::ACTIVATION_STATUS] === Status::UNDER_REVIEW) and
+                ($merchant->isLinkedAccount() === true) and
+                ($merchant->isActivated() === true))
+            {
+                $merchant->deactivate();
+            }
+
             if ($shouldSave === false)
             {
                 return;
@@ -3522,7 +3558,7 @@ class Core extends Base\Core
      * @return bool
      * @throws \RZP\Exception\BadRequestException
      */
-    protected function autoActivateMerchantIfApplicable(Merchant\Entity $merchant): bool
+    public function autoActivateMerchantIfApplicable(Merchant\Entity $merchant): bool
     {
         $merchantDetails = $this->getMerchantDetails($merchant);
 
@@ -3537,7 +3573,7 @@ class Core extends Base\Core
             // Build the input array for the merchant's bank account creation
             $bankData = $bankCore->buildBankAccountArrayFromMerchantDetail($merchantDetails, true);
 
-            $bankCore->createOrChangeBankAccount($bankData, $merchant);
+            $bankCore->createOrChangeBankAccount($bankData, $merchant, false, false);
 
             (new Merchant\Activate)->autoActivate($merchant);
 
@@ -3552,6 +3588,33 @@ class Core extends Base\Core
             return true;
         }
 
+        return false;
+    }
+
+    /**
+     *  Linked Accounts created via dashboard and beta accounts api are directly activated.
+     *  But the linked accounts activated via Route public apis will go through
+     *  needs_clarification, under_review to activated state.
+     *
+     * This function checks if the form is submitted via dashboard / beta api or Route public api
+     *
+     * Jira-EPA-168
+     * @return bool
+     */
+    public function isSubmittedViaProductConfigApi()
+    {
+        $this->trace->info(
+            TraceCode::LINKED_ACCOUNT_FORM_SUBMISSION_JOB_NAME,
+            [
+                'job_name'          =>  $this->app['worker.ctx']->getJobName(),
+                'onboarding_api'    =>  $this->app['api.route']->isRoutePublicApi()
+            ]
+        );
+        if (($this->app['worker.ctx']->getJobName() === Constants::AUTO_UPDATE_MERCHANT_PRODUCTS) or
+            ($this->app['api.route']->isRoutePublicApi() === true))
+        {
+            return true;
+        }
         return false;
     }
 
@@ -3659,6 +3722,14 @@ class Core extends Base\Core
         }
 
         $combinedActivationStatus = null;
+
+        switch ($activationStatus)
+        {
+            case Status::NEEDS_CLARIFICATION:
+                return AccountConstants::VERIFICATION_FAILED;
+            case Status::UNDER_REVIEW:
+                return AccountConstants::VERIFICATION_PENDING;
+        }
 
         switch ([$activationStatus, $bankDetailsVerificationStatus])
         {
@@ -4224,6 +4295,26 @@ class Core extends Base\Core
         return $stakeholder->getAadhaarEsignStatus() === 'verified';
     }
 
+    /**
+     *  Penny testing is not always attempted for all the linked accounts. It is only attempted in following cases.
+     *     1. If parent merchant has 'route_la_penny_testing' feature enabled.
+     *     2. if activation form is submitted via onboarding apis: https://razorpay.com/docs/api/partners/account-onboarding/
+     *          - In onboarding apis, merchant details are somtimes saved asynchronously via AutoUpdateMerchantProducts Job.
+     *             We attempt penny testing in this case too.
+     * @param $merchant
+     * @return bool
+     */
+    private function shouldAttemptPennyTestingForLinkedAccount($merchant): bool
+    {
+        if(($merchant->isLinkedAccount() === true) and
+            ($merchant->isFeatureEnabledOnParentMerchant(FeatureConstants::ROUTE_LA_PENNY_TESTING) === false) and
+            ($this->isSubmittedViaProductConfigApi() === false))
+        {
+            return false;
+        }
+        return true;
+    }
+
     public function publicAttemptPennyTesting(Entity $merchantDetails, Merchant\Entity $merchant, $bankDetailsUpdated = false)
     {
         $this->attemptPennyTesting($merchantDetails, $merchant, $bankDetailsUpdated);
@@ -4241,8 +4332,7 @@ class Core extends Base\Core
      */
     protected function attemptPennyTesting(Entity $merchantDetails, Merchant\Entity $merchant, $bankDetailsUpdated = false, array $input = [])
     {
-        if ($merchant->isLinkedAccount() === true and
-            $merchant->isFeatureEnabledOnParentMerchant(FeatureConstants::ROUTE_LA_PENNY_TESTING) === false)
+        if ($this->shouldAttemptPennyTestingForLinkedAccount($merchant) === false)
         {
             return;
         }
@@ -4310,7 +4400,8 @@ class Core extends Base\Core
 
         if ($isAutoKycAttemptRequired === true or
             ($pennyTestingAttemptsCount == 0 and $merchantDetails->isSubmitted() === false) or
-            $bankDetailsUpdated === true)
+            ($bankDetailsUpdated === true) or
+            ($pennyTestingAttemptsCount === 0 and $merchant->isLinkedAccount() === true))      // attempt penny testing for linked accounts always.
         {
 
             $this->updateDocumentVerificationStatus($merchant, $merchantDetails, Entity::BANK_ACCOUNT_NUMBER);
@@ -4418,6 +4509,13 @@ class Core extends Base\Core
             return Status::UNDER_REVIEW;
         }
 
+        // When the above requirements are all met for linked account move the activation status directly to 'activate'
+        // Linked Account wont be in activated_mcc_pending or activated_kyc_pending state ever.
+        if ($merchantDetails->merchant->isLinkedAccount() === true)
+        {
+            return Status::ACTIVATED;
+        }
+
         $excludeActivationStatusList = [
             Status::NEEDS_CLARIFICATION,
             Status::ACTIVATED,
@@ -4455,6 +4553,13 @@ class Core extends Base\Core
         if ($merchantDetails->merchant->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID)
         {
             return Status::UNDER_REVIEW;
+        }
+
+        // When the above requirements are all met for linked account move the activation status directly to 'activate'
+        // Linked Account wont be in activated_mcc_pending or activated_kyc_pending state ever.
+        if ($merchantDetails->merchant->isLinkedAccount() === true)
+        {
+            return Status::ACTIVATED;
         }
 
         $excludeActivationStatusList = [
@@ -4528,7 +4633,15 @@ class Core extends Base\Core
         }
         else
         {
-            if (isset(AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS[$businessType]) === false)
+            //
+            // - For linked accounts currently,  the kyc verification is irrespective of business type
+            // - For linked accounts, verification is only done for bank details. Hence if bank details are verified auto kyc is said to be done.
+            //
+            if($merchantDetails->merchant->isLinkedAccount() === true)
+            {
+                $conditions = AutoKyc\Constants::LINKED_ACCOUNT_VERIFICATION_CONDITIONS;
+            }
+            else if (isset(AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS[$businessType]) === false)
             {
                 return false;
             }
@@ -6368,6 +6481,27 @@ class Core extends Base\Core
     {
         $this->getStateCodeFromMapping($input, 'business_operation_state');
         $this->getStateCodeFromMapping($input, 'business_registered_state');
+    }
+
+    /**
+     * Linked Account merchant detail fields can be update by the merchant
+     * even when account is activated and locked. Check EPA-168 on Jira
+     *
+     * This function unlocks the submission form if linked account is activated and if form is locked.
+     * @param Merchant\Entity $merchant
+     * @param Entity $merchantDetails
+     */
+    private function unlockLinkedAccountFormIfApplicable(Merchant\Entity $merchant, Entity $merchantDetails)
+    {
+        if (($merchant->isLinkedAccount() === true) and
+            ($merchantDetails->getActivationStatus() === Status::ACTIVATED) and
+            ($merchantDetails->isLocked() === true))
+        {
+            $input = [
+                'locked'  =>  false,
+            ];
+            $this->editMerchantDetailFields($merchant, $input);
+        }
     }
 
     public function setEsignAadhaarSession(string $merchantId, string $sessionId)

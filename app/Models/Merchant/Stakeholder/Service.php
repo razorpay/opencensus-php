@@ -6,6 +6,7 @@ use RZP\Constants\HyperTrace;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Account;
 use RZP\Trace\Tracer;
+use RZP\Models\Merchant\AccountV2\Type;
 
 class Service extends Base\Service
 {
@@ -118,7 +119,7 @@ class Service extends Base\Service
     private function getStakeholderMetricDimensions(): array
     {
         $dimensions = [
-            'partner_type'   => $this->merchant->getPartnerType()
+            'partner_type'   => $this->merchant->getPartnerType() ?? Type::ROUTE
         ];
 
         return $dimensions;

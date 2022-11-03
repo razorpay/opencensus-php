@@ -208,6 +208,9 @@ class Service extends Base\Service
             case Name::PAYMENT_LINKS:
                 $data = Config\Defaults::PAYMENT_GATEWAY;
                 break;
+            case Name::ROUTE:
+                $data = Config\Defaults::ROUTE;
+                break;
         }
 
         return $data;

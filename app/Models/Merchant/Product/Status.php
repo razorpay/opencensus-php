@@ -19,6 +19,8 @@ class Status
     //Payment links and payment gateway product status are same
     const PAYMENT_LINKS_PRODUCT_STATUS_MAPPING = self::PAYMENT_GATEWAY_PRODUCT_STATUS_MAPPING;
 
+    const ROUTE_PRODUCT_STATUS_MAPPING         = self::PAYMENT_GATEWAY_PRODUCT_STATUS_MAPPING;
+
     const PAYMENT_GATEWAY_TERMINAL_STATUS = [MerchantActivationStatus::ACTIVATED, MerchantActivationStatus::REJECTED];
 
     const PAYMENT_LINKS_TERMINAL_STATUS = [MerchantActivationStatus::ACTIVATED, MerchantActivationStatus::REJECTED];
@@ -26,11 +28,13 @@ class Status
     const MERCHANT_STATUS_ASSOCIATED_PRODUCTS = [
         Name::PAYMENT_GATEWAY,
         Name::PAYMENT_LINKS,
+        Name::ROUTE,
     ];
 
     const PRODUCT_NAME_STATUS_MAPPING = [
         Name::PAYMENT_GATEWAY => self::PAYMENT_GATEWAY_PRODUCT_STATUS_MAPPING,
         Name::PAYMENT_LINKS   => self::PAYMENT_LINKS_PRODUCT_STATUS_MAPPING,
+        Name::ROUTE           => self::ROUTE_PRODUCT_STATUS_MAPPING,
     ];
 
     //status

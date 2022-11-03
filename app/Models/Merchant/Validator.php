@@ -3148,4 +3148,18 @@ class Validator extends Base\Validator
         }
         return true;
     }
+
+    public function validateMerchantMarketplaceFeature(Entity $merchant)
+    {
+        if ($merchant->isMarketplace() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR_NOT_MARKETPLACE_MERCHANT,
+                null,
+                [
+                    'parent_mid'    =>  $merchant->getId(),
+                ]
+            );
+        }
+    }
 }

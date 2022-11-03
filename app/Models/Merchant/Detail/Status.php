@@ -28,6 +28,21 @@ class Status
         self::ACTIVATED             => [],
     ];
 
+    /*
+     * With new flow for Linked Accounts where activation status can go back to 'under_review'
+     * from 'activated' status, created a new activation status mapping specifically for linked accounts
+     * Jira EPA-168
+    */
+    const ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_LINKED_ACCOUNT = [
+        self::INSTANTLY_ACTIVATED   => [self::UNDER_REVIEW, self::ACTIVATED, self::ACTIVATED_MCC_PENDING],
+        self::UNDER_REVIEW          => [self::NEEDS_CLARIFICATION, self::ACTIVATED, self::REJECTED, self::ACTIVATED_MCC_PENDING, self::ACTIVATED_KYC_PENDING],
+        self::NEEDS_CLARIFICATION   => [self::UNDER_REVIEW],
+        self::REJECTED              => [self::UNDER_REVIEW],
+        self::ACTIVATED_MCC_PENDING => [self::NEEDS_CLARIFICATION, self::ACTIVATED],
+        self::ACTIVATED_KYC_PENDING => [self::NEEDS_CLARIFICATION, self::UNDER_REVIEW],
+        self::ACTIVATED             => [self::UNDER_REVIEW,],
+    ];
+
     const MERCHANT_OPEN_STATUSES = [
         self::INSTANTLY_ACTIVATED,
         self::UNDER_REVIEW,

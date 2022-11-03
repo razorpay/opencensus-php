@@ -887,10 +887,27 @@ class Validator extends Base\Validator
             return;
         }
 
-        if (in_array($newStatus, Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING[$currentStatus], true) === false)
+        $allowedNextActivationStatusMapping = $this->getAllowedNextActivationStatus($currentStatus);
+
+        if (in_array($newStatus, $allowedNextActivationStatusMapping, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(self::INVALID_STATUS_CHANGE_MESSAGE);
         }
+    }
+
+    public function getAllowedNextActivationStatus(string $currentStatus): array
+    {
+        //
+        // - With new flow for Linked Accounts where activation status can go back to 'under_review'
+        // - from 'activated' status, created a new activation status mapping specifically for linked accounts
+        // Jira EPA-168
+        //
+        if ($this->entity->merchant->isLinkedAccount() === true)
+        {
+            return Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_LINKED_ACCOUNT[$currentStatus];
+        }
+
+       return Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING[$currentStatus];
     }
 
     public function validateActivationFormMilestone($attribute, $value)

@@ -31,6 +31,7 @@ class Validator extends Merchant\Validator
         Constants::TOS_ACCEPTANCE                  => 'sometimes|array',
         Constants::NOTES                           => 'sometimes|notes',
         Constants::NO_DOC_ONBOARDING               => 'sometimes|bool',
+        Constants::TYPE                            => 'sometimes|in:route'
     ];
 
     protected static $editAccountRules = [

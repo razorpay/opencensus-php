@@ -32,6 +32,7 @@ class Service extends Base\Service
         {
             case Name::PAYMENT_GATEWAY:
             case Name::PAYMENT_LINKS:
+            case Name::ROUTE:
                 $data = $this->getPaymentProductsEventData($merchantProductEntity);
                 $this->dispatchProductStatusEvent($merchantProductEntity, $data);
                 break;

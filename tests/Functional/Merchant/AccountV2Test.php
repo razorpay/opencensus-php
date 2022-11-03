@@ -924,4 +924,36 @@ class AccountV2Test extends TestCase
 
         $this->assertNotNull($paymentConfig);
     }
+
+    public function testCreateLinkedAccountWithMarketplaceFeature()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $testData = $this->testData['testCreateLinkedAccountWithMarketplaceFeature'];
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $merchantId = $response['id'];
+
+        Account\Entity::verifyIdAndStripSign($merchantId);
+
+        $linkedAccount = $this->getDbEntity('merchant', ['id' => $merchantId]);
+
+        $this->assertNotNull($linkedAccount->getParentId());
+
+        $this->assertEquals('10000000000000', $linkedAccount->getParentId());
+
+        return $linkedAccount;
+    }
+
+    public function testCreateLinkedAccountWithOutMarketplaceFeature()
+    {
+        $this->ba->privateAuth();
+
+        $testData = $this->testData['testCreateLinkedAccountWithOutMarketplaceFeature'];
+
+        $this->runRequestResponseFlow($testData);
+    }
 }

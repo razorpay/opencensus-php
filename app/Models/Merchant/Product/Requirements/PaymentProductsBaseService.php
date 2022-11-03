@@ -821,7 +821,7 @@ class PaymentProductsBaseService extends Base\Service
         return Constants::ARTEFACT_STATUS_MAPPING[$field] ?? Constants::NOT_APPLICABLE;
     }
 
-    private function getFieldReference(string $fieldName, string $entity): string
+    protected function getFieldReference(string $fieldName, string $entity): string
     {
         $fieldReference = $entity . '->' . $fieldName;
 
@@ -937,7 +937,7 @@ class PaymentProductsBaseService extends Base\Service
         return $isSelectiveRequiredProof;
     }
 
-    private function updateResolutionUrl(Detail\Entity $merchantDetails, Product\Entity $merchantProduct, array $requirements): array
+    protected function updateResolutionUrl(Detail\Entity $merchantDetails, Product\Entity $merchantProduct, array $requirements): array
     {
         foreach ($requirements as & $requirement)
         {
@@ -972,6 +972,10 @@ class PaymentProductsBaseService extends Base\Service
 
     protected function getOtpVerificationLogRequirements(&$requirements, Merchant\Entity $merchant)
     {
+        if($merchant->isLinkedAccount() === true)
+        {
+            return;
+        }
         $merchantDetail = $merchant->merchantDetail;
 
         $hasPendingOtpLog = $this->otpCore->hasPendingOtpLog($merchant->getMerchantId(), $merchantDetail->getContactMobile());

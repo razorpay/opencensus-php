@@ -221,6 +221,8 @@ final class Constants
 
     const SUBMERCHANT_FIRST_TRANSACTION_CRON_CACHE_KEY = 'submerchant_first_transaction_timestamp';
 
+    const AUTO_UPDATE_MERCHANT_PRODUCTS = 'worker:auto_update_merchant_products';
+
     const DAILY_TRANSACTED_SUBMERCHANTS_JOB_PAGE_SIZE  = 100;
     const DAILY_TRANSACTED_SUBMERCHANTS_LIMIT          = 100000;
     const DAILY_TRANSACTED_SUBMERCHANTS_BATCH_SIZE     = 10;

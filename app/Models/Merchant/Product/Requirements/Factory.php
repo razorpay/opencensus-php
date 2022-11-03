@@ -15,6 +15,8 @@ class Factory
                 return new PaymentGatewayRequirementService();
             case Name::PAYMENT_LINKS:
                 return new PaymentLinksRequirementService();
+            case Name::ROUTE:
+                return new RouteRequirementService();
             default:
                 throw new Exception\LogicException('invalid product name for fetching requirement service: '. $productName);
         }

@@ -71,6 +71,7 @@ class HyperTrace
     const CREATE_SUBMERCHANT_AND_SET_RELATIONS_INTERNAL        = 'create_submerchant_and_set_relations_internal';
     const SEND_MAIL_TO_SUBMERCHANT                             = 'send_mail_to_submerchant';
     const VALIDATE_PARTNER_ACCESS                              = 'validate_partner_access';
+    const VALIDATE_LINKED_ACCOUNT_ACCESS                       = 'validate_linked_account';
     const FILL_SUBMERCHANT_DETAILS                             = 'fill_submerchant_details';
     const FETCH_ACCOUNT_V2                                     = 'account_v2.fetch.service';
     const FETCH_ACCOUNT_V2_CORE                                = 'account_v2.fetch.core';
@@ -117,6 +118,7 @@ class HyperTrace
     const ACCEPT_PRODUCT_TNC                                    = 'accept_product_tnc';
     const ACCEPT_OR_FETCH_PRODUCT_TNC                           = 'accept_or_fetch_product_tnc';
     const CREATE_PAYMENT_GENERAL_CONFIG                         = 'create_payment_general_config';
+    const CREATE_ROUTE_CONFIG                                   = 'create_route_config';
     const CREATE_CONFIG                                         = 'payment_general_config.create_config';
     const UPDATE_CONFIG                                         = 'payment_general_config.update_config';
     const GET_CONFIG                                            = 'payment_general_config.get_config';

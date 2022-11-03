@@ -289,6 +289,34 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
+    protected function onProductRouteActivated($merchantProduct)
+    {
+        $payload = $this->getMerchantProductPayload($merchantProduct);
+
+        $this->dispatchEventToStork($payload);
+    }
+
+    protected function onProductRouteNeedsClarification($merchantProduct)
+    {
+        $payload = $this->getMerchantProductPayload($merchantProduct);
+
+        $this->dispatchEventToStork($payload);
+    }
+
+    protected function onProductRouteUnderReview($merchantProduct)
+    {
+        $payload = $this->getMerchantProductPayload($merchantProduct);
+
+        $this->dispatchEventToStork($payload);
+    }
+
+    protected function onProductRouteRejected($merchantProduct)
+    {
+        $payload = $this->getMerchantProductPayload($merchantProduct);
+
+        $this->dispatchEventToStork($payload);
+    }
+
     protected function onAccountNoDocOnboardingGmvLimitWarning($merchant)
     {
         $payload = $this->withPayload;

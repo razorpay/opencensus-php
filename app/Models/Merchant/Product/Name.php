@@ -10,13 +10,16 @@ class Name
 
     const PAYMENT_LINKS = 'payment_links';
 
+    const ROUTE         = 'route';
+
     const ADMIN_ENABLED = [
         self::ALL
     ];
 
     const ENABLED = [
         self::PAYMENT_GATEWAY,
-        self::PAYMENT_LINKS
+        self::PAYMENT_LINKS,
+        self::ROUTE,
     ];
 
 }

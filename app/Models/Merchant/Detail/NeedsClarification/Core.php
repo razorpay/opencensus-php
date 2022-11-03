@@ -50,7 +50,9 @@ class Core extends Base\Core
         /*
            If we have already raised needs clarification flow once then don't raise it again
         */
-        if ($entity->merchant->isNoDocOnboardingEnabled() === false and  $needsClarificationCount >= 1)
+        if (($entity->merchant->isNoDocOnboardingEnabled() === false) and
+            ($needsClarificationCount >= 1) and
+            ($entity->merchant->isLinkedAccount() === false))
         {
             return false;
         }
@@ -149,9 +151,15 @@ class Core extends Base\Core
 
         $factory = new Factory($merchantDetail);
 
+        $isLinkedAccount = (is_null($this->merchant) === false) ? $this->merchant->isLinkedAccount() : false;
+
+        $clarificationMetadataArray = ($isLinkedAccount === true) ? NeedsClarificationMetaData::getLinkedAccountSystemBasedNeedsClarificationMetaData()
+                                                                  : NeedsClarificationMetaData::SYSTEM_BASED_NEEDS_CLARIFICATION_METADATA;
+
+
         foreach ($clarificationKeys as $clarificationKey)
         {
-            $clarificationMetadata = NeedsClarificationMetaData::SYSTEM_BASED_NEEDS_CLARIFICATION_METADATA[$clarificationKey] ?? [];
+            $clarificationMetadata = $clarificationMetadataArray[$clarificationKey] ?? [];
 
             //
             // If clarification metadata is not defined then continue
@@ -372,11 +380,12 @@ class Core extends Base\Core
              ***/
             if (($this->isBankDetailsNCField($field) === true) &&
                 ($this->isNCAcknowledgedForBankDocumentProofs($documentResponse, $clarificationDetails) === false) &&
-                array_key_exists(DocumentType::CANCELLED_CHEQUE, $nonAcknowledgedNCFields[Constants::DOCUMENTS]) === false) {
+                array_key_exists(DocumentType::CANCELLED_CHEQUE, $nonAcknowledgedNCFields[Constants::DOCUMENTS]) === false &&
+                ($this->merchant->isLinkedAccount() === false)) {
                 $nonAcknowledgedNCFields[Constants::DOCUMENTS][DocumentType::CANCELLED_CHEQUE] = $clarificationDetails;
 
                 $totalNonAcknowledgedFieldCount = $totalNonAcknowledgedFieldCount + 1;
-            }
+        }
         }
 
         $nonAcknowledgedNCFields[Merchant\Constants::COUNT] = $totalNonAcknowledgedFieldCount;
@@ -472,7 +481,23 @@ class Core extends Base\Core
         {
             foreach ($additionalDetails as $field => $clarificationDetails)
             {
-                $latestReasons[$field] = $clarificationDetails[0];
+                if($this->merchant->isLinkedAccount() === true)
+                {
+                    // For Linked Accounts, the needs_clarification is system driven and does not involve BizOps
+                    // Hence even when NC counf is > 1 we populate the requirements.
+                    // Check for active clarification details in the additional details array and populate them.
+                    foreach ($clarificationDetails as $clarification)
+                    {
+                        if ($clarification[Merchant\Constants::IS_CURRENT] === true)
+                        {
+                            $latestReasons[$field] = $clarification;
+                        }
+                    }
+                }
+                else
+                {
+                    $latestReasons[$field] = $clarificationDetails[0];
+                }
             }
         }
 

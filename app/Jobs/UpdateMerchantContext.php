@@ -176,7 +176,21 @@ class UpdateMerchantContext extends Job
                     Entity::ACTIVATION_STATUS => $newActivationStatus
                 ];
 
-                $detailCore->updateActivationStatus($merchant, $activationStatusData, $merchant);
+                //
+                //  - When linked accounts are activated, there are set of other functions to be executed
+                //  - which are defined in autoActivateMerchantIfApplicable.
+                //  - Since this is the first time linked accounts are not directly activated and going throught
+                //  - the stages of under_review, needs_clarification... We check if status is 'activated' then
+                //  - call the auto activate method here.  Jira:EPA-168
+                //
+                if ($merchant->isLinkedAccount() === true and $newActivationStatus === Status::ACTIVATED)
+                {
+                    $detailCore->autoActivateMerchantIfApplicable($merchant);
+                }
+                else
+                {
+                    $detailCore->updateActivationStatus($merchant, $activationStatusData, $merchant);
+                }
 
                 if($newActivationStatus === Status::NEEDS_CLARIFICATION)
                 {

@@ -4244,6 +4244,7 @@ class AdminFetch
                     Fetch::VALUES => [
                         Product\Name::PAYMENT_GATEWAY,
                         Product\Name::PAYMENT_LINKS,
+                        Product\Name::ROUTE,
                     ]
                 ]
             ],

@@ -16,6 +16,7 @@ class Constants
 
     const PRODUCT_BU_MAPPING = [
         ProductName::PAYMENT_GATEWAY => self::PAYMENTS,
-        ProductName::PAYMENT_LINKS   => self::PAYMENTS
+        ProductName::PAYMENT_LINKS   => self::PAYMENTS,
+        ProductName::ROUTE           => self::PAYMENTS,
     ];
 }

@@ -73,6 +73,7 @@ class Service extends Merchant\Service
 
         $dimensions = [
             'partner_type'          => $this->merchant->getPartnerType(),
+            'account_type'          => ($merchantDetails->merchant->isLinkedAccount() === true) ? Type::ROUTE : Type::STANDARD,
             'submerchant_business_type' => $merchantDetails->getBusinessType()
         ];
 
