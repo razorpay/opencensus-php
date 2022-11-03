@@ -37,12 +37,7 @@ class PartnerConfigAuditLogger extends Job
 
         try
         {
-            $response = (new PartnerConfigCore())->auditPartnerConfig($this->params);
-
-            if (empty($response) === false and $response['status_code'] === 200)
-            {
-                $this->trace->count(PartnerMetric::PARTNER_CONFIG_AUDIT_SUCCESS);
-            }
+            (new PartnerConfigCore())->auditPartnerConfig($this->params);
         }
         catch(\Throwable $e)
         {
