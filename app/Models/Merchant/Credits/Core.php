@@ -21,6 +21,7 @@ use RZP\Mail\Merchant\RazorpayX\Credits\ConfirmationForKycUsers;
 use RZP\Mail\Merchant\RazorpayX\Credits\ConfirmationForChurnedUsers;
 use RZP\Models\Ledger\MerchantCreditJournalEvents;
 use Neves\Events\TransactionalClosureEvent;
+use Razorpay\Trace\Logger as Trace;
 
 class Core extends Base\Core
 {
