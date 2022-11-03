@@ -15,6 +15,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
 use RZP\Http\Request\Requests;
+use RZP\Base\RepositoryManager;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Error\PublicErrorDescription;
 
@@ -33,6 +34,11 @@ class Base
     protected $secret;
 
     protected $baseUrl;
+
+    /**
+     * @var RepositoryManager
+     */
+    protected $repo;
 
     /**
      * BasicAuth entity
@@ -67,6 +73,8 @@ class Base
         $this->secret = $this->config[$this->mode]['payout_secret'];
 
         $this->auth = $this->app['basicauth'];
+
+        $this->repo = $this->app['repo'];
     }
 
     const TIMEOUT = 60;

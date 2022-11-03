@@ -324,7 +324,7 @@ class MerchantIdempotencyHandler
             {
                 return null;
             }
-            
+
             $psIdempotencyEntity = null;
 
             /** @var Entity $psIdempotencyEntity */
@@ -393,6 +393,30 @@ class MerchantIdempotencyHandler
                         'merchant_id'           => $idempotencyEntity->getMerchantId(),
                         'ps_idempotency_key_id' => $psIdempotencyEntity->getId(),
                         'source_id'             => $psSourceId,
+                    ]);
+            }
+
+            // Keeping in try catch because even if it fails, we want to show the response to the merchant.
+            try
+            {
+                // If payout id is not stored in idempotency_keys source_id, we do that so that when payout is dual
+                // written on api, it can fetch details from there itself. The source_id could have been left empty if
+                // payout creation call to ps timed out or some issue happened while updating idempotency key entity
+                // post that.
+                if (empty($idempotencyEntity->getSourceId()) === true)
+                {
+                    $idempotencyEntity->source()->associate($psPayout);
+
+                    $this->repo->idempotency_key->saveOrFail($idempotencyEntity);
+                }
+            }
+            catch (\Throwable $throwable)
+            {
+                $this->trace->error(
+                    TraceCode::PAYOUT_SERVICE_IDEM_KEY_SOURCE_ASSOCIATION_FAILED,
+                    [
+                        'ps_payout'       => $psPayout->toArrayPublic(),
+                        'idempotency_key' => $idempotencyEntity->toArray(),
                     ]);
             }
 

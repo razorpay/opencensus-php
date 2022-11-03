@@ -2,21 +2,22 @@
 
 namespace RZP\Services\PayoutService;
 
+use RZP\Http\RequestHeader;
 use RZP\Http\Request\Requests;
 use Razorpay\Edge\Passport\Passport;
 
-use RZP\Exception;
-use RZP\Error\Error;
 use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
+use RZP\Constants\Entity;
+use RZP\Models\IdempotencyKey;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Merchant\RazorxTreatment;
 
 class Create extends Base
 {
-    const CREATE_PAYOUT_SERVICE_URI = '/payouts';
-    const CREATE_PAYOUT_INTERNAL_SERVICE_URI = '/payouts/payouts_internal';
-    const CREATE_INTERNAL_PAYOUT_SERVICE_URI = '/payouts/internal_contact_payout';
+    const CREATE_PAYOUT_SERVICE_URI                  = '/payouts';
+    const CREATE_PAYOUT_INTERNAL_SERVICE_URI         = '/payouts/payouts_internal';
+    const CREATE_INTERNAL_CONTACT_PAYOUT_SERVICE_URI = '/payouts/internal_contact_payout';
     // payout create service name for singleton class
     const PAYOUT_SERVICE_CREATE = 'payout_service_create';
 
@@ -25,7 +26,7 @@ class Create extends Base
      * @param string $merchantId
      * @return array
      */
-    public function createPayoutViaMicroservice(array $input, string $merchantId)
+    public function createPayoutViaMicroservice(array $input, string $merchantId, bool $isInternal = false)
     {
         $data = $input;
 
@@ -36,79 +37,52 @@ class Create extends Base
                 'input' => $data,
             ]);
 
+        $uri = self::CREATE_PAYOUT_SERVICE_URI;
+
+        if ($isInternal === true)
+        {
+            $uri = self::CREATE_INTERNAL_CONTACT_PAYOUT_SERVICE_URI;
+        }
+        elseif ($this->app['basicauth']->isAppAuth() === true)
+        {
+            $variant = $this->app->razorx->getTreatment(
+                $merchantId,
+                RazorxTreatment::INTERNAL_PAYOUT_VIA_PS,
+                $this->mode);
+
+            if (strtolower($variant) === 'on')
+            {
+                $uri = self::CREATE_PAYOUT_INTERNAL_SERVICE_URI;
+            }
+        }
+
         $request = $this->createRequestBody($input, $merchantId);
 
         $headers = [Passport::PASSPORT_JWT_V1 => $this->app['basicauth']->getPassportJwt($this->baseUrl)];
 
+        $idempotencyKeyId = $this->app['basicauth']->getIdempotencyKeyId();
+
+        if (empty($idempotencyKeyId) === false)
+        {
+            $fetchInput = [
+                IdempotencyKey\Entity::SOURCE_TYPE => Entity::PAYOUT,
+                IdempotencyKey\Entity::ID          => $idempotencyKeyId,
+            ];
+
+            /** @var IdempotencyKey\Entity $idempotencyKeyEntity */
+            $idempotencyKeyEntity = $this->repo->idempotency_key->fetch($fetchInput, $merchantId)->first();
+
+            $headers[RequestHeader::X_PAYOUT_IDEMPOTENCY] = $idempotencyKeyEntity->getIdempotencyKey();
+        }
+
         $response = $this->makeRequestAndGetContent(
             $request,
-            self::CREATE_PAYOUT_SERVICE_URI,
+            $uri,
             Requests::POST,
             $headers
         );
 
         return $response;
-    }
-
-    /**
-     * @param array $input
-     * @param string $merchantId
-     * @return array
-     */
-    public function createPayoutInternalViaMicroservice(array $input, string $merchantId)
-    {
-        $data = $input;
-
-        unset($data[Payout\Entity::ACCOUNT_NUMBER]);
-
-        $this->trace->info(TraceCode::PAYOUT_CREATE_VIA_MICROSERVICE_REQUEST,
-            [
-                'input' => $data,
-            ]);
-
-        $request = $this->createRequestBody($input, $merchantId);
-
-        $headers = [Passport::PASSPORT_JWT_V1 => $this->app['basicauth']->getPassportJwt($this->baseUrl)];
-
-        $response = $this->makeRequestAndGetContent(
-            $request,
-            self::CREATE_PAYOUT_INTERNAL_SERVICE_URI,
-            Requests::POST,
-            $headers
-        );
-
-        return $response;
-    }
-
-    /**
-     * Create internal contact payout via microservice
-     *
-     * @param array $input
-     * @param string $merchantId
-     * @return array
-     */
-    public function createInternalContactPayoutViaMicroservice(array $input, string $merchantId)
-    {
-        $data = $input;
-
-        unset($data[Payout\Entity::ACCOUNT_NUMBER]);
-
-        $this->trace->info(TraceCode::INTERNAL_PAYOUT_CREATE_VIA_MICROSERVICE_REQUEST,
-            [
-                'input' => $data,
-            ]);
-
-        $request = $this->createRequestBody($input, $merchantId);
-
-        $headers = [Passport::PASSPORT_JWT_V1 => $this->app['basicauth']->getPassportJwt($this->baseUrl)];
-
-        return $this->makeRequestAndGetContent(
-            $request,
-            self::CREATE_INTERNAL_PAYOUT_SERVICE_URI,
-            Requests::POST,
-            $headers
-        );
-
     }
 
     /**

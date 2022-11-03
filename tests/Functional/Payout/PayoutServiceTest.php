@@ -97,7 +97,12 @@ class PayoutServiceTest extends TestCase
         $this->app['config']->set('applications.banking_account_service.mock', true);
     }
 
-    public function mockPayoutServiceCreate($fail = false, $metadata = [], $request = [], $status = 'processing', $insufficient_balance = false, $newBankingError = false)
+    public function mockPayoutServiceCreate($fail = false,
+                                            $metadata = [],
+                                            $request = [],
+                                            $status = 'processing',
+                                            $insufficient_balance = false,
+                                            $newBankingError = false)
     {
         // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request headers that
         // are going to be sent to payout service.
@@ -116,6 +121,19 @@ class PayoutServiceTest extends TestCase
                                             // Using this method only here as we want to check if the keys in the
                                             // request are coming properly or not.
                                             $this->assertArrayKeySelectiveEquals($request, $arg);
+
+                                            if (isset($request['headers']
+                                                    [RequestHeader::X_PAYOUT_IDEMPOTENCY]) === true)
+                                            {
+                                                $idempotencyKey =
+                                                    $request['headers'][RequestHeader::X_PAYOUT_IDEMPOTENCY];
+
+                                                if (empty($idempotencyKey) === false)
+                                                {
+                                                    return ($arg['headers'][RequestHeader::X_PAYOUT_IDEMPOTENCY] ===
+                                                            $idempotencyKey);
+                                                }
+                                            }
 
                                             return true;
                                         }
@@ -2516,24 +2534,65 @@ class PayoutServiceTest extends TestCase
         $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
     }
 
-    // Since idempotency feature is not available for payouts service,
-    // the payout shouldn't go via payouts service
     public function testCreatePayoutWithIdempotencyKey()
     {
+        $request['headers'][RequestHeader::X_PAYOUT_IDEMPOTENCY] =
+            $this->testData[__FUNCTION__]['request']['server']['HTTP_' . \RZP\Http\RequestHeader::X_PAYOUT_IDEMPOTENCY];
+
+        $this->mockPayoutServiceCreate(false, [], $request, 'pending');
+
+        $payoutData = [
+            'id'                   => 'Gg7sgBZgvYjlSB',
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 100,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 590,
+            'tax'                  => 90,
+            'status'               => "pending",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTM",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'scheduled_at'         => null,
+            'queued_at'            => null,
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'cancellation_user_id' => null,
+            'registered_name'      => "SUSANTA BHUYAN",
+            'queued_reason'        => "beneficiary_bank_down",
+            'on_hold_at'           => 1663092113,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData);
+
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
         $this->startTest();
 
-        $payout = $this->getDbLastEntity('payout', 'live');
-
-        // Payout should not have gone via payouts service
-        $this->assertEquals(false, $payout->getIsPayoutService());
-
-        $idempotencyEntity = $this->getLastEntity('idempotency_key', true,'live');
+        $idempotencyEntity = $this->getLastEntity('idempotency_key', true, 'live');
 
         $this->assertEquals($idempotencyEntity['idempotency_key'], 'idem_key_test');
         $this->assertEquals($idempotencyEntity['merchant_id'], '10000000000000');
-        $this->assertEquals($idempotencyEntity['source_id'], $payout['id']);
+        $this->assertEmpty($idempotencyEntity['source_id']);
         $this->assertEquals($idempotencyEntity['source_type'], 'payout');
     }
 

@@ -80,6 +80,8 @@ class Processor
                     (new WorkflowEntityMap)->dualWritePSWorkflowEntityMap($payoutId);
 
                     (new PayoutStatusDetails)->dualWritePSPayoutStatusDetails($payoutId);
+
+                    (new IdempotencyKey)->dualWritePSPayoutIdempotencyKey($payoutId);
                 });
             },
             self::MUTEX_LOCK_TIMEOUT_PS_DUAL_WRITE,

@@ -2250,5 +2250,15 @@ final class FactoryData
                 "category"         => "amc_bank_account",
                "customer_refund_access"    => 0,
         ]);
+
+        $factory(\RZP\Models\IdempotencyKey\Entity::class, [
+            'id'              => $faker->uniqueid,
+            'source_id'       => null,
+            'source_type'     => null,
+            'idempotency_key' => $faker->uniqueid,
+            'merchant_id'     => '10000000000000',
+            'created_at'      => $faker->timestamp,
+            'updated_at'      => $faker->timestamp,
+        ]);
     }
 }

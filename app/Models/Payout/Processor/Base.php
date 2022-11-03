@@ -162,7 +162,9 @@ class Base extends BaseCore
 
     const KEY_SUFFIX = '_payout_workflow';
 
-    // Payout create service client
+    /**
+     * @var PayoutServiceCreate
+     */
     protected $payoutCreateServiceClient;
 
     /**
@@ -3791,13 +3793,6 @@ class Base extends BaseCore
 
             if ($this->isPayoutServiceEnabled === true)
             {
-                $idempotencyKeyId = $this->app['basicauth']->getIdempotencyKeyId();
-
-                if (empty($idempotencyKeyId) === false)
-                {
-                    return false;
-                }
-
                 //Scheduled payout
                 $schedulePayoutViaPSEnabled = $this->merchant->isFeatureEnabled(Feature::SCHEDULE_PAYOUT_VIA_PS);
                 if ((isset($input[Payout\Entity::SCHEDULED_AT]) === true) and
@@ -3919,28 +3914,14 @@ class Base extends BaseCore
 
             if ($this->balance->getAccountType() === AccountType::SHARED)
             {
-                $variant = $this->app->razorx->getTreatment(
-                    $this->merchant->getId(),
-                    RazorxTreatment::INTERNAL_PAYOUT_VIA_PS,
-                    $this->mode);
-
-                if ($this->isInternal === true)
-                {
-                    $response = $this->payoutCreateServiceClient->createInternalContactPayoutViaMicroservice($input, $this->merchant->getId());
-                }
-                else if($this->app['basicauth']->isAppAuth() === true and strtolower($variant) === 'on')
-                {
-                    $response = $this->payoutCreateServiceClient->createPayoutInternalViaMicroservice($input, $this->merchant->getId());
-                }
-                else
-                {
-                    $response = $this->payoutCreateServiceClient->createPayoutViaMicroservice($input, $this->merchant->getId());
-                }
+                $response = $this->payoutCreateServiceClient->createPayoutViaMicroservice($input,
+                                                                                          $this->merchant->getId(),
+                                                                                          $this->isInternal);
 
                 $this->trace->info(
                     TraceCode::PAYOUT_CREATE_RESPONSE_FROM_MICROSERVICE,
                     [
-                        'response'       => $response
+                        'response' => $response
                     ]);
 
                 $id = $response[Entity::ID];
