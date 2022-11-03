@@ -211,6 +211,7 @@ class TraceCode
     const RAZORX_CALL_FAILED                        = 'RAZORX_CALL_FAILED';
     const USER_VERIFY_LOGIN_VIA_2FA                 = 'USER_VERIFY_LOGIN_VIA_2FA';
     const MAKE_RECONCILIATION_REQUEST               = 'MAKE_RECONCILIATION_REQUEST';
+    const USER_SET_PASSWORD_DATA_FROM_CACHE         = 'USER_SET_PASSWORD_DATA_FROM_CACHE';
     const USER_VERIFY_LOGIN_VIA_2FA_DATA_FROM_CACHE = 'USER_VERIFY_LOGIN_VIA_2FA_DATA_FROM_CACHE';
 
     protected static $messages = array(

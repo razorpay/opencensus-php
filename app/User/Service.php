@@ -488,6 +488,30 @@ class Service extends Base\Service
 
         $logged_in_via = Session::get('logged_in_via', null);
 
+        if ($userIdFromSession === "")
+        {
+            $userDetails = $this->cache->get(Session::getId());
+
+            if ($userDetails !== null)
+            {
+                $userIdFromSession = $userDetails['user_id'];
+
+                $logged_in_via = $userDetails['logged_in_via'];
+
+                Session::put('user_id', $userIdFromSession);
+
+                Session::put('logged_in_via', $logged_in_via);
+
+                /*
+                * if not present in session check in cache
+                * */
+                $this->trace->info(TraceCode::USER_SET_PASSWORD_DATA_FROM_CACHE, [
+                    'user_id'      => $userIdFromSession,
+                    'login_in_via' => $logged_in_via,
+                ]);
+            }
+        }
+
         $options['headers']['X-Dashboard-User-Id'] = $userIdFromSession;
 
         list($error, $genericUser) =  $this->loginOnApiOnRoute($input,'users/password', 'PATCH', $options);
@@ -708,7 +732,7 @@ class Service extends Base\Service
                     $this->cache->put(Session::getId(), [
                         'user_id'       => $userId,
                         'logged_in_via' => $logged_in_via
-                    ],                5 * 60);
+                    ],                30 * 60);
                 }
                 else
                 {
@@ -811,6 +835,14 @@ class Service extends Base\Service
                 {
                     Session::put(Constants::USER_ID, $userId);
                     Session::put('logged_in_via', $logged_in_via);
+
+                    /*
+                    * store in cache if missed on graph request
+                    * */
+                    $this->cache->put(Session::getId(), [
+                        'user_id'       => $userId,
+                        'logged_in_via' => $logged_in_via
+                    ],                30 * 60);
                 }
                 else
                 {
