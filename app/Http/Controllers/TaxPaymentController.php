@@ -298,4 +298,9 @@ class TaxPaymentController extends Controller
     {
         return $this->service->fetchPendingGstPayments($this->ba->getMerchant(), $this->ba->getUser());
     }
+    
+    public function internalIciciAction()
+    {
+        return $this->service->internalIciciAction($this->input);
+    }
 }

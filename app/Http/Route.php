@@ -1907,6 +1907,7 @@ class Route
         'tax_payments_cancel'                        => ['post',    'tax-payments/{id}/cancel',                        'TaxPaymentController@cancel'                                       ],
         'tax_payments_fetch_pending_gst'             => ['get',     'tax-payments/gst/fetch',                          'TaxPaymentController@fetchPendingGstPayments'                      ],
         'tax_payments_challan_download'              => ['post',    'tax-payments/challans/download',                  'TaxPaymentController@bulkChallanDownload'                          ],
+        'tax_payments_internal_icici_action'         => ['post',    'tax-payments/internal/icici_actions',             'TaxPaymentController@internalIciciAction'                          ],
 
 
         // Direct Tax Payment
@@ -4596,6 +4597,7 @@ class Route
         'merchant_update_fraud_type',
         'gstin_e_invoice_cron',
         'fix_merchant_data_cron',
+        'tax_payments_internal_icici_action',
         // crons for autoKYC'd merchants who have not been verified manually yet
         'merchant_autokyc_soft_limit',
         'merchant_autokyc_hard_limit',
@@ -13783,6 +13785,7 @@ class Route
             'contact_create_internal',
             'fund_account_create_internal',
             'banking_accounts_list_internal',
+            'tax_payments_internal_icici_action',
         ],
 
         'razorflow' => [

@@ -96,6 +96,7 @@ class Tracing
             'settings_fetch_internal',
             'settings_upsert_internal',
             'tax_payments_enabled_merchant_settings',
+            'tax_payments_internal_icici_action',
 
             // Vendor Payments API routes
             'vendor_payment_execute_bulk',

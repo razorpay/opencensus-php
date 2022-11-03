@@ -35,6 +35,7 @@ class Service
     const GET_TAX_PAYMENT_BY_ID               = 'GetTaxPayment';
     const LIST_TAX_PAYMENTS                   = 'ListTaxPayments';
     const PAY_TAX_PAYMENTS                    = 'PayTaxPayment';
+    const INTERNAL_ICICI_ACTION               = 'InternalIciciAction';
     const BULK_PAY_TAX_PAYMENTS               = 'BulkPayTaxPayments';
     const INITIATE_MONTHLY_PAYOUTS            = 'InitiateMonthlyPayouts';
     const CANCEL_QUEUED_PAYOUT_CRON           = 'CancelQueuedPayoutCron';
@@ -193,6 +194,13 @@ class Service
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CREATE_MANUAL_TAX_PAYMENT);
 
         return $this->makeRequest($merchant, $url, $input);
+    }
+    
+    public function internalIciciAction(array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::INTERNAL_ICICI_ACTION);
+
+        return $this->makeRequest(null, $url, $input);
     }
 
     public function addPenalty()
