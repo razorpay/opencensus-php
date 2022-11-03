@@ -6533,6 +6533,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const CHECKOUT_VIEW_CREATION                                         = 'CHECKOUT_VIEW_CREATION';
 
+    const CHECKOUT_REDIRECTION_DATA                                      = 'CHECKOUT_REDIRECTION_DATA';
+    const CHECKOUT_REDIRECTION_PG_ROUTER                                 = 'CHECKOUT_REDIRECTION_PG_ROUTER';
+    const CHECKOUT_REDIRECTION_URL                                       = 'CHECKOUT_REDIRECTION_URL';
+    const CHECKOUT_REDIRECTION_CONTENT                                   = 'CHECKOUT_REDIRECTION_CONTENT';
+    const CHECKOUT_REDIRECTION_S2S_OTP                                   = 'CHECKOUT_REDIRECTION_S2S_OTP';
+    const CHECKOUT_REDIRECTION_S2S                                       = 'CHECKOUT_REDIRECTION_S2S';
+    const CHECKOUT_REDIRECTION_APPLICATION                               = 'CHECKOUT_REDIRECTION_APPLICATION';
+
     const REWARD_CREATE_REQUEST                                          =  'REWARD_CREATE_REQUEST';
     const REWARD_UPDATE_REQUEST                                          =  'REWARD_UPDATE_REQUEST';
     const REWARD_DELETE_REQUEST                                          =  'REWARD_DELETE_REQUEST';

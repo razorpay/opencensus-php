@@ -1019,6 +1019,10 @@ class PaymentCreateController extends Controller
         {
             unset($data['processed_via_pg_router']);
 
+            $this->trace->info(TraceCode::CHECKOUT_REDIRECTION_PG_ROUTER, [
+                'is_set_html'               => isset($data['html']),
+            ]);
+
             if (isset($data['html']) === true)
             {
                 return $data['html'];
@@ -1087,12 +1091,21 @@ class PaymentCreateController extends Controller
                     $response = \Redirect::away($data['request']['url']);
                     $response->headers->set('X-gateway', $data['gateway']);
 
+                    $this->trace->info(TraceCode::CHECKOUT_REDIRECTION_URL, [
+                        'type'        => $data['type'],
+                        'request_url' => strpos($data['request']['url'],"token=") ? substr_replace($data['request']['url'], '*****', strpos($data['request']['url'],"token=")+6) : $data['request']['url'] ?? '',
+                    ]);
+
                     return $response;
                 }
                 else if ($data['request']['method'] === 'direct')
                 {
                     $response = Response::make($data['request']['content']);
                     $response->headers->set('X-gateway', $data['gateway']);
+
+                    $this->trace->info(TraceCode::CHECKOUT_REDIRECTION_CONTENT, [
+                        'type' => $data['type'],
+                    ]);
 
                     return $response;
                 }
@@ -1118,6 +1131,10 @@ class PaymentCreateController extends Controller
                             'razorpay_payment_id' => $data['payment_id'],
                         ];
 
+                        $this->trace->info(TraceCode::CHECKOUT_REDIRECTION_S2S_OTP, [
+                            'type' => $data['type'],
+                        ]);
+
                         return $response;
                     }
 
@@ -1125,11 +1142,20 @@ class PaymentCreateController extends Controller
                         ($merchant->isFeatureEnabled(Feature::S2S_JSON) === true))
                     {
                         $response = $this->generateOtpJson($data);
+
+                        $this->trace->info(TraceCode::CHECKOUT_REDIRECTION_S2S, [
+                            'type' => $data['type'],
+                        ]);
+
                         return $response;
                     }
 
                     $response = Response::make($data['request']['content']);
                     $response->headers->set('X-gateway', $data['gateway']);
+
+                    $this->trace->info(TraceCode::CHECKOUT_REDIRECTION_CONTENT, [
+                        'type' => $data['type'],
+                    ]);
 
                     return $response;
                 }
@@ -1275,6 +1301,11 @@ class PaymentCreateController extends Controller
                 if ((isset($data['application_name']) === true) and
                     ($data['application_name'] === 'google_pay'))
                 {
+                    $this->trace->info(TraceCode::CHECKOUT_REDIRECTION_APPLICATION, [
+                        'type'      => $data['type'],
+                        'redirect'  => $data['redirect'] ?? '',
+                    ]);
+
                     if ($data['redirect'] === true)
                     {
                         return $this->generateApplicationRedirectResponse($data);
@@ -1290,6 +1321,11 @@ class PaymentCreateController extends Controller
         }
         else
         {
+            $this->trace->info(TraceCode::CHECKOUT_REDIRECTION_DATA, [
+                'type'          => $data['type'] ?? '',
+                'payment_id'    => $data['payment_id'] ?? '',
+                'extra'         => 'No condition match.',
+            ]);
             return $data;
         }
     }
