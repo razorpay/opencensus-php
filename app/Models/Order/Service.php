@@ -107,38 +107,14 @@ class Service extends Base\Service
             return false;
         }
 
-        if (isset($input['line_items_total']) === true)
-        {
-            $requeust_data = json_encode(['merchant_id' => $merchant->getId()]);
-            $uniqueId = UniqueIdEntity::generateUniqueId();
-            $experiment_id = $this->app['config']->get('app.1cc_pg_router_ramp_up_exp_id');
-
-            $variant = null;
-            try
-            {
-                $response = $this->app['splitzService']->evaluateRequest([
-                    'id' => $uniqueId,
-                    'experiment_id' => $experiment_id,
-                    'request_data' => $requeust_data,
-                ]);
-                $variant = $response['response']['variant']['name'] ?? null;
-            }
-            catch (\Throwable $e)
-            {
-                $variant = null;
-            }
-
-            if($variant === 'variant_on')
-            {
-                return true;
-            }
-
-            return false;
-        }
-
         if ($this->isRearchBVTRequest() === true)
         {
             return true;
+        }
+
+        if ($this->app->runningUnitTests() === true)
+        {
+            return false;
         }
 
         if (isset($input[Entity::CUSTOMER_ADDITIONAL_INFO]) === true)
@@ -146,15 +122,14 @@ class Service extends Base\Service
             return false;
         }
 
-        $result = $this->app->razorx->getTreatment($merchant->getId(), RazorxTreatment::ROUTE_ORDER_TO_PG_ROUTER, $this->mode);
+        $result = $this->app->razorx->getTreatment($merchant->getId(), RazorxTreatment::ROUTE_ORDER_TO_PG_ROUTER_REVERSE, $this->mode);
 
-        if (($merchant->getId() === 'CYseUgx4bt9VFp') and
-            ($result === RazorXClient::DEFAULT_CASE))
+        if ($result === 'on')
         {
-            return true;
+            return false;
         }
 
-        return ($result === 'on');
+        return true;
     }
 
     protected function isRearchBVTRequest(): bool

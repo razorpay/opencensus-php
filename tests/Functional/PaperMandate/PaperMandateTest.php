@@ -57,10 +57,6 @@ class PaperMandateTest extends TestCase
         $this->razorxMock->shouldReceive('getTreatment')
             ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
             {
-                if ($featureFlag === (RazorxTreatment::ROUTE_ORDER_TO_PG_ROUTER))
-                {
-                    return 'control';
-                }
                 return 'on';
             });
 
