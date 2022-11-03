@@ -259,7 +259,7 @@ class Service extends Base\Service
     private function checkDuplicatePayment($processor, $input): bool
     {
         try{
-            $ttl = 20 * 60 * 60; // 20 hours in seconds
+            $ttl = 14 * 60 * 60; // 14 hours in seconds
             $redisKey = $processor->getRedisKey($input);
             $result = $this->app['redis']->set($redisKey, true, 'ex', $ttl, 'nx');
             if($result === null){

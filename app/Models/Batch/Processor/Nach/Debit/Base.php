@@ -269,6 +269,8 @@ class Base extends BaseProcessor
 
                 $this->removeCriticalDataFromTracePayload($entry);
 
+                $this->deletePaymentFromRedis($entries);
+
             }
             catch (\Throwable $e)
             {
@@ -287,6 +289,8 @@ class Base extends BaseProcessor
                 $entry[Batch\Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
 
                 $this->removeCriticalDataFromTracePayload($entry);
+
+                $this->deletePaymentFromRedis($entries);
             }
         }
 
@@ -347,6 +351,28 @@ class Base extends BaseProcessor
         {
             $content = $this->getDataFromRow($entry);
             return $content[self::PAYMENT_ID] . '_' . $this->getBankStatus($content[self::GATEWAY_RESPONSE_CODE]);
+        }
+    }
+
+    public function deletePaymentFromRedis(array $entries){
+        try
+        {
+            $redisKey = $this->getRedisKey($entries);
+            $delResult = $this->app['redis']->del($redisKey);
+            $this->trace->info(
+                TraceCode::NACH_PROCESSING_REDIS_DELETE_KEY,
+                [
+                    'redisKey' => $redisKey,
+                    'delValue' => $delResult,
+                ]);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::NACH_PROCESSING_REDIS_FAILURE
+            );
         }
     }
 }
