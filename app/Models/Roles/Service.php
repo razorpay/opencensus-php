@@ -76,9 +76,16 @@ class Service extends Base\Service
         {
             $orgId = $this->app['basicauth']->getAdminOrgId();
 
-            $name = Name::CREATE_PAYOUT;
+            $roleNames = [
+                'Finance L1',
+                'Finance L2',
+                'Finance L3',
+                'Finance',
+                'Owner',
+                'Admin',
+            ];
 
-            $roles = (new AdminRole\Core())->getRolesForPermissionName($name, $orgId);
+            $roles = (new AdminRole\Repository())->fetchRolesByOrgIdNames($orgId, $roleNames);
 
             return $roles->toArray();
         }

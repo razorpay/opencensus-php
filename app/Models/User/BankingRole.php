@@ -70,6 +70,7 @@ class BankingRole
         self::FINANCE_L1,
         self::FINANCE_L2,
         self::FINANCE_L3,
+        self::FINANCE,
         // Owner and admin will also be possible workflow roles now,
         // hence adding here.
         self::OWNER,
@@ -88,6 +89,7 @@ class BankingRole
         self::FINANCE_L1 => 'Finance L1',
         self::FINANCE_L2 => 'Finance L2',
         self::FINANCE_L3 => 'Finance L3',
+        self::FINANCE    => 'Finance',
         self::OWNER      => 'Owner',
         self::ADMIN      => 'Admin',
     ];
@@ -141,6 +143,11 @@ class BankingRole
         $bankingRoles = array_merge(self::$defaultRoles, self::$workflowRoles, self::$axisRoles, self::$rblBankCaManagementRoles);
 
         return $bankingRoles;
+    }
+
+    public static function getWorkflowRoles(): array
+    {
+        return  self::$workflowRoles;
     }
 
     public static function getVendorPortalRoles(): array

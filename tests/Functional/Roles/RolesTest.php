@@ -534,7 +534,7 @@ class RolesTest extends TestCase
     {
         $role = $this->fixtures->create(
             'role',
-            ['org_id' => $this->org->getId(), 'name' => 'test name']);
+            ['org_id' => $this->org->getId(), 'name' => 'Finance']);
 
         $merchant = $this->fixtures->create('merchant',[ 'id' => self::DEFAULT_X_MERCHANT_ID]);
 
@@ -543,12 +543,6 @@ class RolesTest extends TestCase
             'merchant_id'       => self::DEFAULT_X_MERCHANT_ID,
             'business_type'     => '2',
         ]);
-
-        $perms = ['create_payout'];
-
-        $perm = (new Permission\Repository)->retrieveIdsByNames($perms)[0];
-
-        $role->permissions()->attach($perm);
 
         $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = '100000merchant';
 
@@ -560,6 +554,6 @@ class RolesTest extends TestCase
 
         $result = $this->startTest();
 
-        $this->assertCount(2, $result);
+        $this->assertCount(1, $result);
     }
 }

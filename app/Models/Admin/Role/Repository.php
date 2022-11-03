@@ -134,4 +134,19 @@ class Repository extends Base\Repository
             ->where($rOrgId, '=', $orgId)
             ->get();
     }
+
+    /**
+     * @param string $orgId
+     * @param array  $roleNames
+     *
+     * @return mixed
+     */
+    public function fetchRolesByOrgIdNames(string $orgId, array $roleNames)
+    {
+        return $this->newQuery()
+            ->where(Entity::ORG_ID, $orgId)
+            ->whereIn(Entity::NAME, $roleNames)
+            ->product(Product::PRIMARY)
+            ->get();
+    }
 }
