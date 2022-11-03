@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use App;
 
+use RZP\Constants\Metric;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger as Trace;
@@ -25,12 +26,16 @@ class MerchantBalanceUpdate extends Job
      */
     protected $input;
 
+    protected $asyncBalancePushedAt;
 
-    public function __construct(array $input)
+
+    public function __construct(array $input, string $mode = null, int $asyncBalancePushedAt = 0)
     {
         parent::__construct($input['mode']);
 
         $this->input = $input;
+
+        $this->asyncBalancePushedAt = $asyncBalancePushedAt;
     }
 
     /**
@@ -62,6 +67,10 @@ class MerchantBalanceUpdate extends Job
                 self::MUTEX_LOCK_TIMEOUT,
                 ErrorCode::BAD_REQUEST_ASYNC_MERCHANT_BALANCE_UPDATE_IN_PROGRESS);
 
+            if ($this->asyncBalancePushedAt !== 0)
+            {
+                $this->trace->histogram(Metric::ASYNC_TRANSACTION_DURATION_SECONDS, time() - $this->asyncBalancePushedAt);
+            }
         }
         catch (\Throwable $e)
         {

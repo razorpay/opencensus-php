@@ -57,6 +57,7 @@ class Metric
 
     const TRANSACTION_DURATION_MILLISECONDS     = 'transaction_duration_milliseconds.histogram';
     const ASV_SYNC_ACCOUNT_DEVIATION_DURATION_MS = 'asv_sync_account_deviation_duration_ms.histogram';
+    const ASYNC_TRANSACTION_DURATION_SECONDS     = 'async_transaction_duration_secs.histogram';
 
 
     // Labels

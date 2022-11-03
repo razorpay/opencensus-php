@@ -939,7 +939,9 @@ trait Capture
                     'merchant_id' => $payment->getMerchantId(),
                 ]);
 
-            Jobs\MerchantBalanceUpdate::dispatch($input, $this->mode);
+            $asyncBalancePushedAt = time();
+
+            Jobs\MerchantBalanceUpdate::dispatch($input, $this->mode, $asyncBalancePushedAt);
         }
          catch (\Throwable $e)
         {
