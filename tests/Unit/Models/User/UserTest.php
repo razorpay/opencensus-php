@@ -1161,6 +1161,8 @@ class UserTest extends TestCase
 
         $this->userEntityMock->shouldReceive('isOrgEnforcedSecondFactorAuth')->andReturn(false);
 
+        $this->userEntityMock->shouldReceive('isContactMobileVerified')->andReturn(true);
+
         $segmentMock = Mockery::mock('RZP\Services\Segment');
 
         $segmentMock->shouldReceive('pushIdentifyAndTrackEvent')->andReturn([]);

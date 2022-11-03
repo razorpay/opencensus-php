@@ -3052,6 +3052,11 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED);
         }
 
+        if($user->isContactMobileVerified() === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CONTACT_MOBILE_NOT_VERIFIED);
+        }
+
         $action = $input[Entity::SECOND_FACTOR_AUTH];
 
         $user->setSecondFactorAuth($action);
