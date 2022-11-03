@@ -13,7 +13,12 @@ run_bvt_suite_when_approved() {
   cookies="$(cat /tmp/cookies | awk '/SESSION/ { print $NF }')"
   SPINNAKER_HEADER="Cookie: SESSION=$cookies"
   # pipeline id - Trigger BVT Execution -> New pipeline to trigger the BVT execution in parallel (Maintaining two child pipelines now)
-  PIPELINE_ID="842e0854-3a08-4e67-9881-a9ea1d005b31"
+  PIPELINE_ID=""
+  if [ "${RUN_BVT_DEVSTACK}" = "true" ]; then
+    PIPELINE_ID="51ab409e-1ce1-4c59-ae13-f702c02a9c4a"
+  else
+    PIPELINE_ID="842e0854-3a08-4e67-9881-a9ea1d005b31"
+  fi
   api_instance=${API_INSTANCE}
   # https://developer.github.com/v3/pulls/reviews/#list-reviews-on-a-pull-request
   echo "Status Code for fetching spinnaker cookie $statusCode"

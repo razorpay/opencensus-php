@@ -190,6 +190,15 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       run: |
         echo "ONLY_IGNORE_FILES=$(sh ./.github/actions/checkIfPRHasOnlyIgnoreFiles.sh)" >> $GITHUB_ENV
+    - name: Get Build Image Workflow Status
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        BRANCH: ${{ github.event.pull_request.head.ref }}
+        WORKFLOW: build_images.yml
+      run: |
+        echo "WORKFLOW_STATUS=$(sh ./.github/actions/getWorkflowStatus.sh)" >> $GITHUB_ENV
+    - name: Check Workflow Status
+      run: echo $WORKFLOW_STATUS
     - name: Run bvt suite if PR submitted as approved
       # checking if the commit_id post backmerge is same then run BVT on it. Otherwise it invoke PR_workflow and run BVT
       if: env.GIT_NEW_COMMIT_AFTER_MERGE == env.commit_id && startsWith(github.event.pull_request.head.ref,'beta_') != true
@@ -203,5 +212,21 @@ jobs:
         ROAST_PR_COMMIT: ${{steps.latest-commit.outputs.result}}
         SKIP_ROAST_BY_DEV: ${{steps.skipRoastByDev.outputs.result}}
         GIT_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+      run: |
+        sh ./.github/actions/triggerBvtSuite.sh
+    - name: Run bvt suite on devstack if PR approved && Build Image workflow succeeded
+      if: startsWith(github.event.pull_request.head.ref,'beta_') != true &&
+        env.WORKFLOW_STATUS == 'success'
+      env:
+        SPINNAKER_PASSWORD: ${{ secrets.SPINNAKER_PASSWORD }}
+        WEBHOOK_TRIGGER: api-pr-commit-devstack
+        GITHUB_TOKEN: ${{ github.token }}
+        HOTFIX: ${{ steps.hotfix.outputs.flag }}
+        REVERT: ${{ steps.revert.outputs.flag }}
+        ROAST_PR_COMMIT: ${{steps.latest-commit.outputs.result}}
+        SKIP_ROAST_BY_DEV: ${{steps.skipRoastByDev.outputs.result}}
+        ONLY_IGNORE_FILES: ${{ env.ONLY_IGNORE_FILES }}
+        GIT_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+        RUN_BVT_DEVSTACK: true
       run: |
         sh ./.github/actions/triggerBvtSuite.sh
