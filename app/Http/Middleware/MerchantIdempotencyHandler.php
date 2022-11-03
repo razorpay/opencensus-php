@@ -12,12 +12,15 @@ use RZP\Http\Route;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Http\RequestHeader;
 use RZP\Base\RepositoryManager;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Exception\LogicException;
+use RZP\Models\Feature\Constants;
 use RZP\Models\IdempotencyKey\Entity;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Payout\Entity as Payout;
+use RZP\Models\Payout\Core as PayoutCore;
+use \RZP\Constants\Entity as EntityConstants;
 
 /**
  * Class MerchantIdempotencyHandler
@@ -260,6 +263,13 @@ class MerchantIdempotencyHandler
                     'merchant_id'       => $idempotencyEntity->getMerchantId(),
                 ]);
 
+            $payoutServiceResponse = $this->getPayoutServicePayoutResponseIfApplicable($idempotencyEntity);
+
+            if (empty($payoutServiceResponse) === false)
+            {
+                return $payoutServiceResponse;
+            }
+
             return null;
         }
 
@@ -295,5 +305,100 @@ class MerchantIdempotencyHandler
         $hash = hash('sha256', $encodedRequestBody);
 
         return $hash;
+    }
+
+    protected function getPayoutServicePayoutResponseIfApplicable(Entity $idempotencyEntity)
+    {
+        $sourceType = $this->route->getEntityForIdempotencyRequest();
+
+        $psIdempotencyEntity = null;
+
+        if ($sourceType === EntityConstants::PAYOUT)
+        {
+            $merchant = $idempotencyEntity->merchant;
+
+            $isPayoutServiceIdempotencyFeatureEnabled =
+                $merchant->isAtLeastOneFeatureEnabled(Constants::PAYOUT_SERVICE_IDEMPOTENCY_KEY_FEATURES);
+
+            if ($isPayoutServiceIdempotencyFeatureEnabled === false)
+            {
+                return null;
+            }
+            
+            $psIdempotencyEntity = null;
+
+            /** @var Entity $psIdempotencyEntity */
+            $psIdempotencyEntity = (new PayoutCore)->getAPIModelIdempotencyKeyFromPayoutService(
+                $idempotencyEntity->getIdempotencyKey(),
+                $merchant->getId());
+
+            if (empty($psIdempotencyEntity) === true)
+            {
+                $this->trace->info(
+                    TraceCode::PAYOUT_SERVICE_IDEM_KEY_NOT_FOUND,
+                    [
+                        'idempotency_key' => $idempotencyEntity->getIdempotencyKey(),
+                        'idempotency_id'  => $idempotencyEntity->getId(),
+                        'merchant_id'     => $idempotencyEntity->getMerchantId(),
+                    ]);
+
+                return null;
+            }
+
+            $psSourceId = $psIdempotencyEntity->getSourceId();
+
+            if (empty($psSourceId) === true)
+            {
+                $this->trace->info(
+                    TraceCode::PAYOUT_SERVICE_IDEM_KEY_NO_ENTITY_ASSOC,
+                    [
+                        'idempotency_key'       => $idempotencyEntity->getIdempotencyKey(),
+                        'idempotency_id'        => $idempotencyEntity->getId(),
+                        'merchant_id'           => $idempotencyEntity->getMerchantId(),
+                        'ps_idempotency_key_id' => $psIdempotencyEntity->getId(),
+                    ]);
+
+                throw new LogicException(
+                    'Payout service idempotency key has no source mapped',
+                    ErrorCode::SERVER_ERROR_PAYOUT_SERVICE_IDEM_KEY_SOURCE_UNMAPPED,
+                    [
+                        'idempotency_key'       => $idempotencyEntity->getIdempotencyKey(),
+                        'idempotency_id'        => $idempotencyEntity->getId(),
+                        'merchant_id'           => $idempotencyEntity->getMerchantId(),
+                        'ps_idempotency_key_id' => $psIdempotencyEntity->getId(),
+                    ]);
+            }
+
+            /** @var Payout $psPayout */
+            $psPayout = (new PayoutCore)->getAPIModelPayoutFromPayoutService($psSourceId);
+
+            if (empty($psPayout) === true)
+            {
+                $this->trace->info(
+                    TraceCode::PAYOUT_SERVICE_IDEM_KEY_ASSOC_ENTITY_NOT_FOUND,
+                    [
+                        'idempotency_key'       => $idempotencyEntity->getIdempotencyKey(),
+                        'idempotency_id'        => $idempotencyEntity->getId(),
+                        'merchant_id'           => $idempotencyEntity->getMerchantId(),
+                        'ps_idempotency_key_id' => $psIdempotencyEntity->getId(),
+                        'source_id'             => $psSourceId,
+                    ]);
+
+                throw new LogicException(
+                    'Payout service idempotency key source not found in payouts db',
+                    ErrorCode::SERVER_ERROR_PAYOUT_SERVICE_IDEM_KEY_SOURCE_NOT_FOUND,
+                    [
+                        'idempotency_key'       => $idempotencyEntity->getIdempotencyKey(),
+                        'idempotency_id'        => $idempotencyEntity->getId(),
+                        'merchant_id'           => $idempotencyEntity->getMerchantId(),
+                        'ps_idempotency_key_id' => $psIdempotencyEntity->getId(),
+                        'source_id'             => $psSourceId,
+                    ]);
+            }
+
+            return $psPayout->toArrayPublic();
+        }
+
+        return null;
     }
 }

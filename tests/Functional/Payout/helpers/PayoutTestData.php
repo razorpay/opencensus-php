@@ -15170,6 +15170,57 @@ return [
         ],
     ],
 
+    'testCreatePayoutWithExistingIKeyButNoSourceEntityFoundOnApiAndPSForPSIkeyFeatureEnabledMerchant' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => Exception\LogicException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_PAYOUT_SERVICE_IDEM_KEY_SOURCE_NOT_FOUND,
+            'message'             => 'Payout service idempotency key source not found in payouts db',
+        ],
+    ],
+
+    'testCreatePayoutWithExistingIKeyButNoSourceEntityFoundOnApiAndNoMappingOnPSForPSIkeyFeatureEnabledMerchant' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => Exception\LogicException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_PAYOUT_SERVICE_IDEM_KEY_SOURCE_UNMAPPED,
+            'message'             => 'Payout service idempotency key has no source mapped',
+        ],
+    ],
+
+    'testCreatePayoutWithExistingIKeyButNoSourceEntityFoundOnApiAndNullMappingOnPSFForPSIkeyFeatureEnabledMerchant' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => Exception\LogicException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_PAYOUT_SERVICE_IDEM_KEY_SOURCE_UNMAPPED,
+            'message'             => 'Payout service idempotency key has no source mapped',
+        ],
+    ],
+
     'testCreatePayoutOnPrivateAuthAndMetricsSent' => [
         'request'  => [
             'method'  => 'POST',

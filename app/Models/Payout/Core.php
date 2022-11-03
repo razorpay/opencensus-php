@@ -38,6 +38,7 @@ use RZP\Models\Transaction;
 use RZP\Models\FeeRecovery;
 use RZP\Constants\Timezone;
 use RZP\Models\CreditTransfer;
+use RZP\Models\IdempotencyKey;
 use RZP\Models\BankingAccount;
 use RZP\Jobs\PayoutsAutoExpire;
 use RZP\Models\Workflow\Action;
@@ -5892,6 +5893,55 @@ class Core extends Base\Core
             ]);
 
         return $payout;
+    }
+
+    public function getAPIModelIdempotencyKeyFromPayoutService(string $idempotencyKey,
+                                                               string $merchantId)
+    {
+        $this->trace->info(
+            TraceCode::FETCH_PAYOUT_SERVICE_IDEMPOTENCY_KEY,
+            [
+                Entity::IDEMPOTENCY_KEY => $idempotencyKey,
+                Entity::MERCHANT_ID     => $merchantId,
+            ]);
+
+        $payoutServiceIdempotencyKeys = $this->repo->payout->getPayoutServiceIdempotencyKey($idempotencyKey,
+                                                                                           $merchantId);
+
+        if (empty($payoutServiceIdempotencyKeys) === true)
+        {
+            return null;
+        }
+
+        $payoutServiceIdempotencyKey =  $payoutServiceIdempotencyKeys[0];
+
+        $idempotencyKey = new IdempotencyKey\Entity;
+
+        $idempotencyKey->setId($payoutServiceIdempotencyKey->id);
+        $idempotencyKey->setRequestHash($payoutServiceIdempotencyKey->request_hash);
+        $idempotencyKey->setMerchantId($payoutServiceIdempotencyKey->merchant_id);
+        $idempotencyKey->setSourceType($payoutServiceIdempotencyKey->source_type);
+        $idempotencyKey->setCreatedAt($payoutServiceIdempotencyKey->created_at);
+        $idempotencyKey->setUpdatedAt($payoutServiceIdempotencyKey->updated_at);
+
+        if (empty($payoutServiceIdempotencyKey->source_id) === false)
+        {
+            $idempotencyKey->setSourceId($payoutServiceIdempotencyKey->source_id);
+        }
+
+        // This is need to showcase $idempotencyKey as freshly fetched entity and not like a variable on which many
+        // setters are called. After doing this isDirty will give false.
+        $idempotencyKey->syncOriginal();
+
+        $idempotencyKey->setConnection($this->mode);
+
+        $this->trace->info(
+            TraceCode::FETCH_PAYOUT_SERVICE_IDEMPOTENCY_KEY_SUCCESS,
+            [
+                'payout' => $idempotencyKey->toArray(),
+            ]);
+
+        return $idempotencyKey;
     }
 
     public function createPayoutServiceTransaction(array $input)

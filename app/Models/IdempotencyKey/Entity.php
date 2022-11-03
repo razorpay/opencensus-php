@@ -113,6 +113,26 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::REQUEST_HASH, $requestHash);
     }
 
+    public function setIdempotencyKey(string $idempotencyKey)
+    {
+        $this->setAttribute(self::IDEMPOTENCY_KEY, $idempotencyKey);
+    }
+
+    public function setSourceType(string $sourceType)
+    {
+        $this->setAttribute(self::IDEMPOTENCY_KEY, $sourceType);
+    }
+
+    public function setSourceId(string $sourceId)
+    {
+        $this->setAttribute(self::SOURCE_ID, $sourceId);
+    }
+
+    public function setMerchantId(string $merchantId)
+    {
+        $this->setAttribute(self::MERCHANT_ID, $merchantId);
+    }
+
     public function setResponse($response)
     {
         $this->setAttribute(self::RESPONSE, $response);

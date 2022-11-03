@@ -47,6 +47,7 @@ use RZP\Models\Card\Network;
 use RZP\Models\Payout\Status;
 use RZP\Services\RazorXClient;
 use RZP\Models\CreditTransfer;
+use RZP\Models\IdempotencyKey;
 use RZP\Models\PayoutsDetails;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Services\FTS\FundTransfer;
@@ -1450,6 +1451,389 @@ class PayoutTest extends OAuthTestCase
         $ikeys = $this->getDbEntities(Constants\Entity::IDEMPOTENCY_KEY);
 
         $this->assertCount(1, $ikeys);
+    }
+
+    public function testCreatePayoutWithExistingIKeyButNoSourceEntityFound()
+    {
+        // Not asserting the data, just the count.
+        $this->mockLedgerSns(2);
+
+        $payout1 = $this->testCreatePayoutWithIKeyHeader('samekey');
+
+        $payouts = $this->getDbEntities('payout');
+
+        $payoutsCountBefore = count($payouts);
+
+        $idempotencyKey = $this->getDbEntity('idempotency_key', [
+            'idempotency_key' => 'samekey',
+        ]);
+
+        $this->fixtures->edit(
+            'idempotency_key',
+            $idempotencyKey->getId(),
+            [
+                'source_id' => null,
+            ]
+        );
+
+        $payout2 = $this->testCreatePayoutWithIKeyHeader('samekey');
+
+        $payouts = $this->getDbEntities('payout');
+
+        $payoutsCountAfter = count($payouts);
+
+        $this->assertEquals($payoutsCountBefore + 1, $payoutsCountAfter);
+
+        $this->assertNotEquals($payout1['id'], $payout2['id']);
+
+        $ikeys = $this->getDbEntities(Constants\Entity::IDEMPOTENCY_KEY);
+
+        $this->assertCount(1, $ikeys);
+    }
+
+    public function testCreatePayoutWithExistingIKeyButNoSourceEntityFoundForPSIkeyFeatureEnabledMerchant()
+    {
+        // Not asserting the data, just the count.
+        $this->mockLedgerSns(1);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $payout1 = $this->testCreatePayoutWithIKeyHeader('samekey');
+
+        $unsignedPayoutId = substr($payout1['id'], 5);
+
+        $payouts = $this->getDbEntities('payout');
+
+        $payoutsCountBefore = count($payouts);
+
+        /** @var IdempotencyKey\Entity $idempotencyKey */
+        $idempotencyKey = $this->getDbEntity('idempotency_key', [
+            'idempotency_key' => 'samekey',
+        ]);
+
+        $this->fixtures->edit(
+            'idempotency_key',
+            $idempotencyKey->getId(),
+            [
+                'source_id' => null,
+            ]
+        );
+
+        $payoutData = [
+            'id'                          => $unsignedPayoutId,
+            'merchant_id'                 => "10000000000000",
+            'fund_account_id'             => "100000000000fa",
+            'method'                      => "fund_transfer",
+            'reference_id'                => null,
+            'balance_id'                  => "KHTaUGgTXc0dhH",
+            'user_id'                     => "random_user123",
+            'batch_id'                    => null,
+            'idempotency_key'             => "random_key",
+            'purpose'                     => "refund",
+            'narration'                   => "Batman",
+            'purpose_type'                => "refund",
+            'amount'                      => 2000000,
+            'currency'                    => "INR",
+            'notes'                       => "{}",
+            'fees'                        => 10,
+            'tax'                         => 33,
+            'status'                      => "processed",
+            'fts_transfer_id'             => 60,
+            'transaction_id'              => "KHTaWqqBKwrVTM",
+            'channel'                     => "yesbank",
+            'utr'                         => "933815383814",
+            'failure_reason'              => null,
+            'remarks'                     => "Check the status by calling getStatus API.",
+            'pricing_rule_id'             => "Bbg7cl6t6I3XA9",
+            'scheduled_at'                => null,
+            'queued_at'                   => null,
+            'mode'                        => "IMPS",
+            'fee_type'                    => "free_payout",
+            'workflow_feature'            => null,
+            'origin'                      => 1,
+            'status_code'                 => null,
+            'cancellation_user_id'        => null,
+            'registered_name'             => "SUSANTA BHUYAN",
+            'queued_reason'               => "beneficiary_bank_down",
+            'on_hold_at'                  => 1663092113,
+            'created_at'                  => 1000000000,
+            'updated_at'                  => 1000000002,
+        ];
+
+        \DB::connection('live')->table('ps_payouts')->insert($payoutData);
+
+        $idempotencyKeyData = [
+            'id'          => 'randomid111111',
+            'merchant_id' => $idempotencyKey->getMerchantId(),
+            'idempotency_key' => $idempotencyKey->getIdempotencyKey(),
+            'source_id'   => $unsignedPayoutId,
+            'source_type' => 'payout',
+            'request_hash' => $idempotencyKey->getRequestHash(),
+            'created_at'  => $idempotencyKey->getCreatedAt(),
+            'updated_at'  => $idempotencyKey->getUpdatedAt(),
+        ];
+
+        \DB::connection('live')->table('ps_idempotency_keys')->insert($idempotencyKeyData);
+
+        $newPayoutResponse = [
+            'entity'          => 'payout',
+            'amount'          => 2000000,
+            'currency'        => 'INR',
+            'fund_account_id' => 'fa_100000000000fa',
+            'narration'       => 'Batman',
+            'purpose'         => 'refund',
+            'status'          => 'processed',
+            'mode'            => 'IMPS',
+            'tax'             => 33,
+            'fees'            => 10,
+            'notes'           => [],
+        ];
+
+        $testData = $this->testData['testCreatePayoutWithIKeyHeader'];
+
+        $testData['response']['content'] = $newPayoutResponse;
+
+        $headers = [
+            'HTTP_' . RequestHeader::X_PAYOUT_IDEMPOTENCY => 'samekey',
+        ];
+
+        // append headers
+        $testData['request']['server'] = $headers;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->privateAuth();
+
+        $payout2 = $this->startTest();
+
+        $payouts = $this->getDbEntities('payout');
+
+        $payoutsCountAfter = count($payouts);
+
+        $this->assertEquals($payoutsCountBefore, $payoutsCountAfter);
+
+        $this->assertEquals($payout1['id'], $payout2['id']);
+
+        $ikeys = $this->getDbEntities(Constants\Entity::IDEMPOTENCY_KEY);
+
+        $this->assertCount(1, $ikeys);
+
+        $ikey = $ikeys[0];
+
+        $this->assertEquals(null, $ikey->getSourceId());
+        $this->assertEquals('samekey', $ikey->getIdempotencyKey());
+    }
+
+    public function testCreatePayoutWithExistingIKeyButNoSourceEntityFoundOnApiAndPSForPSIkeyFeatureEnabledMerchant()
+    {
+        // Not asserting the data, just the count.
+        $this->mockLedgerSns(1);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $payout1 = $this->testCreatePayoutWithIKeyHeader('samekey');
+
+        $unsignedPayoutId = substr($payout1['id'], 5);
+
+        $payouts = $this->getDbEntities('payout');
+
+        $payoutsCountBefore = count($payouts);
+
+        /** @var IdempotencyKey\Entity $idempotencyKey */
+        $idempotencyKey = $this->getDbEntity('idempotency_key', [
+            'idempotency_key' => 'samekey',
+        ]);
+
+        $this->fixtures->edit(
+            'idempotency_key',
+            $idempotencyKey->getId(),
+            [
+                'source_id' => null,
+            ]
+        );
+
+        $idempotencyKeyData = [
+            'id'          => 'randomid111111',
+            'merchant_id' => $idempotencyKey->getMerchantId(),
+            'idempotency_key' => $idempotencyKey->getIdempotencyKey(),
+            'source_id'   => $unsignedPayoutId,
+            'source_type' => 'payout',
+            'request_hash' => $idempotencyKey->getRequestHash(),
+            'created_at'  => $idempotencyKey->getCreatedAt(),
+            'updated_at'  => $idempotencyKey->getUpdatedAt(),
+        ];
+
+        \DB::connection('live')->table('ps_idempotency_keys')->insert($idempotencyKeyData);
+
+        $testData = $this->testData['testCreatePayoutWithIKeyHeader'];
+
+        $headers = [
+            'HTTP_' . RequestHeader::X_PAYOUT_IDEMPOTENCY => 'samekey',
+        ];
+
+        // append headers
+        $testData['request']['server'] = $headers;
+
+        $this->testData[__FUNCTION__]['request'] = $testData['request'];
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payouts = $this->getDbEntities('payout');
+
+        $payoutsCountAfter = count($payouts);
+
+        $this->assertEquals($payoutsCountBefore, $payoutsCountAfter);
+
+        $ikeys = $this->getDbEntities(Constants\Entity::IDEMPOTENCY_KEY);
+
+        $this->assertCount(1, $ikeys);
+
+        $ikey = $ikeys[0];
+
+        $this->assertEquals(null, $ikey->getSourceId());
+        $this->assertEquals('samekey', $ikey->getIdempotencyKey());
+    }
+
+    public function testCreatePayoutWithExistingIKeyButNoSourceEntityFoundOnApiAndNoMappingOnPSForPSIkeyFeatureEnabledMerchant()
+    {
+        // Not asserting the data, just the count.
+        $this->mockLedgerSns(1);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $this->testCreatePayoutWithIKeyHeader('samekey');
+
+        $payouts = $this->getDbEntities('payout');
+
+        $payoutsCountBefore = count($payouts);
+
+        /** @var IdempotencyKey\Entity $idempotencyKey */
+        $idempotencyKey = $this->getDbEntity('idempotency_key', [
+            'idempotency_key' => 'samekey',
+        ]);
+
+        $this->fixtures->edit(
+            'idempotency_key',
+            $idempotencyKey->getId(),
+            [
+                'source_id' => null,
+            ]
+        );
+
+        $idempotencyKeyData = [
+            'id'          => 'randomid111111',
+            'merchant_id' => $idempotencyKey->getMerchantId(),
+            'idempotency_key' => $idempotencyKey->getIdempotencyKey(),
+            'source_id'   => '',
+            'source_type' => 'payout',
+            'request_hash' => $idempotencyKey->getRequestHash(),
+            'created_at'  => $idempotencyKey->getCreatedAt(),
+            'updated_at'  => $idempotencyKey->getUpdatedAt(),
+        ];
+
+        \DB::connection('live')->table('ps_idempotency_keys')->insert($idempotencyKeyData);
+
+        $testData = $this->testData['testCreatePayoutWithIKeyHeader'];
+
+        $headers = [
+            'HTTP_' . RequestHeader::X_PAYOUT_IDEMPOTENCY => 'samekey',
+        ];
+
+        // append headers
+        $testData['request']['server'] = $headers;
+
+        $this->testData[__FUNCTION__]['request'] = $testData['request'];
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payouts = $this->getDbEntities('payout');
+
+        $payoutsCountAfter = count($payouts);
+
+        $this->assertEquals($payoutsCountBefore, $payoutsCountAfter);
+
+        $ikeys = $this->getDbEntities(Constants\Entity::IDEMPOTENCY_KEY);
+
+        $this->assertCount(1, $ikeys);
+
+        $ikey = $ikeys[0];
+
+        $this->assertEquals(null, $ikey->getSourceId());
+        $this->assertEquals('samekey', $ikey->getIdempotencyKey());
+    }
+
+    public function testCreatePayoutWithExistingIKeyButNoSourceEntityFoundOnApiAndNullMappingOnPSFForPSIkeyFeatureEnabledMerchant()
+    {
+        // Not asserting the data, just the count.
+        $this->mockLedgerSns(1);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $this->testCreatePayoutWithIKeyHeader('samekey');
+
+        $payouts = $this->getDbEntities('payout');
+
+        $payoutsCountBefore = count($payouts);
+
+        /** @var IdempotencyKey\Entity $idempotencyKey */
+        $idempotencyKey = $this->getDbEntity('idempotency_key', [
+            'idempotency_key' => 'samekey',
+        ]);
+
+        $this->fixtures->edit(
+            'idempotency_key',
+            $idempotencyKey->getId(),
+            [
+                'source_id' => null,
+            ]
+        );
+
+        $idempotencyKeyData = [
+            'id'          => 'randomid111111',
+            'merchant_id' => $idempotencyKey->getMerchantId(),
+            'idempotency_key' => $idempotencyKey->getIdempotencyKey(),
+            'source_id'   => null,
+            'source_type' => 'payout',
+            'request_hash' => $idempotencyKey->getRequestHash(),
+            'created_at'  => $idempotencyKey->getCreatedAt(),
+            'updated_at'  => $idempotencyKey->getUpdatedAt(),
+        ];
+
+        \DB::connection('live')->table('ps_idempotency_keys')->insert($idempotencyKeyData);
+
+        $testData = $this->testData['testCreatePayoutWithIKeyHeader'];
+
+        $headers = [
+            'HTTP_' . RequestHeader::X_PAYOUT_IDEMPOTENCY => 'samekey',
+        ];
+
+        // append headers
+        $testData['request']['server'] = $headers;
+
+        $this->testData[__FUNCTION__]['request'] = $testData['request'];
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payouts = $this->getDbEntities('payout');
+
+        $payoutsCountAfter = count($payouts);
+
+        $this->assertEquals($payoutsCountBefore, $payoutsCountAfter);
+
+        $ikeys = $this->getDbEntities(Constants\Entity::IDEMPOTENCY_KEY);
+
+        $this->assertCount(1, $ikeys);
+
+        $ikey = $ikeys[0];
+
+        $this->assertEquals(null, $ikey->getSourceId());
+        $this->assertEquals('samekey', $ikey->getIdempotencyKey());
     }
 
 

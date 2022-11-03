@@ -2649,6 +2649,20 @@ class Repository extends Base\Repository
                   ->select("select * from $tableName where id = '$id' limit 1");
     }
 
+    public function getPayoutServiceIdempotencyKey(string $idempotencyKey, string $merchantId)
+    {
+        $tableName = Table::IDEMPOTENCY_KEY;
+
+        if (in_array($this->app['env'], ['testing', 'testing_docker'], true) === true)
+        {
+            $tableName = 'ps_idempotency_keys';
+        }
+
+        return \DB::connection($this->getPayoutsServiceConnection())
+                  ->select("select * from $tableName where idempotency_key = '$idempotencyKey' and " .
+                           "merchant_id = '$merchantId' and source_type = 'payout' order by id desc limit 1");
+    }
+
     public function getPayoutServicePayoutMetaDataForDualWrite(string $payoutId)
     {
         $tableName = 'payout_meta_temporary';
