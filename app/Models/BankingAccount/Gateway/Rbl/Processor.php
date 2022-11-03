@@ -488,7 +488,10 @@ class Processor extends BankingAccount\Gateway\Processor
                                     function()
                                     {
                                         return $this->generateBankReferenceNumber();
-                                    });
+                                    },
+                                    60,
+                                    ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+                                    3);
 
         return [
             BankingAccount\Entity::STATUS                   => BankingAccount\Status::CREATED,
