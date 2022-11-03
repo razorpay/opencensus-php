@@ -41,8 +41,12 @@ class Service extends Base\Service
 
         $features = $featureParams->map(function ($item) use ($featureCore, $shouldSync)
         {
+            /** @var Entity $featureToAssign */
             $featureToAssign = (new Entity)->build($item);
+
             $featureCore->checkAndDisableRxLedgerAndPayoutFeatureChanges($featureToAssign->getName());
+
+            $featureCore->checkAndDisableFeatureChangesForPayoutServiceIdempotencyFeatures($featureToAssign->getName());
 
             return $featureCore->create($item, $shouldSync);
         });
@@ -547,6 +551,8 @@ class Service extends Base\Service
 
         (new Core)->checkAndDisableRxLedgerAndPayoutFeatureChanges($feature->getName());
 
+        (new Core)->checkAndDisableFeatureChangesForPayoutServiceIdempotencyFeatures($featureName);
+
         (new Core)->delete($feature, $shouldSync);
 
         // We delete the tag also along with feature.
@@ -616,7 +622,9 @@ class Service extends Base\Service
                 {
                     (new Core())->checkAndDisableRxLedgerAndPayoutFeatureChanges($featureName);
 
-                    $feature = (new Core())->create($featureParam, $shouldSync);
+                    (new Core())->checkAndDisableFeatureChangesForPayoutServiceIdempotencyFeatures($featureName);
+
+                    (new Core())->create($featureParam, $shouldSync);
 
                     $successfulMerchant[] = $entityId;
 
@@ -693,6 +701,8 @@ class Service extends Base\Service
                 try
                 {
                     (new Core())->checkAndDisableRxLedgerAndPayoutFeatureChanges($featureName);
+
+                    (new Core())->checkAndDisableFeatureChangesForPayoutServiceIdempotencyFeatures($featureName);
 
                     $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
                         $entityType,

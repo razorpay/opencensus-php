@@ -30,6 +30,7 @@ use RZP\Services\PayoutService\BulkPayout;
 use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Balance\Type as Type;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Counter\Entity as CounterEntity;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
 use RZP\Jobs\FreePayoutMigrationForPayoutsService;
@@ -3965,6 +3966,9 @@ class PayoutServiceTest extends TestCase
             'live')->pluck('name')->toArray();
 
         $this->assertNotContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayBeforeTest);
+        $this->assertNotContains(Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayBeforeTest);
+        $this->assertNotContains(Constants::IDEMPOTENCY_API_TO_PS, $liveFeaturesArrayBeforeTest);
+        $this->assertNotContains(Constants::IDEMPOTENCY_PS_TO_API, $liveFeaturesArrayBeforeTest);
 
         $this->testData[__FUNCTION__]['request']['content']['ids'][0][Entity::BALANCE_ID] = $balance->getId();
 
@@ -3981,6 +3985,138 @@ class PayoutServiceTest extends TestCase
 
         $this->assertContains(Feature\Constants::LEDGER_REVERSE_SHADOW, $liveFeaturesArray);
         $this->assertContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArray);
+        $this->assertContains(Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArray);
+        $this->assertContains(Constants::IDEMPOTENCY_API_TO_PS, $liveFeaturesArray);
+
+        $this->assertNotContains(Constants::IDEMPOTENCY_PS_TO_API, $liveFeaturesArray);
+    }
+
+    public function testFreePayoutMigrationAdminActionWithIdempotencyPsToApiFeatureEnabled()
+    {
+        $this->mockPayoutServiceFreePayoutMigration();
+
+        $balance = $this->getDbEntities('balance',
+                                        [
+                                            'account_number'   => '2224440041626905',
+                                        ], 'live')->first();
+
+        $this->fixtures->on('live')->create('settings', [
+            SettingsEntity::ENTITY_ID   => $balance->getId(),
+            SettingsEntity::ENTITY_TYPE => EntityConstants::BALANCE,
+            SettingsEntity::MODULE      => FreePayout::FREE_PAYOUT,
+            SettingsEntity::KEY         => FreePayout::FREE_PAYOUTS_COUNT,
+            SettingsEntity::VALUE       => '250',
+        ]);
+
+        $this->fixtures->on('live')->create('settings', [
+            SettingsEntity::ENTITY_ID   => $balance->getId(),
+            SettingsEntity::ENTITY_TYPE => EntityConstants::BALANCE,
+            SettingsEntity::MODULE      => FreePayout::FREE_PAYOUT,
+            SettingsEntity::KEY         => FreePayout::FREE_PAYOUTS_SUPPORTED_MODES,
+            SettingsEntity::VALUE       => 'IMPS,NEFT',
+        ]);
+
+        $this->fixtures->on('live')->create('feature', [
+            'name'        => Feature\Constants::LEDGER_REVERSE_SHADOW,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $feature = $this->getDbEntity('feature',
+                                      [
+                                          'entity_id'   => '10000000000000',
+                                          'entity_type' => EntityConstants::MERCHANT,
+                                          'name'        => Feature\Constants::PAYOUT_SERVICE_ENABLED,
+                                      ],
+                                      'live')->toArray();
+
+        $this->fixtures->on('live')->edit(
+            'feature',
+            $feature['id'],
+            [
+                'name' => 'random_feature',
+            ]
+        );
+
+        $this->fixtures->on('live')->merchant->addFeatures([Constants::IDEMPOTENCY_PS_TO_API]);
+
+        $liveFeaturesArrayBeforeTest = $this->getDbEntity('feature',
+                                                          [
+                                                              'entity_id' => '10000000000000',
+                                                              'entity_type' => 'merchant'
+                                                          ],
+                                                          'live')->pluck('name')->toArray();
+
+        $this->assertNotContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayBeforeTest);
+        $this->assertNotContains(Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayBeforeTest);
+        $this->assertNotContains(Constants::IDEMPOTENCY_API_TO_PS, $liveFeaturesArrayBeforeTest);
+        $this->assertContains(Constants::IDEMPOTENCY_PS_TO_API, $liveFeaturesArrayBeforeTest);
+
+        $merchant = $this->getDbEntity('merchant',
+                                       [
+                                           'id' => '10000000000000'
+                                       ],
+                                       'live');
+
+        $tagInputData = [
+            'tags' => [Constants::IDEMPOTENCY_PS_TO_API],
+        ];
+
+        $merchantCore = new MerchantCore();
+
+        $merchantCore ->setModeAndDefaultConnection('live');
+
+        $merchantCore->addTags($merchant->getId(), $tagInputData, false);
+
+        // This works without needing to reload from db somehow.
+        $tagsBefore = $merchant->tagNames();
+
+        // Doing this because it returns tag name with first char as capital always (not sure why).
+        foreach ($tagsBefore as $key => $tag)
+        {
+            $tagsBefore[$key] = strtolower($tag);
+        }
+
+        $this->assertTrue(in_array(Constants::IDEMPOTENCY_PS_TO_API, $tagsBefore, true));
+
+        $this->testData[__FUNCTION__] = $this->testData['testFreePayoutMigrationAdminAction'];
+
+        $this->testData[__FUNCTION__]['request']['content']['ids'][0][Entity::BALANCE_ID] = $balance->getId();
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+
+        $liveFeaturesArray = $this->getDbEntity('feature',
+                                                [
+                                                    'entity_id' => '10000000000000',
+                                                    'entity_type' => 'merchant'
+                                                ],
+                                                'live')->pluck('name')->toArray();
+
+        $this->assertContains(Feature\Constants::LEDGER_REVERSE_SHADOW, $liveFeaturesArray);
+        $this->assertContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArray);
+        $this->assertContains(Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArray);
+        $this->assertContains(Constants::IDEMPOTENCY_API_TO_PS, $liveFeaturesArray);
+
+        $this->assertNotContains(Constants::IDEMPOTENCY_PS_TO_API, $liveFeaturesArray);
+
+        // Doing this because you need to again fetch the entity from db to get the updated tags, ->reload() also
+        // doesn't work (not known why).
+        $merchant = $this->getDbEntity('merchant',
+                                       [
+                                           'id' => '10000000000000'
+                                       ],
+                                       'live');
+
+        $tagsAfter = $merchant->tagNames();
+
+        foreach ($tagsAfter as $key => $tag)
+        {
+            $tagsAfter[$key] = strtolower($tag);
+        }
+
+        $this->assertFalse(in_array(Constants::IDEMPOTENCY_API_TO_PS, $tagsAfter, true));
     }
 
     public function testFreePayoutMigrationAdminActionWithLedgerReverseShadowNotAssigned()
@@ -4128,6 +4264,8 @@ class PayoutServiceTest extends TestCase
             'live')->pluck('name')->toArray();
 
         $this->assertContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayBeforeTest);
+        $this->assertNotContains(Feature\Constants::IDEMPOTENCY_API_TO_PS, $liveFeaturesArrayBeforeTest);
+        $this->assertNotContains(Feature\Constants::IDEMPOTENCY_PS_TO_API, $liveFeaturesArrayBeforeTest);
 
         $this->ba->appAuthLive();
 
@@ -4141,7 +4279,102 @@ class PayoutServiceTest extends TestCase
             'live')->pluck('name')->toArray();
 
         $this->assertContains(Feature\Constants::LEDGER_REVERSE_SHADOW, $liveFeaturesArrayAfterTest);
+        $this->assertContains(Feature\Constants::IDEMPOTENCY_PS_TO_API, $liveFeaturesArrayAfterTest);
         $this->assertNotContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayAfterTest);
+        $this->assertNotContains(Feature\Constants::IDEMPOTENCY_API_TO_PS, $liveFeaturesArrayAfterTest);
+    }
+
+    public function testFreePayoutRollbackWithIdempotencyApiToPsFeatureEnabled()
+    {
+        $balance = $this->getDbEntities('balance',
+                                        [
+                                            'account_number'   => '2224440041626905',
+                                        ], 'live')->first();
+
+        $this->testData[__FUNCTION__] = $this->testData['testFreePayoutRollback'];
+
+        $this->testData[__FUNCTION__]['request']['content'][Entity::BALANCE_ID] = $balance->getId();
+
+        $this->fixtures->on('live')->create('feature', [
+            'name'        => Feature\Constants::LEDGER_REVERSE_SHADOW,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $liveFeaturesArrayBeforeTest = $this->getDbEntity('feature',
+                                                          [
+                                                              'entity_id' => '10000000000000',
+                                                              'entity_type' => 'merchant'
+                                                          ],
+                                                          'live')->pluck('name')->toArray();
+
+        $this->assertContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayBeforeTest);
+        $this->assertContains(Feature\Constants::IDEMPOTENCY_API_TO_PS, $liveFeaturesArrayBeforeTest);
+        $this->assertNotContains(Feature\Constants::IDEMPOTENCY_PS_TO_API, $liveFeaturesArrayBeforeTest);
+
+        $merchant = $this->getDbEntity('merchant',
+                                       [
+                                           'id' => '10000000000000'
+                                       ],
+                                       'live');
+
+        $tagInputData = [
+            'tags' => [Constants::IDEMPOTENCY_API_TO_PS],
+        ];
+
+        (new MerchantCore())->addTags($merchant->getId(), $tagInputData, false);
+
+        $merchantCore = new MerchantCore();
+
+        $merchantCore ->setModeAndDefaultConnection('live');
+
+        $merchantCore->addTags($merchant->getId(), $tagInputData, false);
+
+        // This works without needing to reload from db somehow.
+        $tagsBefore = $merchant->tagNames();
+
+        // Doing this because it returns tag name with first char as capital always (not sure why).
+        foreach ($tagsBefore as $key => $tag)
+        {
+            $tagsBefore[$key] = strtolower($tag);
+        }
+
+        $this->assertTrue(in_array(Constants::IDEMPOTENCY_API_TO_PS, $tagsBefore, true));
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+
+        $liveFeaturesArrayAfterTest = $this->getDbEntity('feature',
+                                                         [
+                                                             'entity_id' => '10000000000000',
+                                                             'entity_type' => 'merchant'
+                                                         ],
+                                                         'live')->pluck('name')->toArray();
+
+        $this->assertContains(Feature\Constants::LEDGER_REVERSE_SHADOW, $liveFeaturesArrayAfterTest);
+        $this->assertContains(Feature\Constants::IDEMPOTENCY_PS_TO_API, $liveFeaturesArrayAfterTest);
+        $this->assertNotContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayAfterTest);
+        $this->assertNotContains(Feature\Constants::IDEMPOTENCY_API_TO_PS, $liveFeaturesArrayAfterTest);
+
+        // Doing this because you need to again fetch the entity from db to get the updated tags, ->reload() also
+        // doesn't work (not known why).
+        $merchant = $this->getDbEntity('merchant',
+                                       [
+                                           'id' => '10000000000000'
+                                       ],
+                                       'live');
+
+        $tagsAfter = $merchant->tagNames();
+
+        foreach ($tagsAfter as $key => $tag)
+        {
+            $tagsAfter[$key] = strtolower($tag);
+        }
+
+        $this->assertFalse(in_array(Constants::IDEMPOTENCY_API_TO_PS, $tagsAfter, true));
     }
 
     public function testFreePayoutRollbackValidationFailure()

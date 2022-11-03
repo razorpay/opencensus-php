@@ -5400,7 +5400,7 @@ class Core extends Base\Core
                 ]);
         }
 
-        (new Feature\Core)->delete($feature);
+        (new Feature\Core)->disablePayoutService($feature);
     }
 
     public function rejectWorkflowViaWorkflowService(Entity $payout, array $input)

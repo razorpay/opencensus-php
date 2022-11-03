@@ -1290,6 +1290,7 @@ class Core extends Base\Core
                     'mode'                  => $this->mode
                 ]
             );
+
             throw new Exception\BadRequestValidationFailureException(
                 'Manually enabling/disabling ledger feature ' . $featureToAssign . ' is not allowed.'
             );
@@ -1329,6 +1330,28 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     * @param string $featureToChange The new feature to be added
+     *
+     * @throws Exception\BadRequestValidationFailureException if feature should not be deleted manually
+     */
+    public function checkAndDisableFeatureChangesForPayoutServiceIdempotencyFeatures(string $featureToChange)
+    {
+        if (in_array($featureToChange, Constants::PAYOUT_SERVICE_IDEMPOTENCY_KEY_FEATURES, true) === true)
+        {
+            $this->trace->info(TraceCode::MANUAL_PAYOUT_SERVICE_IDEMPOTENCY_KEY_FEATURE_CHANGE_ATTEMPTED,
+                               [
+                                   'feature_to_change'     => $featureToChange,
+                                   'mode'                  => $this->mode
+                               ]
+            );
+
+            throw new Exception\BadRequestValidationFailureException(
+                'Manually enabling/disabling payout service feature ' . $featureToChange . ' is not allowed.'
+            );
+        }
+    }
+
     public function removeFeature(string $featureName, bool $shouldSync = false)
     {
         $merchant = $this->merchant;
@@ -1343,5 +1366,133 @@ class Core extends Base\Core
         {
             $this->repo->feature->deleteAndSyncIfApplicableOrFail($feature, $shouldSync);
         }
+    }
+
+    public function enablePayoutService(array $payoutServiceFeatureInput, bool $shouldSync = false): Entity
+    {
+        $this->trace->info(TraceCode::ENABLE_PAYOUT_SERVICE_ENABLED_FEATURE_REQUEST,
+                           [
+                               'input'       => $payoutServiceFeatureInput,
+                               'should_sync' => $shouldSync,
+                           ]
+        );
+
+        /** @var Entity $payoutServiceIdempotencyKeyFromPsToApiFeature */
+        $payoutServiceIdempotencyKeyFromPsToApiFeature = $this->repo->feature
+            ->findByEntityTypeEntityIdAndName(
+                $payoutServiceFeatureInput[Entity::ENTITY_TYPE],
+                $payoutServiceFeatureInput[Entity::ENTITY_ID],
+                Constants::IDEMPOTENCY_PS_TO_API);
+
+        $this->trace->info(TraceCode::IS_IDEMPOTENCY_PS_TO_API_FEATURE_ENABLED,
+                           [
+                               'is_feature_enabled' => empty($payoutServiceIdempotencyKeyFromPsToApiFeature),
+                           ]
+        );
+
+        $feature = $this->repo->feature->transaction(function() use (
+            $payoutServiceFeatureInput,
+            $shouldSync,
+            $payoutServiceIdempotencyKeyFromPsToApiFeature
+        ) {
+            if (empty($payoutServiceIdempotencyKeyFromPsToApiFeature) === false)
+            {
+                $this->delete($payoutServiceIdempotencyKeyFromPsToApiFeature, $shouldSync);
+            }
+
+            $payoutServiceIdempotencyKeyFromApiToPsFeatureInput = [
+                Entity::ENTITY_TYPE => $payoutServiceFeatureInput[Entity::ENTITY_TYPE],
+                Entity::ENTITY_ID   => $payoutServiceFeatureInput[Entity::ENTITY_ID],
+                Entity::NAME        => Constants::IDEMPOTENCY_API_TO_PS,
+            ];
+
+            $this->create($payoutServiceIdempotencyKeyFromApiToPsFeatureInput, $shouldSync);
+
+            return $this->create($payoutServiceFeatureInput, $shouldSync);
+        });
+
+        $this->trace->info(TraceCode::ENABLE_PAYOUT_SERVICE_ENABLED_FEATURE_RESPONSE,
+                           [
+                               'feature' => $feature->toArray(),
+                           ]
+        );
+
+        if (empty($payoutServiceIdempotencyKeyFromPsToApiFeature) === false)
+        {
+            (new Merchant\Service)->deleteTag($payoutServiceIdempotencyKeyFromPsToApiFeature->getEntityId(),
+                                              $payoutServiceIdempotencyKeyFromPsToApiFeature->getName());
+
+            $this->trace->info(TraceCode::DELETE_TAG_FOR_IDEMPOTENCY_PS_TO_API_FEATURE_SUCCESS,
+                               [
+                                   'success' => true,
+                               ]
+            );
+        }
+
+        return $feature;
+    }
+
+    public function disablePayoutService(Entity $payoutServiceFeature, bool $shouldSync = false)
+    {
+        $this->trace->info(TraceCode::DISABLE_PAYOUT_SERVICE_ENABLED_FEATURE_REQUEST,
+                           [
+                               'input'       => $payoutServiceFeature->toArray(),
+                               'should_sync' => $shouldSync,
+                           ]
+        );
+
+        /** @var Entity $payoutServiceIdempotencyKeyFromApiToPsFeature */
+        $payoutServiceIdempotencyKeyFromApiToPsFeature = $this->repo->feature
+            ->findByEntityTypeEntityIdAndName(
+                $payoutServiceFeature->getEntityType(),
+                $payoutServiceFeature->getEntityId(),
+                Constants::IDEMPOTENCY_API_TO_PS);
+
+        $this->trace->info(TraceCode::IS_IDEMPOTENCY_API_TO_PS_FEATURE_ENABLED,
+                           [
+                               'is_feature_enabled' => empty($payoutServiceIdempotencyKeyFromApiToPsFeature),
+                           ]
+        );
+
+        $feature = $this->repo->feature->transaction(function() use (
+            $payoutServiceFeature,
+            $shouldSync,
+            $payoutServiceIdempotencyKeyFromApiToPsFeature
+        ) {
+            if (empty($payoutServiceIdempotencyKeyFromApiToPsFeature) === false)
+            {
+                $this->delete($payoutServiceIdempotencyKeyFromApiToPsFeature, $shouldSync);
+            }
+
+            $payoutServiceIdempotencyKeyFromPsToApiFeatureInput = [
+                Entity::ENTITY_TYPE => $payoutServiceFeature->getEntityType(),
+                Entity::ENTITY_ID   => $payoutServiceFeature->getEntityId(),
+                Entity::NAME        => Constants::IDEMPOTENCY_PS_TO_API,
+            ];
+
+            $this->create($payoutServiceIdempotencyKeyFromPsToApiFeatureInput, $shouldSync);
+
+            $this->delete($payoutServiceFeature, $shouldSync);
+        });
+
+        $this->trace->info(TraceCode::DISABLE_PAYOUT_SERVICE_ENABLED_FEATURE_RESPONSE,
+                           [
+                               'feature' => $payoutServiceFeature->toArrayDeleted(),
+                           ]
+        );
+
+        if (empty($payoutServiceIdempotencyKeyFromApiToPsFeature) === false)
+        {
+            (new Merchant\Service)->deleteTag($payoutServiceIdempotencyKeyFromApiToPsFeature->getEntityId(),
+                                              $payoutServiceIdempotencyKeyFromApiToPsFeature->getName());
+
+            $this->trace->info(TraceCode::DELETE_TAG_FOR_IDEMPOTENCY_API_TO_PS_FEATURE_SUCCESS,
+                               [
+                                   'success' => true,
+                               ]
+            );
+        }
+
+        return $feature;
     }
 }

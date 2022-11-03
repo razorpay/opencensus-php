@@ -915,6 +915,16 @@ class Constants
      */
     const FETCH_VA_PAYOUTS_VIA_PS = 'fetch_va_payouts_via_ps';
 
+    /*
+     * Rollout idempotency key payouts to go via via payout service
+     */
+    const IDEMPOTENCY_API_TO_PS = 'idempotency_api_to_ps';
+
+    /*
+     * Rollback idempotency key payouts to go via via api instead of payouts service
+     */
+    const IDEMPOTENCY_PS_TO_API = 'idempotency_ps_to_api';
+
     /**
      * Skips Risk check for merchants
      */
@@ -2019,6 +2029,8 @@ class Constants
         self::PAYOUT_SERVICE_ENABLED          => true,
         self::SCHEDULE_PAYOUT_VIA_PS          => true,
         self::FETCH_VA_PAYOUTS_VIA_PS         => true,
+        self::IDEMPOTENCY_API_TO_PS           => true,
+        self::IDEMPOTENCY_PS_TO_API           => true,
         self::INTERNAL_CONTACT_VIA_PS         => true,
         self::WHITE_LABELLED_INVOICES         => true,
         self::WHITE_LABELLED_ROUTE            => true,
@@ -3150,6 +3162,12 @@ class Constants
     // Payout service related features
     const PAYOUT_SERVICE_FEATURES = [
         self::PAYOUT_SERVICE_ENABLED
+    ];
+
+    // Payout service idempotency key features
+    const PAYOUT_SERVICE_IDEMPOTENCY_KEY_FEATURES = [
+        self::IDEMPOTENCY_API_TO_PS,
+        self::IDEMPOTENCY_PS_TO_API,
     ];
 
     /**

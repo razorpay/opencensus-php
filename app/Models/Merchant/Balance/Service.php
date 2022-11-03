@@ -364,7 +364,7 @@ class Service extends Base\Service
     {
         try
         {
-            $feature = (new Feature\Core)->create(
+            $feature = (new Feature\Core)->enablePayoutService(
                 [
                     Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
                     Feature\Entity::ENTITY_ID   => $merchant->getId(),

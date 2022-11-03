@@ -14,6 +14,7 @@ use RZP\Models\Admin;
 use RZP\Services\RazorXClient;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Terminal;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Traits\MocksRazorx;
 use RZP\Mail\Loc\CashAdvanceEligible;
@@ -3372,5 +3373,277 @@ Regards,
         $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
 
         $this->startTest();
+    }
+
+    public function testPayoutServiceIdempotencyPsToApiFeaturesManualAddition()
+    {
+        $isIdempotencyPayoutServicePsToApiEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_PS_TO_API]);
+
+        $this->assertFalse($isIdempotencyPayoutServicePsToApiEnabled);
+
+        $this->ba->adminAuth(Mode::TEST, null, 'org_100000razorpay');
+
+        $this->startTest();
+
+        $isIdempotencyPayoutServicePsToApiEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_PS_TO_API]);
+
+        $this->assertFalse($isIdempotencyPayoutServicePsToApiEnabled);
+    }
+
+    public function testPayoutServiceIdempotencyApiToPsFeaturesManualAddition()
+    {
+        $isIdempotencyPayoutServiceApiToPsEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $this->assertFalse($isIdempotencyPayoutServiceApiToPsEnabled);
+
+        $this->ba->adminAuth(Mode::TEST, null, 'org_100000razorpay');
+
+        $this->startTest();
+
+        $isIdempotencyPayoutServiceApiToPsEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $this->assertFalse($isIdempotencyPayoutServiceApiToPsEnabled);
+    }
+
+    public function testPayoutServiceIdempotencyPsToApiFeaturesManualAdditionFromBulk()
+    {
+        $isIdempotencyPayoutServicePsToApiEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_PS_TO_API]);
+
+        $this->assertFalse($isIdempotencyPayoutServicePsToApiEnabled);
+
+        $this->ba->adminAuth(Mode::TEST, null, 'org_100000razorpay');
+
+        $this->startTest();
+
+        $isIdempotencyPayoutServicePsToApiEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_PS_TO_API]);
+
+        $this->assertFalse($isIdempotencyPayoutServicePsToApiEnabled);
+    }
+
+    public function testPayoutServiceIdempotencyApiToPsFeaturesManualAdditionFromBulk()
+    {
+        $isIdempotencyPayoutServiceApiToPsEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $this->assertFalse($isIdempotencyPayoutServiceApiToPsEnabled);
+
+        $this->ba->adminAuth(Mode::TEST, null, 'org_100000razorpay');
+
+        $this->startTest();
+
+        $isIdempotencyPayoutServiceApiToPsEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $this->assertFalse($isIdempotencyPayoutServiceApiToPsEnabled);
+    }
+
+    public function testPayoutServiceIdempotencyPsToApiFeaturesManualDelete()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::IDEMPOTENCY_PS_TO_API]);
+
+        $isIdempotencyPayoutServicePsToApiEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_PS_TO_API]);
+
+        $this->assertTrue($isIdempotencyPayoutServicePsToApiEnabled);
+
+        $this->ba->adminAuth(Mode::TEST, null, 'org_100000razorpay');
+
+        $this->startTest();
+
+        $isIdempotencyPayoutServicePsToApiEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_PS_TO_API]);
+
+        $this->assertTrue($isIdempotencyPayoutServicePsToApiEnabled);
+    }
+
+    public function testPayoutServiceIdempotencyApiToPsFeaturesManualDelete()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $isIdempotencyPayoutServiceApiToPsEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $this->assertTrue($isIdempotencyPayoutServiceApiToPsEnabled);
+
+        $this->ba->adminAuth(Mode::TEST, null, 'org_100000razorpay');
+
+        $this->startTest();
+
+        $isIdempotencyPayoutServiceApiToPsEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $this->assertTrue($isIdempotencyPayoutServiceApiToPsEnabled);
+    }
+
+    public function testPayoutServiceIdempotencyPsToApiFeaturesManualDeleteFromBulk()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::IDEMPOTENCY_PS_TO_API]);
+
+        $isIdempotencyPayoutServicePsToApiEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_PS_TO_API]);
+
+        $this->assertTrue($isIdempotencyPayoutServicePsToApiEnabled);
+
+        $this->ba->adminAuth(Mode::TEST, null, 'org_100000razorpay');
+
+        $this->startTest();
+
+        $isIdempotencyPayoutServicePsToApiEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_PS_TO_API]);
+
+        $this->assertTrue($isIdempotencyPayoutServicePsToApiEnabled);
+    }
+
+    public function testPayoutServiceIdempotencyApiToPsFeaturesManualDeleteFromBulk()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $isIdempotencyPayoutServiceApiToPsEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $this->assertTrue($isIdempotencyPayoutServiceApiToPsEnabled);
+
+        $this->ba->adminAuth(Mode::TEST, null, 'org_100000razorpay');
+
+        $this->startTest();
+
+        $isIdempotencyPayoutServiceApiToPsEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $this->assertTrue($isIdempotencyPayoutServiceApiToPsEnabled);
+    }
+
+    public function testPayoutServiceEnabledFeatureManualAddition()
+    {
+        $isPayoutServiceEnabled =  $this->fixtures->merchant->isFeatureEnabled([Constants::PAYOUT_SERVICE_ENABLED]);
+
+        $isIdempotencyPayoutServicePsToApiEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_PS_TO_API]);
+
+        $isIdempotencyPayoutServiceApiToPsEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $this->assertFalse($isPayoutServiceEnabled);
+        $this->assertFalse($isIdempotencyPayoutServicePsToApiEnabled);
+        $this->assertFalse($isIdempotencyPayoutServiceApiToPsEnabled);
+
+        $this->ba->adminAuth(Mode::TEST, null, 'org_100000razorpay');
+
+        $this->startTest();
+
+        $isPayoutServiceEnabled =  $this->fixtures->merchant->isFeatureEnabled([Constants::PAYOUT_SERVICE_ENABLED]);
+
+        $isIdempotencyPayoutServicePsToApiEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_PS_TO_API]);
+
+        $isIdempotencyPayoutServiceApiToPsEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $this->assertFalse($isPayoutServiceEnabled);
+        $this->assertFalse($isIdempotencyPayoutServicePsToApiEnabled);
+        $this->assertFalse($isIdempotencyPayoutServiceApiToPsEnabled);
+    }
+
+    public function testPayoutServiceEnabledFeatureManualAdditionFromBulk()
+    {
+        $isPayoutServiceEnabled =  $this->fixtures->merchant->isFeatureEnabled([Constants::PAYOUT_SERVICE_ENABLED]);
+
+        $isIdempotencyPayoutServicePsToApiEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_PS_TO_API]);
+
+        $isIdempotencyPayoutServiceApiToPsEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $this->assertFalse($isPayoutServiceEnabled);
+        $this->assertFalse($isIdempotencyPayoutServicePsToApiEnabled);
+        $this->assertFalse($isIdempotencyPayoutServiceApiToPsEnabled);
+
+        $this->ba->adminAuth(Mode::TEST, null, 'org_100000razorpay');
+
+        $this->startTest();
+
+        $isPayoutServiceEnabled =  $this->fixtures->merchant->isFeatureEnabled([Constants::PAYOUT_SERVICE_ENABLED]);
+
+        $isIdempotencyPayoutServicePsToApiEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_PS_TO_API]);
+
+        $isIdempotencyPayoutServiceApiToPsEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $this->assertFalse($isPayoutServiceEnabled);
+        $this->assertFalse($isIdempotencyPayoutServicePsToApiEnabled);
+        $this->assertFalse($isIdempotencyPayoutServiceApiToPsEnabled);
+    }
+
+    public function testPayoutServiceEnabledFeatureManualDeleteFromBulk()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::PAYOUT_SERVICE_ENABLED]);
+
+        $isPayoutServiceEnabled =  $this->fixtures->merchant->isFeatureEnabled([Constants::PAYOUT_SERVICE_ENABLED]);
+
+        $isIdempotencyPayoutServicePsToApiEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_PS_TO_API]);
+
+        $isIdempotencyPayoutServiceApiToPsEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $this->assertTrue($isPayoutServiceEnabled);
+        $this->assertFalse($isIdempotencyPayoutServicePsToApiEnabled);
+        $this->assertFalse($isIdempotencyPayoutServiceApiToPsEnabled);
+
+        $this->ba->adminAuth(Mode::TEST, null, 'org_100000razorpay');
+
+        $this->startTest();
+
+        $isPayoutServiceEnabled =  $this->fixtures->merchant->isFeatureEnabled([Constants::PAYOUT_SERVICE_ENABLED]);
+
+        $isIdempotencyPayoutServicePsToApiEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_PS_TO_API]);
+
+        $isIdempotencyPayoutServiceApiToPsEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $this->assertTrue($isPayoutServiceEnabled);
+        $this->assertFalse($isIdempotencyPayoutServicePsToApiEnabled);
+        $this->assertFalse($isIdempotencyPayoutServiceApiToPsEnabled);
+    }
+
+    public function testPayoutServiceEnabledFeatureManualDelete()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::PAYOUT_SERVICE_ENABLED]);
+
+        $isPayoutServiceEnabled =  $this->fixtures->merchant->isFeatureEnabled([Constants::PAYOUT_SERVICE_ENABLED]);
+
+        $isIdempotencyPayoutServicePsToApiEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_PS_TO_API]);
+
+        $isIdempotencyPayoutServiceApiToPsEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $this->assertTrue($isPayoutServiceEnabled);
+        $this->assertFalse($isIdempotencyPayoutServicePsToApiEnabled);
+        $this->assertFalse($isIdempotencyPayoutServiceApiToPsEnabled);
+
+        $this->ba->adminAuth(Mode::TEST, null, 'org_100000razorpay');
+
+        $this->startTest();
+
+        $isPayoutServiceEnabled =  $this->fixtures->merchant->isFeatureEnabled([Constants::PAYOUT_SERVICE_ENABLED]);
+
+        $isIdempotencyPayoutServicePsToApiEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_PS_TO_API]);
+
+        $isIdempotencyPayoutServiceApiToPsEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $this->assertTrue($isPayoutServiceEnabled);
+        $this->assertFalse($isIdempotencyPayoutServicePsToApiEnabled);
+        $this->assertFalse($isIdempotencyPayoutServiceApiToPsEnabled);
     }
 }

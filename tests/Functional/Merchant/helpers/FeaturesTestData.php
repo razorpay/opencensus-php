@@ -3339,4 +3339,348 @@ return [
             ]
         ]
     ],
+
+    'testPayoutServiceIdempotencyPsToApiFeaturesManualAddition' => [
+        'request'  => [
+            'content' => [
+                'names'       => ['idempotency_ps_to_api'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ],
+            'url'     => '/features',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' =>
+                        'Manually enabling/disabling payout service feature idempotency_ps_to_api is not allowed.'
+
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testPayoutServiceIdempotencyPsToApiFeaturesManualAdditionFromBulk' => [
+        'request'  => [
+            'content' => [
+                'name'        => 'idempotency_ps_to_api',
+                'entity_ids'  => ['10000000000000', '10000000000001'],
+                'entity_type' => 'merchant'
+            ],
+            'url'     => '/features/assign',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+                'HTTP_X-Dashboard-User-Email'     => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'successful' => [
+                ],
+                'failed'     => [
+                    'idempotency_ps_to_api' => [
+                        '10000000000000',
+                        '10000000000001',
+                    ],
+                ],
+            ],
+            'status_code' => 200
+        ],
+    ],
+
+    'testPayoutServiceIdempotencyApiToPsFeaturesManualAddition' => [
+        'request'  => [
+            'content' => [
+                'names'       => ['idempotency_api_to_ps'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ],
+            'url'     => '/features',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' =>
+                        'Manually enabling/disabling payout service feature idempotency_api_to_ps is not allowed.'
+
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testPayoutServiceIdempotencyApiToPsFeaturesManualAdditionFromBulk' => [
+        'request'  => [
+            'content' => [
+                'name'        => 'idempotency_api_to_ps',
+                'entity_ids'  => ['10000000000000', '10000000000001'],
+                'entity_type' => 'merchant'
+            ],
+            'url'     => '/features/assign',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+                'HTTP_X-Dashboard-User-Email'     => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'successful' => [
+                ],
+                'failed'     => [
+                    'idempotency_api_to_ps' => [
+                        '10000000000000',
+                        '10000000000001',
+                    ],
+                ],
+            ],
+            'status_code' => 200
+        ],
+    ],
+
+    'testPayoutServiceIdempotencyPsToApiFeaturesManualDelete' => [
+        'request'   => [
+            'url'     => "/accounts/10000000000000/features/idempotency_ps_to_api",
+            'method'  => 'delete',
+            'content' => [
+                'should_sync' => true,
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' =>
+                        'Manually enabling/disabling payout service feature idempotency_ps_to_api is not allowed.'
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testPayoutServiceIdempotencyApiToPsFeaturesManualDelete' => [
+        'request'  => [
+            'url'     => "/accounts/10000000000000/features/idempotency_api_to_ps",
+            'method'  => 'delete',
+            'content' => [
+                'should_sync' => true,
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' =>
+                        'Manually enabling/disabling payout service feature idempotency_api_to_ps is not allowed.'
+
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testPayoutServiceIdempotencyPsToApiFeaturesManualDeleteFromBulk' => [
+        'request'  => [
+            'content' => [
+                'entity_type' => 'merchant',
+                'name'        => 'idempotency_ps_to_api',
+                'entity_ids'  => ['10000000000000', '10000000000001']
+            ],
+            'url'     => '/features/remove',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'successful' => [
+                ],
+                'failed'     => [
+                    'idempotency_ps_to_api' => [
+                        '10000000000000',
+                        '10000000000001',
+                    ],
+                ],
+            ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testPayoutServiceIdempotencyApiToPsFeaturesManualDeleteFromBulk' => [
+        'request'  => [
+            'content' => [
+                'entity_type' => 'merchant',
+                'name'        => 'idempotency_api_to_ps',
+                'entity_ids'  => ['10000000000000', '10000000000001']
+            ],
+            'url'     => '/features/remove',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'successful' => [
+                ],
+                'failed'     => [
+                    'idempotency_api_to_ps' => [
+                        '10000000000000',
+                        '10000000000001',
+                    ],
+                ],
+            ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testPayoutServiceEnabledFeatureManualAddition' => [
+        'request'  => [
+            'content' => [
+                'names'       => ['payout_service_enabled'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ],
+            'url'     => '/features',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' =>
+                        'Manually enabling/disabling ledger feature payout_service_enabled is not allowed.'
+
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPayoutServiceEnabledFeatureManualAdditionFromBulk' => [
+        'request'  => [
+            'content' => [
+                'name'        => 'payout_service_enabled',
+                'entity_ids'  => ['10000000000000', '10000000000001'],
+                'entity_type' => 'merchant'
+            ],
+            'url'     => '/features/assign',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+                'HTTP_X-Dashboard-User-Email'     => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'successful' => [
+                ],
+                'failed'     => [
+                    'payout_service_enabled' => [
+                        '10000000000000',
+                        '10000000000001',
+                    ],
+                ],
+            ],
+            'status_code' => 200
+        ],
+    ],
+
+    'testPayoutServiceEnabledFeatureManualDeleteFromBulk' => [
+        'request'  => [
+            'content' => [
+                'entity_type' => 'merchant',
+                'name'        => 'payout_service_enabled',
+                'entity_ids'  => ['10000000000000', '10000000000001']
+            ],
+            'url'     => '/features/remove',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'successful' => [
+                ],
+                'failed'     => [
+                    'payout_service_enabled' => [
+                        '10000000000000',
+                        '10000000000001',
+                    ],
+                ],
+            ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testPayoutServiceEnabledFeatureManualDelete' => [
+        'request'  => [
+            'url'     => "/accounts/10000000000000/features/payout_service_enabled",
+            'method'  => 'delete',
+            'content' => [
+                'should_sync' => true,
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' =>
+                        'Manually enabling/disabling ledger feature payout_service_enabled is not allowed.'
+
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];
