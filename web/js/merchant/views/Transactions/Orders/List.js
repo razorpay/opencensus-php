@@ -54,7 +54,7 @@ class OrdersListContainer extends ListContainer {
   render() {
     const updatedItems = this.getUpdatedReceipt();
     return (
-      <div class="content-wrapper">
+      <div class="content-wrapper" data-testId="orders-list">
         <OrdersListFilter
           form="orderListFilter"
           count={this.state.count}

@@ -1,0 +1,50 @@
+export const mockMagicOrder = {
+  resourceIdField: 'id',
+  id: 'order_KVjCfl3gis6AJe',
+  entity: 'order',
+  amount: 877800,
+  amount_paid: 877800,
+  amount_due: 0,
+  currency: 'INR',
+  receipt: 'shopify_1cc_receipt_BILL0000020',
+  offer_id: null,
+  offers: ['offer_K7SBvW0C3exVz5', 'offer_KHenG5RMi0lr3Y', 'offer_KKHcLc9xQVBuwZ'],
+  status: 'paid',
+  attempts: 1,
+  notes: [],
+  created_at: 1666203866,
+  resourceUrl: 'orders',
+  amountInINR: '8778.00',
+  line_items_total: 2300,
+  fetchPayments: () => {},
+};
+
+export const mockOrder = {
+  resourceIdField: 'id',
+  id: 'order_KYr3VqU5czUTjm',
+  entity: 'order',
+  amount: 10000,
+  amount_paid: 0,
+  amount_due: 10000,
+  currency: 'INR',
+  receipt: 'BILL0000001',
+  offer_id: null,
+  status: 'created',
+  attempts: 2,
+  notes: [],
+  created_at: 1666886539,
+  resourceUrl: 'orders',
+  amountInINR: '100.00',
+  fetchPayments: () => {},
+};
+
+export const MockListPayload = {
+  status_code: 200,
+  success: true,
+  data: {
+    entity: 'collection',
+    count: 25,
+    has_more: true,
+    items: [mockOrder, mockMagicOrder],
+  },
+};
