@@ -1838,6 +1838,26 @@ class PayoutServiceTest extends TestCase
         return $payout;
     }
 
+    public function testCreatePayoutViaDashboard()
+    {
+        $this->mockPayoutServiceCreate();
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $testData = $this->testData['testCreatePayout'];
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['otp']   = '0007';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuthLive();
+        $response = $this->startTest();
+
+        $this->assertEquals("test Merchant Fund Transfer", $response[Entity::NARRATION]);
+        $this->assertEquals(1614325830, $response[Entity::INITIATED_AT]);
+        $this->assertEquals("10000000000000", $response[Entity::MERCHANT_ID]);
+    }
+
     public function testCreatePayoutWithNewBankingError(): array
     {
         $this->fixtures->on('live')->create('feature', [

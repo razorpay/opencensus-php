@@ -945,6 +945,11 @@ class Service extends Base\Service
 
             $payout = $this->core->createPayoutToFundAccount($payoutInput, $this->merchant);
 
+            if ($payout->getIsPayoutService() === true)
+            {
+                return $payout->payoutServiceResponse;
+            }
+
             return $payout->toArrayPublic();
         }
     }
