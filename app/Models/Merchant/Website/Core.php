@@ -12,6 +12,7 @@ use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
+use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
 
 class Core extends Base\Core
 {
@@ -145,5 +146,25 @@ class Core extends Base\Core
         }
 
         return $paArray1;
+    }
+
+    public function getUrlType($url)
+    {
+        //check For valid playStore Url
+        if (str_starts_with($url, 'https://play.google.com/store/apps/details') === true)
+        {
+            return BusinessDetailConstants::PLAYSTORE_URL;
+        }
+        else
+        {
+            if (str_starts_with($url, 'https://apps.apple.com') === true)
+            {
+                return BusinessDetailConstants::APPSTORE_URL;
+            }
+            else
+            {
+                return Constants::WEBSITE;
+            }
+        }
     }
 }

@@ -257,6 +257,8 @@ class Core extends Base\Core
 
         $oldMerchantDetails = clone $merchantDetails;
 
+        $oldBusinessDetail = optional($oldMerchantDetails->businessDetail);
+
         $this->convertStatesToStatesCode($input);
 
         $merchantDetails->getValidator()->validateIsNotLocked($merchant);
@@ -324,7 +326,7 @@ class Core extends Base\Core
 
         return $this->mutex->acquireAndRelease(
             $merchant->getId(),
-            function() use ($input, $merchantDetails, $merchant, $originProduct, $oldMerchantDetails, $activationFormMilestone, $startTime) {
+            function() use ($input, $merchantDetails, $merchant, $originProduct, $oldMerchantDetails, $activationFormMilestone, $startTime,$oldBusinessDetail) {
 
                 return $this->repo->transactionOnLiveAndTest(function() use (
                     $input,
@@ -333,7 +335,8 @@ class Core extends Base\Core
                     $originProduct,
                     $oldMerchantDetails,
                     $activationFormMilestone,
-                    $startTime
+                    $startTime,
+                    $oldBusinessDetail
                 ) {
 
                     $startTimePostAcquiringMutexLock = microtime(true);
@@ -388,6 +391,8 @@ class Core extends Base\Core
                     {
                         $response = $this->updateActivationProgress($merchant);
                     }
+
+                    (new Merchant\Website\Service())->changeWebsiteIfApplicable($oldMerchantDetails,$oldBusinessDetail,$input);
 
                     $this->trace->info(TraceCode::MERCHANT_SAVE_ACTIVATION_DETAILS_LATENCY, [
                         'merchant_id'                 => $merchant->getId(),

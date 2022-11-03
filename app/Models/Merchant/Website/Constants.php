@@ -2,13 +2,14 @@
 
 namespace RZP\Models\Merchant\Website;
 
+use RZP\Models\Merchant\BusinessDetail\Constants as BConstants;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 
 class Constants
 {
 
-    const PUBLISH_TIME_LIMIT=10;
-    const DOWNLOAD_TIME_LIMIT=5;
+    const PUBLISH_TIME_LIMIT  = 10;
+    const DOWNLOAD_TIME_LIMIT = 5;
 
     //website_details
     const SECTION_STATUS = 'section_status';
@@ -18,13 +19,13 @@ class Constants
     const PUBLISHED_URL  = 'published_url';
     const UPDATED_AT     = 'updated_at';
     const SUBMITTED      = 'submitted';
-    const SUBMIT      = 'submit';
-    const SECTION_URL ='section_url';
-    const ACTION   = 'action';
-    const PUBLISH  = 'publish';
-    const DOWNLOAD = 'download';
-    const UPLOAD   = 'upload';
-    const DELETE   = 'delete';
+    const SUBMIT         = 'submit';
+    const SECTION_URL    = 'section_url';
+    const ACTION         = 'action';
+    const PUBLISH        = 'publish';
+    const DOWNLOAD       = 'download';
+    const UPLOAD         = 'upload';
+    const DELETE         = 'delete';
 
     //section names
     const CONTACT_US   = 'contact_us';

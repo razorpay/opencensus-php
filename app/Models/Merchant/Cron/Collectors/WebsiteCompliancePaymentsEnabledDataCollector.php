@@ -38,7 +38,7 @@ class WebsiteCompliancePaymentsEnabledDataCollector extends TimeBoundDbDataColle
         ]);
 
         //filter merchants whose first time payments enabled
-        $merchantIdList = $this->repo->state->filterPaymentsEnabledMerchants($merchantIdList,$startTime, $endTime);
+        $merchantIdList = $this->repo->state->filterPaymentsEnabledMerchants($merchantIdList, $startTime, $endTime);
 
         if (empty($merchantIdList) === true)
         {
@@ -59,7 +59,12 @@ class WebsiteCompliancePaymentsEnabledDataCollector extends TimeBoundDbDataColle
 
         // filter all merchants who are not activated
         $merchantIdList = $this->repo->merchant_detail->filterMerchantIdsByActivationStatus(
-            $merchantIdList, DetailStatus::SUBMERCHANT_OPEN_STATUSES);
+            $merchantIdList,
+            [
+                DetailStatus::INSTANTLY_ACTIVATED,
+                DetailStatus::UNDER_REVIEW,
+                DetailStatus::ACTIVATED_MCC_PENDING
+            ]);
 
         if (empty($merchantIdList) === true)
         {
@@ -106,12 +111,13 @@ class WebsiteCompliancePaymentsEnabledDataCollector extends TimeBoundDbDataColle
             {
                 $merchant = $this->repo->merchant->findorFail($merchantId);
 
-                if ((new WebsiteService())->isWebsiteSectionsApplicable($merchant) === true){
+                if ((new WebsiteService())->isWebsiteSectionsApplicable($merchant) === true)
+                {
 
                     $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
                         'merchant' => $merchant->getId(),
-                        'type'            => 'website_Adherence_applicable',
-                        'args'            => $this->args
+                        'type'     => 'website_Adherence_applicable',
+                        'args'     => $this->args
                     ]);
 
                     $websiteDetail = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($merchant->getId());

@@ -269,12 +269,13 @@ class Service extends Base\Service
             //run experiment from every flow except for admin dashboard
             if ($admin === false)
             {
-                if ((new Merchantcore)->isRegularMerchant($merchant)===false)
+                if ((new Merchantcore)->isRegularMerchant($merchant) === false)
                 {
                     return false;
                 }
 
-                if ($merchant->isRazorpayOrgId() === false) {
+                if ($merchant->isRazorpayOrgId() === false)
+                {
 
                     return false;
                 }
@@ -439,23 +440,23 @@ class Service extends Base\Service
 
         if (empty($businessDetails->getPlaystoreUrl()) === false)
         {
-            $urls[trim(strtolower($businessDetails->getPlaystoreUrl()), '/')] = 'playstore_url';
+            $urls[trim(strtolower($businessDetails->getPlaystoreUrl()), '/')] = BusinessConstants::PLAYSTORE_URL;
         }
         if (empty($businessDetails->getAppstoreUrl()) === false)
         {
-            $urls[trim(strtolower($businessDetails->getAppstoreUrl()), '/')] = 'appstore_url';
+            $urls[trim(strtolower($businessDetails->getAppstoreUrl()), '/')] = BusinessConstants::APPSTORE_URL;
         }
 
         if (empty($merchantDetails->getWebsite()) === false)
         {
-            $urls[trim(strtolower($merchantDetails->getWebsite()), '/')] = 'website';
+            $urls[trim(strtolower($merchantDetails->getWebsite()), '/')] = Constants::WEBSITE;
         }
 
         if (empty($merchantDetails->getAdditionalWebsites()) === false)
         {
             foreach ($merchantDetails->getAdditionalWebsites() as $url)
             {
-                $urls[trim(strtolower($url), '/')] = 'website';
+                $urls[trim(strtolower($url), '/')] = $this->core->getUrlType($url);
             }
         }
 
@@ -1177,6 +1178,11 @@ class Service extends Base\Service
 
         $websiteDetail = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($merchantDetails->getMerchantId());
 
+        if (empty($websiteDetail) === true)
+        {
+            $websiteDetail = $this->core->createOrEditWebsiteDetails($merchantDetails, []);
+        }
+
         switch ($input[Constants::ACTION])
         {
             case Constants::SUBMIT:
@@ -1634,57 +1640,20 @@ class Service extends Base\Service
 
         $urlType = $input[Constants::URL_TYPE];
 
-        $businessDetails = optional($merchant->merchantDetail->businessDetail);
+        $url = trim(strtolower($input[Constants::URL]), '/');
 
-        switch ($urlType)
+        $merchantUrls = $this->getAllMerchantWebsites($merchant->merchantDetail);
+
+        if (array_key_exists($url, $merchantUrls) === true and $merchantUrls[$url] === $urlType)
         {
-            case Constants::WEBSITE:
-                // validate if the url in input is same as either business_Website ot additional_websites
-                $merchantDetail = $merchant->merchantDetail;
-
-                if (empty($merchantDetail->getAdditionalWebsites()) === false)
-                {
-                    foreach ($merchantDetail->getAdditionalWebsites() as $url)
-                    {
-                        $urls[] = trim(strtolower($url), '/');
-                    }
-                }
-
-                $urls[] = trim(strtolower($merchantDetail->getWebsite()), '/');
-
-                $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO ,["urls"=>$urls,"input url"=>$input[Constants::URL]]);
-
-                if (in_array(trim(strtolower($input[Constants::URL]), '/'), $urls) === false)
-                {
-                    throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
-                }
-
-                break;
-
-            case Constants::PLAYSTORE_URL:
-
-                // validate if the playstore_url exists for the merchant
-                if (empty($businessDetails->getPlaystoreUrl()) === true)
-                {
-                    $this->trace->info(TraceCode::WEBSITE_SECTION_ERROR ,["input url"=>$input[Constants::URL]]);
-
-                    throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
-                }
-
-                break;
-
-            case Constants::APPSTORE_URL:
-
-                // validate if the url in input exists for the merchant
-                if (empty($businessDetails->getAppstoreUrl()) === true)
-                {
-                    $this->trace->info(TraceCode::WEBSITE_SECTION_ERROR ,["input url"=>$input[Constants::URL]]);
-
-                    throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
-                }
-
-                break;
+            return;
         }
+
+        $this->trace->info(TraceCode::WEBSITE_SECTION_ERROR, ["input"        => $input,
+                                                              "merchantUrls" => $merchantUrls,
+                                                              "merchant_id"  => $merchant->getId()]);
+
+        throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
     }
 
     //validate input url is same as business_Website,additional_websites, playstore_url, appstore_url
@@ -2220,5 +2189,81 @@ class Service extends Base\Service
         }
 
         return null;
+    }
+
+    public function changeWebsiteIfApplicable($merchantDetail, $businessDetail, $input)
+    {
+        $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, [
+            "input"       => $input,
+            "step"        => "changeWebsite",
+            "merchant_id" => $merchantDetail->getMerchantId()
+        ]);
+
+        try
+        {
+            $websiteDetail = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($merchantDetail->getMerchantId());
+
+            if (empty($websiteDetail) === false and
+                $this->hasWebsitesChanged($merchantDetail, $businessDetail, $input) === true)
+            {
+                $merchantWebsiteDetails = $websiteDetail->getMerchantWebsiteDetails();
+
+                foreach (explode(',', Constants::VALID_MERCHANT_SECTIONS) as $sectionName)
+                {
+                    $merchantWebsiteDetails[$sectionName][Constants::STATUS] = null;
+
+                }
+
+                $statusChangeInput = [
+                    Entity::STATUS                   => null,
+                    Entity::MERCHANT_WEBSITE_DETAILS => $merchantWebsiteDetails
+                ];
+
+                $this->core->createOrEditWebsiteDetails($merchantDetail, $statusChangeInput);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::WEBSITE_SECTION_ERROR,
+                                         ['id' => $merchantDetail->getMerchantId()]);
+        }
+    }
+
+    protected function hasWebsitesChanged($merchantDetail, $businessDetail, $input)
+    {
+        try
+        {
+
+            if (empty($merchantDetail->getWebsite()) === false and
+                isset($input[MerchantDetailEntity::BUSINESS_WEBSITE]) and
+                $merchantDetail->getWebsite() !== $input[MerchantDetailEntity::BUSINESS_WEBSITE])
+            {
+                return true;
+            }
+            if (empty($businessDetail->getAppstoreUrl()) === false and
+                isset($input[BusinessConstants::APPSTORE_URL]) and
+                $businessDetail->getAppstoreUrl() !== $input[BusinessConstants::APPSTORE_URL])
+            {
+                return true;
+            }
+            if (empty($businessDetail->getPlaystoreUrl()) === false and
+                isset($input[BusinessConstants::PLAYSTORE_URL]) and
+                $businessDetail->getPlaystoreUrl() !== $input[BusinessConstants::PLAYSTORE_URL])
+            {
+                return true;
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::WEBSITE_SECTION_ERROR,
+                                         ['id' => $merchantDetail->getMerchantId()]);
+
+        }
+
+        return false;
     }
 }

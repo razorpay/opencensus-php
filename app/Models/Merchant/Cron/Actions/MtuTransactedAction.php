@@ -6,6 +6,7 @@ use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Cron\Constants;
 use RZP\Notifications\Onboarding\Events;
+use RZP\Models\Merchant\Detail\Status as DetailStatus;
 use RZP\Models\Merchant\Website\Service as WebsiteService;
 use RZP\Models\Merchant\Cron\Dto\ActionDto;
 use RZP\Services\Segment\EventCode as SegmentEvent;
@@ -99,33 +100,42 @@ class MtuTransactedAction extends BaseAction
 
         (new EscalationCore())->applyMtuCouponIfEligible($merchant);
 
-        if ((new WebsiteService())->isWebsiteSectionsApplicable($merchant) === true)
+        if (in_array($merchant->merchantDetail->getActivationStatus(),
+                     [
+                         DetailStatus::INSTANTLY_ACTIVATED,
+                         DetailStatus::UNDER_REVIEW,
+                         DetailStatus::ACTIVATED_MCC_PENDING
+                     ]) === true)
         {
-            $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
-                'merchant'         => $merchant->getId(),
-                'type'             => 'website_Adherence_applicable',
-                'args'             => $this->args,
-            ]);
-
-            $websiteDetail = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($merchant->getId());
-
-            if (empty(optional($websiteDetail)->getStatus()) === true)
+            if ((new WebsiteService())->isWebsiteSectionsApplicable($merchant) === true)
             {
 
                 $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
-                    'merchant'         => $merchant->getId(),
-                    'type'             => 'website_adherence_communication',
-                    'args'             => $this->args,
+                    'merchant' => $merchant->getId(),
+                    'type'     => 'website_Adherence_applicable',
+                    'args'     => $this->args,
                 ]);
 
-                $args = [
-                    EscalationConstants::MERCHANT => $merchant,
-                    "params"                      => [
-                        "complianceUrl" => 'https://dashboard.razorpay.com/app/website-app-details']
-                ];
+                $websiteDetail = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($merchant->getId());
 
-                $success = (new OnboardingNotificationHandler($args))
-                    ->sendEventNotificationForMerchant($merchantId, Events::WEBSITE_ADHERENCE_HARD_NUDGE);
+                if (empty(optional($websiteDetail)->getStatus()) === true)
+                {
+
+                    $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
+                        'merchant' => $merchant->getId(),
+                        'type'     => 'website_adherence_communication',
+                        'args'     => $this->args,
+                    ]);
+
+                    $args = [
+                        EscalationConstants::MERCHANT => $merchant,
+                        "params"                      => [
+                            "complianceUrl" => 'https://dashboard.razorpay.com/app/website-app-details']
+                    ];
+
+                    (new OnboardingNotificationHandler($args))
+                        ->sendEventNotificationForMerchant($merchantId, Events::WEBSITE_ADHERENCE_HARD_NUDGE);
+                }
             }
         }
     }
