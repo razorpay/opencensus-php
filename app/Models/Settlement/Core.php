@@ -392,7 +392,7 @@ class Core extends Base\Core
             {
                 $data = [
                     'merchant' => [
-                        MerchantModel\Entity::EMAIL      => $email,
+                        MerchantModel\Entity::EMAIL      => $toMail,
                         MerchantModel\Entity::LOGO_URL   => $merchant->getLogoUrl(),
                     ],
                     'settlement' => [
@@ -414,7 +414,7 @@ class Core extends Base\Core
                 $data = [
                     'merchant' => [
                         MerchantModel\Entity::ID         => $settlement->getMerchantId(),
-                        MerchantModel\Entity::EMAIL      => $email,
+                        MerchantModel\Entity::EMAIL      => $toMail,
                         'profile_link'                   => sprintf(self::DASHBOARD_URL, "profile"),
                         'bank_account_update_link'       => sprintf(self::DASHBOARD_URL, "profile/update_bank_account"),
                     ],
