@@ -1938,6 +1938,25 @@ class DefaultPlan
                 'created_at'          => time(),
                 'updated_at'          => time(),
             ],
+            [
+                'id'                  => 'Bbg7e4oKCgyesb',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'fund_transfer',
+                'auth_type'           => BasicAuth\Type::PRIVATE_AUTH,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 900,
+                'amount_range_active' => false,
+                'payouts_filter'      => null,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::DIRECT,
+                'channel'             => Channel::YESBANK,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ],
         ];
     }
 

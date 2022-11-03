@@ -230,7 +230,18 @@ class Mode
                         self::NEFT
                     ],
                 ],
-                    // Need to add mappings for YESBANK
+                Settlement\Channel::YESBANK  => [
+                    Constants\Entity::BANK_ACCOUNT => [
+                        self::RTGS,
+                        self::NEFT,
+                        self::IMPS,
+                        self::IFT,
+                    ],
+                    Constants\Entity::CARD => [
+                        self::IMPS,
+                        self::NEFT
+                    ],
+                ],
             ],
         ];
     }

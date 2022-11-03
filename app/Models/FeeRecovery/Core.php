@@ -659,8 +659,6 @@ class Core extends Base\Core
 
         $fundAccountId = $feeRecoveryFundAccount->getPublicId();
 
-        $payoutMode = Payout\Mode::IFT;
-
         switch($balance->getChannel())
         {
             case Channel::AXIS:
@@ -670,6 +668,7 @@ class Core extends Base\Core
                 break;
 
             default:
+                $payoutMode = Payout\Mode::IFT;
                 break;
         }
 

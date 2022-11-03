@@ -71,12 +71,14 @@ class BankingAccountService
                     'user_id'           => '',
                     'urn'               => '',
                     Fields::CREDENTIALS => [
-                        Yesbank\Fields::CUSTOMER_ID   => 'customer123',
-                        Yesbank\Fields::APP_ID        => 'RAZORPAYX',
-                        Yesbank\Fields::AUTH_PASSWORD => 'random_pass',
-                        Yesbank\Fields::AUTH_USERNAME => 'random_user',
-                        Yesbank\Fields::CLIENT_ID     => 'client_123',
-                        Yesbank\Fields::CLIENT_SECRET => 'random_pass',
+                        Yesbank\Fields::AES_KEY             => 'aes123456',
+                        Yesbank\Fields::APP_ID              => 'RAZORPAYX',
+                        Yesbank\Fields::AUTH_PASSWORD       => 'random_pass',
+                        Yesbank\Fields::AUTH_USERNAME       => 'random_user',
+                        Yesbank\Fields::CLIENT_ID           => 'client_123',
+                        Yesbank\Fields::CLIENT_SECRET       => 'random_pass',
+                        Yesbank\Fields::CUSTOMER_ID         => 'customer123',
+                        Yesbank\Fields::GATEWAY_MERCHANT_ID => 'YESB0000101',
                     ]
                 ];
 

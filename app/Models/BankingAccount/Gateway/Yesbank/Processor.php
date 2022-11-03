@@ -147,12 +147,12 @@ class Processor extends BaseProcessor
     protected function extractBankingAccountCredsFromBASResponse($response)
     {
         return [
-            Fields::CUSTOMER_ID   => $response[Fields::CUSTOMER_ID],
-            Fields::APP_ID        => $response[Fields::APP_ID],
-            Fields::AUTH_PASSWORD => $response[Fields::AUTH_PASSWORD],
-            Fields::AUTH_USERNAME => $response[Fields::AUTH_USERNAME],
-            Fields::CLIENT_ID     => $response[Fields::CLIENT_ID],
-            Fields::CLIENT_SECRET => $response[Fields::CLIENT_SECRET],
+            Fields::CUSTOMER_ID   => $response[BaseFields::CREDENTIALS][Fields::CUSTOMER_ID],
+            Fields::APP_ID        => $response[BaseFields::CREDENTIALS][Fields::APP_ID],
+            Fields::AUTH_PASSWORD => $response[BaseFields::CREDENTIALS][Fields::AUTH_PASSWORD],
+            Fields::AUTH_USERNAME => $response[BaseFields::CREDENTIALS][Fields::AUTH_USERNAME],
+            Fields::CLIENT_ID     => $response[BaseFields::CREDENTIALS][Fields::CLIENT_ID],
+            Fields::CLIENT_SECRET => $response[BaseFields::CREDENTIALS][Fields::CLIENT_SECRET],
         ];
     }
 }
