@@ -4,6 +4,8 @@ import {
   growthAssetSchema,
   eventToGrowthEventTypeMap,
 } from './data';
+import { getUser } from 'merchant/store';
+import get from 'lodash/get';
 
 const getRouteMap = (isOrgRZP = true) => {
   if (isOrgRZP) return routeToChannelIDMap.rzp;
@@ -100,4 +102,28 @@ export const getAssetTrackingProperties = (
     channel_id,
     ...tags,
   };
+};
+
+/**
+ * takes a url as a string & replace "${*}", in the url
+ * with user information, to open custom url based on login user
+ * Eg. www.razorpay.com/mid=${rzp_user.user.id} -> www.razorpay.com/mid=G5KWPzRBj0XXXX
+ * @param {string} stringToInterpolate - url to be opened
+ * @returns {*} - returns modified url
+ */
+export const stringToLiteral = (stringToInterpolate) => {
+  const user = getUser();
+
+  const database = {
+    user,
+    rzp_user: user,
+  };
+
+  return stringToInterpolate.replace(/\$\{.+?}/g, (match) => {
+    const path = match.substring(2, match.length - 1).trim();
+
+    const value = get(database, path);
+
+    return value === undefined ? match : value;
+  });
 };

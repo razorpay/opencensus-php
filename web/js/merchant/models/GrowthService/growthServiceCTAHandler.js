@@ -1,5 +1,5 @@
 import React from 'react';
-import store, { getUser } from '../../../merchant/store';
+import store, { getUser } from 'merchant/store';
 import {
   openModal as openModalProp,
   closeModal as closeModalProp,
@@ -10,6 +10,7 @@ import { isMobileAndTablet } from 'common/utils/rzp-utils';
 import ThankYouModal from 'common/ui/GrowthServiceModal/ThankYouModal';
 import GrowthServiceModal from 'common/ui/GrowthServiceModal';
 import GrowthServiceCenterCTAModal from 'common/ui/GrowthServiceModal/CenterCTAModal';
+import { stringToLiteral } from 'merchant/models/GrowthService/commonUtils';
 
 const MODAL_TYPE = {
   DEFAULT: 'default',
@@ -29,13 +30,15 @@ const EVENT_TYPE = {
  * @param {*} history - history object
  */
 const gSOpenUrl = (url, history) => {
-  const isExternal = /^http(s)?:\/\//.test(url);
+  const processedUrl = stringToLiteral(url);
+
+  const isExternal = /^http(s)?:\/\//.test(processedUrl);
   if (isExternal) {
-    window.open(url, '_blank');
+    window.open(processedUrl, '_blank');
   } else {
     const closeModal = (payload) => store.dispatch(closeModalProp(payload));
     closeModal();
-    history.push(url);
+    history.push(processedUrl);
   }
 };
 
