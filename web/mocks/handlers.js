@@ -587,6 +587,29 @@ export const handlers = [
       ctx.delay(50),
     );
   }),
+  rest.get('*/orders/:orderId/product_details', (req, res, ctx) => {
+    const { orderId } = req.params;
+    if (orderId === '123') {
+      return res(
+        ctx.json({
+          data: {},
+        }),
+        ctx.delay(50),
+      );
+    }
+
+    return res(
+      ctx.json({
+        data: {
+          payment_page: {
+            title: 'Payment page title',
+            id: 'Payment page ID',
+          },
+        },
+      }),
+      ctx.delay(50),
+    );
+  }),
 
   // Verify Email
   rest.post('*/merchant/api/live/users/email/update/verify', (req, res, ctx) => {
