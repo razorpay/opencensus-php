@@ -208,6 +208,7 @@ class Route
         'payment_transfer'                         => ['post',     'payments/{id}/transfers',                        'PaymentController@postTransfer'                                    ],
         'payment_transfer_batch'                   => ['post',     'payments/{id}/transfers/batch',                  'PaymentController@createTransferFromBatch'                         ],
         'payment_verify'                           => ['get',      'payments/{id}/verify',                           'PaymentController@getVerify'                                       ],
+        'barricade_payment_verify'                 => ['get',      'payments/barricade/{id}/verify',                 'PaymentController@getVerify'                                       ],
         'payment_force_authorize'                  => ['post',     'payments/{id}/force_authorize',                  'PaymentController@postForceAuthorize'                              ],
         'payment_cancel'                           => ['get',      'payments/{x_entity_id}/cancel',                  'PaymentController@postCancel'                                      ],
         'payment_authorize_failed'                 => ['post',     'payments/{id}/authorize_failed',                 'PaymentController@postAuthorizeFailedPayment'                      ],
@@ -5355,6 +5356,8 @@ class Route
         'customer_fetch_by_id_global',
 
         'role_list_admins_internal',
+
+        'barricade_payment_verify',
 
         'cyber_crime_helpdesk_send_mail_to_lea',
         'cybercrime_helpdesk_workflow_action',
@@ -13173,6 +13176,9 @@ class Route
             'mock_hdfc_enroll',
             'mock_hdfc_auth_enrolled',
             'mock_hdfc_payment',
+        ],
+        'barricade' => [
+            'barricade_payment_verify',
         ],
 
         // These routes will be hit from the dashboard.

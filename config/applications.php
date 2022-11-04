@@ -233,6 +233,10 @@ return [
         ],
     ],
 
+    'barricade' => [
+        'secret'  => env('BARRICADE_SERVICE_SECRET'),
+    ],
+
     'governor' => [
         'mock'      => env('GOVERNOR_SERVICE_MOCK', false),
         'smart_routing' => [

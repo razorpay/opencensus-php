@@ -951,6 +951,20 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function verifyGatewayPayment($id)
+    {
+        $request = array(
+            'url'    => '/payments/barricade/'.$id.'/verify',
+            'method' => 'GET',
+            'headers' => ['x-barricade-flow'=> 'true']);
+
+        $this->ba->privateAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function verifyPaymentNew($id)
     {
         $request = array(

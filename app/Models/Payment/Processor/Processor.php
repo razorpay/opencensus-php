@@ -306,7 +306,7 @@ class Processor
     const BARRICADE_PAYMENT_GATEWAY = 'barricade_supported_gateway';
     const BARRICADE_AUTHORIZE_VERIFY_CARD_GATEWAY = 'barricade_authorize_verify_card_gateway';
     const DEMO_MERCHANT            = 'demo_merchants';
-
+    const BARRICADE_UPI_RAMP = 'barricade_upi_ramp';
 
     /**
      * User consent flag indicates whether the user has given consent to tokenise
@@ -3857,6 +3857,7 @@ class Processor
 
         $sqsPush = $this->app->razorx->getTreatment($payment->getMethod(), self::BARRICADE_SQS_PUSH, $this->mode);
 
+        $upiRamp = $this->app->razorx->getTreatment($payment->getId(), self::BARRICADE_UPI_RAMP, $this->mode);
 
         if  ($methodResult !== 'on')
         {
@@ -3868,7 +3869,7 @@ class Processor
             return;
         }
         // To Avoid duplicate Verification
-        if ( $payment->isUpi() === true && $payment->getStatus() !== "authorized" ){
+        if ( $payment->isUpi() === true && $payment->getStatus() !== "authorized" && $upiRamp !== 'on' ){
             return;
         }
         // Skip verify cll for BharatQr and UpiTransfer

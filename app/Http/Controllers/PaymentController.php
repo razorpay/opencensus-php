@@ -9,6 +9,7 @@ use RZP\Trace\Tracer;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use View;
+use RZP\Http\RequestHeader;
 
 use RZP\Constants\Entity as E;
 use RZP\Trace\TraceCode;
@@ -151,7 +152,14 @@ class PaymentController extends Controller
 
     public function getVerify($id)
     {
-        $data = $this->service()->verify($id);
+        $isBarricade = false;
+        // Barricade flow headers
+        if (empty(Request::header(RequestHeader::X_BARRICADE_FLOW)) === false)
+        {
+            $isBarricade = Request::header(RequestHeader::X_BARRICADE_FLOW)=="true";
+        }
+
+        $data = $this->service()->verify($id, $isBarricade);
 
         return ApiResponse::json($data);
     }

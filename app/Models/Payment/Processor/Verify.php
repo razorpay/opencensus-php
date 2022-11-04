@@ -26,7 +26,7 @@ trait Verify
      * @throws Exception\PaymentVerificationException
      * @throws \Exception
      */
-    public function verify(Payment\Entity $payment, array $gatewayData = null)
+    public function verify(Payment\Entity $payment, array $gatewayData = null, $isBarricade = false)
     {
         $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_INITIATED, $payment);
 
@@ -78,6 +78,16 @@ trait Verify
 
         try
         {
+            // if barricade flow directly return response
+            if ($isBarricade === true)
+            {
+                 $data['gateway'] = $this->callGatewayFunction(Payment\Action::VERIFY_GATEWAY, $data);
+                 $this->trace->info(
+                                 TraceCode::PAYMENT_VERIFY_RESPONSE,
+                                 $data['gateway']);
+                 return $data;
+            }
+
             $data['gateway'] = $this->callGatewayFunction(Payment\Action::VERIFY, $data);
 
             $this->updatePaymentVerified($payment, VerifyStatus::SUCCESS, $data['gateway']);

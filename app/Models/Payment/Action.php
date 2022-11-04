@@ -24,6 +24,7 @@ class Action
     const PRE_DEBIT                     = 'pre_debit';
     const DEBIT                         = 'debit';
     const VERIFY                        = 'verify';
+    const VERIFY_GATEWAY                = 'verify_gateway';
     const VERIFY_INTERNAL_REFUND        = 'verify_internal_refund';
     const VERIFY_REFUND                 = 'verify_refund';
     const VERIFY_CAPTURE                = 'verify_capture';

@@ -97,6 +97,9 @@ class RequestHeader
     // For testing purpose
     const X_RZP_TESTCASE_ID              = 'X-RZP-TESTCASE-ID';
 
+    // For Barricade Flow
+    const X_BARRICADE_FLOW              = 'x-barricade-flow';
+
     const X_RZP_REARCH_ORDER_TESTCASE_ID = 'X-RZP-REARCH-ORDER-TESTCASE-ID';
 
     const X_REQUEST_TRACE_ID             = 'X-Request-TraceId';

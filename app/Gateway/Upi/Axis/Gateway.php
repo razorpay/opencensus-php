@@ -737,6 +737,18 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    // for barricade flow return gateway verify response
+    public function verifyGateway(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify = $this->sendPaymentVerifyRequestGateway($verify);
+
+        return $verify->getDataToTrace();
+    }
+
     protected function runPaymentVerifyFlow($verify)
     {
         // This payment is the gateway entity payment.
@@ -847,6 +859,25 @@ class Gateway extends Base\Gateway
         $verify->verifyResponseContent = $content;
 
         return $content;
+    }
+
+    protected function sendPaymentVerifyRequestGateway($verify)
+    {
+        $input = $verify->input;
+
+        $gatewayPayment = $verify->payment;
+
+        $request = $this->getPaymentVerifyRequestArray($input, $gatewayPayment);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->response = $response;
+
+        $content = $this->parseGatewayResponse($response->body, $input, Action::VERIFY);
+
+        $verify->verifyResponseContent = $content;
+
+        return $verify;
     }
 
     protected function verifyPayment($verify)

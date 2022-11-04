@@ -259,6 +259,7 @@ class Name
     const AUTHORIZE_PAYMENT                   = 'authorize_payment';
     const VERIFY_PAYMENT                      = 'verify_payment';
     const VERIFY_REFUND                       = 'verify_refund';
+    const BARRICADE_VERIFY_PAYMENT            = 'barricade_verify_payment';
     const EDIT_MERCHANT_RISK_THRESHOLD        = 'edit_merchant_risk_threshold';
     const RETRY_BATCH                         = 'retry_batch';
     const UPDATE_GEO_IP                       = 'update_geo_ip';

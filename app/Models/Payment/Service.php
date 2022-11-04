@@ -356,7 +356,7 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function verify($id)
+    public function verify($id, $isBarricade = false)
     {
         $payment = $this->repo->payment->findOrFailByPublicIdWithParams($id, []);
 
@@ -369,7 +369,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
 
-        return $this->getNewProcessor($merchant)->verify($payment);
+        return $this->getNewProcessor($merchant)->verify($payment, null, $isBarricade);
     }
 
     private function buildVerifyResponse($response)
