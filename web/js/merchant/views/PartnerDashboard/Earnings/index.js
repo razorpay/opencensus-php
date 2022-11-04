@@ -7,7 +7,6 @@ import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import { fetchCommissionBalances } from 'merchant/reducers/commission';
 
 import Amount from 'common/ui/Amount';
-import HeaderAction from 'common/ui/HeaderAction';
 import { isPresent } from 'common/utils/rzp-utils';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -43,22 +42,24 @@ class EarningsContainer extends Component {
     return (
       <div className="earnings-page">
         <tabbed-container>
-          <header>
-            <NavLink exact to="/partners/earnings/daily">
-              Daily Earnings
-            </NavLink>
-            <ShowWhen additionalCondition={(user) => !user.isPartner('reseller')}>
-              <NavLink exact to="/partners/earnings/transactional">
-                Transactional Details
+          <header className="partner-dashboard-header">
+            <div>
+              <NavLink exact to="/partners/earnings/daily">
+                Daily Earnings
               </NavLink>
-            </ShowWhen>
-            <ShowWhen additionalCondition={(user) => user.isCommissionInvoicesEnabled}>
-              <NavLink exact to="/partners/earnings/invoices">
-                Invoices
-              </NavLink>
-            </ShowWhen>
-          </header>
-          <content>
+              <ShowWhen additionalCondition={(user) => !user.isPartner('reseller')}>
+                <NavLink exact to="/partners/earnings/transactional">
+                  Transactional Details
+                </NavLink>
+              </ShowWhen>
+              <ShowWhen additionalCondition={(user) => user.isCommissionInvoicesEnabled}>
+                <NavLink exact to="/partners/earnings/invoices">
+                  Invoices
+                </NavLink>
+              </ShowWhen>
+            </div>
+            {/* Moved Commission Balance from content to header, removed HeaderAction and added some 
+            CSS to fix screen responsive issue */}
             <ShowWhen
               additionalCondition={(user) =>
                 user.isShowCommissionBalanceEnabled &&
@@ -66,12 +67,14 @@ class EarningsContainer extends Component {
                 (commissionBalance == 0 || commissionBalance)
               }
             >
-              <HeaderAction>
-                <span class="settlement-balance-amount">
+              <div className="partner-dashboard-header-action">
+                <span className="settlement-balance-amount">
                   Commission Balance: <Amount value={commissionBalance} currency="INR" />
                 </span>
-              </HeaderAction>
+              </div>
             </ShowWhen>
+          </header>
+          <content>
             <Switch>
               <Redirect to="/partners/earnings/daily" from="/partners/earnings" exact />
               <ShowWhenRoute

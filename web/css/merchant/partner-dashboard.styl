@@ -25,8 +25,23 @@ $fux-text-color = #162F56DE;
 }
 
 .partner-dashboard-header {
-  @media (max-width 625px) {
-    padding-top: 40px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+
+  @media (max-width 1070px) {
+    flex-direction: column-reverse;
+  }
+
+  .partner-dashboard-header-action {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+
+    @media (max-width 1070px) {
+      padding: 10px 0;
+      justify-content: flex-end;
+    }
   }
 }
 

@@ -7,7 +7,6 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { merchantFetch } from 'merchant/utils/ajax';
 import RTracking from 'react-tracking';
 
-import HeaderAction from 'common/ui/HeaderAction';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
@@ -16,7 +15,7 @@ import ReferralBox from './ReferralBox';
 import Announcement from 'merchant/components/Announcements/Instant';
 import { XSubMerchantList, PrimarySubMerchantList } from './AccountsList';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
-import { trackAddNewMerchantEvents } from '../ga';
+import { trackAddNewMerchantEvents } from 'merchant/views/PartnerDashboard/ga';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
@@ -151,58 +150,62 @@ export default class SubMerchantsList extends Component {
         <Announcement user={this.props.user} mode={this.props.mode} />
         <tabbed-container>
           <header className="partner-dashboard-header">
-            <NavLink
-              exact
-              to="/partners/submerchants"
-              onClick={(e) => this.sendAnalytics(e, 'navlink-Payments')}
-            >
-              Payments Affiliate Accounts
-            </NavLink>
-            <ShowWhen
-              additionalCondition={(currentUser) =>
-                not_pure_platform && currentUser.isPartnershipForXEnabled
-              }
-            >
+            <div>
               <NavLink
                 exact
-                to="/partners/submerchants/x"
-                onClick={(e) => this.sendAnalytics(e, 'navlink-X')}
+                to="/partners/submerchants"
+                onClick={(e) => this.sendAnalytics(e, 'navlink-Payments')}
               >
-                RazorpayX Affiliate Accounts
+                Payments Affiliate Accounts
               </NavLink>
-            </ShowWhen>
+              <ShowWhen
+                additionalCondition={(currentUser) =>
+                  not_pure_platform && currentUser.isPartnershipForXEnabled
+                }
+              >
+                <NavLink
+                  exact
+                  to="/partners/submerchants/x"
+                  onClick={(e) => this.sendAnalytics(e, 'navlink-X')}
+                >
+                  RazorpayX Affiliate Accounts
+                </NavLink>
+              </ShowWhen>
+            </div>
+            {/* Moved Share Referral and Add New Accounts from content to header, 
+            removed HeaderAction and added some CSS to fix screen responsive issue */}
+            <div className="partner-dashboard-header-action">
+              <ShowWhen
+                additionalCondition={(currentUser) =>
+                  currentUser.isPartner() && currentUser.isPartner('reseller', 'aggregator')
+                }
+              >
+                <button
+                  className="btn btn-link"
+                  onClick={this.handleShareReferralLink}
+                  type="button"
+                >
+                  <span> Share Referral Link</span>
+                </button>
+              </ShowWhen>
+              <ShowWhen
+                myRole="owner manager admin"
+                additionalCondition={(currentUser) =>
+                  currentUser.isPartner() && !currentUser.isPartner('pure_platform')
+                }
+              >
+                <button
+                  className="btn btn-primary pull-right m-l"
+                  onClick={this.handleAddMerchant}
+                  type="button"
+                >
+                  <i className="i i-plus" /> Add New Accounts
+                </button>
+              </ShowWhen>
+            </div>
           </header>
           <content>
-            <div class="sub-merchants-list">
-              <div>
-                <HeaderAction>
-                  <>
-                    <ShowWhen
-                      additionalCondition={(currentUser) =>
-                        currentUser.isPartner() && currentUser.isPartner('reseller', 'aggregator')
-                      }
-                    >
-                      <button class="btn btn-link" onClick={this.handleShareReferralLink}>
-                        <span> Share Referral Link</span>
-                      </button>
-                    </ShowWhen>
-                    <ShowWhen
-                      myRole="owner manager admin"
-                      additionalCondition={(currentUser) =>
-                        currentUser.isPartner() && !currentUser.isPartner('pure_platform')
-                      }
-                    >
-                      <button
-                        class="btn btn-primary pull-right m-l"
-                        onClick={this.handleAddMerchant}
-                      >
-                        <i class="i i-plus" />
-                        Add New Accounts
-                      </button>
-                    </ShowWhen>
-                  </>
-                </HeaderAction>
-              </div>
+            <div className="sub-merchants-list">
               <Switch>
                 {user.isPartnershipForXEnabled ? (
                   <Route
