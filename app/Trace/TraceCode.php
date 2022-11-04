@@ -654,6 +654,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RAZORX_VARIANT_3DS                                    = 'RAZORX_VARIANT_3DS';
     const RAZORX_VARIANT_SHIELD                                 = 'RAZORX_VARIANT_SHIELD';
     const RAZORX_VARIANT_FULCRUM_ONBOARDING                     = 'RAZORX_VARIANT_FULCRUM_ONBOARDING';
+    const SHIELD_PAYLATER_METADATA_SIMPL                        = 'SHIELD_PAYLATER_METADATA_SIMPL';
 
     const BULK_CREATE_BANKING_ACCOUNTS_REQUEST                  = 'BULK_CREATE_BANKING_ACCOUNTS_REQUEST';
 

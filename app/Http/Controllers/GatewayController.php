@@ -490,8 +490,8 @@ class GatewayController extends Controller
             case Gateway::CASHFREE:
             case Gateway::PAYTM:
             case Gateway::PAYU:
-                // Used for PayU emandate as well, since gateway does not allow setting 
-                // separate URL for diff methods at their end. 
+                // Used for PayU emandate as well, since gateway does not allow setting
+                // separate URL for diff methods at their end.
                 // Pls make sure changes in this flow, do not break for emandate.
                 // In future, move UPI callback to staticS2SCallbackGatewayWithModeAndMethod
                 // For emandate, already handled there.
@@ -798,6 +798,18 @@ class GatewayController extends Controller
         $gatewayinput = $input;
 
         $input['payment'] = $payment;
+
+        $merchantId=$payment->getMerchantId();
+        if($this->checkRazorXExperimentForShieldPaylater($merchantId))
+        {
+
+            //we are sending shopify and shopify-payment-app in metadata in the request but in callback flow these two fields are not coming.
+            //Due to which some risks checks are failing. Therefore, adding all the fields in metadata before callback.
+
+            $pa = $this->repo->payment_analytics->findLatestByPayment($payment->getId());
+            $input['_'] = $pa ? $pa->toArray() : null;
+            $payment->setMetadata($input);
+        }
 
         $data = (new Payment\Processor\Processor($merchant))->process($input, $gatewayinput);
 
@@ -1746,5 +1758,29 @@ class GatewayController extends Controller
         }
 
         return false;
+    }
+
+    private function checkRazorXExperimentForShieldPaylater(string $merchantId = null): bool {
+        if($merchantId === null){
+            return false;
+        }
+
+        $variantFlag = $this->app->razorx->getTreatment($merchantId, "SHIELD_PAYLATER_METADATA_SIMPL","live");
+
+        $this->trace->info(
+            TraceCode::SHIELD_PAYLATER_METADATA_SIMPL,
+            [
+                'merchantID'          => $merchantId,
+                'variant'            => $variantFlag,
+            ]);
+
+        if ($variantFlag === 'on')
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }
