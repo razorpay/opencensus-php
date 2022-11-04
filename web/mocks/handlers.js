@@ -1,4 +1,5 @@
 import { rest, graphql } from 'msw';
+import { paymentHandlers } from 'merchant/views/Transactions/Payments/components/__test__/mocks/handlers';
 import * as ActivationDB from 'merchant/views/onboarding/mobile/services/data/ActivationDB';
 import * as PaymentsDB from 'merchant/views/onboarding/mobile/services/data/PaymentsDB';
 import * as WebsiteWorkflowDB from 'merchant/views/onboarding/mobile/services/data/WebsiteWorkflowDB';
@@ -576,41 +577,6 @@ export const handlers = [
     return res(ctx.errors([{ message: 'Some error occurred' }]), ctx.delay(50));
   }),
 
-  // Payments
-  rest.put('*/merchant/api/test/account/config', (req, res, ctx) => {
-    return res(
-      ctx.status(200),
-      ctx.json({
-        status_code: 200,
-        success: true,
-      }),
-      ctx.delay(50),
-    );
-  }),
-  rest.get('*/orders/:orderId/product_details', (req, res, ctx) => {
-    const { orderId } = req.params;
-    if (orderId === '123') {
-      return res(
-        ctx.json({
-          data: {},
-        }),
-        ctx.delay(50),
-      );
-    }
-
-    return res(
-      ctx.json({
-        data: {
-          payment_page: {
-            title: 'Payment page title',
-            id: 'Payment page ID',
-          },
-        },
-      }),
-      ctx.delay(50),
-    );
-  }),
-
   // Verify Email
   rest.post('*/merchant/api/live/users/email/update/verify', (req, res, ctx) => {
     if (req.body.otp === '000000' || req.body.otp === '111111') {
@@ -748,4 +714,6 @@ export const handlers = [
       ctx.delay(50),
     );
   }),
+
+  ...paymentHandlers,
 ];

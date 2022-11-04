@@ -55,6 +55,7 @@
     "eslint-plugin-yml": "^0.9.0",
     "http-server": "^0.12.3",
     "husky": "^7.0.0",
+    "jest-location-mock": "^1.0.9",
     "jshint": "^2.13.0",
     "lint-staged": "^10.2.11",
     "micromatch": "^4.0.5",
