@@ -866,4 +866,21 @@ class Service extends Base\Service
 
         return $this->core->getTransferInput($transfer);
     }
+
+    public function syncSettlementStatus(array $input)
+    {
+        $settlementIds = $input['settlement_ids'] ?? SettlementIdsInput::$settlementIds;
+
+        foreach ($settlementIds as $settlementId)
+        {
+            $this->trace->info(
+                TraceCode::TRANSFER_SETTLEMENT_STATUS_SYNC_INITIATE,
+                [
+                    'settlement_id' => $settlementId,
+                ]
+            );
+
+            TransferSettlementStatus::dispatch($this->mode, $settlementId);
+        }
+    }
 }

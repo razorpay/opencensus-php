@@ -154,7 +154,7 @@ class TransferController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service(Entity::TRANSACTION)->dispatchIdealLedgerJob($input);
+        $response = $this->service()->syncSettlementStatus($input);
 
         return ApiResponse::json($response);
 
