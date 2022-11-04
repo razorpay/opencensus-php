@@ -58,6 +58,10 @@ glob(
         fileParams.CacheControl = 'max-age=31536000';
       }
 
+      if (/\.[0-9a-f]+\.(woff|woff2)$/.test(file)) {
+        fileParams.CacheControl = 'max-age=1296000';
+      }
+
       const type = ContentType[ext];
 
       if (type) {
