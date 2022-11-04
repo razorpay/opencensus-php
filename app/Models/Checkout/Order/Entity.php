@@ -80,6 +80,7 @@ class Entity extends PublicEntity
     public const RECEIVER_TYPE = 'receiver_type';
     public const SIGNATURE = 'signature';
     public const UPI = 'upi';
+    public const USER_AGENT = 'user_agent';
 
     /**
      * Fields used internally that are added to META_DATA
@@ -107,6 +108,7 @@ class Entity extends PublicEntity
         self::RECEIVER_TYPE,
         self::SIGNATURE,
         self::UPI,
+        self::USER_AGENT,
     ];
 
     /**
@@ -126,6 +128,7 @@ class Entity extends PublicEntity
         self::ORDER_ID,
         self::PAYMENT_LINK_ID,
         self::UPI,
+        self::USER_AGENT,
     ];
 
     /** @var string[] Id attribute to class mapping */
@@ -268,7 +271,7 @@ class Entity extends PublicEntity
 
         // This removes unnecessary meta data like user agent, env, flow, library etc.
         // which is not required on admin dashboard.
-        unset($metaData['_']);
+        unset($metaData['_'], $metaData[self::USER_AGENT]);
 
         return array_merge($data, [
             self::PAYABLE_AMOUNT => $this->getFinalAmount(),

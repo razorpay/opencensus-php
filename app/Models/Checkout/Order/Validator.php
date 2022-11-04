@@ -46,6 +46,7 @@ class Validator extends BaseValidator
         Entity::SIGNATURE => 'sometimes|string',
         Entity::UPI => 'sometimes|array',
         Entity::UPI . '.flow' => 'sometimes_if:method,upi|in:intent',
+        Entity::USER_AGENT => 'required|string',
     ];
 
     public static $closeRules = [

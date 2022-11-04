@@ -229,9 +229,14 @@ class CheckoutOrdersTest extends TestCase
         $this->assertEquals($payment['id'], $paymentAnalytics['payment_id']);
         $this->assertEquals($checkoutOrder['checkout_id'], $paymentAnalytics['checkout_id']);
         $this->assertEquals($checkoutOrder['meta_data']['_']['library'], $paymentAnalytics['library']);
+        $this->assertEquals('chrome', $paymentAnalytics['browser']);
+        $this->assertEquals('107.0.0.0', $paymentAnalytics['browser_version']);
+        $this->assertEquals('macos', $paymentAnalytics['os']);
+        $this->assertEquals('10_15_7', $paymentAnalytics['os_version']);
         $this->assertEquals('desktop', $paymentAnalytics['device']);
         $this->assertEquals($checkoutOrder['meta_data']['_']['platform'], $paymentAnalytics['platform']);
         $this->assertEquals($checkoutOrder['meta_data']['_']['referer'], $paymentAnalytics['referer']);
+        $this->assertEquals($checkoutOrder['meta_data']['user_agent'], $paymentAnalytics['user_agent']);
         $this->assertEquals($checkoutOrder['meta_data']['_']['device_id'], $paymentAnalytics['virtual_device_id']);
 
         //UpiMetadata assertions
@@ -996,6 +1001,9 @@ class CheckoutOrdersTest extends TestCase
             'method'  => 'POST',
             'url'     => '/checkout/order',
             'content' => $attributes,
+            'headers' => [
+                'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
+            ],
         ];
 
         return $this->makeRequestAndGetContent($request);
@@ -1079,7 +1087,8 @@ class CheckoutOrdersTest extends TestCase
             'method' => 'upi',
             'currency' => 'INR',
             'description' => 'Test Checkout Order',
-            'receiver_type' => 'qr_code'
+            'receiver_type' => 'qr_code',
+            'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
         ];
 
         $this->assertArraySelectiveEquals($expectedCheckoutOrderMetadata, $checkoutOrder['meta_data']);

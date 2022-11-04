@@ -5,6 +5,9 @@ namespace RZP\Models\Payment\Analytics;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 
+/**
+ * @property-read Payment\Entity $payment
+ */
 class Entity extends Base\PublicEntity
 {
     const PAYMENT_ID                    = 'payment_id';

@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use Jenssegers\Agent\Agent;
 
 class Parser extends Base\Core
 {
@@ -154,13 +155,25 @@ class Parser extends Base\Core
     /**
      * Sets analytics data using the HTTP request
      */
-    protected function setHttpRequestData(Entity $pa)
+    protected function setHttpRequestData(Entity $pa): void
     {
         $ua = null;
 
-        if ($this->ba->isPrivateAuth() === true)
+        /**
+         * Payment entity creation happens in gateway callback for QrV2 Payments
+         * Since the user agent will not be present in headers in the gateway callback,
+         *      we are taking the user agent from payment input
+         * $this->app['agent'] in init() is not taking user agent from input,
+         *      hence we are creating a new Agent object with user agent from input
+         *
+         * For S2S Payments as well, take user agent from input
+         */
+        if ($this->ba->isPrivateAuth() ||
+            ($this->ba->isDirectAuth() && $pa->payment->isUpiQr()))
         {
             $ua = $pa->payment->getMetadata('user_agent');
+
+            $this->uAgent = new Agent(null, $ua);
         }
 
         $pa->setBrowser($this->getBrowser($ua));

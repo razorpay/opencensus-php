@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Contracts\Support\Arrayable;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Constants\HyperTrace;
+use RZP\Http\RequestHeader;
 use RZP\Http\Route;
 use RZP\Models\Base\Service as BaseService;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\CloseReason as NonVAQrCodeCloseReason;
@@ -34,6 +35,8 @@ class Service extends BaseService
      */
     public function create(array $input): array
     {
+        $input[Entity::USER_AGENT] = $this->app['request']->header(RequestHeader::USER_AGENT);
+
         $this->traceRequest(TraceCode::CREATE_CHECKOUT_ORDER_REQUEST, $input);
 
         $checkoutOrder = $this->core()->create($input);
