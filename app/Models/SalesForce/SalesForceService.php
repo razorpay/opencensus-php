@@ -203,6 +203,13 @@ class SalesForceService extends Base\Service {
                     $eventPayload['X_Channel']    = XChannelDefinition\Channels::PG;
                     $eventPayload['X_Subchannel'] = XChannelDefinition\Channels::PG_BANKING_WIDGET;
                 }
+
+                if (isset($eventPayload['X_Channel']) && isset($eventPayload['X_Subchannel'])) {
+                    $this->trace->info(TraceCode::X_CHANNEL_DEFINITION_UPDATING_SF_PAYLOAD, [
+                        'channel'    => $eventPayload['X_Channel'],
+                        'subchannel' => $eventPayload['X_Subchannel'],
+                    ]);
+                }
             }
             catch (\Throwable $e)
             {

@@ -140,6 +140,11 @@ class Service extends Base\Service
 
         $utm_params['x_channel']    = empty($channel) ? Channels::UNMAPPED : $channel;
         $utm_params['x_subchannel'] = empty($subchannel) ? Channels::UNMAPPED : $subchannel;
+
+        $this->trace->info(TraceCode::X_CHANNEL_DEFINITION_UPDATING_SF_PAYLOAD, [
+            'channel'    => $utm_params['x_channel'],
+            'subchannel' => $utm_params['x_subchannel'],
+        ]);
     }
 
     /**
