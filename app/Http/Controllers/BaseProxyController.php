@@ -15,6 +15,7 @@ use Psr\Http\Message\RequestInterface;
 use RZP\Http\Controllers\Processors\PostProcessor;
 use RZP\Http\Controllers\Processors\PreProcessor;
 use RZP\Http\Request\Requests;
+use RZP\Http\RequestHeader;
 use RZP\Trace\TraceCode;
 
 abstract class BaseProxyController extends Controller
@@ -278,6 +279,10 @@ abstract class BaseProxyController extends Controller
 
         $arrHeaders = new ArrayHeaders($headers);
         $headers    = $arrHeaders->toArray();
+
+        $headers = array_merge($headers, [
+            RequestHeader::DEV_SERVE_USER =>  Request::header(RequestHeader::DEV_SERVE_USER)
+        ]);
 
         $baseUrl = $this->getBaseUrl();
         $url     = $baseUrl . '/' . $path;
