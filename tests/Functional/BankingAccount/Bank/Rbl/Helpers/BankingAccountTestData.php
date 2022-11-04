@@ -417,6 +417,28 @@ return [
         ]
     ],
 
+    'testFreshDeskTicketCreationOnActivationDetailUpdate' => [
+        'request'  => [
+            'url'     => '/banking_accounts_internal/activation/bacc_/details',
+            'method'  => 'PATCH',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [
+                'declaration_step' => 1,
+                'additional_details' => [
+                    'sales_pitch_completed' => 1
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'declaration_step' => 1,
+                'additional_details' => json_encode(["sales_pitch_completed" => 0]),
+            ]
+        ]
+    ],
+
     'testFreshDeskTicketforSalesAssistedFlow' => [
         'request'  => [
             'url'     => '/banking_accounts_dashboard',

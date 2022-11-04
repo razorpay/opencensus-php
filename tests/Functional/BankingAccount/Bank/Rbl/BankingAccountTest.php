@@ -553,7 +553,69 @@ class BankingAccountTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_' . self::DefaultMerchantId);
 
-//        $this->ba->addXOriginHeader();
+        $this->startTest($dataToReplace);
+
+        if ($shouldQueue)
+        {
+            Mail::assertQueued(XProActivation::class, function ($mail)
+            {
+                $mail->build();
+                return $mail->hasTo('x.support@razorpay.com');
+            });
+        }
+        else
+        {
+            Mail::assertNotQueued(XProActivation::class, function ($mail)
+            {
+                $mail->build();
+                return $mail->hasTo('x.support@razorpay.com');
+            });
+        }
+    }
+
+    public function verifyFreshDeskTicketCreationOnActivationDetailUpdate($baId, $baActivationDetailId, $oldDeclarationStep = 0, $oldSalesPitchCompleted = 0, $newDeclarationStep = 1, $newSalesPitchCompleted = 1, $shouldQueue = true)
+    {
+        $this->fixtures->edit('banking_account', $baId, ['status' => 'created']);
+
+        $admin = $this->fixtures->create('admin', ['org_id' => Org::RZP_ORG, 'email' => 'abc@razorpay.com']);
+
+        $baDetails = ['declaration_step' => $oldDeclarationStep];
+
+        if ($oldSalesPitchCompleted !== null)
+        {
+            $baDetails += ['additional_details' => json_encode(['sales_pitch_completed' => $oldSalesPitchCompleted])];
+        }
+
+        $this->fixtures->edit('banking_account_activation_detail', $baActivationDetailId, $baDetails);
+
+        Mail::fake();
+
+        $this->testData[__FUNCTION__] = $this->testData['testFreshDeskTicketCreationOnActivationDetailUpdate'];
+
+        $additionDetailsResponse = json_encode(['sales_pitch_completed' => $newSalesPitchCompleted]);
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts_internal/activation/bacc_' . $baId . '/details',
+                'server'  => [
+                    'HTTP_X-Admin-Email' => $admin->getEmail(),
+                ],
+                'content' => [
+                    'declaration_step' => $newDeclarationStep,
+                    'additional_details' => [
+                        'sales_pitch_completed' => $newSalesPitchCompleted
+                    ],
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'declaration_step' => $newDeclarationStep ? '1' : '0',
+                    'additional_details' => $additionDetailsResponse,
+                ],
+            ]
+        ];
+
+        $this->ba->mobAppAuthForInternalRoutes();
 
         $this->startTest($dataToReplace);
 
@@ -573,6 +635,9 @@ class BankingAccountTest extends TestCase
                 return $mail->hasTo('x.support@razorpay.com');
             });
         }
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+        $this->assertEquals($bankingAccount->getStatus(), $shouldQueue ? 'picked' : 'created');
     }
 
     public function testFreshDeskTicketCreationBehaviourForDifferentOneCaScenarios()
@@ -622,6 +687,26 @@ class BankingAccountTest extends TestCase
         $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 0, 1, false);
         $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 1, 0, false);
         $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 1, 1, false);
+
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 0, 0, 0, false);
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 0, 0, 1, false);
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 0, 1, 0, false);
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 0, 1, 1, true);
+
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 1, 0, 0, false);
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 1, 0, 1, false);
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 1, 1, 0, true);
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 1, 1, 1, true);
+
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 0, 0, 0, false);
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 0, 0, 1, true);
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 0, 1, 0, false);
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 0, 1, 1, true);
+
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 0, 0, false);
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 0, 1, false);
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 1, 0, false);
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 1, 1, false);
     }
 
     public function testFreshDeskTicketCreationBehaviourForDifferentNonOneCaScenarios()
@@ -669,6 +754,27 @@ class BankingAccountTest extends TestCase
         $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 0, 1, false);
         $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 1, 0, false);
         $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 1, 1, false);
+
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 0, 0, 0, false);
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 0, 0, 1, false);
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 0, 1, 0, true);
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 0, 1, 1, true);
+
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 1, 0, 0, false);
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 1, 0, 1, false);
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 1, 1, 0, true);
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 1, 1, 1, true);
+
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 0, 0, 0, false);
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 0, 0, 1, false);
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 0, 1, 0, false);
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 0, 1, 1, false);
+
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 0, 0, false);
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 0, 1, false);
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 1, 0, false);
+        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 1, 1, false);
+
     }
 
     public function testFreshDeskTicketforSalesAssistedFlow()
@@ -8569,7 +8675,7 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($bankDueDate, $activationDetailsResponse[ActivationDetail\Entity::RBL_ACTIVATION_DETAILS][ActivationDetail\Entity::BANK_DUE_DATE]);
 
         // Automatic Assignee Team change
-        $this->assertEquals(ActivationDetail\Entity::SALES, 
+        $this->assertEquals(ActivationDetail\Entity::SALES,
             $bankingAccountResponse[Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::ASSIGNEE_TEAM]);
 
 

@@ -982,7 +982,7 @@ class Core extends Base\Core
             // This will be  removed once LMS changes are made live for all CA flows
             $attributeCore = new Merchant\Attribute\Core;
 
-            $caOnboardingFlow = $attributeCore->fetch($this->merchant,
+            $caOnboardingFlow = $attributeCore->fetch($bankingAccount->merchant,
                                                       Product::BANKING,
                                                       Merchant\Attribute\Group::X_MERCHANT_CURRENT_ACCOUNTS,
                                                       Merchant\Attribute\Type::CA_ONBOARDING_FLOW);
