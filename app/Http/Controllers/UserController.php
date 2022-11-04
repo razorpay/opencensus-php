@@ -1018,7 +1018,7 @@ class UserController extends Controller
                 MetricConstants::LOGIN_METHOD => $this->getLoginMethodFromSession(),
             ]);
 
-        $user->logout();
+        $user->logoutCurrentDevice();
 
         $currentMerchantId = Session::get('current_merchant_id','');
 
