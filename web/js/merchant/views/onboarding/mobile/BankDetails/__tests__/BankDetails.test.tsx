@@ -1,6 +1,6 @@
 import React from 'react';
 import BankDetails from 'merchant/views/onboarding/mobile/BankDetails/index';
-import { fireEvent, render, screen, waitForElementToBeRemoved } from 'test-utils';
+import { fireEvent, render, screen, waitForElementToBeRemoved, waitFor } from 'test-utils';
 import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
 import * as ActivationDB from 'merchant/views/onboarding/mobile/services/data/ActivationDB';
 
@@ -40,7 +40,9 @@ test('should show bank verification status error for unreg type', async () => {
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.getByText(UNREG_BANK_ERROR)).toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.getByText(UNREG_BANK_ERROR)).toBeInTheDocument();
+  });
 });
 
 test('should show bank verification status error for reg type', async () => {
@@ -50,5 +52,7 @@ test('should show bank verification status error for reg type', async () => {
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.getByText(REG_BANK_ERROR)).toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.getByText(REG_BANK_ERROR)).toBeInTheDocument();
+  });
 });
