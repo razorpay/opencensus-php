@@ -2,14 +2,15 @@
 
 namespace RZP\Models\Merchant\Referral;
 
-use RZP\Constants\Product;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\Tracer;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Product;
 use RZP\Constants\HyperTrace;
+use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 
 class Core extends Base\Core
@@ -266,5 +267,43 @@ class Core extends Base\Core
         }
 
         return $referrals->first();
+    }
+
+    public function regenerate(PublicCollection $partners)
+    {
+        $productConfig = array( Product::PRIMARY => $this->config['applications.dashboard.url'],
+
+                                Product::BANKING => $this->config['applications.banking_service_url'] . '/auth/');
+
+        $this->repo->transactionOnLiveAndTest(function() use($partners, $productConfig) {
+
+            $ids = $partners->pluck(Entity::ID)->toArray();
+
+            $oldReferrals = $this->repo->referrals->getReferralsByMerchantIds($ids);
+
+            foreach($oldReferrals as $referral)
+            {
+                $refCode = $referral->getReferralCode();
+
+                $oldUrl = $referral->getReferralLink();
+
+                $dashboardUrl = $productConfig[$referral->getProduct()];
+
+                $newShortUrl = $this->createShortenReferralUrl($refCode, $dashboardUrl);
+
+                $referral[Entity::URL] = $newShortUrl;
+
+                $this->repo->saveOrFail($referral);
+
+                $this->trace->info(TraceCode::PARTNER_REFERRAL_LINK_REGENERATE,
+                                   [
+                                       'partner_id' => $referral->getMerchantId(),
+                                       'product'    => $referral->getProduct(),
+                                       'new_url'    => $referral->getReferralLink(),
+                                       'old_url'    => $oldUrl,
+                                   ]);
+
+            }
+        });
     }
 }

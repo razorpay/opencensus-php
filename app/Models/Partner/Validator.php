@@ -20,6 +20,10 @@ class Validator extends Base\Validator
         'new_auth_create' => 'required|boolean',
     ];
 
+    protected static $regenerateReferralLinkRules = [
+        'partner_ids' => 'required|array'
+    ];
+
     /**
      * @param Merchant\Entity $partner
 

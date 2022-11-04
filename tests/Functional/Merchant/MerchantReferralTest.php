@@ -3,8 +3,12 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use DB;
-use Event;
+use App;
 use Mail;
+use Event;
+use RZP\Services\Elfin;
+use RZP\Models\Merchant\Referral;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
@@ -14,6 +18,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 class MerchantReferralTest extends OAuthTestCase
 {
     use OAuthTrait;
+    use MocksSplitz;
     use PaymentTrait;
     use DbEntityFetchTrait;
 
@@ -195,4 +200,83 @@ class MerchantReferralTest extends OAuthTestCase
         $this->assertEquals($pgReferral->getReferralLink(), $response['url']);
     }
 
+    /**
+     * This test case first creates referral links for PG and X products via /merchant/referral API and
+     * regenerate function stub is invoked to test the regeneration.
+     * 1. Create referrals for the partner
+     * 2. Invoke regenerate referral links function
+     * 3. Validate new referral links for PG and banking are updated
+     */
+    public function testRegenerateReferralLinks()
+    {
+        $this->fixtures->merchant->edit(Constants::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $this->fixtures->merchant->createDummyPartnerApp();
+
+        $merchantId = Constants::DEFAULT_MERCHANT_ID;
+
+        $testData = &$this->testData['testCreateOrFetchReferral'];
+
+        $app = App::getFacadeRoot();
+
+        $app['elfin'] = (new Elfin\Mock\Service($app['config'], $app['trace']));
+
+        $this->ba->proxyAuth();
+
+        $testData['request']['url'] = "/merchant/referral";
+
+        $response  = $this->runRequestResponseFlow($testData);
+
+        $bankingReferral = $this->getDbEntity('referrals',
+                                              [
+                                                  'merchant_id' => $merchantId, 'product' => 'banking'
+                                              ], 'live');
+
+        $oldBankingReferralUrl = $bankingReferral['url'];
+        $pgReferral = $this->getDbEntity('referrals',
+                                         [
+                                             'merchant_id' => $merchantId, 'product' => 'primary'
+                                         ], 'live');
+        $oldPgReferralUrl = $pgReferral['url'];
+
+        $partners = $this->getDbEntities('merchant', ['id' => $merchantId] );
+
+        (new Referral\Core())->regenerate($partners);
+
+        $newPgReferral = $this->getDbEntity('referrals',
+                                           [
+                                               'merchant_id' => $merchantId, 'product' => 'primary'
+                                           ], 'live');
+        $newBankingReferral = $this->getDbEntity('referrals',
+                                              [
+                                                  'merchant_id' => $merchantId, 'product' => 'banking'
+                                              ], 'live');
+
+        $this->assertNotEquals($oldBankingReferralUrl, $newBankingReferral['url']);
+        $this->assertNotEquals($oldPgReferralUrl, $newPgReferral['url']);
+    }
+
+    /**
+     * This test case intend to test when a not whitelisted merchant try to invoke the regenerate API
+     * Asserts Bad request error
+     */
+    public function testRegenerateReferralLinksWithInvalidMerchant()
+    {
+        $this->mockAllExperiments("disable");
+        $this->ba->privateAuth();
+        $this->startTest();
+    }
+
+    private function mockAllExperiments(string $variant = 'enable')
+    {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => $variant,
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+    }
 }

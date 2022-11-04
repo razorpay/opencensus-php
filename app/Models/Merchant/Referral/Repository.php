@@ -34,6 +34,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+
+    public function getReferralsByMerchantIds(array $merchantIds)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                    ->get();
+    }
+
     public function getReferralByMerchantIdAndProduct(string $merchantId, string $product)
     {
         return $this->newQuery()

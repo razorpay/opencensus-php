@@ -391,6 +391,8 @@ return array(
 
     'send_commission_invoice_reminders_exp_id' => env('SEND_COMMISSION_INVOICE_REMINDERS_EXP_ID'),
 
+    'partner_regenerate_referrals_links_exp_id' => env('PARTNER_REGENERATE_REFERRAL_LINKS_EXP_ID'),
+
     'partner_config_auditing_experiment_id' => env('PARTNER_CONFIG_AUDITING_EXPERIMENT_ID'),
 
     'submerchant_ownership_transfer_experiment_id' => env('SUBMERCHANT_OWNERSHIP_TRANSFER_EXPERIMENT_ID'),

@@ -224,6 +224,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Merchant\LinkedAccountReferenceData\Repository           $linked_account_reference_data
  * @property Models\Checkout\Order\Repository                                $checkout_order
  * @property Models\QrPayment\Repository                                     $qr_payment
+ * @property Models\Merchant\Referral\Repository                             $referrals
  */
 
 class RepositoryManager extends Illuminate\Support\Manager
