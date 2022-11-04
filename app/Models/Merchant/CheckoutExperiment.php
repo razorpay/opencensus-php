@@ -28,9 +28,8 @@ class CheckoutExperiment
 
     protected $experimentResults;
 
-    /*** @var array map your experiment id to (experiment name and experiment tag) in your fill method. The experiment
-     * name must be same name you use in your handle response method and exp tag must be same as what you used
-     * in $experimentResults. Sample : ['expID1' => [ 'name' => 'UpiQrV2', 'tag' => 'upi_qr_v2' ] ]  */
+    /*** @var array This is used to map your experiment id to (experiment name and experiment tag)
+     * Sample : ['expID1' => [ 'name' => 'UpiQrV2', 'tag' => 'upi_qr_v2' ] */
     private $experimentToResponseHandlerMapping;
 
     public function __construct(array $input, string $merchantId)
@@ -49,7 +48,8 @@ class CheckoutExperiment
             'recurring_redesign_v1_5' => false,
             'reuse_upi_paymentId'     => false,
             'recurring_upi_intent_qr'=> false,
-            'recurring_upi_all_psp'      => false
+            'recurring_upi_all_psp'   => false,
+            'banking_redesign_v15'    => false,
         ];
 
         $this->input = $input;
@@ -91,9 +91,9 @@ class CheckoutExperiment
     }
 
     /**
-     * This method fills experiment data for all experiments we want to have.
-     * if you want to add new experiment, add a new fill data method and make sure you map your exp id to
-     * exp name & exp tag. call the new fill method in this method to fill its data.
+     * This method fills experiment data for all experiments we want to send to splitz service.
+     * if you want to add new experiment, call the $this->fillExperimentData with your own parameters. just make sure
+     * that experimentTag is same as what you used in default experiment results array($this->experimentResults)
      * @return void
      */
     private function fillSplitzExperimentsData(): void
@@ -170,6 +170,14 @@ class CheckoutExperiment
             'app.checkout_recurring_upi_autopay_psp_splitz_experiment_id',
             'RecurringUpiPsp',
             'recurring_upi_all_psp',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.checkout_banking_redesign_v1_5_splitz_experiment_id',
+            'BankingRedesign',
+            'banking_redesign_v15',
             ['merchant_id' => $this->merchantId]
         );
     }
@@ -309,5 +317,12 @@ class CheckoutExperiment
         }
 
         return false;
+    }
+
+    private function handleBankingRedesignResponse($response): bool
+    {
+        $variant = $response['variant']['name'] ?? '';
+
+        return $variant === 'variant_on';
     }
 }
