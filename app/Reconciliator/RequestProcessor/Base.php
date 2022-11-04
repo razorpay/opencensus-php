@@ -225,7 +225,7 @@ class Base extends Core
         self::CARD_FSS_BOB             => [],
         self::CARD_FSS_SBI             => ['ipay.support@sbi.co.in'],
         self::UPI_AXIS                 => [],
-        self::UPI_HDFC                 => ['upi@hdfcbank.net'],
+        self::UPI_HDFC                 => [],
         self::UPI_HULK                 => [],
         self::UPI_YESBANK              => [],
         self::AMEX                     => [],
