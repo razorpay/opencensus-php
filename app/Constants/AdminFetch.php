@@ -659,6 +659,7 @@ class AdminFetch
                         'collect_local_consents_to_create_tokens',
                         'enach_npci_netbanking',
                         'emandate_debit_enach_rbl',
+                        'emandate_debit_sbi',
                         'auth_link',
                         'recurring_charge',
                         'recurring_charge_bulk',

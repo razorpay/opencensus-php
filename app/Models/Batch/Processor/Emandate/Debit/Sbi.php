@@ -3,11 +3,13 @@
 namespace RZP\Models\Batch\Processor\Emandate\Debit;
 
 use RZP\Error;
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Gateway\Netbanking;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\RecurringType;
+use RZP\Models\Merchant\RazorxTreatment;
 
 class Sbi extends Base
 {
@@ -18,6 +20,13 @@ class Sbi extends Base
     protected function getDataFromRow(array & $row): array
     {
         $row = array_map('trim', $row);
+
+        if(isset($row["Mandate Holder's Account No"]) === true)
+        {
+            $row["Mandate Holder’s Account No"] = $row["Mandate Holder's Account No"];
+
+            unset($row["Mandate Holder's Account No"]);
+        }
 
         return [
             self::PAYMENT_ID            => $row[ Batch\Header::SBI_EM_DEBIT_CUSTOMER_REF_NO ],
@@ -94,5 +103,19 @@ class Sbi extends Base
     protected function removeCriticalDataFromTracePayload(array & $payloadEntry)
     {
         unset($payloadEntry[Batch\Header::SBI_EM_DEBIT_DEBIT_ACCOUNT_NUMBER]);
+    }
+
+    public function shouldSendToBatchService(): bool
+    {
+        $key = Carbon::now()->getTimestamp();
+
+        $razorxTreatment = RazorxTreatment::BATCH_SERVICE_EMANDATE_DEBIT_SBI_MIGRATION;
+
+        $variant = $this->app->razorx->getTreatment($key,
+            $razorxTreatment,
+            $this->mode
+        );
+
+        return (strtolower($variant) === 'on');
     }
 }
