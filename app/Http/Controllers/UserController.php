@@ -1020,20 +1020,19 @@ class UserController extends Controller
 
         $user->logoutCurrentDevice();
 
-        $currentMerchantId = Session::get('current_merchant_id','');
-
-        if (in_array($currentMerchantId, MerchantConstants::X_DEMO_MERCHANT_IDS, true))
-        {
-            // Clearing all session data as session keys like current_merchant_id are persisted even after logout
-            $this->trace->info(TraceCode::FORCE_SESSION_CLEAR_AFTER_X_DEMO_LOGOUT, []);
-
-            Session::forget('current_merchant_id');
-            Session::forget('dashboard_user_payload');
-        }
+        // Clearing all session data as session keys like current_merchant_id are persisted even after logout
 
         Session::forget(User\Constants::OAUTH_LOGIN);
 
         Session::forget(User\Constants::TWO_FA_VERIFIED);
+
+        Session::forget(User\Constants::USER_ID);
+
+        Session::forget('logged_in_via');
+
+        Session::forget('current_merchant_id');
+
+        Session::forget('dashboard_user_payload');
 
         return AppResponse::jsonResponse([]);
     }

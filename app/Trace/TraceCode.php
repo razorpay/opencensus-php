@@ -208,11 +208,12 @@ class TraceCode
     const FORCE_SESSION_CLEAR_BEFORE_X_DEMO_LOGIN     = 'FORCE_SESSION_CLEAR_BEFORE_X_DEMO_LOGIN';
     const FORCE_SESSION_CLEAR_AFTER_X_DEMO_LOGOUT     = 'FORCE_SESSION_CLEAR_AFTER_X_DEMO_LOGOUT';
 
+    const USER_SET_PASSWORD                         = 'USER_SET_PASSWORD';
     const RAZORX_CALL_FAILED                        = 'RAZORX_CALL_FAILED';
     const USER_VERIFY_LOGIN_VIA_2FA                 = 'USER_VERIFY_LOGIN_VIA_2FA';
+    const USER_LOGIN_ADD_IN_SESSION                 = 'USER_LOGIN_ADD_IN_SESSION';
+    const USER_VERIFY_2FA_RESEND_OTP                = 'USER_VERIFY_2FA_RESEND_OTP';
     const MAKE_RECONCILIATION_REQUEST               = 'MAKE_RECONCILIATION_REQUEST';
-    const USER_SET_PASSWORD_DATA_FROM_CACHE         = 'USER_SET_PASSWORD_DATA_FROM_CACHE';
-    const USER_VERIFY_LOGIN_VIA_2FA_DATA_FROM_CACHE = 'USER_VERIFY_LOGIN_VIA_2FA_DATA_FROM_CACHE';
 
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',

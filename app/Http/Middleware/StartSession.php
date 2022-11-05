@@ -64,15 +64,6 @@ class StartSession extends BaseMiddleware
 
         $this->collectGarbage($session);
 
-        $response = $next($request);
-
-        $this->storeCurrentUrl($request, $session);
-
-        // Again, if the session has been configured we will need to close out the session
-        // so that the attributes may be persisted to some storage medium. We will also
-        // add the session identifier cookie to the application response headers now.
-        $this->saveSession($request);
-
-        return $response;
+        return $next($request);
     }
 }
