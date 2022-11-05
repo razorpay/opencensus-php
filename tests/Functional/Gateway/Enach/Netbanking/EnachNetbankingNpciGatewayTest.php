@@ -1303,7 +1303,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $this->makeRequestAndCatchException(function () use ($paymentInput) {
             $this->doAuthPayment($paymentInput);
-        }, \RZP\Exception\BadRequestException::class, 'Recurring is not supported on this bank');
+        }, \RZP\Exception\BadRequestException::class, 'Bank code provided does not match order bank.');
     }
 
     public function testOrderCreationWithBankAccount()

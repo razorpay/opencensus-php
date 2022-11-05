@@ -10,6 +10,7 @@ use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\BankAccount;
 use RZP\Models\Currency\Currency;
 use RZP\Models\SubscriptionRegistration;
@@ -98,6 +99,19 @@ class Validator extends Base\Validator
         Entity::AMOUNT => 'required|integer|min_amount'
     ];
 
+    protected $changeBankCodeGatewayMapping = [
+        IFSC::UJVN => 'USFB',
+    ];
+
+    protected function getBankCodeMapping($bank)
+    {
+        if (array_key_exists($bank, $this->changeBankCodeGatewayMapping) === true)
+        {
+            $bank = $this->changeBankCodeGatewayMapping[$bank];
+        }
+
+        return $bank;
+    }
 
     protected function validatePartialPayment($attribute, $value)
     {
@@ -504,6 +518,11 @@ class Validator extends Base\Validator
             ($method === Payment\Method::UPI))
         {
             return;
+        }
+
+        if ($method === Payment\Method::EMANDATE)
+        {
+            $bank = $this->getBankCodeMapping($bank);
         }
 
         if (($order->getBank() !== null) and
