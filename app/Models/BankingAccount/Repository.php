@@ -268,6 +268,26 @@ class Repository extends Base\Repository
     }
 
     /**
+     * Filter to search whether lead is revived_lead or not
+     */
+    public function addQueryParamRevivedLead(Base\BuilderEx $query, $params)
+    {
+        $revivedLead = $params[ActivationDetail\Entity::REVIVED_LEAD];
+
+        if ($revivedLead === 'yes') {
+            $revivedLead = 'true';
+        } else {
+            $revivedLead = 'false';
+        }
+
+        $this->joinQueryActivationDetail($query);
+
+        $query->select($this->dbColumn('*'));
+
+        $query->whereRaw('json_unquote(json_extract(additional_details, \'$."revived_lead"\')) = \''.$revivedLead.'\'');
+    }
+
+    /**
      * Filter to search whether lead is feet on street or not
      */
     public function addQueryParamFeetOnStreet(Base\BuilderEx $query, $params)
@@ -433,7 +453,7 @@ class Repository extends Base\Repository
 
     /**
      * Filter to search overdue leads using due date
-     * 
+     *
      * If is_overdue is 1, bank_due_date should be less than today start
      * If is_overdue is 0, bank_due_date should be more than today end
      */
@@ -442,7 +462,7 @@ class Repository extends Base\Repository
         $overdue = $params[BankLms\Constants::IS_OVERDUE];
 
         $date = new Carbon();
-        
+
         // default for is_overdue = 1
         $start = 941627769; // 1999-11-03
         $end = (new Carbon())->timestamp;

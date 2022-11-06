@@ -3,6 +3,7 @@
 namespace RZP\Models\BankingAccount\State;
 
 use RZP\Base;
+use RZP\Models\BankingAccount\Status;
 
 class Repository extends Base\Repository
 {
@@ -15,6 +16,14 @@ class Repository extends Base\Repository
                     ->where(Entity::SUB_STATUS, '=', $subStatus)
                     ->get()
                     ->first();
+    }
+
+    public function getAnySendToBankStateByBankingAccountId(string $bankingAccountId)
+    {
+        return $this->newQuery()
+            ->where(Entity::BANKING_ACCOUNT_ID, '=', $bankingAccountId)
+            ->where(Entity::STATUS, Status::INITIATED)
+            ->first();
     }
 
     public function getBankingAccountsStateBySubStateAndCreatedBetween(string $subStatus, string $from, string $to)

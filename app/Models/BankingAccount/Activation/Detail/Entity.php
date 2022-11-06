@@ -105,6 +105,10 @@ class Entity extends Base\PublicEntity
     // Additional details fields
     const ACCOUNT_OPENING_WEBHOOK_DATE = 'account_opening_webhook_date';
 
+    const REVIVED_LEAD = 'revived_lead';
+
+    const MID_OFFICE_POC_NAME = 'mid_office_poc_name';
+
     const SALES_PITCH_COMPLETED = 'sales_pitch_completed';
 
     const COMMENT = 'comment'; //Latest comment. This is to support backward compatibility

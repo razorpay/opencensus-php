@@ -8264,6 +8264,138 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
    }
 
+    public function testBankLmsEndToEndRevivedLeadWithoutSentToBank()
+    {
+
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->ba->addXOriginHeader();
+
+        $bankingAccount =  $this->createBankingAccount();
+
+        $this->ba->adminAuth();
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::CREATED, Status::PICKED,
+            null, null,
+            null, null,
+            $bankingAccount);
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED, Status::ARCHIVED,
+            null, null,
+            null, null,
+            $bankingAccount);
+
+        $dataToReplace = [
+            'url' => '/banking_accounts/'. $bankingAccount['id'],
+            'method' => 'PATCH',
+            'content' => [
+                'status' => 'picked'
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($dataToReplace);
+
+        $additionalDetails = json_decode($response[BankingAccount\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::ADDITIONAL_DETAILS],true);
+
+        $this->assertEquals(null, $additionalDetails[BankingAccount\Activation\Detail\Entity::REVIVED_LEAD]);
+
+    }
+
+    public function testBankLmsEndToEndRevivedLeadWithSentToBank()
+    {
+
+        $response = $this->setupBankLMSTest();
+
+        $user = $response['user'];
+
+        $response = $response['bankingAccount'];
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED, Status::INITIATED,
+            null, null,
+            null, null,
+            $response);
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::INITIATED, Status::ARCHIVED,
+            null, null,
+            null, null,
+            $response);
+
+
+        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
+
+        $this->ba->addXBankLMSOriginHeader();
+
+        $dataToReplace = [
+            'url' => '/banking_accounts/rbl/lms/banking_account/' . $response['id'],
+            'method' => 'PATCH',
+            'content' => [
+                'status' => 'initiated'
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($dataToReplace);
+
+        $additionalDetails = json_decode($response[BankingAccount\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::ADDITIONAL_DETAILS],true);
+
+        $this->assertEquals(true, $additionalDetails[BankingAccount\Activation\Detail\Entity::REVIVED_LEAD]);
+
+    }
+
+    public function testBankLmsEndToEndForRevivedLeadFilter()
+    {
+
+        $response = $this->setupBankLMSTest();
+
+        $user = $response['user'];
+
+        $response = $response['bankingAccount'];
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED, Status::INITIATED,
+            null, null,
+            null, null,
+            $response);
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::INITIATED, Status::ARCHIVED,
+            null, null,
+            null, null,
+            $response);
+
+
+        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
+
+        $this->ba->addXBankLMSOriginHeader();
+
+        $dataToReplace = [
+            'url' => '/banking_accounts/rbl/lms/banking_account/' . $response['id'],
+            'method' => 'PATCH',
+            'content' => [
+                'status' => 'initiated'
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($dataToReplace);
+
+        $url = '/banking_accounts/rbl/lms/banking_account?revived_lead=yes';
+
+        $dataToReplace = [
+            'request' => [
+                'url' => $url,
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
     public function testBankLmsEndToEndForFilterByBankPoc()
     {
         // Make merchant as Bank CA Onboarding Partner

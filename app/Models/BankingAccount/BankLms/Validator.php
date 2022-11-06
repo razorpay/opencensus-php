@@ -65,6 +65,7 @@ class Validator extends BankingAccount\Validator
         Constants::LEAD_RECEIVED_FROM_DATE       => 'required_with:lead_received_to_date|integer',
         Constants::LEAD_RECEIVED_TO_DATE         => 'required_with:lead_received_from_date|integer',
         Constants::IS_GREEN_CHANNEL              => 'sometimes|in:yes,no',
+        BankingAccount\Activation\Detail\Entity::REVIVED_LEAD => 'sometimes|in:yes,no',
         BankingAccount\Entity::BANK_REFERENCE_NUMBER     => 'sometimes|string',
         BankingAccount\Entity::MERCHANT_BUSINESS_NAME    => 'sometimes|string',
         BankingAccount\ENTITY::ASSIGNEE_TEAM                => 'sometimes|in:rzp,bank',

@@ -935,9 +935,9 @@ class Status
 
     /**
      * Used to calculate default assignee when moving from one state to another
-     * 
+     *
      * Return false if default assignee should not be updated
-     * 
+     *
      * Return null or a valid assignee to update the assignee team
      */
     public static function getDefaultAssigneeTeam(?string $status, ?string $subStatus)
@@ -1028,6 +1028,11 @@ class Status
         }
 
         return $completedStages;
+    }
+
+    public static function checkStatusForRevival(string $status)
+    {
+        return in_array($status, array(self::PICKED, self::INITIATED));
     }
 
     public static function isValidStatus(string $status = null)
@@ -1299,8 +1304,8 @@ class Status
         if ($hours == -1)
         {
             return null;
-        } 
-        else 
+        }
+        else
         {
             $followUpDate = new Carbon\Carbon($followUpDate + $hours * 60 * 60);
             if ($followUpDate->isWeekend())

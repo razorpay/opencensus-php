@@ -708,6 +708,13 @@ class Core extends Base\Core
                 'input'   => $traceRequest,
             ]);
 
+        $isRevivedLead = $this->checkIfRevivedLead($input,$bankingAccount);
+
+        if ($isRevivedLead === true)
+        {
+            $this->makeRevivedLeadChanges($input);
+        }
+
         $this->updateInputAssigneeTeamBasedOnStatusOrSubStatusChange($bankingAccount, $input, $isAutomatedUpdate);
 
         $activationDetailInput = $this->extractAndValidateActivationDetailInput($input, $entity, $fromPartnerDashboard);
@@ -789,7 +796,8 @@ class Core extends Base\Core
                 $isAutomatedUpdate,
                 $fromDashboard,
                 $fromPartnerDashboard,
-                $alreadyInTermnialState)
+                $alreadyInTermnialState,
+                $isRevivedLead)
         {
             // Updating BankingAccount
             $this->repo->saveOrFail($bankingAccount);
@@ -833,7 +841,7 @@ class Core extends Base\Core
             {
                 $stateCore = new State\Core;
 
-                // We don't want to add a new state entry 
+                // We don't want to add a new state entry
                 // when updating old leads from old terminal state to new terminal state
                 if ($alreadyInTermnialState === true && $bankingAccount->usingNewStates() === false)
                 {
@@ -851,10 +859,10 @@ class Core extends Base\Core
                 else
                 {
                     $stateCore->captureNewBankingAccountState($bankingAccount, $entity);
-    
+
                     if($isAssigneeChanged === true)
                     {
-    
+
                         $this->notifier->notify($bankingAccount, Event::ASSIGNEE_CHANGE, Event::ALERT);
                     }
                 }
@@ -910,6 +918,12 @@ class Core extends Base\Core
 
             // Again updating since the calculation of due date is dependent on banking account's latest data
             $this->activationDetailService->updateForBankingAccount($bankingAccount->getPublicId(), $activationDetailInput, $isAutomatedUpdate, $entity,false);
+
+            if ($isRevivedLead === true)
+            {
+                (new BankLms\Service())->detachCaApplicationMerchantFromBankPartner([Entity::BANKING_ACCOUNT_ID => $bankingAccount->getPublicId()]);
+            }
+
         });
 
         // re-fetch banking-account to handle case where it is updated during freshdeskticket creation
@@ -923,6 +937,107 @@ class Core extends Base\Core
         $bankingAccount->load('bankingAccountActivationDetails');
 
         return $bankingAccount;
+    }
+
+
+    public function makeRevivedLeadChanges(&$input)
+    {
+        if (isset($input[Entity::ACTIVATION_DETAIL]) === false)
+        {
+            $input[Entity::ACTIVATION_DETAIL] = [];
+        }
+
+
+        $input[Entity::ACTIVATION_DETAIL] = array_merge($input[Entity::ACTIVATION_DETAIL], [
+
+                ActivationDetail\Entity::ACCOUNT_LOGIN_DATE => null,
+                ActivationDetail\Entity::ACCOUNT_OPEN_DATE => null,
+                ActivationDetail\Entity::CUSTOMER_APPOINTMENT_DATE => null,
+                ActivationDetail\Entity::DOC_COLLECTION_DATE => null,
+                ActivationDetail\Entity::ACCOUNT_OPENING_IR_CLOSE_DATE => null,
+                ActivationDetail\Entity::ACCOUNT_OPENING_FTNR => null,
+                ActivationDetail\Entity::ACCOUNT_OPENING_FTNR_REASONS => null,
+                ActivationDetail\Entity::LDAP_ID_MAIL_DATE => null,
+                ActivationDetail\Entity::API_IR_CLOSED_DATE => null,
+                ActivationDetail\Entity::DROP_OFF_DATE => null,
+                ActivationDetail\Entity::RZP_CA_ACTIVATED_DATE => null,
+                ActivationDetail\Entity::API_ONBOARDING_FTNR => null,
+                ActivationDetail\Entity::RM_PHONE_NUMBER => null,
+                ActivationDetail\Entity::RM_NAME => null,
+                ActivationDetail\Entity::RM_EMPLOYEE_CODE => null,
+                ActivationDetail\Entity::API_ONBOARDING_FTNR_REASONS => null,
+                ActivationDetail\Entity::BRANCH_CODE => null,
+                ActivationDetail\Entity::UPI_CREDENTIAL_RECEIVED_DATE => null,
+
+                ActivationDetail\Entity::ADDITIONAL_DETAILS => [
+
+                    ActivationDetail\Entity::REVIVED_LEAD => true,
+                    ActivationDetail\Entity::MID_OFFICE_POC_NAME => null,
+                    ActivationDetail\Entity::API_ONBOARDING_LOGIN_DATE => null,
+                    ActivationDetail\Entity::API_ONBOARDED_DATE => null,
+                    ActivationDetail\Entity::ACCOUNT_OPENING_WEBHOOK_DATE => null,
+                    BankLms\Constants::FEET_ON_STREET => null
+                ],
+
+                ActivationDetail\Entity::RBL_ACTIVATION_DETAILS => [
+
+                    ActivationDetail\Entity::ACCOUNT_OPENING_IR_NUMBER => null,
+                    ActivationDetail\Entity::LEAD_IR_NUMBER => null,
+                    ActivationDetail\Entity::SR_NUMBER => null,
+                    ActivationDetail\Entity::API_IR_NUMBER => null,
+                    ActivationDetail\Entity::UPI_CREDENTIAL_NOT_DONE_REMARKS => null,
+                    ActivationDetail\Entity::PROMO_CODE => null,
+                    ActivationDetail\Entity::IP_CHEQUE_VALUE => null,
+                    ActivationDetail\Entity::LEAD_REFERRED_BY_RBL_STAFF => null,
+                    ActivationDetail\Entity::OFFICE_DIFFERENT_LOCATIONS => null,
+                    ActivationDetail\Entity::API_DOCS_RECEIVED_WITH_CA_DOCS => null,
+                    ActivationDetail\Entity::REVISED_DECLARATION => null,
+                    ActivationDetail\Entity::CASE_LOGIN_DIFFERENT_LOCATIONS => null,
+                    ActivationDetail\Entity::API_DOCS_DELAY_REASON => null,
+                    ActivationDetail\Entity::BANK_POC_ASSIGNED_DATE => null,
+                    ActivationDetail\Entity::API_ONBOARDING_TAT_EXCEPTION => null,
+                    ActivationDetail\Entity::API_ONBOARDING_TAT_EXCEPTION_REASON => null,
+                    ActivationDetail\Entity::ACCOUNT_OPENING_TAT_EXCEPTION => null,
+                    ActivationDetail\Entity::ACCOUNT_OPENING_TAT_EXCEPTION_REASON => null,
+                    ActivationDetail\Entity::BANK_DUE_DATE => null
+                ]
+            ]
+        );
+
+
+    }
+
+    public function checkIfRevivedLead($input, $bankingAccount)
+    {
+
+        // current state should be archived and new state should be either Sent To Bank or Razorpay Processing
+
+        if($bankingAccount->getStatus() != Status::ARCHIVED)
+        {
+            return false;
+        }
+
+        if (isset($input[Entity::STATUS]) === false)
+        {
+            return false;
+        }
+
+        if(Status::checkStatusForRevival($input[Entity::STATUS]) === false)
+        {
+            return false;
+        }
+
+        $sendToBankState = $this->repo->banking_account_state->getAnySendToBankStateByBankingAccountId($bankingAccount->getId());
+
+        // any of the previous states should be Sent To Bank
+
+        if($sendToBankState != null)
+        {
+            return true;
+        }
+
+        return false;
+
     }
 
     private function isAssigneeTeamChanged($activationDetailInput, $bankingAccountId): bool
@@ -2618,7 +2733,7 @@ class Core extends Base\Core
     }
 
     /**
-     * According to new state logic, 
+     * According to new state logic,
      * If status is API Onboarding or Account Activation, and web-hook is triggered -> do nothing
      * Else change the status to account_opening and sub-status to ca_opened
      */
