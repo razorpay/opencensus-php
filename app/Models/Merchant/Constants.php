@@ -177,6 +177,7 @@ final class Constants
     const TRANSACTION_TYPE_INTERNATIONAL                = 'international';
     const TRANSACTION_TYPE_DOMESTIC                     = 'domestic';
 
+    const RAZORPAY_PRIVACY_POLICY_URL                   = 'https://razorpay.com/privacy/';
 
     const INCREASE_TRANSACTION_LIMIT_POST_WORKFLOW_APPROVE          = 'RZP\Http\Controllers\MerchantController@postTransactionLimitWorkflowApprove';
 

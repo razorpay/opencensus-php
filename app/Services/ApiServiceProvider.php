@@ -735,6 +735,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerErrorMappingService();
 
+        $this->registerBvsLegalDocumentManager();
+
         $this->registerMerchantRiskAlertClient();
 
         $this->registerPhonepeDowntimeService();
@@ -846,6 +848,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             'pg_router',
             'bvs_http_client',
             'error_mapper',
+            'bvs_legal_document_manager',
             'sms_sync',
             'cache',
             'cache.store',
@@ -2066,6 +2069,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->bind('error_mapper', function ($app)
         {
             return new ErrorMappingService($app);
+        });
+    }
+
+    public function registerBvsLegalDocumentManager()
+    {
+        $this->app->singleton('bvs_legal_document_manager', function($app)
+        {
+            return new Merchant\AutoKyc\Bvs\BvsClient\BvsLegalDocumentManagerClient();
         });
     }
 

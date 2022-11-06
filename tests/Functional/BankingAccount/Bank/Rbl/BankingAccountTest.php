@@ -49,6 +49,7 @@ use RZP\Models\BankingAccount\Core as BankingAccountCore;
 use RZP\Mail\BankingAccount\Activation as ActivationMails;
 use RZP\Mail\BankingAccount\StatusNotifications\Processing;
 use RZP\Mail\Invitation\Razorpayx\BankLmsInvite;
+use RZP\Tests\Functional\Helpers\CreateLegalDocumentsTrait;
 use RZP\Tests\Functional\Fixtures\Entity\User as UserFixture;
 use RZP\Models\BankingAccountStatement\Details as BasDetails;
 use RZP\Mail\BankingAccount\StatusNotifications\Unserviceable;
@@ -66,6 +67,7 @@ class BankingAccountTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
     use EventsTrait;
+    use CreateLegalDocumentsTrait;
 
     const DefaultMerchantId = '10000000000000';
 
@@ -112,6 +114,13 @@ class BankingAccountTest extends TestCase
 
         $this->fixtures->on('live')->create('merchant_detail:sane', ['merchant_id'=>'10000000000000']);
         $this->fixtures->on('test')->create('merchant_detail:sane', ['merchant_id'=>'10000000000000']);
+    }
+
+    protected function mockBvsService()
+    {
+        $mock = $this->mockCreateLegalDocument();
+
+        $mock->expects($this->once())->method('createLegalDocument')->withAnyParameters();
     }
 
     protected function setupBankPartnerMerchant()
@@ -1193,6 +1202,8 @@ class BankingAccountTest extends TestCase
 
     public function testSuccessRblCoCreatedLeadCreation()
     {
+        $this->mockBvsService();
+
         $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
@@ -1264,6 +1275,8 @@ class BankingAccountTest extends TestCase
 
     public function testGetRblCoCreatedLeadsAfterCreation()
     {
+        $this->mockBvsService();
+
         $response = $this->testSuccessRblCoCreatedLeadCreation();
 
         $this->ba->adminAuth();
@@ -1274,6 +1287,8 @@ class BankingAccountTest extends TestCase
 
     public function testAdminResetPasswordOnSuccessRblCoCreatedLeadCreation()
     {
+        $this->mockBvsService();
+
         $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
@@ -1352,6 +1367,8 @@ class BankingAccountTest extends TestCase
 
     public function testDuplicateRblCoCreatedLeadCreation()
     {
+        $this->mockBvsService();
+
         $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
 
         $request  = [
@@ -1383,6 +1400,8 @@ class BankingAccountTest extends TestCase
 
     public function testSuccessLeadCreationAndWebhookForAccountOpening()
     {
+        $this->mockBvsService();
+
         $request  = [
             'url'     => '/banking_accounts/rbl/lead',
             'method'  => 'POST',

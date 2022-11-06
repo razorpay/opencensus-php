@@ -10,11 +10,13 @@ use RZP\Models\Promotion\Event;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\CreateLegalDocumentsTrait;
 
 class PromotionsTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
+    use CreateLegalDocumentsTrait;
 
     protected function setUp(): void
     {
@@ -23,6 +25,13 @@ class PromotionsTest extends TestCase
         parent::setUp();
 
         $this->ba->adminAuth();
+    }
+
+    protected function mockBvsService()
+    {
+        $mock = $this->mockCreateLegalDocument();
+
+        $mock->expects($this->once())->method('createLegalDocument')->withAnyParameters();
     }
 
     public function testCreateOneTimePromotion()
@@ -211,6 +220,8 @@ class PromotionsTest extends TestCase
 
     public function testMerchantSignUpWithBankingPromotionWithEndAtNull()
     {
+        $this->mockBvsService();
+
         $this->testCreateBankingPromotion();
 
         $event = $this->getDbLastEntity('promotion_event', 'live');
@@ -252,6 +263,8 @@ class PromotionsTest extends TestCase
 
     public function testMerchantSignUpWithBankingPromotionWithEndAtInFuture()
     {
+        $this->mockBvsService();
+
         $timestamp = Carbon::now()->addYear()->getTimestamp();;
 
         $input = [
@@ -297,6 +310,8 @@ class PromotionsTest extends TestCase
 
     public function testMerchantSignUpWithBankingPromotionWithEndAtInPast()
     {
+        $this->mockBvsService();
+
         $timestamp = Carbon::createFromDate(2020, 12, 01, Timezone::IST)->getTimestamp();
 
         $this->testCreateBankingPromotion();

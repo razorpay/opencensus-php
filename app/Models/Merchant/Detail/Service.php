@@ -1732,6 +1732,8 @@ class Service extends Base\Service
             }
         });
 
+        $this->createLegalDocumentsForBanking();
+
         return $this->getPreSignupDetails();
     }
 
@@ -3329,7 +3331,7 @@ class Service extends Base\Service
         }
     }
 
-    private function callBvsServiceToCreateLegalDocuments(array $input)
+    private function callBvsServiceToCreateLegalDocuments(array $input, string $platform = 'pg')
     {
         $documentDetailsInput = $input[DEConstants::DOCUMENTS_DETAIL];
 
@@ -3340,29 +3342,32 @@ class Service extends Base\Service
             $document_detail = [
                 "type"              => $documentDetailInput['type'],
                 "content_type"      => "html",
-                "content"           => $this->getFileContentInHtml($documentDetailInput['url'])
+                "content"           => $this->getFileContentInHtml($documentDetailInput['url']),
             ];
 
             array_push($documents_detail, $document_detail) ;
         }
 
+        // RazorpayX has no concept of PromoterPan Name during signup so, we will be using merchant name instead.
+        $signatory_name = $platform === 'rx' ? $this->merchant->getName() : $this->merchant->merchantDetail->getPromoterPanName();
+
         $ownerDetails = [
             "owner_id"                => $this->merchant->getMerchantId(),
             "ip_address"              => $_SERVER['HTTP_X_IP_ADDRESS'] ?? $this->app['request']->ip(),
             "acceptance_timestamp"    => Carbon::now()->getTimestamp(),
-            "signatory_name"          => $this->merchant->merchantDetail->getPromoterPanName(),
+            "signatory_name"          => $signatory_name,
             "owner_name"              => $this->merchant->merchantDetail->getBusinessName(),
             "contact_number"          => $this->merchant->merchantDetail->getContactMobile(),
             "email"                   => $this->merchant->getEmail(),
         ];
 
         $body = [
-            "client_details"                     => ['platform' => 'pg'],
+            "client_details"                     => ['platform' => $platform],
             "owner_details"                      => $ownerDetails,
             "documents_detail"                   => $documents_detail
         ];
 
-        $response = (new BvsClient\BvsLegalDocumentManagerClient($this->merchant))->createLegalDocument($body);
+        $response = app('bvs_legal_document_manager')->createLegalDocument($body);
 
         $this->trace->info(TraceCode::BVS_RESPONSE_CREATE_CONSENTS, [
             'id' => $response->getId(),
@@ -3440,6 +3445,33 @@ class Service extends Base\Service
         }
         else {
             return null;
+        }
+    }
+
+    protected function createLegalDocumentsForBanking()
+    {
+        try
+        {
+            if ($this->app['basicauth']->getRequestOriginProduct() === ProductType::BANKING)
+            {
+                // Sends Legal documents to BVS
+                // Surrounding this with a try-catch to prevent failure of pre_signup due to any BVS related issue
+                $this->callBvsServiceToCreateLegalDocuments([
+                    DEConstants::DOCUMENTS_DETAIL => [
+                        [
+                            DEConstants::TYPE => Constants::PRIVACY_POLICY,
+                            DEConstants::URL  => Constants::RAZORPAY_PRIVACY_POLICY_URL
+                        ]
+                    ]
+                ], 'rx');
+            }
+        }
+        catch(Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::BVS_CREATE_LEGAL_DOCUMENTS_FAILED);
         }
     }
 }
