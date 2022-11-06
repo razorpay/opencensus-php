@@ -564,6 +564,8 @@ class Core extends Base\Core
 
             $bankingAccount = $this->fetchByBankReferenceAndChannel($channel, $attributes[Entity::BANK_REFERENCE_NUMBER]);
 
+            $this->handleStateFromAccountOpeningWebhook($bankingAccount, $attributes);
+
             // if data validation of pincode or business beneficiary name failed, trigger the internal email
             if($this->isDataValidForBankingAccount($bankingAccount, $attributes[Entity::BENEFICIARY_PIN], $attributes[Entity::BENEFICIARY_NAME]) === false)
             {
@@ -720,6 +722,8 @@ class Core extends Base\Core
 
         $oldStatus = $bankingAccount->getStatus();
 
+        $alreadyInTermnialState = $bankingAccount->isAlreadyInOldTerminalState();
+
         if($fromDashboard === true)
         {
             $bankingAccount->edit($input, 'edit_Dashboard');
@@ -784,7 +788,8 @@ class Core extends Base\Core
                 $bankingAccountSubStatusChanged,
                 $isAutomatedUpdate,
                 $fromDashboard,
-                $fromPartnerDashboard)
+                $fromPartnerDashboard,
+                $alreadyInTermnialState)
         {
             // Updating BankingAccount
             $this->repo->saveOrFail($bankingAccount);
@@ -828,12 +833,30 @@ class Core extends Base\Core
             {
                 $stateCore = new State\Core;
 
-                $stateCore->captureNewBankingAccountState($bankingAccount, $entity);
-
-                if($isAssigneeChanged === true)
+                // We don't want to add a new state entry 
+                // when updating old leads from old terminal state to new terminal state
+                if ($alreadyInTermnialState === true && $bankingAccount->usingNewStates() === false)
                 {
+                    /** @var Entity $state */
+                    $state = $this->repo->banking_account_state->getLatestStateLogByBankingAccountId($bankingAccount->getId());
 
-                    $this->notifier->notify($bankingAccount, Event::ASSIGNEE_CHANGE, Event::ALERT);
+                    $input = [
+                        'status' => $bankingAccount->getStatus(),
+                        'sub_status' => $bankingAccount->getSubStatus(),
+                        'bank_status' => $bankingAccount->getBankInternalStatus(),
+                    ];
+
+                    $stateCore->update($state->getId(), $input);
+                }
+                else
+                {
+                    $stateCore->captureNewBankingAccountState($bankingAccount, $entity);
+    
+                    if($isAssigneeChanged === true)
+                    {
+    
+                        $this->notifier->notify($bankingAccount, Event::ASSIGNEE_CHANGE, Event::ALERT);
+                    }
                 }
             }
 
@@ -960,9 +983,15 @@ class Core extends Base\Core
         $newSubStatus = array_key_exists(Entity::SUB_STATUS, $input) ? $input[Entity::SUB_STATUS] : Status::getInitialSubStatus($newStatus);
 
         $newAssigneeTeam = Status::getDefaultAssigneeTeam($newStatus, $newSubStatus);
+
+        if ($newAssigneeTeam === false)
+        {
+            return;
+        }
+
         $activationDetail = $this->repo->banking_account_activation_detail->findByBankingAccountId($bankingAccount->getId());
 
-        if ($newAssigneeTeam != null && $newAssigneeTeam != $activationDetail[Entity::ASSIGNEE_TEAM])
+        if ($newAssigneeTeam != $activationDetail[Entity::ASSIGNEE_TEAM])
         {
             $input[Entity::ACTIVATION_DETAIL][Entity::ASSIGNEE_TEAM] = $newAssigneeTeam;
             $isAutomatedUpdate = true;
@@ -2586,5 +2615,41 @@ class Core extends Base\Core
         ];
 
         return $activationDetailInput;
+    }
+
+    /**
+     * According to new state logic, 
+     * If status is API Onboarding or Account Activation, and web-hook is triggered -> do nothing
+     * Else change the status to account_opening and sub-status to ca_opened
+     */
+    private function handleStateFromAccountOpeningWebhook(Entity $bankingAccount, array & $attributes)
+    {
+        $this->trace->info(Tracecode::BANKING_ACCOUNT_WEBHOOK_NEW_STATE, [
+            'bankingAccount' => $bankingAccount,
+            'attributes' => $attributes,
+        ]);
+
+        /**
+         * TODO:
+         * M2 States Experiment
+         * Remove this when all new leads are onboarded to new terminal states
+         */
+        if ($bankingAccount->usingNewStates() === false)
+        {
+            return;
+        }
+
+        if (in_array($bankingAccount->getStatus(), [
+            Status::API_ONBOARDING,
+            Status::ACCOUNT_ACTIVATION,
+        ]))
+        {
+            $attributes[Entity::STATUS] = $bankingAccount->getStatus();
+            $attributes[Entity::SUB_STATUS] = $bankingAccount->getSubStatus();
+            return;
+        }
+
+        $attributes[Entity::STATUS] = Status::API_ONBOARDING;
+        $attributes[Entity::SUB_STATUS] = Status::IN_REVIEW;
     }
 }

@@ -444,20 +444,19 @@ class Repository extends Base\Repository
         $date = new Carbon();
         
         // default for is_overdue = 1
-        $symbol = '<';
-        $compare = $date->copy()->startOfDay()->timestamp;
+        $start = 941627769; // 1999-11-03
+        $end = (new Carbon())->timestamp;
 
         if ($overdue === '0') {
-            $symbol = '>';
-            $compare = $date->copy()->endOfDay()->timestamp;
+            $start = $date->copy()->timestamp;
+            $end = 16750953000; // 2500-10-26
         }
-
 
         $this->joinQueryActivationDetail($query);
 
         $query->select($this->dbColumn('*'));
 
-        $query->whereRaw('json_unquote(json_extract(rbl_activation_details, \'$."bank_due_date"\')) '.$symbol.' '.$compare);
+        $query->whereRaw('json_unquote(json_extract(rbl_activation_details, \'$."bank_due_date"\')) BETWEEN '.$start.' AND '.$end);
     }
 
     public function addQueryParamApplicationType($query, $params)

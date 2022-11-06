@@ -7,9 +7,7 @@
     "rm_type": "insignia",
     "manager_name": null,
     "manager_phone": null,
-    "branch_codes": [
-      113
-    ]
+    "branch_codes": [113]
   },
   {
     "employee_code": 5101,
@@ -19,9 +17,7 @@
     "rm_type": "insignia",
     "manager_name": null,
     "manager_phone": null,
-    "branch_codes": [
-      100
-    ]
+    "branch_codes": [100]
   },
   {
     "employee_code": 5220,
@@ -31,9 +27,7 @@
     "rm_type": "insignia",
     "manager_name": null,
     "manager_phone": null,
-    "branch_codes": [
-      990
-    ]
+    "branch_codes": [990]
   },
   {
     "employee_code": 5785,
@@ -43,9 +37,7 @@
     "rm_type": "insignia",
     "manager_name": null,
     "manager_phone": null,
-    "branch_codes": [
-      88
-    ]
+    "branch_codes": [88]
   },
   {
     "employee_code": 7342,
@@ -55,9 +47,7 @@
     "rm_type": "insignia",
     "manager_name": null,
     "manager_phone": null,
-    "branch_codes": [
-      156
-    ]
+    "branch_codes": [156]
   },
   {
     "employee_code": 7814,
@@ -67,9 +57,7 @@
     "rm_type": "insignia",
     "manager_name": null,
     "manager_phone": null,
-    "branch_codes": [
-      100
-    ]
+    "branch_codes": [100]
   },
   {
     "employee_code": 11381,
@@ -79,9 +67,7 @@
     "rm_type": "insignia",
     "manager_name": null,
     "manager_phone": null,
-    "branch_codes": [
-      161
-    ]
+    "branch_codes": [161]
   },
   {
     "employee_code": 17965,
@@ -91,9 +77,7 @@
     "rm_type": "insignia",
     "manager_name": null,
     "manager_phone": null,
-    "branch_codes": [
-      31
-    ]
+    "branch_codes": [31]
   },
   {
     "employee_code": 18341,
@@ -103,9 +87,7 @@
     "rm_type": "insignia",
     "manager_name": null,
     "manager_phone": null,
-    "branch_codes": [
-      192
-    ]
+    "branch_codes": [192]
   },
   {
     "employee_code": 18672,
@@ -115,9 +97,7 @@
     "rm_type": "insignia",
     "manager_name": null,
     "manager_phone": null,
-    "branch_codes": [
-      158
-    ]
+    "branch_codes": [158]
   },
   {
     "employee_code": 19179,
@@ -127,9 +107,7 @@
     "rm_type": "insignia",
     "manager_name": null,
     "manager_phone": null,
-    "branch_codes": [
-      100
-    ]
+    "branch_codes": [100]
   },
   {
     "employee_code": 21016,
@@ -139,9 +117,7 @@
     "rm_type": "insignia",
     "manager_name": null,
     "manager_phone": null,
-    "branch_codes": [
-      100
-    ]
+    "branch_codes": [100]
   },
   {
     "employee_code": 22104,
@@ -151,9 +127,7 @@
     "rm_type": "insignia",
     "manager_name": null,
     "manager_phone": null,
-    "branch_codes": [
-      112
-    ]
+    "branch_codes": [112]
   },
   {
     "employee_code": 23165,
@@ -163,9 +137,7 @@
     "rm_type": "insignia",
     "manager_name": null,
     "manager_phone": null,
-    "branch_codes": [
-      402
-    ]
+    "branch_codes": [402]
   },
   {
     "employee_code": 23765,
@@ -175,9 +147,7 @@
     "rm_type": "insignia",
     "manager_name": null,
     "manager_phone": null,
-    "branch_codes": [
-      155
-    ]
+    "branch_codes": [155]
   },
   {
     "employee_code": 35155,
@@ -185,15 +155,9 @@
     "email": "Ashish.Kumar12@rblbank.com",
     "phone": 7307850930,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Barinder Arora",
     "manager_phone": null,
-    "branch_codes": [
-      202,
-      299,
-      297,
-      298,
-      233
-    ]
+    "branch_codes": [202, 299, 297, 298, 233]
   },
   {
     "employee_code": 32326,
@@ -201,11 +165,9 @@
     "email": "Amit.Chopra@rblbank.com",
     "phone": 8872581146,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Barinder Arora",
     "manager_phone": null,
-    "branch_codes": [
-      464
-    ]
+    "branch_codes": [464]
   },
   {
     "employee_code": 33888,
@@ -213,13 +175,9 @@
     "email": "Sandeep.Singh@rblbank.com",
     "phone": 8528902592,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Barinder Arora",
     "manager_phone": null,
-    "branch_codes": [
-      264,
-      228,
-      268
-    ]
+    "branch_codes": [264, 228, 268]
   },
   {
     "employee_code": 31012,
@@ -227,12 +185,9 @@
     "email": "Chandan.Thapar@rblbank.com",
     "phone": 9888256300,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Barinder Arora",
     "manager_phone": null,
-    "branch_codes": [
-      251,
-      229
-    ]
+    "branch_codes": [251, 229]
   },
   {
     "employee_code": 3448,
@@ -240,17 +195,9 @@
     "email": "Amar.Manral@rblbank.com",
     "phone": 9718179975,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Imtiaz Ansari",
     "manager_phone": null,
-    "branch_codes": [
-      250,
-      430,
-      469,
-      204,
-      114,
-      454,
-      469
-    ]
+    "branch_codes": [250, 430, 469, 204, 114, 454, 469]
   },
   {
     "employee_code": 19555,
@@ -258,17 +205,9 @@
     "email": "Chakit.Tyagi@rblbank.com",
     "phone": 9990160263,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Imtiaz Ansari",
     "manager_phone": null,
-    "branch_codes": [
-      303,
-      516,
-      182,
-      271,
-      292,
-      363,
-      400
-    ]
+    "branch_codes": [303, 516, 182, 271, 292, 363, 400]
   },
   {
     "employee_code": 21697,
@@ -276,13 +215,9 @@
     "email": "naresh.kumar@rblbank.com",
     "phone": 9992678444,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Tribhuvan Nath",
     "manager_phone": null,
-    "branch_codes": [
-      116,
-      335,
-      401
-    ]
+    "branch_codes": [116, 335, 401]
   },
   {
     "employee_code": 26707,
@@ -290,14 +225,9 @@
     "email": "Manoj.Gupt@rblbank.com",
     "phone": 9811559889,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Tribhuvan Nath",
     "manager_phone": null,
-    "branch_codes": [
-      218,
-      492,
-      247,
-      342
-    ]
+    "branch_codes": [218, 492, 247, 342]
   },
   {
     "employee_code": 27528,
@@ -305,15 +235,9 @@
     "email": "Devinder.Kumar1@rblbank.com",
     "phone": 8800270077,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Tribhuvan Nath",
     "manager_phone": null,
-    "branch_codes": [
-      335,
-      447,
-      492,
-      351,
-      401
-    ]
+    "branch_codes": [335, 447, 492, 351, 401]
   },
   {
     "employee_code": 31545,
@@ -321,15 +245,9 @@
     "email": "Navdeep.Navdeep@rblbank.com",
     "phone": 9718301114,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Tribhuvan Nath",
     "manager_phone": null,
-    "branch_codes": [
-      191,
-      322,
-      493,
-      138,
-      106
-    ]
+    "branch_codes": [191, 322, 493, 138, 106]
   },
   {
     "employee_code": 26482,
@@ -337,12 +255,9 @@
     "email": "Amit.Singh5@rblbank.com",
     "phone": 8860616102,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Tribhuvan Nath",
     "manager_phone": null,
-    "branch_codes": [
-      351,
-      447
-    ]
+    "branch_codes": [351, 447]
   },
   {
     "employee_code": 12189,
@@ -350,15 +265,9 @@
     "email": "Arif.Qamar@rblbank.com",
     "phone": 9836362599,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Bikash Agarwal",
     "manager_phone": null,
-    "branch_codes": [
-      161,
-      475,
-      474,
-      197,
-      475
-    ]
+    "branch_codes": [161, 475, 474, 197, 475]
   },
   {
     "employee_code": 7962,
@@ -366,15 +275,9 @@
     "email": "Jayanand.Shaw@rblbank.com",
     "phone": 9312162153,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Bikash Agarwal",
     "manager_phone": null,
-    "branch_codes": [
-      246,
-      259,
-      463,
-      474,
-      225
-    ]
+    "branch_codes": [246, 259, 463, 474, 225]
   },
   {
     "employee_code": 25349,
@@ -382,15 +285,9 @@
     "email": "Rasidul.Islam@rblbank.com",
     "phone": 8609824644,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Bikash Agarwal",
     "manager_phone": null,
-    "branch_codes": [
-      215,
-      240,
-      280,
-      311,
-      355
-    ]
+    "branch_codes": [215, 240, 280, 311, 355]
   },
   {
     "employee_code": 14685,
@@ -398,16 +295,9 @@
     "email": "Saddam.Ansari@rblbank.com",
     "phone": 9800729111,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Bikash Agarwal",
     "manager_phone": null,
-    "branch_codes": [
-      167,
-      196,
-      333,
-      345,
-      347,
-      375
-    ]
+    "branch_codes": [167, 196, 333, 345, 347, 375]
   },
   {
     "employee_code": 26253,
@@ -415,14 +305,9 @@
     "email": "Nikhil.Sharma@rblbank.com",
     "phone": 8383977362,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Kavi Kumar",
     "manager_phone": null,
-    "branch_codes": [
-      142,
-      270,
-      294,
-      0
-    ]
+    "branch_codes": [142, 270, 294, 0]
   },
   {
     "employee_code": 25105,
@@ -430,13 +315,9 @@
     "email": "Shalabh.Verma@rblbank.com",
     "phone": 9811627348,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Kavi Kumar",
     "manager_phone": null,
-    "branch_codes": [
-      272,
-      457,
-      336
-    ]
+    "branch_codes": [272, 457, 336]
   },
   {
     "employee_code": 32454,
@@ -444,14 +325,9 @@
     "email": "Arvind.Kumar@rblbank.com",
     "phone": 9717761936,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Kavi Kumar",
     "manager_phone": null,
-    "branch_codes": [
-      190,
-      382,
-      315,
-      436
-    ]
+    "branch_codes": [190, 382, 315, 436]
   },
   {
     "employee_code": 26685,
@@ -459,14 +335,9 @@
     "email": "Laxmi.Narayan@rblbank.com",
     "phone": 9711204003,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Kavi Kumar",
     "manager_phone": null,
-    "branch_codes": [
-      266,
-      429,
-      432,
-      505
-    ]
+    "branch_codes": [266, 429, 432, 505]
   },
   {
     "employee_code": 30726,
@@ -474,15 +345,9 @@
     "email": "shubhanshu@rblbank.com",
     "phone": 7303126573,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Kavi Kumar",
     "manager_phone": null,
-    "branch_codes": [
-      269,
-      295,
-      302,
-      321,
-      435
-    ]
+    "branch_codes": [269, 295, 302, 321, 435]
   },
   {
     "employee_code": 18880,
@@ -490,22 +355,10 @@
     "email": "Jitendra.Gupta@rblbank.com",
     "phone": 8130192486,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Santosh Joshi",
     "manager_phone": null,
     "branch_codes": [
-      71,
-      100,
-      189,
-      194,
-      198,
-      214,
-      296,
-      380,
-      404,
-      414,
-      417,
-      500,
-      519
+      71, 100, 189, 194, 198, 214, 296, 380, 404, 414, 417, 500, 519
     ]
   },
   {
@@ -514,23 +367,10 @@
     "email": "Pankaj.Mishra@rblbank.com",
     "phone": 9315383526,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Avijit Shrivastava",
     "manager_phone": null,
     "branch_codes": [
-      141,
-      217,
-      257,
-      281,
-      314,
-      323,
-      338,
-      357,
-      385,
-      416,
-      421,
-      434,
-      501,
-      502
+      141, 217, 257, 281, 314, 323, 338, 357, 385, 416, 421, 434, 501, 502
     ]
   },
   {
@@ -539,15 +379,9 @@
     "email": "Rajkumar.Yadav@rblbank.com",
     "phone": 7977362043,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Rikabh Chopra",
     "manager_phone": null,
-    "branch_codes": [
-      386,
-      514,
-      58,
-      81,
-      103
-    ]
+    "branch_codes": [386, 514, 58, 81, 103]
   },
   {
     "employee_code": 21911,
@@ -555,21 +389,9 @@
     "email": "Prasad.Dhanawade@rblbank.com",
     "phone": 7045757045,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Rikabh Chopra",
     "manager_phone": null,
-    "branch_codes": [
-      67,
-      73,
-      78,
-      102,
-      188,
-      258,
-      282,
-      284,
-      381,
-      450,
-      480
-    ]
+    "branch_codes": [67, 73, 78, 102, 188, 258, 282, 284, 381, 450, 480]
   },
   {
     "employee_code": 34471,
@@ -577,13 +399,9 @@
     "email": "Debaraj.Nayak@rblbank.com",
     "phone": 9930168452,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Rikabh Chopra",
     "manager_phone": null,
-    "branch_codes": [
-      89,
-      58,
-      97
-    ]
+    "branch_codes": [89, 58, 97]
   },
   {
     "employee_code": 19269,
@@ -591,15 +409,9 @@
     "email": "tushar.bhalerao@rblbank.com",
     "phone": 9870895790,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Avik Mitra",
     "manager_phone": null,
-    "branch_codes": [
-      193,
-      13,
-      184,
-      88,
-      503
-    ]
+    "branch_codes": [193, 13, 184, 88, 503]
   },
   {
     "employee_code": 12960,
@@ -607,11 +419,9 @@
     "email": "pankaj.pandey2@rblbank.com",
     "phone": 8698956767,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Avik Mitra",
     "manager_phone": null,
-    "branch_codes": [
-      163
-    ]
+    "branch_codes": [163]
   },
   {
     "employee_code": 33665,
@@ -619,17 +429,9 @@
     "email": "siddharth.shukla@rblbank.com",
     "phone": 8779003295,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Avik Mitra",
     "manager_phone": null,
-    "branch_codes": [
-      155,
-      162,
-      286,
-      285,
-      248,
-      377,
-      332
-    ]
+    "branch_codes": [155, 162, 286, 285, 248, 377, 332]
   },
   {
     "employee_code": 3094,
@@ -637,13 +439,9 @@
     "email": "mohdfauzan.siddique@rblbank.com",
     "phone": 8383083669,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Avik Mitra",
     "manager_phone": null,
-    "branch_codes": [
-      70,
-      155,
-      459
-    ]
+    "branch_codes": [70, 155, 459]
   },
   {
     "employee_code": 23935,
@@ -651,11 +449,9 @@
     "email": "Virendra.Kannojia@rblbank.com",
     "phone": 8850096200,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Kavish Desai",
     "manager_phone": null,
-    "branch_codes": [
-      211
-    ]
+    "branch_codes": [211]
   },
   {
     "employee_code": 26117,
@@ -663,11 +459,9 @@
     "email": "Ankesh.Choudhary@rblbank.com",
     "phone": 9665404978,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Kavish Desai",
     "manager_phone": null,
-    "branch_codes": [
-      216
-    ]
+    "branch_codes": [216]
   },
   {
     "employee_code": 26956,
@@ -675,11 +469,9 @@
     "email": "Abhishek.Mishra2@rblbank.com",
     "phone": 9320204865,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Kavish Desai",
     "manager_phone": null,
-    "branch_codes": [
-      62
-    ]
+    "branch_codes": [62]
   },
   {
     "employee_code": 28201,
@@ -687,11 +479,9 @@
     "email": "Niraj.Singh@rblbank.com",
     "phone": 9029109800,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Kavish Desai",
     "manager_phone": null,
-    "branch_codes": [
-      402
-    ]
+    "branch_codes": [402]
   },
   {
     "employee_code": 12373,
@@ -699,11 +489,9 @@
     "email": "Sachin.Shelke@rblbank.com",
     "phone": 8956140098,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Kavish Desai",
     "manager_phone": null,
-    "branch_codes": [
-      305
-    ]
+    "branch_codes": [305]
   },
   {
     "employee_code": 28314,
@@ -711,18 +499,9 @@
     "email": "Raviraj.Raghuvanshi@rblbank.com",
     "phone": 9850496497,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Pune - TBH",
     "manager_phone": null,
-    "branch_codes": [
-      31,
-      278,
-      316,
-      510,
-      513,
-      50,
-      76,
-      157
-    ]
+    "branch_codes": [31, 278, 316, 510, 513, 50, 76, 157]
   },
   {
     "employee_code": 33016,
@@ -730,15 +509,9 @@
     "email": "Satish.Indrekar@rblbank.com",
     "phone": 8600485072,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Pune - TBH",
     "manager_phone": null,
-    "branch_codes": [
-      291,
-      52,
-      359,
-      283,
-      262
-    ]
+    "branch_codes": [291, 52, 359, 283, 262]
   },
   {
     "employee_code": 34168,
@@ -746,16 +519,9 @@
     "email": "Abhishek.Kulkarni@rblbank.com",
     "phone": 7620333030,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Pune - TBH",
     "manager_phone": null,
-    "branch_codes": [
-      279,
-      358,
-      507,
-      508,
-      509,
-      511
-    ]
+    "branch_codes": [279, 358, 507, 508, 509, 511]
   },
   {
     "employee_code": 34536,
@@ -763,12 +529,9 @@
     "email": "Shantilal.Shere@rblbank.com",
     "phone": 9763201836,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Pune - TBH",
     "manager_phone": null,
-    "branch_codes": [
-      461,
-      0
-    ]
+    "branch_codes": [461, 0]
   },
   {
     "employee_code": 24158,
@@ -776,14 +539,9 @@
     "email": "paresh.ranpura@rblbank.com",
     "phone": 9537429828,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Gujarat TBH",
     "manager_phone": null,
-    "branch_codes": [
-      158,
-      226,
-      244,
-      255
-    ]
+    "branch_codes": [158, 226, 244, 255]
   },
   {
     "employee_code": 30827,
@@ -791,13 +549,9 @@
     "email": "Shrawan.Singh1@rblbank.com",
     "phone": 9712935218,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Gujarat TBH",
     "manager_phone": null,
-    "branch_codes": [
-      65,
-      466,
-      482
-    ]
+    "branch_codes": [65, 466, 482]
   },
   {
     "employee_code": 10763,
@@ -805,14 +559,9 @@
     "email": "Rajaram.B@rblbank.com",
     "phone": "9894812157",
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Sanakr G",
     "manager_phone": null,
-    "branch_codes": [
-      171,
-      370,
-      471,
-      472
-    ]
+    "branch_codes": [171, 370, 471, 472]
   },
   {
     "employee_code": 23346,
@@ -820,13 +569,9 @@
     "email": "Vimalkumar.E@rblbank.com",
     "phone": "9677266463",
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Sanakr G",
     "manager_phone": null,
-    "branch_codes": [
-      306,
-      186,
-      399
-    ]
+    "branch_codes": [306, 186, 399]
   },
   {
     "employee_code": 23877,
@@ -834,13 +579,9 @@
     "email": "S.VIJAYAKUMAR@rblbank.com",
     "phone": "7299804018",
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Sanakr G",
     "manager_phone": null,
-    "branch_codes": [
-      393,
-      185,
-      349
-    ]
+    "branch_codes": [393, 185, 349]
   },
   {
     "employee_code": 30793,
@@ -848,13 +589,9 @@
     "email": "L.Karthik@rblbank.com",
     "phone": "9962222062",
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Sanakr G",
     "manager_phone": null,
-    "branch_codes": [
-      343,
-      437,
-      451
-    ]
+    "branch_codes": [343, 437, 451]
   },
   {
     "employee_code": 30793,
@@ -862,13 +599,9 @@
     "email": "L.Karthik@rblbank.com",
     "phone": "9962222062",
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Sanakr G",
     "manager_phone": null,
-    "branch_codes": [
-      486,
-      186,
-      399
-    ]
+    "branch_codes": [486, 186, 399]
   },
   {
     "employee_code": 23346,
@@ -876,13 +609,9 @@
     "email": "Vimalkumar.E@rblbank.com",
     "phone": "9677266463",
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Sanakr G",
     "manager_phone": null,
-    "branch_codes": [
-      180,
-      350,
-      440
-    ]
+    "branch_codes": [180, 350, 440]
   },
   {
     "employee_code": 19973,
@@ -890,17 +619,9 @@
     "email": "Ashokkumar.J@rblbank.com",
     "phone": 9791172424,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Elvis Antony",
     "manager_phone": null,
-    "branch_codes": [
-      378,
-      113,
-      187,
-      378,
-      425,
-      487,
-      489
-    ]
+    "branch_codes": [378, 113, 187, 378, 425, 487, 489]
   },
   {
     "employee_code": 14398,
@@ -908,16 +629,9 @@
     "email": "Rajakumar.Rajendran@rblbank.com",
     "phone": 9940029293,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Elvis Antony",
     "manager_phone": null,
-    "branch_codes": [
-      300,
-      224,
-      245,
-      320,
-      452,
-      488
-    ]
+    "branch_codes": [300, 224, 245, 320, 452, 488]
   },
   {
     "employee_code": 25159,
@@ -925,14 +639,9 @@
     "email": "BIKAS.Kumar@rblbank.com",
     "phone": 9700164959,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Dubasi Chandrashekar",
     "manager_phone": null,
-    "branch_codes": [
-      499,
-      208,
-      364,
-      260
-    ]
+    "branch_codes": [499, 208, 364, 260]
   },
   {
     "employee_code": 24723,
@@ -940,11 +649,9 @@
     "email": "Haribabu.Neelam@rblbank.com",
     "phone": 9959856785,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Dubasi Chandrashekar",
     "manager_phone": null,
-    "branch_codes": [
-      241
-    ]
+    "branch_codes": [241]
   },
   {
     "employee_code": 31447,
@@ -952,14 +659,9 @@
     "email": "Y..Madhavaiah@rblbank.com",
     "phone": 9177952298,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Dubasi Chandrashekar",
     "manager_phone": null,
-    "branch_codes": [
-      341,
-      412,
-      495,
-      365
-    ]
+    "branch_codes": [341, 412, 495, 365]
   },
   {
     "employee_code": 34114,
@@ -967,15 +669,9 @@
     "email": "Dshyam.Kumar@rblbank.com",
     "phone": 9966512535,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Dubasi Chandrashekar",
     "manager_phone": null,
-    "branch_codes": [
-      112,
-      327,
-      356,
-      376,
-      405
-    ]
+    "branch_codes": [112, 327, 356, 376, 405]
   },
   {
     "employee_code": 34922,
@@ -983,13 +679,9 @@
     "email": "Jitendra.Behera@rblbank.com",
     "phone": 8984686343,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Dubasi Chandrashekar",
     "manager_phone": null,
-    "branch_codes": [
-      411,
-      496,
-      331
-    ]
+    "branch_codes": [411, 496, 331]
   },
   {
     "employee_code": 35581,
@@ -997,13 +689,9 @@
     "email": "Ashok.Bairu@rblbank.com",
     "phone": 9550824037,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Dubasi Chandrashekar",
     "manager_phone": null,
-    "branch_codes": [
-      330,
-      497,
-      498
-    ]
+    "branch_codes": [330, 497, 498]
   },
   {
     "employee_code": 36521,
@@ -1011,14 +699,9 @@
     "email": "Srinivas.Macharla@rblbank.com",
     "phone": 9182971915,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Dubasi Chandrashekar",
     "manager_phone": null,
-    "branch_codes": [
-      209,
-      439,
-      366,
-      494
-    ]
+    "branch_codes": [209, 439, 366, 494]
   },
   {
     "employee_code": 26373,
@@ -1026,22 +709,10 @@
     "email": "Satyajit.Ray@rblbank.com",
     "phone": 9861469434,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Manjunath R",
     "manager_phone": null,
     "branch_codes": [
-      91,
-      210,
-      261,
-      290,
-      334,
-      410,
-      427,
-      428,
-      443,
-      445,
-      446,
-      453,
-      484
+      91, 210, 261, 290, 334, 410, 427, 428, 443, 445, 446, 453, 484
     ]
   },
   {
@@ -1050,21 +721,8 @@
     "email": "Sachin.s@rblbank.com",
     "phone": 9535362154,
     "rm_type": "pcarm",
-    "manager_name": null,
+    "manager_name": "Manjunath R",
     "manager_phone": null,
-    "branch_codes": [
-      195,
-      207,
-      253,
-      289,
-      339,
-      352,
-      406,
-      407,
-      408,
-      426,
-      442,
-      444
-    ]
+    "branch_codes": [195, 207, 253, 289, 339, 352, 406, 407, 408, 426, 442, 444]
   }
 ]

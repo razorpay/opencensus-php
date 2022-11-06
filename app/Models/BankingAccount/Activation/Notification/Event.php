@@ -12,7 +12,7 @@ class Event
     /** @var $type string */
     protected $type;
 
-    /** @var $name array */
+    /** @var $properties array */
     protected $properties;
 
     // types

@@ -2057,7 +2057,7 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals('created', $logs['items'][0]['status']);
         $this->assertEquals('activated', $logs['items'][1]['status']);
-        $this->assertEquals(null, $logs['items'][1]['sub_status']);
+        $this->assertEquals(BankingAccount\Status::UPI_CREDS_PENDING, $logs['items'][1]['sub_status']);
 
         $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
         $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
@@ -2218,7 +2218,7 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals('created', $logs['items'][0]['status']);
         $this->assertEquals('activated', $logs['items'][1]['status']);
-        $this->assertEquals(null, $logs['items'][1]['sub_status']);
+        $this->assertEquals(BankingAccount\Status::UPI_CREDS_PENDING, $logs['items'][1]['sub_status']);
 
         $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
         $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
@@ -2457,7 +2457,7 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals('created', $logs['items'][0]['status']);
         $this->assertEquals('activated', $logs['items'][1]['status']);
-        $this->assertEquals(null, $logs['items'][1]['sub_status']);
+        $this->assertEquals(BankingAccount\Status::UPI_CREDS_PENDING, $logs['items'][1]['sub_status']);
 
         $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
         $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
@@ -3047,34 +3047,40 @@ class BankingAccountTest extends TestCase
             and (in_array($finalStatus, [Status::INITIATED, Status::PICKED, Status::ARCHIVED]) === false))
         {
             $mailableClass = RZP\Mail\BankingAccount\StatusNotifications\Factory::getMailer($updatedBankingAccount);
-
+            
             Mail::assertQueued(get_class($mailableClass));
+            
+            // Commenting this, since this is called from shouldNotifyOpsAboutProActivation
+            // which is called only from createBankingAccount flow
+            /**
+                $notificationStatuses = [
+                    Status::PICKED,
+                    Status::INITIATED,
+                    Status::PROCESSING,
+                    Status::CANCELLED,
+                    Status::ACTIVATED,
+                    Status::UNSERVICEABLE,
+                    Status::REJECTED,
+                ];
 
-            $notificationStatuses = [
-                Status::PICKED,
-                Status::INITIATED,
-                Status::PROCESSING,
-                Status::CANCELLED,
-                Status::ACTIVATED,
-                Status::UNSERVICEABLE,
-                Status::REJECTED,
-            ];
+                $this->mockStork();
 
-            $this->mockStork();
+                if (in_array($finalStatus, $notificationStatuses, true) === true) {
 
-            if (in_array($finalStatus, $notificationStatuses, true) === true) {
+                    $pushNotificationTitle = BankingAccountCore::$statusUpdatePnTitleMap[$finalStatus];
 
-                $pushNotificationTitle = BankingAccountCore::$statusUpdatePnTitleMap[$finalStatus];
+                    $pushNotificationBody =  BankingAccountCore::$statusUpdatePnBodyMap[$finalStatus];
 
-                $pushNotificationBody =  BankingAccountCore::$statusUpdatePnBodyMap[$finalStatus];
+                    $merchant = $this->getDbEntity('merchant', ['id' => $bankingAccount['merchant_id']]);
 
-                $this->expectStorkSendPushNotificationRequest([
-                    'ownerId' => $bankingAccount->merchant->getId(),
-                    'ownerType' => 'merchant',
-                    'title' => $pushNotificationTitle,
-                    'body' => $pushNotificationBody
-                ]);
-            }
+                    $this->expectStorkSendPushNotificationRequest([
+                        'ownerId' => $merchant->getId(),
+                        'ownerType' => 'merchant',
+                        'title' => $pushNotificationTitle,
+                        'body' => $pushNotificationBody
+                    ]);
+                }
+             */
         }
         else
         {
@@ -4896,6 +4902,7 @@ class BankingAccountTest extends TestCase
                 }
                 foreach ($bankStatuslist as $bankStatus)
                 {
+                    sleep(1);
                     $this->assertUpdateBankingAccountStatusFromTo(
                         $status,
                         $status,
@@ -8639,7 +8646,7 @@ class BankingAccountTest extends TestCase
                     ActivationDetail\Entity::RM_NAME => 'Amit Chopra',
                     ActivationDetail\Entity::RM_PHONE_NUMBER => '8872581146',
                     ActivationDetail\Entity::RBL_ACTIVATION_DETAILS => [
-                        ActivationDetail\Entity::LEAD_IR_NUMBER => 'IR 1234 ABCD',
+                        ActivationDetail\Entity::LEAD_IR_NUMBER => 'IR1234ABCD',
                         ActivationDetail\Entity::OFFICE_DIFFERENT_LOCATIONS => true,
                     ]
                 ]
@@ -8710,18 +8717,19 @@ class BankingAccountTest extends TestCase
             'url'     => '/banking_accounts/rbl/lms/banking_account/'. $bankingAccountId,
             'method'  => 'PATCH',
             'content' => [
-                Entity::SUB_STATUS => Status::CA_OPENED_SUB_STATUS,
+                Entity::STATUS => Status::API_ONBOARDING,
+                Entity::SUB_STATUS => Status::IN_REVIEW,
                 Entity::ACTIVATION_DETAIL => [
                     ActivationDetail\Entity::ACCOUNT_LOGIN_DATE => '1666290600',
                     ActivationDetail\Entity::ACCOUNT_OPEN_DATE => '1666549800',
                     ActivationDetail\Entity::ACCOUNT_OPENING_IR_CLOSE_DATE => '1666549800',
-                    ActivationDetail\Entity::ACCOUNT_OPENING_FTNR => false,
+                    ActivationDetail\Entity::ACCOUNT_OPENING_FTNR => true,
                     ActivationDetail\Entity::ACCOUNT_OPENING_FTNR_REASONS => 'AO RRT/Attachment/Details Issue,AO Scanning Issue',
                     ActivationDetail\Entity::RBL_ACTIVATION_DETAILS => [
-                        ActivationDetail\Entity::ACCOUNT_OPENING_IR_NUMBER => 'IR 1212 PQRS',
+                        ActivationDetail\Entity::ACCOUNT_OPENING_IR_NUMBER => 'IR1212PQRS',
                         ActivationDetail\Entity::SR_NUMBER => '0989766',
-                        ActivationDetail\Entity::CASE_LOGIN_DIFFERENT_LOCATIONS => 'YES',
-                        ActivationDetail\Entity::REVISED_DECLARATION => 'NO'
+                        ActivationDetail\Entity::CASE_LOGIN_DIFFERENT_LOCATIONS => true,
+                        ActivationDetail\Entity::REVISED_DECLARATION => true
                     ]
                 ],
             ]
@@ -8745,9 +8753,9 @@ class BankingAccountTest extends TestCase
                 Entity::ACTIVATION_DETAIL => [
                     ActivationDetail\Entity::API_IR_CLOSED_DATE => '1666722600',
                     ActivationDetail\Entity::API_ONBOARDING_FTNR => false,
-                    ActivationDetail\Entity::API_ONBOARDING_FTNR_REASONS => '',
+                    ActivationDetail\Entity::API_ONBOARDING_FTNR_REASONS => 'AO RRT/Attachment/Details Issue,AO Scanning Issue',
                     ActivationDetail\Entity::RBL_ACTIVATION_DETAILS => [
-                        ActivationDetail\Entity::API_IR_NUMBER => 'IR 090909'
+                        ActivationDetail\Entity::API_IR_NUMBER => 'IR090909'
                     ],
                     ActivationDetail\Entity::ADDITIONAL_DETAILS => [
                         ActivationDetail\Entity::API_ONBOARDING_LOGIN_DATE => '1666549800'
@@ -8770,36 +8778,13 @@ class BankingAccountTest extends TestCase
 
     public function testBankLmsEndToEndPartnerChangeAssignee()
     {
-        // Make merchant as Bank CA Onboarding Partner
-        $response = $this->makeMerchantAsBankCAOnboardingPartner();
+        $response = $this->setupBankLMSTest();
+        $bankingAccount = $response['bankingAccount'];
 
-        // Add Feature to the Merchant
-        $response = $this->addBankLmsFeatureToTheMerchant();
-
-        // Invite new user to join RBL merchant
-        $this->inviteNewUserToJoinRBLMerchant();
-
-        // Accept invitation
-        $response = $this->acceptInvitation();
-
-        $user = $this->getDbEntity('user', ['email' => 'random@rbl.com']);
-
-        // New Merchant Apply for Current Account
-        $response = $this->MerchantApplyForCurrentAccount();
-
-        // Attach Sub-merchant to RBl Merchant
-        $this->assertUpdateBankingAccountStatusFromTo(
-            Status::PICKED, Status::INITIATED,
-            null, null,
-            null, null,
-            $response);
-
-        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
-
-        $this->ba->addXBankLMSOriginHeader();
+        $this->ba->addXOriginHeader();
 
         $dataToReplace = [
-            'url' => '/banking_accounts/rbl/lms/banking_account/' . $response['id'],
+            'url' => '/banking_accounts/rbl/lms/banking_account/' . $bankingAccount['id'],
             'method' => 'PATCH',
             'content' => [
                 'activation_detail' => [
@@ -8850,7 +8835,6 @@ class BankingAccountTest extends TestCase
 
         sleep(3);
 
-        // Attach Sub-merchant to RBl Merchant
         $this->assertUpdateBankingAccountStatusFromTo(
             Status::INITIATED, Status::INITIATED,
             null, Status::BANK_PICKED_UP_DOCS,
@@ -9176,8 +9160,29 @@ class BankingAccountTest extends TestCase
                 ]
             ],
         ];
+
         $response = $this->makeRequestAndGetContent($dataToReplace);
         $this->assertEquals(ActivationDetail\Entity::BANK, $response[ActivationDetail\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::ASSIGNEE_TEAM]);
+
+        $dataToReplace = [
+            'url'     => '/banking_accounts/'. $bankingAccount['id'],
+            'method'  => 'PATCH',
+            'content' => [
+                'activation_detail' => [
+                    'assignee_team' => 'ops',
+                    'comment' => [
+                        'comment' => 'sample comment while changing assignee',
+                        'source_team' => 'ops',
+                        'source_team_type' => 'internal',
+                        'type' => 'internal',
+                        'added_at' => 1597217557
+                    ]
+                ]
+            ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($dataToReplace);
+        $this->assertEquals(ActivationDetail\Entity::OPS, $response[ActivationDetail\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::ASSIGNEE_TEAM]);
     }
 
     public function testBankLmsEndToEndCommentsCreate()
@@ -10104,6 +10109,64 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
 
         Mail::assertNotQueued(XProActivation::class);
+    }
+
+    public function testMigrationForOldLeads()
+    {
+        $lastCreatedBankingAccount = $this->MerchantApplyForCurrentAccount();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->ba->adminAuth();
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::CREATED,
+            Status::PICKED,
+            null, null, null, null,
+            $lastCreatedBankingAccount
+        );
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED,
+            Status::INITIATED,
+            null, null, null, null,
+            $lastCreatedBankingAccount
+        );
+
+        sleep(1);
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::INITIATED,
+            Status::REJECTED,
+            null, null, null, null,
+            $lastCreatedBankingAccount
+        );
+
+        $lastStatusChangeLogPre = $this->getDbLastEntity('banking_account_state');
+
+        $lastStatusChangeLogsPre = $this->getDbEntities('banking_account_state', [
+            'banking_account_id' => $bankingAccount->getId()
+        ]);
+
+        sleep(1);
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::REJECTED,
+            Status::ARCHIVED,
+            null, STATUS::NEGATIVE_PROFILE_SVR_ISSUE, null, null,
+            $lastCreatedBankingAccount
+        );
+
+        $lastStatusChangeLogsPost = $this->getDbEntities('banking_account_state', [
+            'banking_account_id' => $bankingAccount->getId()
+        ]);
+
+        $lastStatusChangeLogPost = $this->getDbLastEntity('banking_account_state');
+
+        // We update the final status, rather than adding a new entry for state change log
+
+        $this->assertEquals(count($lastStatusChangeLogsPost->toArray()), count($lastStatusChangeLogsPre->toArray()));
+        $this->assertEquals($lastStatusChangeLogPost->getId(), $lastStatusChangeLogPre->getId());
+        $this->assertEquals(Status::ARCHIVED, $lastStatusChangeLogPost->getStatus());
+        $this->assertEquals(Status::NEGATIVE_PROFILE_SVR_ISSUE, $lastStatusChangeLogPost->getSubStatus());
     }
 
 }

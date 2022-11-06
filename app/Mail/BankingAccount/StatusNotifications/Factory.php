@@ -25,7 +25,17 @@ class Factory
             case Status::PROCESSED:
                 return new Processed($bankingAccountId);
 
+            // CA Opened (Processed) → API Onboarding
+            // Could fail if done before webhook is received
+            // because Account Number won’t be present
+            case Status::API_ONBOARDING:
+                return new Processed($bankingAccountId);
+    
             case Status::PROCESSING:
+                return new Processing($bankingAccountId);
+
+            // According to new status Bank Processing → Account Opening
+            case Status::ACCOUNT_OPENING:
                 return new Processing($bankingAccountId);
 
             case Status::UNSERVICEABLE:

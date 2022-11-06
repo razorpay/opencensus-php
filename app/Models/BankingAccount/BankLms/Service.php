@@ -5,6 +5,7 @@ namespace RZP\Models\BankingAccount\BankLms;
 use RZP\Exception\LogicException;
 use RZP\Models\BankingAccount;
 use RZP\Models\BankingAccount\Activation\Comment;
+use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -234,8 +235,14 @@ class Service extends BankingAccount\Service
 
         if (array_key_exists('activation_detail', $input)) 
         {
-            $activationDetail = $input['activation_detail'];
-            $this->validator->validateInput('edit_activation_detail_by_bank', $activationDetail);
+            $activationDetailInput = $input['activation_detail'];
+            $this->validator->validateInput(Validator::EDIT_ACTIVATION_DETAIL_BY_BANK, $activationDetailInput);
+
+            if (array_key_exists(ActivationDetail\Entity::RBL_ACTIVATION_DETAILS, $activationDetailInput)) 
+            {
+                $rblActivationDetails = $activationDetailInput[ActivationDetail\Entity::RBL_ACTIVATION_DETAILS];
+                $this->validator->validateInput(Validator::RBL_ACTIVATION_DETAILS, $rblActivationDetails);
+            }
         }
 
         $this->update($bankingAccountId, $input, true);

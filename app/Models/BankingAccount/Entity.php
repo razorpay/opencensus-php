@@ -10,10 +10,13 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Admin;
 use RZP\Models\FeeRecovery;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\Merchant\Attribute;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\BankingAccount\State;
 use RZP\Models\Base\PublicCollection;
 use Illuminate\Database\Eloquent\Model;
+use RZP\Constants\Product;
+
 use RZP\Models\BankingAccount\Activation\Detail\Entity as ActivationDetails;
 
 /**
@@ -171,6 +174,11 @@ class Entity extends Base\PublicEntity
     const CLARITY_CONTEXT       = 'clarity_context'; // used for filtering banking accounts
     const FOS_CITY = 'fos_city';
 
+    // For experimentation - resolved from merchant preferences - group x_merchant_current_accounts
+    const USING_NEW_STATES = 'using_new_states';
+    const OLD_STATE_MACHINE = 'old';
+    const NEW_STATE_MACHINE = 'new';
+
     // Response attributes
     const BALANCE_TYPE       = 'balance_type';
     const BANKING_ACCOUNT_ID = 'banking_account_id';
@@ -292,6 +300,7 @@ class Entity extends Base\PublicEntity
         self::BANKING_ACCOUNT_CALL_LOG,
         // This is to enable sorting on this column from call logs entity
         self::LATEST_FOLLOW_UP_DATE,
+        self::USING_NEW_STATES,
         'activationCallLog',
         'activationComments',
         self::REVIEWERS,
@@ -323,7 +332,8 @@ class Entity extends Base\PublicEntity
         self::FEE_RECOVERY_DETAILS,
         self::ACCOUNT_STATEMENT_LAST_UPDATED_AT,
         self::STATUS_LAST_UPDATED_AT,
-        self::BANKING_ACCOUNT_CA_SPOC_DETAILS
+        self::BANKING_ACCOUNT_CA_SPOC_DETAILS,
+        self::USING_NEW_STATES,
     ];
 
     protected $relations = [
@@ -339,6 +349,7 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_STATEMENT_LAST_UPDATED_AT,
         self::STATUS_LAST_UPDATED_AT,
         self::BANKING_ACCOUNT_ACTIVATION_DETAILS,
+        self::USING_NEW_STATES,
     ];
 
     // ---------------------------- Setters ----------------------------------- //
@@ -922,6 +933,11 @@ class Entity extends Base\PublicEntity
         return $outstandingAmount;
     }
 
+    public function setPublicUsingNewStatesAttribute(array &$array)
+    {
+        $array[self::USING_NEW_STATES] = $this->usingNewStates() ? self::NEW_STATE_MACHINE : self::OLD_STATE_MACHINE;
+    }
+
     public function getDashboardEntityLink()
     {
         $publicId = $this->getPublicId();
@@ -1009,4 +1025,40 @@ class Entity extends Base\PublicEntity
         return $followUpDate;
     }
 
+    /**
+     * This is for experimentation on leads for intruducing new state framework during Post STB
+     * Read more here: 
+     * https://docs.google.com/spreadsheets/d/1theXYFolRsplp-mDbONthOKRXc0j4waSdQNf6UyqEdg/edit#gid=0
+     * 
+     * TODO:
+     * M2 States Experiment
+     * Remove this when all new leads are onboarded to new terminal states
+     * or just simply return true as all leads will eventually be using new states
+     */
+    public function usingNewStates()
+    {
+        // From merchant attributes, we need value for group:x_merchant_current_accounts, type:ca_onboarding_state_machine
+        $preferences = (new Attribute\Core)->fetchKeyValues(
+            $this->merchant, 
+            Product::BANKING, 
+            Attribute\Group::X_MERCHANT_CURRENT_ACCOUNTS, 
+            [Attribute\Type::CA_ONBOARDING_STATE_MACHINE]
+        );
+
+        $preferences = $preferences->toArray();
+
+        if (count($preferences) > 0)
+        {
+            return $preferences[0][Attribute\Entity::VALUE] === self::NEW_STATE_MACHINE;
+        }
+        
+        return false;
+    }
+
+    public function isAlreadyInOldTerminalState()
+    {
+        $status = $this->getStatus();
+
+        return Status::statusIsTerminal($status);
+    }
 }

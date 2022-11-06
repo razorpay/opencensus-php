@@ -149,7 +149,7 @@ class Core extends BankingAccount\Core
     {
         (new BankingAccount\Activation\Detail\Core())->assignBankPartnerPocToApplication($bankingAccount->bankingAccountActivationDetails, $bankPocUserId);
 
-        if ($bankingAccount->getStatus() === BankingAccount\Status::INITIATED)
+        if ($bankingAccount->getStatus() === BankingAccount\Status::INITIATED && $bankingAccount->usingNewStates())
         {
             $input = [
                 BankingAccount\Entity::STATUS => BankingAccount\Status::VERIFICATION_CALL,
@@ -159,7 +159,7 @@ class Core extends BankingAccount\Core
             $user = $this->app['basicauth']->getUser();
 
             // Will be used with experimentation changes
-            // (new BankingAccount\Core())->updateBankingAccount($bankingAccount, $input, $user, false, false, true);
+            (new BankingAccount\Core())->updateBankingAccount($bankingAccount, $input, $user, false, false, true);
         }
 
         $this->notifier->notify($bankingAccount, Event::BANK_PARTNER_POC_ASSIGNED);

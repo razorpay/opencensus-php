@@ -12,4 +12,11 @@ class Validator extends Base\Validator
         Entity::SUB_STATUS      => 'sometimes|string|nullable',
         Entity::ASSIGNEE_TEAM   => 'sometimes|string|nullable',
     ];
+
+    protected static $editRules = [
+        Entity::STATUS          => 'sometimes|string',
+        Entity::BANK_STATUS     => 'sometimes|string|nullable',
+        Entity::SUB_STATUS      => 'sometimes|string|nullable',
+        Entity::ASSIGNEE_TEAM   => 'sometimes|string|nullable',
+    ];
 }

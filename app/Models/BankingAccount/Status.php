@@ -119,6 +119,11 @@ class Status
     const API_ONBOARDING_INITIATED_EXTERNAL       = 'API onboarding has been initiated by RZP';
     const API_ONBOARDING_IN_PROGRESS_EXTERNAL     = 'API onboarding in Progress';
     const NONE_EXTERNAL                           = 'None';
+    const UPI_ACTIVATED_EXTERNAL                  = 'UPI Activated';
+    const OTHER_EXTERNAL                          = 'Others';
+    const UNSERVICEABLE__PINCODE_EXTERNAL         = 'Unserviceable pincode';
+    const NEGATIVE_PROFILE_SVR_ISSUE_EXTERNAL     = 'Negative Profile/SVR issue';
+    const UPI_CREDS_PENDING_EXTERNAL              = 'UPI Creds Pending';
 
     // Sub-merchant BA status to be shown on partner dashboard
     const PAN_VERIFICATION_IN_PROGRESS      = 'PAN verification in progress';
@@ -207,7 +212,12 @@ class Status
     // Account details can be saved only if the status
     // of banking account is in below array
     //
-    public static $allowedStatusForDetails = [self::PROCESSED];
+    public static $allowedStatusForDetails = [
+        self::PROCESSED,
+        self::ACCOUNT_OPENING,
+        self::API_ONBOARDING,
+        self::ACCOUNT_ACTIVATION,
+    ];
 
     protected static $initialStatuses = [
         Status::CREATED,
@@ -216,6 +226,13 @@ class Status
 
     public static $activatedStatuses = [
         self::ACTIVATED,
+    ];
+
+    public static $terminalStatuses = [
+        self::CANCELLED,
+        self::ACTIVATED,
+        self::UNSERVICEABLE,
+        self::REJECTED,
     ];
 
     protected static $statuses = [
@@ -321,7 +338,6 @@ class Status
             self::ACCOUNT_OPENING,
             self::API_ONBOARDING,
             self::ACCOUNT_ACTIVATION,
-            self::ACTIVATED,
             self::ARCHIVED,
         ],
         self::DOC_COLLECTION => [
@@ -330,7 +346,6 @@ class Status
             self::ACCOUNT_OPENING,
             self::API_ONBOARDING,
             self::ACCOUNT_ACTIVATION,
-            self::ACTIVATED,
             self::ARCHIVED,
         ],
         self::ACCOUNT_OPENING => [
@@ -339,7 +354,6 @@ class Status
             self::DOC_COLLECTION,
             self::API_ONBOARDING,
             self::ACCOUNT_ACTIVATION,
-            self::ACTIVATED,
             self::ARCHIVED,
         ],
         self::API_ONBOARDING => [
@@ -367,6 +381,7 @@ class Status
         ],
         self::UNSERVICEABLE => [
             self::PICKED,
+            self::ARCHIVED,
         ],
         self::ACTIVATED => [
             self::ARCHIVED
@@ -376,11 +391,13 @@ class Status
             // had earlier cancelled their request. This is to
             // restart the process.
             self::PICKED,
+            self::ARCHIVED,
         ],
         self::REJECTED  => [
             // Temporarily allowing this transition because of
             // https://razorpay.slack.com/archives/CRA6TGU8H/p1603954629097600?thread_ts=1603779164.072600&cid=CRA6TGU8H
-            self::PROCESSED
+            self::PROCESSED,
+            self::ARCHIVED,
         ],
         self::ARCHIVED  => [
             self::PICKED,
@@ -764,10 +781,33 @@ class Status
         ],
         self::ACTIVATED => [
             self::UPI_CREDS_PENDING => Activation\Detail\Entity::OPS,
-            self::UPI_ACTIVATED => Activation\Detail\Entity::OPS,
+            self::UPI_ACTIVATED => null,
         ],
         self::ARCHIVED => [
             self::IN_PROCESS => Activation\Detail\Entity::OPS,
+            self::CLIENT_NOT_RESPONDING => null,
+            self::DIRECTOR_PARTNER_IS_UNAVAILABLE => null,
+            self::CLIENT_NOT_INTERESTED_ALREADY_HAS_ACCOUNT_WITH_DIFFERENT_BANK => null,
+            self::CLIENT_NOT_INTERESTED_DID_NOT_CLARIFY => null,
+            self::CLIENT_NOT_INTERESTED_OPENED_ACCOUNT_IN_ANOTHER_BANK => null,
+            self::CLIENT_NOT_INTERESTED_STALLING_APPOINTMENTS => null,
+            self::CLIENT_NOT_INTERESTED_IP_CHEQUE_AMB_BANK_CHARGES => null,
+            self::CLIENT_NOT_INTERESTED_WANTS_TO_LINK_EXISTING_CA => null,
+            self::CLIENT_NOT_INTERESTED_WANTS_TO_USE_ONLY_VA => null,
+            self::CLIENT_NOT_INTERESTED_RZP_ISSUE => null,
+            self::CLIENT_NOT_INTERESTED_DUE_TO_LONGER_TAT => null,
+            self::ON_HOLD_BY_CLIENT => null,
+            self::BUSINESS_IS_NOT_OPERATIONAL => null,
+            self::NEGATIVE_PROFILE_SVR_ISSUE => null,
+            self::INCOMPLETE_KYC => null,
+            self::NOT_SERVICEABLE => null,
+            self::UNSUPPORTED_RZP_BUSINESS_TYPE_MODEL => null,
+            self::ENTITY_CHANGE_IN_PROGRESS => null,
+            self::CC_OD_WITH_OTHER_BANK => null,
+            self::CLIENT_PROCEEDING_WITH_DIFFERENT_RZP_MID => null,
+            self::CA_OPENED_ORGANICALLY => null,
+            self::RM_DELAYS_IN_ACCOUNT_OPENING => null,
+            self::OTHER => null,
         ]
     ];
 
@@ -847,6 +887,11 @@ class Status
         self::API_ONBOARDING_INITIATED_EXTERNAL       => self::API_ONBOARDING_INITIATED,
         self::API_ONBOARDING_IN_PROGRESS_EXTERNAL     => self::API_ONBOARDING_IN_PROGRESS,
         self::NONE_EXTERNAL                           => self::NONE,
+        self::UPI_ACTIVATED_EXTERNAL                  => self::UPI_ACTIVATED,
+        self::OTHER_EXTERNAL                          => self::OTHER,
+        self::UNSERVICEABLE__PINCODE_EXTERNAL         => self::UNSERVICEABLE__PINCODE,
+        self::NEGATIVE_PROFILE_SVR_ISSUE_EXTERNAL     => self::NEGATIVE_PROFILE_SVR_ISSUE,
+        self::UPI_CREDS_PENDING     => self::UPI_CREDS_PENDING,
 
         'null'                                        => null
     ];
@@ -861,15 +906,15 @@ class Status
         self::DOC_COLLECTION => [
             self::PICKED_UP_DOCS,
         ],
-        self::ACCOUNT_OPENING => [
-            self::CA_OPENED_SUB_STATUS,
-        ],
+        // self::ACCOUNT_OPENING => [
+        //     self::CA_OPENED_SUB_STATUS,
+        // ],
         self::API_ONBOARDING => [
             self::API_IR_CLOSED,
         ],
-        self::ACCOUNT_ACTIVATION => [
-            self::CA_ACTIVATED_SUB_STATUS,
-        ],
+        // self::ACCOUNT_ACTIVATION => [
+        //     self::CA_ACTIVATED_SUB_STATUS,
+        // ],
         self::ACTIVATED => [
             self::UPI_ACTIVATED,
         ],
@@ -890,24 +935,28 @@ class Status
 
     /**
      * Used to calculate default assignee when moving from one state to another
+     * 
+     * Return false if default assignee should not be updated
+     * 
+     * Return null or a valid assignee to update the assignee team
      */
     public static function getDefaultAssigneeTeam(?string $status, ?string $subStatus)
     {
         if($status == null)
         {
-            return null;
+            return false;
         }
 
         if(array_key_exists($status, self::$statusAndSubStatusToAssigneeMap) === false)
         {
-            return null;
+            return false;
         }
 
         $subStatuses = self::$statusAndSubStatusToAssigneeMap[$status];
 
         if(array_key_exists($subStatus, $subStatuses) === false)
         {
-            return null;
+            return false;
         }
 
         return  self::$statusAndSubStatusToAssigneeMap[$status][$subStatus];
@@ -1260,5 +1309,10 @@ class Status
             }
             return $followUpDate->timestamp;
         }
+    }
+
+    public static function statusIsTerminal($status)
+    {
+        return in_array($status, self::$terminalStatuses, true);
     }
 }

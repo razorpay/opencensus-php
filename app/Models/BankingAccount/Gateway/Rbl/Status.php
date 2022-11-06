@@ -92,6 +92,21 @@ class Status
                 self::ACCOUNT_OPENED
             ],
         ],
+        BankingAccount\Status::ACCOUNT_OPENING => [
+            self::ALL => [
+                self::CLOSED
+            ],
+        ],
+        BankingAccount\Status::API_ONBOARDING => [
+            self::ALL => [
+                self::CLOSED
+            ],
+        ],
+        BankingAccount\Status::ACCOUNT_ACTIVATION => [
+            self::ALL => [
+                self::CLOSED
+            ],
+        ],
         BankingAccount\Status::PROCESSED      => [
             self::ALL => [
                 self::ACTIVATED

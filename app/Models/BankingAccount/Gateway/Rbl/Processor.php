@@ -85,7 +85,7 @@ class Processor extends BankingAccount\Gateway\Processor
 
         $input = [
             Entity::STATUS     => BankingAccount\Status::ACTIVATED,
-            Entity::SUB_STATUS => null
+            Entity::SUB_STATUS => BankingAccount\Status::UPI_CREDS_PENDING,
         ];
 
         $bankingAccount->fill($input);
@@ -126,6 +126,9 @@ class Processor extends BankingAccount\Gateway\Processor
         $attributes[BankingAccount\Entity::BANK_INTERNAL_STATUS] = Status::CLOSED;
 
         $attributes['activation_detail'][BankingAccount\Activation\Detail\Entity::ASSIGNEE_TEAM] = 'ops';
+
+        $attributes['activation_detail'][BankingAccount\Activation\Detail\Entity::ADDITIONAL_DETAILS]
+                    [BankingAccount\Activation\Detail\Entity::ACCOUNT_OPENING_WEBHOOK_DATE] = Carbon::now()->timestamp;
 
         return $attributes;
     }

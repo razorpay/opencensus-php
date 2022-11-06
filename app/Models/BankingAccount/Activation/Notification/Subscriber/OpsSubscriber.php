@@ -20,6 +20,8 @@ class OpsSubscriber extends Base
                 return in_array($event->getProperties()[Constants::NEW_STATUS],
                     [
                         BankingAccount\Status::PROCESSED,
+                        BankingAccount\Status::API_ONBOARDING,
+                        BankingAccount\Status::ACCOUNT_ACTIVATION,
                     ]);
             case Event::ASSIGNEE_CHANGE:
                 return ($bankingAccount->bankingAccountActivationDetails->getAssigneeTeam() ===  'ops');

@@ -6,6 +6,7 @@ use RZP\Constants\Table;
 use \RZP\Models\BankingAccount;
 use \RZP\Models\BankingAccount\Status;
 use RZP\Models\Admin\Admin;
+use \RZP\Models\BankingAccount\Activation\Detail\Entity as ActivationDetails;
 
 /**
  * This just inheriting banking account entity not a real one
@@ -36,6 +37,7 @@ class Entity extends BankingAccount\Entity
         self::ACCOUNT_CURRENCY,
         self::BENEFICIARY_EMAIL,
         self::BENEFICIARY_MOBILE,
+        self::ACCOUNT_ACTIVATION_DATE,
         self::BENEFICIARY_NAME,
         self::BANK_REFERENCE_NUMBER,
         self::PINCODE,
@@ -48,6 +50,7 @@ class Entity extends BankingAccount\Entity
         self::LEAD_FOLLOW_UP_DATE,
         self::STATUS_LAST_UPDATED_AT,
         self::BANKING_ACCOUNT_CA_SPOC_DETAILS,
+        self::USING_NEW_STATES,
         self::SPOCS,
         self::REVIEWERS,
     ];
@@ -62,6 +65,7 @@ class Entity extends BankingAccount\Entity
         self::BANK_POC_NAME,
         self::COMPLETED_STAGES,
         self::LEAD_FOLLOW_UP_DATE,
+        self::USING_NEW_STATES,
         self::SPOCS,
         self::REVIEWERS,
     ];
@@ -85,6 +89,7 @@ class Entity extends BankingAccount\Entity
         self::ACCOUNT_CURRENCY,
         self::BENEFICIARY_EMAIL,
         self::BENEFICIARY_MOBILE,
+        self::ACCOUNT_ACTIVATION_DATE,
         self::BENEFICIARY_NAME,
         self::BANK_REFERENCE_NUMBER,
         self::PINCODE,
@@ -97,6 +102,7 @@ class Entity extends BankingAccount\Entity
         self::LEAD_FOLLOW_UP_DATE,
         self::STATUS_LAST_UPDATED_AT,
         self::BANKING_ACCOUNT_CA_SPOC_DETAILS,
+        self::USING_NEW_STATES,
         self::SPOCS,
         self::REVIEWERS,
     ];
@@ -120,6 +126,7 @@ class Entity extends BankingAccount\Entity
         self::ACCOUNT_CURRENCY,
         self::BENEFICIARY_EMAIL,
         self::BENEFICIARY_MOBILE,
+        self::ACCOUNT_ACTIVATION_DATE,
         self::BENEFICIARY_NAME,
         self::BANK_REFERENCE_NUMBER,
         self::PINCODE,
@@ -132,6 +139,7 @@ class Entity extends BankingAccount\Entity
         self::LEAD_FOLLOW_UP_DATE,
         self::STATUS_LAST_UPDATED_AT,
         self::BANKING_ACCOUNT_CA_SPOC_DETAILS,
+        self::USING_NEW_STATES,
         self::SPOCS,
         self::REVIEWERS,
     ];

@@ -27,6 +27,8 @@ class SpocSubscriber extends Base
                 return in_array($event->getProperties()[Constants::NEW_STATUS],
                     [
                         BankingAccount\Status::PROCESSED,
+                        BankingAccount\Status::API_ONBOARDING,
+                        BankingAccount\Status::ACCOUNT_ACTIVATION,
                         BankingAccount\Status::ACTIVATED,
                         BankingAccount\Status::REJECTED,
                         BankingAccount\Status::ARCHIVED,

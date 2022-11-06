@@ -336,15 +336,13 @@ class Service extends Base\Service
         {
             $isAutomatedUpdate = true;
             $input[Entity::ASSIGNEE_TEAM] = Entity::BANK_OPS;
-
-            $isAutomatedUpdate = true;
         }
-        else if (
-            empty($ldapIDMailDate) === false && 
-            BankingAccount\Status::isStatusUnderParallelAssignee($bankingAccount->getStatus()))
+
+        // If entering LDAP_ID_MAIL_DATE for the first time, change assignee automatically to bank
+        if (empty($input[Entity::LDAP_ID_MAIL_DATE]) === false && empty($activationDetail->getLDAPIDMailDate()) === true)
         {
-            $input[Entity::ASSIGNEE_TEAM] = Entity::BANK;
             $isAutomatedUpdate = true;
+            $input[Entity::ASSIGNEE_TEAM] = Entity::BANK;
         }
     }
 

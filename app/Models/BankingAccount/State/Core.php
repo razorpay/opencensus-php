@@ -69,4 +69,17 @@ class Core extends Base\Core
 
         return $state;
     }
+
+    /**
+     * Update a state entry
+     */
+    public function update(string $id, array $input)
+    {
+        /** @var Entity $state */
+        $state = $this->repo->banking_account_state->findByPublicId($id);
+
+        $state->edit($input);
+
+        $this->repo->saveOrFail($state);
+    }
 }
