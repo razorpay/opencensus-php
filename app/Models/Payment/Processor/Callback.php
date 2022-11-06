@@ -463,6 +463,9 @@ trait Callback
             //For Cred and walnut369 we receive the discount in the callback event.
             $this->addDiscountToPaymentIfApplicable($payment, $data);
 
+            // set auth ref no. in case of a Rupay card
+            $this->setAuthenticationReferenceNumberIfApplicable($payment->card, $data);
+
             if (isset($data[Payment\Entity::TWO_FACTOR_AUTH]) === true)
             {
                 $twoFactorAuth = $data[Payment\Entity::TWO_FACTOR_AUTH];
@@ -507,9 +510,6 @@ trait Callback
 
                 //For Cred we receive the discount in the callback event.
                 $this->addDiscountToPaymentIfApplicable($payment, $payData);
-
-                // set auth ref no. in case of a Rupay card
-                $this->setAuthenticationReferenceNumberIfApplicable($payment->card, $data);
 
                 if (isset($payData[Payment\Entity::TWO_FACTOR_AUTH]) === true)
                 {
@@ -1213,6 +1213,11 @@ trait Callback
 
     protected function setAuthenticationReferenceNumberIfApplicable($card, $callbackData)
     {
+        if (isset($card) === false)
+        {
+            return;
+        }
+
         if ($card->isRupay() === false)
         {
             return;
