@@ -9,9 +9,12 @@ use Config;
 use Request;
 use Carbon\Carbon;
 
+
 use RZP\Encryption;
 use RZP\Encryption\PGPEncryption;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Gateway\File\Entity;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
@@ -45,6 +48,8 @@ class Axis extends Base
     const S3_PATH           = 'axis_cardsettlement/';
     const SHOULD_ENCRYPT    = true;
     const BULK_LIMIT        = 500;
+
+    const RAZORX_EXP_NAME   = 'axis_moto_new_column';
 
     /**
      * @var $file FileStore\Entity
@@ -117,7 +122,7 @@ class Axis extends Base
             min($this->paymentsFirstTimestamp, $this->refundsFirstTimestamp) );
 
         $pids  = $paymentSettlementsForBank->pluck(Payment\Entity::ID)->toArray();
-        $rids  = $refundSettlementsForBank->pluck(Payment\Refund\Entity::PAYMENT_ID)->toArray();
+        $rids  = $refundSettlementsForBank->pluck(Payment\Refund\Entity::ID)->toArray();
 
         $this->trace->info(TraceCode::CARD_SETTLEMENT_FILE_DETAILS, [
             'location'  => 'After DB fetch',
@@ -346,6 +351,11 @@ class Axis extends Base
         $paymentIds = [];
         $refundIds = [];
 
+        $razorXEnabled = ($this->app['razorx']->getTreatment(
+            UniqueIdEntity::generateUniqueId(),
+            self::RAZORX_EXP_NAME,
+            Mode::LIVE) === 'on');
+
         /**
          * @var $settlementPayment Payment\Entity
          */
@@ -362,7 +372,26 @@ class Axis extends Base
 
                     list($notesGST, $notesCorpName, $notesMTR) = $this->parseNotes($settlementPayment->getNotes());
 
-                    $cardToken = $this->getCardToken($settlementPayment->card);
+                    $cardToken = '';
+
+                    try
+                    {
+                        $cardToken = $this->getCardToken($settlementPayment->card);
+                    }
+                    catch(\Throwable $ex)
+                    {
+                        $this->trace->error(TraceCode::CARD_SETTLEMENT_CARD_TOKEN_NOT_FOUND_ERROR,
+                            [
+                                'payment_id'  => $settlementPayment->getId(),
+                                'merchantIds' => $settlementPayment->getMerchantId(),
+                                'error'       => $ex->getMessage(),
+                            ]);
+
+                        if($razorXEnabled === false)
+                        {
+                            throw $ex;
+                        }
+                    }
 
                     $cardTypeIdentifier = $settlementPayment->card->isCredit() ? 'C' : 'D';
 
@@ -381,11 +410,11 @@ class Axis extends Base
                         $this->getCardTokenBIN($cardToken) . self::PIPE_SEPARATOR .
                         '5' . self::PIPE_SEPARATOR .
                         $notesMTR . self::PIPE_SEPARATOR .
-                        $notesGST . ' ' . $notesCorpName;
+                        $notesGST . ' ' . $notesCorpName . (($razorXEnabled === true) ? self::PIPE_SEPARATOR : '');
 
                     $content[] = $cardToken . self::PIPE_SEPARATOR . $row;
 
-                    $debugFileContent[] = $row;
+                    $debugFileContent[] = $settlementPayment->getId() . self::PIPE_SEPARATOR . $row;
 
                     $paymentIds[] = $settlementPayment->getId();
                 }
@@ -395,6 +424,7 @@ class Axis extends Base
                         [
                             'payment_id'  => $settlementPayment->getId(),
                             'merchantIds' => $settlementPayment->getMerchantId(),
+                            'error'       => $ex->getMessage(),
                         ]);
 
                     $totalTransactions--;
@@ -415,13 +445,33 @@ class Axis extends Base
 
                     $totalTransactions++;
 
-//                    $gatewayRequestID = $cpsAuthData[$settlementRefunds->payment->getId()]['gateway_reference_id2'] ?? '';
+                    $gatewayRequestID = $cpsAuthData[$settlementRefunds->payment->getId()]['gateway_reference_id2'] ?? '';
 
                     $refundRequestId = $scroogeGatewayKeys[$settlementRefunds->getId()]['requestID'] ?? '';
 
                     list($notesGST, $notesCorpName, $notesMTR) = $this->parseNotes($settlementRefunds->payment->getNotes());
 
-                    $cardToken = $this->getCardToken($settlementRefunds->payment->card);
+                    $cardToken = '';
+
+                    try
+                    {
+                        $cardToken = $this->getCardToken($settlementRefunds->payment->card);
+                    }
+                    catch(\Throwable $ex)
+                    {
+                        $this->trace->error(TraceCode::CARD_SETTLEMENT_CARD_TOKEN_NOT_FOUND_ERROR,
+                            [
+                                'payment_id'  => $settlementRefunds->payment->getId(),
+                                'refund_id' => $settlementRefunds->getId(),
+                                'merchantIds' => $settlementRefunds->getMerchantId(),
+                                'error'       => $ex->getMessage(),
+                            ]);
+
+                        if($razorXEnabled === false)
+                        {
+                            throw $ex;
+                        }
+                    }
 
                     $cardTypeIdentifier = $settlementRefunds->payment->card->isCredit() ? 'C' : 'D';
 
@@ -440,11 +490,12 @@ class Axis extends Base
                         $this->getCardTokenBIN($cardToken) . self::PIPE_SEPARATOR .
                         '6' . self::PIPE_SEPARATOR .
                         $notesMTR . self::PIPE_SEPARATOR .
-                        $notesGST . ' ' . $notesCorpName;
+                        $notesGST . ' ' . $notesCorpName .
+                        (($razorXEnabled === true) ? (self::PIPE_SEPARATOR . $gatewayRequestID) : '');
 
                     $content[] = $cardToken . self::PIPE_SEPARATOR . $row;
 
-                    $debugFileContent[] = $row;
+                    $debugFileContent[] = $settlementRefunds->payment->getId() . self::PIPE_SEPARATOR . $row;
 
                     $refundIds[] = $settlementRefunds->payment->getId();
 
@@ -453,8 +504,10 @@ class Axis extends Base
                 {
                     $this->trace->error(TraceCode::CARD_SETTLEMENT_REFUNDS_FILE_ROW_ERROR,
                         [
-                            'payment_id'  => $settlementRefunds->getId(),
+                            'refund_id'  => $settlementRefunds->getId(),
+                            'payment_id'  => $settlementRefunds->payment->getId(),
                             'merchantIds' => $settlementRefunds->getMerchantId(),
+                            'error'       => $ex->getMessage(),
 
                         ]);
 

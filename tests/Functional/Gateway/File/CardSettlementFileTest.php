@@ -15,16 +15,17 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Tests\Traits\MocksRazorx;
 use RZP\Tests\Functional\TestCase;
 use RZP\Http\Controllers as Controllers;
 use RZP\Jobs\GatewayFile as GatewayFileJob;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use function GuzzleHttp\Psr7\str;
 
 class CardSettlementFileTest extends TestCase
 {
+    use MocksRazorx;
     use PaymentTrait;
     use DbEntityFetchTrait;
 
@@ -146,6 +147,27 @@ class CardSettlementFileTest extends TestCase
 
     public function testCase7()
     {
+        $id = $this->createCapturedPaymentAt($this->calculateTimestampStartOfBatch(1)->getTimestamp()+1);
+
+        $refund = $this->refundPayment('pay_'.$id);
+
+        $this->fixtures->edit('refund', $refund['id'], [
+            'processed_at' => ($this->calculateTimestampStartOfBatch(1)->getTimestamp()+2),
+        ]);
+
+        $this->generateAndCheckFile(4, 13);
+
+        $this->generateAndCheckFile(2, 15);
+
+        $this->generateAndCheckFile(2, 18);
+
+        $this->generateAndCheckFile(2, 25);
+    }
+
+    public function testCase7WithExperiment()
+    {
+        $this->mockRazorxTreatmentV2('axis_moto_new_column', 'on');
+
         $id = $this->createCapturedPaymentAt($this->calculateTimestampStartOfBatch(1)->getTimestamp()+1);
 
         $refund = $this->refundPayment('pay_'.$id);
