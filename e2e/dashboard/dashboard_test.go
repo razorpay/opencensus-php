@@ -21,8 +21,10 @@ type DashboardAPISuite struct {
 func (s *DashboardAPISuite) BeforeTest(suiteName, testName string) {
 	// Run statements before every test of the suite.
 
-	if strings.Contains(testName, "PostLogin") {
-		xsrf, session = getTokenAfterLogin()
+	if strings.Contains(testName, "LAPostLogin") {
+		xsrf, session = getTokenAfterLogin(dashboardLATestCreds)
+	} else if strings.Contains(testName, "PostLogin") {
+		xsrf, session = getTokenAfterLogin(dashboardTestCreds)
 	} else {
 		xsrf, session = getTokenBeforeLogin()
 	}
@@ -33,29 +35,10 @@ func (s *DashboardAPISuite) BeforeTest(suiteName, testName string) {
 }
 
 func (s DashboardAPISuite) TestGetIndexPostLogin() {
-	e := httpexpect.NewWithHeaders(s.T(), e2e.Config.App.Hostname, map[string]string{
-		DEVSTACK_LABEL_HEADER: e2e.DevServeHeader,
-		HEADER_X_XSRF_TOKEN:   decodeXsrf,
-		COOKIE:                RZP_USER_SESSION + "=" + session,
-	})
-
-	res := e.DoRequestTests(requestTestGetIndex)
-
 	var response string
-	response = res[VALID_REQUEST].Body().Raw()
+	response = GetIndexRouteCall(s)
 
-	_, err := html.Parse(strings.NewReader(response))
-
-	if err != nil {
-		s.T().Fatal(err.Error())
-	}
-
-	responseComponents := []string{
-		`<title>Razorpay Dashboard</title>`,
-		`<meta name="description" content="Online payment gateway for India with the best in class API, integration procedure, robust security and powerful dashboard" />`,
-	}
-
-	matched, err := regexp.MatchString("window.rzp_user = {*", response)
+	matched, err := regexp.MatchString(`window.rzp_user = {"current":"J9fikDGL4m3rCy".*`, response)
 	if err != nil {
 		s.T().Fatal(err.Error())
 	}
@@ -64,7 +47,7 @@ func (s DashboardAPISuite) TestGetIndexPostLogin() {
 		s.T().Fatalf("Not Logged In")
 	}
 
-	for _, component := range responseComponents {
+	for _, component := range componentsToAssert {
 		if !strings.Contains(response, component) {
 			s.T().Fatalf(`Expected component "%s" not found`, component)
 		}
@@ -72,6 +55,41 @@ func (s DashboardAPISuite) TestGetIndexPostLogin() {
 }
 
 func (s DashboardAPISuite) TestGetIndexBeforeLogin() {
+	var response string
+	response = GetIndexRouteCall(s)
+
+	responseComponents := append(componentsToAssert, "window.isAuthPage = true")
+
+	for _, component := range responseComponents {
+		if !strings.Contains(response, component) {
+			s.T().Fatalf(`Expected component "%s" not found`, component)
+		}
+	}
+}
+
+func (s DashboardAPISuite) TestGetIndexLAPostLogin() {
+	var response string
+	response = GetIndexRouteCall(s)
+
+	matched, err := regexp.MatchString(`window.rzp_user = {"current":"AixKlbbNt84nkl".*};`, response)
+	if err != nil {
+		s.T().Fatal(err.Error())
+	}
+
+	if matched == false {
+		s.T().Fatalf("Not Logged In")
+	}
+
+	responseComponents := append(componentsToAssert, `"linked_account": true`)
+
+	for _, component := range responseComponents {
+		if strings.Contains(response, component) {
+			s.T().Fatalf(`"%s" should not be present`, component)
+		}
+	}
+}
+
+func GetIndexRouteCall(s DashboardAPISuite) string {
 	e := httpexpect.NewWithHeaders(s.T(), e2e.Config.App.Hostname, map[string]string{
 		DEVSTACK_LABEL_HEADER: e2e.DevServeHeader,
 		HEADER_X_XSRF_TOKEN:   decodeXsrf,
@@ -89,17 +107,7 @@ func (s DashboardAPISuite) TestGetIndexBeforeLogin() {
 		s.T().Fatal(err.Error())
 	}
 
-	responseComponents := []string{
-		`<title>Razorpay Dashboard</title>`,
-		`<meta name="description" content="Online payment gateway for India with the best in class API, integration procedure, robust security and powerful dashboard" />`,
-		`window.isAuthPage = true`,
-	}
-
-	for _, component := range responseComponents {
-		if !strings.Contains(response, component) {
-			s.T().Fatalf(`Expected component "%s" not found`, component)
-		}
-	}
+	return response
 }
 
 func TestDashboard(t *testing.T) {

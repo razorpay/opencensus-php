@@ -38,7 +38,7 @@ func getTokenBeforeLogin() (string, string) {
 	return result[0], result[1]
 }
 
-func getTokenAfterLogin() (string, string) {
+func getTokenAfterLogin(loginCreds map[string]string) (string, string) {
 	result := [2]string{}
 
 	req, err := http.NewRequest(GET_METHOD, e2e.Config.App.Hostname+PATH_ORG, nil)
@@ -65,13 +65,7 @@ func getTokenAfterLogin() (string, string) {
 		}
 	}
 
-	values := map[string]string{
-		EMAIL:    DEVSTACK_TEST_EMAIL,
-		PASSWORD: DEVSTACK_TEST_PASSWORD,
-		CAPTCHA:  DEVSTACK_TEST_CAPTCHA,
-	}
-
-	json_data, err := json.Marshal(values)
+	json_data, err := json.Marshal(loginCreds)
 
 	if err != nil {
 		return "", ""
