@@ -121,6 +121,16 @@ class HitachiGatewayTest extends TestCase
                         return 'off';
                     }
 
+                    if ($feature === 'payment_gateway_capture_async_other_networks')
+                    {
+                        return 'control';
+                    }
+
+                    if ($feature === 'payment_gateway_capture_asyc_mc')
+                    {
+                        return 'control';
+                    }
+
                     return 'on';
                 }));
 
@@ -143,7 +153,7 @@ class HitachiGatewayTest extends TestCase
         $this->assertEquals([
             $this->gateway => [
                 DowntimeMetric::Success    => [
-                    DowntimeMetric::NoError      => 2,
+                    DowntimeMetric::NoError      => 1,
                 ]
             ]
         ], $this->app['gateway_downtime_metric']->getMetrics());

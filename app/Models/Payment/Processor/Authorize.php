@@ -1589,6 +1589,7 @@ trait Authorize
 
     public function shouldGatewayCapturePayment(Payment\Entity $payment)
     {
+
         if (($payment->isGatewayCaptured() === false) and
             ($payment->getGateway() === Payment\Gateway::PAYSECURE))
         {
@@ -1596,8 +1597,8 @@ trait Authorize
         }
 
         if(($payment->isGatewayCaptured() === false) and
-            ($payment->isMethodCardOrEmi() === true and $payment->merchant->isRazorpayOrgId() === true and
-             $payment->card->getNetwork() === Network::getFullName(Network::MC)))
+            ($payment->isMethodCardOrEmi() === true  and
+                $payment->card->getNetwork() === Network::getFullName(Network::MC)))
         {
             $variant = $this->app->razorx->getTreatment($this->request->getTaskId(), Merchant\RazorxTreatment::PAYMENT_GATEWAY_CAPTURE_ASYNC_MC, $this->mode);
 
@@ -1616,8 +1617,7 @@ trait Authorize
         }
 
         if(($payment->isGatewayCaptured() === false) and
-            ($payment->isMethodCardOrEmi() === true and
-             $payment->merchant->isRazorpayOrgId() === true))
+            ($payment->isMethodCardOrEmi() === true))
         {
             $variant = $this->app->razorx->getTreatment($this->request->getTaskId(), Merchant\RazorxTreatment::PAYMENT_GATEWAY_CAPTURE_ASYNC_OTHER_NETWORKS, $this->mode);
 
