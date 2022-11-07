@@ -1850,7 +1850,7 @@ class PaymentDowntimeTest extends TestCase
             'content' => [
                 'gateway'     => 'upi_mindgate',
                 'method'      => 'upi',
-                'source'      => 'DOWNTIME_SERVICE',
+                'source'      => 'DOPPLER',
                 'reason_code' => 'HIGHER_ERRORS',
                 'begin'       => strval(Carbon::now()->timestamp),
             ],
@@ -1908,7 +1908,7 @@ class PaymentDowntimeTest extends TestCase
             'content' => [
                 'gateway'     => 'upi_mindgate',
                 'method'      => 'upi',
-                'source'      => 'DOWNTIME_SERVICE',
+                'source'      => 'DOPPLER',
                 'reason_code' => 'HIGHER_ERRORS',
                 'begin'       => strval(Carbon::now()->timestamp),
             ],

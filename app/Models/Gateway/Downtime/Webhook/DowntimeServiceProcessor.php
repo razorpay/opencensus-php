@@ -309,6 +309,18 @@ class DowntimeServiceProcessor implements ProcessorInterface
         ];
         // if its merchant level downtime check if mid is not null
 
+        if(isset($input[Entity::GATEWAY])===true) // For Gateway Downtimes
+        {
+            if($input[Entity::METHOD] === Method::UPI && isset($entity[ENTITY::ISSUER])===true)
+            {
+                $buildInput[Entity::VPA_HANDLE] = $input[Entity::ISSUER];
+            }
+        }else{                                    // For Payment Downtimes
+            if($input[Entity::METHOD] === Method::UPI){
+                $buildInput[Entity::VPA_HANDLE] = $input[Entity::ISSUER];
+            }
+        }
+
         switch ($input[Entity::SEVERITY])
         {
             case strtoupper(Downtime\Severity::HIGH):

@@ -71,7 +71,7 @@ class Repository extends Base\Repository
     {
         parent::saveOrFail($entity, $options);
 
-        if (($this->isValidDowntimeSource($entity)) === true) {
+        if (($this->isValidDowntimeSource($entity)) === true && $this->isPgAvailabilityGatewayDowntime($entity) === false ) {
             // Every update of gateway downtimes table should
             // queue a refresh of the payment downtimes table
             $paymentDowntimesEnabled = (bool)ConfigKey::get(ConfigKey::ENABLE_PAYMENT_DOWNTIMES, false);
@@ -454,4 +454,17 @@ class Repository extends Base\Repository
 
         return true;
     }
+
+    protected function isPgAvailabilityGatewayDowntime($entity): bool
+    {
+        if(isset($entity[ENTITY::SOURCE]) === true && $entity[ENTITY::SOURCE] == SOURCE::DOWNTIME_SERVICE){
+            if(isset($entity[ENTITY::GATEWAY])===true && $entity[ENTITY::GATEWAY] != ENTITY::ALL ){
+                return true;
+            }
+
+        }
+
+        return false;
+    }
+
 }
