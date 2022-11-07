@@ -13,7 +13,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Gateway\Netbanking\Axis\Constants;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
-class Axis extends Base
+class Axis extends NetbankingBase
 {
     use FileHandler;
 

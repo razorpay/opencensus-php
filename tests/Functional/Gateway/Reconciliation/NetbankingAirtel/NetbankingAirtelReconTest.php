@@ -3,11 +3,14 @@
 namespace RZP\Tests\Functional\Gateway\Reconciliation\NetbankingAirtel;
 
 use Carbon\Carbon;
+use Illuminate\Http\UploadedFile;
+
+use Razorpay\IFSC\Bank;
 use RZP\Models\Payment;
-use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Status;
-use Illuminate\Http\UploadedFile;
+use RZP\Services\Mock\Scrooge;
+use RZP\Models\Base\PublicEntity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Reconciliator\RequestProcessor\Base as Recon;
@@ -24,7 +27,7 @@ class NetbankingAirtelReconTest extends TestCase
 
     protected $method = Payment\Method::NETBANKING;
 
-    protected $bank = IFSC::AIRP;
+    protected $bank = Bank::AIRP;
 
     protected function setUp(): void
     {
@@ -32,7 +35,7 @@ class NetbankingAirtelReconTest extends TestCase
 
         $this->gateway = Payment\Gateway::NETBANKING_AIRTEL;
 
-        $this->payment = $this->getDefaultNetbankingPaymentArray(IFSC::AIRP);
+        $this->payment = $this->getDefaultNetbankingPaymentArray(Bank::AIRP);
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_netbanking_airtel_terminal');
 
@@ -231,7 +234,7 @@ class NetbankingAirtelReconTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->refundPayment($payment['id']);
+        $refund = $this->refundPayment($payment['id']);
 
         $this->ba->h2hAuth();
 
@@ -250,26 +253,26 @@ class NetbankingAirtelReconTest extends TestCase
                 }
             });
 
+        $gatewayRefund = $this->getDbLastEntityToArray('netbanking');
+
+        $this->mockScroogeResponse($gatewayRefund['bank_payment_id'], $refund['id'], $refund['payment_id']);
+
         $fileContents = $this->generateReconFile();
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
         $this->reconcile($uploadedFile, Recon::AIRTEL);
 
-        $response = $this->getLastEntity('batch', true);
+        $response = $this->getDbLastEntity('batch');
 
         $this->assertEquals(1, $response['total_count']);
         $this->assertEquals(1, $response['success_count']);
         $this->assertEquals(0, $response['failure_count']);
 
-        $refund = $this->getLastEntity('refund', true);
-
-        $transactionId = $refund['transaction_id'];
-
-        $transaction = $this->getEntityById('transaction', $transactionId, true);
+        $refund = $this->getDbLastRefund();
 
         // Transaction is not reconciled
-        $this->assertNotNull($transaction['reconciled_at']);
+        $this->assertNotNull($refund->transaction['reconciled_at']);
 
         $this->assertEquals(Status::PROCESSED, $response['status']);
     }
@@ -316,5 +319,28 @@ class NetbankingAirtelReconTest extends TestCase
         );
 
         return $uploadedFile;
+    }
+
+    public function mockScroogeResponse($bankRef, $refundId, $paymentId)
+    {
+        $scroogeResponse = [
+            'body' => [
+                'data' => [
+                    $bankRef => [
+                        'payment_id' => PublicEntity::stripDefaultSign($paymentId),
+                        'refund_id'  => PublicEntity::stripDefaultSign($refundId)
+                    ],
+                ]
+            ]
+        ];
+
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getRefundsFromPaymentIdAndGatewayId'])
+            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->app->scrooge->method('getRefundsFromPaymentIdAndGatewayId')->willReturn($scroogeResponse);
     }
 }

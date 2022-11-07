@@ -4,86 +4,20 @@ namespace RZP\Reconciliator\Airtel\SubReconciliator;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
-use RZP\Gateway\Base\Action;
-use RZP\Models\Payment\Method;
-use RZP\Models\Payment\Processor\Wallet;
-use Razorpay\Spine\Exception\DbQueryException;
 
 class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
     const COLUMN_GATEWAY_PAYMENT_ID = 'transaction_id';
     const COLUMN_PAYMENT_ID         = 'partner_txn_id';
     const COLUMN_REFUND_AMOUNT      = 'original_input_amt';
+    const COLUMN_RZP_REFUND_ID      = 'refund_id';
 
     protected function getRefundId($row)
     {
-        $refundId = null;
-
-        if ((isset($row[self::COLUMN_GATEWAY_PAYMENT_ID]) === false) or
-            (isset($row[self::COLUMN_PAYMENT_ID]) === false))
-        {
-            return $refundId;
-        }
-
-        $gatewayPaymentId = $row[self::COLUMN_GATEWAY_PAYMENT_ID];
-
-        $paymentId = $row[self::COLUMN_PAYMENT_ID];
-
-        $payment = $this->repo->payment->find($paymentId);
-
-        if ($payment === null)
-        {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'            => TraceCode::RECON_INFO_ALERT,
-                    'info_code'             => Base\InfoCode::REFUND_PAYMENT_ABSENT,
-                    'refund_reference_id'   => $gatewayPaymentId,
-                    'payment_id'            => $paymentId,
-                    'gateway'               => $this->gateway,
-                ]);
-
-            return $refundId;
-        }
-
-        try
-        {
-            $method = $payment->getMethod();
-
-            if ($method === Method::WALLET)
-            {
-                $gatewayRefundEntity = $this->repo
-                                            ->wallet
-                                            ->findbyGatewayPaymentIdAndAction(
-                                                                        $gatewayPaymentId,
-                                                                        Action::REFUND,
-                                                                        Wallet::AIRTELMONEY);
-            }
-            else
-            {
-                $gatewayRefundEntity = $this->repo
-                                            ->netbanking_airtel
-                                            ->findbyGatewayPaymentIdAndAction($gatewayPaymentId, Action::REFUND);
-            }
-
-            $refundId = $gatewayRefundEntity->getRefundId();
-        }
-        catch (DbQueryException $exception)
-        {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'            => TraceCode::RECON_INFO_ALERT,
-                    'info_code'             => Base\InfoCode::REFUND_ABSENT,
-                    'refund_reference_id'   => $gatewayPaymentId,
-                    'payment_id'            => $paymentId,
-                    'amount'                => $payment->getAmount(),
-                    'gateway'               => $this->gateway,
-                ]);
-        }
-
-        return $refundId;
+        return $row[self::COLUMN_RZP_REFUND_ID];
     }
 
-    protected function validateRefundAmountEqualsReconAmount(array $row)
+    protected function validateRefundAmountEqualsReconAmount(array $row): bool
     {
         if ($this->refund->getBaseAmount() !== $this->getReconRefundAmount($row))
         {
@@ -102,12 +36,5 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         }
 
         return true;
-    }
-
-    protected function getReconRefundAmount(array $row)
-    {
-        $refundAmount = parent::getReconRefundAmount($row);
-
-        return intval(number_format($refundAmount, 2, '.', ''));
     }
 }

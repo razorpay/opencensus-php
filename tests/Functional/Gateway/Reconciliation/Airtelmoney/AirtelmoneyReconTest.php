@@ -3,11 +3,14 @@
 namespace RZP\Tests\Functional\Gateway\Reconciliation\Airtelmoney;
 
 use Carbon\Carbon;
+
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Status;
+use RZP\Services\Mock\Scrooge;
 use Illuminate\Http\UploadedFile;
+use RZP\Models\Base\PublicEntity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -248,25 +251,25 @@ class AirtelmoneyReconTest extends TestCase
                 }
             });
 
+        $gatewayRefund = $this->getDbLastEntityToArray('wallet');
+
+        $this->mockScroogeResponse($gatewayRefund['gateway_payment_id'], $refund['id'], $refund['payment_id']);
+
         $fileContents = $this->generateReconFile();
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
         $this->reconcile($uploadedFile, Recon::AIRTEL);
 
-        $response = $this->getLastEntity('batch', true);
+        $response = $this->getDbLastEntity('batch');
 
         $this->assertEquals(1, $response['total_count']);
         $this->assertEquals(1, $response['success_count']);
         $this->assertEquals(0, $response['failure_count']);
 
-        $refund = $this->getLastEntity('refund', true);
+        $refund = $this->getDbLastRefund();
 
-        $transactionId = $refund['transaction_id'];
-
-        $transaction = $this->getEntityById('transaction', $transactionId, true);
-
-        $this->assertNotNull($transaction['reconciled_at']);
+        $this->assertNotNull($refund->transaction['reconciled_at']);
 
         $this->assertEquals(Status::PROCESSED, $response['status']);
     }
@@ -312,5 +315,28 @@ class AirtelmoneyReconTest extends TestCase
         );
 
         return $uploadedFile;
+    }
+
+    public function mockScroogeResponse($bankRef, $refundId, $paymentId)
+    {
+        $scroogeResponse = [
+            'body' => [
+                'data' => [
+                    $bankRef => [
+                        'payment_id' => PublicEntity::stripDefaultSign($paymentId),
+                        'refund_id'  => PublicEntity::stripDefaultSign($refundId)
+                    ],
+                ]
+            ]
+        ];
+
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getRefundsFromPaymentIdAndGatewayId'])
+            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->app->scrooge->method('getRefundsFromPaymentIdAndGatewayId')->willReturn($scroogeResponse);
     }
 }
