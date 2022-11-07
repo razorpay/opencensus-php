@@ -4,7 +4,11 @@ import Loader from 'common/ui/Loader';
 import MultiSlider from 'common/ui/MultiSlider';
 import Slider from 'common/ui/Slider';
 import { analyticsTrack } from 'common/utils/analytics';
-import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import {
+  classList,
+  getCommonAnalyticsProperties,
+  isMobileResolution,
+} from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import Support from 'merchant/components/Support';
@@ -16,7 +20,7 @@ import qs from 'query-string';
 import React, { Component, Suspense } from 'react';
 import { connect } from 'react-redux';
 import { NavLink, Redirect, Route, Switch, withRouter } from 'react-router-dom';
-import RepaymentsSchedule from '../views/Capital/CashAdvance/RepaymentsSchedule';
+import RepaymentsSchedule from 'merchant/views/Capital/CashAdvance/RepaymentsSchedule';
 import HandleIndex from './HandleIndex';
 import lazy from './LazyLoader';
 import { getXCAStatus } from 'common/ui/NotificationsDropdown/Neostone/common/utils';
@@ -585,7 +589,9 @@ export default class Content extends Component {
             path="/developers"
             component={Developers}
             additionalCondition={(user) =>
-              user.isAllowedView('developers_console') && user.isDeveloperConsoleEnabled
+              !isMobileResolution() &&
+              user.isAllowedView('developers_console') &&
+              user.isDeveloperConsoleEnabled
             }
           />
           <ShowWhenRoute

@@ -4,6 +4,7 @@ import {
   matchModal as matchModalx,
   matchFullPageView as matchFullPageViewx,
 } from 'merchant_common/routes';
+import { isMobileResolution } from 'common/utils/rzp-utils';
 
 import lazy from './LazyLoader';
 
@@ -457,7 +458,9 @@ const entityDetailsMap = {
   '/developers/apis/:id': {
     component: RequestLogDetails,
     additionalCondition: (user) =>
-      user.isAllowedView('developers_console') && user.isDeveloperConsoleEnabled,
+      !isMobileResolution() &&
+      user.isAllowedView('developers_console') &&
+      user.isDeveloperConsoleEnabled,
   },
 };
 

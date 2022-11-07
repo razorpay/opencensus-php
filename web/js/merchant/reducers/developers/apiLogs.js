@@ -2,6 +2,7 @@ import { makeCollectionReducer } from 'merchant/reducers/collection';
 import { merge } from 'common/utils/immutable';
 import { merchantFetch } from 'merchant/utils/ajax';
 import moment from 'moment';
+import isEmpty from '@universe/utils/isEmpty';
 
 const API_LOGS = 'API_LOGS';
 
@@ -13,12 +14,16 @@ export const fetchApiLogs = (params) => {
     '5xx': [500, 502, 503],
   };
 
-  const terms = {};
+  let terms = {};
 
   if (params.httpStatus) {
     terms['response.http_status_code'] = {
       values: statusMap[params.httpStatus],
     };
+  }
+
+  if (isEmpty(terms)) {
+    terms = undefined;
   }
 
   return {

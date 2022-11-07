@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import MainNavLink from 'merchant_common/components/MainNavLink';
 import MagicCheckoutNavLink from 'merchant/components/Sidebar/MagicCheckoutNavLink';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getCommonAnalyticsProperties, isMobileResolution } from 'common/utils/rzp-utils';
 import { getIsBankingEnabled } from './helpers';
 import { trackViewedBankingNavBar } from './ga';
 import BBPSImage from 'assets/bbps.png';
@@ -310,7 +310,9 @@ function MerchantNavLinks(props) {
         icon="i i-code-white text-primary"
         to={routes.developersApis}
         additionalCondition={(currentUser) =>
-          currentUser.isAllowedView('developers_console') && currentUser.isDeveloperConsoleEnabled
+          !isMobileResolution() &&
+          currentUser.isAllowedView('developers_console') &&
+          currentUser.isDeveloperConsoleEnabled
         }
         isNew
       />

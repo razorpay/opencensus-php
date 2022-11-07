@@ -3,7 +3,6 @@ import moment from 'moment';
 import DateRangePicker from 'common/ui/DateRangePicker';
 import RequestLogs from './RequestLogs/RequestLogs';
 import RequestChart from './RequestChart/RequestChart';
-import ApiKeys from './ApiKeys';
 import {
   trackApiLogsSearched,
   trackApiTabOpened,
@@ -89,7 +88,6 @@ const Api = () => {
 
   return (
     <div className="developers-container">
-      <ApiKeys />
       <div className="filters-container content-wrapper mb-20">
         <div className="form-group datepicker-group">
           <label>Duration (can only be fetched for max. past 14 days)</label>

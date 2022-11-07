@@ -16,7 +16,6 @@ export function fetchStats(filters) {
       from: moment(Number(from)).unix(),
       to: moment(Number(to)).unix(),
     },
-    terms: {},
   };
 
   return {
