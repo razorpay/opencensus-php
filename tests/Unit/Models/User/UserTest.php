@@ -2388,10 +2388,12 @@ class UserTest extends TestCase
         $merchantAttributeEntityMock->shouldReceive('toArrayPublic')->withAnyArgs()->andReturn(['items' => []]);
 
         $bankingAccountEntityMock = Mockery::mock('RZP\Models\BankingAccount\Entity')->makePartial();
-
+        
         $creditBalanceRepoMock = Mockery::mock('RZP\Models\Merchant\Credits\Balance\Repository');
-
+        
         $creditBalanceEntityMock = Mockery::mock('RZP\Models\Merchant\Credits\Balance\Entity')->makePartial();
+        
+        $bankingAccountEntityMock->shouldReceive('usingNewStates')->andReturn(false);
 
         $this->basicAuthMock->shouldReceive('isStrictPrivateAuth')->andReturn(true);
 
