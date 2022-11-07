@@ -17,6 +17,7 @@ const (
 	CAPTCHA                = "captcha"
 	DEVSTACK_TEST_CAPTCHA  = "Faked"
 	POST_METHOD            = "POST"
+	GET_METHOD             = "GET"
 	PATH_APP_DASHBOARD     = "/app/dashboard"
 	PATH_ORG               = "/org"
 	PATH_USER_SIGNIN       = "/user/signin"
