@@ -59,7 +59,7 @@ export const ISSUERS = {
   phonepe: 'Phone Pe',
   paypal: 'Paypal',
   zestmoney: 'Zestmoney',
-  walnut369: 'Walnut 369',
+  walnut369: 'Axio',
   earlysalary: 'Earlysalary',
   hdfc: 'HDFC Bank',
   icic: 'ICICI Bank',
@@ -204,7 +204,7 @@ export const WalletIssuersOptions = [
 export const CardLessEmiIssuersOptions = [
   { label: '--Select Issuers--', name: '', minAmount: 0 },
   { label: 'Zestmoney', name: 'zestmoney', minAmount: 99 },
-  { label: 'Walnut 369', name: 'walnut369', minAmount: 900 },
+  { label: 'Axio', name: 'walnut369', minAmount: 900 },
   { label: 'Earlysalary', name: 'earlysalary', minAmount: 3000 },
   { label: 'HDFC Bank', name: 'hdfc', minAmount: 5000 },
   { label: 'ICICI Bank', name: 'icic', minAmount: 7000 },
