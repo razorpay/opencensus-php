@@ -2298,6 +2298,17 @@ class Gateway
         IFSC::ALLA,
         IFSC::BKID,
         IFSC::UBIN,
+        IFSC::IBKL,
+        IFSC::SYNB,
+        IFSC::IDFB,
+        IFSC::SCBL,
+        IFSC::YESB,
+        IFSC::ANDB,
+        IFSC::CORP,
+        IFSC::AUBL,
+        IFSC::BKDN,
+        IFSC::VIJB,
+        IFSC::PUNB,
     ];
 
     public static $directDebitCardNetworks = [
