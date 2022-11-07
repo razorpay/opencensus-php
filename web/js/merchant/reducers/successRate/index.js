@@ -1,6 +1,6 @@
 import moment from 'moment';
 import store from 'merchant/store';
-import { merchantFetch, merchantFetchWithContentType } from 'merchant/utils/ajax';
+import { merchantFetchWithContentType } from 'merchant/utils/ajax';
 import { set, merge } from 'common/utils/immutable';
 import cloneDeep from 'lodash/cloneDeep';
 import lodashset from 'lodash/set';
@@ -29,6 +29,7 @@ const FETCH_SUCCESS_RATE = 'FETCH_SUCCESS_RATE';
 const UPDATE_DATE_RANGE = 'UPDATE_DATE_RANGE';
 const SET_ACTIVE_TAB = 'SET_ACTIVE_TAB';
 const SET_DEFAULT_INTERVAL = 'SET_DEFAULT_INTERVAL';
+const SET_DEFAULT_LAST_UPDATED_AT = 'SET_DEFAULT_LAST_UPDATED_AT';
 const UPDATE_TAB_DATA = 'UPDATE_TAB_DATA';
 const SET_GROUP_TYPE_FILTER = 'SET_GROUP_TYPE_FILTER';
 const SET_METRICS_DATA = 'SET_METRICS_DATA';
@@ -59,6 +60,7 @@ export const fetchSuccessRate = ({
   let newDropdownFilterOptions = dropdownFilterOptions;
   let newSelectedDropdownFilterOptions = selectedDropdownFilterOptions;
   let newGroupBy = group_by;
+
   dispatch({
     type: `${FETCH_SUCCESS_RATE}::PENDING`,
     payload: {
@@ -66,12 +68,12 @@ export const fetchSuccessRate = ({
       isDropdownFilterLoading: updateDropdownOptions,
     },
   });
+
   try {
-    const { data } = await merchantFetch({
+    const { data } = await merchantFetchWithContentType({
       url: 'success-rate/merchant/sr',
       mode: 'live',
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       data: payload,
     });
 
@@ -127,6 +129,7 @@ export const fetchSuccessRate = ({
           dropdownFilterOptions: newDropdownFilterOptions,
           selectedDropdownFilterOptions: newSelectedDropdownFilterOptions,
           group_by: newGroupBy,
+          lastUpdatedAt: moment().unix(),
           ...res,
         },
       });
@@ -159,11 +162,10 @@ export const fetchBreakdownIntervals = (breakdown, payload) => async (dispatch) 
   dispatch({ type: `${FETCH_INTERVALS}::PENDING` });
 
   try {
-    const { data } = await merchantFetch({
+    const { data } = await merchantFetchWithContentType({
       url: 'success-rate/merchant/sr',
       mode: 'live',
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       data: payload,
     });
 
@@ -222,8 +224,15 @@ export const setDefaultInterval = (interval) => {
   };
 };
 
+export const setDefaultLastUpdatedAt = () => {
+  return {
+    type: SET_DEFAULT_LAST_UPDATED_AT,
+    payload: null,
+  };
+};
+
 export const getActiveTab = () => {
-  const { activeTab, tabs } = store.getState().successRate;
+  const { activeTab, tabs = {} } = store?.getState()?.successRate;
   return { ...tabs[activeTab] };
 };
 
@@ -252,7 +261,7 @@ export const setGroupTypeFilter = (groupType) => {
 
 export const setSelectedDropdownFilterOptions = (option) => {
   const { query } = option;
-  const { activeTab, tabs } = store?.getState()?.successRate;
+  const { activeTab, tabs = {} } = store?.getState()?.successRate;
   const { selectedDropdownFilterOptions } = tabs?.[activeTab];
   const indexToUpdate = selectedDropdownFilterOptions?.findIndex(
     (option) => option?.query === query,
@@ -372,6 +381,14 @@ export default (state = getInitialState(), action) => {
       const stateClone = cloneDeep(state);
       Object.keys(state?.tabs)?.forEach((tabName) =>
         lodashset(stateClone, `tabs.${tabName}.selectedInterval`, payload),
+      );
+      return stateClone;
+    }
+
+    case SET_DEFAULT_LAST_UPDATED_AT: {
+      const stateClone = cloneDeep(state);
+      Object.keys(state?.tabs)?.forEach((tabName) =>
+        lodashset(stateClone, `tabs.${tabName}.lastUpdatedAt`, null),
       );
       return stateClone;
     }

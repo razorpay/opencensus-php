@@ -509,6 +509,64 @@ export function reArrange({ arr = [], sortKey = '' }) {
   return res;
 }
 
+export const validateDateRange = (dateRange) => {
+  const { startDate, endDate } = dateRange;
+  const errors = {};
+
+  if (!startDate) {
+    errors.date = 'Start date is required';
+  } else if (!endDate) {
+    errors.date = 'End date is required';
+  } else if (startDate.valueOf() > endDate.valueOf()) {
+    errors.date = 'Start date cannot be greater than end date';
+  } else if (endDate.valueOf() > moment().endOf('hour').valueOf()) {
+    errors.date = 'End time cannot be greater than current time';
+  } else {
+    const duration = moment.duration(endDate.diff(startDate));
+    const hours = duration.asHours();
+
+    if (hours < 6) {
+      errors.date = 'Please select a minimum range of 6 hours';
+    }
+  }
+
+  return errors;
+};
+
+export function timestampHumanize(timestamp) {
+  if (!timestamp) return null;
+
+  moment.updateLocale('en', {
+    relativeTime: {
+      future: 'in %s',
+      past: '%s',
+      s: (number) => `${number}s`,
+      ss: '%ds',
+      m: '1m',
+      mm: '%dm',
+      h: '1h',
+      hh: '%dh',
+      d: '1d',
+      dd: '%dd',
+      M: 'a month',
+      MM: '%d',
+      y: 'a year',
+      yy: '%d',
+    },
+  });
+
+  const diff = moment().diff(timestamp, 'seconds'); // 'diff' in seconds
+  const dayStart = moment().startOf('day').seconds(diff);
+
+  if (diff > 300) {
+    return moment(timestamp).fromNow();
+  } else if (diff < 60) {
+    return `${dayStart.format('s')}s`;
+  } else {
+    return `${dayStart.format('m')}m`;
+  }
+}
+
 const areFiltersSelected = (selectedDropdownFilterOptions) =>
   selectedDropdownFilterOptions?.some(
     (option) =>

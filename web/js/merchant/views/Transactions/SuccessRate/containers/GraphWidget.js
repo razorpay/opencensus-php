@@ -1,4 +1,5 @@
 import React from 'react';
+import moment from 'moment';
 import useLocalStorage from 'merchant/utils/useLocalStorage';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -65,7 +66,8 @@ const GraphWidget = (props) => {
   const handleTabChange = (tabIndex) => {
     const { startDate, endDate } = filters || {};
     const tab = tabPane[tabIndex];
-
+    const lastUpdatedAt = tabs?.[tab.name]?.lastUpdatedAt;
+    const diffInSec = lastUpdatedAt ? moment().diff(moment.unix(lastUpdatedAt), 'seconds') : 0;
     if (tab.name === activeTab) return;
 
     setActiveTab(tab.name);
@@ -73,14 +75,15 @@ const GraphWidget = (props) => {
     if (tab.name === 'Card') {
       setCardTypeFilter(INITIAL_SELECTED_CARD_TYPE);
     }
+    if (!lastUpdatedAt || diffInSec >= 300) {
+      const updateDropdownOptions = tab.name != 'Overall';
+      const payload = queryFilters(updateDropdownOptions);
+      fetchSuccessRate({ payload, updateDropdownOptions });
+      const errorsPaylod = getMerchantErrorsPayload(updateDropdownOptions);
+      fetchMerchantErrors(errorsPaylod);
 
-    const updateDropdownOptions = tab.name != 'Overall';
-    const payload = queryFilters(updateDropdownOptions);
-    fetchSuccessRate({ payload, updateDropdownOptions });
-    const errorsPaylod = getMerchantErrorsPayload(updateDropdownOptions);
-    fetchMerchantErrors(errorsPaylod);
-
-    trackSuccessRateEvents(methodTabClick({ tabName: tab.name }));
+      trackSuccessRateEvents(methodTabClick({ tabName: tab.name }));
+    }
   };
 
   const handleGroupingChange = ({ option }) => {

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import moment from 'moment';
+import omit from 'lodash/omit';
 
 /*
  * @props
@@ -23,25 +24,20 @@ class Time extends Component {
     const diff = moment().diff(date);
 
     // if diff less than a hour, update every minute
-    if (diff < 60 * 60 * 1000) {
-      return 60 * 1000;
-    }
-
+    if (diff < 60 * 60 * 1000) return 60 * 1000;
     // update every hour
     return 24 * 60 * 60;
   }
 
   componentDidMount() {
-    if (!this.isRelative) {
-      return;
-    }
+    if (!this.isRelative) return;
 
     const { date } = this.state;
+    const { timerCallBack, id } = this.props;
 
     this.timer = window.setInterval(() => {
-      this.setState({
-        displayText: date.fromNow(),
-      });
+      this.setState({ displayText: date.fromNow() });
+      timerCallBack?.(date, id);
     }, this.getUpdateInterval(date));
   }
 
@@ -51,11 +47,10 @@ class Time extends Component {
 
   getInitTime = (props = this.props) => {
     const { value = moment(), format = 'DD MMM YYYY', ...otherProps } = props;
+    const isRelative = 'relative' in otherProps;
+    this.isRelative = isRelative;
 
-    const isRelative = (this.isRelative = 'relative' in otherProps);
-
-    const date =
-      typeof value === 'string' ? new moment(value) : moment.unix(value); // value could be of format = 2018-06-15T11:04:45Z
+    const date = typeof value === 'string' ? moment(value) : moment.unix(value); // value could be of format = 2018-06-15T11:04:45Z
 
     return {
       date,
@@ -72,17 +67,15 @@ class Time extends Component {
   }
 
   render() {
-    const { date, displayText } = this.state,
-      { format, value, relative, ...props } = this.props,
-      isoString = date.toISOString(),
-      title = date.toDate() + '';
+    const { date, displayText } = this.state;
+    const { format, value, relative, ...props } = this.props;
+    const isoString = date.toISOString();
+    const title = `${date.toDate()}`;
 
-    if (!value) {
-      return '--';
-    }
+    if (!value) return '--';
 
     return (
-      <time dateTime={`${isoString}`} title={`${title}`} {...props}>
+      <time dateTime={`${isoString}`} title={`${title}`} {...omit(props, 'timerCallBack')}>
         {displayText}
       </time>
     );

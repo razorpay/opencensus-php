@@ -77,7 +77,7 @@ export const tabMeta = {
   data: null,
   error: null,
   fetched: false,
-  lastUpdated: null,
+  lastUpdatedAt: null,
   histogram: { labels: [], datasets: [] },
   tags: [],
   group_by: [],

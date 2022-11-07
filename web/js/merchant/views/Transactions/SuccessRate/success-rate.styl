@@ -11,11 +11,16 @@ $widget-border = #E8EAEB
 $pill-color = #132644
 $btn-disabled-border = #CFDADD73
 $btn-disabled-text = #58666E73
+$tooltip-shadow = #0A1D3826
 $spacer = 8px
 
 .sr-dashboard
   background-color: $bg-white
   padding: $spacer * 3
+
+  .rzp-tooltip .rzp-tooltip-inner
+    color: $text-grey
+    box-shadow: 0 6px 15px $tooltip-shadow;
 
   .panel-actions .panel-action-item
     .btn-default
@@ -29,6 +34,9 @@ $spacer = 8px
 
 .sr-filter
   padding-bottom: $spacer * 3
+  display: flex
+  justify-content: space-between
+  align-items: center
 
   .datepicker-group
     display: flex
@@ -94,6 +102,36 @@ $spacer = 8px
   .grouping-dropdown
     width: 192px
     margin-right: 20px
+
+  .tab-refresh
+    display: flex
+    align-items: center
+    padding-top: 16px
+    font-size: 12px
+
+    span.last-updated-at
+      color: #999A9C
+
+    &__btn
+      color: $text-blue
+      border: none
+      box-shadow: none
+      background-color: transparent
+      font-size: 12px
+      padding: 6px
+
+      &:hover
+        background-color: transparent
+
+      &[disabled]
+        background-color: transparent
+        color: #C4CBD7
+        opacity: 1
+
+      &-icon
+        font-size: 13px
+        vertical-align: middle
+        padding-left: "calc(%s / 2)" % $spacer
 
 // *************** Tab Filter ***************
 .sr-method-filters
@@ -205,6 +243,7 @@ $spacer = 8px
 
   .nav.nav-tabs > li
     display: inline-block
+    flex: auto
     min-width: 260px
     font-size: 14px
     margin-bottom: $spacer * 2
