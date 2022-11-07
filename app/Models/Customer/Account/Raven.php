@@ -85,7 +85,10 @@ class Raven extends Base\Core
             'source' => 'api',
             'params' => [
                 'merchant_name' => strtoupper(mb_substr($merchant->getBillingLabel(), 0, 19, 'UTF-8'))
-            ]
+            ],
+            'stork' => [
+                'owner_id' => $merchant->getId(),
+            ],
         );
 
         if (isset($input['otp_reason']) === true and

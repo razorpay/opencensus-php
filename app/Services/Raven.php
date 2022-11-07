@@ -422,6 +422,14 @@ class Raven
                 ]);
         }
 
+        // Adding MID in raven request
+        if (empty($input['stork']['owner_id']) === false)
+        {
+            return $input;
+        } else {
+            $input['stork']['owner_id'] = $input['context'];
+        }
+
         return $input;
 
     }
