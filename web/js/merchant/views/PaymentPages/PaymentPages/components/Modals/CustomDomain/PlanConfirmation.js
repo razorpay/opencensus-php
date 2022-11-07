@@ -78,8 +78,14 @@ const PlanConfirmationModal = ({ openModal, closeModal, planDetails }) => {
         <br />
         <div class="help-text">
           You can cancel your plan at anytime. By paying, you also agree to the{' '}
-          <a href="razorpay.com/docs">terms and conditions</a>.{' '}
-          {/* TO-DO: use link component, change url, grey color */}
+          <a
+            href="https://razorpay.com/payments/terms/vas"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            terms and conditions
+          </a>
+          .{' '}
         </div>
         <br />
       </main>

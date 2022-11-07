@@ -262,7 +262,8 @@ class Service extends Base\Service
             'optimizer_emandate',
             'rx_bill_payments',
             'batch_service_recurring_charge_bulk',
-            'rx_finance_x'
+            'rx_finance_x',
+            'pp_custom_domain_show_remove',
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);

@@ -302,10 +302,12 @@ const CustomURL = ({
             ) : (
               urlType === 'custom' && (
                 <div class="custom-url-options">
-                  <div class="remove-domain" onClick={handleRemoveDomain}>
-                    <i class="i i-delete-outline" />
-                    Remove domain
-                  </div>
+                  {user.isPaymentPageCustomDomainShowRemoveEnabled && (
+                    <div class="remove-domain" onClick={handleRemoveDomain}>
+                      <i class="i i-delete-outline" />
+                      Remove domain
+                    </div>
+                  )}
                   <div onClick={handlePlanDetails}>
                     <i class="i i-star-outline" />
                     Plan details
