@@ -1,4 +1,4 @@
-import GenericEntity from '../GenericEntity';
+import GenericEntity from 'merchant/models/GenericEntity';
 import { getMode, getUser } from 'merchant/store';
 import { assetNames } from './data';
 import { getChannelID, sortAssetData, isValidAssetData, sortCarouselBanner } from './commonUtils';
@@ -9,13 +9,13 @@ export default class GrowthService extends GenericEntity {
 
   getUserFeatures = () => {
     let device, browser, features;
-    const mode = getMode();
-    const role = this.user?.userRole;
+    const mode = getMode() || undefined;
+    const role = this.user?.userRole || undefined;
 
     if (typeof window.razorpayAnalytics?.utils?.getBrowserDetails === 'function') {
       const browserDetails = window.razorpayAnalytics.utils.getBrowserDetails();
-      device = browserDetails?.device;
-      browser = browserDetails?.browser;
+      device = browserDetails?.device || undefined;
+      browser = browserDetails?.browser || undefined;
     }
 
     const context = {
