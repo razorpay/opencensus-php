@@ -291,7 +291,7 @@ export default class PaymentPagesV3Entity extends React.Component {
 
     const isActive = status === 'active';
     const isExpired = !isActive && statusReason.toLowerCase() === 'expired';
-    const isMagicCheckoutOrder = paymentPageEntity?.settings?.one_click_checkout;
+    const isMagicCheckoutOrder = paymentPageEntity?.settings?.one_click_checkout === '1';
 
     return (
       <React.Fragment>

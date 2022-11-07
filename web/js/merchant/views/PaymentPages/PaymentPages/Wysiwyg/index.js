@@ -197,15 +197,15 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       }
     }
     const { isMagicCheckoutEnabled } = this.state;
+    // Update the magic checkout component state only if it is a magic payment page.
     if (
       this.props.magicCheckout?.enabled !== nextProps.magicCheckout?.enabled ||
-      (nextProps.magicCheckout?.enabled === '1' && !isMagicCheckoutEnabled) ||
-      (nextProps.magicCheckout?.enabled === '0' && isMagicCheckoutEnabled)
+      (nextProps.magicCheckout?.enabled && !isMagicCheckoutEnabled)
     ) {
       const { magicCheckout } = nextProps;
       const { enabled, feeRule } = magicCheckout;
       this.setState({
-        isMagicCheckoutEnabled: !!Number(enabled),
+        isMagicCheckoutEnabled: enabled,
         magicFeeRule: { ...feeRule },
       });
     }
@@ -355,6 +355,11 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     //dispatching event to tell mobile app to show header again as exiting creation flow
     this.props.isWebView && dispatchWebViewEvent({ eventType: 'SHOW_HEADER' });
+
+    this.props.updateMagicData({
+      enabled: false,
+      feeRule: DEFAULT_RULE,
+    });
   }
 
   fetchMerchantDetails = () => {
@@ -457,7 +462,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   )
   handleSavePublish = (label) => {
     const isEditExistingId = !!this.props.id;
-    const { paymentPageEntity, FORM_ITEMS } = this.props;
+    const { paymentPageEntity, FORM_ITEMS, magicCheckout, user } = this.props;
+    const { isMagicCheckoutLive, isPaymentPageMagicEnabled } = user;
+    const { enabled: magicEnabled, feeRule: magicFeeRule } = magicCheckout;
     // console.log('Handle Create..', paymentPageEntity);
 
     const {
@@ -616,11 +623,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       slug,
     };
 
-    const { magicCheckout } = this.props;
-    const { enabled, feeRule } = magicCheckout;
-    if (enabled || isEditExistingId) {
-      reqPayload.settings.one_click_checkout = enabled ? '1' : '0';
-      reqPayload.settings.shipping_fee_rule = transfeeRuleToApiFormat(feeRule);
+    if (isMagicCheckoutLive && isPaymentPageMagicEnabled && (magicEnabled || isEditExistingId)) {
+      reqPayload.settings.one_click_checkout = magicEnabled ? '1' : '0';
+      reqPayload.settings.shipping_fee_rule = transfeeRuleToApiFormat(magicFeeRule);
     }
     // Send template type in while creation
     if (!isEditExistingId) {
