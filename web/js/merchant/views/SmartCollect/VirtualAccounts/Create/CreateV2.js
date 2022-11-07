@@ -28,9 +28,9 @@ import {
 
 import CustomerCreation from 'merchant/views/Customers/New';
 
-import AccountDetailsSummary from '../components/Modals/AccountDetailsSummary';
+import AccountDetailsSummary from 'merchant/views/SmartCollect/VirtualAccounts/components/Modals/AccountDetailsSummary';
 import VPAPrefixModal from './VPAPrefixModal';
-import ConfigureBankAccountsModal from '../components/Modals/ConfigureBankAccounts';
+import ConfigureBankAccountsModal from 'merchant/views/SmartCollect/VirtualAccounts/components/Modals/ConfigureBankAccounts';
 
 import BankImage from 'assets/bank.svg';
 import UpiImage from 'assets/upi.svg';
@@ -230,10 +230,12 @@ export default class CreateVirtualAccount extends React.Component {
       reqPayload.receivers.vpa = descriptorVPA ? { descriptor: descriptorVPA } : {};
     }
 
-    reqPayload.allowed_payers = allowedPayers.map((bankAccount) => ({
-      type: 'bank_account',
-      bank_account: bankAccount,
-    }));
+    if (allowedPayers && allowedPayers.length) {
+      reqPayload.allowed_payers = allowedPayers.map((bankAccount) => ({
+        type: 'bank_account',
+        bank_account: bankAccount,
+      }));
+    }
 
     this.setState({
       isUpdating: true,
