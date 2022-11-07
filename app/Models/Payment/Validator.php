@@ -157,6 +157,7 @@ class Validator extends Base\Validator
         'browser.color_depth'                                        => 'sometimes|integer',
         'browser.screen_width'                                       => 'sometimes|integer',
         'browser.screen_height'                                      => 'sometimes|integer',
+        'network_transaction_id'                                     => 'sometimes',
 
     ];
 

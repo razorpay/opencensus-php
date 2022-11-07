@@ -1682,6 +1682,7 @@ trait PaymentTrait
         $payment['customer_id'] = 'cust_100000customer';
         $payment['acs_afa_authentication'] = array();
         $payment['validate_payment']['afa_required'] = false;
+        $payment['network_transaction_id'] = "039217544591994";
 
         return $payment;
     }
