@@ -2049,7 +2049,7 @@ class BankingAccountTest extends TestCase
 
         $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
 
-        $this->assertEquals(null, $bankingAccountActivationDetail['assignee_team']);
+        $this->assertEquals(ActivationDetail\Entity::OPS, $bankingAccountActivationDetail['assignee_team']);
 
         $this->assertTrue($expectedHubspotCall);
 
@@ -2210,7 +2210,7 @@ class BankingAccountTest extends TestCase
 
         $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
 
-        $this->assertEquals(null, $bankingAccountActivationDetail['assignee_team']);
+        $this->assertEquals(ActivationDetail\Entity::OPS, $bankingAccountActivationDetail['assignee_team']);
 
         $this->assertTrue($expectedHubspotCall);
 
@@ -2449,7 +2449,7 @@ class BankingAccountTest extends TestCase
 
         $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
 
-        $this->assertEquals(null, $bankingAccountActivationDetail['assignee_team']);
+        $this->assertEquals(ActivationDetail\Entity::OPS, $bankingAccountActivationDetail['assignee_team']);
 
         $this->assertTrue($expectedHubspotCall);
 

@@ -140,7 +140,7 @@ class Notifier extends Base\Core
                 {
                     $this->trace->traceException(
                         $ex,
-                        Trace::ERROR,
+                        Logger::ERROR,
                         TraceCode::BANKING_ACCOUNT_EVENT_NOTIFY_FAILED,
                         [
                             'banking_account_id' => $bankingAccount->getId(),

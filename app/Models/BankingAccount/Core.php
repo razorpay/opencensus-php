@@ -1316,10 +1316,10 @@ class Core extends Base\Core
 
             $stateCore->captureNewBankingAccountState($bankingAccount, $admin);
 
-            // updating assignee to null
+            // updating assignee to OPS for UPI Creds Pending
             $updateInput = [
                 'activation_detail' => [
-                    ActivationDetail\Entity::ASSIGNEE_TEAM => null
+                    ActivationDetail\Entity::ASSIGNEE_TEAM => ActivationDetail\Entity::OPS,
                 ]
             ];
 
