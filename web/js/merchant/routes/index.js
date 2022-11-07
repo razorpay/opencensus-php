@@ -585,15 +585,15 @@ const fullPageViewsMap = {
       user.isAllowedEdit('subscription_buttons') && user.isSubscriptionButtonEnabled,
   },
   '/onboarding/steps': {
-    component: isFromEasyL1 ? routeEasyOnboarding : ActivationSteps,
+    component: isFromEasyL1 && !isSourceRX ? routeEasyOnboarding : ActivationSteps,
     additionalCondition: (user) => user.isOnboardingV2Enabled,
   },
   '/onboarding/form': {
-    component: isFromEasyL1 ? routeEasyOnboarding : ActivationForm,
+    component: isFromEasyL1 && !isSourceRX ? routeEasyOnboarding : ActivationForm,
     additionalCondition: (user) => user.isOnboardingV2Enabled,
   },
   '/kyc': {
-    component: isFromEasyL1 ? routeEasyOnboarding : ActivationFullViewContainer,
+    component: isFromEasyL1 && !isSourceRX ? routeEasyOnboarding : ActivationFullViewContainer,
     additionalCondition: (user) => user.isActivationFormFullView,
   },
   '/app-store/:partner': {
