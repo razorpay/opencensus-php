@@ -24,7 +24,7 @@ export function isAmountLiesInRange(amount, maxAmountInPaisa = Infinity, minAmou
 }
 
 function isRecurringChargeBulkEnabled() {
-  return window.rzp_user?.experiments.batch_service_recurring_charge_bulk?.result === 'on';
+  return window.rzp_user?.experiments?.batch_service_recurring_charge_bulk?.result === 'on';
 }
 
 export function getRecurringChargeAPILabel() {
