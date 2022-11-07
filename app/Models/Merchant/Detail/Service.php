@@ -305,6 +305,8 @@ class Service extends Base\Service
 
     public function otpSendViaEmail($input)
     {
+        $input[User\Entity::EMAIL] = mb_strtolower($input[User\Entity::EMAIL]);
+
         $email = $input[User\Entity::EMAIL];
 
         $user = $this->user;
