@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { getFormattedNumber, getSuitableY } from './helper';
+import { getFormattedNumber, getSuitableY, formatIntervals } from './helper';
 import { chartFontColor, gridLineColor, namedColors, TAG_MAP } from './constants';
 
 /**************************************** Overview Chart Config ****************************************/
@@ -85,19 +85,7 @@ export const getChartAreaConfig = ({ breakdown, xLabel, yLabel }) => {
       callbacks: {
         title: ([tooltipItem], { datasets }) => {
           const datapoint = datasets[tooltipItem?.datasetIndex]?.data?.[tooltipItem?.index];
-          const isSameDay = moment(datapoint.from).isSame(datapoint.to, 'day');
-          const isSameMonth = moment(datapoint.from).isSame(datapoint.to, 'month');
-          if (isSameDay) {
-            return `${moment(datapoint.from).format('DD MMM YYYY')}`;
-          }
-          if (isSameMonth) {
-            return `${moment(datapoint.from).format('DD')} - ${moment(datapoint.to).format(
-              'DD, MMM YYYY',
-            )}`;
-          }
-          return `${moment(datapoint.from).format('DD MMM YYYY')} - ${moment(datapoint.to).format(
-            'DD MMM YYYY',
-          )}`;
+          return formatIntervals(datapoint.from, datapoint.to);
         },
         afterTitle: ([tooltipItem], { datasets }) => {
           if (breakdown !== 'hourly') return null;

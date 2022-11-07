@@ -19,24 +19,26 @@ const TabRefreshButton = ({ timestamp, onRefresh, activeTab }) => {
     setRefreshDisabled(diffInSec < 5);
   }, [timestamp]);
 
-  if (!timestamp) return null;
-
   return (
     <div className="tab-refresh">
       <span className="last-updated-at">
         Last updated:&nbsp;
-        <Time
-          key={activeTab}
-          id={activeTab}
-          value={timestamp}
-          relative
-          timerCallBack={timerCallBack}
-        />
+        {timestamp ? (
+          <Time
+            key={activeTab}
+            id={activeTab}
+            value={timestamp}
+            relative
+            timerCallBack={timerCallBack}
+          />
+        ) : (
+          '-- ago'
+        )}
       </span>
       <AsyncButton
         text="Refresh"
         pendingText="Refreshing..."
-        className="btn btn-default tab-refresh__btn"
+        className="btn btn-sm btn-text tab-refresh__btn"
         onClick={onRefresh}
         disabled={isRefreshDisabled}
       >

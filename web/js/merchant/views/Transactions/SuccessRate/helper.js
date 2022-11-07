@@ -533,6 +533,11 @@ export const validateDateRange = (dateRange) => {
   return errors;
 };
 
+/**
+ * @param timestamp 1667823125000 in milliseconds
+ * @returns '1s/m/h/d'
+ */
+
 export function timestampHumanize(timestamp) {
   if (!timestamp) return null;
 
@@ -567,6 +572,26 @@ export function timestampHumanize(timestamp) {
   }
 }
 
+/**
+ * @param from 1667304882000 in milliseconds
+ * @param to 1667823282000 in milliseconds
+ * @returns '01 Nov 2022' if it is same day
+ * @returns '01 - 07 Nov 2022' if it is same month
+ * @returns '01 Oct 2022 - 30 Nov 2022' if it is lies on different months
+ */
+
+export const formatIntervals = (from, to) => {
+  const isSameDay = moment(from).isSame(to, 'day');
+  const isSameMonth = moment(from).isSame(to, 'month');
+  if (isSameDay) {
+    return `${moment(from).format('DD MMM YYYY')}`;
+  }
+  if (isSameMonth) {
+    return `${moment(from).format('DD')} - ${moment(to).format('DD MMM YYYY')}`;
+  }
+  return `${moment(from).format('DD MMM YYYY')} - ${moment(to).format('DD MMM YYYY')}`;
+};
+
 const areFiltersSelected = (selectedDropdownFilterOptions) =>
   selectedDropdownFilterOptions?.some(
     (option) =>
@@ -587,4 +612,28 @@ export const getNoDataSubTitle = (tab) => {
   return `Tip: You could try again by selecting a different${
     areFiltersSelected(selectedDropdownFilterOptions) ? ' filter,' : ''
   }${name !== 'Overall' ? ' payment method or' : ''} date range`;
+};
+
+export const reportSR = (datasets = []) => {
+  if (Boolean(!datasets.length)) return datasets;
+
+  const hashMap = {};
+
+  datasets?.forEach((dataset) => {
+    dataset?.data?.forEach((interval) => {
+      if (hashMap.hasOwnProperty(interval?.x)) {
+        hashMap[interval?.x][dataset?.label] = interval?.y;
+      } else {
+        hashMap[interval?.x] = {
+          '':
+            `${formatIntervals(interval?.from, interval?.to)} | ${moment(interval?.from).format(
+              'hh:mm a',
+            )} - ${moment(interval?.to).format('hh:mm a')}` ?? '',
+          [dataset?.label]: interval?.y,
+        };
+      }
+    });
+  });
+
+  return Object.values(hashMap);
 };

@@ -17,6 +17,7 @@ import {
   queryFilters,
   getMerchantErrorsPayload,
   validateDateRange,
+  reportSR,
 } from 'merchant/views/Transactions/SuccessRate/helper';
 import {
   PRESETS,
@@ -28,6 +29,8 @@ import {
   filterSuccessRate,
   trackSuccessRateEvents,
 } from 'merchant/views/Transactions/SuccessRate/trackEvents';
+import { arrayObjToCsv } from 'common/utils/rzp-utils';
+import fileDownload from 'common/utils/file-download';
 import { DateRangePreset } from './DateRangePreset';
 import TabRefreshButton from './TabRefreshButton';
 
@@ -42,7 +45,8 @@ const SuccessRateFilter = (props) => {
     setDefaultInterval,
     setDefaultLastUpdatedAt,
     activeTab,
-    lastUpdatedAt,
+    tab,
+    isLoading,
     setActiveTab,
     setCardTypeFilter,
   } = props;
@@ -102,7 +106,6 @@ const SuccessRateFilter = (props) => {
     await fetchSuccessRate({ payload, updateDropdownOptions });
     const errorsPaylod = getMerchantErrorsPayload(updateDropdownOptions);
     fetchMerchantErrors(errorsPaylod);
-
     trackSuccessRateEvents(clearFilterSuccessRate(payload));
   };
 
@@ -120,11 +123,18 @@ const SuccessRateFilter = (props) => {
     }
   };
 
+  const handleSearch = () => onSearch(dateRange, errors);
+
+  const handleDownload = () => {
+    const res = reportSR(tab?.histogram?.datasets);
+    const csvData = arrayObjToCsv(res);
+    fileDownload(csvData, `SR_${tab?.name}_Report.csv`);
+  };
+
   return (
     <div className="sr-filter">
-      <div>
+      <div className="sr-filter-inputs">
         <label>Date Range</label>
-
         <div className="datepicker-group">
           <DateRangePreset
             presets={PRESETS}
@@ -137,33 +147,45 @@ const SuccessRateFilter = (props) => {
           <div className="filter__actions">
             <AsyncButton
               className="btn btn-primary btn-sm"
-              onClick={() => onSearch()}
+              onClick={handleSearch}
               disabled={Object.keys(errors).length > 0}
-              text="Search"
+              text="Apply"
             />
             <AsyncButton className="btn btn-sm btn-text" onClick={onReset} text="Clear" />
           </div>
         </div>
-
         {errors.date && (
-          <small class="error-text text-danger">
+          <small className="error-text text-danger">
             <i className="i i-info-outline" />
             <i>{errors.date}</i>
           </small>
         )}
       </div>
 
-      <TabRefreshButton
-        timestamp={lastUpdatedAt}
-        activeTab={activeTab}
-        onRefresh={() => onSearch()}
-      />
+      <div className="sr-filter-extras">
+        <label>
+          <TabRefreshButton
+            timestamp={tab?.lastUpdatedAt}
+            activeTab={activeTab}
+            onRefresh={handleSearch}
+          />
+        </label>
+        <button
+          className="btn btn-outline btn-sm"
+          onClick={handleDownload}
+          disabled={isLoading}
+          type="button"
+        >
+          <i className="i i-download" />
+          <span>Download</span>
+        </button>
+      </div>
     </div>
   );
 };
 
 const mapStateToProps = ({ successRate }) => {
-  const { filters = {}, tabs = {}, activeTab } = successRate;
+  const { filters = {}, tabs = {}, activeTab, isLoading, tabLoading } = successRate;
   const { startDate, endDate, preset } = filters;
 
   return {
@@ -171,7 +193,8 @@ const mapStateToProps = ({ successRate }) => {
     endDate,
     preset,
     activeTab,
-    lastUpdatedAt: tabs[activeTab]?.lastUpdatedAt,
+    tab: tabs[activeTab],
+    isLoading: isLoading || tabLoading,
   };
 };
 

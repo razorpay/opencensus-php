@@ -44,7 +44,7 @@ function DateRangePreset(props) {
   return (
     <div className="rzp-daterange-picker">
       <div className="icon-container">
-        <i class="i i-date-range" />
+        <i className="i i-date-range" />
       </div>
       <div className="presets-container">
         {presets.length > 0 && (

@@ -38,12 +38,27 @@ $spacer = 8px
   justify-content: space-between
   align-items: center
 
+  &-extras
+    display: flex
+    flex-direction: column
+    align-items: flex-end
+
+    .btn.btn-outline
+      padding: 3px 10px
+
+      &:hover,
+      &:focus
+        color: $text-blue
+
+  &-inputs,
+  &-extras
+    margin-bottom: "calc(%s / 2)" % $spacer
+
   .datepicker-group
     display: flex
     flex-wrap: wrap
     gap: $spacer
     margin-left: 0
-    margin-bottom: 4px
 
     .daterange-container
       height: auto
@@ -106,7 +121,6 @@ $spacer = 8px
   .tab-refresh
     display: flex
     align-items: center
-    padding-top: 16px
     font-size: 12px
 
     span.last-updated-at
@@ -118,7 +132,8 @@ $spacer = 8px
       box-shadow: none
       background-color: transparent
       font-size: 12px
-      padding: 6px
+      padding: 0
+      margin-left: "calc(%s / 2)" % $spacer
 
       &:hover
         background-color: transparent
@@ -140,10 +155,10 @@ $spacer = 8px
 
   .panel-actions
     .btn-default.active
-      background-color: $bg-blue;
-      box-shadow: none;
-      border-color: $border-blue;
-      z-index: 1;
+      background-color: $bg-blue
+      box-shadow: none
+      border-color: $border-blue
+      z-index: 1
 
 .sr-tab__filter
   /* stylelint-disable */
