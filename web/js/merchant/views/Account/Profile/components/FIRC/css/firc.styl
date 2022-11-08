@@ -1,11 +1,11 @@
 $heading-color = #0D2366
-$bg-color = #fafafa
-$bg-hover = #0b70e70c
-$border-color = #e4e4e4
+$bg-color = #FAFAFA
+$bg-hover = #0B70E70C
+$border-color = #E4E4E4
 $accordian-title = #515978
-$text-color = #5b666d
+$text-color = #5B666D
 $label-color = #162F56BD
-$tick-color = #528ff0
+$tick-color = #528FF0
 
 .firc-container
   .modal-header
@@ -18,10 +18,10 @@ $tick-color = #528ff0
 
   .fw-600
     font-weight: 600
-  
+
   .pr-10
     padding-right: 10px
-  
+
   .m-0
     margin: 0
 
@@ -45,6 +45,13 @@ $tick-color = #528ff0
 
     .back-btn
       width: 30%
+
+.iec-code-container
+  padding 24px
+
+  .label-text
+    color $label-color
+    padding 15px 0
 
 .purpose-code-container
   .header-section
@@ -70,7 +77,6 @@ $tick-color = #528ff0
     overflow-y: scroll
     max-height: 350px
     min-height: 350px
-
     -ms-overflow-style: none  /* IE and Edge */
     scrollbar-width: none  /* Firefox */
 
@@ -83,15 +89,16 @@ $tick-color = #528ff0
         padding: 10px 24px
         color: $text-color
         cursor: pointer
+
         &:hover
           background-color: $bg-hover
-    
+
         &:first-child
           margin-top: 8px
-    
+
         &:last-child
           margin-bottom: 8px
-    
+
         &:only-child
           margin: 8px 0
 
@@ -104,24 +111,22 @@ $tick-color = #528ff0
 
     .collapse-section
       .Accordion .Accordion__item
-        margin-top: 0px
+        margin-top: 0
         border-top: 1px solid $border-color
 
       .Accordion
-        .Accordion__item
-          .Accordion__title
-            color: $accordian-title
-            background-color: $bg-color
-            padding: 12px 24px
+        .Accordion__item .Accordion__title
+          color: $accordian-title
+          background-color: $bg-color
+          padding: 12px 24px
 
         .accordion__arrow
           right: 20px
 
       .Accordion
-        .Accordion__item
-          .Accordion__content
-            padding: 0
-  
+        .Accordion__item .Accordion__content
+          padding: 0
+
   .confirmation-content
     padding: 12px 24px
     color: $label-color
@@ -132,19 +137,20 @@ $tick-color = #528ff0
     .label-text:last-child
       margin-bottom: 16px
 
-.iec-code-container 
-	padding 24px
-	.label-text
-    color $label-color
-    padding 15px 0
-  .input-container 
+.iec-code-container
+  .input-container
     height 55px
-  .error-text 
+
+  .error-text
     font-size 12px
     margin 5px 5px 0
-  .highlight-content 
+
+  .highlight-content
     background-color $bg-hover
     color $text-color
     padding 6px 12px
     font-size 12px
     margin-top 15px
+
+.hs-code-container
+  min-width: 375px

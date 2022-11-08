@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import DetailRow from 'merchant/components/DetailRow';
@@ -57,6 +57,17 @@ const BankAccountDetails = ({
     );
   };
 
+  /**
+   * if merchant has `opgsp_import_flow` feature enabled then disable Change bank account.
+   * Because Bank account for such merchants will be added during onboarding and
+   * merchant is not allowed to update that. It can only be done via admin dashboard.
+   */
+  const isOpgspImportMerchant = useMemo(() => {
+    return Array.isArray(user.tags)
+      ? user.tags.some((tag) => tag.toLowerCase() === 'opgsp_import_flow')
+      : false;
+  }, [user.tags]);
+
   useEffect(() => {
     if (
       bankAccountSectionRef &&
@@ -76,6 +87,7 @@ const BankAccountDetails = ({
   const hideRequestChange = org.features.indexOf('block_account_update') > -1;
 
   const showRequestChange =
+    !isOpgspImportMerchant &&
     !isSettlementOnHold &&
     isBankAccountChangeAllowed !== null &&
     !user.blockBankAccountUpdate() &&

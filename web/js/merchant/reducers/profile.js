@@ -14,6 +14,7 @@ const GET_TICKET_STATUS = 'GET_TICKET_STATUS';
 const CHECK_PASSWORD = 'CHECK_PASSWORD';
 const INVALID_MERCHANT_CALL = 'INVALID_MERCHANT_CALL';
 const GET_FIRC_DETAILS = 'GET_FIRC_DETAILS';
+const GET_HS_CODE_DETAILS = 'GET_HS_CODE_DETAILS';
 const SAVE_FIRC_DETAILS = 'SAVE_FIRC_DETAILS';
 const IS_ADMIN_AS_MERCHANT = 'IS_ADMIN_AS_MERCHANT';
 
@@ -304,6 +305,16 @@ export const fetchPurposeCode = () => {
   };
 };
 
+export const fetchMerchantHSCode = () => {
+  return {
+    type: GET_HS_CODE_DETAILS,
+    payload: merchantFetch({
+      url: 'merchant/hs/code',
+      method: 'get',
+    }),
+  };
+};
+
 export const updatePurposeCode = (data) => async (dispatch) => {
   const res = await merchantFetch({
     url: 'merchants/purpose/code',
@@ -343,6 +354,11 @@ const initialState = {
   fircDetails: {
     loading: true,
     data: {},
+    error: null,
+  },
+  hsCodeDetails: {
+    loading: true,
+    data: null,
     error: null,
   },
 };
@@ -452,6 +468,31 @@ export default (state = initialState, action) => {
 
     case INVALID_MERCHANT_CALL:
       return state;
+
+    case `${GET_HS_CODE_DETAILS}::PENDING`:
+      return merge(state, {
+        hsCodeDetails: {
+          ...state.hsCodeDetails,
+          loading: true,
+        },
+      });
+
+    case `${GET_HS_CODE_DETAILS}::SUCCESS`:
+      return merge(state, {
+        hsCodeDetails: {
+          data: action.payload?.data?.hs_code ?? null,
+          loading: false,
+          error: null,
+        },
+      });
+
+    case `${GET_HS_CODE_DETAILS}::ERROR`:
+      return merge(state, {
+        hsCodeDetails: {
+          error: action.payload.errors,
+          loading: false,
+        },
+      });
 
     default:
       return state;

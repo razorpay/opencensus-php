@@ -5,6 +5,7 @@ import Button from 'common/new-ui/Button';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import ShowWhen from 'merchant/components/ShowWhen';
 import * as modalActions from 'merchant_common/reducers/modals';
 import { fetchPurposeCode } from 'merchant/reducers/profile';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -12,6 +13,10 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { raiseTicket } from 'merchant/views/TicketSupport/utils';
 
 const FIRCFormModal = lazy(() => import(/* webpackChunkName: "FIRCFormModal" */ './FIRCFormModal'));
+const HSCodeModal = lazy(() =>
+  import(/* webpackChunkName: "HSCodeModal" */ './HSCode/HSCodeModal'),
+);
+const HSCodeDetail = lazy(() => import(/* webpackChunkName: "HSCodeDetail" */ './HSCode'));
 
 const DownloadFIRCForm = lazy(() =>
   import(/* webpackChunkName: "DownloadFIRCForm" */ './DownloadFIRCForm'),
@@ -52,6 +57,12 @@ const SelectPurposeCode = ({ clickHandler }) => (
       </PopoverBody>
     </Popover>
   </div>
+);
+
+const SelectHSCode = ({ clickHandler }) => (
+  <SuspenseWithLoader>
+    <HSCodeDetail onClick={clickHandler} />
+  </SuspenseWithLoader>
 );
 
 const EditValue = ({ code, description, showPopper = false }) => (
@@ -128,6 +139,17 @@ const FIRCSection = (props) => {
     trackModalEvent('opened');
   };
 
+  const openHSCodeModal = () => {
+    props.openModal({
+      size: 'medium',
+      component: (
+        <SuspenseWithLoader>
+          <HSCodeModal />
+        </SuspenseWithLoader>
+      ),
+    });
+  };
+
   useEffect(() => getFircDetails(), [getFircDetails]);
 
   useEffect(() => {
@@ -163,6 +185,17 @@ const FIRCSection = (props) => {
                 )
               }
             />
+            <ShowWhen featureEnabled="opgsp_import_flow">
+              <DetailRow
+                label={() => (
+                  <Label
+                    title="Harmonized System Code"
+                    description="The Harmonized System (HS) code is a standardized numerical method to classify export trade products by customs authorities around the world."
+                  />
+                )}
+                value={() => <SelectHSCode clickHandler={openHSCodeModal} />}
+              />
+            </ShowWhen>
 
             {data?.iec_code && (
               <DetailRow
