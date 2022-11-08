@@ -397,6 +397,12 @@ final class RazorxTreatment
      */
     const PAYMENT_GATEWAY_CAPTURE_ASYNC_OTHER_NETWORKS = 'payment_gateway_capture_async_other_networks';
 
+
+    /**
+     * Experiment to indicate if a payment should go via capture queue for fulcrum gateway
+     */
+    const PAYMENT_GATEWAY_CAPTURE_ASYNC_FULCRUM = 'payment_gateway_capture_async_fulcrum';
+
     // Experiment to have refunds created directly on scrooge based on merchant id
     const MERCHANTS_REFUND_CREATE_V_1_1 = 'merchants_refund_create_v1.1';
 

@@ -1598,6 +1598,7 @@ trait Authorize
 
         if(($payment->isGatewayCaptured() === false) and
             ($payment->isMethodCardOrEmi() === true  and
+                $payment->merchant->isRazorpayOrgId() === true and
                 $payment->card->getNetwork() === Network::getFullName(Network::MC)))
         {
             $variant = $this->app->razorx->getTreatment($this->request->getTaskId(), Merchant\RazorxTreatment::PAYMENT_GATEWAY_CAPTURE_ASYNC_MC, $this->mode);
@@ -1617,9 +1618,31 @@ trait Authorize
         }
 
         if(($payment->isGatewayCaptured() === false) and
-            ($payment->isMethodCardOrEmi() === true))
+            ($payment->isMethodCardOrEmi() === true and
+                $payment->merchant->isRazorpayOrgId() === true))
         {
             $variant = $this->app->razorx->getTreatment($this->request->getTaskId(), Merchant\RazorxTreatment::PAYMENT_GATEWAY_CAPTURE_ASYNC_OTHER_NETWORKS, $this->mode);
+
+            $this->trace->info(TraceCode::GATEWAY_CAPTURE_RAZORX_VARIANT, [
+                'payment_id'     => $payment->getId(),
+                'merchant_id'    => $payment->getMerchantId(),
+                'network'        => $payment->card->getNetwork(),
+                'gateway'        => $payment->getGateway(),
+                'razorx_variant' => $variant,
+            ]);
+
+            if (strtolower($variant) === 'on')
+            {
+                return true;
+            }
+        }
+
+
+        // for non razorpay org
+        if (($payment->isGatewayCaptured() === false) and
+            ($payment->getGateway() === Payment\Gateway::FULCRUM))
+        {
+            $variant = $this->app->razorx->getTreatment($this->request->getTaskId(), Merchant\RazorxTreatment::PAYMENT_GATEWAY_CAPTURE_ASYNC_FULCRUM ,$this->mode);
 
             $this->trace->info(TraceCode::GATEWAY_CAPTURE_RAZORX_VARIANT, [
                 'payment_id'     => $payment->getId(),
