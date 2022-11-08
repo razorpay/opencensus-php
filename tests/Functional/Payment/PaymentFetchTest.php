@@ -1727,6 +1727,7 @@ class PaymentFetchTest extends TestCase
                                     'last4'             =>  '1111',
                                     'vault_token'       => 'NjA3Mzg0OTcwMDAwNDk0Nw==',
                                     'vault'             => 'rzpvault',
+                                    'international'     => 'false'
                                 ],
                                 'base_amount'=>null,
                                 'authorized_amount'=>1,
