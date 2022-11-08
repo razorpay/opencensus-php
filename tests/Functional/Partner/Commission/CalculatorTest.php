@@ -73,6 +73,11 @@ class CalculatorTest extends OAuthTestCase
         $this->ruleEngine->execute(__FUNCTION__);
     }
 
+    public function testPartnerAsSubmerchantCommission()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
     /**
      * Asserts that the commission doesn't get created if neither implicit nor explicit pricing are defined
      */

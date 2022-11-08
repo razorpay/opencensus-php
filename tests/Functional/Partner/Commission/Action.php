@@ -44,6 +44,11 @@ class Action
         $this->instantiateCalculator($postSetupData, $postActionData);
     }
 
+    public function testPartnerAsSubmerchantCommission(array $postSetupData, array & $postActionData)
+    {
+        $this->instantiateCalculator($postSetupData, $postActionData);
+    }
+
     public function testPartnerConfigDoesNotExist(array $postSetupData, array & $postActionData)
     {
         $this->instantiateCalculator($postSetupData, $postActionData);

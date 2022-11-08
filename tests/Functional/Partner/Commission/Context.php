@@ -213,6 +213,33 @@ return [
         ],
     ],
 
+    'testPartnerAsSubmerchantCommission' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'   => 'BptVjGnFv6ITBm',
+                'type' => 'aggregator',
+            ],
+            'create_plans'       => [
+                [
+                    'plan_id'      => '180PartnerPlan',
+                    'percent_rate' => '200',
+                ],
+            ],
+            'attach_partner_as_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => '180PartnerPlan',
+            ],
+            'define_config'      => [
+                'type'             => 'partner',
+                'implicit_plan_id' => '180PartnerPlan',
+            ],
+            'create_payment'     => [
+                'amount' => 4000 * 100, // paise
+                'auth'   => 'partner',
+            ],
+        ],
+    ],
+
     'testImplicitExplicitPricingDoesNotExist' => [
         'setup' => [
             'create_partner'     => [

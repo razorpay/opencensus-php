@@ -119,6 +119,28 @@ class Setup
         $output['merchant_id'] = $merchant->getId();
     }
 
+    public function attachPartnerAsSubmerchant(array $data, array & $output)
+    {
+        $partnerId = $data['partner_id'];
+        unset($data['partner_id']);
+
+        $appType = $data['submerchant_type'] ?? 'managed';
+        unset($data['submerchant_type']);
+
+        $applicationId = $appType === 'managed' ? $output['application_id'] : $output['referred_app_id'];
+
+        $accessMapArray = [
+            'entity_type'     => 'application',
+            'entity_id'       => $applicationId,
+            'merchant_id'     => $partnerId,
+            'entity_owner_id' => $partnerId,
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapArray);
+
+        $output['merchant_id'] = $partnerId;
+    }
+
     public function defineConfig(array $data, array & $output)
     {
         if ($data['type'] === 'partner')

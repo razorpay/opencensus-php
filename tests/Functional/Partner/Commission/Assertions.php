@@ -222,6 +222,11 @@ class Assertions extends TestCase
         $this->assertShouldNotCreateCommission($data);
     }
 
+    public function testPartnerAsSubmerchantCommission(array $data)
+    {
+        $this->assertShouldNotCreateCommission($data);
+    }
+    
     public function testFullyManagedPartnerTypeCommission(array $data)
     {
         $this->assertShouldNotCreateCommission($data);
