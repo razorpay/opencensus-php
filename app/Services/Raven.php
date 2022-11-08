@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Http\Request\Requests;
 use RZP\Constants\Environment;
+use RZP\Models\Merchant\Account;
 use RZP\Exception\ServerErrorException;
 
 
@@ -427,7 +428,7 @@ class Raven
         {
             return $input;
         } else {
-            $input['stork']['owner_id'] = $input['context'];
+            $input['stork']['owner_id'] = $input['context']?? Account::TEST_ACCOUNT;
         }
 
         return $input;
