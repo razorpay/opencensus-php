@@ -3595,4 +3595,12 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function updateShippingProviderConfig() {
+        $input = Request::all();
+
+        $response = (new Merchant\OneClickCheckout\Config\Service())->updateShippingProviderConfig($input);
+
+        return ApiResponse::json($response);
+    }
+
 }

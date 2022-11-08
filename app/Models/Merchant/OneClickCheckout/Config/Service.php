@@ -12,6 +12,7 @@ use RZP\Models\Merchant\OneClickCheckout\Shopify\Utils as ShopifyUtils;
 use RZP\Models\Merchant;
 use RZP\Services\KafkaProducer;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Service as MerchantService;
 
 class Service extends Base\Service
 {
@@ -555,5 +556,24 @@ class Service extends Base\Service
         $response[Constants::ONE_CC_BUY_NOW_BUTTON]      = $oneClickBuyNowConfigStatus;
 
         return $response;
+    }
+
+    /**
+     * @param array $input
+     * @throws \Throwable
+     */
+    // Since, this is a an internal auth route we don't have any
+    // merchant/auth/mode. We take merchant_id and set merchant in basic auth.
+    public function updateShippingProviderConfig(array $input)
+    {
+        (new Validator())->setStrictFalse()->validateInput('shippingProvider', $input);
+
+        $this->merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+
+        $this->app['basicauth']->setMerchant($this->merchant);
+
+        unset($input['merchant_id']);
+
+        return (new MerchantService)->updateShippingMethodProviderConfig($input)->getValueJson();
     }
 }

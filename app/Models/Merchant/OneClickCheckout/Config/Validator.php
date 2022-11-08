@@ -39,6 +39,16 @@ class Validator extends Base\Validator
         "manual_control_cod_order"       => 'sometimes|boolean'
     ];
 
+    protected static $shippingProviderRules = [
+        'shipping_provider_id'     => 'required|string|size:14',
+        'provider_type'            => 'required|string',
+        'enable_cod'               => 'required|boolean',
+        'cod_fee_rule'             => 'required_if:enable_cod,true',
+        'shipping_fee_rule'        => 'required',
+        'warehouse_pincode'        => 'sometimes|string|size:6',
+        'merchant_id'              => 'required|string|size:14',
+   ];
+
     /**
      * @throws BadRequestValidationFailureException
      */

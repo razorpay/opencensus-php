@@ -3865,6 +3865,7 @@ class Route
         '1cc_merchant_preferences'                  => ['get',        'merchant/1cc_preferences',                                  'MerchantController@get1ccMerchantPreferences'],
         '1cc_disable_magic'                         => ['post',       '1cc/magic/disable',                                       'MerchantController@disable1ccMagicCheckout'],
         'update_merchant_1cc_coupon_config'         => ['post',       '1cc/merchant/coupon/configs',                             'MerchantController@updateMerchant1ccCouponConfig'],
+        '1cc_update_shipping_provider_config'       => ['post',       '1cc/shipping-provider/configs',                           'MerchantController@updateShippingProviderConfig'],
 
         '1cc_cod_eligibility_attribute_list'                => ['get',    '1cc/rto_prediction_service/cod_eligibility_attribute/{cod_eligibility_type}',             'CODEligibilityAttributeController@list'       ],
         '1cc_cod_eligibility_attribute_upsert_bulk'         => ['post',   '1cc/rto_prediction_service/cod_eligibility_attribute/{cod_eligibility_type}/upsert/bulk', 'CODEligibilityAttributeController@bulkUpsert' ],
@@ -5379,6 +5380,8 @@ class Route
         'merchant_upload_miq_admin',
 
         'payment_nbplus_authorize_failed',
+
+        '1cc_update_shipping_provider_config',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -13806,6 +13809,7 @@ class Route
             'update_cod_serviceability_slabs_dark',
             'zipcode_add',
             'zipcode_remove',
+            '1cc_update_shipping_provider_config',
         ],
 
         'xpayroll' => [
