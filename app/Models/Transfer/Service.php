@@ -869,7 +869,7 @@ class Service extends Base\Service
 
     public function syncSettlementStatus(array $input)
     {
-        $settlementIds = $input['settlement_ids'] ?? SettlementIdsInput::$settlementIds;
+        $settlementIds = $input['settlement_ids'];
 
         foreach ($settlementIds as $settlementId)
         {
