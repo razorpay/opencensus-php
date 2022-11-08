@@ -11,6 +11,7 @@ import { storeWithInitialState } from 'merchant/store';
 import ModalDialog from 'common/ui/ModalDialog';
 import Notifications from 'common/ui/Notifications';
 import Wrapper from 'common/components/Bootstrap/Wrapper';
+import userEvent from '@testing-library/user-event';
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 const customRender = (
@@ -18,10 +19,11 @@ const customRender = (
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   {
     initialState,
-    customerReducers,
     // Remove after updating snapshots
     showModal,
-    reduxStore = storeWithInitialState(initialState, customerReducers),
+    reduxStore = storeWithInitialState(initialState),
+    historyOptions = { initialEntries: ['/'] },
+    history = createMemoryHistory(historyOptions),
     ...restOptions
   }: any = {},
 ) => {
@@ -47,30 +49,32 @@ const customRender = (
       isAdharEkycRequiredForTrustSocietyNgo: true,
     };
     return (
-      <Provider store={reduxStore}>
-        <Wrapper
-          context={{
-            mode: 'test',
-            org: { id: '123' },
-            user: { contact_name: 'prashant' },
-            experiments: mockRazorXExp,
-          }}
-        >
-          <Notifications />
+      <Wrapper
+        context={{
+          mode: 'test',
+          org: { id: '123' },
+          user: { contact_name: 'prashant' },
+          experiments: mockRazorXExp,
+        }}
+      >
+        <Provider store={reduxStore}>
+          <>
+            <Notifications />
+            <Router history={history}>
+              <>
+                {showModal && <ModalDialog />}
 
-          <Router history={createMemoryHistory({ initialEntries: ['/'] })}>
-            <>
-              {showModal && <ModalDialog />}
-
-              <Route path="/" component={() => children} />
-            </>
-          </Router>
-        </Wrapper>
-      </Provider>
+                <Route path="/" component={() => children} />
+              </>
+            </Router>
+          </>
+        </Provider>
+      </Wrapper>
     );
   };
 
-  return render(ui, { wrapper: AllTheProviders, ...restOptions });
+  const renderObj = render(ui, { wrapper: AllTheProviders, ...restOptions });
+  return { ...renderObj, history };
 };
 
 const waitForLoadingToFinish = (): Promise<void> =>
@@ -81,4 +85,12 @@ const delay = (time = 1000): Promise<void> => new Promise((r) => setTimeout(r, t
 export * from '@testing-library/react';
 
 // override render method
-export { customRender as render, waitForLoadingToFinish, server, errorHandlers, delay, waitFor };
+export {
+  customRender as render,
+  waitForLoadingToFinish,
+  server,
+  errorHandlers,
+  delay,
+  waitFor,
+  userEvent,
+};
