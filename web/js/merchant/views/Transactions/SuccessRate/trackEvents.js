@@ -74,3 +74,10 @@ export const methodDropdownChange = (params) => ({
   screen: 'Transactions - Success Rate',
   properties: params,
 });
+
+export const needHelpFaq = (params) => ({
+  objectName: `Success rate - Need help?`,
+  actionName: 'Click',
+  screen: 'Transactions - Success Rate',
+  properties: params,
+});
