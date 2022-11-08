@@ -152,16 +152,25 @@ class PaymentController extends Controller
 
     public function getVerify($id)
     {
+
+        $data = $this->service()->verify($id);
+
+        return ApiResponse::json($data);
+    }
+
+    // returns just the gateway verify response
+    public function getVerifyBarricade($id)
+    {
         $isBarricade = false;
         // Barricade flow headers
         if (empty(Request::header(RequestHeader::X_BARRICADE_FLOW)) === false)
         {
             $isBarricade = Request::header(RequestHeader::X_BARRICADE_FLOW)=="true";
+            $data = $this->service()->verify($id, $isBarricade);
+            return ApiResponse::json($data);
         }
-
-        $data = $this->service()->verify($id, $isBarricade);
-
-        return ApiResponse::json($data);
+        // if no header return null
+        return null;
     }
 
     /**

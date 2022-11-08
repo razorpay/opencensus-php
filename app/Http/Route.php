@@ -209,7 +209,7 @@ class Route
         'payment_transfer'                         => ['post',     'payments/{id}/transfers',                        'PaymentController@postTransfer'                                    ],
         'payment_transfer_batch'                   => ['post',     'payments/{id}/transfers/batch',                  'PaymentController@createTransferFromBatch'                         ],
         'payment_verify'                           => ['get',      'payments/{id}/verify',                           'PaymentController@getVerify'                                       ],
-        'barricade_payment_verify'                 => ['get',      'payments/barricade/{id}/verify',                 'PaymentController@getVerify'                                       ],
+        'barricade_payment_verify'                 => ['get',      'payments/barricade/{id}/verify',                 'PaymentController@getVerifyBarricade'                                       ],
         'payment_force_authorize'                  => ['post',     'payments/{id}/force_authorize',                  'PaymentController@postForceAuthorize'                              ],
         'payment_cancel'                           => ['get',      'payments/{x_entity_id}/cancel',                  'PaymentController@postCancel'                                      ],
         'payment_authorize_failed'                 => ['post',     'payments/{id}/authorize_failed',                 'PaymentController@postAuthorizeFailedPayment'                      ],
