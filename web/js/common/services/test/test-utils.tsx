@@ -18,6 +18,7 @@ const customRender = (
   ui,
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   {
+    path = '/',
     initialState,
     // Remove after updating snapshots
     showModal,
@@ -64,7 +65,7 @@ const customRender = (
               <>
                 {showModal && <ModalDialog />}
 
-                <Route path="/" component={() => children} />
+                <Route path={path} component={() => children} />
               </>
             </Router>
           </>
