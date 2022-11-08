@@ -387,7 +387,7 @@ class FileBasedErrorCodes
     ];
 
     protected static $debitPublicErrorCodeMappings = [
-        self::DE01  => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN,
+        self::DE01  => ErrorCode::BAD_REQUEST_ACCOUNT_CLOSED,
         self::DE02  => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,
         self::DE03  => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_WITHDRAWER_DATA,
         self::DE04  => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,
