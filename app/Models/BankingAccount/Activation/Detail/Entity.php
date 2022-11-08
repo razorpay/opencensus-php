@@ -98,6 +98,9 @@ class Entity extends Base\PublicEntity
 
     const IS_DOCUMENTS_WALKTHROUGH_COMPLETE = 'is_documents_walkthrough_complete';
 
+    const DWT_SCHEDULED_TIMESTAMP = 'dwt_scheduled_timestamp';
+    const OPS_FOLLOW_UP_DATE = 'ops_follow_up_date';
+
     // This additional_details column will store tags of a lead in json format.
 
     const ADDITIONAL_DETAILS = 'additional_details';

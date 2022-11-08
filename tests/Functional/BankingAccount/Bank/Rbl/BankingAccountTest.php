@@ -10320,4 +10320,164 @@ class BankingAccountTest extends TestCase
         $this->assertEquals(Status::NEGATIVE_PROFILE_SVR_ISSUE, $lastStatusChangeLogPost->getSubStatus());
     }
 
+    public function testFilterOpsFollowUpDate()
+    {
+        $bankingAccount = [
+            'activation_detail' => [
+                'merchant_poc_name' => 'Aryan',
+                'merchant_poc_designation' => 'Financial Consultant',
+                'merchant_poc_email' => 'sample@sample.com',
+                'merchant_poc_phone_number' => '9876556789',
+                'business_category' => 'limited_liability_partnership',
+                'merchant_documents_address' => 'x, y, z',
+                'sales_team' => 'sme',
+                'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
+                'assignee_team' => 'sales',
+                'initial_cheque_value' => 100,
+                'account_type' => 'insignia',
+                'merchant_city' => 'Bangalore',
+                'is_documents_walkthrough_complete' => true,
+                'merchant_region' => 'South',
+                'expected_monthly_gmv' => 10000,
+                'average_monthly_balance' => 0,
+                'additional_details' => [
+                    'ops_follow_up_date' => '1667347200',
+                ],
+            ]
+        ];
+
+        $bankingAccount = $this->createBankingAccountFromDashboard($bankingAccount);
+
+        $this->ba->adminAuth();
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/admin/banking_account?count=20&skip=0&account_type=current&from_ops_follow_up_date=1667346200&to_ops_follow_up_date=1667348200',
+                'method'  => 'GET',
+                'content' => [
+                    'expand' => ['merchant','merchant.merchantDetail'],
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'entity' => 'collection',
+                    'count' => 1,
+                    'items' => [
+                        [
+                            'banking_account_activation_details' => [
+                                'additional_details' => [
+                                    'ops_follow_up_date' => '1667347200'
+    ]
+    ]
+                        ]
+                    ],
+                ],
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testFilterOpsFollowUpDateNegativeCase()
+    {
+        $bankingAccount = [
+            'activation_detail' => [
+                'merchant_poc_name' => 'Aryan',
+                'merchant_poc_designation' => 'Financial Consultant',
+                'merchant_poc_email' => 'sample@sample.com',
+                'merchant_poc_phone_number' => '9876556789',
+                'business_category' => 'limited_liability_partnership',
+                'merchant_documents_address' => 'x, y, z',
+                'sales_team' => 'sme',
+                'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
+                'assignee_team' => 'sales',
+                'initial_cheque_value' => 100,
+                'account_type' => 'insignia',
+                'merchant_city' => 'Bangalore',
+                'is_documents_walkthrough_complete' => true,
+                'merchant_region' => 'South',
+                'expected_monthly_gmv' => 10000,
+                'average_monthly_balance' => 0,
+                'additional_details' => [
+                    'ops_follow_up_date' => '1667347200',
+                ],
+            ]
+        ];
+
+        $bankingAccount = $this->createBankingAccountFromDashboard($bankingAccount);
+
+        $this->ba->adminAuth();
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/admin/banking_account?count=20&skip=0&account_type=current&from_ops_follow_up_date=1667346200&to_ops_follow_up_date=1667347100',
+                'method'  => 'GET',
+                'content' => [
+                    'expand' => ['merchant','merchant.merchantDetail'],
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'entity' => 'collection',
+                    'count' => 0,
+                    'items' => [
+                    ],
+                ],
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testFilterOpsFollowUpDateDoNotReturnRowsWithEmptyOpsFollowUpDate()
+    {
+        $bankingAccount = [
+            'activation_detail' => [
+                'merchant_poc_name' => 'Aryan',
+                'merchant_poc_designation' => 'Financial Consultant',
+                'merchant_poc_email' => 'sample@sample.com',
+                'merchant_poc_phone_number' => '9876556789',
+                'business_category' => 'limited_liability_partnership',
+                'merchant_documents_address' => 'x, y, z',
+                'sales_team' => 'sme',
+                'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
+                'assignee_team' => 'sales',
+                'initial_cheque_value' => 100,
+                'account_type' => 'insignia',
+                'merchant_city' => 'Bangalore',
+                'is_documents_walkthrough_complete' => true,
+                'merchant_region' => 'South',
+                'expected_monthly_gmv' => 10000,
+                'average_monthly_balance' => 0,
+                'additional_details' => [
+                    'ops_follow_up_date' => '',
+                ],
+            ]
+        ];
+
+        $bankingAccount = $this->createBankingAccountFromDashboard($bankingAccount);
+
+        $this->ba->adminAuth();
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/admin/banking_account?count=20&skip=0&account_type=current&to_ops_follow_up_date=1667347100',
+                'method'  => 'GET',
+                'content' => [
+                    'expand' => ['merchant','merchant.merchantDetail'],
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'entity' => 'collection',
+                    'count' => 0,
+                    'items' => [
+                    ],
+                ],
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
 }

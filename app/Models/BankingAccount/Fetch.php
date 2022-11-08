@@ -46,6 +46,8 @@ class Fetch extends BaseFetch
             Entity::SORT_FOLLOW_UP_DATE                 => 'sometimes|in:asc,desc',
             Entity::APPLICATION_TYPE                    => 'sometimes|string',
             Entity::PENDING_ON                          => 'sometimes|string',
+            Entity::FROM_OPS_FOLLOW_UP_DATE             => 'sometimes|epoch',
+            Entity::TO_OPS_FOLLOW_UP_DATE               => 'sometimes|epoch',
         ],
     ];
 
@@ -86,6 +88,8 @@ class Fetch extends BaseFetch
             Entity::TO_FOLLOW_UP_DATE,
             Entity::SORT_FOLLOW_UP_DATE,
             Entity::APPLICATION_TYPE,
+            Entity::FROM_OPS_FOLLOW_UP_DATE,
+            Entity::TO_OPS_FOLLOW_UP_DATE,
             self::EXPAND_EACH,
         ]
     ];

@@ -598,6 +598,12 @@ class Service extends Base\Service
             }
         }
 
+        if (array_key_exists(Entity::DWT_SCHEDULED_TIMESTAMP, $currentAdditionalDetails) === true &&
+            array_key_exists(Entity::OPS_FOLLOW_UP_DATE, $currentAdditionalDetails) === false)
+        {
+            $currentAdditionalDetails[Entity::OPS_FOLLOW_UP_DATE] = $currentAdditionalDetails[Entity::DWT_SCHEDULED_TIMESTAMP];
+        }
+
         if ($previousAdditionalDetails)
         {
             if (!is_array($previousAdditionalDetails))

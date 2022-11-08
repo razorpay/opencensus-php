@@ -173,6 +173,8 @@ class Entity extends Base\PublicEntity
     const LATEST_FOLLOW_UP_DATE = 'latest_follow_up_date';
     const CLARITY_CONTEXT       = 'clarity_context'; // used for filtering banking accounts
     const FOS_CITY = 'fos_city';
+    const FROM_OPS_FOLLOW_UP_DATE = 'from_ops_follow_up_date';
+    const TO_OPS_FOLLOW_UP_DATE = 'to_ops_follow_up_date';
 
     // For experimentation - resolved from merchant preferences - group x_merchant_current_accounts
     const USING_NEW_STATES = 'using_new_states';

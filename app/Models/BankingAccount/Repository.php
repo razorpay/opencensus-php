@@ -989,6 +989,33 @@ class Repository extends Base\Repository
     }
 
     /**
+     * Filter to search leads by ops follow-up date
+     */
+    public function addQueryParamFromOpsFollowUpDate(Base\BuilderEx $query, $params)
+    {
+        $fromOpsFollowUpDate = $params[Entity::FROM_OPS_FOLLOW_UP_DATE];
+
+        $this->joinQueryActivationDetail($query);
+
+        $query->select($this->dbColumn('*'));
+
+        $query->whereRaw('JSON_UNQUOTE(JSON_EXTRACT(additional_details, \'$."ops_follow_up_date"\')) != \'\' AND ' . 
+            'JSON_UNQUOTE(JSON_EXTRACT(additional_details, \'$."ops_follow_up_date"\')) >= \''.$fromOpsFollowUpDate.'\'');
+    }
+
+    public function addQueryParamToOpsFollowUpDate(Base\BuilderEx $query, $params)
+    {
+        $toOpsFollowUpDate = $params[Entity::TO_OPS_FOLLOW_UP_DATE];
+
+        $this->joinQueryActivationDetail($query);
+
+        $query->select($this->dbColumn('*'));
+
+        $query->whereRaw('JSON_UNQUOTE(JSON_EXTRACT(additional_details, \'$."ops_follow_up_date"\')) != \'\' AND ' . 
+            'JSON_UNQUOTE(JSON_EXTRACT(additional_details, \'$."ops_follow_up_date"\')) <= \''.$toOpsFollowUpDate.'\'');
+    }
+
+    /**
      *
      * select distinct `merchant_id` from `banking_accounts`
      *         where `channel` = ? and
