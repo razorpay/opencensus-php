@@ -365,6 +365,7 @@ class Core extends Base\Core
             'cod'          => false,
             'shipping_fee' => 0,
             'cod_fee'      => null,
+            'use_fallback' => true,
         ];
     }
 

@@ -167,6 +167,7 @@ class Service extends Base\Service
             else
             {
             $platformConfig = $this->merchant->getMerchantPlatformConfig();
+            $shippingMethodProviderConfig = $this->merchant->getShippingMethodProvider();
             // shopify configs take priority over all Rzp serviceability features
             if ($platformConfig !== null and $platformConfig->getValue() === Merchant1ccConfig\Type::SHOPIFY)
             {
@@ -175,31 +176,29 @@ class Service extends Base\Service
                     'order_id' => $order->toArrayPublic()['notes']['storefront_id'],
                     'address' => array_merge($address, [self::SHIPPING_INFO_ID => 0]),
                 ]);
+
+                if (empty($decodedResponse['use_fallback']) === false) {
+                    unset($decodedResponse['use_fallback']);
+                    if ($shippingMethodProviderConfig !== null) {
+                        $decodedResponse = (new Providers())->shippingResponseFromShippingProviderConfig(
+                            $orderId,
+                            $order,
+                            $orderMeta,
+                            $address,
+                            $shippingMethodProviderConfig);
+                    }
+                }
             }
             else
             {
-                $shippingMethodProviderConfig = $this->merchant->getShippingMethodProvider();
                 if ($shippingMethodProviderConfig !== null)
                 {
-                    $shippingMethodProviderConfigJson = $shippingMethodProviderConfig->getValueJson();
-                    $shippingProviderType = $shippingMethodProviderConfigJson[Constants::PROVIDER_TYPE] ?? Type::SHIPROCKET;
-                    $this->trace->count(Metric::SHIPPING_SERVICE_CALL_COUNT, $dimensions);
-                    switch ($shippingProviderType)
-                    {
-                        case Type::DEMO:
-                        case Type::RAZORPAY:
-                            $decodedResponse = $this->getShippingMethods(
-                                $shippingMethodProviderConfigJson,
-                                $address,
-                                $orderId,
-                                $orderMeta->getValue()['line_items_total'],
-                                $order->toArrayPublic()['notes']);
-                            break;
-                        default:
-                            $decodedResponse = $this->getShippingInfoForShippingMethodProvider($shippingMethodProviderConfig,
-                                $address, $orderId);
-                            break;
-                    }
+                    $decodedResponse = (new Providers())->shippingResponseFromShippingProviderConfig(
+                        $orderId,
+                        $order,
+                        $orderMeta,
+                        $address,
+                        $shippingMethodProviderConfig);
                 }
                 else
                 {
@@ -446,84 +445,6 @@ class Service extends Base\Service
         unset($address['shipping_methods']);
 
         return $address;
-    }
-
-    protected function getShippingInfoForShippingMethodProvider($shippingMethodProviderEntity, $address, $orderId): array
-    {
-
-        $shippingMethodProvider = $shippingMethodProviderEntity->getValueJson();
-        $merchantId = $this->merchant->getId();
-        $input = [
-            'order_id' => $orderId,
-            'address' => $address
-        ];
-        $shippingInfo = $this->app['shipping_method_provider_service']
-            ->getShippingInfoForAddress($shippingMethodProvider, $input, $merchantId);
-
-        return array_merge($input['address'], $shippingInfo);
-    }
-
-    protected function getShippingMethods($shippingMethodProviderConfig, $address, $orderId, $lineItemsTotal, $notes): array
-    {
-        $address['country_code'] = $address['country'];
-        unset($address['country']);
-
-        $address['zip_code'] = $address['zipcode'];
-        unset($address['zipcode']);
-
-        $shippingInfo = $this->app['shipping_methods_service']->evaluate(
-            $shippingMethodProviderConfig['shipping_provider_id'],
-            $address,
-            $lineItemsTotal,
-            $orderId,
-            $this->merchant->getId(),
-            $notes);
-        $address['country'] = $address['country_code'];
-        unset($address['country_code']);
-        $address['zipcode'] = $address['zip_code'];
-        unset($address['zip_code']);
-
-        $keys = [
-            'shipping_fee',
-            'serviceable',
-            'cod',
-            'cod_fee',
-            'name',
-            'description',
-        ];
-
-        // Filling empty values as protobuf omits empty fields and converting strings to ints due to protobuf serialization
-        for ($i = 0; $i < count($shippingInfo['shipping_methods']); $i++)
-        {
-            foreach ($keys as $key)
-            {
-                if (isset($shippingInfo['shipping_methods'][$i][$key]) === false)
-                {
-                    switch ($key)
-                    {
-                        case 'name':
-                            $shippingInfo['shipping_methods'][$i][$key] = 'default';
-                            break;
-                        case 'description':
-                            $shippingInfo['shipping_methods'][$i][$key] = '';
-                            break;
-                        case 'cod_fee':
-                        case 'shipping_fee':
-                            $shippingInfo['shipping_methods'][$i][$key] = 0;
-                            break;
-                        case 'cod':
-                        case 'serviceable':
-                            $shippingInfo['shipping_methods'][$i][$key] = false;
-                            break;
-                    }
-                }
-                elseif ($key === 'shipping_fee' or $key === 'cod_fee')
-                {
-                    $shippingInfo['shipping_methods'][$i][$key] = (int)$shippingInfo['shipping_methods'][$i][$key];
-                }
-            }
-        }
-        return array_merge($address, $shippingInfo);
     }
 
     protected function getFeeFromSlab(int $amount, string $type): int
@@ -872,4 +793,5 @@ class Service extends Base\Service
 
         $this->trace->histogram($metric, $duration, $dimensions);
     }
+
 }
