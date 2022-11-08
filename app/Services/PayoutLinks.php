@@ -183,6 +183,12 @@ class PayoutLinks
     const AMOUNT                                   = 'amount';
     const META                                     = 'meta';
     const TAX_PAYMENT_ID                           = 'tax_payment_id';
+    const BULK_REJECT_AS_OWNER                      = 'bulk_reject_as_owner';
+    const ADDITIONAL_DATA                           = 'additional_data';
+    const PAYOUT_LINK_IDS                           = 'payout_link_ids';
+    const ACTION_TYPE                               = 'action_type';
+    const BULK_REJECT_PLS_ACTION                    = 'BulkRejectPLs';
+    const USER_COMMENT                              = 'user_comment';
 
     public static $statusValidForSupportDetailsInHostedPage = [
         self::STATUS_EXPIRED,

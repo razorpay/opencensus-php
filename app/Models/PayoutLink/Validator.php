@@ -7,7 +7,9 @@ use App;
 use RZP\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payout\Mode;
+use RZP\Services\PayoutLinks;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Workflow\Action\Checker\Entity as ActionChecker;
 
 
 class Validator extends Base\Validator
@@ -32,6 +34,7 @@ class Validator extends Base\Validator
     const SEND_REMINDER_EMAIL_INTERNAL_RULE   = 'send_reminder_email_internal';
     const SEND_PROCESSING_EXPIRED_EMAIL_INTERNAL_RULE   = 'send_processing_expired_email_internal';
     const SEND_APPROVE_OTP_EMAIL_INTERNAL_RULE   = 'send_approve_otp_email_internal';
+    const OWNER_BULK_REJECT_PAYOUT_LINKS   = 'owner_bulk_reject_payout_links';
     const SEND_BULK_APPROVE_OTP_EMAIL_INTERNAL_RULE   = 'send_bulk_approve_otp_email_internal';
     const MAX_IMPS_AMOUNT                  = 50000000;
     const MAX_UPI_AMOUNT                   = 10000000;
@@ -192,6 +195,13 @@ class Validator extends Base\Validator
         'payout_links_count'  => 'required|integer',
         'otp'                 => 'required|string|min:4|max:6',
         'validity'            => 'required|string',
+    ];
+
+    protected static $ownerBulkRejectPayoutLinksRules = [
+        PayoutLinks::PAYOUT_LINK_IDS            => 'required|array',
+        PayoutLinks::PAYOUT_LINK_IDS . '.*'     => 'required|public_id|size:21',
+        PayoutLinks::BULK_REJECT_AS_OWNER       => 'required|boolean',
+        ActionChecker::USER_COMMENT             => 'sometimes|nullable|string|max:255',
     ];
 
     protected function validateResendNotificationParams(array $input)

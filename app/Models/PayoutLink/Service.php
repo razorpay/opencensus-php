@@ -10,6 +10,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Batch\Type;
 use RZP\Http\RequestHeader;
+use RZP\Services\PayoutLinks;
 use RZP\Constants\Entity as E;
 use Illuminate\Support\Facades\Mail;
 use RZP\Base\ConnectionType;
@@ -23,6 +24,7 @@ use RZP\Mail\PayoutLink\ApprovalOtpInternal;
 use RZP\Mail\PayoutLink\CustomerOtpInternal;
 use RZP\Mail\PayoutLink\SendReminderInternal;
 use RZP\Mail\PayoutLink\BulkApprovalOtpInternal;
+use RZP\Models\Workflow\Service\Adapter\Constants;
 use RZP\Mail\PayoutLink\SendProcessingExpiredInternal;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
@@ -820,7 +822,32 @@ class Service extends Base\Service
     {
         $this->checkIfPLServiceIsDown();
 
+        // add actor details for BulkRejectPLs action
+        if (in_array(PayoutLinks::ACTION_TYPE, $input) === true && $input[PayoutLinks::ACTION_TYPE] === PayoutLinks::BULK_REJECT_PLS_ACTION)
+        {
+            $this->preparePayloadForBulkRejectAction($input);
+        }
+
         return $this->app['payout-links']->adminActions($input);
+    }
+
+    private function preparePayloadForBulkRejectAction(array &$input)
+    {
+        $this->addActorDetails($input[PayoutLinks::ADDITIONAL_DATA], false);
+    }
+
+    public function ownerBulkRejectPayoutLinks(array $input): array
+    {
+        (new Validator())->validateInput(Validator::OWNER_BULK_REJECT_PAYOUT_LINKS, $input);
+
+        $bulkRejectPayload = $this->prepareOwnerBulkRejectPayload($input);
+
+        $this->app['trace']->info(TraceCode::OWNER_BULK_REJECT_PAYOUT_LINKS_REQUEST,
+            [
+                'admin_action_payload' => $bulkRejectPayload,
+            ]);
+
+        return $this->app['payout-links']->adminActions($bulkRejectPayload);
     }
 
     public function getBatchSummary(string $batchId)
@@ -840,5 +867,71 @@ class Service extends Base\Service
         $newFundAccountsItems = array_values($oldFundAccountsItems);
 
         $fundAccountsArray["items"] = $newFundAccountsItems;
+    }
+
+    private function prepareOwnerBulkRejectPayload(array $input)
+    {
+        /*
+         * Input: $input['payout_link_ids'] = ['poutlk_123', ...]
+         * Output:
+            {
+                "action_type": "BulkRejectPLs",
+                "additional_data": {
+                    "payout_link_ids": "poutlk_1234,poutlk_789",
+                    "actor_id": <owner-id>,
+                    "actor_type": "owner",
+                    "actor_property_key": "role",
+                    "actor_property_value": "owner",
+                    "owner_id": "MID",
+                    "service": "rx_live",
+                    "comment": "",
+                }
+            }
+        */
+        $payload = array();
+
+        $payoutLinkIds = $input[PayoutLinks::PAYOUT_LINK_IDS];
+
+        $payoutLinks = $this->getPayoutLinks($payoutLinkIds);
+
+        $payload[PayoutLinks::ACTION_TYPE] = PayoutLinks::BULK_REJECT_PLS_ACTION;
+
+        $additionalData = [
+            PayoutLinks::PAYOUT_LINK_IDS => $payoutLinks,
+            Constants::COMMENT => $input[PayoutLinks::USER_COMMENT] ?? '',
+        ];
+
+        $this->addActorDetails($additionalData, false);
+
+        $payload[PayoutLinks::ADDITIONAL_DATA] = $additionalData;
+
+        $bulkRejectPayload['json_data'] = json_encode($payload);
+
+        return $bulkRejectPayload;
+    }
+
+    private function addActorDetails(array &$additionalData, bool $isAdminAction)
+    {
+        $ba = app('basicauth');
+
+        $user = $ba->getUser();
+
+        $userRole = $isAdminAction ? Constants::ADMIN : Constants::OWNER;
+
+        $additionalData += [
+            Constants::ACTOR_ID => $user->getId(),
+            Constants::ACTOR_TYPE => $userRole,
+            Constants::ACTOR_PROPERTY_KEY => Constants::ROLE,
+            Constants::ACTOR_PROPERTY_VALUE => $userRole,
+            Constants::SERVICE => Constants::SERVICE_RX . $ba->getMode(),
+            Constants::ACTOR_EMAIL => $user->getEmail(),
+            Constants::ACTOR_NAME => $user->getName(),
+            PayoutLinks::MERCHANT_ID => $ba->getMerchantId()
+        ];
+    }
+
+    private function getPayoutLinks(array $payoutLinkIds)
+    {
+        return join(",", $payoutLinkIds);
     }
 }
