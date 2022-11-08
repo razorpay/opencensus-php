@@ -370,6 +370,11 @@ class Core extends Base\Core
     {
         try
         {
+            if($creditsLog->getType() === Credits\Type::AMOUNT )
+            {
+                return;
+            }
+
             if($creditsLog->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
             {
                 return;
