@@ -13,12 +13,15 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Workflow\Service\Metric;
 use RZP\Models\Workflow\Service\StateMap\Service as StateMapService;
 use RZP\Models\Workflow\Service\Config\Service as WorkflowConfigService;
+use RZP\Models\Workflow\Service\Workflow\Service as WorkflowService;
 
 class WorkflowServiceController extends Controller
 {
     protected $workflowConfigService;
 
     protected $stateMapService;
+
+    protected $workflowService;
 
     public function __construct()
     {
@@ -27,6 +30,8 @@ class WorkflowServiceController extends Controller
         $this->workflowConfigService = new WorkflowConfigService;
 
         $this->stateMapService = new StateMapService;
+
+        $this->workflowService = new WorkflowService;
     }
 
     public function createConfig()
@@ -149,4 +154,28 @@ class WorkflowServiceController extends Controller
 
         return response()->json($response);
     }
+
+    public function listWorkflows()
+    {
+        $input = Request::all();
+
+        $response = $this->workflowService->listWorkflows($input);
+
+        return response()->json($response);
+    }
+
+    public function getWorkflow(string $id) {
+        $response = $this->workflowService->getWorkflow($id);
+
+        return response()->json($response);
+    }
+
+    public function createWorkflowAction() {
+        $input = Request::all();
+
+        $response = $this->workflowService->createWorkflowAction($input);
+
+        return response()->json($response);
+    }
+
 }

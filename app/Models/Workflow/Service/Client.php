@@ -19,6 +19,7 @@ class Client
     const WFS_CONFIG_GET_ROUTE                  = "twirp/rzp.workflows.config.v1.ConfigAPI/Get";
     const WFS_WORKFLOW_GET_ROUTE                = "twirp/rzp.workflows.workflow.v1.WorkflowAPI/Get";
     const WFS_WORKFLOW_LIST_BY_IDS_ROUTE        = "twirp/rzp.workflows.workflow.v1.WorkflowAPI/ListByIds";
+    const WFS_WORKFLOW_LIST_ROUTE              = "twirp/rzp.workflows.workflow.v1.WorkflowAPI/List";
     const WFS_ACTION_CREATE_ON_ENTITY_ROUTE     = "twirp/rzp.workflows.action.v1.ActionAPI/CreateWithEntityId";
     const WFS_DIRECT_ACTION_CREATE_ROUTE        = "twirp/rzp.workflows.action.v1.ActionAPI/CreateDirectOnWorkflow";
     const WFS_WORKFLOW_CREATE_ROUTE             = "twirp/rzp.workflows.workflow.v1.WorkflowAPI/Create";
@@ -268,6 +269,24 @@ class Client
         return $entityAdapter->transformWorkflowResponse($content);
     }
 
+    public function createWorkflowProxy( array $input)
+    {
+
+        $res = $this->workflowServiceClient->request(self::WFS_WORKFLOW_CREATE_ROUTE, $input);
+
+        if ($res->status_code != 200)
+        {
+            throw new Exception\ServerErrorException(
+                null,
+                ErrorCode::SERVER_ERROR_WORKFLOW_CREATE_FAILED,
+                [ 'input' => $input]);
+        }
+
+        $content = json_decode($res->body, true);
+
+        return $content;
+    }
+
     /**
      * @param string $id
      * @return array|mixed
@@ -305,6 +324,27 @@ class Client
         $res = $this->workflowServiceClient->request(self::WFS_WORKFLOW_LIST_BY_IDS_ROUTE, $input);
 
         if ($res->status_code !== 200)
+        {
+            throw new Exception\ServerErrorException(
+                null,
+                ErrorCode::SERVER_ERROR_WORKFLOW_LIST_BY_IDS_FAILED,
+                ['input' => $input]);
+        }
+
+        return json_decode($res->body, true);
+    }
+
+    /**
+     * @param array $input
+     * @return mixed
+     * @throws Exception\ServerErrorException
+     */
+    public function listWorkflows(array $input)
+    {
+
+        $res = $this->workflowServiceClient->request(self::WFS_WORKFLOW_LIST_ROUTE, $input);
+
+        if ($res->status_code !== 200 && $res->status_code != 404)
         {
             throw new Exception\ServerErrorException(
                 null,
@@ -360,6 +400,26 @@ class Client
         }
 
         return $entityAdapter->transformActionResponse($content);
+    }
+
+    public function createActionOnEntityProxy( array $input)
+    {
+
+        $this->trace->info(TraceCode::WORKFLOW_SERVICE_TRACE_INFO, $input);
+
+        $res = $this->workflowServiceClient->request(self::WFS_ACTION_CREATE_ON_ENTITY_ROUTE, $input);
+
+        $content = json_decode($res->body, true);
+
+        if ($res->status_code !== 200)
+        {
+            throw new Exception\ServerErrorException(
+                null,
+                ErrorCode::SERVER_ERROR_WORKFLOW_ACTION_CREATE_FAILED,
+                [ 'input' => $input]);
+        }
+
+        return $content;
     }
 
     public function createDirectAction(Base\PublicEntity $entity, array $input)

@@ -888,6 +888,7 @@ class Service extends Base\Service
         // If the merchant is hitting the route directly, only allow him to update his own account features.
         //Allowing Banking account service to add the feature
         if (($this->app['basicauth']->isAdminAuth() === true) or
+            ($this->app['basicauth']->isWorkflowsServiceApp() === true) or
             ($this->app['basicauth']->isBankingAccountServiceApp() === true) or
             ($this->app['basicauth']->isCapitalCollectionsApp() === true) or
             ($this->app['basicauth']->isCapitalCardsApp() === true) or

@@ -21,6 +21,7 @@ class Constants
     const AGGREGATOR                      = 'aggregator';
     const TERMINAL_ONBOARDING             = 'terminal_onboarding';
     const RULE_BASED_ENABLEMENT           = 'rule_based_enablement';
+    const SPR_DISABLE_METHOD_RESET        = 'spr_disable_method_reset';
     const S2SWALLET                       = 's2swallet';
     const S2SUPI                          = 's2supi';
     const S2SAEPS                         = 's2saeps';
@@ -2231,6 +2232,7 @@ class Constants
         self::IMPORT_FLOW_OPEX_REPORT         => true,
         self::ENABLE_3DS2                     => true,
         self::CYBERSOURCE_SI_TXN_TEST         => true,
+        self::SPR_DISABLE_METHOD_RESET        => true,
     ];
 
     // Entity type constants
@@ -3087,6 +3089,11 @@ class Constants
         self::OLD_CUSTOM_SETTL_FLOW => [
             'feature'       => self::OLD_CUSTOM_SETTL_FLOW,
             'display_name'  => 'Feature to enable old custom settlement flow',
+            'documentation' => '',
+        ],
+        self::SPR_DISABLE_METHOD_RESET  => [
+            'feature'       => self::SPR_DISABLE_METHOD_RESET,
+            'display_name'  => 'Special pricing plan assigned to the merchant',
             'documentation' => '',
         ],
 

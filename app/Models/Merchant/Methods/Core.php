@@ -597,7 +597,7 @@ class Core extends Base\Core
 
     public function validateRuleBasedFeatureFlagForMerchant(string $merchantId) :bool
     {
-        $featureResult = $this->repo->feature->findMerchantWithFeatures($merchantId, [Features::RULE_BASED_ENABLEMENT,])->toArray();
+        $featureResult = $this->repo->feature->findMerchantWithFeatures($merchantId, [Features::RULE_BASED_ENABLEMENT, Features::SPR_DISABLE_METHOD_RESET])->toArray();
 
         $featureNames = [];
         foreach ($featureResult as $feature)
@@ -605,7 +605,8 @@ class Core extends Base\Core
             array_push($featureNames, $feature["name"]);
         }
 
-        if (in_array(Features::RULE_BASED_ENABLEMENT, $featureNames))
+        if (in_array(Features::RULE_BASED_ENABLEMENT, $featureNames)
+            || in_array(Features::SPR_DISABLE_METHOD_RESET, $featureNames))
         {
             return true;
         }
@@ -727,6 +728,18 @@ class Core extends Base\Core
         $category  = $merchant->getCategory();
         $category2 = $merchant->getCategory2();
         $orgId     = $merchant->getOrgId();
+
+        if($merchant->isFeatureEnabled(Features::SPR_DISABLE_METHOD_RESET)) {
+            $this->trace->info(
+                TraceCode::MERCHANT_METHODS_RESET_BASED_ON_CATEGORY_REQUEST,
+                [
+                    'merchant_id' => $merchant->getId(),
+                    'METHOD_RESET_SKIPPED_FOR_SPR'    => true
+                ]
+            );
+
+            return;
+        }
 
         $this->trace->info(
             TraceCode::MERCHANT_METHODS_RESET_BASED_ON_CATEGORY_REQUEST,

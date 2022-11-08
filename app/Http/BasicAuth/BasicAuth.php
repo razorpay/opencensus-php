@@ -1941,6 +1941,11 @@ class BasicAuth
         return ($this->getInternalApp() === 'banking_account_service');
     }
 
+    public function isWorkflowsServiceApp(): bool
+    {
+        return ($this->getInternalApp() === 'workflows');
+    }
+
     public function getOAuthApplicationId()
     {
         return $this->applicationId;

@@ -380,6 +380,7 @@ class Route
         'salesforce_converge_get_merchant_details' => ['get',      'merchants/{id}/sf_converge_get_merchant_details','MerchantController@getMerchantDetailsForSFConverge'               ],
         'salesforce_converge_get_terminal_details' => ['get',      'merchants/{id}/sf_converge_get_terminal_details','MerchantController@getTerminalDetailsForSFConverge'               ],
         'merchant_assign_pricing'                  => ['post',     'merchants/{id}/pricing',                         'MerchantController@postAssignPricingPlan'                          ],
+        'merchant_assign_pricing_internal'         => ['post',     'internal/merchants/{id}/pricing',                'MerchantController@postAssignPricingPlan'                          ],
         'merchant_get_pricing'                     => ['get',      'merchants/{id}/pricing',                         'MerchantController@getPricingPlan'                                 ],
         'proxy_merchant_get_pricing'               => ['get',      'proxy/merchants/pricing',                        'MerchantController@proxyGetPricingPlan'                            ],
         'merchant_bank_account_create'             => ['post',     'merchants/bank_account',                         'MerchantController@postBankAccount'                                ],
@@ -1759,6 +1760,9 @@ class Route
         'wfs_config_get_admin'                    => ['get',     'wf-service-admin/configs/{id}',                          'WorkflowServiceController@getConfig'                               ],
         'workflow_state_callback'                 => ['post',    'wf-service/state/callback',                        'WorkflowServiceController@createWorkflowStateMap'                  ],
         'workflow_state_callback_update'          => ['patch',   'wf-service/state/{id}/callback',                   'WorkflowServiceController@updateWorkflowStateMap'                  ],
+        'wfs_workflows_list'                      => ['post',    'wf-service/workflows/list',                        'WorkflowServiceController@listWorkflows'                           ],
+        'wfs_workflows_get'                       => ['get',     'wf-service/workflows/{id}',                        'WorkflowServiceController@getWorkflow'                             ],
+        'wfs_workflow_action_create'              => ['post',    'wf-service/action',                                'WorkflowServiceController@createWorkflowAction'                    ],
 
         //Vendor Payments
         'vendor_payments_check_existing_invoice'   => ['get',      'vendor-payments/check-invoice-exist',                                     'VendorPaymentController@checkIfInvoiceExistForVendor'              ],
@@ -4555,6 +4559,7 @@ class Route
         'payment_page_cds_billing_update_cron',
         'banking_accounts_get_internal',
         'banking_account_activation_detail_update_internal',
+        'merchant_assign_pricing_internal',
         'merchant_onboarding_crons',
         'capture_cron_for_b2b_payments',
         'settlement_cron_for_b2b_payments',
@@ -7271,6 +7276,9 @@ class Route
         'wfs_config_create',
         'wfs_config_update',
         'wfs_config_get_admin',
+        'wfs_workflows_list',
+        'wfs_workflows_get',
+        'wfs_workflow_action_create',
         'payout_workflow_retry_admin_bulk',
         'payout_wf_config_migrate',
         'create_iir_discrepancy_answer_admin',
@@ -8605,6 +8613,10 @@ class Route
         'wfs_config_create'                        => Permission::WFS_CONFIG_CREATE,
         'wfs_config_update'                        => Permission::WFS_CONFIG_UPDATE,
         'wfs_config_get_admin'                     => Permission::WFS_CONFIG_CREATE,
+
+        'wfs_workflows_list'                        => Permission::WFS_VIEW_SPR_WORKFLOWS,
+        'wfs_workflows_get'                         => Permission::WFS_VIEW_SPR_WORKFLOWS,
+        'wfs_workflow_action_create'                => Permission::WFS_VIEW_SPR_WORKFLOWS,
 
         'payout_wf_config_migrate'                 => Permission::WFS_CONFIG_CREATE,
 
@@ -14068,6 +14080,7 @@ class Route
             'payout_reject_internal',
             'workflow_state_callback',
             'workflow_state_callback_update',
+            'merchant_assign_pricing_internal'
         ],
 
         'pg_router' => [

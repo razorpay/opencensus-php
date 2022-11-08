@@ -1152,6 +1152,7 @@ return [
         'username'          => env('WORKFLOWS_USERNAME'),
         'password'          => env('WORKFLOWS_PASSWORD'),
         'secret'            => env('WORKFLOWS_INTERNAL_APP_SECRET'),
+        'spr_config_id'     => env('WORKFLOWS_SPR_CONFIG_ID'),
     ],
 
     'worker' => [

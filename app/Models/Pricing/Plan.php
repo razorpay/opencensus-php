@@ -58,6 +58,16 @@ class Plan extends PublicCollection
         return null;
     }
 
+    public function getPlanName()
+    {
+        if ($this->isNotEmpty() === true)
+        {
+            return $this->first()->getPlanName();
+        }
+
+        return null;
+    }
+
     /**
      * Get the collection of items as a plain array.
      * @return array

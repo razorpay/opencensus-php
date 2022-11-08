@@ -12,6 +12,7 @@ use RZP\Http\Controllers\MerchantController;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\Type;
 use RZP\Models\Emi\DebitProvider;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Payment\Processor\PayLater;
@@ -1950,6 +1951,10 @@ class Service extends Base\Service
             $originalPricingPlan = $merchant->pricing->getPlanName();
         }
 
+        if(isset($input['spr']) && $input['spr']) {
+            return $this->handleSPRWorkflowCreate($input, $merchant, $plan);
+        }
+
         [$original, $dirty] = [
             // Current plan
             ['pricing_plan' => $originalPricingPlan],
@@ -1968,6 +1973,56 @@ class Service extends Base\Service
         $this->logActionToSlack($merchant, SlackActions::ASSIGN_PRICING, $input);
 
         return $plan->toArrayPublic();
+    }
+
+    private function handleSPRWorkflowCreate(array $input, Merchant\Entity $merchant, Plan $plan) {
+
+        $input = (new WorkflowService\Builder\PricingWorkflow())->buildCreatePricingWorkflowPayload($input, $merchant, $plan);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_PRICING_PLAN_ASSIGN_REQUEST_WORKFLOW,
+            [
+                'merchant_id' => $merchant->getId(),
+                'input'       => $input
+            ]);
+
+        return (new WorkflowService\Client())->createWorkflowProxy($input);
+    }
+
+    private function handleSPRWorkflowProcessed(array $input, Merchant\Entity $merchant) {
+        if(isset($input['spr_assigned']) && $input['spr_assigned']) {
+
+            $featureParams = [
+                Feature\Entity::ENTITY_ID   => $merchant->getId(),
+                Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                Feature\Entity::NAMES       => [FeatureConstants::SPR_DISABLE_METHOD_RESET],
+                Feature\Entity::SHOULD_SYNC => true
+            ];
+
+            $features = (new Feature\Service)->addFeatures($featureParams);
+
+            $this->trace->info(
+                TraceCode::MERCHANT_PRICING_PLAN_ASSIGN_REQUEST,
+                [
+                    'features_assigned' => $features
+                ]);
+        } else {
+            if($merchant->isFeatureEnabled(Features::SPR_DISABLE_METHOD_RESET)) {
+                $features = (new Feature\Service)->deleteEntityFeature(
+                    'accounts',
+                    $merchant->getId(),
+                    FeatureConstants::SPR_DISABLE_METHOD_RESET,
+                    [Feature\Entity::SHOULD_SYNC => true]);
+
+
+                $this->trace->info(
+                    TraceCode::MERCHANT_PRICING_PLAN_ASSIGN_REQUEST,
+                    [
+                        'features_assigned' => $features
+                    ]);
+            }
+
+        }
     }
 
     public function isAdminLoggedInAsMerchant()
