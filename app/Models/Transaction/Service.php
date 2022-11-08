@@ -106,7 +106,12 @@ class Service extends Base\Service
         }
         catch (DbQueryException $e)
         {
-            // Do nothing. continue with creation of new transaction
+            $this->trace->traceException(
+                $e,
+                Trace::INFO,
+                TraceCode::CREDIT_REPAYMENT_TRANSACTION_DB_EXCEPTION,
+                ['input' => $input, 'info' => "creating new transaction"]
+            );
         }
 
         return $this->mutex->acquireAndRelease('credit_repayment_transaction_' . $input[\RZP\Models\CreditRepayment\Entity::ID],
@@ -164,7 +169,12 @@ class Service extends Base\Service
         }
         catch (DbQueryException $e)
         {
-            // Do nothing. continue with creation of new transaction
+            $this->trace->traceException(
+                $e,
+                Trace::INFO,
+                TraceCode::CAPITAL_TRANSACTION_DB_EXCEPTION,
+                ['input' => $input, 'info' => "creating new transaction"]
+            );
         }
 
         return $this->mutex->acquireAndRelease('capital_transaction_' . $input[\RZP\Models\CapitalTransaction\Entity::ID],
@@ -242,7 +252,12 @@ class Service extends Base\Service
                 }
                 catch (DbQueryException $e)
                 {
-                    // Do nothing. continue with creation of new transaction
+                    $this->trace->traceException(
+                        $e,
+                        Trace::INFO,
+                        TraceCode::CAPITAL_TRANSACTION_DB_EXCEPTION,
+                        ['input' => $input, 'info' => "creating new transaction"]
+                    );
                 }
 
                 return $this->repo->transaction(function () use ($repaymentBreakups, $repaymentCacheKey)
