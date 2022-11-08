@@ -32,6 +32,9 @@ class UnexpectedPaymentReason
         self::QR_CODE_MISSING_ORDER_ID,
         self::BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED,
         PublicErrorDescription::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID,
+        PublicErrorDescription::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH,
+        PublicErrorDescription::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD,
+        PublicErrorDescription::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD_WEBSITE_MISMATCH,
     ];
 
     public static function shouldCreateUnexpectedPayment(string $message): bool

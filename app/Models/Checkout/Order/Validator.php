@@ -32,7 +32,7 @@ class Validator extends BaseValidator
         Entity::CUSTOMER_ID => 'sometimes|string|alpha_num|size:14',
         Entity::CONTACT => 'sometimes|contact_syntax',
         Entity::CURRENCY => 'sometimes|size:3',
-        Entity::DESCRIPTION => 'sometimes|string|custom',
+        Entity::DESCRIPTION => 'sometimes|string|max:255|utf8',
         Entity::EMAIL => 'sometimes|email',
         Entity::EXPIRE_AT => 'sometimes|epoch|custom',
         Entity::INVOICE_ID => 'sometimes|string|alpha_num|size:14',
@@ -52,18 +52,6 @@ class Validator extends BaseValidator
     public static $closeRules = [
         'close_reason'  => 'required|string|not_in:paid',
     ];
-
-    public function validateDescription(string $attribute, string $value): bool
-    {
-        if (is_valid_utf8($value) === false)
-        {
-            $message = 'Only plain text characters are allowed';
-
-            throw new BadRequestValidationFailureException($message, $attribute);
-        }
-
-        return true;
-    }
 
     public function validateExpireAt(string $attribute, int $expireAt): bool
     {
