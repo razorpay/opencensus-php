@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Merchant;
 
 use Config;
 use RZP\Constants\Mode;
+use RZP\Models\Partner\Commission\Invoice;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Partner\Commission\CommissionTrait as CommissionBaseTrait;
 
@@ -30,15 +31,16 @@ trait CommissionTrait
         $partnerAttributes = [],
         $appAttributes = [],
         $subMerchantAttributes = [],
-        $commissionAttributes = [])
+        $commissionAttributes = [],
+        $createRequiredSubMs = true)
     {
         list($partner, $app) = $this->createPartnerAndApplication($partnerAttributes, $appAttributes);
 
         $config = $this->createConfigForPartnerApp($app->getId());
 
-        list($subMerchant) = $this->createSubMerchant($partner, $app, $subMerchantAttributes);
+        list($subMerchant1) = $this->createSubMerchant($partner, $app, $subMerchantAttributes);
 
-        $payment = $this->createPaymentEntities(1, $subMerchant->getId());
+        $payment = $this->createPaymentEntities(1, $subMerchant1->getId());
 
         $defaultCommissionAttributes = [
             'source_id'         => $payment->getId(),
@@ -46,10 +48,16 @@ trait CommissionTrait
             'partner_config_id' => $config->getId(),
         ];
 
+        for($i =0; $i < Invoice\Constants::VIEW_INVOICE_MIN_SUBM_COUNT; $i++)
+        {
+            $subMerchantAttributes['id'] = random_alphanum_string(14);
+            list($subMerchant) = $this->createSubMerchant($partner, $app, $subMerchantAttributes);
+        }
+
         $commissionAttributes = array_merge($defaultCommissionAttributes, $commissionAttributes);
 
         $commission = $this->fixtures->create('commission:commission_and_sync_es', $commissionAttributes);
 
-        return [$partner, $subMerchant, $payment, $config, $commission];
+        return [$partner, $subMerchant1, $payment, $config, $commission];
     }
 }

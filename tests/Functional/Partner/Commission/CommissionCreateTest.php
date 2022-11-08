@@ -348,6 +348,53 @@ class CommissionCreateTest extends TestCase
         $this->assertEquals('processed', $invoice['status']);
     }
 
+    /**
+     * The following testcase validates the following
+     * 1. Create commission for a single subM
+     * 2. Create commission_invoice
+     * 3. Validate Fetch commission_invoice should return exception since subM onboarded are less than 3
+     */
+    public function testInvoiceFetchWithLessSubM()
+    {
+        Mail::fake();
+
+        $testData = $this->setUpCommissionCreate();
+
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
+
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            null,
+            [
+                'implicit_plan_id'    => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            ]);
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testInvoiceGenerate'];
+
+        $now = Carbon::now(Timezone::IST);
+
+        $testData['request']['content']['month']        = $now->month;
+        $testData['request']['content']['year']         = $now->year;
+        $testData['request']['content']['merchant_ids'] = [Constants::DEFAULT_PLATFORM_MERCHANT_ID];
+
+        $this->createTaxes();
+
+        $this->ba->adminAuth();
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testInvoiceFetchWithLessSubMTestData'];
+
+        $this->ba->proxyAuth('rzp_test_' . Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testImplicitVariableOnHoldClearForHighTdsPercentage()
     {
         $testData = $this->setUpCommissionCreate();

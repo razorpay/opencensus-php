@@ -320,11 +320,17 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getMappingsFromEntityOwnerId(string $entityOwnerId)
+    public function getMappingsFromEntityOwnerId(string $entityOwnerId, $limit = null)
     {
-        return $this->newQuery()
-                    ->where(Entity::ENTITY_OWNER_ID, $entityOwnerId)
-                    ->get();
+        $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
+                      ->where(Entity::ENTITY_OWNER_ID, $entityOwnerId);
+
+        if (empty($limit) === false)
+        {
+            $query->take($limit);
+        }
+
+        return $query->get();
     }
 
     public function getSubMerchantsFromEntityOwnerId(string $entityOwnerId, $limit = null, $lastProcessedId = null)

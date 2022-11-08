@@ -527,4 +527,37 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
+
+    'testInvoiceFetchWithLessSubM' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
+    'testInvoiceFetchWithLessSubMTestData' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/commissions/invoice/fetch/bulk',
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'please add minimum of 3 subMerchants to view the invoices',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_ADD_MINIMUM_SUBM,
+        ]
+    ],
 ];
