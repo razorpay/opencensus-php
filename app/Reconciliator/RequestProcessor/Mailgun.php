@@ -2,6 +2,7 @@
 
 namespace RZP\Reconciliator\RequestProcessor;
 
+use DateTime;
 use RZP\Exception;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\FileProcessor;
@@ -95,9 +96,9 @@ class Mailgun extends Base
         self::NETBANKING_SBI  => [
             [
                 "from" => "donotreply.inb@alerts.sbi.co.in",
-                "subject_pattern" => "/^RAZORPAY Recon File/",
+                "subject_pattern" => "/^RAZORPAY Recon file/",
                 "filename_pattern" => "/razorpay_[\d]+\.txt/",
-                "destination" => "recon/input/nb_sbi/txn_report/",
+                "destination" => "recon/input/netbanking/SBI/bank_payment_report/",
                 "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
             ]
         ]
@@ -154,6 +155,9 @@ class Mailgun extends Base
 
         if($this->validator->isAutomaticFetchingEnabledForGateway($gateway)){
 
+            $date = new DateTime();
+            $result = $date->modify("-1 days")->format('Y-m-d');
+
             foreach($allFilesDetails as $fileDetails){
                 $fileName = $fileDetails['file_name'];
                 $filePath = $fileDetails['file_path'];
@@ -168,7 +172,7 @@ class Mailgun extends Base
                 }
                 foreach($gatewayDetails as $detail){
                     if(preg_match($detail['subject_pattern'], $input['subject']) && preg_match($detail['filename_pattern'], $fileName)){
-                        $destinationPath = $detail['destination'].$fileName;
+                        $destinationPath = $detail['destination'].$result."/".$fileName;
                         $bucketConfigType = $detail['bucket_config_type'];
                         $this->automaticFileFetchUpload($filePath, $destinationPath, $extension, $fileName, $bucketConfigType);
                         break;
@@ -207,7 +211,7 @@ class Mailgun extends Base
 
             $fileStoreEntity = $creator->save()->get();
 
-            $this->trace->info(TraceCode::RECON_FILE_DETAILS, $fileStoreEntity);
+            $this->trace->info(TraceCode::RECON_ART_FILE_UPLOAD_SUCCESSFUL, $fileStoreEntity);
         }
         catch (\Exception $ex)
         {
@@ -230,10 +234,8 @@ class Mailgun extends Base
             'gateway'   => $this->gateway,
         ];
 
-        $this->trace->info(TraceCode::RECON_FILE_DETAILS, $traceData);
+        $this->trace->info(TraceCode::RECON_ART_FILE_DETAILS, $traceData);
 
-        // Delete local file, as it has been upload to filestore (s3) now.
-        (new FileProcessor)->deleteFileLocally($filePath);
         return;
     }
 
