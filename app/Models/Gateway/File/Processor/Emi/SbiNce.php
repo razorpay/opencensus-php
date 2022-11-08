@@ -434,7 +434,7 @@ class SbiNce extends Base
         ];
 
         $emiFileMail = new EmiMail\File(
-            'SBI',
+            'SBI NCE',
             [],
             $recipients,
             $data
@@ -459,7 +459,7 @@ class SbiNce extends Base
         // This assumes we won't be sending more than 9 files after retry.
         $start = Carbon::now()->setTimezone(Timezone::IST)->startOfDay()->getTimestamp();
 
-        $count = $this->repo->gateway_file->fetchFileSentCountFromStart(Type::EMI, GatewayFileConstants::SBI, $start);
+        $count = $this->repo->gateway_file->fetchFileSentCountFromStart(Type::EMI, GatewayFileConstants::SBI_NCE, $start);
 
         return static::FILE_NAME . (string)($count + 1) . '.' . Carbon::now()->setTimezone(Timezone::IST)->format('dmY');
     }
