@@ -2105,14 +2105,22 @@ class Service extends Base\Service
 
         if(isset($entity['token']))
         {
-            if($payment->card->isInternational() === false && $entity['token']['status'] === 'active')
+            if(($payment->isCard() === true) && ($payment->card->isInternational()) === false && ($entity['token']['status'] === 'active'))
             {
                 $data['id'] = $entity['token_id'];
                 $network_token_data = (new Token\Service())->fetchNetworkToken($data);
                 $entity['token'] = $network_token_data;
+            } else{
+                if(($payment->isCard() === true) && ($payment->card->isInternational() === false) && ($entity['token']['status'] === 'failed')){
+                    $entity['error_code'] = "SERVER_ERROR";
+                    $entity['error_description'] = "Token creation was unsuccessful due to a temporary issue on our side. Please retry the token create request.";
+                    $entity['error_source'] = "internal";
+                    $entity['error_step'] = "token_creation";
+                    $entity['error_reason'] = "server_error";
+                }
+                $this->unSetTokenAttributes($entity);
             }
         }
-
         return $entity;
     }
 
@@ -5971,5 +5979,11 @@ class Service extends Base\Service
         }
 
         return true;
+    }
+
+    public function unSetTokenAttributes(&$entity)
+    {
+        unset($entity['token']['mrn'], $entity['token']['used_at'], $entity['token']['recurring'], $entity['token']['recurring_details']['status'], $entity['token']['recurring_details']['failure_reason'], $entity['token']['auth_type']);
+        unset($entity['token']['card']['name'], $entity['token']['card']['expiry_year'], $entity['token']['card']['expiry_month'], $entity['token']['card']['flows']["pin"], $entity['token']['card']['flows']["recurring"], $entity['token']['card']['cobranding_partner'] );
     }
 }
