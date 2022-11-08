@@ -93,12 +93,14 @@ class Repository extends Base\Repository
                           string $merchantId = null,
                           string $connectionType = null): PublicCollection
     {
-        $this->baseQuery = $this->newQuery()
+        $connection = $this->getConnectionFromType($connectionType);
+
+        $this->baseQuery = $this->newQueryWithConnection($connection)
                                 ->whereNotNull($this->repo->direct_account_statement->dbColumn(Entity::ENTITY_ID));
 
         $startTimeMs = round(microtime(true) * 1000);
 
-        $statements = parent::fetch($input, $merchantId, $connectionType);
+        $statements = parent::fetch($input, $merchantId);
 
         $endTimeMs = round(microtime(true) * 1000);
 
