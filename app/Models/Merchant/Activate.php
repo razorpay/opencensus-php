@@ -400,34 +400,38 @@ class Activate extends Base\Core
 
         if($isExperimentEnabledForLedgerPGMerchant === true) {
 
-            $balance = $this->repo->balance->getBalanceLockForUpdate(
-                $merchant->getId());
+           if($merchant->isFeatureEnabled(Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+           {
+               $balance = $this->repo->balance->getBalanceLockForUpdate(
+                   $merchant->getId());
 
-            //fetches fee and amount credits from credits table
-            $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCreditsLockForUpdate($merchant->getId());
+               //fetches fee and amount credits from credits table
+               $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCreditsLockForUpdate($merchant->getId());
 
-            $isPgLedgerAccountCreated = (new LedgerCore())->createPGLedgerAccount(
-                $merchant,
-                $this->mode,
-                $balance->getBalance(),
-                $creditBalances
-            );
+               $isPgLedgerAccountCreated = (new LedgerCore())->createPGLedgerAccount(
+                   $merchant,
+                   $this->mode,
+                   $balance->getBalance(),
+                   $creditBalances
+               );
 
-            if($isPgLedgerAccountCreated === true and $merchant->isFeatureEnabled(Constants::PG_LEDGER_JOURNAL_WRITES) === false)
-            {
-                (new FeatureCore)->create(
-                    [
-                        FeatureEntity::ENTITY_TYPE  => EntityConstants::MERCHANT,
-                        FeatureEntity::ENTITY_ID    => $merchant->getId(),
-                        FeatureEntity::NAME         => Constants::PG_LEDGER_JOURNAL_WRITES,
-                    ]);
-            }
+               if($isPgLedgerAccountCreated === true and $merchant->isFeatureEnabled(Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+               {
+                   (new FeatureCore)->create(
+                       [
+                           FeatureEntity::ENTITY_TYPE  => EntityConstants::MERCHANT,
+                           FeatureEntity::ENTITY_ID    => $merchant->getId(),
+                           FeatureEntity::NAME         => Constants::PG_LEDGER_JOURNAL_WRITES,
+                       ]);
+               }
 
-            $this->trace->info(TraceCode::LEDGER_ONBOARDING_PG_MERCHANT,[
-                "merchantId"                  => $merchantDetail->getMerchantId(),
-                "isExpEnable"                 => $isExperimentEnabledForLedgerPGMerchant,
-                "isPgLedgerAccountCreated"    => $isPgLedgerAccountCreated
-            ]);
+               $this->trace->info(TraceCode::LEDGER_ONBOARDING_PG_MERCHANT,[
+                   "merchantId"                  => $merchantDetail->getMerchantId(),
+                   "isExpEnable"                 => $isExperimentEnabledForLedgerPGMerchant,
+                   "isPgLedgerAccountCreated"    => $isPgLedgerAccountCreated
+               ]);
+
+           }
 
         }
     }
