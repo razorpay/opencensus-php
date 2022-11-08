@@ -379,7 +379,8 @@ class Entity extends Base\PublicEntity
 
     public function setEmail(string $email)
     {
-        $this->setAttribute(self::EMAIL, $email);
+        $formattedEmail = ($email === null) ? null : mb_strtolower($email);
+        $this->setAttribute(self::EMAIL, $formattedEmail);
     }
 
     public function getPassword()
