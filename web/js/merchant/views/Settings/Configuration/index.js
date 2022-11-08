@@ -16,6 +16,7 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { merchantFetch } from 'merchant/utils/ajax';
 import InstantRefundFee from 'merchant/views/Transactions/Payments/components/InstantRefundFee';
+import MissedOrderPaymentLink from './MissedOrderPaymentLink';
 import DebitRefundAnnouncement from 'merchant/components/Announcements/Refunds/DebitRefund';
 import SmsNotification from './SmsNotification';
 import WhatsappNotification from './WhatsappNotification';
@@ -32,6 +33,7 @@ import {
   REFUND_SETTINGS,
   WHATSAPP_NOTIF,
   SKIP_CARD_MANDATE_SUMMARY,
+  MISSED_ORDER_PAYMENT_LINK,
   ACCOUNT_SETTINGS,
 } from './deeplink-constants';
 import EasterEgg from 'merchant/components/EasterEgg';
@@ -326,6 +328,7 @@ class CongfigurationContainer extends Component {
       org,
     } = this.props;
     let showInternationalPaymentsCard = false;
+    const remarketerEnabled = user.isFeatureEnabled('missed_orders_plink');
     if (mode === 'live') {
       if (this.state.isPaypalOrg) {
         if (this.state.isPaypalMid) {
@@ -360,6 +363,11 @@ class CongfigurationContainer extends Component {
                 isLoading={this.state.isLoading}
               />
             </IntoView>
+            {remarketerEnabled && (
+              <IntoView hashedWith={MISSED_ORDER_PAYMENT_LINK}>
+                <MissedOrderPaymentLink />
+              </IntoView>
+            )}
             {user.isOrgAllowedFunctionality('flashcheckout') && (
               <IntoView hashedWith={FLASH_CHECKOUT}>
                 <ToggleSetting {...flashCheckoutProps} org={org} />

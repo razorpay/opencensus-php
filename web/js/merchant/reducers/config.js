@@ -30,6 +30,10 @@ const CALLBACK_SERVICE = 'rzp.care.callback.v1.CallbackService';
 const REMOVE_LOGO = 'REMOVE_LOGO';
 const FETCH_FEATURE_STATUS = 'FETCH_FEATURE_STATUS';
 const FETCH_INTERNATIONAL_SETTING_STATUS = 'FETCH_INTERNATIONAL_SETTING_STATUS';
+const FETCH_MERCHANT_MOPL_SUBSCRIPTION = 'FETCH_MERCHANT_MOPL_SUBSCRIPTION';
+const FETCH_MOPL_PLANS = 'FETCH_MOPL_PLANS';
+const FETCH_INSIGHTS = 'FETCH_INSIGHTS';
+
 export const TICKET_BASE_URL = 'fd/support_dashboard/ticket';
 export const FETCH_WORKFLOWS =
   'care_service/merchant/twirp/rzp.care.workflow.v1.WorkflowService/FetchWorkflows';
@@ -141,6 +145,27 @@ export const onboardTerminal = (gateway) => {
     data: {
       gateway,
     },
+  };
+
+  return merchantFetch(params);
+};
+
+export const missedOrderPlanActivation = (planId) => {
+  const params = {
+    url: `payment_links/subscriptions`,
+    method: 'post',
+    data: {
+      plan_id: planId,
+    },
+  };
+
+  return merchantFetch(params);
+};
+
+export const missedOrderPlanDeActivation = () => {
+  const params = {
+    url: `payment_links/subscriptions/deactivate`,
+    method: 'post',
   };
 
   return merchantFetch(params);
@@ -407,6 +432,27 @@ export const createLateAuthConfig = (payload, method) => {
   };
 };
 
+export const fetchMerchantMOPLSubscription = () => {
+  return {
+    type: FETCH_MERCHANT_MOPL_SUBSCRIPTION,
+    payload: merchantFetch({ url: `payment_links/subscriptions`, method: 'GET' }),
+  };
+};
+
+export const fetchMOPLPlans = () => {
+  return {
+    type: FETCH_MOPL_PLANS,
+    payload: merchantFetch({ url: `payment_links/plans`, method: 'GET' }),
+  };
+};
+
+export const fetchInsights = (month) => {
+  return {
+    type: FETCH_INSIGHTS,
+    payload: merchantFetch({ url: `payment_links/insights?month=${month}`, method: 'GET' }),
+  };
+};
+
 export const fetchFeatureStatus = (currentUserId, featureName) => {
   return {
     type: FETCH_FEATURE_STATUS,
@@ -477,6 +523,11 @@ const initialState = {
   locale: null,
   isBrandColorDark: false,
   features: [],
+  missed_order_payment_link: {
+    subscription: { loading: true, data: {}, error: null },
+    plans: { loading: true, data: {}, error: null },
+    insights: { loading: true, data: {}, error: null },
+  },
   lateAuthConfig: {
     loading: true,
     data: {},
@@ -608,6 +659,51 @@ const configReducer = (state = initialState, action) => {
 
     case `${FETCH_FEATURE_STATUS}::ERROR`:
       return set(state, 'lateAuthConfig', {
+        loading: false,
+        data: {},
+        error: action.payload.errors,
+      });
+
+    case `${FETCH_MERCHANT_MOPL_SUBSCRIPTION}::SUCCESS`: {
+      return set(state, 'missed_order_payment_link.subscription', {
+        loading: false,
+        data: action.payload.data,
+        error: null,
+      });
+    }
+
+    case `${FETCH_MERCHANT_MOPL_SUBSCRIPTION}::ERROR`:
+      return set(state, 'missed_order_payment_link.subscription', {
+        loading: false,
+        data: {},
+        error: action.payload.errors,
+      });
+
+    case `${FETCH_MOPL_PLANS}::SUCCESS`: {
+      return set(state, 'missed_order_payment_link.plans', {
+        loading: false,
+        data: action.payload.data,
+        error: null,
+      });
+    }
+
+    case `${FETCH_MOPL_PLANS}::ERROR`:
+      return set(state, 'missed_order_payment_link.plans', {
+        loading: false,
+        data: {},
+        error: action.payload.errors,
+      });
+
+    case `${FETCH_INSIGHTS}::SUCCESS`: {
+      return set(state, 'missed_order_payment_link.insights', {
+        loading: false,
+        data: action.payload.data,
+        error: null,
+      });
+    }
+
+    case `${FETCH_INSIGHTS}::ERROR`:
+      return set(state, 'missed_order_payment_link.insights', {
         loading: false,
         data: {},
         error: action.payload.errors,
