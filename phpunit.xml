@@ -294,6 +294,7 @@
             <directory>./tests/Functional/Merchant/Bvs/</directory>
             <directory>./tests/Functional/Merchant/BvsVerification/</directory>
             <directory>./tests/Functional/Modules/Acs/</directory>
+            <directory>./tests/Functional/Modules/Acs/Wrapper/</directory>
             <directory>./tests/Unit/Models/Merchant/Asv/</directory>
             <directory>./tests/Functional/Merchant/Slabs/</directory>
             <directory>./tests/Functional/Merchant/Store/</directory>
