@@ -24,4 +24,11 @@ class CheckoutOrderController extends Controller
 
         return Response::json([], 204);
     }
+
+    public function createCheckoutOrdersPartition(): JsonResponse
+    {
+        $response = $this->service()->createCheckoutOrdersPartition();
+
+        return Response::json($response);
+    }
 }

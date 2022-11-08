@@ -9,12 +9,16 @@ use RZP\Constants\HyperTrace;
 use RZP\Http\RequestHeader;
 use RZP\Http\Route;
 use RZP\Models\Base\Service as BaseService;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\CloseReason as NonVAQrCodeCloseReason;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Core as NonVAQrCodeCore;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as NonVAQrCodeEntity;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Service as NonVAQrCodeService;
 use RZP\Trace\TraceCode;
 use RZP\Trace\Tracer;
+use Illuminate\Database\QueryException;
 
 class Service extends BaseService
 {
@@ -80,6 +84,33 @@ class Service extends BaseService
         $checkoutOrder->setClosedAt(Carbon::now()->getTimestamp());
 
         $this->repo->saveOrFail($checkoutOrder);
+    }
+
+    /**
+     * Creates partitions till T+6 date
+     * Drops the oldest partition with a validation that it should be older than T-7.
+     *
+     * @return bool[]
+     * @throws Exception\ServerErrorException
+     */
+    public function createCheckoutOrdersPartition(): array
+    {
+        try
+        {
+            $this->repo->checkout_order->createPartition();
+
+            $this->repo->checkout_order->dropPartition();
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::CHECKOUT_ORDERS_PARTITION_ERROR);
+
+            throw new Exception\ServerErrorException('Partition Query failed', ErrorCode::SERVER_ERROR_DB_QUERY_FAILED);
+        }
+
+        $this->trace->info(TraceCode::CHECKOUT_ORDERS_PARTITION_SUCCESS, []);
+
+        return ['success' => true];
     }
 
     protected function handleReceiver(Entity $checkoutOrder, array $input): array

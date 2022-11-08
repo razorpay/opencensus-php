@@ -35,6 +35,7 @@ class Route
         // ------------------------------ Checkout Order Routes - START ------------------------------
         'create_checkout_order'                    => ['post',      'checkout/order',                               'CheckoutOrderController@create'    ],
         'close_checkout_order'                     => ['delete',    'checkout/order/{id}',                          'CheckoutOrderController@close'     ],
+        'checkout_orders_partition_cron'           => ['post',      'checkout/orders/partition',                    'CheckoutOrderController@createCheckoutOrdersPartition'              ],
         // ------------------------------ Checkout Order Routes - END ------------------------------
 
         //qr code cutoff config
@@ -5199,6 +5200,7 @@ class Route
 
         // payment analytics cron creates a new partition and drops oldest partition, runs daily
         'payment_analytics_partition_cron',
+        'checkout_orders_partition_cron',
         'payout_links_batch_process',
         'merchant_methods_hdfc_debit_emi',
 
@@ -13520,6 +13522,7 @@ class Route
             'health_checker_reminder_cron',
             'fraud_checker_milestone_cron',
             'payment_analytics_partition_cron',
+            'checkout_orders_partition_cron',
             'payout_outbox_partition_cron',
             'audit_info_partition_cron',
             'orphan_payouts_count_cron',
