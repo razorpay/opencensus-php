@@ -549,7 +549,7 @@ class Core extends Base\Core
      * @return Entity
      * @throws Exception\BadRequestException
      */
-    public function getByTokenIdAndCustomerId(string $id, string $customerId)
+    public function  getByTokenIdAndCustomerId(string $id, string $customerId)
     {
         $token = null;
 

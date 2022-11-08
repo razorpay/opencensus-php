@@ -2098,7 +2098,7 @@ class Service extends Base\Service
             $this->addDashboardFlags($entity, $payment, $input);
         }
 
-        if (isset($entity['card']))
+        if (isset($entity['card']) && ($payment->card->isInternational() === false))
         {
             $entity['card']['name'] = "";
         }
