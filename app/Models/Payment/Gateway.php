@@ -768,7 +768,6 @@ class Gateway
         IFSC::SPCB,
         IFSC::TMBL,
         IFSC::UBIN,
-        IFSC::UJVN,
         IFSC::USFB,
         IFSC::UTBI,
         IFSC::UTIB,
