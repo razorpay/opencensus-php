@@ -7649,7 +7649,7 @@ class Core extends Base\Core
 
                             $this->deleteRedisKeyForPayoutServiceMigration($redisKey);
 
-                            return ['completed'];
+                            return 'completed';
                         }
 
                         $createdAt = $input[DataMigrationProcessor::END_TIMESTAMP] + 1;
@@ -7665,7 +7665,7 @@ class Core extends Base\Core
                     $batch++;
                 }
 
-                return ['incomplete'];
+                return 'incomplete';
             },
             self::MUTEX_LOCK_TIMEOUT_PS_DATA_MIGRATION,
             ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
