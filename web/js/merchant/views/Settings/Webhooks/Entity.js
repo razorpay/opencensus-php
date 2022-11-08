@@ -13,15 +13,11 @@ import Button from 'common/new-ui/Button';
 import Alert from 'common/new-ui/Alert';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import PropTypes from 'prop-types';
-
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import DocsLink from 'merchant/components/DocsLink';
 import * as WebhookActions from 'merchant/reducers/webhooks';
 import Collapsible from 'merchant/components/Collapsible';
-import ShowWhen from 'merchant/components/ShowWhen';
-
 import AddEditWebhook from './AddEditWebhook';
-import WebhookStats from './components/WebhookStats';
 
 class WebhookEntity extends Component {
   state = {
@@ -178,6 +174,7 @@ class WebhookEntity extends Component {
                           defaultChecked={webhook.active}
                           onChange={(isChecked, cb) => this.toggleActive(isChecked, cb)}
                           type="prime"
+                          data-testid="webhook-toggle-switch"
                         />
                         {webhook.active ? (
                           <b className="text-primary" style={{ marginLeft: '4px' }}>
@@ -192,11 +189,6 @@ class WebhookEntity extends Component {
                     )}
                   </span>
                 </EntityDetailRow>
-                <ShowWhen additionalCondition={(user) => user.isWebhooksStatsEnabled}>
-                  <div className="Webhook__StatsContainer">
-                    <WebhookStats id={this.props.id} />
-                  </div>
-                </ShowWhen>
                 <EntityDetailRow label="Secret">
                   {webhook.secret_exists ? (
                     <p>Secret was provided during webhook setup</p>

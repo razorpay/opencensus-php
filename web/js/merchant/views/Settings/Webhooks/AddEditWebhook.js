@@ -409,6 +409,7 @@ class webhookForm extends Component {
                   autoFocus={true}
                   validate={[required(), this.validateUrl]}
                   placeholder="HTTPS URL is recommended"
+                  data-testid="webhook-url"
                 />
               </div>
             </div>
@@ -451,6 +452,7 @@ class webhookForm extends Component {
                     className="btn btn-link"
                     onClick={this.toggleVisibility}
                     style={{ fontSize: '12px', padding: '0', float: 'right' }}
+                    data-testid="toggle-secret"
                   >
                     {this.state.showSecret ? 'Hide Secret' : 'Show Secret'}
                   </button>
@@ -487,6 +489,7 @@ class webhookForm extends Component {
                     placeholder="Search"
                     value={searchEventsQuery}
                     onChange={(e) => this.filterWebhooks(e.target.value)}
+                    data-testid="webhook-events-search"
                   />
                   {searchEventsQuery ? (
                     <div
@@ -513,6 +516,7 @@ class webhookForm extends Component {
                           marginTop: '4px',
                           marginLeft: '8px',
                         }}
+                        data-testid="webhook-events-search-close"
                       />
                     </div>
                   ) : null}
@@ -533,7 +537,7 @@ class webhookForm extends Component {
                   }}
                 >
                   {!filterGroupedWebhooks ? (
-                    <div className="page-spinner-container">
+                    <div className="page-spinner-container" data-testid="webhook-events-spinner">
                       <Spinner />
                     </div>
                   ) : Object.keys(filterGroupedWebhooks).length ? (
@@ -544,6 +548,7 @@ class webhookForm extends Component {
                           <div className="checkbox eventGroup">
                             <label>
                               <Field
+                                data-testid={`eventGroup['${eventGroup}']`}
                                 name={`eventGroup['${eventGroup}']`}
                                 component="input"
                                 type="checkbox"

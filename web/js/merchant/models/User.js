@@ -1275,11 +1275,6 @@ export default class User {
     return true;
   }
 
-  get isWebhooksStatsEnabled() {
-    // currently this experiment is not added in User/Service.php
-    return this.getExpStatus('webhook_stats');
-  }
-
   get isAdharEkycRequired() {
     return this.isOrgRZP && this.getExpStatus('adharEkyc_for_reg_businessTypes');
   }
