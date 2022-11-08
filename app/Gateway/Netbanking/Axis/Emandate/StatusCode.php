@@ -29,6 +29,7 @@ class StatusCode
     const ERROR_LIMIT_EXPD                = 'SANCT LIMIT EXPD. OFFICERABOVE';
     const ERROR_TRANSACTION_AMOUNT_EXCEED = 'Transaction Amount is greater than Mandate Ceiling Amount';
     const ERROR_TOTAL_FREEZE              = 'Total Freeze';
+    const ERROR_BALANCE_INSUFFICIENT      = 'Balance Insufficient';
 
 
     const EMANDATE_FAILURE = '0';
@@ -68,6 +69,7 @@ class StatusCode
         self::ERROR_LIMIT_EXPD                => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
         self::ERROR_TRANSACTION_AMOUNT_EXCEED => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_MAX_LIMIT_EXCEEDED,
         self::ERROR_TOTAL_FREEZE              => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN,
+        self::ERROR_BALANCE_INSUFFICIENT      => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,
     ];
 
     public static function isSuccess(string $statusCode)
