@@ -583,10 +583,14 @@ class Core extends Base\Core
                 $admin = $this->repo->admin->findOrFailPublic($input[Entity::OWNER_ID]);
 
                 $this->trace->info(TraceCode::WORKFLOW_MAKER_AND_OWNER, [
-                    Entity::ACTION_ID   => $action->getPublicId(),
-                    Entity::MAKER        => $action->getMakerId(),
-                    Entity::MAKER_TYPE   =>  $action->getMakerType(),
-                    Entity::OWNER_ID     => $input[Entity::OWNER_ID],
+                    Entity::ACTION_ID                 => $action->getPublicId(),
+                    Entity::MAKER                     => $action->getMakerId(),
+                    Entity::MAKER_TYPE                => $action->getMakerType(),
+                    Entity::OWNER_ID                  => $input[Entity::OWNER_ID],
+                    Entity::PERMISSION_ID             => $action->permission->getId(),
+                    Entity::PERMISSION_NAME           => $action->permission->getName(),
+                    Entity::WORKFLOW_ID               => $action->getWorkflowId(),
+                    Workflow\Constants::WORKFLOW_NAME => $action->workflow->getName(),
                     "validation_result"  =>  $action->getValidator()->validateMakerIsNotCheckerOrOwner($action, $admin)
                 ]);
 

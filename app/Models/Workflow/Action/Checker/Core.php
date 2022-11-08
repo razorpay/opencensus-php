@@ -69,7 +69,11 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::WORKFLOW_MAKER_AND_CHECKER, [
             Action\Entity::ACTION_ID            => $action->getPublicId(),
             Action\Entity::MAKER                => $action->getMakerId(),
-            Action\Entity::MAKER_TYPE           =>  $action->getMakerType(),
+            Action\Entity::MAKER_TYPE           => $action->getMakerType(),
+            Action\Entity::PERMISSION_ID        => $action->permission->getId(),
+            Action\Entity::PERMISSION_NAME      => $permissionName,
+            Action\Entity::WORKFLOW_ID          => $action->getWorkflowId(),
+            Workflow\Constants::WORKFLOW_NAME   => $action->workflow->getName(),
             Action\Checker\Entity::CHECKER_TYPE => $checkerType,
             Action\Checker\Entity::CHECKER_ID   => $checkerEntity->getId(),
             "validation_result"                 => (new Action\Validator)->validateMakerIsNotCheckerOrOwner($action, $checkerEntity, $checkerType)
