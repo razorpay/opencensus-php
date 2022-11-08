@@ -469,7 +469,21 @@ class Core extends Base\Core
 
         if(strpos($message, $errorPhone) !== false || strpos($message, $errorCustomer) !== false)
         {
-            $body['customer']['phone'] = null;
+            if (empty($body['email']) === true)
+            {
+                //find customer id with phone
+                $customerId = $this->findCustomerIdByPhone($body['customer']['phone']);
+
+                if(empty($customerId) === false)
+                {
+                    $body['customer']['id'] = $customerId;
+                    $body['customer']['phone'] = null;
+                }
+            }
+            else
+            {
+                $body['customer']['phone'] = null;
+            }
 
             $retry = true;
         }
@@ -537,8 +551,21 @@ class Core extends Base\Core
 
         if(strpos($message, $errorPhone) !== false || strpos($message, $errorCustomer) !== false)
         {
-            $body['customer']['phone'] = null;
+            if (empty($body['email']) === true)
+            {
+                //find customer id with phone
+                $customerId = $this->findCustomerIdByPhone($body['customer']['phone']);
 
+                if(empty($customerId) === false)
+                {
+                    $body['customer']['id'] = $customerId;
+                    $body['customer']['phone'] = null;
+                }
+            }
+            else
+            {
+                $body['customer']['phone'] = null;
+            }
             //New check for retry is made in case we want to add additional retry logic in the future
             $retry = true;
         }
@@ -854,7 +881,10 @@ class Core extends Base\Core
             'zip'        => $billingAddress['zipcode']
         ];
 
-        $body['email'] = $customerDetails['email'];
+        if (empty($customerDetails['email']) === false)
+        {
+            $body['email'] = $customerDetails['email'];
+        }
 
         $body['phone'] = $customerDetails['contact'];
 
@@ -1463,5 +1493,67 @@ class Core extends Base\Core
         return (new AuthConfig\Core)->ge1ccAuthConfigsByMerchantIdAndPlatform($merchantId,
             \RZP\Models\Merchant\OneClickCheckout\Constants::SHOPIFY
         );
+    }
+
+    private function findCustomerIdByPhone($phone)
+    {
+
+        $client = $this->getShopifyClientByMerchantId($this->merchant->getId());
+
+        $method = Client::GET;
+
+        if(substr($phone,0,1) === '+')
+        {
+            $phone = substr($phone,1,mb_strlen($phone) - 1);
+        }
+
+        $queryString = '?query=phone:'.$phone;
+
+        $resource = OneClickCheckout\Constants::CUSTOMER_SEARCH_ENDPOINT.$queryString;
+
+        $requestStart = millitime();
+
+        $customerId = null;
+
+        $response = null;
+
+        $this->monitoring->addTraceCount(Metric::SHOPIFY_CUSTOMER_SEARCH_REQUEST_COUNT, []);
+
+        try
+        {
+            $response = $client->sendRestApiRequest(null, $method, $resource);
+
+            $customerDetails = json_decode($response, true);
+
+            if (empty($customerDetails['customers']) === false)
+            {
+                $customerId = $customerDetails['customers'][0]['id'];
+            }
+        }
+        catch (\Exception $exception)
+        {
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_CUSTOMER_SEARCH_ERROR_COUNT,['error_type' => TraceCode::SHOPIFY_FETCH_CUSTOMER_FAILED]);
+
+            $this->trace->error(
+                TraceCode::SHOPIFY_CUSTOMER_SEARCH_API_ERROR,
+                [
+                    'type'  => 'error_fetching_customer',
+                    'error' => $exception->getMessage()
+                ]
+            );
+            return $customerId;
+        }
+
+        $this->monitoring->traceResponseTime(Metric::SHOPIFY_CUSTOMER_SEARCH_CALL_TIME, $requestStart, []);
+
+        $this->trace->info(
+            TraceCode::SHOPIFY_CUSTOMER_SEARCH_API_RES,
+            [
+                'type' => 'customer_search_with_phone',
+                'time' => millitime() - $requestStart,
+                'customer_id' => $customerId
+            ]
+        );
+        return $customerId;
     }
 }

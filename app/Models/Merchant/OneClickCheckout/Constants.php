@@ -162,6 +162,7 @@ class Constants
     const METAFIELD = "metafield";
 
     const POST = "POST";
+    const GET  = "GET";
     const METAFIELD_ENDPOINT = "/metafields.json";
 
     //action name for rto recommendation
@@ -170,6 +171,8 @@ class Constants
     const HOLD          = 'hold';
     const CANCEL        = 'cancel';
     const CANCEL_ORDER_ENDPOINT = "/cancel.json";
+
+    const CUSTOMER_SEARCH_ENDPOINT = "/customers/search.json";
 
     const ID                = 'id';
     const MERCHANT_ID        = 'merchant_id';

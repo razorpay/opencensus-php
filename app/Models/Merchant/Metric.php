@@ -114,6 +114,10 @@ final class Metric
     const SHOPIFY_CANCEL_ORDER_ERROR_COUNT         = 'shopify_cancel_order_error_count';
     const SHOPIFY_CANCEL_ORDER_CALL_TIME           = 'shopify_cancel_order_call_time';
 
+    const SHOPIFY_CUSTOMER_SEARCH_REQUEST_COUNT       = 'shopify_customer_search_request_count';
+    const SHOPIFY_CUSTOMER_SEARCH_ERROR_COUNT         = 'shopify_customer_search_error_count';
+    const SHOPIFY_CUSTOMER_SEARCH_CALL_TIME           = 'shopify_customer_search_call_time';
+
     const SHOPIFY_ADD_TAG_SUCCESS_COUNT             = 'shopify_add_tag_success_count';
     const SHOPIFY_ADD_TAG_ERROR_COUNT               = 'shopify_add_tag_status_error_count';
     const SHOPIFY_ADD_TAG_CALL_TIME                 = 'shopify_add_tag_call_time';
