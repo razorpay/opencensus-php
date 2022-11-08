@@ -4170,7 +4170,9 @@ trait Refund
     public function isRefundRequestV1_1(string $merchantId, Payment\Entity $payment): bool
     {
         if (($payment->getCurrency() !== Currency\Currency::INR) or
-            ($payment->isDCC() === true))
+            ($payment->isDCC() === true) or
+            (($payment->isTransferred() === true) and
+            ($payment->isTransfer() === false)))
         {
             return false;
         }
