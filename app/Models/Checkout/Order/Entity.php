@@ -71,6 +71,7 @@ class Entity extends PublicEntity
     public const CUSTOMER_ID = 'customer_id';
     public const DESCRIPTION = 'description';
     public const FEE = 'fee';
+    public const IP = 'ip';
     public const METHOD = 'method';
     public const NAME = 'name';
     public const NOTES = 'notes';
@@ -100,6 +101,7 @@ class Entity extends PublicEntity
         self::DISCOUNTED_AMOUNT,
         self::DISCOUNT,
         self::FEE,
+        self::IP,
         self::METHOD,
         self::NAME,
         self::NOTES,
@@ -122,6 +124,7 @@ class Entity extends PublicEntity
         self::CUSTOMER_ID,
         self::DESCRIPTION,
         self::EMAIL,
+        self::IP,
         self::METHOD,
         self::NOTES,
         self::OFFER_ID,

@@ -237,6 +237,7 @@ class CheckoutOrdersTest extends TestCase
         $this->assertEquals($checkoutOrder['meta_data']['_']['platform'], $paymentAnalytics['platform']);
         $this->assertEquals($checkoutOrder['meta_data']['_']['referer'], $paymentAnalytics['referer']);
         $this->assertEquals($checkoutOrder['meta_data']['user_agent'], $paymentAnalytics['user_agent']);
+        $this->assertEquals($checkoutOrder['meta_data']['ip'], $paymentAnalytics['ip']);
         $this->assertEquals($checkoutOrder['meta_data']['_']['device_id'], $paymentAnalytics['virtual_device_id']);
 
         //UpiMetadata assertions

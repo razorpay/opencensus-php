@@ -168,9 +168,10 @@ class Parser extends Base\Core
          *
          * For S2S Payments as well, take user agent from input
          */
-        if ($this->ba->isPrivateAuth() ||
-            ($this->ba->isDirectAuth() && $pa->payment->isUpiQr()))
-        {
+        if (
+            $this->ba->isPrivateAuth() ||
+            ($this->ba->isDirectAuth() && $pa->payment->isUpiQr())
+        ) {
             $ua = $pa->payment->getMetadata('user_agent');
 
             $this->uAgent = new Agent(null, $ua);
@@ -286,12 +287,25 @@ class Parser extends Base\Core
         return ((strtolower($domain) !== 'razorpay.com') ? $reqReferer : null);
     }
 
+    /**
+     * Payment entity creation happens in gateway callback for QrV2 Payments
+     * Since we want to capture the user's IP address from which checkout was opened,
+     *      we are taking the IP from payment input
+     *
+     * For S2S Payments as well, take IP from input
+     *
+     * @param  Entity  $pa
+     *
+     * @return string
+     */
     protected function getIp(Entity $pa)
     {
         $ip = $this->request->ip();
 
-        if ($this->ba->isPrivateAuth() === true)
-        {
+        if (
+            $this->ba->isPrivateAuth() ||
+            ($this->ba->isDirectAuth() && $pa->payment->isUpiQr())
+        ) {
             return $pa->payment->getMetadata('ip', $ip);
         }
 

@@ -40,6 +40,7 @@ class Service extends BaseService
     public function create(array $input): array
     {
         $input[Entity::USER_AGENT] = $this->app['request']->header(RequestHeader::USER_AGENT);
+        $input[Entity::IP] = $this->app['request']->ip();
 
         $this->traceRequest(TraceCode::CREATE_CHECKOUT_ORDER_REQUEST, $input);
 

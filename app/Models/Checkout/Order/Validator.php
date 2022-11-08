@@ -36,6 +36,7 @@ class Validator extends BaseValidator
         Entity::EMAIL => 'sometimes|email',
         Entity::EXPIRE_AT => 'sometimes|epoch|custom',
         Entity::INVOICE_ID => 'sometimes|string|alpha_num|size:14',
+        Entity::IP => 'required|ip',
         Entity::METHOD => 'sometimes|in:upi',
         Entity::NAME => 'sometimes|string|custom',
         Entity::NOTES => 'filled|notes',
