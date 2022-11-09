@@ -797,9 +797,27 @@ class Core extends Base\Core
             $card->setTokenIIn($tokenizedRange);
         }
 
-        if ($input[Card\Entity::NUMBER] === Card\Entity::DUMMY_AXIS_TOKENHQ_CARD) {
-            $card->setTokenIIn(null);
+        if ($input[Card\Entity::NUMBER] === Card\Entity::DUMMY_AXIS_TOKENHQ_CARD)
+        {
+            $card->setTokenIIn('999999');
             $card->setAttribute(Card\Entity::TOKEN_LAST_4, null);
+
+            if (empty($network_card) === false)
+            {
+                $card->setType($network_card['type']);
+                $card->setSubType($network_card['sub_type']);
+                $card->setNetwork($network_card['network']);
+                $card->setCategory($network_card['category']);
+
+                $arr = [
+                    Entity::ISSUER => $network_card['issuer'],
+                    Entity::COUNTRY => $network_card['country'],
+                    Entity::INTERNATIONAL => $network_card->isInternational(),
+                    Entity::EMI => $network_card->getEmi(),
+                ];
+
+                $card->fill($arr);
+            }
         }
 
         return $iin;
