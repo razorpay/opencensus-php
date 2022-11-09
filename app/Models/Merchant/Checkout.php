@@ -197,6 +197,8 @@ class Checkout
 
         $this->fillMerchantPolicyPage($merchant,$data);
 
+        $this->fill1ccCouponDropOffExperiment($merchant, $data);
+
         return $data;
     }
     protected function fillMerchantPolicyPage(Entity $merchant, array & $data): void
@@ -2072,5 +2074,28 @@ class Checkout
             $data['features'][$featureFlags] = $response[$featureFlags];
         }
         $data['1cc']['configs'] = $response;
+    }
+
+    protected function fill1ccCouponDropOffExperiment(Entity $merchant, array &$data): void
+    {
+        if ($merchant->isFeatureEnabled(Feature\Constants::ONE_CLICK_CHECKOUT) === false)
+        {
+            return;
+        }
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.1cc_coupon_drop_off_splitz_experiment_id'),
+            ];
+            
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $data['1cc_coupon_drop_off_exp'] = $response['response']['variant']['name'] ?? null;
+        }
+        catch (\Throwable $e)
+        {
+            $data['1cc_coupon_drop_off_exp'] = null;
+        }
     }
 }

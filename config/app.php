@@ -494,5 +494,7 @@ return array(
 
     'partner_independent_kyc_exp_id' => env('PARTNER_INDEPENDENT_KYC_EXP_ID'),
 
+    '1cc_coupon_drop_off_splitz_experiment_id' => env('MAGIC_CHECKOUT_COUPONS_DROP_OFF_EXP_ID'),
+
     'partnership_service_commission_sync_exp_id' => env('PARTNERSHIP_SERVICE_COMMISSION_SYNC_EXP_ID'),
 );
