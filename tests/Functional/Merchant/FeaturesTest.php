@@ -3646,4 +3646,18 @@ Regards,
         $this->assertFalse($isIdempotencyPayoutServicePsToApiEnabled);
         $this->assertFalse($isIdempotencyPayoutServiceApiToPsEnabled);
     }
+
+    public function test1ccCustomerConsent()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+    }
+
+    public function test1ccCustomerConsentNotDefault()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+    }
 }

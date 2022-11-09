@@ -367,6 +367,9 @@ class Service extends Base\Service
             $addressConsentView = $this->core->fetchAddressConsentViewsFor1CC($customer);
             $data['1cc_consent_banner_views'] = $addressConsentView;
 
+            //fetch customer consent
+            $data['1cc_customer_consent'] = $this->core->fetchCustomerConsentFor1CC($customer->getContact(), $this->merchant->getId());
+
             // Check tokens count only when the device token is not present or not valid.
             // rzpAddressCount check is added as 1cc is also using this api for triggering otp for showing addresses.
             // Todo: rzpAddressCount check will be removed once we have ability to find the request is from 1cc/std checkout.
@@ -917,5 +920,13 @@ class Service extends Base\Service
         $customerArr = $this->core->fetchGlobalCustomerByID($id);
 
         return $customerArr;
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    public function recordCustomerConsent1cc($input)
+    {
+        return $this->core->recordCustomerConsent1cc($input);
     }
 }

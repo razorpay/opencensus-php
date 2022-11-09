@@ -658,6 +658,7 @@ class Entity
     const ADDRESS_CONSENT_1CC           = 'address_consent_1cc';
     const ZIPCODE_DIRECTORY             = 'zipcode_directory';
     const MERCHANT_1CC_COMMENTS          = 'merchant_1cc_comments';
+    const CUSTOMER_CONSENT_1CC          = 'customer_consent_1cc';
 
     // merchant international integrations
     const MERCHANT_INTERNATIONAL_INTEGRATIONS = 'merchant_international_integrations';
@@ -1449,6 +1450,8 @@ class Entity
         self::CHECKOUT_ORDER => \RZP\Models\Checkout\Order::class,
 
         self::PAYMENT_LIMIT => \RZP\Models\Merchant\PaymentLimit::class,
+
+        self::CUSTOMER_CONSENT_1CC          => \RZP\Models\Customer\CustomerConsent1cc::class,
     ];
 
     protected static $repository = [

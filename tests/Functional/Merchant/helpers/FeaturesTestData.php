@@ -3683,4 +3683,46 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+    
+    'test1ccCustomerConsent' => [
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['one_cc_consent_default'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name' => 'one_cc_consent_default',
+                    'entity_id' => '10000000000000',
+                    'entity_type' => 'merchant',
+                ]
+            ]
+        ]
+    ],
+
+    'test1ccCustomerConsentNotDefault' => [
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['one_cc_consent_notdefault'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name' => 'one_cc_consent_notdefault',
+                    'entity_id' => '10000000000000',
+                    'entity_type' => 'merchant',
+                ]
+            ]
+        ]
+    ],
 ];
