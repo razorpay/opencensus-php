@@ -21,7 +21,7 @@ export const routeToChannelIDMap = {
       dev: 'Ifyxxu4bAk99Ev',
       beta: 'Ifyxxu4bAk99Ev',
       stage: 'Ifyxxu4bAk99Ev',
-      production: 'IfyyNE821PHDlt',
+      production: 'HpP3cspZ3AcuV2',
     },
     home: {
       dev: 'HTdu8cC7FJEIHC',
@@ -177,7 +177,7 @@ export const routeToChannelIDMap = {
       dev: 'IiQPZ3bmxiHyoq',
       beta: 'HTdu8cC7FJEIHC',
       stage: 'HTdu8cC7FJEIHC',
-      production: 'IiQPZ3bmxiHyoq',
+      production: 'HpP3cspZ3AcuV2',
     },
     gs_login_card: {
       dev: 'Il7nf6M5YIxTIo',
@@ -198,7 +198,7 @@ export const routeToChannelIDMap = {
       dev: 'Ifyxxu4bAk99Ev',
       beta: 'Ifyxxu4bAk99Ev',
       stage: 'Ifyxxu4bAk99Ev',
-      production: 'IfyyNE821PHDlt',
+      production: 'IMN6odavPeZlSu',
     },
     home: {
       dev: 'ILpOiPdxsl62QN',
@@ -355,7 +355,7 @@ export const routeToChannelIDMap = {
       dev: 'IiQPZ3bmxiHyoq',
       beta: 'HTdu8cC7FJEIHC',
       stage: 'HTdu8cC7FJEIHC',
-      production: 'IiQPZ3bmxiHyoq',
+      production: 'IMN6odavPeZlSu',
     },
     gs_login_card: {
       dev: 'Il7nf6M5YIxTIo',
