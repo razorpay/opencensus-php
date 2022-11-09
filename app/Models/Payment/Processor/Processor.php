@@ -4005,9 +4005,11 @@ class Processor
         }
         $dcc_offered = false;
         $forex_rate = 1.0;
+        $dcc_mark_up_percent=0.0;
         if($paymentMeta !== null)  {
             $dcc_offered= $paymentMeta->isDccOffered();
             $forex_rate=$paymentMeta->getForexRate();
+            $dcc_mark_up_percent=$paymentMeta->getDccMarkUpPercent();
         }
         $data['payment'] = [
             'id'            => $payment->getId(),
@@ -4023,7 +4025,8 @@ class Processor
             'gateway_currency' => $payment->getGatewayCurrency(),
             'dcc_markup_amount'=> $payment->getDccMarkUpAmount(),
             'dcc_offered' => $dcc_offered,
-            'forex_rate' => $forex_rate
+            'forex_rate' => $forex_rate,
+            'dcc_mark_up_percent'=>$dcc_mark_up_percent,
         ];
         $terminal = $payment->terminal;
 
@@ -4055,7 +4058,6 @@ class Processor
                 'gateway_reference_id2'  => $authorisation['gateway_reference_id2'],
                 'verify_id'              => $authorisation['verify_id'],
                 'gateway_transaction_id' => $authorisation['gateway_transaction_id'],
-
             ];
         }
 
