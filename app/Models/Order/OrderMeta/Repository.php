@@ -34,4 +34,21 @@ class Repository extends Base\Repository
             ->where(Entity::ORDER_ID, '=', $orderId, 'AND', Entity::TYPE, '=', $type)
             ->first();
     }
+
+    // Get order meta based on type from orders fetched from PG router
+    public function getOrderMetaByTypeFromPGOrder($order, $type)
+    {
+        if (isset($order['order_metas']) !== false)
+        {
+            foreach ($order['order_metas'] as $orderMeta)
+            {
+                if ($orderMeta['type'] === $type)
+                {
+                    return $orderMeta;
+                }
+            }
+        }
+
+        return null;
+    }
 }

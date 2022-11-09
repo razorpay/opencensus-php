@@ -101,18 +101,32 @@ class Service extends Base\Service
 
     public function createForOrder(string $orderId, array $input)
     {
-        $order = $this->repo
-                      ->order
-                      ->findByPublicIdAndMerchant($orderId, $this->merchant);
+        //check if receiver is offline_challan
+        $isOfflineChallan = (new Receiver($this->entity))->checkReceiverIsOfflineChallan($input);
+
+        if ($isOfflineChallan and ($this->mode === Mode::LIVE))
+        {
+            $order = $this->app['pg_router']->fetch(EntityConstants::ORDER, $orderId, $this->merchant->getId(), $input);
+        }
+        else
+        {
+            $order = $this->repo
+                ->order
+                ->findByPublicIdAndMerchant($orderId, $this->merchant);
+        }
+
+        $offlineInfo = null;
+
+        if ($isOfflineChallan)
+        {
+            $offlineInfo = (new Receiver($this->entity))->getOfflineChallanInfo($order);
+        }
 
         if ($order->isPaid() === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_DISALLOWED_FOR_ORDER);
         }
-
-        //check if receiver is offline_challan
-        $offlineInfo = (new Receiver($this->entity))->checkReceiverIsOfflineChallan($orderId, $input);
 
         $response = $this->mutex->acquireAndRelease(
             $orderId,
@@ -1411,9 +1425,16 @@ class Service extends Base\Service
 
         $response = $this->checkClientCodeForBankRequest($virtualAccount,$input,$response);
 
-        $order = $this->repo->order->findOrFail($virtualAccount->getEntityId());
+        if ($this->mode === Mode::LIVE)
+        {
+            $order = $this->app['pg_router']->fetch(EntityConstants::ORDER, $virtualAccount->getEntityId(), $virtualAccount['merchant_id'], $input);
+        }
+        else
+        {
+            $order = $this->repo->order->findOrFail($virtualAccount->getEntityId());
+        }
 
-        $response = $this->checkIdentificationIdForBankRequest($virtualAccount,$input,$response);
+        $response = $this->checkIdentificationIdForBankRequest($order,$input,$response);
 
         $response = $this->checkOrderAmountForBankRequest($order,$input,$response);
 
@@ -1509,12 +1530,20 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function checkIdentificationIdForBankRequest($virtualAccount,$input,$response): array
+    public function checkIdentificationIdForBankRequest($order, $input, $response): array
     {
-        $metaData = (new Order\OrderMeta\Repository())->findByOrderIdAndType($virtualAccount->getEntityId(),
-            (new Order\OrderMeta\Type)::CUSTOMER_ADDITIONAL_INFO);
+        if ($this->mode === MODE::LIVE)
+        {
+            $metaData = (new Order\OrderMeta\Repository())->getOrderMetaByTypeFromPGOrder($order,
+                (new Order\OrderMeta\Type)::CUSTOMER_ADDITIONAL_INFO);
+        }
+        else
+        {
+            $metaData = (new Order\OrderMeta\Repository())->findByOrderIdAndType($order['id'],
+                (new Order\OrderMeta\Type)::CUSTOMER_ADDITIONAL_INFO);
+        }
 
-        $jsonData = $metaData->value;
+        $jsonData = $metaData['value'];
 
         $idList = array_values($jsonData);
 

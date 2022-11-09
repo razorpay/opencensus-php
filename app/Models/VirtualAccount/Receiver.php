@@ -8,6 +8,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Vpa;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Models\QrCode;
 use RZP\Models\OfflineChallan;
 use RZP\Models\BankAccount\Generator;
@@ -172,17 +173,35 @@ class Receiver extends Base\Core
     }
 
 
-    public function checkReceiverIsOfflineChallan(string $orderId, array $input)
+    public function checkReceiverIsOfflineChallan(array $input)
+    {
+        return isset($input[VAEntity::RECEIVERS]) and ($input[VAEntity::RECEIVERS][0] === self::OFFLINE_CHALLAN);
+    }
+
+    public function getOfflineChallanInfo($order)
     {
         $offlineInfo = null;
-        if ((isset($input[VAEntity::RECEIVERS]) === true) and
-            ($input[VAEntity::RECEIVERS][0] === self::OFFLINE_CHALLAN))
+
+        if ($this->mode === Mode::LIVE)
         {
-            $offlineInfo = $this->repo->order_meta->findByPublicOrderIdAndType($orderId, Order\OrderMeta\Type::CUSTOMER_ADDITIONAL_INFO);
-            if($offlineInfo === null)
+            //Fetched from PG router
+            if (isset($order['order_metas']) === false)
             {
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CUSTOMER_ADDITIONAL_INFO_NOT_PROVIDED);
             }
+
+            $offlineInfo = $this->repo->order_meta->getOrderMetaByTypeFromPGOrder($order, Order\OrderMeta\Type::CUSTOMER_ADDITIONAL_INFO);
+        }
+        else
+        {
+            //Fetched from API
+            $offlineInfo = (new Order\OrderMeta\Repository())->findByOrderIdAndType($order['id'],
+                (new Order\OrderMeta\Type)::CUSTOMER_ADDITIONAL_INFO);
+        }
+
+        if($offlineInfo === null)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CUSTOMER_ADDITIONAL_INFO_NOT_PROVIDED);
         }
 
         return $offlineInfo;
