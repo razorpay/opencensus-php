@@ -404,6 +404,29 @@ class BankingAccountTest extends TestCase
         return $bankingAccount;
     }
 
+    public function testCreateBankingAccountWithDefaultBusinessType()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreateBankingAccountWithActivationDetailFormDashboard'];
+
+        $dataToReplace = [
+            'request' => [
+                'content' => [
+                    'activation_detail' => [
+                        'business_type' => 'default'
+                    ]
+                ]
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
     public function testCreateBankingAccountFormMerchantDashboard()
     {
         $attribute = ['activation_status' => 'activated'];

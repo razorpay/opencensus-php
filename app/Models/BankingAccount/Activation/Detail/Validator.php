@@ -64,6 +64,7 @@ class Validator extends Base\Validator
     const  MULTI_LEVEL_MARKETING                = 'multi_level_marketing';
     const  CRYPTO_CURRENCIES                    = 'crypto_currencies';
     const  DIRECT_MONEY_TRANSFER                = 'direct_money_transfer';
+    const  DEFAULT                              = 'default';
 
 
     // Types of Accounts for RBL
@@ -326,7 +327,8 @@ class Validator extends Base\Validator
         self::UTILITIES_ELECTRIC_GAS_OIL_WATER,
         self::CRYPTO_CURRENCIES,
         self::MULTI_LEVEL_MARKETING,
-        self::DIRECT_MONEY_TRANSFER
+        self::DIRECT_MONEY_TRANSFER,
+        self::DEFAULT
     ];
 
     protected static $allowedAccountTypesForRBL = [
