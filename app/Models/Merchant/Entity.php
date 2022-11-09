@@ -957,6 +957,13 @@ class Entity extends Base\PublicEntity
         return in_array($this->getAttribute(self::CATEGORY), $eduCategories);
     }
 
+    public function isBFSIMerchantCategory()
+    {
+        $bfsiCategories = Constants::BFSI_MERCHANT_CATEGORIES;
+
+        return in_array($this->getAttribute(self::CATEGORY), $bfsiCategories);
+    }
+
     public function isInsuranceCategory()
     {
         $insuranceCategories = Constants::INSURANCE_CATEGORIES;

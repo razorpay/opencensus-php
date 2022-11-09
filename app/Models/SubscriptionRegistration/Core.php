@@ -84,6 +84,10 @@ class Core extends Base\Core
                 if(isset($input['subscription_registration']['method'])  and
                     $input['subscription_registration']['method'] == Method::UPI and $order === null)
                 {
+                    if(isset($input['subscription_registration']['max_amount']) === false)
+                    {
+                        $input['subscription_registration']['max_amount'] = ($merchant->isBFSIMerchantCategory() === true) ? UpiValidator::BFSI_MAX_AMOUNT_LIMIT : UpiValidator::NON_BFSI_MAX_AMOUNT_LIMIT;
+                    }
                     $order = $this->createOrderForUPI($input, $customer);
                 }
 

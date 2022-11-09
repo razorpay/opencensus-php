@@ -542,6 +542,14 @@ final class Constants
         '8299'
     ];
 
+    const BFSI_MERCHANT_CATEGORIES = [
+        '6211',
+        '7322',
+        '5960',
+        '6300',
+        '6529'
+    ];
+
     const LINKED_ACCOUNT_ACTIONS_BLOCKED = [
         Entity::CATEGORY     => '6211',
         Entity::CATEGORY2    => Category::MUTUAL_FUNDS,

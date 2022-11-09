@@ -11,6 +11,10 @@ class Validator extends Base\Validator
 {
     const MAX_AMOUNT_LIMIT = 20000000;
 
+    const NON_BFSI_MAX_AMOUNT_LIMIT = 10000000;
+
+    const BFSI_MAX_AMOUNT_LIMIT = 20000000;
+
     const MIN_AMOUNT_LIMIT = 100;
 
     protected static $createRules = [
