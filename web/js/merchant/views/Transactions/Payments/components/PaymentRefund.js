@@ -144,13 +144,7 @@ const PaymentRefund = ({
                   <Amount value={refundAmount} currency={currency} /> Refunded
                 </span>
                 <span>
-                  Partially refunded in{' '}
-                  <NumRefunds
-                    refunds={refunds}
-                    onToggleClick={() => {
-                      onToggleClick(payment);
-                    }}
-                  />
+                  Partially refunded in <NumRefunds refunds={refunds} />
                 </span>
               </Definition>
             ) : (
