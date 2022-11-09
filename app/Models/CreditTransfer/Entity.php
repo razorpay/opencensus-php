@@ -125,11 +125,6 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
-    public function entity()
-    {
-        return $this->morphTo();
-    }
-
     public function transaction()
     {
         return $this->belongsTo('RZP\Models\Transaction\Entity');
@@ -195,6 +190,16 @@ class Entity extends Base\PublicEntity
     public function getEntityId()
     {
         return $this->getAttribute(self::ENTITY_ID);
+    }
+
+    public function getSourceEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
+    }
+
+    public function getSourceEntityName()
+    {
+        return $this->getAttribute(self::ENTITY_TYPE);
     }
 
     public function getProcessedAt()

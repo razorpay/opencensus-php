@@ -3,9 +3,9 @@
 
 namespace RZP\Models\CreditTransfer;
 
+use RZP\Constants\Entity as EntityConstant;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Payout;
 use RZP\Models\Feature;
 use RZP\Services\Mutex;
 use RZP\Trace\TraceCode;
@@ -13,14 +13,14 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Jobs\Transactions;
 use RZP\Models\Transaction;
-use RZP\Models\FundAccount;
 use RZP\Models\Base\UniqueIdEntity;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Jobs\QueuedCreditTransferRequests;
 use RZP\Models\Transaction\Core as TxnCore;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Transaction\Processor\Ledger;
-use RZP\Models\CreditTransfer\Helper as Helper;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\Transaction\Processor\CreditTransfer as CreditTransferTxnProcessor;
 
 class Core extends Base\Core
@@ -30,6 +30,8 @@ class Core extends Base\Core
      */
     protected $mutex;
 
+    const CREDIT_TRANSFER_MUTEX_LOCK_TIMEOUT = 180;
+
     public function __construct()
     {
         parent::__construct();
@@ -37,27 +39,58 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function getHelper(Base\Entity $source): Helper\Base
+    public function createCreditTransfer(array $creditTransferRequest, bool $isQueued = false)
     {
-        $type = $source->getEntityName();
+        (new Validator)->validateInput('create_input', $creditTransferRequest);
 
-        $helper = __NAMESPACE__ ;
+        $this->mutex->acquireAndRelease(
+            'ct_' . $creditTransferRequest[Constants::SOURCE_ENTITY_ID] . '_' . $creditTransferRequest[Constants::SOURCE_ENTITY_TYPE],
+            function() use ($creditTransferRequest, $isQueued)
+            {
+                try
+                {
+                    $creditTransfer = $this->create($creditTransferRequest);
 
-        $helper .= '\\Helper\\' .studly_case($type);
+                    $this->process($creditTransfer);
 
-        return new $helper($source);
+                    if (($creditTransfer->isStatusProcessed() === true) or
+                        ($creditTransfer->isStatusFailed() === true))
+                    {
+                        $this->notifyPostProcessingOfCreditTransfer($creditTransfer);
+                    }
+                }
+                catch (\Throwable $throwable)
+                {
+                    $traceInfo = [
+                        "credit_transfer_request" => $creditTransferRequest
+                    ];
+
+                    $this->trace->traceException($throwable, null, TraceCode::CREDIT_TRANSFER_PROCESSING_FAILED, $traceInfo);
+
+                    if ($isQueued === false)
+                    {
+                        $this->trace->info(TraceCode::CREDIT_TRANSFER_REQUEST_QUEUE_DISPATCH_INITIATE, $traceInfo);
+
+                        QueuedCreditTransferRequests::dispatch($this->mode, $creditTransferRequest);
+
+                        $this->trace->info(TraceCode::CREDIT_TRANSFER_REQUEST_QUEUE_DISPATCH_COMPLETE, $traceInfo);
+                    }
+                }
+            },
+            self::CREDIT_TRANSFER_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_CREDIT_TRANSFER_ALREADY_BEING_PROCESSED);
     }
 
-    public function create(Base\Entity $source): Entity
+    protected function create(array $input): Entity
     {
-        $creditTransfer = $this->repo->credit_transfer->findCreditTransferBySourceId($source->getId());
+        $creditTransfer = $this->repo->credit_transfer->findCreditTransferBySourceId($input[Constants::SOURCE_ENTITY_ID]);
 
         if (is_null($creditTransfer) === false)
         {
             $this->trace->info(
                 TraceCode::CREDIT_TRANSFER_ALREADY_EXISTS,
                 [
-                    'source_id'              => $source->getId(),
+                    'source_id'              => $input[Constants::SOURCE_ENTITY_ID],
                     'credit_transfer_id'     => $creditTransfer->getId(),
                     'credit_transfer_status' => $creditTransfer->getStatus()
                 ]
@@ -69,41 +102,64 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::CREDIT_TRANSFER_ENTITY_CREATE_REQUEST,
             [
-                'source_id'              => $source->getId(),
+                'input'                       => $input,
             ]
         );
 
-        $sourceEntityHelper = $this->getHelper($source);
+        $payeeAccountType = $input[Entity::PAYEE_ACCOUNT_TYPE];
 
-        $creditAccountType = $sourceEntityHelper->getCreditAccountTypeFromSourceEntity();
+        AccountType::validate($payeeAccountType);
 
-        AccountType::validate($creditAccountType);
+        $payeeDetails = $input[Constants::PAYEE_DETAILS];
 
-        $destinationVirtualAccount = $sourceEntityHelper->getDestinationVirtualAccountFromSourceEntity();
+        $payeeVirtualAccount = null;
 
-        $merchant = $destinationVirtualAccount->merchant;
+        $payeeAccountId = null;
 
-        $balance = $destinationVirtualAccount->balance;
-
-        $creditTransferInput = $sourceEntityHelper->getCreditTransferInputFromSourceEntity();
-
-        switch ($creditAccountType)
+        switch ($payeeAccountType)
         {
             case AccountType::BANK_ACCOUNT:
-                $creditTransferInput = array_merge($creditTransferInput, [
-                                            Entity::PAYEE_ACCOUNT_ID   => $destinationVirtualAccount->getBankAccountId(),
-                                            Entity::PAYEE_ACCOUNT_TYPE => FundAccount\Type::BANK_ACCOUNT
-                                        ]);
+                $payeeVirtualAccount = $this->repo->virtual_account
+                                            ->getActiveVirtualAccountFromAccountNumberAndIfsc(
+                                                $payeeDetails[BankAccountEntity::ACCOUNT_NUMBER],
+                                                $payeeDetails[BankAccountEntity::IFSC_CODE]
+                                            );
+
+                // if there is no active VA, we throw an error
+                if ($payeeVirtualAccount === null)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_NO_ACTIVE_VIRTUAL_ACCOUNT_FOUND,
+                        null,
+                        [
+                            Constants::PAYEE_DETAILS      => $payeeDetails,
+                            Entity::PAYEE_ACCOUNT_TYPE    => $payeeAccountType,
+                            Constants::SOURCE_ENTITY_ID   => $input[Constants::SOURCE_ENTITY_ID],
+                            Constants::SOURCE_ENTITY_TYPE => $input[Constants::SOURCE_ENTITY_TYPE],
+                        ]);
+                }
+
+                $payeeAccountId = $payeeVirtualAccount->getBankAccountId();
+
                 break ;
         }
+
+        $merchant = $payeeVirtualAccount->merchant;
+
+        $balance = $payeeVirtualAccount->balance;
+
+        $creditTransferInput = $this->buildCreditTransferInputFromInput($input);
+
+        $creditTransferInput = array_merge($creditTransferInput, [
+            Entity::PAYEE_ACCOUNT_ID   => $payeeAccountId,
+            Entity::PAYEE_ACCOUNT_TYPE => $payeeAccountType
+        ]);
 
         $creditTransfer = (new Entity);
 
         $creditTransfer->balance()->associate($balance);
 
         $creditTransfer->merchant()->associate($merchant);
-
-        $creditTransfer->entity()->associate($source);
 
         $creditTransfer->setStatus(Status::CREATED);
 
@@ -120,24 +176,12 @@ class Core extends Base\Core
         return $creditTransfer;
     }
 
-    public function process(Entity $creditTransfer): Entity
+    protected function process(Entity $creditTransfer)
     {
-        $creditTransfer->reload();
-
-        if ($creditTransfer->isStatusProcessed() === true)
+        if (($creditTransfer->isStatusProcessed() === true) or
+            ($creditTransfer->isStatusFailed() === true))
         {
-            return $creditTransfer;
-        }
-
-        if ($creditTransfer->isStatusFailed() === true)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_VA_TO_VA_CREDIT_TRANSFER_ALREADY_FAILED,
-                null,
-                [
-                    'credit_transfer_id'     => $creditTransfer->getId(),
-                    'credit_transfer_status' => $creditTransfer->getStatus()
-                ]);
+            return ;
         }
 
         if ($this->shouldCreditTransferGoThroughLedgerReverseShadowFlow($creditTransfer) === true)
@@ -157,6 +201,8 @@ class Core extends Base\Core
                 $this->trace->info(
                     TraceCode::CREDIT_TRANSFER_PROCESS_SUCCESS,
                     $creditTransfer->toArrayPublic());
+
+                $this->notifyPostProcessingOfCreditTransfer($creditTransfer);
             }
             catch(\Throwable $ex)
             {
@@ -171,7 +217,7 @@ class Core extends Base\Core
                 );
             }
 
-            return $creditTransfer;
+            return null;
         }
 
         $creditTransfer = $this->repo->transaction(function () use ($creditTransfer)
@@ -203,7 +249,100 @@ class Core extends Base\Core
 
         $this->processLedgerCreditTransfer($creditTransfer);
 
-        return $creditTransfer;
+        $this->notifyPostProcessingOfCreditTransfer($creditTransfer);
+
+        return null;
+    }
+
+    public function moveCreditTransferToFailed(array $creditTransferRequest)
+    {
+        if (array_key_exists(Constants::SOURCE_ENTITY_ID, $creditTransferRequest) === false)
+        {
+            return;
+        }
+
+        $sourceEntityId = $creditTransferRequest[Constants::SOURCE_ENTITY_ID];
+
+        $this->mutex->acquireAndRelease('ct_'. $sourceEntityId,
+            function() use ($sourceEntityId)
+            {
+                $creditTransfer = $this->repo->credit_transfer->findCreditTransferBySourceId($sourceEntityId);
+
+                if (is_null($creditTransfer) === false)
+                {
+                    $creditTransfer->getValidator()->validateCreditTransferForFailure();
+
+                    $creditTransfer->setStatus(Status::FAILED);
+
+                    $this->repo->saveOrFail($creditTransfer);
+
+                    $this->notifyPostProcessingOfCreditTransfer($creditTransfer);
+                }
+            },
+            self::CREDIT_TRANSFER_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_CREDIT_TRANSFER_ALREADY_BEING_PROCESSED);
+    }
+
+    protected function buildCreditTransferInputFromInput(array $input): array
+    {
+        $creditTransferInput = [
+            Entity::AMOUNT             => $input[Entity::AMOUNT],
+            Entity::CURRENCY           => $input[Entity::CURRENCY],
+            Entity::CHANNEL            => $input[Entity::CHANNEL],
+            Entity::MODE               => $input[Entity::MODE],
+            Entity::ENTITY_ID          => $input[Constants::SOURCE_ENTITY_ID],
+            Entity::ENTITY_TYPE        => $input[Constants::SOURCE_ENTITY_TYPE],
+        ];
+
+        if (array_key_exists(Entity::DESCRIPTION, $input) === true)
+        {
+            $creditTransferInput[Entity::DESCRIPTION] = $input[Entity::DESCRIPTION];
+        }
+
+        if (array_key_exists(Entity::PAYER_ACCOUNT, $input) === true)
+        {
+            $creditTransferInput[Entity::PAYER_ACCOUNT] = $input[Entity::PAYER_ACCOUNT];
+        }
+
+        if (array_key_exists(Entity::PAYER_NAME, $input) === true)
+        {
+            $creditTransferInput[Entity::PAYER_NAME] = $input[Entity::PAYER_NAME];
+        }
+
+        if (array_key_exists(Entity::PAYER_IFSC, $input) === true)
+        {
+            $creditTransferInput[Entity::PAYER_IFSC] = $input[Entity::PAYER_IFSC];
+        }
+
+        return $creditTransferInput;
+    }
+
+    protected function notifyPostProcessingOfCreditTransfer(Entity $creditTransfer)
+    {
+        try
+        {
+            $entityName = $creditTransfer->getSourceEntityName();
+
+            $sourceCoreClass = EntityConstant::getEntityNamespace($entityName) . '\\Core';
+
+            $sourceCore = new $sourceCoreClass();
+
+            if (method_exists($sourceCore, 'updateEntityPostProcessingOfCreditTransfer') === true)
+            {
+                $sourceCore->updateEntityPostProcessingOfCreditTransfer($creditTransfer);
+            }
+        }
+        catch (\Throwable $throwable)
+        {
+            $traceInfo = [
+                Constants::SOURCE_ENTITY_ID   => $creditTransfer->getSourceEntityId(),
+                Constants::SOURCE_ENTITY_TYPE => $creditTransfer->getEntityName(),
+                "credit_transfer_id"          => $creditTransfer->getId(),
+                "credit_transfer_status"      => $creditTransfer->getStatus()
+            ];
+
+            $this->trace->traceException($throwable, null, TraceCode::CREDIT_TRANSFER_SOURCE_ENTITY_NOTIFY_FAILURE, $traceInfo);
+        }
     }
 
     public function processLedgerCreditTransfer(Entity $creditTransfer)
@@ -285,7 +424,7 @@ class Core extends Base\Core
         ];
     }
 
-    public static function shouldCreditTransferGoThroughLedgerReverseShadowFlow($creditTransfer)
+    public static function shouldCreditTransferGoThroughLedgerReverseShadowFlow(Entity $creditTransfer)
     {
         if (($creditTransfer->merchant->isFeatureEnabled(FeatureConstants::LEDGER_REVERSE_SHADOW) === true) and
             ($creditTransfer->getBalanceType() === Merchant\Balance\Type::BANKING) and
@@ -376,7 +515,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($creditTransfer);
 
-        (new Payout\Core)->updatePayoutFromCreditTransfer($creditTransfer);
+        $this->notifyPostProcessingOfCreditTransfer($creditTransfer);
 
         try {
             Transactions::dispatch($this->mode, $creditTransfer->getId(), EntityConstants::CREDIT_TRANSFER, $ledgerResponse);

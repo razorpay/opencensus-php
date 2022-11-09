@@ -18786,19 +18786,58 @@ class PayoutTest extends OAuthTestCase
 
         $payout = $this->getDbLastEntity('payout');
 
+        $creditTransfer = $this->getDbLastEntity('credit_transfer');
+
+        $transactorTypeArray = [
+            'va_to_va_payout_initiated',
+            'va_to_va_credit_processed',
+        ];
+
+        $transactorIdArray = [
+            $payout->getPublicId(),
+            $creditTransfer->getPublicId(),
+        ];
+
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $ledgerRequestPayload['identifiers']       = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+            $this->assertEquals('test', $ledgerRequestPayload['mode']);
+            $this->assertEquals($transactorIdArray[$index], $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+        }
+
+        $ledgerSnsPayloadArray[0]['identifiers'] = json_decode($ledgerSnsPayloadArray[0]['identifiers'], true);
+        $ledgerSnsPayloadArray[1]['identifiers'] = json_decode($ledgerSnsPayloadArray[1]['identifiers'], true);
+
+        $this->assertEquals($payout->transaction->getId(), $ledgerSnsPayloadArray[0]['api_transaction_id']);
+        $this->assertEquals($this->bankingBalance->bankingAccount->getPublicId(), $ledgerSnsPayloadArray[0]['identifiers']['banking_account_id']);
+
+        $this->assertEquals($creditTransfer->transaction->getId(), $ledgerSnsPayloadArray[1]['api_transaction_id']);
+        $this->assertEquals($bankingBalance->bankingAccount->getPublicId(), $ledgerSnsPayloadArray[1]['identifiers']['banking_account_id']);
+
+        // Manually failing the credit_transfer to test the reversal
+
         $this->fixtures->edit('payout', $payout->getId(), [
             'utr'     => null,
             'status'  => 'created'
         ]);
 
-        $creditTransfer = $this->getDbLastEntity('credit_transfer');
-
         $this->fixtures->edit('credit_transfer', $creditTransfer->getId(), [
-            'utr'     => null,
-            'status'  => 'created'
+            CreditTransfer\Entity::UTR            => null,
+            CreditTransfer\Entity::TRANSACTION_ID => null,
+            CreditTransfer\Entity::STATUS         => CreditTransfer\Status::CREATED,
         ]);
 
-        $reversedPayout = (new Payout\Core)->handleReversalForFailedVaToVaPayout($payout->getId());
+        (new CreditTransfer\Core)->moveCreditTransferToFailed([
+            CreditTransfer\Constants::SOURCE_ENTITY_ID => $payout->getId(),
+        ]);
 
         $updatedPayout = $this->getDbLastEntity('payout');
 
@@ -18828,7 +18867,7 @@ class PayoutTest extends OAuthTestCase
             $reversal->getPublicId()
         ];
 
-        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
+        for ($index = 2; $index < count($ledgerSnsPayloadArray); $index++)
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
@@ -18843,15 +18882,7 @@ class PayoutTest extends OAuthTestCase
             $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
         }
 
-        $ledgerSnsPayloadArray[0]['identifiers'] = json_decode($ledgerSnsPayloadArray[0]['identifiers'], true);
-        $ledgerSnsPayloadArray[1]['identifiers'] = json_decode($ledgerSnsPayloadArray[1]['identifiers'], true);
         $ledgerSnsPayloadArray[2]['identifiers'] = json_decode($ledgerSnsPayloadArray[2]['identifiers'], true);
-
-        $this->assertEquals($updatedPayout->transaction->getId(), $ledgerSnsPayloadArray[0]['api_transaction_id']);
-        $this->assertEquals($this->bankingBalance->bankingAccount->getPublicId(), $ledgerSnsPayloadArray[0]['identifiers']['banking_account_id']);
-
-        $this->assertEquals($updatedCreditTransfer->transaction->getId(), $ledgerSnsPayloadArray[1]['api_transaction_id']);
-        $this->assertEquals($bankingBalance->bankingAccount->getPublicId(), $ledgerSnsPayloadArray[1]['identifiers']['banking_account_id']);
 
         $this->assertEquals($reversal->transaction->getId(), $ledgerSnsPayloadArray[2]['api_transaction_id']);
         $this->assertEquals($this->bankingBalance->bankingAccount->getPublicId(), $ledgerSnsPayloadArray[2]['identifiers']['banking_account_id']);
@@ -19068,11 +19099,14 @@ class PayoutTest extends OAuthTestCase
         $creditTransfer = $this->getDbLastEntity('credit_transfer');
 
         $this->fixtures->edit('credit_transfer', $creditTransfer->getId(), [
-            'utr'     => null,
-            'status'  => 'created'
+            CreditTransfer\Entity::UTR            => null,
+            CreditTransfer\Entity::TRANSACTION_ID => null,
+            CreditTransfer\Entity::STATUS         => CreditTransfer\Status::CREATED,
         ]);
 
-        $reversedPayout = (new Payout\Core)->handleReversalForFailedVaToVaPayout($payout->getId());
+        (new CreditTransfer\Core)->moveCreditTransferToFailed([
+            CreditTransfer\Constants::SOURCE_ENTITY_ID => $payout->getId(),
+        ]);
 
         $updatedPayout = $this->getDbLastEntity('payout');
 

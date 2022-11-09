@@ -1207,12 +1207,13 @@ class PublicErrorDescription
     const BAD_REQUEST_VA_TO_VA_PAYOUTS_NOT_ALLOWED                             = 'Payouts between different Razorpay Virtual Account types is not allowed. Please contact support for any further assistance';
     const BAD_REQUEST_VA_TO_VA_PAYOUTS_NO_ACTIVE_BENEFICIARY_VA_FOUND          = 'The account associated with provided fund account is either not active or does not exist. please check';
     const BAD_REQUEST_VA_TO_VA_PAYOUT_ON_SAME_ACCOUNT                          = 'Payout to same banking account is blocked';
-    const BAD_REQUEST_VA_TO_VA_CREDIT_TRANSFER_ALREADY_CREATED                 = 'Credit transaction corresponding to the VA to VA payout is already created';
-    const BAD_REQUEST_VA_TO_VA_CREDIT_TRANSFER_ALREADY_PROCESSED               = 'Credit transaction corresponding to the VA to VA payout is already processed';
-    const BAD_REQUEST_VA_TO_VA_CREDIT_TRANSFER_ALREADY_FAILED                  = 'Credit transaction corresponding to the VA to VA payout is already failed';
-    const BAD_REQUEST_VA_TO_VA_FLOW_NOT_SUPPORTED                              = 'VA to VA flow is not supported for the current payout';
     const BAD_REQUEST_VA_TO_VA_PAYOUT_ALREADY_PROCESSED                        = 'Payout got processed already';
     const BAD_REQUEST_VA_TO_VA_PAYOUT_ALREADY_REVERSED                         = 'Payout got reversed already';
+
+    const BAD_REQUEST_CREDIT_TRANSFER_ALREADY_PROCESSED                        = 'Credit transfer entity is already processed';
+    const BAD_REQUEST_CREDIT_TRANSFER_ALREADY_FAILED                           = 'Credit transfer entity is already failed';
+    const BAD_REQUEST_CREDIT_TRANSFER_ALREADY_BEING_PROCESSED                  = 'credit_transfer is already being processed';
+    const BAD_REQUEST_NO_ACTIVE_VIRTUAL_ACCOUNT_FOUND                          = 'The account associated with provided details is either not active or does not exist. please check';
 
     // Merchant Config Inheritance
     const BAD_REQUEST_INHERITANCE_PARENT_SHOULD_BE_PARTNER_PARENT_OF_SUBMERCHANT    =  'Inheritance parent should be aggregator or fully-managed partner of the submerchant';

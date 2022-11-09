@@ -32,6 +32,7 @@ use RZP\Constants\Product;
 use RZP\Jobs\Transactions;
 use RZP\Jobs\FundTransfer;
 use RZP\Models\Settlement;
+use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Jobs\QueuedPayouts;
 use RZP\Models\Transaction;
@@ -77,7 +78,6 @@ use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Jobs\FreePayoutMigrationForPayoutsService;
-use RZP\Jobs\QueuedPayoutsForVaToVaCreditTransfers;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Services\Pagination\Entity as PaginationEntity;
@@ -4420,53 +4420,45 @@ class Core extends Base\Core
             return;
         }
 
-        // first we try processing the creditTransfer synchronously
-        $this->mutex->acquireAndRelease(
-            'ct_'.$payout->getId(),
-            function() use ($payout)
-            {
-                try
-                {
-                    $this->processCreditTransferForVaToVaPayout($payout);
-                }
-                catch (\Throwable $throwable)
-                {
-                    $traceInfo = [
-                        'payout_id' => $payout->getId(),
-                    ];
+        $creditTransferRequest = null;
 
-                    $this->trace->traceException(
-                        $throwable,
-                        null,
-                        TraceCode::CREDIT_TRANSFER_FOR_VA_TO_VA_PAYOUT_FAILURE,
-                        $traceInfo
-                    );
+        try
+        {
+            $creditTransferRequest = $this->buildCreditTransferInputFromPayout($payout);
 
-                    $this->trace->info(TraceCode::PAYOUT_VA_TO_VA_QUEUE_DISPATCH_INITIATE, $traceInfo);
+            $this->trace->info(TraceCode::CREDIT_TRANSFER_FOR_VA_TO_VA_PAYOUT_INITIATE,
+                [
+                    "credit_transfer_request" => $creditTransferRequest
+                ]);
 
-                    QueuedPayoutsForVaToVaCreditTransfers::dispatch($this->mode, $payout->getId());
+            (new CreditTransfer\Core())->createCreditTransfer($creditTransferRequest);
 
-                    $this->trace->info(TraceCode::PAYOUT_VA_TO_VA_QUEUE_DISPATCH_COMPLETE, $traceInfo);
-                }
-            },
-            self::PAYOUT_MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+            // to update payout if the credit transfer got processed synchronously
+            $payout->reload();
+        }
+        catch (\Throwable $throwable)
+        {
+            $traceInfo = [
+                'payout_id'               => $payout->getId(),
+                "credit_transfer_request" => $creditTransferRequest,
+            ];
+
+            $this->trace->traceException($throwable, null,
+                TraceCode::CREDIT_TRANSFER_FOR_VA_TO_VA_PAYOUT_FAILURE,
+                $traceInfo
+            );
+        }
     }
 
-    protected function processCreditTransferForVaToVaPayout(Entity $payout)
+    public function updateEntityPostProcessingOfCreditTransfer(CreditTransfer\Entity $creditTransfer)
     {
-        $this->trace->info(TraceCode::CREDIT_TRANSFER_FOR_VA_TO_VA_PAYOUT_INITIATE,
-            [
-                'payout_id' => $payout->getId(),
-                'payout'    => $payout->toArrayPublic()
-            ]);
+        $payoutId = $creditTransfer->getSourceEntityId();
 
-        $creditTransfer = (new CreditTransfer\Core())->create($payout);
+        $payout = $this->repo->payout->findOrFail($payoutId);
 
-        $payout = $this->repo->transaction(function () use ($payout, $creditTransfer)
+        if ((empty($payout) === false) and
+            ($payout->getIsPayoutService() === false))
         {
-            $creditTransfer = (new CreditTransfer\Core())->process($creditTransfer);
-
             if ($creditTransfer->isStatusProcessed() === true)
             {
                 $payout->setUtr($creditTransfer->getUtr());
@@ -4482,99 +4474,51 @@ class Core extends Base\Core
                         'credit_transfer_id' => $creditTransfer->getId(),
                         'credit_transfer'    => $creditTransfer->toArray(),
                     ]);
+
+                $this->handlePayoutProcessed($payout);
             }
 
-            return $payout;
-        });
-
-        try
-        {
-            $this->handlePayoutProcessed($payout);
-        }
-        catch(\Throwable $throwable)
-        {
-            $this->trace->traceException($throwable, null, TraceCode::PAYOUT_VA_TO_VA_HANDLE_PROCESSED_EXCEPTION,
-                [
-                    'payout_id'          => $payout->getId(),
-                    'credit_transfer_id' => $creditTransfer->getId()
-                ]
-            );
-        }
-    }
-
-    public function updatePayoutFromCreditTransfer(CreditTransfer\Entity $creditTransfer)
-    {
-        $payout = $this->repo->payout->findOrFail($creditTransfer->getEntityId());
-
-        if ($creditTransfer->isStatusProcessed() === true)
-        {
-            $payout->setUtr($creditTransfer->getUtr());
-
-            $payout->setStatus(Status::PROCESSED);
-
-            $this->repo->saveOrFail($payout);
-
-            $this->trace->info(TraceCode::CREDIT_TRANSFER_FOR_VA_TO_VA_PAYOUT_SUCCESS,
-                [
-                    'payout_id'          => $payout->getId(),
-                    'payout'             => $payout->toArrayPublic(),
-                    'credit_transfer_id' => $creditTransfer->getId(),
-                    'credit_transfer'    => $creditTransfer->toArray(),
-                ]);
-
-            $this->handlePayoutProcessed($payout);
-        }
-    }
-
-    public function handleTransferForQueuedVaToVaPayout(string $payoutId)
-    {
-        return $this->mutex->acquireAndRelease(
-            'ct_'.$payoutId,
-            function() use ($payoutId)
+            if ($creditTransfer->isStatusFailed() === true)
             {
-                /** @var Entity $payout */
-                $payout = $this->repo->payout->findOrFail($payoutId);
-
-                $payout->getValidator()->validateVaToVaPayoutQueuedForCreditTransfer();
-
-                $this->processCreditTransferForVaToVaPayout($payout);
-
-                return $payout;
-            },
-            self::PAYOUT_MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
-    }
-
-    public function handleReversalForFailedVaToVaPayout(string $payoutId)
-    {
-        return $this->mutex->acquireAndRelease(
-            $payoutId,
-            function() use ($payoutId)
-            {
-                /** @var Entity $payout */
-                $payout = $this->repo->payout->findOrFail($payoutId);
-
-                $creditTransfer = $this->repo->credit_transfer->findCreditTransferBySourceId($payout->getId());
-
                 $payout->getValidator()->validateVaToVaPayoutForReversal();
 
-                if (is_null($creditTransfer) === false)
-                {
-                    $creditTransfer->getValidator()->validateCreditTransferForReversal();
-
-                    $creditTransfer->setStatus(CreditTransfer\Status::FAILED);
-
-                    $this->repo->saveOrFail($creditTransfer);
-                }
-
                 $this->handlePayoutReversed($payout);
+            }
+        }
 
-                $payout->reload();
+    }
 
-                return $payout;
-            },
-            self::PAYOUT_MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+    public function buildCreditTransferInputFromPayout(Entity $payout)
+    {
+        $creditTransferRequest = [
+            CreditTransfer\Entity::AMOUNT                => $payout->getAmount(),
+            CreditTransfer\Entity::CURRENCY              => $payout->getCurrency(),
+            CreditTransfer\Entity::CHANNEL               => $payout->getChannel(),
+            CreditTransfer\Entity::DESCRIPTION           => $payout->getNarration(),
+            CreditTransfer\Entity::MODE                  => $payout->getMode(),
+            CreditTransfer\Constants::SOURCE_ENTITY_ID   => $payout->getId(),
+            CreditTransfer\Constants::SOURCE_ENTITY_TYPE => $payout->getEntityName(),
+            CreditTransfer\Entity::PAYER_ACCOUNT         => $payout->bankingAccount->getAccountNumber(),
+            CreditTransfer\Entity::PAYER_NAME            => $payout->merchant->getDisplayNameElseName(),
+            CreditTransfer\Entity::PAYER_IFSC            => $payout->bankingAccount->getAccountIfsc(),
+        ];
+
+        $fundAccount = $payout->fundAccount;
+
+        $fundAccountType = $fundAccount->getAccountType();
+
+        switch ($fundAccountType)
+        {
+            case FundAccount\Type::BANK_ACCOUNT:
+                $creditTransferRequest[CreditTransfer\Constants::PAYEE_DETAILS] = [
+                    BankAccount\Entity::ACCOUNT_NUMBER => $fundAccount->account->getAccountNumber(),
+                    BankAccount\Entity::IFSC_CODE      => $fundAccount->account->getIfscCode()
+                ];
+        }
+
+        $creditTransferRequest[CreditTransfer\Entity::PAYEE_ACCOUNT_TYPE] = $fundAccountType;
+
+        return $creditTransferRequest;
     }
 
     protected function dispatchFtaInitiate(Entity $payout)
