@@ -1,6 +1,7 @@
 import moment from 'moment';
 import { getFormattedNumber, getSuitableY, formatIntervals } from './helper';
 import { chartFontColor, gridLineColor, namedColors, TAG_MAP } from './constants';
+import { custumTooltip } from './customTooltip';
 
 /**************************************** Overview Chart Config ****************************************/
 
@@ -64,9 +65,15 @@ export const getChartAreaConfig = ({ breakdown, xLabel, yLabel }) => {
         hoverRadius: 4,
       },
     },
+    hover: {
+      mode: 'nearest',
+      intersect: true,
+    },
     tooltips: {
-      enabled: true,
-      mode: 'x',
+      enabled: false,
+      mode: 'point',
+      custom: custumTooltip,
+      position: 'nearest',
       intersect: true,
       bodySpacing: 4,
       borderWidth: 1,

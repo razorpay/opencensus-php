@@ -3,6 +3,9 @@ export const DEFAULT_INTERVAL = 60; // default 60 minutes
 export const DEFAULT_ACTIVE_TAB = 'Overall';
 export const INITIAL_SELECTED_CARD_TYPE = 'credit';
 
+// Graph type
+export const SCATTER = 'scatter';
+
 export const PRESETS = [
   { label: 'Last 6 Hours', name: '6h', value: 6, unit: 'hours' },
   { label: 'Last 24 Hours', name: '24h', value: 24, unit: 'hours' },

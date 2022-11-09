@@ -2,8 +2,8 @@ import xss from 'xss';
 
 // Customize the handler function for attributes not in the whitelist
 const onIgnoreTagAttr = (_, name, value) => {
-  // filter attributes starting with data-, class, style
-  if (name.slice(0, 5) === 'data-' || name.slice(0, 5) === 'id') {
+  // filter attributes starting with data-, class, id
+  if (name.slice(0, 5) === 'data-' || ['id', 'class'].includes(name)) {
     // escape its value using built-in escapeAttrValue function
     return `${name}="${xss.escapeAttrValue(value)}"`;
   }
