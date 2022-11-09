@@ -422,4 +422,10 @@ export default {
     // prod
     'KFsZKTQ1cy3zDE',
   ],
+  add_reply_migration: [
+    // beta
+    'KbvmLkY2BLyxki',
+    // prod
+    'Kd8w0C0X88RE2K',
+  ],
 };

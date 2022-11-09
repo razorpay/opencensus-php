@@ -208,8 +208,10 @@ return [
         'X_CORPORATE_CARD_STATUS_TRACKER' => env('X_CORPORATE_CARD_STATUS_TRACKER', ''),
         // show invoices for current FY
         'INVOICE_CURRENT_FY' => env('INVOICE_CURRENT_FY', ''),
-        
+
         //Frontend care Quick Link
-        'QUICK_LINKS_CARE' => env('QUICK_LINKS_CARE', '')
+        'QUICK_LINKS_CARE' => env('QUICK_LINKS_CARE', ''),
+        //migrating apis to care ,this change is for adding reply api migration
+        'ADD_REPLY_MIGRATION' => env('ADD_REPLY_MIGRATION', '')
     ]
 ];

@@ -35,6 +35,8 @@ const FETCH_MOPL_PLANS = 'FETCH_MOPL_PLANS';
 const FETCH_INSIGHTS = 'FETCH_INSIGHTS';
 
 export const TICKET_BASE_URL = 'fd/support_dashboard/ticket';
+const ADD_REPLY_URL_CARE_SERVICE =
+  'care_service/merchant/twirp/rzp.care.freshdesk.v1.FreshdeskService/PostTicketReply';
 export const FETCH_WORKFLOWS =
   'care_service/merchant/twirp/rzp.care.workflow.v1.WorkflowService/FetchWorkflows';
 
@@ -75,9 +77,13 @@ export const fetchRefundPricingApiCall = () => {
   return merchantFetch('instant_refunds/pricing');
 };
 
-export const replyToConversationApiCal = (ticket_id, body) => {
+export const replyToConversationApiCal = (ticket_id, body, isAddReplyMigrationActive = false) => {
+  let url = `${TICKET_BASE_URL}/${ticket_id}/reply`;
+  if (isAddReplyMigrationActive) {
+    url = ADD_REPLY_URL_CARE_SERVICE;
+  }
   const params = {
-    url: `${TICKET_BASE_URL}/${ticket_id}/reply`,
+    url,
     mode: 'live',
     method: 'post',
     data: body,
@@ -279,10 +285,10 @@ export const fetchActiveTickets = () => {
   };
 };
 
-export const replyToConversation = (ticket, body) => {
+export const replyToConversation = (ticket, body, isAddReplyMigrationActive = false) => {
   return {
     type: REPLY_TO_CONVERSATION,
-    payload: replyToConversationApiCal(ticket, body),
+    payload: replyToConversationApiCal(ticket, body, isAddReplyMigrationActive),
   };
 };
 

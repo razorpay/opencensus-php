@@ -75,13 +75,15 @@ export default class Reply extends React.Component {
       showNotification: _showNotification,
       onClose,
     } = this.props;
-
     const { attachments, body } = this.state;
-
+    const isAddReplyMigrationActive = this.props?.user?.isAddReplyMigrationActive;
     const bodyFormData = new FormData();
     bodyFormData.append('body', body);
     bodyFormData.append('user_id', ticket.requester_id);
-
+    if (isAddReplyMigrationActive) {
+      bodyFormData.append('id', ticketID);
+      bodyFormData.append('type', 'support_dashboard');
+    }
     if (attachments && attachments.length) {
       attachments.forEach((attachment) => {
         bodyFormData.append(`attachments[]`, attachment.rawFile);
@@ -89,7 +91,7 @@ export default class Reply extends React.Component {
     }
 
     this.setState({ loading: true });
-    _replyToConversation(ticketID, bodyFormData)
+    _replyToConversation(ticketID, bodyFormData, isAddReplyMigrationActive)
       .then((response) => {
         this.setState({ loading: false, body: null });
 
