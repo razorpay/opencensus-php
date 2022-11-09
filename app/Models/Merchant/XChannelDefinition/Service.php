@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\XChannelDefinition;
 
+use RZP\Constants\Mode;
 use RZP\Constants\Product;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Attribute as Attribute;
@@ -17,13 +18,15 @@ class Service extends Base\Service
 
     protected $attributeService;
 
-    public function __construct($attributeCore = null, $attributeService = null)
+    public function __construct($attributeCore = null, $attributeService = null, $basicAuth = null)
     {
         parent::__construct();
 
         $this->attributeCore = $attributeCore ?? new Attribute\Core();
 
         $this->attributeService = $attributeService ?? new Attribute\Service();
+
+        $this->auth = $basicAuth ?? $this->auth;
     }
 
 
@@ -119,13 +122,18 @@ class Service extends Base\Service
         return Channels::$channelPriorities[$channelName] ?? -1;
     }
 
-    public function addChannelDetailsInSFPayload(Entity $merchant, array &$utm_params)
+    public function getCurrentChannelDetails(Entity $merchant): array
     {
+        $originalMode = $this->auth->getMode();
+        // Use live DB to fetch channel details
+        $this->auth->setModeAndDbConnection(Mode::LIVE);
+
         $attributes = $this->attributeCore->fetchKeyValues($merchant, Product::BANKING, Attribute\Group::X_SIGNUP,
                                                            [Attribute\Type::CHANNEL, Attribute\Type::SUBCHANNEL]);
 
         $channel    = '';
         $subchannel = '';
+
         foreach ($attributes as $attribute)
         {
             if ($attribute[Attribute\Entity::TYPE] === Attribute\Type::CHANNEL)
@@ -138,13 +146,44 @@ class Service extends Base\Service
             }
         }
 
-        $utm_params['x_channel']    = empty($channel) ? Channels::UNMAPPED : $channel;
-        $utm_params['x_subchannel'] = empty($subchannel) ? Channels::UNMAPPED : $subchannel;
+        // Reset mode back to original value
+        $this->auth->setModeAndDbConnection($originalMode);
+
+        return [
+            Constants::CHANNEL    => $channel,
+            Constants::SUBCHANNEL => $subchannel,
+        ];
+    }
+
+    public function addChannelDetailsInPreSignupSFPayload(Entity $merchant, array &$eventPayload)
+    {
+        $channelDetails = $this->getCurrentChannelDetails($merchant);
+
+        // Lowercase keys used below are later mapped to capitalized versions before sending to SF
+        $eventPayload['x_channel']    = empty($channelDetails[Constants::CHANNEL]) ? Channels::UNMAPPED : $channelDetails[Constants::CHANNEL];
+        $eventPayload['x_subchannel'] = empty($channelDetails[Constants::SUBCHANNEL]) ? Channels::UNMAPPED : $channelDetails[Constants::SUBCHANNEL];
 
         $this->trace->info(TraceCode::X_CHANNEL_DEFINITION_UPDATING_SF_PAYLOAD, [
-            'channel'    => $utm_params['x_channel'],
-            'subchannel' => $utm_params['x_subchannel'],
+            'channel'    => $eventPayload['x_channel'],
+            'subchannel' => $eventPayload['x_subchannel'],
         ]);
+    }
+
+    public function addChannelDetailsInSFPayloadIfNotPresent(Entity $merchant, array &$eventPayload)
+    {
+        // Fetch and add current value of channel and sub-channel in SF payload
+        $channelDetails = $this->getCurrentChannelDetails($merchant);
+
+        // If the fields are already set, don't override them to avoid inconsistencies due to replica lag
+        if (!empty($channelDetails[Constants::CHANNEL]) && !isset($eventPayload['X_Channel']))
+        {
+            $eventPayload['X_Channel'] = $channelDetails[Constants::CHANNEL];
+        }
+
+        if (!empty($channelDetails[Constants::SUBCHANNEL]) && !isset($eventPayload['X_Subchannel']))
+        {
+            $eventPayload['X_Subchannel'] = $channelDetails[Constants::SUBCHANNEL];
+        }
     }
 
     /**

@@ -4,6 +4,7 @@ namespace RZP\Tests\Unit\Models\SalesForceServiceTest;
 
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant\Entity;
+use RZP\Models\Merchant\XChannelDefinition;
 use RZP\Services\SalesForceClient;
 use RZP\Models\SalesForce\SalesForceService;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
@@ -17,14 +18,16 @@ class SalesForceServiceTest extends OAuthTestCase {
 
     private $salesForceService;
     private $salesForceClient;
+    private $xChannelDefinitionServiceMock;
 
     protected function setUp(): void {
         parent::setUp();
         $this->salesForceClient = $this->createMock(SalesForceClient::class);
-        $this->salesForceService = new SalesForceService($this->salesForceClient);
+        $this->xChannelDefinitionServiceMock = $this->createMock(XChannelDefinition\Service::class);
+        $this->salesForceService = new SalesForceService($this->salesForceClient, $this->xChannelDefinitionServiceMock);
     }
 
-    public function testEventPayloadIsGeneratedForAMerchantInteresteedInCA() {
+    public function testEventPayloadIsGeneratedForAMerchantInterestedInCA() {
         //Given
         $merchantData = [
             'getId'             => '1DefeDEQE',
@@ -57,6 +60,18 @@ class SalesForceServiceTest extends OAuthTestCase {
                                    return;
                                }));
 
+        $this->xChannelDefinitionServiceMock
+            ->expects($this->any())
+            ->method('getCurrentChannelDetails')
+            ->will(
+                $this->returnValue(
+                    [
+                        XChannelDefinition\Constants::CHANNEL    => XChannelDefinition\Channels::PG,
+                        XChannelDefinition\Constants::SUBCHANNEL => XChannelDefinition\Channels::PG_NITRO,
+                    ]
+                )
+            );
+
         $this->fixtures->create('merchant_attribute',
             [
                 'merchant_id'   => $merchant->getId(),
@@ -79,7 +94,9 @@ class SalesForceServiceTest extends OAuthTestCase {
             'average_monthly_balance'       => '5000',
             'current_ca'                    => 'HDFC',
             'use_case'                      => 'Salary',
-            'source_detail'                 => 'x_mobile'
+            'source_detail'                 => 'x_mobile',
+            'X_Channel'                     => 'PG',
+            'X_Subchannel'                  => 'Nitro',
         ];
 
         $diagMock = $this->createAndReturnDiagMock();
@@ -166,7 +183,7 @@ class SalesForceServiceTest extends OAuthTestCase {
             'Traffic_Campaign'        => 'XWebsite Lead form',
             'Traffic_Medium'          => 'Website',
             'Traffic_Source'          => 'Paid',
-            'Product'                 => 'Current_Account'
+            'Product'                 => 'Current_Account',
         ];
 
         $this->assertEquals($expectedPayload, $actualData);

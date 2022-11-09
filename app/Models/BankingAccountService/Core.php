@@ -2,32 +2,30 @@
 
 namespace RZP\Models\BankingAccountService;
 
-use Mail;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-
-use RZP\Exception;
-use RZP\Models\Base;
-use RZP\Models\Feature;
-use RZP\Constants\Mode;
-use RZP\Models\Counter;
-use RZP\Trace\TraceCode;
-use RZP\Models\Merchant;
-use RZP\Error\ErrorCode;
-use RZP\Models\BankingAccount;
-use RZP\Models\Merchant\Detail;
+use Mail;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Models\BankingAccountStatement;
-use RZP\Models\Merchant\Attribute\Group;
+use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Mail\BankingAccount\CurrentAccount;
+use RZP\Models\BankingAccount;
+use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
+use RZP\Models\BankingAccountStatement;
+use RZP\Models\Base;
+use RZP\Models\Counter;
+use RZP\Models\Feature;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Attribute\Entity as MerchantAttributeEntity;
+use RZP\Models\Merchant\Attribute\Group;
 use RZP\Models\Merchant\Balance\AccountType;
-use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\Merchant\Constants as MerchantConstants;
-use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
-use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
-use RZP\Models\Merchant\Attribute\Entity as MerchantAttributeEntity;
-use RZP\Models\BankingAccountStatement\Details\Status as BankingAccountStatementDetailsStatus;
+use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\XChannelDefinition;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -418,6 +416,9 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::BAS_SALESFORCE_REQUEST);
 
+        /* @var Merchant\Entity $merchant*/
+        $merchant = $this->repo->merchant->findByPublicId($input[Constants::MERCHANT_ID]);
+
         /* @var Detail\Entity $merchantDetails*/
         $merchantDetails = $this->repo->merchant_detail->findByPublicId($input[Constants::MERCHANT_ID]);
 
@@ -439,6 +440,10 @@ class Core extends Base\Core
         {
             $input[Constants::CA_ONBOARDING_FLOW] = $caOnboardingFlow;
         }
+
+        // Add channel details
+        $xChannelDefinitionService = new XChannelDefinition\Service();
+        $xChannelDefinitionService->addChannelDetailsInSFPayloadIfNotPresent($merchant, $input);
 
         $this->app->salesforce->sendCaLeadDetails($input);
 

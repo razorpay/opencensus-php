@@ -264,7 +264,7 @@ class Service extends Base\Service
         {
             $xChannelDefinitionService = new XChannelDefinition\Service;
             $xChannelDefinitionService->storeChannelDetails($this->merchant, $input);
-            $xChannelDefinitionService->addChannelDetailsInSFPayload($this->merchant, $input);
+            $xChannelDefinitionService->addChannelDetailsInPreSignupSFPayload($this->merchant, $input);
 
             // Set SF Lead's Progress as pre-signup to avoid confusion with
             // Signup completed lead (pre_signup done + email verification done)

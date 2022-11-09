@@ -3,6 +3,7 @@
 namespace Unit\Models\Merchant\XChannelDefinition;
 
 use Mockery;
+use RZP\Constants\Mode;
 use RZP\Constants\Product;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant\Attribute;
@@ -14,6 +15,13 @@ use Tests\Unit\TestCase;
 class XChannelDefinitionTest extends TestCase
 {
     protected $xChannelDefinitionService;
+
+    /**
+     * Mock of \RZP\Http\BasicAuth
+     *
+     * @var Mockery\MockInterface
+     */
+    protected $basicAuthMock;
 
     /**
      * Mock of \RZP\Models\Merchant\Attribute\Core
@@ -35,8 +43,7 @@ class XChannelDefinitionTest extends TestCase
 
         $this->createTestDependencyMocks();
 
-        $this->xChannelDefinitionService = new Service($this->attributeCoreMock, $this->attributeServiceMock);
-
+        $this->xChannelDefinitionService = new Service($this->attributeCoreMock, $this->attributeServiceMock, $this->basicAuthMock);
     }
 
     public function testGetChannelAndSubchannel()
@@ -184,6 +191,15 @@ class XChannelDefinitionTest extends TestCase
             ->once()
             ->andReturn();
 
+        $this->basicAuthMock
+            ->shouldReceive('getMode')
+            ->andReturn(Mode::TEST);
+
+        $this->basicAuthMock
+            ->shouldReceive('setModeAndDbConnection')
+            ->withAnyArgs()
+            ->andReturns();
+
         $merchant  = Mockery::mock('RZP\Models\Merchant\Entity');
         $utmParams = [
             'website'          => 'razorpay.com/x/payouts/',
@@ -274,6 +290,15 @@ class XChannelDefinitionTest extends TestCase
             ->once()
             ->andReturn();
 
+        $this->basicAuthMock
+            ->shouldReceive('getMode')
+            ->andReturn(Mode::TEST);
+
+        $this->basicAuthMock
+            ->shouldReceive('setModeAndDbConnection')
+            ->withAnyArgs()
+            ->andReturns();
+
         $merchant  = Mockery::mock('RZP\Models\Merchant\Entity');
         $utmParams = [
             'website'          => 'razorpay.com/x/payouts/',
@@ -286,6 +311,8 @@ class XChannelDefinitionTest extends TestCase
 
     private function createTestDependencyMocks()
     {
+        $this->basicAuthMock = Mockery::mock('RZP\Http\BasicAuth');
+
         $this->attributeCoreMock = Mockery::mock('RZP\Models\Merchant\Attribute\Core');
 
         $this->attributeServiceMock = Mockery::mock('RZP\Models\Merchant\Attribute\Service');

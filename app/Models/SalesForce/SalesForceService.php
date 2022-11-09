@@ -25,14 +25,20 @@ use RZP\Models\BankingAccountService\Constants as BankingAccountServiceConstants
 use RZP\Trace\TraceCode;
 
 class SalesForceService extends Base\Service {
+
     const VendorPayout = 'Vendor_Payout';
+
     /** @var $salesForceClient SalesForceClient */
     private $salesForceClient;
 
+    /** @var $xChannelDefinitionService XChannelDefinition\Service */
+    private $xChannelDefinitionService;
 
-    public function __construct(SalesForceClient $salesForceClient) {
+
+    public function __construct(SalesForceClient $salesForceClient, XChannelDefinition\Service $xChannelDefinitionService = null) {
         parent::__construct();
         $this->salesForceClient = $salesForceClient;
+        $this->xChannelDefinitionService = $xChannelDefinitionService ?? new XChannelDefinition\Service();
     }
 
     public function raiseEvent(Entity $merchant, SalesForceEventRequestDTO $salesForceEventRequestDTO) {
@@ -181,8 +187,6 @@ class SalesForceService extends Base\Service {
 
     protected function addAndStoreChannelDetailsIfApplicable(Entity $merchant, ?string $eventType, array &$eventPayload)
     {
-        $xChannelDefinitionService = new XChannelDefinition\Service;
-
         if (empty($eventType) === false && $eventType === 'CURRENT_ACCOUNT_INTEREST')
         {
             $campaignId = $eventPayload['Campaign_ID'] ?? '';
@@ -193,22 +197,15 @@ class SalesForceService extends Base\Service {
             {
                 if (str_contains(strtolower($campaignId), 'nitro'))
                 {
-                    $xChannelDefinitionService->storeChannelAndSubchannel($merchant, XChannelDefinition\Channels::PG, XChannelDefinition\Channels::PG_NITRO);
+                    $this->xChannelDefinitionService->storeChannelAndSubchannel($merchant, XChannelDefinition\Channels::PG, XChannelDefinition\Channels::PG_NITRO);
                     $eventPayload['X_Channel']    = XChannelDefinition\Channels::PG;
                     $eventPayload['X_Subchannel'] = XChannelDefinition\Channels::PG_NITRO;
                 }
                 elseif ($campaignId === XChannelDefinition\Constants::SF_CAMPAIGN_ID_BANKING_WIDGET)
                 {
-                    $xChannelDefinitionService->storeChannelAndSubchannel($merchant, XChannelDefinition\Channels::PG, XChannelDefinition\Channels::PG_BANKING_WIDGET);
+                    $this->xChannelDefinitionService->storeChannelAndSubchannel($merchant, XChannelDefinition\Channels::PG, XChannelDefinition\Channels::PG_BANKING_WIDGET);
                     $eventPayload['X_Channel']    = XChannelDefinition\Channels::PG;
                     $eventPayload['X_Subchannel'] = XChannelDefinition\Channels::PG_BANKING_WIDGET;
-                }
-
-                if (isset($eventPayload['X_Channel']) && isset($eventPayload['X_Subchannel'])) {
-                    $this->trace->info(TraceCode::X_CHANNEL_DEFINITION_UPDATING_SF_PAYLOAD, [
-                        'channel'    => $eventPayload['X_Channel'],
-                        'subchannel' => $eventPayload['X_Subchannel'],
-                    ]);
                 }
             }
             catch (\Throwable $e)
@@ -216,5 +213,24 @@ class SalesForceService extends Base\Service {
                 $this->trace->traceException($e, null, TraceCode::X_CHANNEL_DEFINITION_FAILED_TO_SAVE_FROM_SF_EVENT);
             }
         }
+
+        // Fetch and add current value of channel and sub-channel in SF payload
+        $channelDetails = $this->xChannelDefinitionService->getCurrentChannelDetails($merchant);
+
+        // If the fields are already set, don't override them to avoid inconsistencies due to replica lag
+        if (!empty($channelDetails[XChannelDefinition\Constants::CHANNEL]) && !isset($eventPayload['X_Channel']))
+        {
+            $eventPayload['X_Channel'] = $channelDetails[XChannelDefinition\Constants::CHANNEL];
+        }
+
+        if (!empty($channelDetails[XChannelDefinition\Constants::SUBCHANNEL]) && !isset($eventPayload['X_Subchannel']))
+        {
+            $eventPayload['X_Subchannel'] = $channelDetails[XChannelDefinition\Constants::SUBCHANNEL];
+        }
+
+        $this->trace->info(TraceCode::X_CHANNEL_DEFINITION_SF_OPP_EVENT_CHANNEL_DETAILS, [
+            'channel'    => $eventPayload['X_Channel'] ?? '',
+            'subchannel' => $eventPayload['X_Subchannel'] ?? '',
+        ]);
     }
 }

@@ -7728,7 +7728,7 @@ class Service extends Base\Service
             $this->storeRelevantPreSignUpSourceInfoForBanking($utmParams, $merchant);
 
             $xChannelDefinitionService = new XChannelDefinition\Service;
-            $xChannelDefinitionService->addChannelDetailsInSFPayload($merchant, $utmParams);
+            $xChannelDefinitionService->addChannelDetailsInPreSignupSFPayload($merchant, $utmParams);
 
             $this->app->salesforce->sendProductSwitchDetails($utmParams, $merchant);
         }
@@ -9341,6 +9341,26 @@ class Service extends Base\Service
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, 'The id provided does not exist');
         }
+
+
+        // Fetch and add current value of X channel and sub-channel in SF payload
+        $xChannelDefinitionService = new XChannelDefinition\Service();
+        $channelDetails = $xChannelDefinitionService->getCurrentChannelDetails($merchant);
+
+        if (!empty($channelDetails[XChannelDefinition\Constants::CHANNEL]))
+        {
+            $input['X_Channel'] = $channelDetails[XChannelDefinition\Constants::CHANNEL];
+        }
+
+        if (!empty($channelDetails[XChannelDefinition\Constants::SUBCHANNEL]))
+        {
+            $input['X_Subchannel'] = $channelDetails[XChannelDefinition\Constants::SUBCHANNEL];
+        }
+
+        $this->trace->info(TraceCode::X_CHANNEL_DEFINITION_SF_LEAD_EVENT_CHANNEL_DETAILS, [
+            'channel'    => $input['X_Channel'] ?? '',
+            'subchannel' => $input['X_Subchannel'] ?? '',
+        ]);
 
         try
         {
