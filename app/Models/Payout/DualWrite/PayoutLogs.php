@@ -31,12 +31,18 @@ class PayoutLogs extends Base
 
     protected function setTimestampForStatusInPayout(Entity & $payout, string $status, $timestamp)
     {
-        if (in_array($status, Status::$timestampedStatuses, true) === false)
+        if ((in_array($status, Status::$timestampedStatuses, true) === false) and
+            (in_array($status, Status::$timestampedStatuses2, true) === false))
         {
             return;
         }
 
         $timestampKey = $status . '_at';
+
+        if (in_array($status, Status::$timestampedStatuses2, true) === true)
+        {
+            $timestampKey = $status . '_on';
+        }
 
         if ($status === Status::CREATED)
         {

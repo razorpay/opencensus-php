@@ -459,6 +459,17 @@ class PayoutTest extends OAuthTestCase
                 'updated_at'   => 1000000001
             ],
             [
+                'id'           => 'randomid111133',
+                'payout_id'    => 'randomid111111',
+                'event'        => 'abc',
+                'from'         => 'abc',
+                'to'           => 'scheduled',
+                'mode'         => 'SYSTEM',
+                'triggered_by' => 'SYSTEM',
+                'created_at'   => 1000000001,
+                'updated_at'   => 1000000001
+            ],
+            [
                 'id'           => 'randomid111114',
                 'payout_id'    => 'randomid111111',
                 'event'        => 'abc',
@@ -610,6 +621,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(1000000000, $payout->getCreateRequestSubmittedAt());
         $this->assertEquals(1000000001, $payout->getInitiatedAt());
         $this->assertEquals(1000000002, $payout->getTransferredAt());
+        $this->assertEquals(1000000001, $payout->getScheduledOn());
 
         /** @var ReversalEntity $payout */
         $reversal = $this->getDbLastEntity('reversal', 'live');

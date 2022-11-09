@@ -1195,6 +1195,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SCHEDULED_AT);
     }
 
+    public function getScheduledOn()
+    {
+        return $this->getAttribute(self::SCHEDULED_ON);
+    }
+
     public function getStatusDetailsId()
     {
         return $this->getAttribute(self::STATUS_DETAILS_ID);
@@ -1210,6 +1215,10 @@ class Entity extends Base\PublicEntity
 
             case Status::INITIATED:
                 $timestampKey = self::TRANSFERRED_AT;
+                break;
+
+            case Status::SCHEDULED:
+                $timestampKey = self::SCHEDULED_ON;
                 break;
 
             default:
