@@ -277,6 +277,8 @@ class Tracing
             'token_delete',
             'token_status',
 
+            'customer_fetch_tokens',
+
 
             'buy_pricing_terminal_cost',
 
