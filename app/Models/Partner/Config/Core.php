@@ -500,35 +500,33 @@ class Core extends Base\Core
 
     /**
      * This function is used to audit partner config entity
-     * @param array $params
+     * @param   array   $params     associative array of format
+     *  [
+     *      'entity'        => Array,
+     *      'entity_name'   => String,
+     *      'actor_id'      => String,
+     *      'actor_email'   => String
+     *  ]
+     *
+     * @return  array    array is an associative array of the format ['status_code' => Int, 'response' => Object];
      */
-    public function auditPartnerConfig(array $params) {
-
+    public function auditPartnerConfig(array $params)
+    {
         $entity = $params['entity'];
 
-        $properties = [
-            'id'            => $entity[Entity::ENTITY_TYPE] === Constants::APPLICATION ?
-                $entity[Entity::ENTITY_ID] : $entity[Entity::ORIGIN_ID],
-            'experiment_id' => $this->app['config']->get('app.partner_config_auditing_experiment_id'),
-        ];
+        $this->trace->info(TraceCode::PARTNER_CONFIG_AUDIT_JOB_REQUEST,
+           [
+               'mode'    => $this->mode,
+               'params'  => $params,
+           ]
+        );
 
-        $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable($properties, 'enable');
-
-        if($isExpEnabled === true)
-        {
-            $this->trace->info(TraceCode::PARTNER_CONFIG_AUDIT_JOB_REQUEST,
-               [
-                   'mode'    => $this->mode,
-                   'params'  => $params,
-               ]);
-
-            $request = $this->getAuditData($entity, $params);
-            $this->app->partnerships->createAuditLog($request);
-        }
+        $request = $this->getAuditData($entity, $params);
+        return $this->app->partnerships->createAuditLog($request);
     }
 
-    private function getAuditData($entity, $params) {
-
+    private function getAuditData($entity, $params)
+    {
         $auditLog =  [
             'entity_id'             => $entity[Entity::ID],
             'entity_type'           => $params['entity_name'],

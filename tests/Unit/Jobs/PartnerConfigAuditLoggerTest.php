@@ -31,23 +31,8 @@ class PartnerConfigAuditLoggerTest extends TestCase
         $this->job = $this->mockPartnerConfigAuditLog("live", $this->auditLogParams);
     }
 
-    public function testHandleWhenSplitzExperimentIsEnabledAndEntityTypeIsApplication()
+    public function testHandleWhenEntityTypeIsApplication()
     {
-        $splitzInput = [
-            "experiment_id" => "JbsZXf3iTCTRre",
-            "id"            => Constants::DEFAULT_PLATFORM_APP_ID,
-        ];
-
-        $splitzOutput = [
-            "response" => [
-                "variant" => [
-                    "name" => 'enable',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
-
         $partnershipsServiceMock = Mockery::mock(PartnershipsService::class)->makePartial();
         $this->app->instance('partnerships', $partnershipsServiceMock);
 
@@ -58,53 +43,11 @@ class PartnerConfigAuditLoggerTest extends TestCase
 
     }
 
-    public function testHandleWhenSplitzExperimentIsDisabledAndEntityTypeIsApplication()
-    {
-        $splitzInput = [
-            "experiment_id" => "JbsZXf3iTCTRre",
-            "id"            => Constants::DEFAULT_PLATFORM_APP_ID,
-        ];
-
-        $splitzOutput = [
-            "response" => [
-                "variant" => [
-                    "name" => 'disable',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
-
-        $partnershipsServiceMock = Mockery::mock(PartnershipsService::class)->makePartial();
-        $this->app->instance('partnerships', $partnershipsServiceMock);
-
-        $partnershipsServiceMock->shouldReceive('createAuditLog')
-                                ->never();
-
-        $this->job->handle();
-
-    }
-
-    public function testHandleWhenSplitzExperimentIsEnabledAndEntityTypeIsMerchant()
+    public function testHandleWhenEntityTypeIsMerchant()
     {
 
         $this->auditLogParams = $this->buildAuditLogParams(self::MERCHANT);
         $this->job = $this->mockPartnerConfigAuditLog("live", $this->auditLogParams);
-
-        $splitzInput = [
-            "experiment_id" => "JbsZXf3iTCTRre",
-            "id"            => Constants::DEFAULT_PLATFORM_APP_ID,
-        ];
-
-        $splitzOutput = [
-            "response" => [
-                "variant" => [
-                    "name" => 'enable',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
 
         $partnershipsServiceMock = Mockery::mock(PartnershipsService::class)->makePartial();
         $this->app->instance('partnerships', $partnershipsServiceMock);

@@ -193,6 +193,15 @@ class PublicEntity extends UniqueIdEntity
         return $this->arrangeInternalAttributes($array);
     }
 
+    public function toArrayAudit(bool $expand = false)
+    {
+        $attributes = $this->attributesToArray();
+
+        $relations = $this->relationsToArrayPublic($expand);
+
+        return array_merge($attributes, $relations);
+    }
+
     /**
      * Returns relations with public array based on expand[] query param in
      * fetch routes (eg. transaction, transaction.settlement with payment fetch),
