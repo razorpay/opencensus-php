@@ -8457,6 +8457,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const IMPACT_PARTNER_PASSING_ACCOUNT_ID_IN_BODY_FAILED            = 'IMPACT_PARTNER_PASSING_ACCOUNT_ID_IN_BODY_FAILED';
 
+    const CARD_METADATA_DELETE_EXCEPTION                              = 'CARD_METADATA_DELETE_EXCEPTION';
+
+    const DELETING_METADATA_AFTER_RECONCILIATION                      = 'DELETING_METADATA_AFTER_RECONCILIATION';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

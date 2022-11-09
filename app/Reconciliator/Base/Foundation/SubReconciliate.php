@@ -4,6 +4,7 @@ namespace RZP\Reconciliator\Base\Foundation;
 
 use App;
 use Carbon\Carbon;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
@@ -17,9 +18,11 @@ use RZP\Reconciliator\Messenger;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\PublicEntity;
 use RZP\Reconciliator\Orchestrator;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Reconciliator\Base\InfoCode;
 use RZP\Reconciliator\Base\Constants;
 use RZP\Reconciliator\RequestProcessor;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Transaction\ReconciledType;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
@@ -61,6 +64,7 @@ class SubReconciliate extends Base\Core
     const TAG_1                 = 'tag_1';
     const TAG_2                 = 'tag_2';
     const TAG_3                 = 'tag_3';
+    const TEMP_VAULT_TOKEN_PREFIX = 'pay_';
 
     const TXN_FILE_ADDITIONAL_FIELDS = [
         self::RZP_TXN_ID,
@@ -426,6 +430,8 @@ class SubReconciliate extends Base\Core
 
             $transaction->saveOrFail();
 
+            $this->deleteCardMetaDataIfApplicable($entity);
+
             $this->pushSuccessReconMetrics($entity);
 
             // Increment the success count for the summary.
@@ -588,6 +594,52 @@ class SubReconciliate extends Base\Core
                     ['entity_id' => $identifier]
                 );
         }
+    }
+
+    protected function deleteCardMetaDataIfApplicable($entity)
+    {
+        try {
+
+            if($entity->getEntityName() !== EntityConstants::PAYMENT)
+            {
+                return;
+            }
+                // (str_contains($card->getVaultToken(), self::TEMP_VAULT_KMS_TOKEN_PREFIX) === true) add for pay_2 token after it is live\
+            if (($entity->isMethodCardOrEmi() === true) and
+                (str_contains($entity->card->getVaultToken(), self::TEMP_VAULT_TOKEN_PREFIX) === true)) {
+
+                if($entity->getGateway() ===  Payment\Gateway::PAYSECURE or $entity->getGateway() ===  Payment\Gateway::FULCRUM )
+                {
+                    $variant = $this->app['razorx']->getTreatment($entity->getId(), RazorxTreatment::DELETE_CARD_METADATA_AFTER_RECONCILIATION_FOR_PAYSECURE_AND_FULCRUM, $this->app['rzp.mode'] ?? 'live');
+                }
+                else
+                {
+                    $variant = $this->app['razorx']->getTreatment($entity->getId(), RazorxTreatment::DELETE_CARD_METADATA_AFTER_RECONCILIATION, $this->app['rzp.mode'] ?? 'live');
+                }
+
+                $this->trace->info(
+                    TraceCode::DELETING_METADATA_AFTER_RECONCILIATION,
+                    [
+                        'id'          => $entity->getId(),
+                        'vault_token' => $entity->card->getvaultToken(),
+                        'gateway'     => $entity->getGateway(),
+                        'variant'     => $variant
+                    ]);
+
+                if ($variant === 'on' ) {
+                    $this->app['card.cardVault']->deleteToken($entity->card->getvaultToken());
+                }
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->info(
+                TraceCode::CARD_METADATA_DELETE_EXCEPTION,
+                [
+                    'id'          => $entity->getId()
+                ]);
+        }
+
     }
 
     protected function getSummary()
