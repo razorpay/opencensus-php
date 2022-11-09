@@ -7,11 +7,10 @@ import InputField from 'common/ui/Forms/InputField';
 import { amount } from 'common/utils/validators';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { closeModal } from 'merchant_common/reducers/modals';
-import { createTestPayment } from 'merchant/reducers/virtualaccounts';
-import { fetchItem, fetchVAPayments } from 'merchant/reducers/virtualaccounts';
+import { createTestPayment, fetchItem, fetchVAPayments } from 'merchant/reducers/virtualaccounts';
 
 @connect(
-  state => {
+  (state) => {
     return {
       mode: state.session.mode,
     };
@@ -22,7 +21,7 @@ import { fetchItem, fetchVAPayments } from 'merchant/reducers/virtualaccounts';
     fetchItem,
     fetchVAPayments,
     createTestPayment,
-  }
+  },
 )
 @reduxForm({
   form: 'createTestPayment',
@@ -35,21 +34,17 @@ export default class CreateTestPayment extends Component {
 
   componentDidMount() {
     this.props.onMount &&
-      this.props.onMount(
-        this.props.virtualAccount && this.props.virtualAccount.id
-      );
+      this.props.onMount(this.props.virtualAccount && this.props.virtualAccount.id);
   }
 
   componentWillUnmount() {
     this.props.onUnmount &&
-      this.props.onUnmount(
-        this.props.virtualAccount && this.props.virtualAccount.id
-      );
+      this.props.onUnmount(this.props.virtualAccount && this.props.virtualAccount.id);
   }
 
-  createTestPayment = props => {
-    let { virtualAccount, mode } = this.props;
-    let bankAccount = virtualAccount.receivers[0];
+  createTestPayment = (props) => {
+    const { virtualAccount, mode } = this.props;
+    const bankAccount = virtualAccount.receivers[0];
 
     if (mode === 'test' && props.amount > 1e7) {
       return this.props.showNotification({
@@ -57,16 +52,13 @@ export default class CreateTestPayment extends Component {
         message: 'Amount should not be greater than 1Cr. in Test Mode',
       });
     }
-
-    let fieldProps = {
+    const fieldProps = {
       ...props,
       payee_account: bankAccount.account_number,
       payee_ifsc: bankAccount.ifsc,
       payer_account: '765432123456789',
       payer_ifsc: 'RAZR0000001',
-      transaction_id: Math.floor(
-        (+new Date() + (Math.random() * 90 + 10)) / 10
-      ),
+      transaction_id: Math.floor((+new Date() + (Math.random() * 90 + 10)) / 10).toString(),
       time: +new Date(),
     };
     return this.props
@@ -94,10 +86,7 @@ export default class CreateTestPayment extends Component {
 
     return (
       <div>
-        <ModalHeader
-          title="Create a Test Payment"
-          onCloseClick={this.props.closeModal}
-        />
+        <ModalHeader title="Create a Test Payment" onCloseClick={this.props.closeModal} />
 
         <div class="modal-body">
           <form onSubmit={handleSubmit(this.createTestPayment)}>
