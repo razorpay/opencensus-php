@@ -119,11 +119,26 @@ export const caApplicationStatus = {
   INITIATED: 'initiated',
   PROCESSING: 'processing',
   PROCESSED: 'processed',
+
+  VERIFICATION_CALL: 'verification_call',
+  DOC_COLLECTION: 'doc_collection',
+  ACCOUNT_OPENING: 'account_opening',
+  API_ONBOARDING: 'api_onboarding',
+  ACCOUNT_ACTIVATION: 'account_activation',
+
   CANCELLED: 'cancelled',
   ACTIVATED: 'activated',
   UNSERVICEABLE: 'unserviceable',
   REJECTED: 'rejected',
   ARCHIVED: 'archived',
+};
+
+export const caApplicationSubStatus = {
+  [caApplicationStatus.ARCHIVED]: {
+    UNSERVICEABLE_PINCODE: 'unserviceable_pincode',
+    NEGATIVE_PROFILE_SVR_ISSUE: 'negative_profile/svr_issue',
+    OTHER: 'other',
+  },
 };
 
 export const caApplicationBlockedStatus = [

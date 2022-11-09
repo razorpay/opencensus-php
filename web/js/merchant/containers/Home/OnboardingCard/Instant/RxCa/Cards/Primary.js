@@ -5,11 +5,11 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import Button from 'common/new-ui/Button';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { updateUser } from 'merchant_common/reducers/user';
-import CaApplyForm from '../CaApplyForm';
-import CaApplyAcknowledge from '../CaApplyAcknowledge';
+import CaApplyForm from 'merchant/containers/Home/OnboardingCard/Instant/RxCa/CaApplyForm';
+import CaApplyAcknowledge from 'merchant/containers/Home/OnboardingCard/Instant/RxCa/CaApplyAcknowledge';
 import { currentAccountStatuses, getTimeLine } from './data';
-import RTracking from 'react-tracking';
-import { getTimeDiff } from '../helpers';
+import rTracking from 'react-tracking';
+import { getTimeDiff } from 'merchant/containers/Home/OnboardingCard/Instant/RxCa/helpers';
 
 const Primary = ({
   tracking,
@@ -44,7 +44,7 @@ const Primary = ({
 
   const handleSuccess = () => {
     const _settings = { ...settings };
-    _settings['clicked_ca_apply_request_done'] = '1';
+    _settings.clicked_ca_apply_request_done = '1';
     merchantFetch({
       url: 'users',
       mode: 'live',
@@ -62,6 +62,15 @@ const Primary = ({
     });
   };
 
+  const sendClickEvents = () => {
+    tracking.trackEvent(
+      window?.rzpQ?.merchantActions()?.clicked('dashboard.neopricing_tracker', {
+        clicked_on: 'apply_now',
+        status: 'application_form',
+      }),
+    );
+  };
+
   const openCaApplyModal = () => {
     sendClickEvents();
     openModal({
@@ -76,21 +85,21 @@ const Primary = ({
       className: 'CA-apply--modal',
     });
   };
-  const sendClickEvents = () => {
-    tracking.trackEvent(
-      window.rzpQ.merchantActions().clicked('dashboard.neopricing_tracker', {
-        clicked_on: 'apply_now',
-        status: 'application_form',
-      }),
-    );
-  };
+
   const getTimelineStatus = (type) => {
     if (
-      (caStatus && caStatus === currentAccountStatuses.processing) ||
-      caStatus === currentAccountStatuses.initiated ||
-      caStatus === currentAccountStatuses.activated ||
-      caStatus === currentAccountStatuses.processed ||
-      caStatus === currentAccountStatuses.unserviceable
+      [
+        currentAccountStatuses.processing,
+        currentAccountStatuses.initiated,
+        currentAccountStatuses.activated,
+        currentAccountStatuses.processed,
+        currentAccountStatuses.unserviceable,
+        currentAccountStatuses.verification_call,
+        currentAccountStatuses.doc_collection,
+        currentAccountStatuses.api_onboarding,
+        currentAccountStatuses.account_opening,
+        currentAccountStatuses.account_activation,
+      ].includes(caStatus)
     ) {
       return false;
     }
@@ -150,6 +159,6 @@ const mapDispatchToProps = (dispatch) => ({
   updateUser: bindActionCreators(updateUser, dispatch),
 });
 
-export default RTracking({ page: 'RXNeoCaPrimaryCard' })(
+export default rTracking({ page: 'RXNeoCaPrimaryCard' })(
   connect(null, mapDispatchToProps)(Primary),
 );

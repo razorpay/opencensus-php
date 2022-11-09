@@ -1,5 +1,16 @@
 import React from 'react';
-import { benefits, currentAccountStatuses } from './data';
+import { benefits, currentAccountStatuses, currentAccountSubSubStatuses } from './data';
+import ChargeListImage from 'assets/onboarding/charge-list.svg';
+
+const getStatusView = ({ pillType, pillText, content, showNitroRXCAFlow }) => {
+  return (
+    <div className="status-container">
+      <img src={ChargeListImage} alt="thunder" />
+      <div className="status">{content}</div>
+      {showNitroRXCAFlow ? null : <div className={`ca-pill ${pillType}`}>{pillText}</div>}
+    </div>
+  );
+};
 
 const Secondary = ({ caAccount, pillType, pillText, content, hasAppliedCa, showNitroRXCAFlow }) => {
   const showSecondaryContent = () => {
@@ -10,12 +21,16 @@ const Secondary = ({ caAccount, pillType, pillText, content, hasAppliedCa, showN
         <>
           {caAccount &&
           (caAccount.status === currentAccountStatuses.activated ||
-            caAccount.status === currentAccountStatuses.unserviceable) ? (
+            caAccount.status === currentAccountStatuses.unserviceable ||
+            (caAccount.status === currentAccountStatuses.archived &&
+              caAccount.sub_status ===
+                currentAccountSubSubStatuses[currentAccountStatuses.archived]
+                  .UNSERVICEABLE_PINCODE)) ? (
             <div className="highlight-info success">
               <img src="/img/green-tick.svg" className="img-info" alt="info" />
               <div className="info">
-                Congrats! You can keep enjoying Neo pricing with a 1.7% platform fee and its
-                other benefits along with the added advantages of your newly opened current account
+                Congrats! You can keep enjoying Neo pricing with a 1.7% platform fee and its other
+                benefits along with the added advantages of your newly opened current account
               </div>
             </div>
           ) : (
@@ -38,9 +53,9 @@ const Secondary = ({ caAccount, pillType, pillText, content, hasAppliedCa, showN
         <>
           <div className="head">A better settlement account:</div>
           <div className="benefits-list">
-            {benefits.map((benefit) => (
-              <div className="benefit">
-                <img src="/img/charge-list.svg" className="img-list" alt="thunder" />
+            {benefits?.map?.((benefit, index) => (
+              <div key={`${index}${benefit.split(' ')[0]}`} className="benefit">
+                <img src={ChargeListImage} className="img-list" alt="thunder" />
                 <div className="info">{benefit}</div>
               </div>
             ))}
@@ -57,16 +72,6 @@ const Secondary = ({ caAccount, pillType, pillText, content, hasAppliedCa, showN
         </>
       )}
       {showSecondaryContent()}
-    </div>
-  );
-};
-
-const getStatusView = ({ pillType, pillText, content, showNitroRXCAFlow }) => {
-  return (
-    <div className="status-container">
-      <img src="/img/charge-list.svg" alt="thunder" />
-      <div className="status">{content}</div>
-      {showNitroRXCAFlow ? null : <div className={`ca-pill ${pillType}`}>{pillText}</div>}
     </div>
   );
 };

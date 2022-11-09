@@ -1,4 +1,8 @@
-import { User, XCAStatus, APIResponseType } from '../TypeDeclare/XCATypeDeclare';
+import {
+  User,
+  XCAStatus,
+  APIResponseType,
+} from 'common/ui/NotificationsDropdown/Neostone/TypeDeclare/XCATypeDeclare';
 import * as TrackerStatusConst from './../Tracker/TrackerConstant';
 import { getItem } from 'common/utils/localStorage';
 import moment from 'moment';
@@ -46,7 +50,7 @@ const getXCAStatus = (user: User): XCAStatus => {
 };
 
 export const getDerivedStatus = (data) => {
-  const { banking_account_activation_details = {}, status = '' } = data || {};
+  const { banking_account_activation_details = {}, status = '', sub_status = '' } = data || {};
   const { business_pan_validation = '', declaration_step = '' } =
     banking_account_activation_details || {};
 
@@ -54,6 +58,7 @@ export const getDerivedStatus = (data) => {
     panValidationFailureStatus,
     derivedCaApplicationStatus,
     caApplicationStatus,
+    caApplicationSubStatus,
   } = TrackerStatusConst;
   switch (status) {
     case caApplicationStatus.CREATED:
@@ -69,7 +74,37 @@ export const getDerivedStatus = (data) => {
       return derivedCaApplicationStatus.PENDING;
     case caApplicationStatus.PICKED:
     case caApplicationStatus.INITIATED:
+    case caApplicationStatus.VERIFICATION_CALL:
+    case caApplicationStatus.DOC_COLLECTION:
       return derivedCaApplicationStatus.INITIATED;
+
+    case caApplicationStatus.ACCOUNT_OPENING:
+    case caApplicationStatus.API_ONBOARDING:
+      return derivedCaApplicationStatus.PROCESSING;
+
+    case caApplicationStatus.ACCOUNT_ACTIVATION:
+      return derivedCaApplicationStatus.PROCESSED;
+
+    case caApplicationStatus.ARCHIVED:
+      if (
+        sub_status === caApplicationSubStatus[caApplicationStatus.ARCHIVED].UNSERVICEABLE_PINCODE
+      ) {
+        return derivedCaApplicationStatus.UNSERVICEABLE;
+      }
+
+      if (
+        sub_status ===
+        caApplicationSubStatus[caApplicationStatus.ARCHIVED].NEGATIVE_PROFILE_SVR_ISSUE
+      ) {
+        return derivedCaApplicationStatus.REJECTED;
+      }
+
+      if (sub_status === caApplicationSubStatus[caApplicationStatus.ARCHIVED].OTHER) {
+        return derivedCaApplicationStatus.CANCELLED;
+      }
+
+      return derivedCaApplicationStatus.ARCHIVED;
+
     default:
       return status;
   }

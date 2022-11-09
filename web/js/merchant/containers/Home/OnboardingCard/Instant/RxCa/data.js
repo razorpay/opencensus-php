@@ -1,6 +1,6 @@
 //TODO
 // update content
-import { currentAccountStatuses } from './Cards/data';
+import { currentAccountStatuses, currentAccountSubSubStatuses } from './Cards/data';
 import Button from 'common/new-ui/Button';
 
 export const FAQ_DATA_NEO = [
@@ -58,7 +58,7 @@ export const hasNeoCouponCode = (coupons = []) => {
   return validCoupons.some((validCoupon) => coupons.includes(validCoupon));
 };
 
-export const getCaState = (caAccountStatus, GoToCaDocs, showNitroRXCAFlow) => {
+export const getCaState = (caAccountStatus, caAccountSubStatus, GoToCaDocs, showNitroRXCAFlow) => {
   let pillType, pillText, content;
   let headState = '';
   let viewType = '';
@@ -98,7 +98,12 @@ export const getCaState = (caAccountStatus, GoToCaDocs, showNitroRXCAFlow) => {
         {viewDocumentsBTN}
       </>
     );
-  } else if (caAccountStatus === currentAccountStatuses.processed) {
+  } else if (
+    caAccountStatus === currentAccountStatuses.processed ||
+    caAccountStatus === currentAccountStatuses.account_opening ||
+    caAccountStatus === currentAccountStatuses.api_onboarding ||
+    caAccountStatus === currentAccountStatuses.account_activation
+  ) {
     pillType = 'yellow';
     pillText = 'Activation In Progress';
     headState = 'Account opened';
@@ -111,7 +116,9 @@ export const getCaState = (caAccountStatus, GoToCaDocs, showNitroRXCAFlow) => {
     );
   } else if (
     caAccountStatus === currentAccountStatuses.processing ||
-    caAccountStatus === currentAccountStatuses.initiated
+    caAccountStatus === currentAccountStatuses.initiated ||
+    caAccountStatus === currentAccountStatuses.verification_call ||
+    caAccountStatus === currentAccountStatuses.doc_collection
   ) {
     pillType = 'yellow';
     pillText = 'Bank KYC In Progress';
@@ -164,6 +171,50 @@ export const getCaState = (caAccountStatus, GoToCaDocs, showNitroRXCAFlow) => {
       <>
         Your current account is now active, and you’re ready to take off! Start enjoying the
         benefits of your new account. Your payments will now be settled in this account
+      </>
+    );
+  } else if (
+    caAccountStatus === currentAccountStatuses.archived &&
+    caAccountSubStatus === currentAccountSubSubStatuses[currentAccountStatuses.archived].OTHER
+  ) {
+    pillType = 'danger';
+    pillText = 'Request Cancelled';
+    viewType = 'announcement';
+    title = 'Current account request cancelled';
+    content = (
+      <>
+        Your current account application has been cancelled. You have been reverted back to classic
+        pricing with 2% platform fee{' '}
+      </>
+    );
+  } else if (
+    caAccountStatus === currentAccountStatuses.archived &&
+    caAccountSubStatus ===
+      currentAccountSubSubStatuses[currentAccountStatuses.archived].UNSERVICEABLE_PINCODE
+  ) {
+    pillType = 'grey';
+    pillText = 'Unserviceable';
+    viewType = 'default';
+    title = '';
+    content = (
+      <>
+        Unfortunately, our banking partner can't service at your location currently. However, you
+        can keep using the RazorpayX Virtual Account.
+      </>
+    );
+  } else if (
+    caAccountStatus === currentAccountStatuses.archived &&
+    caAccountSubStatus ===
+      currentAccountSubSubStatuses[currentAccountStatuses.archived].NEGATIVE_PROFILE_SVR_ISSUE
+  ) {
+    pillType = 'danger';
+    pillText = 'Request Rejected';
+    viewType = 'announcement';
+    title = 'Current account request rejected';
+    content = (
+      <>
+        Your application has been rejected by our banking partner. You have been reverted to classic
+        pricing with 2% transaction rate
       </>
     );
   }

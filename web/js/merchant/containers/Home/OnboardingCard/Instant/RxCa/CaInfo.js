@@ -5,25 +5,22 @@ import Primary from './Cards/Primary';
 import Secondary from './Cards/Secondary';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { currentAccountStatuses, analyticsStatusMap } from './Cards/data';
-import RTracking from 'react-tracking';
-import FAQ from './Faq';
+import rTracking from 'react-tracking';
+import Faq from './Faq';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import { getCaState } from './data';
-import { getTimeDiff } from './helpers.js';
+import { getTimeDiff } from './helpers';
 import { updateUser } from 'merchant_common/reducers/user';
 import { bindActionCreators } from 'redux';
 
 const CaInfo = (props) => {
   const [caAccount, setCaAcccount] = React.useState(null);
   const [isloading, setLoading] = React.useState(true);
-  const hasAppliedCa = props.user.user.settings['clicked_ca_apply_request_done'];
-  const hideTimeline = !!props.user.user.settings['clicked_close_ca_timeline_banner'];
+  const hasAppliedCa = props?.user?.user?.settings?.clicked_ca_apply_request_done;
+  const hideTimeline = !!props?.user?.user?.settings?.clicked_close_ca_timeline_banner;
   const { showNitroRXCAFlow } = props;
-  if (hideTimeline) {
-    return null;
-  }
 
-  const getSFbankAccount = () => {
+  const getSFbankAccount = (data) => {
     const lossReason = data[0].opportunityLossReason || '';
     let status;
     switch (lossReason) {
@@ -65,14 +62,14 @@ const CaInfo = (props) => {
         status:
           caAccount && caAccount.status
             ? analyticsStatusMap[caAccount.status]
-            : analyticsStatusMap['created'],
+            : analyticsStatusMap.created,
       }),
     );
   };
 
   const handleAnnouncementClose = () => {
     const _settings = { ...props.user.user.settings };
-    _settings['clicked_close_ca_timeline_banner'] = '1';
+    _settings.clicked_close_ca_timeline_banner = '1';
     merchantFetch({
       url: 'users',
       mode: 'live',
@@ -100,7 +97,7 @@ const CaInfo = (props) => {
           sendViewEvent('created');
         }
       })
-      .catch((err) => {
+      .catch(() => {
         sendViewEvent('created');
       })
       .finally(() => {
@@ -136,11 +133,14 @@ const CaInfo = (props) => {
     }
   }, []);
 
+  if (hideTimeline) return null;
+
   if (isloading) {
     return <Spinner className="ca-loader" />;
   }
 
   const caStatus = caAccount && caAccount.status ? caAccount.status : null;
+  const caSubStatus = caAccount?.sub_status || null;
   const activatedAt =
     props.user.user.merchants && props.user.user.merchants.length
       ? props.user.merchant.activated_at
@@ -171,7 +171,7 @@ const CaInfo = (props) => {
     );
   }
 
-  const getStatusView = getCaState(caStatus, GoToCaDocs, showNitroRXCAFlow);
+  const getStatusView = getCaState(caStatus, caSubStatus, GoToCaDocs, showNitroRXCAFlow);
   const { pillType, pillText, content, headState, title, viewType } = getStatusView;
 
   return (
@@ -210,7 +210,7 @@ const CaInfo = (props) => {
             />
           </div>
           <div className="faq-container">
-            <FAQ caStatus={caStatus} showNitroRXCAFlow={showNitroRXCAFlow} />
+            <Faq caStatus={caStatus} showNitroRXCAFlow={showNitroRXCAFlow} />
           </div>
         </div>
       )}
@@ -226,6 +226,6 @@ const mapDispatchToProps = (dispatch) => ({
   updateUser: bindActionCreators(updateUser, dispatch),
 });
 
-export default RTracking({ page: 'RXNeoCaHome' })(
+export default rTracking({ page: 'RXNeoCaHome' })(
   connect(mapStateToProps, mapDispatchToProps)(CaInfo),
 );
