@@ -28,19 +28,19 @@ const ToolTip = () => (
 const Settings = ({ closeModal, openModal, missed_order_payment_link }) => {
   const subscription = missed_order_payment_link.subscription?.data;
   const effectiveEndDate = subscription.current_plan?.effective_end_date;
-  const billingDate = effectiveEndDate || subscription.current_plan.renewal_date + 86400 * 30;
+  const renewalDate = subscription.current_plan?.renewal_date;
+  const thirtyDaysInUnixSeconds = 86400 * 30;
+  const freeTrialActive = subscription.current_plan?.free_trial_active;
+  const billingDate = freeTrialActive
+    ? renewalDate + thirtyDaysInUnixSeconds
+    : renewalDate || effectiveEndDate;
   const isProPlan = subscription.current_plan?.name === 'pro';
-
   const handelCancelFlow = () => {
     openModal({
       size: 'large',
       component: (
         <SuspenseWithLoader>
-          <CancelFlow
-            closeModal={closeModal}
-            billingDate={billingDate}
-            isFreeTrial={subscription.current_plan?.free_trial_active}
-          />
+          <CancelFlow closeModal={closeModal} isFreeTrial={freeTrialActive} />
         </SuspenseWithLoader>
       ),
     });
@@ -98,16 +98,18 @@ const Settings = ({ closeModal, openModal, missed_order_payment_link }) => {
         <div className="heading current-wrapper">Current Plan</div>
         <div className="info-wrapper-space">
           <Info
+            isPopOverVisible
             billingDate={billingDate}
             plan={subscription.current_plan}
             trialDate={subscription.current_plan.renewal_date}
-            isTrialVisible={effectiveEndDate ? false : subscription.current_plan.free_trial_active}
+            isTrialVisible={effectiveEndDate ? false : freeTrialActive}
           />
         </div>
         {!effectiveEndDate && (
           <div className="cancel-wrapper">
             <Text size="xsmall" color="shade.980" weight="regular">
-              Your plan will be active till <Time value={billingDate} format="DD MMM, YYYY" />
+              Your plan will be active till{' '}
+              <Time value={effectiveEndDate || renewalDate} format="DD MMM, YYYY" />
             </Text>
             <Text
               size="xsmall"

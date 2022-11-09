@@ -55,7 +55,12 @@ const Plan = ({ plan, viewAllFeaturesCb, selectPlanCb }) => {
       <div className="plan-info">
         <div id="missed-order-plan-title">{titleCase(plan.name)}</div>
         <div className="amount-wrapper">
-          <Amount currency="INR" value={plan.price} hidePaisa />
+          <Amount
+            hidePaisa
+            currency="INR"
+            value={plan.price}
+            parentQuerySelector=".plan-selection-container"
+          />
           <span id="missed-order-amount-information">&nbsp; per retarget</span>
           <div id="info-outline-icon-wrapper" onMouseEnter={trackInfo}>
             <i className="i i-help-outline" />

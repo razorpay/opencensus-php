@@ -56,7 +56,12 @@ const PlanContent = ({ plan, openModal, closeModal, selectPlanCb }) => {
       <div id="missed-order-plan-title">{titleCase(plan.name)}</div>
       <div className="amount-wrapper">
         <div className="amount-value">
-          <Amount currency="INR" value={plan.price} hidePaisa />
+          <Amount
+            hidePaisa
+            currency="INR"
+            value={plan.price}
+            parentQuerySelector=".missedorder-features-container"
+          />
         </div>
         <span id="missed-order-amount-information">&nbsp; per retarget</span>
         <div id="info-outline-icon-wrapper">
