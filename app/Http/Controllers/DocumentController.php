@@ -101,4 +101,12 @@ class DocumentController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getSignedUrl(string $documentId)
+    {
+        $response = $this->service(Entity::MERCHANT_DOCUMENT)->getSignedUrl($documentId);
+
+        return ApiResponse::json($response);
+    }
+
 }

@@ -53,8 +53,9 @@ class UFHFileHandler implements FileHandlerInterface
                                                                $input[Constants::ENTITY],
                                                                $fileMetaData);
 
-        $results[Constants::FILE_ID] = FileStore\Entity::verifyIdAndSilentlyStripSign($fileMetaData[UfhService::FILE_ID]);
-        $results[Constants::SOURCE]  = $this->getSource();
+        $results[Constants::FILE_ID]    = FileStore\Entity::verifyIdAndSilentlyStripSign($fileMetaData[UfhService::FILE_ID]);
+        $results[Constants::SOURCE]     = $this->getSource();
+        $results[Constants::FILE_NAME]  = $input[Constants::FILE_NAME];
 
         return $results;
     }

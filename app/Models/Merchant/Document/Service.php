@@ -568,4 +568,9 @@ class Service extends Base\Service
         }
     }
 
+    public function getSignedUrl(string $documentId)
+    {
+        return $this->core->getSignedUrl($documentId);
+    }
+
 }

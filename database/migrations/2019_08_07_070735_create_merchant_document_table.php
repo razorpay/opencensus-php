@@ -62,6 +62,8 @@ class CreateMerchantDocumentTable extends Migration
 
             $table->index(Document::ENTITY_ID);
 
+            $table->json(Document::METADATA)
+                ->nullable();
         });
     }
 

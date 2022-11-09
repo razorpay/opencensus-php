@@ -738,6 +738,7 @@ class UserRolesScope
             'merchant_document_delete'                             => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_document_fetch'                              => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_document_upload'                             => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
+            'merchant_document_url_fetch'                          => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_edit_email2fa'                               => [Role::OWNER, Role::ADMIN],
             'generate_gifu_file' => [Role::OWNER, Role::ADMIN], // testing
             'merchant_edit_pre_signup_details'                     => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],

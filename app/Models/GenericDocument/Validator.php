@@ -19,19 +19,19 @@ class Validator extends Base\Validator
     ];
 
     protected static $kycMimeRules = [
-        Constants::FILE    => 'mimes:pdf,jpeg,jpg,png'
+        Constants::FILE    => 'mimes:pdf,jpeg,jpg,png,jfif'
     ];
 
     protected static $logoMimeRules = [
-        Constants::FILE    => 'mimes:jpeg,jpg,png'
+        Constants::FILE    => 'mimes:jpeg,jpg,png,jfif'
     ];
 
     protected static $ieMimeRules = [
-        Constants::FILE    => 'mimes:pdf,jpeg,jpg,png'
+        Constants::FILE    => 'mimes:pdf,jpeg,jpg,png,jfif'
     ];
 
     protected static $disputeEvidenceMimeRules = [
-        Constants::FILE    => 'mimes:pdf,jpeg,jpg,png',
+        Constants::FILE    => 'mimes:pdf,jpeg,jpg,png,jfif',
     ];
 
     protected static $merchantWorkflowClarificationMimeRules = [
@@ -46,6 +46,7 @@ class Validator extends Base\Validator
                             . 'image/png,'
                             . 'image/jpg,'
                             . 'image/jpeg,'
+                            . 'image/jfif,'
                             . 'text/xml,'
                             . 'text/csv,'
                             . 'text/plain,'
@@ -64,11 +65,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $b2bExportInvoiceMimeRules = [
-        Constants::FILE    => 'mimes:pdf,jpeg,jpg,png',
+        Constants::FILE    => 'mimes:pdf,jpeg,jpg,png,jfif',
     ];
 
     protected static $apmOnboardingMimeRules = [
-        Constants::FILE    => 'mimes:pdf,jpeg,jpg,png',
+        Constants::FILE    => 'mimes:pdf,jpeg,jpg,png,jfif',
     ];
 
     protected $mimeValidators = [

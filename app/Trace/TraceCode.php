@@ -6480,6 +6480,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_CHARGE_TOKEN_CREATE_ORDER = 'PAYMENT_CHARGE_TOKEN_CREATE_ORDER';
     const PAYMENT_CHARGE_TOKEN              = 'PAYMENT_CHARGE_TOKEN';
 
+    const FETCH_SIGNED_URL                  = 'FETCH_SIGNED_URL';
     const SIGNED_URL_NOT_FOUND              = 'SIGNED_URL_NOT_FOUND';
 
     const PAYOUT_META_ENTITY_CREATE_REQUEST                   = 'PAYOUT_META_ENTITY_CREATE_REQUEST';

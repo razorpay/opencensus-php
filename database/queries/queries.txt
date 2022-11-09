@@ -7074,3 +7074,6 @@ ALTER TABLE raw_addresses MODIFY name varchar(64) NOT NULL;
 
 ALTER TABLE cards
 alter iin set DEFAULT '0', alter name set DEFAULT '0', alter expiry_month set DEFAULT '0', alter expiry_year set DEFAULT '0';
+
+ALTER TABLE merchant_documents
+  ADD metadata json DEFAULT NULL;

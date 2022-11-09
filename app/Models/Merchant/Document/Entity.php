@@ -25,7 +25,8 @@ class Entity extends Base\PublicEntity
     const UPLOAD_BY_ADMIN_ID = 'upload_by_admin_id';
     const AUDIT_ID           = 'audit_id';
     //When the document is accounted for
-    const DOCUMENT_DATE = 'document_date';
+    const DOCUMENT_DATE      = 'document_date';
+    const METADATA           = 'metadata';
 
     protected static $sign = 'doc';
 
@@ -42,7 +43,8 @@ class Entity extends Base\PublicEntity
         self::SOURCE,
         self::UPLOAD_BY_ADMIN_ID,
         self::DOCUMENT_DATE,
-        self::AUDIT_ID
+        self::AUDIT_ID,
+        self::METADATA
     ];
 
     protected $public = [
@@ -54,6 +56,7 @@ class Entity extends Base\PublicEntity
         self::SOURCE,
         self::UPLOAD_BY_ADMIN_ID,
         self::DOCUMENT_DATE,
+        self::METADATA
     ];
 
     protected $dates = [
@@ -61,6 +64,14 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::DELETED_AT,
         self::DOCUMENT_DATE,
+    ];
+
+    protected $casts              = [
+        self::METADATA => 'array',
+    ];
+
+    protected $defaults           = [
+        self::METADATA   => []
     ];
 
     public function getFileStoreSource()
@@ -166,5 +177,10 @@ class Entity extends Base\PublicEntity
     public function bvsValidation()
     {
         return $this->belongsTo(BvsValidation\Entity::class, self::VALIDATION_ID);
+    }
+
+    public function getMetadata()
+    {
+        return $this->getAttribute(self::METADATA);
     }
 }

@@ -131,7 +131,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The file must be a file of type: pdf, jpeg, jpg, png.',
+                    'description' => 'The file must be a file of type: pdf, jpeg, jpg, png, jfif.',
                 ],
             ],
             'status_code' => 400,

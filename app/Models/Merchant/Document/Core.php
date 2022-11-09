@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Document;
 
 use RZP\Models\Base;
 use RZP\Diag\EventCode;
+use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -83,10 +84,15 @@ class Core extends Base\Core
 
         foreach ($params as $documentType => $fileAttributes)
         {
+            $metadata = [
+                'file_name' => $fileAttributes[Constants::FILE_NAME] ?? ''
+            ];
+
             $input = [
                 Entity::FILE_STORE_ID => $fileAttributes[Constants::FILE_ID],
                 Entity::SOURCE        => $fileAttributes[Constants::SOURCE],
                 Entity::DOCUMENT_TYPE => $documentType,
+                Entity::METADATA      => $metadata
             ];
 
             FileStoreEntity::verifyIdAndSilentlyStripSign($input[Entity::FILE_STORE_ID]);
@@ -338,20 +344,8 @@ class Core extends Base\Core
                 Entity::FILE_STORE_ID => $document->getFileStoreId(),
                 Entity::MERCHANT_ID => $document->getMerchantId(),
                 Entity::CREATED_AT => $document->getCreatedAt(),
+                Entity::METADATA => $document->getMetadata()
             ];
-
-            //fetch signed url for given file store id and merchant id
-            //removing this as p95 has increased
-            /*try {
-                $documentMetaData[Entity::SIGNED_URL] = (new DetailService)->getSignedUrl($document->getFileStoreId(), $document->getMerchantId());
-            }
-            catch (\Exception $e)
-            {
-                $this->trace->info(TraceCode::SIGNED_URL_NOT_FOUND, [
-                    "error"       => $e->getMessage(),
-                    "merchant_id" => $document->getMerchantId()
-                ]);
-            }*/
 
             if (isset($documentsResponse[$document->getDocumentType()]) === false)
             {
@@ -423,6 +417,33 @@ class Core extends Base\Core
                                 Entity::DOCUMENT_TYPE        => $document->getDocumentType(),
                                 Detail\Entity::BUSINESS_TYPE => $merchantDetails->getBusinessTypeValue()
                             ]);
+    }
+
+    public function getSignedUrl(string $documentId)
+    {
+        $this->trace->info(TraceCode::FETCH_SIGNED_URL, [
+            'document' => $documentId
+        ]);
+
+        $document = $this->repo->merchant_document->findDocumentById($documentId);
+
+        if($document === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR, null, $documentId);
+        }
+
+        $signedUrl = (new Detail\Service())->getSignedUrl($document[Entity::FILE_STORE_ID], $document[Entity::MERCHANT_ID], $document[Entity::SOURCE]);
+
+        return [
+            'id'            => $documentId,
+            'file_store_id' => $document[Entity::FILE_STORE_ID],
+            'metadata'      => $document[Entity::METADATA],
+            'merchant_id'   => $document[Entity::MERCHANT_ID],
+            'created_at'    => $document[Entity::CREATED_AT],
+            'signed_url'    => $signedUrl
+        ];
+
     }
 
     protected function mapToKycDocType(string $document_type): ?string
