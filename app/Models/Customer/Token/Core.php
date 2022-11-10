@@ -2727,17 +2727,6 @@ class Core extends Base\Core
             return false;
         }
 
-        if (($token->isRecurring() === true) and
-            ($token->getRecurringStatus() !== Token\RecurringStatus::CONFIRMED))
-        {
-            $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
-                'isRecurring'        => $token->isRecurring(),
-                'RecurringStatus'    => $token->getRecurringStatus()
-            ]);
-
-            return false;
-        }
-
         $networkCode = $card->getNetworkCode();
 
         if (in_array($networkCode, Card\Network::NETWORKS_SUPPORTING_TOKEN_PROVISIONING, true) === false) {

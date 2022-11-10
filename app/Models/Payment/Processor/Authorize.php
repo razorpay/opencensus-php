@@ -6672,6 +6672,43 @@ trait Authorize
         $this->eventTokenStatus($token, $oldRecurringStatus);
     }
 
+    protected function updateTokenOnRecurringTokenisationFailure(Payment\Entity $payment, array $data)
+    {
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        if ($token === null)
+        {
+            return;
+        }
+
+        $this->trace->info(
+            TraceCode::PAYMENT_UPDATE_TOKEN,
+            [
+                'payment_id'      => $payment->getId(),
+                'token_id'        => $payment->getTokenId(),
+                'global_token_id' => $payment->getGlobalTokenId(),
+                'data'            => $data,
+            ]);
+
+        $token->setRecurring(true);
+
+        $createdAt = $payment->getCreatedAt();
+
+        $token->setUsedAt($createdAt);
+
+        $token->incrementUsedCount();
+
+        $oldRecurringStatus = $token->getRecurringStatus();
+
+        $token->setRecurringStatus(Token\RecurringStatus::REJECTED);
+
+        $token->setRecurringFailureReason($data[Token\Entity::RECURRING_FAILURE_REASON]);
+
+        $this->repo->saveOrFail($token);
+
+        $this->eventTokenStatus($token, $oldRecurringStatus);
+    }
+
     // Not Used
     protected function updateTokenOnCreatedIfRequired($payment, $response)
     {
@@ -7178,7 +7215,7 @@ trait Authorize
 
             $core = (new Token\Core());
 
-            if (($token->isRecurring() === true) and
+            if (($payment->isRecurring() === true) and
                 ($token->getMethod() === Method::CARD) and
                 ($token->card->isRzpSavedCard() === true))
             {
@@ -7260,7 +7297,7 @@ trait Authorize
                 'razorx_variant' => $variant,
             ]);
 
-            if ((strtolower($variant) === 'on') && ($token['recurring'] === false)){
+            if ((strtolower($variant) === 'on') && ($payment['recurring'] === false)){
 
                 $asyncTokenisationJobId = "paymentmigrate";
 
@@ -7399,26 +7436,63 @@ trait Authorize
         {
             if($payment->isTokenisationUnhappyFlowHandlingApplicable() === true)
             {
+                $token = $payment->localToken;
+
+                $card = $this->repo->card->fetchForToken($token);
+
+                if ($card->isRzpSavedCard() === true)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_TOKENISATION_FAILED_FOR_RECURRING_CARD,null,
+                        [
+                            'payment_id'   => $payment->getPublicId(),
+                            'method'       => $payment->getMethod(),
+                            'token_id'     => $payment->getTokenId(),
+                        ]
+                    );
+                }
+
+                (new CardMandate\Core)->reportInitialPayment($payment);
+
                 $cardMandate = $this->repo->card_mandate->findByIdAndMerchant($payment->localToken->getCardMandateId(), $payment->merchant);
 
                 if($cardMandate->getStatus() !== CardMandate\Status::ACTIVE)
                 {
-                    (new CardMandate\Core)->reportInitialPayment($payment);
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_FAILED_REPORTING_TO_MANDATE_HUB,null,
+                        [
+                            'payment_id'            => $payment->getPublicId(),
+                            'method'                => $payment->getMethod(),
+                            'card_mandate_id'       => $cardMandate->getId(),
+                        ]
+                    );
                 }
+
+                $this->updateTokenOnAuthorized($payment, []);
             }
         }
         catch(\Exception $e)
         {
+            $traceCode = TraceCode::CARD_MANDATE_REPORT_INITIAL_PAYMENT_FAILED;
+            $data[Token\Entity::RECURRING_FAILURE_REASON] = Error\PublicErrorDescription::BAD_REQUEST_FAILED_REPORTING_TO_MANDATE_HUB;
+
+            if ($e->getCode() === ErrorCode::BAD_REQUEST_TOKENISATION_FAILED_FOR_RECURRING_CARD)
+            {
+                $traceCode = TraceCode::FAILED_TO_TOKENISED_THE_RECURRING_CARD;
+                $data[Token\Entity::RECURRING_FAILURE_REASON] = Error\PublicErrorDescription::BAD_REQUEST_TOKENISATION_FAILED_FOR_RECURRING_CARD;
+            }
+
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::FAILED_REPORTING_TO_MANDATEHUB_AFTER_RECURRING_TOKENISATION,
+                $traceCode,
                 [
-                    "message" => "failed in postTokenisationRecurringPaymentProcessingIfApplicable reportInitialPayment",
+                    "message" => "failed in postTokenisationRecurringPaymentProcessingIfApplicable",
                     "paymentId" => $payment->getId(),
                 ]);
-        }
 
+            $this->updateTokenOnRecurringTokenisationFailure($payment, $data);
+        }
     }
 
     protected function postPaymentAuthorizeSubscriptionProcessing(Payment\Entity $payment)
@@ -9715,7 +9789,10 @@ trait Authorize
             (new Invoice\Core)->addOfferDetails($payment->getInvoiceId(), $payment);
         }
 
-        $this->updateTokenOnAuthorized($payment, $data);
+        if ($payment->isTokenisationUnhappyFlowHandlingApplicable() === false)
+        {
+            $this->updateTokenOnAuthorized($payment, $data);
+        }
 
         // We will be updating the details in upi_mandate too.
         $this->updateRecurringEntitiesForUpiIfApplicable($payment, $data);

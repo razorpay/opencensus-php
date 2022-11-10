@@ -330,6 +330,8 @@ class PublicErrorDescription
 
     const BAD_REQUEST_PRODUCT_OFFER_AMOUNT_NOT_SUPPORTED                        = 'Offer Amount is not supported for this product';
     const BAD_REQUEST_AUTO_RECURRING_NOT_SUPPORTED_ON_IIN                       = 'Recurring payments are not supported on this iin';
+    const BAD_REQUEST_TOKENISATION_FAILED_FOR_RECURRING_CARD                    = 'Failed to tokenised the card';
+    const BAD_REQUEST_FAILED_REPORTING_TO_MANDATE_HUB                           = 'Failed while reporting to mandate hub';
     const BAD_REQUEST_UNABLE_TO_AUTHORIZE_PAYMENT                               = 'This payment could not be authorized by the processing bank.';
     const BAD_REQUEST_KEY_EXPIRED                                               = 'Key is expired';
     const BAD_REQUEST_KEY_EXPIRING_SOON                                         = 'Key is already set to expire soon';

@@ -446,6 +446,8 @@ class ApiEventSubscriber extends Base\Core
             $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
         }
 
+        // Removed reportInitialPayment from here,
+        // Moved it to postTokenisationRecurringPaymentProcessingIfApplicable
         if (($payment->isTokenisationUnhappyFlowHandlingApplicable() === false) and
             ($payment->isCardMandateRecurringInitialPayment() === true))
         {
