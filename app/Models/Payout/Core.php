@@ -2317,13 +2317,6 @@ class Core extends Base\Core
         // else process via API workflow system
         $workflowViaWorkflowService = (new EntityMap\Repository)->isPresent(Entity::PAYOUT, $payout->getId());
 
-        $this->trace->info(
-            TraceCode::PROCESS_REQUEST_VIA_WORKFLOW_SERVICE,
-            [
-                'id'    => $payout->getId(),
-                'workflowViaWorkflowService' => $workflowViaWorkflowService
-            ]);
-
         return $workflowViaWorkflowService === true;
     }
 
@@ -5370,15 +5363,6 @@ class Core extends Base\Core
 
         try
         {
-            // Using Self Serve Workflow Feature, Owner role will be able to bulk reject payouts using Admin action
-            if ($auth->isProxyAuth() === true && in_array(Entity::BULK_REJECT_AS_OWNER, $input))
-            {
-                $this->rejectPendingPayout($payout);
-
-                return $this->workflowService->createDirectAction($payout, $input);
-            }
-
-
             // Admin / Worker(for scheduled payouts) actions
             // On these auth, one can only reject a workflow
             if ((($auth->isAdminAuth() === true) ||

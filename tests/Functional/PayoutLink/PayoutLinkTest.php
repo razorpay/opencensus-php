@@ -18,7 +18,6 @@ use RZP\Services\RazorXClient;
 use RZP\Models\PayoutLink\Core;
 use RZP\Mail\PayoutLink\Failed;
 use RZP\Mail\PayoutLink\Success;
-use RZP\Models\Feature\Constants;
 use RZP\Models\Currency\Currency;
 use RZP\Models\PayoutLink\Status;
 use RZP\Mail\PayoutLink\SendLink;
@@ -4279,32 +4278,6 @@ class PayoutLinkTest extends TestCase
         $this->startTest();
 
         $plMock->shouldHaveReceived('create');
-    }
-
-    public function testBulkRejectPayoutLinksAsOwner()
-    {
-        $user = $this->fixtures->create('user');
-
-        $this->fixtures->user->createUserMerchantMapping([
-            'merchant_id' => '10000000000000',
-            'user_id'     => $user->getId(),
-            'product'     => 'banking',
-            'role'        => 'owner',
-        ]);
-
-        $this->fixtures->merchant->addFeatures([Constants::PAYOUT_WORKFLOWS]);
-
-        $this->ba->proxyAuth('rzp_live_10000000000000', $user->getId());
-
-        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
-
-        $plMock->shouldReceive('adminActions')->andReturn([]);
-
-        $this->app->instance('payout-links', $plMock);
-
-        $this->startTest();
-
-        $plMock->shouldHaveReceived('adminActions');
     }
 }
 

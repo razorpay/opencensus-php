@@ -118,11 +118,6 @@ class WorkflowMigration
                                 "rejected"
                             ],
                         ],
-                        "owner" => [
-                            "actions" => [
-                                "rejected"
-                            ],
-                        ],
                         "user" => [
                             "actions" => [
                                 "approved",

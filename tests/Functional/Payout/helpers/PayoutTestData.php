@@ -1208,28 +1208,6 @@ return [
         ]
     ],
 
-    'testBulkRejectPayoutsAsOwner' => [
-        'request'  => [
-            'method'  => 'POST',
-            'url'     => '/payouts/reject/bulk/owner',
-            'content' => [
-                'bulk_reject_as_owner' => true,
-                'user_comment' => ''
-            ],
-            'server' => [
-                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
-            ],
-            'header' => [
-                'PHP_AUTH_PW' => 'RANDOM_DASH_PASSWORD_MERCHANT'
-            ]
-        ],
-        'response' => [
-            'content' => [
-
-            ]
-        ]
-    ],
-
     // Create Undoable payout testcase
     'testCreateUndoablePayoutWithOtp' => [
         'request'  => [

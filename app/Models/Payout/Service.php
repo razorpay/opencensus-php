@@ -847,53 +847,6 @@ class Service extends Base\Service
         ];
     }
 
-    public function ownerBulkRejectPayouts(array $input)
-    {
-        $this->trace->info(TraceCode::OWNER_BULK_REJECT_PAYOUT_REQUEST, ['input' => $input]);
-
-        (new Validator)->validateInput(Validator::OWNER_BULK_REJECT_PAYOUTS, $input);
-
-        $payouts = $this->repo->payout->findManyByPublicIdsAndMerchant($input[Entity::PAYOUT_IDS], $this->merchant);
-
-        foreach ($payouts as $payout)
-        {
-            $payout->getValidator()->validatePayoutStatusForApproveOrReject();
-        }
-
-        $failedIds = [];
-
-        $processedIds = [];
-
-        foreach ($payouts as $payout)
-        {
-            try
-            {
-                $payout = (new Core)->rejectPayout($payout, $input);
-
-                $processedIds[] = $payout->getId();
-            }
-            catch (\Throwable $e)
-            {
-                $this->trace->traceException(
-                    $e,
-                    Trace::ERROR,
-                    TraceCode::OWNER_BULK_REJECT_PAYOUT_EXCEPTION,
-                    [
-                        'payout_id'         => $payout->getId(),
-                        'failure_reason'    => $e->getMessage(),
-                    ]);
-
-                $failedIds[] = $payout->getId();
-            }
-        }
-
-        return [
-            'total_count'   => count($payouts),
-            'processed_ids' => $processedIds,
-            'failed_ids'    => $failedIds,
-        ];
-    }
-
     /**
      * @param array $input
      * @return array

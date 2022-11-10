@@ -1605,11 +1605,9 @@ class Route
         'admin_logout'                             => ['post',     'admin/logout',                                   'OrganizationController@logoutAdmin'                                ],
 
         // Self serve workflow
-        'workflow_config_create'                    => ['post',     'workflow/config',                              'WorkflowServiceController@createWorkflowConfig'                        ],
-        'workflow_config_update'                    => ['put',      'workflow/config',                              'WorkflowServiceController@updateWorkflowConfig'                        ],
-        'workflow_config_delete'                    => ['delete',   'workflow/config',                              'WorkflowServiceController@deleteWorkflowConfig'                        ],
-        'payouts_bulk_reject_owner'                 => ['post',     'payouts/reject/bulk/owner',                    'PayoutController@ownerBulkRejectPayouts'                               ],
-        'payout_links_bulk_reject_owner'            => ['post',     'payout-links/reject/bulk/owner',               'PayoutLinkController@ownerBulkRejectPayoutLinks'                       ],
+        'workflow_config_create'                    => ['post',    'workflow/config',                               'WorkflowServiceController@createWorkflowConfig'                           ],
+        'workflow_config_update'                    => ['put',    'workflow/config',                                'WorkflowServiceController@updateWorkflowConfig'                           ],
+        'workflow_config_delete'                    => ['delete',    'workflow/config',                             'WorkflowServiceController@deleteWorkflowConfig'                           ],
 
         'workflow_config_create_admin'              => ['post',    'admin/workflow/config',                               'WorkflowServiceController@createWorkflowConfig'                           ],
         'workflow_config_update_admin'              => ['put',    'admin/workflow/config',                                'WorkflowServiceController@updateWorkflowConfig'                           ],
@@ -6359,8 +6357,6 @@ class Route
         'workflow_config_create',
         'workflow_config_update',
         'workflow_config_delete',
-        'payouts_bulk_reject_owner',
-        'payout_links_bulk_reject_owner',
 
     ];
     // These will run on internal auth with the assurance
@@ -9351,8 +9347,6 @@ class Route
         'workflow_config_create'                    => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'workflow_config_update'                    => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'workflow_config_delete'                    => Permission::SELF_SERVE_WORKFLOW_CONFIG,
-        'payouts_bulk_reject_owner'                 => Permission::SELF_SERVE_WORKFLOW_CONFIG,
-        'payout_links_bulk_reject_owner'            => Permission::SELF_SERVE_WORKFLOW_CONFIG,
     ];
 
     public static $direct = [
@@ -11026,8 +11020,6 @@ class Route
             'workflow_config_create',
             'workflow_config_update',
             'workflow_config_delete',
-            'payouts_bulk_reject_owner',
-            'payout_links_bulk_reject_owner',
         ],
 
         'admin_dashboard' => [
@@ -15233,8 +15225,6 @@ class Route
         'workflow_config_create',
         'workflow_config_update',
         'workflow_config_delete',
-        'payouts_bulk_reject_owner',
-        'payout_links_bulk_reject_owner',
     ];
 
     const PAYOUT_LINKS_SPECIFIC_PUBLIC_ROUTES = [

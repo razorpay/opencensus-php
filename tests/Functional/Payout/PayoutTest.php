@@ -5418,36 +5418,6 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(true, $firstActionChecker['approved']);
     }
 
-    public function testBulkRejectPayoutsAsOwner()
-    {
-        $user = $this->fixtures->create('user');
-
-        $this->liveSetUp();
-
-        $this->fixtures->on('live');
-
-        $this->fixtures->user->createUserMerchantMapping([
-            'merchant_id' => '10000000000000',
-            'user_id'     => $user->getId(),
-            'product'     => 'banking',
-            'role'        => 'owner',
-        ]);
-
-        $this->createPayoutWorkflowWithBankingUsersLiveMode();
-
-        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $testData['request']['content'] += [
-            'payout_ids' => [$payout['id']],
-        ];
-
-        $this->ba->basicAuth('rzp_live_10000000000000', 'RANDOM_DASH_PASSWORD_MERCHANT');
-
-        $this->startTest();
-    }
-
     // Create Undoable payout testcase
     public function testCreateUndoablePayoutWithOtp()
     {

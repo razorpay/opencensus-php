@@ -132,8 +132,6 @@ class Validator extends Base\Validator
 
     const WFS_CONFIG_FETCH = 'wfs_config_fetch';
 
-    const OWNER_BULK_REJECT_PAYOUTS = 'owner_bulk_reject_payouts';
-
     //
     // This is required for build. Currently, build does not
     // accept ruleName as a parameter. Hence, this list needs
@@ -435,13 +433,6 @@ class Validator extends Base\Validator
         Entity::PAYOUT_IDS . '.*'   => 'required|public_id|size:19',
         Entity::FORCE_REJECT        => 'filled|boolean',
         ActionChecker::USER_COMMENT => 'sometimes|nullable|string|max:255',
-    ];
-
-    protected static $ownerBulkRejectPayoutsRules = [
-        Entity::PAYOUT_IDS              => 'required|array',
-        Entity::PAYOUT_IDS . '.*'       => 'required|public_id|size:19',
-        Entity::BULK_REJECT_AS_OWNER    => 'required|boolean',
-        ActionChecker::USER_COMMENT     => 'sometimes|nullable|string|max:255',
     ];
 
     protected static $processQueuedPayoutsInitiateRules = [

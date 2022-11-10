@@ -52,32 +52,38 @@ class Core extends Base\Core
         // Duplicating code, since the old flow will be removed in future
         // todo: Remove this comment post removal of old flow
 
-        // default config type is 'payout-approval'
-        if (array_key_exists(Constants::CONFIG_TYPE, $input) === false)
+        $config_type = Constants::PAYOUT_APPROVAL_CONFIG_TYPE;
+
+        // config type will be passed from Admin dashboard for ICICI config
+        if (array_key_exists(Constants::CONFIG_TYPE, $input) === true && is_null($input[Constants::CONFIG_TYPE]) == false)
         {
-            $input[Constants::CONFIG_TYPE] = Constants::PAYOUT_APPROVAL_CONFIG_TYPE;
+            $config_type = $input[Constants::CONFIG_TYPE];
+            unset($input[Constants::CONFIG_TYPE]);
         }
 
         // Create config in workflow service
         $response = $this->workflowServiceClient->createConfigV2($input);
 
-        $this->saveConfigId($response, $input[Constants::CONFIG_TYPE]);
+        $this->saveConfigId($response, $config_type);
 
         return $response;
     }
 
     public function updateWorkflowConfig(array $input): array
     {
-        // default config type is 'payout-approval'
-        if (array_key_exists(Constants::CONFIG_TYPE, $input) === false)
+        $config_type = Constants::PAYOUT_APPROVAL_CONFIG_TYPE;
+
+        // config type will be passed from Admin dashboard for ICICI config
+        if (array_key_exists(Constants::CONFIG_TYPE, $input) === true && is_null($input[Constants::CONFIG_TYPE]) == false)
         {
-            $input[Constants::CONFIG_TYPE] = Constants::PAYOUT_APPROVAL_CONFIG_TYPE;
+            $config_type = $input[Constants::CONFIG_TYPE];
+            unset($input[Constants::CONFIG_TYPE]);
         }
 
         // Update config in workflow service
         $response = $this->workflowServiceClient->updateConfigV2($input);
 
-        $this->saveConfigId($response, $input[Constants::CONFIG_TYPE]);
+        $this->saveConfigId($response, $config_type);
 
         return $response;
     }
