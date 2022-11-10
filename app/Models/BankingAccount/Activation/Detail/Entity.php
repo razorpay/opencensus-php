@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Admin;
 use RZP\Models\BankingAccount;
+use stdClass;
 
 /**
  * This captures the details that Sales POCs enter into the admin dashboard
@@ -107,9 +108,10 @@ class Entity extends Base\PublicEntity
 
     // Additional details fields
     const ACCOUNT_OPENING_WEBHOOK_DATE = 'account_opening_webhook_date';
-
+    const GREEN_CHANNEL = 'green_channel';
+    const FEET_ON_STREET = 'feet_on_street';
     const REVIVED_LEAD = 'revived_lead';
-
+    const DOCKET_DELIVERED_DATE = 'docket_delivered_date';
     const MID_OFFICE_POC_NAME = 'mid_office_poc_name';
 
     const SALES_PITCH_COMPLETED = 'sales_pitch_completed';
@@ -666,7 +668,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttributeValue(self::ADDITIONAL_DETAILS);
     }
 
-    public function extractFieldFromJSONField($json, $field)
+    public static function extractFieldFromJSONField($json, $field)
     {
         if (isset($json) === true)
         {
@@ -679,12 +681,17 @@ class Entity extends Base\PublicEntity
             {
                 return $json[$field];
             }
+
+            if ($json instanceof stdClass && isset($json->$field))
+            {
+                return $json->$field;
+            }
         }
 
         return null;
     }
 
-    public function hourDifferenceBetweenTimestamps($t1, $t2, $skipWeekend = true)
+    public static function hourDifferenceBetweenTimestamps($t1, $t2, $skipWeekend = true)
     {
         if (empty($t1) === true || empty($t2) === true)
         {
@@ -732,10 +739,10 @@ class Entity extends Base\PublicEntity
     {
         $verificationDate = $array[self::VERIFICATION_COMPLETION_DATE] ?? Carbon::now()->timestamp;
         $rblActivationDetails = $array[self::RBL_ACTIVATION_DETAILS] ?? $this->getRblActivationDetails();
-        $assignedDate = $this->extractFieldFromJSONField($rblActivationDetails, self::BANK_POC_ASSIGNED_DATE);
+        $assignedDate = self::extractFieldFromJSONField($rblActivationDetails, self::BANK_POC_ASSIGNED_DATE);
 
         $array[self::VERIFICATION_TAT] =
-            $this->hourDifferenceBetweenTimestamps($assignedDate, $verificationDate);
+            self::hourDifferenceBetweenTimestamps($assignedDate, $verificationDate);
     }
 
     public function setPublicDocCollectionCompletionDateAttribute(array &$array)
@@ -749,7 +756,7 @@ class Entity extends Base\PublicEntity
         $docCollectionDate = $array[self::DOC_COLLECTION_COMPLETION_DATE] ?? Carbon::now()->timestamp;
 
         $array[self::DOC_COLLECTION_TAT] =
-                $this->hourDifferenceBetweenTimestamps($verificationDate, $docCollectionDate);
+                self::hourDifferenceBetweenTimestamps($verificationDate, $docCollectionDate);
     }
 
     public function setPublicAccountOpeningCompletionDateAttribute(array &$array)
@@ -763,7 +770,7 @@ class Entity extends Base\PublicEntity
         $accountOpeningDate = $array[self::ACCOUNT_OPENING_COMPLETION_DATE] ?? Carbon::now()->timestamp;
 
         $array[self::ACCOUNT_OPENING_TAT] =
-            $this->hourDifferenceBetweenTimestamps($docCollectionDate, $accountOpeningDate);
+            self::hourDifferenceBetweenTimestamps($docCollectionDate, $accountOpeningDate);
     }
 
     public function setPublicApiOnboardingCompletionDateAttribute(array &$array)
@@ -777,7 +784,7 @@ class Entity extends Base\PublicEntity
         $apiOnboardingDate = $array[self::API_ONBOARDING_COMPLETION_DATE] ?? Carbon::now()->timestamp;
 
         $array[self::API_ONBOARDING_TAT] =
-            $this->hourDifferenceBetweenTimestamps($accountOpeningDate, $apiOnboardingDate);
+            self::hourDifferenceBetweenTimestamps($accountOpeningDate, $apiOnboardingDate);
     }
 
     public function setPublicAccountActivationCompletionDateAttribute(array &$array)
@@ -791,7 +798,7 @@ class Entity extends Base\PublicEntity
         $accountActivationDate = $array[self::ACCOUNT_ACTIVATION_COMPLETION_DATE] ?? Carbon::now()->timestamp;
 
         $array[self::ACCOUNT_ACTIVATION_TAT] =
-            $this->hourDifferenceBetweenTimestamps($apiOnboardingDate, $accountActivationDate);
+            self::hourDifferenceBetweenTimestamps($apiOnboardingDate, $accountActivationDate);
     }
 
     public function setPublicUpiActivationCompletionDateAttribute(array &$array)
@@ -805,6 +812,6 @@ class Entity extends Base\PublicEntity
         $upiActivationDate = $array[self::UPI_ACTIVATION_COMPLETION_DATE] ?? Carbon::now()->timestamp;
 
         $array[self::UPI_ACTIVATION_TAT] =
-            $this->hourDifferenceBetweenTimestamps($apiOnboardingDate, $upiActivationDate);
+            self::hourDifferenceBetweenTimestamps($apiOnboardingDate, $upiActivationDate);
     }
 }

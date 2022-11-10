@@ -465,10 +465,10 @@ class Repository extends Base\Repository
 
         // default for is_overdue = 1
         $start = 941627769; // 1999-11-03
-        $end = (new Carbon())->timestamp;
+        $end = (new Carbon())->startOf('day')->timestamp;
 
         if ($overdue === '0') {
-            $start = $date->copy()->timestamp;
+            $start = (new Carbon())->startOf('day')->timestamp;
             $end = 16750953000; // 2500-10-26
         }
 
