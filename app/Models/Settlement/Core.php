@@ -361,8 +361,8 @@ class Core extends Base\Core
             }
             else
             {
-                $email = $merchant->parent->getEmail()??'';
-                $txnReportEmail = $merchant->parent->getTransactionReportEmail()??[];
+                $email = $merchant->getEmail()??'';
+                $txnReportEmail = $merchant->getTransactionReportEmail()??[];
             }
 
             if($email!=='' && in_array($email,$txnReportEmail) === false)
