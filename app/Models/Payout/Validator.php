@@ -1483,6 +1483,7 @@ class Validator extends Base\Validator
         */
         if (!(($status === Status::CREATE_REQUEST_SUBMITTED) or
             ($status === Status::SCHEDULED) or
+            ($status === Status::BATCH_SUBMITTED) or
             ($status === Status::QUEUED) or
             ($status === Status::PENDING) or
             ($status === Status::ON_HOLD)))
