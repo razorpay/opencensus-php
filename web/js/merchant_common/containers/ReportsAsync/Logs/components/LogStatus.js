@@ -3,7 +3,7 @@ import { AsyncBtn } from 'common/new-ui/Button';
 export default function LogStatus(props) {
   return (
     <div class="LogStatus">
-      <strong>{renderActionBasedOnStatus(props)}</strong>
+      <strong data-testid="log-status-text">{renderActionBasedOnStatus(props)}</strong>
     </div>
   );
 }

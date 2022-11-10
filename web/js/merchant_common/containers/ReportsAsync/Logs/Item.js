@@ -5,11 +5,20 @@ import {
   extractExtensionFromTemplate,
   isLogInProgress,
   getActualLogStatus,
-} from '../utils';
-import KindOfLog from './components/KindOfLog';
-import LogStatus from './components/LogStatus';
+} from 'merchant_common/containers/ReportsAsync/utils';
+import KindOfLog from 'merchant_common/containers/ReportsAsync/Logs/components/KindOfLog';
+import LogStatus from 'merchant_common/containers/ReportsAsync/Logs/components/LogStatus';
+import React from 'react';
 
-const DEFAULT_FILE_FORMAT = 'csv';
+export const DEFAULT_FILE_FORMAT = 'csv';
+
+export const logItemInfoMessages = {
+  'in-process':
+    'Report generation might take  anywhere between 2 min - 1 hour depending on the data volume. You can download here when report is ready.',
+  'no-data': 'Report could not be generated as there is no data available.',
+  'ready-for-download': 'Report has been successfully generated',
+  error: 'Something went wrong, please try again after sometime.',
+};
 
 export default class LogItem extends React.PureComponent {
   componentDidMount() {
@@ -57,7 +66,7 @@ export default class LogItem extends React.PureComponent {
                 properties: {
                   location: 'generate reports',
                   reportType: config.name,
-                  format: format,
+                  format,
                   reportStartTime: props.start_time,
                   reportEndTime: props.end_time,
                   ...getCommonAnalyticsProperties(window.rzp_user),
@@ -77,6 +86,7 @@ export default class LogItem extends React.PureComponent {
               'text-small',
               `LogItem__InfoBar--${actualStatus}`,
             )}
+            data-testid="log-item-info-message"
           >
             <i class="i i-info-outline" /> {logItemInfoMessages[actualStatus]}
           </div>
@@ -96,7 +106,7 @@ function ReportDuration({ startTime, endTime }) {
   const startDate = getFormattedDate(startTime);
   const endDate = getFormattedDate(endTime);
   return (
-    <p class="text-muted small">
+    <p class="text-muted small" data-testid="report-duration">
       ({startDate} {startDate !== endDate ? `- ${endDate}` : ''})
     </p>
   );
@@ -106,7 +116,7 @@ function FileFormat({ logTemplate, configTemplate }) {
   return (
     <>
       <strong>Format</strong>
-      <p class="text-muted text-small">
+      <p class="text-muted text-small" data-testid="file-format">
         {(
           extractExtensionFromTemplate(logTemplate) ||
           extractExtensionFromTemplate(configTemplate) ||
@@ -116,11 +126,3 @@ function FileFormat({ logTemplate, configTemplate }) {
     </>
   );
 }
-
-const logItemInfoMessages = {
-  'in-process':
-    'Report generation might take  anywhere between 2 min - 1 hour depending on the data volume. You can download here when report is ready.',
-  'no-data': 'Report could not be generated as there is no data available.',
-  'ready-for-download': 'Report has been successfully generated',
-  error: 'Something went wrong, please try again after sometime.',
-};
