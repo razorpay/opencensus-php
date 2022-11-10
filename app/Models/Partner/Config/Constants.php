@@ -20,6 +20,9 @@ class Constants
     const SET_FOR                  = 'set_for';
     const NO_DOC_SUBMERCHANTS      = 'no_doc_submerchants';
 
+    const MERCHANT_IDS     = 'merchant_ids';
+    const ONBOARDING_SOURCE =   'onboarding_source';
+
     const attributes = [
         self::MAX_PAYMENT_AMOUNT,
         self::GMV_LIMIT

@@ -47,6 +47,13 @@ class EsClient
     {
         $this->config = $app['config'];
 
+        if (empty($this->dedupeClient) === true )
+        {
+            $dedupeHost = $this->config->get('database.dedupe_es_host').':443';
+
+            $this->setDedupeEsClient($dedupeHost);
+        }
+
         $this->trace = $app['trace'];
 
         $this->runningUnitTests = $app->runningUnitTests();

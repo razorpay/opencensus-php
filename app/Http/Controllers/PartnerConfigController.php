@@ -59,4 +59,14 @@ class PartnerConfigController extends Controller
 
         return  ApiResponse::json($response);
     }
+
+    public function bulkUpdateOnboardingSource()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->bulkUpdateOnboardingSource($input);
+
+        return  ApiResponse::json($response);
+    }
+
 }

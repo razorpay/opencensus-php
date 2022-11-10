@@ -5,7 +5,10 @@ namespace RZP\Models\Partner\Config\SubMerchantConfig;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
+use RZP\Models\Base\EsRepository;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\BusinessDetail\Service;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Partner\Metric;
@@ -215,5 +218,25 @@ class Core extends Base\Core
             }
         }
         return -1;
+    }
+
+    public function updateOnboardingSource(array $input)
+    {
+        $onboardingSource = $input[Constants::ONBOARDING_SOURCE];
+
+        $esRepo = new EsRepository(DetailConstants::DEDUPE_ES_INDEX);
+
+        $merchantIds = $input[Constants::MERCHANT_IDS];
+
+        foreach ( $merchantIds as $mid)
+        {
+            $businessDetailService = new Service();
+
+            $businessDetailService->saveBusinessDetailsForMerchant($mid, [
+                DetailConstants::ONBOARDING_SOURCE => $onboardingSource
+            ]);
+
+            $esRepo->storeOrUpdateDocument($mid, DetailConstants::DEDUPE_ES_INDEX, $onboardingSource, null);
+        }
     }
 }

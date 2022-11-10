@@ -435,4 +435,40 @@ class Service extends Base\Service
         return [$merchant, $partner, $accessMaps];
     }
 
+    public function bulkUpdateOnboardingSource(array $input)
+    {
+        $this->trace->info(
+            TraceCode::PARTNER_BULK_UPDATE_ONBOARDING_SOURCE,
+            [
+                'partner_id' => $input[Constants::PARTNER_ID],
+                'input'       => $input,
+            ]);
+        try
+        {
+            (new SubMerchantConfig\Validator)->validateBulkOnboardingSourceUpdateInput($input);
+
+            $partner = $this->validatePartnerTypeForSubMerchantConfig($input);
+
+            if ($partner->isFeatureEnabled(Feature\Constants::SUBM_NO_DOC_ONBOARDING) === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY);
+            }
+
+            (new SubMerchantConfig\Core)->updateOnboardingSource($input);
+        }
+        catch (Exception\BadRequestException $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::PARTNER_BULK_UPDATE_ONBOARDING_SOURCE_FAILURE,
+                $input);
+
+            $this->trace->count(Metric::PARTNER_SUBMERCHANT_CONFIG_UPDATE_FAILURE, []);
+
+            throw $e;
+        }
+
+        return ["message"=> "success"];
+    }
 }

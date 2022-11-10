@@ -51,4 +51,6 @@ final class Metric
     const PARTNERSHIP_COMMISSION_SYNC_SUCCESS   = 'partnership_commission_sync_success';
 
     const PARTNERSHIP_COMMISSION_SYNC_FAILURE   = 'partnership_commission_sync_failure';
+
+    const PARTNER_BULK_UPDATE_ONBOARDING_SOURCE_FAILURE = 'partner_bulk_update_onboarding_source_failure';
 }

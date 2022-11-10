@@ -399,7 +399,7 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $searchResponse = $this->esDao->searchByIdInDedupeEs($index, $merchantId);
 
-        if (empty($searchResponse) === true)
+        if (empty($document) === false and empty($searchResponse) === true)
         {
             $params['body'] = $document;
             $this->esDao->storeMerchantDetailsInDedupeEs($params);

@@ -55,16 +55,17 @@ class UpdateMerchantContext extends Job
     {
         parent::handle();
 
+        $startTime = microtime(true);
+
         try
         {
             $tracePayload = [
                 Entity::MERCHANT_ID => $this->merchantId,
                 'bvs_validation_id' => $this->validationId,
+                'start_time'        => $startTime
             ];
 
             $this->trace->info(TraceCode::TRIGGER_UPDATE_MERCHANT_CONTEXT_JOB, $tracePayload);
-
-            $this->trace->debug(TraceCode::UPDATE_MERCHANT_CONTEXT_JOB, $tracePayload);
 
             $this->trace->count(Metrics::UPDATE_CONTEXT_JOB_TOTAL);
 
@@ -93,6 +94,15 @@ class UpdateMerchantContext extends Job
 
             $this->checkRetry();
         }
+        finally
+        {
+            $this->trace->info(TraceCode::TRIGGER_UPDATE_MERCHANT_CONTEXT_JOB, [
+                Entity::MERCHANT_ID => $this->merchantId,
+                'bvs_validation_id' => $this->validationId,
+                'duration'          => (microtime(true) - $startTime) * 1000,
+            ]);
+        }
+
     }
 
     /**
@@ -105,6 +115,8 @@ class UpdateMerchantContext extends Job
      */
     protected function updateMerchantContext(): void
     {
+        $startTime = microtime(true);
+
         [$merchant, $merchantDetail] = (new DetailCore())->getMerchantAndSetBasicAuth($this->merchantId);
 
         $canUpdateMerchantContext = $this->updateContextRequirements
@@ -147,7 +159,9 @@ class UpdateMerchantContext extends Job
 
                         $this->trace->info(TraceCode::MERCHANT_CONTEXT_KYC_CLARIFICATION_REASON, [
                             'merchant_id'              => $merchant->getId(),
-                            'kycClarificationReasons'  => $kycClarificationReasons
+                            'kycClarificationReasons'  => $kycClarificationReasons,
+                            'bvs_validation_id'        => $this->validationId,
+                            'duration' =>  (microtime(true) - $startTime) * 1000,
                         ]);
 
                         $merchantDetail->setKycClarificationReasons($kycClarificationReasons);
@@ -190,6 +204,12 @@ class UpdateMerchantContext extends Job
                 else
                 {
                     $detailCore->updateActivationStatus($merchant, $activationStatusData, $merchant);
+
+                    $this->trace->info(TraceCode::UPDATE_ACTIVATION_STATUS_DURATION, [
+                        'merchant_id'              => $merchant->getId(),
+                        'bvs_validation_id'        => $this->validationId,
+                        'duration' =>  (microtime(true) - $startTime) * 1000,
+                    ]);
                 }
 
                 if($newActivationStatus === Status::NEEDS_CLARIFICATION)

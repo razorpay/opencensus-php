@@ -92,4 +92,27 @@ class Validator extends Base\Validator
                 }
         }
     }
+
+    /**
+     * Checks for valid attribute and parameters for partner bulk update onboarding source input
+     *
+     * @param array           $input
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateBulkOnboardingSourceUpdateInput(array $input)
+    {
+
+        $merchantIds = $input[Constants::MERCHANT_IDS];
+
+        $onboardingSourece = $input[Constants::ONBOARDING_SOURCE];
+
+        if(empty($merchantIds) === true or empty($onboardingSourece) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PARTNER_SUBMERCHANT_CONFIGURATION_INVALID,
+                Constants::MERCHANT_IDS,
+                $input);
+        }
+    }
 }

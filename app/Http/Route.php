@@ -2797,6 +2797,7 @@ class Route
         'partner_actions'                          => ['put',      'partner/{id}/action',                            'PartnerController@performAction'                         ],
         'partner_activation_bulk_assign_reviewer'  => ['post',     'partner/activation/bulk_assign_reviewer',        'PartnerController@bulkAssignReviewer'                    ],
         'partner_send_weekly_activation_summary_emails' => ['post', 'partner/send_weekly_activation_summary_emails', 'PartnerController@sendPartnerWeeklyActivationSummaryEmails'       ],
+        'partner_bulk_update_onboarding_source'            =>  ['patch',    'partner_configs/submerchant/bulk_update_onboarding_source', 'PartnerConfigController@bulkUpdateOnboardingSource'],
 
         //route for sending events to partner with pending commission and Incomplete KYC
         'partner_commission_pending'               => ['post',     'partner/commissions_pending',                    'PartnerController@sendEventsOfPartnersWithCommissionPending'],
@@ -6960,6 +6961,7 @@ class Route
         'create_partner_sub_merchant_config',
         'update_partner_sub_merchant_config',
         'partner_config_edit',
+        'partner_bulk_update_onboarding_source',
 
         'vault_token_create',
 
@@ -8300,6 +8302,7 @@ class Route
         'partner_config_edit'                      => Permission::EDIT_PARTNERS,
         'create_partner_sub_merchant_config'       => Permission::EDIT_PARTNERS,
         'update_partner_sub_merchant_config'       => Permission::EDIT_PARTNERS,
+        'partner_bulk_update_onboarding_source'    => Permission::EDIT_PARTNERS,
         'vault_token_create'                       => Permission::VAULT_TOKEN_CREATE,
         'merchant_user_reset_password'             => Permission::USER_PASSWORD_RESET,
         'subscription_update_data'                 => Permission::MODIFY_SUBSCRIPTION_DATA,
@@ -12129,6 +12132,7 @@ class Route
             'partner_config_fetch',
             'create_partner_sub_merchant_config',
             'update_partner_sub_merchant_config',
+            'partner_bulk_update_onboarding_source',
             'partner_referral_create',
             'partner_referral_fetch',
             'partner_activation_migrate',
