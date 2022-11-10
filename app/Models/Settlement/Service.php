@@ -1087,9 +1087,7 @@ class Service extends Base\Service
                 ],
             ],
             E::REVERSAL => [
-                E::REVERSAL => [
-                    E::REFUND,
-                ],
+                E::REVERSAL => [],
             ]
         ];
 
@@ -1154,7 +1152,7 @@ class Service extends Base\Service
 
                 case E::REVERSAL:
 
-                    $response['external_id'] =  $txn->source->refund->getReceipt();
+                    $response['external_id'] =  $txn->source->entity->getReceipt();
 
                     $result[] = $response;
 
