@@ -8220,6 +8220,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKENS_TO_BE_DELETED                                  = 'TOKENS_TO_BE_DELETED';
     const TOKENS_DELETED                                        = 'TOKENS_DELETED';
 
+    const CYBER_HELPDESK_INTEGRATION_ERROR                      = 'CYBER_HELPDESK_INTEGRATION_ERROR';
+    const CYBER_HELPDESK_DOWNSTREAM_RESPONSE                    = 'CYBER_HELPDESK_DOWNSTREAM_RESPONSE';
     const MAIL_TO_LEA_FROM_CYBER_CRIME_HELPDESK_SENT            = 'MAIL_TO_LEA_FROM_CYBER_CRIME_HELPDESK_SENT';
     const CYBER_CRIME_PUT_PAYMENTS_ON_HOLD                      = 'CYBER_CRIME_PUT_PAYMENTS_ON_HOLD';
     const PAYMENT_DETAILS_USED_FOR_CYBER_CRIME                  = 'PAYMENT_DETAILS_USED_FOR_CYBER_CRIME';

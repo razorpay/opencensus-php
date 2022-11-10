@@ -2251,6 +2251,25 @@ class Route
         // Settlement Repatriation
         'process_settlement_repatriation'          => ['post',      'settlements/nium/repat',               'LambdaController@processLambdaSettlementRepatriation'                  ],
 
+        //cyber-helpdesk admin route
+        'cyber_helpdesk_admin_upload_document' => [
+            'post',
+            'cyber_helpdesk/document',
+            'CyberCrimeHelpDeskController@proxyRequest'
+        ],
+
+        'cyber_helpdesk_admin_delete_document' => [
+            'delete',
+            'cyber_helpdesk/document/{file_id}',
+            'CyberCrimeHelpDeskController@proxyRequest'
+        ],
+
+        'cyber_helpdesk_admin_create_ticket' => [
+            'post',
+            'cyber_helpdesk/ticket',
+            'CyberCrimeHelpDeskController@proxyRequest'
+        ],
+
         // Shield routes
         'shield_rules_get_multiple' => [
             'get',
@@ -6820,6 +6839,8 @@ class Route
         'sub_virtual_account_list_admin',
         'sub_virtual_account_enable_disable',
 
+
+
         // oauth routes
         'oauth_application_update_admin',
         'oauth_application_refresh_clients',
@@ -7527,6 +7548,11 @@ class Route
         'merchant_risk_alerts_create_rule',
         'merchant_risk_alerts_update_rule',
         'merchant_risk_alerts_delete_rule',
+
+        //cyber-helpdesk route
+        'cyber_helpdesk_admin_upload_document',
+        'cyber_helpdesk_admin_delete_document',
+        'cyber_helpdesk_admin_create_ticket',
 
         // Payment Fraud
         'get_fraud_attributes',
@@ -8844,6 +8870,11 @@ class Route
         'merchant_risk_alerts_create_rule'                => Permission::MERCHANT_RISK_ALERT_UPSERT_RULE,
         'merchant_risk_alerts_update_rule'                => Permission::MERCHANT_RISK_ALERT_UPSERT_RULE,
         'merchant_risk_alerts_delete_rule'                => Permission::MERCHANT_RISK_ALERT_DELETE_RULE,
+
+        //cyber helpdesk
+        'cyber_helpdesk_admin_upload_document'    => Permission::CREATE_CYBER_HELPDESK_WORKFLOW,
+        'cyber_helpdesk_admin_delete_document'    => Permission::CREATE_CYBER_HELPDESK_WORKFLOW,
+        'cyber_helpdesk_admin_create_ticket'      => Permission::CREATE_CYBER_HELPDESK_WORKFLOW,
 
         // Risk Audit Workflow Actions
         'w-actions_merchant_risk_audit_get'               => Permission::VIEW_ALL_WORKFLOW,
@@ -11899,6 +11930,9 @@ class Route
             'merchant_risk_alerts_update_rule',
             'merchant_risk_alerts_delete_rule',
             'merchant_edit_risk_attributes',
+            'cyber_helpdesk_admin_upload_document',
+            'cyber_helpdesk_admin_delete_document',
+            'cyber_helpdesk_admin_create_ticket',
             'execute_bulk_action',
             'merchant_features_fetch',
             'merchant_features_update',

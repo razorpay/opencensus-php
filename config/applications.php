@@ -1236,7 +1236,13 @@ return [
 
     'cyber_crime_helpdesk' => [
         'secret'      => env('CYBER_CRIME_HELPDESK', 'cyber_crime_helpdesk_secret'),
-        'maker_email' => env('CYBER_CRIME_HELPDESK_WORKFLOW_MAKER_EMAIL', 'shashank@razorpay.com')
+        'maker_email' => env('CYBER_CRIME_HELPDESK_WORKFLOW_MAKER_EMAIL', 'shashank@razorpay.com'),
+        'auth' => [
+            'username' => 'api',
+            'secret' => env('CYBER_HELPDESK_API_SECRET', 'cyber_helpdesk_api_secret@1'),
+        ],
+        'mock'     => env('CYBER_HELPDESK_MOCK', false),
+        'base_url'      => env('CYBER_HELPDESK_BASE_URL', 'https://cyber-helpdesk.stage.razorpay.in/api')
     ],
 
     'sms_sync'  =>  [
@@ -1417,6 +1423,8 @@ return [
         'mock'     => env('AUTHZ_XPLATFORM_ADMIN_MOCK', true),
         'url'      => env('AUTHZ_XPLATFORM_ADMIN_BASE_URL')
     ],
+
+
 
     'downtime_manager' => [
         'url' => env('DOWNTIME_MANAGER_URL'),
