@@ -121,6 +121,10 @@ class Constants
 
     CONST MERCHANT = 'merchant';
 
+    const AGENT_Id = 'agent_id';
+    const UNDEFINED_AGENT = 'undefined_agent';
+    const AGENT_NAME     = 'agent_name';
+
     const MERCHANT_ACTION_METRO_BODY = [
         self::WORKFLOW_ACTION_ID => "",
         self::STATUS => StateName::APPROVED,

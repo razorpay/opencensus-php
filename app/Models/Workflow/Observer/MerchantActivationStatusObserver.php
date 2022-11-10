@@ -119,6 +119,10 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
 
             $data[Constants::STATUS] = Status::REJECTED;
 
+            $data[Constants::AGENT_Id] = optional($this->app['basicauth']->getAdmin())->getPublicId() ?? Constants::UNDEFINED_AGENT;
+
+            $data[Constants::AGENT_NAME] = optional($this->app['basicauth']->getAdmin())->getName() ?? Constants::UNDEFINED_AGENT;
+
             $this->publishToMetroTopic($data, Constants::CMMA_WORKFLOW_METRO_TOPIC);
         }
 
@@ -172,6 +176,10 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
             $data[Constants::NEW_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->newActivationStatus)===true) ? Status::ACTIVATED : $this->newActivationStatus;
 
             $data[Constants::STATUS] = Constants::EXECUTED;
+
+            $data[Constants::AGENT_Id] = optional($this->app['basicauth']->getAdmin())->getPublicId() ?? Constants::UNDEFINED_AGENT;
+
+            $data[Constants::AGENT_NAME] = optional($this->app['basicauth']->getAdmin())->getName() ?? Constants::UNDEFINED_AGENT;
 
             $this->publishToMetroTopic($data, Constants::CMMA_WORKFLOW_METRO_TOPIC);
         }
