@@ -79,7 +79,16 @@ class ApiRequestSpan
          * */
         if(isset($methodArgs['options']['cookies']) === true)
         {
-            $methodArgs['options']['cookies'] = new CookieJar(true, [$methodArgs['options']['cookies']]);
+
+            $cookieDomain = '.razorpay.com';
+
+            if (\App::environment() !== 'production')
+            {
+                $cookieDomain = '.razorpay.in';
+            }
+
+            $methodArgs['options']['cookies'] = CookieJar::fromArray($methodArgs['options']['cookies'],$cookieDomain);
+
         }
 
         // handle actual request
