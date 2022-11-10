@@ -397,6 +397,19 @@ abstract class Base extends Core
         }
     }
 
+    protected function filterFiles(& $fileList, & $statusFiles, $fileStatus)
+    {
+        foreach ($fileList as $index => $eachFile)
+        {
+            if ($eachFile->getComments() === $fileStatus)
+            {
+                array_push($statusFiles, $this->getSingleFileName($eachFile));
+
+                unset($fileList[$index]);
+            }
+        }
+    }
+
     /**
      * Process the file_generation_instrumentation entity via queue
      *

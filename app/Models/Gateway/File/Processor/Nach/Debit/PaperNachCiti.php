@@ -6,6 +6,7 @@ use Mail;
 use Cache;
 use Carbon\Carbon;
 
+use RZP\Models\Base;
 use RZP\Gateway\Enach;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -309,24 +310,24 @@ class PaperNachCiti extends Debit\Base
             $variant = 'off';
         }
 
+        // for retry this step will fail anyway, as we don't have file store enttiy here
+        if($this->fileStore === null)
+        {
+            return;
+        }
+
+
+        $files = $this->gatewayFile
+            ->files()
+            ->whereIn(FileStore\Entity::ID, $this->fileStore)
+            ->get();
+
         if (strtolower($variant) === 'on')
         {
-            $fileStoreIds = $this->fetchFilestoreIds();
-
-            $files = $this->gatewayFile
-                ->files()
-                ->whereIn(FileStore\Entity::ID, $fileStoreIds)
-                ->get();
-
             $this->sendFilesInBatches($files, 2);
         }
         else
         {
-            $files = $this->gatewayFile
-                ->files()
-                ->whereIn(FileStore\Entity::ID, $this->fileStore)
-                ->get();
-
             $this->sendFilesBulk($files);
         }
 
@@ -355,26 +356,7 @@ class PaperNachCiti extends Debit\Base
             $fileInfo[] = $fullFileName;
         }
 
-        $bucketConfig = $this->getBucketConfig(self::FILE_TYPE);
-
-        $data = [
-            BeamService::BEAM_PUSH_FILES         => $fileInfo,
-            BeamService::BEAM_PUSH_JOBNAME       => BeamConstants::CITIBANK_NACH_FILE_JOB_NAME,
-            BeamService::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
-            BeamService::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
-        ];
-
-        $timelines = [];
-
-        $mailInfo = [
-            'fileInfo'  => $fileInfo,
-            'channel'   => 'nach',
-            'filetype'  => FileStore\Type::CITI_NACH_DEBIT,
-            'subject'   => 'File Send failure',
-            'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::SUBSCRIPTIONS_APPS]
-        ];
-
-        $beamResponse = $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
+        $beamResponse = $this->beamPushRequest($fileInfo);
 
         if ((isset($beamResponse['success']) === false) or
             ($beamResponse['success'] === null) or
@@ -395,28 +377,20 @@ class PaperNachCiti extends Debit\Base
 
     protected function sendFilesInBatches($fileInfo, $batch_size = 1)
     {
-        $attempts = 0;
-
         $pendingBatches = $fileInfo->chunk($batch_size);
 
-        do
+        $sentFiles = $failedFiles = $timeoutFiles = [];
+
+        foreach($pendingBatches as $pendingBatch)
         {
-            $sentFiles = $failedFiles = $timeoutFiles = [];
+            $response = $this->sendEachFileBatch($pendingBatch);
 
-            foreach($pendingBatches as $pendingBatch)
-            {
-                $response = $this->sendEachFileBatch($pendingBatch);
+            $sentFiles = array_merge($sentFiles, $response['sent_files']);
 
-                $sentFiles = array_merge($sentFiles, $response['sent_files']);
+            $failedFiles = array_merge($failedFiles, $response['failed_files']);
 
-                $failedFiles = array_merge($failedFiles, $response['failed_files']);
-
-                $timeoutFiles = array_merge($timeoutFiles, $response['timeout_files']);
-            }
-
-            $attempts = $attempts + 1;
+            $timeoutFiles = array_merge($timeoutFiles, $response['timeout_files']);
         }
-        while(count($failedFiles) > 0 and $attempts < 2);
 
         $response = [
             'gateway_id' => $this->gatewayFile->getId(),
@@ -445,31 +419,19 @@ class PaperNachCiti extends Debit\Base
 
         $this->trace->info(TraceCode::GATEWAY_FILE_BEAM_FILES_PENDING,
             [
-                "pendingFiles" => $pendingFiles,
+                "pendingFiles" => $this->getFileNames($pendingFiles),
                 'gateway' => $this->gatewayFile->getTarget()
             ]);
 
-        foreach ($pendingFiles as $index => $pendingFile)
-        {
-            if ($pendingFile->getComments() === Constants::FILE_SENT)
-            {
-                array_push($sentFiles, $this->getSingleFileName($pendingFile));
+        $this->filterFiles($pendingFiles, $sentFiles,Constants::FILE_SENT);
 
-                unset($pendingFiles[$index]);
-            }
+        $this->filterFiles($pendingFiles, $timeoutFiles, Constants::FILE_TIMEOUT);
 
-            if ($pendingFile->getComments() === Constants::FILE_TIMEOUT or
-                $pendingFile->getComments() === Constants::FILE_UNKNOWN)
-            {
-                array_push($timeoutFiles, $this->getSingleFileName($pendingFile));
-
-                unset($pendingFiles[$index]);
-            }
-        }
+        $this->filterFiles($pendingFiles, $timeoutFiles, Constants::FILE_UNKNOWN);
 
         $this->trace->info(TraceCode::GATEWAY_FILE_BEAM_FILES_FILTERED,
             [
-                "pendingFiles" => $pendingFiles,
+                "pendingFiles" => $this->getFileNames($pendingFiles),
                 'gateway' => $this->gatewayFile->getTarget()
             ]);
 
@@ -477,27 +439,7 @@ class PaperNachCiti extends Debit\Base
         {
             $beamFiles = $this->getFileNames($pendingFiles);
 
-            $bucketConfig = $this->getBucketConfig(self::FILE_TYPE);
-
-            $data = [
-                BeamService::BEAM_PUSH_FILES         => $beamFiles,
-                BeamService::BEAM_PUSH_JOBNAME       => BeamConstants::CITIBANK_NACH_FILE_JOB_NAME,
-                BeamService::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
-                BeamService::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
-            ];
-
-            // In seconds
-            $timelines = [];
-
-            $mailInfo = [
-                'fileInfo'  => $beamFiles,
-                'channel'   => 'nach',
-                'filetype'  => FileStore\Type::CITI_NACH_DEBIT,
-                'subject'   => 'File Send failure',
-                'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::SUBSCRIPTIONS_APPS]
-            ];
-
-            $beamResponse = $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
+            $beamResponse = $this->beamPushRequest($beamFiles);
 
             $this->trace->info(TraceCode::GATEWAY_FILE_BEAM_RESPONSE,
                 [
@@ -505,31 +447,44 @@ class PaperNachCiti extends Debit\Base
                     'gateway' => $this->gatewayFile->getTarget()
                 ]);
 
-            if($beamResponse === null)
+            if($beamResponse !== null and
+                isset($beamResponse['failed']) === true or
+                isset($beamResponse['success']) === true)
             {
-                $timeoutFiles = array_merge($timeoutFiles, $beamFiles);
+                $beamSuccessFiles = $beamResponse['success'] ?? [];
 
-                $this->setFilesBeamStatus($pendingFiles, Constants::FILE_TIMEOUT);
-            }
-            elseif (isset($beamResponse['failed']) === true and
-                    ($beamResponse['failed'] !== null or $beamResponse['failed'] === true) or
-                    (isset($beamResponse['success']) === true and $beamResponse['success'] === false))
-            {
-                $failedFiles = array_merge($failedFiles, $beamFiles);
+                foreach ($pendingFiles as $pendingFile)
+                {
+                    $pendingFileName = $this->getSingleFileName($pendingFile);
 
-                $this->setFilesBeamStatus($pendingFiles, Constants::FILE_FAILED);
-            }
-            elseif(isset($beamResponse['success']) == true and $beamResponse['success'] === true)
-            {
-                $sentFiles = array_merge($sentFiles, $beamFiles);
+                    if(in_array($pendingFileName, $beamSuccessFiles))
+                    {
+                        $this->setFilesBeamStatus([$pendingFile], Constants::FILE_SENT);
 
-                $this->setFilesBeamStatus($pendingFiles, Constants::FILE_SENT);
+                        array_push($sentFiles, $pendingFileName);
+                    }
+                    else
+                    {
+                        $this->setFilesBeamStatus([$pendingFile], Constants::FILE_FAILED);
+
+                        array_push($failedFiles, $pendingFileName);
+                    }
+                }
             }
             else
             {
-                $timeoutFiles = array_merge($timeoutFiles, $beamFiles);
+                if($beamResponse === null)
+                {
+                    $timeoutFiles = array_merge($timeoutFiles, $beamFiles);
 
-                $this->setFilesBeamStatus($pendingFiles, Constants::FILE_UNKNOWN);
+                    $this->setFilesBeamStatus($pendingFiles, Constants::FILE_TIMEOUT);
+                }
+                else
+                {
+                    $timeoutFiles = array_merge($timeoutFiles, $beamFiles);
+
+                    $this->setFilesBeamStatus($pendingFiles, Constants::FILE_UNKNOWN);
+                }
             }
         }
 
@@ -538,6 +493,31 @@ class PaperNachCiti extends Debit\Base
             "sent_files"    => $sentFiles,
             "timeout_files" => $timeoutFiles
         ];
+    }
+
+    protected function beamPushRequest($beamFiles)
+    {
+        $bucketConfig = $this->getBucketConfig(self::FILE_TYPE);
+
+        $data = [
+            BeamService::BEAM_PUSH_FILES         => $beamFiles,
+            BeamService::BEAM_PUSH_JOBNAME       => BeamConstants::CITIBANK_NACH_FILE_JOB_NAME,
+            BeamService::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
+            BeamService::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
+        ];
+
+        // In seconds
+        $timelines = [];
+
+        $mailInfo = [
+            'fileInfo'  => $beamFiles,
+            'channel'   => 'nach',
+            'filetype'  => FileStore\Type::CITI_NACH_DEBIT,
+            'subject'   => 'File Send failure',
+            'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::SUBSCRIPTIONS_APPS]
+        ];
+
+        return $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
     }
 
     protected function sendMail($files)
