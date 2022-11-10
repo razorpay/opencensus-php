@@ -2,24 +2,18 @@ import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import AddEditWebhook from 'merchant/views/Settings/Webhooks/AddEditWebhook';
 import { render, screen, waitFor, fireEvent } from 'test-utils';
-import { Provider } from 'react-redux';
-import { storeWithInitialState } from 'merchant/store';
 import {
   initialState,
   webhook,
 } from 'merchant/views/Settings/Webhooks/__test__/mocks/fixtures/AddEditWebhook';
 
 describe('Webhooks - AddEditWebhook.js', () => {
-  const App = ({ state = initialState, ...rest }) => {
-    return (
-      <Provider store={storeWithInitialState(state)}>
-        <AddEditWebhook {...rest} />
-      </Provider>
-    );
+  const App = (props) => {
+    return <AddEditWebhook {...props} />;
   };
 
   test('should render add/edit webhook form correctly', async () => {
-    render(<App state={initialState} />);
+    render(<App />, { initialState });
     await waitFor(() => {
       expect(screen.getByText('Webhook Setup')).toBeInTheDocument();
       expect(screen.getByText('Active Events')).toBeInTheDocument();
@@ -29,7 +23,7 @@ describe('Webhooks - AddEditWebhook.js', () => {
   });
 
   test('should render add/edit webhook form CTAs', async () => {
-    render(<App state={initialState} />);
+    render(<App />, { initialState });
     await waitFor(() => {
       expect(screen.getByText('Cancel')).toBeInTheDocument();
       expect(screen.getByText('Create Webhook')).toBeInTheDocument();
@@ -37,7 +31,7 @@ describe('Webhooks - AddEditWebhook.js', () => {
   });
 
   test('should show error message when url is not entered', async () => {
-    render(<App state={initialState} />);
+    render(<App />, { initialState });
     let urlInput, createBtn;
     await waitFor(() => {
       urlInput = screen.getByTestId('webhook-url');
@@ -56,7 +50,7 @@ describe('Webhooks - AddEditWebhook.js', () => {
   });
 
   test('should create webhook successfully on valid input', async () => {
-    render(<App state={initialState} />);
+    render(<App />, { initialState });
     let urlInput, createBtn;
     await waitFor(() => {
       urlInput = screen.getByTestId('webhook-url');
@@ -76,10 +70,13 @@ describe('Webhooks - AddEditWebhook.js', () => {
     await waitFor(() => {
       expect(screen.queryByText('Saving...')).toBeInTheDocument();
     });
+    await waitFor(() => {
+      expect(screen.queryByText('Webhook saved successfully')).toBeInTheDocument();
+    });
   });
 
   test('should edit webhook successfully on valid input', async () => {
-    render(<App state={initialState} webhook={webhook} />);
+    render(<App webhook={webhook} />, { initialState });
     let urlInput, saveBtn;
     await waitFor(() => {
       urlInput = screen.getByTestId('webhook-url');
@@ -98,7 +95,9 @@ describe('Webhooks - AddEditWebhook.js', () => {
   });
 
   test('should throw error on duplicate url', async () => {
-    render(<App state={initialState} webhookList={initialState.webhooks.webhooks} />);
+    render(<App webhookList={initialState.webhooks.webhooks} />, {
+      initialState,
+    });
     let urlInput, createBtn;
     await waitFor(() => {
       urlInput = screen.getByTestId('webhook-url');
@@ -118,7 +117,7 @@ describe('Webhooks - AddEditWebhook.js', () => {
   });
 
   test('should show/hide secret on cta click', async () => {
-    render(<App state={initialState} webhookList={initialState.webhooks.webhooks} />);
+    render(<App webhookList={initialState.webhooks.webhooks} />, { initialState });
     let toggleCTa;
     await waitFor(() => {
       toggleCTa = screen.getByTestId('toggle-secret');
@@ -132,7 +131,9 @@ describe('Webhooks - AddEditWebhook.js', () => {
   });
 
   test('should search successfully for a webhook event', async () => {
-    render(<App state={initialState} webhookList={initialState.webhooks.webhooks} />);
+    render(<App webhookList={initialState.webhooks.webhooks} />, {
+      initialState,
+    });
     let searchInput;
     await waitFor(() => {
       searchInput = screen.getByTestId('webhook-events-search');
@@ -147,7 +148,7 @@ describe('Webhooks - AddEditWebhook.js', () => {
   });
 
   test('should reset events on search close click', async () => {
-    render(<App state={initialState} webhookList={initialState.webhooks.webhooks} />);
+    render(<App webhookList={initialState.webhooks.webhooks} />, { initialState });
     let searchInput;
     await waitFor(() => {
       searchInput = screen.getByTestId('webhook-events-search');
