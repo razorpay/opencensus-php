@@ -824,9 +824,7 @@ class Core extends Base\Core
             $this->validateFeatureForAccountUpdate($merchant);
         }
 
-        if (($merchant->org->isFeatureEnabled(Feature\Constants::ORG_POOL_ACCOUNT_SETTLEMENT) === true) or
-            ($merchant->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === true))
-
+        if ($merchant->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === true)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ACCOUNT_ACTION_NOT_SUPPORTED);
         }
@@ -1484,6 +1482,11 @@ class Core extends Base\Core
     protected function validateFeatureForAccountUpdate(MerchantEntity $merchant)
     {
         if($merchant->org->isFeatureEnabled(Feature\Constants::ORG_BLOCK_ACCOUNT_UPDATE)=== true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CANNOT_UPDATE_BANK_ACCOUNT, null, null);
+        }
+
+        if($merchant->org->isFeatureEnabled(Feature\Constants::ORG_POOL_ACCOUNT_SETTLEMENT) === true)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CANNOT_UPDATE_BANK_ACCOUNT, null, null);
         }

@@ -384,7 +384,8 @@ class Service extends Base\Service
 
         $org = $this->repo->org->findOrFail($orgId);
 
-        if($org->isFeatureEnabled(Feature\Constants::ORG_POOL_ACCOUNT_SETTLEMENT) === false)
+        if (($org->isFeatureEnabled(Feature\Constants::ORG_POOL_ACCOUNT_SETTLEMENT) === false) and 
+            ($org->isFeatureEnabled(Feature\Constants::ORG_SETTLE_TO_BANK) === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_REQUIRED_PERMISSION_NOT_FOUND);
