@@ -15,10 +15,12 @@ const copyFallback = (url) => {
 };
 
 const copyToClipboard = (url) => {
-  if (navigator?.clipboard?.writeText) {
-    navigator.clipboard.writeText(url).catch(() => {
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      navigator.clipboard.writeText(url);
+    } catch (error) {
       copyFallback(url);
-    });
+    }
   } else {
     copyFallback(url);
   }
