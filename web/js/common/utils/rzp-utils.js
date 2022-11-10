@@ -16,7 +16,7 @@
 /* eslint-disable prefer-const */
 import moment from 'moment';
 import axios from 'axios';
-import { SENSITIVE_FIELDS } from '../constant';
+import { SENSITIVE_FIELDS } from 'common/constant';
 import { acronyms, shortenText } from './acronyms';
 
 moment.updateLocale('en', {
@@ -1434,9 +1434,10 @@ const isBase64 = (str) => {
  */
 export const encodeSensitiveFields = (params) => {
   let parameter = { ...params };
+  let unescape = window.unescape || window.decodeURI; // using this logic in local scope only
   for (let param in parameter) {
     if (SENSITIVE_FIELDS.includes(param)) {
-      parameter[param] = window?.btoa(parameter[param]);
+      parameter[param] = window?.btoa(unescape(encodeURIComponent(parameter[param])));
     }
   }
   return parameter;
