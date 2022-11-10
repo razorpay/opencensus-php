@@ -2,17 +2,17 @@
 
 namespace RZP\Tests\Functional\Gateway\Netbanking\Airtel;
 
-use Carbon\Carbon;
 use RZP\Gateway\Base\Action;
-use RZP\Models\Terminal\Options;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Gateway\Netbanking\Airtel\AuthFields;
 use RZP\Gateway\Netbanking\Base\Entity;
+use RZP\Gateway\Netbanking\Airtel\AuthFields;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class NetbankingAirtelGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     protected function setUp(): void
     {
@@ -31,9 +31,9 @@ class NetbankingAirtelGatewayTest extends TestCase
 
     public function testPayment()
     {
-        $payment = $this->doAuthPayment($this->payment);
+        $this->doAuthPayment($this->payment);
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbLastPayment()->toArray();
 
         $this->assertTestResponse($payment);
 

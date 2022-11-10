@@ -3090,9 +3090,9 @@ class BankingAccountTest extends TestCase
             and (in_array($finalStatus, [Status::INITIATED, Status::PICKED, Status::ARCHIVED]) === false))
         {
             $mailableClass = RZP\Mail\BankingAccount\StatusNotifications\Factory::getMailer($updatedBankingAccount);
-            
+
             Mail::assertQueued(get_class($mailableClass));
-            
+
             // Commenting this, since this is called from shouldNotifyOpsAboutProActivation
             // which is called only from createBankingAccount flow
             /**

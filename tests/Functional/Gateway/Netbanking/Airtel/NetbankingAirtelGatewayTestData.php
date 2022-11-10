@@ -27,7 +27,6 @@ return [
         'gateway' => 'netbanking_airtel',
         'signed' => false,
         'verified' => null,
-        'entity' => 'payment',
         'terminal_id' => '100NbAirtlTmnl',
     ],
     'testFailedAuthPayment' => [

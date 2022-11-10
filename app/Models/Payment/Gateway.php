@@ -4538,6 +4538,7 @@ class Gateway
             self::WALLET_PHONEPE,
             self::WALLET_AMAZONPAY,
             self::NETBANKING_AXIS,
+            self::NETBANKING_AIRTEL,
         ];
 
         $acquirerGateways = [

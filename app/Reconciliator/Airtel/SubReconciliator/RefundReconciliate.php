@@ -2,7 +2,6 @@
 
 namespace RZP\Reconciliator\Airtel\SubReconciliator;
 
-use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 
 class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
@@ -17,24 +16,13 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         return $row[self::COLUMN_RZP_REFUND_ID];
     }
 
-    protected function validateRefundAmountEqualsReconAmount(array $row): bool
+    protected function getGatewayAmount(array $row)
     {
-        if ($this->refund->getBaseAmount() !== $this->getReconRefundAmount($row))
-        {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
-                    'info_code'         => Base\InfoCode::AMOUNT_MISMATCH,
-                    'refund_id'         => $this->refund->getId(),
-                    'expected_amount'   => $this->refund->getBaseAmount(),
-                    'recon_amount'      => $this->getReconRefundAmount($row),
-                    'currency'          => $this->refund->getCurrency(),
-                    'gateway'           => $this->refund->getGateway(),
-                ]);
+        return $row[self::COLUMN_REFUND_AMOUNT];
+    }
 
-            return false;
-        }
-
-        return true;
+    protected function getArn($row)
+    {
+        return $row[self::COLUMN_GATEWAY_PAYMENT_ID];
     }
 }
