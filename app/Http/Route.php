@@ -1763,6 +1763,10 @@ class Route
         'wfs_workflows_list'                      => ['post',    'wf-service/workflows/list',                        'WorkflowServiceController@listWorkflows'                           ],
         'wfs_workflows_get'                       => ['get',     'wf-service/workflows/{id}',                        'WorkflowServiceController@getWorkflow'                             ],
         'wfs_workflow_action_create'              => ['post',    'wf-service/action',                                'WorkflowServiceController@createWorkflowAction'                    ],
+        'wfs_workflow_add_assignee'               => ['post',    'wf-service/workflows/addAssignee',                 'WorkflowServiceController@addWorkflowAssignee'                     ],
+        'wfs_workflow_remove_assignee'            => ['delete',  'wf-service/workflows/removeAssignee',              'WorkflowServiceController@removeWorkflowAssignee'                     ],
+        'wfs_comments_create'                     => ['post',    'wf-service/comments',                              'WorkflowServiceController@createComment'                           ],
+        'wfs_comments_list'                       => ['post',    'wf-service/comments/list',                         'WorkflowServiceController@listComments'                            ],
 
         //Vendor Payments
         'vendor_payments_check_existing_invoice'   => ['get',      'vendor-payments/check-invoice-exist',                                     'VendorPaymentController@checkIfInvoiceExistForVendor'              ],
@@ -7307,6 +7311,10 @@ class Route
         'wfs_workflows_list',
         'wfs_workflows_get',
         'wfs_workflow_action_create',
+        'wfs_workflow_add_assignee',
+        'wfs_workflow_remove_assignee',
+        'wfs_comments_create',
+        'wfs_comments_list',
         'payout_workflow_retry_admin_bulk',
         'payout_wf_config_migrate',
         'create_iir_discrepancy_answer_admin',
@@ -8651,6 +8659,10 @@ class Route
         'wfs_workflows_list'                        => Permission::WFS_VIEW_SPR_WORKFLOWS,
         'wfs_workflows_get'                         => Permission::WFS_VIEW_SPR_WORKFLOWS,
         'wfs_workflow_action_create'                => Permission::WFS_VIEW_SPR_WORKFLOWS,
+        'wfs_comments_create'                       => Permission::WFS_VIEW_SPR_WORKFLOWS,
+        'wfs_comments_list'                         => Permission::WFS_VIEW_SPR_WORKFLOWS,
+        'wfs_workflow_add_assignee'                 => Permission::WFS_VIEW_SPR_WORKFLOWS,
+        'wfs_workflow_remove_assignee'              => Permission::WFS_VIEW_SPR_WORKFLOWS,
 
         'payout_wf_config_migrate'                 => Permission::WFS_CONFIG_CREATE,
 

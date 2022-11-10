@@ -44,4 +44,24 @@ class Service extends Base\Service
     {
         return $this->workflowServiceClient->createActionOnEntityProxy( $input);
     }
+
+    public function addWorkflowAssignee( array $input )
+    {
+        return $this->workflowServiceClient->addWorkflowAssignee($input);
+    }
+
+    public function removeWorkflowAssignee( array $input )
+    {
+        return $this->workflowServiceClient->removeWorkflowAssignee($input);
+    }
+
+    public function createComment( array $input )
+    {
+        return $this->workflowServiceClient->createComment($input);
+    }
+
+    public function listComments( array $input )
+    {
+        return $this->workflowServiceClient->listComments($input);
+    }
 }

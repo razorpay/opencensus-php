@@ -23,6 +23,10 @@ class Client
     const WFS_ACTION_CREATE_ON_ENTITY_ROUTE     = "twirp/rzp.workflows.action.v1.ActionAPI/CreateWithEntityId";
     const WFS_DIRECT_ACTION_CREATE_ROUTE        = "twirp/rzp.workflows.action.v1.ActionAPI/CreateDirectOnWorkflow";
     const WFS_WORKFLOW_CREATE_ROUTE             = "twirp/rzp.workflows.workflow.v1.WorkflowAPI/Create";
+    const WFS_WORKFLOW_ADD_ASSIGNEE_ROUTE       = "twirp/rzp.workflows.workflow.v1.WorkflowAPI/AddAssignee";
+    const WFS_WORKFLOW_REMOVE_ASSIGNEE_ROUTE    = "twirp/rzp.workflows.workflow.v1.WorkflowAPI/RemoveAssignee";
+    const WFS_CREATE_COMMENT_ROUTE              = "twirp/rzp.workflows.comment.v1.CommentAPI/Create";
+    const WFS_LIST_COMMENTS_ROUTE               = "twirp/rzp.workflows.comment.v1.CommentAPI/List";
 
     // self serve workflow routes
     const WORKFLOWS_CONFIG_CREATE_ROUTE         = "twirp/rzp.workflows.config.v1.ConfigAPI/CreateV2";
@@ -348,7 +352,7 @@ class Client
         {
             throw new Exception\ServerErrorException(
                 null,
-                ErrorCode::SERVER_ERROR_WORKFLOW_LIST_BY_IDS_FAILED,
+                ErrorCode::SERVER_ERROR_WORKFLOW_LIST_FAILED,
                 ['input' => $input]);
         }
 
@@ -443,6 +447,90 @@ class Client
         }
 
         return $entityAdapter->transformDirectActionResponse($content);
+    }
+
+    /**
+     * @param array $input
+     * @return mixed
+     * @throws Exception\ServerErrorException
+     */
+    public function addWorkflowAssignee(array $input)
+    {
+
+        $res = $this->workflowServiceClient->request(self::WFS_WORKFLOW_ADD_ASSIGNEE_ROUTE, $input);
+
+        if ($res->status_code !== 200)
+        {
+            throw new Exception\ServerErrorException(
+                null,
+                ErrorCode::SERVER_ERROR_WORKFLOW_ADD_ASSIGNEE_FAILED,
+                ['input' => $input]);
+        }
+
+        return json_decode($res->body, true);
+    }
+
+    /**
+     * @param array $input
+     * @return mixed
+     * @throws Exception\ServerErrorException
+     */
+    public function removeWorkflowAssignee(array $input)
+    {
+
+        $res = $this->workflowServiceClient->request(self::WFS_WORKFLOW_REMOVE_ASSIGNEE_ROUTE, $input);
+
+        if ($res->status_code !== 200)
+        {
+            throw new Exception\ServerErrorException(
+                null,
+                ErrorCode::SERVER_ERROR_WORKFLOW_REMOVE_ASSIGNEE_FAILED,
+                ['input' => $input]);
+        }
+
+        return json_decode($res->body, true);
+    }
+
+    /**
+     * @param array $input
+     * @return mixed
+     * @throws Exception\ServerErrorException
+     */
+    public function createComment(array $input)
+    {
+
+        $res = $this->workflowServiceClient->request(self::WFS_CREATE_COMMENT_ROUTE, $input);
+
+        if ($res->status_code !== 200)
+        {
+            throw new Exception\ServerErrorException(
+                null,
+                ErrorCode::SERVER_ERROR_CREATE_COMMENT_FAILED,
+                ['input' => $input]);
+        }
+
+        return json_decode($res->body, true);
+    }
+
+    /**
+     * @param array $input
+     * @return mixed
+     * @throws Exception\ServerErrorException
+     */
+    public function listComments(array $input)
+    {
+
+        $res = $this->workflowServiceClient->request(self::WFS_LIST_COMMENTS_ROUTE, $input);
+
+        if ($res->status_code !== 200 && $res->status_code != 404)
+        {
+            throw new Exception\ServerErrorException(
+                null,
+                ErrorCode::SERVER_ERROR_LIST_COMMENTS_FAILED,
+                ['input' => $input]);
+        }
+
+        return json_decode($res->body, true);
     }
 
     protected function getEntityAdapter(Base\PublicEntity $entity): Adapter\Base

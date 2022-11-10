@@ -178,4 +178,36 @@ class WorkflowServiceController extends Controller
         return response()->json($response);
     }
 
+    public function addWorkflowAssignee() {
+        $input = Request::all();
+
+        $response = $this->workflowService->addWorkflowAssignee($input);
+
+        return response()->json($response);
+    }
+
+    public function removeWorkflowAssignee() {
+        $input = Request::all();
+
+        $response = $this->workflowService->removeWorkflowAssignee($input);
+
+        return response()->json($response);
+    }
+
+    public function createComment() {
+        $input = Request::all();
+
+        $response = $this->workflowService->createComment($input);
+
+        return response()->json($response);
+    }
+
+    public function listComments() {
+        $input = Request::all();
+
+        $response = $this->workflowService->listComments($input);
+
+        return response()->json($response);
+    }
+
 }
