@@ -303,6 +303,7 @@ class Repository extends Base\Repository
                       ->take($count)
                       ->skip($skip)
                       ->latest()
+                      ->orderBy(Common::ID, 'desc')
                       ->get();
 
         $txns = $this->fetchAssociatedRelationsWithLoadedEntities($txns, 'source', $entityToRelationFetchMap);
