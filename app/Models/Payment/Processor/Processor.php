@@ -4027,6 +4027,7 @@ class Processor
             'dcc_offered' => $dcc_offered,
             'forex_rate' => $forex_rate,
             'dcc_mark_up_percent'=>$dcc_mark_up_percent,
+            'fee_bearer' => $payment->getFeeBearer(),
         ];
         $terminal = $payment->terminal;
 
