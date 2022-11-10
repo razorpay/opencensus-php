@@ -233,6 +233,7 @@ class Route
         'subscription_fetch_by_id_data_fix'        => ['get',      'payments/data_fix/subscriptions/{subId}',        'PaymentController@getPaymentwithSubscriptionEmailAndContactNotNull'],
         'payment_fetch_multiple'                   => ['get',      'payments',                                       'PaymentController@getPayments'                                     ],
         'payment_status_count'                     => ['get',      'payments/transaction/count',                     'PaymentController@getPaymentsStatusCount'                                     ],
+        'payment_validate_vpa_internal'            => ['post',     'payments/validate_internal/vpa',                 'PaymentController@postPaymentValidateVpaInternal'                 ],
         'payment_fetch_card_details'               => ['get',      'payments/{id}/card',                             'PaymentController@getCardForPayment'                               ],
         'payment_fetch_card_metadata'              => ['get',      'payments/{id}/card/metadata',                    'PaymemtController@getCardMetadataForPayment'                       ],
         'payment_fetch_refunds'                    => ['get',      'payments/{id}/refunds',                          'PaymentController@getRefundsForPayment'                            ],
@@ -6220,6 +6221,7 @@ class Route
 
         'wfs_config_get',
 
+        'payment_validate_vpa_internal',
         // Get free_payout attributes for balance
         'get_free_payouts_attributes',
         'proxy_merchant_get_support_details',
@@ -9273,6 +9275,7 @@ class Route
         'tax_payments_fetch_pending_gst'               => Permission::CREATE_TAX_PAYMENTS,
         'salesforce_event'                             => '*',
         'salesforce_opportunity_details'               => '*',
+        'payment_validate_vpa_internal'                => '*',
 
         'get_free_payouts_attributes'                  => Permission::MERCHANT_VIEW_FREE_PAYOUTS_ATTRIBUTES,
         'payouts_bulk_sample_file'                     => '*',
@@ -10091,6 +10094,7 @@ class Route
             'gateway_payment_validate_bharatqr',
             'get_account_documents_v2',
             'get_es_pricing_merchant',
+            'payment_validate_vpa_internal',
             'get_free_payouts_attributes',
             'get_instant_refunds_pricing_merchant',
             'get_merchant_balance_config',
@@ -11629,6 +11633,7 @@ class Route
             'get_config_key',
             'get_config_keys',
             'get_es_pricing_merchant',
+            'payment_validate_vpa_internal',
             'get_free_payouts_attributes',
             'get_gateway_downtime_conf',
             'get_instant_refunds_pricing_merchant',

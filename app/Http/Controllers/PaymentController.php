@@ -615,6 +615,15 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postPaymentValidateVpaInternal()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->validateVpa($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postPaymentValidateVpa()
     {
         $input = Request::all();

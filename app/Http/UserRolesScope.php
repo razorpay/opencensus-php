@@ -328,6 +328,7 @@ class UserRolesScope
             'payment_handle_get'                       => [Role::OWNER, Role::ADMIN, Role::OPERATIONS, Role::MANAGER],
             'payment_handle_suggestion'                => [Role::OWNER, Role::ADMIN, Role::OPERATIONS, Role::MANAGER],
             'payment_handle_amount_encryption'         => [Role::OWNER, Role::ADMIN, Role::OPERATIONS, Role::MANAGER],
+            'payment_validate_vpa_internal'            => [Role::OWNER, Role::ADMIN, Role::OPERATIONS, Role::MANAGER],
 
             // payment button
 
