@@ -11,6 +11,7 @@ const AmountBasedModalContent = ({
   meta_data,
   onMetaDataChange,
   handleSubmit,
+  currency,
 }) => {
   const [disableSubmit, setDisableSubmit] = useState(false);
 
@@ -37,7 +38,7 @@ const AmountBasedModalContent = ({
             label="Enter your goal amount"
           >
             <div class="Input-content">
-              <Input.CurrencySelect autoRender name="currency" defaultValue="INR" />
+              <Input.CurrencySelect autoRender name="currency" defaultValue={currency} disabled />
               <Input
                 autoRender
                 placeholder="0.00"

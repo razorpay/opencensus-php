@@ -464,6 +464,7 @@ export default class PaymentPagesV3Entity extends React.Component {
                       endDate={moment.unix(
                         paymentPageEntity.settings.goal_tracker.meta_data.goal_end_timestamp,
                       )}
+                      currency={paymentPageEntity.currency}
                     />
                   )}
                 <div class="table-container">

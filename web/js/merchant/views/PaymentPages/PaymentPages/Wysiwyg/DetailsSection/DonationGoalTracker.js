@@ -7,7 +7,7 @@ import moment from 'moment';
 import Button from 'common/new-ui/Button';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { Modal, ModalMask, ModalContent } from 'common/new-ui/Modal';
-import FieldsDropdownWrapper from '../FormSection/FieldsDropdown';
+import FieldsDropdownWrapper from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/FieldsDropdown';
 import DonationGoalTrackerPreview from './DonationGoalTrackerPreview';
 import AmountBasedModalContent from './AmountBasedModalContent';
 import SupporterBasedModalContent from './SupporterBasedModalContent';
@@ -18,7 +18,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 
 import { parseGoalTrackerAmountValues } from './helpers';
 import debounce from 'common/utils/debounce';
-import track from '../track';
+import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
 import FIELD_TYPES from './helpers/fieldTypes';
 import { isMobileDevice } from 'merchant/components/Home/data';
 
@@ -50,11 +50,16 @@ const sampleData2 = {
   },
 };
 
-@connect(null, {
-  showNotification,
-  closeModal,
-  openModal,
-})
+@connect(
+  (state) => ({
+    currency: state.wysiwyg.paymentPageEntity?.currency || 'INR',
+  }),
+  {
+    showNotification,
+    closeModal,
+    openModal,
+  },
+)
 @RTracking(() => window.rzpQ.component('PaymentButtonDetails'))
 export default class DonationGoalTracker extends React.PureComponent {
   static contextTypes = {
@@ -292,6 +297,7 @@ export default class DonationGoalTracker extends React.PureComponent {
       tracker_type,
       isBottomSheetOpen,
     } = this.state;
+    const { currency } = this.props;
 
     const isMobile = isMobileDevice();
 
@@ -338,6 +344,7 @@ export default class DonationGoalTracker extends React.PureComponent {
             isMain={true}
             editGoal={this.editGoal}
             removeGoal={this.removeGoal}
+            currency={currency}
           />
         )}
         {isEditable && (
@@ -349,6 +356,7 @@ export default class DonationGoalTracker extends React.PureComponent {
                   is_active={is_active}
                   tracker_type={tracker_type}
                   endDate={endDate}
+                  currency={currency}
                 />
               </ModalContent>
             </Modal>
@@ -366,6 +374,7 @@ export default class DonationGoalTracker extends React.PureComponent {
                       meta_data={meta_data}
                       onMetaDataChange={this.onMetaDataChange}
                       handleSubmit={this.handleSubmit}
+                      currency={currency}
                     />
                   ) : (
                     <SupporterBasedModalContent
@@ -397,6 +406,7 @@ export default class DonationGoalTracker extends React.PureComponent {
                         meta_data={meta_data}
                         onMetaDataChange={this.onMetaDataChange}
                         handleSubmit={this.handleSubmit}
+                        currency={currency}
                       />
                     ) : (
                       <SupporterBasedModalContent

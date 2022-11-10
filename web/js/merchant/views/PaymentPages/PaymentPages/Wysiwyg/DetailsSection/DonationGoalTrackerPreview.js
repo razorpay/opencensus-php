@@ -2,6 +2,7 @@ import moment from 'moment';
 import { useEffect, useState } from 'react';
 import RangeSlider from 'common/new-ui/RangeSlider';
 import Button from 'common/new-ui/Button';
+import { getCurrency } from 'common/ui/Amount';
 
 const DonationGoalTrackerPreview = ({ tracker_type, is_active, meta_data, ...remainingProps }) => {
   if (is_active === '0') return null;
@@ -133,6 +134,7 @@ const AmountBasedGoalTrackerPreview = ({
   isMain,
   editGoal = () => {},
   removeGoal = () => {},
+  currency,
 }) => {
   const [daysLeft, setDaysLeft] = useState(0);
   useEffect(() => {
@@ -142,17 +144,20 @@ const AmountBasedGoalTrackerPreview = ({
       setDaysLeft(newDaysLeft >= 0 ? newDaysLeft : 0);
     }
   }, [display_days_left, endDate]);
+  const currencySymbol = getCurrency(currency).symbol;
+
   return (
     <>
       <div className={`goal-tracker--amount-based ${isMain ? 'goal-tracker--main' : ''}`}>
         <div className="goal-tracker--amount-based-top">
           <span className="goal-tracker--collected">
-            ₹{' '}
+            {currencySymbol}{' '}
             {Number.toLocaleString
               ? Number(collected_amount).toLocaleString('en-IN')
               : collected_amount}
           </span>{' '}
-          of ₹ {Number.toLocaleString ? Number(goal_amount).toLocaleString('en-IN') : goal_amount}{' '}
+          of {currencySymbol}{' '}
+          {Number.toLocaleString ? Number(goal_amount).toLocaleString('en-IN') : goal_amount}{' '}
           collected
         </div>
         <div className="goal-tracker--amount-based-slider">
