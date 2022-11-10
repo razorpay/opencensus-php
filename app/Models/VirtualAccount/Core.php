@@ -282,6 +282,8 @@ class Core extends Base\Core
 
             $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
 
+            $virtualAccount = $this->updateVirtualAccountForHdfcUpiQR($virtualAccount,$input);
+
             Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_CORE_SAVE], function() use($virtualAccount)
             {
                 $this->repo->virtual_account->saveOrFail($virtualAccount);
@@ -310,6 +312,31 @@ class Core extends Base\Core
         $this->eventVirtualAccountCreated($virtualAccount);
 
         return $virtualAccount;
+    }
+
+    protected function updateVirtualAccountForHdfcUpiQR($virtualAccount,$input)
+    {
+        if(isset($this->merchant) === true and ($this->merchant->isFeatureEnabled(Feature\Constants::UPIQR_V1_HDFC) === true)
+            and isset($input[Entity::RECEIVERS][Entity::TYPES]) === true
+            and $this->isUpiQr($input[Entity::RECEIVERS]) === true
+            and isset($input[Entity::CLOSE_BY]) === true)
+        {
+            $virtualAccount->close_by = null;
+        }
+        
+        return $virtualAccount;
+    }
+
+    protected function isUpiQr($input)
+    {
+        if($input[Entity::TYPES][0] === Entity::QR_CODE and isset($input[Entity::QR_CODE]['method']['card']) === true
+            and isset($input[Entity::QR_CODE]['method']['upi']) === true
+            and ($input[Entity::QR_CODE]['method']['card'] === false)
+            and ($input[Entity::QR_CODE]['method']['upi'] === true))
+        {
+            return true;
+        }
+         return false;
     }
 
     protected function updateQrCodeInput($virtualAccount,$input): array

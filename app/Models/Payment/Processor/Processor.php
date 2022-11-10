@@ -487,7 +487,7 @@ class Processor
             $currentRouteName = $this->route->getCurrentRouteName();
             $merchant = $this->app['basicauth']->getMerchant();
 
-            if($merchant->isFeatureEnabled(Feature::UPIQR_V1_HDFC) === true)
+            if($this->merchant->isFeatureEnabled(Feature::UPIQR_V1_HDFC) === true)
             {
                 return false;
             }

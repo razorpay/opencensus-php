@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\Upi\Mindgate;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -2067,6 +2068,69 @@ class UpiMindgateGatewayTest extends TestCase
         $usage   = $qrCode['usage_type'];
 
         parse_str(str_replace('upi://pay?', '', $qrString), $params);
+
+        $this->assertFalse(str_starts_with($params['tr'],'STQ'));
+
+        $this->assertEquals('active', $status);
+
+        $this->assertEquals('single_use',$usage);
+    }
+
+    public function testCreateUpiQRVirtualAccountWithCloseBy()
+    {
+
+        $this->fixtures->merchant->addFeatures(['virtual_accounts','upiqr_v1_hdfc']);
+
+        $org = $this->createTestOrg();
+
+        $this->fixtures->edit('merchant','10000000000000',[
+            'name'=>'Test Name',
+            'org_id' => $org->getId(),
+        ]);
+
+        $this->fixtures->create('terminal', [
+            'id'                        => '10000000000112',
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'upi_mindgate',
+            'gateway_merchant_id'       => 'razorpay upi mindgate',
+            'gateway_terminal_id'       => 'nodal account upi hdfc',
+            'gateway_merchant_id2'      => 'razorpay@hdfcbank',
+            // Sample hex for aes encryption, not in used
+            'gateway_terminal_password' => '93158d5892188161a259db660ddb1d0b',
+            'upi'                       => 1,
+            'gateway_acquirer'          => 'hdfc',
+            'vpa'                       => 'unittest@hdfcbank',
+            'type'                      => [
+                'non_recurring' => '1',
+                'pay'           => '1',
+            ]
+        ]);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['request']['content']['close_by'] = Carbon::now()->addMinutes(20)->getTimestamp();
+
+        $this->ba->privateAuth();
+
+        $this->startTest($data);
+
+        $qrCode = $this->getLastEntity('qr_code',true);
+
+        $va = $this->getLastEntity('virtual_account',true);
+
+        $closeBy = $va['close_by'];
+
+        $qrString = $qrCode['qr_string'];
+
+        $status  = $qrCode['status'];
+
+        $usage   = $qrCode['usage_type'];
+
+        parse_str(str_replace('upi://pay?', '', $qrString), $params);
+
+        $this->assertNull($closeBy);
+
+        $this->assertNotNull($qrCode['close_by']);
 
         $this->assertFalse(str_starts_with($params['tr'],'STQ'));
 
