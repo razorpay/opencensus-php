@@ -1452,7 +1452,9 @@ export default class ActivationWizard extends React.Component {
             }, {})
           : this.formData
         : {};
-
+    if (data.company_cin === null) {
+      delete data.company_cin;
+    }
     return this.props.submitForm({ data }).then((data) => {
       if (data?.errors) {
         // Track session for any error on submission (non-LA account)
