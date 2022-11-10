@@ -1,6 +1,7 @@
 import React from 'react';
 import { StatusTrackerStepsT } from 'merchant/components/StatusTracker/statusTracker.types';
 import { STATUS_TRACKER_STATUS } from 'merchant/components/StatusTracker/constants';
+import { triggerEvents } from 'merchant/components/StatusTracker/Wrappers/XCorporateCardWapper/xCorporateCardWrapperUtil';
 
 enum ApplicationStates {
   BusinessDetailsPending = 'BUSINESS_DETAILS_PENDING',
@@ -62,6 +63,11 @@ const inProgressApplicationSteps: StatusTrackerStepsT[] = [
       {
         label: ButtonLabels.ContinueApplication,
         onClick: (): void => {
+          triggerEvents(
+            'Continue Application',
+            ApplicationStepTitles.CreditVerification,
+            'Clicked',
+          );
           window.open(links.applyApplication, '_blank');
         },
         style: 'primary',
@@ -77,6 +83,7 @@ const inProgressApplicationSteps: StatusTrackerStepsT[] = [
       {
         label: ButtonLabels.ContinueApplication,
         onClick: (): void => {
+          triggerEvents('Continue Application', ApplicationStepTitles.BankStatement, 'Clicked');
           window.open(links.applyApplication, '_blank');
         },
         style: 'disabled',
@@ -92,6 +99,7 @@ const inProgressApplicationSteps: StatusTrackerStepsT[] = [
       {
         label: ButtonLabels.TrackYourApplication,
         onClick: (): void => {
+          triggerEvents('Track Your Application', ApplicationStepTitles.OfferCuration, 'Clicked');
           window.open(links.applyApplication, '_blank');
         },
         style: 'disabled',
@@ -107,6 +115,7 @@ const inProgressApplicationSteps: StatusTrackerStepsT[] = [
       {
         label: ButtonLabels.CompleteYourApplication,
         onClick: (): void => {
+          triggerEvents('Complete Your Application', ApplicationStepTitles.KycPending, 'Clicked');
           window.open(links.applyApplication, '_blank');
         },
         style: 'disabled',
@@ -122,6 +131,7 @@ const inProgressApplicationSteps: StatusTrackerStepsT[] = [
       {
         label: ButtonLabels.CompleteYourApplication,
         onClick: (): void => {
+          triggerEvents('Complete Your Application', ApplicationStepTitles.ESignPending, 'Clicked');
           window.open(links.applyApplication, '_blank');
         },
         style: 'disabled',
@@ -140,6 +150,7 @@ const closedApplicationSteps: StatusTrackerStepsT[] = [
       {
         label: ButtonLabels.ApplyAgain,
         onClick: (): void => {
+          triggerEvents('Apply Again', ApplicationStepTitles.ApplicationExpired, 'Clicked');
           window.open(links.apply, '_blank');
         },
       },
@@ -157,6 +168,7 @@ const completeApplicationSteps: StatusTrackerStepsT[] = [
       {
         label: ButtonLabels.UseCorporateCard,
         onClick: (): void => {
+          triggerEvents('Use Corporate Card', ApplicationStepTitles.StartYourJourney, 'Clicked');
           window.open(links.cards, '_blank');
         },
       },

@@ -16,6 +16,8 @@ import {
   inProgressApplicationSteps,
   rejectedApplicationSteps,
 } from './data';
+import { trackSegmentEvent } from 'merchant/components/StatusTracker/StatusTrackerEvents';
+import { getURLQueryParams } from 'common/utils/rzp-utils';
 
 type ApplicationData = {
   applicationStatus: ApplicationStates;
@@ -41,6 +43,20 @@ const getApplicationSteps = (
     default:
       return [];
   }
+};
+
+const triggerEvents = (objectName: string, currentStatus: string, actionName: string): void => {
+  const utmParam = getURLQueryParams(location.search);
+  const screen = `${location?.hostname}${location?.pathname}`;
+  const properties = {
+    location: `PG Dashboard | ${currentStatus}`,
+    utm_params: {
+      utm_source: utmParam?.utm_source,
+      utm_medium: utmParam?.utm_medium,
+      utm_campaign: utmParam?.utm_campaign,
+    },
+  };
+  trackSegmentEvent({ objectName, actionName, screen, properties });
 };
 
 const getXCCStatusTrackerProps = (applicationData: ApplicationData): StatusTrackerPropsT | null => {
@@ -136,10 +152,27 @@ const getXCCStatusTrackerProps = (applicationData: ApplicationData): StatusTrack
       </>
     ),
     steps: applicationSteps,
+    onLoad: () => {
+      if (applicationSteps?.length === 1) {
+        if (applicationSteps[0].title === ApplicationStepTitles.ApplicationClosed) {
+          triggerEvents(
+            'Application Closed Modal',
+            ApplicationStepTitles.ApplicationClosed,
+            'Rendered',
+          );
+        } else if (applicationSteps[0].title === ApplicationStepTitles.ApplicationExpired) {
+          triggerEvents(
+            'Application Expired Modal',
+            ApplicationStepTitles.ApplicationExpired,
+            'Rendered',
+          );
+        }
+      }
+    },
     rightIllustration: XCCSTRightIllustration,
   };
 
   return statusTrackerProps;
 };
 
-export { getXCCStatusTrackerProps };
+export { getXCCStatusTrackerProps, triggerEvents };
