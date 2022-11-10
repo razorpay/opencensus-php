@@ -60,7 +60,12 @@ export default ({
   // TODO: pointer-events: allow, but cursor be as per inherit
   return (
     <AmountTooltip currency={currency} parentQuerySelector={parentQuerySelector}>
-      <span className={`rzp-amount ${className ? className : ''}`} dir={getDirection()} {...attrs}>
+      <span
+        className={`rzp-amount ${className ? className : ''}`}
+        dir={getDirection()}
+        aria-label="amount-info"
+        {...attrs}
+      >
         <span
           className="rzp-currency"
           dangerouslySetInnerHTML={{ __html: sanitizer(currencySymbol) }}

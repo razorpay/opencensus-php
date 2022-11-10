@@ -90,6 +90,7 @@ const InstantSettlementPayoutDetails = ({
                 <PlaceholderLoader />
                 <i
                   className="i i-info-outline total-settlement-info-icon ml-8"
+                  data-testid="settlement-info"
                   onMouseEnter={() => trackIS.hoverLoadingTotalSettledAmountIconPayoutDetails()}
                 >
                   <PopoverComponent align="bottom" theme="dark">
@@ -112,6 +113,7 @@ const InstantSettlementPayoutDetails = ({
               Deductions
               <i
                 className="i i-info-outline mr-10"
+                data-testid="settlement-deduction"
                 onMouseEnter={() => {
                   trackIS.hoverDeductionIconPayoutDetails();
                   trackOnDemandPayoutDeductionsHover();
