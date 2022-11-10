@@ -108,4 +108,37 @@ export const paymentHandlers = [
       ctx.delay(50),
     );
   }),
+  rest.get('*/orders/:orderId/line_items', (req, res, ctx) => {
+    const { orderId } = req.params;
+    if (orderId === '123') {
+      return res(
+        ctx.json({
+          data: null,
+        }),
+        ctx.delay(50),
+      );
+    }
+    return res(
+      ctx.json({
+        data: {
+          items: [
+            {
+              name: 'item name 1',
+              amount: 931860,
+              currency: 'INR',
+              net_amount: 944860,
+              quantity: 10,
+            },
+            {
+              name: 'item name 2',
+              amount: 90,
+              currency: 'INR',
+              net_amount: 98,
+            },
+          ],
+        },
+      }),
+      ctx.delay(50),
+    );
+  }),
 ];

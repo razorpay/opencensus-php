@@ -78,5 +78,5 @@ class PaymentSplitInItems extends Component {
 export default compose(
   withRouter,
   // eslint-disable-next-line babel/new-cap
-  RTracking(() => window.rzpQ.component('PaymentSplitInItems')),
+  RTracking(/* istanbul ignore next */ () => window.rzpQ.component('PaymentSplitInItems')),
 )(PaymentSplitInItems);
