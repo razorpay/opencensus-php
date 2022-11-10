@@ -312,6 +312,7 @@ class Entity extends Base\PublicEntity
     const ALLOW_USER_CREATION       = 'allow_user_creation';
 
     protected $entity = 'merchant';
+    const COUNTRY_CODE = 'country_code';
 
     /**
      * Merchant features, saved to this variable once fetched to avoid
@@ -391,7 +392,8 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_CODE,
         self::PURPOSE_CODE,
         self::SIGNUP_VIA_EMAIL,
-        self::AUDIT_ID
+        self::AUDIT_ID,
+        self::COUNTRY_CODE
     ];
 
     const CONFIG_LIST = [
@@ -490,6 +492,7 @@ class Entity extends Base\PublicEntity
         self::SIGNUP_SOURCE,
         self::DCC_MARKUP_PERCENTAGE,
         self::PURPOSE_CODE,
+        self::COUNTRY_CODE
      ];
 
     protected $defaults = [
@@ -3578,6 +3581,18 @@ class Entity extends Base\PublicEntity
         }
 
         return $name;
+    }
+
+    public function getCountry()
+    {
+        $country  = $this->getAttribute(self::COUNTRY_CODE);
+
+        return $country ?? 'IN';
+    }
+
+    public function getCurrency()
+    {
+        return Currency::getCurrencyForCountry($this->getCountry()) ?? "INR";
     }
 
 }

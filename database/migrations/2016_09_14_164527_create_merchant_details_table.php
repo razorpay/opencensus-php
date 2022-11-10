@@ -372,6 +372,18 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::SHOP_ESTABLISHMENT_VERIFICATION_STATUS, 30)
                   ->nullable();
 
+            $table->string(MerchantDetail::BANK_BRANCH_CODE, 255)
+                ->nullable();
+
+            $table->string(MerchantDetail::BANK_BRANCH_CODE_TYPE, 255)
+                ->nullable();
+
+            $table->string(MerchantDetail::INDUSTRY_CATEGORY_CODE, 255)
+                ->nullable();
+
+            $table->string(MerchantDetail::INDUSTRY_CATEGORY_CODE_TYPE, 255)
+                ->nullable();
+
             $table->string(MerchantDetail::FRAUD_TYPE, 100)
                   ->nullable();
 

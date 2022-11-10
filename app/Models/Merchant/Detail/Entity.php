@@ -79,6 +79,10 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const BANK_ACCOUNT_NUMBER                = 'bank_account_number';
     const BANK_ACCOUNT_NAME                  = 'bank_account_name';
     const BANK_ACCOUNT_TYPE                  = 'bank_account_type';
+    const BANK_BRANCH_CODE_TYPE              = 'bank_branch_code_type';
+    const BANK_BRANCH_CODE                   = 'bank_branch_code';
+    const INDUSTRY_CATEGORY_CODE_TYPE        = 'industry_category_code_type';
+    const INDUSTRY_CATEGORY_CODE             = 'industry_category_code';
     const BANK_BRANCH                        = 'bank_branch';
     const BANK_BRANCH_IFSC                   = 'bank_branch_ifsc';
     const BANK_BENEFICIARY_ADDRESS1          = 'bank_beneficiary_address1';
@@ -266,6 +270,8 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::BANK_ACCOUNT_NUMBER,
         self::BANK_ACCOUNT_NAME,
         self::BANK_ACCOUNT_TYPE,
+        self::BANK_BRANCH_CODE_TYPE,
+        self::BANK_BRANCH_CODE,
         self::BANK_BRANCH,
         self::BANK_BRANCH_IFSC,
         self::BANK_BENEFICIARY_ADDRESS1,
@@ -328,7 +334,9 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::BUSINESS_SUGGESTED_ADDRESS,
         self::FRAUD_TYPE,
         self::IEC_CODE,
-        self::AUDIT_ID
+        self::AUDIT_ID,
+        self::INDUSTRY_CATEGORY_CODE_TYPE,
+        self::INDUSTRY_CATEGORY_CODE,
     ];
 
     protected $public     = [
@@ -403,6 +411,8 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::BANK_ACCOUNT_TYPE,
         self::BANK_BRANCH,
         self::BANK_BRANCH_IFSC,
+        self::BANK_BRANCH_CODE,
+        self::BANK_BRANCH_CODE_TYPE,
         self::BANK_BENEFICIARY_ADDRESS1,
         self::BANK_BENEFICIARY_ADDRESS2,
         self::BANK_BENEFICIARY_ADDRESS3,
@@ -447,6 +457,8 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::MERCHANT_OTP_VERIFICATION_LOG,
         self::PROMOTER_PAN_NAME_SUGGESTED,
         self::BUSINESS_NAME_SUGGESTED,
+        self::INDUSTRY_CATEGORY_CODE,
+        self::INDUSTRY_CATEGORY_CODE_TYPE,
     ];
 
     protected $defaults   = [
@@ -509,6 +521,10 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::ISSUE_FIELDS,
         self::INTERNAL_NOTES,
         self::ISSUE_FIELDS_REASON,
+    ];
+
+    protected static $modifiers = [
+        'bank_branch_input',
     ];
 
     /**
@@ -700,6 +716,26 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     public function getBankBranchIfsc()
     {
         return $this->getAttribute(self::BANK_BRANCH_IFSC);
+    }
+
+    public function getBankBranchCode()
+    {
+        return $this->getAttribute(self::BANK_BRANCH_CODE);
+    }
+
+    public function getBankBranchCodeType()
+    {
+        return $this->getAttribute(self::BANK_BRANCH_CODE_TYPE);
+    }
+
+    public function getIndustryCategoryCode()
+    {
+        return $this->getAttribute(self::INDUSTRY_CATEGORY_CODE);
+    }
+
+    public function getIndustryCategoryCodeType()
+    {
+        return $this->getAttribute(self::INDUSTRY_CATEGORY_CODE_TYPE);
     }
 
     public function getCompanyCin()
@@ -1617,6 +1653,29 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
                 unset($input[$key]);
             }
         }
+    }
+
+    protected function modifyBankBranchInput(& $input)
+    {
+        if (isset($input[Entity::BANK_BRANCH_IFSC]) === true)
+        {
+            $input[Entity::BANK_BRANCH_CODE] = $input[Entity::BANK_BRANCH_IFSC];
+            $input[Entity::BANK_BRANCH_CODE_TYPE] = BankBranchCodeType::IFSC;
+        }
+    }
+
+
+    public function edit(array $input = array(), $operation = 'edit')
+    {
+        $this->modify($input);
+
+        $this->validateInput($operation, $input);
+
+        $this->unsetInput($operation, $input);
+
+        $this->fill($input);
+
+        return $this;
     }
 
 }

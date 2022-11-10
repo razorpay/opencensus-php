@@ -134,6 +134,7 @@ class Validator extends Base\Validator
         Entity::SIGNUP_SOURCE               => 'sometimes|string|max:32',
         Entity::CODE                        => 'custom',
         Entity::SIGNUP_VIA_EMAIL            => 'sometimes|in:0,1',
+        Entity::COUNTRY_CODE                => 'sometimes|string|max:2'
     ];
 
     protected static $editRules = [
@@ -182,6 +183,7 @@ class Validator extends Base\Validator
         'reset_pricing_plan'                          => 'sometimes|boolean',
         Entity::PURPOSE_CODE                          => 'sometimes|string|max:5',
 //        Entity::EMAIL                                 => 'sometimes|email|unique:merchants',
+        Entity::COUNTRY_CODE                          => 'sometimes|string|size:2',
     ];
 
     protected static $editBillingLabelRules = [

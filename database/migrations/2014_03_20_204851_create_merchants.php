@@ -235,6 +235,9 @@ class CreateMerchants extends Migration
 
             $table->char(Merchant::AUDIT_ID,Merchant::ID_LENGTH)->nullable();
 
+            $table->string(Merchant::COUNTRY_CODE, 2)
+                ->default('IN');
+
             $table->index(Merchant::ACTIVATED_AT);
             $table->index(Merchant::ACTIVATED);
             $table->index(Merchant::LIVE);

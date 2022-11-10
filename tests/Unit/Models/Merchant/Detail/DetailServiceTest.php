@@ -742,6 +742,8 @@ class DetailServiceTest extends TestCase
 
         $this->merchantDetailValidator->shouldReceive('validateCommonFieldsWithPartnerActivation')->andReturn();
 
+        $this->merchantDetailValidator->shouldReceive('validateBankBranchCode')->andReturn();
+
         $this->merchantDetailValidator->shouldReceive('performInstantActivationValidations')->andReturn();
 
         $this->merchantDetailEntityMock->shouldReceive('edit')->andReturn($this->merchantDetailEntityMock);

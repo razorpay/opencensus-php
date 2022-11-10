@@ -40,6 +40,9 @@ class Validator extends Base\Validator
     const INVALID_MERCHANTS                             = 'Invalid merchants';
     const INVALID_STATUS_MESSAGE                        = 'Invalid status';
     const INVALID_IFSC_CODE_MESSAGE                     = 'Invalid IFSC Code';
+    const INVALID_BANK_BRANCH_CODE_MESSAGE              = 'Invalid Bank Branch Code';
+    const INVALID_BANK_BRANCH_CODE_TYPE_MESSAGE         = 'Invalid Bank Branch Code Type';
+    const INVALID_INDUSTRY_CATEGORY_CODE_TYPE_MESSAGE   = 'Invalid Industry Category Code Type';
     const INVALID_STATUS_CHANGE_MESSAGE                 = 'Invalid status change';
     const INVALID_CLARIFICATION_MODE_MESSAGE            = 'Invalid clarification mode';
     const INVALID_FILE_NON_NGO_ORGANISATION_TYPE        = 'Invalid file for non NGO organisation type';
@@ -107,6 +110,8 @@ class Validator extends Base\Validator
         Entity::BANK_ACCOUNT_TYPE               => 'sometimes|alpha_space|max:20',
         Entity::BANK_BRANCH                     => 'sometimes|max:255',
         Entity::BANK_BRANCH_IFSC                => 'sometimes|alpha_num|max:11|custom',
+        Entity::BANK_BRANCH_CODE_TYPE           => 'required_with:'. Entity::BANK_BRANCH_CODE . '|string|max:255|custom',
+        Entity::BANK_BRANCH_CODE                => 'required_with:'. Entity::BANK_BRANCH_CODE_TYPE . '|alpha_num|max:11',
         Entity::BANK_BENEFICIARY_ADDRESS1       => 'sometimes|max:30',
         Entity::BANK_BENEFICIARY_ADDRESS2       => 'sometimes|max:30',
         Entity::BANK_BENEFICIARY_ADDRESS3       => 'sometimes|max:30',
@@ -139,6 +144,8 @@ class Validator extends Base\Validator
         Entity::ADDITIONAL_WEBSITES. '.*'       => 'required_with:'. Entity::ADDITIONAL_WEBSITES . '|string|custom:active_url',
         Entity::ACTIVATION_FORM_MILESTONE       => 'sometimes|string|max:30|custom',
         Entity::SHOP_ESTABLISHMENT_NUMBER       => 'sometimes|string|max:100|nullable',
+        Entity::INDUSTRY_CATEGORY_CODE_TYPE     => 'required_with:'. Entity::INDUSTRY_CATEGORY_CODE . '|string|max:255|custom',
+        Entity::INDUSTRY_CATEGORY_CODE          => 'required_with:'. Entity::INDUSTRY_CATEGORY_CODE_TYPE . '|alpha_num|max:5',
         BDConstants::PLAYSTORE_URL              => 'sometimes|custom:active_url|max:255|nullable',
         BDConstants::APPSTORE_URL               => 'sometimes|custom:active_url|max:255|nullable',
         BDConstants::PHYSICAL_STORE             => 'sometimes|boolean',
@@ -203,6 +210,8 @@ class Validator extends Base\Validator
         Entity::BANK_ACCOUNT_TYPE                        => 'sometimes|alpha_space|max:20',
         Entity::BANK_BRANCH                              => 'sometimes|max:255',
         Entity::BANK_BRANCH_IFSC                         => 'filled|alpha_num|max:11|custom',
+        Entity::BANK_BRANCH_CODE_TYPE                    => 'required_with:'. Entity::BANK_BRANCH_CODE . '|string|max:255|custom',
+        Entity::BANK_BRANCH_CODE                         => 'required_with:'. Entity::BANK_BRANCH_CODE_TYPE . '|alpha_num|max:11',
         Entity::BANK_BENEFICIARY_ADDRESS1                => 'sometimes|max:30',
         Entity::BANK_BENEFICIARY_ADDRESS2                => 'sometimes|max:30',
         Entity::BANK_BENEFICIARY_ADDRESS3                => 'sometimes|max:30',
@@ -253,6 +262,8 @@ class Validator extends Base\Validator
         Entity::SHOP_ESTABLISHMENT_NUMBER                => 'sometimes|string|max:100|nullable',
         Entity::BUSINESS_SUGGESTED_PIN                   => 'sometimes|size:6',
         Entity::BUSINESS_SUGGESTED_ADDRESS               => 'sometimes|max:255',
+        Entity::INDUSTRY_CATEGORY_CODE_TYPE              => 'required_with:'. Entity::INDUSTRY_CATEGORY_CODE . '|string|max:255|custom',
+        Entity::INDUSTRY_CATEGORY_CODE                   => 'required_with:'. Entity::INDUSTRY_CATEGORY_CODE_TYPE . '|alpha_num|max:5',
         BDConstants::PLAYSTORE_URL                       => 'sometimes|custom:active_url|max:255|nullable',
         BDConstants::APPSTORE_URL                        => 'sometimes|custom:active_url|max:255|nullable',
         BDConstants::PHYSICAL_STORE                      => 'sometimes|boolean',
@@ -348,11 +359,13 @@ class Validator extends Base\Validator
     protected static $createValidators = [
         'business_subcategory_for_category',
         'blacklisted_bank',
+        Entity::BANK_BRANCH_CODE,
     ];
 
     protected static $editValidators = [
         'business_subcategory_for_category',
         'blacklisted_bank',
+        Entity::BANK_BRANCH_CODE,
     ];
 
     protected static $pennyTestingEventPayloadRules = [
@@ -807,6 +820,31 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(self::INVALID_IFSC_CODE_MESSAGE);
         }
     }
+
+    public function validateBankBranchCode($input)
+    {
+        if(isset($input[Entity::BANK_BRANCH_CODE]) === true){
+            if ($input[Entity::BANK_BRANCH_CODE_TYPE] === BankBranchCodeType::IFSC && IFSC::validate($input[Entity::BANK_BRANCH_CODE]) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(self::INVALID_BANK_BRANCH_CODE_MESSAGE);
+            }
+        }
+    }
+
+    public function validateBankBranchCodeType($attribute, $value)
+    {
+        if(!in_array($value, BankBranchCodeType::getAllowableEnumValues(), false)){
+            throw new Exception\BadRequestValidationFailureException(self::INVALID_BANK_BRANCH_CODE_TYPE_MESSAGE);
+        }
+    }
+
+    public function validateIndustryCategoryCodeType($attribute, $value)
+    {
+        if(!in_array($value, IndustryCategoryCodeType::getAllowableEnumValues(), false)){
+            throw new Exception\BadRequestValidationFailureException(self::INVALID_INDUSTRY_CATEGORY_CODE_TYPE_MESSAGE);
+        }
+    }
+
 
     /**
      * @throws Exception\BadRequestException
