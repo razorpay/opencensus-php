@@ -252,6 +252,16 @@ class Repository extends Base\Repository
                     ->count();
     }
 
+    public function fetchNonArchivedMerchantsByPartnerType($partnerType)
+    {
+        return $this->newQuery()
+            ->where(Entity::PARTNER_TYPE, '=', $partnerType)
+            ->whereNull(Entity::ARCHIVED_AT)
+            ->get()
+            ->pluck(Entity::ID)
+            ->toArray();
+    }
+
     public function isMerchantIdRequiredForFetch()
     {
         return false;

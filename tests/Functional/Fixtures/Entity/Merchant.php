@@ -1062,6 +1062,22 @@ class Merchant extends Base
 
         return $this->createOAuthApplication($attributes, $createMerchantApplication);
     }
+    public function createAnotherDummyPartnerApp(array $attributes = [], $createMerchantApplication = true)
+    {
+        $defaults = [
+            'id'          => '8ckeirnw84ifkf',
+            'merchant_id' => '10000000000000',
+            'name'        => 'Internal',
+            'website'     => 'https://www.razorpay.com',
+            'logo_url'    => '/logo/app_logo.png',
+            'category'    => null,
+            'type'        => 'partner',
+        ];
+
+        $attributes = array_merge($defaults, $attributes);
+
+        return $this->createOAuthApplication($attributes, $createMerchantApplication);
+    }
 
     public function createDummyReferredAppForManaged(array $attributes = [], $createMerchantApplication = true)
     {

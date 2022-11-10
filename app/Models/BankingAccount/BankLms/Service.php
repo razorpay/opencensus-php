@@ -2,6 +2,7 @@
 
 namespace RZP\Models\BankingAccount\BankLms;
 
+use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
 use RZP\Models\BankingAccount;
 use RZP\Models\BankingAccount\Activation\Comment;
@@ -12,6 +13,8 @@ use RZP\Exception\BadRequestValidationFailureException;
 use \RZP\Models\Merchant;
 use \RZP\Models\User;
 use RZP\Trace\TraceCode;
+use RZP\Exception;
+use RZP\Models\Feature;
 
 class Service extends BankingAccount\Service
 {
@@ -44,14 +47,22 @@ class Service extends BankingAccount\Service
         $this->validator = new Validator();
 
         $this->branchMaster = new BranchMaster();
+        $this->branchMaster = new BranchMaster();
 
         $this->rmMaster = new RmMaster();
 
-        $partnerBankMerchantId = $this->validator->validateOnlyOneCaBankPartnerAndReturn();
+        $partnerBankMerchantId = $this->getPartnerBankMerchant();
 
         $this->partnerBankMerchant = is_null($partnerBankMerchantId) ? null : $this->repo->merchant->findByPublicId($partnerBankMerchantId);
 
         $this->repository = new Repository();
+    }
+
+    public function getPartnerBankMerchant(): ?string
+    {
+        $merchantIds = (new Merchant\Repository())->fetchNonArchivedMerchantsByPartnerType(Constants::BANK_LMS_PARTNER_TYPE);
+
+        return count($merchantIds) == 1 ? $merchantIds[0] : null;
     }
 
     /**
@@ -64,7 +75,7 @@ class Service extends BankingAccount\Service
     {
         $this->validator->validateInput(Validator::CREATE_BANK_CA_ONBOARDING_PARTNER_TYPE, $input);
 
-        $partnerBankMerchantId = $this->validator->validateOnlyOneCaBankPartnerAndReturn();
+        $partnerBankMerchantId = $this->validator->validateOnlyOneCaBankPartnerAndReturn($input[Constants::PARTNER_TYPE]);
 
         if ($partnerBankMerchantId !== null) {
             return ['success' => false, 'reason' => 'One CA Bank Partner Merchant is Already There'];
@@ -233,7 +244,7 @@ class Service extends BankingAccount\Service
 
         $this->validator->validateInput(Validator::PARTNER_LMS_EDIT, $input);
 
-        if (array_key_exists('activation_detail', $input)) 
+        if (array_key_exists('activation_detail', $input))
         {
             $activationDetailInput = $input['activation_detail'];
             $this->validator->validateInput(Validator::EDIT_ACTIVATION_DETAIL_BY_BANK, $activationDetailInput);
@@ -259,7 +270,7 @@ class Service extends BankingAccount\Service
     public function fetchBankingAccountsActivationActivityById(string $bankingAccountId, array $input): array
     {
         $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
-        
+
         $this->validator->validateMerchantIsAttachedToPartner($bankingAccount->merchant, $this->partnerBankMerchant);
 
         $activity = [];
@@ -312,7 +323,7 @@ class Service extends BankingAccount\Service
             if (array_key_exists('sort', $input) && $input['sort'] === 'asc')
             {
                 return $a_createdAt - $b_createdAt;
-            } 
+            }
             else // default
             {
                 return $b_createdAt - $a_createdAt;

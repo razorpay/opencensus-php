@@ -73,6 +73,7 @@ class BankingAccountTest extends TestCase
     const DefaultMerchantId = '10000000000000';
 
     const DefaultPartnerMerchantId = 'randomBankPaId';
+    const DefaultAnotherPartnerMerchantId = 'randomBankPaI1';
 
     private $partnerOwnerUser;
 
@@ -98,6 +99,7 @@ class BankingAccountTest extends TestCase
         $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
 
         $this->fixtures->create('merchant', ['id' => self::DefaultPartnerMerchantId]);
+        $this->fixtures->create('merchant', ['id' => self::DefaultAnotherPartnerMerchantId]);
 
         $this->fixtures->create('merchant_detail:sane', [
             'merchant_id'       => self::DefaultPartnerMerchantId,
@@ -107,7 +109,16 @@ class BankingAccountTest extends TestCase
             'activation_status' => null
         ]);
 
+        $this->fixtures->create('merchant_detail:sane', [
+            'merchant_id'       => self::DefaultAnotherPartnerMerchantId,
+            'business_type'     => 1,
+            'contact_name'      => 'contact name',
+            'contact_mobile'    => '8888888888',
+            'activation_status' => null
+        ]);
+
         $this->partnerOwnerUser = $this->fixtures->user->createBankingUserForMerchant(self::DefaultPartnerMerchantId);
+        $this->partnerOwnerUser = $this->fixtures->user->createBankingUserForMerchant(self::DefaultAnotherPartnerMerchantId);
 
         $this->ba->proxyAuth();
 
@@ -9975,7 +9986,28 @@ class BankingAccountTest extends TestCase
         return $response;
     }
 
-    /**
+    public function testInValidateMakeMerchantAsBankCAOnboardingPartnerTwice() {
+        // Make merchant as Bank CA Onboarding Partner
+        $response1 = $this->makeMerchantAsBankCAOnboardingPartner();
+        // Making another merchant as Bank CA Onboarding Partner
+        $request = [
+            'url'     => '/banking_accounts/rbl/lms/merchant/admin/partner_type',
+            'method'  => 'PATCH',
+            'content' => [
+                'merchant_id'  => self::DefaultAnotherPartnerMerchantId,
+                'partner_type' => 'bank_ca_onboarding_partner',
+            ],
+        ];
+        $this->ba->adminAuth();
+
+        $response2 = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(false, $response2["success"]);
+        $this->assertEquals("One CA Bank Partner Merchant is Already There", $response2["reason"]);
+    }
+
+
+        /**
      * @param string $merchantId
      *
      * @return array
