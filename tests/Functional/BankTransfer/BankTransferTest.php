@@ -9242,7 +9242,7 @@ class BankTransferTest extends TestCase
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
 
-        $this->fixtures->merchant->addFeatures('allow_b2b_activation',$merchantDetail['merchant_id']);
+        $this->fixtures->merchant->addFeatures('enable_intl_bank_transfer',$merchantDetail['merchant_id']);
 
         $this->fixtures->merchant->enableInternational($merchantDetail['merchant_id']);
 

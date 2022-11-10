@@ -925,12 +925,12 @@ class Service extends Base\Service
     {
         $merchantId = $this->merchant->getId();
 
-        if (!$this->merchant->isInternational() || !($this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_B2B_ACTIVATION) || $this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_INTL_BANK_TRANSFER)) || !$input['accept_b2b_tnc'])
+        if (!$this->merchant->isInternational() || !($this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_INTL_BANK_TRANSFER)) || !$input['accept_b2b_tnc'])
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_FEATURE_NOT_ENABLED,null,[
-                'international'         => $this->merchant->isInternational(),
-                'allow_b2b_activation'  => ($this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_B2B_ACTIVATION) || $this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_INTL_BANK_TRANSFER)),
-                't&c'                   => $input['accept_b2b_tnc'],
+                'international'              => $this->merchant->isInternational(),
+                'enable_intl_bank_transfer'  => $this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_INTL_BANK_TRANSFER),
+                't&c'                        => $input['accept_b2b_tnc'],
             ]);
         }
 

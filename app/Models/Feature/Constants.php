@@ -782,18 +782,12 @@ class Constants
     const ENABLE_SETTLEMENT_FOR_B2B = 'enable_settlement_for_b2b';
 
     /**
-     * Allows the dashboard to show the B2B account creation for merchants
-     */
-    const ALLOW_B2B_ACTIVATION = 'allow_b2b_activation';
-
-    /**
      * Enables OPGSP import flow on merchant
      */
     const OPGSP_IMPORT_FLOW = 'opgsp_import_flow';
 
     /**
      * Allows the dashboard to show the B2B account creation for merchants
-     * TODO: Remove allow_b2b_activation afterwards.
      */
     const ENABLE_INTL_BANK_TRANSFER = 'enable_intl_bank_transfer';
 
@@ -2211,7 +2205,6 @@ class Constants
         self::INTER_ACCOUNT_TEST_PAYOUT       => true,
         self::CART_API_AMOUNT_CHECK           => true,
         self::ENABLE_B2B_EXPORT               => true,
-        self::ALLOW_B2B_ACTIVATION            => true,
         self::ENABLE_INTL_BANK_TRANSFER       => true,
         self::ENABLE_SETTLEMENT_FOR_B2B       => true,
         self::OPGSP_IMPORT_FLOW               => true,
