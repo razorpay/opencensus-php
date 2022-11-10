@@ -1557,7 +1557,6 @@ class Entity
     ];
 
     public static $dualWriteConfigKey = [
-        self::UPI => Models\Admin\ConfigKey::UPI_DUAL_WRITE_ENABLED,
     ];
 
     protected static $externalServiceClass = [
