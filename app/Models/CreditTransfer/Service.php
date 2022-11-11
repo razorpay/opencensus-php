@@ -4,8 +4,6 @@
 namespace RZP\Models\CreditTransfer;
 
 use RZP\Models\Base;
-use RZP\Models\Payout\Batch\Core;
-use RZP\Models\Payout\Batch\Repository;
 
 class Service extends Base\Service
 {
@@ -26,5 +24,10 @@ class Service extends Base\Service
         $this->entityRepo = $this->repo->credit_transfer;
 
         $this->core = (new Core());
+    }
+
+    public function createAsync(array $input)
+    {
+        return $this->core->createAsync($input);
     }
 }

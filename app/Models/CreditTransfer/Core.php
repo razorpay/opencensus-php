@@ -3,7 +3,6 @@
 
 namespace RZP\Models\CreditTransfer;
 
-use RZP\Constants\Entity as EntityConstant;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
@@ -79,6 +78,25 @@ class Core extends Base\Core
             },
             self::CREDIT_TRANSFER_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_CREDIT_TRANSFER_ALREADY_BEING_PROCESSED);
+    }
+
+    public function createAsync(array $input)
+    {
+        (new Validator)->validateInput('create_input', $input);
+
+        $traceInfo = [
+            "credit_transfer_request" => $input
+        ];
+
+        $this->trace->info(TraceCode::CREDIT_TRANSFER_REQUEST_QUEUE_DISPATCH_INITIATE, $traceInfo);
+
+        QueuedCreditTransferRequests::dispatch($this->mode, $input);
+
+        $this->trace->info(TraceCode::CREDIT_TRANSFER_REQUEST_QUEUE_DISPATCH_COMPLETE, $traceInfo);
+
+        return [
+            "status" => Constants::ACCEPTED
+        ];
     }
 
     protected function create(array $input): Entity
@@ -201,8 +219,6 @@ class Core extends Base\Core
                 $this->trace->info(
                     TraceCode::CREDIT_TRANSFER_PROCESS_SUCCESS,
                     $creditTransfer->toArrayPublic());
-
-                $this->notifyPostProcessingOfCreditTransfer($creditTransfer);
             }
             catch(\Throwable $ex)
             {
@@ -248,8 +264,6 @@ class Core extends Base\Core
         });
 
         $this->processLedgerCreditTransfer($creditTransfer);
-
-        $this->notifyPostProcessingOfCreditTransfer($creditTransfer);
 
         return null;
     }
@@ -317,13 +331,13 @@ class Core extends Base\Core
         return $creditTransferInput;
     }
 
-    protected function notifyPostProcessingOfCreditTransfer(Entity $creditTransfer)
+    public function notifyPostProcessingOfCreditTransfer(Entity $creditTransfer)
     {
         try
         {
             $entityName = $creditTransfer->getSourceEntityName();
 
-            $sourceCoreClass = EntityConstant::getEntityNamespace($entityName) . '\\Core';
+            $sourceCoreClass = EntityConstants::getEntityNamespace($entityName) . '\\Core';
 
             $sourceCore = new $sourceCoreClass();
 

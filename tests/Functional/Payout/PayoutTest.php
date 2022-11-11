@@ -101,6 +101,7 @@ use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Mail\Payout\PayoutProcessedContactCommunication;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Models\PayoutSource\Entity as PayoutSourceEntity;
+use RZP\Services\PayoutService\CreditTransferPayoutUpdate;
 use RZP\Models\PayoutsStatusDetails\Entity as PayoutsStatusDetailsEntity;
 use RZP\Services\PayoutService\OnHoldBeneEvent as OnHoldBeneEventService;
 use RZP\Models\Workflow\Service\EntityMap\Entity as WorkflowEntityMapEntity;
@@ -19174,6 +19175,127 @@ class PayoutTest extends OAuthTestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+    }
+
+    // tests for va to va transfers using creditTransfer
+    public function testCreditTransferPayoutServiceUpdate()
+    {
+        // setting up source VA as Yes Bank Nodal Account VA
+        $this->bankAccount->setAccountNumber("7878780111222");
+        $this->bankAccount->save();
+        $this->bankingBalance->setAccountNumber("7878780111222");
+        $this->bankingBalance->save();
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HANDLE_VA_TO_VA_PAYOUT]);
+        $this->fixtures->merchant->activate();
+
+        // setting up destination merchant with Yes Bank Nodal Account VA
+        // Activate merchant with business_banking flag set to true.
+        $this->fixtures->merchant->edit('100000Razorpay', ['business_banking' => 1]);
+
+        // Creates banking balance for destination merchant
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            1000, '100000Razorpay','shared', null);
+
+        $bankingBalance->setAccountNumber('7878780111011');
+        $bankingBalance->save();
+
+        $this->fixtures->create('banking_account', [
+            'account_number'        => $bankingBalance['account_number'],
+            'merchant_id'           => $bankingBalance['merchant_id'],
+            'account_type'          => $bankingBalance['account_type'],
+            'status'                => 'activated',
+            'balance_id'            => $bankingBalance['id'],
+            'channel'               => 'yesbank'
+        ]);
+
+        $fundAccount = $this->createFundAccountOfYesbankNodalVA();
+        $fundAccountId = $fundAccount['id'];
+
+        // We shall setup a virtual account and a bank account that will act as a destination account
+        $destinationVirtualAccount = $this->fixtures->create('virtual_account',
+            [
+                'merchant_id' => '100000Razorpay',
+                'balance_id'  => $bankingBalance->getId()
+            ]);
+
+        $destinationBankAccount = $this->fixtures->create('bank_account',
+            [
+                'type'              => 'virtual_account',
+                'entity_id'         => $destinationVirtualAccount['id'],
+                'account_number'    => $fundAccount['bank_account']['account_number'],
+                'ifsc_code'         => $fundAccount['bank_account']['ifsc'],
+                'merchant_id'       => $destinationVirtualAccount['merchant_id'],
+            ]);
+
+        $this->fixtures->edit('virtual_account', $destinationVirtualAccount['id'],
+            [
+                'bank_account_id'   => $destinationBankAccount['id']
+            ]);
+
+        $destinationVirtualAccount = $this->getDbLastEntity('virtual_account');
+        $this->ba->adminAuth();
+
+        // Whitelisting the MID corresponding to the destination bank account number
+        $this->makeRequestAndGetContent([
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                Admin\ConfigKey::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS =>
+                    [
+                        $destinationVirtualAccount['merchant_id']
+                    ],
+            ],
+        ]);
+
+        $testData = & $this->testData['testAllowVAtoVAPayoutsWhenDestinationMerchantIsWhitelisted'];
+        $testData['request']['content']['fund_account_id'] = $fundAccountId;
+
+        $this->mockRazorxTreatment();
+
+        $this->ba->privateAuth();
+
+        $this->startTest($testData);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $creditTransfer = $this->getDbLastEntity('credit_transfer');
+
+        // Manually marking the payout as originated from payouts service
+        $this->fixtures->edit('payout', $payout->getId(), [
+            'is_payout_service'     => 1,
+        ]);
+
+        $creditTransferPayoutUpdateMock = Mockery::mock('RZP\Services\PayoutService\CreditTransferPayoutUpdate',
+            [$this->app])->makePartial();
+
+        $requestBody = [
+            "source_id"            => $payout->getId(),
+            Payout\Entity::STATUS  => $creditTransfer->getStatus(),
+            Payout\Entity::CHANNEL => $creditTransfer->getChannel(),
+            Payout\Entity::MODE    => $creditTransfer->getMode(),
+            Payout\Entity::UTR     => $creditTransfer->getUtr(),
+        ];
+
+        $flagToAssertRequestBody = false;
+
+        $creditTransferPayoutUpdateMock->shouldReceive('makeRequestAndGetContent')
+            ->withArgs(function($payload, $action, $method) use ($requestBody, &$flagToAssertRequestBody) {
+
+                $this->assertEquals($action, CreditTransferPayoutUpdate::UPDATE_CREDIT_TRANSFER_PAYOUT);
+
+                $this->assertArraySelectiveEquals($payload, $requestBody);
+
+                $flagToAssertRequestBody = true;
+
+                return true;
+            })
+            ->andReturn(["success" => true]);
+
+        $this->app->instance(CreditTransferPayoutUpdate::CREDIT_TRANSFER_PAYOUT_SERVICE_UPDATE, $creditTransferPayoutUpdateMock);
+
+        (new CreditTransfer\Core)->notifyPostProcessingOfCreditTransfer($creditTransfer);
+
+        $this->assertTrue($flagToAssertRequestBody);
     }
 
     // Since this is a VA to VA payout and razorx returns control, we shall fail this payout

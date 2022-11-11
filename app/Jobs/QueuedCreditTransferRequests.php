@@ -30,7 +30,7 @@ class QueuedCreditTransferRequests extends Job
     {
         parent::__construct($mode);
 
-        $this->$params = $params;
+        $this->params = $params;
     }
 
     public function handle()

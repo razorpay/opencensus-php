@@ -689,6 +689,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerPayoutServiceDetail();
 
+        $this->registerCreditTransferPayoutServiceUpdate();
+
         $this->registerPayoutServiceCancel();
 
         $this->registerPayoutServiceRetry();
@@ -1695,6 +1697,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton(PayoutService\Details::PAYOUT_SERVICE_DETAIL, function($app)
         {
             return new PayoutService\Details($app);
+        });
+    }
+
+    protected function registerCreditTransferPayoutServiceUpdate()
+    {
+        $this->app->singleton(PayoutService\CreditTransferPayoutUpdate::CREDIT_TRANSFER_PAYOUT_SERVICE_UPDATE, function($app)
+        {
+            return new PayoutService\CreditTransferPayoutUpdate($app);
         });
     }
 

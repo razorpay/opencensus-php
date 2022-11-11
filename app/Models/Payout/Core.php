@@ -188,6 +188,11 @@ class Core extends Base\Core
     protected $payoutDetailsServiceClient;
 
     /**
+     * @var PayoutService\CreditTransferPayoutUpdate
+     */
+    protected $creditTransferPayoutServiceUpdateClient;
+
+    /**
      * @var PayoutService\Cancel
      */
     protected $payoutCancelServiceClient;
@@ -255,6 +260,8 @@ class Core extends Base\Core
         $this->payoutWorkflowServiceClient = $this->app[PayoutService\Workflow::PAYOUT_SERVICE_WORKFLOW];
 
         $this->payoutDetailsServiceClient = $this->app[PayoutService\Details::PAYOUT_SERVICE_DETAIL];
+
+        $this->creditTransferPayoutServiceUpdateClient = $this->app[PayoutService\CreditTransferPayoutUpdate::CREDIT_TRANSFER_PAYOUT_SERVICE_UPDATE];
 
         $this->payoutCancelServiceClient = $this->app[PayoutService\Cancel::PAYOUT_SERVICE_CANCEL];
 
@@ -4447,7 +4454,7 @@ class Core extends Base\Core
     {
         $payoutId = $creditTransfer->getSourceEntityId();
 
-        $payout = $this->repo->payout->findOrFail($payoutId);
+        $payout = $this->repo->payout->find($payoutId);
 
         if ((empty($payout) === false) and
             ($payout->getIsPayoutService() === false))
@@ -4478,7 +4485,10 @@ class Core extends Base\Core
                 $this->handlePayoutReversed($payout);
             }
         }
-
+        else
+        {
+            $this->creditTransferPayoutServiceUpdateClient->UpdateCreditTransferPayoutOnPayoutsService($creditTransfer);
+        }
     }
 
     public function buildCreditTransferInputFromPayout(Entity $payout)

@@ -3724,6 +3724,9 @@ class Route
         'merchant_risk_notes_create'           => ['post',      'merchants/{merchant_id}/risk_notes',                       'MerchantRiskNotesController@create'    ],
         'merchant_risk_notes_delete'           => ['delete',    'merchants/{merchant_id}/risk_notes/{id}',                  'MerchantRiskNotesController@delete'    ],
 
+        // Credit Transfer Routes
+        'credit_transfer_create'                  => ['post',     'credit_transfer/create_async',                           'CreditTransferController@createAsync'                         ],
+
         // Payout service url's
         'create_payout_entry'                     => ['post',     'payouts_service/create',                                 'PayoutController@createPayoutEntry'                           ],
         'create_FTA_payout_service'               => ['post',     'payouts_service/create_fta/{payout_id}',                 'PayoutController@createFTAForPayoutService'                   ],
@@ -5202,6 +5205,9 @@ class Route
 
         'max_payment_limit_update',
         'execute_max_payment_limit_workflow',
+
+        // credit_transfer
+        'credit_transfer_create',
 
         // payout service
         'create_payout_entry',
@@ -14272,6 +14278,7 @@ class Route
         'payouts_service' => [
             'create_payout_entry',
             'payouts_service_dual_write',
+            'credit_transfer_create',
             'delete_card_meta_data_and_vault_token',
             'fund_account_get_internal',
             'banking_account_fetch_by_account_number',
