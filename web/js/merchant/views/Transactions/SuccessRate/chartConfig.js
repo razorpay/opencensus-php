@@ -1,6 +1,16 @@
 import moment from 'moment';
-import { getFormattedNumber, getSuitableY, formatIntervals } from './helper';
-import { chartFontColor, gridLineColor, namedColors, TAG_MAP } from './constants';
+import { getFormattedNumber, getSuitableY, formatIntervals, formatTime } from './helper';
+import {
+  chartFontColor,
+  DOWNTIME_X,
+  DOWNTIME_Y,
+  gridLineColor,
+  namedColors,
+  SCATTER,
+  SR_X,
+  SR_Y,
+  TAG_MAP,
+} from './constants';
 import { custumTooltip } from './customTooltip';
 
 /**************************************** Overview Chart Config ****************************************/
@@ -42,6 +52,24 @@ export const overviewGraphOptions = {
 /****************************************************************************************************/
 
 /**************************************** Line Chart Config ****************************************/
+const timeAxisUnit = {
+  hourly: {
+    unit: 'hour',
+    stepSize: 1,
+  },
+  daily: {
+    unit: 'day',
+    stepSize: 1,
+  },
+  weekly: {
+    unit: 'day',
+    stepSize: 7,
+  },
+  monthly: {
+    unit: 'month',
+    stepSize: 1,
+  },
+};
 
 export const getChartAreaConfig = ({ breakdown, xLabel, yLabel }) => {
   const now = moment();
@@ -58,11 +86,18 @@ export const getChartAreaConfig = ({ breakdown, xLabel, yLabel }) => {
     elements: {
       point: {
         radius: (ctx) => {
+          const { type } = ctx.dataset;
           const isLastPoint = ctx.dataIndex === ctx.dataset.data.length - 1; // change the point radius for last data point
+          if (type === 'scatter') return 2;
           if (isLastPoint) return 4;
           return 2;
         },
-        hoverRadius: 4,
+        hoverRadius: (ctx) => {
+          const { type } = ctx.dataset;
+
+          if (type === 'scatter') return 2;
+          return 4;
+        },
       },
     },
     hover: {
@@ -92,21 +127,51 @@ export const getChartAreaConfig = ({ breakdown, xLabel, yLabel }) => {
       callbacks: {
         title: ([tooltipItem], { datasets }) => {
           const datapoint = datasets[tooltipItem?.datasetIndex]?.data?.[tooltipItem?.index];
+
           return formatIntervals(datapoint.from, datapoint.to);
         },
         afterTitle: ([tooltipItem], { datasets }) => {
           if (breakdown !== 'hourly') return null;
-          const datapoint = datasets[tooltipItem?.datasetIndex]?.data?.[tooltipItem?.index];
-          const startTime = moment(datapoint.from).format('hh:mm a');
-          const endTime = moment(datapoint.to).format('hh:mm a');
+
+          const { type } = datasets[tooltipItem?.datasetIndex] || {};
+
+          // Need to show the text only if the graph is `not` of type scatter.
+          if (type === SCATTER) return null;
+
+          const { from, to } =
+            datasets[tooltipItem?.datasetIndex]?.data?.[tooltipItem?.index] || {};
+
+          const startTime = from ? formatTime(from) : '';
+          const endTime = to ? formatTime(to) : '';
+
           return `${startTime} - ${endTime}`;
+        },
+        beforeLabel: (tooltipItem, { datasets }) => {
+          if (breakdown !== 'hourly') return null;
+
+          const { type } = datasets[tooltipItem?.datasetIndex] || {};
+
+          // Need to show the text only if the graph is of type scatter.
+          if (type !== SCATTER) return null;
+
+          const { from, to, severity } =
+            datasets[tooltipItem?.datasetIndex]?.data?.[tooltipItem?.index] || {};
+
+          const startTime = from ? formatTime(from) : '';
+          const endTime = to ? formatTime(to) : 'Present';
+
+          return `${startTime} - ${endTime}, ${severity}`;
         },
         label: (tooltipItem, { datasets }) => {
           const { datasetIndex, yLabel, index } = tooltipItem;
 
           const datapoint = datasets[datasetIndex]?.data?.[index];
-          const label = datasets[datasetIndex]?.label;
+          const { label, type } = datasets[datasetIndex];
           const labelText = TAG_MAP[label] ?? label;
+
+          if (type === SCATTER) {
+            return `${labelText}`;
+          }
 
           return `${labelText}: ${yLabel}% | Total payments: ${getFormattedNumber(
             datapoint?.total || 0,
@@ -114,6 +179,7 @@ export const getChartAreaConfig = ({ breakdown, xLabel, yLabel }) => {
         },
         labelColor: (item, chart) => {
           const color = chart.config.data.datasets[item.datasetIndex].borderColor;
+
           return { backgroundColor: color, borderColor: 'transparent' };
         },
       },
@@ -122,27 +188,18 @@ export const getChartAreaConfig = ({ breakdown, xLabel, yLabel }) => {
     scales: {
       xAxes: [
         {
+          id: SR_X,
           type: 'time',
-          distribution: 'series',
+          distribution: 'linear',
           time: {
-            displayFormats: {
-              month: 'MMM YYYY',
-              day: 'MMM D',
-              week: 'MMM D',
-              hour: 'h a',
-              second: 'h a',
-              millisecond: 'h a',
-            },
+            ...timeAxisUnit[breakdown],
           },
           gridLines: {
             color: gridLineColor,
             drawOnChartArea: true,
           },
           ticks: {
-            source: 'data',
-            autoSkip: true,
             maxRotation: 0,
-            autoSkipPadding: 21,
             fontColor: chartFontColor,
             callback: (_, index, values) => {
               // _ is value
@@ -162,9 +219,21 @@ export const getChartAreaConfig = ({ breakdown, xLabel, yLabel }) => {
             },
           },
         },
+        {
+          id: DOWNTIME_X,
+          type: 'time',
+          distribution: 'linear',
+          gridLines: {
+            display: false,
+          },
+          ticks: {
+            display: false,
+          },
+        },
       ],
       yAxes: [
         {
+          id: SR_Y,
           stacked: false,
           offset: true,
           gridLines: {
@@ -179,6 +248,17 @@ export const getChartAreaConfig = ({ breakdown, xLabel, yLabel }) => {
             max: 100,
             stepSize: 20,
             fontColor: chartFontColor,
+          },
+        },
+        {
+          id: DOWNTIME_Y,
+          offset: false,
+          gridLines: {
+            display: false,
+          },
+          ticks: {
+            display: false,
+            beginAtZero: true,
           },
         },
       ],

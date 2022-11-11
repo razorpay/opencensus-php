@@ -6,6 +6,18 @@ export const INITIAL_SELECTED_CARD_TYPE = 'credit';
 // Graph type
 export const SCATTER = 'scatter';
 
+// Tab names
+export const OVERALL = 'Overall';
+export const UPI = 'UPI';
+export const CARD = 'Card';
+export const NETBANKING = 'Netbanking';
+
+// Graph axis ids for downtimes and sr
+export const SR_X = 'sr_x';
+export const SR_Y = 'sr_y';
+export const DOWNTIME_X = 'downtime_x';
+export const DOWNTIME_Y = 'downtime_y';
+
 export const PRESETS = [
   { label: 'Last 6 Hours', name: '6h', value: 6, unit: 'hours' },
   { label: 'Last 24 Hours', name: '24h', value: 24, unit: 'hours' },
@@ -88,6 +100,7 @@ export const tabMeta = {
   dropdownFilterOptions: [],
   selectedDropdownFilterOptions: [],
   selectedTags: [],
+  downtimes: { resolved: [], ongoing: [] },
 };
 
 export const metricsCard = {
@@ -399,3 +412,11 @@ export const CARD_TYPES = [
     name: 'prepaid',
   },
 ];
+
+export const CARD_NETWORKS = {
+  AMEX: 'American Express',
+  VISA: 'Visa',
+  MC: 'Master Card',
+  RUPAY: 'RuPay',
+  DICL: 'Diners Club',
+};

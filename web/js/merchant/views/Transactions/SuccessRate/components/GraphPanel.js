@@ -13,12 +13,17 @@ import {
   breakdownInterval,
   chartStyle,
   defaultChartStyle,
+  SR_X,
+  SR_Y,
+  DOWNTIME_X,
+  DOWNTIME_Y,
 } from 'merchant/views/Transactions/SuccessRate/constants';
 import {
   queryFilters,
   generateDatasets,
   getIntervals,
   getTagLabelWithOverallTag,
+  generateDowntimeDataSets,
   getNoDataTitle,
   getNoDataSubTitle,
 } from 'merchant/views/Transactions/SuccessRate/helper';
@@ -31,7 +36,16 @@ import {
 const GraphPanel = (props) => {
   const chartReference = React.useRef(null);
   const { isLoading, activeTab, startDate, endDate, tab = {} } = props;
-  const { selectedTags, tags, selectedInterval, histogram, data, error, group_by } = tab;
+  const {
+    selectedTags,
+    tags,
+    selectedInterval,
+    histogram,
+    data,
+    error,
+    group_by,
+    downtimes: { resolved, ongoing },
+  } = tab;
   const { datasets } = histogram;
   const hasNoData = !histogram || datasets?.length === 0;
 
@@ -46,22 +60,50 @@ const GraphPanel = (props) => {
       // 'index' of actual tags list
       const tagIndex = tags.findIndex(({ name }) => name === tag);
 
-      const intervals = getIntervals({
-        tag,
-        data,
-        group_by,
-        activeTab,
-      });
-
       if (position > -1 && selectedTags.length > 1) {
-        chart.data.datasets.splice(position, 1);
+        // Filter out the dataset having tagname that is unselected from the ui.
+        const updatedDatasets = chart?.data?.datasets?.filter(({ tagName }) => tagName !== tag);
+
+        chart.data.datasets = updatedDatasets;
       } else if (position < 0) {
-        const newDataset = {
-          label: getTagLabelWithOverallTag({ tag, activeTab, groupBy: group_by }),
-          data: generateDatasets(intervals),
-          ...(chartStyle[tagIndex] ?? defaultChartStyle),
-        };
-        chart.data.datasets.push(newDataset);
+        const intervals = getIntervals({
+          tag,
+          data,
+          group_by,
+          activeTab,
+        });
+        const filterOngoingDowntimes = ongoing.filter(
+          ({ method }) => method === activeTab.toLowerCase(),
+        );
+
+        const newDataset = [
+          {
+            label: getTagLabelWithOverallTag({ tag, activeTab, groupBy: group_by }),
+            data: generateDatasets(intervals),
+            ...(chartStyle[tagIndex] ?? defaultChartStyle),
+            xAxisID: SR_X,
+            yAxisID: SR_Y,
+            tagName: tag,
+          },
+          {
+            label: getTagLabelWithOverallTag({ tag, activeTab, groupBy: group_by }),
+            data: generateDowntimeDataSets({
+              intervals: [...resolved, ...filterOngoingDowntimes],
+              tag: tags[tagIndex],
+              activeTab,
+              startTime: +startDate.format('X'),
+              endTime: +endDate.format('X'),
+              groupBy: group_by,
+            }),
+            ...(chartStyle[tagIndex] ?? defaultChartStyle),
+            xAxisID: DOWNTIME_X,
+            yAxisID: DOWNTIME_Y,
+            tagName: tag,
+            type: 'scatter',
+          },
+        ];
+
+        chart.data.datasets.push(...newDataset);
       }
       chart.update();
     }

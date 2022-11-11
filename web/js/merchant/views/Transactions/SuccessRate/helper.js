@@ -21,6 +21,14 @@ import {
   PRESETS,
   DEFAULT_GROUP_BY_LIMIT,
   GROUP_BY_KEY_VS_LIMIT,
+  NETBANKING,
+  SR_Y,
+  SR_X,
+  DOWNTIME_X,
+  DOWNTIME_Y,
+  OVERALL,
+  CARD,
+  CARD_NETWORKS,
   PAYMENT_METHOD_VS_CALLOUT_DISPLAY_TEXT,
 } from './constants';
 
@@ -166,6 +174,54 @@ export const generateDatasets = (intervals) => {
   });
 };
 
+export const generateDowntimeDataSets = ({
+  intervals = [],
+  tag,
+  activeTab,
+  startTime,
+  endTime,
+  groupBy,
+}) => {
+  // Substracting 1hr from endtime as to not overflow the graph with downtimes leaving behind the sr graph
+  const newEndTime = +moment(endTime * 1000)
+    .clone()
+    .subtract(1, 'hour')
+    .format('X');
+
+  return intervals
+    ?.filter((interval) => {
+      // Default end date to present date when downtime is still going on
+      const { instrument, begin, end, method } = interval;
+      const isInbetweenTime = begin >= startTime && (end || Date.now() / 1000) <= newEndTime;
+
+      if (activeTab === OVERALL) {
+        return tag.code === method && isInbetweenTime;
+      }
+
+      if (activeTab === NETBANKING && instrument[groupBy]) {
+        return tag.code === instrument[groupBy] && isInbetweenTime;
+      }
+
+      if (activeTab === CARD && instrument[groupBy]) {
+        if (groupBy === 'network') {
+          return tag.code === CARD_NETWORKS[instrument[groupBy]] && isInbetweenTime;
+        } else if (groupBy === 'issuer') {
+          return tag.code === instrument[groupBy] && isInbetweenTime;
+        }
+      }
+
+      return false;
+    })
+    .map((interval) => {
+      const { begin, end, severity, status } = interval;
+
+      const from = +moment.unix(begin).format('x');
+      const to = +moment.unix(end).format('x');
+
+      return { x: from, y: 0, from, to, severity, status };
+    });
+};
+
 export const getTimelineData = ({ intervals = [], startTime, endTime, breakdown }) => {
   const timestamps = intervals
     .map((obj) => +moment.unix(obj?.from).format('x'))
@@ -272,8 +328,9 @@ export const onFetchSR = ({
   breakdown,
   group_by = '',
   activeTab,
-  updateSelectedTags,
   selectedTags: initialSelectedTags,
+  resolvedDowntimes = [],
+  ongoingDowntimes = [],
 }) => {
   try {
     const { groups, intervals = [], total } = data;
@@ -281,9 +338,9 @@ export const onFetchSR = ({
 
     const tags =
       groups?.[group_by]?.reduce(
-        (acc, { name, sr } = {}, idx) => {
+        (acc, { name, code, sr } = {}, idx) => {
           if (!name || (name === 'others' && !sr)) return acc;
-          acc.push({ name, ...(tagStyles[idx + 1] ?? defaultTagStyle) });
+          acc.push({ name, code, ...(tagStyles[idx + 1] ?? defaultTagStyle) });
           return acc;
         },
         [{ name: 'Overall', ...tagStyles[0] }],
@@ -296,19 +353,45 @@ export const onFetchSR = ({
       breakdown,
     };
 
-    const selectedTags = updateSelectedTags ? tags : initialSelectedTags;
-
+    const selectedTags = initialSelectedTags || tags;
     const labels = getTimelineData(options);
-    const datasets = selectedTags?.map((tag) => {
+    const filterOngoingDowntimes = ongoingDowntimes.filter(
+      ({ method }) => method === activeTab.toLowerCase(),
+    );
+
+    const datasets = selectedTags?.reduce((acc, tag) => {
       const intervals = getIntervals({ tag: tag.name, data, group_by, activeTab });
       const selectedTagIndex = tags?.findIndex(({ name }) => name === tag.name);
 
-      return {
-        label: getTagLabelWithOverallTag({ tag: tag.name, activeTab, groupBy: group_by }),
-        data: generateDatasets(intervals),
-        ...chartStyle[selectedTagIndex],
-      };
-    });
+      acc.push(
+        {
+          label: getTagLabelWithOverallTag({ tag: tag.name, activeTab, groupBy: group_by }),
+          data: generateDatasets(intervals),
+          ...chartStyle[selectedTagIndex],
+          xAxisID: SR_X,
+          yAxisID: SR_Y,
+          tagName: tag.name,
+        },
+        {
+          label: getTagLabelWithOverallTag({ tag: tag.name, activeTab, groupBy: group_by }),
+          data: generateDowntimeDataSets({
+            intervals: [...resolvedDowntimes, ...filterOngoingDowntimes],
+            tag,
+            activeTab,
+            startTime,
+            endTime,
+            groupBy: group_by,
+          }),
+          ...chartStyle[selectedTagIndex],
+          xAxisID: DOWNTIME_X,
+          yAxisID: DOWNTIME_Y,
+          tagName: tag.name,
+          type: 'scatter',
+        },
+      );
+
+      return acc;
+    }, []);
 
     return {
       tags,
@@ -590,6 +673,15 @@ export const formatIntervals = (from, to) => {
     return `${moment(from).format('DD')} - ${moment(to).format('DD MMM YYYY')}`;
   }
   return `${moment(from).format('DD MMM YYYY')} - ${moment(to).format('DD MMM YYYY')}`;
+};
+
+/**
+ * @param time 1667304882000 in milliseconds
+ * @returns '10:32 pm'
+ */
+
+export const formatTime = (time) => {
+  return moment(time).format('hh:mm a');
 };
 
 const areFiltersSelected = (selectedDropdownFilterOptions) =>

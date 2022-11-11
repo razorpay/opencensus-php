@@ -27,11 +27,12 @@ const SuccessRate = (props) => {
 
   const docLink = 'https://razorpay.com/docs/payments/optimizer/success-rate';
 
-  const fetchData = async () => {
+  const fetchData = () => {
     const payload = queryFilters();
-    await fetchSuccessRate({ payload });
     const errorsPaylod = getMerchantErrorsPayload();
-    await fetchMerchantErrors(errorsPaylod);
+
+    fetchSuccessRate({ payload });
+    fetchMerchantErrors(errorsPaylod);
   };
 
   useEffect(() => fetchData(), []);

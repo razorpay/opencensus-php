@@ -67,7 +67,7 @@ const SuccessRateFilter = (props) => {
     const isOverallTabActive = activeTab !== 'Overall';
     const { startDate, endDate } = dateRangeParam;
 
-    if (Object.keys(errorsParam).length) return null;
+    if (Object.keys(errorsParam).length) return;
 
     updateDateRange(dateRangeParam);
     setDefaultInterval(getBreakdownInterval(startDate, endDate));
@@ -81,7 +81,6 @@ const SuccessRateFilter = (props) => {
         refreshMetricTabs: isOverallTabActive,
         updateDropdownOptions: false,
       });
-      return null;
     }
 
     const payload = queryFilters(isOverallTabActive);
@@ -90,7 +89,6 @@ const SuccessRateFilter = (props) => {
     fetchMerchantErrors(errorsPaylod);
 
     trackSuccessRateEvents(filterSuccessRate(payload));
-    return null;
   };
 
   const onReset = async () => {

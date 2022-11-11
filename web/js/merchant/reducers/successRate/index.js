@@ -1,6 +1,5 @@
 import moment from 'moment';
 import store from 'merchant/store';
-import { merchantFetchWithContentType } from 'merchant/utils/ajax';
 import { set, merge } from 'common/utils/immutable';
 import cloneDeep from 'lodash/cloneDeep';
 import lodashset from 'lodash/set';
@@ -23,7 +22,16 @@ import {
   metricsCard,
   tabsTitleMap,
   SR_FILTERS,
+  OVERALL,
+  CARD,
+  NETBANKING,
 } from 'merchant/views/Transactions/SuccessRate/constants';
+import {
+  getSR,
+  getResolvedDowntimes,
+  getOngoingDowntimes,
+  getMerchantError,
+} from 'merchant/views/Transactions/SuccessRate/service';
 
 const FETCH_SUCCESS_RATE = 'FETCH_SUCCESS_RATE';
 const UPDATE_DATE_RANGE = 'UPDATE_DATE_RANGE';
@@ -70,14 +78,45 @@ export const fetchSuccessRate = ({
   });
 
   try {
-    const { data } = await merchantFetchWithContentType({
-      url: 'success-rate/merchant/sr',
-      mode: 'live',
-      method: 'POST',
-      data: payload,
-    });
+    const promises = [];
 
-    if (data?.Code === 'SERVER_ERROR') throw new Error(data?.Description);
+    promises.push(getSR(payload));
+
+    // Fetch downtimes for hourly intervals and for razorpay merchants.
+    if (
+      newSelectedInterval === 'hourly' &&
+      [CARD, NETBANKING, OVERALL].includes(activeTab) &&
+      !refreshMetricTabs &&
+      !user?.isOptimizerEnabled
+    ) {
+      // Taking start date 24hr before endDate as downtime api doesnt support time query params and we show hourly graph if it is <= 24hr.
+      const startDate = moment(payload.to * 1000)
+        .clone()
+        .subtract(24, 'hour')
+        .format('YYYY-MM-DD');
+      const endDate = moment(payload.to * 1000).format('YYYY-MM-DD');
+
+      const data = {
+        skip: '0',
+        startDate,
+        endDate,
+      };
+
+      // Dont require method param when calling donwntime api for overall active tab
+      if (activeTab !== OVERALL) {
+        data.method = activeTab.toLowerCase();
+      }
+
+      promises.push(getResolvedDowntimes(data), getOngoingDowntimes());
+    }
+
+    const [
+      { data: sr } = {},
+      { data: resolvedDowntimes } = {},
+      { data: ongoingDowntimes } = {},
+    ] = await Promise.all(promises);
+
+    if (sr?.Code === 'SERVER_ERROR') throw new Error(sr?.Description);
 
     if (updateDropdownOptions) {
       if (!user?.isOptimizerEnabled) {
@@ -85,19 +124,20 @@ export const fetchSuccessRate = ({
         newSelectedDropdownFilterOptions = getInitialGroupings(newDropdownFilterOptions);
         newGroupBy = DEFAULT_GROUP_BY[activeTab];
       } else {
-        newDropdownFilterOptions = getOptimizerFilters(data, activeTab);
+        newDropdownFilterOptions = getOptimizerFilters(sr, activeTab);
         newSelectedDropdownFilterOptions = getInitialGroupings(newDropdownFilterOptions);
       }
     }
 
     const options = {
-      data,
+      data: sr,
       startTime: payload.from,
       endTime: payload.to,
       breakdown: newSelectedInterval,
       group_by: activeTab === 'Overall' || !user.isOptimizerEnabled ? newGroupBy : 'procurer',
       activeTab,
-      updateSelectedTags: true,
+      resolvedDowntimes,
+      ongoingDowntimes,
     };
 
     const res = onFetchSR(options);
@@ -105,7 +145,7 @@ export const fetchSuccessRate = ({
     if (activeTab === 'Overall') {
       const metricsResult = getMetricsData({
         metrics,
-        data,
+        data: sr,
         payload,
         breakdown: newSelectedInterval,
         group_by,
@@ -122,13 +162,14 @@ export const fetchSuccessRate = ({
         type: `${FETCH_SUCCESS_RATE}::SUCCESS`,
         payload: {
           ...tabs[activeTab],
-          data,
+          data: sr,
           error: null,
           fetched: true,
           selectedInterval: newSelectedInterval,
           dropdownFilterOptions: newDropdownFilterOptions,
           selectedDropdownFilterOptions: newSelectedDropdownFilterOptions,
           group_by: newGroupBy,
+          downtimes: { resolved: resolvedDowntimes || [], ongoing: ongoingDowntimes || [] },
           lastUpdatedAt: moment().unix(),
           ...res,
         },
@@ -144,12 +185,7 @@ export const fetchSuccessRate = ({
 export const fetchMerchantErrors = (payload) => {
   return {
     type: FETCH_MERCHANT_ERRORS,
-    payload: merchantFetchWithContentType({
-      url: 'success-rate/merchant/error',
-      mode: 'live',
-      method: 'POST',
-      data: payload,
-    }),
+    payload: getMerchantError(payload),
   };
 };
 
@@ -162,12 +198,7 @@ export const fetchBreakdownIntervals = (breakdown, payload) => async (dispatch) 
   dispatch({ type: `${FETCH_INTERVALS}::PENDING` });
 
   try {
-    const { data } = await merchantFetchWithContentType({
-      url: 'success-rate/merchant/sr',
-      mode: 'live',
-      method: 'POST',
-      data: payload,
-    });
+    const { data } = await getSR(payload);
 
     if (data?.Code === 'SERVER_ERROR') throw new Error(data?.Description);
 
@@ -178,7 +209,6 @@ export const fetchBreakdownIntervals = (breakdown, payload) => async (dispatch) 
       breakdown,
       group_by: activeTab === 'Overall' || !user?.isOptimizerEnabled ? group_by : 'procurer',
       activeTab,
-      updateSelectedTags: false,
       selectedTags,
     };
 
