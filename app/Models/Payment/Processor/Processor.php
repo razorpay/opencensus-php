@@ -4047,6 +4047,8 @@ class Processor
             'type'      => $card->GetType(),
             'issuer'    => $card->getIssuer(),
             'network'   => $card->getNetwork(),
+            'authentication_reference_number' => $card->getReference4(),
+
         ];
 
         $authorisation = $this->app['card.payments']->fetchEntity('authorization', $payment->getId());
