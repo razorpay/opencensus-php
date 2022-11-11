@@ -54,6 +54,7 @@ class BulkPayout extends Base
                            ]);
 
         $headers = [
+            Passport::PASSPORT_JWT_V1  => $this->app['basicauth']->getPassportJwt($this->baseUrl),
             RequestHeader::X_Batch_Id  => $this->app['request']->header(RequestHeader::X_Batch_Id, null),
             RequestHeader::X_ENTITY_ID => $this->app['request']->header(RequestHeader::X_ENTITY_ID, null)
         ];

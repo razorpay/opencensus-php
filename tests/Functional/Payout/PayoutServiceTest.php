@@ -690,6 +690,8 @@ class PayoutServiceTest extends TestCase
         $createBulkPayoutMock = Mockery::mock('RZP\Services\PayoutService\BulkPayout',
                                            [$this->app])->makePartial();
 
+        $defaultRequest['headers']['X-Passport-JWT-V1'] = "";
+
         $defaultRequest['headers'][RequestHeader::X_Batch_Id] = "";
 
         $defaultRequest['headers'][RequestHeader::X_ENTITY_ID] = "";
