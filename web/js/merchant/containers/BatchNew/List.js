@@ -180,7 +180,7 @@ class BatchList extends ListContainer {
                 </PopoverComponent>
               </div>
             ) : (
-              ((session.mode !== 'live' || !user.isRejected) && (
+              ((session.mode !== 'live' || !user.isRejected) && user.isAdminOrOwner && (
                 <span className="cta-container">
                   <button
                     class="btn btn-primary pull-right"

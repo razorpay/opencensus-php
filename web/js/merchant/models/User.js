@@ -456,6 +456,10 @@ export default class User {
     return this.userRole === rolesList.OWNER;
   }
 
+  get isOwnerOrAdmin() {
+    return this.isOwner || this.userRole === rolesList.ADMIN;
+  }
+
   get isRazorxRXCASelfServeFlowEnabled() {
     return this.getExpStatus('rx_ca_self_serve_flow');
   }
