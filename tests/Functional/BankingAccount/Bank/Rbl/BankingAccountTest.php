@@ -9556,12 +9556,20 @@ class BankingAccountTest extends TestCase
 
         $user = $this->getDbEntity('user', ['email' => 'random@rbl.com']);
 
+        Mail::fake();
+
         // Attach Submerchant to RBl Merchant
         $this->assertUpdateBankingAccountStatusFromTo(
             Status::PICKED, Status::INITIATED,
             null, null,
             null, null,
             $response);
+
+        Mail::assertQueued(ActivationMails\BankPartnerAssigned::class, function ($mail) use ($user)
+        {
+            $mail->build();
+            return $mail->hasTo($user->getEmail());
+        });
 
         $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
 
@@ -10225,6 +10233,12 @@ class BankingAccountTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertEquals($user->getId(), $response["banking_account_activation_details"]["bank_poc_user_id"]);
+
+        Mail::assertQueued(ActivationMails\BankPartnerPocAssigned::class, function ($mail) use ($user)
+        {
+            $mail->build();
+            return $mail->hasTo($user->getEmail());
+        });
 
         return $response;
     }

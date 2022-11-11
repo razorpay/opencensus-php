@@ -3343,7 +3343,7 @@ return [
             'url'     => '/banking_accounts/rbl/lms/activation/{id}/comments',
             'method'  => 'POST',
             'content' => [
-                'comment'           => 'this is a comment from RBL team',
+                'comment'           => '<p>this is a comment from RBL team</p>',
                 'source_team_type'  => 'external',
                 'source_team'       => 'bank',
                 'added_at'          => '1593567500',
@@ -3352,7 +3352,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'comment'           => 'this is a comment from RBL team',
+                'comment'           => '<p>this is a comment from RBL team</p>',
                 'source_team_type'  => 'external',
                 'source_team'       => 'bank',
                 'added_at'          => 1593567500,

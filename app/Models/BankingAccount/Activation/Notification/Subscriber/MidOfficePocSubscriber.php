@@ -23,7 +23,7 @@ class MidOfficePocSubscriber extends Base
 
     protected function getNameAndEmails(BankingAccount\Entity $bankingAccount, Event $event): array
     {
-        $bankPocUser = $bankingAccount->bankingAccountActivationDetails()->getBankPOCUser();
+        $bankPocUser = $bankingAccount->bankingAccountActivationDetails->getBankPOCUser();
 
         $emails = [];
 

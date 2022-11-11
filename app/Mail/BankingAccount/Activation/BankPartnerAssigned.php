@@ -42,7 +42,7 @@ class BankPartnerAssigned extends Base
 
         $constitution_type = ucwords(str_replace('_', ' ', $constitution_type));
 
-        $config = App::getFacadeRoot()['config'];
+        $config = app()->config;
 
         $bankingUrl = $config['applications.bank_lms_banking_service_url'];
 

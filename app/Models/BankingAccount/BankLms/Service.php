@@ -370,6 +370,8 @@ class Service extends BankingAccount\Service
         $input[Comment\Entity::SOURCE_TEAM] = 'bank';
         $input[Comment\Entity::SOURCE_TEAM_TYPE] = 'external';
 
+        $this->validator->validateInput(Validator::ADD_COMMENT, $input);
+
         return $this->core->createBankingAccountsActivationComment($bankingAccount, $input);
     }
 

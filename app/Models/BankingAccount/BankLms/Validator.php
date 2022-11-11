@@ -36,6 +36,8 @@ class Validator extends BankingAccount\Validator
 
     const RBL_ACTIVATION_DETAILS = 'rbl_activation_details';
 
+    const ADD_COMMENT = 'add_comment';
+
     const ALLOWED_STRING_PATTERN = 'regex:/^[0-9A-Za-z_.\s,\'-?\/]*$/';
 
     protected static $createBankCaOnboardingPartnerTypeRules = [
@@ -81,6 +83,15 @@ class Validator extends BankingAccount\Validator
         Entity::STATUS                          => 'filled|string|in:initiated,verification_call,doc_collection,account_opening,api_onboarding,account_activation,archived',
         Entity::SUB_STATUS                      => 'string|nullable|custom',
         Entity::ACTIVATION_DETAIL               => 'sometimes|array',
+    ];
+
+    protected static $addCommentRules = [
+        BankingAccount\Activation\Comment\Entity::COMMENT             => 'sometimes|'.self::ALLOWED_STRING_PATTERN,
+        BankingAccount\Activation\Comment\Entity::NOTES               => 'sometimes|array|max:3',
+        BankingAccount\Activation\Comment\Entity::SOURCE_TEAM_TYPE    => 'sometimes|max:255|in:internal,external',
+        BankingAccount\Activation\Comment\Entity::SOURCE_TEAM         => 'sometimes|max:255|in:product,sales,ops,bank',
+        BankingAccount\Activation\Comment\Entity::TYPE                => 'sometimes|max:64|in:internal,external,external_resolved',
+        BankingAccount\Activation\Comment\Entity::ADDED_AT            => 'sometimes|epoch'
     ];
 
     protected static $editActivationDetailByBankRules = [
