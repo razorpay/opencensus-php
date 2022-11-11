@@ -223,4 +223,10 @@ class AccountingPayoutsController extends Controller
     {
         return $this->service->getBankTransactionsSyncStatus($this->ba->getMerchant(), $this->input);
     }
+
+    public function checkIfBankMappingRequired()
+    {
+        return $this->service->checkIfBankMappingRequired($this->ba->getMerchant());
+    }
+
 }

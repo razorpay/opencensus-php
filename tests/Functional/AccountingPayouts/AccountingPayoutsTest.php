@@ -799,4 +799,21 @@ class AccountingPayoutsTest extends TestCase
 
         $apMock->shouldHaveReceived('getBankTransactionsSyncStatus');
     }
+
+    public function testCheckIfBankMappingRequired()
+    {
+        $this->ba->proxyAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('checkIfBankMappingRequired')->andReturn([
+            "is_required" => true
+        ]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('checkIfBankMappingRequired');
+    }
 }

@@ -566,4 +566,16 @@ return [
             ]
         ]
     ],
+
+    'testCheckIfBankMappingRequired' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/accounting-integration/bank-accounts/verify',
+        ],
+        'response' => [
+            'content' => [
+                'is_required' => true,
+            ]
+        ]
+    ],
 ];
