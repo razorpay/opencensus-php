@@ -111,6 +111,7 @@ export const batchUploadStatusMap = {
   partially_processed: 'label-info',
   processed: 'label-success',
   failure: 'label-danger',
+  failed: 'label-danger',
   cancelled: 'label-danger',
   cancellation_requested: 'label-info',
   paused: 'label-yellow',
