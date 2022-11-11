@@ -2384,11 +2384,6 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::RETAIN_SUB_MERCHANT_NAME));
     }
 
-    public function isUnderAutomatedCommission(): bool
-    {
-        return ($this->isFeatureEnabled(Feature\Constants::AUTOMATED_COMM_PAYOUT));
-    }
-
     public function canCommunicateWithSubmerchant(): bool
     {
         return ($this->isFeatureEnabled(Feature\Constants::NO_COMM_WITH_SUBMERCHANTS) === false);

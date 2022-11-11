@@ -36,7 +36,7 @@ class CommissionOpsInvoice extends Mailable
 
     protected function addSubject()
     {
-        $status = $this->data['is_under_auto_commission'] ? 'Processed' : 'Created';
+        $status = 'Processed';
         $mId = $this->data['merchant']['id'];
         $name = $this->data['merchant']['name'];
 
@@ -73,17 +73,7 @@ class CommissionOpsInvoice extends Mailable
 
     protected function addHtmlView()
     {
-        $status = $this->data['is_under_auto_commission'];
-
-        if ($status === false)
-        {
-            $this->view('emails.mjml.merchant.partner.commission_invoice.ops_created');
-        }
-        else
-        {
-            $this->view('emails.mjml.merchant.partner.commission_invoice.ops_processed');
-        }
-
+        $this->view('emails.mjml.merchant.partner.commission_invoice.ops_processed');
         return $this;
     }
 }

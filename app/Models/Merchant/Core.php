@@ -3681,7 +3681,6 @@ class Core extends Base\Core
 
         $features = [
             Feature\Constants::GENERATE_PARTNER_INVOICE,
-            Feature\Constants::AUTOMATED_COMM_PAYOUT,
         ];
 
         foreach ($features as $feature)

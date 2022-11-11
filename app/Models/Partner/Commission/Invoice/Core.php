@@ -142,7 +142,7 @@ class Core extends Base\Core
 
         Tracer::inspan(['name' => HyperTrace::TRIGGER_COMMISSION_INVOICE_ACTION, 'attributes' => $attrs], function () use ($invoice, $merchant) {
 
-            $this->triggerWorkflowActionIfApplicable($invoice, $merchant);
+            $this->triggerWorkflowAction($invoice, $merchant);
         });
 
         return ['success' => 'true'];
@@ -429,7 +429,6 @@ class Core extends Base\Core
             'address'                  => $merchant->getBusinessRegisteredAddressAsText(),
             'start_date'               => Carbon::createFromTimestamp($fromTimestamp, Timezone::IST)->format('d-M-y'),
             'end_date'                 => Carbon::createFromTimestamp($endTimestamp, Timezone::IST)->format('d-M-y'),
-            'is_under_auto_commission' => $invoice->merchant->isUnderAutomatedCommission(),
             'invoice'                  => $invoice->toArrayPublic(),
             'created_at'               => Carbon::createFromTimestamp($invoice->getCreatedAt(), Timezone::IST)->format('d-M-y'),
             'tds_percentage'           => $tdsPercentage/100,
@@ -480,16 +479,9 @@ class Core extends Base\Core
         return [$currencySymbol, $rupeesInAmount, $paiseInAmount];
     }
 
-    public function triggerWorkflowActionIfApplicable(Entity $invoice, Merchant\Entity $merchant)
+    public function triggerWorkflowAction(Entity $invoice, Merchant\Entity $merchant)
     {
-        $result = $merchant->isFeatureEnabled(Feature\Constants::AUTOMATED_COMM_PAYOUT);
 
-        if ($result === false)
-        {
-            return;
-        }
-
-        //trigger workflow if automated commission feature is present;
         $routePermission = Permission::COMMISSION_PAYOUT;
 
         $this->trace->info(

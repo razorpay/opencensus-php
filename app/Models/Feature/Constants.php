@@ -1900,7 +1900,6 @@ class Constants
         self::SAVE_VPA                        => true,
         self::REDIRECT_TO_ZESTMONEY           => true,
         self::GENERATE_PARTNER_INVOICE        => true,
-        self::AUTOMATED_COMM_PAYOUT           => true,
         self::OFFLINE_PAYMENTS                => true,
         self::SKIP_HITACHI_AUTO_ONBOARD       => true,
         self::SKIP_FULCRUM_AUTO_ONBOARD       => true,
