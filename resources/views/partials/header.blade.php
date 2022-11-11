@@ -12,11 +12,6 @@
   @endif
   @include('partials/environment')
   @include('partials/signup-redirect')
-  @if(env('APP_ENV') === 'production')
-    <script src="https://www.googleoptimize.com/optimize.js?id=GTM-NCWFQ39"></script>
-  @else
-    <script src="https://www.googleoptimize.com/optimize.js?id=GTM-WB43S6Q" defer></script>
-  @endif
   <script type="text/javascript">
         var _hsq = window._hsq = window._hsq || [];
 
