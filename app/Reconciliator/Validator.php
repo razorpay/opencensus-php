@@ -52,7 +52,7 @@ class Validator extends Base\Core
                                                         . "\(20[0-9]{2}-[0-9]{2}-[0-9]{2}\)/"
                                                      ],
         RequestProcessor\Base::NETBANKING_CSB     => ["/^RAZORPAY_Recon File/"],
-        RequestProcessor\Base::NETBANKING_SBI     => ["/^RAZORPAY Recon File/"],
+        RequestProcessor\Base::NETBANKING_SBI     => ["/(?i)^RAZORPAY Recon File/"],
         RequestProcessor\Base::NETBANKING_ICICI   => ["/Consumer Durable Loan booking Razorpay Reports for [0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
         RequestProcessor\Base::NETBANKING_FEDERAL => [
                                                         "/^MIS Report File Dated "

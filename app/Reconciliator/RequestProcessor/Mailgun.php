@@ -96,8 +96,8 @@ class Mailgun extends Base
         self::NETBANKING_SBI  => [
             [
                 "from" => "donotreply.inb@alerts.sbi.co.in",
-                "subject_pattern" => "/^RAZORPAY Recon file/",
-                "filename_pattern" => "/razorpay_[\d]+\.txt/",
+                "subject_pattern" => "/(?i)^RAZORPAY Recon file/",
+                "filename_pattern" => "/(?i)razorpay_[\d]+\.txt/",
                 "destination" => "recon/input/netbanking/SBI/bank_payment_report/",
                 "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
             ]
