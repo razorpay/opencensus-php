@@ -198,7 +198,7 @@ class Client
 
         if ($lastStatusCode >= 500)
         {
-            throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_SHOPIFY_SERVICE_FAILURE);
+            throw new Exception\ServerErrorException("Error connecting with Shopify", ErrorCode::SERVER_ERROR_SHOPIFY_SERVICE_FAILURE);
         }
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR_MERCHANT_SHOPIFY_ACCOUNT_THROTTLED);
     }
