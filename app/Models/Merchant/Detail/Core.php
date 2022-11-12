@@ -3161,7 +3161,7 @@ class Core extends Base\Core
 
         $this->pushHubspotEvent($merchant, $merchantDetails);
 
-        (new SalesforceConvergeService())->pushUpdatesToSalesforce(new SalesforceMerchantUpdatesRequest($merchant));
+        (new SalesforceConvergeService())->pushUpdatesToSalesforce(new SalesforceMerchantUpdatesRequest($merchant, 'Activation'));
 
         $this->app['diag']->trackOnboardingEvent(EventCode::ACT_CHANGE_ACTIVATION_STATUS_SUCCESS,
                                                  $merchant,
@@ -7891,7 +7891,7 @@ class Core extends Base\Core
 
                 $this->app['segment-analytics']->pushIdentifyEvent($merchant, $properties);
 
-                (new SalesforceConvergeService())->pushUpdatesToSalesforce(new SalesforceMerchantUpdatesRequest($merchant));
+                (new SalesforceConvergeService())->pushUpdatesToSalesforce(new SalesforceMerchantUpdatesRequest($merchant, 'LeadScore'));
             }
         }
         catch (\Exception $e)

@@ -30,7 +30,7 @@ class MerchantObserver
                              'merchantId' => $entity
                          ]);
 
-            $retval = (new SalesforceConvergeService())->pushUpdatesToSalesforce(new SalesforceMerchantUpdatesRequest($entity));
+            $retval = (new SalesforceConvergeService())->pushUpdatesToSalesforce(new SalesforceMerchantUpdatesRequest($entity, 'FOH'));
 
             if ($retval == true)
             {
