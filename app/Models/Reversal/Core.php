@@ -400,23 +400,6 @@ class Core extends Base\Core
             try
             {
                 $response = (new Ledger\FundAccountValidation())->processValidationAndCreateJournalEntry($fav);
-
-                // dispatch to queue for transactions creation.
-                try
-                {
-                    Transactions::dispatch($this->mode, $reversal->getId(), E::REVERSAL, $response);
-                }
-                catch (\Throwable $ex)
-                {
-                    // Todo: check how to handle this failure
-                    $this->trace->info(
-                        TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED,
-                        [
-                            'reversal_id'    => $reversal->getId(),
-                            'entity_name'    => \RZP\Constants\Entity::REVERSAL,
-                            'ledgerResponse' => $response,
-                        ]);
-                }
             }
             catch (\Throwable $e)
             {
@@ -467,27 +450,6 @@ class Core extends Base\Core
             ]);
 
         return;
-    }
-
-    /**
-     * @throws \Throwable
-     */
-    public function pushFavReversalToLedgerTxnQueue($reversal, $ledgerResponse)
-    {
-        try
-        {
-            Transactions::dispatch($this->mode, $reversal->getId(), E::REVERSAL, $ledgerResponse);
-        }
-        catch (\Throwable $ex)
-        {
-            // trace and ignore exception
-            $payload = [
-                'reversal_id'    => $reversal->getId(),
-                'entity_name'    => \RZP\Constants\Entity::REVERSAL,
-                'ledgerResponse' => $ledgerResponse,
-            ];
-            $this->trace->traceException($ex, Trace::ERROR, TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED, $payload);
-        }
     }
 
     /**

@@ -762,21 +762,6 @@ class Core extends Base\Core
             $ledgerResponse = (new LedgerAdjustment)->createJournalEntry($ledgerPayload);
             $adj->setStatus(Status::PROCESSED);
             $this->repo->saveOrFail($adj);
-            // Push txn to sqs if ledger response is successful
-            try {
-                // push to ledger transaction sqs
-                Transactions::dispatch($this->mode, $adj->getId(), DefaultConstants\Entity::ADJUSTMENT, $ledgerResponse);
-            }
-            catch (DefaultException $ex)
-            {
-                $this->trace->info(
-                    TraceCode::LEDGER_TXN_PUSH_FAILED_REVERSE_SHADOW,
-                    [
-                        'adjustment_id'             => $adj->getId(),
-                        'entity_name'               => DefaultConstants\Entity::ADJUSTMENT,
-                        'ledger_response'           => $ledgerResponse,
-                    ]);
-            }
         }
         catch (BadRequestException $ex)
         {
@@ -853,18 +838,6 @@ class Core extends Base\Core
 
         $adjustment->setStatus(Status::PROCESSED);
         $this->repo->saveOrFail($adjustment);
-
-        try {
-            Transactions::dispatch($this->mode, $adjustment->getId(), DefaultConstants\Entity::ADJUSTMENT, $ledgerResponse);
-        } catch (\Throwable $ex) {
-            // trace and ignore exception
-            $payload = [
-                'adjustment_id'     => $adjustment->getId(),
-                'entity_name'       => DefaultConstants\Entity::ADJUSTMENT,
-                'ledger_response'   => $ledgerResponse,
-            ];
-            $this->trace->traceException($ex, Trace::ERROR, TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED, $payload);
-        }
     }
 
     public function failAdjustmentAfterLedgerStatusCheck($adjustment)

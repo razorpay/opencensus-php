@@ -306,21 +306,6 @@ class Processor extends VirtualAccount\Processor
             $ledgerResponse = (new LedgerFundLoading)->createJournalEntry($ledgerPayload);
             $bankTransfer->setStatus(Status::PROCESSED);
             $this->repo->saveOrFail($bankTransfer);
-            // Push txn to sqs if ledger response is successful
-            try {
-                Transactions::dispatch($this->mode, $bankTransfer->getId(), DefaultConstants\Entity::BANK_TRANSFER, $ledgerResponse);
-            }
-            catch (Exception $ex)
-            {
-                $this->trace->traceException(
-                    $ex,
-                    TraceCode::LEDGER_TXN_PUSH_FAILED_REVERSE_SHADOW,
-                    [
-                        'bank_transfer_id'           => $bankTransfer->getId(),
-                        'entity_name'                => DefaultConstants\Entity::BANK_TRANSFER,
-                        'ledger_response'            => $ledgerResponse,
-                    ]);
-            }
         }
         catch (\Throwable $ex)
         {

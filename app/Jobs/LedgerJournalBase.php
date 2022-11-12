@@ -20,7 +20,7 @@ use RZP\Models\CreditTransfer\Core as CreditTransferCore;
 class LedgerJournalBase extends Job
 {
     const MAX_RETRY_ATTEMPTS = 10;
-    // the delay is in seconds
+    // the delay is in second
     // used in an exponential backoff manner
     const MIN_RETRY_DELAY    = 5;
 

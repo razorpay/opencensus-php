@@ -216,25 +216,6 @@ class Core extends Base\Core
         try
         {
             $ledgerResponse = (new Ledger\FundAccountValidation())->processValidationAndCreateJournalEntry($validation, [], null, $feesSplit);
-            // If it is a success, dispatch to queue for transactions creation
-            try
-            {
-                Transactions::dispatch($this->mode,
-                    $validation->getId(),
-                    EntityConstant::FUND_ACCOUNT_VALIDATION,
-                    $ledgerResponse,
-                    $feesSplit);
-            }
-            catch (\Throwable $ex)
-            {
-                $this->trace->info(
-                    TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED,
-                    [
-                        'fav_id'         => $validation->getId(),
-                        'entity_name'    => EntityConstant::FUND_ACCOUNT_VALIDATION,
-                        'ledger_response' => $ledgerResponse,
-                    ]);
-            }
         }
         catch (BadRequestException | Exception\IntegrationException $ex)
         {
@@ -273,25 +254,6 @@ class Core extends Base\Core
 
         $processor = Processor\Factory::get($validation);
         $processor->preProcessValidation();
-
-        // Todo: how to get $feesSplit here ?
-        try
-        {
-            Transactions::dispatch($this->mode,
-                $validation->getId(),
-                EntityConstant::FUND_ACCOUNT_VALIDATION,
-                $ledgerResponse,
-                $feesSplit);
-        } catch (\Throwable $ex) {
-            // trace and ignore exception
-            $payload = [
-                'payout_id'         => $validation->getId(),
-                'entity_name'       => EntityConstant::FUND_ACCOUNT_VALIDATION,
-                'ledger_response'   => $ledgerResponse,
-            ];
-            $this->trace->traceException($ex, Trace::ERROR, TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED, $payload);
-        }
-
     }
 
     public function failFavAfterLedgerStatusCheck($validation)

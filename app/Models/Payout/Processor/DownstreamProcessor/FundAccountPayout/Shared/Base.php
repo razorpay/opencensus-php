@@ -194,27 +194,6 @@ class Base extends FundAccountPayout\Base
             {
                 $this->createFundTransferAttempt($payout, $ftaAccount);
             }
-
-            // If it is a success, dispatch to queue for transactions creation
-            try
-            {
-                Transactions::dispatch($this->mode,
-                                       $payout->getId(),
-                                       EntityConstant::PAYOUT,
-                                       $ledgerResponse);
-            }
-            catch (\Throwable $ex)
-            {
-                // TODO: Set an alert. Check how to handle this failure.
-                // Will probably need to give a route to retry creation
-                $this->trace->info(
-                    TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED,
-                    [
-                        'payout_id'      => $payout->getId(),
-                        'entity_name'    => EntityConstant::PAYOUT,
-                        'ledgerResponse' => $ledgerResponse,
-                    ]);
-            }
         }
         catch (BadRequestException $ex)
         {

@@ -462,27 +462,6 @@ class Core extends Base\Core
         $event = $this->getLedgerEventBasedOnCreditTransferReverseShadowMode($creditTransfer);
 
         $ledgerResponse = (new Ledger\CreditTransfer())->processCreditTransferAndCreateJournalEntry($creditTransfer, $event);
-
-        // If it is a success, dispatch to queue for transactions creation
-        try
-        {
-            Transactions::dispatch($this->mode,
-                $creditTransfer->getId(),
-                EntityConstants::CREDIT_TRANSFER,
-                $ledgerResponse);
-        }
-        catch (\Throwable $ex)
-        {
-            // TODO: Set an alert. Check how to handle this failure.
-            // Will probably need to give a route to retry creation
-            $this->trace->info(
-                TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED,
-                [
-                    'credit_transfer_id' => $creditTransfer->getId(),
-                    'entity_name'        => EntityConstants::CREDIT_TRANSFER,
-                    'ledgerResponse'     => $ledgerResponse,
-                ]);
-        }
     }
 
     public function createTransactionForLedgerReverseShadow($creditTransfer, $ledgerResponse)
@@ -531,16 +510,5 @@ class Core extends Base\Core
 
         $this->notifyPostProcessingOfCreditTransfer($creditTransfer);
 
-        try {
-            Transactions::dispatch($this->mode, $creditTransfer->getId(), EntityConstants::CREDIT_TRANSFER, $ledgerResponse);
-        } catch (\Throwable $ex) {
-            // trace and ignore exception
-            $payload = [
-                'credit_transfer_id' => $creditTransfer->getId(),
-                'entity_name'        => EntityConstants::CREDIT_TRANSFER,
-                'ledger_response'    => $ledgerResponse,
-            ];
-            $this->trace->traceException($ex, Trace::ERROR, TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED, $payload);
-        }
     }
 }

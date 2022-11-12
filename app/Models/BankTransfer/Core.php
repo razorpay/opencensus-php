@@ -805,18 +805,6 @@ class Core extends Base\Core
 
         $bankTransfer->setStatus(Status::PROCESSED);
         $this->repo->saveOrFail($bankTransfer);
-
-        try {
-            Transactions::dispatch($this->mode, $bankTransfer->getId(), Constants\Entity::BANK_TRANSFER, $ledgerResponse);
-        } catch (\Throwable $ex) {
-            // trace and ignore exception
-            $payload = [
-                'bank_transfer_id'     => $bankTransfer->getId(),
-                'entity_name'          => Constants\Entity::BANK_TRANSFER,
-                'ledger_response'       => $ledgerResponse,
-            ];
-            $this->trace->traceException($ex, Trace::ERROR, TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED, $payload);
-        }
     }
 
     public function createBankTransferViaLedgerCronJob(array $blacklistIds, array $whitelistIds, int $limit)

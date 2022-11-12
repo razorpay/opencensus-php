@@ -3777,19 +3777,6 @@ class Core extends Base\Core
                             $reversal,
                             $ftsSourceAccountInformation
                         );
-                        // dispatch to queue for transactions creation when ledger call success
-                        try {
-                            Transactions::dispatch($this->mode, $reversal->getId(), Constants\Entity::REVERSAL, $response);
-                        } catch (\Throwable $ex) {
-                            // Todo: check how to handle this failure
-                            $this->trace->info(
-                                TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED,
-                                [
-                                    'reversal_id'       => $reversal->getId(),
-                                    'entity_name'       => Constants\Entity::REVERSAL,
-                                    'ledger_response'   => $response,
-                                ]);
-                        }
                     }
                     catch (\Throwable $e)
                     {
@@ -3816,20 +3803,6 @@ class Core extends Base\Core
                             $clonedPayout,
                             $reversal
                         );
-                        // This is a payout reversal for API so
-                        // dispatch to queue for transactions creation
-                        try {
-                            Transactions::dispatch($this->mode, $reversal->getId(), Constants\Entity::REVERSAL, $response);
-                        } catch (\Throwable $ex) {
-                            // Todo: check how to handle this failure
-                            $this->trace->info(
-                                TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED,
-                                [
-                                    'bank_transfer_id' => $reversal->getId(),
-                                    'entity_name' => Constants\Entity::REVERSAL,
-                                    'ledgerResponse' => $response,
-                                ]);
-                        }
                     }
                     catch (\Throwable $e)
                     {
@@ -6781,21 +6754,6 @@ class Core extends Base\Core
                 $downstreamProcessor->processCreateFundTransferAttempt();
             }
         }
-
-        try {
-            Transactions::dispatch($this->mode,
-                $payout->getId(),
-                EntityConstant::PAYOUT,
-                $ledgerResponse);
-        } catch (\Throwable $ex) {
-            // trace and ignore exception
-            $payload = [
-                'payout_id'         => $payout->getId(),
-                'entity_name'       => EntityConstant::PAYOUT,
-                'ledger_response'   => $ledgerResponse,
-            ];
-            $this->trace->traceException($ex, Trace::ERROR, TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED, $payload);
-        }
     }
 
     /**
@@ -6870,31 +6828,6 @@ class Core extends Base\Core
 
         // mark payout as failed
         $subProcessor->failPayoutPostLedgerFailure($payout);
-    }
-
-    /**
-     * @throws \Throwable
-     */
-    public function pushPayoutReversalToLedgerTxnQueue($reversal, $ledgerResponse)
-    {
-        $this->trace->info(
-            TraceCode::PROCESS_PAYOUT_REVERSAL_AFTER_LEDGER_STATUS_SUCCESS,
-            [
-                'reversal_id'       => $reversal->getId(),
-                'entity_name'       => EntityConstant::REVERSAL,
-            ]);
-
-        try {
-            Transactions::dispatch($this->mode, $reversal->getId(), Constants\Entity::REVERSAL, $ledgerResponse);
-        } catch (\Throwable $ex) {
-            // trace and ignore exception
-            $payload = [
-                'reversal_id'       => $reversal->getId(),
-                'entity_name'       => Constants\Entity::REVERSAL,
-                'ledger_response'   => $ledgerResponse,
-            ];
-            $this->trace->traceException($ex, Trace::ERROR, TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED, $payload);
-        }
     }
 
     public function trackPayoutEvent(array $eventCode, $payout = null, $error = null)

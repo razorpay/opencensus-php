@@ -239,23 +239,6 @@ class LedgerStatus extends Job
             $bankTransfer = $this->repoManager->bank_transfer->findByPublicId($this->transactorId);
             (new BankTransferCore)->processBankTransferAfterLedgerStatusCheck($bankTransfer, $ledgerResponse);
         }
-        else if (strpos($this->transactorId, self::REVERSAL_PREFIX) !== false)
-        {
-            if (strpos($this->transactorEvent, self::PAYOUT_TYPE) !== false)
-            {
-                $reversal = $this->repoManager->reversal->findByPublicId($this->transactorId);
-                // can be payout failed OR payout reversed events
-                if ($this->transactorEvent !== Ledger\Payout::PAYOUT_PROCESSED) {
-                    (new PayoutCore)->pushPayoutReversalToLedgerTxnQueue($reversal, $ledgerResponse);
-                }
-            } else if (strpos($this->transactorEvent, self::FAV_TYPE) !== false) {
-                $reversal = $this->repoManager->reversal->findByPublicId($this->transactorId);
-                // can only be fav failed event
-                if ($this->transactorEvent === Ledger\FundAccountValidation::FAV_FAILED) {
-                    (new ReversalCore)->pushFavReversalToLedgerTxnQueue($reversal, $ledgerResponse);
-                }
-            }
-        }
         else if (strpos($this->transactorId, self::ADJUSTMENT_PREFIX) !== false)
         {
             // Todo: discuss after state changes

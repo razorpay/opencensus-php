@@ -4151,15 +4151,9 @@ class BankTransferTest extends TestCase
 
 //        MockQueue::assertPushed(Transactions::class);
 
-
         // assert bankTransfer
         $this->assertEquals('processed', $bankTransfersCreated['status']);
         $this->assertEquals(5000000, $bankTransfersCreated['amount']);
-
-        // assert api transaction
-        $this->assertEquals($bankTransfersTxn['id'], $bankTransfersCreated['transaction_id']);
-        $this->assertEquals($bankTransfersCreated['id'], $bankTransfersTxn['entity_id']);
-        $this->assertEquals(5000000, $bankTransfersTxn['amount']);
 
     }
 
@@ -4289,13 +4283,8 @@ class BankTransferTest extends TestCase
 
         // assert bankTransfer
         $this->assertEquals('processed', $bankTransfersCreated['status']);
-        $this->assertEquals('HNjsypA96SgJKJ', $bankTransfersCreated['transaction_id']);
         $this->assertEquals(5000000, $bankTransfersCreated['amount']);
 
-        // assert api transaction
-        $this->assertEquals('HNjsypA96SgJKJ', $bankTransfersTxn['id']);
-        $this->assertEquals($bankTransfersCreated['id'], $bankTransfersTxn['entity_id']);
-        $this->assertEquals(5000000, $bankTransfersTxn['amount']);
     }
 
     // Test for ledger reverse shadow case when both sync and async failure from ledger
@@ -4635,13 +4624,7 @@ class BankTransferTest extends TestCase
 
         // assert bankTransfer
         $this->assertEquals('processed', $bankTransfersCreated['status']);
-        $this->assertEquals('HNjsypA96SgJKJ', $bankTransfersCreated['transaction_id']);
         $this->assertEquals(5000000, $bankTransfersCreated['amount']);
-
-        // assert api transaction
-        $this->assertEquals('HNjsypA96SgJKJ', $bankTransfersTxn['id']);
-        $this->assertEquals($bankTransfersCreated['id'], $bankTransfersTxn['entity_id']);
-        $this->assertEquals(5000000, $bankTransfersTxn['amount']);
     }
 
     public function testBankTransferProcessWithIncorrectPayeeAccountLength()

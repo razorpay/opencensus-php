@@ -98,8 +98,6 @@ class AdjustmentTest extends TestCase
 
         $this->testData[__FUNCTION__] = $this->testData['testAddPrimaryBalance'];
 
-        Queue::fake();
-
         Mail::fake();
 
         $this->fixtures->create(
@@ -149,8 +147,6 @@ class AdjustmentTest extends TestCase
         $this->assertEquals($balanceId, $transaction['balance_id']);
 
         $this->assertNotNull($transaction['posted_at']);
-
-        Queue::assertPushed(Transactions::class, 0);
 
     }
 
@@ -1135,8 +1131,6 @@ class AdjustmentTest extends TestCase
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
 
-        Queue::fake();
-
         $countOfAdjustmentsBeforeTest = count($this->getDbEntities('adjustment', [], 'live'));
 
         $this->fixtures->on('live')->create('balance',
@@ -1177,8 +1171,6 @@ class AdjustmentTest extends TestCase
         $this->assertEquals(Status::PROCESSED, $newAdjustments['status']);
 
         $this->assertNull($newAdjustments['transaction_id']);
-
-        Queue::assertPushed(Transactions::class);
     }
 
     public function testForPositiveAdjustmentCreationOnLiveModeWhenLedgerReverseShadowSyncFailureAndAsyncSuccess()
@@ -1294,14 +1286,8 @@ class AdjustmentTest extends TestCase
 
         // assert api adjustment
         $this->assertEquals(Status::PROCESSED, $newAdjustments['status']);
-        $this->assertEquals('sampleJournlID', $newAdjustments['transaction_id']);
         $this->assertEquals(250000, $newAdjustments['amount']);
 
-        // assert api transaction
-        $this->assertEquals('sampleJournlID', $newAdjustmentsTxn['id']);
-        $this->assertEquals($newAdjustments['id'], $newAdjustmentsTxn['entity_id']);
-        $this->assertEquals(250000, $newAdjustmentsTxn['amount']);
-        $this->assertEquals(250000, $newAdjustmentsTxn['credit']);
     }
 
     public function testForPositiveAdjustmentCreationOnLiveModeWhenLedgerReverseShadowSyncAsyncFailure()
@@ -1604,14 +1590,8 @@ class AdjustmentTest extends TestCase
 
         // assert api adjustment
         $this->assertEquals(Status::PROCESSED, $newAdjustments['status']);
-        $this->assertEquals('sampleJournlID', $newAdjustments['transaction_id']);
         $this->assertEquals(250000, $newAdjustments['amount']);
 
-        // assert api transaction
-        $this->assertEquals('sampleJournlID', $newAdjustmentsTxn['id']);
-        $this->assertEquals($newAdjustments['id'], $newAdjustmentsTxn['entity_id']);
-        $this->assertEquals(250000, $newAdjustmentsTxn['amount']);
-        $this->assertEquals(250000, $newAdjustmentsTxn['credit']);
     }
 
     public function testLedgerSnsForNegativeAdjustmentCreationOnLiveMode()
@@ -1718,8 +1698,6 @@ class AdjustmentTest extends TestCase
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
 
-        Queue::fake();
-
         $countOfAdjustmentsBeforeTest = count($this->getDbEntities('adjustment', [], 'live'));
 
         $this->fixtures->on('live')->create('balance',
@@ -1760,8 +1738,6 @@ class AdjustmentTest extends TestCase
         $this->assertEquals(Status::PROCESSED, $newAdjustments['status']);
 
         $this->assertNull($newAdjustments['transaction_id']);
-
-        Queue::assertPushed(Transactions::class);
     }
 
     public function testForNegativeAdjustmentCreationOnLiveModeWhenLedgerReverseShadowSyncFailureAndAsyncSuccess()
@@ -1877,14 +1853,8 @@ class AdjustmentTest extends TestCase
 
         // assert api adjustment
         $this->assertEquals(Status::PROCESSED, $newAdjustments['status']);
-        $this->assertEquals('sampleJournlID', $newAdjustments['transaction_id']);
         $this->assertEquals(-250000, $newAdjustments['amount']);
 
-        // assert api transaction
-        $this->assertEquals('sampleJournlID', $newAdjustmentsTxn['id']);
-        $this->assertEquals($newAdjustments['id'], $newAdjustmentsTxn['entity_id']);
-        $this->assertEquals(250000, $newAdjustmentsTxn['amount']);
-        $this->assertEquals(250000, $newAdjustmentsTxn['debit']);
     }
 
     public function testForNegativeAdjustmentCreationOnLiveModeWhenLedgerReverseShadowSyncAsyncFailure()

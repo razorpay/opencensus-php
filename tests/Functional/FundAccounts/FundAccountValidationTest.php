@@ -660,7 +660,7 @@ class FundAccountValidationTest extends TestCase
         $this->assertNull($fav['retry_at']);
     }
 
-    public function testFundAccValidationWithAccountNumberAndBankAccount()
+    public function testFundAccValidationWithAccountNumberAndBankAccount($skipTxnCheck = false)
     {
         $this->setUpMerchantForBusinessBanking(false, 10000000);
 
@@ -681,7 +681,9 @@ class FundAccountValidationTest extends TestCase
         $txn = $this->getLastEntity('transaction', true);
 
         // validate balance entry in database
-        $this->assertEquals(9999997, $balance['balance']);
+        if ($skipTxnCheck === false) {
+            $this->assertEquals(9999997, $balance['balance']);
+        }
 
         // validate fund account validation last entry
         $this->assertEquals($balance['id'], $fav['balance_id']);
@@ -689,21 +691,24 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav['entity']);
 
         // validate transaction table last entry
-        $this->assertEquals(Constants\Entity::FUND_ACCOUNT_VALIDATION, $txn['type']);
-        $this->assertEquals($fav['id'], $txn['entity_id']);
-        $this->assertEquals(100, $txn['amount']);
-        $this->assertEquals(3, $txn['fee']);
-        $this->assertEquals($balance['id'], $txn['balance_id']);
-        $this->assertEquals(9999997, $txn['balance']);
+        if ($skipTxnCheck === false) {
+            $this->assertEquals(Constants\Entity::FUND_ACCOUNT_VALIDATION, $txn['type']);
+            $this->assertEquals($fav['id'], $txn['entity_id']);
+            $this->assertEquals(100, $txn['amount']);
+            $this->assertEquals(3, $txn['fee']);
+            $this->assertEquals($balance['id'], $txn['balance_id']);
+            $this->assertEquals(9999997, $txn['balance']);
+
+            $this->assertEquals($txn['entity_id'], $fav['id']);
+            $this->assertEquals($txn['id'], 'txn_'.$fav['transaction_id']);
+        }
 
         // validate fund transfer attempt table last entry
         $this->assertEquals('penny_testing', $fta['purpose']);
         $this->assertEquals($fav['id'], $fta['source']);
-        $this->assertEquals($txn['entity_id'], $fav['id']);
-        $this->assertEquals($txn['id'], 'txn_'.$fav['transaction_id']);
     }
 
-    public function testFundAccValidationWithAccountNumberAndBankAccountOnLiveMode()
+    public function testFundAccValidationWithAccountNumberAndBankAccountOnLiveMode($skipTxnCheck = false)
     {
         $this->setUpMerchantForBusinessBankingLive(false, 10000000);
 
@@ -730,7 +735,9 @@ class FundAccountValidationTest extends TestCase
         $txn = $this->getLastEntity('transaction', true, 'live');
 
         // validate balance entry in database
-        $this->assertEquals(9999997, $balance['balance']);
+        if ($skipTxnCheck === false) {
+            $this->assertEquals(9999997, $balance['balance']);
+        }
 
         // validate fund account validation last entry
         $this->assertEquals($balance['id'], $fav['balance_id']);
@@ -738,12 +745,14 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav['entity']);
 
         // validate transaction table last entry
-        $this->assertEquals(Constants\Entity::FUND_ACCOUNT_VALIDATION, $txn['type']);
-        $this->assertEquals($fav['id'], $txn['entity_id']);
-        $this->assertEquals(100, $txn['amount']);
-        $this->assertEquals(3, $txn['fee']);
-        $this->assertEquals($balance['id'], $txn['balance_id']);
-        $this->assertEquals(9999997, $txn['balance']);
+        if ($skipTxnCheck === false) {
+            $this->assertEquals(Constants\Entity::FUND_ACCOUNT_VALIDATION, $txn['type']);
+            $this->assertEquals($fav['id'], $txn['entity_id']);
+            $this->assertEquals(100, $txn['amount']);
+            $this->assertEquals(3, $txn['fee']);
+            $this->assertEquals($balance['id'], $txn['balance_id']);
+            $this->assertEquals(9999997, $txn['balance']);
+        }
 
         // validate fund transfer attempt table last entry
         $this->assertEquals('penny_testing', $fta['purpose']);
@@ -1345,26 +1354,6 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals($bankAccount['id'], 'ba_'.$fta['bank_account_id']);
         $this->assertNotNull($fta['narration']);
 
-        $txn = $this->getLastEntity('transaction', true);
-        $reversal = $this->getLastEntity('reversal', true);
-        $this->assertEquals($reversal['id'], $txn['entity_id']);
-        $this->assertEquals('reversal', $txn['type']);
-        $this->assertEquals(substr($txn['id'], strlen('txn_')), $reversal['transaction_id']);
-        // these are na for prepaid.
-        $this->assertEquals('na', $txn['fee_bearer']);
-        $this->assertEquals('na', $txn['fee_model']);
-        $this->assertEquals(false, $txn['settled']);
-        $this->assertEquals(-3, $txn['fee']);
-        $this->assertEquals(-3, $txn['mdr']);
-        $this->assertEquals(0, $txn['tax']);
-        $this->assertEquals(0, $txn['debit']);
-        $this->assertEquals(3, $txn['credit']);
-        //Not sure if it should be 100 or 0
-        $this->assertEquals(0, $txn['amount']);
-        $this->assertEquals($balance['id'], $txn['balance_id']);
-        $this->assertEquals(10000000, $txn['balance']);
-        $this->assertEquals(0, $txn['fee_credits']);
-        $this->assertEquals('default', $txn['credit_type']);
     }
 
     public function testFundAccValidationWithFailedStatusOnPostpaid()
@@ -1699,11 +1688,11 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('nodal', $ledgerSnsPayloadArray[2]['identifiers']['fts_account_type']);
     }
 
-    public function testFundAccountValidationReversedOnLiveMode()
+    public function testFundAccountValidationReversedOnLiveMode($skipTxnCheck = false)
     {
         $this->mockRazorxTreatment();
 
-        $this->testFundAccValidationWithAccountNumberAndBankAccountOnLiveMode();
+        $this->testFundAccValidationWithAccountNumberAndBankAccountOnLiveMode($skipTxnCheck);
 
         $fav = $this->getDbLastEntity('fund_account_validation', 'live');
 
@@ -1826,7 +1815,7 @@ class FundAccountValidationTest extends TestCase
         $this->app['config']->set('applications.ledger.enabled', false);
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
 
-        $this->testFundAccValidationWithAccountNumberAndBankAccount();
+        $this->testFundAccValidationWithAccountNumberAndBankAccount(true);
     }
 
     /**
@@ -1838,15 +1827,13 @@ class FundAccountValidationTest extends TestCase
         $this->app['config']->set('applications.ledger.enabled', false);
         $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
 
-        $this->testFundAccValidationWithAccountNumberAndBankAccountOnLiveMode();
+        $this->testFundAccValidationWithAccountNumberAndBankAccountOnLiveMode(true);
     }
 
     public function testDispatchOfTransactionsJobInLedgerReverseShadow()
     {
         $this->app['config']->set('applications.ledger.enabled', false);
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
-
-        Queue::fake();
 
         $this->setUpMerchantForBusinessBanking(false, 10000000);
 
@@ -1859,16 +1846,12 @@ class FundAccountValidationTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
 
         $this->startTest();
-
-        Queue::assertPushed(Transactions::class);
     }
 
     public function testDispatchOfTransactionsJobInLedgerReverseShadowInLiveMode()
     {
         $this->app['config']->set('applications.ledger.enabled', false);
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
-
-        Queue::fake();
 
         $this->setUpMerchantForBusinessBankingLive(false, 10000000);
 
@@ -1887,8 +1870,6 @@ class FundAccountValidationTest extends TestCase
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
         $this->startTest();
-
-        Queue::assertPushed(Transactions::class);
     }
 
     public function testFundAccountValidationReversedInLedgerReverseShadowInLiveMode()
@@ -1896,7 +1877,7 @@ class FundAccountValidationTest extends TestCase
         $this->app['config']->set('applications.ledger.enabled', false);
         $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
 
-        $this->testFundAccountValidationReversedOnLiveMode();
+        $this->testFundAccountValidationReversedOnLiveMode(true);
     }
 
     public function testDispatchOfTransactionsJobForFundAccountValidationReversedInLedgerReverseShadowInLiveMode()
@@ -1906,7 +1887,7 @@ class FundAccountValidationTest extends TestCase
 
         $this->mockRazorxTreatment();
 
-        $this->testFundAccValidationWithAccountNumberAndBankAccountOnLiveMode();
+        $this->testFundAccValidationWithAccountNumberAndBankAccountOnLiveMode(true);
 
         Queue::fake();
 
@@ -1973,11 +1954,7 @@ class FundAccountValidationTest extends TestCase
 
         $fav = $this->getLastEntity('fund_account_validation', true);
 
-        Queue::fake();
-
         $this->triggerFlowToUpdateFavWithNewState($fav['id']);
-
-        Queue::assertPushed(Transactions::class);
     }
 
     public function testCreateFundAccountValidationWithBalanceInLedgerReverseShadow()

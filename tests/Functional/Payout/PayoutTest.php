@@ -194,7 +194,7 @@ class PayoutTest extends OAuthTestCase
         self::assertEquals(true, $transferredAt >= $currentTime);
     }
 
-    public function testCreatePayout(): array
+    public function testCreatePayout($skipTxnChecks = false): array
     {
         $this->ba->privateAuth();
 
@@ -215,24 +215,26 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout['channel'], 'yesbank');
 
         // Verify transaction entity
-        $txn   = $this->getLastEntity('transaction', true);
-        $txnId = str_after($txn['id'], 'txn_');
+        if ($skipTxnChecks === false) {
+            $txn = $this->getLastEntity('transaction', true);
+            $txnId = str_after($txn['id'], 'txn_');
 
-        $this->assertEquals($payout['transaction_id'], $txn['id']);
-        $this->assertNotNull($txn['balance_id']);
-        $this->assertNotNull($txn['posted_at']);
+            $this->assertEquals($payout['transaction_id'], $txn['id']);
+            $this->assertNotNull($txn['balance_id']);
+            $this->assertNotNull($txn['posted_at']);
 
-        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
+            $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
 
-        $expectedBreakup = [
-            'name'            => "payout",
-            'transaction_id'  => $txnId,
-            'pricing_rule_id' => "Bbg7dTcURsOr77",
-            'percentage'      => null,
-            'amount'          => 900,
-        ];
+            $expectedBreakup = [
+                'name' => "payout",
+                'transaction_id' => $txnId,
+                'pricing_rule_id' => "Bbg7dTcURsOr77",
+                'percentage' => null,
+                'amount' => 900,
+            ];
 
-        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+            $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+        }
 
         return $payout;
     }
@@ -2212,7 +2214,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('created', $fta->getStatus());
     }
 
-    public function testCreatePayoutOnLiveMode(): array
+    public function testCreatePayoutOnLiveMode($skipTxnChecks = false): array
     {
         $this->liveSetUp();
 
@@ -2235,25 +2237,26 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout['channel'], 'icici');
 
         // Verify transaction entity
-        $txn   = $this->getLastEntity('transaction', true, 'live');
-        $txnId = str_after($txn['id'], 'txn_');
+        if ($skipTxnChecks === false) {
+            $txn = $this->getLastEntity('transaction', true, 'live');
+            $txnId = str_after($txn['id'], 'txn_');
 
-        $this->assertEquals($payout['transaction_id'], $txn['id']);
-        $this->assertNotNull($txn['balance_id']);
-        $this->assertNotNull($txn['posted_at']);
+            $this->assertEquals($payout['transaction_id'], $txn['id']);
+            $this->assertNotNull($txn['balance_id']);
+            $this->assertNotNull($txn['posted_at']);
 
-        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true, 'live');
+            $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true, 'live');
 
-        $expectedBreakup = [
-            'name'            => "payout",
-            'transaction_id'  => $txnId,
-            'pricing_rule_id' => "Bbg7dTcURsOr77",
-            'percentage'      => null,
-            'amount'          => 900,
-        ];
+            $expectedBreakup = [
+                'name' => "payout",
+                'transaction_id' => $txnId,
+                'pricing_rule_id' => "Bbg7dTcURsOr77",
+                'percentage' => null,
+                'amount' => 900,
+            ];
 
-        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
-
+            $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+        }
         return $payout;
     }
 
@@ -15069,25 +15072,12 @@ class PayoutTest extends OAuthTestCase
         // Assert that one free payout has been consumed
         $this->assertEquals(1, $counter->getFreePayoutsConsumed());
 
-        $transactionId = $payout->transaction->getId();
-
-        $transaction = $this->getDbEntityById('transaction', $transactionId)->toArray();
-
-        // Assert 0 fee and tax in payout
-        $this->assertEquals(0, $transaction['fee']);
-        $this->assertEquals(0, $transaction['tax']);
-
-        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $transactionId], true);
-
         $expectedBreakup = [
             'name'            => "payout",
-            'transaction_id'  => $transactionId,
             'pricing_rule_id' => "Bbg7cl6t6I3XA9",
             'percentage'      => null,
             'amount'          => 0,
         ];
-
-        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
 
         $pricingRule = $this->getDbEntityById('pricing', $expectedBreakup['pricing_rule_id']);
 
@@ -18965,23 +18955,9 @@ class PayoutTest extends OAuthTestCase
 
         $creditTransfer = $this->getDbLastEntity('credit_transfer');
 
-        $transaction = $this->getDbLastEntity('transaction');
-
-        $this->assertEquals($transaction['type'], 'credit_transfer');
-
         $this->assertEquals($creditTransfer['utr'], $payout['utr']);
 
         $this->assertEquals($payout['channel'], Channel::RZPX);
-
-        $destinationBalance = $this->getEntityById('balance', $bankingBalance->getId(), true);
-
-        $finalExpectedDestinationBalance = $initialDestinationBalance + $payout['amount'];
-
-        $this->assertEquals($finalExpectedDestinationBalance, $destinationBalance['balance']);
-
-        $sourceBalance = $this->getEntityById('balance', $this->bankingBalance->getId(), true);
-
-        $finalExpectedSourceBalance = $initialSourceBalance - $payout['amount'] - $payout['fees'];
 
 //        $this->assertEquals($finalExpectedSourceBalance, $sourceBalance['balance']);
     }
@@ -22027,25 +22003,10 @@ class PayoutTest extends OAuthTestCase
 
         // assertions on balance_id
         $this->assertEquals($balance->getId(), $payout->getBalanceId());
-        $this->assertEquals($payout->getBalanceId(), $txn->getBalanceId());
 
         // assertions on payout intermediate transactions
         $this->assertNull($intermediateTxn);
 
-        // assertions on closing balance
-        $this->assertEquals($balanceAfter->getBalance(),
-                            $balance->getBalance() - $payout->getAmount() - $payout->getFees());
-        $this->assertEquals($balanceAfter->getBalance(), $txn->getBalance());
-
-        // assertions on id
-        $this->assertEquals('journal1000000', $txn->getId());
-        $this->assertEquals($txn->getId(), $payout->getTransactionId());
-        $this->assertEquals('payout', $txn->getType());
-
-        // assertions on amount and fees and pricing rule id
-        $this->assertEquals($payout->getAmount() + $payout->getFees(), $txn->getAmount());
-        $this->assertEquals($payout->getFees(), $txn->getFee());
-        $this->assertEquals($payout->getTax(), $txn->getTax());
         $this->assertNotNull($payout->getPricingRuleId());
 
         $publicResponse = $payout->toArrayPublic();
@@ -22289,22 +22250,9 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($balance->getId(), $payout->getBalanceId());
         // assert that sub_balance was not picked as merchant is on ledger reverse shadow
         $this->assertNotEquals($subBalance->getId(), $payout->getBalanceId());
-        $this->assertEquals($payout->getBalanceId(), $txn->getBalanceId());
 
-        // assertions on closing balance
-        $this->assertEquals($balanceAfter->getBalance(),
-                            $balance->getBalance() - $payout->getAmount() - $payout->getFees());
-        $this->assertEquals($balanceAfter->getBalance(), $txn->getBalance());
-
-        $this->assertEquals('journal1000000', $txn->getId());
-        $this->assertEquals($txn->getId(), $payout->getTransactionId());
-        $this->assertEquals($payout->getId(), $txn->source->getId());
-        $this->assertEquals('payout', $txn->getType());
         $this->assertEquals($payoutId, $payout->getId());
 
-        $this->assertEquals($payout->getAmount() + $payout->getFees(), $txn->getAmount());
-        $this->assertEquals($payout->getFees(), $txn->getFee());
-        $this->assertEquals($payout->getTax(), $txn->getTax());
         $this->assertNotNull($payout->getPricingRuleId());
 
         $publicResponse = $payout->toArrayPublic();
@@ -24688,7 +24636,7 @@ class PayoutTest extends OAuthTestCase
         $this->app['config']->set('applications.ledger.enabled', false);
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
 
-        $this->testCreatePayout();
+        $this->testCreatePayout(true);
     }
 
     public function testCreatePayoutOnLiveModeInLedgerReverseShadowMode()
@@ -24696,12 +24644,11 @@ class PayoutTest extends OAuthTestCase
         $this->app['config']->set('applications.ledger.enabled', false);
         $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
 
-        $this->testCreatePayoutOnLiveMode();
+        $this->testCreatePayoutOnLiveMode(true);
     }
 
     public function testPayoutReversalInLedgerReverseShadowMode()
     {
-        Queue::fake();
         $this->app['config']->set('applications.ledger.enabled', false);
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
 
@@ -24730,15 +24677,10 @@ class PayoutTest extends OAuthTestCase
         $reversal = $this->getLastEntity('reversal', true);
         $this->assertEquals(2001062, $reversal['amount']);
 
-        // pushed twice
-        // once for payout creation transaction
-        // once for reversal transaction
-        Queue::assertPushed(Transactions::class, 2);
     }
 
     public function testPayoutProcessedInLedgerReverseShadowMode()
     {
-        Queue::fake();
         $this->app['config']->set('applications.ledger.enabled', false);
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
 
@@ -24759,14 +24701,10 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::PROCESSED);
         $this->assertNull($updatedPayout[Payout\Entity::REVERSED_AT]);
 
-        // pushed once for payout creation
-        Queue::assertPushed(Transactions::class, 1);
     }
 
     public function testPayoutChannelChangeWhenTxnNotCreatedInLedgerReverseShadow()
     {
-        Queue::fake();
-
         $this->app['config']->set('applications.ledger.enabled', false);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
@@ -24824,14 +24762,10 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('icici', $updatedPayout[Payout\Entity::CHANNEL]);
         $this->assertNull($updatedPayout[Payout\Entity::REVERSED_AT]);
 
-        // pushed once for payout creation
-        Queue::assertPushed(Transactions::class, 1);
     }
 
     public function testPayoutChannelChangeWhenTxnNotCreatedAndModeIsAmazonPayInLedgerReverseShadow()
     {
-        Queue::fake();
-
         $this->app['config']->set('applications.ledger.enabled', false);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
@@ -24894,9 +24828,6 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('amz_pay', $updatedPayout[Payout\Entity::CHANNEL]);
         $this->assertNull($updatedPayout[Payout\Entity::REVERSED_AT]);
 
-        // pushed once for payout creation
-        Queue::assertPushed(Transactions::class, 1);
-
         $ledgerResponse = [
             'id'               => '1000000Journal',
             'created_at'       => $updatedPayout['created_at'],
@@ -24954,20 +24885,10 @@ class PayoutTest extends OAuthTestCase
             'body' => $ledgerResponse,
         ];
 
-        // call job handle function and see nothing breaks
-        (new Transactions('test', $payoutId, 'payout', $ledgerResponse))->handle();
-
-        $updatedTxn = $this->getDbLastEntity('transaction');
-
-        $this->assertEquals($payout->getId(), $updatedTxn->getEntityId());
-        $this->assertEquals('payout', $updatedTxn->getType());
-        $this->assertEquals('amz_pay', $updatedTxn->getChannel());
     }
 
     public function testPayoutChannelChangeWhenTxnNotCreatedAndNewFtsChannelIsAxisInLedgerReverseShadow()
     {
-        Queue::fake();
-
         $this->app['config']->set('applications.ledger.enabled', false);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
@@ -25026,9 +24947,6 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('axis', $updatedPayout[Payout\Entity::CHANNEL]);
         $this->assertNull($updatedPayout[Payout\Entity::REVERSED_AT]);
 
-        // pushed once for payout creation
-        Queue::assertPushed(Transactions::class, 1);
-
         $ledgerResponse = [
             'id'               => '1000000Journal',
             'created_at'       => $updatedPayout['created_at'],
@@ -25086,20 +25004,10 @@ class PayoutTest extends OAuthTestCase
             'body' => $ledgerResponse,
         ];
 
-        // call job handle function and see nothing breaks
-        (new Transactions('test', $payoutId, 'payout', $ledgerResponse))->handle();
-
-        $updatedTxn = $this->getDbLastEntity('transaction');
-
-        $this->assertEquals($payout->getId(), $updatedTxn->getEntityId());
-        $this->assertEquals('payout', $updatedTxn->getType());
-        $this->assertEquals('axis', $updatedTxn->getChannel());
     }
 
     public function testPayoutChannelChangeWhenTxnNotCreatedAndNewFtsChannelIsRblInLedgerReverseShadow()
     {
-        Queue::fake();
-
         $this->app['config']->set('applications.ledger.enabled', false);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
@@ -25158,9 +25066,6 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('rbl', $updatedPayout[Payout\Entity::CHANNEL]);
         $this->assertNull($updatedPayout[Payout\Entity::REVERSED_AT]);
 
-        // pushed once for payout creation
-        Queue::assertPushed(Transactions::class, 1);
-
         $ledgerResponse = [
             'id'               => '1000000Journal',
             'created_at'       => $updatedPayout['created_at'],
@@ -25218,20 +25123,10 @@ class PayoutTest extends OAuthTestCase
             'body' => $ledgerResponse,
         ];
 
-        // call job handle function and see nothing breaks
-        (new Transactions('test', $payoutId, 'payout', $ledgerResponse))->handle();
-
-        $updatedTxn = $this->getDbLastEntity('transaction');
-
-        $this->assertEquals($payout->getId(), $updatedTxn->getEntityId());
-        $this->assertEquals('payout', $updatedTxn->getType());
-        $this->assertEquals('rbl', $updatedTxn->getChannel());
     }
 
     public function testPayoutChannelChangeViaReversalWhenTxnNotCreatedInLedgerReverseShadow()
     {
-        Queue::fake();
-
         $this->app['config']->set('applications.ledger.enabled', false);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
@@ -25297,9 +25192,6 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('icici', $reversal[Payout\Entity::CHANNEL]);
 
         $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
-
-        // pushed twice, once for payout creation and once for reversal
-        Queue::assertPushed(Transactions::class, 2);
     }
 
     public function testPayoutChannelChangeWhenTxnAlreadyCreatedInLedgerReverseShadow()
@@ -25312,8 +25204,6 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->getDbLastEntity('payout');
 
         $this->assertNotEquals('icici', $payout->getChannel());
-
-        $this->assertEquals($payout->getChannel(), $payout->transaction->getChannel());
 
         $payoutId = $payout->getId();
 
@@ -25355,11 +25245,9 @@ class PayoutTest extends OAuthTestCase
         $this->makeRequestAndGetContent($request);
 
         $updatedPayout    = $this->getDbEntityById('payout', $payoutId)->toArray();
-        $updatedPayoutTxn = $this->getDbEntity('transaction', ['entity_id' => $payoutId])->toArray();
 
         $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::PROCESSED);
         $this->assertEquals('icici', $updatedPayout[Payout\Entity::CHANNEL]);
-        $this->assertEquals('icici', $updatedPayoutTxn[TransactionEntity::CHANNEL]);
         $this->assertNull($updatedPayout[Payout\Entity::REVERSED_AT]);
     }
 
@@ -25374,8 +25262,6 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->getDbLastEntity('payout');
 
         $this->assertNotEquals('icici', $payout->getChannel());
-
-        $this->assertEquals($payout->getChannel(), $payout->transaction->getChannel());
 
         $payoutId = $payout->getId();
 
@@ -25418,13 +25304,11 @@ class PayoutTest extends OAuthTestCase
 
         $updatedPayout      = $this->getDbEntityById('payout', $payoutId)->toArray();
         $reversal           = $this->getDbLastEntity('reversal')->toArray();
-        $updatedReversalTxn = $this->getDbEntity('transaction', ['entity_id' => $reversal['id']])->toArray();
 
         $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::REVERSED);
         $this->assertEquals('icici', $updatedPayout[Payout\Entity::CHANNEL]);
 
         $this->assertEquals('icici', $reversal[Payout\Entity::CHANNEL]);
-        $this->assertEquals('icici', $updatedReversalTxn[TransactionEntity::CHANNEL]);
 
         $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
     }
@@ -26273,26 +26157,6 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
         $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
         $this->assertEquals($payout['channel'], 'icici');
-
-        // Verify transaction entity
-        $txn   = $this->getLastEntity('transaction', true, 'live');
-        $txnId = str_after($txn['id'], 'txn_');
-
-        $this->assertEquals($payout['transaction_id'], $txn['id']);
-        $this->assertNotNull($txn['balance_id']);
-        $this->assertNotNull($txn['posted_at']);
-
-        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true, 'live');
-
-        $expectedBreakup = [
-            'name'            => "payout",
-            'transaction_id'  => $txnId,
-            'pricing_rule_id' => "Bbg7cl6t6I3XA9",
-            'percentage'      => null,
-            'amount'          => 0,
-        ];
-
-        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
 
         $counter1->reload();
 
@@ -27912,11 +27776,7 @@ class PayoutTest extends OAuthTestCase
 
         $payoutReversal->reload();
 
-        $txn = $this->getDbLastEntity('transaction');
-
         $this->assertEquals(Status::REVERSED, $payout['status']);
-
-        $this->assertEquals($payoutReversal->getTransactionId(), $txn->getId());
 
         $newTxn = $this->getDbEntity('transaction', ['entity_id' => $newReversal->getId()]);
 
@@ -28221,18 +28081,8 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(900, $payout['fees']);
         $this->assertEquals('reward_fee', $payout['fee_type']);
 
-        $txn = $this->getLastEntity('transaction', true);
-        $this->assertEquals($payout['transaction_id'], $txn['id']);
-        $this->assertNotNull($txn['balance_id']);
-        $this->assertEquals(0, $txn['tax']);
-        $this->assertEquals(900, $txn['fee']);
-        $this->assertEquals('reward_fee', $txn['credit_type']);
-        $this->assertEquals(900, $txn['fee_credits']);
-
         $balance = $this->getLastEntity('balance', true);
         $this->assertEquals('shared', $balance['account_type']);
-
-        $this->assertEquals($balanceBefore - 2000000, $balance['balance']);
 
         $creditEntity = $this->getLastEntity('credits', true);
         $this->assertEquals(900, $creditEntity['used']);
@@ -28262,9 +28112,6 @@ class PayoutTest extends OAuthTestCase
         //get reversal and check posted_at in reversal txn
         $payoutReversal = $this->getDbLastEntity('reversal');
 
-        $txn = $this->getLastEntity('transaction', true);
-        $this->assertNotNull($txn['posted_at']);
-
         $creditEntity = $this->getLastEntity('credits', true);
         $this->assertEquals(0, $creditEntity['used']);
 
@@ -28275,7 +28122,6 @@ class PayoutTest extends OAuthTestCase
         $reversal = $this->getLastEntity('reversal', true);
         $this->assertEquals(2000000, $reversal['amount']);
 
-        $this->assertEquals(substr($txn['id'], strlen('txn_')), $reversal['transaction_id']);
     }
 
     public function testPayoutInitiatedInLedgerCron()
@@ -31386,7 +31232,6 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreationOfInternalEntityWhenInterAccountTestPayoutIsProcessedInLedgerReverseShadow()
     {
-        Queue::fake();
         $this->app['config']->set('applications.ledger.enabled', false);
         $this->fixtures->merchant->addFeatures([
                                                    Feature\Constants::INTER_ACCOUNT_TEST_PAYOUT,
@@ -31449,8 +31294,6 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('test_payout', $internalEntity->getRemarks());
         $this->assertNull($internalEntity->getBankName());
 
-        //Pushed once for payout create transaction
-        Queue::assertPushed(Transactions::class, 1);
     }
 
     public function testStatusChangeOfInternalEntityWhenInterAccountTestPayoutIsReversedInledgerReverseShadow()
@@ -31473,8 +31316,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($reversal->getEntityId(), $payout->getId());
         $this->assertEquals('reversed', $payout->getStatus());
         $this->assertEquals('failed', $internalEntity->getStatus());
-        // pushed once for payout creation transaction and once for reversal transaction
-        Queue::assertPushed(Transactions::class, 2);
+
     }
 
     public function testNoCreationOfInternalEntityForTestPayoutWhenBeneAccountIsNotWhitelisted()
