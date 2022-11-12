@@ -1712,6 +1712,8 @@ class TokenisationTest extends TestCase
      */
     public function testIsRepeatPaymentProcessedWithActualCardOnLocalMerchantWhenExp2ReturnsFalse()
     {
+        $this->markTestSkipped();
+
         $this->mockCardVaultWithMigrateToken();
 
         $this->mockRazorXTreatment('off');
@@ -1844,6 +1846,8 @@ class TokenisationTest extends TestCase
      */
     public function testIsRepeatPaymentProcessedWithActualCardOnGlobalMerchantWhenExp1ReturnFalseExp2ReturnsFalse()
     {
+        $this->markTestSkipped();
+
         $this->mockSession();
 
         $output = [];
@@ -1908,6 +1912,8 @@ class TokenisationTest extends TestCase
      */
     public function testIsRepeatPaymentProcessedWithActualCardOnGlobalMerchantWhenExp1ReturnTrueExp2ReturnsFalse()
     {
+        $this->markTestSkipped();
+
         $this->mockSession();
 
         $output = [

@@ -408,6 +408,8 @@ class CardVault
 
         $headers[self::X_RAZORPAY_TASKID] = $this->request->getTaskId();
 
+        $headers['X-Razorpay-Mode'] =  $this->app['rzp.mode'] ?? Mode::LIVE;
+
         $options = [
             'timeout' => self::REQUEST_TIMEOUT,
             'auth' => [

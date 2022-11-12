@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Customer\Token;
 
+use RZP\Constants\Environment;
 use RZP\Diag\EventCode;
 use Aws\Ec2\Exception\Ec2Exception;
 use phpseclib\Crypt\AES;
@@ -678,7 +679,7 @@ class Service extends Base\Service
 
         try
         {
-            if (($this->merchant->isTokenizationEnabled() === true ) && ($mode === Mode::LIVE))
+            if (($this->merchant->isTokenizationEnabled() === true ) && (($mode === Mode::LIVE) || app()->isEnvironmentQA() === true))
             {
                 (new Validator)->validateInput(Validator::FETCH_TOKEN, $input);
 

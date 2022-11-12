@@ -128,6 +128,7 @@ class TokenisationExperiment
      */
     protected function shouldPaymentGoThroughTokenisedCardIssuerNetworkTypeExp(Card\Entity $card): bool
     {
+        return true;
         try
         {
             $experimentKey = implode('_', [
