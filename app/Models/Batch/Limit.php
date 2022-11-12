@@ -46,6 +46,7 @@ class Limit
         Type::RECURRING_CHARGE_BSE                  => 50000,
         Type::AUTH_LINK                             => 500100,
         Type::RECURRING_CHARGE                      => 500100,
+        Type::RECURRING_CHARGE_BULK                 => 500100,
         Type::RECURRING_CHARGE_AXIS                 => 500100,
         Type::SUB_MERCHANT                          => 5000,
         Type::MERCHANT_UPLOAD_MIQ                   => 1000,

@@ -24,8 +24,6 @@ class Sbi extends Base
         if(isset($row["Mandate Holder's Account No"]) === true)
         {
             $row["Mandate Holder’s Account No"] = $row["Mandate Holder's Account No"];
-
-            unset($row["Mandate Holder's Account No"]);
         }
 
         return [
@@ -117,5 +115,10 @@ class Sbi extends Base
         );
 
         return (strtolower($variant) === 'on');
+    }
+
+    protected function getBankStatus($status): string
+    {
+        return Netbanking\Sbi\Emandate\Status::bankMappedStatus($status);
     }
 }

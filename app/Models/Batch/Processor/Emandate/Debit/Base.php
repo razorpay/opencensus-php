@@ -6,6 +6,7 @@ use RZP\Constants\HyperTrace;
 use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Gateway;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Base\RuntimeManager;
@@ -383,7 +384,12 @@ class Base extends BaseProcessor
         }
     }
 
-    public function deletePaymentFromRedis(array $entries){
+    public function deletePaymentFromRedis(array $entries)
+    {
+        if($this->gateway !== Gateway::ENACH_NPCI_NETBANKING){
+            return false;
+        }
+
         try
         {
             $redisKey = $this->getRedisKey($entries);
