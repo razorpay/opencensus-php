@@ -52,6 +52,12 @@ class Service extends Base\Service
      */
     const BILLDESK_CANCELLED_TXN_FETCH_QUERY_LIMIT = 200;
 
+    const VPA = 'vpa';
+
+    const IFSC = 'ifsc';
+
+    const NAME = 'name';
+
     protected $core;
 
     protected $messenger;
@@ -1080,6 +1086,8 @@ class Service extends Base\Service
             $gatewayPayment->setNpciReferenceId($input['upi']['npci_reference_id']);
         }
 
+        $this->updateAccountDetails($input['upi'], $gatewayPayment);
+
         $gatewayPayment->setReconciledAt($input['reconciled_at']);
 
         $this->repo->saveOrFail($gatewayPayment);
@@ -1114,9 +1122,67 @@ class Service extends Base\Service
 
         $transaction->setReconciledType($input['reconciled_type']);
 
-        $transaction->setGatewayAmount($input['amount']);
+        if ($payment->getMethod() !== Payment\Method::UPI)
+        {
+            $transaction->setGatewayAmount($input['amount']);
+        }
 
         $this->repo->saveOrFail($transaction);
+    }
+
+    /**
+     *  Persists the vpa and provider details
+     * @param array $input
+     * @param Entity $gatewayPayment
+     */
+    protected function updateAccountDetails(array $input, Entity $gatewayPayment)
+    {
+        $payerVpa = $gatewayPayment->getVpa();
+
+        $reconVpa = $input[self::VPA] ?? null;
+
+        $accountDetails = [];
+
+        if (empty($input[self::VPA]) === false)
+        {
+            $accountDetails[self::VPA] = $input[self::VPA];
+        }
+
+        if (empty($input[self::IFSC]) === false)
+        {
+            $accountDetails[self::IFSC] = $input[self::IFSC];
+        }
+
+        if (empty($input[self::NAME]) === false)
+        {
+            $accountDetails[self::NAME] = $input[self::NAME];
+        }
+
+        if (($payerVpa === null) and
+            (empty($reconVpa) === false))
+        {
+            $gatewayPayment->fill($accountDetails);
+
+            $gatewayPayment->generatePspData($accountDetails);
+
+            return;
+        }
+
+        if ((empty($payerVpa) === false) and
+            (empty($reconVpa) === false))
+        {
+            if (strtolower($payerVpa) !== strtolower($reconVpa))
+            {
+                $this->trace->info(TraceCode::RECON_INFO_ALERT, [
+                    'message' => 'Payer VPA is not same as in recon',
+                    'info_code' => InfoCode::VPA_MISMATCH,
+                    'payment_id' => $gatewayPayment->getPaymentId(),
+                    'api_vpa' => $payerVpa,
+                    'recon_vpa' => $reconVpa,
+                    'gateway' => $gatewayPayment->getGateway()
+                ]);
+            }
+        }
     }
 
     protected function getRequestSource(array $input): string

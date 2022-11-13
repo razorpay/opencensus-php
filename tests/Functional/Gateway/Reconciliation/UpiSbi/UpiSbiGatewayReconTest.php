@@ -446,9 +446,17 @@ class UpiSbiGatewayReconTest extends TestCase
 
         $content['reconciled_at'] = Carbon::now(Timezone::IST)->getTimestamp();
 
+        $upiEntity = $this->getDbLastEntity('upi');
+
         $response = $this->makeUpdatePostReconRequestAndGetContent($content);
 
         $upiEntity = $this->getDbLastEntity('upi');
+
+        $this->assertNotEmpty($upiEntity['vpa']);
+
+        $this->assertNotEmpty($upiEntity['provider']);
+
+        $this->assertNotEmpty($upiEntity['bank']);
 
         $this->assertNotEmpty($upiEntity['reconciled_at']);
 

@@ -862,11 +862,14 @@ class UpiIciciGatewayReconTest extends TestCase
 
         $upiEntity = $this->getDbLastEntity('upi');
 
+        print_r($upiEntity);
         $this->assertNotEmpty($upiEntity['reconciled_at']);
 
         $this->assertEquals($content['upi']['npci_reference_id'], $upiEntity['npci_reference_id']);
 
         $this->assertEquals($content['upi']['gateway_payment_id'], $upiEntity['gateway_payment_id']);
+
+        $this->assertNotEmpty($upiEntity['vpa']);
 
         $updatedTransactionEntity = $this->getDbLastEntity('transaction');
 
@@ -934,7 +937,7 @@ class UpiIciciGatewayReconTest extends TestCase
 
             $upiEntity = $this->getDbLastEntity('upi');
 
-            $this->fixtures->edit('upi', $upiEntity['id'], ['npci_reference_id' => $rrn, 'gateway' => 'upi_icici']);
+            $this->fixtures->edit('upi', $upiEntity['id'], ['npci_reference_id' => $rrn, 'gateway' => 'upi_icici','vpa' => 'test@icici', 'bank' => 'icici', 'provider' => 'icici']);
         }
 
         foreach ($payments as $payment)

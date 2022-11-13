@@ -4,7 +4,7 @@ namespace RZP\Tests\Functional\Gateway\Reconciliation\UpiAxis;
 
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
-
+use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -327,6 +327,93 @@ class UpiAxisReconTest extends TestCase
         $this->assertNull($transaction3['items'][0]['reconciled_at']);
     }
 
+    public function testInvalidUpiAxisUpdateReconData()
+    {
+        $this->payment = $this->doUpiAxisPayment();
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->fixtures->edit('transaction', $transaction['id'], ['reconciled_at' => Carbon::now(Timezone::IST)->getTimestamp()]);
+
+        $content = $this->getDefaultUpiPostReconArray();
+
+        $content['payment_id'] = $this->payment->getId();
+
+        unset($content['upi']['npci_reference_id']);
+        unset($content['reconciled_at']);
+
+        $this->makeRequestAndCatchException(function() use ($content)
+        {
+            $request = [
+                'url'    => '/reconciliate/data',
+                'method' => 'POST',
+                'content' => $content,
+            ];
+
+            $this->ba->appAuth();
+
+            $this->makeRequestAndGetContent($request);
+        }, Exception\BadRequestValidationFailureException::class);
+    }
+
+    public function testUpiAxisUpdateAlreadyReconciled()
+    {
+        $this->payment = $this->doUpiAxisPayment();
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->fixtures->edit('transaction', $transaction['id'], ['reconciled_at' => Carbon::now(Timezone::IST)->getTimestamp()]);
+
+        $content = $this->getDefaultUpiPostReconArray();
+
+        $content['payment_id'] = $this->payment->getId();
+
+        $response = $this->makeUpdatePostReconRequestAndGetContent($content);
+
+        $this->assertFalse($response['success']);
+
+        $this->assertEquals('ALREADY_RECONCILED', $response['error']['code']);
+    }
+
+    public function testUpiAxisUpdatePostReconData()
+    {
+        $this->payment = $this->doUpiAxisPayment();
+
+        $content = $this->getDefaultUpiPostReconArray();
+
+        $content['payment_id'] = $this->payment->getId();
+
+        $content['reconciled_at'] = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $content['upi']['vpa'] = "test@axis";
+
+        $content['upi']['ifsc'] = "AXIS003421Y3T";
+
+        $content['upi']['name'] = "TESTACCOUNT";
+
+        $response = $this->makeUpdatePostReconRequestAndGetContent($content);
+
+        $upiEntity = $this->getDbLastEntity('upi');
+
+        $this->assertEquals('test@axis', $upiEntity['vpa']);
+
+        $this->assertEquals('AXIS003421Y3T', $upiEntity['ifsc']);
+
+        $this->assertEquals('TESTACCOUNT', $upiEntity['name']);
+
+        $this->assertNotEmpty($upiEntity['reconciled_at']);
+
+        $this->assertEquals($content['upi']['npci_reference_id'], $upiEntity['npci_reference_id']);
+
+        $this->assertEquals($content['upi']['gateway_payment_id'], $upiEntity['gateway_payment_id']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotEmpty($transactionEntity['reconciled_at']);
+
+        $this->assertTrue($response['success']);
+    }
+
     protected function overrideUpiAxisPayment(array $upiEntity)
     {
         $facade = $this->testData['upiAxis'];
@@ -473,5 +560,18 @@ class UpiAxisReconTest extends TestCase
             filesize($url),
             null,
             true);
+    }
+
+    private function makeUpdatePostReconRequestAndGetContent(array $input)
+    {
+        $request = [
+            'method'  => 'POST',
+            'content' => $input,
+            'url'     => '/reconciliate/data',
+        ];
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
     }
 }
