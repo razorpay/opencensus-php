@@ -542,6 +542,12 @@ class Core extends Merchant\Core
                 {
                     $submerchantConfig = $applicationConfig->getSubMerchantConfig();
 
+                    //If GMV limit is set in test mode without workflow, the config fetched will be of type string and it needs type conversion to array to be processed further
+                    if(is_string($submerchantConfig) === true)
+                    {
+                        $submerchantConfig = json_decode($submerchantConfig, true);
+                    }
+
                     if(empty($submerchantConfig) === false and
                         array_key_exists(ConfigConstants::GMV_LIMIT,$submerchantConfig) === true and
                         empty($submerchantConfig[ConfigConstants::GMV_LIMIT]) === false)
