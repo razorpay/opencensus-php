@@ -167,6 +167,7 @@ class Core extends Base\Core
 
     const REDIS_KEY_PREFIX                     = 'ps_data_migration_';
     const MAX_ATTEMPTS_FOR_DATA_MIGRATION      = 10;
+    const BUFFER_FOR_DATA_MIGRATION            = 10;
     const PS_DATA_MIGRATION_LIMIT              = 10;
     const MUTEX_LOCK_TIMEOUT_PS_DATA_MIGRATION = 180;
 
@@ -7483,6 +7484,16 @@ class Core extends Base\Core
         {
             $limit = self::MAX_ATTEMPTS_FOR_DATA_MIGRATION;
         }
+
+        $buffer = (int) (new AdminService)->getConfigKey(
+            ['key' => ConfigKey::PAYOUT_SERVICE_DATA_MIGRATION_BUFFER]);
+
+        if (empty($limit) === true)
+        {
+            $buffer = self::BUFFER_FOR_DATA_MIGRATION;
+        }
+
+        $input['buffer'] = $buffer;
 
         return $this->mutex->acquireAndRelease(
             $redisKey,

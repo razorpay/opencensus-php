@@ -119,6 +119,7 @@ class Validator extends Base\Validator
 
         ConfigKey::PAYOUT_SERVICE_DATA_MIGRATION_LIMIT_PER_BATCH            => 'filled|integer',
         ConfigKey::PAYOUT_SERVICE_DATA_MIGRATION_BATCH_ATTEMPTS             => 'filled|integer',
+        ConfigKey::PAYOUT_SERVICE_DATA_MIGRATION_BUFFER                     => 'filled|integer',
         ConfigKey::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING            => 'filled|integer',
         ConfigKey::RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT    => 'filled|integer',
         ConfigKey::ICICI_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT  => 'filled|integer',

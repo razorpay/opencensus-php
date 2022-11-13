@@ -2586,6 +2586,11 @@ class Repository extends Base\Repository
         $createdAtStart = $queryParams[self::CREATED_AT];
         $limit          = $queryParams[self::LIMIT];
 
+        if (array_key_exists('buffer', $queryParams) === true)
+        {
+            $createdAtStart = $createdAtStart - $queryParams['buffer'];
+        }
+
 
         return $this->newQueryWithConnection($this->getReportingReplicaConnection())
                     ->whereBetween(Entity::CREATED_AT, [$createdAtStart, $createdAtEnd])

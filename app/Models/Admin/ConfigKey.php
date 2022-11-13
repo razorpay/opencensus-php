@@ -109,6 +109,7 @@ class ConfigKey
     const PAYOUT_SERVICE_DATA_MIGRATION_LIMIT_PER_BATCH = self::PREFIX . 'payout_service_data_migration_limit_per_batch';
 
     const PAYOUT_SERVICE_DATA_MIGRATION_BATCH_ATTEMPTS = self::PREFIX . 'payout_service_data_migration_batch_attempts';
+    const PAYOUT_SERVICE_DATA_MIGRATION_BUFFER         = self::PREFIX . 'payout_service_data_migration_buffer';
 
     // while creating payouts we fetch balance from gateway at a frequency decided in SLA.
     // So if last fetched at was while ago greater than this value, then we will fetch balance
@@ -484,6 +485,7 @@ class ConfigKey
         self::PAYOUT_SERVICE_DATA_MIGRATION_BATCH_ATTEMPTS,
         self::ONDEMAND_SETTLEMENT_INTERNAL_MERCHANTS,
         self::MCC_DEFAULT_MARKDOWN_PERCENTAGE,
+        self::PAYOUT_SERVICE_DATA_MIGRATION_BUFFER,
     ];
 
     const REDIS_CONFIG_MAP = [
