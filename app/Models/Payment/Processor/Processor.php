@@ -3921,6 +3921,11 @@ class Processor
                 //Add delay of 10 minutes
                 $waitTime = 600;
 
+                //if card gateway is authorizeVerify then waitTime is 0
+                if ($authorizeVerifyCardGateways === 'on'){
+                    $waitTime = 60;
+                }
+
                 $queueName = $this->app['config']->get('queue.barricade_verify.' . $this->mode);
 
                 $this->app['queue']->connection('sqs')->later($waitTime, "Barricade Queue Push", json_encode($data), $queueName);
