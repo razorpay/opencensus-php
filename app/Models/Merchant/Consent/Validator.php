@@ -18,15 +18,18 @@ class Validator extends Base\Validator
         //failed call to bvs has failed
         Entity::STATUS                                 => 'required|string|nullable|in:success,failed,pending,initiated',
         Entity::DETAILS_ID                             => 'sometimes|string|size:14',
-        Entity::CONSENT_FOR                            => 'required|string|in:'.Constants::CONSENT_KEYS,
+        Entity::CONSENT_FOR                            => 'required|string|in:' . Constants::CONSENT_KEYS,
         Entity::METADATA                               => 'sometimes|array',
         Entity::METADATA . '.' . Constants::IP         => 'sometimes|ip|nullable',
         Entity::METADATA . '.' . Constants::USER_AGENT => 'sometimes|nullable',
     ];
 
     protected static $editRules   = [
-        Entity::REQUEST_ID => 'sometimes|string|size:14|nullable',
-        Entity::STATUS     => 'required|string|nullable|in:success,failed,pending,initiated',
-        Entity::METADATA   => 'sometimes|array',
+        Entity::REQUEST_ID  => 'sometimes|string|size:14|nullable',
+        Entity::STATUS      => 'required|string|nullable|in:success,failed,pending,initiated',
+        Entity::METADATA    => 'sometimes|array',
+        Entity::UPDATED_AT  => 'sometimes',
+        Entity::RETRY_COUNT => 'sometimes|integer'
+
     ];
 }

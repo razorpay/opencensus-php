@@ -4103,6 +4103,107 @@ class ActivationTest extends OAuthTestCase
         $this->assertEquals($merchantDetail->getBankDetailsVerificationStatus(),'failed');
     }
 
+    public function testStoreLegalDocumentsRetryCronFailedWitNoValidMerchant()
+    {
+
+        Config::set('services.bvs.mock', true);
+
+        $this->fixtures->create('merchant_detail',
+                                [
+                                    'promoter_pan_name' => 'sdfds',
+                                    'merchant_id'       => '10000000000000',
+                                    'business_name'     => 'sdfds',
+                                    'contact_mobile'    => '12345566'
+                                ]);
+
+        $this->fixtures->create('merchant_consent_details');
+
+        $this->fixtures->create('merchant_consents');
+
+        $this->ba->cronAuth();
+
+        $testData = $this->testData['testStoreLegalDocumentsRetryCron'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $merchantConsent = $this->getLastEntity('merchant_consents', true);
+
+        $this->assertEquals('failed', $merchantConsent['status']);
+
+    }
+
+    public function testStoreLegalDocumentsRetryCronFailedWithValidMerchant()
+    {
+        Config::set('services.bvs.mock', true);
+
+        $this->fixtures->create('merchant_detail',
+                                [
+                                    'promoter_pan_name' => 'sdfds',
+                                    'merchant_id'       => '10000000000000',
+                                    'business_name'     => 'sdfds',
+                                    'contact_mobile'    => '12345566'
+                                ]);
+
+        $this->fixtures->create('merchant_consent_details',
+                                [
+                                    'id' => 'KdwZeHbUYIqVnW'
+                                ]);
+
+        $this->fixtures->create('merchant_consents',
+                                [
+                                    'details_id' => 'KdwZeHbUYIqVnW'
+                                ]);
+
+        $this->ba->cronAuth();
+
+        $testData = $this->testData['testStoreLegalDocumentsRetryCron'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $merchantConsent = $this->getLastEntity('merchant_consents', true);
+
+        $this->assertEquals('initiated', $merchantConsent['status']);
+
+    }
+
+    public function testStoreLegalDocumentsRetryCronSuccess()
+    {
+
+        $this->fixtures->create('merchant_consents', [
+            'status' => 'success'
+        ]);
+
+        $this->ba->cronAuth();
+
+        $testData = $this->testData['testStoreLegalDocumentsRetryCron'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $merchantConsent = $this->getLastEntity('merchant_consents', true);
+
+        $this->assertEquals('success', $merchantConsent['status']);
+
+    }
+
+    public function testStoreLegalDocumentsRetryCountExceeded()
+    {
+
+        $this->fixtures->create('merchant_consents', [
+            'retry_count' => '3'
+        ]);
+
+        $this->ba->cronAuth();
+
+        $testData = $this->testData['testStoreLegalDocumentsRetryCron'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $merchantConsent = $this->getLastEntity('merchant_consents', true);
+
+        $this->assertEquals('failed', $merchantConsent['status']);
+
+    }
+
     public function testPennyTestingCronFailure()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
@@ -4953,5 +5054,33 @@ class ActivationTest extends OAuthTestCase
         $this->assertTrue($merchant->isInternational());
 
         $this->assertFalse($merchant->convertOnApi());
+    }
+
+    public function testStorageConsentForInstantlyActivatedMerchantWithL2Milestone()
+    {
+        Mail::fake();
+
+        Config::set('services.bvs.mock', true);
+
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->setupKycSubmissionForInstantlyActivatedMerchant($merchantId);
+
+        $this->startTest();
+
+        Mail::assertQueued(NotifyActivationSubmission::class);
+    }
+
+    public function testStorageConsentNullForMerchantWithL2Milestone()
+    {
+        Mail::fake();
+
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->setupKycSubmissionForInstantlyActivatedMerchant($merchantId);
+
+        $this->startTest();
+
+        Mail::assertQueued(NotifyActivationSubmission::class);
     }
 }

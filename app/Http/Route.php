@@ -3400,7 +3400,7 @@ class Route
         'retry_penny_testing_cron'                => ['post',      'merchants/retry_penny_testing',                           'MerchantController@retryPennyTestingCron'                 ],
 
         //cron job to retry storing legal documents
-        'retry_store_legal_documents_cron'        => ['post',      'merchants/retry_store_legal_documents',                   'MerchantController@retryStoreLegalDocuments'                 ],
+        'retry_store_legal_documents_cron'        => ['post',      'merchant/retry_store_legal_documents',                   'MerchantController@retryStoreLegalDocuments'                 ],
 
         // low balance notification config apis
         'create_low_balance_config'               => ['post',       'low_balance_configs',                    'LowBalanceConfigController@create'],
@@ -4128,7 +4128,7 @@ class Route
         'app_fetch_tokens_v2',
         'app_delete_tokens_v2',
         '1cc_shopify_add_checkout_url',
-        '1cc_shopify_add_checkout_url_preflight',
+        '1cc_shopify_add_checkout_url_preflight'
     ];
 
     public static $device = [
@@ -4594,6 +4594,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'retry_store_legal_documents_cron',
         '1cc_shipping_service_merchant_config_create',
         '1cc_shipping_service_merchant_config_update_by_type',
         '1cc_shipping_service_remove_shipping_providers',
@@ -5043,7 +5044,6 @@ class Route
         'update_admin_through_batch',
         'merchant_create_terminal_internal',
         'retry_penny_testing_cron',
-        'retry_store_legal_documents_cron',
         'merchant_methods_edit_internal',
         'refund_create_batch_service',
         'methods_update_merchants_internal',
@@ -5760,6 +5760,7 @@ class Route
         'merchant_gstin_self_serve_update',
         'merchant_international_toggle',
         'merchant_activation_details',
+        'retry_store_legal_documents_cron',
         'fetch_merchant_escalation',
         'fetch_merchant_sr',
         'merchant_aov_config',
@@ -7909,6 +7910,7 @@ class Route
         'merchant_logs_fetch'                      => Permission::VIEW_MERCHANT,
         'merchant_get_terminals'                   => Permission::VIEW_TERMINAL,
         'merchant_activation_details'              => Permission::VIEW_MERCHANT,
+        'retry_store_legal_documents_cron'         => Permission::VIEW_MERCHANT,
         'fetch_merchant_escalation'                => Permission::VIEW_MERCHANT,
         'merchant_aov_config'                      => Permission::VIEW_MERCHANT,
         'merchant_fetch'                           => Permission::VIEW_MERCHANT,

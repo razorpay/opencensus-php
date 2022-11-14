@@ -33,7 +33,7 @@ class CreateMerchantConsentsTable extends Migration
             $table->string(Entity::STATUS, 30)
                   ->nullable();
 
-            $table->integer(Entity::DETAILS_ID)
+            $table->char(Entity::DETAILS_ID)
                   ->nullable();
 
             $table->string(Entity::CONSENT_FOR, 100)->nullable();
@@ -43,6 +43,10 @@ class CreateMerchantConsentsTable extends Migration
             $table->bigInteger(Entity::UPDATED_AT);
 
             $table->index(Entity::STATUS);
+
+            $table->integer(Entity::RETRY_COUNT);
+
+            $table->index(Entity::CREATED_AT);
 
         });
     }

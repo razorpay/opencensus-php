@@ -3,88 +3,86 @@
 
 namespace RZP\Models\Merchant\Consent;
 
+use Illuminate\Support\Facades\DB;
 use RZP\Base\ConnectionType;
 use RZP\Constants\Table;
-use RZP\Models\Base\RepositoryUpdateTestAndLive;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Consent\Details as ConsentDetails;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryUpdateTestAndLive
-    {
-        saveOrFail as saveOrFailTestAndLive;
-    }
 
     protected $entity = 'merchant_consents';
 
-    public function getConsentDetailsForMerchantIdandConsentFor(string $merchantId, string $activationFormMilestone, string $connectionType = null)
+    public function getConsentDetailsForMerchantIdAndConsentFor(string $merchantId, array $validLegalDocs, string $connectionType = null)
     {
-        if($connectionType === null)
+        if ($connectionType === null)
         {
             $connectionType = ConnectionType::REPLICA;
         }
 
         return $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
-            ->where(Entity::MERCHANT_ID, '=', $merchantId)
-            ->where(Entity::CONSENT_FOR, 'LIKE', $activationFormMilestone . '%')
-            ->orderBy(Entity::CREATED_AT, 'desc')
-            ->first();
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->whereIn(Entity::CONSENT_FOR, $validLegalDocs)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->first();
     }
 
-    public function updateStatusForMerchantIdAndConsentFor(string $merchantId, string $activationFormMilestone, string $status, $updatedAt, $requestId)
-    {
-        return $this->newQuery()
-            ->where(Entity::MERCHANT_ID, '=', $merchantId)
-            ->where(Entity::CONSENT_FOR, 'LIKE', $activationFormMilestone . '%')
-            ->where(Entity::STATUS, '<>',  Constants::SUCCESS)
-            ->update(array(
-                'status' => $status,
-                'updated_at' => $updatedAt,
-                'request_id' => $requestId
-            ));
-    }
-
-    public function updateStatusForRequestIdandConsentFor($id, $consentFor, $updatedAt, $status)
-    {
-        return $this->newQuery()
-            ->where(Entity::REQUEST_ID, '=', $id)
-            ->where(Entity::CONSENT_FOR, '=', $consentFor)
-            ->update(array(
-                'status' => $status,
-                'updated_at' => $updatedAt
-            ));
-    }
-
-    public function getUniqueMerchantIdsWithFailedConsents($lastCronJobTime)
+    public function getUniqueMerchantIdsWithConsentsNotSuccess(array $validLegalDocs, $intervalTime)
     {
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
-            ->select(Entity::MERCHANT_ID)
-            ->where(Entity::STATUS, '=', Constants::FAILED)
-            ->where(Entity::UPDATED_AT, '>', $lastCronJobTime)
-            ->distinct()
-            ->get()
-            ->pluck(Entity::MERCHANT_ID)
-            ->toArray();
+                    ->select(Entity::MERCHANT_ID)
+                    ->where(Entity::STATUS, '<>', Constants::SUCCESS)
+                    ->where(Entity::RETRY_COUNT, '<', Constants::STORE_CONSENTS_MAX_ATTEMPT)
+                    ->whereIn(Entity::CONSENT_FOR, $validLegalDocs)
+                    ->where(Entity::CREATED_AT, '>', $intervalTime)
+                    ->distinct()
+                    ->get()
+                    ->pluck(Entity::MERCHANT_ID)
+                    ->toArray();
     }
 
-    public function getFailedConsentDetailsForMerchants($merchantId, $lastCronJobTime)
+    public function getFailedConsentDetailsForMerchants($merchantId)
     {
-        $consentDetailsIdColumn           = $this->dbColumn(Entity::DETAILS_ID);
-        $detailIdColumn                   = $this->repo->merchant_consent_details->dbColumn(ConsentDetails\Entity::ID);
+        $consentDetailsIdColumn = $this->dbColumn(Entity::DETAILS_ID);
+        $detailIdColumn         = $this->repo->merchant_consent_details->dbColumn(ConsentDetails\Entity::ID);
 
+        $url        = $this->repo->merchant_consent_details->dbColumn(ConsentDetails\Entity::URL);
+        $consentFor = $this->dbColumn(Entity::CONSENT_FOR);
+        $retryCount = $this->dbColumn(Entity::RETRY_COUNT);
+
+        $userAttrs = [
+            $url,
+            $consentDetailsIdColumn,
+            $consentFor,
+            $retryCount
+        ];
+
+        return $this->newQuery()
+                    ->select($userAttrs)
+                    ->join(Table::MERCHANT_CONSENT_DETAILS, $detailIdColumn, '=', $consentDetailsIdColumn)
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Entity::STATUS, '<>', Constants::SUCCESS)
+                    ->where(Entity::RETRY_COUNT, '<', Constants::STORE_CONSENTS_MAX_ATTEMPT)
+                    ->whereNotNull(Entity::DETAILS_ID)
+                    ->get();
+    }
+
+    public function getConsentDetailsForRequestId($requestId, $consentFor)
+    {
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
-            ->join(Table::MERCHANT_CONSENT_DETAILS, $detailIdColumn, '=', $consentDetailsIdColumn)
-            ->select(
-                ConsentDetails\Entity::URL,
-                Entity::DETAILS_ID,
-                Entity::USER_ID,
-                Entity::METADATA,
-                Entity::CONSENT_FOR,
-                Entity::AUDIT_ID)
-            ->where(Entity::MERCHANT_ID, '=', $merchantId)
-            ->where(Entity::STATUS, '=', Constants::FAILED)
-            ->where(Entity::UPDATED_AT, '>', $lastCronJobTime);
+                    ->where(Entity::REQUEST_ID, '=', $requestId)
+                    ->where(Entity::CONSENT_FOR, '=', $consentFor)
+                    ->first();
+    }
+
+    public function fetchMerchantConsentDetails($merchantId, $type)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Entity::CONSENT_FOR, '=', $type)
+                    ->where(Entity::STATUS, '<>', Constants::SUCCESS)
+                    ->first();
     }
 
 }

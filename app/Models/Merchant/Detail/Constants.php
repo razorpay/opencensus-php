@@ -274,6 +274,9 @@ class Constants
     const L1_SUBMISSION = 'L1';
     const L2_SUBMISSION = 'L2';
 
+    const INITIATED         = 'initiated';
+    const DUMMY_REQUEST_ID  = 'KdsshbadDzab81';
+
     const CONSENT = 'consent';
     const DOCUMENTS_DETAIL = 'documents_detail';
     const URL = 'url';

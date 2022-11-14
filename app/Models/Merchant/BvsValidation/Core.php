@@ -593,18 +593,48 @@ class Core extends Base\Core
 
     private function processDocuments($id, array $payload)
     {
-        $documentsDetail =  $payload[Constants::DOCUMENTS_DETAIL];
+        $documentsDetail = $payload[Constants::DOCUMENTS_DETAIL];
 
         foreach ($documentsDetail as $documentDetail)
         {
+            //To make this code extensible, prefix can be replaced with a check on new legal doc column in
+            // merchant consents table
             $consentFor = "L2_" . $documentDetail['type'];
 
             $updatedAt = $documentDetail['acceptance_timestamp'];
 
             $status = $documentDetail['status'];
 
-            $this->repo->merchant_consents->updateStatusForRequestIdandConsentFor($id, $consentFor, $updatedAt, $status);
+            $merchantDetail = $this->repo->merchant_consents->getConsentDetailsForRequestId($id, $consentFor);
+
+            $input = [
+                'status'     => $status,
+                'updated_at' => $updatedAt
+            ];
+
+            try
+            {
+                $merchantDetail->edit($input, 'edit');
+
+                $this->repo->merchant_consents->saveOrFail($merchantDetail);
+            }
+            catch (LogicException $e)
+            {
+                throw new LogicException($e->getMessage(), $e->getCode());
+            }
+
+            $retryCount = $merchantDetail->retry_count;
+
+            $this->trace->info(TraceCode::CRON_ATTEMPT_COMPLETE, [
+                'count' => $retryCount
+            ]);
+
+            if ($retryCount == self::MAX_RETRY_COUNT)
+            {
+                $this->trace->count(Constants::API_RETRY_JOB_FAILURE);
+            }
         }
 
+        return ['success' => true];
     }
 }

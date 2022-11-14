@@ -792,6 +792,7 @@ class UserRolesScope
             'merchant_verify_attributes'                           => [Role::OWNER, Role::ADMIN],
             'merchant_workflow_details'                            => Role::ALL_ROLES,
             'merchant_consents_admin_fetch'                        => [Role::ADMIN],
+            'retry_store_legal_documents_cron'                     => Role::ALL_ROLES,
             'merchant_workflow_clarification'                      => [Role::OWNER, Role::ADMIN],
             'merchants_risk_service'                               => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'mpans_fetch'                                          => [Role::OWNER, Role::ADMIN],

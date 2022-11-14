@@ -17,6 +17,7 @@ class Entity extends Base\PublicEntity
     const ID         = 'id';
     const URL        = 'url';
     const CREATED_AT = 'created_at';
+    const UPDATED_AT = 'updated_at';
 
     protected $entity             = 'merchant_consent_details';
 

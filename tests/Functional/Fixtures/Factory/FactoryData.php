@@ -906,6 +906,35 @@ final class FactoryData
                                                                       ]
         );
 
+        $factory(\RZP\Models\Merchant\Consent\Entity::class, [
+                                                               'id'            => 'KdSCny9TA9OrmI',
+                                                               'merchant_id'   => '10000000000000',
+                                                               'user_id'       => 'KbA4mhZRhV3RBq',
+                                                               'metadata'      => [],
+                                                               'status'        => 'failed',
+                                                               'request_id'    => 'KdRvpX6ffYF7yG',
+                                                               'details_id'    => 'KdwZeHbUYIqVnW',
+                                                               'consent_for'   => 'L2_Terms and Conditions',
+                                                               'retry_count'   => 1,
+                                                               'audit_id'      => 'cnsudhbcsdk',
+                                                               'created_at'    => $faker->timestamp,
+                                                               'updated_at'    => $faker->timestamp,
+                                                           ]
+        );
+
+        $factory(\RZP\Models\Merchant\Consent\Details\Entity::class, [
+                                                                'id'          => $faker->uniqueid,
+                                                                'url'           => 'https://razorpay.com/terms/',
+                                                                'created_at'    => $faker->timestamp,
+                                                                'updated_at'    => $faker->timestamp,
+                                                           ]
+        );
+
+        $factory(\RZP\Models\Merchant\Website\Entity::class, [
+                                                               'id'            => $faker->uniqueid,
+                                                           ]
+        );
+
         $factory(\RZP\Models\User\Entity::class, [
                                                    'id'         => $faker->uniqueid,
                                                    'name'       => $faker->word,

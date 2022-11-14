@@ -41,6 +41,8 @@ class Constants
     const UFH_FILE_ID           = 'ufh_file_id';
     const ACCEPTANCE_TIMESTAMP  = 'acceptance_timestamp';
 
+    const API_RETRY_JOB_FAILURE = 'api_retry_job_failure';
+
     const PLATFORMS = [
         self::RX,
         self::PG,

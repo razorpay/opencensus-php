@@ -87,6 +87,7 @@ use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApp;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
 use RZP\Models\Workflow\Observer\Constants as WorkflowObserverConstants;
+use Platform\Bvs\Legaldocumentmanager\V1\LegalDocumentsManagerResponse;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use RZP\Notifications\Dashboard\Constants as DashboardNotificationConstants;
 use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
@@ -98,9 +99,11 @@ use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\LegalDocumentBaseResponse;
 use RZP\Models\Merchant\Consent\Details\Entity as MerchantConsentDetails;
 use RZP\Models\Merchant\Consent\Entity as MerchantConsent;
+use RZP\Models\Merchant\Consent\Core as ConsentCore;
 use RZP\Models\Merchant\Consent\Constants as ConsentConstant;
 use Illuminate\Database\Query\Builder;
 use RZP\Exception\LogicException;
+use RZP\Models\Merchant\Consent\Processor\Factory as ProcessorFactory;
 
 class Service extends Base\Service
 {
@@ -386,25 +389,54 @@ class Service extends Base\Service
                     ]);
                 }
 
-                //if legal documents are not present already, store them in database
-                if($this->checkIfConsentsPresent($merchantId, $activationFormMilestone) === false)
-                {
-                    $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS, [
-                        'message' => 'Consents are not present.'
-                    ]);
+                try {
 
-                    $this->storeConsents($merchantId, $input);
+                    //if legal documents are not present already, store them in database
+                    if($this->checkIfConsentsPresent($merchantId) === false)
+                    {
+                        $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS, [
+                            'message' => 'Consents are not present.'
+                        ]);
 
-                    $response = $this->callBvsServiceToCreateLegalDocuments($input);
+                        $this->storeConsents($merchantId, $input);
 
-                    $responseData = $response->getResponseData();
+                        $documents_detail = $this->getDocumentsDetails($input);
 
-                    $this->updateConsentStatus($merchantId, $activationFormMilestone, $responseData['id']);
+                        $processor = (new ProcessorFactory())->getLegalDocumentProcessor();
+
+                        $response = $processor->processLegalDocuments($documents_detail);
+
+                        $responseData = $response->getResponseData();
+
+                        $documentDetailsInput = $input[DEConstants::DOCUMENTS_DETAIL];
+
+                        foreach ($documentDetailsInput as $documentDetailInput)
+                        {
+                            $type = $activationFormMilestone.'_'.$documentDetailInput['type'] ;
+
+                            $merchantConsentDetail = $this->repo->merchant_consents->fetchMerchantConsentDetails($merchantId, $type);
+
+                            $input = [
+                                'status'     => ConsentConstant::INITIATED,
+                                'updated_at' => Carbon::now()->getTimestamp(),
+                                'request_id' => $responseData['id']
+                            ];
+
+                            (new ConsentCore())->updateConsentDetails($merchantConsentDetail, $input);
+                        }
+
+                    }
+                    else
+                    {
+                        $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS, [
+                            'message' => 'Consents are already present.'
+                        ]);
+                    }
                 }
-                else
+                catch (\Exception $exception)
                 {
-                    $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS, [
-                        'message' => 'Consents are already present.'
+                    $this->trace->info(TraceCode::BVS_INTEGRATION_ERROR, [
+                        'message' => 'Request to BVS was unsuccessful.'
                     ]);
                 }
             }
@@ -3259,9 +3291,9 @@ class Service extends Base\Service
         return true;
     }
 
-    public function checkIfConsentsPresent($merchantId, $activationFormMilestone)
+    public function checkIfConsentsPresent($merchantId)
     {
-        $consentDetails = $this->repo->merchant_consents->getConsentDetailsForMerchantIdandConsentFor($merchantId, $activationFormMilestone);
+        $consentDetails = $this->repo->merchant_consents->getConsentDetailsForMerchantIdAndConsentFor($merchantId, ConsentConstant::VALID_LEGAL_DOC);
 
         if($consentDetails === null)
         {
@@ -3275,7 +3307,7 @@ class Service extends Base\Service
     {
         $documentDetailsInput = $input[DEConstants::DOCUMENTS_DETAIL] ?? null;
 
-        if($documentDetailsInput === null)
+        if ($documentDetailsInput === null)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, [
                 'error description' => 'Legal documents are not present in the request. '
@@ -3300,6 +3332,8 @@ class Service extends Base\Service
 
             $merchant_consent->setMerchantId($merchantId);
 
+            //This to know the milestone at which consents are stored and this value
+            // should be unique for each merchant to avoid duplicate submission of same legal document.
             $merchant_consent->setConsentFor($input[Entity::ACTIVATION_FORM_MILESTONE] . '_' . $documentDetailInput[DEConstants::TYPE]);
 
             $merchant_consent->setDetailsId($id);
@@ -3315,7 +3349,7 @@ class Service extends Base\Service
 
             $merchant_consent->setMetadata($metadata);
 
-            $merchant_consent->setUserId($this->app['request']->header(RequestHeader::X_DASHBOARD_USER_ID) );
+            $merchant_consent->setUserId($this->app['request']->header(RequestHeader::X_DASHBOARD_USER_ID));
 
             $merchant_consent->setId((new Entity)->generateUniqueId());
 
@@ -3328,67 +3362,16 @@ class Service extends Base\Service
             }
             catch (LogicException $e)
             {
-                throw new LogicException($e);
+                throw new LogicException($e->getMessage(), $e->getCode());
             }
         }
-    }
-
-    private function callBvsServiceToCreateLegalDocuments(array $input, string $platform = 'pg')
-    {
-        $documentDetailsInput = $input[DEConstants::DOCUMENTS_DETAIL];
-
-        $documents_detail = [];
-
-        foreach ($documentDetailsInput as $documentDetailInput)
-        {
-            $document_detail = [
-                "type"              => $documentDetailInput['type'],
-                "content_type"      => "html",
-                "content"           => $this->getFileContentInHtml($documentDetailInput['url']),
-            ];
-
-            array_push($documents_detail, $document_detail) ;
-        }
-
-        // RazorpayX has no concept of PromoterPan Name during signup so, we will be using merchant name instead.
-        $signatory_name = $platform === 'rx' ? $this->merchant->getName() : $this->merchant->merchantDetail->getPromoterPanName();
-
-        $ownerDetails = [
-            "owner_id"                => $this->merchant->getMerchantId(),
-            "ip_address"              => $_SERVER['HTTP_X_IP_ADDRESS'] ?? $this->app['request']->ip(),
-            "acceptance_timestamp"    => Carbon::now()->getTimestamp(),
-            "signatory_name"          => $signatory_name,
-            "owner_name"              => $this->merchant->merchantDetail->getBusinessName(),
-            "contact_number"          => $this->merchant->merchantDetail->getContactMobile(),
-            "email"                   => $this->merchant->getEmail(),
-        ];
-
-        $body = [
-            "client_details"                     => ['platform' => $platform],
-            "owner_details"                      => $ownerDetails,
-            "documents_detail"                   => $documents_detail
-        ];
-
-        $response = app('bvs_legal_document_manager')->createLegalDocument($body);
-
-        $this->trace->info(TraceCode::BVS_RESPONSE_CREATE_CONSENTS, [
-            'id' => $response->getId(),
-            'status' => $response->getStatus()
-        ]);
-
-        return new LegalDocumentBaseResponse($response);
-    }
-
-    private function updateConsentStatus($merchantId, $activationFormMilestone, $requestId)
-    {
-        $this->repo->merchant_consents->updateStatusForMerchantIdAndConsentFor($merchantId, $activationFormMilestone, ConsentConstant::INITIATED, Carbon::now()->getTimestamp(), $requestId);
     }
 
     /**
      * @param $documentDetailInput
      * @return string|string[]|null
      */
-    private function getFileContentInHtml($url)
+    public function getFileContentInHtml($url)
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -3458,14 +3441,19 @@ class Service extends Base\Service
             {
                 // Sends Legal documents to BVS
                 // Surrounding this with a try-catch to prevent failure of pre_signup due to any BVS related issue
-                $this->callBvsServiceToCreateLegalDocuments([
-                    DEConstants::DOCUMENTS_DETAIL => [
-                        [
-                            DEConstants::TYPE => Constants::PRIVACY_POLICY,
-                            DEConstants::URL  => Constants::RAZORPAY_PRIVACY_POLICY_URL
-                        ]
-                    ]
-                ], 'rx');
+                $documents_detail = $this->getDocumentsDetails([
+                                                                   DEConstants::DOCUMENTS_DETAIL => [
+                                                                       [
+                                                                           DEConstants::TYPE => Constants::PRIVACY_POLICY,
+                                                                           DEConstants::URL  => Constants::RAZORPAY_PRIVACY_POLICY_URL
+                                                                       ]
+                                                                   ]
+                                                               ]);
+
+                $processor = (new ProcessorFactory())->getLegalDocumentProcessor();
+
+                $processor->processLegalDocuments($documents_detail, 'rx');
+
             }
         }
         catch(Throwable $e)
@@ -3475,5 +3463,30 @@ class Service extends Base\Service
                 Trace::ERROR,
                 TraceCode::BVS_CREATE_LEGAL_DOCUMENTS_FAILED);
         }
+    }
+
+    /**
+     * @param $input
+     *
+     * @return array
+     */
+    private function getDocumentsDetails($input): array
+    {
+        $documentDetailsInput = $input[DEConstants::DOCUMENTS_DETAIL];
+
+        $documents_detail = [];
+
+        foreach ($documentDetailsInput as $documentDetailInput)
+        {
+            $document_detail = [
+                "type"         => $documentDetailInput['type'],
+                "content_type" => "html",
+                "content"      => $this->getFileContentInHtml($documentDetailInput['url']),
+            ];
+
+            array_push($documents_detail, $document_detail);
+        }
+
+        return $documents_detail;
     }
 }

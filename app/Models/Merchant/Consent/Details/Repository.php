@@ -9,10 +9,6 @@ use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryUpdateTestAndLive
-    {
-        saveOrFail as saveOrFailTestAndLive;
-    }
 
     protected $entity = 'merchant_consent_details';
 

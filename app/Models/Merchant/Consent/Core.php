@@ -3,10 +3,16 @@
 namespace RZP\Models\Merchant\Consent;
 
 
+use Carbon\Carbon;
 use RZP\Base\ConnectionType;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
+use RZP\Exception\LogicException;
+use Illuminate\Support\Facades\DB;
+use RZP\Models\Merchant\Consent\Processor\Factory;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\FetchLegalDocumentBaseResponse;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\LegalDocumentBaseResponse;
+use RZP\Models\Merchant\Consent\Constants as ConsentConstant;
 use RZP\Models\Merchant\Detail\Service as DetailService;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
@@ -15,9 +21,17 @@ use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient;
 
 class Core extends Base\Core
 {
+    protected $mutex;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
 
     /**
-     * @param                $input
+     * @param $input
      *
      * @return mixed
      * @throws \Throwable
@@ -89,8 +103,84 @@ class Core extends Base\Core
      */
     public function retryStoreLegalDocuments()
     {
-        //TODO: add retry logic here.
-        return null;
+        $this->trace->info(TraceCode::MERCHANT_STORE_CONSENTS_CRON_RETRY,
+                           [
+                               'message' => 'Store consents cron retry initiated!'
+                           ]);
+
+        $merchantIdList = $this->repo->merchant_consents->getUniqueMerchantIdsWithConsentsNotSuccess(
+            Constants::VALID_LEGAL_DOC,
+            Carbon::now()->subDays(Constants::DEFAULT_LAST_CRON_SUB_DAYS)->getTimestamp());
+
+        if (empty($merchantIdList) === true)
+        {
+            $this->trace->info(TraceCode::CRON_ATTEMPT_SKIPPED, [
+                'type'   => 'retry Store Legal Documents cron',
+                'reason' => 'no merchants found',
+                'step'   => 'get_merchants'
+            ]);
+
+            return;
+        }
+
+        foreach ($merchantIdList as $merchantId)
+        {
+            $consentDetailsForMerchant = $this->repo->merchant_consents->getFailedConsentDetailsForMerchants($merchantId);
+
+            $documents_detail = $this->getDocumentsDetails($consentDetailsForMerchant);
+
+            $processor = (new Factory())->getLegalDocumentProcessor();
+
+            $response = $processor->processLegalDocuments($documents_detail);
+
+            $responseData = $response->getResponseData();
+
+            foreach ($consentDetailsForMerchant as $consentDetailForMerchant)
+            {
+                $type = $consentDetailForMerchant->consent_for;
+
+                $merchantConsentDetail = $this->repo->merchant_consents->fetchMerchantConsentDetails($merchantId, $type);
+
+                $retryCount = $merchantConsentDetail->retry_count + 1;
+
+                $input = [
+                    'status'      => ConsentConstant::INITIATED,
+                    'updated_at'  => Carbon::now()->getTimestamp(),
+                    'request_id'  => $responseData['id'],
+                    'retry_count' => $retryCount
+                ];
+
+                $this->updateConsentDetails($merchantConsentDetail, $input);
+
+            }
+        }
+    }
+
+    public function updateConsentDetails($merchantConsentDetail, $input)
+    {
+        try
+        {
+            $this->mutex->acquireAndRelease(
+
+                $merchantConsentDetail->id,
+
+                function() use ($merchantConsentDetail, $input) {
+
+                    $merchantConsentDetail->edit($input, 'edit');
+
+                    $this->repo->merchant_consents->saveOrFail($merchantConsentDetail);
+                },
+
+                Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_INVALID_STATUS_TRANSITION,
+                Constants::MERCHANT_MUTEX_RETRY_COUNT);
+
+        }
+        catch (LogicException $e)
+        {
+            throw new LogicException($e->getMessage(), $e->getCode());
+        }
+
     }
 
     /**
@@ -102,7 +192,7 @@ class Core extends Base\Core
     {
         $responseData = [];
 
-        if ((new DetailService())->checkIfConsentsPresent($merchantId, "L2") === false)
+        if ((new DetailService())->checkIfConsentsPresent($merchantId) === false)
         {
             return $responseData;
         }
@@ -115,11 +205,11 @@ class Core extends Base\Core
 
         $documentDetail = $bvsResponseData['documents_detail'];
 
-        for($count = 0; $count < $documentCount; $count++)
+        for ($count = 0; $count < $documentCount; $count++)
         {
-            $fileStoreId  = $documentDetail[$count]->getUfhFileId();
+            $fileStoreId = $documentDetail[$count]->getUfhFileId();
 
-            $ufhService = $this->app['ufh.service'];
+            $ufhService        = $this->app['ufh.service'];
             $signedUrlResponse = $ufhService->getSignedUrl($fileStoreId, [], $merchantId)['signed_url'];
 
             $data = [
@@ -145,13 +235,38 @@ class Core extends Base\Core
     private function callBVSToGetLegalDocumentsByOwnerId($merchantId)
     {
         $requestBody = [
-            "platform"                      => 'pg',
-            "owner_id"                      => $merchantId
+            "platform" => 'pg',
+            "owner_id" => $merchantId
         ];
 
         $response = (new BvsClient\BvsLegalDocumentManagerClient($this->merchant))->getLegalDocumentsByOwnerId($requestBody);
 
         return new FetchLegalDocumentBaseResponse($response);
+    }
+
+    /**
+     * @param $consentDetailsForMerchant
+     *
+     * @return array
+     */
+    private function getDocumentsDetails($consentDetailsForMerchant): array
+    {
+        $documents_detail = [];
+
+        foreach ($consentDetailsForMerchant as $consentDetailForMerchant)
+        {
+            $type = explode("_", $consentDetailForMerchant->consent_for)[1];
+
+            $document_detail = [
+                "type"         => $type,
+                "content_type" => "html",
+                "content"      => (new DetailService())->getFileContentInHtml($consentDetailForMerchant->url)
+            ];
+
+            array_push($documents_detail, $document_detail);
+        }
+
+        return $documents_detail;
     }
 
 }

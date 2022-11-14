@@ -17,9 +17,14 @@ class CreateMerchantConsentDetailsTable extends Migration
     {
         Schema::create(Table::MERCHANT_CONSENT_DETAILS, function(Blueprint $table) {
 
+            $table->char(Entity::ID, Entity::ID_LENGTH)
+                  ->primary();
+
             $table->string(Entity::URL, 255)->nullable();
 
             $table->bigInteger(Entity::CREATED_AT);
+
+            $table->bigInteger(Entity::UPDATED_AT);
 
             $table->index(Entity::URL);
         });

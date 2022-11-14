@@ -163,8 +163,5 @@ add_cron "0 */2 * * *"      "retry_penny_testing_cron"       POST "$BASE_URL/mer
 # Banking account statement
 # add_cron "0 * * * *"        "banking_account_statement"      POST  "BASE_URL/banking_account_statement/process"        ""                               $LIVE_AUTH
 
-#Storage of legal documents
-add_cron "0 1 * * *"        "retry_store_legal_documents_cron"       POST "$BASE_URL/merchants/retry_store_legal_documents"                 ""                           $LIVE_AUTH
-
 # Install the generated crontab
 crontab $TMP_CRONTAB

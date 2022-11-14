@@ -430,10 +430,17 @@ class Core extends Base\Core
         if($document === null)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR, null, $documentId);
+                ErrorCode::BAD_REQUEST_ERROR, null, $documentId, 'Document id is not valid.');
         }
 
-        $signedUrl = (new Detail\Service())->getSignedUrl($document[Entity::FILE_STORE_ID], $document[Entity::MERCHANT_ID], $document[Entity::SOURCE]);
+        try {
+            $signedUrl = (new Detail\Service())->getSignedUrl($document[Entity::FILE_STORE_ID], $document[Entity::MERCHANT_ID], $document[Entity::SOURCE]);
+        }
+        catch (\Exception $e )
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_UFH_INTEGRATION, null , $documentId, 'Signed url could not be fetched for this document id.');
+        }
 
         return [
             'id'            => $documentId,
