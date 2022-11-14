@@ -518,7 +518,6 @@ class Processor
                 return true;
             }
 
-
             if (($this->route->isRearchRoute($currentRouteName) == false) or
                 (empty($input[Payment\Entity::METHOD]) === true) or
                 ($input[Payment\Entity::METHOD] !== Payment\METHOD::CARD) or
@@ -535,7 +534,10 @@ class Processor
                 ($merchant->isRazorpayOrgId() === false) or
                 ($merchant->isFeatureEnabled('openwallet') === true) or
                 ((empty($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === false) and
-                    empty($input[Payment\Entity::CARD][Card\Entity::CRYPTOGRAM_VALUE]) === true))
+                    empty($input[Payment\Entity::CARD][Card\Entity::CRYPTOGRAM_VALUE]) === true) or
+                ($input['application'] === 'visasafeclick') or
+                ((isset($this->input[Payment\Method::CARD][Card\Entity::CVV]) === false) and
+                    ($merchant->isFeatureEnabled('vsc_authorization') === true)))
             {
                 return false;
             }
