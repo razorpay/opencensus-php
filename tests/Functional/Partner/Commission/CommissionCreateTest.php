@@ -353,8 +353,50 @@ class CommissionCreateTest extends TestCase
      * 1. Create commission for a single subM
      * 2. Create commission_invoice
      * 3. Validate Fetch commission_invoice should return exception since subM onboarded are less than 3
+     * as the experiment is enabled
      */
-    public function testInvoiceFetchWithLessSubM()
+    public function testInvoiceFetchWithLessSubMExpEnabled()
+    {
+        $this->createInvoiceDataForLessSubM();
+
+        $this->mockAllSplitzTreatment();
+
+        $testData = $this->testData['testInvoiceFetchWithLessSubMTestDataExpEnabled'];
+
+        $this->ba->proxyAuth('rzp_test_' . Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    /**
+     * The following testcase validates the following
+     * 1. Create commission for a single subM
+     * 2. Create commission_invoice
+     * 3. No exception should be thrown and should work as before as the experiment is disabled.
+     */
+    public function testInvoiceFetchWithLessSubMExpDisabled()
+    {
+        $this->createInvoiceDataForLessSubM();
+
+        $splitzResponse = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($splitzResponse);
+
+        $testData = $this->testData['testInvoiceFetchWithLessSubMTestDataExpDisabled'];
+
+        $this->ba->proxyAuth('rzp_test_' . Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+
+    private function createInvoiceDataForLessSubM()
     {
         Mail::fake();
 
@@ -385,12 +427,6 @@ class CommissionCreateTest extends TestCase
         $this->createTaxes();
 
         $this->ba->adminAuth();
-
-        $this->runRequestResponseFlow($testData);
-
-        $testData = $this->testData['testInvoiceFetchWithLessSubMTestData'];
-
-        $this->ba->proxyAuth('rzp_test_' . Constants::DEFAULT_PLATFORM_MERCHANT_ID);
 
         $this->runRequestResponseFlow($testData);
     }

@@ -528,7 +528,7 @@ return [
         ]
     ],
 
-    'testInvoiceFetchWithLessSubM' => [
+    'createInvoiceDataForLessSubM' => [
         'request' => [
             'method' => 'POST',
             'content' => [],
@@ -541,7 +541,7 @@ return [
         ],
     ],
 
-    'testInvoiceFetchWithLessSubMTestData' => [
+    'testInvoiceFetchWithLessSubMTestDataExpEnabled' => [
         'request'  => [
             'method'  => 'GET',
             'url'     => '/commissions/invoice/fetch/bulk',
@@ -559,5 +559,17 @@ return [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_ADD_MINIMUM_SUBM,
         ]
+    ],
+
+    'testInvoiceFetchWithLessSubMTestDataExpDisabled' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/commissions/invoice/fetch/bulk',
+        ],
+        'response' => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ],
     ],
 ];

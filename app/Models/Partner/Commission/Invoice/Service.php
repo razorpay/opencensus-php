@@ -3,7 +3,6 @@
 namespace RZP\Models\Partner\Commission\Invoice;
 
 use RZP\Models\Base;
-use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Trace\Tracer;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -14,6 +13,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Partner\Activation;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Jobs\CommissionInvoiceReminderAction;
 
 class Service extends Base\Service
@@ -104,26 +104,17 @@ class Service extends Base\Service
 
     /**
      * This function validates the following before returning the invoices to the partner
-     * 1. The partner should be activated to view the LIVE invoices
-     * 2. Partner should onboard more than 3 subM to view the invoices
+     * 1. Partner should onboard more than 3 subM to view the invoices
      * This validation restricts the partner to perform any action on the invoice (approve invoice)
      * @throws BadRequestException
      */
     private function validateInvoiceFetch()
     {
-        $partnerActivation = (new Activation\Core())->createOrFetchPartnerActivationForMerchant($this->merchant, false);
+        $isExperimentEnabled = $this->isViewCommissionInvoiceExperimentEnabled();
 
-        if (($partnerActivation->getActivationStatus() !== Activation\Constants::ACTIVATED) and
-            ($this->mode === Mode::LIVE))
+        if ($isExperimentEnabled === false)
         {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PARTNER_IS_NOT_ACTIVATED,
-                null,
-                [
-                    'partner_id' => $this->merchant->getId(),
-                    'reason'     => 'only active partners can fetch commission invoices'
-                ]
-            );
+            return;
         }
 
         $subMs = $this->repo->merchant_access_map->getMappingsFromEntityOwnerId($this->merchant->getId(),Constants::VIEW_INVOICE_MIN_SUBM_COUNT);
@@ -140,4 +131,15 @@ class Service extends Base\Service
             );
         }
     }
+
+    private function isViewCommissionInvoiceExperimentEnabled(): bool
+    {
+        $properties = [
+            'id'            => $this->merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.view_comm_invoice_with_less_subM_experiment_id')
+        ];
+
+        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+    }
+
 }
