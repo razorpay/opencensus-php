@@ -199,6 +199,15 @@ jobs:
         echo "WORKFLOW_STATUS=$(sh ./.github/actions/getWorkflowStatus.sh)" >> $GITHUB_ENV
     - name: Check Workflow Status
       run: echo $WORKFLOW_STATUS
+    # Log Workflow Status outputs the logs for Get Build Image Workflow Status workflow
+    - name: Log Workflow Status
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        BRANCH: ${{ github.event.pull_request.head.ref }}
+        WORKFLOW: build_images.yml
+        API_HEADER: "Accept: application/vnd.github.v3+json"
+      run: |
+        cat build_image_workflow_log.txt
     - name: Run bvt suite if PR submitted as approved
       # checking if the commit_id post backmerge is same then run BVT on it. Otherwise it invoke PR_workflow and run BVT
       if: env.GIT_NEW_COMMIT_AFTER_MERGE == env.commit_id && startsWith(github.event.pull_request.head.ref,'beta_') != true
