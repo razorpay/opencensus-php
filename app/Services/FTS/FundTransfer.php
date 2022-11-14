@@ -308,6 +308,8 @@ class FundTransfer extends Base
                 throw new LogicException('Account Type is not supported ' . $this->accountType);
         }
 
+        $request = $this->addMerchantCategory($request);
+
         $request = $otp === null ? $request : $this->add2FABlock($request, $otp);
 
         return $request;
@@ -321,6 +323,17 @@ class FundTransfer extends Base
     protected function add2FABlock(array $request, string $otp): array
     {
         $request[Constants::TWO_FACTOR_AUTH][Constants::OTP] = $otp;
+
+        return $request;
+    }
+
+    protected function addMerchantCategory(array $request) :array
+    {
+        $category = $this->fta->source->merchant->getCategory2();
+        $mcc = $this->fta->source->merchant->getCategory();
+
+        $request[Constants::MERCHANT_CATEGORY][Constants::CATEGORY] = $category;
+        $request[Constants::MERCHANT_CATEGORY][Constants::MCC] = $mcc;
 
         return $request;
     }

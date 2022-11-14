@@ -78,6 +78,12 @@ final class Constants
 
     const MERCHANT_ID                    = 'merchant_id';
 
+    const MERCHANT_CATEGORY              = 'merchant_category';
+
+    const CATEGORY                       = 'category';
+
+    const MCC                            = 'mcc';
+
     const NETWORK_CODE                   = 'network_code';
 
     const BANK_ACCOUNT                   = 'bank_account';
