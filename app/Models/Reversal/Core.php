@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Models\Payout;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
+use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Models\Transfer;
 use RZP\Models\Reversal;
 use RZP\Error\ErrorCode;
@@ -172,6 +173,24 @@ class Core extends Base\Core
                     $this->traceSuccess(TraceCode::DISPUTE_TRANSFER_SUCCESS, $reversal);
 
                     $this->customerRefundIfApplicable($transfer, $input, $reversal);
+
+                    $sourcePayment = null;
+
+                    if ($transfer->getSourceType() === E::PAYMENT)
+                    {
+                        $sourcePayment = $transfer->source;
+                    }
+                    else if ($transfer->getSourceType() === E::ORDER)
+                    {
+                        $sourceOrderId = $transfer->getSourceId();
+
+                        $sourcePayment = $this->repo->payment->getCapturedPaymentForOrder($sourceOrderId);
+                    }
+
+                    if ($reversal !== null && $sourcePayment !== null && $sourcePayment->isExternal())
+                    {
+                        $this->repo->saveOrFail($sourcePayment);
+                    }
 
                     (new Transfer\Metric)->pushReversalSuccessMetrics();
 
