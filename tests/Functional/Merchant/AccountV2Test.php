@@ -37,27 +37,6 @@ class AccountV2Test extends TestCase
 
     const RZP_ORG = '100000razorpay';
 
-    const OPTIONAL_REGISTERED_NO_DOC_FIELDS = [
-        Detail\Entity::CONTACT_MOBILE,
-        Detail\Entity::CONTACT_NAME,
-        Detail\Entity::PROMOTER_PAN_NAME,
-        Detail\Entity::BUSINESS_DBA,
-        Detail\Entity::BUSINESS_INTERNATIONAL,
-        Detail\Entity::BUSINESS_NAME,
-        Detail\Entity::BUSINESS_OPERATION_ADDRESS,
-        Detail\Entity::BUSINESS_OPERATION_CITY,
-        Detail\Entity::BUSINESS_OPERATION_PIN,
-        Detail\Entity::BUSINESS_OPERATION_STATE,
-        Detail\Entity::BUSINESS_PAN_URL,
-        Detail\Entity::BUSINESS_PROOF_URL,
-    ];
-
-    const OPTIONAL_UNREGISTERED_NO_DOC_FIELDS = [
-        Detail\Entity::CONTACT_MOBILE,
-        Detail\Entity::CONTACT_NAME,
-        Detail\Entity::PROMOTER_PAN_NAME,
-    ];
-
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/AccountV2TestData.php';
@@ -556,12 +535,10 @@ class AccountV2Test extends TestCase
 
         $expectedRequiredFields = Detail\ValidationFields::DEFAULT_REGISTERED_NO_DOC_FIELDS;
 
-        $expectedOptionalFields = self::OPTIONAL_REGISTERED_NO_DOC_FIELDS;
-
         $this->assertNotNull($data);
         $this->assertEquals($expectedRequiredFields, $data[0]);
         $this->assertNotNull($data[1]);
-        $this->assertEquals($expectedOptionalFields, array_values($data[2]));
+        $this->assertNotNull($data[2]);
 
         $testData = $this->testData['testGetValidationFieldsForNoDocOnboarding'];
 
@@ -577,12 +554,10 @@ class AccountV2Test extends TestCase
 
         $expectedRequiredFields = Detail\ValidationFields::UNREGISTERED_NO_DOC_FIELDS;
 
-        $expectedOptionalFields = self::OPTIONAL_UNREGISTERED_NO_DOC_FIELDS;
-
         $this->assertNotNull($data);
         $this->assertEquals($expectedRequiredFields, $data[0]);
         $this->assertNotNull($data[1]);
-        $this->assertEquals($expectedOptionalFields, array_values($data[2]));
+        $this->assertNotNull($data[2]);
     }
 
     public function testProvideOptionalFieldsForNoDocMerchantInNCstate()

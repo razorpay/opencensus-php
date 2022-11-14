@@ -3700,7 +3700,7 @@ class Core extends Base\Core
             {
                 $noDocValidationFields = ValidationFields::getRequiredFieldsForNoDocOnboarding($merchantDetails->getBusinessType());
 
-                $noDocOptionalValidationFields = array_diff_key(array_merge($validationFields, $validationOptionalFields), $noDocValidationFields);
+                $noDocOptionalValidationFields = array_diff(array_merge($validationFields, $validationOptionalFields), $noDocValidationFields);
 
                 return [$noDocValidationFields, $validationSelectiveRequiredFields, $noDocOptionalValidationFields];
             }

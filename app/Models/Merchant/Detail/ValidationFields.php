@@ -211,6 +211,8 @@ class ValidationFields
         Entity::BUSINESS_NAME,
         Entity::CONTACT_MOBILE,
         Entity::COMPANY_PAN,
+        Entity::PROMOTER_PAN_NAME,
+        Entity::PROMOTER_PAN,
         Entity::BANK_ACCOUNT_NAME,
         Entity::BANK_ACCOUNT_NUMBER,
         Entity::BANK_BRANCH_IFSC,
@@ -241,14 +243,8 @@ class ValidationFields
         Entity::BUSINESS_OPERATION_ADDRESS
     ];
 
-    const PROPRIETORSHIP_NO_DOC_OPTIONAL_FIELDS = [
-        Entity::BUSINESS_DBA
-    ];
-
     const REGISTERED_NO_DOC_OPTIONAL_FIELDS = [
-        Entity::BUSINESS_DBA,
-        Entity::PROMOTER_PAN_NAME,
-        Entity::PROMOTER_PAN
+        Entity::BUSINESS_DBA
     ];
 
     const L1_FIELDS_IA_V2_APIS = [
@@ -380,8 +376,6 @@ class ValidationFields
         switch ($businessType)
         {
             case BusinessType::PROPRIETORSHIP:
-                return self::PROPRIETORSHIP_NO_DOC_OPTIONAL_FIELDS;
-
             case BusinessType::PARTNERSHIP:
             case BusinessType::TRUST:
             case BusinessType::NGO:

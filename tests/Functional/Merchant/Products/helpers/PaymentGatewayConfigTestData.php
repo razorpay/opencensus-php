@@ -1020,6 +1020,18 @@ return [
                         'reason_code'     => 'field_missing'
                     ],
                     [
+                        'field_reference' => 'name',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'kyc.pan',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
                         'field_reference' => 'settlements.beneficiary_name',
                         'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
@@ -1042,18 +1054,6 @@ return [
                         'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
                         'status'          => 'optional',
                         'reason_code'     => 'document_missing'
-                    ],
-                    [
-                        'field_reference' => 'name',
-                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
-                        'status'          => 'optional',
-                        'reason_code'     => 'field_missing'
-                    ],
-                    [
-                        'field_reference' => 'kyc.pan',
-                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
-                        'status'          => 'optional',
-                        'reason_code'     => 'field_missing'
                     ],
                 ],
                 'tnc'     => [
@@ -1117,6 +1117,18 @@ return [
                         'reason_code'     => 'field_missing'
                     ],
                     [
+                        'field_reference' => 'name',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'kyc.pan',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
                         'field_reference' => 'settlements.beneficiary_name',
                         'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
@@ -1139,18 +1151,6 @@ return [
                         'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
                         'status'          => 'optional',
                         'reason_code'     => 'document_missing'
-                    ],
-                    [
-                        'field_reference' => 'name',
-                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
-                        'status'          => 'optional',
-                        'reason_code'     => 'field_missing'
-                    ],
-                    [
-                        'field_reference' => 'kyc.pan',
-                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
-                        'status'          => 'optional',
-                        'reason_code'     => 'field_missing'
                     ],
                 ],
                 'tnc'     => []
@@ -1201,6 +1201,18 @@ return [
                         'reason_code'     => 'field_missing'
                     ],
                     [
+                        'field_reference' => 'name',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'kyc.pan',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
                         'field_reference' => 'settlements.beneficiary_name',
                         'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
@@ -1223,18 +1235,6 @@ return [
                         'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
                         'status'          => 'optional',
                         'reason_code'     => 'document_missing'
-                    ],
-                    [
-                        'field_reference' => 'name',
-                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
-                        'status'          => 'optional',
-                        'reason_code'     => 'field_missing'
-                    ],
-                    [
-                        'field_reference' => 'kyc.pan',
-                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
-                        'status'          => 'optional',
-                        'reason_code'     => 'field_missing'
                     ],
                 ],
                 'tnc'     => [
@@ -2205,6 +2205,18 @@ return [
                         'reason_code'     => 'field_missing'
                     ],
                     [
+                        'field_reference' => 'name',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'kyc.pan',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
                         'field_reference' => 'settlements.beneficiary_name',
                         'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
@@ -2227,18 +2239,6 @@ return [
                         'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
                         'status'          => 'optional',
                         'reason_code'     => 'document_missing'
-                    ],
-                    [
-                        'field_reference' => 'name',
-                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
-                        'status'          => 'optional',
-                        'reason_code'     => 'field_missing'
-                    ],
-                    [
-                        'field_reference' => 'kyc.pan',
-                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
-                        'status'          => 'optional',
-                        'reason_code'     => 'field_missing'
                     ],
                 ]
             ],
