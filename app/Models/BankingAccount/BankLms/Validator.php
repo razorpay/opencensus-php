@@ -108,6 +108,7 @@ class Validator extends BankingAccount\Validator
         ActivationDetail::API_IR_CLOSED_DATE                      => 'sometimes|epoch|nullable',
         ActivationDetail::API_ONBOARDING_FTNR                     => 'sometimes|boolean',
         ActivationDetail::API_ONBOARDING_FTNR_REASONS             => 'sometimes|'.self::ALLOWED_STRING_PATTERN,
+        ActivationDetail::ASSIGNEE_TEAM                           => 'sometimes|alpha_dash|in:ops,bank',
         ActivationDetail::COMMENT                                 => 'sometimes|array',
         ActivationDetail::ADDITIONAL_DETAILS                      => 'sometimes',
         ActivationDetail::ACCOUNT_OPEN_DATE                       => 'sometimes|epoch|nullable',
@@ -116,6 +117,9 @@ class Validator extends BankingAccount\Validator
         ActivationDetail::ASSIGNEE_TEAM                           => 'sometimes|alpha_dash|nullable|in:ops,bank,sales',
         ActivationDetail::RM_NAME                                 => 'sometimes|regex:/^[\pL\s\-]+$/u|max:255',
         ActivationDetail::RM_PHONE_NUMBER                         => 'sometimes|alpha_dash|max:255',
+        ActivationDetail::ACCOUNT_OPEN_DATE                       => 'sometimes|epoch|nullable',
+        ActivationDetail::ACCOUNT_LOGIN_DATE                      => 'sometimes|epoch|nullable',
+        ActivationDetail::MERCHANT_CITY                           => 'sometimes|alpha_dash|max:255',
     ];
 
     protected static $rblActivationDetailsRules = [
@@ -138,19 +142,14 @@ class Validator extends BankingAccount\Validator
         ActivationDetail::ACCOUNT_OPENING_TAT_EXCEPTION_REASON  => 'sometimes|'.self::ALLOWED_STRING_PATTERN,
         ActivationDetail::API_ONBOARDING_TAT_EXCEPTION          => 'sometimes|boolean|nullable',
         ActivationDetail::API_ONBOARDING_TAT_EXCEPTION_REASON   => 'sometimes|'.self::ALLOWED_STRING_PATTERN,
-        ActivationDetail::MERCHANT_CITY                           => 'sometimes|string|max:255',
-        ActivationDetail::ASSIGNEE_TEAM                           => 'sometimes|string|nullable|in:ops,bank,sales',
-        ActivationDetail::RM_NAME                                 => 'sometimes|string|max:255',
-        ActivationDetail::RM_PHONE_NUMBER                         => 'sometimes|string|max:255',
     ];
 
     /**
      * @throws Exception\BadRequestException
      */
-    public function validateOnlyOneCaBankPartnerAndReturn(string $partnerType): ?string
+    public function validateOnlyOneCaBankPartnerAndReturn(): ?string
     {
-//        $merchantIds = (new Feature\Repository())->findMerchantIdsHavingFeatures([Feature\Constants::RBL_BANK_LMS_DASHBOARD]);
-        $merchantIds = (new Merchant\Repository())->fetchNonArchivedMerchantsByPartnerType($partnerType);
+        $merchantIds = (new Feature\Repository())->findMerchantIdsHavingFeatures([Feature\Constants::RBL_BANK_LMS_DASHBOARD]);
 
         if (count($merchantIds) > 1)
         {

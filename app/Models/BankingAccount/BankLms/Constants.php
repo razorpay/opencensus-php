@@ -14,10 +14,8 @@ class Constants
 
     const IS_GREEN_CHANNEL              = 'is_green_channel';
     const SORT_SENT_TO_BANK_DATE        = 'sort_sent_to_bank_date';
-    const DUE_ON        = 'due_on'; // to filter leads due on a date
+
+    const DUE_ON        = 'due_on'; // to filter leads due on a date 
     const IS_OVERDUE    = 'is_overdue'; // to filter leads that are overdue on a particular date
     const FEET_ON_STREET = 'feet_on_street';
-    const PARTNER_TYPE                   = 'partner_type';
-    const BANK_LMS_PARTNER_TYPE = "bank_ca_onboarding_partner";
-
 }
