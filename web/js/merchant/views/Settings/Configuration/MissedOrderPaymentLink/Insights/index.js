@@ -76,7 +76,7 @@ const ViewInsight = ({ closeModal, isProPlan = false, insights }) => {
                     title={titleCase(data.channel)}
                     value={`${getPercentage(data.sent, data.paid)}%`}
                   >
-                    {data.sent && data.paid && (
+                    {data.sent > 0 && data.paid && (
                       <Popover
                         align="bottom"
                         theme="dark"
