@@ -4,6 +4,8 @@ namespace RZP\Models\Merchant\Document;
 
 use RZP\Base\ConnectionType;
 use RZP\Models\Base;
+use RZP\Modules\Acs\Wrapper\MerchantDocument;
+use RZP\Models\Merchant\Document\Entity as MerchantDocumentEntity;
 
 class Repository extends Base\Repository
 {
@@ -15,6 +17,23 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID   => 'sometimes|alpha_num',
         Entity::DOCUMENT_TYPE => 'sometimes|string|max:255'
     ];
+
+    /**
+     * __deleteOrFail -  Keeping the method name not same with base repository method, this to be renamed  and used in document core while ramp-up
+     * @param Entity $entity
+     * @throws \Throwable
+     */
+    public function __deleteOrFail(MerchantDocumentEntity $entity)
+    {
+        $this->repo->transactionOnLiveAndTest(function () use ($entity) {
+            $this->repo->deleteOrFail($entity);
+
+            $merchantDocumentWrapper = new MerchantDocument();
+            if ($merchantDocumentWrapper->isWriteShadowOn($entity->getMerchantId())) {
+                $merchantDocumentWrapper->DeleteOrFail($entity);
+            }
+        });
+    }
 
     /**
      * fetch documents by Id

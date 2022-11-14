@@ -7453,6 +7453,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ASV_ROLLBACK_EVENT_PUBLISHED                          = 'ASV_ROLLBACK_EVENT_PUBLISHED';
     const ASV_ROLLBACK_EVENT_PUBLISH_FAILED                     = 'ASV_ROLLBACK_EVENT_PUBLISH_FAILED';
     const ASV_ROLLBACK_EVENT_LISTENER_EXCEPTION                 = 'ASV_ROLLBACK_EVENT_LISTENER_EXCEPTION';
+    const ASV_HTTP_CLIENT_REQUEST                               = 'ASV_HTTP_CLIENT_REQUEST';
+    const ASV_HTTP_CLIENT_RESPONSE                              = 'ASV_HTTP_CLIENT_RESPONSE';
+    const ASV_HTTP_CLIENT_ERROR                                 = 'ASV_HTTP_CLIENT_ERROR';
+
 
     # ASV Migration
     const ASV_MIGRATION_SPLITZ_REQUEST                          = 'ASV_MIGRATION_SPLITZ_REQUEST';

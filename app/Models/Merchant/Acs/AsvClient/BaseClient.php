@@ -41,6 +41,7 @@ class BaseClient
 
         $this->headers = [
             Constant::AUTHORIZATION_KEY => $auth,
+            Constant::X_TASK_ID => $this->app['request']->getTaskId()
         ];
     }
 }

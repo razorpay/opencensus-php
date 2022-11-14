@@ -3,7 +3,7 @@
 
 declare(strict_types=1);
 
-namespace Google\Protobuf;
+namespace Rzp\Accounts\Account\V1;
 
 use Twirp\ErrorCode;
 use Twirp\Error;
