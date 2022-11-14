@@ -202,11 +202,7 @@ class VerifyCsrfToken extends BaseVerifier
     {
         $sessionToken = $request->session()->token();
 
-        $token = $request->header('X-CSRF-TOKEN');
-
-        if (empty($token) === true && $header = $request->header('X-XSRF-TOKEN')) {
-            $token = $this->encrypter->decrypt($header);
-        }
+        $token = $this->getTokenFromRequest($request);
 
         $xsrfCookieToken = $request->cookie('XSRF-TOKEN');
 
