@@ -229,32 +229,9 @@ class Core extends Base\Core
                  */
                 $differ[Differ\Entity::PAYLOAD] = (new Helper())->encryptSensitiveFields($differ[Differ\Entity::PAYLOAD]);
 
-                try
-                {
-                    $this->esDao->storeAdminEvent(
+                $this->esDao->storeAdminEvent(
                         strtolower($this->baseIndex), self::ES_TYPE, $differ);
-                }
-                catch (\Throwable $e)
-                {
-                    $permission = $differ[Differ\Entity::PERMISSION] ?? null;
 
-                    if ($permission === Permission\Name::NEEDS_CLARIFICATION_RESPONDED)
-                    {
-                        $this->trace->count(Metric::HEIMDALL_ACTION_LOG_FAIL);
-
-                        $this->trace->traceException(
-                            $e,
-                            Trace::ERROR,
-                            TraceCode::HEIMDALL_ACTION_LOG_FAIL,
-                            $differ);
-
-                        return;
-                    }
-                    else
-                    {
-                        throw $e;
-                    }
-                }
             }
         }
         catch (\Exception $e)
