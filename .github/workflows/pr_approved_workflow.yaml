@@ -224,7 +224,7 @@ jobs:
       run: |
         sh ./.github/actions/triggerBvtSuite.sh
     - name: Run bvt suite on devstack if PR approved && Build Image workflow succeeded
-      if: startsWith(github.event.pull_request.head.ref,'beta_') != true &&
+      if: env.GIT_NEW_COMMIT_AFTER_MERGE == env.commit_id && startsWith(github.event.pull_request.head.ref,'beta_') != true &&
         env.WORKFLOW_STATUS == 'success'
       env:
         SPINNAKER_PASSWORD: ${{ secrets.SPINNAKER_PASSWORD }}
