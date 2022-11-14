@@ -16986,7 +16986,6 @@ The same has been enabled for the account.
         $this->assertNotEquals('risk_review_watchlist_tag', $merchantDetails['fraud_type']);
     }
 
-
     public function testHsCodeDetails(){
         $hsCode = '1234567890';
 

@@ -11,6 +11,7 @@ use Lib\PhoneBook;
 use RZP\Base;
 use RZP\Diag\EventCode;
 use RZP\Exception;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Vpa;
 use Razorpay\IFSC\IFSC;
 use RZP\Constants\Mode;
@@ -1151,6 +1152,32 @@ class Validator extends Base\Validator
                 'The amount must be atleast INR 1.00.',
                 'amount',
                 ['amount' => $baseAmount]);
+        }
+
+        // For OPGSP import flow, max trasaction limit is USD 2000
+        if($this->entity->merchant->isOpgspImportEnabled())
+        {
+            $opgspLimitAmountUSD = ConfigKey::get(ConfigKey::DEFAULT_OPGSP_TRANSACTION_LIMIT_USD);
+
+            if($opgspLimitAmountUSD === null)
+            {
+                $opgspLimitAmountUSD = Constants::OPGSP_TRANSACTION_LIMIT_USD;
+            }
+
+            $opgspLimitAmountINR = (new CurrencyCore)->getBaseAmount($opgspLimitAmountUSD, Currency::USD);
+
+            if($baseAmount > $opgspLimitAmountINR)
+            {
+                $this->trace->count(Metric::PAYMENT_CREATION_AMOUNT_VALIDATION_FAILURE_COUNT, [
+                    'business_type' => $this->entity->merchant->merchantDetail->getBusinessType() ?? '',
+                ]);
+
+                throw new Exception\BadRequestValidationFailureException(
+                    'Amount exceeds maximum amount allowed.',
+                    'amount',
+                    ['amount' => $baseAmount,
+                      'opgsp' =>  $opgspLimitAmountINR, ]);
+            }
         }
     }
 

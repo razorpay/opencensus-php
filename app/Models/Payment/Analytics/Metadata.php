@@ -163,6 +163,10 @@ class Metadata
         self::LEGACYJS,
     ];
 
+    const OPGSP_SUPPORTED_LIBRARIES = [
+        self::S2S,
+    ];
+
     const ADDRESS_COLLECTION_VIA_REDIRECT_LIBS = [
         self::RAZORPAYJS,
         self::CUSTOM,

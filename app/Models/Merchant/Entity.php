@@ -1046,6 +1046,11 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::ADDRESS_REQUIRED) === true);
     }
 
+    public function isOpgspImportEnabled(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === true);
+    }
+
     public function isAVSEnabled(): bool
     {
         return ($this->isFeatureEnabled(Feature\Constants::AVS) === true);

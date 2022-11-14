@@ -481,7 +481,8 @@ class Payment extends Base
 
         $merchant = $payment->merchant;
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::TRANSACTION_ON_HOLD) === true)
+        if ($merchant->isFeatureEnabled(Feature\Constants::TRANSACTION_ON_HOLD) === true or
+            $merchant->isOpgspImportEnabled() === true)
         {
             $this->txn->setOnHold(true);
         }

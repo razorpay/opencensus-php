@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Card\Network;
+use RZP\Models\Address\Type;
 use RZP\Models\Card\Repository;
 use RZP\Tests\Functional\Fixtures\Entity\Card;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
@@ -44,6 +45,8 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Admin\Service as AdminService;
+use RZP\Models\Admin\ConfigKey;
 
 class PaymentCreateTest extends TestCase
 {
@@ -9452,7 +9455,7 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals('rzpvault', $token->card->getVault());
     }
-    
+
     public function testFetchPaymentsCardEntity()
     {
         $paymentArray = $this->getDefaultPaymentArray();
@@ -9463,7 +9466,7 @@ class PaymentCreateTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/payments/' . $payment['id']. '/card';
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/' . $payment['id'] . '/card';
 
         $data = $this->startTest();
 
@@ -9481,7 +9484,7 @@ class PaymentCreateTest extends TestCase
 
         $cardEntity = \DB::table('cards')->select(\DB::raw("*"))->where('id', '=', $cardId)->get()->first();
 
-        $card = (array) $cardEntity;
+        $card = (array)$cardEntity;
 
         // insert card into live DB
         \DB::connection('live')->table('cards')->insert($card);
@@ -9495,7 +9498,7 @@ class PaymentCreateTest extends TestCase
 
         $this->assertNull($cardEntity);
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/payments/' . $payment['id']. '/card';
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/' . $payment['id'] . '/card';
 
         $data = $this->startTest();
 
@@ -9510,5 +9513,391 @@ class PaymentCreateTest extends TestCase
         \DB::connection('test')->table('cards')->where('id', '=', 'KOOmLB0xqazzXp')->limit(1)->update(['id' => $cardId]);
 
         \DB::connection('test')->statement('SET FOREIGN_KEY_CHECKS=1');
+    }
+
+    public function testOpgspImportPaymentWithAmountGreaterThanOpgspLimit()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::MAX_PAYMENT_AMOUNT => 3000000,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+        $this->fixtures->merchant->addFeatures(['opgsp_import_flow']);
+
+        $merchantDetailAttribute = [
+            DetailEntity::MERCHANT_ID => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '2000100';
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $this->makeRequestAndCatchException(function() use ($payment)
+        {
+            $response = $this->doS2SPrivateAuthPayment($payment);
+
+            $error = $response['error'];
+            $this->assertEquals($error['field'], 'amount');
+            $this->assertEquals($error['code'], 'BAD_REQUEST_ERROR');
+            $this->assertEquals($error['description'], 'Amount exceeds maximum amount allowed.');
+        },
+            \RZP\Exception\BadRequestValidationFailureException::class,
+            'Amount exceeds maximum amount allowed.');
+
+    }
+
+    public function testOpgspImportPaymentWithAmountGreaterThanOpgspLimitConfigKey()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::MAX_PAYMENT_AMOUNT => 3000000,
+        ];
+
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::DEFAULT_OPGSP_TRANSACTION_LIMIT_USD => "100000"
+            ]);
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+        $this->fixtures->merchant->addFeatures(['opgsp_import_flow']);
+
+        $merchantDetailAttribute = [
+            DetailEntity::MERCHANT_ID => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '1000100';
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $this->makeRequestAndCatchException(function() use ($payment)
+        {
+            $response = $this->doS2SPrivateAuthPayment($payment);
+
+            $error = $response['error'];
+            $this->assertEquals($error['field'], 'amount');
+            $this->assertEquals($error['code'], 'BAD_REQUEST_ERROR');
+            $this->assertEquals($error['description'], 'Amount exceeds maximum amount allowed.');
+
+        },
+            \RZP\Exception\BadRequestValidationFailureException::class,
+            'Amount exceeds maximum amount allowed.');
+
+    }
+
+    public function testOpgspImportPaymentWithoutInvoiceNumber()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::MAX_PAYMENT_AMOUNT => 3000000,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+        $this->fixtures->merchant->addFeatures(['opgsp_import_flow']);
+
+        $merchantDetailAttribute = [
+            DetailEntity::MERCHANT_ID => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '1000000';
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $this->makeRequestAndCatchException(function() use ($payment)
+        {
+            $response = $this->doS2SPrivateAuthPayment($payment);
+
+            $error = $response['error'];
+            $this->assertEquals($error['field'], 'notes');
+            $this->assertEquals($error['code'], 'BAD_REQUEST_ERROR');
+            $this->assertEquals($error['description'], 'Invoice number field is required with in the notes.');
+
+        },
+            \RZP\Exception\BadRequestValidationFailureException::class,
+            'Invoice number field is required with in the notes.');
+
+    }
+
+    public function testOpgspImportPaymentWithUnsupportedLibrary()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::MAX_PAYMENT_AMOUNT => 3000000,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+        $this->fixtures->merchant->addFeatures(['opgsp_import_flow']);
+
+        $merchantDetailAttribute = [
+            DetailEntity::MERCHANT_ID => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '1000000';
+
+        $this->makeRequestAndCatchException(function() use ($payment)
+        {
+            $response = $this->doAuthPayment($payment);
+
+            $error = $response['error'];
+
+            $this->assertEquals($error['code'], 'BAD_REQUEST_ERROR');
+            $this->assertEquals($error['description'], 'The payment request has invalid library');
+
+        },
+            \RZP\Exception\BadRequestException::class,
+            'The payment request has invalid library');
+
+    }
+
+    public function testOpgspImportPaymentWithUnsupportedMethod()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::MAX_PAYMENT_AMOUNT => 3000000,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+        $this->fixtures->merchant->addFeatures(['opgsp_import_flow']);
+
+        $merchantDetailAttribute = [
+            DetailEntity::MERCHANT_ID => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
+
+        $payment['amount'] = '1000000';
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
+        $this->fixtures->merchant->addFeatures(['email_optional', 'contact_optional']);
+
+        $this->makeRequestAndCatchException(function() use ($payment)
+        {
+            $response = $this->doS2SPrivateAuthPayment($payment);
+
+            $error = $response['error'];
+
+            $this->assertEquals($error['code'], 'BAD_REQUEST_ERROR');
+            $this->assertEquals($error['description'], 'Payment method invalid / not allowed');
+
+        },
+            \RZP\Exception\BadRequestException::class,
+            'Payment method invalid / not allowed');
+
+    }
+
+    public function testOpgspImportPaymentPositive()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::MAX_PAYMENT_AMOUNT => 3000000,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+        $this->fixtures->merchant->addFeatures(['opgsp_import_flow']);
+
+        $merchantDetailAttribute = [
+            DetailEntity::MERCHANT_ID => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '1000000';
+        $payment['notes'] = [
+            'invoice_number' => 'INV123',
+        ];
+
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
+
+        $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $responseContent);
+
+        $this->assertArrayHasKey('next', $responseContent);
+
+        $this->assertArrayHasKey('action', $responseContent['next'][0]);
+
+        $this->assertArrayHasKey('url', $responseContent['next'][0]);
+
+        $redirectContent = $responseContent['next'][0];
+
+        $this->assertTrue($this->isRedirectToAddressCollectUrl($redirectContent['url']));
+
+        $id = getTextBetweenStrings($redirectContent['url'], '/payments/', '/address_collect');
+
+        $this->redirectToAddressCollect= true;
+
+        $url = $this->getPaymentRedirectToAddressCollectUrl($id);
+
+        $this->ba->directAuth();
+
+        $request = [
+            'url'   => $url,
+            'method' => 'get',
+            'content' => [],
+        ];
+
+        $infoResponse = $this->makeRequestParent($request);
+        $this->ba->publicAuth();
+
+        $content = $infoResponse->getContent();
+        $this->redirectToUpdateAndAuthorize = true;
+
+        list($url, $method, $content) = $this->getFormDataFromResponse($content, 'http://localhost');
+
+        $content['billing_address'] = $this->getDefaultBillingAddressArray();
+        $content['billing_address']['first_name'] = 'First';
+        $content['billing_address']['last_name'] = 'Rahul';
+
+        $firstRequest = [
+            'content'=>$content,
+            'method'=>$method,
+            'url'=>$url
+        ];
+        $firstResponse=$this->sendRequest($firstRequest);
+
+        $paymentEntity = $this->getDbLastPayment();
+        $paymentSupportingDocs = $this->getLastEntity('payment_supporting_documents', true);
+        $this->assertEquals($paymentSupportingDocs['payment_id'], $paymentEntity['id'] );
+        $this->assertEquals($paymentSupportingDocs['document_owner'],'merchant');
+        $this->assertEquals($paymentSupportingDocs['document_type'],'invoice');
+        $this->assertEquals($paymentSupportingDocs['document_number'],'INV123');
+        $this->validatePaymentBillingAddress($paymentEntity, $content['billing_address']);
+
+    }
+
+    public function testOpgspImportPaymentNBPositive()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::MAX_PAYMENT_AMOUNT => 3000000,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+        $this->fixtures->merchant->addFeatures(['opgsp_import_flow']);
+
+        $merchantDetailAttribute = [
+            DetailEntity::MERCHANT_ID => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['amount'] = '1000000';
+        $payment['notes'] = [
+            'invoice_number' => 'INV123',
+        ];
+
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
+
+        $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $responseContent);
+
+        $this->assertArrayHasKey('next', $responseContent);
+
+        $this->assertArrayHasKey('action', $responseContent['next'][0]);
+
+        $this->assertArrayHasKey('url', $responseContent['next'][0]);
+
+        $redirectContent = $responseContent['next'][0];
+
+        $this->assertTrue($this->isRedirectToAddressCollectUrl($redirectContent['url']));
+
+        $id = getTextBetweenStrings($redirectContent['url'], '/payments/', '/address_collect');
+
+        $this->redirectToAddressCollect= true;
+
+        $url = $this->getPaymentRedirectToAddressCollectUrl($id);
+
+        $this->ba->directAuth();
+
+        $request = [
+            'url'   => $url,
+            'method' => 'get',
+            'content' => [],
+        ];
+
+        $infoResponse = $this->makeRequestParent($request);
+        $this->ba->publicAuth();
+
+        $content = $infoResponse->getContent();
+        $this->redirectToUpdateAndAuthorize = true;
+
+        list($url, $method, $content) = $this->getFormDataFromResponse($content, 'http://localhost');
+
+        $content['billing_address'] = $this->getDefaultBillingAddressArray();
+        $content['billing_address']['first_name'] = 'First';
+        $content['billing_address']['last_name'] = 'Rahul';
+
+        $firstRequest = [
+            'content'=>$content,
+            'method'=>$method,
+            'url'=>$url
+        ];
+        $firstResponse=$this->sendRequest($firstRequest);
+
+        $paymentEntity = $this->getDbLastPayment();
+        $paymentSupportingDocs = $this->getLastEntity('payment_supporting_documents', true);
+        $this->assertEquals($paymentSupportingDocs['payment_id'], $paymentEntity['id'] );
+        $this->assertEquals($paymentSupportingDocs['document_owner'],'merchant');
+        $this->assertEquals($paymentSupportingDocs['document_type'],'invoice');
+        $this->assertEquals($paymentSupportingDocs['document_number'],'INV123');
+        $this->validatePaymentBillingAddress($paymentEntity, $content['billing_address']);
+
+    }
+
+    /**
+     * @param $paymentEntity
+     * @param array $billingAddressArray
+     */
+    protected function validatePaymentBillingAddress($paymentEntity, array $billingAddressArray): void
+    {
+        $paymentAddressEntity = (new \RZP\Models\Address\Repository)->fetchPrimaryAddressOfEntityOfType($paymentEntity, Type::BILLING_ADDRESS);
+
+        $this->assertNotNull($paymentAddressEntity);
+
+        $this->validateBillingAddress($billingAddressArray, $paymentAddressEntity);
+    }
+
+    /**
+     * @param $postal_code
+     * @param $addressEntity
+     */
+    private function validateBillingAddress($billingAddress, $addressEntity): void
+    {
+        foreach (['line1', 'line2', 'city', 'state', 'country'] as $attribute) {
+            $this->assertEquals($billingAddress[$attribute], $addressEntity[$attribute]);
+        }
+
+        $this->assertEquals($billingAddress['postal_code'], $addressEntity['zipcode']);
     }
 }

@@ -102,6 +102,11 @@ class Method
         self::UPI,
     ];
 
+    const OPGSP_IMPORT_SUPPORTED_METHODS= [
+        self::CARD,
+        self::NETBANKING,
+    ];
+
     public static function formatted($method)
     {
         return self::$methods[$method];

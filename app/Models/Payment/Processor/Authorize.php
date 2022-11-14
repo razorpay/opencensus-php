@@ -100,6 +100,9 @@ use RZP\Jobs\SavedCardTokenisationJob;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Currency\Currency as CurrencyCurrency;
 use RZP\Models\Payment\TokenisationExperiment;
+use RZP\Models\Payment\PaymentSupportingDocuments\Service as PaymentDocumentsService;
+use RZP\Models\Payment\PaymentSupportingDocuments\Entity as PaymentDocumentsEntity;
+use RZP\Models\Payment\PaymentSupportingDocuments\Constants as PaymentDocumentsConstants;
 
 trait Authorize
 {
@@ -1861,6 +1864,8 @@ trait Authorize
 
             $this->validateProviderIfApplicable($payment, $input);
 
+            $this->validateOpgspImport($payment);
+
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_INPUT_VALIDATIONS2_PROCESSED, $payment);
         }
         catch (\Throwable $ex)
@@ -3535,6 +3540,66 @@ trait Authorize
         $this->validateInternationalAllowed($payment);
 
         $this->validateInternationalRecurringPaymentsAllowed($payment);
+    }
+
+    protected function validateOpgspImport(Payment\Entity $payment)
+    {
+
+        if($payment->merchant->isOpgspImportEnabled() === true)
+        {
+
+            $library = (new Payment\Service)->getLibraryFromPayment($payment);
+
+            if(in_array($library, Analytics\Metadata::OPGSP_SUPPORTED_LIBRARIES) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_LIBRARY,
+                    [
+                        'merchant_id' => $payment->merchant->getId(),
+                    ]);
+            }
+
+            /*
+             * Validate payment methods.
+             * OPGSP import flow supports only Cards and NB.
+             */
+            if (in_array($payment->getMethod(), Method::OPGSP_IMPORT_SUPPORTED_METHODS) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD,
+                    [
+                        'merchant_id' => $payment->merchant->getId(),
+                    ]);
+            }
+
+            //Validate if invoice number is present in notes
+            if (empty($payment->getNotes()))
+            {
+                $this->trace->error(
+                    TraceCode::INVALID_NOTES_FOR_OPGSP_IMPORT,
+                    ['payment_id' => $payment->getId()]
+                );
+                throw new Exception\BadRequestValidationFailureException(
+                    'Notes field is required with invoice_number.', 'notes');
+            }
+
+            $paymentNotes = $payment->getNotes()->toArray();
+
+            // Validate invoice number is present in notes
+            if (empty($paymentNotes[PaymentDocumentsConstants::INVOICE_NUMBER]))
+            {
+                $this->trace->error(
+                    TraceCode::INVALID_INVOICE_FOR_OPGSP_IMPORT,
+                    ['payment_id' => $payment->getId()]
+                );
+                throw new Exception\BadRequestValidationFailureException(
+                    'Invoice number field is required with in the notes.', 'notes');
+            }
+
+            $this->saveDocumentForOpgspPayment($payment);
+
+        }
+
     }
 
     protected function runFraudChecksIfApplicable(Payment\Entity $payment, $input = [])
@@ -10331,12 +10396,18 @@ trait Authorize
         //Check if address required is enabled
         $addressRequired = false;
 
+        $library = $payment->getMetadata(Analytics\Entity::LIBRARY);
+
+        if(($payment->merchant->isOpgspImportEnabled()) and
+            (in_array($library, Analytics\Metadata::OPGSP_SUPPORTED_LIBRARIES) === true))
+        {
+            return true;
+        }
+
         if (($payment->isInternational() === true) and
             ($payment->isCard() === true) and
             ($payment->card !== null))
         {
-            $library = $payment->getMetadata(Analytics\Entity::LIBRARY);
-
             // CheckoutJS has native address collection support, hence doesn't need a redirect
             if($library === Analytics\Metadata::CHECKOUTJS or $library === Analytics\Metadata::HOSTED)
             {
@@ -11633,13 +11704,14 @@ trait Authorize
 
         $addressRequiredWithName = false;
 
+        $library = (new Payment\Service)->getLibraryFromPayment($payment);
+
         if ($payment->isInternational() === true) {
             if ($payment->isCard() === true and $payment->getBatchId() !== null) {
                 return;
             }
 
             if (($payment->isCard() === true) and ($payment->card !== null)) {
-                $library = (new Payment\Service)->getLibraryFromPayment($payment);
 
                 $addressRequired = (new Payment\Service)->isAddressRequired($library, $payment->card->iinRelation, $payment->merchant);
             }
@@ -11647,6 +11719,12 @@ trait Authorize
             if (in_array($payment->getWallet(), Payment\Gateway::ADDRESS_REQUIRED_APPS) === true) {
                 $addressRequiredWithName = (new Payment\Service)->isAddressWithNameRequired($input, $payment->merchant);
             }
+        }
+
+        if($payment->merchant->isOpgspImportEnabled() and
+            (in_array($library,Analytics\Metadata::OPGSP_SUPPORTED_LIBRARIES) === true))
+        {
+            $addressRequiredWithName = true;
         }
 
         if ($addressRequired === true || $addressRequiredWithName === true) {
@@ -11667,7 +11745,7 @@ trait Authorize
                 );
             }
 
-            if (isset($input[Payment\Entity::BILLING_ADDRESS]['postal_code']) === false){
+            if (isset($input[Payment\Entity::BILLING_ADDRESS]['postal_code']) === false) {
 
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY,
@@ -11679,7 +11757,7 @@ trait Authorize
 
             if (($addressRequiredWithName === true) and
                 ((isset($input[Payment\Entity::BILLING_ADDRESS]['first_name']) === false) or
-                (isset($input[Payment\Entity::BILLING_ADDRESS]['last_name']) === false))){
+                    (isset($input[Payment\Entity::BILLING_ADDRESS]['last_name']) === false))) {
 
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY,
@@ -12361,5 +12439,30 @@ trait Authorize
         }
 
         return false;
+      }
+
+      protected function saveDocumentForOpgspPayment($payment){
+
+          $paymentDocumentEntity = [];
+
+          try{
+            $paymentNotes = $payment->getNotes()->toArray();
+
+            $paymentSupportingDocument[PaymentDocumentsEntity::MERCHANT_ID] = $payment->merchant->getId();
+            $paymentSupportingDocument[PaymentDocumentsEntity::PAYMENT_ID] = $payment->getId();
+            $paymentSupportingDocument[PaymentDocumentsEntity::DOCUMENT_TYPE] = PaymentDocumentsConstants::DOCUMENT_TYPE_INVOICE;
+            $paymentSupportingDocument[PaymentDocumentsEntity::DOCUMENT_OWNER] = PaymentDocumentsConstants::DOCUMENT_OWNER_MERCHANT;
+            $paymentSupportingDocument[PaymentDocumentsEntity::DOCUMENT_NUMBER] = $paymentNotes[PaymentDocumentsConstants::INVOICE_NUMBER];
+            $paymentSupportingDocument[PaymentDocumentsEntity::UPDATED_AT] = time();
+
+            (new PaymentDocumentsService())->createPaymentSupportingDocuments($paymentSupportingDocument);
+        }catch (\Throwable $e){
+            $this->trace->error(
+                TraceCode::PAYMENT_SUPPORTING_DOCUMENTS_SAVE_FAILED,
+                ['paymentDocumentEntity' => $paymentDocumentEntity]
+            );
+            $this->trace->traceException($e);
+            throw new ServerErrorException(PublicErrorDescription::SERVER_ERROR, ErrorCode::REPO_FAILED_TO_SAVE);
+        }
       }
 }

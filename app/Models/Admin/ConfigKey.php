@@ -339,6 +339,9 @@ class ConfigKey
 
     const MCC_DEFAULT_MARKDOWN_PERCENTAGE = SELF::PREFIX . 'mcc_default_markdown_percentage';
 
+    const DEFAULT_OPGSP_TRANSACTION_LIMIT_USD = SELF::PREFIX . 'default_opgsp_transaction_limit_usd';
+
+
     const SET_CARD_METADATA_NULL = SELF::PREFIX. 'set_card_metadata_null';
 
     const PUBLIC_KEYS = [
@@ -485,6 +488,7 @@ class ConfigKey
         self::PAYOUT_SERVICE_DATA_MIGRATION_BATCH_ATTEMPTS,
         self::ONDEMAND_SETTLEMENT_INTERNAL_MERCHANTS,
         self::MCC_DEFAULT_MARKDOWN_PERCENTAGE,
+        self::DEFAULT_OPGSP_TRANSACTION_LIMIT_USD,
         self::PAYOUT_SERVICE_DATA_MIGRATION_BUFFER,
     ];
 

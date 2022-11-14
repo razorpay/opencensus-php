@@ -600,7 +600,7 @@ class Service extends Base\Service
     public function getMerchantHsCode(string $merchantId = null)
     {
         $merchant = $this->merchant;
-        
+
         if($merchant !== null){
             $mid = $this->merchant->getId();
         }else{

@@ -82,6 +82,9 @@ trait PaymentTrait
 
     protected $redirectToAddressCollect = false;
 
+    protected $addressNameCollect = false;
+
+
     /**
      * For certain payments, user has the option to fail it
      * on the bank page. If this property is set to true in

@@ -111,5 +111,9 @@ class Constants
 
     // default time out for upi and card subsequent payment
     const AUTO_CAPTURE_DEFAULT_TIMEOUT_UPI_RECURRING_AUTO = 2160;
+
     const AUTO_CAPTURE_DEFAULT_TIMEOUT_CARD_RECURRING_AUTO = 4320;
+
+    const OPGSP_TRANSACTION_LIMIT_USD = 200000;
+
 }

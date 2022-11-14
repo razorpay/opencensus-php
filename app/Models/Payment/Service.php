@@ -2335,6 +2335,11 @@ class Service extends Base\Service
         $data['merchant'] = $merchant->getBillingLabel();
         $data['show_mor_tnc'] = $merchant->isShowMorTncEnabled();
 
+        if ($merchant->isOpgspImportEnabled()){
+            $data['address_name_required'] = true;
+            $data['domestic_address'] = true;
+        }
+
         return $data;
     }
 
