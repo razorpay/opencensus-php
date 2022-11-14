@@ -6,6 +6,6 @@ import { fetchMarketplacePayments as fetchAll } from 'merchant/reducers/collecti
 
 import PaymentsList from 'merchant/views/Transactions/Payments/components/PaymentsList';
 
-export default connect(state => state.mpPayments, { fetchAll })(props => (
+export default connect((state) => state.mpPayments, { fetchAll })((props) => (
   <PaymentsList {...props} quickTourFeature={RZPFeatures.ROUTE} isRoute />
 ));

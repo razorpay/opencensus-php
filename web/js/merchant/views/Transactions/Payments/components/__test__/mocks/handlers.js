@@ -141,4 +141,15 @@ export const paymentHandlers = [
       ctx.delay(50),
     );
   }),
+  rest.get('*/payments', (req, res, ctx) => {
+    return res(
+      ctx.json({
+        status_code: 200,
+        data: {
+          items: [],
+        },
+      }),
+      ctx.delay(50),
+    );
+  }),
 ];
