@@ -130,6 +130,32 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
+    public function fetchMerchantIdsWithFeatureWithPagination(string $featureName,
+                                                              $skip,
+                                                              $limit,
+                                                              $from = null,
+                                                              $to = null)
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::NAME, $featureName)
+                      ->where(Entity::ENTITY_TYPE, Constants::MERCHANT);
+
+        if (empty($from) === false)
+        {
+            $query->where(Entity::CREATED_AT, '>=', $from);
+        }
+
+        if (empty($to) === false)
+        {
+            $query->where(Entity::CREATED_AT, '<', $to);
+        }
+
+        return $query->skip($skip)
+                     ->take($limit)
+                     ->pluck(Entity::ENTITY_ID)
+                     ->toArray();
+    }
+
     public function fetchMerchantIdsWithFeatureAndNoFundAccountInChunks(string $featureName)
     {
         return $this->newQuery()

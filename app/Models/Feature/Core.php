@@ -1337,6 +1337,13 @@ class Core extends Base\Core
      */
     public function checkAndDisableFeatureChangesForPayoutServiceIdempotencyFeatures(string $featureToChange)
     {
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        if ($routeName === 'payout_service_idempotency_key_feature_remove')
+        {
+            return;
+        }
+
         if (in_array($featureToChange, Constants::PAYOUT_SERVICE_IDEMPOTENCY_KEY_FEATURES, true) === true)
         {
             $this->trace->info(TraceCode::MANUAL_PAYOUT_SERVICE_IDEMPOTENCY_KEY_FEATURE_CHANGE_ATTEMPTED,
@@ -1386,7 +1393,8 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::IS_IDEMPOTENCY_PS_TO_API_FEATURE_ENABLED,
                            [
-                               'is_feature_enabled' => empty($payoutServiceIdempotencyKeyFromPsToApiFeature),
+                               'is_feature_enabled' =>
+                                   (empty($payoutServiceIdempotencyKeyFromPsToApiFeature) === false),
                            ]
         );
 
@@ -1450,7 +1458,8 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::IS_IDEMPOTENCY_API_TO_PS_FEATURE_ENABLED,
                            [
-                               'is_feature_enabled' => empty($payoutServiceIdempotencyKeyFromApiToPsFeature),
+                               'is_feature_enabled' =>
+                                   (empty($payoutServiceIdempotencyKeyFromApiToPsFeature) === false),
                            ]
         );
 

@@ -319,4 +319,11 @@ class FeatureController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function removePayoutServiceIntermediateIdempotencyFeatures()
+    {
+        $response = $this->service()->removePayoutServiceIntermediateIdempotencyFeatures();
+
+        return ApiResponse::json($response);
+    }
 }

@@ -2,15 +2,18 @@
 
 namespace RZP\Models\Feature;
 
+use Carbon\Carbon;
+
 use Illuminate\Support\Arr;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Error\PublicErrorDescription;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Feature\Metric as FeatureMetric;
@@ -19,6 +22,8 @@ use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 
 class Service extends Base\Service
 {
+    const PAYOUT_SERVICE_IDEMPOTENCY_KEY_INTERMEDIATE_FEATURES_FETCH_LIMIT = 500;
+
     public function addFeatures(
         array $input,
         string $routeEndpoint = null,
@@ -1287,6 +1292,133 @@ class Service extends Base\Service
             }
             $response->add($result);
         }
+        return $response;
+    }
+
+    public function removePayoutServiceIntermediateIdempotencyFeatures()
+    {
+        // Get start of day (i.e. 00 hours) timestamp for 7th previous day, features enabled before this time should be
+        // removed.
+        $beforeTimestamp = Carbon::now(Timezone::IST)->subDays(7)->startOfDay()->getTimestamp();
+
+        $merchantIdsWithIdempotencyApiToPs = $this->repo->feature->fetchMerchantIdsWithFeatureWithPagination(
+            Constants::IDEMPOTENCY_API_TO_PS,
+            0,
+            self::PAYOUT_SERVICE_IDEMPOTENCY_KEY_INTERMEDIATE_FEATURES_FETCH_LIMIT,
+            null,
+            $beforeTimestamp
+        );
+
+        $merchantIdsWithIdempotencyPsToApi = $this->repo->feature->fetchMerchantIdsWithFeatureWithPagination(
+            Constants::IDEMPOTENCY_PS_TO_API,
+            0,
+            self::PAYOUT_SERVICE_IDEMPOTENCY_KEY_INTERMEDIATE_FEATURES_FETCH_LIMIT,
+            null,
+            $beforeTimestamp
+        );
+
+        $successfulMerchantIdsWithIdempotencyApiToPs = [];
+
+        $failedMerchantIdsWithIdempotencyApiToPs = [];
+
+        foreach ($merchantIdsWithIdempotencyApiToPs as $merchantId)
+        {
+            try
+            {
+                $this->trace->info(
+                    TraceCode::PAYOUT_SERVICE_IDEMPOTENCY_KEY_API_TO_PS_FEATURE_REMOVE_REQUEST,
+                    [
+                        Constants::MERCHANT_ID => $merchantId,
+                    ]
+                );
+
+                $this->deleteEntityFeature(Type::ACCOUNTS, $merchantId, Constants::IDEMPOTENCY_API_TO_PS, []);
+
+                $this->trace->info(
+                    TraceCode::PAYOUT_SERVICE_IDEMPOTENCY_KEY_API_TO_PS_FEATURE_REMOVE_SUCCESS,
+                    [
+                        Constants::MERCHANT_ID => $merchantId,
+                    ]
+                );
+
+                array_push($successfulMerchantIdsWithIdempotencyApiToPs, $merchantId);
+            }
+
+            catch (\Throwable $throwable)
+            {
+                $this->trace->error(
+                    TraceCode::PAYOUT_SERVICE_IDEMPOTENCY_KEY_API_TO_PS_FEATURE_REMOVE_FAILED,
+                    [
+                        "exception"            => $throwable,
+                        "message"              => $throwable->getMessage(),
+                        "code"                 => $throwable->getCode(),
+                        Constants::MERCHANT_ID => $merchantId,
+                    ]
+                );
+
+                array_push($failedMerchantIdsWithIdempotencyApiToPs, $merchantId);
+            }
+        }
+
+        $successfulMerchantIdsWithIdempotencyPsToApi = [];
+
+        $failedMerchantIdsWithIdempotencyPsToApi = [];
+
+        foreach ($merchantIdsWithIdempotencyPsToApi as $merchantId)
+        {
+            try
+            {
+                $this->trace->info(
+                    TraceCode::PAYOUT_SERVICE_IDEMPOTENCY_KEY_PS_TO_API_FEATURE_REMOVE_REQUEST,
+                    [
+                        Constants::MERCHANT_ID => $merchantId,
+                    ]
+                );
+
+                $this->deleteEntityFeature(Type::ACCOUNTS, $merchantId, Constants::IDEMPOTENCY_PS_TO_API, []);
+
+                $this->trace->info(
+                    TraceCode::PAYOUT_SERVICE_IDEMPOTENCY_KEY_PS_TO_API_FEATURE_REMOVE_SUCCESS,
+                    [
+                        Constants::MERCHANT_ID => $merchantId,
+                    ]
+                );
+
+                array_push($successfulMerchantIdsWithIdempotencyPsToApi, $merchantId);
+            }
+
+            catch (\Throwable $throwable)
+            {
+                $this->trace->error(
+                    TraceCode::PAYOUT_SERVICE_IDEMPOTENCY_KEY_PS_TO_API_FEATURE_REMOVE_FAILED,
+                    [
+                        "exception"            => $throwable,
+                        "message"              => $throwable->getMessage(),
+                        "code"                 => $throwable->getCode(),
+                        Constants::MERCHANT_ID => $merchantId,
+                    ]
+                );
+
+                array_push($failedMerchantIdsWithIdempotencyPsToApi, $merchantId);
+            }
+        }
+
+        $response = [
+            Constants::IDEMPOTENCY_API_TO_PS => [
+                Constants::SUCCESS => count($successfulMerchantIdsWithIdempotencyApiToPs),
+                Constants::FAILURE => count($failedMerchantIdsWithIdempotencyApiToPs),
+            ],
+            Constants::IDEMPOTENCY_PS_TO_API => [
+                Constants::SUCCESS => count($successfulMerchantIdsWithIdempotencyPsToApi),
+                Constants::FAILURE => count($failedMerchantIdsWithIdempotencyPsToApi),
+            ]
+        ];
+
+        $this->trace->info(
+            TraceCode::PAYOUT_SERVICE_IDEMPOTENCY_KEY_INTERMEDIATE_FEATURE_REMOVE_RESPONSE,
+            $response
+        );
+
         return $response;
     }
 }

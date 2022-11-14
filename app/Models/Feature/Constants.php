@@ -1682,7 +1682,6 @@ class Constants
         self::ONE_CC_CONSENT_DEFAULT,
         self::ONE_CC_CONSENT_NOTDEFAULT,
         self::ONE_CC_COUPON_DISABLE_COD,
-
     ];
 
     const ONE_CC_FEATURES = [

@@ -5,17 +5,17 @@ namespace RZP\Tests\Functional\Merchant;
 use Mail;
 use Event;
 use Mockery;
+use Carbon\Carbon;
 
+use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Terminal;
+use RZP\Constants\Timezone;
 use RZP\Error\PublicErrorCode;
 use RZP\Models\Feature\Entity;
-use RZP\Models\Admin;
 use RZP\Services\RazorXClient;
 use RZP\Models\Feature\Constants;
-use RZP\Models\Terminal;
-use RZP\Models\Merchant\Core as MerchantCore;
-use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Traits\MocksRazorx;
 use RZP\Mail\Loc\CashAdvanceEligible;
 use RZP\Error\PublicErrorDescription;
@@ -25,23 +25,23 @@ use Illuminate\Cache\Events\CacheMissed;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Mail\Merchant\FullES as FullESMail;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Mail\Merchant\MerchantDashboardEmail;
 use RZP\Tests\Functional\Helpers\FileUploadTrait;
+use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\Merchant\Store\ConfigKey as StoreConfigKey;
 use RZP\Models\Base\QueryCache\Constants as CacheConstants;
 use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
-use RZP\Models\Admin\Org\Entity as OrgEntity;
-use RZP\Models\Admin\Permission\Name as Permission;
-
-
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
+
 use function Clue\StreamFilter\fun;
 
 class FeaturesTest extends OAuthTestCase
@@ -3659,5 +3659,159 @@ Regards,
         $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
 
         $this->startTest();
+    }
+
+    public function testRemovePayoutServiceIntermediateIdempotencyKeyFeatures()
+    {
+        $this->fixtures->create('merchant', ['id' => '10000000000001']);
+        $this->fixtures->create('merchant', ['id' => '10000000000002']);
+        $this->fixtures->create('merchant', ['id' => '10000000000003']);
+        $this->fixtures->create('merchant', ['id' => '10000000000004']);
+
+        $this->fixtures->merchant->addFeatures([Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $this->fixtures->merchant->addFeatures([Constants::IDEMPOTENCY_PS_TO_API], '10000000000001');
+
+        $this->fixtures->merchant->addFeatures([Constants::IDEMPOTENCY_PS_TO_API], '10000000000002');
+
+        $this->fixtures->merchant->addFeatures([Constants::IDEMPOTENCY_API_TO_PS], '10000000000003');
+
+        $tagsBefore = $this->fixtures->merchant->addTags([Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $tagsBeforeM3 = $this->fixtures->merchant
+            ->addTags([Constants::IDEMPOTENCY_API_TO_PS], '10000000000003');
+
+        $tagsBeforeM1 = $this->fixtures->merchant
+            ->addTags([Constants::IDEMPOTENCY_PS_TO_API], '10000000000001');
+
+        $tagsBeforeM2 = $this->fixtures->merchant
+            ->addTags([Constants::IDEMPOTENCY_PS_TO_API], '10000000000002');
+
+        $time = Carbon::now(Timezone::IST)->startOfDay();
+
+        $time->addHours(5);
+
+        // Doing this so that Carbon::now never returns time as 00 hours as we want to test scenarios where created at
+        // is just on the 7th previous day but is at time > 00 and for scenario where created at is < 00 of 7th previous
+        // day.
+        Carbon::setTestNow($time);
+
+        $featureApiToPs = $this->getDbEntity('feature', [
+            'name'        => Constants::IDEMPOTENCY_API_TO_PS,
+            'entity_id'   => '10000000000000',
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->edit(
+            'feature',
+            $featureApiToPs->getId(),
+            [
+                'created_at' => Carbon::now(Timezone::IST)->subDays(8)->getTimestamp(),
+            ]);
+
+        $featureApiToPsForM3 = $this->getDbEntity('feature', [
+            'name'        => Constants::IDEMPOTENCY_API_TO_PS,
+            'entity_id'   => '10000000000003',
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->edit(
+            'feature',
+            $featureApiToPsForM3->getId(),
+            [
+                'created_at' => Carbon::now(Timezone::IST)->subDays(7)->getTimestamp(),
+            ]);
+
+        $featurePsToApiForM1 = $this->getDbEntity('feature', [
+            'name'        => Constants::IDEMPOTENCY_PS_TO_API,
+            'entity_id'   => '10000000000001',
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->edit(
+            'feature',
+            $featurePsToApiForM1->getId(),
+            [
+                'created_at' => Carbon::now(Timezone::IST)->subDays(8)->getTimestamp(),
+            ]);
+
+        $featurePsToApiForM2 = $this->getDbEntity('feature', [
+            'name'        => Constants::IDEMPOTENCY_PS_TO_API,
+            'entity_id'   => '10000000000002',
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->edit(
+            'feature',
+            $featurePsToApiForM2->getId(),
+            [
+                'created_at' => Carbon::now(Timezone::IST)->subDays(7)->getTimestamp(),
+            ]);
+
+        $isIdempotencyPayoutServicePsToApiEnabledForM1 =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_PS_TO_API], '10000000000001');
+
+        $isIdempotencyPayoutServicePsToApiEnabledForM2 =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_PS_TO_API], '10000000000002');
+
+        $isIdempotencyPayoutServiceApiToPsEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $isIdempotencyPayoutServiceApiToPsEnabledForM3 =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_API_TO_PS], '10000000000003');
+
+        $this->assertTrue($isIdempotencyPayoutServicePsToApiEnabledForM1);
+        $this->assertTrue($isIdempotencyPayoutServicePsToApiEnabledForM2);
+        $this->assertTrue($isIdempotencyPayoutServiceApiToPsEnabled);
+        $this->assertTrue($isIdempotencyPayoutServiceApiToPsEnabledForM3);
+
+        $this->assertTrue(in_array(Constants::IDEMPOTENCY_API_TO_PS, $tagsBefore, true));
+        $this->assertTrue(in_array(Constants::IDEMPOTENCY_API_TO_PS, $tagsBeforeM3, true));
+        $this->assertTrue(in_array(Constants::IDEMPOTENCY_PS_TO_API, $tagsBeforeM1, true));
+        $this->assertTrue(in_array(Constants::IDEMPOTENCY_PS_TO_API, $tagsBeforeM2, true));
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $isIdempotencyPayoutServicePsToApiEnabledForM1 =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_PS_TO_API], '10000000000001');
+
+        $isIdempotencyPayoutServicePsToApiEnabledForM2 =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_PS_TO_API], '10000000000002');
+
+        $isIdempotencyPayoutServiceApiToPsEnabled =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_API_TO_PS]);
+
+        $isIdempotencyPayoutServiceApiToPsEnabledForM3 =
+            $this->fixtures->merchant->isFeatureEnabled([Constants::IDEMPOTENCY_API_TO_PS], '10000000000003');
+
+        // For merchant 10000000000000 and 10000000000001 the features will be removed as their created at was < 00
+        // hours of 7th previous day.
+        $this->assertFalse($isIdempotencyPayoutServicePsToApiEnabledForM1);
+        $this->assertFalse($isIdempotencyPayoutServiceApiToPsEnabled);
+
+        // For merchant 10000000000002 and 10000000000003 the features will be not be removed as their created at was >
+        // 00 hours of 7th previous day.
+        $this->assertTrue($isIdempotencyPayoutServicePsToApiEnabledForM2);
+        $this->assertTrue($isIdempotencyPayoutServiceApiToPsEnabledForM3);
+
+        $tagsAfter = $this->fixtures->merchant->reloadTags();
+
+        $tagsAfterM1 = $this->fixtures->merchant->reloadTags('10000000000001');
+
+        $tagsAfterM2 = $this->fixtures->merchant->reloadTags('10000000000002');
+
+        $tagsAfterM3 = $this->fixtures->merchant->reloadTags('10000000000003');
+
+        // For merchant 10000000000000 and 10000000000001 the tags will be removed as their created at was < 00 hours of
+        // 7th previous day.
+        $this->assertFalse(in_array(Constants::IDEMPOTENCY_API_TO_PS, $tagsAfter, true));
+        $this->assertFalse(in_array(Constants::IDEMPOTENCY_PS_TO_API, $tagsAfterM1, true));
+
+        // For merchant 10000000000002 and 10000000000003 the tags will be not be removed as their created at was > 00
+        // hours of 7th previous day.
+        $this->assertTrue(in_array(Constants::IDEMPOTENCY_API_TO_PS, $tagsAfterM3, true));
+        $this->assertTrue(in_array(Constants::IDEMPOTENCY_PS_TO_API, $tagsAfterM2, true));
     }
 }

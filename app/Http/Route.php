@@ -3754,6 +3754,8 @@ class Route
         'initiate_payouts_consistency_check'      => ['post',     'consistency_checker',                                    'PayoutController@initiatePayoutsConsistencyCheck'             ],
         'dcc_payouts_details_fetch'               => ['post',     'consistency_checker/fetch',                              'PayoutController@fetchPayoutsDetailsForDcc'                   ],
 
+        'payout_service_idempotency_key_feature_remove' => ['post', 'ps_idempotency_key_feature_remove', 'FeatureController@removePayoutServiceIntermediateIdempotencyFeatures'],
+
         //auditing
         'audit_info_partition_cron'            => ['post',     'audit_info/partition',                                'AuditingController@createAuditInfoPartition'           ],
 
@@ -5245,6 +5247,7 @@ class Route
 
         'rollback_free_payouts',
         'payouts_service_redis_key_set',
+        'payout_service_idempotency_key_feature_remove',
 
         // payment analytics cron creates a new partition and drops oldest partition, runs daily
         'payment_analytics_partition_cron',
@@ -13640,7 +13643,8 @@ class Route
             'developer_console_maintenance',
             'firs_collect_and_zip_cron',
 
-            'payouts_service_redis_key_set'
+            'payouts_service_redis_key_set',
+            'payout_service_idempotency_key_feature_remove',
         ],
 
         'subscriptions' => [

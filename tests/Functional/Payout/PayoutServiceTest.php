@@ -4139,24 +4139,9 @@ class PayoutServiceTest extends TestCase
                                        ],
                                        'live');
 
-        $tagInputData = [
-            'tags' => [Constants::IDEMPOTENCY_PS_TO_API],
-        ];
+        $tagInputData = [Constants::IDEMPOTENCY_PS_TO_API];
 
-        $merchantCore = new MerchantCore();
-
-        $merchantCore ->setModeAndDefaultConnection('live');
-
-        $merchantCore->addTags($merchant->getId(), $tagInputData, false);
-
-        // This works without needing to reload from db somehow.
-        $tagsBefore = $merchant->tagNames();
-
-        // Doing this because it returns tag name with first char as capital always (not sure why).
-        foreach ($tagsBefore as $key => $tag)
-        {
-            $tagsBefore[$key] = strtolower($tag);
-        }
+        $tagsBefore = $this->fixtures->on('live')->merchant->addTags($tagInputData);;
 
         $this->assertTrue(in_array(Constants::IDEMPOTENCY_PS_TO_API, $tagsBefore, true));
 
@@ -4182,20 +4167,7 @@ class PayoutServiceTest extends TestCase
 
         $this->assertNotContains(Constants::IDEMPOTENCY_PS_TO_API, $liveFeaturesArray);
 
-        // Doing this because you need to again fetch the entity from db to get the updated tags, ->reload() also
-        // doesn't work (not known why).
-        $merchant = $this->getDbEntity('merchant',
-                                       [
-                                           'id' => '10000000000000'
-                                       ],
-                                       'live');
-
-        $tagsAfter = $merchant->tagNames();
-
-        foreach ($tagsAfter as $key => $tag)
-        {
-            $tagsAfter[$key] = strtolower($tag);
-        }
+        $tagsAfter = $this->fixtures->on('live')->merchant->reloadTags();;
 
         $this->assertFalse(in_array(Constants::IDEMPOTENCY_API_TO_PS, $tagsAfter, true));
     }
@@ -4401,26 +4373,9 @@ class PayoutServiceTest extends TestCase
                                        ],
                                        'live');
 
-        $tagInputData = [
-            'tags' => [Constants::IDEMPOTENCY_API_TO_PS],
-        ];
+        $tagInputData = [Constants::IDEMPOTENCY_API_TO_PS];
 
-        (new MerchantCore())->addTags($merchant->getId(), $tagInputData, false);
-
-        $merchantCore = new MerchantCore();
-
-        $merchantCore ->setModeAndDefaultConnection('live');
-
-        $merchantCore->addTags($merchant->getId(), $tagInputData, false);
-
-        // This works without needing to reload from db somehow.
-        $tagsBefore = $merchant->tagNames();
-
-        // Doing this because it returns tag name with first char as capital always (not sure why).
-        foreach ($tagsBefore as $key => $tag)
-        {
-            $tagsBefore[$key] = strtolower($tag);
-        }
+        $tagsBefore = $this->fixtures->on('live')->merchant->addTags($tagInputData);;
 
         $this->assertTrue(in_array(Constants::IDEMPOTENCY_API_TO_PS, $tagsBefore, true));
 
@@ -4440,20 +4395,7 @@ class PayoutServiceTest extends TestCase
         $this->assertNotContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayAfterTest);
         $this->assertNotContains(Feature\Constants::IDEMPOTENCY_API_TO_PS, $liveFeaturesArrayAfterTest);
 
-        // Doing this because you need to again fetch the entity from db to get the updated tags, ->reload() also
-        // doesn't work (not known why).
-        $merchant = $this->getDbEntity('merchant',
-                                       [
-                                           'id' => '10000000000000'
-                                       ],
-                                       'live');
-
-        $tagsAfter = $merchant->tagNames();
-
-        foreach ($tagsAfter as $key => $tag)
-        {
-            $tagsAfter[$key] = strtolower($tag);
-        }
+        $tagsAfter = $this->fixtures->on('live')->merchant->reloadTags();;
 
         $this->assertFalse(in_array(Constants::IDEMPOTENCY_API_TO_PS, $tagsAfter, true));
     }

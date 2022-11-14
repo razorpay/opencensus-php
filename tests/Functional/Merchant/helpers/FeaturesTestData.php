@@ -3683,7 +3683,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
-    
+
     'test1ccCustomerConsent' => [
         'request'  => [
             'url'     => '/features',
@@ -3724,5 +3724,27 @@ return [
                 ]
             ]
         ]
+    ],
+
+    'testRemovePayoutServiceIntermediateIdempotencyKeyFeatures' => [
+        'request'  => [
+            'url'     => '/ps_idempotency_key_feature_remove',
+            'method'  => 'post',
+            'content' => [
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'idempotency_api_to_ps' => [
+                    'success' => 1,
+                    'failure' => 0,
+                ],
+                'idempotency_ps_to_api' => [
+                    'success' => 1,
+                    'failure' => 0,
+                ],
+            ],
+            'status_code' => 200
+        ],
     ],
 ];

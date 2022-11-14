@@ -18,9 +18,10 @@ use RZP\Models\Merchant\Credits;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Merchant\Balance\AccountType;
-use RZP\Models\Payment\Processor\App as AppMethod;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Models\Merchant\Methods\Entity as MerchantMethodEntity;
 
 class Merchant extends Base
@@ -892,6 +893,47 @@ class Merchant extends Base
             ->get();
 
         return sizeof($features) > 0;
+    }
+
+    public function addTags(array $tagNames, string $merchantId = '10000000000000')
+    {
+        $merchant = MerchantEntity::where(MerchantEntity::ID, $merchantId)
+                                        ->first();
+
+        $tagInputData = [
+            'tags' => $tagNames,
+        ];
+
+        (new MerchantCore())->addTags($merchantId, $tagInputData, false);
+
+        // This works without needing to reload from db somehow.
+        $tags = $merchant->tagNames();
+
+        // Doing this because it returns tag name with first char as capital always (not sure why).
+        foreach ($tags as $key => $tag)
+        {
+            $tags[$key] = strtolower($tag);
+        }
+
+        return $tags;
+    }
+
+    public function reloadTags(string $merchantId = '10000000000000')
+    {
+        // Doing this because you need to fetch the entity from db to get the updated tags, ->reload() on entity also
+        // doesn't work (not known why).
+        $merchant = MerchantEntity::where(MerchantEntity::ID, $merchantId)
+                                        ->first();
+
+        $tags = $merchant->tagNames();
+
+        // Doing this because it returns tag name with first char as capital always (not sure why).
+        foreach ($tags as $key => $tag)
+        {
+            $tags[$key] = strtolower($tag);
+        }
+
+        return $tags;
     }
 
     public function addDccPaymentConfig($dccMarkupPercent, string $id = '10000000000000')

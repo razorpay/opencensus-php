@@ -43,6 +43,7 @@ class Create extends Base
         {
             $uri = self::CREATE_INTERNAL_CONTACT_PAYOUT_SERVICE_URI;
         }
+
         elseif ($this->app['basicauth']->isAppAuth() === true)
         {
             $variant = $this->app->razorx->getTreatment(
