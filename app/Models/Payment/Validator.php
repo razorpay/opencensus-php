@@ -1112,7 +1112,7 @@ class Validator extends Base\Validator
 
         $baseAmount = $amount;
 
-        if ($currency != Currency::INR)
+        if ($currency != $this->entity->merchant->getCurrency())
         {
             $baseAmount = (new CurrencyCore)->getBaseAmount($amount, $currency);
         }
@@ -1142,8 +1142,8 @@ class Validator extends Base\Validator
                 'amount',
                 $meta_data);
         }
-        // check for min amount >1 Rupee for non-inr
-        if ( $currency != Currency::INR && ($baseAmount < 100) === true)
+        // check for min amount > 100 for payment currency not equal to merchant currency
+        if ( $currency != $this->entity->merchant->getCurrency() && ($baseAmount < 100) === true)
         {
             $this->trace->count(Metric::PAYMENT_CREATION_AMOUNT_VALIDATION_FAILURE_COUNT, [
                 'business_type' => $this->entity->merchant->merchantDetail->getBusinessType() ?? '',

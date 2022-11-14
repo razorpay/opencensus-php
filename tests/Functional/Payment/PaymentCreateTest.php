@@ -5164,6 +5164,73 @@ class PaymentCreateTest extends TestCase
         });
     }
 
+    public function testCreatePaymentWithAmountGreaterThanMaxAmountAndCurrencyMYRUnhappyFlow()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::INTERNATIONAL => true,
+            MERCHANT::CONVERT_CURRENCY => true,
+            Merchant::COUNTRY_CODE => 'MY'
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+
+        $merchantDetailAttribute = [
+            DetailEntity::MERCHANT_ID => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '10010000';
+
+        $payment['currency'] = 'MYR';
+
+        $testData = $this->testData["testCreatePaymentWithAmountGreaterThanMaxAmountAndCurrencyUSD"];
+
+        $this->runRequestResponseFlow($testData, function () use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testCreatePaymentCurrencyMYRHappyFlow()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::INTERNATIONAL => true,
+            MERCHANT::CONVERT_CURRENCY => true,
+            Merchant::COUNTRY_CODE => 'MY'
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+
+        $merchantDetailAttribute = [
+            DetailEntity::MERCHANT_ID => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '1001';
+
+        $payment['currency'] = 'MYR';
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastPayment(true);
+
+        $this->assertEquals($paymentEntity["status"], "authorized");
+
+        $this->assertEquals($paymentEntity["currency"], "MYR");
+
+        $this->assertEquals($paymentEntity["amount"], 1001);
+    }
+
+
     public function testCreateInternationalPaymentWithAmountGreaterThanMaxAmount()
     {
         $merchantId = "10000000000000";

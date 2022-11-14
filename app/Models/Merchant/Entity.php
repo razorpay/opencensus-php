@@ -17,6 +17,7 @@ use RZP\Models\Admin\Org;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\BankAccount;
 use RZP\Models\BankingAccount;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Pricing;
 use RZP\Models\Base;
 use RZP\Models\Base\QueryCache\Cacheable;
@@ -622,9 +623,9 @@ class Entity extends Base\PublicEntity
         ],
     ];
 
-    const MAX_PAYMENT_AMOUNT_DEFAULT                  = 50000000;
-    const MAX_INTERNATIONAL_PAYMENT_AMOUNT_DEFAULT    = 50000000;
-    const MAX_PAYMENT_AMOUNT_DEFAULT_FOR_UNREGISTERED = 1000000;
+    const MAX_PAYMENT_AMOUNT_DEFAULT                  = 'max_payment_amount_default';
+    const MAX_INTERNATIONAL_PAYMENT_AMOUNT_DEFAULT    = 'max_international_payment_amount_default';
+    const MAX_PAYMENT_AMOUNT_DEFAULT_FOR_UNREGISTERED = 'max_payment_amount_default_for_unregistered';
     const RISK_THRESHOLD_DEFAULT                      = 8;
     const DCC_MARKUP_PERCENTAGE_DEFAULT               = 8;
     const DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_APPS      = 6;
@@ -632,6 +633,40 @@ class Entity extends Base\PublicEntity
     const DCC_RECURRING_MARKUP_PERCENTAGE_DEFAULT     = 4;
     const DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_PAYPAL    = 5;
     const DEFAULT_MCC_MARKDOWN_PERCENTAGE             = 2;
+
+    const COUNTRY_MAXIMUM_AMOUNT = [
+        "IN" => [
+            self::MAX_PAYMENT_AMOUNT_DEFAULT                    => 50000000,
+            self::MAX_PAYMENT_AMOUNT_DEFAULT_FOR_UNREGISTERED   => 1000000,
+            self::MAX_INTERNATIONAL_PAYMENT_AMOUNT_DEFAULT      => 50000000,
+        ],
+        "MY" => [
+            self::MAX_PAYMENT_AMOUNT_DEFAULT                    => 3000000,
+            self::MAX_PAYMENT_AMOUNT_DEFAULT_FOR_UNREGISTERED   => 60000,
+            self::MAX_INTERNATIONAL_PAYMENT_AMOUNT_DEFAULT      => 3000000
+        ]
+    ];
+
+    public function getMaxPaymentAmountDefault()
+    {
+        $country = $this->getCountry();
+
+        return self::COUNTRY_MAXIMUM_AMOUNT[$country][self::MAX_PAYMENT_AMOUNT_DEFAULT];
+    }
+
+    public function getMaxPaymentAmountDefaultForUnregistered()
+    {
+        $country = $this->getCountry();
+
+        return self::COUNTRY_MAXIMUM_AMOUNT[$country][self::MAX_PAYMENT_AMOUNT_DEFAULT_FOR_UNREGISTERED];
+    }
+
+    public function getMaxInternationalPaymentAmountDefault()
+    {
+        $country = $this->getCountry();
+
+        return self::COUNTRY_MAXIMUM_AMOUNT[$country][self::MAX_INTERNATIONAL_PAYMENT_AMOUNT_DEFAULT];
+    }
 
     /**
      * {@inheritDoc}
@@ -1838,8 +1873,9 @@ class Entity extends Base\PublicEntity
         if (($amount === null) or
             ($amount === '0'))
         {
+
             $domesticMaxPaymentAmount = $this->getAttribute(self::MAX_PAYMENT_AMOUNT);
-            $amount = max(Entity::MAX_INTERNATIONAL_PAYMENT_AMOUNT_DEFAULT, $domesticMaxPaymentAmount);
+            $amount = max($this->getMaxInternationalPaymentAmountDefault(), $domesticMaxPaymentAmount);
         }
 
         return (int) $amount;
@@ -1944,7 +1980,7 @@ class Entity extends Base\PublicEntity
             $maxPaymentAmount = $this->getAttribute(self::MAX_INTERNATIONAL_PAYMENT_AMOUNT);
             if($maxPaymentAmount === null){
                 $domesticMaxPaymentAmount = $this->getAttribute(self::MAX_PAYMENT_AMOUNT);
-                $maxPaymentAmount = max(Entity::MAX_INTERNATIONAL_PAYMENT_AMOUNT_DEFAULT, $domesticMaxPaymentAmount);
+                $maxPaymentAmount = max($this->getMaxInternationalPaymentAmountDefault(), $domesticMaxPaymentAmount);
             }
             return $maxPaymentAmount;
         }
