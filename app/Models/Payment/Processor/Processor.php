@@ -535,8 +535,8 @@ class Processor
                 ($merchant->isFeatureEnabled('openwallet') === true) or
                 ((empty($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === false) and
                     empty($input[Payment\Entity::CARD][Card\Entity::CRYPTOGRAM_VALUE]) === true) or
-                ($input['application'] === 'visasafeclick') or
-                ((isset($this->input[Payment\Method::CARD][Card\Entity::CVV]) === false) and
+                (empty($input['application']) === false && $input['application'] === 'visasafeclick') or
+                ((isset($input[Payment\Method::CARD][Card\Entity::CVV]) === false) and
                     ($merchant->isFeatureEnabled('vsc_authorization') === true)))
             {
                 return false;
