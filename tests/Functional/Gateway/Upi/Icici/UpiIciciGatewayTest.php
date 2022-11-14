@@ -1311,6 +1311,38 @@ EOT;
         $this->assertSame($this->payment['payment']['verified'], 1);
     }
 
+    public function testVerifyPaymentGateway()
+    {
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $payment = $this->getDbLastPayment();
+        $upi = $this->getDBLastEntity('upi');
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upi->toArray(), $payment->toArray());
+
+        $this->makeS2SCallbackAndGetContent($content);
+
+        $payment->reload();
+        $this->assertEquals('authorized', $payment['status']);
+        $payment_updated_at = $payment['updated_at'];
+
+        $upi = $this->getDBLastEntity('upi');
+        $updated_at = $upi['updated_at'];
+
+        sleep(1);
+
+        $this->verifyGatewayPayment($payment->getPublicId());
+
+        $payment->reload();
+
+        $upi = $this->getDbLastEntity('upi');
+
+        // asserting that entities are not updated
+        $this->assertEquals($updated_at, $upi['updated_at']);
+        $this->assertEquals($payment_updated_at, $payment['updated_at']);
+
+    }
+
     public function testVerifyPaymentWithNpciRefIdMismatch()
     {
         $payment = $this->getDefaultUpiPaymentArray();

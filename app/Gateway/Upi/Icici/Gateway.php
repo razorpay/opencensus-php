@@ -708,6 +708,60 @@ class Gateway extends Base\Gateway
         return $this->recurringMandateRevoke($input);
     }
 
+    // Verify payment from barricade
+    public function verifyGateway(array $input)
+    {
+        parent::verify($input);
+
+        if (($this->isFirstRecurringPayment($input) === true) or
+            ($this->isSecondRecurringPayment($input) === true))
+        {
+            return array(
+                'description' => "Can't Process recurring payment",
+                'error'       => "422"
+
+            );
+        }
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify = $this->sendPaymentVerifyRequestGateway($verify);
+
+        return $verify->getDataToTrace();
+    }
+
+    protected function sendPaymentVerifyRequestGateway(Verify $verify)
+    {
+        $input = $verify->input;
+
+        $request = $this->getPaymentVerifyRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->response = $response;
+
+        $content = $this->parseGatewayResponse($response->body);
+
+        $this->mapMigratedFields($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            [
+                'raw_content' => $response->body,
+                'content'     => $content,
+                'gateway'     => 'upi_icici',
+                'payment_id'  => $input['payment']['id'],
+            ]);
+
+        $verify->verifyResponse = $this->response;
+
+        $verify->verifyResponseBody = $this->response->body;
+
+        $verify->verifyResponseContent = $content;
+
+        return $verify;
+    }
+
     public function verify(array $input)
     {
         parent::verify($input);
