@@ -989,6 +989,56 @@ class Gateway extends Base\Gateway
         return [];
     }
 
+    // Verify payment from barricade
+    public function verifyGateway(array $input)
+    {
+        parent::verify($input);
+
+        if (($this->isFirstRecurringPayment($input) === true) or
+            ($this->isSecondRecurringPayment($input) === true))
+        {
+            return array(
+                'description' => "Can't Process recurring payment",
+                'error'       => "422"
+
+            );
+        }
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify = $this->sendPaymentVerifyRequestGateway($verify);
+
+        return $verify->getDataToTrace();
+    }
+
+    protected function sendPaymentVerifyRequestGateway($verify)
+    {
+        $input = $verify->input;
+
+        // update input using the merchant_reference in the gateway payment
+        $input['gateway']['merchant_reference'] = $verify->payment['merchant_reference'];
+
+        $request = $this->getPaymentVerifyRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->response = $response;
+
+        $content = $this->parseGatewayResponse($response->body, Action::VERIFY);
+
+        $bankDetails = $this->parseBankAccountDetails($content[ResponseFields::BANK_REFERENCE]);
+
+        $content = array_merge($content, $bankDetails);
+
+        $verify->verifyResponse = $this->response;
+
+        $verify->verifyResponseBody = $this->response->body;
+
+        $verify->verifyResponseContent = $content;
+
+        return $verify;
+    }
+
     public function verify(array $input)
     {
         parent::verify($input);
