@@ -16,6 +16,7 @@ use App\Admin;
 use OAuthFacade;
 use App\Merchant;
 use App\Lib\Util;
+use App\Http\Headers;
 use App\Admin\Entity;
 use App\Trace\TraceCode;
 use App\Http\AppResponse;
@@ -385,6 +386,8 @@ class AdminController extends Controller
 
         list($error, $org) = (new Admin\Service)->getOrg($domain);
 
+        $this->changeAuthTypeToPasswordForItfTest($error, $org);
+
         return AppResponse::jsonResponse($error, $org);
     }
 
@@ -692,5 +695,22 @@ class AdminController extends Controller
     private function putSessionValue($input)
     {
         return (new Admin\Service)->putSessionValues($input);
+    }
+
+    private function changeAuthTypeToPasswordForItfTest(&$error, &$org)
+    {
+        $env = \App::environment();
+
+        $domain = \Request::server('SERVER_NAME');
+
+        if ((empty($error) === true) and
+            (empty(Request::header(Headers::DEV_SERVE_USER)) === false) and
+            (str_starts_with(Request::header(Headers::DEV_SERVE_USER), 'itf')) and
+            ($env === 'stage') and
+            (($domain === 'dashboard-' . Request::header(Headers::DEV_SERVE_USER) . '.dev.razorpay.in') or
+            ($domain === 'dashboard.dev.razorpay.in')))
+        {
+            $org['auth_type'] = 'password';
+        }
     }
 }
