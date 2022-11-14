@@ -5481,40 +5481,8 @@ trait Authorize
 
             $gatewayInput['card'] = $this->createCardEntity($input['card'], $vault, $this->merchant, $input);
 
-            // dummy code to test network tokenization for merchants in test mode
-            if (($this->app['rzp.mode'] === 'test') and
-                ($this->app['basicauth']->isPrivateAuth() === true) and
-                ($payment->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION) === true))
-            {
-                $payment->setSave(true);
+            $payment->setSave(false);
 
-                // Setting dummy values for card attributes to support BFL payments on S2S in test mode
-                if (empty($input['card']['cvv']) === true)
-                {
-                    $input['card']['cvv'] = 123;
-                }
-                if (empty($input['card']['expiry_year']) === true)
-                {
-                    $input['card']['expiry_year'] = 2099;
-                }
-                if (empty($input['card']['expiry_month']) === true)
-                {
-                    $input['card']['expiry_month'] = 12;
-                }
-
-                $createInput = [
-                    'method' => 'card',
-                    'card' => $input['card']
-                ];
-
-                $token = (new Token\Core)->createNetworkToken($createInput);
-
-                $payment->localToken()->associate($token);
-            }
-            else
-            {
-                $payment->setSave(false);
-            }
         }
     }
 
