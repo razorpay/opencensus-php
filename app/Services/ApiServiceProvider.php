@@ -101,6 +101,7 @@ use RZP\Models\Merchant\OneClickCheckout\ShippingService\Client as ShippingServi
 use RZP\Models\Merchant\OneClickCheckout\RtoPredictionProvider\Service as RtoPredictionProviderService;
 use RZP\Models\Merchant\OneClickCheckout\RtoPredictionService\Client as RtoPredictionServiceClient;
 use RZP\Models\Merchant\OneClickCheckout\RtoDashboard\Service as RtoDashboardService;
+use RZP\Models\Merchant\OneClickCheckout\ShippingService as  ShippingService;
 use RZP\Models\Merchant\OneClickCheckout\RtoFileUploadAuditService\Service as RtoFileUploadAuditService;
 use RZP\Models\Merchant\OneClickCheckout\RtoFeatureReasonProvider\Service as RtoFeatureReasonProviderService;
 
@@ -643,6 +644,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerRtoPredictionServiceClient();
 
         $this->registerRtoDashboardService();
+
+        $this->registerMerchantConfigInShippingService();
 
         $this->registerRtoFileUploadAuditService();
 
@@ -1572,6 +1575,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton('rto_prediction_service_client', function($app)
         {
             return new RtoPredictionServiceClient($app);
+        });
+    }
+
+    protected function registerMerchantConfigInShippingService()
+    {
+        $this->app->singleton(ShippingService\MerchantConfig\Service::SHIPPING_SERVICE_MERCHANT_CONFIG, function($app)
+        {
+            return new ShippingService\MerchantConfig\Service($app);
         });
     }
 

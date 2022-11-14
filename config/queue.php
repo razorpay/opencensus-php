@@ -555,6 +555,9 @@ return [
         'test'       => env('AWS_ART_RECON_ENTITY_UPDATE_QUEUE'),
         'live'       => env('AWS_ART_RECON_ENTITY_UPDATE_QUEUE'),
     ],
+
+    'fulfillment_event_update' => env('AWS_ORDER_STATUS_UPDATE_QUEUE'),
+
     /*
     |--------------------------------------------------------------------------
     | Raw SQS Mappings

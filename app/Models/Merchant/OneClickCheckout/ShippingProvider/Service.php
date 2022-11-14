@@ -13,6 +13,7 @@ class Service
     const UPDATE_SHIPPING_PROVIDER             = 'update_shipping_provider';
     const LIST_SHIPPING_PROVIDER               = 'list_shipping_providers';
     const DELETE_SHIPPING_PROVIDER             = 'delete_shipping_providers';
+    const CONNECT_SHIPPING_PROVIDER            = 'connect_shipping_provider';
     const PATH                                 = 'path';
 
     const PARAMS = [
@@ -28,6 +29,9 @@ class Service
         self::LIST_SHIPPING_PROVIDER => [
             self::PATH   => 'twirp/rzp.shipping.shipping_provider.v1.ShippingProviderAPI/List',
         ],
+        self::CONNECT_SHIPPING_PROVIDER => [
+            self::PATH   => 'twirp/rzp.shipping.shipping_provider.v1.ShippingProviderAPI/Connect'
+        ]
     ];
 
     public function __construct($app = null)
@@ -94,6 +98,13 @@ class Service
         $input = $this->addMerchantDetails($input, $merchantId);
 
         $params = self::PARAMS[self::DELETE_SHIPPING_PROVIDER];
+
+        return $this->app['shipping_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
+    }
+
+    public function connect($input)
+    {
+        $params = self::PARAMS[self::CONNECT_SHIPPING_PROVIDER];
 
         return $this->app['shipping_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
     }

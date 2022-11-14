@@ -3896,6 +3896,11 @@ class Route
         'update_merchant_1cc_coupon_config'         => ['post',       '1cc/merchant/coupon/configs',                             'MerchantController@updateMerchant1ccCouponConfig'],
         '1cc_update_shipping_provider_config'       => ['post',       '1cc/shipping-provider/configs',                           'MerchantController@updateShippingProviderConfig'],
 
+        '1cc_shipping_service_merchant_config_create'               => ['post',      '1cc/shipping_service/merchant_config/create',                     'MerchantConfigController@create'],
+        '1cc_shipping_service_merchant_config_update_by_type'       => ['post',      '1cc/shipping_service/merchant_config/update_by_type',             'MerchantConfigController@updateByType'],
+        '1cc_shipping_service_remove_shipping_providers'            => ['delete',    '1cc/shipping_service/merchant_config/merchant/{merchantId}',      'MerchantConfigController@removeShippingProvider'],
+        '1cc_shipping_service_connect_shipping_providers'           => ['post',      '1cc/shipping_service/shipping_providers/connect',                 'ShippingProviderController@connect'],
+
         '1cc_cod_eligibility_attribute_list'                => ['get',    '1cc/rto_prediction_service/cod_eligibility_attribute/{cod_eligibility_type}',             'CODEligibilityAttributeController@list'       ],
         '1cc_cod_eligibility_attribute_upsert_bulk'         => ['post',   '1cc/rto_prediction_service/cod_eligibility_attribute/{cod_eligibility_type}/upsert/bulk', 'CODEligibilityAttributeController@bulkUpsert' ],
         '1cc_cod_eligibility_attribute_upsert_batch'        => ['post',   '1cc/rto_prediction_service/cod_eligibility_attribute/{cod_eligibility_type}/upsert/batch', 'CODEligibilityAttributeController@batchUpsert' ],
@@ -4587,6 +4592,10 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        '1cc_shipping_service_merchant_config_create',
+        '1cc_shipping_service_merchant_config_update_by_type',
+        '1cc_shipping_service_remove_shipping_providers',
+        '1cc_shipping_service_connect_shipping_providers',
         'payment_page_cds_billing_update_cron',
         'banking_accounts_get_internal',
         'banking_account_activation_detail_update_internal',
@@ -13862,6 +13871,10 @@ class Route
         ],
 
         'thirdwatch_cod_score' => [
+            '1cc_shipping_service_merchant_config_create',
+            '1cc_shipping_service_merchant_config_update_by_type',
+            '1cc_shipping_service_remove_shipping_providers',
+            '1cc_shipping_service_connect_shipping_providers',
             'third_watch_address_cod_score',
             'update_shopify_1cc_config',
             'update_fetch_coupons_url_dark',

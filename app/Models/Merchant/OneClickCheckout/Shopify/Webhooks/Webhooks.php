@@ -72,6 +72,10 @@ class Webhooks extends Base\Core
         {
             $this->storeCartInCache($data);
         }
+        elseif ($headers['x-shopify-topic'][0] == 'fulfillments/update')
+        {
+            $this->processFulfillmentUpdateEvent($data);
+        }
     }
 
     public function processWebhookWithLock(array $data)
@@ -415,5 +419,76 @@ class Webhooks extends Base\Core
         $this->app['basicauth']->setModeAndDbConnection($mode);
         $this->mode = $mode;
         return $this->repo->payment->find($paymentId);
+    }
+
+    protected function processFulfillmentUpdateEvent(array $data)
+    {
+        $rawContents = $data['raw_contents'];
+        $headers = $data['headers'];
+        $input = $data['input'];
+
+        $shopId = $this->utils->stripAndReturnShopId($headers['x-shopify-shop-domain'][0]);
+        $configs = $this->getMerchantConfigs($shopId);
+
+        if (empty($configs) === true)
+        {
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_WEBHOOK_FUlFILLMENT_UPDATE_EVENT_VALIDATION_FAILED,
+                [
+                    'type'  => 'configs_not_found',
+                ]);
+            return;
+        }
+
+        $signature = $headers['x-shopify-hmac-sha256'][0];
+        $isSignatureValid = $this->validator->isSignatureValid($rawContents, $signature, $configs['api_secret']);
+
+        if ($isSignatureValid === false)
+        {
+            return;
+        }
+
+        try
+        {
+            $queueName = $this->app['config']->get('queue.fulfillment_event_update');
+
+            $publishData = $this->getFulfillmentData($configs['merchant_id'], $input);
+
+            $this->app['queue']->connection('sqs')->pushRaw(json_encode($publishData), $queueName);
+
+            $this->trace->info(
+                TraceCode::SHOPIFY_1CC_WEBHOOK_FUlFILLMENT_UPDATE_SQS_PUSH_SUCCESS,
+                [
+                    'data'    => $publishData
+                ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_WEBHOOK_FUlFILLMENT_UPDATE_SQS_PUSH_FAILED,
+                [
+                    'data'    => $publishData,
+                    'message' => $e->getMessage()
+                ]);
+
+            return;
+        }
+    }
+
+    protected function getFulfillmentData(string $merchantId, $data): array
+    {
+        $merchantOrderId = explode('.', $data['name'])[0];
+        return [
+            'merchant_order_id' => $merchantOrderId,
+            'merchant_id'       => $merchantId,
+            'source'            =>[
+                'origin'    => 'shopify'
+            ],
+            'shipping_provider' => [
+                'awb_number'        => $data['tracking_number'],
+                'shipping_status'   => $data['shipment_status'],
+                'provider_type'     => $data['tracking_company']
+            ]
+        ];
     }
 }

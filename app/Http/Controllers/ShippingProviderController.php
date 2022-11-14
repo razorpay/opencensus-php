@@ -48,4 +48,11 @@ class ShippingProviderController extends Controller
         return ApiResponse::json([]);
     }
 
+    protected function connect()
+    {
+        $input = Request::all();
+        $response = $this->app['shipping_provider_service']->connect($input);
+        return ApiResponse::json($response);
+    }
+
 }
