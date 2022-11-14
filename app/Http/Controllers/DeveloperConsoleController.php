@@ -211,7 +211,7 @@ class DeveloperConsoleController extends Controller
 
         $payload = $request->all();
 
-        $response = $this->developerConsoleService->sendRequestAndParseResponse($path, $method, 'merchant',$payload);
+        $response = $this->developerConsoleService->sendRequestAndParseResponse($path, $method, 'merchant', $payload);
 
         return ApiResponse::json($response);
     }

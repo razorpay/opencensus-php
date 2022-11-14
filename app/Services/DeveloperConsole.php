@@ -64,9 +64,9 @@ class DeveloperConsole
         $this->trace->info(TraceCode::DEVELOPER_CONSOLE_RESPONSE, [
             'response_code' => $response->status_code
         ]);
-
+        
         $decodedResponse = json_decode($response->body, true);
-
+        
         return [
             'body' => $decodedResponse,
             'code' => $response->status_code,
@@ -89,6 +89,10 @@ class DeveloperConsole
         ]);
 
         $headers = $this->getHeaders($auth);
+
+        if (array_key_exists('terms', $data) && $data['terms'] == []){
+            unset($data['terms']);
+        }
 
         // json encode if data is must, else ignore.
         $data = (empty($data) === false) ? json_encode($data) : null;
