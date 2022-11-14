@@ -594,7 +594,7 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::TYPE                       => 'sometimes|array',
         Entity::CAPABILITY                 => 'sometimes|in:0,2',
-        Entity::MODE                       => 'required|in:2',
+        Entity::MODE                       => 'sometimes|in:2',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::CURRENCY                   => 'sometimes|array',
         Entity::EMI                        => 'sometimes|boolean',
@@ -2634,7 +2634,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET2                  => 'sometimes|string',
     ];
 
-    protected $tokenisationAxisTerminalRules = [
+    protected static $tokenisationAxisTerminalRules = [
         Entity::GATEWAY                                 => 'required|in:tokenisation_axis',
         Entity::GATEWAY_MERCHANT_ID                     => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2                    => 'sometimes|string',
@@ -2880,6 +2880,7 @@ class Validator extends Base\Validator
             Gateway::PINELABS,
             Gateway::INGENICO,
             Gateway::BILLDESK_OPTIMIZER,
+            Gateway::AXIS_TOKENHQ,
         ];
 
         //Migs now supports purchase mode as well

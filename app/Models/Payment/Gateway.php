@@ -246,6 +246,7 @@ class Gateway
     const TOKENISATION_RUPAY       = 'tokenisation_rupay';
     const TOKENISATION_HDFC        = 'tokenisation_hdfc';
     const TOKENISATION_AMEX        = 'tokenisation_amex';
+    const TOKENISATION_AXIS        = 'tokenisation_axis';
 
     const GATEWAY_ACQUIRERS = [
         self::AXIS_MIGS    => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
@@ -283,6 +284,7 @@ class Gateway
         self::TOKENISATION_RUPAY,
         self::TOKENISATION_HDFC,
         self::TOKENISATION_AMEX,
+        self::TOKENISATION_AXIS,
     ];
 
     //
