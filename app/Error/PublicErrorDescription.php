@@ -1577,6 +1577,7 @@ class PublicErrorDescription
 
     // Templating Service
     const BAD_REQUEST_ERROR_IN_TEMPLATING_RESPONSE                                  = 'Received an Error Response from templating service';
+    const BAD_REQUEST_ENTITY_ALREADY_EXISTS                                         = 'Provided entity already exists. Please try again with other details.';
 
     // NPS Survey
     const BAD_REQUEST_DUPLICATE_SURVEY_TYPE                                         = 'Survey with same type already exists';

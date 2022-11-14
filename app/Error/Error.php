@@ -649,6 +649,7 @@ class Error extends Support\Fluent
             case ErrorCode::BAD_REQUEST_RATE_LIMIT_EXCEEDED:
                 $httpStatusCode = 429;
                 break;
+            case ErrorCode::BAD_REQUEST_ENTITY_ALREADY_EXISTS:
             case ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS:
             case ErrorCode::BAD_REQUEST_CONFLICT_ANOTHER_OPERATION_PROGRESS_SAME_IDEM_KEY:
                 $httpStatusCode = 409;

@@ -197,6 +197,15 @@ class Templating
                     'templating_error'    => $responseBody->error,
                 ]);
         }
+        else if($response->status_code == 409)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ENTITY_ALREADY_EXISTS,
+                null,
+                [
+                    'templating_error'    => $responseBody->error,
+                ]);
+        }
         else if($response->status_code >= 400)
         {
             throw new BadRequestException(
