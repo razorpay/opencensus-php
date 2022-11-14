@@ -3577,11 +3577,16 @@ class Core extends Base\Core
 
             (new Merchant\Activate)->autoActivate($merchant);
 
-            $activationStatusData = [
-                Entity::ACTIVATION_STATUS => Status::ACTIVATED,
-            ];
+            $currentActivationStatus = $merchantDetails->getActivationStatus();
 
-            $this->updateActivationStatus($merchant, $activationStatusData, $merchant);
+            if($currentActivationStatus !== Status::ACTIVATED)
+            {
+                $activationStatusData = [
+                    Entity::ACTIVATION_STATUS => Status::ACTIVATED,
+                ];
+
+                $this->updateActivationStatus($merchant, $activationStatusData, $merchant);
+            }
 
             $this->repo->saveOrFail($merchantDetails);
 
