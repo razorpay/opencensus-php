@@ -12946,6 +12946,7 @@ class Route
             'update_merchant_sla_for_on_hold_payouts',
             'update_partner_intent',
             'update_partner_type',
+            'fetch_partner_first_user_experience',
             'update_payment_config',
             'update_payment_config_admin',
             'update_payout_downtime_by_id',
