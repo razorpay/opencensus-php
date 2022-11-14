@@ -40,7 +40,7 @@ dev:
           name: ${APP_NAME}-${DEVSTACK_LABEL}
 vars:
   - name: DEVSTACK_LABEL
-    value: "kalpit-devstack"
+    value: "prince"
   - name: NAMESPACE
     value: "api"
   - name: APP_NAME

@@ -169,8 +169,14 @@ class PaymentController extends Controller
             $data = $this->service()->verify($id, $isBarricade);
             return ApiResponse::json($data);
         }
-        // if no header return null
-        return null;
+        // If no header return error code and description
+        $data = [];
+        $desctiption = "Cannot Process Payment without Header";
+        $data['gateway'] = [
+            "error"     => "400",
+            "Description" => $desctiption,
+        ];
+        return ApiResponse::json($data);
     }
 
     /**
