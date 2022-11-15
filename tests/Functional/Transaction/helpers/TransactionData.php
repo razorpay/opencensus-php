@@ -193,6 +193,23 @@ return [
         'channel'         => 'axis',
     ],
 
+    'txnDataAfterCapturingPaymentMalaysia' => [
+        'entity'          => 'transaction',
+        'type'            => 'payment',
+        'amount'          => 490000,
+        'currency'        => 'MYR',
+        'debit'           => 0,
+        'credit'          => 478436,
+        'fee'             => 11564,
+        'tax'             => 1764,
+        'gateway_fee'     => 0,
+        'api_fee'         => 0,
+        'balance'         => 1478436,
+        'merchant_id'     => '10000000000000',
+        'pricing_rule_id' => null,
+        'channel'         => 'axis',
+    ],
+
     'testTransactionAfterCapturingPaymentForVasMerchant' => [
         'entity'          => 'transaction',
         'type'            => 'payment',

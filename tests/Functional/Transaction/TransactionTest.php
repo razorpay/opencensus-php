@@ -167,6 +167,46 @@ class TransactionTest extends TestCase
         return $payment;
     }
 
+    public function testTransactionAfterCapturingPaymentMalaysia()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['country_code' => 'MY']);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->iin->edit('401200', ['country' => "MY"]);
+
+        $payment['currency'] = "MYR";
+
+        $payment = $this->doAuthAndCapturePayment($payment, $payment['amount'], "MYR");
+
+        $txn = $this->getLastTransaction(true);
+
+        $testData = $this->testData['txnDataAfterCapturingPaymentMalaysia'];
+        $testData['entity_id'] = $payment['id'];
+
+        $this->assertArraySelectiveEquals($testData, $txn);
+
+        return $payment;
+    }
+
+    public function testTransactionAfterCapturingPaymentMerchantIndia()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['country_code' => 'IN']);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment, $payment['amount'], "INR");
+
+        $txn = $this->getLastTransaction(true);
+
+        $testData = $this->testData['txnDataAfterCapturingPayment'];
+        $testData['entity_id'] = $payment['id'];
+
+        $this->assertArraySelectiveEquals($testData, $txn);
+
+        return $payment;
+    }
+
     // for vas merchant for direct settlement payment credit and debit both should be zero
     // fee will be non-zero as same needs to be collected by the acquiring bank and not merchant
     public function testTransactionAfterCapturingPaymentForVasMerchant()

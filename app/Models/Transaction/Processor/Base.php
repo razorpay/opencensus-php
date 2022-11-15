@@ -309,11 +309,13 @@ abstract class Base extends BaseCore
 
     abstract function calculateFees();
 
+    // Currently settlement with merchant is done in the currency of a merchant, Hence
+    // all the fields for credit, debit and fee should be in merchant's currency only
     public function setSourceDefaults()
     {
         $txnData = [
             Transaction\Entity::TYPE            => $this->source->getEntity(),
-            Transaction\Entity::CURRENCY        => Currency\Currency::INR,
+            Transaction\Entity::CURRENCY        => $this->txn->merchant->getCurrency(),
             Transaction\Entity::CHANNEL         => $this->source->merchant->getChannel(),
         ];
 
