@@ -29,6 +29,8 @@ class SetResponseLogHeaders
 
         $response->header('X-Amzn-Trace-id', $request->header('X-Amzn-Trace-Id'));
 
+        $response->headers->set('X-Content-Type-Options', 'nosniff');
+
         return $response;
     }
 
