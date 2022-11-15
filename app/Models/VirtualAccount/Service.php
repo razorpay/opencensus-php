@@ -1421,7 +1421,10 @@ class Service extends Base\Service
 
         $response = $this->checkOfflineChallanForBankRequest($input,$response,$offlineChallan);
 
-        $virtualAccount = $this->repo->virtual_account->fetchByOfflineId($offlineChallan['id']);
+
+     //   $virtualAccount = $this->repo->virtual_account->fetchByOfflineId($offlineChallan['id']);
+
+        $virtualAccount = $this->repo->virtual_account->find($offlineChallan['virtual_account_id']);
 
         $response = $this->checkClientCodeForBankRequest($virtualAccount,$input,$response);
 
@@ -1464,15 +1467,16 @@ class Service extends Base\Service
             ]);
         }
 
-        $challanId = $offlineChallan['id'];
 
-        $virtualAccount = $this->repo->virtual_account->fetchByOfflineId($challanId);
+       // $virtualAccount = $this->repo->virtual_account->fetchByOfflineId($challanId);*/
+
+       $virtualAccount = $this->repo->virtual_account->find($offlineChallan['virtual_account_id']);
 
         $response['challan_number'] = $input['challan_number'];
 
         $this->trace->info(TraceCode::OTC_VALIDATION_OFFLINE_CHALLAN,
             [
-                'Challan Id' => $challanId,
+                'Challan Number' => $response['challan_number'],
                 'VA'         => $virtualAccount->getId() ?? 'not set',
             ]);
 
