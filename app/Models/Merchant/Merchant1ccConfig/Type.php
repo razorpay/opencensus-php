@@ -17,6 +17,7 @@ class Type {
     const ONE_CC_GA_ANALYTICS              = 'one_cc_ga_analytics';
     const ONE_CC_FB_ANALYTICS              = 'one_cc_fb_analytics';
     const DOMAIN_URL                       = 'domain_url';
+
     const COUPON_CONFIG                    = 'coupon_config';
     const ORDER_STATUS_UPDATE_URL          = 'order_status_update_url';
     const MANUAL_CONTROL_COD_ORDER         = 'manual_control_cod_order';
@@ -24,6 +25,9 @@ class Type {
     const API_SECRET                       = 'api_secret';
     const USERNAME                         = 'username';
     const PASSWORD                         = 'password';
+
+    const ONE_CC_CAPTURE_GSTIN             = 'one_cc_capture_gstin';
+    const ONE_CC_CAPTURE_ORDER_INSTRUCTIONS = 'one_cc_capture_order_instructions';
 
     // supported platform types
     const NATIVE            = 'native';

@@ -2519,4 +2519,19 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testOrderNoteUpdateFor1CC' => [
+        'request' => [
+            'method' => 'patch',
+            'content' => [
+                "gstin" => "12345abcde98765",
+                "order_instructions" => "deliver it early"
+            ]
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200
+        ],
+    ],
+
 ];

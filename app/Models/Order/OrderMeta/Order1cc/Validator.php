@@ -32,6 +32,11 @@ class Validator extends Base\Validator
         Fields::CUSTOMER_DETAILS => 'required|array|custom',
     ];
 
+    protected static $editOrderNotesRules = [
+        Fields::GSTIN                 => 'sometimes|string|size:15',
+        Fields::ORDER_INSTRUCTIONS    => 'sometimes|string|max:256'
+    ];
+
     protected static $lineItemRules = [
         Fields::LINE_ITEM_TYPE                                                   => 'sometimes|string|max:128',
         Fields::LINE_ITEM_SKU                                                    => 'sometimes|string|max:128',
@@ -151,5 +156,10 @@ class Validator extends Base\Validator
     protected function validateCustomerDetails($attribute, $value)
     {
         $this->validateInput('customerDetails', $value);
+    }
+
+    protected function validateEditOrderNotes(string $attribute, array $value)
+    {
+        $this->validateInput('editOrderNotes', $value);
     }
 }

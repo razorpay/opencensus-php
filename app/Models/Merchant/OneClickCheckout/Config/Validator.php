@@ -22,7 +22,9 @@ class Validator extends Base\Validator
         "one_cc_capture_billing_address" => 'sometimes|boolean',
         "domain_url"                     => 'sometimes|url',
         "order_status_update"            => 'sometimes|url',
-        "manual_control_cod_order"       => 'sometimes|boolean'
+        "manual_control_cod_order"       => 'sometimes|boolean',
+        "one_cc_capture_gstin"           => 'sometimes|boolean',
+        "one_cc_capture_order_instructions"  => 'sometimes|boolean',
     ];
 
     protected static $shopifyRules = [
@@ -36,7 +38,9 @@ class Validator extends Base\Validator
         "one_cc_international_shipping"  => 'sometimes|boolean',
         "one_cc_capture_billing_address" => 'sometimes|boolean',
         "domain_url"                     => 'sometimes|url',
-        "manual_control_cod_order"       => 'sometimes|boolean'
+        "manual_control_cod_order"       => 'sometimes|boolean',
+        "one_cc_capture_gstin"           => 'sometimes|boolean',
+        "one_cc_capture_order_instructions"   => 'sometimes|boolean',
     ];
 
     protected static $shippingProviderRules = [

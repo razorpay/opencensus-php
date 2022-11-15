@@ -145,6 +145,15 @@ class Service extends \RZP\Models\Base\Service
                     Order1cc\Fields::SHIPPING_FEE => 0,
                     Order1cc\Fields::PROMOTIONS => [],
                 ]);
+
+            /*
+             * reset gstin & order_instructions
+             */
+            $notes = $this->getOrderNotes($orderId);
+            unset($notes[Order1cc\Fields::GSTIN]);
+            unset($notes[Order1cc\Fields::ORDER_INSTRUCTIONS]);
+            (new Order\Service)->update($orderId, ['notes' => $notes]);
+
         } catch (\Throwable $e) {
             $internalErrorCode = '';
             if (($e instanceof BaseException) === true)
@@ -271,6 +280,87 @@ class Service extends \RZP\Models\Base\Service
         }
 
         return $maskedRequest;
+    }
+
+    /**
+     * Update GSTIN and orderInstruction for the order.
+     * Applies only for 1CC Orders.
+     * @param string $orderId
+     * @throws \RZP\Exception\BadRequestException
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function update1CCOrderNotes(string $orderId, $input)
+    {
+
+        try {
+            $core = (new Core);
+
+            $core->validateActive1CCOrderId($orderId);
+
+            (new Order1cc\Validator())->validateInput('editOrderNotes', $input);
+
+            $notes = $this->getOrderNotes($orderId);
+
+            if ($this->merchant->get1ccConfigFlagStatus('one_cc_capture_gstin') === true &&
+                isset($input[Order1cc\Fields::GSTIN]) === true) {
+                $notes[Order1cc\Fields::GSTIN] = $input[Order1cc\Fields::GSTIN];
+            } else {
+                unset($notes[Order1cc\Fields::GSTIN]);
+            }
+
+            if ($this->merchant->get1ccConfigFlagStatus('one_cc_capture_order_instructions') === true &&
+                isset($input[Order1cc\Fields::ORDER_INSTRUCTIONS]) === true) {
+                $notes[Order1cc\Fields::ORDER_INSTRUCTIONS] = $input[Order1cc\Fields::ORDER_INSTRUCTIONS];
+            } else {
+                unset($notes[Order1cc\Fields::ORDER_INSTRUCTIONS]);
+            }
+
+            (new Order\Service)->update($orderId, ['notes' => $notes]);
+
+
+            $this->trace->info(TraceCode::UPDATE_1CC_ORDER_NOTES_REQUEST,
+                [
+                   'request' =>  $this->maskOrderNotesRequest($orderId, $input)
+                ]
+            );
+
+        } catch (\Throwable $e) {
+            $this->trace->error(TraceCode::UPDATE_1CC_ORDER_NOTES_REQUEST_ERROR,
+                [
+                    'request' =>  $this->maskOrderNotesRequest($orderId, $input),
+                    'exception'=> $e->getTrace()
+                ]
+            );
+
+            throw $e;
+        }
+
+    }
+
+    /**
+     * @param string $orderId
+     * @throws \Throwable
+     */
+    protected function getOrderNotes(string $orderId) {
+        $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
+        $orderArray = $order->toArrayPublic();
+        return $orderArray['notes'];
+    }
+
+    protected function maskOrderNotesRequest($orderId, $input) {
+        $data = [
+            'order_id' => $orderId
+        ];
+
+        if (isset($input['gstin']) === true) {
+            $data['gstin'] = mask_by_percentage($input['gstin']);
+        }
+
+        if (isset($input['order_instructions']) === true) {
+            $data['order_instructions'] = mask_by_percentage($input['order_instructions']);
+        }
+
+        return $data;
     }
 
     public function updateActionFor1ccOrders($input,$merchant, string $userEmail)

@@ -13153,6 +13153,24 @@ return [
         ],
     ],
 
+    'testOrderNotesMerchant1ccConfig' => [
+        'request' => [
+            'url' => '/1cc/merchant/configs',
+            'method' => 'post',
+            'content' => [
+                "shop_id" => "hias",
+                "platform" => "shopify",
+                "one_cc_capture_gstin" => true,
+                "one_cc_capture_order_instructions" => true,
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200
+        ],
+    ],
+
     'testGetCheckoutPreferencesFor1CCOrderWithLineItems' => [
         'request'  => [
             'url'     => '/preferences',

@@ -217,6 +217,17 @@ class Service extends Base\Service
                     }
                 }
 
+                /* This will be removed post
+                 * Gift-card changes is merged
+                 */
+                if (isset($input['one_cc_capture_gstin']) === true) {
+                    $this->add1ccConfigFlags($input, Type::ONE_CC_CAPTURE_GSTIN);
+                }
+
+                if (isset($input['one_cc_capture_order_instructions']) === true) {
+                    $this->add1ccConfigFlags($input, Type::ONE_CC_CAPTURE_ORDER_INSTRUCTIONS);
+                }
+
                 foreach ($input as $key => $value)
                 {
                     switch ($key)
@@ -368,7 +379,9 @@ class Service extends Base\Service
             Constants::ONE_CC_AUTO_FETCH_COUPONS => $configFlagsResponse[Constants::ONE_CC_AUTO_FETCH_COUPONS],
             Constants::ONE_CC_INTERNATIONAL_SHIPPING => $configFlagsResponse[Constants::ONE_CC_INTERNATIONAL_SHIPPING],
             Constants::ONE_CC_CAPTURE_BILLING_ADDRESS => $configFlagsResponse[Constants::ONE_CC_CAPTURE_BILLING_ADDRESS],
-            Constants::MANUAL_CONTROL_COD_ORDER => $configFlagsResponse[Constants::MANUAL_CONTROL_COD_ORDER]
+            Constants::MANUAL_CONTROL_COD_ORDER => $configFlagsResponse[Constants::MANUAL_CONTROL_COD_ORDER],
+            Constants::ONE_CC_CAPTURE_GSTIN => $configFlagsResponse[Constants::ONE_CC_CAPTURE_GSTIN],
+            Constants::ONE_CC_CAPTURE_ORDER_INSTRUCTIONS => $configFlagsResponse[Constants::ONE_CC_CAPTURE_ORDER_INSTRUCTIONS]
         ];
 
         if ($merchantPlatformConfig !== null and $merchantPlatformConfig->getValue() === Constants::NATIVE)

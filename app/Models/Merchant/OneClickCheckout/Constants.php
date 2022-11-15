@@ -29,6 +29,8 @@ class Constants
     const ONE_CC_GA_ANALYTICS            = 'one_cc_ga_analytics';
     const ONE_CC_FB_ANALYTICS            = 'one_cc_fb_analytics';
     const MANUAL_CONTROL_COD_ORDER         = 'manual_control_cod_order';
+    const ONE_CC_CAPTURE_GSTIN             = 'one_cc_capture_gstin';
+    const ONE_CC_CAPTURE_ORDER_INSTRUCTIONS = 'one_cc_capture_order_instructions';
 
     // common auth keys
     const API_KEY        = 'api_key';
@@ -113,7 +115,9 @@ class Constants
         self::ONE_CC_CAPTURE_BILLING_ADDRESS,
         self::ONE_CC_INTERNATIONAL_SHIPPING,
         self::ONE_CC_BUY_NOW_BUTTON,
-        self::ONE_CC_AUTO_FETCH_COUPONS
+        self::ONE_CC_AUTO_FETCH_COUPONS,
+        self::ONE_CC_CAPTURE_GSTIN,
+        self::ONE_CC_CAPTURE_ORDER_INSTRUCTIONS,
     ];
 
     const CONFIG_CUM_FEATURE_FLAGS = [
@@ -127,6 +131,8 @@ class Constants
         self::ONE_CC_CAPTURE_BILLING_ADDRESS,
         self::ONE_CC_INTERNATIONAL_SHIPPING,
         self::MANUAL_CONTROL_COD_ORDER,
+        self::ONE_CC_CAPTURE_GSTIN,
+        self::ONE_CC_CAPTURE_ORDER_INSTRUCTIONS,
     ];
 
     const SHOPIFY_RESETTABLE_CONFIGS = [

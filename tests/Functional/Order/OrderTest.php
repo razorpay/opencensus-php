@@ -2814,4 +2814,45 @@ class OrderTest extends TestCase
         $result = $orderService->canRouteOrderCreationToPGRouter(['line_items_total' => 2000], $merchant);
         $this->assertEquals(false, $result);
     }
+
+    public function testOrderNoteUpdateFor1CC()
+    {
+        $this->fixtures->merchant->addFeatures(FeatureConstants::ONE_CLICK_CHECKOUT);
+
+        $orderData = [
+            Order\Entity::AMOUNT                              => 10000,
+            Order\Entity::RECEIPT                             => 'R1',
+            Order\OrderMeta\Order1cc\Fields::LINE_ITEMS_TOTAL => 10000,
+        ];
+
+        $this->createOrder($orderData);
+
+        $order = $this->getDbLastOrder();
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/orders/1cc/'.$order->getPublicId().'/order-notes';
+
+        $this->fixtures->create(
+            'merchant_1cc_configs',
+            [
+                'merchant_id' => '10000000000000',
+                'config'      => 'one_cc_capture_gstin',
+                'value'       => true
+            ]
+        );
+
+        $this->fixtures->create(
+            'merchant_1cc_configs',
+            [
+                'merchant_id' => '10000000000000',
+                'config'      => 'one_cc_capture_order_instructions',
+                'value'       => true
+            ]
+        );
+
+        $this->runRequestResponseFlow($testData);
+    }
 }

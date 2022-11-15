@@ -269,6 +269,15 @@ class OrderController extends Controller
 
     }
 
+    public function update1CCOrderNotes(string $orderId)
+    {
+        $input = Request::all();
+
+        (new OrderMeta\Service())->update1CCOrderNotes($orderId, $input);
+
+        return ApiResponse::json([], 200);
+    }
+    
     public function getCODOrders(){
 
         $input = Request::all();

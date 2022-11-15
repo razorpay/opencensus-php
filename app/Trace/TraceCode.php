@@ -7752,6 +7752,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RESET_ORDER_REQUEST                                = 'RESET_ORDER_REQUEST';
     const RESET_ORDER_REQUEST_ERROR                          = 'RESET_ORDER_REQUEST_ERROR';
 
+    const UPDATE_1CC_ORDER_NOTES_REQUEST                     = 'UPDATE_1CC_ORDER_NOTES_REQUEST';
+    const UPDATE_1CC_ORDER_NOTES_REQUEST_ERROR               = 'UPDATE_1CC_ORDER_NOTES_REQUEST_ERROR';
+
     const SHIPPING_SERVICE_REQUEST                           = 'SHIPPING_SERVICE_REQUEST';
     const SHIPPING_SERVICE_RESPONSE                          = 'SHIPPING_SERVICE_RESPONSE';
     const SHIPPING_SERVICE_ERROR                             = 'SHIPPING_SERVICE_ERROR';

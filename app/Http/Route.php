@@ -3895,6 +3895,7 @@ class Route
         '1cc_configs_get'                           => ['get',        '1cc/merchant/configs',                                  'MerchantController@get1ccConfig'],
         '1cc_merchant_preferences'                  => ['get',        'merchant/1cc_preferences',                                  'MerchantController@get1ccMerchantPreferences'],
         '1cc_disable_magic'                         => ['post',       '1cc/magic/disable',                                       'MerchantController@disable1ccMagicCheckout'],
+        '1cc_order_notes_update'                    => ['patch',      'orders/1cc/{id}/order-notes',                             'OrderController@update1CCOrderNotes'             ],
         'update_merchant_1cc_coupon_config'         => ['post',       '1cc/merchant/coupon/configs',                             'MerchantController@updateMerchant1ccCouponConfig'],
         '1cc_update_shipping_provider_config'       => ['post',       '1cc/shipping-provider/configs',                           'MerchantController@updateShippingProviderConfig'],
 
@@ -4128,7 +4129,8 @@ class Route
         'app_fetch_tokens_v2',
         'app_delete_tokens_v2',
         '1cc_shopify_add_checkout_url',
-        '1cc_shopify_add_checkout_url_preflight'
+        '1cc_shopify_add_checkout_url_preflight',
+        '1cc_order_notes_update',
     ];
 
     public static $device = [

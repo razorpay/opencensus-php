@@ -152,6 +152,12 @@ class MerchantOneCcConfigTest extends TestCase
         $this->startTest();
     }
 
+    public function testOrderNotesMerchant1ccConfig(){
+        $this->ba->proxyAuth();
+        $this->setUpAuthConfigForMerchant();
+        $this->startTest();
+    }
+
     private function setUpAuthConfigForMerchant()
     {
         $app = App::getFacadeRoot();

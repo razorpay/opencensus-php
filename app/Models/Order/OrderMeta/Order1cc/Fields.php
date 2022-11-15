@@ -66,6 +66,8 @@ class Fields
     const REVIEWED_BY   = 'reviewed_by';
 
     const ONE_CLICK_CHECKOUT = 'one_click_checkout';
+    const GSTIN              = 'gstin';
+    const ORDER_INSTRUCTIONS  = 'order_instructions';
 
     public static $dataFields = [
         self::LINE_ITEMS,
