@@ -3885,12 +3885,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
      */
     public function setPublicBaseCurrencyAttribute(array & $array)
     {
-        if ($this->getCurrency() === Currency\Currency::INR)
+        if ($this->getCurrency() === $this->merchant->getCurrency())
         {
             return;
         }
 
-        $array[self::BASE_CURRENCY] = Currency\Currency::INR;
+        $array[self::BASE_CURRENCY] = $this->merchant->getCurrency();
     }
 
     public function setPublicOrderIdAttribute(array & $array)

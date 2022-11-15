@@ -1201,6 +1201,48 @@ class PaymentFetchTest extends TestCase
         $this->assertArrayNotHasKey('base_currency', $paymentFromAdminFetch);
     }
 
+    public function testAdminPaymentFetchMYRCurrency()
+    {
+        $this->fixtures->merchant->edit('10000000000000', [
+            'convert_currency' => 1,
+            'country_code' => 'MY']);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray["currency"] = "MYR";
+
+        $response = $this->doAuthAndCapturePayment($paymentArray);
+
+        $paymentId = $response['id'];
+
+        $paymentFromAdminFetch = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertArrayHasKey('base_amount', $paymentFromAdminFetch);
+
+        $this->assertArrayNotHasKey('base_currency', $paymentFromAdminFetch);
+    }
+
+    public function testAdminPaymentFetchMYRCurrencyINRPayment()
+    {
+        $this->fixtures->merchant->edit('10000000000000', [
+            'convert_currency' => 1,
+            'country_code' => 'MY']);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthAndCapturePayment($paymentArray);
+
+        $paymentId = $response['id'];
+
+        $paymentFromAdminFetch = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertArrayHasKey('base_amount', $paymentFromAdminFetch);
+
+        $this->assertArrayHasKey('base_currency', $paymentFromAdminFetch);
+
+        $this->assertEquals($paymentFromAdminFetch['base_currency'], 'MYR');
+    }
+
     public function testPrivateAuthPaymentFetchFeeBearerAttribute()
     {
         $payment = $this->fixtures->create('payment', []);
