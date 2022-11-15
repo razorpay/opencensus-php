@@ -48,14 +48,6 @@ class Service extends Base\Service
         $this->cache = $this->app['cache'];
     }
 
-    public function settlementFixer()
-    {
-        return $this->repo->transaction(function()
-        {
-            return (new BugFixer)->settlementFixerInTxn();
-        });
-    }
-
     public function createFeeBreakupForTransaction($input)
     {
         return (new Transaction\DataMigration())->createFeeBreakupForTransaction($input);

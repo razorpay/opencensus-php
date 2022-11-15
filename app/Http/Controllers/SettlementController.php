@@ -186,12 +186,6 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getSettlementFixer()
-    {
-        $data = $this->service(E::TRANSACTION)->settlementFixer();
-
-        return ApiResponse::json($data);
-    }
 
     public function getSettlementDetails($id)
     {
