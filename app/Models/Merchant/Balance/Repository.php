@@ -313,6 +313,20 @@ class Repository extends Base\Repository
                      ->first();
     }
 
+    public function getMerchantBalanceByTypeAndAccountTypeForUpdate(
+        string $merchantId,
+        string $balanceType,
+        string $accType,
+        string $connection = null)
+    {
+        assertTrue ($this->isTransactionActive());
+
+        return Entity::lockForUpdate()->newQuery()
+            ->merchantIdAndType($merchantId, $balanceType)
+            ->where(Entity::ACCOUNT_TYPE, $accType)
+            ->firstOrFail();
+    }
+
     public function getMerchantBalancesByTypeAndAccountType(
         string $merchantId,
         string $balanceType,

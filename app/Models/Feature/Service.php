@@ -11,8 +11,10 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
+use RZP\Models\Merchant\Credits;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Balance\AccountType;
@@ -101,6 +103,32 @@ class Service extends Base\Service
                             Entity::ENTITY_ID => $merchant->getId(),
                             Entity::NAME => Constants::LEDGER_JOURNAL_WRITES,
                                 ]);
+                        break;
+
+                    case 'shadow_onboard_with_balance_lock':
+
+                        if ((empty($merchant) === false) and
+                            ($merchant->isFeatureEnabled(Constants::LEDGER_REVERSE_SHADOW) === true))
+                        {
+                            throw new Exception\ServerErrorException(
+                                'ledger_journal_writes can not be enabled as merchant is on reverse shadow already',
+                                ErrorCode::SERVER_ERROR,
+                                [
+                                    Entity::MERCHANT_ID => $merchant->getId(),
+                                ]);
+                        }
+
+                            // first sending the request to ledger because if anything fails we don't add the feature
+                            $this->ledgerAccountCreateRequestWithBalanceLock($merchant);
+
+                            // Add LEDGER_JOURNAL_WRITES feature to merchant
+                            (new Core)->create(
+                                [
+                                    Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                                    Entity::ENTITY_ID => $merchant->getId(),
+                                    Entity::NAME => Constants::LEDGER_JOURNAL_WRITES,
+                                ]);
+
                         break;
 
                     case 'reverse_shadow':
@@ -219,6 +247,19 @@ class Service extends Base\Service
                     case 'da_shadow_merchant_onboard':
                         // first sending the request to ledger because if anything fails we don't add the feature
                         $this->ledgerAccountCreateRequestForDirect($merchant, Constants::DA_LEDGER_JOURNAL_WRITES);
+
+                        // Add DA_LEDGER_JOURNAL_WRITES feature to merchant
+                        (new Core)->create(
+                            [
+                                Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                                Entity::ENTITY_ID => $merchant->getId(),
+                                Entity::NAME => Constants::DA_LEDGER_JOURNAL_WRITES,
+                            ]);
+                        break;
+
+                    case 'da_shadow_merchant_onboard_with_balance_lock':
+                        // first sending the request to ledger because if anything fails we don't add the feature
+                        $this->ledgerAccountCreateRequestForDirectWithBalanceLock($merchant, Constants::DA_LEDGER_JOURNAL_WRITES);
 
                         // Add DA_LEDGER_JOURNAL_WRITES feature to merchant
                         (new Core)->create(
@@ -383,6 +424,58 @@ class Service extends Base\Service
             $currentMerchantCredits);
     }
 
+    private function ledgerAccountCreateRequestWithBalanceLock($merchant)
+    {
+        $this->repo->transaction(function () use ($merchant) {
+            // Fetch Merchant balance. Required to generate request body for account creation on ledger
+            $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountTypeForUpdate(
+                $merchant->getId(),
+                BalanceType::BANKING,
+                AccountType::SHARED,
+                $this->mode);
+
+            // Fetch Merchant banking account. Required to generate request body for account creation on ledger
+            $bankingAcc = $this->repo->banking_account->getFromBalanceId($balance->getId());
+
+            // credit balance initialized (rewards)
+            $currentMerchantCredits = 0;
+
+            // Fetch Merchant Credit balance by taking lock on credit rows.
+            $creditBalances = $this->repo->credits->getCreditsSortedByExpiryForProduct(time(),
+                $merchant->getId(),
+                Merchant\Credits\Type::REWARD_FEE,
+                Product::BANKING);
+
+            foreach ($creditBalances as $creditBalance)
+            {
+                // This way of locking by id is better than locking on getCreditsSortedByExpiryForProduct
+                // Main idea behind this is locking by primary key will be quicker and is
+                // recommended by DBA
+                $this->repo->credits->getCreditLockForUpdate($creditBalance);
+
+                $currentMerchantCredits += $creditBalance[Credits\Entity::VALUE] - $creditBalance[Credits\Entity::USED];
+            }
+
+            $this->trace->info(TraceCode::LEDGER_JOURNAL_WRITES_FEATURE_ASSIGNED,
+                [
+                    Constants::MERCHANT_ID => $merchant->getId(),
+                    Constants::MODE        => $this->mode,
+                    'balance_id'           => $balance->getId(),
+                    'banking_account_id'   => $bankingAcc->getId(),
+                ]);
+
+            // passing isReverseShadow parameter as true to ensure sync onboarding of merchant on ledger
+            (new Merchant\Balance\Ledger\Core)->createXLedgerAccount(
+                $merchant,
+                $bankingAcc,
+                $this->mode,
+                AccountType::SHARED,
+                $balance->getBalance(),
+                $currentMerchantCredits,
+                true);
+        });
+    }
+
     private function ledgerAccountCreateRequestForDirect($merchant, $featureName)
     {
         // Fetch Merchant balances. Required to generate request body for direct accounts creation on ledger
@@ -424,6 +517,58 @@ class Service extends Base\Service
                 $balance->getBalance(),
                 $currentMerchantCredits);
         }
+    }
+
+    private function ledgerAccountCreateRequestForDirectWithBalanceLock($merchant, $featureName)
+    {
+        $this->repo->transaction(function () use ($merchant, $featureName) {
+            // Fetch Merchant balances. Required to generate request body for direct accounts creation on ledger
+            $balances = $this->repo->balance->getMerchantBalanceByTypeAndAccountTypeForUpdate(
+                $merchant->getId(),
+                BalanceType::BANKING,
+                AccountType::DIRECT,
+                $this->mode);
+
+            // onboard all accounts of the merchant
+            foreach ($balances as $balance) {
+                // Fetch Merchant banking account. Required to generate request body for account creation on ledger
+                $bankingAccStmtDetails = $this->repo->banking_account_statement_details->getDirectBasDetailEntityByMerchantAndBalanceId($merchant->getId(), $balance->getId());
+
+                // credit balance initialized (rewards)
+                $currentMerchantCredits = 0;
+
+                // Fetch Merchant Credit balance by taking lock on credit rows.
+                $creditBalances = $this->repo->credits->getCreditsSortedByExpiryForProduct(time(),
+                    $merchant->getId(),
+                    Merchant\Credits\Type::REWARD_FEE,
+                    Product::BANKING);
+
+                foreach ($creditBalances as $creditBalance) {
+                    // This way of locking by id is better than locking on getCreditsSortedByExpiryForProduct
+                    // Main idea behind this is locking by primary key will be quicker and is
+                    // recommended by DBA
+                    $this->repo->credits->getCreditLockForUpdate($creditBalance);
+
+                    $currentMerchantCredits += $creditBalance[Credits\Entity::VALUE] - $creditBalance[Credits\Entity::USED];
+                }
+
+                $this->trace->info(TraceCode::DA_LEDGER_FEATURE_ASSIGNED,
+                    [
+                        Constants::MERCHANT_ID => $merchant->getId(),
+                        Constants::MODE => $this->mode,
+                        'balance_id' => $balance->getId(),
+                        'banking_account_stmt_detail_id' => $bankingAccStmtDetails->getId(),
+                        'feature_name' => $featureName
+                    ]);
+
+                (new Merchant\Balance\Ledger\Core)->createXLedgerAccountForDirect(
+                    $merchant,
+                    $bankingAccStmtDetails,
+                    $this->mode,
+                    $balance->getBalance(),
+                    $currentMerchantCredits);
+            }
+        });
     }
 
     public function addAccountFeatures(array $input): array
