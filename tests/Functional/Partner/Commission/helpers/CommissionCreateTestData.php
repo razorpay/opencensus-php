@@ -5,6 +5,72 @@ use RZP\Error\PublicErrorCode;
 use RZP\Tests\Functional\Partner\Constants;
 
 return [
+    'createVirtualAccountQrCodeReceiver' => [
+        'method'  => 'POST',
+        'url'     => '/virtual_accounts',
+        'content' => [
+            'name'        => 'Test virtual account',
+            'description' => 'VA for tests',
+            'receivers'   => [
+                'types' => ['qr_code'],
+                'qr_code' => [
+                    'method' => [
+                        'card' =>  false,
+                        'upi' =>  true,
+                    ]
+                ],
+            ],
+            'amount_expected' => 100000,
+        ],
+    ],
+
+    'createVirtualAccountBankTransferReceiver' => [
+        'method'  => 'POST',
+        'url'     => '/virtual_accounts',
+        'content' => [
+            'name'        => 'Test virtual account',
+            'description' => 'VA for tests',
+            'receivers'   => [
+                'types' => ['bank_account'],
+            ],
+        ],
+    ],
+
+    'createBankTransferPayment' => [
+        'method'  => 'POST',
+        'url'     => '/ecollect/validate/test',
+        'content' => [
+            'amount'         => 1000,
+            'payer_account'  => '7654321234567',
+            'payer_ifsc'     => 'HDFC0000001',
+            'mode'           => 'neft',
+            'transaction_id' => strtoupper(random_alphanum_string(12)),
+            'time'           => time(),
+            'description'    => 'Test bank transfer',
+            'payee_account'  => 'random_ac_num',
+            'payee_ifsc'     => 'random_ifsc',
+        ],
+    ],
+
+    'createQRCodePayment' => [
+        'method'  => 'POST',
+        'url'     => '/payment/callback/bharatqr/upi_icici',
+        'content' => [
+            'response'        => '92',
+            'merchantId'      => 'abcd_bharat_qr',
+            'subMerchantId'   => '42324',
+            'terminalId'      => '2425',
+            'success'         => 'true',
+            'message'         => 'Transaction initiated',
+            'merchantTranId'  => 'to_be_filled',
+            'BankRRN'         => random_int(111111111, 999999999),
+            'PayerName'       => 'Ria Garg',
+            'PayerVA'         => 'random@icici',
+            'PayerAmount'    => '1000.00',
+            'TxnStatus'       => 'SUCCESS',
+        ],
+    ],
+
     'testImplicitVariableOnPaymentCapture' => [
         'request' => [
             'method' => 'POST',

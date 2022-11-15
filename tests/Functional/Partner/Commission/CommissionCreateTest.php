@@ -49,6 +49,183 @@ class CommissionCreateTest extends TestCase
         $this->app->make(Factory::class)->load($factoryPath);
     }
 
+    private function enableVirtualAccountAndMethods(string $merchantId, string $appId) {
+        $this->fixtures->merchant->enableMethod($merchantId, 'bank_transfer');
+        $this->fixtures->merchant->enableMethod($merchantId, 'upi');
+
+        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'qr_codes'], $merchantId);
+        $this->fixtures->merchant->addFeatures(['virtual_accounts'], $appId, 'application');
+
+        $this->fixtures->create('terminal:shared_bank_account_terminal');
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+        $this->fixtures->create('terminal:bharat_qr_terminal_upi');
+    }
+
+    private function createVirtualAccountWithPartnerAuth(string $subMerchantId, string $clientId, string $clientSecret, string $type) {
+        $this->ba->partnerAuth($subMerchantId, 'rzp_test_partner_' . $clientId, $clientSecret);
+
+        switch($type) {
+            case 'bank_transfer':
+                $testDataName = 'createVirtualAccountBankTransferReceiver';
+                break;
+            case 'qr_code':
+                $testDataName = 'createVirtualAccountQrCodeReceiver';
+                break;
+            default:
+                throw new \Exception('Type not implemented!');
+        }
+
+        $virtualAccount = $this->makeRequestAndGetContent($this->testData[$testDataName]);
+
+        $this->fixtures->stripSign($virtualAccount['id']);
+        $this->fixtures->stripSign($virtualAccount['receivers'][0]['id']);
+
+        $this->ba->deleteAccountAuth();
+
+        return $virtualAccount;
+    }
+
+    private function createBankTransferPayment(array $virtualAccount) {
+        $paymentAttributes = $this->testData['createBankTransferPayment'];
+        $paymentAttributes['content']['payee_account'] = $virtualAccount['receivers'][0]['account_number'];
+        $paymentAttributes['content']['payee_ifsc'] = $virtualAccount['receivers'][0]['ifsc'];
+
+        $this->ba->proxyAuth();
+        $this->makeRequestAndGetContent($paymentAttributes);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->fixtures->stripSign($payment['id']);
+
+        return $payment;
+    }
+
+    private function createQRCodePayment(array $qrCode) {
+        $paymentAttributes = $this->testData['createQRCodePayment'];
+        $paymentAttributes['content']['merchantTranId'] = $qrCode['id'] . 'qrv2';
+        $paymentAttributes['raw'] = $this->getMockServer('upi_icici')->getAsyncCallbackContentForBharatQr($paymentAttributes['content']);
+
+        $this->makeRequestAndGetContent($paymentAttributes);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->fixtures->stripSign($payment['id']);
+
+        return $payment;
+    }
+
+    /**
+     * This testcase validates the following,
+     *    (in this we create virtual account with partner auth (bank transfer) and payment from bank transfer)
+     *
+     * 1. If payment is created for virtual account from partner auth has,
+     *     same partner auth propagated
+     * 2. by checking valid entityOrigin for payment (here partner application)
+     * 3. validates if commission is generated and belongs to made payment
+     * 4. also verifies the partner to which commission is granted
+     */
+    public function testVirtualAccountForAggregatorCommissionForBankTransfer() {
+        $partnerId = Constants::DEFAULT_MERCHANT_ID;
+        $subMerchantId = Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
+
+        $client = $this->setUpNonPurePlatformPartnerAndSubmerchant($partnerId, $subMerchantId);
+
+        $this->enableVirtualAccountAndMethods($subMerchantId, $client->getApplicationId());
+
+        $this->fixtures->pricing->createBankTransferPercentPricingPlan([
+           'plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
+           'percent_rate' => 200,
+        ]);
+        $this->fixtures->pricing->createBankTransferPercentPricingPlan([
+            'plan_id' => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            'percent_rate' => 100,
+        ]);
+        $this->createConfigForPartnerApp($client->getApplicationId(), null, [
+            'implicit_plan_id' => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+        ]);
+
+        $virtualAccount = $this->createVirtualAccountWithPartnerAuth(
+            $subMerchantId,
+            $client->getId(),
+            $client->getSecret(),
+            'bank_transfer'
+        );
+
+        $vaEntityOrigin = $this->getDbEntity('entity_origin', ['entity_id' => $virtualAccount['id']]);
+
+        $this->assertEquals('application', $vaEntityOrigin['origin_type']);
+        $this->assertEquals($client->getApplicationId(), $vaEntityOrigin['origin_id']);
+
+        $payment = $this->createBankTransferPayment($virtualAccount);
+
+        $paymentEntityOrigin = $this->getDbEntity('entity_origin', ['entity_id' => $payment['id']]);
+
+        $this->assertEquals('application', $paymentEntityOrigin['origin_type']);
+        $this->assertEquals($client->getApplicationId(), $paymentEntityOrigin['origin_id']);
+
+        $commission = $this->getLastEntity('commission', true);
+
+        $this->assertEquals($commission['source_id'], $payment['id']);
+        $this->assertEquals('captured', $commission['status']);
+        $this->assertEquals($partnerId, $commission['partner_id']);
+    }
+
+    /**
+     * This testcase validates the following,
+     *    (in this we create virtual account with partner auth (qr_code type) and payment upi)
+     *
+     * 1. If payment is created for virtual account from partner auth has,
+     *     same partner auth propagated
+     * 2. check valid entityOrigin for payment (here partner application)
+     * 3. validates if commission is generated and belongs to made payment
+     * 4. also verifies the partner to which commission is granted
+     */
+    public function testVirtualAccountForAggregatorCommissionForQrCode() {
+        $partnerId = Constants::DEFAULT_MERCHANT_ID;
+        $subMerchantId = Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
+
+        $client = $this->setUpNonPurePlatformPartnerAndSubmerchant($partnerId, $subMerchantId);
+
+        $this->enableVirtualAccountAndMethods($subMerchantId, $client->getApplicationId());
+
+        $this->fixtures->pricing->createUpiTransferPricingPlan([
+           'plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
+           'percent_rate' => 200,
+           'receiver_type' => 'qr_code',
+        ]);
+        $this->fixtures->pricing->createUpiTransferPricingPlan([
+            'plan_id' => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            'percent_rate' => 100,
+            'receiver_type' => 'qr_code',
+        ]);
+        $this->createConfigForPartnerApp($client->getApplicationId(), null, [
+            'implicit_plan_id' => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+        ]);
+
+        $virtualAccount = $this->createVirtualAccountWithPartnerAuth(
+            $subMerchantId,
+            $client->getId(),
+            $client->getSecret(),
+            'qr_code'
+        );
+
+        $vaEntityOrigin = $this->getDbEntity('entity_origin', ['entity_id' => $virtualAccount['id']]);
+
+        $this->assertEquals('application', $vaEntityOrigin['origin_type']);
+        $this->assertEquals($client->getApplicationId(), $vaEntityOrigin['origin_id']);
+
+        $payment = $this->createQRCodePayment($virtualAccount['receivers'][0]);
+
+        $paymentEntityOrigin = $this->getDbEntity('entity_origin', ['entity_id' => $payment['id']]);
+
+        $this->assertEquals('application', $paymentEntityOrigin['origin_type']);
+        $this->assertEquals($client->getApplicationId(), $paymentEntityOrigin['origin_id']);
+
+        $commission = $this->getLastEntity('commission', true);
+
+        $this->assertEquals($commission['source_id'], $payment['id']);
+        $this->assertEquals('captured', $commission['status']);
+        $this->assertEquals($partnerId, $commission['partner_id']);
+    }
+
     public function testImplicitVariableOnPaymentCapture()
     {
         $testData = $this->setUpCommissionCreate();

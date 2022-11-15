@@ -1219,6 +1219,12 @@ class Calculator extends Base\Core
 
         $entityOriginCore = new EntityOrigin\Core;
 
+        if ($sourceEntity->isReadyForCommissionRecord() &&
+            empty($sourceEntity->entityOrigin) === true)
+        {
+            $sourceEntity->load('entityOrigin');
+        }
+
         if ($entityOriginCore->isOriginApplication($sourceEntity) === true)
         {
             // $partnerApp will always be a non-null value here
