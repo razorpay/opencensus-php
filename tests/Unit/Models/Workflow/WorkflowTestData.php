@@ -238,6 +238,13 @@ return [
                                                 1 => 'rejected',
                                             ),
                                     ),
+                                'owner' =>
+                                    array (
+                                        'actions' =>
+                                            array (
+                                                0 => 'rejected',
+                                            ),
+                                    ),
                                 'user' =>
                                     array (
                                         'actions' =>
@@ -619,6 +626,13 @@ return [
                                                 array (
                                                     0 => 'update_data',
                                                     1 => 'rejected',
+                                                ),
+                                        ),
+                                    'owner' =>
+                                        array (
+                                            'actions' =>
+                                                array (
+                                                    0 => 'rejected',
                                                 ),
                                         ),
                                     'user' =>

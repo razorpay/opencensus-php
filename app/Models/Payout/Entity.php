@@ -222,6 +222,7 @@ class Entity extends Base\PublicEntity
     const PAYOUT_ID            = 'payout_id';
     const SKIP_WORKFLOW        = 'skip_workflow';
     const FORCE_REJECT         = 'force_reject';
+    const BULK_REJECT_AS_OWNER = 'bulk_reject_as_owner';
     //Input key to support search using reversal_id
     const REVERSAL_ID                           = 'reversal_id';
 

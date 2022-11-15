@@ -5422,6 +5422,107 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(true, $firstActionChecker['approved']);
     }
 
+    public function testBulkRejectPayoutsAsOwnerSSWF()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->liveSetUp();
+
+        $this->fixtures->on('live');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000000',
+            'user_id'     => $user->getId(),
+            'product'     => 'banking',
+            'role'        => 'owner',
+        ]);
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $workflowServiceClientMock = Mockery::mock('RZP\Services\WorkflowService');
+
+        $this->app->instance('workflow_service', $workflowServiceClientMock);
+
+        $workflowServiceClientMock->shouldReceive('request')->with("twirp/rzp.workflows.action.v1.ActionAPI/CreateDirectOnWorkflow");
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] += [
+            'payout_ids' => [$payout['id']],
+        ];
+
+        $this->ba->basicAuth('rzp_live_10000000000000', 'RANDOM_DASH_PASSWORD_MERCHANT');
+
+        $this->startTest();
+    }
+
+    public function testBulkRejectPayoutsAsOwnerSSWFValidationError()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->liveSetUp();
+
+        $this->fixtures->on('live');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000000',
+            'user_id'     => $user->getId(),
+            'product'     => 'banking',
+            'role'        => 'owner',
+        ]);
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] += [
+            'payout_ids' => [$payout['id']],
+        ];
+
+        $this->ba->basicAuth('rzp_live_10000000000000', 'RANDOM_DASH_PASSWORD_MERCHANT');
+
+        $this->startTest();
+    }
+
+    public function testBulkRejectPayouts()
+    {
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout1 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+        $payout2 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $testData                                     = &$this->testData[__FUNCTION__];
+        $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
+
+        $this->mockRazorxTreatment('yesbank', 'on');
+
+        $eventTestDataKey = 'testFiringOfWebhookOnRejectionOfPayoutEventData';
+
+        $this->expectWebhookEventWithContents('payout.rejected', $eventTestDataKey);
+        $this->expectWebhookEventWithContents('payout.rejected', $eventTestDataKey);
+
+        // Reject with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $workflowServiceClientMock = Mockery::mock('RZP\Services\WorkflowService');
+
+        $this->app->instance('workflow_service', $workflowServiceClientMock);
+
+        $workflowServiceClientMock->shouldReceive('request')->with("twirp/rzp.workflows.action.v1.ActionAPI/CreateWithEntityId");
+
+        $this->startTest();
+
+        $actionChecker = $this->getDbLastEntity('action_checker', 'live');
+        $this->assertEquals(false, $actionChecker['approved']);
+        $this->assertEquals('Bulk Rejecting', $actionChecker['user_comment']);
+    }
+
     // Create Undoable payout testcase
     public function testCreateUndoablePayoutWithOtp()
     {

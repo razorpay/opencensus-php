@@ -1208,6 +1208,77 @@ return [
         ]
     ],
 
+    'testBulkRejectPayoutsAsOwnerSSWF' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/reject/bulk/owner',
+            'content' => [
+                'bulk_reject_as_owner' => true,
+                'user_comment' => ''
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'header' => [
+                'PHP_AUTH_PW' => 'RANDOM_DASH_PASSWORD_MERCHANT'
+            ]
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ],
+
+    'testBulkRejectPayoutsAsOwnerSSWFValidationError' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/reject/bulk/owner',
+            'content' => [
+                'user_comment' => ''
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'header' => [
+                'PHP_AUTH_PW' => 'RANDOM_DASH_PASSWORD_MERCHANT'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The bulk reject as owner field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testBulkRejectPayouts' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/reject/bulk',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+                'payout_ids' => [],
+                'user_comment'    => 'Bulk Rejecting',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total_count' => 2,
+                'failed_ids'  => [],
+            ],
+        ],
+    ],
+
     // Create Undoable payout testcase
     'testCreateUndoablePayoutWithOtp' => [
         'request'  => [

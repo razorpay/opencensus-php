@@ -3389,4 +3389,53 @@ return [
             ]
         ]
     ],
+
+    'testBulkRejectPayoutLinksAsOwner' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/reject/bulk/owner',
+            'content' => [
+                'payout_link_ids' => ['poutlk_4Dx41ywjzsda6u'],
+                'bulk_reject_as_owner' => true,
+                'user_comment' => ''
+            ],
+            'server' => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+                'HTTP_X-Request-Origin'   => config('applications.banking_service_url'),
+            ]
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ],
+
+    'testBulkRejectPayoutLinksAsOwnerError' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/reject/bulk/owner',
+            'content' => [
+                'payout_link_ids' => ['poutlk_4Dx41ywjzsda6u'],
+                'user_comment' => ''
+            ],
+            'server' => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+                'HTTP_X-Request-Origin'   => config('applications.banking_service_url'),
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The bulk reject as owner field is required.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
 ];

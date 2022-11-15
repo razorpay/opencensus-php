@@ -10,6 +10,7 @@ use RZP\Constants\Product;
 use RZP\Base\RepositoryManager;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Workflow\Service\EntityMap\Entity;
 
 abstract class Base
@@ -83,7 +84,7 @@ abstract class Base
             $payload += ['data' => $input['data']];
         }
 
-        $this->enrichActorFieldsForDirectActions($payload);
+        $this->enrichActorFieldsForDirectActions($payload, $input);
 
         return ['action' => $payload];
     }
@@ -209,11 +210,34 @@ abstract class Base
     }
 
     /**
+     * @param array $payload
      * @param array $input
      */
-    protected function enrichActorFieldsForDirectActions(array &$input)
+    protected function enrichActorFieldsForDirectActions(array &$payload, array $input)
     {
-        $this->enrichActorAndServiceDetails($input);
+        $this->enrichActorAndServiceDetails($payload);
+
+        if (array_key_exists(PayoutEntity::BULK_REJECT_AS_OWNER, $input))
+        {
+            $ba = app('basicauth');
+
+            $owner = $ba->getUser();
+
+            $payload[Constants::ACTOR_ID]               = $owner->getId();
+
+            $payload[Constants::ACTOR_TYPE]             = Constants::OWNER;
+
+            $payload[Constants::ACTOR_PROPERTY_KEY]     = Constants::ROLE;
+
+            $payload[Constants::ACTOR_PROPERTY_VALUE]   = Constants::OWNER;
+
+            $payload[Constants::SERVICE]                = Constants::SERVICE_RX . $this->ba->getMode();
+
+            $payload[Constants::ACTOR_META]             = [
+                                                                Constants::EMAIL => $owner->getEmail(),
+                                                                Constants::NAME => $owner->getName()
+                                                            ];
+        }
     }
 
     private function enrichActorAndServiceDetails(array &$input)

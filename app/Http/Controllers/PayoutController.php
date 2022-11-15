@@ -294,6 +294,13 @@ class PayoutController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function ownerBulkRejectPayouts()
+    {
+        $response = $this->service()->ownerBulkRejectPayouts($this->input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postMerchantPayoutOnDemand()
     {
         $input = Request::all();

@@ -52,38 +52,26 @@ class Core extends Base\Core
         // Duplicating code, since the old flow will be removed in future
         // todo: Remove this comment post removal of old flow
 
-        $config_type = Constants::PAYOUT_APPROVAL_CONFIG_TYPE;
-
-        // config type will be passed from Admin dashboard for ICICI config
-        if (array_key_exists(Constants::CONFIG_TYPE, $input) === true && is_null($input[Constants::CONFIG_TYPE]) == false)
-        {
-            $config_type = $input[Constants::CONFIG_TYPE];
-            unset($input[Constants::CONFIG_TYPE]);
-        }
+        // default config type is 'payout-approval'
+        $input[Constants::CONFIG_TYPE] = array_pull($input, Constants::CONFIG_TYPE, Constants::PAYOUT_APPROVAL_CONFIG_TYPE);
 
         // Create config in workflow service
         $response = $this->workflowServiceClient->createConfigV2($input);
 
-        $this->saveConfigId($response, $config_type);
+        $this->saveConfigId($response, $input[Constants::CONFIG_TYPE]);
 
         return $response;
     }
 
     public function updateWorkflowConfig(array $input): array
     {
-        $config_type = Constants::PAYOUT_APPROVAL_CONFIG_TYPE;
-
-        // config type will be passed from Admin dashboard for ICICI config
-        if (array_key_exists(Constants::CONFIG_TYPE, $input) === true && is_null($input[Constants::CONFIG_TYPE]) == false)
-        {
-            $config_type = $input[Constants::CONFIG_TYPE];
-            unset($input[Constants::CONFIG_TYPE]);
-        }
+        // default config type is 'payout-approval'
+        $input[Constants::CONFIG_TYPE] = array_pull($input, Constants::CONFIG_TYPE, Constants::PAYOUT_APPROVAL_CONFIG_TYPE);
 
         // Update config in workflow service
         $response = $this->workflowServiceClient->updateConfigV2($input);
 
-        $this->saveConfigId($response, $config_type);
+        $this->saveConfigId($response, $input[Constants::CONFIG_TYPE]);
 
         return $response;
     }
