@@ -713,14 +713,26 @@ class Payment extends Base
 
                 if (empty($feeModel) === false) {
 
-                    $this->trace->info(TraceCode::RULE_LEVEL_FEE_MODEL,
-                        [
-                            'fee_model'=> $feeModel
-                        ]);
+                    $redis = $this->app['redis']->connection();
 
-                    $payment->transaction->setFeeModel($feeModel);
+                    $redisKey = Pricing\BuyPricing::BPCL_TRANSACTION_COUNTER;
+
+                    $currentCount = $redis->get($redisKey);
+
+                    if ($currentCount === null or $currentCount < Pricing\BuyPricing::BPCL_TRANSACTION_LIMIT) {
+
+                        $this->trace->info(TraceCode::RULE_LEVEL_FEE_MODEL,
+                            [
+                                'fee_model' => $feeModel,
+                                'counter' => $currentCount
+                            ]);
+
+                        $payment->transaction->setFeeModel($feeModel);
+
+                        $redis->incr($redisKey);
+
+                    }
                 }
-
             }
         } catch (\Throwable $e){
             $this->trace->error(TraceCode::RULE_LEVEL_FEE_MODEL_FAILURE,

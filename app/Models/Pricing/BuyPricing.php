@@ -142,6 +142,8 @@ class BuyPricing
     const POLI                          = 'poli';
 
     const BPCL_TEST_MERCHANT_ID              = 'GfjiTEOfQJJBBX';
+    const BPCL_TRANSACTION_COUNTER           = 'bpcl_transaction_counters';
+    const BPCL_TRANSACTION_LIMIT             =  10;
 
     protected static $cardGateways = [
         self::HDFC,
