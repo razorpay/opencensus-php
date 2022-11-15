@@ -70,6 +70,38 @@ class CaptureJournalEvents
         return $message;
     }
 
+    public static function createTransactionMessageForCaptureGatewayCommission(Payment\Entity $payment, Transaction\Entity $transaction): array
+    {
+        $gateway = $payment->terminal ? $payment->terminal->getGateway() : "not found";
+
+        $gatewayCommission = $transaction->getGatewayFee();
+
+        $gatewayTax = $transaction->getGatewayServiceTax();
+
+        $gatewayReceivableAmount = $gatewayCommission + $gatewayTax;
+
+        // api transaction id is assigned to transaction id if it is present in payment entity else payment id is passed as api transaction id
+        $message = array(
+            Constants::TRANSACTOR_ID                => $payment->getPublicId(),
+            Constants::MERCHANT_ID                  => $payment->getMerchantId(),
+            Constants::CURRENCY                     => Constants::INR_CURRENCY,
+            Constants::TRANSACTOR_EVENT             => Constants::GATEWAY_CAPTURED_COMMISSION,
+            Constants::TRANSACTION_DATE             => $transaction->getUpdatedAt(),
+            Constants::IDENTIFIERS                  => [
+                Constants::GATEWAY          => $gateway,
+            ],
+            Constants::MONEY_PARAMS                 => [
+                Constants::AMOUNT             => strval($gatewayReceivableAmount),
+                Constants::BASE_AMOUNT        => strval($gatewayReceivableAmount),
+                Constants::GATEWAY_COMMISSION => strval($gatewayCommission),
+                Constants::GATEWAY_TAX        => strval($gatewayTax)
+
+            ]
+        );
+
+        return $message;
+    }
+
     public static function fetchRulesForPaymentCredits(Transaction\Entity $transaction)
     {
         $rule = null;
@@ -111,10 +143,6 @@ class CaptureJournalEvents
         else if($transaction->isPostpaid() === true)
         {
             $rule[Constants::CREDIT_ACCOUNTING] = Constants::POSTPAID;
-        }
-        else if($transaction->isGratis() === true)
-        {
-            $rule[Constants::CREDIT_ACCOUNTING] = Constants::AMOUNT_CREDITS;
         }
 
         return $rule;
@@ -192,30 +220,19 @@ class CaptureJournalEvents
 
         if($transaction->isFeeCredits() === true)
         {
-            $moneyParams[Constants::DS_GMV_AMOUNT]              = strval($amount);
-            $moneyParams[Constants::DS_CONTROL_AMOUNT]          = strval($amount);
             $moneyParams[Constants::TAX]                        = strval(abs($tax));
             $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
             $moneyParams[Constants::FEE_CREDITS]                = strval($tax + $fee);
         }
         else if($transaction->isPostpaid() === true)
         {
-            $moneyParams[Constants::DS_GMV_AMOUNT]              = strval($amount);
-            $moneyParams[Constants::DS_CONTROL_AMOUNT]          = strval($amount);
             $moneyParams[Constants::TAX]                        = strval(abs($tax));
             $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
             $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $fee);
         }
-        else if ($transaction->isGratis() === true)
-        {
-            $moneyParams[Constants::DS_GMV_AMOUNT]              = strval($amount);
-            $moneyParams[Constants::DS_CONTROL_AMOUNT]          = strval($amount);
-        }
         // Normal merchant captured scenario (commissions considered)
         else
         {
-            $moneyParams[Constants::DS_GMV_AMOUNT]              = strval($amount);
-            $moneyParams[Constants::DS_CONTROL_AMOUNT]          = strval($amount);
             $moneyParams[Constants::TAX]                        = strval(abs($tax));
             $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
             $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval( $fee + $tax);

@@ -54,6 +54,10 @@ trait Transfer
 
         $txnCore->saveFeeDetails($txn, $feesSplit);
 
+        $this->createLedgerEntriesForGatewayCapture($payment);
+
+        $this->createLedgerEntriesForMerchantCapture($payment, $txn);
+
         return $payment;
     }
 

@@ -886,6 +886,12 @@ trait Capture
 
     public function createLedgerEntriesForMerchantCapture(Payment\Entity $payment, Transaction\Entity $txn)
     {
+        if (($payment->isDirectSettlement() === true) and
+            ($txn->isGratis() === true))
+        {
+            return;
+        }
+
         try
         {
             if($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === true)

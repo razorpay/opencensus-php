@@ -6,6 +6,7 @@ class Constants
 {
     //Gateway events
     const GATEWAY_CAPTURED                                  = "payment_gateway_captured";
+    const GATEWAY_CAPTURED_COMMISSION                       = "payment_gateway_capture_commission";
     const INR_CURRENCY                                      = "INR";
 
     //Merchant Capture events
@@ -104,6 +105,8 @@ class Constants
     const TRANSACTOR_EVENT                                  = 'transactor_event';
     const ADDITIONAL_PARAMS                                 = 'additional_params';
     const BASE_AMOUNT                                       = 'base_amount';
+    const GATEWAY_COMMISSION                                = "gateway_commission";
+    const GATEWAY_TAX                                       = "gateway_tax";
 
     const MONEY_PARAMS                                      = 'money_params';
     const MERCHANT_ID                                       = 'merchant_id';

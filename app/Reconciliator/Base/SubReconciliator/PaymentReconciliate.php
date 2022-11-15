@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\QrCode;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card\IIN;
 use RZP\Models\Transaction;
@@ -17,13 +18,17 @@ use RZP\Models\Batch\Entity;
 use RZP\Jobs\CardsPaymentRecon;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\UniqueIdEntity;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Reconciliator\Base\InfoCode;
 use RZP\Models\Base\PublicCollection;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Exception\ReconciliationException;
+use Neves\Events\TransactionalClosureEvent;
+use RZP\Models\Ledger\CaptureJournalEvents;
 use RZP\Models\Batch\Processor\Reconciliation;
 use RZP\Models\Payment\Verify\Result as VerifyResult;
 use RZP\Reconciliator\RequestProcessor\Base as ReqBase;
+use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\Foundation\SubReconciliate
@@ -2088,6 +2093,9 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             if ($recordGatewayServiceTaxSuccess === true)
             {
                 $this->paymentTransaction->saveOrFail();
+
+                $this->createLedgerEntriesForCaptureGatewayCommission($this->payment, $this->paymentTransaction);
+
                 return true;
             }
         }
@@ -2095,6 +2103,39 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::RECON_RECORD_GATEWAY_FEE_FAILED);
 
         return false;
+    }
+
+    public function createLedgerEntriesForCaptureGatewayCommission(Payment\Entity $payment, Transaction\Entity $txn)
+    {
+        if($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+        {
+            return;
+        }
+
+        try
+        {
+            $transactionMessage = CaptureJournalEvents::createTransactionMessageForCaptureGatewayCommission($payment, $txn);
+
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($txn, $transactionMessage) {
+                // Job will be dispatched only if the transaction commits.
+                LedgerEntryJob::dispatchNow($this->mode, $transactionMessage);
+            }));
+
+            $this->trace->info(
+                TraceCode::PAYMENT_CAPTURED_GATEWAY_COMMISSION_EVENT_TRIGGERED,
+                [
+                    'payment_id'            => $payment->getId(),
+                    'message'               => $transactionMessage
+                ]);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PG_LEDGER_ENTRY_FAILED,
+                []);
+        }
     }
 
     protected function isNullGatewayFeesAndTaxAllowed()
