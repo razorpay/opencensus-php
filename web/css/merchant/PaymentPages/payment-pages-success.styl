@@ -1,11 +1,16 @@
-@import './mulish'
-  
+// stylelint-disable max-nesting-depth
+// stylelint-disable color-function-notation
+@import "./mulish"
+
 .pp-success-container
-  background-color: white
+  $white = #FFF
+
+  background-color: $white
   min-height: 100vh
   min-width: 900px
-  font-family: "Mulish", "Lato", "Lato-Regular", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  @media (max-width: $screen-xs-max)
+  font-family: Mulish, Lato, Lato-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  @media (max-width $screen-xs-max)
     min-width: 100vw
 
   .page-nav-container
@@ -15,7 +20,7 @@
     top: 0
     left: 0
 
-  .payment-page-nav 
+  .payment-page-nav
     display: flex
     justify-content: space-between
     background-color: #2F3345
@@ -27,7 +32,7 @@
       .nav-title
         font-size: 18px
         font-weight: 600
-        color: white
+        color: $white
 
     .nav-right
       button
@@ -41,7 +46,8 @@
     margin: auto
     padding-top: 20px
     margin-top: 56px
-    @media (max-width: $screen-xs-max)
+
+    @media (max-width $screen-xs-max)
       min-width: 100vw
 
     .edit-page-btn
@@ -51,25 +57,35 @@
       letter-spacing: 0.5px
       line-height: 14px
       margin-bottom: 4px
-      
+
       .i-chevron-left
         font-size: 13px
 
     .divider
-      height: 0px
+      height: 0
       width: 28px
       margin-top: 12px
       border: 2px solid #0B70E7
+
+    .button--highlight
+      background: rgba(11, 112, 231, 0.05);
+      border: 1px solid rgba(11, 112, 231, 0.74);
+      box-sizing: border-box;
+      border-radius: 2px;
+      padding: 7px 15px 8px
+      display: flex
+      align-items: center
 
     #hero-box
       display: flex
       justify-content: space-between
       background: #F3F8FE
-      box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15)
-      height: 214px   
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15)
+      height: 214px
       border-radius: 3px
       margin-right: 80px
-      @media (max-width: $screen-xs-max)
+
+      @media (max-width $screen-xs-max)
         margin: 0 24px
         height: inherit
 
@@ -77,7 +93,8 @@
         padding-top: 40px
         padding-bottom: 40px
         padding-left: 75px
-        @media (max-width: $screen-xs-max)
+
+        @media (max-width $screen-xs-max)
           padding: 40px 20px
           width: 100%
 
@@ -85,7 +102,8 @@
         display: flex
         align-items: center
         margin-top: 22px
-        @media (max-width: $screen-xs-max)
+
+        @media (max-width $screen-xs-max)
           flex-direction: column
           align-items: start
 
@@ -95,7 +113,8 @@
           font-weight: 700
           line-height: 20px
           margin-right: 24px
-          @media (max-width: $screen-xs-max)
+
+          @media (max-width $screen-xs-max)
             margin: 0
             width: 100%
 
@@ -128,21 +147,22 @@
             text-transform: uppercase
             letter-spacing: 0.5px
             line-height: 14px
+
             &:disabled
-              cursor: not-allowed !important
               opacity: 0.5
               color: rgba(22, 47, 86, 0.68)
               background: rgba(22, 47, 86, 0.02)
               border: 1px solid rgba(22, 47, 86, 0.4)
             // separate CTA container for mobile view. only share and view page shown, check .mobile-cta-container
-            @media (max-width: $screen-xs-max)
+            @media (max-width $screen-xs-max)
               display: none
 
         .mobile-cta-container
           display: none
           margin-top: 10px
           text-align: right
-          @media (max-width: $screen-xs-max)
+
+          @media (max-width $screen-xs-max)
             display: block
 
           .button--highlight
@@ -152,8 +172,7 @@
             margin-right: 0
             margin-left: 10px
 
-
-        .short-url 
+        .short-url
           margin-top: 8px
 
           .Input-elWrapper
@@ -172,8 +191,8 @@
         margin-top: 6px
 
         .i-tick
-          color: white
-          background: green
+          color: $white
+          background: #008000
           border-radius: 50%
           font-size: 8px
           padding: 3px
@@ -191,7 +210,7 @@
         padding-top: 22px
         position: relative
         // not showing iframe in mobile
-        @media (max-width: $screen-xs-max)
+        @media (max-width $screen-xs-max)
           display: none
 
         .preview-icon
@@ -219,16 +238,16 @@
         &:hover
           .preview-icon
             background: rgba(256, 256, 256, 0.6)
+
             i
               opacity: 1
-        
+
         .image-shadow
           width: 322px
           height: 148px
           background: linear-gradient(250.74deg, #7B64F2 2.05%, #3C9FE6 102.22%)
           opacity: 0.7
-          box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.15)
-          position: relative
+          box-shadow: 0 4px 4px rgba(0, 0, 0, 0.15)
           border-radius: 3px
           z-index: 2
           position: absolute
@@ -248,7 +267,8 @@
 
     #next-steps
       margin: 24px 56px
-      @media (max-width: $screen-xs-max)
+
+      @media (max-width $screen-xs-max)
         margin: 24px 20px
 
       &--title
@@ -275,7 +295,8 @@
         display: flex
         justify-content: space-between
         padding: 20px 22px
-        @media (max-width: $screen-xs-max)
+
+        @media (max-width $screen-xs-max)
           flex-direction: column
           align-items: start
           gap: 7px
@@ -285,7 +306,7 @@
           font-size: 14px
           line-height: 20px
           color: #536582
-        
+
         &--right
           display: flex
           justify-content: center
@@ -294,12 +315,13 @@
         &--line
           margin-bottom: 6px
 
+          // stylelint-disable-next-line no-descending-specificity
           i
             width: 15px
             display: inline-block
             text-align: center
             margin-right 12px
-          
+
           .i-redirect
             font-size: 12px
 
@@ -308,7 +330,7 @@
 
           img
             margin-right: 12px
-          
+
           .embed-image
             margin-right: 10px
 
@@ -318,22 +340,12 @@
         &--and-more
           margin-top: 10px
 
-        &--space, &--and-more
+        &--space,
+        &--and-more
           margin-left: 28px
-          @media (max-width: $screen-xs-max)
+
+          @media (max-width $screen-xs-max)
             margin-left: 0
-          
-    .button--highlight
-      background: rgba(11, 112, 231, 0.05);
-      border: 1px solid rgba(11, 112, 231, 0.74);
-      box-sizing: border-box;
-      border-radius: 2px;background: rgba(11, 112, 231, 0.05);
-      border: 1px solid rgba(11, 112, 231, 0.74);
-      box-sizing: border-box;
-      border-radius: 2px;
-      padding: 7px 15px 8px
-      display: flex
-      align-items: center
 
   .rzp-tooltip-80g
     .rzp-tooltip-title
@@ -344,7 +356,8 @@
   .rzp-tooltip-inner
     padding: 16px 12px
     position: relative
-    &:after
+
+    &::after
       content: ""
       position: absolute
       top: 100%
@@ -352,10 +365,14 @@
       margin-left: -10px
       border-width: 5px
       border-style: solid
-      border-color: #2c3243 transparent transparent transparent
+      border-color: #2C3243 transparent transparent
       margin-top: -1px
 
   .error-message
-    width: 80%
+    min-height: inherit
     margin: 30px auto
-    color: #f05050
+    color: #F05050
+    display: flex
+    justify-content: center
+    align-items: center
+    font-size: 20px

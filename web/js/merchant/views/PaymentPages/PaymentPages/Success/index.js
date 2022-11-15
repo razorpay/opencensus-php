@@ -53,7 +53,7 @@ class Success extends React.Component {
     isPaymentReceiptsModalOpen: false,
     isPageSettingsModalOpen: false,
     isLoaded: false,
-    isPageLoadError: '',
+    pageLoadError: '',
   };
 
   componentDidMount() {
@@ -73,12 +73,8 @@ class Success extends React.Component {
         .catch(({ errors }) => {
           const err = getErrorMessageFromResponse(errors);
 
-          this.props.showNotification({
-            type: 'error',
-            message: err,
-          });
           this.setState({
-            isPageLoadError: true,
+            pageLoadError: err?.[0] || 'Something went wrong, please try again later',
             isLoaded: true,
           });
         });
@@ -251,18 +247,19 @@ class Success extends React.Component {
   };
 
   render() {
-    const { paymentPageEntity, FORM_ITEMS } = this.props;
-    const { isLoaded, isPageLoadError } = this.state;
-    const isShiprocket =
-      paymentPageEntity.settings?.partner_webhook_settings?.partner_shiprocket === '1';
+    const { isLoaded, pageLoadError } = this.state;
 
     let content;
 
     if (!isLoaded) {
       content = <Loader />;
-    } else if (isPageLoadError) {
-      content = <div className="error-message">Something went wrong</div>;
+    } else if (pageLoadError) {
+      content = <div className="error-message">{pageLoadError}</div>;
     } else {
+      const { paymentPageEntity, FORM_ITEMS } = this.props;
+      const isShiprocket =
+        paymentPageEntity.settings?.partner_webhook_settings?.partner_shiprocket === '1';
+
       content = (
         <>
           {this.state.isPageSettingsModalOpen && (
@@ -465,6 +462,7 @@ class Success extends React.Component {
         </>
       );
     }
+
     return (
       <div class="pp-success-container">
         <Header />
