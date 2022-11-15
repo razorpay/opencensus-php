@@ -222,7 +222,8 @@ class Server extends Base\Mock\Server
                     Fields::CHECK_STATUS_UNQ_TXN_ID => $payment['id'] ?? $input[Fields::CHECK_STATUS_UNQ_TXN_ID],
                     Fields::CHECK_STATUS_REF_ID     => '714513318376',
                     Fields::CHECK_STATUS_DATE_TIME  => '25/07/18 17:42:16',
-                    Fields::AMOUNT                  => $this->formatAmount($payment['amount'] ?? 60000),
+                    Fields::AMOUNT                  => ($payment['vpa'] === 'unexpectedPayment@axisbank' ? 100 :
+                        $this->formatAmount($payment['amount'] ?? 60000)),
                     Fields::CHECK_STATUS_DEBIT_VPA  => $payment['vpa'] ?? 'unexpected@axisbank',
                     Fields::CHECK_STATUS_CREDIT_VPA => 'razorpay@axis',
                     Fields::STATUS                  => 'C',
