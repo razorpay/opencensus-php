@@ -102,7 +102,7 @@ class Entity extends Base\PublicEntity
         self::REFUND_REQUEST_PERIOD    => null,
         self::REFUND_PROCESS_PERIOD    => null,
         self::WARRANTY_PERIOD          => null,
-        self::GRACE_PERIOD             => false,
+        self::GRACE_PERIOD             => null,
         self::SEND_COMMUNICATION       => true,
 
     ];
@@ -137,6 +137,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STATUS);
     }
 
+    public function getGracePeriodStatus()
+    {
+        return $this->getAttribute(self::GRACE_PERIOD);
+    }
 
     /*
      "merchant_website_details": {
@@ -150,11 +154,18 @@ class Entity extends Base\PublicEntity
            }
        }
      */
-    public function getMerchantDocumentId($sectionName, $urlType, $url)
+    public function getMerchantDocumentId($sectionName, $urlType, $inputUrl)
     {
         $merchantWebsiteDetail = $this->getAttribute(self::MERCHANT_WEBSITE_DETAILS);
 
-        return $merchantWebsiteDetail[$sectionName][$urlType][$url][Constants::DOCUMENT_ID] ?? null;
+        foreach ($merchantWebsiteDetail[$sectionName][$urlType] as $url => $constant)
+        {
+            if (trim(strtolower($url), '/') === $inputUrl)
+            {
+                return $merchantWebsiteDetail[$sectionName][$urlType][$url][$constant] ?? null;
+            }
+        }
+        return null;
     }
 
     /* "admin_website_details": {
@@ -167,11 +178,19 @@ class Entity extends Base\PublicEntity
            }
        }
     */
-    public function getAdminDocumentId($urlType, $url, $sectionName)
+    public function getAdminDocumentId($urlType, $inputUrl, $sectionName)
     {
         $adminWebsiteDetail = $this->getAttribute(self::ADMIN_WEBSITE_DETAILS);
 
-        return $adminWebsiteDetail[$urlType][$url][$sectionName][Constants::DOCUMENT_ID] ?? null;
+        foreach ($adminWebsiteDetail[$urlType] as $url => $data)
+        {
+            if (trim(strtolower($url), '/') === $inputUrl)
+            {
+                return $data[$sectionName][Constants::DOCUMENT_ID] ?? null;
+            }
+        }
+
+        return null;
     }
 
     /* "admin_website_details": {
@@ -184,11 +203,18 @@ class Entity extends Base\PublicEntity
        }
    }
 */
-    public function getAdminUrl($urlType, $url, $sectionName)
+    public function getAdminUrl($urlType, $inputUrl, $sectionName)
     {
         $adminWebsiteDetail = $this->getAttribute(self::ADMIN_WEBSITE_DETAILS);
 
-        return $adminWebsiteDetail[$urlType][$url][$sectionName][Constants::URL] ?? null;
+        foreach ($adminWebsiteDetail[$urlType] as $url => $data)
+        {
+            if (trim(strtolower($url), '/') === $inputUrl)
+            {
+                return $data[$sectionName][Constants::URL] ?? null;
+            }
+        }
+        return null;
     }
 
     /* "merchant_website_details": {

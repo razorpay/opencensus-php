@@ -32,6 +32,7 @@ use RZP\Models\Merchant\BusinessDetail\Constants as BusinessConstants;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\Permission;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 use Illuminate\Support\Facades\File;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -507,10 +508,8 @@ class Service extends Base\Service
         try
         {
             $response[Constants::STATUS] = $this->getWebsiteStatus($merchantDetails, $websiteDetail);
-
             $response["isWebsiteSectionsApplicable"] = true;
             $response["isGracePeriodApplicable"]     = false;
-            //$response["canActivateMerchant"]         = $this->canActivateMerchant($merchantDetails, $websiteDetail);
 
             $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, ["response"    => $response,
                                                                    "merchant_id" => $merchantDetails->getMerchantId()]);
@@ -811,36 +810,97 @@ class Service extends Base\Service
         }
     }
 
-    private function canActivateMerchant($merchantDetails, $websiteDetail): bool
+    public function canActivateMerchant($merchantDetails, $websiteDetail): bool
     {
         try
         {
+
             $urls = $this->getAllMerchantWebsites($merchantDetails);
 
-            foreach (explode(',', Constants::VALID_ADMIN_SECTIONS) as $key)
+            $gracePeriodCheck = false;
+
+            foreach (Constants::MANDATORY_ADMIN_SECTIONS as $sectionName)
             {
                 foreach ($urls as $url => $url_type)
                 {
-                    $sectionUrl = $websiteDetail->getAdminUrl($url_type, $url, $key) ??
-                                  $websiteDetail->getPublishedUrl($key);
+
+                    $sectionUrl = $websiteDetail->getAdminUrl($url_type, $url, $sectionName) ??
+                                  $websiteDetail->getPublishedUrl($sectionName);
+
+                    $sectionStatus = $websiteDetail->getSectionStatus($sectionName);
+
+                    $this->trace->info(TraceCode::WEBSITE_SECTION_ERROR, [
+                            'Section Status' => $sectionStatus,
+                            'Section Url'    => $sectionUrl
+                    ]);
+
+                    if ($sectionStatus === 3)
+                    {
+                        $gracePeriodCheck = true;
+                    }
+
+                    if ($sectionName === Constants::CANCELLATION)
+                    {
+                        $refundSectionName = Constants::REFUND;
+
+                        $refundSectionStatus = $websiteDetail->getSectionStatus($refundSectionName);
+
+                        if ($refundSectionStatus === 3)
+                        {
+                            $gracePeriodCheck = true;
+                        }
+                        if (empty($sectionUrl) === true and $refundSectionStatus === 3)
+                        {
+                            continue;
+                        }
+                    }
 
                     if (empty($sectionUrl) === true)
                     {
-                        return false;
+                        throw new BadRequestValidationFailureException(
+                            'Please set value of ' . $sectionName . ' for '. $url_type . ' to create activation workflow');
                     }
-
                 }
+            }
+            if ($gracePeriodCheck === true)
+            {
+                $gracePeriod = $websiteDetail->getGracePeriodStatus();
 
+                $this->trace->info(TraceCode::WEBSITE_SECTION_ERROR, [
+                    'Grace Period' => $gracePeriod
+                ]);
+
+                if($gracePeriod === 0)
+                {
+                    return true;
+                }
+                elseif ($gracePeriod === 1)
+                {
+                    return true;
+                }
+                else
+                {
+                    throw new BadRequestValidationFailureException(
+                        'Please set the value for GracePeriod');
+                }
             }
         }
-        catch (\Exception $e)
+        catch (BadRequestValidationFailureException $e)
+        {
+            $this->trace->info(TraceCode::WEBSITE_SECTION_ERROR, [
+                "error" => $e->getMessage(),
+                "merchant_id" => $merchantDetails->getMerchantId()
+            ]);
+
+            throw $e;
+        }
+        catch (\Throwable $e)
         {
             $this->trace->info(TraceCode::WEBSITE_SECTION_ERROR, [
                 "error"       => $e->getMessage(),
                 "merchant_id" => $merchantDetails->getMerchantId()
             ]);
-
-            return false;
+            return true;
         }
 
         return true;
@@ -1746,7 +1806,7 @@ class Service extends Base\Service
 
         $merchantDetails = $merchant->merchantDetail;
 
-        $websiteDetail = $websiteDetail = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($merchantDetails->getMerchantId());
+        $websiteDetail = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($merchantDetails->getMerchantId());
 
         if (empty($websiteDetail) === true)
         {

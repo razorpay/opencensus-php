@@ -2846,7 +2846,18 @@ class Core extends Base\Core
 
         $merchantDetails->getValidator()->validateInput('activationStatus', $input);
 
+        $websiteDetail = $merchantDetails->merchantWebsite;
+
         $currentActivationStatus = $merchantDetails->getActivationStatus();
+
+        $this->trace->info(TraceCode::MERCHANT_UPDATE_ACTIVATION_STATUS_INTERNAL,[
+            'Activation Status' => $input[Entity::ACTIVATION_STATUS]
+        ]);
+
+        if($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED)
+        {
+            (new Merchant\Website\Service()) -> canActivateMerchant($merchantDetails, $websiteDetail);
+        }
 
         $merchantDetails->getValidator()
                         ->validateActivationStatusChange(

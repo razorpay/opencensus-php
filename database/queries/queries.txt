@@ -7099,7 +7099,6 @@ CREATE TABLE IF NOT EXISTS payment_supporting_documents (
 ALTER TABLE merchant_documents
   ADD metadata json DEFAULT NULL;
 
-
 Alter table merchants add column country_code char(2) DEFAULT ‘IN’;
 
 Alter table merchant_details
@@ -7108,4 +7107,5 @@ Alter table merchant_details
     add column industry_category_code varchar(255) DEFAULT NULL ,
     add column industry_category_code_type varchar(255) DEFAULT NULL ;
 
-
+ALTER TABLE merchant_website
+    MODIFY COLUMN grace_period tinyint(1) DEFAULT NULL ;

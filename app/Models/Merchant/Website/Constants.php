@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Website;
 
 use RZP\Models\Merchant\BusinessDetail\Constants as BConstants;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
+use RZP\Models\Merchant\OneClickCheckout\Shopify\Shipping;
 
 class Constants
 {
@@ -104,6 +105,15 @@ class Constants
                                  self::ABOUT_US . ',' .
                                  self::CANCELLATION . ',' .
                                  self::COMMENTS;
+
+    const MANDATORY_ADMIN_SECTIONS = [self::TERMS,
+                                      self::CONTACT_US,
+                                      self::REFUND,
+                                      self::PRIVACY,
+                                      self::SHIPPING,
+                                      self::PRICING,
+                                      self::CANCELLATION] ;
+
 
     // 1- I have live page with required details
     // 2- I have live page but some details are missing

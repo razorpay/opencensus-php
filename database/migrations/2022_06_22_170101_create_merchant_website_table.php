@@ -67,8 +67,8 @@ class CreateMerchantWebsiteTable extends Migration
             $table->boolean(Entity::SEND_COMMUNICATION)
                   ->default(1);
 
-            $table->boolean(Entity::GRACE_PERIOD)
-                  ->default(0);
+            $table->tinyInteger(Entity::GRACE_PERIOD)
+                  ->nullable();
         });
     }
 
