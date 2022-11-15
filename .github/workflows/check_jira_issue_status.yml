@@ -31,16 +31,6 @@ jobs:
         id: paymentsBU
         run: echo "::set-output name=flag::true"
 
-      - if: contains(github.event.pull_request.labels.*.name, 'Non-Migration')
-        name: Set flag Non-Migration
-        id: nonMigration
-        run: echo "::set-output name=flag::true"
-
-      - if: contains(github.event.pull_request.labels.*.name, 'Archival')
-        name: Set flag Archival
-        id: archival
-        run: echo "::set-output name=flag::true"
-
       - if: contains(github.event.pull_request.head.ref, 'hotfix')
         name: Set flag hotfix
         id: hotfix
@@ -69,8 +59,6 @@ jobs:
         env:
           JIRA_ISSUE_ID: ${{steps.jiraIssueId.outputs.result}}
           PAYMENTS_BU_FLAG: ${{steps.paymentsBU.outputs.flag}}
-          NON_MIGRATION_FLAG: ${{steps.nonMigration.outputs.flag}}
-          ARCHIVAL_LABEL: ${{steps.archival.outputs.flag}}
           HOTFIX_LABEL: ${{steps.hotfix.outputs.flag}}
           BUGFIX_LABEL: ${{steps.bugfix.outputs.flag}}
           BASE_URL: ${{secrets.JIRA_BASE_URL}}
