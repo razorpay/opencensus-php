@@ -758,39 +758,6 @@ return [
         ],
     ],
 
-    'testCreatePayoutInternalContactWithoutFeatureFlag' => [
-        'request'  => [
-            'method'  => 'POST',
-            'server'  => [
-                'HTTP_X-Razorpay-Account'   => '10000000000000',
-            ],
-            'url'     => '/internalContactPayout',
-            'content' => [
-                'account_number'                       => '2224440041626905',
-                'amount'                               => 100,
-                'currency'                             => 'INR',
-                'purpose'                              => 'refund',
-                'narration'                            => 'Batman',
-                'mode'                                 => 'IMPS',
-                'enable_workflow_for_internal_contact' => false,
-                'fund_account_id'                      => 'fa_100000000000fa',
-                'origin'                               => 'api',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'entity'          => 'payout',
-                'amount'          => 100,
-                'currency'        => 'INR',
-                'fund_account_id' => 'fa_100000000000fa',
-                'narration'       => 'Batman',
-                'purpose'         => 'refund',
-                'mode'            => 'IMPS',
-                'origin'          => 'api',
-            ],
-        ],
-    ],
-
     'testFetchPayoutById' => [
         'request'  => [
             'method'  => 'GET',
@@ -1699,35 +1666,6 @@ return [
         ],
     ],
 
-    'testCreatePayoutForOnHoldPayout' => [
-        'request'  => [
-            'method'  => 'POST',
-            'url'     => '/payouts',
-            'content' => [
-                'account_number'  => '2224440041626905',
-                'amount'          => 100,
-                'currency'        => 'INR',
-                'purpose'         => 'refund',
-                'narration'       => 'Batman',
-                'mode'            => 'NEFT',
-                'fund_account_id' => 'fa_100000000000fa',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'entity'          => 'payout',
-                'amount'          => 100,
-                'currency'        => 'INR',
-                'fund_account_id' => 'fa_100000000000fa',
-                'purpose'         => 'refund',
-                'status'          => 'processing',
-                'mode'            => 'NEFT',
-                'tax'             => 90,
-                'fees'            => 590,
-            ],
-        ],
-    ],
-
     'testCreateScheduledPayoutViaPayoutService' => [
         'request'  => [
             'method'  => 'POST',
@@ -1754,42 +1692,6 @@ return [
                 'mode'            => 'IMPS',
                 'tax'             => 0,
                 'fees'            => 0,
-            ],
-        ],
-    ],
-
-    'testCreateScheduledPayoutWhenScheduledPayoutFeatureIsNotEnabled' => [
-        'request'  => [
-            'method'  => 'POST',
-            'url'     => '/payouts_with_otp',
-            'content' => [
-                'account_number'  => '2224440041626905',
-                'amount'          => 2000000,
-                'currency'        => 'INR',
-                'purpose'         => 'refund',
-                'narration'       => 'Batman',
-                'mode'            => 'IMPS',
-                'fund_account_id' => 'fa_100000000000fa',
-                'notes'           => [
-                    'abc' => 'xyz',
-                ],
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'entity'          => 'payout',
-                'amount'          => 2000000,
-                'currency'        => 'INR',
-                'fund_account_id' => 'fa_100000000000fa',
-                'narration'       => 'Batman',
-                'purpose'         => 'refund',
-                'status'          => 'scheduled',
-                'mode'            => 'IMPS',
-                'tax'             => 0,
-                'fees'            => 0,
-                'notes'           => [
-                    'abc' => 'xyz',
-                ],
             ],
         ],
     ],

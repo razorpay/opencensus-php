@@ -990,23 +990,38 @@ class PayoutServiceTest extends TestCase
     }
 
     // Check payout Create Entry func on processor base
-    public function testCreatePayoutEntry($mode = 'IMPS', $migratePayoutToPS = true)
+    public function testCreatePayoutEntry($mode = 'IMPS',
+                                          $migratePayoutToPS = true,
+                                          $payoutID = 'pout_Gg7sgBZgvYjlSB',
+                                          $balanceID = '')
     {
         $this->ba->appAuthLive();
 
-        $balance = $this->getDbEntities('balance',
-            [
-                'account_number'   => '2224440041626905',
-            ], 'live')->first();
+        if (empty($balanceID) === true)
+        {
+            $balance = $this->getDbEntities('balance',
+                                            [
+                                                'account_number' => '2224440041626905',
+                                            ], 'live')->first();
 
-        $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balance->getId();
+            $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balance->getId();
+        }
+        else
+        {
+            $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balanceID;
+        }
+
+        $strippedPayoutID = $payoutID;
+        $strippedPayoutID = Entity::verifyIdAndStripSign($strippedPayoutID);
+
+        $this->testData[__FUNCTION__]['request']['content']['id'] = $strippedPayoutID;
         $this->testData[__FUNCTION__]['request']['content']['mode'] = $mode;
 
         $this->startTest();
 
         $payout = $this->getLastEntity('payout', true,'live');
 
-        $this->assertEquals($payout['id'], 'pout_Gg7sgBZgvYjlSB');
+        $this->assertEquals($payout['id'], $payoutID);
 
         if ($migratePayoutToPS === true)
         {
@@ -1016,11 +1031,11 @@ class PayoutServiceTest extends TestCase
                 Entity::BALANCE_ID            => $payout[Entity::BALANCE_ID]
             ]))->handle();
 
-            $migratedPayout = \DB::connection('test')->select("select * from ps_payouts where id = 'Gg7sgBZgvYjlSB'")[0];
+            $migratedPayout = \DB::connection('test')->select("select * from ps_payouts where id = '$strippedPayoutID'")[0];
 
             $this->assertEquals($payout[Entity::ID], 'pout_' .$migratedPayout->id);
 
-            $this->fixtures->edit('payout', 'Gg7sgBZgvYjlSB', ['id' => 'Gg7sgBZgvYjlSC']);
+            $this->fixtures->edit('payout', $strippedPayoutID, ['id' => 'Gg7sgBZgvYjlSC']);
         }
 
         return $payout;
@@ -2051,23 +2066,6 @@ class PayoutServiceTest extends TestCase
         return $payout;
     }
 
-    public function testCreatePayoutInternalContactWithoutFeatureFlag()
-    {
-
-        $this->ba->appAuthLive($this->config['applications.vendor_payments.secret']);
-
-        $this->fixtures->on('live')->edit('contact', '1000001contact', ['type' => 'rzp_tax_pay']);
-
-        $this->startTest();
-
-        $payout = $this->getDbLastEntity('payout', 'live');
-
-
-        $this->assertEquals($payout['merchant_id'], '10000000000000');
-        $this->assertEquals($payout['fees'], 590);
-        $this->assertEquals($payout['is_payout_service'], 0);
-    }
-
     public function testCreatePayoutInternalContact()
     {
         $metadata = [
@@ -2077,8 +2075,6 @@ class PayoutServiceTest extends TestCase
         ];
 
         $this->mockPayoutServiceCreate(false, $metadata);
-
-        $this->fixtures->merchant->addFeatures([Feature\Constants::INTERNAL_CONTACT_VIA_PS]);
 
         $this->testCreatePayoutEntry('IMPS');
 
@@ -2107,8 +2103,6 @@ class PayoutServiceTest extends TestCase
         ];
 
         $this->mockPayoutServiceCreate(false, $metadata);
-
-        $this->fixtures->merchant->addFeatures([Feature\Constants::INTERNAL_CONTACT_VIA_PS]);
 
         $this->testCreatePayoutEntry('IMPS');
 
@@ -2150,7 +2144,6 @@ class PayoutServiceTest extends TestCase
         $this->mockPayoutServiceCreate(false, $metadata);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::WORKFLOW_VIA_PAYOUTS_MS]);
-        $this->fixtures->merchant->addFeatures([Feature\Constants::INTERNAL_CONTACT_VIA_PS]);
 
         $this->testCreatePayoutEntry('IMPS');
 
@@ -2485,57 +2478,6 @@ class PayoutServiceTest extends TestCase
         return $payout;
     }
 
-    // Since PAYOUTS_ON_HOLD feature is enabled for the merchant, the payout won't go via payouts service and would
-    // directly go to processing state.
-    public function testCreatePayoutForOnHoldPayout()
-    {
-        $this->fixtures->on('live')->create('feature', [
-            'name'        => Feature\Constants::PAYOUTS_ON_HOLD,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
-
-        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
-
-        $this->startTest();
-
-        $payout = $this->getDbLastEntity('payout', 'live');
-
-        // Payout should not have gone via payouts service
-        $this->assertEquals(false, $payout->getIsPayoutService());
-
-        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true, 'live');
-
-        // On private auth, payout.user_id should be null
-        $this->assertNull($payout['user_id']);
-
-        // Verify attempt entity
-        $this->assertEquals($payout->getPublicId(), $payoutAttempt['source']);
-        $this->assertEquals($payout->getMerchantId(), $payoutAttempt['merchant_id']);
-        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
-        $this->assertEquals($payout['channel'], 'icici');
-
-        // Verify transaction entity
-        $txn = $this->getDbLastEntity('transaction',  'live');
-        $txnId = str_after($txn['id'], 'txn_');
-
-        $this->assertEquals($payout['transaction_id'], $txn['id']);
-        $this->assertNotNull($txn['balance_id']);
-        $this->assertNotNull($txn['posted_at']);
-
-        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true, 'live');
-
-        $expectedBreakup = [
-            'name'            => "payout",
-            'transaction_id'  => $txnId,
-            'pricing_rule_id' => "Bbg7cl6t6I3XA5",
-            'percentage'      => null,
-            'amount'          => 500,
-        ];
-
-        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
-    }
-
     public function testCreatePayoutWithIdempotencyKey()
     {
         $request['headers'][RequestHeader::X_PAYOUT_IDEMPOTENCY] =
@@ -2608,29 +2550,6 @@ class PayoutServiceTest extends TestCase
             'entity_type' => 'merchant',
         ]);
 
-        $this->mockRazorxTreatment(
-            'yesbank',
-            'off',
-            'off',
-            'off',
-            'off',
-            'on',
-            'on',
-            'off',
-            'on',
-            'on',
-            'off',
-            'on',
-            'on',
-            'off',
-            'control',
-            'on',
-            'on',
-            'control',
-            'off',
-            'on'
-        );
-
         $metadata = [
             'status' => 'queued',
             'tax'    => 0,
@@ -2685,12 +2604,6 @@ class PayoutServiceTest extends TestCase
 
     public function testCreateScheduledPayoutViaPayoutService()
     {
-        $this->fixtures->on('live')->create('feature', [
-            'name'        => Feature\Constants::SCHEDULE_PAYOUT_VIA_PS,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
-
         $scheduledAtTime = Carbon::now(Timezone::IST)->hour(9)->addMonths(2)->getTimestamp();
         $scheduledAtStartOfHour = Carbon::createFromTimestamp($scheduledAtTime, Timezone::IST)->startOfHour()->getTimestamp();
 
@@ -2755,40 +2668,13 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals('scheduled', $payout->getStatus());
     }
 
-    public function testCreateScheduledPayoutWhenScheduledPayoutFeatureIsNotEnabled()
+    public function testCreateQueuedPayoutViaPayoutService(
+        string $balanceId = '',
+        string $payoutID = 'pout_Gg7sgBZgvYjlSB')
     {
-        $scheduledAtTime = Carbon::now(Timezone::IST)->hour(9)->addMonths(2)->getTimestamp();
-        $scheduledAtStartOfHour = Carbon::createFromTimestamp($scheduledAtTime, Timezone::IST)->startOfHour()->getTimestamp();
+        $strippedPayoutID = $payoutID;
+        $strippedPayoutID = Entity::verifyIdAndStripSign($strippedPayoutID);
 
-        $testData = $this->testData['testCreateScheduledPayoutWhenScheduledPayoutFeatureIsNotEnabled'];
-
-        $testData['request']['url']              = '/payouts_with_otp';
-        $testData['request']['content']['otp']   = '0007';
-        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
-
-        $testData['request']['content']['scheduled_at'] = $scheduledAtTime;
-
-        $this->testData[__FUNCTION__] = $testData;
-
-        $currentTime = Carbon::now(Timezone::IST);
-
-        Carbon::setTestNow($currentTime);
-
-        $this->ba->proxyAuthLive();
-
-        $this->startTest();
-
-        $payout = $this->getDbLastEntity('payout', 'live');
-
-        $this->assertEquals(false, $payout->getIsPayoutService());
-
-        $this->assertEquals('scheduled', $payout->getStatus());
-
-    }
-
-    // Since payout has queue_if_low_balance flag set to true, it won't go via payouts service
-    public function testCreateQueuedPayoutViaPayoutService(string $balanceId = '')
-    {
         if (empty($balanceId) === true)
         {
             $balanceId = $this->bankingBalance->getId();
@@ -2803,149 +2689,13 @@ class PayoutServiceTest extends TestCase
         );
 
         $balance = $this->getDbEntityById('balance', $balanceId, "live");
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $testData['request']['content']['account_number'] = $balance->getAccountNumber();
-
-        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
-
-        $this->startTest();
-
-        $payout = $this->getDbLastEntity('payout', 'live');
-
-        // Payout should not have gone via payouts service
-        $this->assertEquals(false, $payout->getIsPayoutService());
-
-        // On private auth, payout.user_id should be null
-        $this->assertNull($payout['user_id']);
-
-        // Payout should be in queued state
-        $this->assertEquals('queued', $payout->getStatus());
-    }
-
-    // Payout request has queue_if_low_balance flag set to true, workflow and on hold enabled for merchant, it won't go via payouts service
-    public function testCreateQueuedPayoutViaAPIWhenWorkflowAndOnHoldEnabledForMerchant(string $balanceId = '')
-    {
-        if (empty($balanceId) === true)
-        {
-            $balanceId = $this->bankingBalance->getId();
-        }
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balanceId,
-            [
-                'balance' => 100
-            ]
-        );
-
-        $balance = $this->getDbEntityById('balance', $balanceId, "live");
-
-        $this->fixtures->merchant->addFeatures([Constants::PAYOUT_WORKFLOWS]);
-
-        $this->fixtures->on('live')->create('feature', [
-            'name'        => Feature\Constants::PAYOUTS_ON_HOLD,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
-
-        $this->fixtures->on('live')->create('feature', [
-            'name'        => Feature\Constants::WORKFLOW_VIA_PAYOUTS_MS,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
-
-        $this->mockRazorxTreatment(
-            'yesbank',
-            'off',
-            'off',
-            'off',
-            'off',
-            'on',
-            'on',
-            'off',
-            'on',
-            'on',
-            'off',
-            'on',
-            'on',
-            'off',
-            'control',
-            'on',
-            'on',
-            'control',
-            'off',
-            'on'
-        );
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $testData['request']['content']['account_number'] = $balance->getAccountNumber();
-
-        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
-
-        $this->startTest();
-
-        $payout = $this->getDbLastEntity('payout', 'live');
-
-        // Payout should not have gone via payouts service
-        $this->assertEquals(false, $payout->getIsPayoutService());
-
-        // On private auth, payout.user_id should be null
-        $this->assertNull($payout['user_id']);
-
-        // Payout should be in queued state
-        $this->assertEquals('queued', $payout->getStatus());
-    }
-
-    // Since payout has queue_if_low_balance flag set to true, it won't go via payouts service
-    public function testCreateQueuedPayoutViaPayoutServiceWhenQueuedPayoutViaServiceEnabledForMerchant(
-        string $balanceId = '')
-    {
-        if (empty($balanceId) === true)
-        {
-            $balanceId = $this->bankingBalance->getId();
-        }
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balanceId,
-            [
-                'balance' => 100
-            ]
-        );
-
-        $this->mockRazorxTreatment(
-            'yesbank',
-            'off',
-            'off',
-            'off',
-            'off',
-            'on',
-            'on',
-            'off',
-            'on',
-            'on',
-            'off',
-            'on',
-            'on',
-            'off',
-            'control',
-            'on',
-            'on',
-            'on'//Just use this as on, rest everything as default.
-        );
-
-        $balance = $this->getDbEntityById('balance', $balanceId, "live");
-
-        $this->testData[__FUNCTION__] = $this->testData['testCreateQueuedPayoutViaPayoutService'];
 
         $testData = & $this->testData[__FUNCTION__];
 
         $testData['request']['content']['account_number'] = $balance->getAccountNumber();
 
         $metadata = [
+            'id'              => $payoutID,
             'amount'          => 500,
             'purpose'         => 'refund',
             'status'          => 'queued',
@@ -2957,7 +2707,7 @@ class PayoutServiceTest extends TestCase
         $this->mockPayoutServiceCreate(false, $metadata);
 
         // Doing this because we fetch payout from the db before returning response from api.
-        $this->testCreatePayoutEntry('NEFT', false);
+        $this->testCreatePayoutEntry('NEFT', false, $payoutID, $balanceId);
 
         $payout = $this->getDbLastEntity('payout','live');
 
@@ -2976,11 +2726,9 @@ class PayoutServiceTest extends TestCase
             Entity::BALANCE_ID            => $payout[Entity::BALANCE_ID]
         ]))->handle();
 
-        $migratedPayout = \DB::connection('test')->select("select * from ps_payouts where id = 'Gg7sgBZgvYjlSB'")[0];
+        $migratedPayout = \DB::connection('test')->select("select * from ps_payouts where id = '$strippedPayoutID'")[0];
 
         $this->assertEquals($payout[Entity::ID], $migratedPayout->id);
-
-        $this->fixtures->edit('payout', 'Gg7sgBZgvYjlSB', ['id' => 'Gg7sgBZgvYjlSC']);
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
@@ -3157,7 +2905,7 @@ class PayoutServiceTest extends TestCase
 
         $this->mockPayoutServiceQueuedInitiate($request);
 
-        $this->testCreateQueuedPayoutViaPayoutService();
+        $this->testCreateQueuedPayoutViaPayoutService($balanceId, 'pout_Gg7sgBZgvYjAAA');
 
         $payout1 = $this->getDbLastEntity('payout', 'live');
 
@@ -3170,48 +2918,11 @@ class PayoutServiceTest extends TestCase
             ]
         );
 
-        $this->testCreateQueuedPayoutViaPayoutService();
-
-        $payout2 = $this->getDbLastEntity('payout', 'live');
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balanceId,
-            [
-                'balance' => 1000000
-            ]
-        );
-
-        $secondBankingBalance = $this->createSecondBankingBalance();
-
-        $balanceId2 = $secondBankingBalance['id'];
-
-        $this->fixtures->on('live')->create(
-            'counter',
-            [
-                'balance_id' => $balanceId2,
-                'account_type' => $secondBankingBalance->getAccountType(),
-            ]
-        );
-
-        $this->testCreateQueuedPayoutViaPayoutService($balanceId2);
-
-        $payout3 = $this->getDbLastEntity('payout', 'live');
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balanceId2,
-            [
-                'balance' => 1000000
-            ]
-        );
-
         $response = $this->dispatchQueuedPayouts('live');
 
         $expectedResponse = [
             'balance_id_list' => [
                 $balanceId,
-                $balanceId2
             ]
         ];
 
@@ -3220,16 +2931,6 @@ class PayoutServiceTest extends TestCase
         $payout1->reload();
 
         $this->assertEquals('queued', $payout1->getStatus());
-
-        $payout2->reload();
-
-        // This payout should go to processing state as it is not created via payout service.
-        $this->assertEquals('created', $payout2->getStatus());
-
-        $payout3->reload();
-
-        // This payout should go to processing state as it is not created via payout service.
-        $this->assertEquals('created', $payout3->getStatus());
     }
 
     // Since queued payout has is_payout_service value set to 1, it won't be processed via api. Here we check that even
@@ -3245,7 +2946,7 @@ class PayoutServiceTest extends TestCase
 
         $this->mockPayoutServiceQueuedInitiate($request);
 
-        $this->testCreateQueuedPayoutViaPayoutService();
+        $this->testCreateQueuedPayoutViaPayoutService($balanceId, 'pout_Gg7sgBZgvYjAAA');
 
         $payout1 = $this->getDbLastEntity('payout', 'live');
 
@@ -3258,48 +2959,11 @@ class PayoutServiceTest extends TestCase
             ]
         );
 
-        $this->testCreateQueuedPayoutViaPayoutService();
-
-        $payout2 = $this->getDbLastEntity('payout', 'live');
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balanceId,
-            [
-                'balance' => 1000000
-            ]
-        );
-
-        $secondBankingBalance = $this->createSecondBankingBalance();
-
-        $balanceId2 = $secondBankingBalance['id'];
-
-        $this->fixtures->on('live')->create(
-            'counter',
-            [
-                'balance_id' => $balanceId2,
-                'account_type' => $secondBankingBalance->getAccountType(),
-            ]
-        );
-
-        $this->testCreateQueuedPayoutViaPayoutService($balanceId2);
-
-        $payout3 = $this->getDbLastEntity('payout', 'live');
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balanceId2,
-            [
-                'balance' => 1000000
-            ]
-        );
-
         $response = $this->dispatchQueuedPayouts('live');
 
         $expectedResponse = [
             'balance_id_list' => [
                 $balanceId,
-                $balanceId2
             ]
         ];
 
@@ -3308,16 +2972,6 @@ class PayoutServiceTest extends TestCase
         $payout1->reload();
 
         $this->assertEquals('queued', $payout1->getStatus());
-
-        $payout2->reload();
-
-        // This payout should go to processing state as it is not created via payout service.
-        $this->assertEquals('created', $payout2->getStatus());
-
-        $payout3->reload();
-
-        // This payout should go to processing state as it is not created via payout service.
-        $this->assertEquals('created', $payout3->getStatus());
     }
 
     public function createSecondBankingBalance()
@@ -5120,8 +4774,6 @@ class PayoutServiceTest extends TestCase
 
     public function testGetScheduleTimeSlotsForDashboard()
     {
-        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::SCHEDULE_PAYOUT_VIA_PS]);
-
         $this->mockPayoutServiceDashboardScheduleTimeSlots();
 
         $testData = $this->testData['testGetScheduleTimeSlotsForDashboard'];

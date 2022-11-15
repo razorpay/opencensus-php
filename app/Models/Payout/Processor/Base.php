@@ -3785,7 +3785,7 @@ class Base extends BaseCore
      *
      * @return bool
      */
-    protected function isPayoutServiceIfApplicable(array $input) : bool
+    protected function isPayoutServiceIfApplicable() : bool
     {
         if ($this->mode == Mode::LIVE)
         {
@@ -3793,21 +3793,6 @@ class Base extends BaseCore
 
             if ($this->isPayoutServiceEnabled === true)
             {
-                //Scheduled payout
-                $schedulePayoutViaPSEnabled = $this->merchant->isFeatureEnabled(Feature::SCHEDULE_PAYOUT_VIA_PS);
-                if ((isset($input[Payout\Entity::SCHEDULED_AT]) === true) and
-                    (empty($input[Payout\Entity::SCHEDULED_AT]) === false) and $schedulePayoutViaPSEnabled === false)
-                {
-                    return false;
-                }
-
-                // internal payout contact check for payout service
-                $internalPayoutServiceEnabled = $this->merchant->isFeatureEnabled(Feature::INTERNAL_CONTACT_VIA_PS);
-                if ($this->isInternal === true and $internalPayoutServiceEnabled === false)
-                {
-                    return false;
-                }
-
                 // workflow payout skip
                 if ($this->isWorkflowEnabled === true)
                 {
@@ -3815,10 +3800,20 @@ class Base extends BaseCore
 
                     if ($isEnabled === false)
                     {
+                        $this->trace->info(TraceCode::PAYOUT_SERVICE_NOT_APPLICABLE_FOR_PS_ENABLED_MERCHANT,
+                                           [
+                                               'workflow_via_payouts_ms' => false,
+                                           ]);
+
                         return false;
                     }
 
                     if ((new Payout\Service())->isPayoutLinkApp() === true) {
+                        $this->trace->info(TraceCode::PAYOUT_SERVICE_NOT_APPLICABLE_FOR_PS_ENABLED_MERCHANT,
+                                           [
+                                               'is_payout_link_app' => true,
+                                           ]);
+
                         return false;
                     }
                 }
@@ -3830,50 +3825,12 @@ class Base extends BaseCore
                     if((empty($this->workflowFeature) == false) &&
                         (!in_array($this->workflowFeature, Payout\WorkflowFeature::SUPPORTED_FEATURES_ON_PAYOUT_SERVICE, true) === true))
                     {
+                        $this->trace->info(TraceCode::PAYOUT_SERVICE_NOT_APPLICABLE_FOR_PS_ENABLED_MERCHANT,
+                                           [
+                                               'workflow_feature' => $this->workflowFeature,
+                                           ]);
+
                         return false;
-                    }
-                }
-
-                // batch payout check
-                if (empty($this->batchId) === false)
-                {
-                    return false;
-                }
-
-                // skip payout creation via payout service if on_hold payouts via
-                // service are not enabled for the merchant.
-                if ($this->merchant->isFeatureEnabled(Features::PAYOUTS_ON_HOLD) === true)
-                {
-                    $variant = $this->app->razorx->getTreatment(
-                        $this->merchant->getId(),
-                        RazorxTreatment::ENABLE_ON_HOLD_PAYOUTS_VIA_PAYOUTS_SERVICE,
-                        $this->mode,
-                        Payout\Entity::RAZORX_RETRY_COUNT
-                    );
-
-                    if (strtolower($variant) !== 'on')
-                    {
-                        return false;
-                    }
-                }
-
-                // skip payout creation via payout service if queue_if_low_balance flag is true and queued payouts via
-                // service are not enabled for the merchant.
-                if (empty($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === false)
-                {
-                    if (boolval($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === true)
-                    {
-                        $variant = $this->app->razorx->getTreatment(
-                            $this->merchant->getId(),
-                            RazorxTreatment::ENABLE_QUEUED_PAYOUTS_VIA_PAYOUTS_SERVICE,
-                            $this->mode,
-                            Payout\Entity::RAZORX_RETRY_COUNT
-                        );
-
-                        if (strtolower($variant) !== 'on')
-                        {
-                            return false;
-                        }
                     }
                 }
 
@@ -3884,6 +3841,12 @@ class Base extends BaseCore
                 if (empty($partnerMerchantId) === false and
                     empty($applicationId) === false)
                 {
+                    $this->trace->info(TraceCode::PAYOUT_SERVICE_NOT_APPLICABLE_FOR_PS_ENABLED_MERCHANT,
+                                       [
+                                           'partner_merchant_id' => $partnerMerchantId,
+                                           'application_id'      => $applicationId
+                                       ]);
+
                     return false;
                 }
 
@@ -3908,7 +3871,7 @@ class Base extends BaseCore
      */
     protected function createPayoutViaMicroservice(array $input)
     {
-        if ($this->isPayoutServiceIfApplicable($input) === true)
+        if ($this->isPayoutServiceIfApplicable() === true)
         {
             $input[Balance\Entity::ACCOUNT_NUMBER] = $this->balance->getAccountNumber();
 

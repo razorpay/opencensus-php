@@ -2082,7 +2082,7 @@ class Service extends Base\Service
 
     public function getScheduleSlotsForPayouts()
     {
-        if ($this->merchant->isFeatureEnabled(FeatureConstant::SCHEDULE_PAYOUT_VIA_PS))
+        if ($this->merchant->isFeatureEnabled(FeatureConstant::PAYOUT_SERVICE_ENABLED))
         {
             return $this->core->getScheduleTimeSlotsViaPayoutService();
         }
