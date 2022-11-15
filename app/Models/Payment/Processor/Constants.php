@@ -101,7 +101,7 @@ class Constants
     const PAYMENT_AMOUNT_GREATER_THAN_AMOUNT_DUE    = 'Payment amount is greater than amount due.';
     const CAPTURE_SETTINGS_AUTOMATIC                = 'Capture settings is automatic.';
     const CAPTURE_SETTINGS_MANUAL                   = 'Capture settings is manual.';
-    const ORDER_PAYMENT_CAPTURE_FALSE               = 'Order payment capture flag is false.';
+    const ORDER_PAYMENT_CAPTURE_NOT_TRUE            = 'Order payment capture flag is not true.';
     const AUTO_REFUND_DELAY_EXCEEDED                = 'Auto Refund delay exceeded for this payment.';
     const PAYMENT_PASSED_ALL_CHECKS_FOR_CAPTURE     = 'Payment passed all checks for auto capture.';
     const MERCHANT_AUTO_CAPTURE_LATE_AUTH_TRUE      = 'Merchant has auto capture late auth enabled.';

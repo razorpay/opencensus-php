@@ -6163,7 +6163,7 @@ class Processor
         {
             $response['should_auto_capture'] = false;
 
-            $response['reason'] = Constants::ORDER_PAYMENT_CAPTURE_FALSE;
+            $response['reason'] = Constants::ORDER_PAYMENT_CAPTURE_NOT_TRUE;
 
             return $response;
         }
