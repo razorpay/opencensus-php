@@ -76,7 +76,6 @@ export function getChartData(data, aggregation, duration, filteredStatusCodeList
 
       labelToDataMap[label] = updatedDataForLabel;
     });
-
     const labels = Object.keys(labelToDataMap);
 
     Object.values(labelToDataMap).forEach((statData) => {
@@ -283,7 +282,7 @@ function getTimestampsWithGapFilled(currTimestamp, prevTimestamp, aggregation) {
     numPointsGap = Math.floor(numPointsGap / 15);
     addValue = 15;
   }
-  while (numPointsGap > 1) {
+  while (numPointsGap > 0) {
     timestamp = moment(timestamp).add(addValue, momentDurationMap[aggregation]).toDate().getTime();
     timestamps.push(timestamp);
     numPointsGap--;

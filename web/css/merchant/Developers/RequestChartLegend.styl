@@ -1,9 +1,8 @@
 $black = #252939
 $yellow = #F9B154
-$blue = #5bc0de
+$blue = #5BC0DE
 $green = #01B358
 $red = #F54A2A
-$purple = #9F3DFB
 $disabled = #DFDFDF
 
 .status-legend-container
@@ -20,6 +19,45 @@ $disabled = #DFDFDF
       .rzp-legend-item-inner
         border: none
 
+    .status-checkbox
+      width: 15px
+      height: 15px
+      border-radius: 3px
+      margin-right: 5px
+      display: flex
+      align-items: center
+      justify-content: center
+      flex-shrink: 0
+
+      &__black
+        border: 1px solid $black
+
+      &__yellow
+        border: 1px solid $yellow
+
+      &__blue
+        border: 1px solid $blue
+
+      &__green
+        border: 1px solid $green
+
+      &__red
+        border: 1px solid $red
+
+      &__disabled
+        border: 1px solid $disabled
+
+    .status-checkbox::after
+      position: absolute
+      bottom: 10px
+      width: 5px
+      height: 10px
+      border: solid #FFF
+      border-width: 0 2px 2px 0
+      content: ""
+      color: #FFF
+      transform: rotate(45deg)
+
     label
       display inline-flex
       align-items: center
@@ -27,57 +65,28 @@ $disabled = #DFDFDF
       padding-left: 4px
       padding-right: 10px
 
-      input[type=checkbox]
-        display none
+    input[type="checkbox"]
+      display none
 
-        &:checked + .status-checkbox
-          &__black
-            background: $black
-          &__yellow
-            background: $yellow
-          &__blue
-            background: $blue
-          &__green
-            background: $green
-          &__red
-            background: $red
-          &__other
-            background: $purple
-          &__disabled
-            background: $disabled
-            cursor: not-allowed
-
-        &:checked + .status-checkbox::after
-          display block
-
-      .status-checkbox
-        width: 15px
-        height: 15px
-        border-radius: 3px
-        margin-right: 5px
-        display: flex
-        align-items: center
-        justify-content: center
-        flex-shrink: 0
-
+      &:checked + .status-checkbox
         &__black
-          border: 1px solid $black
-        &__yellow
-          border: 1px solid $yellow
-        &__blue
-          border: 1px solid $blue
-        &__green
-          border: 1px solid $green
-        &__red
-          border: 1px solid $red
-        &__other
-          border: 1px solid $purple
-        &__disabled
-          border: 1px solid $disabled
+          background: $black
 
-        &:after
-          content: "\f00c"
-          font-family: "FontAwesome"
-          font-size: 10px
-          font-weight: lighter
-          color: #ffffff
+        &__yellow
+          background: $yellow
+
+        &__blue
+          background: $blue
+
+        &__green
+          background: $green
+
+        &__red
+          background: $red
+
+        &__disabled
+          background: $disabled
+          cursor: not-allowed
+
+      &:checked + .status-checkbox::after
+        display block

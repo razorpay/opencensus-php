@@ -83,7 +83,10 @@ const Api = () => {
   };
 
   const isOutsideRange = (day) => {
-    return day.isAfter(moment()) || day.isBefore(moment().subtract(14, 'days'));
+    return (
+      day.isAfter(moment().endOf('day')) ||
+      day.isBefore(moment().startOf('day').subtract(14, 'days').startOf('day'))
+    );
   };
 
   return (
