@@ -22,7 +22,6 @@ import {
   metricsCard,
   tabsTitleMap,
   SR_FILTERS,
-  OVERALL,
   CARD,
   NETBANKING,
 } from 'merchant/views/Transactions/SuccessRate/constants';
@@ -85,7 +84,7 @@ export const fetchSuccessRate = ({
     // Fetch downtimes for hourly intervals and for razorpay merchants.
     if (
       newSelectedInterval === 'hourly' &&
-      [CARD, NETBANKING, OVERALL].includes(activeTab) &&
+      [CARD, NETBANKING].includes(activeTab) &&
       !refreshMetricTabs &&
       !user?.isOptimizerEnabled
     ) {
@@ -100,12 +99,8 @@ export const fetchSuccessRate = ({
         skip: '0',
         startDate,
         endDate,
+        method: activeTab.toLowerCase(),
       };
-
-      // Dont require method param when calling donwntime api for overall active tab
-      if (activeTab !== OVERALL) {
-        data.method = activeTab.toLowerCase();
-      }
 
       promises.push(getResolvedDowntimes(data), getOngoingDowntimes());
     }

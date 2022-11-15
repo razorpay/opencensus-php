@@ -126,9 +126,15 @@ export const getChartAreaConfig = ({ breakdown, xLabel, yLabel }) => {
       cornerRadius: 4,
       callbacks: {
         title: ([tooltipItem], { datasets }) => {
-          const datapoint = datasets[tooltipItem?.datasetIndex]?.data?.[tooltipItem?.index];
+          const { type } = datasets?.[tooltipItem?.datasetIndex] || {};
+          const { from, to } =
+            datasets?.[tooltipItem?.datasetIndex]?.data?.[tooltipItem?.index] || {};
 
-          return formatIntervals(datapoint.from, datapoint.to);
+          const intervals = formatIntervals({ from, to });
+
+          if (type === SCATTER) return `${intervals} | Downtimes`;
+
+          return intervals;
         },
         afterTitle: ([tooltipItem], { datasets }) => {
           if (breakdown !== 'hourly') return null;

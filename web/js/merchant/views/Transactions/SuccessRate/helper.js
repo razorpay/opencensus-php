@@ -26,7 +26,6 @@ import {
   SR_X,
   DOWNTIME_X,
   DOWNTIME_Y,
-  OVERALL,
   CARD,
   CARD_NETWORKS,
   PAYMENT_METHOD_VS_CALLOUT_DISPLAY_TEXT,
@@ -191,12 +190,8 @@ export const generateDowntimeDataSets = ({
   return intervals
     ?.filter((interval) => {
       // Default end date to present date when downtime is still going on
-      const { instrument, begin, end, method } = interval;
+      const { instrument, begin, end } = interval;
       const isInbetweenTime = begin >= startTime && (end || Date.now() / 1000) <= newEndTime;
-
-      if (activeTab === OVERALL) {
-        return tag.code === method && isInbetweenTime;
-      }
 
       if (activeTab === NETBANKING && instrument[groupBy]) {
         return tag.code === instrument[groupBy] && isInbetweenTime;
@@ -663,7 +658,7 @@ export function timestampHumanize(timestamp) {
  * @returns '01 Oct 2022 - 30 Nov 2022' if it is lies on different months
  */
 
-export const formatIntervals = (from, to) => {
+export const formatIntervals = ({ from, to }) => {
   const isSameDay = moment(from).isSame(to, 'day');
   const isSameMonth = moment(from).isSame(to, 'month');
   if (isSameDay) {
