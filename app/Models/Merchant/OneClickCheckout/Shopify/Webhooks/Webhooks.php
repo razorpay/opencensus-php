@@ -72,6 +72,10 @@ class Webhooks extends Base\Core
         {
             $this->storeCartInCache($data);
         }
+        elseif ($headers['x-shopify-topic'][0] == 'app/uninstalled')
+        {
+            $this->createMetricsForMagicAppUninstall($data);
+        }
         elseif ($headers['x-shopify-topic'][0] == 'fulfillments/update')
         {
             $this->processFulfillmentUpdateEvent($data);
@@ -421,7 +425,7 @@ class Webhooks extends Base\Core
         return $this->repo->payment->find($paymentId);
     }
 
-    protected function processFulfillmentUpdateEvent(array $data)
+protected function processFulfillmentUpdateEvent(array $data)
     {
         $rawContents = $data['raw_contents'];
         $headers = $data['headers'];
@@ -490,5 +494,55 @@ class Webhooks extends Base\Core
                 'provider_type'     => $data['tracking_company']
             ]
         ];
+    }
+
+    private function createMetricsForMagicAppUninstall(array $data)
+    {
+        $rawContents = $data['raw_contents'];
+
+        $headers = $data['headers'];
+
+        $shopId = $this->utils->stripAndReturnShopId($headers['x-shopify-shop-domain'][0]);
+
+        $configs = $this->getMerchantConfigs($shopId);
+
+        if (empty($configs) === true)
+        {
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_UNINSTALL_EVENT_VALIDATION_FAILED,
+                [
+                    'type'  => 'configs_not_found',
+                ]);
+            return;
+        }
+
+        $signature = $headers['x-shopify-hmac-sha256'][0];
+
+        $isSignatureValid = $this->validator->isSignatureValid($rawContents, $signature, $configs['api_secret']);
+
+        if ($isSignatureValid === false)
+        {
+            return;
+        }
+
+        try {
+            $this->monitoring->addTraceCount(TraceCode::MAGIC_CHECKOUT_DISABLED, ["error_type" => "app uninstalled by merchant"]);
+
+            $this->trace->info(
+                TraceCode::MAGIC_CHECKOUT_DISABLED,
+                [
+                    'type'     => 'app uninstalled by merchant',
+                    'shop'     => $shopId
+                ]);
+        } catch (\Throwable $e) {
+            $this->trace->error(
+                TraceCode::MAGIC_CHECKOUT_DISABLED,
+                [
+                    'type'    => 'app uninstalled by merchant',
+                    'message' => $e->getMessage()
+                ]);
+
+            return;
+        }
     }
 }
