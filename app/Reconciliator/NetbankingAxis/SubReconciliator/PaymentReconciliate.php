@@ -2,6 +2,7 @@
 
 namespace RZP\Reconciliator\NetbankingAxis\SubReconciliator;
 
+use RZP\Models\Payment;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Payment\Status;
@@ -35,6 +36,12 @@ class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceReco
         $bankPaymentIdInDB = null;
 
         $bankPaymentIdInDB = $this->gatewayPayment->getBankPaymentId();
+
+        if(($this->payment->getCpsRoute() === Payment\Entity::NB_PLUS_SERVICE) or
+            ($this->payment->getCpsRoute() === Payment\Entity::NB_PLUS_SERVICE_PAYMENTS))
+        {
+            $bankPaymentIdInDB = $this->payment->getReference16();
+        }
 
         // Duplicate entry, fail the row
         if($bankPaymentIdInDB !== null && $bankPaymentIdInDB !== $bankPaymentId)
