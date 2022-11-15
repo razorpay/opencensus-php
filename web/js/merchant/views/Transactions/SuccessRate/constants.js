@@ -30,10 +30,48 @@ export const PRESETS = [
 ];
 
 export const DEFAULT_METHOD = {
-  Overall: ['card', 'upi', 'netbanking'],
-  UPI: ['upi'],
-  Card: ['card'],
-  Netbanking: ['netbanking'],
+  Overall: [
+    {
+      method: 'card',
+      optimizerEnabled: true,
+    },
+    {
+      method: 'upi',
+      optimizerEnabled: true,
+    },
+    {
+      method: 'netbanking',
+      optimizerEnabled: true,
+    },
+    {
+      method: 'emandate',
+      optimizerEnabled: false,
+    },
+  ],
+  UPI: [
+    {
+      method: 'upi',
+      optimizerEnabled: true,
+    },
+  ],
+  Card: [
+    {
+      method: 'card',
+      optimizerEnabled: true,
+    },
+  ],
+  Netbanking: [
+    {
+      method: 'netbanking',
+      optimizerEnabled: true,
+    },
+  ],
+  Emandate: [
+    {
+      method: 'emandate',
+      optimizerEnabled: false,
+    },
+  ],
 };
 
 export const DEFAULT_GROUP_BY = {
@@ -41,12 +79,14 @@ export const DEFAULT_GROUP_BY = {
   UPI: 'upi_type',
   Card: 'network',
   Netbanking: 'bank',
+  Emandate: 'bank',
 };
 
 export const TAG_MAP = {
   upi: 'UPI',
   card: 'Cards',
   netbanking: 'Netbanking',
+  emandate: 'Emandate',
   collect: 'Collect',
   intent: 'Intent',
   credit: 'Credit',
@@ -68,13 +108,35 @@ export const TAG_OVERALL_MAP = {
 
 /**************************************** Graph Widget Variables ****************************************/
 
-export const tabsOrder = ['Overall', 'UPI', 'Card', 'Netbanking'];
+export const tabsOrder = [
+  {
+    tab: 'Overall',
+    optimizerEnabled: true,
+  },
+  {
+    tab: 'UPI',
+    optimizerEnabled: true,
+  },
+  {
+    tab: 'Card',
+    optimizerEnabled: true,
+  },
+  {
+    tab: 'Netbanking',
+    optimizerEnabled: true,
+  },
+  {
+    tab: 'Emandate',
+    optimizerEnabled: false,
+  },
+];
 
 export const tabsTitleMap = {
   Overall: 'All payment methods',
   UPI: 'UPI',
   Card: 'Cards',
   Netbanking: 'Netbanking',
+  Emandate: 'Emandate',
 };
 
 export const METHOD_HELP_TEXT =

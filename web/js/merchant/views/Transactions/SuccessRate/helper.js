@@ -115,6 +115,7 @@ export const queryFilters = (updateDropdownOptions, refreshMetricTabs = false) =
   } = tabs[activeTab];
 
   let _group_by = [group_by];
+  let filterMethods = method.map(({ method }) => method);
 
   if (updateDropdownOptions) {
     if (isOptimizerEnabled) {
@@ -124,6 +125,15 @@ export const queryFilters = (updateDropdownOptions, refreshMetricTabs = false) =
     }
   }
 
+  if (isOptimizerEnabled && activeTab === 'Overall') {
+    filterMethods = method.reduce((methods, { optimizerEnabled, method }) => {
+      if (optimizerEnabled) {
+        methods.push(method);
+      }
+      return methods;
+    }, []);
+  }
+
   const payload = {
     entity: 'payments',
     from: startDate.unix(),
@@ -131,7 +141,7 @@ export const queryFilters = (updateDropdownOptions, refreshMetricTabs = false) =
     interval: breakdownInterval[selectedInterval] || selectedInterval,
     mode,
     filters: {
-      method,
+      method: filterMethods,
       ...(updateDropdownOptions
         ? {}
         : getSelectedFilters({
@@ -413,7 +423,7 @@ export const getMetricsData = ({ metrics, data, payload, breakdown, group_by }) 
   const metricsClone = cloneDeep(metrics);
   const groups = data.groups?.[group_by] || [];
 
-  tabsOrder.forEach((tabName, tabIdx) => {
+  tabsOrder.forEach(({ tab: tabName }, tabIdx) => {
     const groupIdx = groups.findIndex((group) => group.name === tabName.toLocaleLowerCase());
 
     const args = {
@@ -484,13 +494,24 @@ export const getMerchantErrorsPayload = (updateDropdownOptions) => {
   const { method, selectedDropdownFilterOptions, selectedCardType } = tabs[activeTab];
   const { startDate, endDate } = filters;
 
+  let filterMethods = method.map(({ method }) => method);
+
+  if (isOptimizerEnabled && activeTab === 'Overall') {
+    filterMethods = method.reduce((methods, { optimizerEnabled, method }) => {
+      if (optimizerEnabled) {
+        methods.push(method);
+      }
+      return methods;
+    }, []);
+  }
+
   const payload = {
     entity: 'payments',
     from: startDate.unix(),
     to: endDate.unix(),
     mode: 'razorpay',
     filters: {
-      method,
+      method: filterMethods,
       ...(updateDropdownOptions
         ? {}
         : getSelectedFilters({
@@ -586,6 +607,20 @@ export function reArrange({ arr = [], sortKey = '' }) {
 
   return res;
 }
+
+export const getTabsPane = (metrics = {}) => {
+  let tabs = Object.values(metrics);
+  if (!tabs.length) return [];
+  const user = getUser();
+  const isOptimizerEnabled = user?.isOptimizerEnabled;
+  tabs = Object.values(metrics).filter(({ optimizerEnabled }) => {
+    if (isOptimizerEnabled) {
+      return optimizerEnabled;
+    }
+    return true;
+  });
+  return tabs;
+};
 
 export const validateDateRange = (dateRange) => {
   const { startDate, endDate } = dateRange;

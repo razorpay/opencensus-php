@@ -315,17 +315,19 @@ const getInitialState = () => {
     merchantErrors: {},
   };
 
-  tabsOrder.forEach((tabName) => {
+  tabsOrder.forEach(({ tab: tabName, optimizerEnabled }) => {
     state.metrics[tabName] = {
       ...metricsCard,
       name: tabName,
       title: tabsTitleMap[tabName],
+      optimizerEnabled,
     };
     state.tabs[tabName] = {
       ...tabMeta,
       name: tabName,
       method: DEFAULT_METHOD[tabName],
       group_by: DEFAULT_GROUP_BY[tabName],
+      optimizerEnabled,
     };
   });
 

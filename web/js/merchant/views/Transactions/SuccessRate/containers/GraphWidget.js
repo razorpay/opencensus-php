@@ -24,6 +24,7 @@ import {
   queryFilters,
   getMerchantErrorsPayload,
   getBreakdownInterval,
+  getTabsPane,
 } from 'merchant/views/Transactions/SuccessRate/helper';
 import {
   methodTabClick,
@@ -54,7 +55,7 @@ const GraphWidget = (props) => {
     filters,
   } = successRate;
 
-  const tabPane = Object.values(metrics);
+  const tabPane = getTabsPane(metrics);
   const [isSRDashboardFirstTime, setIsSRDashboardFirstTime] = useLocalStorage(
     `isSRDashboardFirstTime_${user?.current}`,
     true,
