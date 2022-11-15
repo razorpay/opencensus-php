@@ -2063,6 +2063,8 @@ class Core extends Base\Core
 
             $res["plugin_type"] = isset($pluginData[$additionalWebsite]) ?  WhatCmsService::getIndexFromKey($pluginData[$additionalWebsite]) : 0;
 
+            $res["plugin_name"] = $pluginData[$additionalWebsite] ?? null;
+
             array_push($additionalWebsitesData, $res);
         }
 
