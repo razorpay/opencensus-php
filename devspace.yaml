@@ -40,7 +40,7 @@ dev:
           name: ${APP_NAME}-${DEVSTACK_LABEL}
 vars:
   - name: DEVSTACK_LABEL
-    value: "prince"
+    value: "dcs"
   - name: NAMESPACE
     value: "api"
   - name: APP_NAME

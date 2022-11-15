@@ -6,6 +6,8 @@ use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
+use Illuminate\Support\Collection;
+use RZP\Services\Dcs\Service;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\QueryCache\CacheQueries;
@@ -25,15 +27,27 @@ class Repository extends Base\Repository
 
     public function fetchByEntityTypeAndEntityId(string $entityType, string $entityId, string $mode = null)
     {
+        $res = collect();
         $cacheTtl = $this->getCacheTtl();
         $cacheTags = Entity::getCacheTagsForEntities($entityType, $entityId);
 
         $query = ($mode === null) ? $this->newQuery() : $this->newQueryWithConnection($mode);
-        return $query->where(Entity::ENTITY_TYPE, $entityType)
-                    ->where(Entity::ENTITY_ID, $entityId)
-                    ->remember($cacheTtl)
-                    ->cacheTags($cacheTags)
-                    ->get();
+
+        $dcs = $this->app['dcs'];
+
+        if ($dcs->isDcsEnabled(__FUNCTION__))
+        {
+            $response = $dcs->fetchByEntityIdAndEntityType($entityType, $entityId, ($mode === null) ? $this->app['rzp.mode']: $mode);
+            $res = collect($response);
+        }
+
+        $apiResponse = $query->where(Entity::ENTITY_TYPE, $entityType)
+            ->where(Entity::ENTITY_ID, $entityId)
+            ->remember($cacheTtl)
+            ->cacheTags($cacheTags)
+            ->get();
+
+        return $res->merge($apiResponse)->unique('name', true);
     }
 
     public function findByEntityTypeEntityIdAndNameOrFail(string $entityType, string $entityId, string $featureName)
@@ -191,6 +205,13 @@ class Repository extends Base\Repository
         {
             $feature->getValidator()->validateFeatureIsNotAlreadyAssigned($assignedFeatureNames);
 
+            $dcs = $this->app['dcs'];
+            if (($dcs->isDcsEnabled($feature->getName()) === true) &&
+                (Service::isDcsFeature($feature->getName()) === true))
+            {
+                $dcs->assignFeature($feature, $this->app['rzp.mode']);
+            }
+
             $this->repo->saveOrFail($feature);
         }
     }
@@ -203,6 +224,13 @@ class Repository extends Base\Repository
         }
         else
         {
+            $dcs = $this->app['dcs'];
+            if (($dcs->isDcsEnabled($feature->getName()) === true) &&
+                (Service::isDcsFeature($feature->getName()) === true))
+            {
+                $dcs->removeFeature($feature, $this->app['rzp.mode']);
+            }
+
             $this->deleteOrFail($feature);
         }
     }
@@ -242,17 +270,35 @@ class Repository extends Base\Repository
             $featureName = $entity->getName();
             $entityId    = $entity->getEntityId();
 
-            $testEntity = $this->findByEntityIdAndNameOnConnection($entityId, $featureName, Mode::TEST);
-            $liveEntity = $this->findByEntityIdAndNameOnConnection($entityId, $featureName, Mode::LIVE);
+            try {
+                // new DCS features update
+                $dcs = $this->app['dcs'];
+                if (($dcs->isDcsEnabled($entity->getName()) === true) &&
+                    (Service::isDcsFeature($entity->getName()) === true))
+                {
+                    $dcs->assignFeature($entity, Mode::TEST);
+                    $dcs->assignFeature($entity, Mode::LIVE);
+                }
 
-            if ($testEntity === null)
-            {
-                $this->cloneAndSaveToModeOrFail($entity, Mode::TEST);
-            }
+                $testEntity = $this->findByEntityIdAndNameOnConnection($entityId, $featureName, Mode::TEST);
+                $liveEntity = $this->findByEntityIdAndNameOnConnection($entityId, $featureName, Mode::LIVE);
 
-            if ($liveEntity === null)
-            {
-                $this->cloneAndSaveToModeOrFail($entity, Mode::LIVE);
+                if ($testEntity === null) {
+                    $this->cloneAndSaveToModeOrFail($entity, Mode::TEST);
+                }
+
+                if ($liveEntity === null) {
+                    $this->cloneAndSaveToModeOrFail($entity, Mode::LIVE);
+                }
+            } catch (\Exception $e) {
+                // new DCS features update
+                $dcs = $this->app['dcs'];
+                if (($dcs->isDcsEnabled($entity->getName()) === true) &&
+                    (Service::isDcsFeature($entity->getName()) === true))
+                {
+                    $dcs->removeFeature($entity, Mode::TEST);
+                    $dcs->removeFeature($entity, Mode::LIVE);
+                }
             }
         });
     }
@@ -265,26 +311,41 @@ class Repository extends Base\Repository
      */
     protected function deleteAndSyncOrFail(Entity $entity)
     {
-        $this->repo->transactionOnLiveAndTest(function () use ($entity)
-        {
+        $this->repo->transactionOnLiveAndTest(function () use ($entity) {
             $featureName = $entity->getName();
-            $entityId    = $entity->getEntityId();
+            $entityId = $entity->getEntityId();
+            try {
+                $dcs = $this->app['dcs'];
+                if (($dcs->isDcsEnabled($entity->getName()) === true) &&
+                    (Service::isDcsFeature($entity->getName()) === true))
+                {
+                    $dcs->removeFeature($entity, Mode::TEST);
+                    $dcs->removeFeature($entity, Mode::LIVE);
+                }
 
-            $testEntity = $this->findByEntityIdAndNameOnConnection($entityId, $featureName, Mode::TEST);
-            $liveEntity = $this->findByEntityIdAndNameOnConnection($entityId, $featureName, Mode::LIVE);
+                $testEntity = $this->findByEntityIdAndNameOnConnection($entityId, $featureName, Mode::TEST);
+                $liveEntity = $this->findByEntityIdAndNameOnConnection($entityId, $featureName, Mode::LIVE);
 
-            if ($testEntity !== null)
-            {
-                $testEntity->deleteOrFail();
+                if ($testEntity !== null) {
+                    $testEntity->deleteOrFail();
 
-                $this->syncToEs($entity, EsRepository::DELETE, null, Mode::TEST);
-            }
+                    $this->syncToEs($entity, EsRepository::DELETE, null, Mode::TEST);
+                }
 
-            if ($liveEntity !== null)
-            {
-                $liveEntity->deleteOrFail();
+                if ($liveEntity !== null) {
+                    $liveEntity->deleteOrFail();
 
-                $this->syncToEs($entity, EsRepository::DELETE, null, Mode::LIVE);
+                    $this->syncToEs($entity, EsRepository::DELETE, null, Mode::LIVE);
+                }
+            } catch (\Exception $e) {
+                $dcs = $this->app['dcs'];
+                // revert DCS features updates if exception occurs
+                if (($dcs->isDcsEnabled($entity->getName()) === true) &&
+                    (Service::isDcsFeature($entity->getName()) === true))
+                {
+                    $dcs->assignFeature($entity, Mode::TEST);
+                    $dcs->assignFeature($entity, Mode::LIVE);
+                }
             }
         });
     }

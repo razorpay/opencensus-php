@@ -85,6 +85,8 @@
         "p3k/emoji-detector": "^0.3.1",
         "jakeasmith/http_build_url": "^1",
         "ext-curl": "*",
+        "razorpay/dcs-php-sdk": "^1.0",
+        "razorpay/config-proto": "^1.2",
         "mvanduijker/laravel-transactional-model-events": "^2.3"
     },
     "repositories": [
@@ -112,6 +114,16 @@
             "type": "vcs",
             "no-api": true,
             "url": "git@github.com:razorpay/ufh-sdk-php.git"
+        },
+        {
+            "type": "vcs",
+            "no-api": true,
+            "url": "git@github.com:razorpay/dcs-php-sdk.git"
+        },
+        {
+            "type": "vcs",
+            "no-api": true,
+            "url": "git@github.com:razorpay/config-proto.git"
         },
         {
             "type": "vcs",

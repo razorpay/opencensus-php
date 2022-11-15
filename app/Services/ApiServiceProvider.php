@@ -84,6 +84,7 @@ use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Gateway\File as GatewayFile;
 use RZP\Models\PaymentLink\PaymentPageItem;
 use RZP\Services\Beam\Service as BeamService;
+use RZP\Services\Dcs\Service as DcsService;
 use RZP\Models\Base\DbMigrationMetricsObserver;
 use RZP\Base\Database\Connectors\MySqlConnector;
 use RZP\Models\Base\EntityInstrumentationObserver;
@@ -498,6 +499,18 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             return new BeamService($app);
         });
 
+        $this->app->singleton('dcs', function($app)
+        {
+            $dcsServiceMock = $app['config']->get('applications.dcs.mock');
+
+            if ($dcsServiceMock === true)
+            {
+                return new Mock\DcsServiceClient();
+            }
+
+            return new DcsService($app);
+        });
+
         $this->app->singleton('module', function($app)
         {
             return new RZP\Modules\Manager($app);
@@ -862,6 +875,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             'developer_console',
             Acs\SyncEventManager::SINGLETON_NAME,
             'outbox',
+            'dcs',
             'splitzService',
             'bbpsService',
             'smartcollect',

@@ -1093,6 +1093,36 @@ return [
         ],
     ],
 
+    'dcs' => [
+        'mock'      => env('DCS_MOCK', false),
+        'live'       => [
+            "url"       => env('DCS_LIVE_URL'),
+            'username'  => env('DCS_AUTH_API_USERNAME_LIVE'),
+            'password'  => env('DCS_AUTH_API_PASSWORD_LIVE'),
+        ],
+        'test'       => [
+            "url"       => env('DCS_TEST_URL'),
+            'username'  => env('DCS_AUTH_API_USERNAME_TEST'),
+            'password'  => env('DCS_AUTH_API_PASSWORD_TEST'),
+        ],
+    ],
+
+    'dcs_service_integrations' => [
+        'mock'      => env('DCS_EXTERNAL_MOCK', false),
+        'checkout-affordability-api' => [
+            'live'       => [
+                'url'       => env('CHECKOUT_AFFORDABILITY_API_LIVE_URL'),
+                'username'  => env('CHECKOUT_AFFORDABILITY_API_USERNAME_LIVE'),
+                'password'  => env('AFFORDABILITY_PASSWORD_LIVE'),
+            ],
+            'test'       => [
+                "url"       => env('CHECKOUT_AFFORDABILITY_API_TEST_URL'),
+                'username'  => env('CHECKOUT_AFFORDABILITY_API_USERNAME_TEST'),
+                'password'  => env('CHECKOUT_AFFORDABILITY_API_PASSWORD_TEST'),
+            ],
+        ]
+    ],
+
     'automation' => [
         'secret' => env('AUTOMATION_API_SECRET'),
     ],

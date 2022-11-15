@@ -165,6 +165,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const UTM_PARAMS                                            = 'UTM_PARAMS';
     const RZP_UTM                                               = 'RZP_UTM';
+    // DCS Traces
+    const DCS_ASSIGN_REQUEST_RECEIVED                           = 'DCS_ASSIGN_REQUEST_RECEIVED';
+    const DCS_REMOVE_REQUEST_RECEIVED                           = 'DCS_REMOVE_REQUEST_RECEIVED';
+    const DCS_FETCH_REQUEST_RECEIVED                            = 'DCS_FETCH_REQUEST_RECEIVED';
+    const SERVER_ERROR_DCS_SERVICE_FAILURE                      = "SERVER_ERROR_DCS_SERVICE_FAILURE";
+    const DCS_SERVICE_RETRY                                     = 'DCS_SERVICE_RETRY';
+    const DCS_RAZORX_EXPERIMENT                                 = 'DCS_RAZORX_EXPERIMENT';
+
     // payout links
     const PAYOUT_LINK_GET_MODE_AND_MERCHANT                     = "PAYOUT_LINK_GET_MODE_AND_MERCHANT";
     const PAYOUT_LINK_APPROVE_WORKFLOW                          = "PAYOUT_LINK_APPROVE_WORKFLOW";

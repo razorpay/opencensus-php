@@ -660,4 +660,10 @@ final class RazorxTreatment
 
     const PP_MAGIC_SETTING = 'pp_magic_setting';
 
+
+    //Experiment used to control whether requests route to DCS or NOT
+    const DCS_ENABLED = 'dcs_enabled';
+
+    //Experiment used to control whether requests route to DCS or NOT
+    const DCS_ENABLED_NEW_USECASE = 'dcs_new_usecases_enabled';
 }

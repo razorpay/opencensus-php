@@ -2235,6 +2235,9 @@ class Constants
         self::ENABLE_3DS2                     => true,
         self::CYBERSOURCE_SI_TXN_TEST         => true,
         self::SPR_DISABLE_METHOD_RESET        => true,
+        \RZP\Services\Dcs\Constants::RefundEnabled => true,  // Example Feature for DCS
+        \RZP\Services\Dcs\Constants::DisableAutoRefund => true,  // Example Feature for DCS
+        \RZP\Services\Dcs\Constants::EligibilityEnabled => true  // Example Feature for DCS
     ];
 
     // Entity type constants
@@ -3099,6 +3102,21 @@ class Constants
             'documentation' => '',
         ],
 
+        \RZP\Services\Dcs\Constants::RefundEnabled => [
+            'feature'       => \RZP\Services\Dcs\Constants::RefundEnabled,
+            'display_name'  => 'Feature to enable Refunds api flow',
+            'documentation' => '',
+        ],
+        \RZP\Services\Dcs\Constants::DisableAutoRefund => [
+            'feature'       => \RZP\Services\Dcs\Constants::DisableAutoRefund,
+            'display_name'  => 'Feature to disable Auto Refunds',
+            'documentation' => '',
+        ],
+        \RZP\Services\Dcs\Constants::EligibilityEnabled => [
+            'feature'       => \RZP\Services\Dcs\Constants::EligibilityEnabled,
+            'display_name'  => 'Feature to enable Eligibility api flow',
+            'documentation' => '',
+        ],
     ];
 
     /**

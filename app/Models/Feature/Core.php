@@ -154,7 +154,7 @@ class Core extends Base\Core
             return $this->repo->feature->fetchByEntityTypeAndEntityId($entityType, $entityId, $mode);
         });
 
-        $assignedFeatureNames = $existingFeatures->pluck(Entity::NAME)->toArray();
+        $assignedFeatureNames = array_unique($existingFeatures->pluck(Entity::NAME)->toArray());
 
         $this->trace->info(
             TraceCode::MERCHANT_FEATURE_EDIT_REQUEST,
