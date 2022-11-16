@@ -30,7 +30,11 @@ class Constant
     // Route Level Timeout
     const SYNC_DEVIATION_ROUTE_HTTP_TIMEOUT_SEC = 'sync_deviation_route_http_timeout_sec';
     const DOCUMENT_DELETE_ROUTE_HTTP_TIMEOUT_SEC = 'document_delete_route_http_timeout_sec';
+    const ACCOUNT_CONTACT_DELETE_ROUTE_HTTP_TIMEOUT_SEC = 'account_contact_delete_route_http_timeout_sec';
 
     // Account Document Api Routes
     const ACCOUNT_DOCUMENT_DELETE_ROUTE = 'twirp/rzp.accounts.account.v1.DocumentAPI/Delete';
+
+    //Account Api Routes
+    const ACCOUNT_CONTACT_DELETE_ROUTE = 'twirp/rzp.accounts.account.v1.AccountAPI/DeleteAccountContact';
 }

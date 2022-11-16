@@ -15,7 +15,7 @@ class AccountDocumentAsvClient extends BaseClient
     private $AccountDocumentAsvClient;
 
     /**
-     * SyncAccountDeviationAsvClient Constructor
+     * AccountDocumentAsvClient Constructor
      */
     function __construct(accountDocumentV1\DocumentAPIClient $accountDocumenAsvClient = null)
     {

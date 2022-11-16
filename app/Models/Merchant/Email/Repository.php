@@ -3,7 +3,9 @@
 namespace RZP\Models\Merchant\Email;
 
 use RZP\Models\Base;
+use RZP\Modules\Acs\Wrapper\MerchantEmail;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
+use RZP\Models\Merchant\Email\Entity as MerchantEmailEntity;
 
 class Repository extends Base\Repository
 {
@@ -21,6 +23,23 @@ class Repository extends Base\Repository
         Entity::EMAIL       => 'sometimes|string|email',
         Entity::MERCHANT_ID => 'sometimes|string|unsigned_id',
     ];
+
+    /**
+     * __delete -  Keeping the method name not same with base repository method, this to be renamed  and used in merchant email core while ramp-up
+     * @param MerchantEmailEntity $entity
+     * @throws \Throwable
+     */
+    public function __delete(MerchantEmailEntity $entity)
+    {
+        $this->repo->transactionOnLiveAndTest(function () use ($entity) {
+            $this->repo->delete($entity);
+
+            $merchantEmailWrapper = new MerchantEmail();
+            if ($merchantEmailWrapper->isWriteShadowOn($entity->getMerchantId())) {
+                $merchantEmailWrapper->Delete($entity);
+            }
+        });
+    }
 
     /**
      * This function does not check for verification status and
