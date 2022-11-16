@@ -15,7 +15,7 @@ import Amount from 'common/ui/Amount';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { OfferStatusLabel } from 'merchant/components/StatusLabel';
 
-import { PAYMENT_NETWORK_MAP, OFFER_TYPE_LABELS, ISSUERS } from '../constants';
+import { PAYMENT_NETWORK_MAP, OFFER_TYPE_LABELS, ISSUERS } from 'merchant/views/Offers/constants';
 import SubscriptionUsageDetails from './SubscriptionUsageDetails';
 import { emiDurationString } from 'merchant/views/Offers/New/helpers';
 
@@ -55,10 +55,64 @@ export default class OffersDetails extends React.Component {
     return null;
   }
 
+  close = () => {
+    this.context.confirm({
+      forceClose: true,
+    });
+  };
+
+  showBajajDisableAlert = () => {
+    const message = (
+      <div className="text-semi-muted">
+        <p>
+          Bajaj is a No Cost EMI, disabling this offer would lead to disabling this method. Please
+          reach out to our support team, if you would like to disable this method
+        </p>
+        <div className="confirm-container">
+          <button
+            type="button"
+            className="btn btn-primary btn-expanded"
+            onClick={() => {
+              this.close();
+            }}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+    this.context.confirm({
+      header: 'Disable Offer',
+      message,
+      affirmativeLabel: 'No',
+      hideActions: true,
+    });
+  };
+
   toggleActivation = () => {
-    const { offer, tracking, fetchOffer, updateOfferInReduxList, showNotification } = this.props;
+    const {
+      offer,
+      tracking,
+      fetchOffer,
+      updateOfferInReduxList,
+      showNotification,
+      user,
+    } = this.props;
     const { id, active, current_offer_usage } = offer;
     const actionName = active ? 'Disable' : 'Enable';
+
+    if (active && offer.payment_network === 'BAJAJ') {
+      // Track disable offer click for Bajaj
+      tracking.trackEvent(
+        window.rzpQ.merchantActions().clicked('bajaj_offer_disable', {
+          clicked_on: 'disable',
+          merchant_id: user.merchant.id,
+          offer_id: id,
+        }),
+      );
+      this.showBajajDisableAlert();
+      return;
+    }
 
     // analytics
     tracking.trackEvent(
@@ -182,6 +236,10 @@ export default class OffersDetails extends React.Component {
       }
     }
 
+    const isBajajNcEmiOffer = payment_network === 'BAJAJ';
+
+    const disabledButtonClass = isBajajNcEmiOffer ? `link-disabled` : '';
+
     return (
       <div className="Offers--Details content-wrapper content-sm txn-details">
         {loading ? (
@@ -215,7 +273,7 @@ export default class OffersDetails extends React.Component {
                   <EntityDetailRow label="Status">
                     <OfferStatusLabel status={active ? 'enabled' : 'disabled'} />
                     <Button.Transparent
-                      class="Button--Link"
+                      class={`Button--Link ${disabledButtonClass}`}
                       style={{ marginLeft: 12 }}
                       onClick={this.toggleActivation}
                     >

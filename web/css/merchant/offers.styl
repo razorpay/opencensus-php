@@ -1,206 +1,236 @@
 .dual-column-table
-    display: grid;
-    //TODO replace with the standard samller size for the application
-    font-size: 0.9em;
+  display: grid;
+  // TODO replace with the standard samller size for the application
+  font-size: 0.9em;
 
-    >span
-        padding-top: 10px;
+  >span
+    padding-top: 10px;
 
-    >span:first-child
-        font-weight: bold;
-        text-align: right;
-        padding-right: 15px;
-        text-transform: capitalize;
+  >span:first-child
+    font-weight: bold;
+    text-align: right;
+    padding-right: 15px;
+    text-transform: capitalize;
 
 .no-cost-emi-footnote
-    font-family: Lato;
-    font-style: normal;
-    font-weight: normal;
-    font-size: 13px;
-    line-height: 18px;
-    color: #828282;
-    margin-left: 130px;
+  /* stylelint-disable */
+  font-family: Lato;
+  /* stylelint-enable */
+  font-style: normal;
+  font-weight: normal;
+  font-size: 13px;
+  line-height: 18px;
+  color: #828282;
+  margin-left: 130px;
+
+.Input-label
+  white-space: normal
 
 .offers-duration-container
-    .offers-datetime
-        .Input-label
-            top:0px !important;
+  .offers-datetime
+    .Input-label
+      /* stylelint-disable */
+      top: 0 !important;
+      /* stylelint-enable */
 
 .horizontally-stacked-checkbox
-    align-items: center;
-    flex-wrap: wrap;
+  align-items: center;
+  flex-wrap: wrap;
 
-    >div
-        display: grid;
-        grid-template-columns: 25px 100%;
+  >div
+    display: grid;
+    grid-template-columns: 25px 100%;
 
-    >label
-        font-weight: bold;
-        position:relative;
-        width: 100%;
+  >label
+    font-weight: bold;
+    position: relative;
+    width: 100%;
 
-        &::after
-            content: '*';
-            font-size: 12px;
-            position: absolute;
-            margin-left: 1px;
-            top: 0;
-            color: #f05050;
+    &::after
+      content: "*";
+      font-size: 12px;
+      position: absolute;
+      margin-left: 1px;
+      top: 0;
+      color: #F05050;
 
 .announcement-sidebar
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
-    border: 1px solid #F2F6F9;
-    border-left: 2px solid #3d55e3;
-    border-radius: 2px;
-    padding: 20px;
-    margin: 20px 0;
-    overflow: hidden;
-    &:before 
-        position: absolute;
-        content: '';
-        left: 0;
-        top: 0;
-        height: 100%;
-        width: 70%;
-        border-right: 43px solid transparent;
-        border-bottom: 135px solid #f2f6f9;
-    .wrapper
-        z-index: 1;
-        h2 
-         color: #162F56;
-         font-size: 18px;
-         margin: 0;
-        p
-          color: #162F56;
-          opacity: 0.7;
-          padding-top: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  border: 1px solid #F2F6F9;
+  border-left: 2px solid #3D55E3;
+  border-radius: 2px;
+  padding: 20px;
+  margin: 20px 0;
+  overflow: hidden;
+
+  &::before
+    position: absolute;
+    content: "";
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 70%;
+    border-right: 43px solid transparent;
+    border-bottom: 135px solid #F2F6F9;
+
+  .wrapper
+    z-index: 1;
+
+    h2
+      color: #162F56;
+      font-size: 18px;
+      margin: 0;
+
+    p
+      color: #162F56;
+      opacity: 0.7;
+      padding-top: 5px;
 
 .settlement-announcement
-    margin-right: 5px;
-    position: relative;
-    top: 2px;
+  margin-right: 5px;
+  position: relative;
+  top: 2px;
 
 .btn-border
-    border: 1px solid #528ff0 !important;
+  /* stylelint-disable */
+  border: 1px solid #528FF0 !important;
+  /* stylelint-enable */
+
+.confirm-container
+  margin-top: 8px;
+
+.btn-expanded
+  width: 100%;
+
+.Button.link-disabled
+  color: #AAA;
+
+.Button--transparent.link-disabled:not(:disabled):hover
+  color: #AAA;
+
+.Button--transparent.link-disabled:not(:disabled).Button--Link:focus
+  color: #AAA;
 
 .disable-offer-alert
-    line-height: 17px
+  line-height: 17px
 
-    .heading
-        font-weight bold
-        margin-bottom 12px
+  .heading
+    font-weight bold
+    margin-bottom 12px
 
-    div
-        margin-bottom 16px
+  div
+    margin-bottom 16px
 
 .Offers--Details
-    .download-report
-        margin-bottom 20px
-        .rzp-banner-text
-            display flex
-            align-items: center
-            justify-content: space-around
-        .Button
-            margin-left: 20px
-            min-width: 150px
+  .download-report
+    margin-bottom 20px
 
-    .subscription-details
-        border: 1px solid #EAEFF0
-        padding 16px 20px
-        display: flex
-        align-items: center
-        text-align: center
-        margin: 0 20px
-        justify-content: space-between
+    .rzp-banner-text
+      display flex
+      align-items: center
+      justify-content: space-around
 
-        .divider
-            width: 2px
-            background #EAEFF0
-            height: 37px
+    .Button
+      margin-left: 20px
+      min-width: 150px
 
-        .hading
-            font-size: 13px
-            color: #515978
+  .subscription-details
+    border: 1px solid #EAEFF0
+    padding 16px 20px
+    display: flex
+    align-items: center
+    text-align: center
+    margin: 0 20px
+    justify-content: space-between
 
-        .count
-            font-size: 18px
-            color: #58666E
-            font-weight: bold
-            span
-                font-weight: bold
+    .divider
+      width: 2px
+      background #EAEFF0
+      height: 37px
 
-        .error
-            color: #C5752B
-            width: 100%
+    .hading
+      font-size: 13px
+      color: #515978
+
+    .count
+      font-size: 18px
+      color: #58666E
+      font-weight: bold
+
+      span
+        font-weight: bold
+
+    .error
+      color: #C5752B
+      width: 100%
 
 .Modal-mask.Modal-mask.Modal-mask--Offers--TypeSelection
-    background: rgba(22, 47, 86, 0.74)
+  background: rgb(22 47 86 / 0.74)
 
 .Offers--TypeSelection
-    text-align: center
+  text-align: center
 
-    .heading
-        font-size: 24px
-        font-weight: bold
+  .heading
+    font-size: 24px
+    font-weight: bold
 
 .Offers--Create
-    > div:nth-child(2)
-        filter: blur(4px)
+  > div:nth-child(2)
+    filter: blur(4px)
 
-    .StandAloneContainer .TemplateCard-list
-        width: auto
+  .StandAloneContainer .TemplateCard-list
+    width: auto
 
-    .emi-options
-        border-width: 1px
-        border-color: #e2e2e2
-        border-style: solid
-        margin-top: 10px
-        margin-bottom: 10px
-        margin-left: 156px
-        max-height: 200px
-        overflow: scroll
-        position relative
+  .emi-options
+    border-width: 1px
+    border-color: #E2E2E2
+    border-style: solid
+    margin-top: 10px
+    margin-bottom: 10px
+    margin-left: 156px
+    max-height: 200px
+    overflow: scroll
+    position relative
 
-        > div:nth-of-type(even)
-            background: #FFFFFF
+    > div:nth-of-type(even)
+      background: #FFF
 
-    .emi-option.heading
-        padding: 13px
-        font-weight: bold
-        position absolute
-        width: 100%
-        background: #fafafa
-        z-index: 1
+  .emi-option.heading
+    padding: 13px
+    font-weight: bold
+    position absolute
+    width: 100%
+    background: #FAFAFA
+    z-index: 1
 
-    .emi-option
-        display: flex
-        flex-direction: row
-        justify-content:flex-start
-        align-items: center
-        padding-left: 15px
-        z-index: 0
+  .emi-option
+    display: flex
+    flex-direction: row
+    justify-content: flex-start
+    align-items: center
+    padding-left: 15px
+    z-index: 0
 
-        &:nth-child(2)
-            margin-top 46px
+    &:nth-child(2)
+      margin-top 46px
 
-        .emi-check-field
-            width: 110px
+    .emi-check-field
+      width: 110px
 
-        .Input-content
-            margin-left: 0px !important
+    .Input-content
+      /* stylelint-disable */
+      margin-left: 0 !important
+      /* stylelint-enable */
 
-    .Input-label
-        white-space: normal
+  .offers-api-note
+    margin-left: 156px
+    color: #838383
+    font-size: 13px
 
-    .offers-api-note
-        margin-left: 156px
-        color: #838383
-        font-size: 13px
-
-        .btn
-            padding: 0
-            margin-left: 4px
-            line-height: 1
+    .btn
+      padding: 0
+      margin-left: 4px
+      line-height: 1
