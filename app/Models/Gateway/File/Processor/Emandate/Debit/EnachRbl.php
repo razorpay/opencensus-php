@@ -92,6 +92,7 @@ class EnachRbl extends Base
                 TraceCode::NACH_DEBIT_FILE_GENERATED,
                 [
                     'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
                 ]);
 
             $this->fileGenerationProcessAsync($this->gatewayFile->getId(), "GEN_RBL");
@@ -105,6 +106,8 @@ class EnachRbl extends Base
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [
                     'id' => $this->gatewayFile->getId(),
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
                 ],
                 $e);
         }

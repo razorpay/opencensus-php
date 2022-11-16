@@ -117,6 +117,13 @@ class CombinedNachIcici extends Debit\Base
 
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
 
+            $this->trace->info(
+                TraceCode::NACH_DEBIT_FILE_GENERATED,
+                [
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
+                ]);
+
             $this->fileGenerationProcessAsync($this->gatewayFile->getId(), "GEN_ICICI");
 
         }
@@ -126,6 +133,8 @@ class CombinedNachIcici extends Debit\Base
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [
                     'id' => $this->gatewayFile->getId(),
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
                 ],
                 $e);
         }
@@ -227,6 +236,7 @@ class CombinedNachIcici extends Debit\Base
                     'beam_response' => $beamResponse,
                     'gateway_file'  => $this->gatewayFile->getId(),
                     'target'        => 'combined_nach_icici',
+                    'type'   => $this->gatewayFile->getType()
                 ]
             );
         }
@@ -443,6 +453,8 @@ class CombinedNachIcici extends Debit\Base
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [
                     'id' => $this->gatewayFile->getId(),
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
                 ]);
         }
 
@@ -457,6 +469,8 @@ class CombinedNachIcici extends Debit\Base
                 'count'           => count($paymentIds),
                 'begin'           => $begin,
                 'end'             => $end,
+                'target' => $this->gatewayFile->getTarget(),
+                'type'   => $this->gatewayFile->getType()
             ]);
 
         return $tokens;
@@ -509,6 +523,8 @@ class CombinedNachIcici extends Debit\Base
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_DATA,
                 [
                     'id' => $this->gatewayFile->getId(),
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
                 ],
                 $e);
         }

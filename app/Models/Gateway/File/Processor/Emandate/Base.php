@@ -7,6 +7,7 @@ use Storage;
 use ZipArchive;
 use Carbon\Carbon;
 
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
@@ -62,6 +63,13 @@ abstract class Base extends Processor\Base
 
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
 
+            $this->trace->info(
+                TraceCode::EMANDATE_FILE_GENERATED,
+                [
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
+                ]);
+
             $this->fileGenerationProcessAsync($this->gatewayFile->getId(), "OTHER_BANKS");
         }
         catch (\Throwable $e)
@@ -70,6 +78,8 @@ abstract class Base extends Processor\Base
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [
                     'id' => $this->gatewayFile->getId(),
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
                 ],
                 $e);
         }
@@ -97,7 +107,9 @@ abstract class Base extends Processor\Base
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,
                 [
-                    'id' => $this->gatewayFile->getId()
+                    'id' => $this->gatewayFile->getId(),
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
                 ],
                 $e);
         }

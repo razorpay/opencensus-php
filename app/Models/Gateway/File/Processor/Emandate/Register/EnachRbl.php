@@ -75,6 +75,8 @@ class EnachRbl extends Base
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [
                     'id' => $this->gatewayFile->getId(),
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
                 ]);
         }
 
@@ -87,6 +89,8 @@ class EnachRbl extends Base
                 'entity_ids'      => $paymentIds,
                 'begin'           => $begin,
                 'end'             => $end,
+                'target' => $this->gatewayFile->getTarget(),
+                'type'   => $this->gatewayFile->getType()
             ]);
 
         return $payments;
@@ -140,6 +144,13 @@ class EnachRbl extends Base
 
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
 
+            $this->trace->info(
+                TraceCode::EMANDATE_REGISTER_FILE_GENERATED,
+                [
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
+                ]);
+
             unlink($zipFilePath); // nosemgrep : php.lang.security.unlink-use.unlink-use
         }
         catch (\Throwable $e)
@@ -150,6 +161,8 @@ class EnachRbl extends Base
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [
                     'id' => $this->gatewayFile->getId(),
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
                 ]);
         }
     }

@@ -159,6 +159,7 @@ class Sbi extends Base
                 TraceCode::NACH_DEBIT_FILE_GENERATED,
                 [
                     'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
                 ]);
 
             $this->fileGenerationProcessAsync($this->gatewayFile->getId(), "GEN_SBI");

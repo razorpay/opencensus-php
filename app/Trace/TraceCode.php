@@ -1174,6 +1174,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EMANDATE_REGISTER_REQUEST                             = 'EMANDATE_REGISTER_REQUEST';
     const EMANDATE_REGISTER_REQUEST_ROW                         = 'EMANDATE_REGISTER_REQUEST_ROW';
     const EMANDATE_REGISTER_RESPONSE_ERROR                      = 'EMANDATE_REGISTER_RESPONSE_ERROR';
+    const EMANDATE_REGISTER_FILE_GENERATED                      = 'EMANDATE_REGISTER_FILE_GENERATED';
+    const EMANDATE_FILE_GENERATED                               = 'EMANDATE_FILE_GENERATED';
+
+
 
     const EMANDATE_RECON_FORCE_AUTH_RESPONSE                    = 'EMANDATE_RECON_FORCE_AUTH_RESPONSE';
     const NACH_MANUAL_SUBMIT_FAILED                             = 'NACH_MANUAL_SUBMIT_FAILED';
@@ -1185,6 +1189,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NACH_DEBIT_RESPONSE_ERROR                             = 'NACH_DEBIT_RESPONSE_ERROR';
     const NACH_FUNCTION_NOT_IMPLEMENTED                         = 'NACH_FUNCTION_NOT_IMPLEMENTED';
     const NACH_DEBIT_FILE_GENERATED                             = 'NACH_DEBIT_FILE_GENERATED';
+    const NACH_REGISTER_FILE_GENERATED                          = 'NACH_REGISTER_FILE_GENERATED';
     const NACH_DEBIT_MAIL_ERROR                                 = 'NACH_DEBIT_MAIL_ERROR';
     const EMANDATE_DEBIT_ENTITY_CREATE                          = 'EMANDATE_DEBIT_ENTITY_CREATE';
 

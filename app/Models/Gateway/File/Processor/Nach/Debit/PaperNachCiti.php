@@ -225,6 +225,8 @@ class PaperNachCiti extends Debit\Base
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [
                     'id' => $this->gatewayFile->getId(),
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
                 ],
                 $e);
         }
@@ -370,6 +372,7 @@ class PaperNachCiti extends Debit\Base
                     'beam_response' => $beamResponse,
                     'gateway_file' => $this->gatewayFile->getId(),
                     'target' => 'paper_nach_citi',
+                    'type'   => $this->gatewayFile->getType()
                 ]
             );
         }
@@ -394,7 +397,8 @@ class PaperNachCiti extends Debit\Base
 
         $response = [
             'gateway_id' => $this->gatewayFile->getId(),
-            'gateway_target' => $this->gatewayFile->getTarget(),
+            'target' => $this->gatewayFile->getTarget(),
+            'type'   => $this->gatewayFile->getType(),
             "failed_files"  => $failedFiles,
             "sent_files"    => $sentFiles,
             "timeout_files" => $timeoutFiles
@@ -778,6 +782,8 @@ class PaperNachCiti extends Debit\Base
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [
                     'id' => $this->gatewayFile->getId(),
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
                 ]);
         }
 
@@ -816,6 +822,8 @@ class PaperNachCiti extends Debit\Base
                 'begin'           => $begin,
                 'end'             => $end,
                 'entity_count'    => count($paymentIds),
+                'target' => $this->gatewayFile->getTarget(),
+                'type'   => $this->gatewayFile->getType()
             ]);
 
         return $tokens;

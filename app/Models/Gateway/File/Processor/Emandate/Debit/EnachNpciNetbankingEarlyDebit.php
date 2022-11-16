@@ -48,6 +48,8 @@ class EnachNpciNetbankingEarlyDebit extends EnachNpciNetbanking
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [
                     'id' => $this->gatewayFile->getId(),
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
                 ]);
         }
 

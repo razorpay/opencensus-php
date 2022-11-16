@@ -160,6 +160,7 @@ class PaperNachCitiV2 extends PaperNachCiti
                 TraceCode::NACH_DEBIT_FILE_GENERATED,
                 [
                     'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
                 ]);
 
             $this->fileGenerationProcessAsync($this->gatewayFile->getId(), "GEN_CITI");
@@ -170,6 +171,8 @@ class PaperNachCitiV2 extends PaperNachCiti
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [
                     'id' => $this->gatewayFile->getId(),
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
                 ],
                 $e);
         }
@@ -202,6 +205,8 @@ class PaperNachCitiV2 extends PaperNachCiti
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [
                     'id' => $this->gatewayFile->getId(),
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
                 ]);
         }
 
@@ -240,6 +245,8 @@ class PaperNachCitiV2 extends PaperNachCiti
                 'begin'           => $begin,
                 'end'             => $end,
                 'entity_count'    => count($paymentIds),
+                'target' => $this->gatewayFile->getTarget(),
+                'type'   => $this->gatewayFile->getType()
             ]);
 
         return $tokens;

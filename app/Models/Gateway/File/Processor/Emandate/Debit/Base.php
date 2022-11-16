@@ -10,6 +10,7 @@ use RZP\Constants\Timezone;
 use RZP\Gateway\Netbanking;
 use RZP\Models\Base as ModelBase;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Gateway\File\Constants;
 use RZP\Exception\GatewayFileException;
 use RZP\Exception\ServerErrorException;
 use RZP\Gateway\Base\Action as GatewayAction;
@@ -50,6 +51,8 @@ abstract class Base extends EMandate\Base
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [
                     'id' => $this->gatewayFile->getId(),
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
                 ]);
         }
 
@@ -64,6 +67,8 @@ abstract class Base extends EMandate\Base
                 'count'           => count($paymentIds),
                 'begin'           => $begin,
                 'end'             => $end,
+                'target' => $this->gatewayFile->getTarget(),
+                'type'   => $this->gatewayFile->getType()
             ]);
 
         return $tokens;
@@ -76,6 +81,14 @@ abstract class Base extends EMandate\Base
     {
         try
         {
+            $target = $this->gatewayFile->getTarget();
+
+            if($target === Constants::ENACH_NPCI_NETBANKING or
+                $target === Constants::ENACH_NPCI_NETBANKING_EARLY_DEBIT)
+            {
+                return $tokens;
+            }
+
             $data = $tokens;
 
             // Create gateway entities
@@ -89,6 +102,8 @@ abstract class Base extends EMandate\Base
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_DATA,
                 [
                     'id' => $this->gatewayFile->getId(),
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
                 ],
                 $e);
         }

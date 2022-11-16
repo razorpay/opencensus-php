@@ -346,6 +346,7 @@ abstract class Base extends Core
                     'beam_response' => $beamResponse,
                     'gateway_file'  => $this->gatewayFile->getId(),
                     'target'        => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
                 ]);
         }
 

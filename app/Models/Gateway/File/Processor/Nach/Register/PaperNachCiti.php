@@ -66,6 +66,8 @@ class PaperNachCiti extends Base
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [
                     'id' => $this->gatewayFile->getId(),
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
                 ]);
         }
 
@@ -80,6 +82,8 @@ class PaperNachCiti extends Base
                 'entity_ids' => $paymentIds,
                 'begin' => $begin,
                 'end' => $end,
+                'target' => $this->gatewayFile->getTarget(),
+                'type'   => $this->gatewayFile->getType()
             ]);
 
         return $tokens;
@@ -158,12 +162,21 @@ class PaperNachCiti extends Base
             $this->fileStore = $fileStoreIds;
 
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
+
+            $this->trace->info(
+                TraceCode::NACH_REGISTER_FILE_GENERATED,
+                [
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
+                ]);
         }
         catch (\Throwable $e) {
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [
                     'id' => $this->gatewayFile->getId(),
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
                 ],
                 $e);
         }
@@ -313,6 +326,7 @@ class PaperNachCiti extends Base
                     'beam_response' => $beamResponse,
                     'gateway_file' => $this->gatewayFile->getId(),
                     'target' => 'paper_nach_citi',
+                    'type'   => $this->gatewayFile->getType()
                 ]
             );
         }

@@ -155,6 +155,7 @@ class EnachNpciNetbanking extends Base
                     'beam_response' => $beamResponse,
                     'gateway_file'  => $this->gatewayFile->getId(),
                     'target'        => 'enach_npci_netbanking',
+                    'type'   => $this->gatewayFile->getType()
                 ]
             );
         }
@@ -210,6 +211,7 @@ class EnachNpciNetbanking extends Base
                 TraceCode::NACH_DEBIT_FILE_GENERATED,
                 [
                     'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
                 ]);
 
             $this->fileGenerationProcessAsync($this->gatewayFile->getId(), "GEN_YES");
@@ -220,6 +222,8 @@ class EnachNpciNetbanking extends Base
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [
                     'id' => $this->gatewayFile->getId(),
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
                 ],
                 $e);
         }
@@ -258,6 +262,8 @@ class EnachNpciNetbanking extends Base
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [
                     'id' => $this->gatewayFile->getId(),
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
                 ]);
         }
 
@@ -280,6 +286,8 @@ class EnachNpciNetbanking extends Base
                 'begin'           => $begin,
                 'end'             => $end,
                 'count'           => count($paymentIds),
+                'target' => $this->gatewayFile->getTarget(),
+                'type'   => $this->gatewayFile->getType()
             ]);
 
         return $tokens;
