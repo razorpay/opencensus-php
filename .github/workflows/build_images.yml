@@ -212,7 +212,16 @@ jobs:
                       "web_requests_memory": "500Mi"
                    }
                },
-               "dependencies": []
+               "dependencies": [
+                      {
+                          "name": "pg-router",
+                          "commit_id": "",
+                          "chart_values": {
+                              "ephemeral_db": false,
+                              "replicas": 1
+                          }
+                      }
+                  ]
             }
 
   trigger_regression_suite:
