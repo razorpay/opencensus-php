@@ -1298,6 +1298,60 @@ class Repository extends Base\Repository
               ->where($merchantIdColumn, $this->merchant->getId());
     }
 
+    /**
+     * filterPayoutsPendingOnUserViaWFS returns those payout IDs in the payoutIdList that are pending on the user role.
+     * select `payouts`.*
+     * inner join `workflow_entity_map` on
+     *      `payouts`.`id` = `workflow_entity_map`.`entity_id`
+     *      and `workflow_entity_map`.`entity_type` = ?
+     * inner join `workflow_state_map` on
+     *      `workflow_entity_map`.`workflow_id` = `workflow_state_map`.`workflow_id`
+     *      and `workflow_state_map`.`status` = ? and `workflow_state_map`.`actor_type_value` in (?)
+     * where
+     *      `payouts`.`status` = 'pending'
+     *      and `payouts`.`merchant_id` = ?
+     *      and `workflow_state_map`.`group_name` = (
+     *          select max(`wsm`.`group_name`)
+     *          from `workflow_state_map` as `wsm`
+     *          where `wsm`.`workflow_id` = `workflow_entity_map`.`workflow_id`
+     *      )
+     *      and `payouts`.`id` in ?
+     * @param array $payoutIdList
+     */
+    public function filterPayoutsPendingOnUserViaWFS(array $payoutIdList)
+    {
+        $payoutIdColumn = $this->dbColumn(self::ID);
+        $statusColumn = $this->dbColumn(Entity::STATUS);
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $workflowGroupNameColumn = $this->repo->workflow_state_map->dbColumn(Workflow\Service\StateMap\Entity::GROUP_NAME);
+        $entityMapWorkflowIdColumn = $this->repo->workflow_entity_map->dbColumn(Workflow\Service\StateMap\Entity::WORKFLOW_ID);
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+                      ->select($this->getTableName() . '.*')
+                      ->from($this->getTableName());
+
+        $user = $this->auth->getUser();
+        if (empty($user) == true)
+        {
+            return [];
+        }
+
+        $this->joinQueryWorkflowServiceEntities($query, [$this->auth->getUserRole()]);
+
+        $query->where($workflowGroupNameColumn,  function($subQuery) use($entityMapWorkflowIdColumn, $query) {
+            $subQuery->select(\DB::raw("max(wsm.group_name)"))
+                     ->from($this->repo->workflow_state_map->getTableName() . ' as wsm')
+                     ->whereColumn('wsm.workflow_id', $entityMapWorkflowIdColumn);
+        });
+
+        return $query->where($statusColumn, Status::PENDING)
+                     ->where($merchantIdColumn, $this->merchant->getId())
+                     ->whereIn($payoutIdColumn, $payoutIdList)
+                     ->get()
+                     ->pluck(Entity::ID)
+                     ->toArray();
+    }
+
     protected function filterByRoleIds(BuilderEx $query, array $roleIds, array $userId = null)
     {
         $permissionId = ''; // Resolve from name

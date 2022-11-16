@@ -8423,7 +8423,6 @@ class PayoutTest extends OAuthTestCase
         $response = $this->startTest();
 
         $this->assertEquals(1, $response['count']);
-
         $responsePayout = $response['items'][0];
 
         $this->assertEquals($payout['id'], $responsePayout['id']);
@@ -14927,7 +14926,14 @@ class PayoutTest extends OAuthTestCase
                                                 'balance'        => 3000000,
                                             ]);
 
-        $user = $this->fixtures->user->createUserForMerchant($merchant['id']);
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id'], ['id' => '20000000000000', 'contact_mobile' => 9999999999], 'owner', 'test');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => '20000000000000',
+            'merchant_id' => $merchant['id'],
+            'product'     => 'banking',
+            'role'        => 'owner'
+        ], 'test');
 
         $this->fixtures->create('contact',
                                 ['id' => '1000002contact', 'name' => 'Contact X', 'merchant_id' => $merchant['id']]);

@@ -11,6 +11,7 @@ use RZP\Constants\Product;
 use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Constants;
+use RZP\Http\Route;
 use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\User;
@@ -35,6 +36,7 @@ use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Mail\Payout\Attachments;
 use RZP\Services\PayoutService;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Exception\DbQueryException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccountService;
@@ -2262,6 +2264,105 @@ class Service extends Base\Service
                                 ->where(Entity::SCHEDULED_AT, '<=', $endTime);
     }
 
+    /**
+     * setPendingOnUserFlagForPendingPayoutsViaWFS accepts an array of payouts and sets the pending_on_user flag
+     * for the payouts using the WFS data dual written in API DB.
+     * @param array $payoutArray
+     */
+    public function setPendingOnUserFlagForPendingPayoutsViaWFS(array & $payoutArray)
+    {
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        /** @var Route $route */
+        $route = app('api.route');
+
+        $routeName = $route->getCurrentRouteName();
+
+        if (($routeName !== Entity::PAYOUT_FETCH_MULTIPLE) or
+            ($basicAuth->isSlackApp() === true))
+        {
+            return;
+        }
+
+        if (($basicAuth->isStrictPrivateAuth() === true) or
+            ($basicAuth->isAdminAuth() === true))
+        {
+            return;
+        }
+
+        // Workflows are not enabled on test mode for now
+        if ((app('rzp.mode') === Mode::TEST) or
+            ($basicAuth->getUser() === null) or
+            ($this->merchant === null) or
+            ($this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS) === false))
+        {
+            return;
+        }
+
+        $pendingPayoutsViaWFS = [];
+
+        // If the payout is on WFS flow or if the payout doesn't already have the pending_on_user flag set,
+        // we fetch the flag from WFS tables in api DB. So, we will ignore only those payouts which are on API's workflow system.
+        // Since only payouts pending on user will have these flags toggled to true later on, we will initially set the
+        // flag to false for all payouts so that the pending_on_user param is returned for all payouts in the response
+        foreach ($payoutArray as $index => $payout)
+        {
+            if (isset($payout[Entity::ID]) == true)
+            {
+                $payoutId = $payout[Entity::ID];
+
+                Entity::verifyIdAndStripSign($payoutId);
+
+                $workflowViaWorkflowService = $this->repo->workflow_entity_map->isPresent(Entity::PAYOUT, $payoutId);
+
+                if (($workflowViaWorkflowService === true) or
+                    (isset($payout[Entity::PENDING_ON_USER]) == false))
+                {
+                    $payout[Entity::PENDING_ON_USER] = false;
+
+                    array_push($pendingPayoutsViaWFS, $payoutId);
+
+                    $payoutArray[$index] = $payout;
+                }
+            }
+        }
+
+        if (empty($pendingPayoutsViaWFS) === true)
+        {
+            return;
+        }
+
+        $pendingPayoutIds = $this->repo->payout->filterPayoutsPendingOnUserViaWFS($pendingPayoutsViaWFS);
+
+        $this->trace->info(
+            TraceCode::PAYOUT_LIST_API_PAYOUTS_PENDING_ON_USER,
+            [
+                'description' => 'list of payouts pending on user',
+                'payout_ids' => $pendingPayoutIds
+            ]);
+
+        foreach ($pendingPayoutIds as $pendingPayoutId)
+        {
+            foreach ($payoutArray as $index => $payout)
+            {
+                if (isset($payout[Entity::ID]) == true)
+                {
+                    $payoutId = $payout[Entity::ID];
+
+                    Entity::verifyIdAndStripSign($payoutId);
+
+                    if ($payoutId == $pendingPayoutId)
+                    {
+                        $payout[Entity::PENDING_ON_USER] = true;
+                    }
+
+                    $payoutArray[$index] = $payout;
+                }
+            }
+        }
+    }
+
 
     /**
      * @param string $isSummaryApiExperimentEnabled
@@ -2744,6 +2845,8 @@ class Service extends Base\Service
         $payoutsArr = $payouts->toArrayPublic();
 
         $payoutItems = & $payoutsArr['items'];
+
+        $this->setPendingOnUserFlagForPendingPayoutsViaWFS($payoutItems);
 
         // Sort payouts by created_at desc
         usort($payoutItems, function($a, $b)

@@ -703,9 +703,13 @@ class Entity extends Base\PublicEntity
         self::USER_ID,
         self::FUND_ACCOUNT_ID,
         self::FUND_ACCOUNT,
-        self::PENDING_ON_USER,
         self::BANKING_ACCOUNT_ID,
         self::REVERSAL,
+        // If the merchant is still on the workflow system in api codebase, this flag will be set in the
+        // public setter.
+        // On the other hand, if the merchant is on WFS, an aggregated query will be run after all the
+        // public setters to determine this flag for all the payouts in the payout list API response
+        self::PENDING_ON_USER,
         // We want to show the failure reason only if the status is reversed.
         // This is because we might have intermittent failure reasons even
         // when the payout is not completely processed (succeeded/failed)
@@ -2123,7 +2127,10 @@ class Entity extends Base\PublicEntity
 
         // The pending on user field is handled differently in the workflow service.
         // We don't have the sufficient information to populate pending on user at this point.
-        // Hence, returning. The workflow history attribute will enrich this is field.
+        // Hence, returning.
+        // If the API being called is payout list, this flag will be populated for all payouts in the response
+        // by an aggregated query run outside after all setters
+        // Else, this field will be populated by the workflow history attribute.
         if ($workflowViaWorkflowService === true)
         {
             return;
@@ -2854,11 +2861,11 @@ class Entity extends Base\PublicEntity
 
         $routeName = $route->getCurrentRouteName();
 
-        //if (($routeName === self::PAYOUT_FETCH_MULTIPLE) and
-        //    ($basicAuth->isSlackApp() === false))
-        //{
-        //    $this->publicSetters = $this->publicSettersListView;
-        //}
+        if (($routeName === self::PAYOUT_FETCH_MULTIPLE) and
+            ($basicAuth->isSlackApp() === false))
+        {
+            $this->publicSetters = $this->publicSettersListView;
+        }
 
         $payoutArray = parent::toArrayPublic();
 
