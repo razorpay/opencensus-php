@@ -266,12 +266,22 @@ $tooltip-border-color = #E0E8F4
     margin-left: $spacer * 2
     cursor: pointer
 
+    &.loading
+      opacity: 0.5
+      cursor: not-allowed
+
+    &.loading .metrics-card.active
+      border-color: $border-grey
+
     > a
       margin: 0
       padding: 0
       border: none
       text-align: left
       color: inherit
+
+    &.loading > a
+      pointer-events: none
 
     &:hover > a,
     &.active > a
@@ -287,7 +297,6 @@ $tooltip-border-color = #E0E8F4
       border-color: $border-blue
 
     &.active .metrics-card
-      position: relative
       border-width: 2px
 
       &::after
@@ -302,6 +311,9 @@ $tooltip-border-color = #E0E8F4
         border-bottom-width: 0
         border-top-color: $border-blue
         border-style: solid
+
+    &.loading.active .metrics-card::after
+      border-top-color: $border-grey
 
 .sr-dashboard
   .box-widget div.no-data

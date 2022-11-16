@@ -1,7 +1,7 @@
 import React from 'react';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { getFixedNumber } from 'common/utils/rzp-utils';
+import { getFixedNumber, classList } from 'common/utils/rzp-utils';
 import OverviewGraph from './OverviewGraph';
 import {
   METHOD_HELP_TEXT,
@@ -51,9 +51,9 @@ const MetricsCard = ({ isLoading, metric, isActive }) => {
   };
 
   return (
-    <div className={`metrics-card ${isActive ? 'active' : ''}`}>
+    <div className={classList('metrics-card', isActive && 'active')}>
       {renderCardDetails()}
-      <div className={`mini-chart ${noData ? 'no-data' : ''} ${isActive ? 'active' : ''}`}>
+      <div className={classList('mini-chart', noData && 'no-data', isActive && 'active')}>
         <div className="min-chart-content">
           {!isLoading && <OverviewGraph histogram={datasets} isActive={isActive} />}
         </div>

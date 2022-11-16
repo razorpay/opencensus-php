@@ -11,6 +11,7 @@ export const OVERALL = 'Overall';
 export const UPI = 'UPI';
 export const CARD = 'Card';
 export const NETBANKING = 'Netbanking';
+export const EMANDATE = 'Emandate';
 
 // Graph axis ids for downtimes and sr
 export const SR_X = 'sr_x';

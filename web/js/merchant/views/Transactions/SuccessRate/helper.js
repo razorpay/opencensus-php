@@ -22,6 +22,7 @@ import {
   DEFAULT_GROUP_BY_LIMIT,
   GROUP_BY_KEY_VS_LIMIT,
   NETBANKING,
+  EMANDATE,
   SR_Y,
   SR_X,
   DOWNTIME_X,
@@ -29,6 +30,7 @@ import {
   CARD,
   CARD_NETWORKS,
   PAYMENT_METHOD_VS_CALLOUT_DISPLAY_TEXT,
+  DEFAULT_METHOD,
 } from './constants';
 
 export const getBreakdownInterval = (from, to) => {
@@ -106,16 +108,11 @@ export const queryFilters = (updateDropdownOptions, refreshMetricTabs = false) =
   const activeTab = refreshMetricTabs ? 'Overall' : stateActiveTab;
   const mode = activeTab === 'Overall' || !isOptimizerEnabled ? 'razorpay' : 'optimizer';
   const { startDate, endDate } = filters;
-  const {
-    method,
-    group_by,
-    selectedDropdownFilterOptions = {},
-    selectedInterval,
-    selectedCardType,
-  } = tabs[activeTab];
+  const { selectedDropdownFilterOptions = {}, selectedInterval, selectedCardType } =
+    tabs[activeTab] || {};
 
-  let _group_by = [group_by];
-  let filterMethods = method.map(({ method }) => method);
+  let _group_by = [DEFAULT_GROUP_BY[activeTab]];
+  let filterMethods = DEFAULT_METHOD[activeTab]?.map(({ method }) => method);
 
   if (updateDropdownOptions) {
     if (isOptimizerEnabled) {
@@ -126,7 +123,7 @@ export const queryFilters = (updateDropdownOptions, refreshMetricTabs = false) =
   }
 
   if (isOptimizerEnabled && activeTab === 'Overall') {
-    filterMethods = method.reduce((methods, { optimizerEnabled, method }) => {
+    filterMethods = DEFAULT_METHOD[activeTab]?.reduce((methods, { optimizerEnabled, method }) => {
       if (optimizerEnabled) {
         methods.push(method);
       }
@@ -203,16 +200,16 @@ export const generateDowntimeDataSets = ({
       const { instrument, begin, end } = interval;
       const isInbetweenTime = begin >= startTime && (end || Date.now() / 1000) <= newEndTime;
 
-      if (activeTab === NETBANKING && instrument[groupBy]) {
-        return tag.code === instrument[groupBy] && isInbetweenTime;
-      }
-
       if (activeTab === CARD && instrument[groupBy]) {
         if (groupBy === 'network') {
           return tag.code === CARD_NETWORKS[instrument[groupBy]] && isInbetweenTime;
         } else if (groupBy === 'issuer') {
           return tag.code === instrument[groupBy] && isInbetweenTime;
         }
+      }
+
+      if ([NETBANKING, EMANDATE].includes(activeTab) && instrument[groupBy]) {
+        return tag.code === instrument[groupBy] && isInbetweenTime;
       }
 
       return false;

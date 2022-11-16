@@ -5,8 +5,11 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import { getUser } from 'merchant/store';
+
 import Tabs, { Tab, TabPane } from 'common/ui/ReactTabs';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import { classList } from 'common/utils/rzp-utils';
+
 import MetricsCard from 'merchant/views/Transactions/SuccessRate/components/MetricsCard';
 import GraphPanel from 'merchant/views/Transactions/SuccessRate/components/GraphPanel';
 import MethodFilter from 'merchant/views/Transactions/SuccessRate/components/MethodFilter';
@@ -69,13 +72,16 @@ const GraphWidget = (props) => {
     const tab = tabPane[tabIndex];
     const lastUpdatedAt = tabs?.[tab.name]?.lastUpdatedAt;
     const diffInSec = lastUpdatedAt ? moment().diff(moment.unix(lastUpdatedAt), 'seconds') : 0;
+
     if (tab.name === activeTab) return;
 
     setActiveTab(tab.name);
     setDefaultInterval(getBreakdownInterval(startDate, endDate));
+
     if (tab.name === 'Card') {
       setCardTypeFilter(INITIAL_SELECTED_CARD_TYPE);
     }
+
     if (!lastUpdatedAt || diffInSec >= 300) {
       const updateDropdownOptions = tab.name != 'Overall';
       const payload = queryFilters(updateDropdownOptions);
@@ -110,8 +116,16 @@ const GraphWidget = (props) => {
       >
         {tabPane.map((tab, idx) => {
           return (
-            <Tab key={`${tab.name}-${idx}`}>
-              <MetricsCard isLoading={isLoading} isActive={activeTab === tab.name} metric={tab} />
+            <Tab
+              key={`${tab.name}-${idx}`}
+              className={classList((isLoading || tabLoading) && 'loading')}
+            >
+              <MetricsCard
+                isLoading={isLoading}
+                tabLoading={tabLoading}
+                isActive={activeTab === tab.name}
+                metric={tab}
+              />
               {!isLoading && isSRDashboardFirstTime && tab?.name === 'Card' && (
                 <Popover persistent={true} theme="dark" align="bottom">
                   <PopoverBody>

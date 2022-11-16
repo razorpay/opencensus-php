@@ -24,6 +24,7 @@ import {
   SR_FILTERS,
   CARD,
   NETBANKING,
+  EMANDATE,
 } from 'merchant/views/Transactions/SuccessRate/constants';
 import {
   getSR,
@@ -84,7 +85,7 @@ export const fetchSuccessRate = ({
     // Fetch downtimes for hourly intervals and for razorpay merchants.
     if (
       newSelectedInterval === 'hourly' &&
-      [CARD, NETBANKING].includes(activeTab) &&
+      [CARD, NETBANKING, EMANDATE].includes(activeTab) &&
       !refreshMetricTabs &&
       !user?.isOptimizerEnabled
     ) {

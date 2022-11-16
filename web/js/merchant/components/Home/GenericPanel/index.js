@@ -62,10 +62,11 @@ class PanelBody extends Component {
       windowWidth,
       error,
       dispatch,
+      customTitle,
+      customSubtitle,
       ...otherProps
     } = this.props;
 
-    const { customTitle, customSubtitle } = otherProps;
     otherProps.className = `panel-body${className ? ` ${className}` : ''}`;
 
     let noDataMsg = '';
