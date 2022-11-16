@@ -18,15 +18,11 @@ const FETCH_LATE_AUTH_CONFIG = 'FETCH_LATE_AUTH_CONFIG';
 const CREATE_LATE_AUTH_CONFIG = 'CREATE_LATE_AUTH_CONFIG';
 const GET_ONBOARDING_STATUS = 'GET_ONBOARDING_STATUS';
 const FETCH_REFUND_PRICING = 'FETCH_REFUND_PRICING';
-const FETCH_CALL_ELIGIBILITY = 'FETCH_CALL_ELIGIBILITY';
-const FETCH_SCHEDULE_CALL_CONFIG = 'FETCH_SCHEDULE_CALL_CONFIG';
 const UPDATE_BRAND_COLOR_CONTRAST = 'UPDATE_BRAND_COLOR_CONTRAST';
 const FETCH_INTERNATIONAL_PRODUCTS_STATUS = 'FETCH_INTERNATIONAL_PRODUCTS_STATUS';
 const REPLY_TO_CONVERSATION = 'REPLY_TO_CONVERSATION';
 const FETCH_SUPPORT_TICKETS = 'FETCH_SUPPORT_TICKETS';
 const FETCH_ACTIVE_TICKETS = 'FETCH_ACTIVE_TICKETS';
-const FETCH_CALL_SLOTS = 'FETCH_CALL_SLOTS';
-const CALLBACK_SERVICE = 'rzp.care.callback.v1.CallbackService';
 const REMOVE_LOGO = 'REMOVE_LOGO';
 const FETCH_FEATURE_STATUS = 'FETCH_FEATURE_STATUS';
 const FETCH_INTERNATIONAL_SETTING_STATUS = 'FETCH_INTERNATIONAL_SETTING_STATUS';
@@ -39,11 +35,6 @@ const ADD_REPLY_URL_CARE_SERVICE =
   'care_service/merchant/twirp/rzp.care.freshdesk.v1.FreshdeskService/PostTicketReply';
 export const FETCH_WORKFLOWS =
   'care_service/merchant/twirp/rzp.care.workflow.v1.WorkflowService/FetchWorkflows';
-
-const DEFAULT_CALL_BACK_SCHEDULE_RESPONSE = {
-  is_eligible: false,
-  reason: 'NOT_FETCHED_YET',
-};
 
 export const fetchConfigAjax = () => {
   return merchantFetch('account/config');
@@ -101,36 +92,6 @@ export const fetchActiveTicketsApiCall = () => {
     url,
     mode: 'live',
   }).then((res) => res.data.results);
-};
-
-export const checkCallEligibilityApiCall = () => {
-  if (!window.rzp_user) {
-    return Promise.resolve();
-  }
-
-  return merchantFetch('merchants/support_call/can_submit').then(
-    (res) => res && res.success && res.data && res.data.response === true,
-  );
-};
-
-export const actionCheckScheduleCallConfig = () => {
-  return merchantFetch({
-    url: `care_service/merchant/twirp/${CALLBACK_SERVICE}/CheckEligibilityV2`,
-    mode: 'live',
-    method: 'POST',
-  }).then((res) => {
-    return res && res.data ? res.data : DEFAULT_CALL_BACK_SCHEDULE_RESPONSE;
-  });
-};
-
-export const fetchSlots = (mode) => {
-  return merchantFetch({
-    url: `care_service/merchant/twirp/${CALLBACK_SERVICE}/GetSlots`,
-    mode: mode || 'live',
-    method: 'POST',
-  }).then((res) => {
-    return res && res.data ? res.data : [];
-  });
 };
 
 export const fetchFeaturesAjax = (currentUserId, mode) => {
@@ -254,27 +215,6 @@ export const fetchRefundPricing = () => {
   return {
     type: FETCH_REFUND_PRICING,
     payload: fetchRefundPricingApiCall(),
-  };
-};
-
-export const checkCallEligibility = () => {
-  return {
-    type: FETCH_CALL_ELIGIBILITY,
-    payload: checkCallEligibilityApiCall(),
-  };
-};
-
-export const checkScheduleCallConfig = () => {
-  return {
-    type: FETCH_SCHEDULE_CALL_CONFIG,
-    payload: actionCheckScheduleCallConfig(),
-  };
-};
-
-export const fetchCallSlots = () => {
-  return {
-    type: FETCH_CALL_SLOTS,
-    payload: fetchSlots(),
   };
 };
 
@@ -524,7 +464,6 @@ const initialState = {
     custom_pricing: true,
     not_loaded: true,
   },
-  call_slots: [],
   config: {},
   locale: null,
   isBrandColorDark: false,
@@ -555,8 +494,6 @@ const initialState = {
     error: null,
   },
   isCallEnabled: false,
-  scheduleCallConfig: DEFAULT_CALL_BACK_SCHEDULE_RESPONSE,
-  scheduleCallConfigCategory: null,
   internationalSettingStatus: {
     loading: true,
     data: {},
@@ -589,43 +526,6 @@ const configReducer = (state = initialState, action) => {
         refund_pricing: action.payload.data,
         error: null,
       });
-
-    case `${FETCH_CALL_SLOTS}::SUCCESS`:
-      return merge(state, {
-        loading: false,
-        call_slots: action.payload.slots ? action.payload.slots : [],
-        error: null,
-      });
-
-    case `${FETCH_CALL_SLOTS}::ERROR`:
-      return merge(state, {
-        loading: false,
-        error: action.payload.data,
-        ...initialState,
-      });
-
-    case `${FETCH_CALL_ELIGIBILITY}::SUCCESS`:
-      return set(state, 'isCallEnabled', !!action.payload);
-
-    case `${FETCH_SCHEDULE_CALL_CONFIG}::SUCCESS`: {
-      let payload = action.payload;
-      if (payload.reason) {
-        return set(state, 'scheduleCallConfig', payload);
-      } else {
-        payload = payload.category_vs_eligibility;
-        if (Array.isArray(payload) && payload.length === 0) {
-          return set(state, 'scheduleCallConfig', {
-            is_eligible: false,
-            reason: 'NOT_APPLICABLE',
-          });
-        } else {
-          const key = Object.keys(payload)[0];
-          window.scheduleCallConfigCategory = key;
-          set(state, 'scheduleCallConfigCategory', key);
-          return set(state, 'scheduleCallConfig', payload[key]);
-        }
-      }
-    }
 
     case `${FEATURES_FETCH}::ERROR`:
       return merge(state, {

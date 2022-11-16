@@ -33,11 +33,11 @@ const raiseTicket = () => {
       'create-ticket',
       'ticket',
       () => {
-        rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
+        rzpTicketSystem?.setPrefill('#request', ['merchant', 'other']);
       },
       () => {
         setTimeout(() => {
-          rzpTicketSystem.modal.next();
+          rzpTicketSystem?.modal?.next();
         }, 0);
       },
     );

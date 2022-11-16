@@ -19,7 +19,6 @@ import {
 } from 'merchant/components/Support/getCommonSupportProperties';
 import { getCookie, setCookie } from 'common/utils/cookies';
 import SupportActions from 'merchant/components/Support/components/SupportActions';
-import { isMobileDevice } from 'merchant/components/Home/data';
 
 const OpenRequestStatus = lazy(() =>
   import(/* webpackChunkName: 'frontend-care-open-request' */ '@razorpay/frontend-care').then(
@@ -37,7 +36,10 @@ const CareStore = lazy(() =>
 );
 
 const SupportSection = lazy(
-  () => import(/* webpackChunkName: 'frontend-care' */ '@razorpay/frontend-care'),
+  () =>
+    import(/* webpackChunkName: 'frontend-care' */ '@razorpay/frontend-care').then((module) => ({
+      default: module.SupportSection,
+    })),
   // This will be replaced by @razorpay/care in prod
 );
 
@@ -45,19 +47,11 @@ const isWorkingDay = () => {
   return window.RZP && window.RZP.holidays && window.RZP.holidays.isExtendedWorkingDay;
 };
 
-@connect(
-  (state) => {
-    return {
-      call_slots: state.config.call_slots,
-      scheduleCallConfig: state.config.scheduleCallConfig,
-    };
-  },
-  {
-    openModal,
-    fetchTicketsRaisedByAgents,
-    closeModal,
-  },
-)
+@connect(null, {
+  openModal,
+  fetchTicketsRaisedByAgents,
+  closeModal,
+})
 class SupportBody extends Component {
   state = {
     chatTiming: {},
@@ -244,11 +238,9 @@ class SupportBody extends Component {
 
       if (response?.success) {
         this.setState({ openClickToCall: response?.data?.is_eligible }, () => {
-          const { user: { isFrontendCareActive, isClickToCallActive } = {} } = this.props;
-
           const { openClickToCall } = this.state;
 
-          if (isFrontendCareActive && isClickToCallActive && openClickToCall) {
+          if (openClickToCall) {
             analyticsTrack({
               objectName: 'Click to Call',
               actionName: 'Initialised',
@@ -363,14 +355,14 @@ class SupportBody extends Component {
   };
 
   chatWithUsTracking = ({ showChat } = {}) => {
-    const { user: { isChatbotLive, isFreshChatbotLive } = {} } = this.props;
+    const { user: { isFreshChatbotLive } = {} } = this.props;
 
     analyticsTrack({
       objectName: 'chat with us',
       actionName: 'clicked',
       screen: 'home page',
       properties: {
-        isChatbot: isChatbotLive,
+        isChatbot: isFreshChatbotLive,
         isAvailable: showChat,
         isContextual: isFreshChatbotLive,
         ...getCommonAnalyticsProperties(window.rzp_user),
@@ -514,8 +506,6 @@ class SupportBody extends Component {
       notifyCount,
       isOpened,
       onToggle,
-      isCallEnabled,
-      scheduleCallConfig,
       user,
       isWebView,
       supportFlags,
@@ -529,25 +519,8 @@ class SupportBody extends Component {
       chatTiming,
       openClickToCall,
     } = this.state;
-    const shouldDisable = !isWorkingDay();
-    const { showOpenTicketStatus = false } = user;
 
-    let scheduleCallbackReason =
-      scheduleCallConfig && scheduleCallConfig.is_eligible === false && scheduleCallConfig.reason
-        ? scheduleCallConfig.reason
-        : 'For elaborate queries needing quick resolution';
-
-    if (scheduleCallConfig.reason === 'NOT_AVAILABLE') {
-      scheduleCallbackReason = (
-        <span className="text-danger">Slots are unavailable right now, try later.</span>
-      );
-    }
-
-    if (scheduleCallConfig.reason === 'ALREADY_BOOKED') {
-      scheduleCallbackReason = <span className="text-danger">Call already requested.</span>;
-    }
-
-    const isMobile = isMobileDevice(1020);
+    const isDev = process.env.PUBLIC_ENV !== 'production';
     return (
       <div className={classList('support-body support-body-old', isOpened && 'active')}>
         <ErrorBoundary
@@ -571,6 +544,30 @@ class SupportBody extends Component {
             );
           }}
         >
+          {isOpened && (
+            <>
+              <header>
+                <i className="i i-headset m-r" /> Help and Support{' '}
+                <i className="i i-close pull-right mob-close" onClick={onToggle} />
+              </header>
+              <OpenRequestStatus
+                handleOpenQueries={this.handleOpenQueries}
+                track={this.handleCareAnalytics}
+              />
+              <SupportActions
+                notifyCount={notifyCount}
+                handleClick={this.handleClick}
+                openClickToCall={openClickToCall}
+                supportFlags={supportFlags}
+                botIsLoaded={botIsLoaded}
+                chatTiming={chatTiming}
+                isClickToCallSubmitted={isClickToCallSubmitted}
+                isChatWithUsDisabled={isChatWithUsDisabled}
+                openDashboardGuide={this.openDashboardGuide}
+                splitzExperiments={user?.splitz_experiments}
+              />
+            </>
+          )}
           <CareStore
             user={{
               experiments: user.experiments,
@@ -583,6 +580,9 @@ class SupportBody extends Component {
             isOpened={isOpened || shouldOpenRaiseAQueryOnMount}
             isWebView={isWebView}
             onError={this.handleError}
+            track={this.handleCareAnalytics}
+            host={location.origin}
+            isDev={isDev}
           />
           {careSupportSection ? (
             <SupportSection
@@ -594,70 +594,22 @@ class SupportBody extends Component {
                 contact_mobile: user?.user?.contact_mobile,
                 splitzExperiments: user?.splitz_experiments,
               }}
-              analyticsInstance={this.handleCareAnalytics}
+              track={this.handleCareAnalytics}
               // removing hash to support frontend care package
               module={careSupportSection.module?.replace('#', '')}
               initialData={careSupportSection.initialData}
               onSuccess={this.handleTicketCreatingSuccess}
               onClose={this.handleCloseCareSupportSection}
               hideModalHeader={isWebView}
-              shouldPersistSearchString={isWebView}
               onClickToCallSuccess={this.onClickToCallSuccess}
-              shouldOpenExistingTicketsOnNewTab={!isWebView}
               deviceSource={getDeviceSource()}
               onRequestFollowUp={this.onRequestFollowUp}
               handleOpenQueries={this.handleOpenQueries}
-              showBackButton={isMobile}
               onBackClick={this.handleBackClick}
               onError={this.handleError}
               isWebView={isWebView}
             />
           ) : null}
-          {isOpened && (
-            <header>
-              <i className="i i-headset m-r" /> Help and Support{' '}
-              <i className="i i-close pull-right mob-close" onClick={onToggle} />
-            </header>
-          )}
-          {showOpenTicketStatus && (
-            <OpenRequestStatus
-              user={{
-                experiments: user.experiments,
-                email: user.email,
-                splitzExperiments: user?.splitz_experiments,
-                name: user.name,
-                id: user.id,
-                contact_mobile: user?.user?.contact_mobile,
-              }}
-              handleOpenQueries={this.handleOpenQueries}
-              shouldPersistSearchString={isWebView}
-              shouldOpenExistingTicketsOnNewTab={!isWebView}
-              onRequestFollowUp={this.onRequestFollowUp}
-              analyticsInstance={this.handleCareAnalytics}
-              isOpened={isOpened}
-              onError={this.handleError}
-            />
-          )}
-          {isOpened && (
-            <SupportActions
-              key="SupportActions"
-              notifyCount={notifyCount}
-              isCallEnabled={isCallEnabled}
-              handleClick={this.handleClick}
-              shouldDisable={shouldDisable}
-              scheduleCallbackReason={scheduleCallbackReason}
-              openClickToCall={openClickToCall}
-              user={user}
-              supportFlags={supportFlags}
-              botIsLoaded={botIsLoaded}
-              chatTiming={chatTiming}
-              isEligible={scheduleCallConfig.is_eligible}
-              isClickToCallSubmitted={isClickToCallSubmitted}
-              isChatWithUsDisabled={isChatWithUsDisabled}
-              openDashboardGuide={this.openDashboardGuide}
-              splitzExperiments={user?.splitz_experiments}
-            />
-          )}
         </ErrorBoundary>
       </div>
     );

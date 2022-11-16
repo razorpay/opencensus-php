@@ -1,0 +1,171 @@
+import React, { Suspense, lazy, useEffect, useState } from 'react';
+import SupportLoader from 'merchant/components/Support/components/Loader';
+import ErrorBoundary, { Ranks, Teams, InlineFallbackComponent } from 'common/new-ui/ErrorBoundary';
+import errorService from '@razorpay/universe-utils/errorService';
+import { analyticsTrack } from 'common/utils/analytics';
+import { withRouter } from 'react-router';
+import { connect } from 'react-redux';
+import { fetchTicketsRaisedByAgents } from 'merchant/reducers/config';
+import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
+import { fireCustomEvent } from './utils';
+import { TicketSystemEmitter } from 'merchant/care/init';
+import { Modal, ModalBody } from 'common/components/Modal';
+
+const Support = lazy(() =>
+  import(/* webpackChunkName: 'frontend-care' */ '@razorpay/frontend-care'),
+);
+
+const ErrorFallbackComponent = (props) => {
+  const [isOpen, setIsOpen] = useState(true);
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={() => {
+        setIsOpen(false);
+      }}
+    >
+      <ModalBody>
+        <InlineFallbackComponent {...props} />
+      </ModalBody>
+    </Modal>
+  );
+};
+
+const HelpSection = ({ user, history, org, fetchTicketsRaisedByAgents: _fetchTickets }) => {
+  const handleError = ({ error = 'CARE ERROR', rank = Ranks.P2 } = {}) => {
+    errorService.captureError(error, {
+      tags: {
+        team: Teams.CARE,
+      },
+      rank,
+    });
+  };
+
+  const handleTicketCreated = (ev) => {
+    TicketSystemEmitter.emit('ticket-created', ev?.details || {});
+  };
+
+  useEffect(() => {
+    if (user.isMobileSignupCareActive) {
+      _fetchTickets();
+    }
+
+    CreateTicketEmitter.on('create-ticket', (id, pcb, lcb) => {
+      fireCustomEvent({
+        event: 'create-ticket',
+        data: {
+          id,
+          pcb,
+          lcb,
+        },
+      });
+    });
+
+    TicketSystemEmitter.on('openModal', (module, initialData) => {
+      fireCustomEvent({
+        event: 'open-ticket-modal',
+        data: {
+          module,
+          initialData,
+        },
+      });
+    });
+    TicketSystemEmitter.on('closeModal', () => {
+      fireCustomEvent({
+        event: 'close-ticket-modal',
+      });
+    });
+
+    document.addEventListener('ticket-created', handleTicketCreated);
+
+    return () => {
+      document.removeEventListener('ticket-created', handleTicketCreated);
+    };
+  }, []);
+
+  const isOnBoardingRevampScreen =
+    history.location.pathname.includes('onboarding') ||
+    history.location.pathname.includes('tncform');
+  const DASHBOARD_HOST_REGEX = /(dashboard.*\.razorpay\.(com|in)|localhost)$/;
+
+  // Don't show support for Axis org
+  if (
+    !user.isComdelApiEnabled &&
+    (!DASHBOARD_HOST_REGEX.test(location.hostname) || org.custom_code === 'axis')
+  ) {
+    return null;
+  }
+
+  if (isOnBoardingRevampScreen) {
+    return null;
+  }
+
+  const handleCompleteKYC = () => {
+    history.push('/onboarding/steps');
+  };
+
+  const handleActivation = () => {
+    history.push('activation');
+  };
+
+  const handleCloseWebView = () => {
+    try {
+      window.ReactNativeWebView.postMessage(JSON.stringify({ eventType: 'EXIT' }));
+    } catch (error) {
+      handleError({ error });
+    }
+  };
+
+  const shouldOpenRaiseAQueryOnMount = history?.location?.pathname?.includes('/app-support');
+
+  const isDev = process.env.PUBLIC_ENV !== 'production';
+
+  const splitzHost = isDev
+    ? 'https://beta-api.stage.razorpay.in/v1'
+    : 'https://api.razorpay.com/v1';
+
+  return (
+    <ErrorBoundary
+      resetOnProps
+      rank={Ranks.P1}
+      team={Teams.CARE}
+      FallbackComponent={ErrorFallbackComponent}
+    >
+      <Suspense fallback={<SupportLoader showLoader={true} />}>
+        <Support
+          user={{
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            contact_mobile: user?.user?.contact_mobile,
+            role: user?.role,
+            activation_status: user.activation_status,
+          }}
+          onError={handleError}
+          track={analyticsTrack}
+          shouldOpenRaiseAQueryOnMount={shouldOpenRaiseAQueryOnMount}
+          handleCompleteKYC={handleCompleteKYC}
+          handleActivation={handleActivation}
+          handleCloseWebView={handleCloseWebView}
+          host={location.origin}
+          splitzHost={splitzHost}
+          isDev={isDev}
+        />
+      </Suspense>
+    </ErrorBoundary>
+  );
+};
+
+export default withRouter(
+  connect(
+    (state) => {
+      return {
+        user: state.session.user,
+        org: state.session.org,
+      };
+    },
+    {
+      fetchTicketsRaisedByAgents,
+    },
+  )(HelpSection),
+);

@@ -11,7 +11,6 @@ import {
 } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
-import Support from 'merchant/components/Support';
 import Home from 'merchant/containers/Home/Index';
 import { setActiveEntity, setBaseLocation, setSecActiveEntity } from 'merchant/reducers/app';
 import { matchDetail, matchModal, supportHashMapping } from 'merchant/routes';
@@ -146,6 +145,13 @@ const MagicCheckout = lazy(() =>
 
 const Developers = lazy(() =>
   import(/* webpackChunkName: "Developers" */ 'merchant/views/Developers'),
+);
+
+const Support = lazy(() =>
+  import(/* webpackChunkName: "Support-section" */ 'merchant/components/Support'),
+);
+const HelpSection = lazy(() =>
+  import(/* webpackChunkName: "new-help-section" */ 'merchant/components/Support/HelpSection'),
 );
 
 // Can be removed with old navigation removal
@@ -736,7 +742,9 @@ export default class Content extends Component {
             {DetailView}
             {ModalFormView}
             <MultiSlider />
-            <Support user={user} />
+            <Suspense fallback={null}>
+              {user.isHelpWidgetRevamped ? <HelpSection user={user} /> : <Support user={user} />}
+            </Suspense>
           </Suspense>
         </ErrorBoundary>
       </main>

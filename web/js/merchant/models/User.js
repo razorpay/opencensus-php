@@ -738,14 +738,14 @@ export default class User {
     return this.getExpStatus('TicketSystemSupport');
   }
 
-  get isChatbotLive() {
-    return this.getExpStatus('razorpay_chat_bot');
-  }
   get isFreshChatbotLive() {
     return this.getExpStatus('is_freshchat_chatbot_enabled');
   }
   get isSupportChatTimingMigrated() {
     return this.getExpStatus('support_chat_timing');
+  }
+  get isHelpWidgetRevamped() {
+    return this.getExpStatus('help_widget_revamp');
   }
 
   get isWorkboxEnable() {
@@ -759,24 +759,8 @@ export default class User {
     return this.getExpStatus('instrument_requests_smart_dashboard');
   }
 
-  get isFrontendCareActive() {
-    return this.getExpStatus('frontend_care_active');
-  }
   get isNewCategoriesEnable() {
     return this.getExpStatus('new_categories_enable');
-  }
-  get showOpenTicketStatus() {
-    return this.getExpStatus('open_ticket_status');
-  }
-
-  get isWorkflowTicketEnabled() {
-    return (
-      this.getExpStatus('open_ticket_status') && this.getExpStatus('is_workflow_ticket_enabled')
-    );
-  }
-
-  get isClickToCallActive() {
-    return true;
   }
 
   get isRazorxAnnouncementEnabled() {

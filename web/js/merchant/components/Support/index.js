@@ -4,12 +4,6 @@ import { trackSupportButton } from './ga';
 import { withRouter } from 'react-router-dom';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, classList } from 'common/utils/rzp-utils';
-
-import {
-  checkCallEligibility,
-  checkScheduleCallConfig,
-  fetchCallSlots,
-} from 'merchant/reducers/config';
 import SupportHeader from 'merchant/components/Support/components/SupportHeader';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { CHATBOT_CLOSING_TEXTS, COMDEL_URL } from 'merchant/components/Support/constants';
@@ -18,26 +12,18 @@ import SupportLoader from 'merchant/components/Support/components/Loader';
 import { getCommonSupportProperties } from 'merchant/components/Support/getCommonSupportProperties';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import initChat from 'merchant/components/Support/chat';
-import { initChatbot } from 'merchant/chatbot-init';
+import { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
+import errorService from '@razorpay/universe-utils/errorService';
 
 const SupportBody = lazy(() => import('merchant/components/Support/components/SupportBody'));
 
 @withRouter
-@connect(
-  (state) => {
-    return {
-      isCallEnabled: state.config.isCallEnabled,
-      scheduleCallConfig: state.config.scheduleCallConfig,
-      user: state.session.user,
-      org: state.session.org,
-    };
-  },
-  {
-    checkCallEligibility,
-    checkScheduleCallConfig,
-    fetchCallSlots,
-  },
-)
+@connect((state) => {
+  return {
+    user: state.session.user,
+    org: state.session.org,
+  };
+}, null)
 export default class Support extends Component {
   state = {
     isOpenedOnce: false,
@@ -58,26 +44,6 @@ export default class Support extends Component {
   };
 
   componentDidMount() {
-    const {
-      checkCallEligibility: _checkCallEligibility,
-      checkScheduleCallConfig: _checkScheduleCallConfig,
-    } = this.props;
-    _checkCallEligibility();
-
-    _checkScheduleCallConfig().then((response) => {
-      if (response.is_eligible) {
-        analyticsTrack({
-          objectName: 'request a call',
-          actionName: 'viewed',
-          screen: 'home page',
-          properties: {
-            message: response.reason,
-            ...getCommonAnalyticsProperties(window.rzp_user),
-          },
-        });
-      }
-    });
-
     this.fetchSupportFlags();
 
     this.handleIsWebView();
@@ -102,24 +68,33 @@ export default class Support extends Component {
             },
           },
           async () => {
-            const response = await merchantFetch({
-              url: 'merchants/support/option/flags',
-            });
-            const newSupportFlags = {
-              ...oldSupportFlags,
-              ...response.data,
-              loaded: true,
-              isFetching: false,
-            };
+            try {
+              const response = await merchantFetch({
+                url: 'merchants/support/option/flags',
+              });
+              const newSupportFlags = {
+                ...oldSupportFlags,
+                ...response.data,
+                loaded: true,
+                isFetching: false,
+              };
 
-            this.setState(
-              {
-                supportFlags: newSupportFlags,
-              },
-              () => {
-                resolve(newSupportFlags);
-              },
-            );
+              this.setState(
+                {
+                  supportFlags: newSupportFlags,
+                },
+                () => {
+                  resolve(newSupportFlags);
+                },
+              );
+            } catch (error) {
+              errorService.captureError(error, {
+                tags: {
+                  team: Teams.CARE,
+                },
+                rank: Ranks.P2,
+              });
+            }
           },
         );
       } else {
@@ -156,34 +131,16 @@ export default class Support extends Component {
         });
       }
     }
-
-    if (user.isChatbotLive && !user.isFreshChatbotLive) {
-      const chatBotInt = setInterval(() => {
-        if (window.chatBotCloseIcon) {
-          this.setState({ botIsLoaded: true });
-          window.chatBotCloseIcon.onclick = () => {
-            window.chatbotToggle();
-            this.handleVisibility(false);
-          };
-          clearInterval(chatBotInt);
-        }
-      }, 500);
-    }
   };
 
   handleInitChat = () => {
     const { user = {} } = this.props;
 
     setTimeout(() => {
-      if (user.isChatbotLive && !user.isFreshChatbotLive) {
-        initChatbot(user);
-        this.bindEvents();
-      } else {
-        initChat(user, this.onFreshchatScriptLoad);
-      }
+      initChat(user, this.onFreshchatScriptLoad);
     }, 0);
 
-    if (user.isChatbotLive || user.isFreshChatbotLive) {
+    if (user.isFreshChatbotLive) {
       analyticsTrack({
         objectName: 'chatbot',
         actionName: 'initialised',
@@ -273,19 +230,14 @@ export default class Support extends Component {
   };
 
   handleChat = () => {
-    const { user = {} } = this.props;
-    if (user.isChatbotLive && !user.isFreshChatbotLive) {
-      if (window.chatbotToggle) {
-        window.chatbotToggle();
-      }
-    } else if (window.fcWidget) {
+    if (window.fcWidget) {
       window.fcWidget.open();
       this.handleVisibility(true);
     }
   };
 
   render() {
-    const { user, org, history, scheduleCallConfig } = this.props;
+    const { user, org, history } = this.props;
     const {
       notifyCount,
       isOpened,
@@ -295,8 +247,6 @@ export default class Support extends Component {
       supportFlags,
       isOpenedOnce,
     } = this.state;
-    // Temporarily disabled till further notice for improving support quality index for calls,
-    const isCallEnabled = false;
 
     const isOnBoardingRevampScreen =
       history.location.pathname.includes('onboarding') ||
@@ -328,7 +278,7 @@ export default class Support extends Component {
           isWebView={isWebView}
           user={user}
         />
-        <Suspense fallback={<SupportLoader isOpened={isOpened} />}>
+        <Suspense fallback={<SupportLoader showLoader={isOpened} />}>
           <SupportBody
             onToggle={this.handleToggle}
             isOpened={isOpened}
@@ -336,8 +286,6 @@ export default class Support extends Component {
             botIsLoaded={botIsLoaded}
             onChat={this.handleChat}
             notifyCount={notifyCount}
-            isCallEnabled={isCallEnabled}
-            scheduleCallConfig={scheduleCallConfig}
             supportFlags={supportFlags}
             user={user}
             isWebView={isWebView}

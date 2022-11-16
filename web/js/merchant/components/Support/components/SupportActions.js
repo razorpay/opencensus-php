@@ -1,17 +1,11 @@
-import ShowWhen from 'merchant/components/ShowWhen';
 import PropTypes from 'prop-types';
 
 const noop = () => {};
 
 function SupportActions({
   notifyCount,
-  isCallEnabled,
   handleClick,
-  shouldDisable,
-  scheduleCallbackReason,
   openClickToCall,
-  isEligible,
-  user,
   supportFlags,
   botIsLoaded,
   chatTiming,
@@ -20,7 +14,6 @@ function SupportActions({
   openDashboardGuide,
 }) {
   const { show_chat, loaded } = supportFlags;
-  const { isClickToCallActive, isFrontendCareActive } = user;
   const activationStatus = window?.rzp_user?.activation_status || '';
 
   const isChatDisabled =
@@ -34,24 +27,7 @@ function SupportActions({
         Have a query? <small className="help-block">Check existing query/raise a new one</small>
       </li>
 
-      <ShowWhen
-        myRole="owner admin"
-        additionalCondition={() =>
-          !(isClickToCallActive || openClickToCall) &&
-          !(
-            scheduleCallbackReason === 'NOT_FETCHED_YET' ||
-            (scheduleCallbackReason === 'NOT_APPLICABLE' && !isEligible)
-          )
-        }
-      >
-        <li className="support-item" onClick={handleClick.bind(null, 'schedule-call')}>
-          <span>
-            Request a call <span className="badge">Recommended</span>
-          </span>
-          <small className="help-block">{scheduleCallbackReason}</small>
-        </li>
-      </ShowWhen>
-      {isFrontendCareActive && isClickToCallActive && openClickToCall && (
+      {openClickToCall && (
         <li
           className={`support-item p-all callback ${isClickToCallSubmitted ? 'disabled' : ''}`}
           onClick={isClickToCallSubmitted ? noop : handleClick.bind(null, 'click-to-call')}
@@ -91,18 +67,6 @@ function SupportActions({
         ) : null
       ) : null}
 
-      {isCallEnabled ? (
-        <li
-          className={`support-item p-all call ${shouldDisable ? 'disabled' : ''}`}
-          onClick={shouldDisable ? noop : handleClick.bind(null, 'call')}
-        >
-          Call Support <small className="help-content">(9am-9pm, working days)</small>
-          <small className="help-block">
-            {shouldDisable ? 'Currently unavailable' : 'For queries and help on the dashboard'}
-          </small>
-        </li>
-      ) : null}
-
       <li className="support-item p-all dashboard_guide" onClick={openDashboardGuide}>
         Dashboard Guide{' '}
         <small className="help-block">Read more about how to use the dashboard</small>
@@ -112,25 +76,17 @@ function SupportActions({
 }
 
 SupportActions.defaultProps = {
-  isEligible: false,
   botIsLoaded: false,
-  isCallEnabled: false,
-  shouldDisable: false,
   openClickToCall: false,
   isClickToCallSubmitted: false,
   isChatWithUsDisabled: false,
   notifyCount: 0,
-  scheduleCallbackReason: '',
-  user: {},
   supportFlags: {},
   handleClick: () => {},
   openDashboardGuide: () => {},
 };
 
 SupportActions.propTypes = {
-  isCallEnabled: PropTypes.bool,
-  isEligible: PropTypes.bool,
-  shouldDisable: PropTypes.bool,
   botIsLoaded: PropTypes.bool,
   openClickToCall: PropTypes.bool,
   isClickToCallSubmitted: PropTypes.bool,
@@ -138,8 +94,6 @@ SupportActions.propTypes = {
   handleClick: PropTypes.func,
   openDashboardGuide: PropTypes.func,
   notifyCount: PropTypes.number,
-  scheduleCallbackReason: PropTypes.string,
-  user: PropTypes.object,
   supportFlags: PropTypes.object,
   chatTiming: PropTypes.object.isRequired,
 };
