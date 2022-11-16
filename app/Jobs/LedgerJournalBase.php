@@ -161,6 +161,7 @@ class LedgerJournalBase extends Job
                     'entity_id'   => $entityId,
                     'entity_name' => $entityName,
                     'response'    => $response,
+                    'start_time'  => millitime(),
                 ]
             );
 
