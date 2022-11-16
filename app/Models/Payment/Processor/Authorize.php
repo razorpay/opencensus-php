@@ -8370,7 +8370,7 @@ trait Authorize
                     }
                 }
 
-                if($this->canRunPaysecureOTP($payment) === true)
+                if($this->canRunPaysecureOTP($payment) === true or ($this->canRunAxisTokenHQOTP($payment) === true))
                 {
                     return true;
                 }
@@ -8468,6 +8468,17 @@ trait Authorize
     protected function canRunPaysecureOTP(Payment\Entity $payment)
     {
         if (($payment->getGateway() === Payment\Gateway::PAYSECURE) and
+            ($payment->getAuthType() === Payment\AuthType::OTP))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function canRunAxisTokenHQOTP(Payment\Entity $payment)
+    {
+        if (($payment->getGateway() === Payment\Gateway::AXIS_TOKENHQ) and
             ($payment->getAuthType() === Payment\AuthType::OTP))
         {
             return true;
