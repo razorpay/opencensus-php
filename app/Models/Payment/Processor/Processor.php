@@ -2419,6 +2419,7 @@ class Processor
             $data['tax'] = $tax;
             $data['currency'] = $payment->getCurrency();
             $data['fee_bearer']= $payment->getFeeBearer();
+            $data['fee_split']= $feeSplit;
             return $data;
         }
 
@@ -2464,7 +2465,8 @@ class Processor
             'tax'             => $tax,
             'amount'          => $payment->getAmount() + $fee,
             'currency'        => $payment->getCurrency(),
-            'fee_bearer'      => $payment->getFeeBearer()
+            'fee_bearer'      => $payment->getFeeBearer(),
+            'fee_split'       => $feeSplit,
         ];
 
         //Adding extra fields for response in case of
