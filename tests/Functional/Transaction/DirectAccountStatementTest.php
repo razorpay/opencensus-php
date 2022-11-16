@@ -31,8 +31,6 @@ class DirectAccountStatementTest extends TestCase
 
         $this->setUpMerchantForBusinessBanking(false, 10000000, 'direct', 'rbl');
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_DA_ACC_STMT_EXPERIMENT => 'on',]);
-
         $this->app['rzp.mode'] = Mode::TEST;
     }
 

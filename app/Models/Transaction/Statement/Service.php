@@ -46,8 +46,7 @@ class Service extends Transaction\Service
         }
 
         // Route request to BAS if DA ledger feature is enabled and acc is of type direct
-        if (($this->isExperimentEnabled(Merchant\RazorxTreatment::RX_DA_ACC_STMT_EXPERIMENT) === true) and
-            ($balance->isAccountTypeDirect() === true))
+        if ($balance->isAccountTypeDirect() === true)
         {
             $this->trace->info(
                 TraceCode::DRIVING_ACCOUNT_STATEMENT_FOR_DA_VIA_BAS,
@@ -83,9 +82,7 @@ class Service extends Transaction\Service
         // This means that an entity must have gotten linked to the BAS entity.
         // There is a very small edge case where a requester randomly passes a BAS ID which exists in our systems
         // but has not been linked to an entity. We are not sending invalid ID error in these edge cases.
-
-        if (($this->isExperimentEnabled(Merchant\RazorxTreatment::RX_DA_ACC_STMT_EXPERIMENT) === true) and
-            (strpos($id, DirectAccount\Statement\Entity::getSign()) !== false))
+        if (strpos($id, DirectAccount\Statement\Entity::getSign()) !== false)
         {
             return $this->repo->direct_account_statement
                 ->fetchByPublicIdAndMerchantForTransactionsBasedOnBasId($id, $this->merchant, $input)
@@ -171,8 +168,7 @@ class Service extends Transaction\Service
         }
 
         // Route request to BAS if DA ledger feature is enabled and acc is of type direct
-        if (($this->isExperimentEnabled(Merchant\RazorxTreatment::RX_DA_ACC_STMT_EXPERIMENT) === true) and
-            ($balance->isAccountTypeDirect() === true))
+        if ($balance->isAccountTypeDirect() === true)
         {
             $this->trace->count(TxnMetric::TRANSACTION_CA_REQUEST_TOTAL, $dimension);
 

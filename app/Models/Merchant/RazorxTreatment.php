@@ -482,9 +482,6 @@ final class RazorxTreatment
     // Experiment for RX Rearch (Ledger <> RX integration)
     const RX_REARCH_TIDB_EXPERIMENT = 'rx_rearch_fetch_tidb';
 
-    // Experiment for RX DA stmt (driving stmt via BAS entity)
-    const RX_DA_ACC_STMT_EXPERIMENT = 'rx_da_acc_stmt_experiment';
-
     // Experiment for RX DA stmt (driving stmt via BAS entity) - Rearch
     const RX_DA_ACC_STMT_REARCH_EXPERIMENT = 'rx_da_acc_stmt_rearch_experiment';
 
