@@ -15,7 +15,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Entity as MerchantEntity;
-
+use RZP\Error\PublicErrorDescription;
 
 class Service extends Base\Service
 {
@@ -46,6 +46,58 @@ class Service extends Base\Service
         unset($input[Entity::FAIL_EXISTING]);
 
         $customer = $this->core->createLocalCustomer($input, $this->merchant, $failOnDuplicate);
+
+        return $customer->toArrayPublic();
+    }
+
+    /**
+     * Gets or Creates Local customer entity for merchant
+     * @param array $input
+     * @return array customer data
+     */
+    public function getOrCreateLocalCustomerInternal(array $input): array
+    {
+        if((isset($input['merchant_id']) === false) or (isset($input['contact']) === false)) {
+            throw new Exception\BadRequestValidationFailureException('Merchant Id or Contact Id
+            is not present in the request');
+        }
+
+        $failOnDuplicate = true;
+        if ((isset($input[Entity::FAIL_EXISTING])) and
+            ($input[Entity::FAIL_EXISTING] === '0'))
+        {
+            $failOnDuplicate = false;
+        }
+
+        unset($input[Entity::FAIL_EXISTING]);
+        $merchantId = $input['merchant_id'];
+        unset($input['merchant_id']);
+
+        $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
+            $merchantId, ['methods', \RZP\Models\Merchant\Entity::GROUPS, \RZP\Models\Merchant\Entity::ADMINS]);
+        $this->merchant = $merchant;
+
+        try
+        {
+            $customer = $this->core->createLocalCustomer($input, $this->merchant, $failOnDuplicate);
+        }
+        catch (\Exception $e)
+        {
+            if($e->getMessage() === PublicErrorDescription::BAD_REQUEST_CUSTOMER_ALREADY_EXISTS)
+            {
+                $this->trace->info(TraceCode::CUSTOMER_ALREADY_EXISTS,
+                    [
+                        'contact'   => $input['contact'],
+                        'merchantId'=> $merchantId
+                    ]);
+
+                $customer = $this->core->getCustomerByContactAndMerchant($input['contact'], $this->merchant);
+            }
+            else
+            {
+                throw $e;
+            }
+        }
 
         return $customer->toArrayPublic();
     }
@@ -89,6 +141,23 @@ class Service extends Base\Service
         $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $customer->toArrayPublic();
+    }
+
+    /**
+     * Fetch local customer using customerId and merchantId
+     *
+     * @param  string $customerId
+     * @param  string $merchantId
+     * @return array customer details
+     */
+    public function fetchByCustomerAndMerchantId($customerId, $merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
+            $merchantId, ['methods', \RZP\Models\Merchant\Entity::GROUPS, \RZP\Models\Merchant\Entity::ADMINS]);
+
+        $this->merchant = $merchant;
+
+        return $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
     }
 
     public function fetchByDeviceAuth()
@@ -380,7 +449,7 @@ class Service extends Base\Service
                 if ($customerTokensCount === 0)
                 {
                     $sendOtp = false;
-                    
+
                     $data['saved'] = false;
                 }
             }

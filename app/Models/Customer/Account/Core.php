@@ -1202,6 +1202,19 @@ class Core extends Base\Core
     }
 
     /**
+     * Fetches Customer Details by Input
+     *
+     * @param string $contact
+     * @param string $merchantId
+     *
+     * @return Array $array
+     */
+    public function getCustomerByContactAndMerchant(string $contact, Merchant\Entity $merchant)
+    {
+        return $this->repo->customer->findByContactAndMerchant($contact, $merchant);
+    }
+
+    /**
      * Formats global customer for consumer app.
      *
      * @param Customer\Entity $customer

@@ -408,6 +408,7 @@ class Route
         'merchant_methods_edit'                    => ['put',      'merchant/methods',                               'MerchantController@editMethods'                                    ],
         'merchant_methods_edit_internal'           => ['patch',    'merchants/{mid}/methods',                        'MerchantController@editMerchantMethods'                            ],
         'merchant_fetch_methods'                   => ['get',      'merchant/methods',                               'MerchantController@getPaymentMethods'                              ],
+        'merchant_fetch_methods_internal'          => ['get',      'merchant/methods/{id}',                          'MerchantController@getPaymentMethodsById'                          ],
         'merchant_send_activation_mail'            => ['post',     'merchants/activation_mail',                      'MerchantController@postSendActivationMail'                         ],
         'merchant_live_enable'                     => ['post',     'merchants/{id}/live/enable',                     'MerchantController@postLiveEnable'                                 ],
         'merchant_live_disable'                    => ['post',     'merchants/{id}/live/disable',                    'MerchantController@postLiveDisable'                                ],
@@ -1126,8 +1127,10 @@ class Route
         'reports_refund_irctc'                     => ['get',      'reports/refund/irctc',                           'MerchantController@getIrctcRefundReport'                           ],
         'get_global_config'                        => ['get',      'merchant/{mid}/configs',                         'MerchantController@getGlobalMerchantConfigs'                       ],
         'customer_create'                          => ['post',     'customers',                                      'CustomerController@createLocalCustomer'                            ],
+        'get_or_create_customer_internal'          => ['post',     'customers/create',                               'CustomerController@getOrCreateLocalCustomerInternal'               ],
         'customer_update'                          => ['put',      'customers/{id}',                                 'CustomerController@updateCustomer'                                 ],
         'customer_fetch_by_id'                     => ['get',      'customers/{id}',                                 'CustomerController@getCustomer'                                    ],
+        'customer_fetch_by_id_internal'            => ['get',      'customers/{id}/merchant/{merchant_id}',          'CustomerController@getCustomerByCustomerAndMerchantId'             ],
         'customer_fetch_multiple'                  => ['get',      'customers',                                      'CustomerController@getCustomers'                                   ],
         'customer_add_bank_account'                => ['post',     'customers/{id}/bank_account',                    'CustomerController@postBankAccount'                                ],
         'customer_fetch_bank_account'              => ['get',      'customers/{id}/bank_account',                    'CustomerController@getBankAccounts'                                ],
@@ -3984,6 +3987,8 @@ class Route
         'create_cac_role'                       => ['post',                   'cac/role',                                                   'RolesController@create'],
         'edit_cac_role'                         => ['patch',                  'cac/role/{id}',                                       'RolesController@edit'],
         'relay_get_props_history'               => ['get',                    'relay/apps/{app_id}/props/{prop_id}/history',                'RelayController@getPropsHistory'],
+        'fetch_customer_eligibility'            => ['post',          'customers/eligibility',                               'EligibilityController@fetchCustomerEligibility'],
+        'fetch_customer_eligibility_by_id'      => ['get',           'customers/eligibility/{id}',                          'EligibilityController@fetchCustomerEligibilityById'],
     ];
 
     public static $public = [
@@ -4590,7 +4595,9 @@ class Route
         'add_token_iin_bulk',
 
         // Generate and send NIUM settlements file via manual trigger
-        'generate_nium_settlement_file_admin'
+        'generate_nium_settlement_file_admin',
+ 	    'fetch_customer_eligibility',
+        'fetch_customer_eligibility_by_id'
     ];
 
     // Only routes defined in internalApps go here
@@ -5430,6 +5437,12 @@ class Route
         'payment_nbplus_authorize_failed',
 
         '1cc_update_shipping_provider_config',
+
+	    'merchant_fetch_methods_internal',
+
+        'get_or_create_customer_internal',
+
+        'customer_fetch_by_id_internal',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -14380,6 +14393,9 @@ class Route
 
         'affordability' => [
             'get_affordability_suite',
+            'merchant_fetch_methods_internal',
+            'get_or_create_customer_internal',
+            'customer_fetch_by_id_internal',
         ],
 
         'trusted_badge' => [

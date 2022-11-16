@@ -1399,6 +1399,10 @@ return [
         'secret' => env('AFFORDABILITY_SECRET'),
         'service_secret' => env('AFFORDABILITY_SERVICE_SECRET'),
         'url'    => env('AFFORDABILITY_SERVICE_URL'),
+        'eligibility_url' => [
+            'live' => env('ELIGIBILITY_SERVICE_LIVE_URL'),
+            'test' => env('ELIGIBILITY_SERVICE_TEST_URL'),
+        ],
     ],
 
     'trusted_badge' => [

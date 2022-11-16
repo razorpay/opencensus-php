@@ -3137,6 +3137,25 @@ class Service extends Base\Service
         return $formattedMethods;
     }
 
+    /**
+     * Get Payment Methods by Merchant Id
+     *
+     * @param string $merchantId
+     *
+     * @return array
+     */
+    public function getPaymentMethodsById($merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
+            $merchantId, ['methods', \RZP\Models\Merchant\Entity::GROUPS, Entity::ADMINS]);
+
+        $this->merchant = $merchant;
+
+        $this->auth->setMerchant($this->merchant);
+
+        return (new Methods\Core)->getFormattedMethods($this->merchant);
+    }
+
     public function setPaymentMethods($merchantId, $input)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);

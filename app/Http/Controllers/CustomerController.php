@@ -22,6 +22,15 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getOrCreateLocalCustomerInternal()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getOrCreateLocalCustomerInternal($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function updateCustomer($id)
     {
         $input = Request::all();
@@ -34,6 +43,13 @@ class CustomerController extends Controller
     public function getCustomer($id)
     {
         $data = $this->service()->fetch($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getCustomerByCustomerAndMerchantId($customerId, $merchantId)
+    {
+        $data = $this->service()->fetchByCustomerAndMerchantId($customerId, $merchantId);
 
         return ApiResponse::json($data);
     }
