@@ -73,6 +73,7 @@ class Core extends Base\Core
 
     // Ledger sync retry
     const DEFAULT_MAX_RETRY_COUNT = 3;
+    const MERCHANT_OPENING_BALANCES = "merchant_opening_balances";
 
     protected $eventDescription = [
         self::DIRECT_MERCHANT_ONBOARDING    => 'Event for onboarding of merchant on direct account',
@@ -409,6 +410,7 @@ class Core extends Base\Core
                     $uniqueIdKey => [$uniqueId],
                 ],
             ],
+            self::MERCHANT_OPENING_BALANCES   => [],
         ];
 
         if ($ftsId !== null)
@@ -418,12 +420,12 @@ class Core extends Base\Core
 
         if ($balanceAmount !== 0)
         {
-            $payload[self::MERCHANT_BALANCE_OPENING_BALANCE] = (string) $balanceAmount;
+            $payload[self::MERCHANT_OPENING_BALANCES][self::MERCHANT_BALANCE_OPENING_BALANCE] = (string) $balanceAmount;
         }
 
         if ($creditBalance !== 0)
         {
-            $payload[self::MERCHANT_REWARD_OPENING_BALANCE] = (string) $creditBalance;
+            $payload[self::MERCHANT_OPENING_BALANCES][self::MERCHANT_REWARD_OPENING_BALANCE] = (string) $creditBalance;
         }
 
         return $payload;
@@ -451,17 +453,18 @@ class Core extends Base\Core
             self::MERCHANT_ID       => $merchant->getId(),
             self::EVENTS             => [
                 $eventObj
-            ]
+            ],
+            self::MERCHANT_OPENING_BALANCES   => [],
         ];
 
         if ($balanceAmount !== 0)
         {
-            $payload[self::MERCHANT_BALANCE_OPENING_BALANCE] = (string) $balanceAmount;
+            $payload[self::MERCHANT_OPENING_BALANCES][self::MERCHANT_BALANCE_OPENING_BALANCE] = (string) $balanceAmount;
         }
 
         if ($creditBalance !== 0)
         {
-            $payload[self::MERCHANT_REWARD_OPENING_BALANCE] = (string) $creditBalance;
+            $payload[self::MERCHANT_OPENING_BALANCES][self::MERCHANT_REWARD_OPENING_BALANCE] = (string) $creditBalance;
         }
 
         $this->trace->info(
@@ -488,27 +491,28 @@ class Core extends Base\Core
             self::MERCHANT_ID       => $merchant->getId(),
             self::EVENTS             => [
                 $eventObj
-            ]
+            ],
+            self::MERCHANT_OPENING_BALANCES   => [],
         ];
 
         if ($balanceAmount !== 0)
         {
-            $payload[self::MERCHANT_BALANCE_OPENING_BALANCE] = (string) $balanceAmount;
+            $payload[self::MERCHANT_OPENING_BALANCES][self::MERCHANT_BALANCE_OPENING_BALANCE] = (string) $balanceAmount;
         }
 
         if(isset($creditBalances[self::FEE]) === true)
         {
-            $payload[self::MERCHANT_FEE_OPENING_BALANCE] = (string) $creditBalances[self::FEE];
+            $payload[self::MERCHANT_OPENING_BALANCES][self::MERCHANT_FEE_OPENING_BALANCE] = (string) $creditBalances[self::FEE];
         }
 
         if(isset($creditBalances[self::AMOUNT]) === true)
         {
-            $payload[self::MERCHANT_REWARD_OPENING_BALANCE] = (string) $creditBalances[self::AMOUNT];
+            $payload[self::MERCHANT_OPENING_BALANCES][self::MERCHANT_REWARD_OPENING_BALANCE] = (string) $creditBalances[self::AMOUNT];
         }
 
         if(isset($creditBalances[self::REFUND]) === true)
         {
-            $payload[self::MERCHANT_REFUND_OPENING_BALANCE] = (string) $creditBalances[self::REFUND];
+            $payload[self::MERCHANT_OPENING_BALANCES][self::MERCHANT_REFUND_OPENING_BALANCE] = (string) $creditBalances[self::REFUND];
         }
 
         $this->trace->info(
