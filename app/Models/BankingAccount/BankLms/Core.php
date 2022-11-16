@@ -103,7 +103,6 @@ class Core extends BankingAccount\Core
     {
         (new Merchant\Core())->submerchantDelink($partnerBank, $subMerchant);
     }
-
     /**
      * @param Merchant\Entity $partnerBank
      * @param array           $params

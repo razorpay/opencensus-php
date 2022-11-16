@@ -8435,6 +8435,52 @@ class BankingAccountTest extends TestCase
 
     }
 
+
+    public function testBankLmsEndToEndRevivedLeadWithSentToBankAndNotLinkedToPartner()
+    {
+
+        $response = $this->setupBankLMSTest();
+
+        $user = $response['user'];
+
+        $response = $response['bankingAccount'];
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED, Status::INITIATED,
+            null, null,
+            null, null,
+            $response);
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::INITIATED, Status::ARCHIVED,
+            null, null,
+            null, null,
+            $response);
+
+        $this->ba->adminAuth();
+
+        // detach to check the behaviour of revived lead functionality when application is not attached to the bank partner
+        // in case of application not attached to the bank partner detaching functionality shouldn't be triggered
+        // there are some cases where attachment to bank partner didn't happened.
+
+        (new BankingAccount\BankLms\Service())->detachCaApplicationMerchantFromBankPartner(['banking_account_id' => $response['id']]);
+
+        $dataToReplace = [
+            'url'     => '/banking_accounts/'. $response['id'],
+            'method' => 'PATCH',
+            'content' => [
+                'status' => 'initiated'
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($dataToReplace);
+
+        $additionalDetails = $response[BankingAccount\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::ADDITIONAL_DETAILS];
+
+        $this->assertEquals(true, $additionalDetails[BankingAccount\Activation\Detail\Entity::REVIVED_LEAD]);
+
+    }
+
     public function testBankLmsEndToEndForRevivedLeadFilter()
     {
 

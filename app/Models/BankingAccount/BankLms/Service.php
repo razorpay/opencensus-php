@@ -148,7 +148,12 @@ class Service extends BankingAccount\Service
 
         $bankingAccount = $this->repo->banking_account->findByPublicId($input[BankingAccount\Entity::BANKING_ACCOUNT_ID]);
 
-        $this->core->detachCaApplicationMerchantFromBankPartner($this->partnerBankMerchant, $bankingAccount->merchant);
+        $subMerchantIds = (new Repository())->fetchSubMerchantForPartnerAndSubMerchantId($this->partnerBankMerchant, $bankingAccount->merchant);
+
+        if (count($subMerchantIds) !== 0)
+        {
+            $this->core->detachCaApplicationMerchantFromBankPartner($this->partnerBankMerchant, $bankingAccount->merchant);
+        }
     }
 
 
@@ -233,12 +238,12 @@ class Service extends BankingAccount\Service
 
         $this->validator->validateInput(Validator::PARTNER_LMS_EDIT, $input);
 
-        if (array_key_exists('activation_detail', $input)) 
+        if (array_key_exists('activation_detail', $input))
         {
             $activationDetailInput = $input['activation_detail'];
             $this->validator->validateInput(Validator::EDIT_ACTIVATION_DETAIL_BY_BANK, $activationDetailInput);
 
-            if (array_key_exists(ActivationDetail\Entity::RBL_ACTIVATION_DETAILS, $activationDetailInput)) 
+            if (array_key_exists(ActivationDetail\Entity::RBL_ACTIVATION_DETAILS, $activationDetailInput))
             {
                 $rblActivationDetails = $activationDetailInput[ActivationDetail\Entity::RBL_ACTIVATION_DETAILS];
                 $this->validator->validateInput(Validator::RBL_ACTIVATION_DETAILS, $rblActivationDetails);
@@ -259,7 +264,7 @@ class Service extends BankingAccount\Service
     public function fetchBankingAccountsActivationActivityById(string $bankingAccountId, array $input): array
     {
         $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
-        
+
         $this->validator->validateMerchantIsAttachedToPartner($bankingAccount->merchant, $this->partnerBankMerchant);
 
         $activity = [];
@@ -312,7 +317,7 @@ class Service extends BankingAccount\Service
             if (array_key_exists('sort', $input) && $input['sort'] === 'asc')
             {
                 return $a_createdAt - $b_createdAt;
-            } 
+            }
             else // default
             {
                 return $b_createdAt - $a_createdAt;
