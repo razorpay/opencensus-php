@@ -438,8 +438,19 @@ class SyncEventManager
 
     public function logEntityFetch(array $logData)
     {
-        if ((config('app.acs.verbose_log') === true) or ($this->stats['total']['count'] > 0))
-        {
+        $routeName = $logData['route'] ?? 'none';
+        $asyncJobName = $logData['async_job_name'] ?? 'none';
+
+        $metricDimensions = [
+            Metric::LABEL_ROUTE => $routeName,
+            Metric::LABEL_ASYNC_JOB_NAME => $asyncJobName
+        ];
+
+        if (config('applications.acs.read_traffic_metric_enabled', false) === true) {
+            app('trace')->count(Metric::MERCHANT_RELATED_ENTITIES_READ_TRAFFIC_TOTAL, $metricDimensions);
+        }
+
+        if ((config('app.acs.verbose_log') === true) or ($this->stats['total']['count'] > 0)) {
             app('trace')->info(TraceCode::ACS_ENTITY_FETCH, $logData);
         }
     }
