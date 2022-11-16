@@ -485,6 +485,9 @@ final class RazorxTreatment
     // Experiment for RX DA stmt (driving stmt via BAS entity)
     const RX_DA_ACC_STMT_EXPERIMENT = 'rx_da_acc_stmt_experiment';
 
+    // Experiment for RX DA stmt (driving stmt via BAS entity) - Rearch
+    const RX_DA_ACC_STMT_REARCH_EXPERIMENT = 'rx_da_acc_stmt_rearch_experiment';
+
     //Experiment for enabling dcc on various libraries
     const DCC_ON_INTERNATIONAL = 'dcc_on_international';
 

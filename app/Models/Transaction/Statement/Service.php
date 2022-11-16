@@ -174,9 +174,11 @@ class Service extends Transaction\Service
         if (($this->isExperimentEnabled(Merchant\RazorxTreatment::RX_DA_ACC_STMT_EXPERIMENT) === true) and
             ($balance->isAccountTypeDirect() === true))
         {
-            $startTime = millitime();
-
             $this->trace->count(TxnMetric::TRANSACTION_CA_REQUEST_TOTAL, $dimension);
+
+            $isReArchExperimentEnabled = $this->isExperimentEnabled(Merchant\RazorxTreatment::RX_DA_ACC_STMT_REARCH_EXPERIMENT);
+
+            $startTime = millitime();
 
             $this->trace->info(
                 TraceCode::DRIVING_ACCOUNT_STATEMENT_FOR_DA_VIA_BAS,
@@ -185,11 +187,12 @@ class Service extends Transaction\Service
                     'balance_id'           => $balance->getId(),
                     'balance_type'         => $balance->getType(),
                     'balance_account_type' => $balance->getAccountType(),
+                    'is_rearch_enabled'    => $isReArchExperimentEnabled,
                 ]
             );
 
             $response = $this->repo->direct_account_statement
-                ->fetch($input, $this->merchant->getId(), ConnectionType::SLAVE)->toArrayPublic();
+                ->fetch($input, $this->merchant->getId(), ConnectionType::SLAVE, $isReArchExperimentEnabled)->toArrayPublic();
 
             $this->trace->info(
                 TraceCode::FETCH_MULTIPLE_FOR_TRANSACTIONS_RESPONSE,

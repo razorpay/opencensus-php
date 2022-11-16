@@ -2,12 +2,15 @@
 
 namespace RZP\Models\Transaction\Statement\DirectAccount\Statement;
 
+use Db;
+
 use RZP\Models\Base;
 use RZP\Base\Common;
 use RZP\Constants\Es;
 use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Base\BuilderEx;
+use RZP\Constants\Table;
 use RZP\Models\Reversal;
 use RZP\Models\External;
 use RZP\Trace\TraceCode;
@@ -29,6 +32,8 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
  */
 class Repository extends Base\Repository
 {
+
+    private $removeExpands = false;
     /**
      * {@inheritDoc}
      */
@@ -50,6 +55,22 @@ class Repository extends Base\Repository
         'source.fundAccount.contact',
         'source.fundAccount.account',
         'source.reversal',
+    ];
+
+    /**
+     * In GET and LIST for only source of type reversal laze loads following nested relations.
+     * @var array
+     */
+    protected $expandsForTypeReversal = [
+        'source',
+    ];
+
+    /**
+     * In GET and LIST for only source of type external laze loads following nested relations.
+     * @var array
+     */
+    protected $expandsForTypeExternal = [
+        'source',
     ];
 
     protected function addQueryOrder($query)
@@ -91,11 +112,23 @@ class Repository extends Base\Repository
      */
     public function fetch(array $input,
                           string $merchantId = null,
-                          string $connectionType = null): PublicCollection
+                          string $connectionType = null,
+                          bool $isReArchExperimentEnabled = false): PublicCollection
     {
         $connection = $this->getConnectionFromType($connectionType);
 
-        $this->baseQuery = $this->newQueryWithConnection($connection)
+        $this->baseQuery = $this->newQueryWithConnection($connection);
+
+        if($isReArchExperimentEnabled === true)
+        {
+            // remove expands from the list
+            $this->removeExpands = $isReArchExperimentEnabled;
+
+            $this->baseQuery = $this->baseQuery
+                                    ->from(\DB::raw(Table::BANKING_ACCOUNT_STATEMENT.' USE INDEX (banking_account_statement_merchant_id_created_at_index)'));
+        }
+
+        $this->baseQuery = $this->baseQuery
                                 ->whereNotNull($this->repo->direct_account_statement->dbColumn(Entity::ENTITY_ID));
 
         $startTimeMs = round(microtime(true) * 1000);
@@ -113,6 +146,12 @@ class Repository extends Base\Repository
 
         // After fetching settlement collection, we lazy load source relations for payout.
         $statements->where(Entity::ENTITY_TYPE, E::PAYOUT)->load($this->expandsForTypePayout);
+
+        if($isReArchExperimentEnabled === true)
+        {
+            $statements->where(Entity::ENTITY_TYPE, E::REVERSAL)->load($this->expandsForTypeReversal);
+            $statements->where(Entity::ENTITY_TYPE, E::EXTERNAL)->load($this->expandsForTypeExternal);
+        }
 
         return $statements;
     }
@@ -394,7 +433,7 @@ class Repository extends Base\Repository
             return;
         }
 
-        $query->leftJoin(
+        $query->join(
             $balanceTable,
             function(JoinClause $join)
             {
@@ -519,4 +558,10 @@ class Repository extends Base\Repository
                 $join->where($transactionTypeColumn, E::PAYOUT);
             });
     }
+
+    public function getExpandsForQuery(array $extra = []): array
+    {
+        return $this->removeExpands === true  ? array() : parent::getExpandsForQuery($extra);
+    }
+
 }
