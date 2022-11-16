@@ -12,8 +12,6 @@ import { LOADING } from 'merchant/components/Activation/Constants';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import SuccessModal from './SuccessModal';
 import ExitConfirmation from './ExitConfirmation';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { initialState, reducer } from './stateHelpers';
 import {
   openModal as openModalFn,
@@ -28,7 +26,15 @@ import {
   modelFormDataBeforeSave,
 } from './utils';
 
-const SCREEN = window.location.pathname.includes('payment-methods') ? 'payment methods' : 'config';
+//Analytics
+import {
+  trackDataSaveError,
+  trackDataSaveSuccess,
+  trackDataSaving,
+  trackFormButtonClicked,
+  trackModalClosed,
+  trackModalOpened,
+} from './analytics';
 
 // eslint-disable-next-line no-shadow
 const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource }) => {
@@ -62,15 +68,7 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
           dispatch({ type: 'LOADING', payload: false });
         }
       });
-    analyticsTrack({
-      objectName: 'intl enablement form',
-      actionName: 'open',
-      screen: SCREEN,
-      properties: {
-        timestamp: Date.now(),
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
+    trackModalOpened();
     return () => {
       window.clearTimeout(loaderTimeout); // cleanup
     };
@@ -144,6 +142,7 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
       return null;
     }
     validateTab(formikProps, false, activeTab);
+    trackDataSaving(true, tabsData?.[activeTab]?.name);
     dispatch({ type: 'IS_SAVING_FORM', payload: LOADING.PENDING });
     window.clearTimeout(loaderTimeout); // Reset the previous removeLoader-call timer on each new Pending
     let formData = {};
@@ -168,10 +167,12 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
         // save the data back to formik
         const data = modelFormData(res.data);
         formikProps.setValues(data);
+        trackDataSaveSuccess(tabsData?.[activeTab]?.name);
       })
       .catch((err) => {
         dispatch({ type: 'IS_SAVING_FORM', payload: LOADING.ERROR });
         removeLoader();
+        trackDataSaveError(tabsData?.[activeTab]?.name, err?.errors);
 
         // handle any errors sent from server
         if (err?.errors?._internal) {
@@ -213,32 +214,17 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
   const submitForm = (formData, bag) => {
     formData = modelFormDataBeforeSave(formData);
     bag.setStatus(null); // reset status
-    analyticsTrack({
-      objectName: 'intl enablement form',
-      actionName: 'submit',
-      screen: SCREEN,
-      properties: {
-        timestamp: Date.now(),
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
+    trackDataSaving(true, tabsData?.[activeTab]?.name, true);
     merchantFetch({ url: 'international_enablement/submit', method: 'post', data: formData })
       .then(() => {
-        analyticsTrack({
-          objectName: 'intl enablement form',
-          actionName: 'submit success',
-          screen: SCREEN,
-          properties: {
-            timestamp: Date.now(),
-            ...getCommonAnalyticsProperties(window.rzp_user),
-          },
-        });
+        trackDataSaveSuccess(tabsData?.[activeTab]?.name, true);
         // close this modal and open success modal
         closeModal();
         openModal({ component: <SuccessModal closeModal={closeModal} /> });
       })
       .catch((err) => {
         // handle any errors sent from server
+        trackDataSaveError(tabsData?.[activeTab]?.name, err?.errors, true);
         if (err.errors._internal) {
           const errorObj = err.errors._internal;
           delete errorObj.internal_error_code;
@@ -277,7 +263,6 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
   const handleOnSubmit = (e, formikProps) => {
     e.preventDefault();
     formikProps.validateForm().then((err) => {
-      console.error('errors', err);
       // set tabs validity. Last tab is set to false since it doesn't contain any field (submit form)
       const tabVal = [true, true, true, true, false];
       Object.keys(err).forEach((item) => {
@@ -308,21 +293,17 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
   };
 
   const handleNext = (formikProps) => {
-    analyticsTrack({
-      objectName: 'intl enablement form',
-      actionName: `click Save & Next on ${tabsData[activeTab]?.name}`,
-      screen: SCREEN,
-      properties: {
-        timestamp: Date.now(),
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
+    trackFormButtonClicked(
+      tabsData?.[activeTab]?.name,
+      activeTab === tabsData.length - 1 ? 'Submit & Verify' : 'Next',
+    );
     validateTab(formikProps, false, activeTab);
     if (activeTab < tabsData.length - 1) dispatch({ type: 'NEXT_TAB' });
     saveFormData(formikProps);
   };
 
   const handlePrev = () => {
+    trackFormButtonClicked(tabsData?.[activeTab]?.name, 'Previous');
     if (activeTab > 0) dispatch({ type: 'PREV_TAB' });
   };
 
@@ -340,21 +321,14 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
         component: (
           <ExitConfirmation
             triggerSource={triggerSource}
+            activeTab={activeTab}
             saveFormData={() => saveFormData(formikProps)}
           />
         ),
         size: 'small',
       });
     } else {
-      analyticsTrack({
-        objectName: 'intl enablement form',
-        actionName: `click close`,
-        screen: SCREEN,
-        properties: {
-          timestamp: Date.now(),
-          ...getCommonAnalyticsProperties(window.rzp_user),
-        },
-      });
+      trackModalClosed();
     }
   };
 

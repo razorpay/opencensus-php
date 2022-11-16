@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Amount from 'common/ui/Amount';
 import Button from 'common/new-ui/Button';
 import SwitchField from 'common/ui/Forms/SwitchField';
@@ -6,6 +6,7 @@ import { formatFromNow } from 'common/utils/rzp-utils';
 import withInternationalConfig from './InternationalConfig';
 import InternationalStatusLabel from 'merchant/components/InternationalStatusLabel';
 import ProductInfo from './components/InternationalConfigComponents/ProductInfo';
+import { trackIsButtonVisible } from './Questionnaire/analytics';
 
 const statusMap = {
   approved: 'enabled',
@@ -40,26 +41,26 @@ const InternationalCards = ({
 
   const renderInternationalAccessOrStatus = () => {
     const isRequestButtonDisabled = !isWebsiteAdded || !isKycComplete;
+    const buttonText =
+      questionnaireStatus?.new_flow && questionnaireStatus?.enablement_progress === 'in_progress'
+        ? 'Edit Draft'
+        : 'Request Access';
 
     if (isRequestAccessAllowed) {
       return (
         <Button.Primary
-          class="pull-right"
+          className="pull-right"
           onClick={onRequestAccessClick}
           disabled={isRequestButtonDisabled}
         >
-          {questionnaireStatus &&
-          questionnaireStatus.new_flow &&
-          questionnaireStatus.enablement_progress === 'in_progress'
-            ? 'Edit Draft'
-            : 'Request Access'}
+          {buttonText}
         </Button.Primary>
       );
     }
 
     if (currentStatusOnHeader) {
       return (
-        <span class="access-status">
+        <span className="access-status">
           <InternationalStatusLabel status={statusMap[currentStatusOnHeader]} />
         </span>
       );
@@ -74,7 +75,7 @@ const InternationalCards = ({
     }
 
     return (
-      <ul class="product-list">
+      <ul className="product-list">
         <ProductInfo
           title="Payment Gateway"
           status={statusMap[pgProductStatus]}
@@ -108,13 +109,17 @@ const InternationalCards = ({
     );
   };
 
+  useEffect(() => {
+    trackIsButtonVisible(isRequestAccessAllowed, 'Request');
+  }, [isRequestAccessAllowed]);
+
   return (
-    <div class="international-card">
-      <div class="heading">
-        <li class="title">International Card</li>
+    <div className="international-card">
+      <div className="heading">
+        <li className="title">International Card</li>
 
         {isTogglerVisible && (
-          <span class="toggler-btn">
+          <span className="toggler-btn">
             <SwitchField
               defaultChecked={internationalEnabled}
               onChange={(isChecked, postActionCB) => {
@@ -123,9 +128,9 @@ const InternationalCards = ({
               type="prime"
             />
             {internationalEnabled ? (
-              <b class="text-primary">Enabled</b>
+              <b className="text-primary">Enabled</b>
             ) : (
-              <b class="text-faded">Disabled</b>
+              <b className="text-faded">Disabled</b>
             )}
           </span>
         )}
@@ -133,9 +138,9 @@ const InternationalCards = ({
         {renderInternationalAccessOrStatus()}
       </div>
 
-      <div class="body">
-        <form class="form-horizontal">
-          <div class="description">
+      <div className="body">
+        <form className="form-horizontal">
+          <div className="description">
             <div style={{ display: 'flex', alignItems: 'center', margin: '10px 0' }}>
               {isInternationalPaymentsAllowed && (
                 <span>Card payments on payment gateway, payment pages, links & invoices</span>
@@ -143,7 +148,7 @@ const InternationalCards = ({
               {isRequestAccessAllowed &&
                 questionnaireStatus?.new_flow &&
                 questionnaireStatus.enablement_progress === 'in_progress' && (
-                  <span class="questionnaire-status">{`${
+                  <span className="questionnaire-status">{`${
                     questionnaireStatus.percentage_completion
                   }% details are complete | ${formatFromNow(
                     questionnaireStatus.last_updated_at,
@@ -152,7 +157,7 @@ const InternationalCards = ({
             </div>
             <div>{description}</div>
           </div>
-          <div class="product-section">
+          <div className="product-section">
             {renderProductsSection()}
             {isAnyProductIntlApproved && (
               <div>

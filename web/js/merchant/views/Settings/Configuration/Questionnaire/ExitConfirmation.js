@@ -2,28 +2,19 @@ import React from 'react';
 import Questionnaire from './index';
 import { connect } from 'react-redux';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import {
   openModal as openModalFn,
   closeModal as closeModalFn,
 } from 'merchant_common/reducers/modals';
+import { trackFormButtonClicked, trackModalClosed } from './analytics';
+import { tabsData } from './utils';
 
-const SCREEN = window.location.pathname.includes('payment-methods') ? 'payment methods' : 'config';
-
-const ExitConfirmation = ({ closeModal, openModal, saveFormData, triggerSource }) => {
+const ExitConfirmation = ({ closeModal, openModal, saveFormData, triggerSource, activeTab }) => {
   const saveDraft = () => {
     saveFormData();
     closeModal();
-    analyticsTrack({
-      objectName: 'intl enablement form',
-      actionName: `click close Save as draft`,
-      screen: SCREEN,
-      properties: {
-        timestamp: Date.now(),
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
+    trackFormButtonClicked(tabsData?.[activeTab]?.name, 'Save and Exit');
+    trackModalClosed();
   };
 
   return (

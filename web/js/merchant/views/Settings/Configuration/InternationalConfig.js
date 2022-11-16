@@ -11,8 +11,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { updateSession } from 'merchant/reducers/session';
 import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
 import { fetchSchedule } from 'merchant/reducers/settlements/details';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties, isPresent } from 'common/utils/rzp-utils';
+import { isPresent } from 'common/utils/rzp-utils';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 import { getItem, setItem } from 'common/utils/localStorage';
@@ -21,12 +20,12 @@ import RequestInitiateModal from './components/InternationalConfigComponents/Req
 import RequestSubmittedModal from './components/InternationalConfigComponents/RequestSubmittedModal';
 import Questionnaire from './Questionnaire';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { trackFormSubmitted, trackRequestClicked } from './Questionnaire/analytics';
 
 const NO_ACTION_RECEIVED = 'no_action_received';
 const IN_REVIEW = 'in_review';
 const APPROVED = 'approved';
 const REJECTED = 'rejected';
-const SCREEN = window.location.pathname.includes('payment-methods') ? 'payment methods' : 'config';
 
 function withInternationalConfig(WrappedComponent) {
   class InternationalConfig extends React.Component {
@@ -163,17 +162,7 @@ function withInternationalConfig(WrappedComponent) {
         ['in_progress', 'submitted'].includes(questionnaireStatus?.enablement_progress)
           ? 'edit draft'
           : 'request access';
-      analyticsTrack({
-        objectName,
-        actionName,
-        screen: SCREEN,
-        properties: {
-          triggerSource,
-          timestamp: Date.now(),
-          ...getCommonAnalyticsProperties(window.rzp_user),
-        },
-      });
-
+      trackRequestClicked(actionName, objectName);
       let modalOptions = {
         component: (
           <RequestInitiateModal
@@ -225,21 +214,13 @@ function withInternationalConfig(WrappedComponent) {
       } else stateKeyToUpdate = 'isAccessRequested';
 
       this.setState({ [stateKeyToUpdate]: IN_REVIEW }, () => {
+        trackFormSubmitted('intl typeform');
         this.IntlEnableTypeForm.close();
         this.openRequestSubmittedModal();
       });
     };
 
     openRequestSubmittedModal = () => {
-      analyticsTrack({
-        objectName: 'intl typeform',
-        actionName: 'submit',
-        screen: SCREEN,
-        properties: {
-          timestamp: Date.now(),
-          ...getCommonAnalyticsProperties(window.rzp_user),
-        },
-      });
       this.props.openModal({
         component: <RequestSubmittedModal closeModal={this.closeModal} />,
         size: 'medium',

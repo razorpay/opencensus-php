@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Amount from 'common/ui/Amount';
 import SwitchField from 'common/ui/Forms/SwitchField';
 import InternationalStatusLabel from 'merchant/components/InternationalStatusLabel';
 import withInternationalConfig from 'merchant/views/Settings/Configuration/InternationalConfig';
 import Non3dsCardsActivation from './Non3dsCardsActivation';
+import { trackIsButtonVisible } from 'merchant/views/Settings/Configuration/Questionnaire/analytics';
 
 const statusMap = {
   approved: 'activated',
@@ -31,11 +32,15 @@ const International = ({
   onRequestAccessClick,
   toggleInternationalization,
 }) => {
+  useEffect(() => {
+    trackIsButtonVisible(isRequestAccessAllowed && !isInternationalBlackList && isWebsiteAdded);
+  }, [isRequestAccessAllowed]);
+
   if (!isWebsiteAdded || isInternationalBlackList) {
     return (
-      <li class="international-leaf-item alert-info">
+      <li className="international-leaf-item alert-info">
         <div>
-          <div class="detail">
+          <div className="detail">
             <strong>International Cards</strong>
             {isInternationalBlackList && (
               <p>International Cards is not supported for your business type</p>
@@ -50,12 +55,12 @@ const International = ({
   }
 
   return (
-    <li class="international-leaf-item">
+    <li className="international-leaf-item">
       <div>
-        <div class="detail">
+        <div className="detail">
           <strong>International Cards</strong>
           {isTogglerVisible && (
-            <span class="toggler-btn" style={{ marginLeft: '10px' }}>
+            <span className="toggler-btn" style={{ marginLeft: '10px' }}>
               <SwitchField
                 defaultChecked={internationalEnabled}
                 onChange={(isChecked, postActionCB) => {
@@ -64,17 +69,17 @@ const International = ({
                 type="prime"
               />
               {internationalEnabled ? (
-                <b class="text-primary">Enabled</b>
+                <b className="text-primary">Enabled</b>
               ) : (
-                <b class="text-faded">Disabled</b>
+                <b className="text-faded">Disabled</b>
               )}
             </span>
           )}
-          <p class="desc">On Payment Gateway, Pages, Links and Invoices</p>
+          <p className="desc">On Payment Gateway, Pages, Links and Invoices</p>
         </div>
         {isRequestAccessAllowed && (
           <button
-            class="btn btn-primary ml-5"
+            className="btn btn-primary ml-5"
             onClick={onRequestAccessClick}
             disabled={!isKycComplete}
           >
@@ -94,7 +99,7 @@ const International = ({
 
       {!!isAnyProductIntlApproved && (
         <>
-          <div class="spacer-10" />
+          <div className="spacer-10" />
 
           <ProductInfo
             product="pg"
@@ -107,7 +112,7 @@ const International = ({
             onRequestAccessClick={() => onRequestAccessClick({ triggerSource: 'pg' })}
           />
 
-          <div class="spacer-20" />
+          <div className="spacer-20" />
 
           <ProductInfo
             product="otherProducts"
@@ -170,12 +175,12 @@ const ProductInfo = ({
       return null;
   }
   return (
-    <div class="product-info">
-      <div class="product-title">
+    <div className="product-info">
+      <div className="product-title">
         <strong>{title}</strong>
 
         {showRequestAccessBtn ? (
-          <a role="button" class="ml-5" onClick={onRequestAccessClick}>
+          <a role="button" className="ml-5" onClick={onRequestAccessClick}>
             <strong>
               {questionnaireStatus?.new_flow &&
               questionnaireStatus.enablement_progress === 'in_progress'
@@ -187,7 +192,7 @@ const ProductInfo = ({
           showStatusLabel && <InternationalStatusLabel status={statusMap[status]} />
         )}
       </div>
-      <div class="spacer-10" />
+      <div className="spacer-10" />
       {description}
     </div>
   );
