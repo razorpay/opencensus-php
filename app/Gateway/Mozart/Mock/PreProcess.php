@@ -162,6 +162,8 @@ class PreProcess extends Base\Mock\Server
     {
         assertTrue($entities['gateway']['cps_route'] === Payment\Entity::UPI_PAYMENT_SERVICE);
 
+        $callbackData = json_decode($entities['gateway']['payload']['msg'], true);
+
         $data = (new Sbi())->decryptInput($entities)['apiResp'];
 
         $response = MozartUpiResponse::getDefaultInstanceForV2();
@@ -172,15 +174,21 @@ class PreProcess extends Base\Mock\Server
             UpiEntity::NPCI_REFERENCE_ID    => $data['custRefNo'],
             UpiEntity::NPCI_TXN_ID          => $data['npciTransId'] ?? "",
             UpiEntity::MERCHANT_REFERENCE   => $data['pspRefNo'],
+            UpiEntity::GATEWAY_PAYMENT_ID   => $data['upiTransRefNo'],
+            UpiEntity::GATEWAY              => 'upi_sbi',
+            'gateway_amount'                => $data['amount'] * 100,
+            "npci_response_code"            => $data['status'],
+            "gateway_status_code"           => $data['status'],
+            "gateway_data"                  => "{\"addInfo2\":\"7971807546\"}"
         ]);
 
         $response->setPayment([
             Payment\Entity::CURRENCY          => 'INR',
-            Payment\Entity::AMOUNT_AUTHORIZED => $data['amount']*100,
+            Payment\Entity::AMOUNT_AUTHORIZED => $data['amount'] * 100,
         ]);
 
         $response->setTerminal([
-            Terminal\Entity::GATEWAY_MERCHANT_ID2   => $data['payeeVPA'],
+            Terminal\Entity::GATEWAY_MERCHANT_ID    => $callbackData['pgMerchantId'],
             Terminal\Entity::GATEWAY                => 'upi_sbi',
         ]);
 

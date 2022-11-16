@@ -667,6 +667,10 @@ class VerifyData extends Base\Mock\Server
             // Mocking amount for validating duplicating unexpected payment for amount mismatch
             $response['data']['gateway_response']['amount'] = 100;
         }
+        else if ($vpa === 'unexpected@v2contract')
+        {
+            $response['data']['gateway_response']['amount'] = $entities['payment']['amount']/100;
+        }
 
         return $response;
     }

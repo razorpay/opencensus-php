@@ -781,6 +781,12 @@ class Gateway extends Base\Gateway
 
     public function getParsedDataFromUnexpectedCallback($callbackData)
     {
+        if ((isset($callbackData['data']['version']) === true)
+            and ($callbackData['data']['version']) === 'v2')
+        {
+            return $this->upiGetParsedDataFromUnexpectedCallback($callbackData);
+        }
+
         $payment = [
             'method'   => 'upi',
             'amount'   => (int) ($callbackData['data']['amount'] * 100),
@@ -805,9 +811,57 @@ class Gateway extends Base\Gateway
         ];
     }
 
+    /**
+     * Verifies if the payload specified in the server callback is valid.
+     * @param array $callbackData
+     */
+    protected function isValidUnexpectedPaymentV3($callbackData)
+    {
+        $data = $callbackData['data'];
+
+        $input = [
+            'payment' => [
+                'id'      => $data['upi']['merchant_reference'],
+                'gateway' => $this->gateway,
+                'vpa'     => $data['upi']['vpa'],
+                'amount'  => (int) ($data['payment']['amount_authorized']),
+            ],
+            'terminal' => $this->terminal,
+        ];
+
+        $this->action = Action::VERIFY;
+
+        $verify = new Verify($this->gateway, $input);
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $paymentAmount = $this->formatAmount($verify->input);
+
+        $content = $verify->verifyResponseContent;
+
+        $actualAmount = number_format($content['amount'], 2, '.', '');
+
+        $this->assertAmount($paymentAmount, $actualAmount);
+
+        $status = $content['status'];
+
+        $this->checkResponseStatus($status);
+    }
+
     public function validatePush($input)
     {
         parent::action($input, Action::VALIDATE_PUSH);
+
+        // It checks if pre process happened through common gateway trait contracts
+        if ((isset($input['data']['version']) === true) and
+            ($input['data']['version'] === 'v2'))
+        {
+            $this->upiIsDuplicateUnexpectedPayment($input);
+
+            $this->isValidUnexpectedPaymentV3($input);
+
+            return ;
+        }
 
        // It checks if the version is V2,which is request from art
         if ((empty($input['meta']['version']) === false) and ($input['meta']['version'] === 'api_v2'))
@@ -924,12 +978,68 @@ class Gateway extends Base\Gateway
         ];
     }
 
+    /**
+     * This method takes the preprocessed input of unexpected callback
+     * in v2 contract and creates upi entity
+     *
+     * @param array $input
+     * @return array
+     */
+    public function authorizePushV3($input)
+    {
+        list($paymentId , $callbackData) = $input;
+        $data = $callbackData['data'];
+
+        $gatewayInput = [
+            'payment' => [
+                'id'      => $paymentId,
+                'gateway' => $data['upi']['gateway'],
+                'vpa'     => $data['upi']['vpa'],
+                'amount'  => $data['payment']['amount_authorized'],
+            ],
+        ];
+
+        parent::action($gatewayInput, Action::AUTHORIZE);
+
+        $attributes = [
+            Entity::TYPE                    => Base\Type::PAY,
+            Entity::RECEIVED                => 1,
+            Entity::GATEWAY_MERCHANT_ID     => $data['terminal']['gateway_merchant_id'],
+            Entity::VPA                     => $data['upi']['vpa'],
+            Entity::NPCI_REFERENCE_ID       => $data['upi']['npci_reference_id'],
+            Entity::GATEWAY_PAYMENT_ID      => $data['upi']['gateway_payment_id'],
+            Entity::STATUS_CODE             => $data['upi']['gateway_status_code'],
+            Entity::NPCI_TXN_ID             => $data['upi']['npci_txn_id'],
+            Entity::MERCHANT_REFERENCE      => $data['upi']['merchant_reference'],
+            Entity::GATEWAY_DATA            => $data['upi']['gateway_data'],
+        ];
+
+        $gatewayPayment = $this->upiCreateGatewayEntity($gatewayInput, $attributes);
+
+        $result = $data['upi']['gateway_status_code'];
+
+        $this->checkResponseStatus($result);
+
+        return [
+            'acquirer' => [
+                Payment\Entity::VPA         => $gatewayPayment->getVpa(),
+                Payment\Entity::REFERENCE16 => $gatewayPayment->getNpciReferenceId(),
+            ]
+        ];
+    }
+
     public function authorizePush($input)
     {
         // Authorize push now have two implementations, one which calls mozart for
         // pre processing of callback. In this case, the callback data parsed by mozart.
         // Second approach where input is parsed according to new structure
         list($paymentId , $callbackData) = $input;
+
+        if ((isset($callbackData['data']['version']) === true) and
+            (($callbackData['data']['version']) === 'v2'))
+        {
+            return $this->authorizePushV3($input);
+        }
 
         // Older structure will have the gateway response
         if (empty($callbackData['data']['gateway_response'] ?? null) === false)

@@ -72,9 +72,9 @@ class Server extends Base\Mock\Server
     ];
     }
 
-    public function getUnexpectedAsyncCallbackContent(string $status)
+    public function getUnexpectedAsyncCallbackContent(string $status, $requiredData = [])
     {
-        $response = $this->getUnexpectedAsyncCallbackResponseArray($status);
+        $response = $this->getUnexpectedAsyncCallbackResponseArray($status, $requiredData);
 
         $paymentId =  $response['apiResp']['pspRefNo'];
         $vpa = $response['apiResp']['payerVPA'];
@@ -285,7 +285,7 @@ class Server extends Base\Mock\Server
         return [ResponseFields::API_RESPONSE => $response];
     }
 
-    private function getUnexpectedAsyncCallbackResponseArray($status)
+    private function getUnexpectedAsyncCallbackResponseArray($status, $requiredData)
     {
         $response = [
             ResponseFields::PSP_REFERENCE_NO       => str_random(12),
@@ -310,6 +310,11 @@ class Server extends Base\Mock\Server
             ResponseFields::PAYER_VPA              => $status === 'success' ? 'success@sbi' : 'failedverify@sbi',
             ResponseFields::PAYEE_VPA              => self::DEFAULT_PAYEE_VPA,
         ];
+
+        foreach ($requiredData as $key => $value)
+        {
+            $response[$key] = $value;
+        }
 
         return [ResponseFields::API_RESPONSE => $response];
     }
