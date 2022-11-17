@@ -4178,7 +4178,7 @@ trait Refund
         }
 
         $variant = $this->app->razorx->getTreatment(
-            $merchantId,
+            $payment->getId(),
             Merchant\RazorxTreatment::MERCHANTS_REFUND_CREATE_V_1_1,
             $this->mode
         );
