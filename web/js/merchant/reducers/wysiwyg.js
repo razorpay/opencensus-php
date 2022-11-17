@@ -316,7 +316,7 @@ export default (state = initialState, action) => {
         ...initialState,
         magicCheckout: {
           ...initialState.magicCheckout,
-          enabled: entityData.settings.one_click_checkout === '1',
+          enabled: false,
           feeRule: entityData.settings.shipping_fee_rule
             ? transfeeRuleToNormalFormat(JSON.parse(entityData.settings.shipping_fee_rule))
             : { ...DEFAULT_RULE },
