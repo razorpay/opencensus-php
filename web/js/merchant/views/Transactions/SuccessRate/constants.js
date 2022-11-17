@@ -2,6 +2,7 @@ export const DEFAULT_PRESET = 0; // Last 6 Hours
 export const DEFAULT_INTERVAL = 60; // default 60 minutes
 export const DEFAULT_ACTIVE_TAB = 'Overall';
 export const INITIAL_SELECTED_CARD_TYPE = 'credit';
+export const OPTIMIZER_FAQ_DOC_LINK = 'https://razorpay.com/docs/payments/optimizer/success-rate';
 
 // Graph type
 export const SCATTER = 'scatter';

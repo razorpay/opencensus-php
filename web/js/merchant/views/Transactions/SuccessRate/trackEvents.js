@@ -81,3 +81,17 @@ export const needHelpFaq = (params) => ({
   screen: 'Transactions - Success Rate',
   properties: params,
 });
+
+export const downloadSRGraphReport = (params) => ({
+  objectName: `Success rate - Download SR Report`,
+  actionName: 'Click',
+  screen: 'Transactions - Success Rate',
+  properties: params,
+});
+
+export const downloadSRErrorReport = (params) => ({
+  objectName: `Success rate - Download SR Report`,
+  actionName: 'Click',
+  screen: 'Transactions - Success Rate',
+  properties: params,
+});

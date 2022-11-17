@@ -17,7 +17,6 @@ import {
   queryFilters,
   getMerchantErrorsPayload,
   validateDateRange,
-  reportSR,
 } from 'merchant/views/Transactions/SuccessRate/helper';
 import {
   PRESETS,
@@ -29,8 +28,6 @@ import {
   filterSuccessRate,
   trackSuccessRateEvents,
 } from 'merchant/views/Transactions/SuccessRate/trackEvents';
-import { arrayObjToCsv } from 'common/utils/rzp-utils';
-import fileDownload from 'common/utils/file-download';
 import { DateRangePreset } from './DateRangePreset';
 import TabRefreshButton from './TabRefreshButton';
 
@@ -46,7 +43,6 @@ const SuccessRateFilter = (props) => {
     setDefaultLastUpdatedAt,
     activeTab,
     tab,
-    isLoading,
     setActiveTab,
     setCardTypeFilter,
   } = props;
@@ -87,7 +83,6 @@ const SuccessRateFilter = (props) => {
     await fetchSuccessRate({ payload, updateDropdownOptions: isOverallTabActive });
     const errorsPaylod = getMerchantErrorsPayload(isOverallTabActive);
     fetchMerchantErrors(errorsPaylod);
-
     trackSuccessRateEvents(filterSuccessRate(payload));
   };
 
@@ -123,12 +118,6 @@ const SuccessRateFilter = (props) => {
 
   const handleSearch = () => onSearch(dateRange, errors);
 
-  const handleDownload = () => {
-    const res = reportSR(tab?.histogram?.datasets);
-    const csvData = arrayObjToCsv(res);
-    fileDownload(csvData, `SR_${tab?.name}_Report.csv`);
-  };
-
   return (
     <div className="sr-filter">
       <div className="sr-filter-inputs">
@@ -161,29 +150,18 @@ const SuccessRateFilter = (props) => {
       </div>
 
       <div className="sr-filter-extras">
-        <label>
-          <TabRefreshButton
-            timestamp={tab?.lastUpdatedAt}
-            activeTab={activeTab}
-            onRefresh={handleSearch}
-          />
-        </label>
-        <button
-          className="btn btn-outline btn-sm"
-          onClick={handleDownload}
-          disabled={isLoading}
-          type="button"
-        >
-          <i className="i i-download" />
-          <span>Download</span>
-        </button>
+        <TabRefreshButton
+          timestamp={tab?.lastUpdatedAt}
+          activeTab={activeTab}
+          onRefresh={handleSearch}
+        />
       </div>
     </div>
   );
 };
 
 const mapStateToProps = ({ successRate }) => {
-  const { filters = {}, tabs = {}, activeTab, isLoading, tabLoading } = successRate;
+  const { filters = {}, tabs = {}, activeTab } = successRate;
   const { startDate, endDate, preset } = filters;
 
   return {
@@ -192,7 +170,6 @@ const mapStateToProps = ({ successRate }) => {
     preset,
     activeTab,
     tab: tabs[activeTab],
-    isLoading: isLoading || tabLoading,
   };
 };
 

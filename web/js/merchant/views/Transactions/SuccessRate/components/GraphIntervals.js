@@ -7,7 +7,7 @@ const GraphIntervals = (props) => {
   const { selected, onChange, startDate, endDate } = props;
 
   return (
-    <BtnGroup className="panel-action-item time-breakdown" value={selected} onChange={onChange}>
+    <BtnGroup className="panel-action-item" value={selected} onChange={onChange}>
       {Object.values(graphIntervals).map((item, index) => {
         const isEnabled = item.isEnabled(startDate, endDate);
         const btnProps = {

@@ -30,6 +30,7 @@ import {
   CARD,
   CARD_NETWORKS,
   PAYMENT_METHOD_VS_CALLOUT_DISPLAY_TEXT,
+  ERROR_CATEGORIES_VS_DISPLAY_TEXT,
   DEFAULT_METHOD,
 } from './constants';
 
@@ -755,4 +756,20 @@ export const reportSR = (datasets = []) => {
   });
 
   return Object.values(hashMap);
+};
+
+export const srErrorReport = (errors = {}) => {
+  const keys = Object.keys(errors);
+  if (!keys.length) return [];
+
+  return keys.reduce((previous, key) => {
+    errors[key]?.forEach(({ reason, count }) => {
+      previous.push({
+        'Error Type': ERROR_CATEGORIES_VS_DISPLAY_TEXT[key] ?? '--',
+        'Error Description': reason,
+        'Error Count': count,
+      });
+    });
+    return previous;
+  }, []);
 };

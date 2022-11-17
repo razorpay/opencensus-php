@@ -11,6 +11,7 @@ $widget-border = #E8EAEB
 $pill-color = #132644
 $btn-disabled-border = #CFDADD73
 $btn-disabled-text = #58666E73
+$refresh-disabled = #C4CBD7
 $tooltip-shadow = #0A1D3826
 $spacer = 8px
 $tooltip-border-color = #E0E8F4
@@ -33,6 +34,12 @@ $tooltip-border-color = #E0E8F4
     .btn-default:active
       box-shadow: none
 
+  .panel-actions .download-btn,
+  .rp-panel--header .download-btn
+    padding: 9px 12px
+    background-color: $bg-white
+    margin-left: "calc(%s / 2)" % $spacer
+
 .sr-filter
   padding-bottom: $spacer * 3
   display: flex
@@ -51,15 +58,12 @@ $tooltip-border-color = #E0E8F4
       &:focus
         color: $text-blue
 
-  &-inputs,
-  &-extras
-    margin-bottom: "calc(%s / 2)" % $spacer
-
   .datepicker-group
     display: flex
     flex-wrap: wrap
     gap: $spacer
     margin-left: 0
+    margin-bottom: "calc(%s / 2)" % $spacer
 
     .daterange-container
       height: auto
@@ -105,12 +109,11 @@ $tooltip-border-color = #E0E8F4
 
   .filter__actions .btn
     font-weight: bold
-    border: none
 
-  .filter__actions .btn-text
-    color: $text-blue
-    background-color: transparent
-    margin-left: $spacer
+    &.btn-text
+      color: $text-blue
+      background-color: transparent
+      margin-left: $spacer
 
   .error-text .i-info-outline
     margin-right: 2px
@@ -123,9 +126,10 @@ $tooltip-border-color = #E0E8F4
     display: flex
     align-items: center
     font-size: 12px
+    padding-top: $spacer * 2.5
 
     span.last-updated-at
-      color: #999A9C
+      color: $text-grey
 
     &__btn
       color: $text-blue
@@ -133,15 +137,13 @@ $tooltip-border-color = #E0E8F4
       box-shadow: none
       background-color: transparent
       font-size: 12px
-      padding: 0
-      margin-left: "calc(%s / 2)" % $spacer
+      padding: 6px
 
       &:hover
         background-color: transparent
 
       &[disabled]
-        background-color: transparent
-        color: #C4CBD7
+        color: $refresh-disabled
         opacity: 1
 
       &-icon
@@ -337,19 +339,19 @@ $tooltip-border-color = #E0E8F4
     padding-left: $spacer * 3
 
     div.panel-actions .panel-action-item
-      &.btn-group.time-breakdown button.btn[disabled]
-        opacity: 1
+      &.btn-group .btn-default[disabled]
         position: relative
         color: $btn-disabled-text
         border-color: $btn-disabled-border
+        opacity: 1
 
         &:hover .rzp-tooltip
-          opacity: 1
           position: absolute
           top: 0
           right: 0
           margin-top: $spacer * -5
           white-space: nowrap
+          opacity: 1
 
   div.chart-container
     position: relative
@@ -462,6 +464,11 @@ $tooltip-border-color = #E0E8F4
   .rp-panel
     padding: $spacer * 2 $spacer * 4
     height: 100%
+
+    &--header
+      display: flex
+      justify-content: space-between
+      align-items: center
 
     div.no-data
       text-align: start

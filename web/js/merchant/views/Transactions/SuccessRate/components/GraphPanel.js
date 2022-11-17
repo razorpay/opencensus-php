@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import GenericTooltip from 'common/ui/Tooltip';
 import GenericPanel, { PanelTopbar, PanelBody } from 'merchant/components/Home/GenericPanel';
 import TagGroup from './TagGroup';
 import GraphIntervals from './GraphIntervals';
@@ -26,12 +27,16 @@ import {
   generateDowntimeDataSets,
   getNoDataTitle,
   getNoDataSubTitle,
+  reportSR,
 } from 'merchant/views/Transactions/SuccessRate/helper';
 import {
+  trackSuccessRateEvents,
   methodIntervalClick,
   methodTagsClick,
-  trackSuccessRateEvents,
+  downloadSRGraphReport,
 } from 'merchant/views/Transactions/SuccessRate/trackEvents';
+import { arrayObjToCsv } from 'common/utils/rzp-utils';
+import fileDownload from 'common/utils/file-download';
 
 const GraphPanel = (props) => {
   const chartReference = React.useRef(null);
@@ -134,6 +139,13 @@ const GraphPanel = (props) => {
     trackSuccessRateEvents(methodIntervalClick({ breakdown }));
   };
 
+  const handleDownload = useCallback(() => {
+    const res = reportSR(tab?.histogram?.datasets);
+    const csvData = arrayObjToCsv(res);
+    fileDownload(csvData, `SR_${tab?.name}_Report.csv`);
+    trackSuccessRateEvents(downloadSRGraphReport({ fileName: `SR_${tab?.name}_Report.csv` }));
+  }, [tab.name]);
+
   return (
     <GenericPanel
       className="box-widget graph-panel"
@@ -158,6 +170,15 @@ const GraphPanel = (props) => {
             startDate={startDate}
             endDate={endDate}
           />
+          <button
+            className="btn btn-default download-btn"
+            onClick={handleDownload}
+            disabled={isLoading}
+            type="button"
+          >
+            <i className="i i-download" />
+            <GenericTooltip align="top">Download the SR Report</GenericTooltip>
+          </button>
         </div>
       </PanelTopbar>
       <PanelBody customTitle={getNoDataTitle(tab)} customSubtitle={getNoDataSubTitle(tab)}>

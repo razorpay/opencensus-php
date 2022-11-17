@@ -16,6 +16,8 @@ import {
   queryFilters,
   getMerchantErrorsPayload,
 } from 'merchant/views/Transactions/SuccessRate/helper';
+import { OPTIMIZER_FAQ_DOC_LINK } from 'merchant/views/Transactions/SuccessRate/constants';
+
 import {
   trackSuccessRateEvents,
   needHelpFaq,
@@ -24,8 +26,6 @@ import {
 const SuccessRate = (props) => {
   const { activeTab, tabs, fetchSuccessRate, fetchMerchantErrors } = props;
   const { error } = tabs[activeTab];
-
-  const docLink = 'https://razorpay.com/docs/payments/optimizer/success-rate';
 
   const fetchData = () => {
     const payload = queryFilters();
@@ -45,11 +45,13 @@ const SuccessRate = (props) => {
             <div className="btn-toolbar pull-right">
               <a
                 className="btn btn-link"
-                href={docLink}
+                href={OPTIMIZER_FAQ_DOC_LINK}
                 target="_blank"
                 rel="noopener noreferrer"
                 role="link"
-                onClick={() => trackSuccessRateEvents(needHelpFaq({ docLink }))}
+                onClick={() =>
+                  trackSuccessRateEvents(needHelpFaq({ docLink: OPTIMIZER_FAQ_DOC_LINK }))
+                }
               >
                 <i className="i i-lightbulb" /> Need help?
               </a>

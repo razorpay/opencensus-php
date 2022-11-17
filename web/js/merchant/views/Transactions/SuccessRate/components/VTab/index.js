@@ -40,6 +40,7 @@ function VTab(props) {
           tab={tab}
           heading={`Top payment failure reasons: ${title}`}
           data={content}
+          panelData={tabData}
         />
       </TabContent>
     </div>

@@ -37,7 +37,7 @@ const TabRefreshButton = ({ timestamp, onRefresh, activeTab }) => {
       </span>
       <AsyncButton
         text="Refresh"
-        pendingText="Refreshing..."
+        pendingText="Refreshing"
         className="btn btn-sm btn-text tab-refresh__btn"
         onClick={onRefresh}
         disabled={isRefreshDisabled}
