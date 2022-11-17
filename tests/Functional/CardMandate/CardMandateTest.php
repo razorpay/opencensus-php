@@ -2012,6 +2012,7 @@ class CardMandateTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
+
         $this->assertNotNull($response['razorpay_payment_id'] ?? null);
     }
 

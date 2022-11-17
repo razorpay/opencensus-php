@@ -4,6 +4,7 @@ namespace RZP\Gateway\Mozart;
 
 use RZP\Exception;
 use RZP\Gateway\Base;
+use RZP\Models\CardMandate\MandateHubs\MandateHubs;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -3037,6 +3038,12 @@ class Gateway extends Base\Gateway
 
         if ($handleException === true)
         {
+            if ($input['gateway'] == MandateHubs::BILLDESK_SIHUB)
+            {
+                $response['meta_data']['payment_id'] = $input['payment']['id'] ?? null;
+                $response['meta_data']['order_id'] = $input['payment']['order_id'] ?? null;
+
+            }
             $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
         }
 

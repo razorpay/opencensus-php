@@ -523,6 +523,7 @@ trait PaymentTrait
 //        $this->mockValidatePayment();
         $content = $this->makeRequestAndGetContent($request);
 
+
         return $content;
     }
 
@@ -2143,6 +2144,7 @@ trait PaymentTrait
 
         $response = $this->makeRequestParent($request);
 
+
         $url = $request['url'];
 
         if ($this->isPaymentCreationUrl($url))
@@ -2150,8 +2152,8 @@ trait PaymentTrait
             $this->resetSingletons();
 
             $response = $this->handlePaymentCreationFlow($response, $request, $callback);
-        }
 
+        }
         return $response;
     }
 
