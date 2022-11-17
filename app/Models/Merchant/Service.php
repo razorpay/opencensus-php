@@ -128,6 +128,7 @@ use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
 use RZP\Models\Merchant\Detail\SmsTemplates as SmsTemplates;
+use RZP\Notifications\Onboarding\Events as OnboardingEvents;
 use RZP\Models\Workflow\Action\Entity as WorkFlowActionEntity;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 use RZP\Models\Batch\Helpers\SubMerchant as SubMerchantBatchHelper;
@@ -135,6 +136,7 @@ use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
 use RZP\Models\Partner\SubMerchantBatchUtility as SubMerchantBatchUtil;
 use RZP\Models\Merchant\Detail\BusinessType as MerchantDetBusinessType;
 use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
+use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 use RZP\Models\Merchant\Balance\BalanceConfig\Service as BalanceConfigService;
 use RZP\Mail\Merchant\CreateSubMerchantPartner as CreateSubMerchantPartnerForPG;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForPG;
@@ -1028,18 +1030,34 @@ class Service extends Base\Service
     }
 
     protected function communicateSubMerchantCreation(
-        Entity $subMerchant,
-        Entity $aggregator,
-        string $product,
+        Entity      $subMerchant,
+        Entity      $aggregator,
+        string      $product,
         User\Entity $user = null,
-        bool $createdNewUser = false
+        bool        $createdNewUser = false
     )
     {
         $this->sendSubMerchantCreationMail($subMerchant, $aggregator, $product, $user, $createdNewUser);
 
         if (empty($user) === false)
         {
-            $this->sendSubMerchantCreationSMS($subMerchant, $aggregator, $product, $user, $createdNewUser);
+            if ($product === Product::BANKING)
+            {
+                $this->sendSubMerchantCreationSMSForX($subMerchant, $aggregator, $user, $createdNewUser);
+            }
+
+            $args      = [
+                MerchantConstants::MERCHANT => $subMerchant,
+                MerchantConstants::PARTNER  => $aggregator,
+                MerchantConstants::PARAMS   => [
+                    'subMerchantName'  => $subMerchant->getTrimmedName(25, "..."),
+                    'subMerchantId'    => $subMerchant->getId(),
+                    'subMerchantEmail' => $subMerchant->getEmail()
+                ]
+            ];
+            $eventName = ($product === Product::BANKING) ? OnboardingEvents::PARTNER_ADDED_SUBMERCHANT_FOR_X : OnboardingEvents::PARTNER_ADDED_SUBMERCHANT;
+
+            (new OnboardingNotificationHandler($args))->sendForEvent($eventName);
         }
     }
 
@@ -1158,20 +1176,19 @@ class Service extends Base\Service
     }
 
     /**
-     * Send an SMS to sub-merchant when added via partner dashboard for X and Primary
+     * Send an SMS to sub-merchant when added via partner dashboard for X
      *
-     * @param Entity $subMerchant
-     * @param Entity $merchant
-     * @param string $product
+     * @param Entity           $subMerchant
+     * @param Entity           $merchant
+     * @param string           $product
      * @param User\Entity|null $user
-     * @param bool $isNewUser
+     * @param bool             $isNewUser
      */
-    protected function sendSubMerchantCreationSMS(
-        Entity $subMerchant,
-        Entity $merchant,
-        string $product,
+    protected function sendSubMerchantCreationSMSForX(
+        Entity      $subMerchant,
+        Entity      $merchant,
         User\Entity $user,
-        bool $isNewUser
+        bool        $isNewUser
     )
     {
         $subMerchantDetails = (new MerchantDetailCore())->getMerchantDetails($subMerchant);
@@ -1185,53 +1202,12 @@ class Service extends Base\Service
         if (
             ($merchant->isPartner() === false) or
             ($isNewUser === false) or
-            (empty($submContactMobile) === true))
+            (empty($submContactMobile) === true)
+        )
         {
             return;
         }
 
-        // common parts of sms payload
-        $smsPayload = [
-            'language'          => 'english',
-            'ownerType'         => 'merchant',
-            'templateNamespace' => 'partnerships',
-            'destination'       => $submContactMobile,
-            'orgId'             => $subMerchant->getOrgId(),
-            'ownerId'           => $subMerchant->getId(),
-        ];
-
-        if ($product === Product::PRIMARY)
-        {
-            $properties = [
-                'id'            => $merchant->getId(),
-                'experiment_id' => $this->app['config']->get('app.send_sms_on_add_sub_merchant_partner_exp_id'),
-            ];
-
-            $isSubmOnboardingSmsEnabled = $this->core()->isSplitzExperimentEnable($properties, 'enable');
-
-            if ($isSubmOnboardingSmsEnabled !== true)
-            {
-                return;
-            }
-
-            return $this->sendSmsToSubmerchantForPrimary($smsPayload, $subMerchant, $merchant, $user);
-        }
-        else
-        {
-            $isSubmOnboardingSmsEnabled = (new Core())->isRazorxExperimentEnable($merchant->getId(),
-                                                                                 RazorxTreatment::PARTNER_SUBMERCHANT_INVITE_SMS);
-
-            if ($isSubmOnboardingSmsEnabled !== true)
-            {
-                return;
-            }
-
-            return $this->sendSmsToSubmerchantForX($smsPayload, $subMerchant, $merchant, $user);
-        }
-    }
-
-    protected function sendSmsToSubmerchantForX($smsPayload, $subMerchant, $merchant, $user)
-    {
         $token = (new User\Service())->getTokenWithExpiry(
             $user->getId(),
             User\Constants::SUBMERCHANT_ACCOUNT_CREATE_PASSOWRD_TOKEN_EXPIRY_TIME
@@ -1247,11 +1223,17 @@ class Service extends Base\Service
             'resetPasswordLink' => $this->app['elfin']->shorten($passwordResetLink)
         ];
 
-        $smsPayload = array_merge($smsPayload, [
-            'templateName'  => 'sms.onboarding.partner_submerchant_invite',
-            'contentParams' => $contentParams,
-            'sender'        => 'RZPAYX'
-        ]);
+        $smsPayload = [
+            'language'          => 'english',
+            'ownerType'         => 'merchant',
+            'templateNamespace' => 'partnerships',
+            'destination'       => $submContactMobile,
+            'orgId'             => $subMerchant->getOrgId(),
+            'ownerId'           => $subMerchant->getId(),
+            'templateName'      => 'sms.onboarding.partner_submerchant_invite',
+            'contentParams'     => $contentParams,
+            'sender'            => 'RZPAYX'
+        ];
 
         $tracePayload = [
             'submerchant_id'      => $subMerchant->getId(),
@@ -1270,35 +1252,6 @@ class Service extends Base\Service
         {
             $this->trace->traceException($e, Trace::CRITICAL, TraceCode::SUBMERCHANT_X_ONBOARDING_SMS_FAILED, $tracePayload);
         }
-    }
-
-    protected function sendSmsToSubmerchantForPrimary($smsPayload, $subMerchant, $merchant, $user)
-    {
-        $templateName = SmsTemplates::ADD_SUB_MERCHANT_PARTNER;
-
-        $smsPayload = array_merge($smsPayload, [
-            'templateName'  => $templateName,
-            'contentParams' => ['subMerchantName' => mb_strimwidth($subMerchant->getName(), 0, 25, "..."),],
-            'sender'        => 'RZRPAY'
-        ]);
-
-        $tracePayload = [
-            'submerchant_id'      => $subMerchant->getId(),
-            'partner_id'          => $merchant->getId(),
-            'submerchant_user_id' => $user->getId(),
-            'sms_template'        => $templateName
-        ];
-        try
-        {
-            $this->app->stork_service->sendSms($this->mode, $smsPayload);
-
-            $this->trace->info(TraceCode::SEND_SMS_ON_ADD_SUB_MERCHANT_PARTNER, $tracePayload);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException($e, Trace::CRITICAL, TraceCode::SEND_SMS_ON_ADD_SUB_MERCHANT_PARTNER_FAILED, $tracePayload);
-        }
-
     }
 
     public function editEmail($id, array $input): array

@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Merchant\Account;
 
 use DB;
 use Mail;
+use Mockery;
 use Illuminate\Database\Eloquent\Factory;
 
 use Psr\Http\Message\ResponseInterface;
@@ -46,6 +47,12 @@ class PartnerAccountTest extends TestCase
         $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
         $this->app->make(Factory::class)->load($factoryPath);
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->app['stork_service']->shouldReceive('sendWhatsappMessage')->andReturn([]);
     }
 
     public function testCreateAccountForCompletelyFilledRequest()
@@ -54,7 +61,10 @@ class PartnerAccountTest extends TestCase
 
         [$client] = $this->setUpPartnerWithKycHandled();
 
+        // expectWebhookEvent overrides the stork mock.
         $this->expectWebhookEvent('account.under_review');
+
+        $this->app['stork_service']->shouldReceive('sendWhatsappMessage')->andReturn([]);
 
         $metricsMock = $this->createMetricsMock();
 
@@ -408,6 +418,8 @@ class PartnerAccountTest extends TestCase
         [$client] = $this->setUpPartnerWithKycNotHandled();
 
         $this->expectWebhookEvent('account.under_review');
+
+        $this->app['stork_service']->shouldReceive('sendWhatsappMessage')->andReturn([]);
 
         // testUpdateKYCClarificationReason
         $subMerchant = $this->createUnderReviewAccount();

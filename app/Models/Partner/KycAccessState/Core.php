@@ -16,6 +16,9 @@ use RZP\Models\Merchant\AccessMap;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant\Partner as PartnerEmail;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Constants as MerchantConstants;
+use RZP\Notifications\Onboarding\Events as OnboardingEvents;
+use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 
 class Core extends Base\Core
 {
@@ -115,15 +118,59 @@ class Core extends Base\Core
         Mail::send($mail);
     }
 
-    protected function sendKycRequestConfirmedRejectedEmail(Entity $kycAccess, bool $isConfirmEmail)
+    /**
+     * Trigger sending Email/SMS/Whatsapp to partner when KYC access request is confirmed or rejected
+     *
+     * @param Entity $kycAccess
+     * @param bool   $isConfirmed
+     */
+    protected function sendKycRequestConfirmedRejectedCommunication(Entity $kycAccess, bool $isConfirmed)
     {
         $merchant = $this->repo->merchant->findOrFail($kycAccess->getEntityId());
-        $partner = $this->repo->merchant->findOrFail($kycAccess->getPartnerId());
+        $partner  = $this->repo->merchant->findOrFail($kycAccess->getPartnerId());
 
+        $this->sendKycRequestConfirmedRejectedEmail($merchant, $partner, $isConfirmed);
+        $this->sendKycRequestConfirmedRejectedMessages($merchant, $partner, $isConfirmed);
+    }
+
+    /**
+     * Trigger sending SMS/Whatsapp to partner when KYC access request is confirmed or rejected
+     *
+     * @param Merchant\Entity $subMerchant
+     * @param Merchant\Entity $partner
+     * @param bool            $isConfirmed
+     */
+    protected function sendKycRequestConfirmedRejectedMessages(Merchant\Entity $subMerchant, Merchant\Entity $partner, bool $isConfirmed)
+    {
+
+        // Note: setting partner in the args sends sms/wa notification exclusively to the passed $partner.
+        $args = [
+            MerchantConstants::MERCHANT => $subMerchant,
+            MerchantConstants::PARTNER  => $partner,
+            MerchantConstants::PARAMS   => [
+                'subMerchantName' => $subMerchant->getTrimmedName(25, "..."),
+                'subMerchantId'   => $subMerchant->getId()
+            ]
+        ];
+
+        $notificationHandler = new OnboardingNotificationHandler($args);
+        $notificationEvent   = $isConfirmed ? OnboardingEvents::PARTNER_SUBMERCHANT_KYC_ACCESS_APPROVED : OnboardingEvents::PARTNER_SUBMERCHANT_KYC_ACCESS_REJECTED;
+        $notificationHandler->sendForEvent($notificationEvent);
+    }
+
+    /**
+     * Trigger sending Email to partner when KYC access request is confirmed or rejected
+     *
+     * @param Merchant\Entity $merchant
+     * @param Merchant\Entity $partner
+     * @param bool            $isConfirmed
+     */
+    protected function sendKycRequestConfirmedRejectedEmail(Merchant\Entity $merchant, Merchant\Entity $partner, bool $isConfirmed)
+    {
         $viewPayload['merchant'] = $merchant->toArray();
         $viewPayload['partner']  = $partner->toArray();
 
-        if ($isConfirmEmail)
+        if ($isConfirmed)
         {
             $mail = new PartnerEmail\KycAccessConfirmed($viewPayload);
         }
@@ -183,7 +230,7 @@ class Core extends Base\Core
 
             $eventData['status'] = State::APPROVED;
             $this->app['diag']->trackOnboardingEvent(EventCode::PARTNER_KYC_ACCESS_APPROVE, null, null, $eventData);
-            $this->sendKycRequestConfirmedRejectedEmail($subMerchantKycAccess, true);
+            $this->sendKycRequestConfirmedRejectedCommunication($subMerchantKycAccess, true);
         }
         elseif (isset($input[Entity::REJECT_TOKEN]) === true)
         {
@@ -194,7 +241,7 @@ class Core extends Base\Core
 
             $eventData['status'] = State::REJECTED;
             $this->app['diag']->trackOnboardingEvent(EventCode::PARTNER_KYC_ACCESS_REJECT, null, null, $eventData);
-            $this->sendKycRequestConfirmedRejectedEmail($subMerchantKycAccess, false);
+            $this->sendKycRequestConfirmedRejectedCommunication($subMerchantKycAccess, false);
         }
 
         $this->trace->info(TraceCode::PARTNER_KYC_ACCESS__REQUEST, ['events_data' => $eventData]);

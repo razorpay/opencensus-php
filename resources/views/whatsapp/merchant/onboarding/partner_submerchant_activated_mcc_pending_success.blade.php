@@ -1,0 +1,1 @@
+Your affiliate: {{{$subMerchantName}}}'s (Id: {{{$subMerchantId}}}) can now start accepting payments, and as per their settlement schedule, the funds will be settled to their bank account.

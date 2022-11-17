@@ -1,6 +1,5 @@
 <?php
 
-
 namespace RZP\Notifications\Onboarding;
 
 use RZP\Trace\TraceCode;
@@ -12,6 +11,7 @@ use RZP\Notifications\BaseHandler;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\Merchant\Detail\BusinessType;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 
 class Handler extends BaseHandler
@@ -30,11 +30,11 @@ class Handler extends BaseHandler
         Events::ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH              => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
         Events::FUNDS_ON_HOLD                                        => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
         Events::FUNDS_ON_HOLD_REMINDER                               => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
-        Events::DOWNLOAD_MERCHANT_WEBSITE_SECTION                    => [Channel::EMAIL,Channel::WHATSAPP ],
-        Events::WEBSITE_SECTION_PUBLISHED                            => [Channel::EMAIL, Channel::WHATSAPP ],
-        Events::WEBSITE_ADHERENCE_SOFT_NUDGE                         => [Channel::EMAIL, Channel::WHATSAPP ],
+        Events::DOWNLOAD_MERCHANT_WEBSITE_SECTION                    => [Channel::EMAIL, Channel::WHATSAPP],
+        Events::WEBSITE_SECTION_PUBLISHED                            => [Channel::EMAIL, Channel::WHATSAPP],
+        Events::WEBSITE_ADHERENCE_SOFT_NUDGE                         => [Channel::EMAIL, Channel::WHATSAPP],
         Events::WEBSITE_ADHERENCE_GRACE_PERIOD_REMINDER              => [Channel::EMAIL],
-        Events::WEBSITE_ADHERENCE_HARD_NUDGE                         => [Channel::EMAIL, Channel::WHATSAPP, Channel::SMS ],
+        Events::WEBSITE_ADHERENCE_HARD_NUDGE                         => [Channel::EMAIL, Channel::WHATSAPP, Channel::SMS],
         Events::L1_NOT_SUBMITTED_IN_1_DAY                            => [Channel::SMS, Channel::WHATSAPP],
         Events::L1_NOT_SUBMITTED_IN_1_HOUR                           => [Channel::SMS, Channel::WHATSAPP],
         Events::L2_BANK_DETAILS_NOT_SUBMITTED_IN_1_HOUR              => [Channel::SMS, Channel::WHATSAPP],
@@ -48,11 +48,15 @@ class Handler extends BaseHandler
         Events::SIGNUP_STARTED_NOTIFY                                => [Channel::SMS, Channel::WHATSAPP],
 
         // partner submerchant email events
-        Events::PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS    => [Channel::EMAIL],
-        Events::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION              => [Channel::EMAIL],
-        Events::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED => [Channel::EMAIL],
-        Events::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   => [Channel::EMAIL],
-        Events::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED                 => [Channel::EMAIL],
+        Events::PARTNER_ADDED_SUBMERCHANT                            => [Channel::SMS, Channel::WHATSAPP],
+        Events::PARTNER_ADDED_SUBMERCHANT_FOR_X                      => [Channel::SMS, Channel::WHATSAPP],
+        Events::PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS    => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
+        Events::PARTNER_SUBMERCHANT_KYC_ACCESS_APPROVED              => [Channel::SMS, Channel::WHATSAPP],
+        Events::PARTNER_SUBMERCHANT_KYC_ACCESS_REJECTED              => [Channel::SMS, Channel::WHATSAPP],
+        Events::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION              => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
+        Events::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED                 => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
+        Events::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
+        Events::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
     ];
 
     private $activationStatus;

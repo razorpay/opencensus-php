@@ -1,0 +1,1 @@
+We are happy to inform you that your affiliate: {{{$subMerchantName}}}'s (Id: {{{$subMerchantId}}}) KYC is approved, and we have enabled settlements on their Razorpay account. Now they can accept payments and get funds settled in their bank accounts.

@@ -1,0 +1,1 @@
+{{{$subMerchantName}}} with MID: {{{$subMerchantId}}} has approved your request to perform their KYC. Visit your Partner Dashboard, to access their KYC form.

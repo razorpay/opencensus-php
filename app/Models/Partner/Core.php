@@ -34,7 +34,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Jobs\PartnerActivationMigration;
 use RZP\Models\Merchant\Detail\ValidationFields;
 use RZP\Jobs\SendPartnerWeeklyActivationSummary;
-use RZP\Models\Feature\Constants as FeatureConstant;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Mail\Merchant\PartnerWeeklyActivationSummary;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -217,8 +217,8 @@ class Core extends Detail\Core
         //
         // Is the feature flag enabled for the submerchant or the partner
         //
-        return (($merchant->isFeatureEnabled((FeatureConstant::BLOCK_ONBOARDING_SMS) === true)
-            or ($partner->isFeatureEnabled(FeatureConstant::BLOCK_ONBOARDING_SMS) === true)));
+        return (($merchant->isFeatureEnabled((FeatureConstants::BLOCK_ONBOARDING_SMS) === true)
+                 or ($partner->isFeatureEnabled(FeatureConstants::BLOCK_ONBOARDING_SMS) === true)));
     }
 
     /**
@@ -237,7 +237,7 @@ class Core extends Detail\Core
             return false;
         }
 
-        return ($partner->isFeatureEnabled(FeatureConstant::SKIP_SUBM_ONBOARDING_COMM) === true);
+        return ($partner->isFeatureEnabled(FeatureConstants::SKIP_SUBM_ONBOARDING_COMM) === true);
     }
 
     public function createPartnerActivationForPartners(array $input)
@@ -889,7 +889,10 @@ class Core extends Detail\Core
         ]);
 
         $partnerMerchant = $this->repo->merchant->findorFailPublic($partnerMerchantId);
-        if ($partnerMerchant->getEmail() === null)
+
+        $notificationBlocked = $partnerMerchant->isFeatureEnabled(FeatureConstants::SKIP_SUBM_ONBOARDING_COMM);
+
+        if ($notificationBlocked === true || $partnerMerchant->getEmail() === null)
         {
             return;
         }

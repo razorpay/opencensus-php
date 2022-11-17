@@ -1,12 +1,12 @@
 <?php
 
-
 namespace RZP\Notifications\Onboarding;
 
 use RZP\Services\Stork;
 use RZP\Models\Merchant\Core;
 use RZP\Models\Merchant\Constants;
 use RZP\Notifications\BaseNotificationService;
+use RZP\Models\Feature\Constants as FeatureConstants;
 
 class WhatsappNotificationService extends BaseNotificationService
 {
@@ -15,12 +15,13 @@ class WhatsappNotificationService extends BaseNotificationService
     public function send(): void
     {
         $isExperimentEnabled = true;
-//        $destination = $this->getPhone();
+        //        $destination = $this->getPhone();
 
-//        if(empty($destination) === true)
-//        {
-//            return;
-//        }
+        //        if(empty($destination) === true)
+        //        {
+        //            return;
+        //        }
+        $merchantCore = new Core();
         //use the experiment if we need to block specific whatsapp templates
         if (isset(Events::WHATSAPP_TEMPLATES_NEW_EXPERIMENTS[$this->event]) === true)
         {
@@ -28,17 +29,98 @@ class WhatsappNotificationService extends BaseNotificationService
 
             $merchant = $this->args[Constants::MERCHANT];
 
-            $isExperimentEnabled = (new Core)->isRazorxExperimentEnable($merchant->getMerchantId(), $experiment);
+            $isExperimentEnabled = $merchantCore->isRazorxExperimentEnable($merchant->getMerchantId(), $experiment);
+        }
+        if (isset(Events::WHATSAPP_TEMPLATES_SPLITZ_EXPERIMENTS[$this->event]) === true)
+        {
+            $experimentKey = Events::WHATSAPP_TEMPLATES_SPLITZ_EXPERIMENTS[$this->event];
+            $merchant      = $this->args[Constants::MERCHANT];
+
+            $properties = [
+                'id'            => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get($experimentKey),
+            ];
+
+            $isExperimentEnabled = $merchantCore->isSplitzExperimentEnable($properties, 'enable');
         }
 
         if ($isExperimentEnabled === true)
         {
-            (new Stork)->sendWhatsappMessage(
-                $this->mode,
-                $this->getTemplateMessage(),
-                $this->getPhone(),
-                $this->getPayload()
-            );
+
+            $templateMessage = $this->getTemplateMessage();
+            $payload         = $this->getPayload();
+
+            if (strpos($this->event, Events::PARTNER_EVENTS_PREFIX) === 0)
+            {
+                // Send to partners
+                $merchant = $this->args[Constants::MERCHANT];
+
+                // Note: setting partner in the args sends the notification exclusively to the passed $partner.
+                $partner = $this->args[Constants::PARTNER] ?? null;
+
+                if (isset($partner) === true)
+                {
+                    $partners = [$partner];
+                }
+                else
+                {
+                    $accessMaps = $this->app['repo']->merchant_access_map->fetchAffiliatedPartnersForSubmerchant($merchant->getId());
+
+                    $accessMaps = $accessMaps->filter(function($value, $key) {
+                        return ($value->entityOwner->isNonPurePlatformPartner() === true);
+                    })->unique(function($item) {
+                        return $item->entityOwner->getId();
+                    });
+
+                    $partners = $accessMaps->map(function($item) {
+                        return $item->entityOwner;
+                    });
+
+                    if (strpos($this->event, Events::PARTNER_SUBMERCHANT_EVENTS_PREFIX) === 0)
+                    {
+                        // Filter partners with kyc access
+                        $partners = $accessMaps->filter(function($value, $key) {
+                            return ($value->hasKycAccess() === true);
+                        })->map(function($item) {
+                            return $item->entityOwner;
+                        });
+                    }
+
+                    if ($partners->isEmpty() === true)
+                    {
+                        return;
+                    }
+                }
+
+                foreach ($partners as $partner)
+                {
+                    $notificationBlocked = $partner->isFeatureEnabled(FeatureConstants::SKIP_SUBM_ONBOARDING_COMM);
+
+                    $partnerContactMobile = $partner->merchantDetail ? $partner->merchantDetail->getContactMobile() : null;
+
+                    if ($notificationBlocked === true || empty($partnerContactMobile) === true)
+                    {
+                        continue;
+                    }
+
+                    $this->app['stork_service']->sendWhatsappMessage(
+                        $this->mode,
+                        $templateMessage,
+                        $partnerContactMobile,
+                        $payload
+                    );
+                }
+            }
+            else
+            {
+                // Send to submerchant
+                $this->app['stork_service']->sendWhatsappMessage(
+                    $this->mode,
+                    $templateMessage,
+                    $this->getPhone(),
+                    $payload
+                );
+            }
         }
     }
 
@@ -46,7 +128,7 @@ class WhatsappNotificationService extends BaseNotificationService
     {
         $merchant = $this->args[Constants::MERCHANT];
 
-        $templateName = self::ONBOARDING_PREFIX . strtolower($this->event);
+        $templateName = $this->getTemplateName();
 
         $payload = [
             Constants::OWNER_ID      => $merchant->getMerchantId(),
@@ -68,6 +150,23 @@ class WhatsappNotificationService extends BaseNotificationService
         }
 
         return $payload;
+    }
+
+    private function getOrg($merchant)
+    {
+        $org = $merchant->org ?: $this->app[Constants::REPO]->org->getRazorpayOrg();
+
+        return $org;
+    }
+
+    private function getTemplateName()
+    {
+        if (isset(Events::WHATSAPP_TEMPLATE_NAMES[$this->event]) === true)
+        {
+            return Events::WHATSAPP_TEMPLATE_NAMES[$this->event];
+        }
+
+        return self::ONBOARDING_PREFIX . strtolower($this->event);
     }
 
     private function getTemplateMessage()

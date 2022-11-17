@@ -3191,8 +3191,12 @@ class Core extends Base\Core
                 $currentActivationStatus));
 
         $args = [
-            'activationStatus' => $currentActivationStatus,
-            'merchant'         => $merchant
+            'activationStatus'         => $currentActivationStatus,
+            'merchant'                 => $merchant,
+            Merchant\Constants::PARAMS => [
+                'subMerchantName' => $merchant->getTrimmedName(25, "..."),
+                'subMerchantId'   => $merchant->getId()
+            ]
         ];
 
         $this->trace->info(TraceCode::MERCHANT_ACTIVATION_ONBOARDING_NOTIFICATION, [
@@ -3368,6 +3372,13 @@ class Core extends Base\Core
         // $partnerMerchant can be null in case of linked accounts
         if (!is_null($partnerMerchant))
         {
+            $notificationBlocked = $partnerMerchant->isFeatureEnabled(FeatureConstants::SKIP_SUBM_ONBOARDING_COMM);
+
+            if ($notificationBlocked === true)
+            {
+                return;
+            }
+
             $properties = [
                 'id'            => $partnerMerchant->getId(),
                 'experiment_id' => $this->app['config']->get('app.merchant_kyc_update_to_partner_exp_id')

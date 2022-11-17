@@ -1030,6 +1030,14 @@ class MerchantCreateTest extends TestCase
 
         $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
 
+        $this->fixtures->on('test')->create('merchant_detail:sane', [
+            'merchant_id' => $app->merchant_id
+        ]);
+
+        $this->fixtures->on('live')->create('merchant_detail:sane', [
+            'merchant_id' => $app->merchant_id
+        ]);
+
         $configAttributes = [
             PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
         ];
@@ -1040,13 +1048,11 @@ class MerchantCreateTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertQueued(CreateSubMerchantPartnerMail::class, function ($mail)
-        {
+        Mail::assertQueued(CreateSubMerchantPartnerMail::class, function($mail) {
             return $mail->hasTo('test@razorpay.com');
         });
 
-        Mail::assertQueued(CreateSubMerchantAffiliateMail::class, function ($mail)
-        {
+        Mail::assertQueued(CreateSubMerchantAffiliateMail::class, function($mail) {
             $data = $mail->viewData;
 
             $this->assertEquals('org_100000razorpay', $data['org']['id']);

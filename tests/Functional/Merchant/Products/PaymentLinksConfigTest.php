@@ -36,6 +36,8 @@ class PaymentLinksConfigTest extends OAuthTestCase
         $this->fixtures->connection('live')->create('tnc_map', ['product_name' => 'all', 'content' => ['terms' => 'https://www.terms.com'], 'business_unit' => 'payments']);
 
         $this->mockStorkService();
+
+        $this->app['stork_service']->shouldReceive('sendWhatsappMessage')->andReturn([]);
     }
 
     public function testCreateDefaultPaymentLinksConfigForActivatedMerchant()

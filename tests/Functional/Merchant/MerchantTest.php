@@ -4327,48 +4327,52 @@ IFSC Code  ICIC0001206
         );
     }
 
-    protected function expectStorkWhatsappRequest($storkMock, $text, $destination = '9876543210'): void
+    public function expectStorkWhatsappRequest($storkMock, $text, $destination = '9876543210', $useRegexForText = false): void
     {
         $storkMock->shouldReceive('sendWhatsappMessage')
-            ->times(1)
-            ->with(
-                Mockery::on(function ($mode)
-                {
-                    return true;
-                }),
-                Mockery::on(function ($actualText) use($text)
-                {
-                    $actualText = trim(preg_replace('/\s+/', ' ', $actualText));
+                  ->times(1)
+                  ->with(
+                      Mockery::on(function($mode) {
+                          return true;
+                      }),
+                      Mockery::on(function($actualText) use ($text, $useRegexForText) {
+                          $actualText = trim(preg_replace('/\s+/', ' ', $actualText));
+                          if ($useRegexForText === true)
+                          {
+                              if (preg_match($text, $actualText) === 0)
+                              {
+                                  return false;
+                              }
+                          }
+                          else
+                          {
+                              $text = trim(preg_replace('/\s+/', ' ', $text));
+                              if ($actualText !== $text)
+                              {
+                                  return false;
+                              }
+                          }
 
-                    $text = trim(preg_replace('/\s+/', ' ', $text));
+                          return true;
+                      }),
+                      Mockery::on(function($actualReceiver) use ($destination) {
+                          if ($actualReceiver !== $destination)
+                          {
+                              return false;
+                          }
 
-                    if ($actualText !== $text)
-                    {
-                        return false;
-                    }
+                          return true;
+                      }),
+                      Mockery::on(function($input) {
+                          return true;
+                      }))
+                  ->andReturnUsing(function() {
+                      $response = new \Requests_Response;
 
-                    return true;
-                }),
-                Mockery::on(function ($actualReceiver) use($destination)
-                {
-                    if ($actualReceiver !== $destination)
-                    {
-                        return false;
-                    }
-                    return true;
-                }),
-                Mockery::on(function ($input)
-                {
-                    return true;
-                }))
-            ->andReturnUsing(function ()
-            {
-                $response = new \Requests_Response;
+                      $response->body = json_encode(['key' => 'value']);
 
-                $response->body = json_encode(['key' => 'value']);
-
-                return $response;
-            });
+                      return $response;
+                  });
     }
 
     public function expectStorkSendSmsRequest($ravenMock, $templateName, $destination)
@@ -4399,23 +4403,20 @@ IFSC Code  ICIC0001206
             });
     }
 
-    public function expectStorkSmsRequest($storkMock, $templateName, $destination, $expectedParms = [])
+    public function expectStorkSmsRequest($storkMock, $templateName, $destination, $expectedParams = [])
     {
         $storkMock->shouldReceive('sendSms')
                   ->times(1)
                   ->with(
-                      Mockery::on(function ($mockInMode)
-                      {
+                      Mockery::on(function($mockInMode) {
                           return true;
                       }),
-                      Mockery::on(function ($actualPayload) use ($templateName, $destination, $expectedParms)
-                      {
-
+                      Mockery::on(function($actualPayload) use ($templateName, $destination, $expectedParams) {
                           // We are sending null in contentParams in the payload if there is no SMS_TEMPLATE_KEYS present for that event
                           // Reference: app/Notifications/Dashboard/SmsNotificationService.php L:99
-                          if(isset($actualPayload['contentParams']) === true)
+                          if (isset($actualPayload['contentParams']) === true)
                           {
-                              $this->assertArraySelectiveEquals($expectedParms, $actualPayload['contentParams']);
+                              $this->assertArraySelectiveEquals($expectedParams, $actualPayload['contentParams']);
                           }
 
                           if (($templateName !== $actualPayload['templateName']) or
@@ -4426,8 +4427,7 @@ IFSC Code  ICIC0001206
 
                           return true;
                       }))
-                  ->andReturnUsing(function ()
-                  {
+                  ->andReturnUsing(function() {
                       return ['success' => true];
                   });
     }
@@ -5110,7 +5110,7 @@ IFSC Code  ICIC0001206
         $this->ba->publicAuth();
 
         $this->fixturesToCreateToken('100022xytoken1', '100000003card1', '411140', '10000000000000', '10000gcustomer', ['vault' => 'visa']);
-                
+
         $this->fixtures->merchant->activate('10000000000000');
 
         $response = $this->startTest();

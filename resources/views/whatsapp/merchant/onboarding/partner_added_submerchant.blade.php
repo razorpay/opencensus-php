@@ -1,0 +1,1 @@
+{{{$subMerchantName}}} ({{{$subMerchantId}}}) has been added as your affiliate account on Razorpay. We have sent an invite mail to {{{$subMerchantEmail}}} for setting up their Razorpay account password. They must login and submit the activation form with KYC details to start transacting.

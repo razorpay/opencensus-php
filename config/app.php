@@ -389,7 +389,7 @@ return array(
 
     'send_sms_on_commission_invoice_issued_exp_id' => env('SEND_SMS_ON_COMMISSION_INVOICE_ISSUED_EXP_ID'),
 
-    'send_sms_on_add_sub_merchant_partner_exp_id' => env('SEND_SMS_ON_ADD_SUB_MERCHANT_PARTNER_EXP_ID'),
+    'send_sms_whatsapp_partner_submerchant_onboarding_events' => env('SEND_SMS_WHATSAPP_PARTNER_SUBMERCHANT_ONBOARDING_EVENTS'),
 
     'send_commission_invoice_reminders_exp_id' => env('SEND_COMMISSION_INVOICE_REMINDERS_EXP_ID'),
 

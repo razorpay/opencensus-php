@@ -30,5 +30,4 @@ class SmsTemplates
 
     const ONBOARDING_SOURCE                         = 'api.merchant.onboarding';
 
-    const ADD_SUB_MERCHANT_PARTNER                  = 'Sms.Partnerships.Add_sub_merchant_partner';
 }

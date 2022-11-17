@@ -43,11 +43,15 @@ class Events
     const SIGNUP_STARTED_NOTIFY                       = 'SIGNUP_STARTED_NOTIFY';
 
     // partner submerchant events
+    const PARTNER_ADDED_SUBMERCHANT                            = "PARTNER_ADDED_SUBMERCHANT";
+    const PARTNER_ADDED_SUBMERCHANT_FOR_X                      = "PARTNER_ADDED_SUBMERCHANT_FOR_X";
     const PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS    = 'PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS';
+    const PARTNER_SUBMERCHANT_KYC_ACCESS_APPROVED              = "PARTNER_SUBMERCHANT_KYC_ACCESS_APPROVED";
+    const PARTNER_SUBMERCHANT_KYC_ACCESS_REJECTED              = "PARTNER_SUBMERCHANT_KYC_ACCESS_REJECTED";
     const PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION              = 'PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION';
-    const PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED = 'PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED';
-    const PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   = 'PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED';
     const PARTNER_SUBMERCHANT_PAYMENTS_ENABLED                 = 'PARTNER_SUBMERCHANT_PAYMENTS_ENABLED';
+    const PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   = 'PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED';
+    const PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED = 'PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED';
 
     const SMS_TEMPLATES = [
         self::PAYMENTS_ENABLED                            => 'sms.onboarding.payments_enabled',
@@ -73,8 +77,37 @@ class Events
         self::L1_NOT_SUBMITTED_IN_1_HOUR                  => 'sms.onboarding.Onboarding_L1_not_submit_SMS2',
         self::SIGNUP_STARTED_NOTIFY                       => 'sms.onboarding.Welcome_SMS_1',
         self::WEBSITE_ADHERENCE_HARD_NUDGE                => 'sms.onboarding.website_adherence_hard_nudge_1',
+
+        // Note: the template name for PARTNER_ADDED_SUBMERCHANT_FOR_X was incorrectly registered and now we have to use the same.
+        self::PARTNER_ADDED_SUBMERCHANT_FOR_X                      => 'sms.onboarding.partner_submerchant_unregistered_settlements',
+        self::PARTNER_ADDED_SUBMERCHANT                            => 'Sms.Partnerships.Add_sub_merchant_partner',
+
+        // Note: PARTNER_SUBMERCHANT_ prefix is checked for notifying all affiliated partners.
+        self::PARTNER_SUBMERCHANT_KYC_ACCESS_APPROVED              => 'sms.onboarding.partner_submerchant_kyc_access_approved',
+        self::PARTNER_SUBMERCHANT_KYC_ACCESS_REJECTED              => 'sms.onboarding.partner_submerchant_kyc_access_rejected',
+        self::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION              => 'sms.onboarding.partner_submerchant_needs_clarification',
+        self::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED                 => 'sms.onboarding.partner_submerchant_payments_enabled',
+        // Note: currently we have same content for below 3 events, thus using same template name.
+        self::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   => 'sms.onboarding.partner_submerchant_registered_settlements',
+        self::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED => 'sms.onboarding.partner_submerchant_registered_settlements',
+        self::PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS    => 'sms.onboarding.partner_submerchant_registered_settlements',
     ];
 
+    const SMS_TEMPLATES_CUSTOM_NAMESPACES = [
+        self::PARTNER_ADDED_SUBMERCHANT => 'partnerships',
+    ];
+
+    const SMS_TEMPLATES_SPLITZ_EXPERIMENTS = [
+        self::PARTNER_ADDED_SUBMERCHANT                            => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
+        self::PARTNER_ADDED_SUBMERCHANT_FOR_X                      => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
+        self::PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS    => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
+        self::PARTNER_SUBMERCHANT_KYC_ACCESS_APPROVED              => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
+        self::PARTNER_SUBMERCHANT_KYC_ACCESS_REJECTED              => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
+        self::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION              => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
+        self::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED                 => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
+        self::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
+        self::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
+    ];
 
     const WHATSAPP_TEMPLATES = [
         self::NEEDS_CLARIFICATION              => 'Hi {merchantName}, we need more clarifications on your KYC, please visit your dashboard and make the necessary changes at {dashboardUrl}',
@@ -82,6 +115,31 @@ class Events
         self::REGISTERED_SETTLEMENTS_ENABLED   => 'Congratulations {merchantName}, your account is activated, you can now accept payments and get funds settled to your bank account. Visit your dashboard to accept payments {dashboardUrl}',
         self::PENNY_TESTING_FAILURE            => "Hi {merchantName}, we couldn't verify your Bank Account, kindly visit your Dashboard and upload scanned copy of cheque/bank statement at {dashboardUrl}",
         self::ACTIVATED_MCC_PENDING            => "Dear Customer, Congratulations! You can now start accepting payments and the payments will be settled in your bank account as per your settlement schedule. Please note that as part of the routine compliance checks mandated by our banking partners, we will review your business model, website details and reach out for further clarifications. You can now visit your dashboard to accept payments at {dashboardUrl}."
+    ];
+
+    // Add template name here if the registered template name defers from standard pattern of 'onboarding.*'
+    const WHATSAPP_TEMPLATE_NAMES = [
+        self::PARTNER_ADDED_SUBMERCHANT                            => 'whatsapp_partnerships_add_sub_merchant_partner',
+        self::PARTNER_ADDED_SUBMERCHANT_FOR_X                      => 'whatsapp_partnerships_add_sub_merchant_partner_for_x',
+        self::PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS    => 'whatsapp_partnerships_partner_submerchant_activated_mcc_pending_success',
+        self::PARTNER_SUBMERCHANT_KYC_ACCESS_APPROVED              => 'whatsapp_partnerships_partner_submerchant_kyc_access_approved',
+        self::PARTNER_SUBMERCHANT_KYC_ACCESS_REJECTED              => 'whatsapp_partnerships_partner_submerchant_kyc_access_rejected',
+        self::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION              => 'whatsapp_partnerships_partner_submerchant_needs_clarification',
+        self::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED                 => 'whatsapp_partnerships_partner_submerchant_payments_enable',
+        self::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   => 'whatsapp_partnerships_partner_submerchant_registered_settlements_enable',
+        self::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED => 'whatsapp_partnerships_partner_submerchant_unregistered_settlements_payments_enable',
+    ];
+
+    const WHATSAPP_TEMPLATES_SPLITZ_EXPERIMENTS = [
+        self::PARTNER_ADDED_SUBMERCHANT                            => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
+        self::PARTNER_ADDED_SUBMERCHANT_FOR_X                      => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
+        self::PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS    => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
+        self::PARTNER_SUBMERCHANT_KYC_ACCESS_APPROVED              => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
+        self::PARTNER_SUBMERCHANT_KYC_ACCESS_REJECTED              => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
+        self::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION              => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
+        self::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED                 => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
+        self::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
+        self::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
     ];
 
     const WHATSAPP_TEMPLATES_NEW_EXPERIMENTS = [
@@ -93,9 +151,13 @@ class Events
     ];
 
     const WHATSAPP_TEMPLATES_CTA_TEMPLATE = [
-        self::WEBSITE_ADHERENCE_HARD_NUDGE => 'app/website-app-detail',
-        self::WEBSITE_ADHERENCE_SOFT_NUDGE => 'app/website-app-detail',
-        self::FIRST_PAYMENT_OFFER => 'signin?utm_source=Reactivation&utm_medium=whatsapp&utm_campaign=10k_referral_content'
+        self::WEBSITE_ADHERENCE_HARD_NUDGE            => 'app/website-app-detail',
+        self::WEBSITE_ADHERENCE_SOFT_NUDGE            => 'app/website-app-detail',
+        self::FIRST_PAYMENT_OFFER                     => 'signin?utm_source=Reactivation&utm_medium=whatsapp&utm_campaign=10k_referral_content',
+        self::PARTNER_ADDED_SUBMERCHANT               => 'app/partners/submerchants',
+        self::PARTNER_SUBMERCHANT_KYC_ACCESS_APPROVED => 'app/partners',
+        self::PARTNER_SUBMERCHANT_KYC_ACCESS_REJECTED => 'app/partners',
+        self::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED    => 'app/partners',
     ];
 
     // blade templates
@@ -118,6 +180,16 @@ class Events
         self::L1_NOT_SUBMITTED_IN_1_HOUR                  => 'whatsapp.merchant.onboarding.Onboarding_L1_not_submit_WA2_A',
         self::SIGNUP_STARTED_NOTIFY                       => 'whatsapp.merchant.onboarding.welcome_wa_noemoji',
         self::FIRST_PAYMENT_OFFER                         => 'whatsapp.merchant.onboarding.mtu_offer_new_text',
+
+        self::PARTNER_ADDED_SUBMERCHANT                            => 'whatsapp.merchant.onboarding.partner_added_submerchant',
+        self::PARTNER_ADDED_SUBMERCHANT_FOR_X                      => 'whatsapp.merchant.onboarding.partner_added_submerchant_for_x',
+        self::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION              => 'whatsapp.merchant.onboarding.partner_submerchant_needs_clarification',
+        self::PARTNER_SUBMERCHANT_KYC_ACCESS_APPROVED              => 'whatsapp.merchant.onboarding.partner_submerchant_kyc_access_approved',
+        self::PARTNER_SUBMERCHANT_KYC_ACCESS_REJECTED              => 'whatsapp.merchant.onboarding.partner_submerchant_kyc_access_rejected',
+        self::PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS    => 'whatsapp.merchant.onboarding.partner_submerchant_activated_mcc_pending_success',
+        self::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED                 => 'whatsapp.merchant.onboarding.partner_submerchant_payments_enabled',
+        self::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   => 'whatsapp.merchant.onboarding.partner_submerchant_registered_settlements_enabled',
+        self::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED => 'whatsapp.merchant.onboarding.partner_submerchant_registered_settlements_enabled',
 
         self::DOWNLOAD_MERCHANT_WEBSITE_SECTION => 'whatsapp.merchant.onboarding.website_section_downloaded',
         self::WEBSITE_SECTION_PUBLISHED         => 'whatsapp.merchant.onboarding.website_section_published',

@@ -168,6 +168,30 @@ class PartnerTest extends OAuthTestCase
         $this->fixtures->create('partner_kyc_access_state');
 
         $this->ba->directAuth();
+
+        $razorxMock = $this->getMockBuilder(Merchant\Core::class)
+                           ->setMethods(['isRazorxExperimentEnable'])
+                           ->getMock();
+
+        $razorxMock->expects($this->any())
+                   ->method('isRazorxExperimentEnable')
+                   ->willReturn(true);
+
+        $this->mockAllSplitzTreatment();
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $merchantTestUtil = new MerchantTest();
+        $merchantTestUtil->expectStorkSmsRequest($storkMock, 'sms.onboarding.partner_submerchant_kyc_access_approved', '9123456789', [
+            'subMerchantId'   => self::DEFAULT_SUBMERCHANT_ID,
+            'subMerchantName' => 'submerchant'
+        ]);
+
+        $whatsappTextRegex = '/submerchant with MID: 10000000000009 has approved your request to perform their KYC. Visit your Partner Dashboard, to access their KYC form./';
+        $merchantTestUtil->expectStorkWhatsappRequest($storkMock, $whatsappTextRegex, '9123456789', true);
+
         $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
 
         // calling confirm again should give error
@@ -185,6 +209,30 @@ class PartnerTest extends OAuthTestCase
         $this->fixtures->create('partner_kyc_access_state');
 
         $this->ba->directAuth();
+
+        $razorxMock = $this->getMockBuilder(Merchant\Core::class)
+                           ->setMethods(['isRazorxExperimentEnable'])
+                           ->getMock();
+
+        $razorxMock->expects($this->any())
+                   ->method('isRazorxExperimentEnable')
+                   ->willReturn(true);
+
+        $this->mockAllSplitzTreatment();
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $merchantTestUtil = new MerchantTest();
+        $merchantTestUtil->expectStorkSmsRequest($storkMock, 'sms.onboarding.partner_submerchant_kyc_access_rejected', '9123456789', [
+            'subMerchantId'   => self::DEFAULT_SUBMERCHANT_ID,
+            'subMerchantName' => 'submerchant'
+        ]);
+
+        $whatsappTextRegex = 'submerchant with MID: 10000000000009 has rejected your request to perform their Razorpay KYC. Visit Partner Dashboard to resend this request.';
+        $merchantTestUtil->expectStorkWhatsappRequest($storkMock, $whatsappTextRegex, '9123456789', false);
+
         $this->runRequestResponseFlow($this->testData['testRejectKycAccessRequest']);
 
         // calling confirm now should work fine
@@ -192,7 +240,7 @@ class PartnerTest extends OAuthTestCase
 
         // revoke access
         $user = $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
-        $this->ba->proxyAuth('rzp_test_'.self::DEFAULT_SUBMERCHANT_ID, $user['id']);
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_SUBMERCHANT_ID, $user['id']);
         $this->runRequestResponseFlow($this->testData['testRevokeKycAccess']);
     }
 
@@ -2123,15 +2171,24 @@ class PartnerTest extends OAuthTestCase
 
         $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator']);
 
+        $merchantDetailArray = $this->fixtures->merchant_detail->createMerchantDetail(
+            [
+                'merchant_id'   => self::DEFAULT_MERCHANT_ID,
+                'business_type' => 2,
+                'contact_email' => 'user@email.com'
+            ]);
+
+        $this->fixtures->merchant_detail->createAssociateMerchant($merchantDetailArray);
+
         $this->ba->proxyAuth();
 
         $razorxMock = $this->getMockBuilder(Merchant\Core::class)
-            ->setMethods(['isRazorxExperimentEnable'])
-            ->getMock();
+                           ->setMethods(['isRazorxExperimentEnable'])
+                           ->getMock();
 
         $razorxMock->expects($this->any())
-            ->method('isRazorxExperimentEnable')
-            ->willReturn(true);
+                   ->method('isRazorxExperimentEnable')
+                   ->willReturn(true);
 
         $this->mockAllSplitzTreatment();
 
@@ -2140,11 +2197,14 @@ class PartnerTest extends OAuthTestCase
         $this->app->instance('stork_service', $storkMock);
 
         // test clipping name to 25 characters
-        $expectedParms = [
+        $expectedParams = [
             'subMerchantName' => 'some_very_long_long_na...'
         ];
 
-        (new MerchantTest())->expectStorkSmsRequest($storkMock,'Sms.Partnerships.Add_sub_merchant_partner', '9999999999', $expectedParms);
+        $merchantTestUtil = new MerchantTest();
+        $merchantTestUtil->expectStorkSmsRequest($storkMock, 'Sms.Partnerships.Add_sub_merchant_partner', '9123456789', $expectedParams);
+        $whatsappTextRegex = '/some_very_long_long_na\.\.\. \(\w{14}\) has been added as your affiliate account on Razorpay\. We have sent an invite mail to user@example\.com for setting up their Razorpay account password\. They must login and submit the activation form with KYC details to start transacting\./';
+        $merchantTestUtil->expectStorkWhatsappRequest($storkMock, $whatsappTextRegex, '9123456789', true);
 
         $this->startTest();
     }
@@ -2194,18 +2254,34 @@ class PartnerTest extends OAuthTestCase
     public function testCreatePartnerSubmerchantWithProduct()
     {
         $this->createPartnerAndUser();
-
-        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'fully_managed']);
-
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'fully_managed']);
         $this->ba->proxyAuth();
 
+        $this->fixtures->on('test')->create('merchant_detail:sane', [
+            'merchant_id' => $app->merchant_id
+        ]);
+
+        $this->fixtures->on('live')->create('merchant_detail:sane', [
+            'merchant_id' => $app->merchant_id
+        ]);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'id'          => 'IBb9OU2WPuCC29',
+                'entity_type' => 'application',
+                'entity_id'   => $app->getId(),
+                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            ]
+        );
+
         $razorxMock = $this->getMockBuilder(Merchant\Core::class)
-            ->setMethods(['isRazorxExperimentEnable'])
-            ->getMock();
+                           ->setMethods(['isRazorxExperimentEnable'])
+                           ->getMock();
 
         $razorxMock->expects($this->any())
-            ->method('isRazorxExperimentEnable')
-            ->willReturn(true);
+                   ->method('isRazorxExperimentEnable')
+                   ->willReturn(true);
 
         $this->mockSalesForce('sendPartnerLeadInfo', 1);
 
@@ -3412,9 +3488,17 @@ class PartnerTest extends OAuthTestCase
 
         $this->createMerchantApplication($app->merchant_id, 'reseller', $app->getId());
 
-        $this->fixtures->create('merchant_detail:sane',[
+        $this->fixtures->on('test')->create('merchant_detail:sane',[
             'merchant_id' => $app->merchant_id,
             'contact_name'=> 'randomName',
+            'contact_mobile'=> '9123456789',
+            'business_type' => 2
+        ]);
+
+        $this->fixtures->on('live')->create('merchant_detail:sane',[
+            'merchant_id' => $app->merchant_id,
+            'contact_name'=> 'randomName',
+            'contact_mobile'=> '9123456789',
             'business_type' => 2
         ]);
 

@@ -62,7 +62,6 @@ use RZP\Models\Merchant\Credits\Balance\Entity as CreditEntity;
 use RZP\Mail\User\ContactMobileUpdated as ContactMobileUpdatedMail;
 use RZP\Models\OAuthApplication\Constants as OAuthApplicationConstants;
 use RZP\Models\User\RateLimitLoginSignup\Facade as LoginSignupRateLimit;
-use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 use RZP\Mail\User\AccountLockedWrongAttempt as AccountLockedWrongAttemptMail;
 
 class Core extends Base\Core

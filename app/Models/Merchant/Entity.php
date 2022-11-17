@@ -3618,6 +3618,17 @@ class Entity extends Base\PublicEntity
 
         return $name;
     }
+    
+    /**
+     * This function can be used while preparing payload to send notifications via stork (to fit 160 char limit for SMS)
+     *
+     * @param int    $limit
+     * @param string $suffix
+     */
+    public function getTrimmedName($limit = 25, $suffix = "...")
+    {
+        return mb_strimwidth($this->getName(), 0, $limit, $suffix);
+    }
 
     public function getCountry()
     {
