@@ -2725,6 +2725,12 @@ class Processor
                     'isCompliant' => $token->card->isTokenisationCompliant(),
                 ]);
 
+                if ($token->card->getVault() === Card\Vault::AXIS)
+                {
+                    $input[Payment\Method::CARD] = $input[Payment\Method::CARD] ?? [];
+                    $input[Payment\Method::CARD][Card\Entity::VAULT] = Card\Vault::AXIS;
+                }
+
                 if ($token->card->isTokenisationCompliant() === false) {
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_TOKEN_NOT_APPLICABLE,
@@ -7165,9 +7171,8 @@ class Processor
 
         if (isset($input[Customer\Token\Entity::TOKEN]) === true && $payment->getMethod() == Method::CARD)
         {
-            $token = (new Customer\Token\Repository())->findByPublicId($input['token']);
-
-            if ($token !== null && $token->card->getVault() == Card\Vault::AXIS) {
+            if ((isset($input[Payment\Method::CARD]) === true) and (isset($input[Payment\Method::CARD][Card\Entity::VAULT]) === true) and $input[Payment\Method::CARD][Card\Entity::VAULT] == Card\Vault::AXIS)
+            {
                 $payment->setGateway(Payment\Gateway::AXIS_TOKENHQ);
             }
         }
