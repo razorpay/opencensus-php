@@ -5,6 +5,7 @@ namespace RZP\Gateway\Upi\Base;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Constants\Table;
+use RZP\Base\ConnectionType;
 use RZP\Gateway\Base\Action;
 
 class Repository extends Base\Repository
@@ -119,7 +120,9 @@ class Repository extends Base\Repository
         $upiBank = $this->dbColumn(Entity::BANK);
         $upiPaymentId = $this->dbColumn(Entity::PAYMENT_ID);
 
-        return $this->newQuery()
+        $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+        return $this->newQueryWithConnection($connectionType)
                     ->select($upiId, $upiVpa)
                     ->join(TABLE::PAYMENT, $upiPaymentId, '=', $paymentId)
                     ->where($paymentStatus, '=', Payment\Status::CAPTURED)
