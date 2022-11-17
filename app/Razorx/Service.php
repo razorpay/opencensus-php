@@ -260,6 +260,7 @@ class Service extends Base\Service
             'batch_service_recurring_charge_bulk',
             'rx_finance_x',
             'pp_custom_domain_show_remove',
+            'rx_mtp_downtime_enabled',
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
