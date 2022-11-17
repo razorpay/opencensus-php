@@ -1217,7 +1217,10 @@ class Calculator extends Base\Core
 
         $submerchant = $this->getSubMerchant();
 
-        $entityOriginCore = new EntityOrigin\Core;
+        $entityOriginCore = new EntityOrigin\Core();
+        $merchantAccessMapCore = new Merchant\AccessMap\Core();
+
+        $partnerApp = null;
 
         if ($sourceEntity->isReadyForCommissionRecord() &&
             empty($sourceEntity->entityOrigin) === true)
@@ -1227,14 +1230,26 @@ class Calculator extends Base\Core
 
         if ($entityOriginCore->isOriginApplication($sourceEntity) === true)
         {
-            // $partnerApp will always be a non-null value here
-            $partnerApp = $entityOriginCore->getOrigin($sourceEntity);
+            // $application will always be a non-null value here
+            $application = $entityOriginCore->getOrigin($sourceEntity);
 
-            $this->setIsPartnerOriginated(true);
+            if ($merchantAccessMapCore->isMerchantMappedToApplication($submerchant, $application))
+            {
+                $partnerApp = $application;
+                $this->setIsPartnerOriginated(true);
+            }
+            else
+            {
+                $this->trace->info(TraceCode::COMMISSION_INVALIDATED_ORIGIN_ENTITY, [
+                    'app_id'            => $application->getId(),
+                    'submerchant_id'    => $submerchant->getId(),
+                    'source_entity_id'  => $sourceEntity->getId(),
+                ]);
+            }
         }
         else
         {
-            $partnerApp = (new Merchant\AccessMap\Core())->getReferredAppOfSubmerchant($submerchant);
+            $partnerApp = $merchantAccessMapCore->getReferredAppOfSubmerchant($submerchant);
 
             $this->setIsPartnerOriginated(false);
         }

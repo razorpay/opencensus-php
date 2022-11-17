@@ -38,6 +38,11 @@ class Assertions extends TestCase
         $this->assertEquals(144, $commission->getTax());
     }
 
+    public function testNoCommissionOnDetachedMerchant(array $data)
+    {
+        $this->assertShouldNotCreateCommission($data);
+    }
+
     public function testImplicitForPartnerWithNoGstin(array $data)
     {
         $this->assertShouldCreateCommission($data);

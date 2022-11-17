@@ -4,11 +4,13 @@ namespace RZP\Tests\Functional\Partner\Commission\Base;
 
 use RZP\Constants\Mode;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 
 class Setup
 {
     use SettlementTrait;
+    use DbEntityFetchTrait;
 
     protected $fixtures;
 
@@ -117,6 +119,26 @@ class Setup
         $this->fixtures->create('merchant_access_map', $accessMapArray);
 
         $output['merchant_id'] = $merchant->getId();
+    }
+
+    /**
+     * Attributes required ($output) - partner_id
+     * Attributes required ($data) - merchant_id
+     *
+     * @param array $data
+     * @param array $output
+     */
+    public function deleteSubmerchantAccessMap(array $data, array & $output)
+    {
+        $accessMap = $this->getDbEntity(
+            'merchant_access_map',
+            [
+                'merchant_id'     => $output['merchant_id'],
+                'entity_owner_id' => $data['partner_id'],
+            ]
+        );
+
+        $this->fixtures->edit('merchant_access_map', $accessMap->getId(), ['deleted_at' => round(microtime(true))]);
     }
 
     public function attachPartnerAsSubmerchant(array $data, array & $output)
