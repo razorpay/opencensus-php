@@ -7563,7 +7563,7 @@ class Core extends Base\Core
 
         $response['users'] = $finalUsers;
 
-        $verificationDetails = $this->repo->merchant_verification_detail->getDetailsForMerchant($merchantId);
+        $verificationDetails = $this->repo->merchant_verification_detail->getDetailsForMerchant($merchantId)->callOnEveryItem('toArrayPublic');
 
         foreach (Constant::ARTEFACT_STATUS_ATTRIBUTE_MAPPING as $artefactIdentifier => $tableNameFieldName)
         {

@@ -42,6 +42,13 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
+    public function getAllConsentDetailsForMerchant(string $merchantId)
+    {
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->get();
+    }
+
     public function getFailedConsentDetailsForMerchants($merchantId)
     {
         $consentDetailsIdColumn = $this->dbColumn(Entity::DETAILS_ID);

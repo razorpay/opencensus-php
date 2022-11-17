@@ -746,7 +746,7 @@ class Route
         'merchant_logs_fetch'                      => ['get',      'merchant/logs',                                  'MerchantController@getMerchantLogs'                                ],
         'merchant_audit_info'                      => ['get',      'audit/info/merchant/{id}',                       'AuditingController@getMerchantAuditInfo'                           ],
         'entity_audit_info'                        => ['get',      'audit_logs/{entity}/{id}',                       'AuditingController@getAuditInfo'                                   ],
-        'get_audit_entities'                        => ['get',     'audit_logs/entities',                            'AuditingController@getAuditEntities'                                   ],
+        'get_audit_entities'                       => ['get',      'audit_logs/entities',                            'AuditingController@getAuditEntities'                               ],
         'merchant_activation_needs_clarification'  => ['get',      'merchant/activation/clarification_reasons',      'MerchantController@getNeedsClarificationReasons'                   ],
         'merchant_activation_files'                => ['get',      'merchant/activation/{id}/files',                 'MerchantController@getActivationFiles'                             ],
         'merchant_activation_upload_file_admin'    => ['post',     'merchant/activation/{id}/files',                 'MerchantController@postUploadActivationFileAdmin'                  ],

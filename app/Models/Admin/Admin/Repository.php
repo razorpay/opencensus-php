@@ -5,6 +5,7 @@ namespace RZP\Models\Admin\Admin;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Base;
+use RZP\Base\ConnectionType;
 use RZP\Models\Admin\Permission;
 
 class Repository extends Base\Repository
@@ -21,6 +22,13 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
                     ->where(Entity::EMAIL, '=', $email)
+                    ->firstOrFailPublic();
+    }
+
+    public function getAdminFromId($id)
+    {
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
+                    ->where(Entity::ID, '=', $id)
                     ->firstOrFailPublic();
     }
 

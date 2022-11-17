@@ -13,6 +13,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Models\Admin\Action;
+use RZP\Base\ConnectionType;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Base\QueryCache\CacheQueries;
 use RZP\Trace\TraceCode;
@@ -315,6 +316,16 @@ class Repository extends Base\Repository
         $pricingPlanId = $merchant->getPricingPlanId();
 
         return $this->getPricingPlanByIdOrFailPublic($pricingPlanId);
+    }
+
+    public function getPricingRuleIdsByMerchant($merchant)
+    {
+        $pricingPlanId = $merchant->getPricingPlanId();
+
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
+                    ->where(Pricing\Entity::PLAN_ID, '=', $pricingPlanId)
+                    ->pluck('id')
+                    ->toArray();
     }
 
     public function fetchEligiblePlanIdsWithMissingCorporateRule(int $limit)

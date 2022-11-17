@@ -4,6 +4,7 @@
 namespace RZP\Models\Merchant\VerificationDetail;
 
 use RZP\Models\Base;
+use RZP\Base\ConnectionType;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
 
 class Repository extends Base\Repository
@@ -22,9 +23,8 @@ class Repository extends Base\Repository
     }
     public function getDetailsForMerchant(string $mid)
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
                     ->where(Entity::MERCHANT_ID, '=', $mid)
-                    ->get()
-                    ->callOnEveryItem('toArrayPublic');
+                    ->get();
     }
 }

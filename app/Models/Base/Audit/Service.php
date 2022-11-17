@@ -49,13 +49,17 @@ class Service extends Base\Service
 
     public function getMerchantAuditInfo($merchant_id, $input)
     {
+        $orgId = $this->auth->getOrgId();
+
+        $merchant = $this->repo->merchant->findByIdAndOrgId($merchant_id, $orgId);
+
         $core = new Core();
 
-        $timeStamp = $input["timeStamp"] ?? Carbon::now()->getTimestamp();
+        $startTime = $input["start_time"] ?? Carbon::today()->subDays(7)->getTimestamp();
 
-        $limit = $input["limit"] ?? 20;
+        $endTime = $input["end_time"] ?? Carbon::now()->getTimestamp();
 
-        return $core->getMerchantAuditInfo($merchant_id, $timeStamp, $limit);
+        return $core->getAuditInfoV2($merchant, $startTime, $endTime);
     }
 
     public function getAuditInfo($entity, $merchant_id, $input)

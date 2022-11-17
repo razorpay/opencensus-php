@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\User\Role;
+use RZP\Base\ConnectionType;
 use RZP\Exception\LogicException;
 use RZP\Constants\Table;
 use RZP\Models\User\Entity as UserEntity;
@@ -147,6 +148,13 @@ class Repository extends Base\Repository
         }
 
         return $query->get();
+    }
+
+    public function getAllUsersByMerchantId(string $merchantId)
+    {
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->get();
     }
 
     public function isOwnerForUserId(string $userId): bool
