@@ -122,6 +122,7 @@ class Checkout
 
     public function getPreferences(Entity $merchant, $mode, array $input)
     {
+
         Locale::setLocale($input, $merchant->getId());
 
         $this->tracePreferencesRequest($merchant, $mode, $input);
@@ -197,6 +198,8 @@ class Checkout
 
         $this->fillMerchantPolicyPage($merchant,$data);
 
+        $this->fillPrivacyAndTerms($merchant,$data);
+
         $this->fill1ccCouponDropOffExperiment($merchant, $data);
 
         return $data;
@@ -212,6 +215,21 @@ class Checkout
                 $data["merchant_policy"]["url"] = $policyData["url"];
 
                 $data["merchant_policy"]["display_name"] = $policyData["display_name"];
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e, Trace::WARNING, TraceCode::WEBSITE_SECTION_ERROR);
+        }
+    }
+
+    protected function fillPrivacyAndTerms(Entity $merchant, array & $data): void
+    {
+        try {
+            if ($merchant->getCountry() === 'MY') {
+                $data['terms'] = ['display_name' => 'Terms & Conditions', 'url' => 'https://curlec.com/terms-of-service/'];
+                $data['privacy'] = ['display_name' => 'Privacy Policy', 'url' => 'https://curlec.com/privacy-policy/'];
             }
         }
         catch (\Throwable $e)
