@@ -110,12 +110,16 @@ class Entity extends Base\PublicEntity
 
     public function getPlaystoreUrl()
     {
-        return $this->getAppUrls()[Constants::PLAYSTORE_URL] ?? null;
+        return isset($this->getAttribute(self::APP_URLS)[Constants::PLAYSTORE_URL]) ?
+            $this->getAttribute(self::APP_URLS)[Constants::PLAYSTORE_URL] :
+            null;
     }
 
     public function getAppstoreUrl()
     {
-        return $this->getAppUrls()[Constants::APPSTORE_URL] ?? null;
+        return isset($this->getAttribute(self::APP_URLS)[Constants::APPSTORE_URL]) ?
+            $this->getAttribute(self::APP_URLS)[Constants::APPSTORE_URL] :
+            null;
     }
 
     public function getWebsiteDetails()
