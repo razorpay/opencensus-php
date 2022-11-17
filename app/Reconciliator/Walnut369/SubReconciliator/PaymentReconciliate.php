@@ -46,28 +46,4 @@ class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceReco
             ]
         ];
     }
-
-    protected function getGatewayFee($row)
-    {
-        $mdr = 0;
-        $partner_fee = 0;
-        $net_transfer_amount = 0;
-
-        if (isset($row[Reconciliate::MDR]) === true) {
-            $mdr = floatval($row[Reconciliate::MDR]) * 100;
-        }
-
-        if (isset($row[Reconciliate::PARTNER_FEES]) === true) {
-            $partner_fee = floatval($row[Reconciliate::PARTNER_FEES]) * 100;
-        }
-
-        if (isset($row[Reconciliate::NET_TRANSFER_AMOUNT]) === true) {
-            $net_transfer_amount = floatval($row[Reconciliate::NET_TRANSFER_AMOUNT]) * 100;
-        }
-
-        $gateway_fee = $mdr + $partner_fee + $net_transfer_amount;
-
-        return intval(number_format($gateway_fee, 2, '.', ''));
-
-    }
 }

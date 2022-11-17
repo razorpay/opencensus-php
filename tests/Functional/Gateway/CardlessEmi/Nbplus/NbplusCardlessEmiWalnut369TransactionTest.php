@@ -50,61 +50,11 @@ class NbplusCardlessEmiWalnut369TransactionTest extends NbplusPaymentServiceCard
 
         $transactionEntity = $this->getDbLastEntity(Entity::TRANSACTION);
 
-        $this->assertEquals(1770, $transactionEntity['mdr']); // 1.18 * 1500
-        $this->assertEquals(1770, $transactionEntity['fee']); // 1.18 * 1500
-        $this->assertEquals(270, $transactionEntity['tax']); // 0.18 * 1500
+        $this->assertEquals(0, $transactionEntity['mdr']); // we ignore our pricing for CF sourced merchants
+        $this->assertEquals(0, $transactionEntity['fee']); // we ignore our pricing for CF sourced merchants
+        $this->assertEquals(0, $transactionEntity['tax']); // since there is no fee, so tax as well
 
-        $this->assertEquals(48230, $transactionEntity['credit']); // 50000 - 1770
-    }
-
-    public function testRoundoffGreaterWalnut369SourcedByMerchant()
-    {
-        $oldBalance = 1000000;
-
-        // round off > .5
-        $this->verifyRoundOffWalnut369SourcedByMerchant('60000', 2174, 2174, 332, 57826, $oldBalance + 57826);
-    }
-
-    public function testRoundoffLessWalnut369SourcedByMerchant()
-    {
-        $oldBalance = 1000000;
-
-        // round off < .5
-        $this->verifyRoundOffWalnut369SourcedByMerchant('70000', 2512, 2512, 384, 67488, $oldBalance + 67488);
-    }
-
-    public function testRoundoffWalnut369SourcedByMerchant()
-    {
-        $oldBalance = 1000000;
-
-        // round off without decimals
-        $this->verifyRoundOffWalnut369SourcedByMerchant('50000', 1770, 1770, 270, 48230, $oldBalance + 48230);
-    }
-
-    public function verifyRoundOffWalnut369SourcedByMerchant($amount, $mdr, $fee, $tax, $credit, $balance)
-    {
-        $this->fixtures->merchant->addFeatures(['sourced_by_walnut369']);
-
-        $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
-
-        $payment['amount'] = $amount;
-
-        $this->doAuthAndCapturePayment($payment);
-
-        $payment = $this->getDbLastEntityToArray(Entity::PAYMENT);
-
-        $this->assertEquals($payment[Payment::CPS_ROUTE], Payment::NB_PLUS_SERVICE);
-        $this->assertEquals($payment[Payment::STATUS], Payment::CAPTURED);
-
-        $transactionEntity = $this->getDbLastEntity(Entity::TRANSACTION);
-
-        $this->assertEquals($mdr, $transactionEntity['mdr']);
-        $this->assertEquals($fee, $transactionEntity['fee']);
-        $this->assertEquals($tax, $transactionEntity['tax']);
-
-        $this->assertEquals($credit, $transactionEntity['credit']);
-        $this->assertEquals($balance, $transactionEntity['balance']);
-
+        $this->assertEquals(48500, $transactionEntity['credit']); // 3% gst of 500
     }
 
     public function testWalnut369SourcedByMerchantTransactionLateAuth()
@@ -152,11 +102,11 @@ class NbplusCardlessEmiWalnut369TransactionTest extends NbplusPaymentServiceCard
 
         $transactionEntity = $this->getDbLastEntity(Entity::TRANSACTION);
 
-        $this->assertEquals(1770, $transactionEntity['mdr']); // 1.18 * 1500
-        $this->assertEquals(1770, $transactionEntity['fee']); // 1.18 * 1500
-        $this->assertEquals(270, $transactionEntity['tax']); // 0.18 * 1500
+        $this->assertEquals(0, $transactionEntity['mdr']); // we ignore our pricing for CF sourced merchants
+        $this->assertEquals(0, $transactionEntity['fee']); // we ignore our pricing for CF sourced merchants
+        $this->assertEquals(0, $transactionEntity['tax']); // since there is no fee, so tax as well
 
-        $this->assertEquals(48230, $transactionEntity['credit']); // 50000 - 1770
+        $this->assertEquals(48500, $transactionEntity['credit']); // 3% gst of 500
     }
 
     public function testWalnut369SourcedByMerchantTransactionFullRefund()
@@ -177,11 +127,11 @@ class NbplusCardlessEmiWalnut369TransactionTest extends NbplusPaymentServiceCard
 
         $transactionEntity = $this->getDbEntities(Entity::TRANSACTION, ['entity_id' => $paymentId, 'type' => 'payment']);
 
-        $this->assertEquals(1770, $transactionEntity[0]['mdr']); // 1.18 * 1500
-        $this->assertEquals(1770, $transactionEntity[0]['fee']); // 1.18 * 1500
-        $this->assertEquals(270, $transactionEntity[0]['tax']); // 0.18 * 1500
+        $this->assertEquals(0, $transactionEntity[0]['mdr']); // we ignore our pricing for CF sourced merchants
+        $this->assertEquals(0, $transactionEntity[0]['fee']); // we ignore our pricing for CF sourced merchants
+        $this->assertEquals(0, $transactionEntity[0]['tax']); // since there is no fee, so tax as well
 
-        $this->assertEquals(48230, $transactionEntity[0]['credit']); // 50000 - 1770
+        $this->assertEquals(48500, $transactionEntity[0]['credit']); // 3% gst of 500
 
         $transactionEntity = $this->getDbEntities(Entity::TRANSACTION, ['entity_id' => $refundId, 'type' => 'refund']);
 
@@ -206,11 +156,11 @@ class NbplusCardlessEmiWalnut369TransactionTest extends NbplusPaymentServiceCard
 
         $transactionEntity = $this->getDbEntities(Entity::TRANSACTION, ['entity_id' => $paymentId, 'type' => 'payment']);
 
-        $this->assertEquals(1770, $transactionEntity[0]['mdr']); // 1.18 * 1500
-        $this->assertEquals(1770, $transactionEntity[0]['fee']); // 1.18 * 1500
-        $this->assertEquals(270, $transactionEntity[0]['tax']); // 0.18 * 1500
+        $this->assertEquals(0, $transactionEntity[0]['mdr']); // we ignore our pricing for CF sourced merchants
+        $this->assertEquals(0, $transactionEntity[0]['fee']); // we ignore our pricing for CF sourced merchants
+        $this->assertEquals(0, $transactionEntity[0]['tax']); // since there is no fee, so tax as well
 
-        $this->assertEquals(48230, $transactionEntity[0]['credit']); // 50000 - 1770
+        $this->assertEquals(48500, $transactionEntity[0]['credit']); // 3% gst of 500
 
         $transactionEntity = $this->getDbEntities(Entity::TRANSACTION, ['entity_id' => $refundId, 'type' => 'refund']);
 
