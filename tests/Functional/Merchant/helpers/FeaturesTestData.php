@@ -3747,4 +3747,24 @@ return [
             'status_code' => 200
         ],
     ],
+    'test1ccDisableEmailCookie' => [
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['one_cc_disableemailcookie'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name' => 'one_cc_disableemailcookie',
+                    'entity_id' => '10000000000000',
+                    'entity_type' => 'merchant',
+                ]
+            ]
+        ],
+    ],
 ];

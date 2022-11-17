@@ -3814,4 +3814,11 @@ Regards,
         $this->assertTrue(in_array(Constants::IDEMPOTENCY_API_TO_PS, $tagsAfterM3, true));
         $this->assertTrue(in_array(Constants::IDEMPOTENCY_PS_TO_API, $tagsAfterM2, true));
     }
+
+    public function test1ccDisableEmailCookie()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+    }
 }

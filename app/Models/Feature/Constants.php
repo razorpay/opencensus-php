@@ -1149,6 +1149,8 @@ class Constants
 
     const ONE_CC_COUPON_DISABLE_COD = 'one_cc_coupon_disable_cod';
 
+    const ONE_CC_DISABLE_EMAIL_COOKIE = 'one_cc_disableemailcookie';
+
     const ORG_EMAIL_UPDATE_2FA_ENABLED = 'email_update_2fa_enabled';
 
     const ORG_TPV_DISABLE    = 'axis_tpv';
@@ -1682,6 +1684,7 @@ class Constants
         self::ONE_CC_CONSENT_DEFAULT,
         self::ONE_CC_CONSENT_NOTDEFAULT,
         self::ONE_CC_COUPON_DISABLE_COD,
+        self::ONE_CC_DISABLE_EMAIL_COOKIE,
     ];
 
     const ONE_CC_FEATURES = [
@@ -1699,6 +1702,7 @@ class Constants
         self::ONE_CC_CONSENT_DEFAULT,
         self::ONE_CC_CONSENT_NOTDEFAULT,
         self::ONE_CC_COUPON_DISABLE_COD,
+        self::ONE_CC_DISABLE_EMAIL_COOKIE,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -2235,6 +2239,7 @@ class Constants
         self::ENABLE_3DS2                     => true,
         self::CYBERSOURCE_SI_TXN_TEST         => true,
         self::SPR_DISABLE_METHOD_RESET        => true,
+        self::ONE_CC_DISABLE_EMAIL_COOKIE       => true,
         \RZP\Services\Dcs\Constants::RefundEnabled => true,  // Example Feature for DCS
         \RZP\Services\Dcs\Constants::DisableAutoRefund => true,  // Example Feature for DCS
         \RZP\Services\Dcs\Constants::EligibilityEnabled => true  // Example Feature for DCS
