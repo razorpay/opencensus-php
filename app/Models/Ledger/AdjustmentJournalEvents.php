@@ -7,7 +7,7 @@ use RZP\Models\Adjustment\Entity as AdjustmentEntity;
 class AdjustmentJournalEvents extends BaseJournalEvents
 {
 
-    public static function createTransactionMessageForManualAdjustment(AdjustmentEntity $adjustment): array
+    public static function createTransactionMessageForManualAdjustment(AdjustmentEntity $adjustment, string $publicId): array
     {
         $adjustmentAmount = $adjustment->getAmount() != null ? abs($adjustment->getAmount()) : 0;
 
@@ -19,7 +19,7 @@ class AdjustmentJournalEvents extends BaseJournalEvents
         }
 
         return array(
-            Constants::TRANSACTOR_ID                => $adjustment->getEntityId(),
+            Constants::TRANSACTOR_ID                => $publicId,
             Constants::MERCHANT_ID                  => $adjustment->getMerchantId(),
             Constants::API_TRANSACTION_ID           => $adjustment->getTransactionId(),
             Constants::CURRENCY                     => $adjustment->getCurrency(),

@@ -212,7 +212,7 @@ class Core extends Base\Core
         }
     }
 
-    private function createLedgerEntriesForManualAdjustment(Adjustment\Entity $adj, Merchant\Entity $merchant)
+    private function createLedgerEntriesForManualAdjustment(Adjustment\Entity $adj, Merchant\Entity $merchant, string $publicId)
     {
         try
         {
@@ -221,7 +221,7 @@ class Core extends Base\Core
                 return;
             }
 
-            $transactionMessage= AdjustmentJournalEvents::createTransactionMessageForManualAdjustment($adj);
+            $transactionMessage= AdjustmentJournalEvents::createTransactionMessageForManualAdjustment($adj, $publicId);
 
             \Event::dispatch(new TransactionalClosureEvent(function () use ($transactionMessage)
             {
@@ -268,7 +268,7 @@ class Core extends Base\Core
         if (($adjustment->isBalanceTypePrimary() === true) and
             ($adjustment->getEntityType() !== DefaultConstants\Entity::DISPUTE))
         {
-            $this->createLedgerEntriesForManualAdjustment($adjustment, $source->merchant);
+            $this->createLedgerEntriesForManualAdjustment($adjustment, $source->merchant, $source->getPublicId());
         }
 
         return $adjustment;
