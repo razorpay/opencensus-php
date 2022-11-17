@@ -23326,6 +23326,61 @@ class PayoutTest extends OAuthTestCase
         $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
     }
 
+
+    public function testStatusDetailsInPayoutUpdatedWebhookForPartnerBankPendingNEFTMode()
+    {
+        $payloadUpdatedOne = null;
+
+        $this->mockServiceStorkRequest(
+            function($path, $payload) use (& $payloadUpdated) {
+                $this->assertContains($payload['event']['name'], ['payout.updated']);
+                switch ($payload['event']['name'])
+                {
+                    case Event::PAYOUT_UPDATED:
+                        $payloadUpdated = $payload;
+                        break;
+                }
+
+                return new \Requests_Response();
+            })->times(5);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout->getId(), ['mode' => 'NEFT']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+            'source_type'      => 'payout',
+            'source_id'        => $payout->getId(),
+            'fta_status'       => 'initiated',
+            'channel'          => 'rbl',
+            'failure_reason'   => '',
+            'utr'              => 928337183,
+            'mode'             => 'NEFT',
+            'remarks'          => '',
+            'bank_status_code' => 'PENDING',
+            'status_details'   => [
+                'reason'     => 'partner_bank_pending',
+                'parameters' => [
+                    'processed_by_time' => '1636484602',
+                ],
+            ],
+        ]);
+
+        $statusDetails = $this->getDbLastEntity('payouts_status_details');
+
+        $this->assertNotNull($statusDetails);
+        $this->assertEquals('partner_bank_pending', $statusDetails['reason']);
+        $this->assertEquals('Payout is being processed by our partner bank. Please check the final status after 10th November 2021, 12:33 AM', $statusDetails['description']);
+
+        $payoutUpdatedEventData = $this->testData[__FUNCTION__];
+
+        $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
+    }
+
     public function testStatusDetailsInPayoutUpdatedWebhookForPayoutProcessing()
     {
         $payloadUpdatedOne = null;

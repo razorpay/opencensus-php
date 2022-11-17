@@ -14,6 +14,8 @@ class StatusReasonMap
 
     const PAYOUT_BANK_PROCESSING                = 'payout_bank_processing';
 
+    const PARTNER_BANK_PENDING                  = 'partner_bank_pending';
+
     const PAYOUT_PROCESSING                     = 'payout_processing';
 
     const PAYOUT_PROCESSED                      = 'payout_processed';
@@ -68,6 +70,7 @@ class StatusReasonMap
             self::BANK_WINDOW_CLOSED,
             self::PAYOUT_BANK_PROCESSING,
             self::AMOUNT_LIMIT_EXHAUSTED,
+            self::PARTNER_BANK_PENDING,
         ],
 
         PayoutStatus::PROCESSED => [

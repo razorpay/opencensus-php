@@ -18083,6 +18083,27 @@ return [
         ],
     ],
 
+    'testStatusDetailsInPayoutUpdatedWebhookForPartnerBankPendingNEFTMode' => [
+        'entity' => 'event',
+        'event'  => 'payout.updated',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity'         => 'payout',
+                    'status'         => 'processing',
+                    'status_details'  => [
+                        'reason' => 'partner_bank_pending',
+                        'description' => "Payout is being processed by our partner bank. Please "
+                            ."check the final status after 10th November 2021, 12:33 AM",
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testStatusDetailsInPayoutUpdatedWebhookForPayoutProcessing' => [
         'entity' => 'event',
         'event'  => 'payout.updated',

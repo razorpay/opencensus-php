@@ -22,6 +22,8 @@ class ReasonSourceMap
 
      Reason::PAYOUT_BANK_PROCESSING                => self::INTERNAL,
 
+     Reason::PARTNER_BANK_PENDING                  => self::INTERNAL,
+
      Reason::PAYOUT_PROCESSING                     => self::INTERNAL,
 
      Reason::PENDING_APPROVAl                      => self::BUSINESS,
