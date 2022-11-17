@@ -1005,14 +1005,6 @@ class NeedsClarificationTest extends TestCase
 
         $expectedKycClarificationReasons = [
             'additional_details' =>  [
-                'cancelled_cheque' => [
-                    [
-                        'reason_type' => "predefined",
-                        'field_type' => "document",
-                        'field_value' => null,
-                        'reason_code' => "bank_account_change_request_for_pvt_public_llp"
-                    ]
-                ],
                 'bank_account_name' => [
                     [
                         'reason_type' => "predefined",

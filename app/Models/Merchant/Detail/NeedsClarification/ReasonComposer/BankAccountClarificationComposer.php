@@ -13,6 +13,7 @@ use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Detail\Constants;
 use RZP\Models\Merchant\Detail\BankDetailsVerificationStatus;
 use RZP\Models\Merchant\Detail\NeedsClarification\Constants as NCConstants;
+use RZP\Models\Merchant\Product\Requirements\Constants as RequirementConstants;
 use RZP\Models\Merchant\Detail\NeedsClarificationMetaData;
 use RZP\Models\Merchant\Detail\NeedsClarificationReasonsList;
 use RZP\Trace\TraceCode;
@@ -96,11 +97,19 @@ class BankAccountClarificationComposer extends BaseClarificationReasonComposer
             return [];
         }
 
+        $isNoDocOnboardingEnabled = $this->merchantDetails->merchant->isNoDocOnboardingEnabled();
+
         $latestBankValidationError = $this->getLatestBankAccountValidationError();
 
         If(isset(Constants::VERIFICATION_RESPONSE_ERROR_CODES[$latestBankValidationError]) === true) {
             $response = [];
             foreach ($this->clarificationMetaData[NCConstants::ADDITIONAL_DETAILS][NCConstants::FIELDS] as $field) {
+
+                if ($isNoDocOnboardingEnabled === true and in_array($field[NCConstants::FIELD_NAME], RequirementConstants::NO_DOC_OPTIONAL_DOC_FIELDS) === true)
+                {
+                    continue;
+                }
+
                 $response[$field[NCConstants::FIELD_NAME]] = [[
                     NCConstants::REASON_TYPE => Merchant\Constants::PREDEFINED_REASON_TYPE,
                     NCConstants::FIELD_TYPE => $field[NCConstants::FIELD_TYPE],

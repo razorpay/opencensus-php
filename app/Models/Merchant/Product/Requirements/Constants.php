@@ -120,4 +120,8 @@ class Constants
         Document\Type::CANCELLED_CHEQUE          => Detail\Entity::BANK_DETAILS_DOC_VERIFICATION_STATUS,
 
     ];
+
+    const NO_DOC_OPTIONAL_DOC_FIELDS = [
+        Document\Type::CANCELLED_CHEQUE
+    ];
 }

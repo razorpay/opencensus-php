@@ -350,6 +350,8 @@ class Core extends Base\Core
 
     public function getNonAcknowledgedNCFields(Merchant\Entity $merchant, DetailEntity $merchantDetails): array
     {
+        $isNoDocOnboardingEnabled = $merchant->isNoDocOnboardingEnabled();
+
         $documentResponse = (new Document\Core())->documentResponse($merchant);
 
         $latestClarificationFields = $this->getLatestKycClarificationReasons($merchantDetails);
@@ -381,7 +383,7 @@ class Core extends Base\Core
             if (($this->isBankDetailsNCField($field) === true) &&
                 ($this->isNCAcknowledgedForBankDocumentProofs($documentResponse, $clarificationDetails) === false) &&
                 array_key_exists(DocumentType::CANCELLED_CHEQUE, $nonAcknowledgedNCFields[Constants::DOCUMENTS]) === false &&
-                ($this->merchant->isLinkedAccount() === false)) {
+                ($this->merchant->isLinkedAccount() === false) && $isNoDocOnboardingEnabled === false) {
                 $nonAcknowledgedNCFields[Constants::DOCUMENTS][DocumentType::CANCELLED_CHEQUE] = $clarificationDetails;
 
                 $totalNonAcknowledgedFieldCount = $totalNonAcknowledgedFieldCount + 1;

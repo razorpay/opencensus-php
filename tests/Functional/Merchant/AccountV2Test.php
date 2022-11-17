@@ -931,4 +931,39 @@ class AccountV2Test extends TestCase
 
         $this->runRequestResponseFlow($testData);
     }
+
+    public function testBankAccountBankAccountVerificationFails()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $featureParams = [
+            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'subm_no_doc_onboarding',
+        ];
+
+        (new Core())->create($featureParams, true);
+
+        $testData = $this->testData['testCreateSubmerchantWithNoDocFeature'];
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $accountId = $result['id'];
+
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+
+        $merchant = $this->getDbEntity('merchant', ['id' => $accountId]);
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $merchantDetails->setBankDetailsVerificationStatus(POIStatus::INCORRECT_DETAILS);
+
+        $merchantDetails->setCompanyPanVerificationStatus(POIStatus::VERIFIED);
+
+        $merchantDetails->setGstinVerificationStatus(POIStatus::VERIFIED);
+
+        $value = (new \RZP\Models\Merchant\Detail\Core())->getApplicableActivationStatus($merchantDetails);
+
+        $this->assertEquals('under_review', $value);
+    }
 }

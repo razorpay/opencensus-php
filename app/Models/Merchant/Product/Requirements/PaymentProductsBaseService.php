@@ -618,8 +618,15 @@ class PaymentProductsBaseService extends Base\Service
     {
         $ncDocumentRequirements = [];
 
+        $isNoDocOnboardingEnabled = $merchantDetails->merchant->isNoDocOnboardingEnabled();
+
         foreach ($ncDocuments as $documentType => $fieldData)
         {
+            if($isNoDocOnboardingEnabled === true and in_array($documentType, Constants::NO_DOC_OPTIONAL_DOC_FIELDS) === true)
+            {
+                continue;
+            }
+
             $fieldReference = Document\Type::DOCUMENT_TYPE_TO_PROOF_TYPE_MAPPING[$documentType] . '.' . $documentType;
 
             if (in_array($documentType, SelectiveRequiredFields::BANK_PROOF_DOCUMENTS) === true)
