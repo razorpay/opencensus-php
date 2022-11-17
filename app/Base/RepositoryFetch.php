@@ -312,12 +312,7 @@ trait RepositoryFetch
                 return $this->getPaymentFetchReplicaConnection();
 
             case ConnectionType::RX_DATA_WAREHOUSE_MERCHANT:
-                if ($this->isExperimentEnabled(Merchant\RazorxTreatment::RX_REARCH_TIDB_EXPERIMENT) === true)
-                {
-                    return $this->getDataWarehouseConnection(ConnectionType::RX_DATA_WAREHOUSE_MERCHANT);
-                }
-
-                return $this->getPaymentFetchReplicaConnection();
+                return $this->getDataWarehouseConnection(ConnectionType::RX_DATA_WAREHOUSE_MERCHANT);
 
             case ConnectionType::RX_ACCOUNT_STATEMENTS:
                 return $this->getRxStatementConnection();

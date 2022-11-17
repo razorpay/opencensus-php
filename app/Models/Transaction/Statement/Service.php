@@ -37,7 +37,6 @@ class Service extends Transaction\Service
 
         // Route request to ledger statement if ledger feature is enabled
         if (($this->merchant->isFeatureEnabled(Constants::LEDGER_REVERSE_SHADOW) === true) and
-            ($this->isExperimentEnabled(Merchant\RazorxTreatment::RX_REARCH_TIDB_EXPERIMENT) === true) and
             ($balance->isAccountTypeShared() === true))
         {
             $ledger = $this->repo->ledger_statement->fetch($input, $this->merchant->getId(), ConnectionType::RX_DATA_WAREHOUSE_MERCHANT);
@@ -134,7 +133,6 @@ class Service extends Transaction\Service
 
         // Route request to ledger statement if ledger read feature is enabled
         if (($this->merchant->isFeatureEnabled(Constants::LEDGER_REVERSE_SHADOW) === true) and
-            ($this->isExperimentEnabled(Merchant\RazorxTreatment::RX_REARCH_TIDB_EXPERIMENT) === true) and
             ($balance->isAccountTypeShared() === true))
         {
             $startTime = millitime();

@@ -479,10 +479,6 @@ final class RazorxTreatment
     // Experiment to block customer prefill on authlink checkout
     const BLOCK_CUSTOMER_PREFILL_IN_AUTHLINK = 'block_customer_prefill_in_authlink';
 
-    // Experiment for RX Rearch (Ledger <> RX integration)
-    const RX_REARCH_TIDB_EXPERIMENT = 'rx_rearch_fetch_tidb';
-
-    // Experiment for RX DA stmt (driving stmt via BAS entity) - Rearch
     const RX_DA_ACC_STMT_REARCH_EXPERIMENT = 'rx_da_acc_stmt_rearch_experiment';
 
     //Experiment for enabling dcc on various libraries
