@@ -11119,6 +11119,13 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'wfs_workflows_list',
+            'wfs_workflows_get',
+            'wfs_workflow_action_create',
+            'wfs_workflow_add_assignee',
+            'wfs_workflow_remove_assignee',
+            'wfs_comments_create',
+            'wfs_comments_list',
             'admin_payouts_workflow_config_get',
             'merchant_website_section_action',
             'merchant_website_section_save',
