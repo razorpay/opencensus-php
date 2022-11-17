@@ -35,12 +35,14 @@ class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceReco
 
         $bankPaymentIdInDB = null;
 
-        $bankPaymentIdInDB = $this->gatewayPayment->getBankPaymentId();
-
         if(($this->payment->getCpsRoute() === Payment\Entity::NB_PLUS_SERVICE) or
             ($this->payment->getCpsRoute() === Payment\Entity::NB_PLUS_SERVICE_PAYMENTS))
         {
-            $bankPaymentIdInDB = $this->payment->getReference16();
+            $bankPaymentIdInDB = $this->payment->getReference1();
+        }
+        else
+        {
+            $bankPaymentIdInDB = $this->gatewayPayment->getBankPaymentId();
         }
 
         // Duplicate entry, fail the row
