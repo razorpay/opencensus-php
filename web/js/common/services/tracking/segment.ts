@@ -29,11 +29,20 @@ const sendToLumberjack = ({ eventName, properties = {} }) => {
     ],
   };
 
-  axios.post(window.LUMBERJACK_API_URL, JSON.stringify(body), {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+  axios
+    .post(window.LUMBERJACK_API_URL, JSON.stringify(body), {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    .catch((error) => {
+      errorService.captureError(error, {
+        tags: {
+          team: Teams.PLATFORM,
+        },
+        rank: Ranks.P2,
+      });
+    });
 };
 
 const getCommonProperties = ({ screen, properties, user }) => {
