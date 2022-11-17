@@ -2070,7 +2070,10 @@ class Core extends Base\Core
 
         $data[Entity::BUSINESS_WEBSITE] = [
             "website"     => $businessWebsite,
-            "plugin_type" => isset($pluginData[$businessWebsite]) ?  WhatCmsService::getIndexFromKey($pluginData[$businessWebsite]) : 0
+
+            "plugin_type" => isset($pluginData[$businessWebsite]) ?  WhatCmsService::getIndexFromKey($pluginData[$businessWebsite]) : 0,
+
+            "plugin_name" => $pluginData[$businessWebsite] ?? null
         ];
 
         $data[Entity::ADDITIONAL_WEBSITES] = $additionalWebsitesData;
