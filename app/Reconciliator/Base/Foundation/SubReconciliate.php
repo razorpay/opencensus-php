@@ -26,6 +26,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Transaction\ReconciledType;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Jobs\CardMetaDataDelete as CardMetaDataDeleteJob;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class SubReconciliate extends Base\Core
@@ -627,7 +628,13 @@ class SubReconciliate extends Base\Core
                     ]);
 
                 if ($variant === 'on' ) {
-                    $this->app['card.cardVault']->deleteToken($entity->card->getvaultToken());
+                    $data = [
+                        'mode'        => $this->app['rzp.mode'] ?? 'live',
+                        'payment_id'  => $entity->getId(),
+                        'vault_token' => $entity->card->getVaultToken()
+                    ];
+
+                    CardMetaDataDeleteJob::dispatch($data);
                 }
             }
         }

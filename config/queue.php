@@ -512,6 +512,11 @@ return [
         'live'       => env('AWS_PAR_ASYNC_TOKENISATION_LIVE_QUEUE'),
     ],
 
+    'card_metadata_deletion' =>[
+        'test'       => env('AWS_CARD_METADATA_DELETION_TEST_QUEUE'),
+        'live'       => env('AWS_CARD_METADATA_DELETION__LIVE_QUEUE'),
+    ],
+
     'firs_document_process' => [
         'test'       => env('AWS_FIRS_DOCUMENT_TEST_QUEUE'),
         'live'       => env('AWS_FIRS_DOCUMENT_LIVE_QUEUE'),

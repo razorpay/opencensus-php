@@ -8509,8 +8509,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PARTNER_BULK_UPDATE_ONBOARDING_SOURCE                       = 'PARTNER_BULK_UPDATE_ONBOARDING_SOURCE';
     const PARTNER_BULK_UPDATE_ONBOARDING_SOURCE_FAILURE               = 'PARTNER_BULK_UPDATE_ONBOARDING_SOURCE_FAILURE';
     const CARD_METADATA_DELETE_EXCEPTION                              = 'CARD_METADATA_DELETE_EXCEPTION';
-
     const DELETING_METADATA_AFTER_RECONCILIATION                      = 'DELETING_METADATA_AFTER_RECONCILIATION';
+    const CARD_METADATA_DELETE_SUCCESSFUL                             = 'CARD_METADATA_DELETE_SUCCESSFUL';
+    const CARD_METADATA_DELETE_EVENT                                  = 'CARD_METADATA_DELETE_EVENT';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

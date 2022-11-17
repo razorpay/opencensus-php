@@ -1,11 +1,13 @@
 <?php
 namespace RZP\Tests\Functional\Gateway\Reconciliation;
 
+use App;
 use Queue;
 use Mockery;
 use RZP\Jobs;
 use Carbon\Carbon;
 use RZP\Models\Batch;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Status;
@@ -588,6 +590,113 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN], "'" . $updatedPayment1['reference1']);
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_AUTH_CODE], "'" . $updatedPayment1['reference2']);
         $this->assertTrue($updatedPayment1['gateway_captured']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+
+    public function testHdfcReconPaymentFileWithMetaDataDelete()
+    {
+        $this->fixtures->create('terminal:shared_hdfc_recurring_terminals');
+
+// Mock Razorx
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function($mid, $feature, $mode) {
+                    if ($feature === RazorxTreatment::DELETE_CARD_METADATA_AFTER_RECONCILIATION)
+                    {
+                        return 'on';
+                    }
+
+                    return 'off';
+                }));
+
+        $callable = function($route, $method, $input) {
+            $response = [
+                'error'   => '',
+                'success' => true,
+            ];
+
+            switch ($route)
+            {
+                case 'tokenize':
+                    $response['token']       = 'pay_44f3d176b38b4cd2a588f243e3ff7b20';
+                    $response['fingerprint'] = null;
+                    $response['scheme']      = '0';
+                    break;
+
+                case 'cards/metadata/fetch':
+                    $response['token']        = $input['token'];
+                    $response['iin']          = '411111';
+                    $response['expiry_month'] = '08';
+                    $response['expiry_year']  = '2025';
+                    $response['name']         = 'chirag';
+                    break;
+
+                case 'cards/metadata':
+                    self::assertArrayKeysExist($input, [
+                        Entity::TOKEN,
+                        Entity::NAME,
+                        Entity::EXPIRY_YEAR,
+                        Entity::EXPIRY_MONTH,
+                        Entity::IIN
+                    ]);
+                    break;
+
+                case 'delete/token':
+                    self::assertEquals('pay_44f3d176b38b4cd2a588f243e3ff7b20', $input['token']);
+                    break;
+            }
+
+            return $response;
+        };
+
+        $app = App::getFacadeRoot();
+
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$app])->makePartial();
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing($callable)->times(6);
+
+
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'capture')
+            {
+                throw new GatewayRequestException('Timed out');
+            }
+
+            return $content;
+        }, 'hdfc');
+
+        $this->makeRequestAndCatchException(
+            function ()
+            {
+                $this->doAuthAndCapturePayment();
+            });
+
+        $gatewayPayment = $this->getDbLastEntityToArray('hdfc');
+
+        $entries[] = $this->overrideHdfcPayment($gatewayPayment);
+
+        $file = $this->writeToExcelFile($entries, 'fss');
+        $this->runForFiles([$file], 'HDFC');
+
+        $updatedPayment = $this->getDbLastPayment();
+
+        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN], "'" . $updatedPayment['reference1']);
+        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_AUTH_CODE], "'" . $updatedPayment['reference2']);
+        $this->assertTrue($updatedPayment['gateway_captured']);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }
