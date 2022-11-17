@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
+use RZP\Exception;
 use Illuminate\Support\Collection;
 use RZP\Services\Dcs\Service;
 use RZP\Models\Base\EsRepository;
@@ -206,10 +207,18 @@ class Repository extends Base\Repository
             $feature->getValidator()->validateFeatureIsNotAlreadyAssigned($assignedFeatureNames);
 
             $dcs = $this->app['dcs'];
-            if (($dcs->isDcsEnabled($feature->getName()) === true) &&
-                (Service::isDcsFeature($feature->getName()) === true))
+            if ($dcs->isDcsEnabled($feature->getName()) === true)
             {
                 $dcs->assignFeature($feature, $this->app['rzp.mode']);
+            }
+            else if ($dcs->isDCSNewFeature($feature->getName()) === true)
+            {
+                $ex = new Exception\ServerErrorException('dcs service is disabled, please check with dcs team',
+                    'SERVER_ERROR_DCS_DISABLED',
+                    "dcs service is disabled, please check with dcs team");
+                $this->trace->traceException($ex);
+
+                throw $ex;
             }
 
             $this->repo->saveOrFail($feature);
@@ -225,10 +234,22 @@ class Repository extends Base\Repository
         else
         {
             $dcs = $this->app['dcs'];
-            if (($dcs->isDcsEnabled($feature->getName()) === true) &&
-                (Service::isDcsFeature($feature->getName()) === true))
+
+            if (Service::isDcsFeature($feature->getName()) === true)
             {
-                $dcs->removeFeature($feature, $this->app['rzp.mode']);
+                if ($dcs->isDcsEnabled($feature->getName()) === true)
+                {
+                    $dcs->removeFeature($feature, $this->app['rzp.mode']);
+                }
+                else if ($dcs->isDCSNewFeature($feature->getName()) === true)
+                {
+                    $ex = new Exception\ServerErrorException('dcs service is disabled, please check with dcs team',
+                        'SERVER_ERROR_DCS_DISABLED',
+                        "dcs service is disabled, please check with dcs team");
+                    $this->trace->traceException($ex);
+
+                    throw $ex;
+                }
             }
 
             $this->deleteOrFail($feature);
@@ -273,12 +294,24 @@ class Repository extends Base\Repository
             try {
                 // new DCS features update
                 $dcs = $this->app['dcs'];
-                if (($dcs->isDcsEnabled($entity->getName()) === true) &&
-                    (Service::isDcsFeature($entity->getName()) === true))
+                if (Service::isDcsFeature($entity->getName()) === true)
                 {
-                    $dcs->assignFeature($entity, Mode::TEST);
-                    $dcs->assignFeature($entity, Mode::LIVE);
+                    if ($dcs->isDcsEnabled($entity->getName()) === true)
+                    {
+                        $dcs->assignFeature($entity, Mode::TEST);
+                        $dcs->assignFeature($entity, Mode::LIVE);
+                    }
+                    else if ($dcs->isDCSNewFeature($entity->getName()) === true)
+                    {
+                        $ex = new Exception\ServerErrorException('dcs service is disabled, please check with dcs team',
+                            'SERVER_ERROR_DCS_DISABLED',
+                            "dcs service is disabled, please check with dcs team");
+                        $this->trace->traceException($ex);
+
+                        throw $ex;
+                    }
                 }
+
 
                 $testEntity = $this->findByEntityIdAndNameOnConnection($entityId, $featureName, Mode::TEST);
                 $liveEntity = $this->findByEntityIdAndNameOnConnection($entityId, $featureName, Mode::LIVE);
@@ -316,11 +349,23 @@ class Repository extends Base\Repository
             $entityId = $entity->getEntityId();
             try {
                 $dcs = $this->app['dcs'];
-                if (($dcs->isDcsEnabled($entity->getName()) === true) &&
-                    (Service::isDcsFeature($entity->getName()) === true))
+
+                if (Service::isDcsFeature($entity->getName()) === true)
                 {
-                    $dcs->removeFeature($entity, Mode::TEST);
-                    $dcs->removeFeature($entity, Mode::LIVE);
+                    if ($dcs->isDcsEnabled($entity->getName()) === true)
+                    {
+                        $dcs->removeFeature($entity, Mode::TEST);
+                        $dcs->removeFeature($entity, Mode::LIVE);
+                    }
+                    else if ($dcs->isDCSNewFeature($entity->getName()) === true)
+                    {
+                        $ex = new Exception\ServerErrorException('dcs service is disabled, please check with dcs team',
+                            'SERVER_ERROR_DCS_DISABLED',
+                            "dcs service is disabled, please check with dcs team");
+                        $this->trace->traceException($ex);
+
+                        throw $ex;
+                    }
                 }
 
                 $testEntity = $this->findByEntityIdAndNameOnConnection($entityId, $featureName, Mode::TEST);

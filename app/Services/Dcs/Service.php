@@ -135,7 +135,7 @@ class Service extends Base
                 Entity::ENTITY_TYPE => $key->getEntity(),
                 Entity::ENTITY_ID => $entityId,
             ];
-            $func = 'get'. camel_case($featureName);
+            $func = 'get'. ucfirst(camel_case($featureName));
             $result = $features->$func();
            if ($result === true){
                $entity = (new Entity)->build($data);
@@ -187,7 +187,7 @@ class Service extends Base
                 Entity::ENTITY_ID => $key->getEntityId(),
 
             ];
-            $func = 'get'. camel_case($featureName);
+            $func = 'get'. ucfirst(camel_case($featureName));
             $result = $features->$func();
             if ($result === true){
                 $entity = (new Entity)->build($data);

@@ -1113,7 +1113,7 @@ return [
             'live'       => [
                 'url'       => env('CHECKOUT_AFFORDABILITY_API_LIVE_URL'),
                 'username'  => env('CHECKOUT_AFFORDABILITY_API_USERNAME_LIVE'),
-                'password'  => env('AFFORDABILITY_PASSWORD_LIVE'),
+                'password'  => env('CHECKOUT_AFFORDABILITY_API_PASSWORD_LIVE'),
             ],
             'test'       => [
                 "url"       => env('CHECKOUT_AFFORDABILITY_API_TEST_URL'),

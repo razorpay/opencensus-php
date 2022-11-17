@@ -241,7 +241,7 @@ class Service
         $request['key'] = $key;
         if($mode === Mode::LIVE)
         {
-            $request['live_mode'] = $mode;
+            $request['liveMode'] = true;
         }
 
         $request['entity_id'] = $entity_id;
