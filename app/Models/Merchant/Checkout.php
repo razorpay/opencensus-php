@@ -1155,6 +1155,10 @@ class Checkout
 
         $data['merchant_brand_name'] = $merchant->getFilteredDba();
 
+        $data['merchant_country'] = $merchant->getCountry();
+
+        $data['merchant_currency'] = $merchant->getCurrency();
+
         if(empty($data['merchant_key']) === true)
         {
             $data['merchant_key'] = (new key\Core)->getLatestActiveKeyForMerchant($merchant->getId());
@@ -2088,7 +2092,7 @@ class Checkout
                 'id'            => UniqueIdEntity::generateUniqueId(),
                 'experiment_id' => $this->app['config']->get('app.1cc_coupon_drop_off_splitz_experiment_id'),
             ];
-            
+
             $response = $this->app['splitzService']->evaluateRequest($properties);
 
             $data['1cc_coupon_drop_off_exp'] = $response['response']['variant']['name'] ?? null;
