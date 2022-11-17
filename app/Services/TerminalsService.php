@@ -949,12 +949,15 @@ class TerminalsService
 
         $params = self::PARAMS[self::INSTRUMENT_RULES_EVENT];
 
+        $options = [self::TIMEOUT=> 3]; // 3 secs.
+
         $this->trace->info(TraceCode::TEMPORARY_INSTRUMENT_EVENT_CONSUME_LOG, [
             'input'   => $input,
             'content' => $content,
+            'options' => $options,
         ]);
 
-        $response = $this->handleRequestAndResponse($params[self::PATH], $content, $params[self::METHOD]);
+        $response = $this->handleRequestAndResponse($params[self::PATH], $content, $params[self::METHOD], $options);
 
         return $this->parseAndReturnResponse($response)['data'] ?? [];
     }
