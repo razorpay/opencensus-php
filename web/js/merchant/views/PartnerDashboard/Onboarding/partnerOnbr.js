@@ -10,7 +10,7 @@ import { updateSession } from 'merchant/reducers/session';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { connect } from 'react-redux';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { openModal } from 'merchant_common/reducers/modals';
 import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import { track } from './ga';
@@ -31,7 +31,6 @@ import { analyticsTrack } from 'common/utils/analytics';
     updateSession,
     showNotification,
     openModal,
-    closeModal,
   },
 )
 export default class BaseScreen extends React.Component {

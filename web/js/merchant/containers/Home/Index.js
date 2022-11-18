@@ -13,7 +13,7 @@ import {
 import lazyLoader from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import { getItem, setItem, removeItem } from 'common/utils/localStorage';
-import { getCookie } from '../../../common/utils/cookies';
+import { getCookie } from 'common/utils/cookies';
 import debounce from 'common/utils/debounce';
 import { getFormattedAmountNew, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
@@ -931,12 +931,19 @@ export default class HomeContainer extends Component {
     }
   };
 
+  closePartnerExplore = () => {
+    const { history, closeModal } = this.props;
+    history.replace('/dashboard');
+    closeModal();
+  };
+
   render() {
     const {
       mode,
       current_balance,
       tabsMeta,
       user,
+      location,
       // following three props will be sent by admin analytics
       // - web/pokedex.js
       isAdmin,
@@ -986,6 +993,7 @@ export default class HomeContainer extends Component {
       onExtraContentMount,
       setScrollAmountToStickHeader,
       settleNowRestrictionMsg,
+      closePartnerExplore,
     } = this;
 
     const roleToShowSupportDetailForm =
@@ -1054,12 +1062,16 @@ export default class HomeContainer extends Component {
 
     const isPartnerOnBoardingModalShown = getItem(this.partnerOnBoardingToken);
 
-    if (user.isPartnerIntent() && !isPartnerOnBoardingModalShown) {
+    const showPartnerExplore = location?.search === '?partnerExplore=true';
+
+    if ((user.isPartnerIntent() && !isPartnerOnBoardingModalShown) || showPartnerExplore) {
       setItem(this.partnerOnBoardingToken, true);
       this.props.openModal({
         size: 'xlarge',
-        disableClose: true,
-        component: <PartnerOnbr disableClose={true} />,
+        disableClose: !showPartnerExplore,
+        component: (
+          <PartnerOnbr disableClose={!showPartnerExplore} closeModal={closePartnerExplore} />
+        ),
         className: this.state.isMobile
           ? 'partner-onboarding-popup mobile-app-popup'
           : 'partner-onboarding-popup',
