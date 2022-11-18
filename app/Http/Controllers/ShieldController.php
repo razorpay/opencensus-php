@@ -59,6 +59,8 @@ class ShieldController extends Controller
         self::MERCHANT_RISK_THRESHOLD_DELETE_ROUTE,
     ];
 
+    const SHARED_MERCHANT_ID = '100000razorpay';
+
     public function proxyRequest()
     {
         $routeName = Request::route()->getName();
@@ -259,6 +261,10 @@ class ShieldController extends Controller
                     $externalEntityId = substr($this->app['request']->getId(), 0, 12);
                 }
                 break;
+        }
+
+        if ($externalEntityId === self::SHARED_MERCHANT_ID) {
+            $externalEntityId = substr($this->app['request']->getId(), 0, 12);
         }
 
         $this->app['trace']->info(TraceCode::SHIELD_WORKFLOW_ENTITY_ID, [
