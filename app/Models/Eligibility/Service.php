@@ -57,12 +57,7 @@ class Service extends Base\Service
                 ErrorCode::SERVER_ERROR);
         }
 
-        if ($response->body === "null" or $response->body === '') {
-            throw new Exception\ServerErrorException('Error completing the request',
-                ErrorCode::SERVER_ERROR);
-        }
-
-        return json_decode($response->body);
+        return $this->formatResponse($response);
     }
 
     /**
@@ -86,13 +81,7 @@ class Service extends Base\Service
                 ErrorCode::SERVER_ERROR);
         }
 
-        if ($response->body === "null" or $response->body === '') {
-            throw new Exception\ServerErrorException('Error completing the request',
-                ErrorCode::SERVER_ERROR);
-        }
-
-        return json_decode($response->body);
-
+        return $this->formatResponse($response);
     }
 
     protected function getBaseUrl(): string
@@ -117,6 +106,36 @@ class Service extends Base\Service
              self::X_PASSPORT_JWT_V1 => $jwt,
              self::X_REQUEST_TASK_ID => $this->app['request']->getTaskId(),
         ];
+    }
+
+    /**
+     * @param $response
+     * @return mixed
+     * @throws Exception\BadRequestException
+     * @throws Exception\ServerErrorException
+     */
+    protected function formatResponse($response)
+    {
+        if ($response->status_code >= 500) {
+
+            throw new Exception\ServerErrorException('Error completing the request',
+                ErrorCode::SERVER_ERROR);
+
+        } else if ($response->status_code >= 400) {
+
+            $error = json_decode($response->body);
+            $errorDescription = $error->error->description;
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR, null, null, $errorDescription);
+        }
+
+        if ($response->body === "null" or $response->body === '') {
+            throw new Exception\ServerErrorException('Error completing the request',
+                ErrorCode::SERVER_ERROR);
+        }
+
+        return json_decode($response->body);
     }
 }
 
