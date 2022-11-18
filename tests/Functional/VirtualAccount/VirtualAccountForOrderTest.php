@@ -221,7 +221,7 @@ class VirtualAccountForOrderTest extends TestCase
         $resp = $this->starttest();
 
         $terminalCreteData = [
-            'gateway'                  => 'offline',
+            'gateway'                  => 'offline_hdfc',
             'gateway_merchant_id'      => '12345678',
             'gateway_secure_secret'    => '12345',
             'offline'                  =>  1,
@@ -278,7 +278,7 @@ class VirtualAccountForOrderTest extends TestCase
     public function testCheckCustomerInfoReturned() {
         // customer info should be returned when receivers => offline_challan
         $terminalCreteData = [
-            'gateway'                  => 'offline',
+            'gateway'                  => 'offline_hdfc',
             'gateway_merchant_id'      => '12345678',
             'gateway_secure_secret'    => '12345',
             'offline'                  =>  1,
@@ -307,7 +307,7 @@ class VirtualAccountForOrderTest extends TestCase
     public function testCheckCustomerInfoNotReturned() {
         // customer info should not be returned when recievers is not offline_challan
         $terminalCreteData = [
-            'gateway'                  => 'offline',
+            'gateway'                  => 'offline_hdfc',
             'gateway_merchant_id'      => '12345678',
             'gateway_secure_secret'    => '12345',
             'offline'                  =>  1,
@@ -379,7 +379,7 @@ class VirtualAccountForOrderTest extends TestCase
         $this->ba->privateAuth();
 
         $terminalCreteData = [
-            'gateway'                  => 'offline',
+            'gateway'                  => 'offline_hdfc',
             'gateway_merchant_id'      => '12345678',
             'gateway_secure_secret'    => '12345',
             'offline'                  =>  1,

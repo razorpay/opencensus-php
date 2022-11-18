@@ -53,9 +53,22 @@ class Generator extends Base\Core
 
         $params['offline'] = true;
 
-        $params['merchant_id'] = $entity->getMerchantId();;
+        $params['gateway'] = 'offline_hdfc';
+
+        $params['merchant_id'] = $entity->getMerchantId();
+
+        $this->trace->info(TraceCode::TERMINAL_SELECTION,
+            [
+                'Params for fetch'  => $params,
+
+            ]);
 
         $terminalData = $this->repo->terminal->getByParams($params);
+
+        $this->trace->info(TraceCode::TERMINAL_SELECTION,
+            [
+                'Terminal Count'    => $terminalData ?? 'Not Set',
+            ]);
 
         if($terminalData->count() === 0)
         {
