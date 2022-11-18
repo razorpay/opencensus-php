@@ -60,10 +60,10 @@ const customRender = (
       >
         <Provider store={reduxStore}>
           <>
-            <Notifications />
             <Router history={history}>
               <>
                 {showModal && <ModalDialog />}
+                <Notifications />
 
                 <Route path={path} component={() => children} />
               </>

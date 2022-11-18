@@ -41,6 +41,7 @@ export default class ReportHome extends React.PureComponent {
         accountId,
       )
       .then((data) => {
+        /* istanbul ignore else */
         if (data) {
           const selectedConfig =
             this.props.configs.items &&
@@ -68,25 +69,29 @@ export default class ReportHome extends React.PureComponent {
                 ...getCommonAnalyticsProperties(window.rzp_user),
               },
             });
-          } else if (data.id) {
-            // eslint-disable-next-line no-shadow
-            const accountId = data.generated_by !== data.consumer ? data.consumer : undefined;
-            this.props.pollLog(data.id, accountId);
-            analyticsTrack({
-              objectName: 'generate report',
-              actionName: 'result',
-              screen: 'reports',
-              properties: {
-                location: 'generate reports',
-                reportType: selectedConfig[0].name,
-                periodStart: payload.start_time,
-                periodEnd: payload.end_time,
-                formatSelected: payload.template_overrides,
-                emailSelected: !!(payload.emails && payload.emails.length > 0),
-                status: 'Success',
-                ...getCommonAnalyticsProperties(window.rzp_user),
-              },
-            });
+          } else {
+            /* istanbul ignore else */
+            // eslint-disable-next-line no-lonely-if
+            if (data.id) {
+              // eslint-disable-next-line no-shadow
+              const accountId = data.generated_by !== data.consumer ? data.consumer : undefined;
+              this.props.pollLog(data.id, accountId);
+              analyticsTrack({
+                objectName: 'generate report',
+                actionName: 'result',
+                screen: 'reports',
+                properties: {
+                  location: 'generate reports',
+                  reportType: selectedConfig[0].name,
+                  periodStart: payload.start_time,
+                  periodEnd: payload.end_time,
+                  formatSelected: payload.template_overrides,
+                  emailSelected: !!(payload.emails && payload.emails.length > 0),
+                  status: 'Success',
+                  ...getCommonAnalyticsProperties(window.rzp_user),
+                },
+              });
+            }
           }
         }
       })
@@ -167,7 +172,7 @@ export default class ReportHome extends React.PureComponent {
           <TestModeBanner />
           <content>
             <div className="content-wrapper Reporting--ContentWrapper">
-              {configs.loading && logs.loading ? (
+              {configs.loading && logs.pending ? (
                 <div className="page-spinner-container">
                   <Spinner />
                 </div>

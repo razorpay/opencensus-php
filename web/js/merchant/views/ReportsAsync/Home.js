@@ -84,19 +84,19 @@ const customConfigMap = {
 
 function getCustomConfigs(sessionUser) {
   const customConfigs = [];
-
+  /* istanbul ignore else */
   if (sessionUser.isOrgAllowedFunctionality('monthlyInvoice')) {
     customConfigs.push(customConfigMap.monthlyInvoice);
   }
-
+  /* istanbul ignore else */
   if (sessionUser.findTag('borking_report')) {
     customConfigs.push(customConfigMap.broking);
   }
-
+  /* istanbul ignore else */
   if (sessionUser.findTag('rpp_report')) {
     customConfigs.push(customConfigMap.rpp_report);
   }
-
+  /* istanbul ignore else */
   if (sessionUser.findTag('dsp_report')) {
     customConfigs.push(customConfigMap.dsp_report);
   }

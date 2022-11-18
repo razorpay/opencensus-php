@@ -12,6 +12,7 @@ import * as SettlementsDB from 'merchant/views/Settlements/tests/data/Settlement
 import WEBHOOK_HANDLERS from 'merchant/views/Settings/Webhooks/__test__/mocks/handlers';
 import logHandlers from 'merchant_common/containers/ReportsAsync/Logs/__test__/mocks/handlers';
 import { payoutDetailsHandlers } from 'merchant/views/Settlements/InstantSettlements/PayoutDetails/__test__/mocks/handlers';
+import reportsHandlers from 'merchant_common/containers/ReportsAsync/__test__/mocks/handlers';
 
 export const handlers = [
   // Handles a "Login" mutation
@@ -721,4 +722,5 @@ export const handlers = [
   ...paymentHandlers,
   ...logHandlers,
   ...payoutDetailsHandlers,
+  ...reportsHandlers,
 ];
