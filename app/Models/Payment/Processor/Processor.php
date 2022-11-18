@@ -3990,7 +3990,6 @@ class Processor
             'gateway_merchant_id'   => $terminal->getGatewayMerchantId(),
             'gateway_merchant_id2'  => $terminal->getGatewayMerchantId2(),
             'gateway_terminal_id'   => $terminal->getGatewayTerminalId(),
-            'gateway_secure_secret' => $terminal->getGatewaySecureSecret(),
         ];
 
 
