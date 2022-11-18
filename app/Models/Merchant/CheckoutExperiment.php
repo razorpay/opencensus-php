@@ -50,6 +50,7 @@ class CheckoutExperiment
             'recurring_upi_intent_qr'=> false,
             'recurring_upi_all_psp'   => false,
             'banking_redesign_v15'    => false,
+            'remove_default_tokenization_flag' => false,
         ];
 
         $this->input = $input;
@@ -178,6 +179,14 @@ class CheckoutExperiment
             'app.checkout_banking_redesign_v1_5_splitz_experiment_id',
             'BankingRedesign',
             'banking_redesign_v15',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.checkout_remove_default_tokenization_flag_splitz_experiment_id',
+            'RemoveDefaultTokenizationFlag',
+            'remove_default_tokenization_flag',
             ['merchant_id' => $this->merchantId]
         );
     }
@@ -320,6 +329,13 @@ class CheckoutExperiment
     }
 
     private function handleBankingRedesignResponse($response): bool
+    {
+        $variant = $response['variant']['name'] ?? '';
+
+        return $variant === 'variant_on';
+    }
+
+    private function handleRemoveDefaultTokenizationFlagResponse($response): bool
     {
         $variant = $response['variant']['name'] ?? '';
 
