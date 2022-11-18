@@ -34,6 +34,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\UpiMetadata;
 use RZP\Models\Merchant\Preferences;
 use RZP\Constants\Entity as Constants;
+use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Feature\Constants as Features;
@@ -1222,7 +1223,8 @@ class Selector extends Base\Core
         $payment = $this->input['payment'];
         $merchant = $this->input['merchant'];
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::SKIP_HITACHI_AUTO_ONBOARD) === true)
+        if ($merchant->isFeatureEnabled(Feature\Constants::SKIP_HITACHI_AUTO_ONBOARD) === true ||
+            (isset($payment[Entity::RECEIVER_TYPE]) && $payment[Entity::RECEIVER_TYPE] === Receiver::POS))
         {
             $this->trace->info(
                 TraceCode::SKIPPING_HITACHI_AUTOMATIC_ONBOARDING,
@@ -1256,7 +1258,8 @@ class Selector extends Base\Core
         $payment = $this->input['payment'];
         $merchant = $this->input['merchant'];
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::SKIP_FULCRUM_AUTO_ONBOARD) === true)
+        if ($merchant->isFeatureEnabled(Feature\Constants::SKIP_FULCRUM_AUTO_ONBOARD) === true ||
+            (isset($payment[Entity::RECEIVER_TYPE]) && $payment[Entity::RECEIVER_TYPE] === Receiver::POS))
         {
             $this->trace->info(
                 TraceCode::SKIPPING_FULCRUM_AUTOMATIC_ONBOARDING,
