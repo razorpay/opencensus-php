@@ -3,11 +3,11 @@
 namespace RZP\Models\PayoutOutbox;
 
 use Cache;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {
@@ -72,35 +72,18 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
-    public function createPayoutOutboxPartition() {
+    public function createPayoutOutboxPartition()
+    {
         try
         {
-            $this->repo->payout_outbox->createPartition();
-
-            $this->repo->payout_outbox->dropPartition();
+            $this->repo->payout_outbox->managePartitions();
         }
-        catch (\Illuminate\Database\QueryException $e)
+        catch (\Exception $e)
         {
-            // duplicate partition name error
-            if (($e->getCode() === 'HY000') and (in_array(1517, $e->errorInfo) === true))
-            {
-                $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYOUT_OUTBOX_DUPLICATE_PARTITION_ERROR);
-
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, 'Duplicate partition name');
-            }
-
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYOUT_OUTBOX_PARTITION_ERROR);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::TABLE_PARTITION_ERROR);
 
             return ['success' => false];
         }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYOUT_OUTBOX_PARTITION_ERROR);
-
-            return ['success' => false];
-        }
-
-        $this->trace->info(TraceCode::PAYOUT_OUTBOX_PARTITION_SUCCESS, []);
 
         return ['success' => true];
     }

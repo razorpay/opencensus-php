@@ -10,7 +10,6 @@ use RZP\Http\RequestHeader;
 use RZP\Http\Route;
 use RZP\Models\Base\Service as BaseService;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\CloseReason as NonVAQrCodeCloseReason;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Core as NonVAQrCodeCore;
@@ -98,18 +97,14 @@ class Service extends BaseService
     {
         try
         {
-            $this->repo->checkout_order->createPartition();
-
-            $this->repo->checkout_order->dropPartition();
+            $this->repo->checkout_order->managePartitions();
         }
-        catch (\Throwable $e)
+        catch (\Exception $e)
         {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::CHECKOUT_ORDERS_PARTITION_ERROR);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::TABLE_PARTITION_ERROR);
 
-            throw new Exception\ServerErrorException('Partition Query failed', ErrorCode::SERVER_ERROR_DB_QUERY_FAILED);
+            return ['success' => false];
         }
-
-        $this->trace->info(TraceCode::CHECKOUT_ORDERS_PARTITION_SUCCESS, []);
 
         return ['success' => true];
     }

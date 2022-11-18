@@ -531,7 +531,7 @@ return array(
             'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
         ],
 
-        'payment_analytics_partition_live' => [
+        'table_partition_live' => [
             'host'      => env('DB_LIVE_HOST'),
             'port'      => env('DB_LIVE_PORT'),
             'username'  => env('DB_LIVE_PARTITION_MGR_USERNAME'),
@@ -546,7 +546,7 @@ return array(
             'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
         ],
 
-        'payment_analytics_partition_test' => [
+        'table_partition_test' => [
             'host'      => env('DB_TEST_HOST'),
             'port'      => env('DB_TEST_PORT'),
             'username'  => env('DB_TEST_PARTITION_MGR_USERNAME'),
@@ -561,80 +561,6 @@ return array(
             'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
         ],
 
-        'checkout_orders_partition_live' => [
-            'host'      => env('DB_LIVE_HOST'),
-            'port'      => env('DB_LIVE_PORT'),
-            'username'  => env('DB_LIVE_PARTITION_CHECKOUT_ORDERS_USERNAME'),
-            'password'  => env('DB_LIVE_PARTITION_CHECKOUT_ORDERS_PASSWORD'),
-            'database'  => env('DB_LIVE_DATABASE'),
-            'driver'    => env('DB_LIVE_DRIVER'),
-            'charset'   => 'utf8',
-            'collation' => 'utf8_bin',
-            'prefix'    => '',
-            'strict'    => true,
-            'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
-            'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
-        ],
-
-        'checkout_orders_partition_test' => [
-            'host'      => env('DB_TEST_HOST'),
-            'port'      => env('DB_TEST_PORT'),
-            'username'  => env('DB_TEST_PARTITION_CHECKOUT_ORDERS_USERNAME'),
-            'password'  => env('DB_TEST_PARTITION_CHECKOUT_ORDERS_PASSWORD'),
-            'database'  => env('DB_TEST_DATABASE'),
-            'driver'    => env('DB_TEST_DRIVER'),
-            'charset'   => 'utf8',
-            'collation' => 'utf8_bin',
-            'prefix'    => '',
-            'strict'    => true,
-            'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
-            'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
-        ],
-
-        'payout_outbox_partition_live' => [
-            'host'      => env('DB_LIVE_HOST'),
-            'port'      => env('DB_LIVE_PORT'),
-            'username'  => env('DB_LIVE_PARTITION_PAYOUT_OUTBOX_USERNAME'),
-            'password'  => env('DB_LIVE_PARTITION_PAYOUT_OUTBOX_PASSWORD'),
-            'database'  => env('DB_LIVE_DATABASE'),
-            'driver'    => env('DB_LIVE_DRIVER'),
-            'charset'   => 'utf8',
-            'collation' => 'utf8_bin',
-            'prefix'    => '',
-            'strict'    => true,
-            'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
-            'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
-        ],
-
-        'payout_outbox_partition_test' => [
-            'host'      => env('DB_TEST_HOST'),
-            'port'      => env('DB_TEST_PORT'),
-            'username'  => env('DB_TEST_PARTITION_PAYOUT_OUTBOX_USERNAME'),
-            'password'  => env('DB_TEST_PARTITION_PAYOUT_OUTBOX_PASSWORD'),
-            'database'  => env('DB_TEST_DATABASE'),
-            'driver'    => env('DB_TEST_DRIVER'),
-            'charset'   => 'utf8',
-            'collation' => 'utf8_bin',
-            'prefix'    => '',
-            'strict'    => true,
-            'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
-            'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
-        ],
-
-        'audit_info_partition_live' => [
-            'host'      => env('DB_LIVE_HOST'),
-            'port'      => env('DB_LIVE_PORT'),
-            'username'  => env('PROD_API_LIVE_PARTITION_AUDIT_INFO_USERNAME'),
-            'password'  => env('PROD_API_LIVE_PARTITION_AUDIT_INFO_PASSWORD'),
-            'database'  => env('DB_LIVE_DATABASE'),
-            'driver'    => env('DB_LIVE_DRIVER'),
-            'charset'   => 'utf8',
-            'collation' => 'utf8_bin',
-            'prefix'    => '',
-            'strict'    => true,
-            'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
-            'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
-        ],
         'rx_account_statements_live' => [
             'read'  => [
                 'host'     => env('RX_ACCOUNT_STATEMENTS_LIVE_HOST'),

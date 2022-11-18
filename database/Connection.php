@@ -21,16 +21,8 @@ class Connection
     const PAYMENT_FETCH_REPLICA_LIVE = 'payment-fetch-replica-live';
     const ACCOUNT_SERVICE_REPLICA_LIVE = 'account-service-replica-live';
 
-    const PAYMENT_ANALYTICS_PARTITION_LIVE = 'payment_analytics_partition_live';
-    const PAYMENT_ANALYTICS_PARTITION_TEST = 'payment_analytics_partition_test';
-
-    const CHECKOUT_ORDERS_PARTITION_LIVE = 'checkout_orders_partition_live';
-    const CHECKOUT_ORDERS_PARTITION_TEST = 'checkout_orders_partition_test';
-
-    const PAYOUT_OUTBOX_PARTITION_LIVE = 'payout_outbox_partition_live';
-    const PAYOUT_OUTBOX_PARTITION_TEST = 'payout_outbox_partition_test';
-
-    const AUDIT_INFO_PARTITION_LIVE = 'audit_info_partition_live';
+    const TABLE_PARTITION_LIVE = 'table_partition_live';
+    const TABLE_PARTITION_TEST = 'table_partition_test';
 
     // different tidb cluster for merchant queries and for admin queries
     const DATA_WAREHOUSE_ADMIN_LIVE = 'data-warehouse-admin-live'; // same as data warehouse live
