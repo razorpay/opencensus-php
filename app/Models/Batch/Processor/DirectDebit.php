@@ -144,7 +144,8 @@ class DirectDebit extends Base
 
         $deleter = new FileStore\Deleter();
 
-        $deleter->type($ufhFile->getType())
+        // since file creation is happening on rzp-1415-prod-api-settlement we have to delete from the same bucket hence using same bucket config in type
+        $deleter->type(Batch\Constants::NON_MIGRATED_BATCH)
                 ->id($ufhFile->getId())
                 ->merchantId($this->merchant->getId())
                 ->file($ufhFile)
