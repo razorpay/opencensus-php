@@ -31,11 +31,13 @@ use RZP\Models\Payment\Processor\Constants;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Payment\Processor\UpiTrait;
 use RZP\Models\Currency\Core as CurrencyCore;
+use Illuminate\Validation\Concerns;
 
 class Validator extends Base\Validator
 {
 
     use UpiTrait;
+    use Concerns\ValidatesAttributes;
 
     protected $trace;
 
@@ -891,6 +893,20 @@ class Validator extends Base\Validator
              ($method === Payment\Method::APP))
         {
             return;
+        }
+
+        if($this->validateUrl(Entity::CALLBACK_URL, $callbackUrl) === false){
+
+            $traceData = [
+                'callback_url' => $callbackUrl,
+            ];
+
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid callback url',
+                'callback_url',
+                $traceData
+            );
+
         }
 
         $app = App::getFacadeRoot();
