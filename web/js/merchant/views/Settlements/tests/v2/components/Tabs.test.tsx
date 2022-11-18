@@ -29,9 +29,9 @@ test('should display sanitized tab names', () => {
     {},
   );
 
-  expect(screen.getByText(/Payment/i).parentElement).toHaveTextContent('Payment (21)');
-  expect(screen.getByText(/Adjustment/i).parentElement).toHaveTextContent('Adjustment (1)');
-  expect(screen.getByText(/Refund/i).parentElement).toHaveTextContent('Refund (1)');
+  expect(screen.getByText(/Payment/i).parentElement).toHaveTextContent('Payment (204)');
+  expect(screen.getByText(/Adjustment/i).parentElement).toHaveTextContent('Adjustment (16)');
+  expect(screen.getByText(/Refund/i).parentElement).toHaveTextContent('Refund (8)');
 });
 
 test('should display sanitized tab names', () => {

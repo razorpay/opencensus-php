@@ -61,7 +61,7 @@ test('should show correct settlement amount', async () => {
 
   await waitForLoadingToFinish();
 
-  const settledAmount = 10981272;
+  const settledAmount = 33691411;
 
   expect(screen.getByText(/Total settled amount/i)).toHaveTextContent(
     new RegExp(getFormattedAmount(settledAmount), 'g'),
