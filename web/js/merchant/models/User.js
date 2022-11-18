@@ -456,7 +456,7 @@ export default class User {
     return this.userRole === rolesList.OWNER;
   }
 
-  get isOwnerOrAdmin() {
+  get isAdminOrOwner() {
     return this.isOwner || this.userRole === rolesList.ADMIN;
   }
 

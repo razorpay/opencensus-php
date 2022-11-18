@@ -117,29 +117,30 @@ class BatchList extends ListContainer {
             )}
           </ShowWhen>
 
-          {this.props.multiBatch ? (
-            <div class="pull-right MultiBatch--action">
-              <div class="btn btn-primary">Upload New Batch</div>
-              <PopoverComponent align="bottom" class="MultiBatch--popover">
-                <PopoverTitle>
-                  <h4>
-                    <strong>Upload New Batch</strong>
-                  </h4>
-                </PopoverTitle>
-                <PopoverBody>{this.props.renderBatchOptions(this.openUploadModal)}</PopoverBody>
-              </PopoverComponent>
-            </div>
-          ) : (
-            ((session.mode !== 'live' || !user.isRejected) && (
-              <button
-                class="btn btn-primary pull-right"
-                onClick={this.openUploadModal(this.props.renderUploadModal)}
-              >
-                Click here to upload
-              </button>
-            )) ||
-            null
-          )}
+          {user.isAdminOrOwner &&
+            (this.props.multiBatch ? (
+              <div class="pull-right MultiBatch--action">
+                <div class="btn btn-primary">Upload New Batch</div>
+                <PopoverComponent align="bottom" class="MultiBatch--popover">
+                  <PopoverTitle>
+                    <h4>
+                      <strong>Upload New Batch</strong>
+                    </h4>
+                  </PopoverTitle>
+                  <PopoverBody>{this.props.renderBatchOptions(this.openUploadModal)}</PopoverBody>
+                </PopoverComponent>
+              </div>
+            ) : (
+              ((session.mode !== 'live' || !user.isRejected) && (
+                <button
+                  class="btn btn-primary pull-right"
+                  onClick={this.openUploadModal(this.props.renderUploadModal)}
+                >
+                  Click here to upload
+                </button>
+              )) ||
+              null
+            ))}
         </div>
         {/* Mobile Header for New Batch Upload Mobile View */}
         <HeaderAction responsive>
@@ -165,33 +166,34 @@ class BatchList extends ListContainer {
               )}
             </ShowWhen>
 
-            {this.props.multiBatch ? (
-              <div class="pull-right MultiBatch--action">
-                <span className="cta-container">
-                  <div class="btn btn-primary">Upload New Batch</div>
-                </span>
-                <PopoverComponent align="bottom" class="MultiBatch--popover">
-                  <PopoverTitle>
-                    <h4>
-                      <strong>Upload New Batch</strong>
-                    </h4>
-                  </PopoverTitle>
-                  <PopoverBody>{this.props.renderBatchOptions(this.openUploadModal)}</PopoverBody>
-                </PopoverComponent>
-              </div>
-            ) : (
-              ((session.mode !== 'live' || !user.isRejected) && user.isAdminOrOwner && (
-                <span className="cta-container">
-                  <button
-                    class="btn btn-primary pull-right"
-                    onClick={this.openUploadModal(this.props.renderUploadModal)}
-                  >
-                    Click here to upload
-                  </button>
-                </span>
-              )) ||
-              null
-            )}
+            {user.isAdminOrOwner &&
+              (this.props.multiBatch ? (
+                <div class="pull-right MultiBatch--action">
+                  <span className="cta-container">
+                    <div class="btn btn-primary">Upload New Batch</div>
+                  </span>
+                  <PopoverComponent align="bottom" class="MultiBatch--popover">
+                    <PopoverTitle>
+                      <h4>
+                        <strong>Upload New Batch</strong>
+                      </h4>
+                    </PopoverTitle>
+                    <PopoverBody>{this.props.renderBatchOptions(this.openUploadModal)}</PopoverBody>
+                  </PopoverComponent>
+                </div>
+              ) : (
+                ((session.mode !== 'live' || !user.isRejected) && (
+                  <span className="cta-container">
+                    <button
+                      class="btn btn-primary pull-right"
+                      onClick={this.openUploadModal(this.props.renderUploadModal)}
+                    >
+                      Click here to upload
+                    </button>
+                  </span>
+                )) ||
+                null
+              ))}
           </div>
         </HeaderAction>
 
