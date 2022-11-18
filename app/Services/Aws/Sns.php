@@ -53,8 +53,6 @@ class Sns
 
     public function publish($message, $messageTarget = 'sms')
     {
-        $this->trace->info(TraceCode::AWS_SNS_PUBLISH_REQUEST);
-
         $arn = $this->awsConfig['sns_target_arn'][$messageTarget];
 
         $mode = app('rzp.mode') ?? Mode::LIVE;
@@ -65,7 +63,13 @@ class Sns
                 'TargetArn' => $arn[$mode],
             ])->toArray();
 
-        $this->trace->info(TraceCode::AWS_SNS_PUBLISH_RESPONSE, $result);
+        if (isset($result['@metadata']['statusCode']) === true)
+        {
+            if (intval($result['@metadata']['statusCode']) != 200)
+            {
+                $this->trace->info(TraceCode::AWS_SNS_PUBLISH_RESPONSE, $result);
+            }
+        }
 
         return $result;
     }

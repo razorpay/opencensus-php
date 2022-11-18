@@ -73,16 +73,6 @@ class Bucket extends Job
         {
             $txn = $this->repoManager->transaction->findOrFail($this->transactionId);
 
-            // Temporary debug logging
-            $this->trace->debug(TraceCode::SETTLEMENT_DEBUG_LOG, [
-                'transaction_id' => $txn->getId(),
-                'credit'         => $txn->getCredit(),
-                'debit'          => $txn->getDebit(),
-                'settled_at'     => $txn->getSettledAt(),
-                // this is to check to which connection the query is going
-                'connection'     => $txn->getConnection()->getName(),
-            ]);
-
             // this is added to ensure that if the authorised transactions are created earlier
             // then after capture dirty reads should not happen and we always get the updated transaction
             if ($txn->getSettledAt() == null)

@@ -608,7 +608,6 @@ final class RequestContext
                 $this->setInternalAppNameByPassport();
             }
 
-            $this->trace->error(TraceCode::APP_NAME_NOT_SET);
             return true;
         }
         else if (in_array($this->route, Route::$admin, true) === true)

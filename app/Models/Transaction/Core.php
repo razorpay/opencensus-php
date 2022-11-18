@@ -2006,14 +2006,6 @@ class Core extends Base\Core
             return;
         }
 
-        // Temporary debug logging
-        $this->trace->debug(TraceCode::SETTLEMENT_DEBUG_LOG, [
-            'transaction_id' => $txn->getId(),
-            'credit'         => $txn->getCredit(),
-            'debit'          => $txn->getDebit(),
-            'settled_at'     => $txn->getSettledAt(),
-        ]);
-
         try
         {
             //
