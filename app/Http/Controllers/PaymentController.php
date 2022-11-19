@@ -174,7 +174,7 @@ class PaymentController extends Controller
         $desctiption = "Cannot Process Payment without Header";
         $data['gateway'] = [
             "error"     => "400",
-            "Description" => $desctiption,
+            "description" => $desctiption,
         ];
         return ApiResponse::json($data);
     }

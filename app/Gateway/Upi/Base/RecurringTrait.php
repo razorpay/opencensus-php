@@ -567,6 +567,33 @@ trait RecurringTrait
         return $response;
     }
 
+    protected function recurringPaymentVerifyGateway(array $input)
+    {
+        // Here we check which step for the first recurring payment needs to be verified. If authorize entity has been
+        // created, that means mandate creation was successful and we need to verify first debit. Otherwise, we need
+        // to verify mandate creation only.
+
+        $upiEntity = $this->getUpiEntityForAction($input, Action::AUTHORIZE);
+
+        if (($upiEntity instanceof Entity) === false)
+        {
+            $upiEntity = $this->getUpiEntityForAction($input, Action::AUTHENTICATE);
+        }
+
+        if (($upiEntity instanceof Entity) === false)
+        {
+            throw new LogicException('Upi Entity not found');
+        }
+
+        $this->setRequestDataForUpiRecurring($input, $upiEntity);
+
+        $gateway = $this->getMozartGatewayWithModeSet();
+
+        $response = $gateway->upiRecurringVerifyGateway($input, $upiEntity);
+
+        return $response;
+    }
+
     public function extractUpiRecurringMandateAndPaymentProperties($upiEntity, $verify)
     {
         $input = $verify->input;

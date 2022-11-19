@@ -716,11 +716,7 @@ class Gateway extends Base\Gateway
         if (($this->isFirstRecurringPayment($input) === true) or
             ($this->isSecondRecurringPayment($input) === true))
         {
-            return array(
-                'description' => "Can't Process recurring payment",
-                'error'       => "422"
-
-            );
+            return $this->recurringPaymentVerifyGateway($input);
         }
 
         $verify = new Verify($this->gateway, $input);
