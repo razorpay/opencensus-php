@@ -122,16 +122,14 @@ class PayoutServiceTest extends TestCase
                                             // request are coming properly or not.
                                             $this->assertArrayKeySelectiveEquals($request, $arg);
 
-                                            if (isset($request['headers']
-                                                    [RequestHeader::X_PAYOUT_IDEMPOTENCY]) === true)
+                                            foreach ($request['headers'] as $header => $headerValue)
                                             {
-                                                $idempotencyKey =
-                                                    $request['headers'][RequestHeader::X_PAYOUT_IDEMPOTENCY];
-
-                                                if (empty($idempotencyKey) === false)
+                                                if (empty($headerValue) === false)
                                                 {
-                                                    return ($arg['headers'][RequestHeader::X_PAYOUT_IDEMPOTENCY] ===
-                                                            $idempotencyKey);
+                                                    if ($arg['headers'][$header] != $headerValue)
+                                                    {
+                                                        return false;
+                                                    }
                                                 }
                                             }
 
@@ -1955,7 +1953,7 @@ class PayoutServiceTest extends TestCase
 
     }
 
-    public function testCreateInternalPayoutViaMicroService(): array
+    public function testCreateInternalPayoutViaMicroService()
     {
         $this->mockPayoutServiceCreate();
 
@@ -1972,38 +1970,30 @@ class PayoutServiceTest extends TestCase
         $this->ba->appAuthLive($this->config['applications.vendor_payments.secret']);
 
         $this->startTest();
+    }
 
-        //$payout = $this->getLastEntity('payout', true, 'live');
+    public function testCreateInternalPayoutViaMicroServiceWithUserIdInHeaders()
+    {
+        $this->mockRazorxDefault();
 
-        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true, 'live');
+        $testData = $this->testData['testCreateInternalPayoutViaMicroService'];
 
-        // Verify attempt entity
-        $this->assertEquals($payout['id'], $payoutAttempt['source']);
-        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
-        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
-        //$this->assertEquals($payout['channel'], 'icici');
+        $merchantUser = $this->getDbEntity('merchant_user', ['role' => 'owner', 'product' => 'banking'], 'live')->toArray();
 
-        // Verify transaction entity
-        $txn = $this->getLastEntity('transaction', true, 'live');
-        $txnId = str_after($txn['id'], 'txn_');
+        $userId = $merchantUser['user_id'];
 
-        $this->assertEquals($payout['transaction_id'], $txn['id']);
-        $this->assertNotNull($txn['balance_id']);
-        $this->assertNotNull($txn['posted_at']);
+        $request['headers']['App-User-Id'] = $userId;
 
-        //$feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true, 'live');
-        //
-        //$expectedBreakup = [
-        //    'name'            => "payout",
-        //    'transaction_id'  => $txnId,
-        //    'pricing_rule_id' => "Bbg7cl6t6I3XA5",
-        //    'percentage'      => null,
-        //    'amount'          => 500,
-        //];
-        //
-        //$this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+        $this->mockPayoutServiceCreate(false, [], $request);
 
-        return $payout;
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = '10000000000000';
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $userId;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->appAuthLive($this->config['applications.vendor_payments.secret']);
+
+        $this->startTest();
     }
 
     public function testCreatePayoutWithFeeRewards(): array

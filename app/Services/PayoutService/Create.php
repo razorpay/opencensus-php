@@ -10,6 +10,7 @@ use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Models\IdempotencyKey;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\RazorxTreatment;
 
@@ -20,6 +21,13 @@ class Create extends Base
     const CREATE_INTERNAL_CONTACT_PAYOUT_SERVICE_URI = '/payouts/internal_contact_payout';
     // payout create service name for singleton class
     const PAYOUT_SERVICE_CREATE = 'payout_service_create';
+
+    const TYPE     = 'type';
+    const CONSUMER = 'consumer';
+    const PASSPORT = 'passport';
+
+    const NAME               = 'name';
+    const APP_USER_ID_HEADER = 'App-User-Id';
 
     /**
      * @param array $input
@@ -59,8 +67,63 @@ class Create extends Base
 
         $request = $this->createRequestBody($input, $merchantId);
 
-        $headers = [Passport::PASSPORT_JWT_V1 => $this->app['basicauth']->getPassportJwt($this->baseUrl)];
+        $headers = $this->getHeadersWithJwt();
 
+        $this->addIdempotencyKeyToHeaders($headers, $merchantId);
+
+        $response = $this->makeRequestAndGetContent(
+            $request,
+            $uri,
+            Requests::POST,
+            $headers
+        );
+
+        return $response;
+    }
+
+    public function getHeadersWithJwt()
+    {
+        $jwt = $this->app['basicauth']->getPassportJwt($this->baseUrl);
+
+        /** @var BasicAuth $ba */
+        $ba = $this->app['basicauth'];
+
+        $headers = [];
+
+        if ($ba->isPrivilegeAuth() === true)
+        {
+            $passport = $ba->getPassport();
+
+            if (array_key_exists(self::CONSUMER, $passport) === true)
+            {
+                if ($passport[self::CONSUMER][self::TYPE] === BasicAuth::PASSPORT_CONSUMER_TYPE_USER)
+                {
+                    $this->trace->info(TraceCode::PASSPORT_EDIT_FOR_PRIVILEGE_AUTH_WITH_USER_CLAIMS,
+                                       [
+                                           self::PASSPORT => $ba->getPassport(),
+                                       ]);
+
+                    $baTemp = clone $ba;
+
+                    $baTemp->setPassportConsumerClaims(BasicAuth::PASSPORT_CONSUMER_TYPE_APPLICATION,
+                                                       $ba->getInternalApp(),
+                                                       true,
+                                                       [self::NAME => $ba->getInternalApp()]);
+
+                    $jwt = $baTemp->getPassportJwt($this->baseUrl);
+
+                    $headers[self::APP_USER_ID_HEADER] = $ba->getUser()->getId();
+                }
+            }
+        }
+
+        $headers[Passport::PASSPORT_JWT_V1] = $jwt;
+
+        return $headers;
+    }
+
+    public function addIdempotencyKeyToHeaders(array & $headers, string $merchantId)
+    {
         $idempotencyKeyId = $this->app['basicauth']->getIdempotencyKeyId();
 
         if (empty($idempotencyKeyId) === false)
@@ -76,14 +139,7 @@ class Create extends Base
             $headers[RequestHeader::X_PAYOUT_IDEMPOTENCY] = $idempotencyKeyEntity->getIdempotencyKey();
         }
 
-        $response = $this->makeRequestAndGetContent(
-            $request,
-            $uri,
-            Requests::POST,
-            $headers
-        );
-
-        return $response;
+        return $headers;
     }
 
     /**
