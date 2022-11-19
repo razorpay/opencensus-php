@@ -43,6 +43,15 @@ interface AccountAPI
     /**
      *
      *
+     * Generated from protobuf method <code>rzp.accounts.account.v1.AccountAPI/FetchMerchant</code>
+     *
+     * @throws \Twirp\Error
+     */
+    public function FetchMerchant(array $ctx, \Rzp\Accounts\Account\V1\FetchMerchantRequest $req): \Rzp\Accounts\Account\V1\FetchMerchantResponse;
+
+    /**
+     *
+     *
      * Generated from protobuf method <code>rzp.accounts.account.v1.AccountAPI/DeleteAccountContact</code>
      *
      * @throws \Twirp\Error

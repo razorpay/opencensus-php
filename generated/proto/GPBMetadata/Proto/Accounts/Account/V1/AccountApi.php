@@ -19,7 +19,7 @@ class AccountApi
         \GPBMetadata\Google\Protobuf\FieldMask::initOnce();
         $pool->internalAddGeneratedFile(
             '
-§%
+Ô;
 +proto/accounts/account/v1/account_api.protorzp.accounts.account.v1google/protobuf/timestamp.proto google/protobuf/field_mask.proto"ê
 Account
 
@@ -160,7 +160,115 @@ NotesEntry
 field_mask (2.google.protobuf.FieldMask%
 FetchAccountRequestBody
 
-id (	"K
+id (	"R
+FetchMerchantRequest
+
+id (	.
+
+field_mask (2.google.protobuf.FieldMask"¢
+FetchMerchantResponse3
+merchant (2!.rzp.accounts.account.v1.Merchant@
+merchant_detail (2\'.rzp.accounts.account.v1.MerchantDetailQ
+merchant_business_detail (2/.rzp.accounts.account.v1.MerchantBusinessDetail?
+merchant_emails (2&.rzp.accounts.account.v1.MerchantEmail"É
+Merchant
+
+id (	
+org_id (	
+name (	
+email (	
+account_code (	
+	parent_id (	
+legal_entity_id (	
+suspended_at (
+website	 (	
+billing_label
+ (	
+display_name (	 
+transaction_report_email (	
+brand_color (	
+business_banking (
+logo_url (	
+icon_url (	;
+notes (2,.rzp.accounts.account.v1.Merchant.NotesEntry
+whitelisted_ips_live (	
+whitelisted_ips_test (	
+whitelisted_domains (	&
+dashboard_whitelisted_ips_live (	&
+dashboard_whitelisted_ips_test (	
+purpose_code (	
+signup_via_email ( 
+amount_credits_threshold (
+archived_at (,
+
+NotesEntry
+key (	
+value (	:8"—
+MerchantDetail
+merchant_id (	
+contact_name (	
+contact_email (	
+contact_mobile (	
+contact_landline (	
+business_type (	
+business_name (	
+business_description (	
+business_dba	 (	
+business_website
+ (	
+additional_websites (	#
+business_registered_address (	&
+business_registered_address_l2 (	!
+business_registered_state (	 
+business_registered_city (	$
+business_registered_district (	
+business_registered_pin (	#
+business_registered_country (	"
+business_operation_address (	%
+business_operation_address_l2 (	 
+business_operation_state (	
+business_operation_city (	#
+business_operation_district (	
+business_operation_pin (	"
+business_operation_country (	
+gstin (	
+company_cin (	
+company_pan (	
+company_pan_name (	
+business_category (	
+business_subcategory (	
+business_model  (	
+transaction_volume! (
+bank_account_number" (	
+bank_account_name# (	
+bank_account_type$ (	
+bank_branch_ifsc% (	
+
+department& (	!
+kyc_clarification_reasons\' (	
+kyc_additional_details( (	
+internal_notes) (	0
+(authorized_signatory_residential_address* (	 
+authorized_signatory_dob+ (	
+platform, (	
+date_of_establishment- (	!
+shop_establishment_number. (	
+client_applications/ (	
+iec_code0 (	
+audit_id1 (	"y
+MerchantEmail
+
+id (	
+type (	
+email (	
+phone (	
+policy (	
+url (	
+merchant_id (	"a
+MerchantBusinessDetail
+merchant_id (	 
+business_parent_category (	
+app_urls (	"K
 DeleteAccountContactRequest
 
 id (	
@@ -168,12 +276,13 @@ field_mask (2.google.protobuf.FieldMask%
 account_id (	
 type (	"/
 DeleteAccountContactResponse
-deleted (2¡
+deleted (2‘
 
 AccountAPIY
 Create-.rzp.accounts.account.v1.CreateAccountRequest .rzp.accounts.account.v1.AccountY
 Update-.rzp.accounts.account.v1.UpdateAccountRequest .rzp.accounts.account.v1.AccountW
-Fetch,.rzp.accounts.account.v1.FetchAccountRequest .rzp.accounts.account.v1.Accountƒ
+Fetch,.rzp.accounts.account.v1.FetchAccountRequest .rzp.accounts.account.v1.Accountn
+FetchMerchant-.rzp.accounts.account.v1.FetchMerchantRequest..rzp.accounts.account.v1.FetchMerchantResponseƒ
 DeleteAccountContact4.rzp.accounts.account.v1.DeleteAccountContactRequest5.rzp.accounts.account.v1.DeleteAccountContactResponseB9Zaccounts/account/v1;accountv1ÊRzp\\Accounts\\Account\\V1bproto3'
         , true);
 
