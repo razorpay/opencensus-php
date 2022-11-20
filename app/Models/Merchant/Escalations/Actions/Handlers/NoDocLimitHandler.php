@@ -21,7 +21,12 @@ class NoDocLimitHandler extends Handler
         {
             $this->repo->transactionOnLiveAndTest(function() use ($merchantId, $action, $params)
             {
+
+                $startTime = microtime(true);
+
                 $accountV2Core = new AccV2Core();
+
+                (new DetailCore())->getMerchantAndSetBasicAuth($merchantId);
 
                 $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
@@ -79,7 +84,8 @@ class NoDocLimitHandler extends Handler
                         'merchant_id'           => $merchantId,
                         'milestone'             => $params['milestone'] ?? null,
                         'threshold'             => $params['threshold'] ?? null,
-                        'new_activation_status' => $merchantDetails->getActivationStatus()
+                        'new_activation_status' => $merchantDetails->getActivationStatus(),
+                        'duration'              => (microtime(true) - $startTime) * 1000,
                     ]
                 );
             });

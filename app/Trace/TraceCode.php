@@ -8494,6 +8494,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INVALID_PARTITIONING_TYPE                     = 'INVALID_PARTITIONING_TYPE';
     const NO_RANGE_PARTITIONING                         = 'NO_RANGE_PARTITIONING';
 
+    const HANDLE_WORKFLOW_ACTION_IF_OPEN                = 'HANDLE_WORKFLOW_ACTION_IF_OPEN';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

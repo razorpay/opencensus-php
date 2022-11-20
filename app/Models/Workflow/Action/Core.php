@@ -998,6 +998,8 @@ class Core extends Base\Core
         // If there are any action in progress
         if (empty($actions) === false)
         {
+            $this->trace->info(TraceCode::HANDLE_WORKFLOW_ACTION_IF_OPEN,['entityId' => $entityId]);
+
             $maker = $this->app['workflow']->getWorkflowMaker();
 
             foreach ($actions as $workflowAction)
