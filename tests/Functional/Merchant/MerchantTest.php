@@ -14143,6 +14143,13 @@ IFSC Code  ICIC0001206
         $this->startTest();
     }
 
+    public function testUpsertOpportunityOnSalesforce()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testEditBulkMerchantActionCronFOH()
     {
         $this->createMerchant([

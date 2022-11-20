@@ -20,6 +20,9 @@ use RZP\Exception\BadRequestException;
 
 class SalesForceClient
 {
+    const SALESFORCE_ACCESS_TOKEN_CACHE_KEY = "SALESFORCE_ACCESS_TOKEN_CACHE_KEY";
+    const CACHE_TTL_SECONDS = 1 * 60 * 60; // 1 hour in seconds
+
     protected $baseUrl;
 
     protected $username;
@@ -34,6 +37,9 @@ class SalesForceClient
 
     protected $config;
 
+    /**
+     * @var Trace
+     */
     protected $trace;
 
     /**
@@ -109,8 +115,15 @@ class SalesForceClient
         return $request;
     }
 
-    public function fetchAccessToken()
+    public function fetchAccessToken(bool $skipCache = false)
     {
+        $accessToken = $this->getCachedAccessToken($skipCache);
+
+        if (empty($accessToken) === false)
+        {
+            return $accessToken;
+        }
+
         $request = $this->getAccessTokenRequest();
 
         $response = $this->makeRequestAndGetResponse($request);
@@ -124,7 +137,48 @@ class SalesForceClient
             throw new Exception\IntegrationException('Unable to parse and fetch Access Token');
         }
 
+        $this->setCachedAccessToken($accessToken);
+
         return $accessToken;
+    }
+
+    private function getCachedAccessToken(bool $skipCache)
+    {
+        $accessToken = null;
+
+        if ($skipCache)
+        {
+            return null;
+        }
+
+        try
+        {
+            $accessToken = app('cache')->store($this->getDriver())->get(self::SALESFORCE_ACCESS_TOKEN_CACHE_KEY);
+
+            if (empty($accessToken) === false)
+            {
+                $accessToken  = app('encrypter')->decrypt($accessToken);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SALESFORCE_TOKEN_CACHE_FETCH_ERROR);
+        }
+
+        return $accessToken;
+    }
+
+    private function setCachedAccessToken(string $accessToken)
+    {
+        $accessToken  = app('encrypter')->encrypt($accessToken);
+
+        app('cache')->store($this->getDriver())
+                            ->set(self::SALESFORCE_ACCESS_TOKEN_CACHE_KEY, $accessToken, self::CACHE_TTL_SECONDS);
+    }
+
+    protected function getDriver()
+    {
+        return app('config')->get('cache.secure_default');
     }
 
     /**
@@ -715,7 +769,7 @@ class SalesForceClient
         return $response_body;
     }
 
-    protected function sendRequest(array $request): Requests_Response
+    public function sendRequest(array $request): Requests_Response
     {
         try
         {

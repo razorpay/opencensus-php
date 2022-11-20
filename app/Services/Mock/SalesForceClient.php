@@ -26,7 +26,7 @@ class SalesForceClient extends BaseSalesForceClient
         return;
     }
 
-    public function fetchAccessToken()
+    public function fetchAccessToken(bool $skipCache = false)
     {
         return '123';
     }

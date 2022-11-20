@@ -10676,6 +10676,24 @@ return [
         ],
     ],
 
+    'testUpsertOpportunityOnSalesforce' => [
+        'request' => [
+            'url'     => '/merchant/10000000000000/salesforce_event',
+            'method'  => \Requests::POST,
+            'content' => [
+                "event_type"=> "CURRENT_ACCOUNT_INTEREST",
+                "event_properties"=> [
+                    "opportunity_progress"=> "Application submitted"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 202,
+        ],
+    ],
+
     'testCreateLeadOnSalesforceViaAdmin' => [
         'request' => [
             'url'     => '/admin/merchants/lead_to_salesforce',

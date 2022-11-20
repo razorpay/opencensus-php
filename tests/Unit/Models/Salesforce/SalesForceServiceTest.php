@@ -3,6 +3,7 @@
 namespace RZP\Tests\Unit\Models\SalesForceServiceTest;
 
 use RZP\Diag\EventCode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Entity;
 use RZP\Models\Merchant\XChannelDefinition;
 use RZP\Services\SalesForceClient;
@@ -16,41 +17,29 @@ class SalesForceServiceTest extends OAuthTestCase {
 
     use MocksDiagTrait;
 
+    const RESPONSE_ACCESS_TOKEN_SUCCESS = 'RESPONSE_ACCESS_TOKEN_SUCCESS';
+    const RESPONSE_OPPORTUNITY_UPSERT_INVALID_AUTH_FAILURE = 'RESPONSE_OPPORTUNITY_UPSERT_INVALID_AUTH_FAILURE';
+    const RESPONSE_OPPORTUNITY_UPSERT_SUCCESS = 'RESPONSE_OPPORTUNITY_UPSERT_SUCCESS';
+
     private $salesForceService;
     private $salesForceClient;
     private $xChannelDefinitionServiceMock;
 
     protected function setUp(): void {
         parent::setUp();
-        $this->salesForceClient = $this->createMock(SalesForceClient::class);
+        $this->salesForceClient = $this->mockSalesForceServiceClient();
         $this->xChannelDefinitionServiceMock = $this->createMock(XChannelDefinition\Service::class);
         $this->salesForceService = new SalesForceService($this->salesForceClient, $this->xChannelDefinitionServiceMock);
     }
 
     public function testEventPayloadIsGeneratedForAMerchantInterestedInCA() {
         //Given
-        $merchantData = [
-            'getId'             => '1DefeDEQE',
-            'getName'           => 'Aditya',
-            'getEmail'          => 'aditya@example.com',
-            'isActivated'       => true,
-            'getCreatedAt'      => 1597842772,
-            'getMerchantDetail' => $this->createConfiguredMock(\RZP\Models\Merchant\Detail\Entity::class, [
-                'getBusinessName' => 'NEW BIZ',
-                'getContactName'  => 'Aditya'
-            ])
-        ];
+        $merchantData = $this->getMerchantData();
         $merchant = $this->createConfiguredMock(Entity::class, $merchantData);
 
         $salesForceRequestDTO = new SalesForceEventRequestDTO();
         $salesForceRequestDTO->setEventType(new SalesForceEventRequestType('CURRENT_ACCOUNT_INTEREST'));
-        $salesForceRequestDTO->setEventProperties([
-            'interested_in_current_account' => 1,
-            'pin_code'                      => '560079',
-            'average_monthly_balance'       => '5000',
-            'current_ca'                    => 'HDFC',
-            'use_case'                      => 'Salary'
-        ]);
+        $salesForceRequestDTO->setEventProperties($this->getEventProperties());
 
         $actualData = null;
         $this->salesForceClient->expects($this->any())
@@ -119,19 +108,8 @@ class SalesForceServiceTest extends OAuthTestCase {
     }
 
     public function testEventPayloadIsGeneratedForWebsiteEvent() {
-        ////Given
-        $merchantData = [
-            'getId'             => 'midtestca123',
-            'getName'           => 'Aditya',
-            'getEmail'          => 'aditya@example.com',
-            'isActivated'       => true,
-            'getCreatedAt'      => 1597842772,
-            'getMerchantDetail' => $this->createConfiguredMock(\RZP\Models\Merchant\Detail\Entity::class, [
-                'getBusinessName' => 'NEW BIZ',
-                'getContactName'  => 'Aditya'
-            ])
-        ];
-
+        // Given
+        $merchantData = $this->getMerchantData();
         $merchant = $this->createConfiguredMock(Entity::class, $merchantData);
 
         $salesForceRequestDTO = new SalesForceEventRequestDTO();
@@ -287,4 +265,193 @@ class SalesForceServiceTest extends OAuthTestCase {
         $this->assertEquals(json_encode($expectedMerchantDetails), json_encode($merchantDetails));
     }
 
+    public function testSalesforceRequestJobSuccessiveAuthErrorScenario() {
+        //Given
+        $merchantData = $this->getMerchantData();
+        $merchant = $this->createConfiguredMock(Entity::class, $merchantData);
+
+        $this->salesForceClient->expects($this->exactly(4))
+            ->method('sendRequest')
+            ->willReturnOnConsecutiveCalls(
+                $this->getSalesForceResponseCase(self::RESPONSE_ACCESS_TOKEN_SUCCESS),
+                $this->getSalesForceResponseCase(self::RESPONSE_OPPORTUNITY_UPSERT_INVALID_AUTH_FAILURE),
+                $this->getSalesForceResponseCase(self::RESPONSE_ACCESS_TOKEN_SUCCESS),
+                $this->getSalesForceResponseCase(self::RESPONSE_OPPORTUNITY_UPSERT_INVALID_AUTH_FAILURE));
+
+        $salesForceRequestDTO = new SalesForceEventRequestDTO();
+        $salesForceRequestDTO->setEventType(new SalesForceEventRequestType('CURRENT_ACCOUNT_INTEREST'));
+        $salesForceRequestDTO->setEventProperties($this->getEventProperties());
+
+        $this->validateOnboardingEvent();
+
+        $traceMock = $this->createTraceMock();
+        $traceMock->shouldReceive('traceException')
+            ->once()
+            ->andReturnUsing(function(\Throwable $exception, $level = null, $code = null, array $extraData = []) {
+                    $this->assertEquals(ErrorCode::SERVER_ERROR_SALESFORCE_SERVICE_ERROR, $exception->getCode());
+                    $this->assertEquals('Failed to push event to Salesforce', $exception->getMessage());
+                }
+            );
+
+        //When
+        $this->salesForceService->raiseEvent($merchant, $salesForceRequestDTO);
+    }
+
+    public function testSalesforceRequestJobOnceAuthErrorScenario() {
+        //Given
+        $merchantData = $this->getMerchantData();
+        $merchant = $this->createConfiguredMock(Entity::class, $merchantData);
+
+        $this->salesForceClient->expects($this->exactly(4))
+            ->method('sendRequest')
+            ->willReturnOnConsecutiveCalls(
+                $this->getSalesForceResponseCase(self::RESPONSE_ACCESS_TOKEN_SUCCESS),
+                $this->getSalesForceResponseCase(self::RESPONSE_OPPORTUNITY_UPSERT_INVALID_AUTH_FAILURE),
+                $this->getSalesForceResponseCase(self::RESPONSE_ACCESS_TOKEN_SUCCESS),
+                $this->getSalesForceResponseCase(self::RESPONSE_OPPORTUNITY_UPSERT_SUCCESS));
+
+        $salesForceRequestDTO = new SalesForceEventRequestDTO();
+        $salesForceRequestDTO->setEventType(new SalesForceEventRequestType('CURRENT_ACCOUNT_INTEREST'));
+        $salesForceRequestDTO->setEventProperties($this->getEventProperties());
+
+        $this->validateOnboardingEvent();
+
+        $traceMock = $this->createTraceMock();
+        $traceMock->shouldNotReceive('traceException');
+
+        //When
+        $this->salesForceService->raiseEvent($merchant, $salesForceRequestDTO);
+    }
+
+    public function testSalesforceRequestJobNoAuthErrorScenario() {
+        //Given
+        $merchantData = $this->getMerchantData();
+        $merchant = $this->createConfiguredMock(Entity::class, $merchantData);
+
+        $this->salesForceClient->expects($this->exactly(2))
+            ->method('sendRequest')
+            ->willReturnOnConsecutiveCalls(
+                $this->getSalesForceResponseCase(self::RESPONSE_ACCESS_TOKEN_SUCCESS),
+                $this->getSalesForceResponseCase(self::RESPONSE_OPPORTUNITY_UPSERT_SUCCESS));
+
+        $salesForceRequestDTO = new SalesForceEventRequestDTO();
+        $salesForceRequestDTO->setEventType(new SalesForceEventRequestType('CURRENT_ACCOUNT_INTEREST'));
+        $salesForceRequestDTO->setEventProperties($this->getEventProperties());
+
+        $this->validateOnboardingEvent();
+
+        $traceMock = $this->createTraceMock();
+        $traceMock->shouldNotReceive('traceException');
+
+        //When
+        $this->salesForceService->raiseEvent($merchant, $salesForceRequestDTO);
+    }
+
+    private function createTraceMock() :\Razorpay\Trace\Logger
+    {
+        $webProcessor = $this->app['trace']->processor('web');
+        $traceMock = \Mockery::mock('\Razorpay\Trace\Logger')->makePartial();
+        $traceMock->shouldReceive('info', 'count');
+        $traceMock->shouldReceive('processor')->andReturn($webProcessor);
+        $this->app->instance('trace', $traceMock);
+
+        return $traceMock;
+    }
+
+    private function mockSalesForceServiceClient(): SalesForceClient
+    {
+        $salesForceClient = $this->getMockBuilder(SalesForceClient::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['sendRequest', 'sendEventToSalesForce', 'sendLeadUpsertEventsToSalesforce', 'getMerchantDetailsOnOpportunity'])
+            ->getMock();
+
+        $salesForceClient->method('sendEventToSalesForce')
+            ->willReturnCallback(function(array $eventPayload){
+                (new SalesForceClient($this->app))->sendEventToSalesForce($eventPayload);
+            });
+
+        $this->app['salesforce'] = $salesForceClient;
+        $this->app['rzp.mode'] = 'test';
+
+        return $salesForceClient;
+    }
+
+    private function getSalesForceResponseCase(string $case) :\Requests_Response
+    {
+        $response = new \Requests_Response;
+
+        switch ($case)
+        {
+            case self::RESPONSE_ACCESS_TOKEN_SUCCESS:
+                $response->status_code = 200;
+                $response->body = '{"access_token": "123"}';
+                break;
+            case self::RESPONSE_OPPORTUNITY_UPSERT_INVALID_AUTH_FAILURE:
+                $response->status_code = 400;
+                $response->body = '{"error": "invalid_grant"}';
+                break;
+            case self::RESPONSE_OPPORTUNITY_UPSERT_SUCCESS:
+                $response->status_code = 200;
+                $response->body = '{"Status":"SUCCESS"}';
+                break;
+        }
+
+        return $response;
+    }
+
+    private function getMerchantData(): array
+    {
+        return [
+            'getId'             => '1DefeDEQE',
+            'getName'           => 'Aditya',
+            'getEmail'          => 'aditya@example.com',
+            'isActivated'       => true,
+            'getCreatedAt'      => 1597842772,
+            'getMerchantDetail' => $this->createConfiguredMock(\RZP\Models\Merchant\Detail\Entity::class, [
+                'getBusinessName' => 'NEW BIZ',
+                'getContactName'  => 'Aditya'
+            ])
+        ];
+    }
+
+    private function validateOnboardingEvent()
+    {
+        $expectedPayload = [
+            'merchant_id'                   => '1DefeDEQE',
+            'name'                          => 'Aditya',
+            'email'                         => 'aditya@example.com',
+            'activated'                     => 1,
+            'signup_date'                   => '2020-08-19',
+            'interested_in_current_account' => 1,
+            'pin_code'                      => '560079',
+            'average_monthly_balance'       => '5000',
+            'current_ca'                    => 'HDFC',
+            'use_case'                      => 'Salary',
+            'source_detail'                 => 'x_dashboard',
+        ];
+
+        $diagMock = $this->createAndReturnDiagMock();
+
+        $diagMock->shouldReceive('buildRequestAndSend');
+        $diagMock->shouldReceive('trackOnboardingEvent')
+            ->once()
+            ->withArgs(function($eventData, $merchant, $ex, $actualData) use ($expectedPayload) {
+                unset($actualData['event_submission_date']); //Because it changes day by day
+                $this->assertEquals($expectedPayload, $actualData);
+                $this->assertEquals(EventCode::X_CA_ONBOARDING_OPPORTUNITY_UPSERT, $eventData);
+                return true;
+            })
+            ->andReturnNull();
+    }
+
+    private function getEventProperties(): array
+    {
+        return [
+            'interested_in_current_account' => 1,
+            'pin_code'                      => '560079',
+            'average_monthly_balance'       => '5000',
+            'current_ca'                    => 'HDFC',
+            'use_case'                      => 'Salary'
+        ];
+    }
 }

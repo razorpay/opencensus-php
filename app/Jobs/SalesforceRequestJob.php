@@ -18,6 +18,7 @@ class SalesforceRequestJob extends RequestJob
     use TransactionAware;
 
     const STATUS = 'Status';
+    const MAX_RETRY_COUNT = 1;
 
     /** @var $salesforceClient SalesForceClient */
     protected $salesforceClient;
@@ -49,9 +50,9 @@ class SalesforceRequestJob extends RequestJob
         }
     }
 
-    private function getAccessToken()
+    private function getAccessToken(bool $skipCache = false)
     {
-        return $this->salesforceClient->fetchAccessToken();
+        return $this->salesforceClient->fetchAccessToken($skipCache);
     }
 
     protected function handleRequest()
@@ -60,14 +61,31 @@ class SalesforceRequestJob extends RequestJob
 
         $this->salesforceClient = $app->salesforce;
 
-        $accessToken = $this->getAccessToken();
+        $this->handleRequestToSalesforce();
+    }
+
+    private function handleRequestToSalesforce(int $attemptCount = 1, bool $skipCache = false)
+    {
+        $accessToken = $this->getAccessToken($skipCache);
 
         $this->request['headers'][RequestHeader::AUTHORIZATION] = RequestHeader::BEARER . ' ' . $accessToken;
 
-        $response = parent::handleRequest();
+        $response = $this->salesforceClient->sendRequest($this->request);
 
-        if (($response[self::STATUS_CODE] != 200) or
-            ($response[self::BODY][self::STATUS] != "SUCCESS")
+        $responseBody = json_decode($response->body, true);
+
+        if (($response->status_code == 400) and
+            ($attemptCount <= self::MAX_RETRY_COUNT))
+        {
+            app('trace')->info(TraceCode::SALESFORCE_SERVICE_AUTH_ERROR, $responseBody);
+
+            $this->handleRequestToSalesforce(++$attemptCount, true);
+
+            return;
+        }
+
+        if (($response->status_code != 200) or
+            ($responseBody[self::STATUS] != "SUCCESS")
         )
         {
             throw new Exception\IntegrationException(
@@ -75,7 +93,7 @@ class SalesforceRequestJob extends RequestJob
                 ErrorCode::SERVER_ERROR_SALESFORCE_SERVICE_ERROR,
                 [
                     'request' => $this->salesforceClient->getTraceableRequest($this->request),
-                    'response' => $this->response->body
+                    'response' => $responseBody
                 ]);
         }
     }
