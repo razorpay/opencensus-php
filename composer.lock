@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "098b1915c5080ffe71c713831976270a",
+    "content-hash": "7f387fbd6e47ba17fa7d13e89240c697",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -6125,12 +6125,6 @@
                 "reference": "e9d6a5446104b3583c6b6ed02a34bf64b59e9969",
                 "shasum": ""
             },
-            "archive": {
-                "exclude": [
-                    "ext/",
-                    "scripts/"
-                ]
-            },
             "require": {
                 "cache/adapter-common": "^1.0",
                 "php": ">=7.0",
@@ -6163,6 +6157,12 @@
                 "psr-4": {
                     "OpenCensus\\": "src/"
                 }
+            },
+            "archive": {
+                "exclude": [
+                    "ext/",
+                    "scripts/"
+                ]
             },
             "scripts": {
                 "tests": [
@@ -9133,16 +9133,16 @@
         },
         {
             "name": "razorpay/oauth",
-            "version": "2.4.0",
+            "version": "dev-oauth_dualwrite_php_7.0",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/oauth.git",
-                "reference": "732160a3fddd4f15eb468f77ff730f21dec9785d"
+                "reference": "c25f2bd7b5b8b88879143b8a4c264e5f9a6ae1fc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/oauth/zipball/732160a3fddd4f15eb468f77ff730f21dec9785d",
-                "reference": "732160a3fddd4f15eb468f77ff730f21dec9785d",
+                "url": "https://api.github.com/repos/razorpay/oauth/zipball/c25f2bd7b5b8b88879143b8a4c264e5f9a6ae1fc",
+                "reference": "c25f2bd7b5b8b88879143b8a4c264e5f9a6ae1fc",
                 "shasum": ""
             },
             "require": {
@@ -9180,7 +9180,11 @@
                 "razorpay",
                 "service"
             ],
-            "time": "2022-08-24T07:46:30+00:00"
+            "support": {
+                "source": "https://github.com/razorpay/oauth/tree/oauth_dualwrite_php_7.0",
+                "issues": "https://github.com/razorpay/oauth/issues"
+            },
+            "time": "2022-11-03T07:31:48+00:00"
         },
         {
             "name": "razorpay/outbox-php",
@@ -9569,11 +9573,6 @@
                 "reference": "bcefdc6b5c2e970d8a0095448f6b1d8674609bfb",
                 "shasum": ""
             },
-            "archive": {
-                "exclude": [
-                    "/xsd/"
-                ]
-            },
             "require": {
                 "goetas-webservices/xsd2php-runtime": "^0.2.2"
             },
@@ -9586,6 +9585,11 @@
                 "psr-4": {
                     "Razorpay\\UPI\\": "src"
                 }
+            },
+            "archive": {
+                "exclude": [
+                    "/xsd/"
+                ]
             },
             "authors": [
                 {
@@ -15240,6 +15244,7 @@
         "razorpay/upi-clients": 20,
         "razorpay/ufh-sdk-php": 20,
         "razorpay/hodor": 20,
+        "razorpay/oauth": 20,
         "opencensus/opencensus-exporter-jaeger": 15,
         "codacy/coverage": 20
     },
@@ -15255,5 +15260,5 @@
         "ext-curl": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "1.1.0"
+    "plugin-api-version": "2.3.0"
 }

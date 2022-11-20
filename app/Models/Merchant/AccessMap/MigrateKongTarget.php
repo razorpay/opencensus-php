@@ -11,6 +11,23 @@ use \RZP\Models\Merchant\MerchantApplications;
 
 class MigrateKongTarget implements Target
 {
+
+    /**
+     * @var $enable_cassandra_outbox
+     */
+    protected $enable_cassandra_outbox;
+
+    /**
+     * @var $enable_postgres_outbox
+     */
+    protected $enable_postgres_outbox;
+
+    public function __construct() {
+        $this->enable_cassandra_outbox = env("ENABLE_CASSANDRA_OUTBOX", true);
+
+        $this->enable_postgres_outbox = env("ENABLE_POSTGRES_OUTBOX", false);
+    }
+
     /** {@inheritDoc} */
     public function getParallelOpts(array $opts): Generator
     {
@@ -32,10 +49,7 @@ class MigrateKongTarget implements Target
         $repo = app('repo');
 
         $repo->transaction(function () use ($core, $sourceRecord) {
-            $core->createOutboxJob(
-                "create_impersonation_grant",
-                $sourceRecord->value,
-                MerchantApplications\Entity::MANAGED);
+            $this->outboxSend($core, $sourceRecord);
         });
 
         return new Response(Response::ACTION_UPSERTED, $sourceRecord->key, null);
@@ -45,5 +59,27 @@ class MigrateKongTarget implements Target
     public function delete(Record $record)
     {
         // Not needed to implement.
+    }
+
+    /**
+     * @param Core $core
+     * @param Record $sourceRecord
+     * @return void
+     */
+    function outboxSend(Core $core, Record $sourceRecord): void {
+        if ($this->enable_cassandra_outbox)
+        {
+            $core->createOutboxJob(
+                "create_impersonation_grant",
+                $sourceRecord->value,
+                MerchantApplications\Entity::MANAGED);
+        }
+        if ($this->enable_postgres_outbox)
+        {
+            $core->createOutboxJob(
+                "create_impersonation_grant_postgres",
+                $sourceRecord->value,
+                MerchantApplications\Entity::MANAGED);
+        }
     }
 }

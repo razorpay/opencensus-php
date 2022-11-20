@@ -23,6 +23,25 @@ use Razorpay\Trace\Logger as Trace;
 
 class Core extends Base\Core
 {
+
+    /**
+     * @var $enable_cassandra_outbox
+     */
+    protected $enable_cassandra_outbox;
+
+    /**
+     * @var $enable_postgres_outbox
+     */
+    protected $enable_postgres_outbox;
+
+    public function __construct() {
+        parent::__construct();
+
+        $this->enable_cassandra_outbox = env("ENABLE_CASSANDRA_OUTBOX", true);
+
+        $this->enable_postgres_outbox = env("ENABLE_POSTGRES_OUTBOX", false);
+    }
+
     public function create(
         Merchant\Entity $entityOwner,
         Merchant\Entity $merchant,
@@ -47,7 +66,14 @@ class Core extends Base\Core
         $this->repo->transaction(function () use ($merchantMapping, $applicationType) {
             $this->repo->saveOrFail($merchantMapping);
 
-            $this->createOutboxJob("create_impersonation_grant", $merchantMapping, $applicationType);
+            if ($this->enable_cassandra_outbox === true )
+            {
+                $this->createOutboxJob("create_impersonation_grant", $merchantMapping, $applicationType);
+            }
+            if ($this->enable_postgres_outbox === true )
+            {
+                $this->createOutboxJob("create_impersonation_grant_postgres", $merchantMapping, $applicationType);
+            }
         });
 
         return $merchantMapping;
@@ -157,8 +183,14 @@ class Core extends Base\Core
 
             return $this->repo->transaction(function () use ($mapping, $applicationType)
                 {
-                    $this->createOutboxJob("delete_impersonation_grant", $mapping, $applicationType);
-
+                    if ($this->enable_cassandra_outbox === true )
+                    {
+                        $this->createOutboxJob("delete_impersonation_grant", $mapping, $applicationType);
+                    }
+                    if ($this->enable_postgres_outbox === true )
+                    {
+                        $this->createOutboxJob("delete_impersonation_grant_postgres", $mapping, $applicationType);
+                    }
                     return $this->repo->merchant_access_map->deleteOrFail($mapping);
                 });
         }
