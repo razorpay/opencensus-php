@@ -1067,6 +1067,11 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::DISABLE_NATIVE_CURRENCY) === false) && ($this->isFeatureEnabled(Feature\Constants::RAAS) === false);
     }
 
+    public function isSubMerchantOnDirectMasterMerchant(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::SUB_VA_FOR_DIRECT_BANKING) === true);
+    }
+
     /**
      * @return bool
      * This flag is used to enable dcc on custom, embedded & direct for specific merchants.

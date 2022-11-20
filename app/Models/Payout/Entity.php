@@ -45,6 +45,7 @@ use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Payout\Batch as PayoutsBatch;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Models\SubVirtualAccount\Core as SubVaCore;
 use RZP\Exception\UserWorkflowNotApplicableException;
 use RZP\Models\PayoutSource\Core as PayoutSourceCore;
 use RZP\Models\PayoutMeta\Entity as PayoutMetaEntity;
@@ -1434,9 +1435,23 @@ class Entity extends Base\PublicEntity
         return [];
     }
 
-    public function getSourceFtsFundAccountId()
+    public function getSourceFtsFundAccountId($isSubMerchantOnDirectMasterMerchant = false)
     {
+        $payoutBalance = $this->balance;
+
         $channel = $this->balance->getChannel();
+
+        $app = App::getFacadeRoot();
+
+        if (($isSubMerchantOnDirectMasterMerchant === true) and
+            ($payoutBalance->isAccountTypeShared() === true))
+        {
+            $directBalance = (new SubVaCore())->getDirectBalanceOfMasterMerchantFromSubMerchantIdForSubVaPayout($this->getMerchantId());
+
+            $this->balance()->associate($directBalance);
+
+            $channel = $this->balance->getChannel();
+        }
 
         $bankingAccount = $this->balance->bankingAccount;
 
@@ -1446,13 +1461,17 @@ class Entity extends Base\PublicEntity
             ($this->isBalanceAccountTypeDirect() === true) and
             (in_array($channel, BankingAccount\Core::$directChannelsForConnectBanking) === true))
         {
-            $app = App::getFacadeRoot();
-
             $accountNumber = $this->balance->getAccountNumber();
 
             $merchantId    = $this->balance->getMerchantId();
 
             $ftsFundAccountId = $app['banking_account_service']->fetchFtsFundAccountIdFromBas($merchantId, $channel, $accountNumber);
+        }
+
+        //Need to set the balance back to the shared balance as we do not want fee recovery entity being created for this payout
+        if ($isSubMerchantOnDirectMasterMerchant === true)
+        {
+            $this->balance()->associate($payoutBalance);
         }
 
         return $ftsFundAccountId;

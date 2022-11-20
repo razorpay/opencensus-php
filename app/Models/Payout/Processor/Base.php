@@ -11,6 +11,7 @@ use RZP\Error\Error;
 use RZP\Constants\Mode;
 use RZP\Models\Workflow;
 use RZP\Constants\Timezone;
+use RZP\Models\SubVirtualAccount;
 use RZP\Exception\LogicException;
 use RZP\Models\Feature\Constants;
 use RZP\Constants as RzpConstants;
@@ -680,6 +681,15 @@ class Base extends BaseCore
                     'balance_id'  => $payout->getBalanceId(),
                 ]);
 
+            if ($exception->getMessage() === SubVirtualAccount\Core::SUB_VA_PAYOUT_ON_DIRECT_MASTER_BALANCE_ERROR)
+            {
+                $this->trace->info(TraceCode::ASYNC_FTS_DISPATCH_SKIPPED,
+                [
+                    'reason' => SubVirtualAccount\Core::SUB_VA_PAYOUT_ON_DIRECT_MASTER_BALANCE_ERROR
+                ]);
+
+                return;
+            }
             // If any exception is raised while making sync call, we push the fta to queue as fall back.
             (new Initiator)->sendFTSFundTransferRequest($fta, $otp);
         }

@@ -1640,6 +1640,12 @@ class Constants
      */
     const IMPORT_FLOW_OPEX_REPORT = 'import_flow_opex_report';
 
+    /**
+     * Feature flag to enable account <> sub-account setup. This is used when payouts are to be initiated from
+     * a virtual account (read as sub VA) where as balance deduction happens from parent DA (read as master DA).
+     * Main use case is to enable NBFCs integrate with FinTech's on X post RBI's lending guidelines.
+     */
+    const SUB_VA_FOR_DIRECT_BANKING = 'sub_va_for_direct_banking';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -2238,6 +2244,7 @@ class Constants
         self::IMPORT_FLOW_OPEX_REPORT         => true,
         self::ENABLE_3DS2                     => true,
         self::CYBERSOURCE_SI_TXN_TEST         => true,
+        self::SUB_VA_FOR_DIRECT_BANKING       => true,
         self::SPR_DISABLE_METHOD_RESET        => true,
         self::ONE_CC_DISABLE_EMAIL_COOKIE       => true,
         \RZP\Services\Dcs\Constants::RefundEnabled => true,  // Example Feature for DCS

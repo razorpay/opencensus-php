@@ -31640,5 +31640,171 @@ class PayoutTest extends OAuthTestCase
 
         return $response;
     }
+
+    public function testCreatePayoutFromSubVirtualAccount()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::SUB_VA_FOR_DIRECT_BANKING]);
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $masterMerchant = $this->getDbEntityById('merchant', '10000000000012');
+
+        $this->createRelevantEntitiesForSubVirtualAccountSetup($masterMerchant);
+
+        $this->ba->privateAuth();
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])
+                       ->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $ftsRequest = [
+            'transfer' => [
+                'preferred_source_account_id' => 12345678
+            ]
+        ];
+
+        $mock->shouldReceive('shouldAllowTransfersViaFts')
+             ->andReturn([true, 'Dummy']);
+        $mock->shouldReceive('createAndSendRequest')
+             ->withArgs(function($endpoint, $method, $input) use ($ftsRequest)
+             {
+                 $this->assertArraySelectiveEquals($ftsRequest, $input);
+             });
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $this->startTest($this->testData['testCreatePayout']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+        $this->assertNotNull($attempt->getFTSTransferId());
+        $this->assertEquals('initiated', $payout->getStatus());
+        $this->assertEquals($attempt->getFTSTransferId(), $payout->getFTSTransferId());
+    }
+
+    public function testPayoutCreationFromSubMerchantWhenEntryMissingInSubVirtualAccountsTable()
+    {
+        Queue::fake();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::SUB_VA_FOR_DIRECT_BANKING]);
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $this->ba->privateAuth();
+
+        $testData = $this->testData['testCreatePayout'];
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])
+                       ->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mock->shouldReceive('shouldAllowTransfersViaFts')
+             ->andReturn([true, 'Dummy']);
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $this->startTest($testData);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $payout = $this->getDbLastEntity('payout');
+
+        //Assert that request was not sent to FTS
+        $this->assertEquals('created', $attempt->getStatus());
+        $this->assertEquals('created', $payout->getStatus());
+
+        Queue::assertPushed(FtsFundTransfer::class, 0);
+    }
+
+    public function testSubVirtualAccountPayoutStatusUpdateForProcessedState()
+    {
+        $this->testCreatePayoutFromSubVirtualAccount();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->updateFtaAndSource($payout->getId(), 'processed', '12345678');
+
+        $payout->reload();
+
+        $this->assertEquals('processed', $payout->getStatus());
+
+        $this->assertEquals('12345678', $payout->getUtr());
+    }
+
+    public function testSubVirtualAccountPayoutStatusUpdateForFailedState()
+    {
+        $this->testCreatePayoutFromSubVirtualAccount();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutBalance = $payout->balance;
+
+        $balanceAfterPayout = $payoutBalance->getBalance();
+
+        $this->updateFtaAndSource($payout->getId(), 'failed', null);
+
+        $payout->reload();
+
+        $payoutBalance->reload();
+
+        $balanceAfterReversal = $payoutBalance->getBalance();
+
+        $this->assertEquals('reversed', $payout->getStatus());
+
+        $this->assertEquals($balanceAfterPayout + $payout->getAmount() + $payout->getFees(), $balanceAfterReversal);
+
+        $this->assertEquals(null, $payout->getUtr());
+
+        $reversal = $this->getDbLastEntity('reversal');
+
+        $this->assertEquals($reversal->getEntityId(), $payout->getId());
+        $this->assertEquals($reversal->getAmount(), $payout->getFees() + $payout->getAmount());
+    }
+
+    public function createRelevantEntitiesForSubVirtualAccountSetup($masterMerchant)
+    {
+        //direct balance of master va
+        $this->fixtures->on('test')->edit('merchant', $masterMerchant->getId(), [
+            'business_banking' => 1,
+            'live'             => 1
+        ]);
+
+        $this->fixtures->on('test')->create('feature', [
+            'id'        => random_alphanum_string(14),
+            'entity_id' => $masterMerchant->getId(),
+            'name'      => 'sub_virtual_account',
+        ]);
+
+        $this->fixtures->on('test')->create('balance', [
+            'id'             => random_alphanum_string(14),
+            'merchant_id'    => $masterMerchant->getId(),
+            'account_number' => '0004001156789',
+            'type'           => 'banking',
+            'account_type'   => 'direct',
+            'channel'        => 'axis'
+        ]);
+
+        // shared balance of sub VA
+        $this->fixtures->on('test')->create('balance', [
+            'type'           => 'banking',
+            'account_type'   => 'shared',
+            'account_number' => '2323230041626905',
+            'merchant_id'    => '10000000000000',
+            'balance'        => 10000000
+        ]);
+
+        $this->fixtures->on('test')->create('sub_virtual_account', [
+            'id'                    => random_alphanum_string(14),
+            'master_merchant_id'    => $masterMerchant->getId(),
+            'master_balance_id'     => 'xbalance123456',
+            'sub_merchant_id'       => '10000000000000',
+            'master_account_number' => '34341234567890',
+            'active'                => true
+        ]);
+    }
  }
 

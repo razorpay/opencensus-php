@@ -384,15 +384,13 @@ class FundTransfer extends Base
 
         if ($sourceType === Entity::PAYOUT)
         {
-            if ((in_array($channel, Channel::getNonTransactionChannels(), true) === true) and
-                ($source->balance->getAccountType() === Balance\AccountType::DIRECT))
+            [$shouldFetch, $isSubMerchant] = $this->shouldFetchSourceFtsFundAccountId($source, $channel);
+
+            if ($shouldFetch === true)
             {
-                if (method_exists($source, 'getSourceFtsFundAccountId') === true)
-                {
-                    $request[Constants::TRANSFER] += [
-                        Constants::PREFERRED_SOURCE_ACCOUNT_ID => (int) $this->fta->source->getSourceFtsFundAccountId(),
-                    ];
-                }
+                $request[Constants::TRANSFER] += [
+                    Constants::PREFERRED_SOURCE_ACCOUNT_ID => (int) $source->getSourceFtsFundAccountId($isSubMerchant),
+                ];
             }
 
             /**
@@ -1621,6 +1619,34 @@ class FundTransfer extends Base
             parent::FTS_TRANSFER_RETRY_BULK_URL,
             Requests::POST,
             $input);
+    }
+
+    /*
+     * Returns a list of booleans [$shouldFetch, $isSubVa].
+     * 1. $shouldFetch is true if
+     *  i.  the balance if of type direct and FTS needs preferred_source_account_id in /transfer payload.
+     *  ii. the balance is of type shared but the merchant has feature SUB_VA_FOR_DIRECT_BANKING enabled. This feature
+     *      indicates that money movement must happen from Master Merchant's DA and not from merchant's own VA.
+     *
+     * 2. $isSubVA is true only if the feature SUB_VA_FOR_DIRECT_BANKING is enabled on the merchant.
+     */
+    public function shouldFetchSourceFtsFundAccountId(Payout\Entity $payout, string $channel)
+    {
+        $balanceAccountType = $payout->balance->getAccountType();
+
+        if (($balanceAccountType === Balance\AccountType::DIRECT) and
+            (in_array($channel, Channel::getNonTransactionChannels(), true) === true))
+        {
+            return [true, false];
+        }
+
+        if (($balanceAccountType === Balance\AccountType::SHARED) and
+            ($payout->merchant->isSubMerchantOnDirectMasterMerchant() === true))
+        {
+            return [true, true];
+        }
+
+        return [false, false];
     }
 
 }

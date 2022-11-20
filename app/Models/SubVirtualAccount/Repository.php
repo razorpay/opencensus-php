@@ -41,5 +41,12 @@ class Repository extends Base\Repository
                     ->where(Entity::SUB_ACCOUNT_NUMBER, $input[Entity::SUB_ACCOUNT_NUMBER])
                     ->first();
     }
+
+    public function getSubVirtualAccountFromSubMerchantId($subMerchantId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::SUB_MERCHANT_ID, '=', $subMerchantId)
+                    ->first();
+    }
 }
 

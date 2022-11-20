@@ -2,6 +2,8 @@
 
 namespace RZP\Models\SubVirtualAccount;
 
+use Razorpay\Trace\Logger;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
@@ -20,6 +22,8 @@ use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
  */
 class Core extends Base\Core
 {
+    const SUB_VA_PAYOUT_ON_DIRECT_MASTER_BALANCE_ERROR = "Error in mapping sub VA payout to direct master balance";
+
     public function create(array $input): Entity
     {
         $subVirtualAccount = $this->repo->sub_virtual_account->getSubVirtualAccountWithSimilarDetails($input);
@@ -158,5 +162,66 @@ class Core extends Base\Core
         });
 
         return $masterAdjEntity;
+    }
+
+    public function getDirectBalanceOfMasterMerchantFromSubMerchantIdForSubVaPayout($subMerchantId)
+    {
+        /** @var Entity $subVirtualAccount */
+        $subVirtualAccount = $this->repo->sub_virtual_account->getSubVirtualAccountFromSubMerchantId($subMerchantId);
+
+        $subVirtualAccountValidator = new Validator();
+
+        $directBalance  = null;
+        $masterMerchant = null;
+
+        try
+        {
+            $subVirtualAccountValidator->validateSubVirtualAccount($subVirtualAccount,
+                                                                   [
+                                                                       Entity::SUB_MERCHANT_ID => $subMerchantId
+                                                                   ]);
+            /** @var MerchantEntity $masterMerchant */
+            $masterMerchant =  $this->repo->merchant->findOrFail($subVirtualAccount->getMasterMerchantId());
+
+            $subVirtualAccountValidator->validateMasterMerchant($masterMerchant);
+
+            $directBalance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType($masterMerchant->getId(),
+                                                                                           Type::BANKING,
+                                                                                           AccountType::DIRECT);
+            if (empty($directBalance) === true)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR,
+                    null,
+                    [
+                        Entity::MASTER_MERCHANT_ID => $masterMerchant->getId()
+                    ],
+                    "Master merchant direct balance not found"
+                );
+            }
+        }
+        catch(\Throwable $exception)
+        {
+            $this->trace->traceException($exception,
+                                         Logger::ERROR,
+                                         TraceCode::MASTER_MERCHANT_DIRECT_BALANCE_NOT_FOUND,
+                                         [
+                                             Entity::SUB_MERCHANT_ID    => $subMerchantId,
+                                             Entity::MASTER_MERCHANT_ID => $masterMerchant
+                                         ]);
+
+
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                [
+                    Entity::SUB_MERCHANT_ID    => $subMerchantId,
+                    Entity::MASTER_MERCHANT_ID => $masterMerchant,
+                ],
+                self::SUB_VA_PAYOUT_ON_DIRECT_MASTER_BALANCE_ERROR
+            );
+        }
+
+        return $directBalance;
     }
 }
