@@ -123,7 +123,7 @@ export const DISABLE_MAGIC_REASONS = [
 
 export const SHOPIFY_CHECKOUT_SETTINGS = [
   {
-    label: 'Buy Now button',
+    label: 'Buy now button',
     value: false,
     key: 'one_cc_buy_now_button',
     description: 'Enable Magic Checkout on Buy Now',
@@ -136,28 +136,38 @@ export const SHOPIFY_CHECKOUT_SETTINGS = [
       'Enable auto fetching of coupons to show all available coupons directly on Magic Checkout',
   },
   {
-    label: 'International Shipping',
+    label: 'International shipping',
     value: false,
     key: 'one_cc_international_shipping',
     description: 'Allow customers to select international pin code for delivery',
   },
   {
-    label: 'Capture Billing Address',
+    label: 'Capture billing address',
     value: false,
     key: 'one_cc_capture_billing_address',
     description: 'Ask customers to enter billing address separately',
   },
+  // {
+  //   label: 'Capture GSTIN',
+  //   value: false,
+  //   key: 'one_cc_capture_gstin',
+  // },
+  // {
+  //   label: 'Capture order instructions',
+  //   value: false,
+  //   key: 'one_cc_capture_order_instructions',
+  // },
 ];
 
 export const SHOPIFY_ANALYTICS_SETTINGS = [
   {
-    label: 'Google Analytics',
+    label: 'Google analytics',
     value: false,
     key: 'one_cc_ga_analytics',
     description: 'Enable Google Analytics tracking for Magic Checkout orders',
   },
   {
-    label: 'Facebook Pixel',
+    label: 'Facebook pixel',
     value: false,
     key: 'one_cc_fb_analytics',
     description: 'Enable Facebook Pixel tracking for Magic Checkout orders',
@@ -166,13 +176,13 @@ export const SHOPIFY_ANALYTICS_SETTINGS = [
 
 export const SHIPPING_SETTINGS = [
   {
-    label: 'International Shipping',
+    label: 'International shipping',
     value: false,
     key: 'one_cc_international_shipping',
     description: 'Allow customers to select international pin code for delivery',
   },
   {
-    label: 'Capture Billing Address',
+    label: 'Capture billing address',
     value: false,
     key: 'one_cc_capture_billing_address',
     description: 'Ask customers to enter billing address separately',
@@ -237,5 +247,30 @@ export const ORDER_PENDING = 'Order Pending';
 
 export const SHOPIFY_BUY_NOW_BUTTON = 'one_cc_buy_now_button';
 
+export const CHECKOUT_SETTINGS_CONFIG = [
+  {
+    label: 'Capture GSTIN?',
+    value: false,
+    key: 'one_cc_capture_gstin',
+  },
+  {
+    label: 'Capture order intructions?',
+    value: false,
+    key: 'one_cc_capture_order_instructions',
+  },
+];
+
+export const COUPON = 'coupon';
+export const CHECKOUT = 'checkout';
+export const ANALYTICS = 'analytics';
+export const CARD = 'Card';
+export const COUPON_FORM = `${COUPON}Form`;
+export const COUPON_CARD = `${COUPON}Card`;
+export const CHECKOUT_FORM = `${CHECKOUT}Form`;
+export const CHECKOUT_CARD = `${CHECKOUT}Card`;
+export const ANALYTICS_FORM = `${ANALYTICS}Form`;
+export const ANALYTICS_CARD = `${ANALYTICS}Card`;
+export const CHECKOUT_SETTINGS = 'Checkout Settings';
+export const ANALYTICS_SETTINGS = 'Analytics Settings';
 export const WOOCOMMERCE_REST_API_URL =
   'https://woocommerce.github.io/woocommerce-rest-api-docs/?shell#authentication';

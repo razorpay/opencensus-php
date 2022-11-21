@@ -21,7 +21,7 @@ const PlatformSubText = ({
   const { isShopifyMagicEnabled } = user;
 
   if (platform === PLATFORMS.VALUES.WOOCOMMERCE) {
-    domainSubText = shipping_info.split('wp-json')[0];
+    domainSubText = shipping_info?.split('wp-json')[0];
   }
   if (nested_view_type !== NESTED_VIEW_TYPE.SETTINGS) {
     return (

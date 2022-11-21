@@ -1,63 +1,73 @@
 $border-color = #E0E8F4
 $text-blue = #2B83EA
 
-.native-coupon-container
+.native-coupons-container
   .Input
     display: flex
     margin: 8px 0 24px
+    width: 100%;
 
     .Input-label
       width: 30%
+
       .i-info-outline
         margin-top: 4px;
         margin-left: 10px;
         font-size: 18px;
+
     .Input-content
       width: 320px
+
   .checkout-settings-toggle
     margin-bottom: 24px
 
   .next-cta
     margin: 16px 0
     text-align: right
-  
+
   .checkout-settings-toggle
     width: 100%
+
     .setting-label
       width: 30%
+
       .i-info-outline
         margin-top: 4px;
         margin-left: 8px;
         font-size: 16px;
+
         .rzp-popover-content > .rzp-popover-body
           font-style: normal
+
     .setting-toggle
       .checkbox-knob
         margin-top: 4px
+
       .toggle-status
         padding-left: 12px
+
       .text-faded
         color: #58666E
+
       .text-primary
         color: #528FF0
 
-  
 .native-shipping-wrapper
-
   .native-shipping-header
-      padding: 16px 16px 24px
-      border-bottom: 1px solid #e9ecf1
-    
-    .native-shipping-heading
-      margin-bottom: 24px
-    
-    .native-shipping-provider
-      margin-right: 24px
-    
-    .view-edit
-      color: $text-blue
-      .view-edit-icon
-        margin-right: 8px
+    padding: 16px 16px 24px
+    border-bottom: 1px solid #E9ECF1
+
+  .native-shipping-heading
+    margin-bottom: 24px
+
+  .native-shipping-provider
+    margin-right: 24px
+
+  .view-edit
+    color: $text-blue
+
+    .view-edit-icon
+      margin-right: 8px
 
 .native-platform-settings-card
   max-width: 420px
@@ -66,6 +76,12 @@ $text-blue = #2B83EA
 
 .wooc-settings-card.native-shipping-card
   padding-bottom: 30px
+
+.native-card-edit
+  position: absolute;
+  right: 0;
+  color: $text-blue
+  width: 90px
 
 .native-shipping-card
   .native-shipping-card-content
@@ -83,28 +99,19 @@ $text-blue = #2B83EA
 
 .wooc-settings-card
   max-width: 500px
-  padding: 30px 16px 60px
-  
-  .wooc-settings-card-widget
+
+.settings-card
+  padding-bottom: 20px
+
+  .settings-card-widget
+    max-width: 460px
+
+.wooc-settings-card,
+.settings-card
+  .wooc-settings-card-widget,
+  .settings-card-widget
     border: 1px solid $border-color
     border-radius: 4px
-
-    .native-shipping-card-content > .native-card-edit
-      position: absolute;
-      right: 14px;
-      width: 50px;
-
-    .wooc-settings-card-widget-content
-      max-width: 75%
-      word-break: break-word
-      flex-direction: column
-
-      .setting-value
-        word-break: break-all
-    
-    .wooc-settings-card-widget-wrapper
-      justify-content: space-between
-      position: relative
 
     .native-card-widget
       position: relative;
@@ -114,17 +121,45 @@ $text-blue = #2B83EA
         right: 14px;
         width: 50px;
 
+    .native-shipping-card-content > .native-card-edit
+      position: absolute;
+      right: 14px;
+      width: 50px;
+
+    .wooc-settings-card-widget-content,
+    .settings-card-widget-content
+      width: 100%
+      word-break: break-word
+      flex-direction: column
+
+      .card-title
+        justify-content: space-between;
+        border-bottom: 1px solid #E0E8F4;
+        margin: 0 24px;
+
+        .title-text
+          padding: 16px 0 0;
+          font-size: 16px;
+          font-weight: 700;
+          color: #162F56DE;
+
+      .setting-value
+        word-break: break-all
+
+    .wooc-settings-card-widget-wrapper,
+    .settings-card-widget-wrapper
+      justify-content: space-between
+      position: relative
+
     .setting-card-item
-      padding: 16px 24px 2px
+      padding: 8px 16px 2px
 
     .setting-card-item-last
       padding-bottom: 16px
 
-  .native-card-edit
-    position: absolute;
-    right: 0;
+  .card-edit
     color: $text-blue
-    width: 90px
+    padding: 16px 0
 
   .native-settings-edit-icon
     margin-right: 6px

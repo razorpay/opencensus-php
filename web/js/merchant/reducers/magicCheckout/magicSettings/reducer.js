@@ -29,6 +29,7 @@ const initialState = {
   nested_view_type: NESTED_VIEW_TYPE.PLATFORM_SELECTION,
   codSlabsSet: false,
   nestedTabsStatus: FETCH_STATUS.IDLE,
+  showTabHeading: true,
   manualControlCodOrder: false,
 };
 
@@ -68,7 +69,11 @@ export default function magicSettingsReducer(state = initialState, action) {
         nestedTabsStatus: FETCH_STATUS.IDLE,
       });
     case ACTIONS.UPDATE_MAGIC_SETTINGS_ERROR:
-      return merge(state, { status: FETCH_STATUS.ERROR, error: action.payload });
+      return merge(state, {
+        status: FETCH_STATUS.ERROR,
+        nestedTabsStatus: FETCH_STATUS.ERROR,
+        error: action.payload,
+      });
     case ACTIONS.DISABLE_MAGIC_CHECKOUT_PENDING: {
       const status = action.data.showLoader ? FETCH_STATUS.LOADING : state.status;
       return merge(state, { status });
@@ -81,6 +86,8 @@ export default function magicSettingsReducer(state = initialState, action) {
       return merge(state, { nested_view_type: action.payload.view });
     case ACTIONS.UPDATE_DOMAIN_DETAIL:
       return merge(state, { domain: action.payload.domain });
+    case ACTIONS.SET_TAB_HEADING_VISIBLE:
+      return merge(state, { showTabHeading: action.showTabHeading });
     default:
       return state;
   }

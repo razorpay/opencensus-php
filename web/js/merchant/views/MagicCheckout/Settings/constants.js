@@ -1,10 +1,10 @@
-import WoocCoupons from 'merchant/views/MagicCheckout/MagicSettings/components/woocommerce/CouponWrapper';
+import WoocCoupons from 'merchant/views/MagicCheckout/MagicSettings/components/woocommerce/CouponGCSetting';
 import WoocShippingTab from 'merchant/views/MagicCheckout/MagicSettings/containers/woocommerce/ShippingWrapper';
 
 import MagicIntelligenceTab from 'merchant/views/MagicCheckout/Settings/containers/MagicIntelligenceTab';
 import CheckoutSettingsTab from 'merchant/views/MagicCheckout/MagicSettings/containers/shopify/CheckoutSettingsTab';
 
-import NativeCoupons from 'merchant/views/MagicCheckout/MagicSettings/components/native/CouponWrapper';
+import NativeCoupons from 'merchant/views/MagicCheckout/MagicSettings/components/native/CheckoutSettings';
 import NativeShippingWrapper from 'merchant/views/MagicCheckout/MagicSettings/containers/native/ShippingWrapper';
 
 export const PLATFORMS = {
@@ -26,9 +26,8 @@ export const TABS = {
   ],
   [PLATFORMS.WOOCOMMERCE]: [
     {
-      label: 'Coupons',
+      label: 'Checkout Settings',
       Component: WoocCoupons,
-      tabHeading: 'Coupon Settings',
     },
     {
       label: 'Shipping Settings',
@@ -42,9 +41,8 @@ export const TABS = {
   ],
   [PLATFORMS.NATIVE]: [
     {
-      label: 'Coupons',
+      label: 'Checkout Settings',
       Component: NativeCoupons,
-      tabHeading: 'Coupon Settings',
     },
     {
       label: 'Shipping Settings',

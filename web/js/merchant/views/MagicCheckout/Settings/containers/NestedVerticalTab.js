@@ -5,7 +5,7 @@ import { updatePageView } from 'merchant/reducers/magicCheckout/magicSettings/ac
 import { TABS } from 'merchant/views/MagicCheckout/Settings/constants';
 
 const NestedVerticalTab = ({ settings }) => {
-  const { platform } = settings;
+  const { platform, showTabHeading } = settings;
   const [activeTab, setActiveTab] = useState(TABS[platform][0]);
   const { Component, label, tabHeading } = activeTab;
 
@@ -25,7 +25,7 @@ const NestedVerticalTab = ({ settings }) => {
         ))}
       </div>
       <div className="tabs-content bg-white">
-        {tabHeading ? (
+        {tabHeading && showTabHeading ? (
           <div className="padding-16 font-20 font-bold tab-heading">{tabHeading}</div>
         ) : null}
         <div className={`tabs-component${!tabHeading ? ' tab-padding' : ''}`}>

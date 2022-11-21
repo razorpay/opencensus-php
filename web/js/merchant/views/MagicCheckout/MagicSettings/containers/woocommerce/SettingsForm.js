@@ -8,6 +8,7 @@ import { FETCH_STATUS, PLATFORMS } from 'merchant/views/MagicCheckout/MagicSetti
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { AsyncBtn } from 'common/new-ui/Button';
 import { analyticsTrack } from 'common/utils/analytics';
+import { updateDefaultViewInStorage } from 'merchant/views/MagicCheckout/utils/storeSettings';
 
 const isUrlValid = (value) => {
   if (!isUrlLenient(value)) {
@@ -55,6 +56,7 @@ const SettingsForm = ({ settings, updateSettings, merchantId }) => {
       shipping_info: `${domain}/wp-json/1cc/v1/shipping/shipping-info`,
       domain_url: domain,
     });
+    updateDefaultViewInStorage(merchantId, true);
     analyticsTrack({
       objectName: '1ccclickednextonplatformsettings',
       actionName: 'behav',

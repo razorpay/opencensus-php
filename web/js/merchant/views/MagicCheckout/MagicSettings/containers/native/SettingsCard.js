@@ -7,7 +7,7 @@ const NativeSettingsCard = ({
 }) => {
   const getSettingValue = (value) => (value ? 'Enabled' : 'Disabled');
   return (
-    <div className="wooc-settings-card native-shipping-card bg-white">
+    <div className="wooc-settings-card native-shipping-card">
       <div className="wooc-settings-card-widget bg-white">
         <div className="flex flex--column gap--12 p--14 native-shipping-card-content">
           <SettingsCard.Item label="API For Shipping Info" value={shipping_info} />

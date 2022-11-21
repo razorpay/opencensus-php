@@ -6,6 +6,7 @@ import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettin
 import { PLATFORMS, FETCH_STATUS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import { AsyncBtn } from 'common/new-ui/Button';
 import { analyticsTrack } from 'common/utils/analytics';
+import { updateDefaultViewInStorage } from 'merchant/views/MagicCheckout/utils/storeSettings';
 
 const SHOPIFY_ID_REGEX = new RegExp(/([A-Za-z0-9]+)(.myshopify.com)/);
 
@@ -63,7 +64,9 @@ const SettingsForm = ({ settings, updateSettings, merchantId }) => {
         merchant_id: merchantId,
       },
     });
-  }, [updateSettings, shopId]);
+
+    updateDefaultViewInStorage(merchantId, true);
+  }, [shopId, updateSettings, merchantId]);
 
   useEffect(() => {
     if (settings.platform === PLATFORMS.VALUES.SHOPIFY && settings.shop_id) {

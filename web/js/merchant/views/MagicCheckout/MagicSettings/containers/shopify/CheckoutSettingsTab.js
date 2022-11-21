@@ -1,81 +1,45 @@
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { useState, useCallback, useEffect } from 'react';
-import isEmpty from '@universe/utils/isEmpty';
-import SettingsToggle from 'merchant/views/MagicCheckout/MagicSettings/components/common/SettingsToggle';
+import CheckoutWrapper from 'merchant/views/MagicCheckout/MagicSettings/containers/shopify/CheckoutWrapper';
+import AnalyticsWrapper from 'merchant/views/MagicCheckout/MagicSettings/containers/shopify/AnalyticsWrapper';
 import {
   fetchMagicSettings,
   updateMagicSettings,
 } from 'merchant/reducers/magicCheckout/magicSettings/actions';
+import { AsyncBtn } from 'common/new-ui/Button';
+import { analyticsTrack } from 'common/utils/analytics';
 import {
-  SHOPIFY_CHECKOUT_SETTINGS,
-  SHOPIFY_ANALYTICS_SETTINGS,
   FETCH_STATUS,
   PLATFORMS,
   SHOPIFY_BUY_NOW_BUTTON,
+  SHOPIFY_CHECKOUT_SETTINGS,
+  CHECKOUT_FORM,
+  ANALYTICS_FORM,
+  CHECKOUT,
+  ANALYTICS,
+  CARD,
 } from 'merchant/views/MagicCheckout/MagicSettings/constants';
-import { AsyncBtn } from 'common/new-ui/Button';
-import { analyticsTrack } from 'common/utils/analytics';
+import 'merchant/views/MagicCheckout/css/settings/checkout.styl';
+import { updateDefaultViewInStorage } from 'merchant/views/MagicCheckout/utils/storeSettings';
 
 const CheckoutSettingsTab = ({ settings, merchantId, updateSettings, user }) => {
   const [checkoutSettings, setCheckoutSettings] = useState([]);
   const [analyticSettings, setAnalyticSettings] = useState([]);
+  const [currentView, setCurrentView] = useState(CARD);
 
-  const getInitialSettings = (initialSettings, currentSettings) =>
-    isEmpty(checkoutSettings) ? initialSettings : [...currentSettings];
-
-  useEffect(() => {
-    setCheckoutSettings((prevSettings) => {
-      const tempCheckoutSettings = getInitialSettings(SHOPIFY_CHECKOUT_SETTINGS, prevSettings);
-
-      tempCheckoutSettings.forEach((settingItem) => {
-        settingItem.value = settings[settingItem.key];
-      });
-      return tempCheckoutSettings;
-    });
-
-    setAnalyticSettings((prevSettings) => {
-      const tempAnalyticSettings = getInitialSettings(SHOPIFY_ANALYTICS_SETTINGS, prevSettings);
-      tempAnalyticSettings.forEach((settingItem) => {
-        settingItem.value = settings[settingItem.key];
-      });
-
-      return tempAnalyticSettings;
-    });
-  }, [settings]);
+  const { nestedTabsStatus } = settings;
+  const isLoading = nestedTabsStatus === FETCH_STATUS.LOADING;
+  const isFormView = !currentView.includes(CARD);
+  const showAllFormView = localStorage.getItem(`show_default_view-${merchantId}`) === 'true';
+  const showCTA = isFormView || showAllFormView;
 
   useEffect(() => {
     const { isShopifyMagicEnabled } = user;
     if (!isShopifyMagicEnabled && SHOPIFY_CHECKOUT_SETTINGS[0].key === SHOPIFY_BUY_NOW_BUTTON) {
       SHOPIFY_CHECKOUT_SETTINGS.shift();
     }
-  }, []);
-
-  const onToggleCheckout = useCallback((checked, label) => {
-    setCheckoutSettings((prevSettings) => {
-      const tempCheckoutSettings = [...prevSettings];
-      tempCheckoutSettings.forEach((setting) => {
-        if (setting.label === label) {
-          setting.value = checked;
-        }
-      });
-
-      return tempCheckoutSettings;
-    });
-  }, []);
-
-  const onToggleAnalytics = useCallback((checked, label) => {
-    setAnalyticSettings((prevSettings) => {
-      const tempAnalyticSettings = [...prevSettings];
-      tempAnalyticSettings.forEach((setting) => {
-        if (setting.label === label) {
-          setting.value = checked;
-        }
-      });
-
-      return tempAnalyticSettings;
-    });
-  }, []);
+  }, [user]);
 
   const onSave = useCallback(() => {
     const payload = {
@@ -88,6 +52,8 @@ const CheckoutSettingsTab = ({ settings, merchantId, updateSettings, user }) => 
     analyticSettings.forEach((setting) => {
       payload[setting.key] = setting.value;
     });
+
+    updateDefaultViewInStorage(merchantId, false);
 
     const {
       one_cc_buy_now_button,
@@ -115,29 +81,56 @@ const CheckoutSettingsTab = ({ settings, merchantId, updateSettings, user }) => 
       },
     });
 
-    updateSettings(payload);
-  }, [updateSettings, checkoutSettings, analyticSettings]);
+    updateSettings(payload, false);
+  }, [
+    settings.shop_id,
+    settings.one_click_checkout,
+    checkoutSettings,
+    analyticSettings,
+    merchantId,
+    updateSettings,
+  ]);
+
+  const showSettings = (setting) =>
+    currentView.includes(CARD) || currentView.includes(setting) || showAllFormView;
+
+  const showFormView = (formView) => currentView === formView || showAllFormView;
 
   return (
-    <div className="checkout-settings">
-      <p className="font-18 font-bold checkout-headings">Checkout Settings</p>
-      {checkoutSettings.map((setting) => (
-        <SettingsToggle key={setting.label} setting={setting} onToggle={onToggleCheckout} />
-      ))}
-      <hr />
-      <p className="font-18 font-bold checkout-headings">Analytics Settings</p>
-      {analyticSettings.map((setting) => (
-        <SettingsToggle key={setting.label} setting={setting} onToggle={onToggleAnalytics} />
-      ))}
-      <AsyncBtn.Primary
-        type="button"
-        isPending={settings.status === FETCH_STATUS.LOADING}
-        onClick={onSave}
-        className="save-cta"
-      >
-        Save settings
-      </AsyncBtn.Primary>
-    </div>
+    <>
+      <div className="checkout-settings">
+        {showSettings(CHECKOUT) && (
+          <CheckoutWrapper
+            checkoutSettings={checkoutSettings}
+            setCheckoutSettings={setCheckoutSettings}
+            setCurrentView={setCurrentView}
+            showFormView={showFormView(CHECKOUT_FORM)}
+            settings={settings}
+          />
+        )}
+        <hr />
+        {showSettings(ANALYTICS) && (
+          <AnalyticsWrapper
+            analyticSettings={analyticSettings}
+            setCurrentView={setCurrentView}
+            showFormView={showFormView(ANALYTICS_FORM)}
+            settings={settings}
+            setAnalyticSettings={setAnalyticSettings}
+          />
+        )}
+      </div>
+      {showCTA && (
+        <AsyncBtn.Primary
+          type="button"
+          isPending={isLoading}
+          showLoader={isLoading}
+          onClick={onSave}
+          className="save-cta"
+        >
+          Save settings
+        </AsyncBtn.Primary>
+      )}
+    </>
   );
 };
 

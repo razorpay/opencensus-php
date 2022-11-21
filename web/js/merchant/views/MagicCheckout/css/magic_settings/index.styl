@@ -1,3 +1,7 @@
+$lightGray = #51597826
+$black = #000
+$gray = #5A6870
+
 .Input.select-platform-dropdown
   width: 320px
   margin: 0 0 8px
@@ -9,12 +13,11 @@
 .selection-container
   padding: 40px 16px 24px
 
-  label 
+  label
     width: 16%
     margin-bottom: 8px
-  
-.platform-input-container
 
+.platform-input-container
   .Input-elWrapper.Select-elWrapper::before
     margin-top: 20px
     border-top: 6px dashed
@@ -26,9 +29,99 @@
   .Input-el
     height: 44px
 
+.wooc-settings-card-widget
+  max-width: 460px
+
+.gift-card
+  padding: 0 16px 60px;
+
+.analytics-card
+  border-top: 1px solid $lightGray
+  padding: 20px 0 0
+  width: 100%
+  max-width: 100%
+
+  .wooc-settings-card-widget
+    max-width: 460px
+
+.coupon-card,
+.gift-card,
+.analytics-card,
+.settings-card
+  .setting-label
+    color: $gray;
+
+  .setting-value
+    color: $black;
+
+.save-cta
+  float: right
+  margin: 32px 0 24px
+
+  .Input
+    margin: 0
+    width: 375px
+    opacity: 1
+
+.Input--Shopify.Input
+  .Input-addons--after
+    right: 8px
+
+  .Input-addons
+    width: auto
+    background-color: transparent
+
+.shopify-container,
+.woocommerce-container
+  padding: 0 16px 24px
+
+  .Input
+    display: flex
+    margin: 0
+
+    .Input-addons
+      top: 4px
+
+    .Input-label
+      width: 16%
+
+    .Input-content
+      width: 320px
+
+      .Input-addons--after
+        width: auto
+        background-color: transparent
+        right: 8px
+
+.Input--Shopify.Input.is-focused
+  .Input-addons
+    background-color: transparent
+
+.Input--Shopify.Input.is-mature:not(.is-focused).is-invalid
+  .Input-addons
+    background-color: transparent
+
+.shopify-container
+  label
+    width: 16%
+
+  .Input-el--after
+    padding-right: 105px
+
+.platform-settings-card--body
+  .setting-label
+    color: $gray
+    font-size: 14px
+    font-weight: 500
+    line-height: 16px
+
+  .setting-value
+    color: $black
+    font-size: 14px
+    font-weight: 600
+    line-height: 20px
 
 .woocommerce-shipping-container
-
   .c-fee-configuration .serviceability-setting-label
     min-width: 25%
     font-weight: normal
@@ -36,92 +129,83 @@
     .slabs-input-container
       .Input-addons--before
         padding-top: 4px
-    
+
     .slabs-charge
       .slabs-close
         margin-top: 8px
 
-.woocommerce-coupons-container, .woocommerce-shipping-container
-  padding: 22px 0
+.form-wrapper
+  .checkout-headings
+    color: #162F56DE;
+
+.coupons-container,
+.woocommerce-shipping-container,
+.gift-card-settings,
+.form-wrapper
+  padding: 16px
+
   .Input
     margin-bottom: 0
+
   .checkout-settings-toggle
-      margin-top: 24px
-      width: 100%
-      .setting-label
-        width: 25%
-        display: flex
-        align-items: center
-        .i-info-outline
-          margin-top: 4px;
-          margin-left: 6px;
-          font-size: 16px;
-          .rzp-popover-content > .rzp-popover-body
-            font-style: normal
-      .setting-toggle
-        .checkbox-knob
-          margin-top: 4px
-        .toggle-status
-          padding-left: 12px
-        .text-faded
-          color: #58666E
-        .text-primary
-          color: #528FF0
+    margin-top: 24px
+    width: 100%
+
+    .setting-label
+      width: 32%
+      display: flex
+      align-items: center
+
+      .i-info-outline
+        margin-top: 4px;
+        margin-left: 6px;
+        font-size: 16px;
+
+        .rzp-popover-content > .rzp-popover-body
+          font-style: normal
+
+    .setting-toggle
+      .checkbox-knob
+        margin-top: 4px
+
+      .toggle-status
+        padding-left: 12px
+
+      .text-faded
+        color: #58666E
+
+      .text-primary
+        color: #528FF0
+
   .wooc-url-label
     width: 25%
     font-weight: normal
-    color: #162f56bd
-  
+    color: #162F56BD
+
   .woo-url-wrapper
     margin-bottom: 24px
+
     .Input
       margin-top: 0;
       width: 100%;
+
       .Input-content
         width: 320px;
         max-width: 100%;
-  .save-cta
-    float: right
-    margin-top: 42px
-    .Input
-      margin: 0
-      width: 375px
-      opacity: 1
 
-.shopify-container, .woocommerce-container
-  padding: 0 16px 24px
-  
-  .Input
-    display: flex
-    margin: 0
-
-    .Input-addons
-      top: 4px
-    
-    .Input-label
-      width: 16%
-    
-    .Input-content
-      width: 320px
-      
-      .Input-addons--after
-        width: auto
-        background-color: transparent
-        right: 8px
-
-.shopify-container
-  label
-    width: 16%
-
-  .Input-el--after {
-    padding-right: 105px
-  }
+  .woo-coupon
+    margin-bottom: 0
 
 .edit-settings-cta-container
   padding: 14px 28px
   background: #FAFAFA
 
-.Form.Form--magic-settings 
+.native-shipping-tab-selector
+  label
+    width: 30%
+    margin: 0
+
+.Form.Form--magic-settings
   .Input-label
     text-align: left
 
@@ -134,35 +218,26 @@
 
   .serviceability-setting-label
     text-align: right
-  
+
   .Magic-Settings--Input.Input--disabled
     opacity: 1
+
     .Input-el
       background: #F7F8F8
 
   .Magic-Settings--Input.Input
     display: flex
+
     .Input-content
       flex: 1
       margin-left: 16px
+
     .Input-label
       width: 30%
       text-align: right
+
       label
         font-weight: bold
-
-  .Input--Shopify.Input.is-mature:not(.is-focused).is-invalid 
-      .Input-addons
-        background-color: transparent
-  .Input--Shopify.Input
-      .Input-addons--after 
-        right: 8px
-      .Input-addons
-        width: auto
-        background-color: transparent
-  .Input--Shopify.Input.is-focused
-      .Input-addons
-        background-color: transparent
 
 .magic-settings-container
   padding-bottom: 44px
@@ -173,48 +248,49 @@
   line-height: 20px;
   font-weight: bold;
 
-.border-bottom-light 
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1)
+.border-bottom-light
+  border-bottom: 1px solid rgb(0 0 0 / 0.1)
 
 .platform-settings-card-wrapper
   padding: 30px 16px 60px
-  .platform-settings-card
-    max-width: 500px
-    border: 1px solid #e0e8f4
-    border-radius: 4px
-    
-    .settings-fee-details
-      padding-top: 2px
 
-    .platform-settings-card-info
-      justify-content: space-between
-      position: relative
+.platform-settings-edit
+  color: #2B83EA
+  position: absolute;
+  right: 14px;
 
-      .setting-card
-        width: 85%
+  .platform-settings-edit-icon
+    margin-left: 8px
+    margin-right: 8px
 
-        .setting-value
-          word-break: break-all
+.platform-settings-card
+  max-width: 500px
+  border: 1px solid #E0E8F4
+  border-radius: 4px
 
-    .platform-settings-edit
-      color: #2B83EA
-      position: absolute;
-      right: 14px;
-      
-      .platform-settings-edit-icon
-        margin-left: 8px
-        margin-right: 8px
+  .settings-fee-details
+    padding-top: 2px
 
-  .platform-settings-edit
-    color: #2B83EA
-    
-    .platform-settings-edit-icon
-      margin-left: 8px
-      margin-right: 8px
+  .platform-settings-card-info
+    justify-content: space-between
+    position: relative
+
+    .setting-card
+      width: 85%
+
+      .setting-value
+        word-break: break-all
+
+.platform-settings-edit
+  color: #2B83EA
+
+  .platform-settings-edit-icon
+    margin-left: 8px
+    margin-right: 8px
 
 .platform-settings-card--header
   background: #F8FBFF
-  border-bottom: 1px solid rgba(0, 0, 0, 0.2)
+  border-bottom: 1px solid rgb(0 0 0 / 0.2)
   padding: 24px 18px
 
   .inline-flex
@@ -222,29 +298,67 @@
     align-items: center
     gap: 8px
 
-  .platform-heading 
+  .platform-heading
     color: #58666E
     font-size: 14px
     font-weight: 800
     line-height: 18px
 
-.platform-settings-card--body
-  .setting-label
-    color: #5A6870
-    font-size: 14px
-    font-weight: 500
-    line-height: 16px
+.border-bottom-light
+  border-bottom: 1px solid #0000001A
 
-  .setting-value
-    color: #000000
-    font-size: 14px
-    font-weight: 600
-    line-height: 20px
+.wooc-coupon-gc
+  border: 1px solid #EAEFF0;
+  border-radius: 4px;
+  margin-top: 24px;
 
-.border-bottom-light 
-  border-bottom: 1px solid #0000001a
+  .checkout-card
+    padding: 30px 16px 0;
 
-.native-shipping-tab-selector
-  label
-    width: 30%
-    margin: 0
+  hr
+    width: 96%;
+
+.coupon-card
+  padding: 0 16px 30px;
+
+.coupon-gc-form
+  margin-top: 24px
+
+.coupons-container,
+.native-coupons-container
+  .checkout-headings
+    color: #162F56DE;
+    margin-bottom: 24px;
+
+.native-checkout
+  border: 1px solid #EAEFF0;
+  border-radius: 4px;
+  margin-top: 24px;
+
+  .checkout-card
+    padding: 30px 16px 0;
+
+  hr
+    width: 96%;
+
+  .coupon-card,
+  .checkout-card
+    padding: 0;
+
+  .native-coupons-container.padding-16
+    padding: 0 16px 16px
+
+  .form-wrapper,
+  .coupons-container,
+  .native-coupons-container
+    background: #FAFCFF;
+    border: 1px solid #F3F8FE;
+    border-radius: 4px;
+
+  .form-view
+    margin-bottom: 32px;
+
+.native-card
+  padding: 24px;
+  background: #FAFCFF;
+  border: 1px solid #F3F8FE;

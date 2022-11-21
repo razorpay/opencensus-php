@@ -13,6 +13,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import AmountBreakup from 'merchant/views/Transactions/Orders/components/AmountBreakup';
 import SkuDetails from 'merchant/views/Transactions/Orders/components/SkuDetails';
+import { getFormattedKey } from 'merchant/views/Transactions/Orders/helpers';
 
 export default (props) => {
   const { order, payments, isLoading, statusMsg } = props;
@@ -97,7 +98,7 @@ export default (props) => {
                 {Object.keys(order.notes).length
                   ? Object.keys(order.notes).map((key, index) => (
                       <Definition key={index} customClass="notes">
-                        {key}
+                        {getFormattedKey(key)}
                         {String(order.notes[key] || '--')}
                       </Definition>
                     ))

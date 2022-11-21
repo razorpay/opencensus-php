@@ -7,13 +7,15 @@ const SettingsToggle = ({ setting, onToggle }) =>
     <div className="display-flex checkout-settings-toggle">
       <div className="setting-label">
         {setting.label}
-        <i className="i i-info-outline">
-          <Popover align="bottom" theme="dark">
-            <PopoverBody>
-              <div>{setting.description}</div>
-            </PopoverBody>
-          </Popover>
-        </i>
+        {setting.description && (
+          <i className="i i-info-outline">
+            <Popover align="bottom" theme="dark">
+              <PopoverBody>
+                <div>{setting.description}</div>
+              </PopoverBody>
+            </Popover>
+          </i>
+        )}
       </div>
       <div className="display-flex setting-toggle">
         <SwitchField

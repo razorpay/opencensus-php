@@ -84,7 +84,7 @@ const SettingsForm = ({ settings, updateSettings }) => {
   }, []);
 
   return (
-    <div className="native-coupon-container">
+    <div className="native-coupons-container">
       <Input
         required={true}
         validator={isUrlValid}

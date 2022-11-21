@@ -5,6 +5,7 @@ import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettin
 import { AsyncBtn } from 'common/new-ui/Button';
 import { FETCH_STATUS, PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import { analyticsTrack } from 'common/utils/analytics';
+import { updateDefaultViewInStorage } from 'merchant/views/MagicCheckout/utils/storeSettings';
 
 const NativePlatform = ({ status, merchantId, updateSettings }) => {
   const onSave = useCallback(() => {
@@ -17,13 +18,16 @@ const NativePlatform = ({ status, merchantId, updateSettings }) => {
         merchant_id: merchantId,
       },
     });
+
     updateSettings({
       platform: PLATFORMS.VALUES.NATIVE,
       list_promotions: ``,
       apply_promotion: ``,
       shipping_info: ``,
     });
-  }, [updateSettings]);
+
+    updateDefaultViewInStorage(merchantId, true);
+  }, [merchantId, updateSettings]);
 
   return (
     <AsyncBtn.Primary

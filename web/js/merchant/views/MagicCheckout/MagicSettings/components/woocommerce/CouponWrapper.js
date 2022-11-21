@@ -1,32 +1,74 @@
-import { connect } from 'react-redux';
-import { useEffect, useState } from 'react';
-import { VIEWS, FETCH_STATUS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
+import { useEffect, useCallback } from 'react';
+import isEmpty from '@universe/utils/isEmpty';
 import CouponCard from 'merchant/views/MagicCheckout/MagicSettings/containers/common/CouponCard';
 import CouponForm from 'merchant/views/MagicCheckout/MagicSettings/containers/woocommerce/CouponForm';
+import {
+  FETCH_STATUS,
+  COUPON_FORM,
+  COUPON_CARD,
+  COUPON_SETTINGS,
+} from 'merchant/views/MagicCheckout/MagicSettings/constants';
 
-export const CouponWrapper = ({
-  settings: { list_promotions, apply_promotion, nestedTabsStatus },
+const CouponWrapper = ({
+  listPromotions,
+  applyPromotion,
+  autoFetchCoupon,
+  settings,
+  setCurrentView,
+  showFormView,
+  setTabHeadingVisible,
+  setAutoFetchCoupon,
 }) => {
-  const [view, setView] = useState(VIEWS.EDIT);
-
-  const switchToEdit = () => setView(VIEWS.EDIT);
+  const { one_cc_auto_fetch_coupons, nestedTabsStatus } = settings;
 
   useEffect(() => {
-    if (list_promotions && apply_promotion && nestedTabsStatus !== FETCH_STATUS.LOADING) {
-      setView(VIEWS.READ);
+    if (listPromotions && applyPromotion && nestedTabsStatus !== FETCH_STATUS.LOADING) {
+      setCurrentView(COUPON_CARD);
     } else {
-      setView(VIEWS.EDIT);
+      setCurrentView(COUPON_FORM);
     }
-  }, [list_promotions, apply_promotion, nestedTabsStatus]);
+  }, [listPromotions, applyPromotion, one_cc_auto_fetch_coupons]);
 
-  if (view === VIEWS.EDIT) {
-    return <CouponForm />;
-  }
-  return <CouponCard editable={true} switchToEdit={switchToEdit} />;
+  useEffect(() => {
+    setAutoFetchCoupon((prevSettings) => {
+      const tempCouponSettings = isEmpty(prevSettings) ? COUPON_SETTINGS : { ...prevSettings };
+      tempCouponSettings.value = one_cc_auto_fetch_coupons;
+
+      return tempCouponSettings;
+    });
+  }, [one_cc_auto_fetch_coupons]);
+
+  useEffect(() => {
+    setTabHeadingVisible(false);
+    return () => {
+      setTabHeadingVisible(true);
+    };
+  }, []);
+
+  const switchToEdit = () => {
+    setCurrentView(COUPON_FORM);
+  };
+
+  const onToggle = useCallback((checked) => {
+    setAutoFetchCoupon((prevSetting) => ({ ...prevSetting, value: checked }));
+  }, []);
+
+  return (
+    <>
+      {showFormView ? (
+        <CouponForm
+          isWooCommerce
+          listPromotions={listPromotions}
+          applyPromotion={applyPromotion}
+          autoFetchCoupon={autoFetchCoupon}
+          onToggle={onToggle}
+          isFieldDisabled
+        />
+      ) : (
+        <CouponCard switchToEdit={switchToEdit} />
+      )}
+    </>
+  );
 };
 
-const mapStateToProps = (state) => ({
-  settings: state.magic_settings,
-});
-
-export default connect(mapStateToProps, null)(CouponWrapper);
+export default CouponWrapper;
