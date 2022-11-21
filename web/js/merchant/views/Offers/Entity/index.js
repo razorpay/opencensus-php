@@ -15,7 +15,12 @@ import Amount from 'common/ui/Amount';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { OfferStatusLabel } from 'merchant/components/StatusLabel';
 
-import { PAYMENT_NETWORK_MAP, OFFER_TYPE_LABELS, ISSUERS } from 'merchant/views/Offers/constants';
+import {
+  PAYMENT_NETWORK_MAP,
+  OFFER_TYPE_LABELS,
+  ISSUERS,
+  OFFER_DISABLE_CTA_NETWORKS,
+} from 'merchant/views/Offers/constants';
 import SubscriptionUsageDetails from './SubscriptionUsageDetails';
 import { emiDurationString } from 'merchant/views/Offers/New/helpers';
 
@@ -98,10 +103,12 @@ export default class OffersDetails extends React.Component {
       showNotification,
       user,
     } = this.props;
-    const { id, active, current_offer_usage } = offer;
+    const { id, active, current_offer_usage, payment_network, emi_subvention } = offer;
     const actionName = active ? 'Disable' : 'Enable';
 
-    if (active && offer.payment_network === 'BAJAJ') {
+    const showDisableAlert = OFFER_DISABLE_CTA_NETWORKS.includes(payment_network) && emi_subvention;
+
+    if (active && showDisableAlert) {
       // Track disable offer click for Bajaj
       tracking.trackEvent(
         window.rzpQ.merchantActions().clicked('bajaj_offer_disable', {
@@ -236,7 +243,7 @@ export default class OffersDetails extends React.Component {
       }
     }
 
-    const isBajajNcEmiOffer = payment_network === 'BAJAJ';
+    const isBajajNcEmiOffer = OFFER_DISABLE_CTA_NETWORKS.includes(payment_network);
 
     const disabledButtonClass = isBajajNcEmiOffer ? `link-disabled` : '';
 
