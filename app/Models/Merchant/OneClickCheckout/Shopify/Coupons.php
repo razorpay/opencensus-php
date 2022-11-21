@@ -108,8 +108,8 @@ class Coupons extends Base\Core
             $dateTimeNow = date('Y-m-d H:i:s');
             if (($amount < $discountMinAmount)
                 || ($minQuantityRange !== null && $minQuantityRange > $orderQuantity)
-                || ($discountStartDate !== null && $discountStartDate > time())
-                || ($dicountEndDate !== null && $dicountEndDate < $dateTimeNow))
+                || ($discountStartDate !== null && strtotime($discountStartDate) > time())
+                || ($dicountEndDate !== null && strtotime($dicountEndDate) < $dateTimeNow))
             {
                 continue;
             }
