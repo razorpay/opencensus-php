@@ -57,6 +57,8 @@ class Core extends Base\Core
         Payment\Method::NACH,
     ];
 
+
+    // Merchant Onboarding for International Merchants wouldn't be happening via ledger
     /**
      * @param Merchant\Entity $merchant
      * @param array           $input
@@ -74,11 +76,13 @@ class Core extends Base\Core
             ]
         );
 
-        $balance = (new Entity)->build($input);
+        // We need to associate the merchant before validation starts
+        // Because in validate currency merchant entity is required
+        $balance = (new Entity)->merchant()->associate($merchant);
+
+        $balance = $balance->build($input);
 
         $balance->setConnection($mode);
-
-        $balance->merchant()->associate($merchant);
 
         $this->repo->saveOrFail($balance);
 
@@ -105,13 +109,15 @@ class Core extends Base\Core
             ]
         );
 
-        $balance = (new Entity)->build($input);
+        // We need to associate the merchant before validation starts
+        // Because in validate currency merchant entity is required
+        $balance = (new Entity)->merchant()->associate($merchant);
+
+        $balance = $balance->build($input);
 
         $balance->setBalance($initialBalance);
 
         $balance->setConnection($mode);
-
-        $balance->merchant()->associate($merchant);
 
         $this->repo->saveOrFail($balance);
 
@@ -143,7 +149,7 @@ class Core extends Base\Core
             // Evey balance we create will start with 0 balance. if needed we can extend this.
             $input = [
                 Entity::TYPE     => $balanceType,
-                Entity::CURRENCY => Currency::INR,
+                Entity::CURRENCY => $merchant->getCurrency(),
             ];
 
             $balance = $this->create($merchant, $input, $mode);
@@ -238,7 +244,7 @@ class Core extends Base\Core
     {
         $content = [
             Entity::TYPE     => Product::BANKING,
-            Entity::CURRENCY => Currency::INR,
+            Entity::CURRENCY => $merchant->getCurrency(),
         ];
 
         $input = array_merge($input, $content);
@@ -270,7 +276,7 @@ class Core extends Base\Core
             $input = [
                 Entity::TYPE         => Type::BANKING,
                 Entity::ACCOUNT_TYPE => AccountType::SHARED,
-                Entity::CURRENCY     => Currency::INR,
+                Entity::CURRENCY     => $merchant->getCurrency(),
             ];
 
             $balance = $this->create($merchant, $input, $mode);

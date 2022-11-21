@@ -30,6 +30,24 @@ class MerchantEsCreateTest extends TestCase
         $this->assertNotEmpty($liveEsDoc['merchant_detail']['updated_at']);
     }
 
+    public function testCreateMerchantMalaysia()
+    {
+        list($response, $testEsDoc, $liveEsDoc) = $this->startTestAndMakeAssertionsOnEsDoc(__FUNCTION__, '1X4hRFHFx4UiXt');
+
+        $balance = $this->getLastEntity('balance', true);
+
+        $this->assertEquals($balance['currency'], 'MYR');
+        $this->assertEquals($balance['type'], 'primary');
+
+        $this->assertNotEmpty($testEsDoc['created_at']);
+        $this->assertNotEmpty($testEsDoc['updated_at']);
+        $this->assertNotEmpty($testEsDoc['merchant_detail']['updated_at']);
+
+        $this->assertNotEmpty($liveEsDoc['created_at']);
+        $this->assertNotEmpty($liveEsDoc['updated_at']);
+        $this->assertNotEmpty($liveEsDoc['merchant_detail']['updated_at']);
+    }
+
     public function testUpdateMerchantWithBasicDatapoints()
     {
         $this->startTestAndMakeAssertionsOnEsDoc(__FUNCTION__);

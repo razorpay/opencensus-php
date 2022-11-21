@@ -15,6 +15,35 @@ return [
                     'admin_10000000000016',
                     'admin_10000000000018',
                 ],
+                'country_code' => 'IN'
+            ],
+            'url'    => '/merchants',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'id'    => '1X4hRFHFx4UiXt',
+                'name'  => 'Test',
+                'email' => 'test@test.com',
+            ],
+        ],
+    ],
+
+    'testCreateMerchantMalaysia' => [
+        'request' => [
+            'content' => [
+                'id'     => '1X4hRFHFx4UiXt',
+                'name'   => 'Test',
+                'email'  => 'test@test.com',
+                'groups' => [
+                    '10000000000035',
+                    '10000000000036',
+                ],
+                'admins' => [
+                    'admin_10000000000016',
+                    'admin_10000000000018',
+                ],
+                'country_code' => 'MY'
             ],
             'url'    => '/merchants',
             'method' => 'POST'
@@ -198,6 +227,72 @@ return [
         'referrer'        => null,
     ],
 
+    'testCreateMerchantMalaysiaExpectedEsTestDoc' => [
+        'id'              => '1X4hRFHFx4UiXt',
+        'org_id'          => '100000razorpay',
+        'name'            => 'Test',
+        'email'           => 'test@test.com',
+        'parent_id'       => null,
+        'activated'       => false,
+        'activated_at'    => null,
+        'archived_at'     => null,
+        'suspended_at'    => null,
+        'website'         => null,
+        'billing_label'   => 'Test',
+        // 'created_at'      => 1504620540,
+        // 'updated_at'      => 1504620540,
+        'tag_list'        => [],
+        'merchant_detail' => [
+            'merchant_id'         => '1X4hRFHFx4UiXt',
+            'steps_finished'      => '[]',
+            'activation_progress' => 0,
+            'submitted_at'        => null,
+            // 'updated_at'          => 1504620540
+        ],
+        'admins'          => [
+            '10000000000016',
+            '10000000000018',
+        ],
+        'groups'          => [
+            '10000000000035',
+            '10000000000036',
+            '10000000000030',
+            '10000000000031',
+            '10000000000032',
+            '10000000000033',
+            '10000000000028',
+            '10000000000029',
+        ],
+        'is_marketplace'  => false,
+        'referrer'        => 'test admin'
+    ],
+
+    'testCreateMerchantMalaysiaExpectedEsLiveDoc' => [
+        'id'              => '1X4hRFHFx4UiXt',
+        'org_id'          => '100000razorpay',
+        'name'            => 'Test',
+        'email'           => 'test@test.com',
+        'parent_id'       => null,
+        'activated'       => false,
+        'activated_at'    => null,
+        'archived_at'     => null,
+        'suspended_at'    => null,
+        'website'         => null,
+        'billing_label'   => 'Test',
+        // 'created_at'      => 1504620540,
+        // 'updated_at'      => 1504620540,
+        'tag_list'        => [],
+        'merchant_detail' => [
+            'merchant_id'         => '1X4hRFHFx4UiXt',
+            'steps_finished'      => '[]',
+            'activation_progress' => 0,
+            'submitted_at'        => null,
+            // 'updated_at'          => 1504620540
+        ],
+        // Admins and groups doesn't get synced to other mode.
+        'is_marketplace'  => false,
+        'referrer'        => null,
+    ],
     //
     // In following test data, many attributes are intentionally
     // missing for convenience; They are redundant for assertions as well.

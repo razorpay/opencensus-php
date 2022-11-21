@@ -15,7 +15,7 @@ class Validator extends Base\Validator
     const UPDATE_FREE_PAYOUTS_ATTRIBUTES = 'update_free_payouts_attributes';
 
     protected static $createRules = [
-        Entity::CURRENCY         => 'required|string|in:INR',
+        Entity::CURRENCY         => 'required|string|custom',
         Entity::TYPE             => 'required|string|custom',
         Entity::ACCOUNT_TYPE     => 'filled|string|custom',
         Entity::CHANNEL          => 'sometimes|string|nullable|custom',
@@ -88,6 +88,13 @@ class Validator extends Base\Validator
         if (Type::exists($type) === false)
         {
             throw new Exception\BadRequestValidationFailureException('Invalid type name: ' . $type);
+        }
+    }
+
+    protected function validateCurrency($attribute, $value)
+    {
+        if($this->entity->merchant->getCurrency() !== $value) {
+            throw new Exception\BadRequestValidationFailureException('Balance and Merchant currency mismatch, balance_currency => ' . $value);
         }
     }
 

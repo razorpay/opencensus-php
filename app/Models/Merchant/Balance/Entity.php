@@ -379,7 +379,7 @@ class Entity extends Base\PublicEntity
 
         $balance->merchant()->associate($merchant);
         $balance->setAttribute(self::BALANCE, 0);
-        $balance->setAttribute(self::CURRENCY, Currency::INR);
+        $balance->setAttribute(self::CURRENCY, $merchant->getCurrency());
         $balance->setAttribute(self::TYPE, Type::PRIMARY);
 
         return $balance;
