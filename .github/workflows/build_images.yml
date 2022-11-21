@@ -224,6 +224,61 @@ jobs:
                   ]
             }
 
+  build-slit:
+    name: SLIT test build
+    runs-on: [ api-public]
+    needs: [build-web, build-worker, build-checkout, build-openresty]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build and push
+        uses: docker/build-push-action@v1
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+          repository: ${{ github.repository }}
+          dockerfile: ./slit/Dockerfile
+          path: slit
+          build_args: GIT_COMMIT_HASH=${{ github.event.pull_request.head.sha }},GIT_TOKEN=${{ secrets.GIT_TOKEN }},SONAR_TOKEN=${{ secrets.SONARQUBE_TOKEN }}
+          push: true
+          tags: slit_${{ github.sha }}
+
+  # Triggers end-to-end test execution with argo workflow as executor
+  slit-test-webhook:
+    name: SLIT test webhook
+    runs-on: [ self-hosted, api ]
+    needs: [ build-slit ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Find current pr
+        # Find the PR associated with this push, if there is one.
+        uses: jwalton/gh-find-current-pr@v1.3.0
+        id: findPr
+        with:
+          # Can be "open", "closed", or "all".  Defaults to "open".
+          state: open
+      - name: Triggers argo workflows webhook to execute slit tests
+        if: ${{ steps.findPr.outputs.pr != '' }}
+        uses: fjogeleit/http-request-action@master
+        with:
+          url: 'https://argo.dev.razorpay.in/api/v1/events/argo-workflows/api-slit'
+          method: 'POST'
+          bearerToken: ${{ secrets.ARGO_TOKEN }}
+          data: >
+            {
+               "kube_manifests_ref": "master",
+               "self": {
+                   "name": "api",
+                   "commit_id": "${{ github.sha }}",
+                   "chart_values": {
+                      "replicas": 2,
+                      "web_requests_cpu": "150m",
+                      "web_requests_memory": "500Mi"
+                   }
+               },
+               "dependencies": []
+            }
+
   trigger_regression_suite:
    runs-on: [api-public]
    name: Regression Suite

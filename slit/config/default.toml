@@ -1,0 +1,33 @@
+[app]
+    hostname = "https://api-web-decentfellow.dev.razorpay.in"
+
+[application]
+    app_env     = "slit"
+
+[Payments]
+    username = "rzp_test_1DP5mmOlF5G5ag"
+    password = "thisissupersecret"
+
+[SubMerchant]
+    user = "7HQnhEQDgBIdlv"
+    role = "owner"
+    username = "rzp_test_10000000000000"
+    liveUsername = "rzp_live_10000000000000"
+    password = "RANDOM_DASH_PASSWORD"
+    rzpSuperKey="rzp_test"
+    rzpSuperSecret="DASHBOARD_AUTH_PASS_STAGING"
+
+[apidb]
+    [apidb.connectionconfig]
+        dialect               = "mysql"
+        protocol              = "tcp"
+        url                   = "beta-api-db.np.razorpay.vpc."
+        port                  = 3306
+        username              = "api-beta-test"
+        sslMode               = "require"
+        name                  = "api-beta-test"
+
+    [apidb.connectionpoolconfig]
+        maxopenconnections    = 5
+        maxidleconnections    = 5
+        connectionMaxLifetime = 0

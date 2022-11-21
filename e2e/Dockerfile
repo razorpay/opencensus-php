@@ -27,4 +27,9 @@ RUN cd /go/pkg/mod/github.com/razorpay/goutils/itf@v0.2.0/cmd/reporter && go ins
 
 ENTRYPOINT set -euo pipefail && \
     go test -timeout=60m -v -json ./... -args -parallel | \
-    reporter -host $REPORT_PORTAL_HOST -project $REPORT_PORTAL_PROJECT -token $REPORT_PORTAL_TOKEN -name $REPORT_NAME -build_id $COMMIT_ID -skip_on_failure "true"
+    reporter -host $REPORT_PORTAL_HOST \
+    -project $REPORT_PORTAL_PROJECT \
+    -token $REPORT_PORTAL_TOKEN \
+    -name $REPORT_NAME \
+    -build_id $COMMIT_ID \
+    -skip_on_failure "true"
