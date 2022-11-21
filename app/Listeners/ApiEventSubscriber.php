@@ -1482,7 +1482,14 @@ class ApiEventSubscriber extends Base\Core
     {
         $receiver = $payment->receiver;
 
-        $virtualAccount = $receiver->source;
+        if ($payment->isOffline() === true) {
+
+            $virtualAccount = $receiver->virtualAccount;
+        }
+        else {
+            $virtualAccount = $receiver->source;
+        }
+
 
         $partialPayload[Constants\Entity::PAYMENT] = [
             'entity' => $payment->toArrayPublic()

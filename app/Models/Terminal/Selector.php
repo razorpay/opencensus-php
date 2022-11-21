@@ -988,7 +988,8 @@ class Selector extends Base\Core
 
         // for cash on delivery payments, there is no gateway involved, hence we can bypass
         // routing logic
-        if ($payment->isCoD() === true)
+        if (($payment->isCoD() === true) or
+            ($payment->isOffline() === true))
         {
             return false;
         }
@@ -1192,6 +1193,12 @@ class Selector extends Base\Core
 
     private function shouldFetchApiTerminals($payment): bool
     {
+
+        if ($payment->isOffline() === true)
+        {
+            return true;
+        }
+
         $merchantId = $payment->getMerchantId();
 
         $variantFlag = $this->app->razorx->getTreatment($merchantId, "API_ROUTER_NEW_CONTRACT_2",  $this->mode);

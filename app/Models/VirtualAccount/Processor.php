@@ -166,6 +166,13 @@ abstract class Processor extends Base\Core
             $logData = $entity->toArrayTrace();
         }
 
+        if (($this->virtualAccount->getAmountPaid() >= $this->virtualAccount->getAmountExpected()) and
+            ($entity->getEntityName() === Constants\Entity::OFFLINE_PAYMENT))
+        {
+            $this->virtualAccount->setStatus(STATUS::CLOSED);
+            $this->repo->saveOrFail($this->virtualAccount);
+        }
+
         $this->trace->info(
             TraceCode::VIRTUAL_ACCOUNT_PAYMENT_SUCCESSFUL,
             $logData

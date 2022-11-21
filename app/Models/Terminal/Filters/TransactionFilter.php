@@ -305,6 +305,11 @@ class TransactionFilter extends Terminal\Filter
         $merchant = $this->input['merchant'];
         $cardMandate = $this->input['card_mandate'];
 
+        //TODO need to remove this, add type non_recurring in offline terminal
+        if ($payment->isOffline() === true)
+        {
+            return true;
+        }
         if ($payment->isRecurring() === false)
         {
             return ($terminal->isNonRecurring() === true);

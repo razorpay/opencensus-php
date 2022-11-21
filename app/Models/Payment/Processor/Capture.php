@@ -1386,7 +1386,7 @@ trait Capture
         }
         else if($payment->isOffline() === true)
         {
-            $virtualAccount = $payment->offlinePayment->virtualAccount;
+            $virtualAccount = $payment->receiver->virtualAccount;
         }
 
         if (($virtualAccount->hasAmountExpected() === true) and

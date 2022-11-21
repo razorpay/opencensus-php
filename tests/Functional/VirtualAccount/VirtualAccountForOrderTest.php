@@ -475,6 +475,18 @@ class VirtualAccountForOrderTest extends TestCase
         ];
 
         $this->startTest();
+        $virtualAccountData = DB::select('select * from virtual_accounts')[0];
+
+        $this->assertEquals('closed', $virtualAccountData->status);
+
+        $offlinePayment = DB::select('select * from offline_payments')[0];
+
+        $this->assertEquals('captured', $offlinePayment->status);
+
+        $offlineChallan = DB::select('select * from offline_challans')[0];
+
+        $this->assertEquals($virtualAccountData->id, $offlineChallan->virtual_account_id);
+
     }
 
     public function testHdfcOfflinePaymentCreditAmountValidationFail()

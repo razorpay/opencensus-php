@@ -5501,7 +5501,8 @@ class Processor
                 $receiver = $this->repo->$entity->findbyPublicIdAndMerchantAlsoWithTrash($receiverInput['id'], $this->merchant);
                 break;
             case Receiver::OFFLINE_CHALLAN:
-                $receiver = $this->repo->$entity->findbyPublicId($receiverInput['id']);
+                $id = explode('_', $receiverInput['id'])[1];
+                $receiver = $this->repo->$entity->findbyPublicId($id);
                 break;
             case Receiver::POS :
                 $payment->setReceiverType(Receiver::POS);
