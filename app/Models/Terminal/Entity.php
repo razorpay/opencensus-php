@@ -454,6 +454,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY_MERCHANT_ID);
     }
 
+    public function getGatewaySecureSecret()
+    {
+        return $this->getGatewaySecureSecretAttribute();
+    }
 
     public function getGatewayAccessCode()
     {
