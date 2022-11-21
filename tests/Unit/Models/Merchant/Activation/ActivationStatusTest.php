@@ -6,6 +6,7 @@ namespace Unit\Models\Merchant\Activation;
 use DB;
 use Illuminate\Support\Facades\Mail;
 use RZP\Constants\Mode;
+use RZP\Models\Feature;
 use RZP\Mail\Merchant\NeedsClarificationEmail;
 
 use RZP\Models\Admin\Permission;
@@ -262,6 +263,170 @@ class ActivationStatusTest extends OAuthTestCase
         Mail::assertQueued(NeedsClarificationEmail::class);
 
         Mail::assertNotQueued(SubMerchantNCStatusChangedEmail::class);
+    }
+
+    public function testStatusUpdateToActivatedKycPending()
+    {
+        $fixtures       = $this->createAndFetchFixtures(Detail\Status::UNDER_REVIEW);
+        $merchantDetail = $fixtures['merchantDetail'];
+        $merchant       = $merchantDetail->merchant;
+        $admin          = $fixtures['admin'];
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $this->fixtures->merchant->addFeatures(['no_doc_onboarding']);
+
+        $input = [
+            'activation_status' => Detail\Status::ACTIVATED_KYC_PENDING
+        ];
+        (new Detail\Core)->updateActivationStatus($merchant, $input, $admin);
+
+        // check status changed successfully
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+        $this->assertEquals(Detail\Status::ACTIVATED_KYC_PENDING, $merchantDetail->getActivationStatus());
+
+        $merchant = $merchantDetail->merchant;
+
+        $this->assertTrue($merchant->isLive());
+        $this->assertFalse($merchant->getHoldFunds());
+        $this->assertFalse($merchantDetail->isLocked());
+        $this->assertContains('No_doc_partially_activated', $merchant->tagNames());
+    }
+
+    public function testCheckIfPaymentsRemainEnabledForPartiallyActivatedNoDocMerchant()
+    {
+        $fixtures       = $this->createAndFetchFixtures(Detail\Status::UNDER_REVIEW);
+        $merchantDetail = $fixtures['merchantDetail'];
+        $merchant       = $merchantDetail->merchant;
+        $admin          = $fixtures['admin'];
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $this->fixtures->merchant->addFeatures(['no_doc_onboarding']);
+
+        $input = [
+            'activation_status' => Detail\Status::ACTIVATED_KYC_PENDING
+        ];
+        (new Detail\Core)->updateActivationStatus($merchant, $input, $admin);
+
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+        $this->assertEquals(Detail\Status::ACTIVATED_KYC_PENDING, $merchantDetail->getActivationStatus());
+
+        $input = [
+            'activation_status' => Detail\Status::UNDER_REVIEW
+        ];
+        (new Detail\Core)->updateActivationStatus($merchant, $input, $admin);
+
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+        $this->assertEquals(Detail\Status::UNDER_REVIEW, $merchantDetail->getActivationStatus());
+
+        $merchant = $merchantDetail->merchant;
+
+        $this->assertTrue($merchant->isLive());
+        $this->assertFalse($merchant->getHoldFunds());
+        $this->assertTrue($merchantDetail->isLocked());
+        $this->assertContains('No_doc_partially_activated', $merchant->tagNames());
+    }
+
+    public function testActivatedStateForPartiallyActivatedNoDocMerchant()
+    {
+        $fixtures       = $this->createAndFetchFixtures(Detail\Status::UNDER_REVIEW);
+        $merchantDetail = $fixtures['merchantDetail'];
+        $merchant       = $merchantDetail->merchant;
+        $admin          = $fixtures['admin'];
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $this->fixtures->merchant->addFeatures(['no_doc_onboarding']);
+
+        $input = [
+            'activation_status' => Detail\Status::ACTIVATED_KYC_PENDING
+        ];
+        (new Detail\Core)->updateActivationStatus($merchant, $input, $admin);
+
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+        $this->assertEquals(Detail\Status::ACTIVATED_KYC_PENDING, $merchantDetail->getActivationStatus());
+
+        $input = [
+            'activation_status' => Detail\Status::UNDER_REVIEW
+        ];
+        (new Detail\Core)->updateActivationStatus($merchant, $input, $admin);
+
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+        $this->assertEquals(Detail\Status::UNDER_REVIEW, $merchantDetail->getActivationStatus());
+
+
+        $input = [
+            'activation_status' => Detail\Status::ACTIVATED
+        ];
+        (new Detail\Core)->updateActivationStatus($merchant, $input, $admin);
+
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+        $this->assertEquals(Detail\Status::ACTIVATED, $merchantDetail->getActivationStatus());
+
+        $merchant = $merchantDetail->merchant;
+
+        $this->assertTrue($merchant->isLive());
+        $this->assertFalse($merchant->getHoldFunds());
+        $this->assertTrue($merchantDetail->isLocked());
+        $this->assertContains('No_doc_partially_activated', $merchant->tagNames());
+
+        $isNoDocOnboardingFeatureEnabled = $this->fixtures->merchant->isFeatureEnabled([Feature\Constants::NO_DOC_ONBOARDING], $merchant->getId());
+        $this->assertEquals(false, $isNoDocOnboardingFeatureEnabled);
+    }
+
+    public function testRejectedStateForPartiallyActivatedNoDocMerchant()
+    {
+        $fixtures       = $this->createAndFetchFixtures(Detail\Status::UNDER_REVIEW);
+        $merchantDetail = $fixtures['merchantDetail'];
+        $merchant       = $merchantDetail->merchant;
+        $admin          = $fixtures['admin'];
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $this->fixtures->merchant->addFeatures(['no_doc_onboarding']);
+
+        $input = [
+            'activation_status' => Detail\Status::ACTIVATED_KYC_PENDING
+        ];
+        (new Detail\Core)->updateActivationStatus($merchant, $input, $admin);
+
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+        $this->assertEquals(Detail\Status::ACTIVATED_KYC_PENDING, $merchantDetail->getActivationStatus());
+
+        $input = [
+            'activation_status' => Detail\Status::UNDER_REVIEW
+        ];
+        (new Detail\Core)->updateActivationStatus($merchant, $input, $admin);
+
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+        $this->assertEquals(Detail\Status::UNDER_REVIEW, $merchantDetail->getActivationStatus());
+
+
+        $input = [
+            'activation_status' => Detail\Status::REJECTED
+        ];
+        (new Detail\Core)->updateActivationStatus($merchant, $input, $admin);
+
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+        $this->assertEquals(Detail\Status::REJECTED, $merchantDetail->getActivationStatus());
+
+        $merchant = $merchantDetail->merchant;
+
+        $this->assertFalse($merchant->isLive());
+        $this->assertTrue($merchant->getHoldFunds());
+        $this->assertContains('No_doc_partially_activated', $merchant->tagNames());
+
+        $isNoDocOnboardingFeatureEnabled = $this->fixtures->merchant->isFeatureEnabled([Feature\Constants::NO_DOC_ONBOARDING], $merchant->getId());
+        $this->assertEquals(false, $isNoDocOnboardingFeatureEnabled);
     }
 
     public function testAutoKycHUF()

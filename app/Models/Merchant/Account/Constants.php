@@ -84,6 +84,7 @@ class Constants
 
     // tags
     const NO_DOC_LIMIT_BREACHED = 'no_doc_limit_breached';
+    const NO_DOC_PARTIALLY_ACTIVATED = 'no_doc_partially_activated';
 
     // tags
     const INSTANT_ACTIVATION_SUBM = 'instant_activation_subm';

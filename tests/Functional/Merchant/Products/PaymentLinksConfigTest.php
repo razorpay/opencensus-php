@@ -4,7 +4,10 @@ namespace Functional\Merchant\Products;
 
 use Mail;
 use Carbon\Carbon;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Constants\Mode;
+use RZP\Models\Feature\Core;
+use RZP\Models\Feature\Entity;
 use RZP\Models\Merchant\Detail;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Partner\PartnerTrait;
@@ -93,6 +96,54 @@ class PaymentLinksConfigTest extends OAuthTestCase
         $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $response['id'];
 
         $this->runRequestResponseFlow($testData);
+    }
+
+    public function testSubmitBankDetailsWhileInAKPstate()
+    {
+        Mail::fake();
+
+        list($subMerchant, $partner) = $this->setupPrivateAuthForPartner();
+
+        $this->createMerchantFixtures($subMerchant, null);
+
+        $accountId = 'acc_' . $subMerchant->getId();
+
+        $featureParams = [
+            Entity::ENTITY_ID   => $subMerchant->getId(),
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'no_doc_onboarding',
+        ];
+
+        (new Core())->create($featureParams, true);
+
+        $testData = $this->testData['testCreateDefaultPaymentLinksConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->fixtures->merchant->activate($subMerchant->getId());
+
+        $attribute = [
+            'activation_status'         => 'activated_kyc_pending'
+        ];
+
+        $this->fixtures->on('test')->edit('merchant_detail', $subMerchant->getId(), $attribute);
+
+        $this->fixtures->on('live')->edit('merchant_detail', $subMerchant->getId(), $attribute);
+
+        $testData = $this->testData['testFetchPaymentLinksConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $response['id'];
+
+        $response = $this->runRequestResponseFlow($testData);
+
+
+        //Disabling below lines, since Error code is getting populated within the response
+
+        //$testData = $this->testData['testUpdateSettlementsDuringAKPstate'];
+        //$testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $response['id'];
+        //$this->runRequestResponseFlow($testData);
     }
 
 

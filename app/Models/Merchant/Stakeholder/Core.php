@@ -86,6 +86,8 @@ class Core extends Base\Core
                 $accountV2Validator->validateNeedsClarificationRespondedIfApplicable($merchant, $merchantDetailInput);
             });
 
+            $accountV2Validator->validateOptionalFieldSubmissionInActivatedKycPendingState($merchant, $merchantDetailInput);
+
             if (empty($merchantDetailInput) === false)
             {
                 Tracer::inspan(['name' => HyperTrace::SAVE_MERCHANT_DETAILS], function () use ($merchantDetailCore, $merchantDetailInput, $merchant) {

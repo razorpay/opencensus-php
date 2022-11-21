@@ -1543,6 +1543,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_FILE_ACCESS                                           = 'Invalid file id provided or merchant is unauthorized to access the fileId(s) provided';
     const BAD_REQUEST_ONLY_NEEDS_CLARIFICATION_FIELDS_ARE_ALLOWED                   = 'Only fields requested for needs clarification are allowed for update';
     const BAD_REQUEST_ONLY_NEEDS_CLARIFICATION_DOCUMENTS_ARE_ALLOWED                = 'Only documents requested for needs clarification are allowed for upload';
+    const BAD_REQUEST_ONLY_REMAINING_KYC_FIELDS_ARE_ALLOWED                         = 'You can not update this value as it is already verified.';
     const BAD_REQUEST_MERCHANT_PRODUCT_CONFIG_DOESNT_EXIST                          = 'The provided product config id doesnt exist for the merchant';
 
     const BAD_REQUEST_OFFER_SUBSCRIPTION_NOT_ENABLED                                = 'Offers On Subscription not enabled for the merchant';

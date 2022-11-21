@@ -2,6 +2,9 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Feature\Core;
+use RZP\Models\Feature\Entity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Detail\NeedsClarification\UpdateContextRequirements;
 

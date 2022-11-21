@@ -8381,6 +8381,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const DEDUPE_ES_UPDATE_FAILURE                                    = 'DEDUPE_ES_UPDATE_FAILURE';
 
+    const NO_DOC_MERCHANT_FULLY_ACTIVATED                             = 'NO_DOC_MERCHANT_FULLY_ACTIVATED';
+
+    const NO_DOC_MERCHANT_PARTIALLY_ACTIVATED                         = 'NO_DOC_MERCHANT_PARTIALLY_ACTIVATED';
+
+    const NO_DOC_MERCHANT_REJECTED                                    = 'NO_DOC_MERCHANT_REJECTED';
+
     const NC_INITIATED                                                = 'NC_INITIATED';
 
     const NC_EMAIL_INITIATED                                          = 'NC_EMAIL_INITIATED';

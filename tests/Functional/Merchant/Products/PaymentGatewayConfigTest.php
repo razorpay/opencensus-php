@@ -13,6 +13,7 @@ use RZP\Models\Merchant\Product\Config\DefaultConfigurationHelper;
 use RZP\Models\User\Role;
 use RZP\Models\Feature\Core;
 use RZP\Models\Feature\Entity;
+use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Product;
 use RZP\Models\Merchant\Methods;
 use Illuminate\Http\UploadedFile;
@@ -1910,6 +1911,84 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $stakeholder = $this->getDbEntity('stakeholder',  ['id' => $stakeholderId]);
 
         $this->assertTrue(($stakeholder[Stakeholder\Entity::AADHAAR_LINKED] === 0));
+    }
+
+    public function testNoOptionalRequirementArrivesForPartiallyActivatedNoDocMerchant()
+    {
+        Mail::fake();
+
+        $this->mockTerminalServiceResponse();
+
+        $this->setUpPartnerWithKycHandled();
+
+        $featureParams = [
+            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'subm_no_doc_onboarding',
+        ];
+
+        (new Core())->create($featureParams, true);
+
+        $testData = $this->testData['createUnregisteredBusinessTypeAccountForNoDocWithPan'];
+
+        $testData['request']['content']['no_doc_onboarding'] = true;
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData['testCreateStakeholderForThinRequest'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders';
+
+        $stakeholderResponse = $this->runRequestResponseFlow($testData);
+
+        $stakeholderId = $stakeholderResponse['id'];
+
+        $testData = $this->testData['testUpdateStakeholderDetails'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders/' . $stakeholderId;
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['productConfigCreateForNoDocWithTnc'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $this->storkMock->shouldReceive('optOutForWhatsapp')->once();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+
+        $merchantProductId = $response['id'];
+
+        $testData = $this->testData['testUpdatePaymentGatewayConfigForNoDoc'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testEmptyRequirements'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+
+        $this->runRequestResponseFlow($testData);
+
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+
+        $merchant = $this->getDbEntity('merchant', ['id' => $accountId]);
+
+        $input = [
+            'activation_status' => Detail\Status::ACTIVATED_KYC_PENDING
+        ];
+        (new Detail\Core)->updateActivationStatus($merchant, $input, $merchant);
+
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+        $this->assertEquals(Detail\Status::ACTIVATED_KYC_PENDING, $merchantDetail->getActivationStatus());
+
+        $testData = $this->testData['testEmptyRequirements'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
     }
 }
 

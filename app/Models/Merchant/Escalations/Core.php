@@ -1199,18 +1199,6 @@ class Core extends Base\Core
                     }
                 }
 
-                if ($merchant->isNoDocOnboardingEnabled() === false)
-                {
-                    $this->trace->info(
-                        TraceCode::NO_DOC_ONBOARDING_ESCALATION_SKIPPED,
-                        [
-                            'merchant' => $merchant->getId(),
-                            'reason'   => 'Escalation skipped for merchant since it does not have no_doc_onboarding feature enabled',
-                        ]
-                    );
-                    continue;
-                }
-
                 $merchantDetails = $this->repo->merchant_detail->getByMerchantId($merchant->getId());
 
                 $escalationConfig = $this->getEscalationConfigForNoDocThresholdAndMilestone($merchantDetails, $threshold, $amount, $milestone);

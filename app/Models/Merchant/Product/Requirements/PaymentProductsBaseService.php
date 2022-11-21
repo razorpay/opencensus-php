@@ -216,7 +216,7 @@ class PaymentProductsBaseService extends Base\Service
             }
         }
 
-        if ($merchantDetails->isSubmitted() === false)
+        if ($merchantDetails->isSubmitted() === false or $merchantDetails->getActivationStatus() === Detail\Status::ACTIVATED_KYC_PENDING)
         {
             $verificationResponse = $this->merchantDetailCore->setVerificationDetails($merchantDetails, $merchant, $verificationResponse, true);
 
@@ -509,7 +509,7 @@ class PaymentProductsBaseService extends Base\Service
 
         $requirements = array_merge($requirements, $missingDocumentRequirements, $documentRequirementsFromSubmittedDocuments);
 
-        return [$requirements, $missingOptionalDocumentRequirements];;
+        return [$requirements, $missingOptionalDocumentRequirements];
     }
 
     /**

@@ -855,6 +855,31 @@ return [
         ],
     ],
 
+    'testProvideNotAllowedFieldForNoDocSubmerchantInAKPstate' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}',
+            'method'  => 'PATCH',
+            'content' => [
+                'legal_info' => [
+                    'cin'            => 'U67190TN2014PTC096971'
+                ]
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'You can not update this value as it is already verified.',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ONLY_REMAINING_KYC_FIELDS_ARE_ALLOWED,
+        ],
+    ],
+
     'testEditAccountV2ProfileAddress' => [
         'request'  => [
             'url'     => '/v2/accounts/{accountId}',

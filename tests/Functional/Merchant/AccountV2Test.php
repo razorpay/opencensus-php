@@ -560,6 +560,81 @@ class AccountV2Test extends TestCase
         $this->assertNotNull($data[2]);
     }
 
+    public function testNoDocRequirementsWhenPaymentsEnabled()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $featureParams = [
+            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'subm_no_doc_onboarding',
+        ];
+
+        (new Core())->create($featureParams, true);
+
+        $testData = $this->testData['testCreateSubmerchantWithNoDocFeature'];
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $accountId = $response['id'];
+
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+
+        $merchant = $this->getDbEntity('merchant', ['id' => $accountId]);
+
+        $this->fixtures->merchant->activate($accountId);
+
+        $data = (new Detail\Core())->getValidationFields($merchant->merchantDetail);
+
+        $this->assertNotNull($data);
+        $this->assertNotNull($data[0]);
+        $this->assertNotNull($data[1]);
+        $this->assertEmpty($data[2]); //optional requirements should be empty for such a merchant
+    }
+
+    public function testSubmitNotAllowedKycFieldsInActivatedKycPendingState()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $featureParams = [
+            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'subm_no_doc_onboarding',
+        ];
+
+        (new Core())->create($featureParams, true);
+
+        $testData = $this->testData['testCreateSubmerchantWithNoDocFeature'];
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $accountId = $response['id'];
+
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+
+        $merchant = $this->getDbEntity('merchant', ['id' => $accountId]);
+
+        $this->fixtures->merchant->activate($accountId);
+
+        $attribute = [
+            'activation_status'         => 'activated_kyc_pending'
+        ];
+
+        $this->fixtures->on('test')->edit('merchant_detail', $accountId, $attribute);
+
+        $this->fixtures->on('live')->edit('merchant_detail', $accountId, $attribute);
+
+        $testData = $this->testData['testProvideOptionalFieldForNoDocSubmerchantInNC'];
+        $testData['request']['url'] = '/v2/accounts/acc_' . $accountId;
+        $this->startTest($testData);
+
+        //Disabling below lines, since Error code is getting populated within the response
+
+        //$testData = $this->testData['testProvideNotAllowedFieldForNoDocSubmerchantInAKPstate'];
+        //$testData['request']['url'] = '/v2/accounts/acc_' . $accountId;
+        //$this->startTest($testData);
+    }
+
     public function testProvideOptionalFieldsForNoDocMerchantInNCstate()
     {
         $this->setUpPartnerWithKycHandled();

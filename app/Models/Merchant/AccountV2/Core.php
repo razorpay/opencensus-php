@@ -257,6 +257,8 @@ class Core extends Merchant\Core
             (new Validator())->validateNeedsClarificationRespondedIfApplicable($subMerchant, $detailInput);
         });
 
+        (new Validator())->validateOptionalFieldSubmissionInActivatedKycPendingState($subMerchant, $detailInput);
+
         Tracer::inspan(['name' => HyperTrace::SAVE_MERCHANT_DETAILS], function () use ($merchantDetailsCore, $detailInput, $subMerchant) {
 
             $merchantDetailsCore->saveMerchantDetails($detailInput, $subMerchant);
@@ -332,6 +334,23 @@ class Core extends Merchant\Core
         if (in_array(Constants::NO_DOC_LIMIT_BREACHED, array_map('strtolower', $existingTags)) === false)
         {
             (new Merchant\Core())->appendTag($subMerchant, Constants::NO_DOC_LIMIT_BREACHED);
+        }
+    }
+
+    /**
+     * Add no_doc_partially_activated tag to the sub-merchant when no-doc onboarded merchant reaches activated_kyc_pending state
+     *
+     * @param Merchant\Entity $subMerchant
+     *
+     * @return void
+     */
+    public function addNoDocPartiallyActivatedTag(Merchant\Entity $subMerchant)
+    {
+        $existingTags = $subMerchant->tagNames();
+
+        if (in_array(Constants::NO_DOC_PARTIALLY_ACTIVATED, array_map('strtolower', $existingTags)) === false)
+        {
+            (new Merchant\Core())->appendTag($subMerchant, Constants::NO_DOC_PARTIALLY_ACTIVATED);
         }
     }
 
@@ -578,7 +597,7 @@ class Core extends Merchant\Core
      */
     public function isNoDocEnabledAndGmvLimitExhausted(Merchant\Entity $merchant): bool
     {
-        if($merchant->isNoDocOnboardingEnabled() === false)
+        if($merchant->isNoDocOnboardingFeatureEnabled() === false)
         {
             return false;
         }

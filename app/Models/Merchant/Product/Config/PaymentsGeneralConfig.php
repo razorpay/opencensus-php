@@ -325,6 +325,8 @@ class PaymentsGeneralConfig extends Base\Service
             $accountV2Validator->validateNeedsClarificationRespondedIfApplicable($merchant, $input);
         });
 
+        $accountV2Validator->validateOptionalFieldSubmissionInActivatedKycPendingState($merchant, $input);
+
         $this->merchantDetailCore->saveMerchantDetails($input, $merchant);
 
         $accountCore->updateNCFieldsAcknowledgedIfApplicable($input, $merchant);

@@ -2989,6 +2989,16 @@ class Core extends Base\Core
                 {
                     $this->paymentEnabledEvent($merchant, $oldMerchantDetails, $newMerchantDetails);
                 }
+
+                if($merchant->isNoDocOnboardingFeatureEnabled() === true)
+                {
+                    (new Merchant\AccountV2\Core())->removeNoDocOnboardingFeature($merchantId);
+
+                    $this->trace->info(TraceCode::NO_DOC_MERCHANT_FULLY_ACTIVATED, [
+                        'merchant_id'   => $merchantId,
+                        'step'          => 'No-doc onboarded merchant is fully activated before its Gmv limit breaches'
+                    ]);
+                }
             }
 
             if (($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_MCC_PENDING) and
@@ -3015,6 +3025,14 @@ class Core extends Base\Core
                 $this->storeOnboardingSourceForNoDocMerchants($merchant);
 
                 (new Merchant\Activate)->activate($merchant, false, $shouldSave);
+
+                $merchantDetails->setLocked(false);
+
+                (new Merchant\AccountV2\Core())->addNoDocPartiallyActivatedTag($merchant);
+
+                $this->trace->info(TraceCode::NO_DOC_MERCHANT_PARTIALLY_ACTIVATED, [
+                    'merchant_id'                   => $merchantId
+                ]);
             }
 
             if ($input[Entity::ACTIVATION_STATUS] === Status::REJECTED)
@@ -3049,6 +3067,15 @@ class Core extends Base\Core
 
                 $this->triggerRequestToBvs($merchant, Status::REJECTED, $rejectionReasons);
 
+                if($merchant->isNoDocOnboardingFeatureEnabled() === true)
+                {
+                    (new Merchant\AccountV2\Core())->removeNoDocOnboardingFeature($merchantId);
+
+                    $this->trace->info(TraceCode::NO_DOC_MERCHANT_REJECTED, [
+                        'merchant_id'                   => $merchantId,
+                        'step'          => 'No-doc onboarded merchant is marked rejected before its Gmv limit breaches'
+                    ]);
+                }
             }
 
             if ($input[Entity::ACTIVATION_STATUS] === Status::NEEDS_CLARIFICATION)

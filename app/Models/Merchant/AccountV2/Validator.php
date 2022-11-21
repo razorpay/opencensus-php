@@ -374,6 +374,41 @@ class Validator extends Merchant\Validator
         }
     }
 
+    /**
+     * This function restricts merchant to provide only specific optional fields while in 'activated_kyc_pending' state.
+     * Once a merchant reaches this state, we will only allow specific optional fields to be submitted via Onboarding APIs.
+     * Note: This validation currently exists within onboarding APIs itself. We currently don't have checks to restrict a merchant on other platforms like dashboard, apps etc.
+     *
+     * @param Merchant\Entity $merchant
+     * @param array $input
+     * @return void
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateOptionalFieldSubmissionInActivatedKycPendingState(Merchant\Entity $merchant, array $input)
+    {
+        $merchantDetails = $merchant->merchantDetail;
+
+        if (empty($merchantDetails) === true || $merchantDetails->getActivationStatus() !== Detail\Status::ACTIVATED_KYC_PENDING)
+        {
+            return;
+        }
+
+        $noDocValidationFields = ValidationFields::getOptionalFieldsForNoDocOnboarding($merchantDetails->getBusinessType());
+
+        $extraFields = array_diff_key($input, array_flip($noDocValidationFields));
+
+        if (count($extraFields) > 0)
+        {
+            $tracePayload = [
+                'provided_fields'          => $input,
+                'accepted_optional_fields' => $noDocValidationFields
+            ];
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ONLY_REMAINING_KYC_FIELDS_ARE_ALLOWED, null, $tracePayload);
+        }
+    }
+
     protected function validateState(string $attribute, string $value)
     {
         //check if a valid state code exists for the input
