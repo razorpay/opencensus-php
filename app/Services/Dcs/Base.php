@@ -96,6 +96,7 @@ class Base
         $config->setServerURL($this->config[$mode]['url'])
             ->setMock($this->config['mock'])
             ->setUserCreds($creds);
+        $config->setMode($mode);
 
         $this->client[$mode] = new Client($config);
     }

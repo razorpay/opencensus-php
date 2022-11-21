@@ -3,18 +3,21 @@
 
 namespace RZP\Services\Dcs;
 
-
-
+use App;
 use Razorpay\Dcs\CacheInterface;
-use Razorpay\Trace\Facades\Trace;
+use RZP\Trace\TraceCode;
 
 class Cache implements CacheInterface
 {
     private $cache;
+    private $app;
+    private $trace;
 
     public function __construct()
     {
-        $this->cache = $this->getCache();
+        $this->app = App::getFacadeRoot();
+        $this->cache = $this->app['cache'];
+        $this->trace = $this->app['trace'];
     }
 
     /**
@@ -27,8 +30,11 @@ class Cache implements CacheInterface
         $message = [
             'action' => 'cache_get',
             'key'    => $key,
-            'value'  => $value,
-        ];
+           ];
+
+        $this->trace->info(
+            TraceCode::REDIS_KEY_FETCH, $message
+        );
 
         return $value;
     }
@@ -49,21 +55,14 @@ class Cache implements CacheInterface
         $message = [
             'action' => 'cache_set',
             'key'    => $key,
-            'value'  => $value,
             'ttl'    => $ttl,
         ];
 
-        $this->cache->put($key, $value, $ttl);
-    }
+        $this->trace->info(
+            TraceCode::REDIS_KEY_SET, $message
+        );
 
-    /**
-     * Returns the configured Laravel Cache Store
-     *
-     * @return mixed
-     */
-    protected function getCache()
-    {
-        return app('cache')->store('file');
+        $this->cache->put($key, $value, $ttl);
     }
 }
 

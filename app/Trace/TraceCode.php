@@ -166,10 +166,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const UTM_PARAMS                                            = 'UTM_PARAMS';
     const RZP_UTM                                               = 'RZP_UTM';
     // DCS Traces
-    const DCS_ASSIGN_REQUEST_RECEIVED                           = 'DCS_ASSIGN_REQUEST_RECEIVED';
-    const DCS_REMOVE_REQUEST_RECEIVED                           = 'DCS_REMOVE_REQUEST_RECEIVED';
+    const DCS_EXTERNAL_REQUEST_RECEIVED                         = 'DCS_EXTERNAL_REQUEST_RECEIVED';
+    const DCS_EXTERNAL_RESPONSE_RECEIVED                        = 'DCS_EXTERNAL_RESPONSE_RECEIVED';
+    const DCS_EXTERNAL_REQUEST_FAILED                           = 'DCS_EXTERNAL_REQUEST_FAILED';
+    const DCS_SERVICE_REQUEST                                   = 'DCS_SERVICE_REQUEST';
+    const DCS_SERVICE_SUCCESSFUL_RESPONSE                       = 'DCS_SERVICE_SUCCESSFUL_RESPONSE';
     const DCS_FETCH_REQUEST_RECEIVED                            = 'DCS_FETCH_REQUEST_RECEIVED';
-    const SERVER_ERROR_DCS_SERVICE_FAILURE                      = "SERVER_ERROR_DCS_SERVICE_FAILURE";
+    const DCS_FETCH_RESPONSE_RECEIVED                           = 'DCS_FETCH_REQUEST_RECEIVED';
+    const SERVER_ERROR_DCS_SERVICE_FAILURE                      = 'SERVER_ERROR_DCS_SERVICE_FAILURE';
     const DCS_SERVICE_RETRY                                     = 'DCS_SERVICE_RETRY';
     const DCS_RAZORX_EXPERIMENT                                 = 'DCS_RAZORX_EXPERIMENT';
 

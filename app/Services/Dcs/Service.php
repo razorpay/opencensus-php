@@ -44,13 +44,14 @@ class Service extends Base
 
         if($this->isDCSNewFeature($entity->getName()) === true)
         {
-            $this->handleNewFeatures($entity, true, $mode);
-            return;
+           $this->handleNewFeatures($entity, true, $mode);
+           return;
         }
 
-        $this->trace->info(TraceCode::DCS_ASSIGN_REQUEST_RECEIVED, [
-            'feature_name' => $entity->getName(),
-            'request_data' => $data,
+        $this->trace->info(TraceCode::DCS_SERVICE_REQUEST, [
+            'action'      => 'assign',
+            'featureName' => $entity->getName(),
+            'requestData' => $data,
             'key' => $key,
             'mode' => $mode,
         ]);
@@ -61,7 +62,15 @@ class Service extends Base
 
         $value = $features->serializeToString();
 
-        $this->patch($data, $entity->getEntityId(), base64_encode($value), $entity->getName(), $mode);
+        $res = $this->patch($data, $entity->getEntityId(), base64_encode($value), $entity->getName(), $mode);
+
+        $this->trace->info(TraceCode::DCS_SERVICE_SUCCESSFUL_RESPONSE, [
+            'action'      => 'assign',
+            'responseEntityId' => $res->getKey()->getEntityId(),
+            'featureName' => $entity->getName(),
+            'success' => true,
+            'mode' => $mode,
+        ]);
     }
 
     /**
@@ -76,19 +85,19 @@ class Service extends Base
         $key = Constants::$featureToDCSKeyMapping[$entity->getName()];
         $data = $this->toKeyMap($key);
 
-        $this->trace->info(TraceCode::DCS_REMOVE_REQUEST_RECEIVED, [
-            'feature_name' => $entity->getName(),
-            'request_data' => $data,
-            'id' =>  $entity->getEntityId(),
-            'key' => $key,
-            'mode' => $mode,
-        ]);
-
         if($this->isDCSNewFeature($entity->getName()) === true)
         {
             $this->handleNewFeatures($entity, false, $mode);
             return;
         }
+
+        $this->trace->info(TraceCode::DCS_SERVICE_REQUEST, [
+            'action'      => 'remove',
+            'featureName' => $entity->getName(),
+            'requestData' => $data,
+            'key' => $key,
+            'mode' => $mode,
+        ]);
 
         $features = new Constants::$featureToDCSClass[$entity->getName()](
             [$entity->getName() => !FeatureConstants::$featureValueMap[$entity->getName()]]
@@ -96,7 +105,15 @@ class Service extends Base
 
         $value = $features->serializeToString();
 
-        $this->patch($data, $entity->getEntityId(), base64_encode($value), $entity->getName(), $mode);
+        $res = $this->patch($data, $entity->getEntityId(), base64_encode($value), $entity->getName(), $mode);
+
+        $this->trace->info(TraceCode::DCS_SERVICE_SUCCESSFUL_RESPONSE, [
+            'action'      => 'assign',
+            'responseEntityId' => $res->getKey()->getEntityId(),
+            'featureName' => $entity->getName(),
+            'success' => true,
+            'mode' => $mode,
+        ]);
     }
 
     /**
@@ -340,8 +357,8 @@ class Service extends Base
       return $data;
     }
 
-    public function isDcsEnabled($featureName){
-        $mode = $this->app['rzp.mode'] ?? 'live';
+    public function isDcsEnabled($featureName, $mode){
+        $mode = $mode ?? 'live';
         $flag = $this->app['razorx']->getTreatment($featureName,
             RazorxTreatment::DCS_ENABLED,
             $mode);
@@ -367,27 +384,52 @@ class Service extends Base
         $key = Constants::$featureToDCSKeyMapping[$entity->getName()];
         $data = $this->toKeyMap($key);
 
-        $this->trace->info(TraceCode::DCS_ASSIGN_REQUEST_RECEIVED, [
-            'feature_name' => $entity->getName(),
-            'request_data' => $data,
+        $this->trace->info(TraceCode::DCS_EXTERNAL_REQUEST_RECEIVED, [
+            'featureName' => $entity->getName(),
+            'entityID'  => $entity->getEntityId(),
+            'entityType' => $entity->getEntity(),
+            'requestData' => $data,
             'key' => $key,
+            'value' => $value,
             'mode' => $mode,
-            'new_usecase' => true
+            'newUseCase' => true
         ]);
 
         $svc = new ExternalService\Service($this->app);
+
         $req = $svc->buildExternalRequest($key, $entity->getEntityId(), $entity->getName(), $value, $mode);
+
         $svcName = Constants::$newDcsFeaturesAndServiceMapping[$entity->getName()];
+
         $res = $svc->action($svcName, $req, $mode);
-        $this->handleResponse($res);
+
+        $this->trace->info(TraceCode::DCS_EXTERNAL_RESPONSE_RECEIVED, [
+            'featureName' => $entity->getName(),
+            'entityID'  => $entity->getEntityId(),
+            'entityType' => $entity->getEntity(),
+            'requestData' => $data,
+            'key' => $key,
+            'value' => $value,
+            'response' => $res,
+            'mode' => $mode,
+            'newUseCase' => true
+        ]);
+       return $this->handleResponse($res);
     }
 
     public function handleResponse($response) {
-        if ($response['success'] !== true) {
+        if (key_exists('success', $response) === false || $response['success'] !== true)
+        {
+            $this->trace->info(TraceCode::DCS_EXTERNAL_RESPONSE_RECEIVED,
+                [
+                    'response' => $response,
+                    'successKeyExists' => key_exists('success', $response),
+                ]);
+
             $description = ($response['error'] !== null && $response['error']['description'] !== null) ?
                 $response['error']['description']: "Error in DCS Client Service Request";
             $ex = new Exception\ServerErrorException($description,
-                'SERVER_ERROR_DCS_SERVICE_FAILURE',
+                'SERVER_ERROR_EXTERNAL_SERVICE_FAILURE',
                 "failure response from external service");
 
             $this->trace->traceException($ex);

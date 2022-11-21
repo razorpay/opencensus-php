@@ -52,7 +52,8 @@ class Service
             'method'  => 'POST',
             'content' => $input,
             'headers' => [
-                'task_id'       => $this->app['request']->getTaskId(),
+                'Accept'            => 'application/json',
+                'X-Razorpay-TaskId'       => $this->app['request']->getTaskId(),
                 'request_id'    => $this->app['request']->getId(),
                 'Content-Type' => 'application/json'
             ],
