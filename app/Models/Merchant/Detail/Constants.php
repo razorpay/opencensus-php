@@ -273,6 +273,8 @@ class Constants
 
     const L1_SUBMISSION = 'L1';
     const L2_SUBMISSION = 'L2';
+    const X_SUBMISSION  = 'X';
+    const RX            = 'rx';
 
     const INITIATED         = 'initiated';
     const DUMMY_REQUEST_ID  = 'KdsshbadDzab81';
@@ -602,6 +604,25 @@ class Constants
         Entity::CREATED_AT,
         Entity::UPDATED_AT,
         Entity::ARCHIVED_AT
+    ];
+
+    const CA_PAGES = [
+        'razorpay.com/x/current-accounts/',
+        'razorpay.com/x/',
+        'razorpay.com/x/payout-links/',
+        'razorpay.com/x/tax-payments/',
+        'razorpay.com/x/mobile-app/',
+        'razorpay.com/x/accounting-payouts/',
+        'razorpay.com/x/accounting-payouts/quickbooks/',
+        'razorpay.com/x/accounting-payouts/tally-payouts/',
+        'razorpay.com/docs/x/',
+        'razorpay.com/blog/category/business-banking/',
+        'razorpay.com/x/tds-online-payment/',
+        'razorpay.com/watch-banking/',
+        'razorpay.com/current-account-for-startups/',
+        'razorpay.com/x/neobank-report-for-smes-in-india/',
+        'razorpay.com/x/for-yc-startups/',
+        'razorpay.com/demo/'
     ];
 }
 

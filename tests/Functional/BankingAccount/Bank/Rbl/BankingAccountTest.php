@@ -1226,8 +1226,6 @@ class BankingAccountTest extends TestCase
 
     public function testSuccessRblCoCreatedLeadCreation()
     {
-        $this->mockBvsService();
-
         $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
@@ -1299,8 +1297,6 @@ class BankingAccountTest extends TestCase
 
     public function testGetRblCoCreatedLeadsAfterCreation()
     {
-        $this->mockBvsService();
-
         $response = $this->testSuccessRblCoCreatedLeadCreation();
 
         $this->ba->adminAuth();
@@ -1311,8 +1307,6 @@ class BankingAccountTest extends TestCase
 
     public function testAdminResetPasswordOnSuccessRblCoCreatedLeadCreation()
     {
-        $this->mockBvsService();
-
         $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
@@ -1391,8 +1385,6 @@ class BankingAccountTest extends TestCase
 
     public function testDuplicateRblCoCreatedLeadCreation()
     {
-        $this->mockBvsService();
-
         $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
 
         $request  = [
@@ -1424,8 +1416,6 @@ class BankingAccountTest extends TestCase
 
     public function testSuccessLeadCreationAndWebhookForAccountOpening()
     {
-        $this->mockBvsService();
-
         $request  = [
             'url'     => '/banking_accounts/rbl/lead',
             'method'  => 'POST',

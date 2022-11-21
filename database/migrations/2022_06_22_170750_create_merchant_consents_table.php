@@ -44,7 +44,8 @@ class CreateMerchantConsentsTable extends Migration
 
             $table->index(Entity::STATUS);
 
-            $table->integer(Entity::RETRY_COUNT);
+            $table->integer(Entity::RETRY_COUNT)
+                  ->default(0);
 
             $table->index(Entity::CREATED_AT);
 

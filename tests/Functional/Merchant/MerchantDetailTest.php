@@ -62,6 +62,8 @@ use RZP\Models\Merchant\Document\Entity as MerchantDocuments;
 use RZP\Models\Workflow\Action\Repository as ActionRepository;
 use RZP\Mail\Merchant\RazorpayX\AccountActivationConfirmation;
 use RZP\Models\Admin\Permission\Repository as PermissionRepository;
+use RZP\Models\Merchant\Consent\Repository as MerchantConsentRepository;
+use RZP\Models\Merchant\Consent\Details\Repository as MerchantConsentDetailsRepo;
 
 
 class MerchantDetailTest extends OAuthTestCase
@@ -1708,13 +1710,13 @@ We look forward to transacting with you!
                     ->method($methodName);
     }
 
-    public function testPutPreSignupDetails()
+    public function testPutPreSignupDetails($dataToReplace = [])
     {
         $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
 
         $this->verifyOnboardingEvent('banking');
 
-        $merchantDetail = $this->fixtures->create('merchant_detail', [Entity::CONTACT_MOBILE => '1234567890']);
+        $merchantDetail = $this->fixtures->create('merchant_detail', [Entity::CONTACT_MOBILE => '1234567890', 'merchant_id' => self::DEFAULT_MERCHANT_ID]);
 
         $this->mockBvsService();
 
@@ -1753,7 +1755,32 @@ We look forward to transacting with you!
                  })
                  ->andReturnNull();
 
-        $this->startTest();
+        $this->startTest($dataToReplace);
+
+        $merchantConsents = (new MerchantConsentRepository())->getConsentDetailsForMerchantIdAndConsentFor($merchantDetail['merchant_id'], ['X_Terms of Use']);
+
+        $termsDetails = (new MerchantConsentDetailsRepo())->getById($merchantConsents->getDetailsId());
+
+        $expectedTerms = empty($dataToReplace) ? 'https://razorpay.com/x/terms/' : 'https://razorpay.com/x/terms/razorpayx/';
+
+        $this->assertEquals($expectedTerms, $termsDetails->getURL());
+
+        $this->assertEquals(\RZP\Models\Merchant\Consent\Constants::INITIATED, $merchantConsents->getStatus());
+    }
+
+    public function testPutPreSignupDetailsWithUtmParams()
+    {
+        $dataToReplace = [
+            'request' => [
+                'cookies' => [
+                    'rzp_utm' => json_encode([
+                        'website' => 'razorpay.com/x/current-accounts/'
+                    ])
+                ]
+            ]
+        ];
+
+        $this->testPutPreSignupDetails($dataToReplace);
     }
 
     public function testPutPreSignupDetailsForNeostone()
@@ -2268,8 +2295,6 @@ We look forward to transacting with you!
 
     public function testPutPreSignupDetailsForUnregisteredBusiness()
     {
-        $this->mockBvsService();
-
         $this->verifyOnboardingEvent('primary');
 
         $merchantDetail = $this->fixtures->create('merchant_detail', [
@@ -2302,8 +2327,6 @@ We look forward to transacting with you!
 
     public function testPutPreSignupDetailsWithCouponCode()
     {
-        $this->mockBvsService();
-
         $this->ba->adminAuth();
 
         $promotion = $this->fixtures->on('live')->create('promotion:onetime');
@@ -2431,6 +2454,23 @@ We look forward to transacting with you!
             ->toArray();
 
         $this->assertSame(1, $merchantPromotion['remaining_iterations']);
+    }
+
+    public function testFetchMerchantConsents()
+    {
+        $this->testPutPreSignupDetails();
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/merchant/consents/'. self::DEFAULT_MERCHANT_ID,
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $response = $this->startTest($dataToReplace);
+
+        $this->assertCount(2, $response);
     }
 
     public function testBulkAssignReviewer()
@@ -3102,8 +3142,6 @@ Team Razorpay', '1234567890');
 
     public function testPutPreSignUpDetailsWithReferralCode()
     {
-        $this->mockBvsService();
-
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
 
         $this->fixtures->merchant->create(['id' => self::DEFAULT_SUBMERCHANT_ID]);
@@ -3265,6 +3303,8 @@ Team Razorpay', '1234567890');
 
         $this->fixtures->merchant->create(['id' => self::DEFAULT_SUBMERCHANT_ID]);
 
+        $this->fixtures->user->createBankingUserForMerchant(self::DEFAULT_SUBMERCHANT_ID, [], 'owner', 'live');
+
         $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller']);
 
         $this->fixtures->create('pricing:two_percent_pricing_plan', [
@@ -3305,8 +3345,6 @@ Team Razorpay', '1234567890');
 
     public function testPutPreSignUpDetailsWithPrimaryReferralCodeInXForAggregator()
     {
-        $this->mockBvsService();
-
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'aggregator']);
 
         $this->fixtures->merchant->create(['id' => self::DEFAULT_SUBMERCHANT_ID]);
@@ -3349,8 +3387,6 @@ Team Razorpay', '1234567890');
 
     public function testPutPreSignUpDetailsWithReferralCodeForAggregator()
     {
-        $this->mockBvsService();
-
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'aggregator']);
 
         $this->fixtures->merchant->create(['id' => self::DEFAULT_SUBMERCHANT_ID]);
@@ -3478,8 +3514,6 @@ Team Razorpay', '1234567890');
 
     public function testPutPreSignUpDetailsWithInvalidReferralCode()
     {
-        $this->mockBvsService();
-
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
 
         $this->fixtures->merchant->create(['id' => self::DEFAULT_SUBMERCHANT_ID]);
@@ -5379,8 +5413,6 @@ Team Razorpay',
 
     public function testRequestOriginInHubspotPreSignupDetailsForPrimary()
     {
-        $this->mockBvsService();
-
         $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = 'https://dashboard.razorpay.com';
 
         $param  = ["product_type" => "primary"];
@@ -7491,8 +7523,6 @@ We look forward to transacting with you!
 
     public function testPutPresignupDetailsWithContactMobileExistsUniquenessExperimentOff()
     {
-        $this->mockBvsService();
-
         $this->enableRazorXTreatmentForUniqueMobile('anything');
 
         $merchant = $this->fixtures->create('merchant', ['signup_via_email' => 1]);

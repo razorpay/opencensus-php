@@ -416,13 +416,13 @@ class Service extends Base\Service
 
                             $merchantConsentDetail = $this->repo->merchant_consents->fetchMerchantConsentDetails($merchantId, $type);
 
-                            $input = [
+                            $updateInput = [
                                 'status'     => ConsentConstant::INITIATED,
                                 'updated_at' => Carbon::now()->getTimestamp(),
                                 'request_id' => $responseData['id']
                             ];
 
-                            (new ConsentCore())->updateConsentDetails($merchantConsentDetail, $input);
+                            (new ConsentCore())->updateConsentDetails($merchantConsentDetail, $updateInput);
                         }
 
                     }
@@ -1766,7 +1766,7 @@ class Service extends Base\Service
             }
         });
 
-        $this->createLegalDocumentsForBanking();
+        $this->createLegalDocumentsForBanking($merchant);
 
         return $this->getPreSignupDetails();
     }
@@ -3291,9 +3291,9 @@ class Service extends Base\Service
         return true;
     }
 
-    public function checkIfConsentsPresent($merchantId)
+    public function checkIfConsentsPresent($merchantId, $validDocTypes = ConsentConstant::VALID_LEGAL_DOC)
     {
-        $consentDetails = $this->repo->merchant_consents->getConsentDetailsForMerchantIdAndConsentFor($merchantId, ConsentConstant::VALID_LEGAL_DOC);
+        $consentDetails = $this->repo->merchant_consents->getConsentDetailsForMerchantIdAndConsentFor($merchantId, $validDocTypes);
 
         if($consentDetails === null)
         {
@@ -3420,7 +3420,7 @@ class Service extends Base\Service
     private function get_match($content)
     {
         //Regex statement to fetch main body
-        if (preg_match('/<main>(.*?)<\/main>/s', $content,$matches))
+        if (preg_match('/<main(.*?)>(.*?)<\/main>/s', $content,$matches))
         {
             $content_body = $matches[0];
 
@@ -3433,28 +3433,67 @@ class Service extends Base\Service
         }
     }
 
-    protected function createLegalDocumentsForBanking()
+    protected function createLegalDocumentsForBanking(Merchant\Entity $merchant)
     {
+        if ($this->app['basicauth']->getRequestOriginProduct() !== ProductType::BANKING
+            or $this->app['request']->header(RequestHeader::X_DASHBOARD_USER_ID) === null)
+        {
+            // Don't proceed further if product is not 'banking' or user_id is not sent in request
+            // user_id presence is checked since pre_signup is called internally in flows where user_id is not passed
+            // and in these flows, we don't want merchant_consents & legal documents creation.
+
+            $this->trace->info(TraceCode::USER_HEADER_MISSING, [
+                Constants::MERCHANT_ID => $merchant->getId(),
+                'method'               => 'createLegalDocumentsForBanking',
+            ]);
+
+            return;
+        }
+
+        $input = [
+            Entity::ACTIVATION_FORM_MILESTONE => DEConstants::X_SUBMISSION,
+            DEConstants::DOCUMENTS_DETAIL => [
+                  [
+                      DEConstants::TYPE => Constants::PRIVACY_POLICY,
+                      DEConstants::URL  => Constants::RAZORPAY_PRIVACY_POLICY_URL
+                  ],
+                  [
+                      DEConstants::TYPE => Constants::TERMS_OF_USE,
+                      DEConstants::URL  => $this->getTermsOfUsePage(),
+                  ]
+            ]
+        ];
+
+        $documentsDetail = $this->getDocumentsDetails($input);
+
+        // Sends Legal documents to BVS & creates merchant_consents
+        // Merchant_consents should be created in 'Pending' state. If BVS call succeeds, we update status of this record.
+        $this->storeConsents($merchant->getId(), $input);
+
+        // Surrounding this with a try-catch to prevent failure of pre_signup due to any BVS related issue
         try
         {
-            if ($this->app['basicauth']->getRequestOriginProduct() === ProductType::BANKING)
+            $processor = (new ProcessorFactory())->getLegalDocumentProcessor();
+
+            $response = $processor->processLegalDocuments($documentsDetail, DEConstants::RX);
+
+            $responseData = $response->getResponseData();
+
+            foreach ($documentsDetail as $documentDetailInput)
             {
-                // Sends Legal documents to BVS
-                // Surrounding this with a try-catch to prevent failure of pre_signup due to any BVS related issue
-                $documents_detail = $this->getDocumentsDetails([
-                                                                   DEConstants::DOCUMENTS_DETAIL => [
-                                                                       [
-                                                                           DEConstants::TYPE => Constants::PRIVACY_POLICY,
-                                                                           DEConstants::URL  => Constants::RAZORPAY_PRIVACY_POLICY_URL
-                                                                       ]
-                                                                   ]
-                                                               ]);
+                $type = DEConstants::X_SUBMISSION.'_'.$documentDetailInput['type'] ;
 
-                $processor = (new ProcessorFactory())->getLegalDocumentProcessor();
+                $merchantConsentDetail = $this->repo->merchant_consents->fetchMerchantConsentDetails($merchant->getId(), $type);
 
-                $processor->processLegalDocuments($documents_detail, 'rx');
+                $input = [
+                    'status'     => ConsentConstant::INITIATED,
+                    'updated_at' => Carbon::now()->getTimestamp(),
+                    'request_id' => $responseData['id']
+                ];
 
+                (new ConsentCore())->updateConsentDetails($merchantConsentDetail, $input);
             }
+
         }
         catch(Throwable $e)
         {
@@ -3463,6 +3502,33 @@ class Service extends Base\Service
                 Trace::ERROR,
                 TraceCode::BVS_CREATE_LEGAL_DOCUMENTS_FAILED);
         }
+    }
+
+    protected function getTermsOfUsePage(): string
+    {
+        $cookieValue = trim(\Cookie::get('rzp_utm'), '"');
+
+        $utmParams = json_decode($cookieValue, true);
+
+        $website = $utmParams[Constants::WEBSITE] ?? '';
+
+        $isCaPage = false;
+
+        foreach (DEConstants::CA_PAGES as $caPage)
+        {
+            if($website === $caPage)
+            {
+                $isCaPage = true;
+                break;
+            }
+        }
+
+        if ($isCaPage)
+        {
+            return Constants::RAZORPAY_CA_TERMS_OF_USE;
+        }
+
+        return Constants::RAZORPAY_TERMS_OF_USE;
     }
 
     /**

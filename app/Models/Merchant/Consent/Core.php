@@ -190,14 +190,20 @@ class Core extends Base\Core
      */
     public function getMerchantConsents($merchantId)
     {
+        $detailService = new DetailService();
+
+        $l2Consents = $detailService->checkIfConsentsPresent($merchantId) ? $this->processAndGetConsents($merchantId, Constants::PG) : [];
+
+        $xConsents = $detailService->checkIfConsentsPresent($merchantId, ConsentConstant::VALID_LEGAL_DOC_FOR_X) ? $this->processAndGetConsents($merchantId, Constants::RX) : [];
+
+        return array_merge($l2Consents, $xConsents);
+    }
+
+    protected function processAndGetConsents($merchantId, $platform)
+    {
         $responseData = [];
 
-        if ((new DetailService())->checkIfConsentsPresent($merchantId) === false)
-        {
-            return $responseData;
-        }
-
-        $bvsResponse = $this->callBVSToGetLegalDocumentsByOwnerId($merchantId);
+        $bvsResponse = $this->callBVSToGetLegalDocumentsByOwnerId($merchantId, $platform);
 
         $bvsResponseData = $bvsResponse->getResponseData();
 
@@ -224,22 +230,23 @@ class Core extends Base\Core
         }
 
         return $responseData;
-
     }
 
     /**
      * @param string $merchantId
+     * @param string $platform
      *
      * @return
      */
-    private function callBVSToGetLegalDocumentsByOwnerId($merchantId)
+    private function callBVSToGetLegalDocumentsByOwnerId($merchantId, $platform)
     {
+
         $requestBody = [
-            "platform" => 'pg',
-            "owner_id" => $merchantId
+            "platform"                      => $platform,
+            "owner_id"                      => $merchantId
         ];
 
-        $response = (new BvsClient\BvsLegalDocumentManagerClient($this->merchant))->getLegalDocumentsByOwnerId($requestBody);
+        $response = app('bvs_legal_document_manager')->getLegalDocumentsByOwnerId($requestBody);
 
         return new FetchLegalDocumentBaseResponse($response);
     }

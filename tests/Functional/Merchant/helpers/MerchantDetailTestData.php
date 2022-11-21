@@ -1605,6 +1605,17 @@ return [
         ],
     ],
 
+    'testFetchMerchantConsents' => [
+        'request' => [
+            'url'    => '/merchant/consents',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ]
+    ],
+
     'testBulkAssignReviewer' => [
         'request' => [
             'content' => [

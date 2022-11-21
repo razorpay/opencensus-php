@@ -178,6 +178,8 @@ final class Constants
     const TRANSACTION_TYPE_DOMESTIC                     = 'domestic';
 
     const RAZORPAY_PRIVACY_POLICY_URL                   = 'https://razorpay.com/privacy/';
+    const RAZORPAY_CA_TERMS_OF_USE                      = 'https://razorpay.com/x/terms/razorpayx/';
+    const RAZORPAY_TERMS_OF_USE                         = 'https://razorpay.com/x/terms/';
 
     const INCREASE_TRANSACTION_LIMIT_POST_WORKFLOW_APPROVE          = 'RZP\Http\Controllers\MerchantController@postTransactionLimitWorkflowApprove';
 
@@ -1080,6 +1082,7 @@ final class Constants
     const PRICING_POLICY    = 'Pricing Policy';
     const TERMS             = 'Terms & Conditions';
     const PRIVACY_POLICY    = 'Privacy Policy';
+    const TERMS_OF_USE      = 'Terms of Use';
     const WEBSITEDETAILS    = 'Website Details';
     const REFUND_POLICY     = 'Refund Policy';
     const CANCELLATION_POLICY   = 'Cancellation Policy';

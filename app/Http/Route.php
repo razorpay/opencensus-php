@@ -4184,7 +4184,8 @@ class Route
         'mob_ca_lms_routes',
         'mob_admin_routes',
         'merchant_create_lead_to_salesforce_admin',
-        'salesforce_event_admin'
+        'salesforce_event_admin',
+        'merchant_consents_admin_fetch'
     ];
 
     /**

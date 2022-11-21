@@ -18,6 +18,11 @@ class Constants
     const PRIVACY     = 'privacy';
     const SHIPPING    = 'shipping';
     const IP_ADDRESS  = 'ip_address';
+    const PG          = 'pg';
+    const RX          = 'rx';
+
+    CONST X_SUBMISSION  = 'X';
+    const L2_SUBMISSION = 'L2';
 
     //STATUS
     const PENDING   = 'pending';
@@ -29,7 +34,6 @@ class Constants
     const STORE_CONSENTS_ATTEMPT_COUNT_REDIS_KEY_PREFIX = 'store_consents_attempt_count';
     const STORE_CONSENTS_MAX_ATTEMPT                    = 3;
     const STORE_DOCUMENTS_ATTEMPT_COUNT                 = 'store_documents_attempt_count';
-    const L2_SUBMISSION                                 = 'L2';
 
     const MERCHANT_MUTEX_LOCK_TIMEOUT                 = '60';
     const MERCHANT_MUTEX_RETRY_COUNT                  = '2';
@@ -38,6 +42,11 @@ class Constants
         'L2_Terms and Conditions',
         'L2_Service Agreement',
         'L2_Privacy Policy'
+    ];
+
+    const VALID_LEGAL_DOC_FOR_X = [
+        'X_Privacy Policy',
+        'X_Terms of Use'
     ];
 
     const DEFAULT_LAST_CRON_SUB_DAYS  = 30;

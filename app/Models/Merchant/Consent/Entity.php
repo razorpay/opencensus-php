@@ -75,10 +75,19 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::CONSENT_FOR);
     }
+    public function getDetailsId()
+    {
+        return $this->getAttribute(self::DETAILS_ID);
+    }
 
     public function getRetryCount()
     {
         return $this->getAttribute(self::RETRY_COUNT);
+    }
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
     }
 
     public function setUserId($userId)

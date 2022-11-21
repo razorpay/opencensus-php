@@ -19,4 +19,12 @@ class Repository extends Base\Repository
                     ->first();
 
     }
+
+    public function getById(string $id)
+    {
+        return $this->newQuery()
+            ->where(Entity::ID, '=', $id)
+            ->orderBy(Entity::CREATED_AT, 'desc')
+            ->firstOrFail();
+    }
 }
