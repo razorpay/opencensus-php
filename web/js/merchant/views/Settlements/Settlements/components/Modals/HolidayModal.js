@@ -29,10 +29,8 @@ class HolidayModal extends Component {
   }
 }
 
-const mapStateToProps = (state) => state.settlement;
-
 const mapDispatchToProps = (dispatch) => {
   return bindActionCreators({ fetchBreakupDetails, ...ModalActions }, dispatch);
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(HolidayModal);
+export default connect(null, mapDispatchToProps)(HolidayModal);

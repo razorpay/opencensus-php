@@ -176,8 +176,8 @@ const holidaysList = {
       description: 'Chhatrapati Shivaji Maharaj Jayanti',
     },
     {
-      date: '25/12/2022',
-      description: 'Christmas',
+      date: '01/03/2022',
+      description: 'Mahashivratri',
     },
   ],
 };

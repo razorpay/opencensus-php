@@ -88,7 +88,7 @@ class SettlementSchedule extends Component {
 
     this.props.openModal({
       size: 'small',
-      component: <HolidayModal data={this.props.holidayList} />,
+      component: <HolidayModal holidayList={this.props.holidayList} />,
     });
 
     window.rzpAnalytics?.({

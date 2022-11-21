@@ -49,7 +49,7 @@ const SettlementTimeline = ({
   const viewHolidayList = () => {
     openModal({
       size: 'small',
-      component: <HolidayModal data={holidayList} />,
+      component: <HolidayModal holidayList={holidayList} />,
     });
   };
   const trackEvent = () => {

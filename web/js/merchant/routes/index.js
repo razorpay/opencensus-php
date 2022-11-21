@@ -8,12 +8,6 @@ import { isMobileResolution } from 'common/utils/rzp-utils';
 
 import lazy from './LazyLoader';
 
-const SettlementDetails = lazy(() =>
-  import(
-    /* webpackChunkName: "SettlementsDetails" */ 'merchant/views/Settlements/Settlements/Details'
-  ),
-);
-
 const InstantSettlementDetails = lazy(() =>
   import(
     /* webpackChunkName: "InstantSettlementDetails" */ 'merchant/views/Settlements/InstantSettlements/InstantSettlementDetails'
@@ -335,11 +329,6 @@ const entityDetailsMap = {
   '/orders/:id': {
     component: OrderDetails,
     additionalCondition: (user) => user.isAllowedView('orders'),
-  },
-  '/settlements/:id': {
-    component: SettlementDetails,
-    additionalCondition: (user) =>
-      !user.isUxRevampPhase2Enabled && user.isAllowedView('settlements'),
   },
   '/instantsettlement/:id': {
     component: InstantSettlementDetails,

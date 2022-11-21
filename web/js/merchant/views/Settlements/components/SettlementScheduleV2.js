@@ -33,7 +33,7 @@ const SettlementScheduleV2 = (props) => {
   const viewHolidayList = () => {
     openModal({
       size: 'small',
-      component: <HolidayModal data={holidayList} />,
+      component: <HolidayModal holidayList={holidayList} />,
     });
   };
 

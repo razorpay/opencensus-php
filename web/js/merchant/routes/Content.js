@@ -326,11 +326,7 @@ export default class Content extends Component {
             additionalCondition={(usr) => this.props.mode === 'live' && usr.findTag('success_rate')}
           />
 
-          <Route
-            path="/settlements/:id(setl_.+)/"
-            component={SettlementDetailsV2}
-            additionalCondition={(user) => user.isUxRevampPhase2Enabled}
-          />
+          <Route path="/settlements/:id(setl_.+)/" component={SettlementDetailsV2} />
 
           <ShowWhenRoute
             path="/settlements"
