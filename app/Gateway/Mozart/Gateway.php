@@ -3069,11 +3069,10 @@ class Gateway extends Base\Gateway
 
         if ($handleException === true)
         {
-            if ($input['gateway'] == MandateHubs::BILLDESK_SIHUB)
+            if (isset($input['gateway']) && $input['gateway'] == MandateHubs::BILLDESK_SIHUB)
             {
                 $response['meta_data']['payment_id'] = $input['payment']['id'] ?? null;
                 $response['meta_data']['order_id'] = $input['payment']['order_id'] ?? null;
-
             }
             $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
         }
