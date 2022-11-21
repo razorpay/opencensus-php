@@ -48,4 +48,9 @@ class Core extends Base\Core
 
             return $raw_address;
     }
+
+    public function bulkCreate(array $data)
+    {
+        $this->repo->raw_address->bulkInsert($data);
+    }
 }

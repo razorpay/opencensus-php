@@ -125,6 +125,34 @@ class Service extends Base\Service
                             'value'       => $shopId,
                         ]
                     );
+
+                    $topic =  env('APP_MODE', 'prod').'-'. Constants::ONE_CC_MERCHANT_CONFIG;
+                    try
+                    {
+                        $this->trace->info(TraceCode::STARTING_ONE_CC_MERCHANT_CONFIG_KAFKA_UPLOAD,
+                            [
+                                Constants::MERCHANT_ID => $this->merchant->getId(),
+                                'topic' => $topic,
+                                'broker' => env('QUEUE_KAFKA_CONSUMER_BROKERS')
+                            ]);
+                        $message = array(
+                            Constants::MERCHANT_ID => $this->merchant->getId(),
+                            Constants::PLATFORM => Constants::SHOPIFY,
+                            'action' => 'one_cc_merchant_config_update',
+                        );
+                        (new KafkaProducer($topic, stringify($message)))->Produce();
+                    }
+                    catch (\Exception $e)
+                    {
+                        $this->trace->error(TraceCode::ONE_CC_MERCHANT_CONFIG_KAFKA_UPLOAD_FAILED,
+                            [
+                                'error' => $e->getMessage(),
+                                Constants::MERCHANT_ID => $this->merchant->getId(),
+                                'topic' => $topic
+                            ]
+                        );
+                        $this->trace->count(TraceCode::ONE_CC_MERCHANT_CONFIG_KAFKA_UPLOAD_FAILED);
+                    }
                 }
 
                 $updatedCodIntelligenceEnabledFlag = isset($input[Type::COD_INTELLIGENCE]) &&
@@ -296,12 +324,12 @@ class Service extends Base\Service
         }
     }
 
-    public function get1ccConfig()
+    public function get1ccConfig($internal = false)
     {
         // Special handling for Shopify
         $merchantPlatformConfig = $this->merchant->getMerchantPlatformConfig();
 
-        $configFlagsResponse = $this->get1ccConfigFlagsStatus($this->merchant);
+        $configFlagsResponse = $this->get1ccConfigFlagsStatus($this->merchant, $internal);
 
         $domainUrlConfig = $this->merchant->get1ccConfig(Type::DOMAIN_URL);
         $domainUrl = null;
@@ -394,6 +422,22 @@ class Service extends Base\Service
         }
 
         return $configs;
+    }
+
+    public function getInternal1ccConfig($merchantId)
+    {
+        try
+        {
+            $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+        }
+        catch (\Exception $ex)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_MERCHANT_ID);
+        }
+
+        $this->app['basicauth']->setMerchant($this->merchant);
+
+        return $this->get1ccConfig(true);
     }
 
     /**
@@ -535,7 +579,7 @@ class Service extends Base\Service
     }
 
 
-    public function get1ccConfigFlagsStatus(Merchant\Entity $merchant) {
+    public function get1ccConfigFlagsStatus(Merchant\Entity $merchant, $internal = false) {
         $response = [];
 
         foreach(Constants::CONFIG_CUM_FEATURE_FLAGS as $flag)
@@ -553,6 +597,15 @@ class Service extends Base\Service
         {
             $configStatus = $merchant->get1ccConfigFlagStatus($flag);
             $response[$flag] = $configStatus;
+        }
+
+        if ($internal)
+        {
+           foreach (Constants::INTERNAL_CONFIGS as $flag)
+           {
+               $featureStatus = $merchant->isFeatureEnabled($flag);
+               $response[$flag] = $featureStatus;
+           }
         }
 
         // If Config not present then by default the value should be true.

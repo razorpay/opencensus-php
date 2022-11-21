@@ -3336,6 +3336,55 @@ class MerchantController extends Controller
         return (new Merchant\OneClickCheckout\Config\Service())->get1ccConfig();
     }
 
+    public function getInternal1ccConfig($merchantId)
+    {
+        try
+        {
+            return (new Merchant\OneClickCheckout\Config\Service())->getInternal1ccConfig($merchantId);
+        }
+        catch (\Exception $ex)
+        {
+            if (($ex instanceof Exception\BadRequestException) === true)
+            {
+                $error = $ex->getError();
+                $errorCode = $error->getInternalErrorCode();
+                if ($errorCode == ErrorCode::BAD_REQUEST_INVALID_MERCHANT_ID)
+                {
+                    $data = ["error_class" => $error->getPublicErrorCode(), "internal_error_code" => $errorCode];
+                    return ApiResponse::json($data, 500);
+                }
+            }
+            throw $ex;
+        }
+    }
+
+    public function getInternalShopifyCustomerAddresses($merchantId)
+    {
+        $input = Request::all();
+
+        try
+        {
+            return (new Merchant\OneClickCheckout\Shopify\AddressIngestion\Service())->getInternalCustomerAddresses($merchantId, $input);
+        }
+        catch (\Exception $ex)
+        {
+            if (($ex instanceof Exception\BadRequestException) === true)
+            {
+                $error = $ex->getError();
+                $errorCode = $error->getInternalErrorCode();
+                switch ($errorCode)
+                {
+                    case ErrorCode::BAD_REQUEST_ERROR_MERCHANT_SHOPIFY_ACCOUNT_NOT_CONFIGURED:
+                    case ErrorCode::BAD_REQUEST_ERROR_INVALID_ONE_CC_MERCHANT:
+                    case ErrorCode::BAD_REQUEST_INVALID_MERCHANT_ID:
+                        $data = ["error_class" => $error->getPublicErrorCode(), "internal_error_code" => $errorCode];
+                        return ApiResponse::json($data, 500);
+                }
+            }
+            throw $ex;
+        }
+    }
+
     public function get1ccMerchantPreferences()
     {
         $data = $this->service()->get1ccMerchantPreferences();

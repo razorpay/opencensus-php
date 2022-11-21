@@ -31,7 +31,7 @@ class Validator extends Base\Validator
         Entity::TAG              => 'sometimes|string|between:0,50',
         Entity::LANDMARK         => 'sometimes|string|between:0,255',
         Entity::MERCHANT_ID      => 'required|alpha_num|size:14',
-        Entity::BATCH_ID         => 'required|alpha_num|size:14',
+        Entity::BATCH_ID         => 'sometimes|alpha_num|size:14',
     ];
 
     protected static $createForAddressRules = [

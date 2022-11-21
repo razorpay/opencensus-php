@@ -1136,6 +1136,11 @@ class Constants
 
     const ONE_CLICK_OVERRIDE_THEME = 'one_cc_override_theme';
 
+    /**
+     * Feature flag to disable shopify address ingestion
+     */
+    const ONE_CC_ADDRESS_SYNC_OFF = 'one_cc_address_sync_off';
+
     const ONE_CC_REPORTING_TEST  = 'one_cc_reporting_test';
 
     const ONE_CC_MERCHANT_DASHBOARD = 'one_cc_merchant_dashboard';
@@ -1710,6 +1715,7 @@ class Constants
         self::ONE_CC_CONSENT_NOTDEFAULT,
         self::ONE_CC_COUPON_DISABLE_COD,
         self::ONE_CC_DISABLE_EMAIL_COOKIE,
+        self::ONE_CC_ADDRESS_SYNC_OFF,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -2250,7 +2256,8 @@ class Constants
         self::ONE_CC_DISABLE_EMAIL_COOKIE       => true,
         \RZP\Services\Dcs\Constants::RefundEnabled => true,  // Example Feature for DCS
         \RZP\Services\Dcs\Constants::DisableAutoRefund => true,  // Example Feature for DCS
-        \RZP\Services\Dcs\Constants::EligibilityEnabled => true  // Example Feature for DCS
+        \RZP\Services\Dcs\Constants::EligibilityEnabled => true,  // Example Feature for DCS
+        self::ONE_CC_ADDRESS_SYNC_OFF         => true,
     ];
 
     // Entity type constants

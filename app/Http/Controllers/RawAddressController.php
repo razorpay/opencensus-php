@@ -17,4 +17,14 @@ class RawAddressController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function createAddressBulk()
+    {
+
+        $input = Request::all();
+
+        $this->service()->createAddressBulk($input);
+
+        return ApiResponse::json([]);
+    }
 }

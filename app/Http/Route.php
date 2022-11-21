@@ -304,6 +304,7 @@ class Route
         'refund_create_batch_service'              => ['post',     'refunds/batch_service',                          'RefundController@postCreateBatchRefund'                            ],
         'scrooge_fetch_refund_email_data'          => ['post',     'scrooge/fetch_refund_email_data',                'RefundController@scroogeFetchRefundEmailData'                      ],
         'raw_address_create_batch_service'         => ['post',     'raw_address/batch_service',                      'RawAddressController@postCreateBatch'                              ],
+        'raw_address_create_bulk'                       => ['post',     'raw_address/create/bulk',                             'RawAddressController@createAddressBulk'                              ],
         //'raw_address_kafka_consume_test'          => ['post',     'raw_address/kafka_consume',                     'RawAddressController@consumeAddressFromKafka'                      ],
 
         'fulfillment_order_update'                 => ['post',     'fulfillment_order/batch_service',             'FulfillmentOrderController@updateOrder'                             ],
@@ -3897,11 +3898,13 @@ class Route
         'order_reset_1cc'                           => ['post',       'orders/1cc/{id}/reset',                                 'OrderController@reset1CCOrder'                                ],
         '1cc_configs_update'                        => ['post',       '1cc/merchant/configs',                                  'MerchantController@update1ccConfig'],
         '1cc_configs_get'                           => ['get',        '1cc/merchant/configs',                                  'MerchantController@get1ccConfig'],
+        'internal_1cc_configs_get'                  => ['get',        'internal/1cc/merchants/{id}/configs',                   'MerchantController@getInternal1ccConfig'],
         '1cc_merchant_preferences'                  => ['get',        'merchant/1cc_preferences',                                  'MerchantController@get1ccMerchantPreferences'],
         '1cc_disable_magic'                         => ['post',       '1cc/magic/disable',                                       'MerchantController@disable1ccMagicCheckout'],
         '1cc_order_notes_update'                    => ['patch',      'orders/1cc/{id}/order-notes',                             'OrderController@update1CCOrderNotes'             ],
         'update_merchant_1cc_coupon_config'         => ['post',       '1cc/merchant/coupon/configs',                             'MerchantController@updateMerchant1ccCouponConfig'],
         '1cc_update_shipping_provider_config'       => ['post',       '1cc/shipping-provider/configs',                           'MerchantController@updateShippingProviderConfig'],
+        'internal_1cc_shopify_customer_addresses_get' => ['get',        'internal/1cc/shopify/merchants/{id}/customer_addresses',                   'MerchantController@getInternalShopifyCustomerAddresses'],
 
         '1cc_shipping_service_merchant_config_create'               => ['post',      '1cc/shipping_service/merchant_config/create',                     'MerchantConfigController@create'],
         '1cc_shipping_service_merchant_config_update_by_type'       => ['post',      '1cc/shipping_service/merchant_config/update_by_type',             'MerchantConfigController@updateByType'],
@@ -5443,6 +5446,11 @@ class Route
         'get_or_create_customer_internal',
 
         'customer_fetch_by_id_internal',
+
+        // Address Service
+        'internal_1cc_configs_get',
+        'internal_1cc_shopify_customer_addresses_get',
+        'raw_address_create_bulk',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -14434,6 +14442,11 @@ class Route
         'consumer_app' => [
             'customer_one_cc_get_or_create_global',
             'customer_fetch_by_id_global',
+        ],
+        'address_service' => [
+            'internal_1cc_configs_get',
+            'internal_1cc_shopify_customer_addresses_get',
+            'raw_address_create_bulk',
         ],
     ];
 

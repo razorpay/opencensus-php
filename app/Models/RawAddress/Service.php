@@ -34,15 +34,9 @@ class Service extends Base\Service
 
     public function create(array $input)
     {
-        if (isset($input[Entity::COUNTRY]) === true) {
-            $input[Entity::COUNTRY] = strtolower($input[Entity::COUNTRY]);
-        }
-
         try
         {
-            $this->validateForAddressEntity($input);
-            $this->validateForUnicode($input);
-            $input[Entity::CONTACT] = $this->checkAndGetValidContact($input[Entity::CONTACT]);
+            $input = $this->validateAndStandardiseAddress($input);
             $raw_address = $this->core()->create($input);
 
             return $raw_address->toArrayPublic();
@@ -70,6 +64,67 @@ class Service extends Base\Service
         $input['batch_id'] = $batchId;
 
         return $this->create($input);
+    }
+
+
+    /**
+     * @throws \Exception if an error occurs while saving.
+     */
+    public function createAddressBulk(array $inputArr)
+    {
+        $rawAddressArr = array();
+        $addresses = $inputArr['addresses'];
+        foreach ($addresses as $input)
+        {
+            try
+            {
+                if(!isset($input['batch_id']))
+                {
+                    $input['batch_id'] = "";
+                }
+
+                $rawAddress = $this->validateAndStandardiseAddress($input);
+
+                $rawAddress[Entity::ID] = Entity::generateUniqueId();
+                $rawAddress[Entity::CREATED_AT] = Carbon::now(Timezone::IST)->getTimestamp();
+                $rawAddress[Entity::UPDATED_AT] = Carbon::now(Timezone::IST)->getTimestamp();
+
+                $rawAddressArr[] = $rawAddress;
+            } catch (\Exception $e)
+            {
+                $this->trace->info(
+                    TraceCode::STANDARDIZE_RAW_ADDRESS_EXCEPTION, [
+                        'error' => $e->getMessage(),
+                    ]);
+                $this->trace->count(TraceCode::RAW_ADDRESS_BULK_CREATE_VALIDATION_FAILED);
+                    continue;
+            }
+        }
+        try
+        {
+            $this->core->bulkCreate($rawAddressArr);
+        } catch (\Exception $e)
+        {
+            $this->trace->info(
+                TraceCode::RAW_ADDRESS_BULK_CREATE_REQUEST, [
+                'error' => $e->getMessage(),
+            ]);
+            $this->trace->count(TraceCode::RAW_ADDRESS_BULK_CREATE_FAILED);
+            throw $e;
+        }
+    }
+
+
+    protected function validateAndStandardiseAddress(array $input)
+    {
+        if (isset($input[Entity::COUNTRY]) === true)
+        {
+            $input[Entity::COUNTRY] = strtolower($input[Entity::COUNTRY]);
+        }
+        $this->validateForAddressEntity($input);
+        $this->validateForUnicode($input);
+        $input[Entity::CONTACT] = $this->checkAndGetValidContact($input[Entity::CONTACT]);
+        return $input;
     }
 
     public function validateForAddressEntity(array $input)

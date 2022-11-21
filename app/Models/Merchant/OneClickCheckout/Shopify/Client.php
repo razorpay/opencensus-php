@@ -37,6 +37,9 @@ class Client
     protected $oaAuthToken;
     protected $storefrontAccessToken;
 
+    protected $endpoint;
+    protected $headers;
+
     public function __construct(array $config)
     {
         $this->app = App::getFacadeRoot();

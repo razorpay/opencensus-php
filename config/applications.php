@@ -1428,6 +1428,10 @@ return [
         'timeout'       => env('APP_RTO_PREDICTION_SERVICE_TIMEOUT', 10),
     ],
 
+    'address_service' => [
+        'secret'  => env('APP_ADDRESS_SERVICE_SECRET')
+    ],
+
     'tokenization' => [
         'secret' => env('TOKENIZATION_SECRET'),
     ],

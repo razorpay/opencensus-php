@@ -167,9 +167,14 @@ class BulkUploadClient extends Job
         {
             try
             {
+                $sourceType = Constants::ADDRESS_SOURCE_TYPE_SHOPIFY;
+                if (strlen($address[RawAddress\Entity::BATCH_ID]) > 0)
+                {
+                    $sourceType = Constants::ADDRESS_SOURCE_TYPE_BULK_UPLOAD;
+                }
                 $address[Constants::ADDRESS_TYPE]=Constants::ADDRESS_TYPE_RAW;
                 $address[Address\Entity::SOURCE_ID] = $address[RawAddress\Entity::ID];
-                $address[Address\Entity::SOURCE_TYPE] = Constants::ADDRESS_SOURCE_TYPE_BULK_UPLOAD;
+                $address[Address\Entity::SOURCE_TYPE] = $sourceType;
                 unset($address[RawAddress\Entity::ID]);
                 unset($address[RawAddress\Entity::MERCHANT_ID]);
                 unset($address[RawAddress\Entity::BATCH_ID]);

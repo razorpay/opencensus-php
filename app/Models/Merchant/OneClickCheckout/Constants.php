@@ -31,6 +31,7 @@ class Constants
     const MANUAL_CONTROL_COD_ORDER         = 'manual_control_cod_order';
     const ONE_CC_CAPTURE_GSTIN             = 'one_cc_capture_gstin';
     const ONE_CC_CAPTURE_ORDER_INSTRUCTIONS = 'one_cc_capture_order_instructions';
+    const ONE_CC_ADDRESS_SYNC_OFF        = 'one_cc_address_sync_off';
 
     // common auth keys
     const API_KEY        = 'api_key';
@@ -135,6 +136,10 @@ class Constants
         self::ONE_CC_CAPTURE_ORDER_INSTRUCTIONS,
     ];
 
+    const INTERNAL_CONFIGS = [
+        self::ONE_CC_ADDRESS_SYNC_OFF,
+    ];
+
     const SHOPIFY_RESETTABLE_CONFIGS = [
         self::PLATFORM,
         self::SHOP_ID,
@@ -153,6 +158,7 @@ class Constants
     ];
 
     const RTO_MLMODEL_ASSIGNMENT   = 'rto-mlmodel-assignment-events';
+    const ONE_CC_MERCHANT_CONFIG = 'one-cc-merchant-config-events';
 
     const ONE_CLICK_CHECKOUT_ENABLED = "oneClickCheckoutEnabled";
     const BUY_NOW_ENABLED = "buyNowEnabled";

@@ -67,4 +67,9 @@ class Repository  extends Base\Repository
 
     }
 
+    public function bulkInsert($data)
+    {
+        return $this->newQuery()->insert($data);
+    }
+
 }
