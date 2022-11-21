@@ -1,12 +1,17 @@
 <?php
 
 namespace RZP\Models\Merchant\BusinessDetail;
+
 use Throwable;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Constants as MerchantConstants;
+use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
+use RZP\Models\Merchant\Website;
+use RZP\Exception;
 
 class Service extends Base\Service
 {
@@ -70,22 +75,21 @@ class Service extends Base\Service
     }
 
     /**
+     *
      * save a details in MerchantWebsiteDetail table
      *
      * @param string $merchantId
      * @param array  $input
      *
      * @return array
+     * @throws LogicException
+     * @throws Throwable
      */
     public function saveBusinessDetailsForMerchant(string $merchantId, array $input)
     {
         $startTime = microtime(true);
 
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
-        $merchantDetailCore = new Detail\Core();
-
-        $merchantDetails = $merchantDetailCore->getMerchantDetails($merchant);
+        $merchantDetails = $this->repo->merchant_detail->findOrFailPublic($merchantId);
 
         $businessDetail = $merchantDetails->businessDetail;
 
@@ -105,5 +109,36 @@ class Service extends Base\Service
         ]);
 
         return $businessDetail;
+    }
+
+    /**
+     * @param $merchantId
+     * @param $input
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function saveWebsitePlugin($merchantId, $input)
+    {
+        $merchantDetails = $this->repo->merchant_detail->findOrFailPublic($merchantId);
+
+        $urls = (new Website\Service())->getUrls($merchantDetails);
+
+        $website = $input['website'];
+
+        $updatedWebsite = trim(strtolower($website), '/');
+
+        if (in_array($updatedWebsite, $urls) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_WEBSITE);
+        }
+
+        $businessDetailsInput[BusinessDetailEntity::PLUGIN_DETAILS] = [
+            'website'                  => $website,
+            'merchant_selected_plugin' => $input['plugin_name'],
+        ];
+
+        $this->saveBusinessDetailsForMerchant($merchantId, $businessDetailsInput);
+
+        return [];
     }
 }

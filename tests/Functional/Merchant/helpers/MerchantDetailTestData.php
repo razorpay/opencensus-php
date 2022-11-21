@@ -3654,5 +3654,21 @@ return [
             'content'     => [],
             'status_code' => 200,
         ],
+    ],
+
+    'testSaveWebsitePlugin' => [
+        'request'  => [
+            'content' => [
+                'website' => "https://flipkart.com",
+                'plugin_name' => "wix"
+            ],
+            'url'     => '/onboarding/merchants/1cXSLlUU8V9sXl/plugin',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content'     => [],
+            'success'     => true,
+            'status_code' => 200,
+        ]
     ]
 ];

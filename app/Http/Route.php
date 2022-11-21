@@ -787,6 +787,8 @@ class Route
 
         'merchant_consents_admin_fetch'            => ['get',       'merchant/consents/{mid}',                      'MerchantController@getMerchantConsents'                          ],
 
+        'merchant_website_plugin_save'             => ['post',      'onboarding/merchants/{mid}/plugin',             'MerchantController@saveWebsitePlugin'                              ],
+
         'appsflyer_attribution_details'            => ['post',     'appsflyer/attribution-details',                  'MerchantController@postAppsflyerAttributionDetails'],
         'merchant_checkout_details_save'           => ['post',     'merchant/checkout_details',                      'MerchantController@postMerchantCheckoutDetail'                     ],
         'merchant_checkout_details'                => ['get',      'merchant/checkout_details',                      'MerchantController@getMerchantCheckoutDetail'                      ],
@@ -5579,6 +5581,7 @@ class Route
     //
 
     public static $proxy = [
+        'merchant_website_plugin_save',
         'payment_links_subscription_activate',
         'payment_links_subscription_deactivate',
         'payment_links_subscription_fetch',
@@ -7654,6 +7657,7 @@ class Route
         'public_merchant_website_section_page_load'       => Permission::VIEW_MERCHANT,
         'public_merchant_website_section_pages'           => Permission::VIEW_MERCHANT,
         'merchant_consents_admin_fetch'                   => Permission::VIEW_MERCHANT,
+        'merchant_website_plugin_save'                    => Permission::VIEW_MERCHANT,
         //'banking_account_bank_lms_fetch_multiple'      => Permission::RBL_BANK_MID_OFFICE,
         //'banking_account_bank_lms_fetch_by_id'         => Permission::RBL_BANK_MID_OFFICE,
         //'banking_account_bank_lms_comments_list'       => Permission::RBL_BANK_MID_OFFICE,
@@ -9827,6 +9831,7 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'merchant_website_plugin_save',
             'payment_links_subscription_activate',
             'payment_links_subscription_deactivate',
             'payment_links_subscription_fetch',
@@ -11130,6 +11135,7 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'merchant_website_plugin_save',
             'wfs_workflows_list',
             'wfs_workflows_get',
             'wfs_workflow_action_create',

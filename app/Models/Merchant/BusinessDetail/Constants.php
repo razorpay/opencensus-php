@@ -76,4 +76,6 @@ class Constants
         self::IOS_APP_PRESENT,
         self::OTHERS_PRESENT,
     ];
+
+    const MERCHANT_SELECTED_PLUGIN = 'merchant_selected_plugin';
 }

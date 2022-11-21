@@ -31,6 +31,7 @@ use RZP\Models\Merchant\AccessMap;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\InheritanceMap;
 use RZP\Services\SumoLogic\Service as SumoLogicService;
+use RZP\Models\Merchant\BusinessDetail;
 
 
 class MerchantController extends Controller
@@ -3603,6 +3604,15 @@ class MerchantController extends Controller
     public function getMerchantConsents(string $merchantId)
     {
         $response = $this->service()->getMerchantConsents($merchantId);
+
+        return ApiResponse::json($response);
+    }
+
+    public function saveWebsitePlugin(string $merchantId)
+    {
+        $input = Request::all();
+
+        $response = (new BusinessDetail\Service())->saveWebsitePlugin($merchantId, $input);
 
         return ApiResponse::json($response);
     }

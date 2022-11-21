@@ -59,12 +59,7 @@ class Core extends Base\Core
 
                     if (empty($input[BusinessDetailEntity::PLUGIN_DETAILS]) === false)
                     {
-                        $existingPluginDetails = $businessDetail->getPluginDetails() ?? [];
-
-                        $input[BusinessDetailEntity::PLUGIN_DETAILS] = array_merge(
-                            $input[BusinessDetailEntity::PLUGIN_DETAILS],
-                            $existingPluginDetails
-                        );
+                        $input[BusinessDetailEntity::PLUGIN_DETAILS] = $this->setPluginDetails($businessDetail, $input);
                     }
 
                     $businessDetail->edit($input, MerchantConstants::EDIT);
@@ -230,5 +225,33 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
                 MerchantConstants::MERCHANT_MUTEX_RETRY_COUNT);
         });
+    }
+
+    public function setPluginDetails($businessDetail, $input)
+    {
+        //This will be an array returning value like this ->
+        // [website : https://flipkart.com, merchant_selected_plugin : 'shopify', suggested_plugin :' WooCommerce']
+        $existingPluginDetails = $businessDetail->getPluginDetails() ?? [];
+
+        $existingWebsite = false;
+
+        $pluginDetails = $input['plugin_details'];
+
+        foreach ($existingPluginDetails as &$existingPluginDetail)
+        {
+            if ($existingPluginDetail['website'] === $pluginDetails['website'])
+            {
+                $existingPluginDetail = array_merge($existingPluginDetail, $pluginDetails);
+                $existingWebsite                   = true;
+                break;
+            }
+        }
+
+        if ($existingWebsite === false)
+        {
+            array_push($existingPluginDetails, $pluginDetails);
+        }
+
+        return $existingPluginDetails;
     }
 }

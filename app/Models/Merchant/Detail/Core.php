@@ -559,35 +559,24 @@ class Core extends Base\Core
 
     public function handlePluginDetails(Merchant\Entity $merchant, &$input): array
     {
-        $whatcmsExpt = (new Merchant\Core)->isRazorxExperimentEnable(
+        $whatCMSExperiment = (new Merchant\Core)->isRazorxExperimentEnable(
             $merchant->getId(),
             RazorxTreatment::WHATCMS_EXPERIMENT);
 
         $businessDetailsInput = [];
 
-        if ((empty($input[Entity::BUSINESS_WEBSITE]) === false) && ($whatcmsExpt === true))
+        if ((empty($input[Entity::BUSINESS_WEBSITE]) === false) && ($whatCMSExperiment === true))
         {
             $businessWebsite = $input[Entity::BUSINESS_WEBSITE];
 
-            $merchantBusinessDetail = $merchant->merchantBusinessDetail;
-
-            $pluginDetails = null;
-
-            if($merchantBusinessDetail !== null)
-            {
-                $pluginDetails = $merchantBusinessDetail->getPluginDetails() ?? [];
-            }
-
             $domain = (new Merchant\TLDExtract)->getEffectiveTLDPlusOne($businessWebsite);
 
-            if(isset($pluginDetails[$domain]) === false)
-            {
-                $pluginType = (new WhatCmsService())->checkForPluginType($merchant->getId(), $input[Entity::BUSINESS_WEBSITE]);
+            $pluginType = (new WhatCmsService())->checkForPluginType($merchant->getId(), $domain);
 
-                $businessDetailsInput[BusinessDetailEntity::PLUGIN_DETAILS] = [
-                    $domain => $pluginType
-                ];
-            }
+            $businessDetailsInput[BusinessDetailEntity::PLUGIN_DETAILS] = [
+                'website'     => $businessWebsite,
+                'suggested_plugin' => $pluginType
+            ];
         }
 
         return $businessDetailsInput;
@@ -2030,55 +2019,6 @@ class Core extends Base\Core
         }
 
         return \RZP\Constants\Entity::MERCHANT;
-    }
-
-    /**
-     * This function is used to get the updated kyc clarification reasons
-     * with the sender info and the timestamp
-     *
-     * @param array       $input
-     * @param string      $merchantId
-     * @param string|null $source
-     *
-     * @return array
-     */
-    public function getPluginData(Merchant\Entity $merchant, Merchant\Detail\Entity $merchantDetail, $pluginData){
-        $data = [];
-
-        $businessWebsite = $merchant->getWebsite() ?? '';
-
-        $businessWebsite = (new Merchant\TLDExtract)->getEffectiveTLDPlusOne($businessWebsite);
-
-        $additionalWebsites = $merchantDetail->getAdditionalWebsites() ?? [];
-
-        $additionalWebsitesData = [];
-
-        foreach ($additionalWebsites as $additionalWebsite)
-        {
-            $res = [];
-
-            $additionalWebsite = (new Merchant\TLDExtract)->getEffectiveTLDPlusOne($additionalWebsite);
-
-            $res["website"]     = $additionalWebsite;
-
-            $res["plugin_type"] = isset($pluginData[$additionalWebsite]) ?  WhatCmsService::getIndexFromKey($pluginData[$additionalWebsite]) : 0;
-
-            $res["plugin_name"] = $pluginData[$additionalWebsite] ?? null;
-
-            array_push($additionalWebsitesData, $res);
-        }
-
-        $data[Entity::BUSINESS_WEBSITE] = [
-            "website"     => $businessWebsite,
-
-            "plugin_type" => isset($pluginData[$businessWebsite]) ?  WhatCmsService::getIndexFromKey($pluginData[$businessWebsite]) : 0,
-
-            "plugin_name" => $pluginData[$businessWebsite] ?? null
-        ];
-
-        $data[Entity::ADDITIONAL_WEBSITES] = $additionalWebsitesData;
-
-        return $data;
     }
 
     public function getUpdatedKycClarificationReasons(array $input, string $merchantId, ?string $source = null): array
@@ -3895,15 +3835,6 @@ class Core extends Base\Core
                 'isUnderReview' => !$isDedupeBlocked
             ];
 
-            $pluginDetails = [];
-
-            if($merchantBusinessDetails !== null)
-            {
-                $pluginDetails = $merchantBusinessDetails->getPluginDetails() ?? [];
-            }
-
-            $pluginData = $this->getPluginData($merchant, $merchantDetails, $pluginDetails);
-
             $addressSuggestedFromGSTIN = null;
 
             try
@@ -3929,8 +3860,6 @@ class Core extends Base\Core
             $response['isHardLimitReached']                           = empty($hardEscalationLevel4) ? false : true;
             $response['activationStatusChangeLogs']                   = $this->getStatusChangeLogs($merchant);
             $response[Entity::MERCHANT_BUSINESS_DETAIL]               = $merchantBusinessDetails;
-            $response['isPluginMerchant']                             = $pluginData[Entity::BUSINESS_WEBSITE]['plugin_type'] == 0 ? false : true;
-            $response['pluginData']                                   = $pluginData;
             $response[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY] = $merchantBusinessDetails[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY];
             $response[Entity::PROMOTER_PAN_NAME_SUGGESTED]            = $merchantDetails->getPromoterPanNameSuggested();
             $response[Entity::BUSINESS_NAME_SUGGESTED]                = $merchantDetails->getBusinessNameSuggested();

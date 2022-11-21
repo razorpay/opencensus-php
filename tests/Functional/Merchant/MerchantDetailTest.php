@@ -76,7 +76,6 @@ class MerchantDetailTest extends OAuthTestCase
     use WorkflowTrait;
     use MocksSplitz;
     use MocksDiagTrait;
-    use CreateLegalDocumentsTrait;
 
     const PARTNER                = 'partner';
     const ACTIVATION             = 'activation';
@@ -7873,5 +7872,65 @@ We look forward to transacting with you!
         ];
 
         $this->mockSplitzTreatment($input, $output);
+    }
+
+    public function testSaveWebsitePlugin()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $website = 'https://flipkart.com';
+
+        $this->fixtures->on('live')->edit('merchant', $merchantId, ['website' => $website, 'whitelisted_domains' => ['flipkart.com']]);
+
+        $this->fixtures->on('live')->create('merchant_detail', ['merchant_id' => $merchantId, 'business_website' => $website, 'issue_fields' => 'business_website']);
+
+        $this->fixtures->on('live')->create('merchant_business_detail', ['merchant_id' => $merchantId]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $businessDetail = $this->getLastEntity('merchant_business_detail', true);
+
+        $expectedData = [
+            'website' => 'https://flipkart.com',
+            'merchant_selected_plugin' => 'wix'
+        ];
+
+        $this->assertEquals($expectedData, $businessDetail['plugin_details']);
+    }
+
+    public function testSaveWebsitePluginExistingWebsite()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $website = 'https://flipkart.com';
+
+        $this->fixtures->on('live')->edit('merchant', $merchantId, ['website' => $website, 'whitelisted_domains' => ['flipkart.com']]);
+
+        $this->fixtures->on('live')->create('merchant_detail', ['merchant_id' => $merchantId, 'business_website' => $website, 'issue_fields' => 'business_website']);
+
+        $this->fixtures->on('live')->create('merchant_business_detail', [
+            'merchant_id' => $merchantId,
+            'plugin_details' => [
+                'website' => 'https://flipkart.com',
+                'merchant_selected_plugin' => 'WooCommerce'
+            ]
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData['testSaveWebsitePlugin'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $businessDetail = $this->getLastEntity('merchant_business_detail', true);
+
+        $expectedData = [
+            'website' => 'https://flipkart.com',
+            'merchant_selected_plugin' => 'wix'
+        ];
+
+        $this->assertEquals($expectedData, $businessDetail['plugin_details']);
     }
 }

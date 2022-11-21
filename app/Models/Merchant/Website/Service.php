@@ -464,40 +464,33 @@ class Service extends Base\Service
         return $urls;
     }
 
-    private function getUrls($merchantDetails, $urlType)
+    public function getUrls($merchantDetails)
     {
         $urls = [];
 
         $businessDetails = optional($merchantDetails->businessDetail);
 
-        switch ($urlType)
+        if (empty($merchantDetails->getAdditionalWebsites()) === false)
         {
-            case Constants::WEBSITE:
+            foreach ($merchantDetails->getAdditionalWebsites() as $url)
+            {
+                $additionalWebsiteUrl = trim(strtolower($url), '/');
 
-                if (empty($merchantDetails->getAdditionalWebsites()) === false)
-                {
-                    foreach ($merchantDetails->getAdditionalWebsites() as $url)
-                    {
-                        $urls[] = trim(strtolower($url), '/');
-                    }
-                }
-
-                $urls[] = trim(strtolower($merchantDetails->getWebsite()), '/');
-
-                break;
-
-            case Constants::APPSTORE_URL:
-
-                $urls[] = trim(strtolower($businessDetails->getAppstoreUrl()), '/');
-
-                break;
-
-            case Constants::PLAYSTORE_URL:
-
-                $urls[] = trim(strtolower($businessDetails->getPlaystoreUrl()), '/');
-
-                break;
+                array_push($urls, $additionalWebsiteUrl);
+            }
         }
+
+        $businessWebsiteUrl = trim(strtolower($merchantDetails->getWebsite()), '/');
+
+        $appStoreUrl = trim(strtolower($businessDetails->getAppstoreUrl()), '/');
+
+        $playStoreUrl = trim(strtolower($businessDetails->getPlaystoreUrl()), '/');
+
+        array_push($urls, $businessWebsiteUrl);
+
+        array_push($urls, $appStoreUrl);
+
+        array_push($urls, $playStoreUrl);
 
         return $urls;
     }
