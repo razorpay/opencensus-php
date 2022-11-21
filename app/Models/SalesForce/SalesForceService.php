@@ -193,6 +193,25 @@ class SalesForceService extends Base\Service {
 
             $this->trace->info(TraceCode::X_CHANNEL_DEFINITION_SF_OPPORTUNITY_EVENT, compact('eventType', 'campaignId'));
 
+            // Fetch existing values of channel and sub-channel
+            $channelDetails = $this->xChannelDefinitionService->getCurrentChannelDetails($merchant);
+
+            // If channel details are already present, add existing values in SF payload and return early
+            if (!empty($channelDetails[XChannelDefinition\Constants::CHANNEL])
+                && $channelDetails[XChannelDefinition\Constants::CHANNEL] !== XChannelDefinition\Channels::UNMAPPED)
+            {
+                $eventPayload['X_Channel']    = $channelDetails[XChannelDefinition\Constants::CHANNEL];
+                $eventPayload['X_Subchannel'] = $channelDetails[XChannelDefinition\Constants::SUBCHANNEL];
+
+                $this->trace->info(TraceCode::X_CHANNEL_DEFINITION_SF_OPP_EVENT_CHANNEL_DETAILS, [
+                    'channel'    => $eventPayload['X_Channel'] ?? '',
+                    'subchannel' => $eventPayload['X_Subchannel'] ?? '',
+                ]);
+
+                return;
+            }
+
+            // Check for PG Nitro and Banking_Widget channels
             try
             {
                 if (str_contains(strtolower($campaignId), 'nitro'))
@@ -212,25 +231,11 @@ class SalesForceService extends Base\Service {
             {
                 $this->trace->traceException($e, null, TraceCode::X_CHANNEL_DEFINITION_FAILED_TO_SAVE_FROM_SF_EVENT);
             }
+
+            $this->trace->info(TraceCode::X_CHANNEL_DEFINITION_SF_OPP_EVENT_CHANNEL_DETAILS, [
+                'channel'    => $eventPayload['X_Channel'] ?? '',
+                'subchannel' => $eventPayload['X_Subchannel'] ?? '',
+            ]);
         }
-
-        // Fetch and add current value of channel and sub-channel in SF payload
-        $channelDetails = $this->xChannelDefinitionService->getCurrentChannelDetails($merchant);
-
-        // If the fields are already set, don't override them to avoid inconsistencies due to replica lag
-        if (!empty($channelDetails[XChannelDefinition\Constants::CHANNEL]) && !isset($eventPayload['X_Channel']))
-        {
-            $eventPayload['X_Channel'] = $channelDetails[XChannelDefinition\Constants::CHANNEL];
-        }
-
-        if (!empty($channelDetails[XChannelDefinition\Constants::SUBCHANNEL]) && !isset($eventPayload['X_Subchannel']))
-        {
-            $eventPayload['X_Subchannel'] = $channelDetails[XChannelDefinition\Constants::SUBCHANNEL];
-        }
-
-        $this->trace->info(TraceCode::X_CHANNEL_DEFINITION_SF_OPP_EVENT_CHANNEL_DETAILS, [
-            'channel'    => $eventPayload['X_Channel'] ?? '',
-            'subchannel' => $eventPayload['X_Subchannel'] ?? '',
-        ]);
     }
 }

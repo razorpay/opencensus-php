@@ -44,15 +44,15 @@ class Channels
     const PG_PG_DASHBOARD_ANNOUNCEMENT = 'PG_Dashboard_Announcement';
 
     // DirectX, DirectX_CA, DirectX_Apps, DirectX_Capital sub-channels
-    const DIRECTX_BANNER           = 'Banner';
-    const DIRECTX_BLOG             = 'Blog';
-    const DIRECTX_DIRECT           = 'Direct';
-    const DIRECTX_EMAIL            = 'Email';
-    const DIRECTX_ORGANIC          = 'Organic';
-    const DIRECTX_OTHERS_MARKETING = 'Others_Marketing';
-    const DIRECTX_PERFORMANCE      = 'Performance';
-    const DIRECTX_REFERRAL         = 'Referral';
-    const DIRECTX_SOCIAL           = 'Social';
+    const SUB_CHANNEL_BANNER           = 'Banner';
+    const SUB_CHANNEL_BLOG             = 'Blog';
+    const SUB_CHANNEL_DIRECT           = 'Direct';
+    const SUB_CHANNEL_EMAIL            = 'Email';
+    const SUB_CHANNEL_ORGANIC          = 'Organic';
+    const SUB_CHANNEL_OTHERS_MARKETING = 'Others_Marketing';
+    const SUB_CHANNEL_PERFORMANCE      = 'Performance';
+    const SUB_CHANNEL_REFERRAL         = 'Referral';
+    const SUB_CHANNEL_SOCIAL           = 'Social';
 
     public static $channelPriorities = [
         self::NIT                => 1,
@@ -131,298 +131,145 @@ class Channels
             '/razorpay.com\/links\/covid19/',
             '/razorpay.com\/mor_terms\//',
             '/razorpay.com\/about\//',
-        ]
+        ],
+        self::UNMAPPED           => [],
     ];
 
-    // Mapping of channels to sub-channels and their criteria. Only certain channels have been added here which are
-    // currently implemented. Mobile_App_Signups is not included here as it is updated during pre-signup.
-    // Priority is added but isn't used right now because PHP's associative array is ordered.
-    public static $channelSubchannelMapping = [
-        self::PG              => [
-            self::PG_NITRO                     => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_PG_DASHBOARD],
-                Constants::FINAL_UTM_CAMPAIGN         => ['nitro'],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::PG_BANKING_WIDGET            => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_PG_DASHBOARD],
-                Constants::FINAL_UTM_CAMPAIGN         => ['banking_widget'],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 2,
-            ],
-            self::PG_ACCOUNT_LINKING           => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_PG_DASHBOARD],
-                Constants::FINAL_UTM_CAMPAIGN         => ['account_linking'],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 3,
-            ],
-            self::PG_DIRECT_RAZORPAY           => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [
-                    '/razorpay.com\/$/',
-                    '/razorpay.com\/\?/',
-                    '/razorpay.com\/#/',
-                    '/razorpay.com\/payment-gateway\//',
-                    '/razorpay.com\/payment-pages\//',
-                    '/razorpay.com\/payment-links\//',
-                    '/razorpay.com\/settlement\//',
-                    '/razorpay.com\/e-mandate\//',
-                    '/razorpay.com\/accept-international-payments\//',
-                    '/razorpay.com\/offers\//',
-                    '/razorpay.com\/magic\//',
-                    '/razorpay.com\/links\/payment-links-reminders/',
-                    '/razorpay.com\/payment-buttons\//',
-                    '/razorpay.com\/freelancer-unregistered-business\//',
-                    '/razorpay.com\/smart-collect\//',
-                    '/razorpay.com\/qr-code\//',
-                    '/razorpay.com\/gst-calculator\//',
-                    '/razorpay.com\/flashcheckout\/manage\//',
-                    '/razorpay.com\/payments-app\//',
-                    '/razorpay.com\/upi\//',
-                    '/razorpay.com\/payment-link\//',
-                ],
-                Constants::SUBCHANNEL_PRIORITY        => 4,
-            ],
-            self::PG_APP_SWITCHER              => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_PG_DASHBOARD],
-                Constants::FINAL_UTM_CAMPAIGN         => ['app_switcher'],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 5,
-            ],
-            self::PG_PG_DASHBOARD_ANNOUNCEMENT => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_PG_DASHBOARD],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 6,
-            ],
+    // Mapping of default subchannels and their criteria
+    public static $defaultSubChannels = [
+        self::SUB_CHANNEL_BANNER           => [
+            Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_BANNER],
+            Constants::FINAL_UTM_CAMPAIGN         => [],
+            Constants::REF_WEBSITE                => [],
+            Constants::SUBCHANNEL_PRIORITY        => 1,
         ],
-        self::DIRECTX         => [
-            self::DIRECTX_BANNER           => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_BANNER],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_BLOG             => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_BLOG],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_DIRECT           => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_DIRECT],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_EMAIL            => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_EMAIL],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_ORGANIC          => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_ORGANIC],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_OTHERS_MARKETING => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_OTHERS_MARKETING],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_PERFORMANCE      => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_PERFORMANCE],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_REFERRAL         => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_REFERRAL],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_SOCIAL           => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_SOCIAL],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
+        self::SUB_CHANNEL_BLOG             => [
+            Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_BLOG],
+            Constants::FINAL_UTM_CAMPAIGN         => [],
+            Constants::REF_WEBSITE                => [],
+            Constants::SUBCHANNEL_PRIORITY        => 1,
         ],
-        self::DIRECTX_CA      => [
-            self::DIRECTX_BANNER           => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_BANNER],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_BLOG             => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_BLOG],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_DIRECT           => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_DIRECT],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_EMAIL            => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_EMAIL],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_ORGANIC          => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_ORGANIC],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_OTHERS_MARKETING => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_OTHERS_MARKETING],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_PERFORMANCE      => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_PERFORMANCE],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_REFERRAL         => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_REFERRAL],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_SOCIAL           => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_SOCIAL],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
+        self::SUB_CHANNEL_DIRECT           => [
+            Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_DIRECT],
+            Constants::FINAL_UTM_CAMPAIGN         => [],
+            Constants::REF_WEBSITE                => [],
+            Constants::SUBCHANNEL_PRIORITY        => 1,
         ],
-        self::DIRECTX_APPS    => [
-            self::DIRECTX_BANNER           => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_BANNER],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_BLOG             => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_BLOG],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_DIRECT           => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_DIRECT],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_EMAIL            => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_EMAIL],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_ORGANIC          => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_ORGANIC],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_OTHERS_MARKETING => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_OTHERS_MARKETING],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_PERFORMANCE      => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_PERFORMANCE],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_REFERRAL         => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_REFERRAL],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_SOCIAL           => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_SOCIAL],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
+        self::SUB_CHANNEL_EMAIL            => [
+            Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_EMAIL],
+            Constants::FINAL_UTM_CAMPAIGN         => [],
+            Constants::REF_WEBSITE                => [],
+            Constants::SUBCHANNEL_PRIORITY        => 1,
         ],
-        self::DIRECTX_CAPITAL => [
-            self::DIRECTX_BANNER           => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_BANNER],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_BLOG             => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_BLOG],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_DIRECT           => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_DIRECT],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_EMAIL            => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_EMAIL],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_ORGANIC          => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_ORGANIC],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_OTHERS_MARKETING => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_OTHERS_MARKETING],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_PERFORMANCE      => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_PERFORMANCE],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_REFERRAL         => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_REFERRAL],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
-            self::DIRECTX_SOCIAL           => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_SOCIAL],
-                Constants::FINAL_UTM_CAMPAIGN         => [],
-                Constants::REF_WEBSITE                => [],
-                Constants::SUBCHANNEL_PRIORITY        => 1,
-            ],
+        self::SUB_CHANNEL_ORGANIC          => [
+            Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_ORGANIC],
+            Constants::FINAL_UTM_CAMPAIGN         => [],
+            Constants::REF_WEBSITE                => [],
+            Constants::SUBCHANNEL_PRIORITY        => 1,
         ],
-        self::DIRECT_SIGNUPS  => [],
-        self::OTHERS          => [],
+        self::SUB_CHANNEL_OTHERS_MARKETING => [
+            Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_OTHERS_MARKETING],
+            Constants::FINAL_UTM_CAMPAIGN         => [],
+            Constants::REF_WEBSITE                => [],
+            Constants::SUBCHANNEL_PRIORITY        => 1,
+        ],
+        self::SUB_CHANNEL_PERFORMANCE      => [
+            Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_PERFORMANCE],
+            Constants::FINAL_UTM_CAMPAIGN         => [],
+            Constants::REF_WEBSITE                => [],
+            Constants::SUBCHANNEL_PRIORITY        => 1,
+        ],
+        self::SUB_CHANNEL_REFERRAL         => [
+            Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_REFERRAL],
+            Constants::FINAL_UTM_CAMPAIGN         => [],
+            Constants::REF_WEBSITE                => [],
+            Constants::SUBCHANNEL_PRIORITY        => 1,
+        ],
+        self::SUB_CHANNEL_SOCIAL           => [
+            Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_SOCIAL],
+            Constants::FINAL_UTM_CAMPAIGN         => [],
+            Constants::REF_WEBSITE                => [],
+            Constants::SUBCHANNEL_PRIORITY        => 1,
+        ],
     ];
+
+    /**
+     * Mapping of channels to sub-channels and their criteria. Only certain channels have been added here which are
+     * currently implemented. Mobile_App_Signups is not included here as it is updated during pre-signup.
+     * Priority is added but isn't used right now because PHP's associative array is ordered.
+     *
+     * @return array
+     */
+    public static function getChannelSubchannelMapping(): array
+    {
+        return [
+            self::PG              => [
+                self::PG_NITRO                     => [
+                    Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_PG_DASHBOARD],
+                    Constants::FINAL_UTM_CAMPAIGN         => ['nitro'],
+                    Constants::REF_WEBSITE                => [],
+                    Constants::SUBCHANNEL_PRIORITY        => 1,
+                ],
+                self::PG_BANKING_WIDGET            => [
+                    Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_PG_DASHBOARD],
+                    Constants::FINAL_UTM_CAMPAIGN         => ['banking_widget'],
+                    Constants::REF_WEBSITE                => [],
+                    Constants::SUBCHANNEL_PRIORITY        => 2,
+                ],
+                self::PG_ACCOUNT_LINKING           => [
+                    Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_PG_DASHBOARD],
+                    Constants::FINAL_UTM_CAMPAIGN         => ['account_linking'],
+                    Constants::REF_WEBSITE                => [],
+                    Constants::SUBCHANNEL_PRIORITY        => 3,
+                ],
+                self::PG_DIRECT_RAZORPAY           => [
+                    Constants::LAST_CLICK_SOURCE_CATEGORY => [],
+                    Constants::FINAL_UTM_CAMPAIGN         => [],
+                    Constants::REF_WEBSITE                => [
+                        '/razorpay.com\/$/',
+                        '/razorpay.com\/\?/',
+                        '/razorpay.com\/#/',
+                        '/razorpay.com\/payment-gateway\//',
+                        '/razorpay.com\/payment-pages\//',
+                        '/razorpay.com\/payment-links\//',
+                        '/razorpay.com\/settlement\//',
+                        '/razorpay.com\/e-mandate\//',
+                        '/razorpay.com\/accept-international-payments\//',
+                        '/razorpay.com\/offers\//',
+                        '/razorpay.com\/magic\//',
+                        '/razorpay.com\/links\/payment-links-reminders/',
+                        '/razorpay.com\/payment-buttons\//',
+                        '/razorpay.com\/freelancer-unregistered-business\//',
+                        '/razorpay.com\/smart-collect\//',
+                        '/razorpay.com\/qr-code\//',
+                        '/razorpay.com\/gst-calculator\//',
+                        '/razorpay.com\/flashcheckout\/manage\//',
+                        '/razorpay.com\/payments-app\//',
+                        '/razorpay.com\/upi\//',
+                        '/razorpay.com\/payment-link\//',
+                    ],
+                    Constants::SUBCHANNEL_PRIORITY        => 4,
+                ],
+                self::PG_APP_SWITCHER              => [
+                    Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_PG_DASHBOARD],
+                    Constants::FINAL_UTM_CAMPAIGN         => ['app_switcher'],
+                    Constants::REF_WEBSITE                => [],
+                    Constants::SUBCHANNEL_PRIORITY        => 5,
+                ],
+                self::PG_PG_DASHBOARD_ANNOUNCEMENT => [
+                    Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_PG_DASHBOARD],
+                    Constants::FINAL_UTM_CAMPAIGN         => [],
+                    Constants::REF_WEBSITE                => [],
+                    Constants::SUBCHANNEL_PRIORITY        => 6,
+                ],
+            ],
+            self::DIRECTX         => self::$defaultSubChannels,
+            self::DIRECTX_CA      => self::$defaultSubChannels,
+            self::DIRECTX_APPS    => self::$defaultSubChannels,
+            self::DIRECTX_CAPITAL => self::$defaultSubChannels,
+            self::DIRECT_SIGNUPS  => self::$defaultSubChannels,
+            self::OTHERS          => self::$defaultSubChannels,
+            self::UNMAPPED        => self::$defaultSubChannels,
+        ];
+    }
 }

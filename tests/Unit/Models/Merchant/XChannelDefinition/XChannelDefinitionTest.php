@@ -17,13 +17,6 @@ class XChannelDefinitionTest extends TestCase
     protected $xChannelDefinitionService;
 
     /**
-     * Mock of \RZP\Http\BasicAuth
-     *
-     * @var Mockery\MockInterface
-     */
-    protected $basicAuthMock;
-
-    /**
      * Mock of \RZP\Models\Merchant\Attribute\Core
      *
      * @var Mockery\MockInterface
@@ -43,7 +36,7 @@ class XChannelDefinitionTest extends TestCase
 
         $this->createTestDependencyMocks();
 
-        $this->xChannelDefinitionService = new Service($this->attributeCoreMock, $this->attributeServiceMock, $this->basicAuthMock);
+        $this->xChannelDefinitionService = new Service($this->attributeCoreMock, $this->attributeServiceMock);
     }
 
     public function testGetChannelAndSubchannel()
@@ -57,7 +50,7 @@ class XChannelDefinitionTest extends TestCase
                 ],
                 'expectedResult' => [
                     Constants::CHANNEL    => Channels::DIRECTX_CA,
-                    Constants::SUBCHANNEL => Channels::DIRECTX_BLOG,
+                    Constants::SUBCHANNEL => Channels::SUB_CHANNEL_BLOG,
                 ]
             ],
             [
@@ -87,7 +80,7 @@ class XChannelDefinitionTest extends TestCase
                 ],
                 'expectedResult' => [
                     Constants::CHANNEL    => Channels::DIRECTX_CAPITAL,
-                    Constants::SUBCHANNEL => Channels::DIRECTX_OTHERS_MARKETING,
+                    Constants::SUBCHANNEL => Channels::SUB_CHANNEL_OTHERS_MARKETING,
                 ]
             ],
             [
@@ -101,11 +94,33 @@ class XChannelDefinitionTest extends TestCase
             ],
             [
                 'input'          => [
+                    'website' => 'x.razorpay.com/auth/signup',
+                    'final_utm_source' => 'google',
+                    'final_utm_medium' => 'cpc',
+                ],
+                'expectedResult' => [
+                    Constants::CHANNEL    => Channels::DIRECT_SIGNUPS,
+                    Constants::SUBCHANNEL => Channels::SUB_CHANNEL_PERFORMANCE,
+                ]
+            ],
+            [
+                'input'          => [
                     'website' => 'razorpay.com/learn/',
                 ],
                 'expectedResult' => [
                     Constants::CHANNEL    => Channels::OTHERS,
                     Constants::SUBCHANNEL => Channels::UNMAPPED,
+                ]
+            ],
+            [
+                'input'          => [
+                    'website' => 'razorpay.com/learn/',
+                    'final_utm_source' => 'google',
+                    'final_utm_medium' => 'cpc',
+                ],
+                'expectedResult' => [
+                    Constants::CHANNEL    => Channels::OTHERS,
+                    Constants::SUBCHANNEL => Channels::SUB_CHANNEL_PERFORMANCE,
                 ]
             ],
             [
@@ -116,7 +131,17 @@ class XChannelDefinitionTest extends TestCase
                 ],
                 'expectedResult' => [
                     Constants::CHANNEL    => Channels::DIRECTX_APPS,
-                    Constants::SUBCHANNEL => Channels::DIRECTX_PERFORMANCE,
+                    Constants::SUBCHANNEL => Channels::SUB_CHANNEL_PERFORMANCE,
+                ]
+            ],
+            [
+                'input'          => [
+                    'final_utm_source' => 'google',
+                    'final_utm_medium' => 'cpc',
+                ],
+                'expectedResult' => [
+                    Constants::CHANNEL    => Channels::UNMAPPED,
+                    Constants::SUBCHANNEL => Channels::SUB_CHANNEL_PERFORMANCE,
                 ]
             ],
 
@@ -152,7 +177,7 @@ class XChannelDefinitionTest extends TestCase
             ],
             [
                 Attribute\Entity::TYPE  => Attribute\Type::SUBCHANNEL,
-                Attribute\Entity::VALUE => Channels::DIRECTX_PERFORMANCE,
+                Attribute\Entity::VALUE => Channels::SUB_CHANNEL_PERFORMANCE,
             ],
             [
                 Attribute\Entity::TYPE  => Attribute\Type::FINAL_UTM_SOURCE,
@@ -239,7 +264,7 @@ class XChannelDefinitionTest extends TestCase
                             Attribute\Entity::PRODUCT => Product::BANKING,
                             Attribute\Entity::GROUP   => Attribute\Group::X_SIGNUP,
                             Attribute\Entity::TYPE    => Channels::DIRECTX_CAPITAL,
-                            Attribute\Entity::VALUE   => Channels::DIRECTX_BLOG,
+                            Attribute\Entity::VALUE   => Channels::SUB_CHANNEL_BLOG,
                         ]
                     ])
             );
@@ -311,8 +336,6 @@ class XChannelDefinitionTest extends TestCase
 
     private function createTestDependencyMocks()
     {
-        $this->basicAuthMock = Mockery::mock('RZP\Http\BasicAuth');
-
         $this->attributeCoreMock = Mockery::mock('RZP\Models\Merchant\Attribute\Core');
 
         $this->attributeServiceMock = Mockery::mock('RZP\Models\Merchant\Attribute\Service');

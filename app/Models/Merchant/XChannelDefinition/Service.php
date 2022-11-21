@@ -18,15 +18,13 @@ class Service extends Base\Service
 
     protected $attributeService;
 
-    public function __construct($attributeCore = null, $attributeService = null, $basicAuth = null)
+    public function __construct($attributeCore = null, $attributeService = null)
     {
         parent::__construct();
 
         $this->attributeCore = $attributeCore ?? new Attribute\Core();
 
         $this->attributeService = $attributeService ?? new Attribute\Service();
-
-        $this->auth = $basicAuth ?? $this->auth;
     }
 
 
@@ -52,7 +50,7 @@ class Service extends Base\Service
         $finalUtmCampaign = $input['final_utm_campaign'] ?? '';
         $lcsCategory      = $this->getLastClickSourceCategory($finalUtmSource, $finalUtmMedium);
 
-        foreach (Channels::$channelSubchannelMapping as $channel => $subchannelDetails)
+        foreach (Channels::getChannelSubchannelMapping() as $channel => $subchannelDetails)
         {
             // If URL patterns for the channel are specified, we find channel using that and use other parameters for
             // finding sub-channel
@@ -74,7 +72,7 @@ class Service extends Base\Service
             }
             else
             {
-                $subchannels = Channels::$channelSubchannelMapping[$channel];
+                $subchannels = Channels::getChannelSubchannelMapping()[$channel];
                 if (!empty($subchannels))
                 {
                     $subchannel = $this->getSubchannel($channel, $lcsCategory, $finalUtmCampaign, $refWebsite);
@@ -124,9 +122,9 @@ class Service extends Base\Service
 
     public function getCurrentChannelDetails(Entity $merchant): array
     {
-        $originalMode = $this->auth->getMode();
+        $originalMode = $this->app['rzp.mode'];
         // Use live DB to fetch channel details
-        $this->auth->setModeAndDbConnection(Mode::LIVE);
+        $this->app['rzp.mode'] = Mode::LIVE;
 
         $attributes = $this->attributeCore->fetchKeyValues($merchant, Product::BANKING, Attribute\Group::X_SIGNUP,
                                                            [Attribute\Type::CHANNEL, Attribute\Type::SUBCHANNEL]);
@@ -146,8 +144,8 @@ class Service extends Base\Service
             }
         }
 
-        // Reset mode back to original value
-        $this->auth->setModeAndDbConnection($originalMode);
+        // Reset mode back to original value (or live mode as fallback if empty)
+        $this->app['rzp.mode'] = $originalMode ?? Mode::LIVE;
 
         return [
             Constants::CHANNEL    => $channel,
@@ -415,7 +413,7 @@ class Service extends Base\Service
 
     protected function getSubchannel(string $channel, string $lcsCategory, string $finalUtmCampaign, string $refWebsite)
     {
-        $subchannels = Channels::$channelSubchannelMapping[$channel];
+        $subchannels = Channels::getChannelSubchannelMapping()[$channel];
         if (empty($subchannels))
         {
             return Channels::UNMAPPED; // If the channel doesn't have any sub-channels, we'll consider sub-channel as Unmapped
