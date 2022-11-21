@@ -245,7 +245,9 @@ trait RepositoryFetch
 
             if($queryDuration > 100) {
                 $this->trace->info(TraceCode::PAGINATED_RESPONSE_DURATION, [
-                    'duration_ms' => $queryDuration,
+                    'duration_ms'       => $queryDuration,
+                    'query'             => $query->toSql(),
+                    'merchantId'        => $merchantId,
                 ]);
             }
 

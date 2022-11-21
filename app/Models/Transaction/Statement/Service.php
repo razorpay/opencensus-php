@@ -186,10 +186,13 @@ class Service extends Transaction\Service
             );
 
             $response = $this->repo->direct_account_statement
-                ->fetch($input, $this->merchant->getId(), ConnectionType::SLAVE, $isReArchExperimentEnabled)->toArrayPublic();
+                ->fetch($input, $this->merchant->getId(), ConnectionType::SLAVE,
+                        $isReArchExperimentEnabled, true)->toArrayPublic();
+
+            $endTime = millitime() - $startTime;
 
             $this->trace->info(
-                TraceCode::FETCH_MULTIPLE_FOR_TRANSACTIONS_RESPONSE,
+                TraceCode::FETCH_MULTIPLE_FOR_CA_TRANSACTIONS_RESPONSE,
                 [
                     'merchant_id'          => $this->merchant->getId(),
                     'balance_id'           => $balance->getId(),
@@ -197,12 +200,13 @@ class Service extends Transaction\Service
                     'balance_account_type' => $balance->getAccountType(),
                     'connection'           => 'mysql-slave',
                     'response'             => $response,
+                    'duration_ms'          => $endTime,
                 ]
             );
 
             $this->trace->histogram(
                 TxnMetric::TRANSACTION_CA_REQUEST_LATENCY_MILLISECONDS,
-                millitime() - $startTime,
+                $endTime,
                 $dimension);
 
             return $response;

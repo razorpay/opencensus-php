@@ -58,6 +58,14 @@ class Repository extends Base\Repository
     ];
 
     /**
+     * In GET and LIST for only source of type payout laze loads following nested relations for Dashboard.
+     * @var array
+     */
+    protected $expandsForTypePayoutForDashboard = [
+        'source.fundAccount.contact',
+    ];
+
+    /**
      * In GET and LIST for only source of type reversal laze loads following nested relations.
      * @var array
      */
@@ -113,7 +121,8 @@ class Repository extends Base\Repository
     public function fetch(array $input,
                           string $merchantId = null,
                           string $connectionType = null,
-                          bool $isReArchExperimentEnabled = false): PublicCollection
+                          bool $isReArchExperimentEnabled = false,
+                          bool $isTransactionBankingApi = false): PublicCollection
     {
         $connection = $this->getConnectionFromType($connectionType);
 
@@ -144,8 +153,12 @@ class Repository extends Base\Repository
             'merchantId'     => $merchantId,
         ]);
 
+        $payoutExpands = (($isReArchExperimentEnabled === true) and
+                          ($isTransactionBankingApi === true)) ?
+                            $this->expandsForTypePayoutForDashboard : $this->expandsForTypePayout;
+
         // After fetching settlement collection, we lazy load source relations for payout.
-        $statements->where(Entity::ENTITY_TYPE, E::PAYOUT)->load($this->expandsForTypePayout);
+        $statements->where(Entity::ENTITY_TYPE, E::PAYOUT)->load($payoutExpands);
 
         if($isReArchExperimentEnabled === true)
         {
