@@ -27,6 +27,8 @@ abstract class Handler
 
     protected $trace;
 
+    protected $mutex;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -34,6 +36,8 @@ abstract class Handler
         $this->repo = $this->app['repo'];
 
         $this->trace = $this->app['trace'];
+
+        $this->mutex = $this->app['api.mutex'];
     }
 
     public abstract function execute(string $merchantId, Entity $action, array $params = []);

@@ -181,6 +181,7 @@ class Constants
     const SR_SENSITIVE_BUCKET_4           = 'sr_sensitive_bucket_4';
 
     const FEATURE                         = 'feature';
+    const DISABLED_FEATURE                = 'disabled_feature';
     const DISPLAY_NAME                    = 'display_name';
     const CONTACT_NAME                    = 'contact_name';
     const DOCUMENTATION                   = 'documentation';

@@ -56,47 +56,20 @@ class Service extends Base\Service
         $timeBound = $input[Constants::TIME_BOUND] ?? false;
         $core      = (new Core);
 
-        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
-            RazorxTreatment::SKIP_OLD_XPRESS_ONBOARDING_ESCALATION,
-            Mode::LIVE);
-
-        $isOldXpressEscalationSkipped = ( $experimentResult === 'on' ) ? true : false;
-
-        if($isOldXpressEscalationSkipped === true)
+        try
         {
-            try
-            {
-                $core->handleNoDocGmvLimitBreach($timeBound);
+            $core->handleNoDocGmvLimitBreach($timeBound);
 
-                $this->trace->count(Metric::NEW_XPRESS_ESCALATIONS_SUCCESS_TOTAL);
-            }
-            catch (\Exception $e)
-            {
-                $this->trace->info(TraceCode::ESCALATION_ATTEMPT_FAILED, [
-                    'type'  => 'new_no_doc_escalations',
-                    'error' => $e->getMessage()
-                ]);
-
-                $this->trace->count(Metric::NEW_XPRESS_ESCALATIONS_FAIL_TOTAL);
-            }
+            $this->trace->count(Metric::NEW_XPRESS_ESCALATIONS_SUCCESS_TOTAL);
         }
-        else
+        catch (\Exception $e)
         {
-            try
-            {
-                $core->handleNoDocLimitBreach();
+            $this->trace->info(TraceCode::ESCALATION_ATTEMPT_FAILED, [
+                'type'  => 'xpress_escalations',
+                'error' => $e->getMessage()
+            ]);
 
-                $this->trace->count(Metric::XPRESS_ESCALATIONS_SUCCESS_TOTAL);
-            }
-            catch (\Exception $e)
-            {
-                $this->trace->info(TraceCode::ESCALATION_ATTEMPT_FAILED, [
-                    'type'  => 'no_doc_escalations',
-                    'error' => $e->getMessage()
-                ]);
-
-                $this->trace->count(Metric::XPRESS_ESCALATIONS_FAIL_TOTAL);
-            }
+            $this->trace->count(Metric::NEW_XPRESS_ESCALATIONS_FAIL_TOTAL);
         }
     }
 

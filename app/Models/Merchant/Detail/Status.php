@@ -59,6 +59,8 @@ class Status
     ];
 
     const MERCHANT_NO_DOC_OPEN_STATUSES = [
+        self::UNDER_REVIEW,
+        self::NEEDS_CLARIFICATION,
         self::ACTIVATED_KYC_PENDING
     ];
 

@@ -124,6 +124,12 @@ class Handler
 
                 return $merchant->isFeatureEnabled($value) === true;
             }
+            else if ($key === FeatureConstants::DISABLED_FEATURE)
+            {
+                $merchant = $merchantDetails->merchant;
+
+                return $merchant->isFeatureEnabled($value) === false;
+            }
             else if ($key === Constants::TAG)
             {
                 $merchantId = $merchantDetails->getId();

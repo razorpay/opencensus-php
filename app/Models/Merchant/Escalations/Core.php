@@ -20,6 +20,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\Segment as SegmentAnalytics;
 use RZP\Models\Merchant\Constants as MConstants;
 use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Escalations\Actions\Entity as ActionEntity;
@@ -976,6 +977,29 @@ class Core extends Base\Core
 
         $escalationStartTime = microtime(true);
 
+        $merchantIdList = $this->repo->feature->getMerchantIdsHavingFeature(FeatureConstants::NO_DOC_ONBOARDING, $merchantIdList);
+
+        if($merchantIdList === null)
+        {
+            $this->trace->info(
+                TraceCode::NO_DOC_ONBOARDING_ESCALATION_SKIPPED,
+                [
+                    'step'     => 'xpress_merchants',
+                    'reason'   => 'Xpress escalation skipped since filtered merchants does not have no_doc_onboarding feature enabled',
+                ]
+            );
+
+            return;
+        }
+
+        $this->trace->info(
+            TraceCode::NO_DOC_ONBOARDING_ESCALATION_MERCHANTS,
+            [
+                'xpress_merchants' => $merchantIdList,
+                'step'   => 'xpress_merchants',
+            ]
+        );
+
         $merchants = $this->repo->merchant->findManyOrFailPublic($merchantIdList);
 
         $thresholdToMerchantMapping = [];
@@ -992,6 +1016,17 @@ class Core extends Base\Core
             [$merchantsGmvBreachList, $merchantsNinetyOnePercentileGmvList, $merchantsNinetyPercentileGmvList]
                 = $this->filterNoDocEscalatedMerchants($merchantIds, $threshold, $merchantsGMVList);
 
+            $this->trace->info(
+                TraceCode::NO_DOC_ONBOARDING_ESCALATION_MERCHANTS,
+                [
+                    'xpress_merchants'              => $merchantIdList,
+                    'GMV breached merchants'        => $merchantsGmvBreachList,
+                    '90% GMV breached merchants'    => $merchantsNinetyPercentileGmvList,
+                    '91% GMV breached merchants'    => $merchantsNinetyOnePercentileGmvList,
+                    'step'                          => 'xpress_merchants_escalation',
+                ]
+            );
+
             $this->handleNoDocOnboardingEscalation($merchantsNinetyPercentileGmvList, Constants::NO_DOC_P90_GMV, $threshold);
 
             $this->handleNoDocOnboardingEscalation($merchantsNinetyOnePercentileGmvList, Constants::NO_DOC_P91_GMV, $threshold);
@@ -1003,7 +1038,7 @@ class Core extends Base\Core
             'escalation_startTime'          => $startTime,
             'overall_escalation_duration'   => (microtime(true) - $startTime) * 1000,
             'escalation_duration'           => (microtime(true) - $escalationStartTime) * 1000,
-            'escalation_type'               => 'new_no_doc_escalation'
+            'escalation_type'               => 'xpress_escalation'
         ]);
     }
 
@@ -1233,62 +1268,6 @@ class Core extends Base\Core
                 );
             }
         }
-    }
-
-    public function handleNoDocLimitBreach()
-    {
-        $startTime = microtime(true);
-
-        $thresholdToMerchantMapping = [];
-
-        $merchantIds = $this->repo->merchant_detail->fetchMerchantIdsByActivationStatus([DetailStatus::ACTIVATED_KYC_PENDING]);
-
-        $merchants = $this->repo->merchant->findManyOrFailPublic($merchantIds);
-
-        if($merchants->count() > 0)
-        {
-            foreach ($merchants as $merchant)
-            {
-                $threshold = (new Merchant\AccountV2\Core())->getGmvLimitForNoDocMerchant($merchant);
-
-                $thresholdToMerchantMapping[$threshold][] = $merchant->getId();
-            }
-
-            foreach ($thresholdToMerchantMapping as $threshold => $merchantIds)
-            {
-                [$merchantsGmvList, $merchantsNinetyOnePercentileGmvList, $merchantsNinetyPercentileGmvList] =
-                    $this->repo->transaction->fetchTotalAmountByTransactionTypeWithThresholdInRange($merchantIds, MConstants::PAYMENT, $threshold);
-
-                $this->handleNoDocOnboardingEscalation($merchantsNinetyPercentileGmvList, Constants::NO_DOC_P90_GMV, $threshold);
-
-                $this->handleNoDocOnboardingEscalation($merchantsNinetyOnePercentileGmvList, Constants::NO_DOC_P91_GMV, $threshold);
-
-                $this->handleNoDocOnboardingEscalation($merchantsGmvList, Constants::HARD_LIMIT_NO_DOC, $threshold);
-            }
-
-            $this->trace->info(
-                TraceCode::NO_DOC_ONBOARDING_ESCALATION_MERCHANTS,
-                [
-                    'merchants' => $merchantIds,
-                    'reason'    => 'No doc onboarding escalation completed',
-                ]
-            );
-        }
-        else
-        {
-            $this->trace->info(
-                TraceCode::NO_DOC_ONBOARDING_ESCALATION_SKIPPED,
-                [
-                    'reason'    => 'no merchants found',
-                ]
-            );
-        }
-
-        $this->trace->info(TraceCode::NO_DOC_ONBOARDING_ESCALATION_LATENCY, [
-            'escalation_startTime'  => $startTime,
-            'escalation_duration'   => (microtime(true) - $startTime) * 1000,
-            'escalation_type'       => 'old_no_doc_escalation'
-        ]);
     }
 
     public function handleNoDocOnboardingEscalation(array $merchantsGmvList, string $milestone, int $threshold)

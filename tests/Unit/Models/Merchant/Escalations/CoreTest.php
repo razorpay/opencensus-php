@@ -293,6 +293,77 @@ class CoreTest extends TestCase
         $this->assertFeatureAbsence('no_doc_onboarding', $merchant->id);
     }
 
+    public function testEscalation10kMilestoneTimeBoundFalseFilterNoDocMerchant()
+    {
+        $this->createAndFetchMocks(true);
+
+        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
+            'activation_status'         => 'under_review',
+            'activation_form_milestone' => 'L1'
+        ]);
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $this->fixtures->create('feature', [
+            'name'        => 'no_doc_onboarding',
+            'entity_id'   => $merchantId,
+            'entity_type' => 'merchant'
+        ]);
+
+        $this->createTransaction($merchantId, 'payment', 10000);
+
+        (new Escalations\Core)->triggerPaymentEscalations(false);
+
+        $escalation = $this->getDbLastEntity('merchant_onboarding_escalations', 'live');
+
+        // Verify no escalation is triggered for the merchant
+        $this->assertEmpty($escalation);
+    }
+
+    public function testHardLimitNoDocEscalationInNeedsClarificationState()
+    {
+        $merchant = $this->createPrerequisiteForNoDocEscalation();
+
+        $this->fixtures->on('live')->create('merchant_detail:filled_entity', [
+            'merchant_id'       => $merchant['id'],
+            'activation_status' => 'needs_clarification',
+            'business_website'  => 'http://hello.com'
+        ]);
+
+        $this->createTransaction($merchant->getId(), 'payment', 55600);
+
+        (new Escalations\Core())->handleNoDocGmvLimitBreach();
+
+        $this->performAssertionsForNoDocTests($merchant, Escalations\Constants::HARD_LIMIT_NO_DOC,
+            Escalations\Constants::HARD_LIMIT_KYC_PENDING_THRESHOLD_2_WAY, MerchantDetail\Status::NEEDS_CLARIFICATION);
+
+        $this->assertFundHoldsForNoDoc($merchant, true, true,Actions\Handlers\Constants::HOLD_FUNDS_REASON_FOR_NO_DOC_LIMIT_BREACH);
+
+        $this->assertFeatureAbsence('no_doc_onboarding', $merchant->id);
+    }
+
+    public function testHardLimitNoDocEscalationInUnderReviewState()
+    {
+        $merchant = $this->createPrerequisiteForNoDocEscalation();
+
+        $this->fixtures->on('live')->create('merchant_detail:filled_entity', [
+            'merchant_id'       => $merchant['id'],
+            'activation_status' => 'under_review',
+            'business_website'  => 'http://hello.com'
+        ]);
+
+        $this->createTransaction($merchant->getId(), 'payment', 55600);
+
+        (new Escalations\Core())->handleNoDocGmvLimitBreach();
+
+        $this->performAssertionsForNoDocTests($merchant, Escalations\Constants::HARD_LIMIT_NO_DOC,
+            Escalations\Constants::HARD_LIMIT_KYC_PENDING_THRESHOLD_2_WAY, MerchantDetail\Status::UNDER_REVIEW);
+
+        $this->assertFundHoldsForNoDoc($merchant, true, true,Actions\Handlers\Constants::HOLD_FUNDS_REASON_FOR_NO_DOC_LIMIT_BREACH);
+
+        $this->assertFeatureAbsence('no_doc_onboarding', $merchant->id);
+    }
+
     public function testHardLimitNoDocEscalationWithCompleteKYC()
     {
         $merchant = $this->createPrerequisiteForNoDocEscalation();
@@ -392,6 +463,48 @@ class CoreTest extends TestCase
         $this->assertFundHoldsForNoDoc($merchant, false, false);
     }
 
+    public function testNinetyPercentileGmvWarningForNoDocInUnderReview()
+    {
+        $merchant = $this->createPrerequisiteForNoDocEscalation();
+
+        $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
+            'merchant_id'       => $merchant['id'],
+            'activation_status' => 'under_review',
+            'business_website'  => 'http://hello.com'
+        ]);
+
+        $this->createTransaction($merchant->getId(), 'payment', 45000);
+
+        (new Escalations\Core())->handleNoDocGmvLimitBreach();
+
+        $this->performAssertionsForNoDocTests($merchant, Escalations\Constants::NO_DOC_P90_GMV,
+            Escalations\Constants::HARD_LIMIT_KYC_PENDING_THRESHOLD_2_WAY,
+            MerchantDetail\Status::UNDER_REVIEW);
+
+        $this->assertFundHoldsForNoDoc($merchant, false, false);
+    }
+
+    public function testNinetyPercentileGmvWarningForNoDocInNC()
+    {
+        $merchant = $this->createPrerequisiteForNoDocEscalation();
+
+        $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
+            'merchant_id'       => $merchant['id'],
+            'activation_status' => 'needs_clarification',
+            'business_website'  => 'http://hello.com'
+        ]);
+
+        $this->createTransaction($merchant->getId(), 'payment', 45000);
+
+        (new Escalations\Core())->handleNoDocGmvLimitBreach();
+
+        $this->performAssertionsForNoDocTests($merchant, Escalations\Constants::NO_DOC_P90_GMV,
+            Escalations\Constants::HARD_LIMIT_KYC_PENDING_THRESHOLD_2_WAY,
+            MerchantDetail\Status::NEEDS_CLARIFICATION);
+
+        $this->assertFundHoldsForNoDoc($merchant, false, false);
+    }
+
     public function testNinetyOnePercentileGmvWarningForNoDoc()
     {
         $merchant = $this->createPrerequisiteForNoDocEscalation();
@@ -454,7 +567,7 @@ class CoreTest extends TestCase
 
     private function assertFundHoldsForNoDoc(MerchantEntity $merchant, bool $expHoldFunds, bool $expStopPayments, string $expHoldFundsReason = null)
     {
-        $merchant = $this->getDbEntityById('merchant', $merchant->id);
+        $merchant = $this->getDbEntityById('merchant', $merchant->getId());
 
         self::assertEquals($expStopPayments, !$merchant->getAttribute('live'));
         self::assertEquals($expHoldFunds, $merchant->getAttribute('hold_funds'));

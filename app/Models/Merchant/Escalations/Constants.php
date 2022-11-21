@@ -121,8 +121,9 @@ class Constants
                 self::DESCRIPTION => "transacted after L1",
                 self::TO          => self::ADMIN,
                 self::CONDITIONS  => [
-                    DEntity::ACTIVATION_FORM_MILESTONE => DConstants::L1_SUBMISSION,
-                    DEntity::ACTIVATION_STATUS         => Status::MERCHANT_OPEN_STATUSES
+                    DEntity::ACTIVATION_FORM_MILESTONE          => DConstants::L1_SUBMISSION,
+                    DEntity::ACTIVATION_STATUS                  => Status::MERCHANT_OPEN_STATUSES,
+                    FeatureConstants::DISABLED_FEATURE          => FeatureConstants::NO_DOC_ONBOARDING
                 ],
                 self::MILESTONE   => 'L1',
                 self::ACTIONS     => [
@@ -137,8 +138,9 @@ class Constants
                 self::DESCRIPTION => "soft limit breach on activated mcc pending",
                 self::TO          => self::MERCHANT,
                 self::CONDITIONS  => [
-                    DEntity::ACTIVATION_STATUS => Status::ACTIVATED_MCC_PENDING,
-                    DEntity::BUSINESS_WEBSITE  => self::IS_NOT_NULL
+                    DEntity::ACTIVATION_STATUS                  => Status::ACTIVATED_MCC_PENDING,
+                    DEntity::BUSINESS_WEBSITE                   => self::IS_NOT_NULL,
+                    FeatureConstants::DISABLED_FEATURE          => FeatureConstants::NO_DOC_ONBOARDING
                 ],
                 self::MILESTONE   => 'soft_limit_level_1',
                 self::ACTIONS     => [
@@ -157,8 +159,9 @@ class Constants
                 self::DESCRIPTION => "payments breach of 5k after L1, before L2",
                 self::TO          => self::MERCHANT,
                 self::CONDITIONS  => [
-                    DEntity::ACTIVATION_FORM_MILESTONE => DConstants::L1_SUBMISSION,
-                    DEntity::ACTIVATION_STATUS         => Status::MERCHANT_OPEN_STATUSES
+                    DEntity::ACTIVATION_FORM_MILESTONE          => DConstants::L1_SUBMISSION,
+                    DEntity::ACTIVATION_STATUS                  => Status::MERCHANT_OPEN_STATUSES,
+                    FeatureConstants::DISABLED_FEATURE          => FeatureConstants::NO_DOC_ONBOARDING
                 ],
                 self::MILESTONE   => 'L1',
                 self::ACTIONS     => [
@@ -176,8 +179,9 @@ class Constants
                 self::DESCRIPTION => "payments breach of 10k after L1, before L2",
                 self::TO          => self::MERCHANT,
                 self::CONDITIONS  => [
-                    DEntity::ACTIVATION_FORM_MILESTONE => DConstants::L1_SUBMISSION,
-                    DEntity::ACTIVATION_STATUS         => Status::MERCHANT_OPEN_STATUSES
+                    DEntity::ACTIVATION_FORM_MILESTONE          => DConstants::L1_SUBMISSION,
+                    DEntity::ACTIVATION_STATUS                  => Status::MERCHANT_OPEN_STATUSES,
+                    FeatureConstants::DISABLED_FEATURE          => FeatureConstants::NO_DOC_ONBOARDING
                 ],
                 self::MILESTONE   => 'L1',
                 self::ACTIONS     => [
@@ -195,8 +199,9 @@ class Constants
                 self::DESCRIPTION => "payments breach of 15k after L1, before L2",
                 self::TO          => self::MERCHANT,
                 self::CONDITIONS  => [
-                    DEntity::ACTIVATION_FORM_MILESTONE => DConstants::L1_SUBMISSION,
-                    DEntity::ACTIVATION_STATUS         => Status::MERCHANT_OPEN_STATUSES
+                    DEntity::ACTIVATION_FORM_MILESTONE          => DConstants::L1_SUBMISSION,
+                    DEntity::ACTIVATION_STATUS                  => Status::MERCHANT_OPEN_STATUSES,
+                    FeatureConstants::DISABLED_FEATURE          => FeatureConstants::NO_DOC_ONBOARDING
                 ],
                 self::MILESTONE   => 'L1',
                 self::ACTIONS     => [
@@ -302,8 +307,9 @@ class Constants
                 self::DESCRIPTION => "payments breach of 1cr after L2",
                 self::TO          => self::MERCHANT,
                 self::CONDITIONS  => [
-                    DEntity::ACTIVATION_FORM_MILESTONE => DConstants::L2_SUBMISSION,
-                    DEntity::ACTIVATION_STATUS         => Status::MERCHANT_OPEN_STATUSES
+                    DEntity::ACTIVATION_FORM_MILESTONE          => DConstants::L2_SUBMISSION,
+                    DEntity::ACTIVATION_STATUS                  => Status::MERCHANT_OPEN_STATUSES,
+                    FeatureConstants::DISABLED_FEATURE          => FeatureConstants::NO_DOC_ONBOARDING
                 ],
                 self::MILESTONE   => 'L2',
                 self::ACTIONS     => [
@@ -322,10 +328,10 @@ class Constants
     const NO_DOC_PAYMENTS_ESCALATION_MATRIX = [
         self::NO_DOC_P90_GMV => [
             [
-                self::DESCRIPTION => "gmv limit 90% reached warning on activated kyc pending",
+                self::DESCRIPTION => "gmv limit 90% reached warning for no-doc onboarded merchant",
                 self::TO          => self::MERCHANT,
                 self::CONDITIONS  => [
-                    DEntity::ACTIVATION_STATUS  => Status::ACTIVATED_KYC_PENDING,
+                    DEntity::ACTIVATION_STATUS  => Status::MERCHANT_NO_DOC_OPEN_STATUSES,
                     FeatureConstants::FEATURE   => FeatureConstants::NO_DOC_ONBOARDING
                 ],
                 self::MILESTONE   => self::NO_DOC_P90_GMV,
@@ -343,10 +349,10 @@ class Constants
         ],
         self::NO_DOC_P91_GMV => [
             [
-                self::DESCRIPTION => "gmv limit 91% reached warning on activated kyc pending",
+                self::DESCRIPTION => "gmv limit 91% reached warning for no-doc onboarded merchant",
                 self::TO          => self::MERCHANT,
                 self::CONDITIONS  => [
-                    DEntity::ACTIVATION_STATUS  => Status::ACTIVATED_KYC_PENDING,
+                    DEntity::ACTIVATION_STATUS  => Status::MERCHANT_NO_DOC_OPEN_STATUSES,
                     FeatureConstants::FEATURE   => FeatureConstants::NO_DOC_ONBOARDING
                 ],
                 self::MILESTONE   => self::NO_DOC_P91_GMV,
@@ -364,10 +370,10 @@ class Constants
         ],
         self::HARD_LIMIT_NO_DOC => [
             [
-                self::DESCRIPTION => "gmv limit breach on activated kyc pending",
+                self::DESCRIPTION => "gmv limit breach for no-doc onboarded merchant",
                 self::TO          => self::MERCHANT,
                 self::CONDITIONS  => [
-                    DEntity::ACTIVATION_STATUS  => Status::ACTIVATED_KYC_PENDING,
+                    DEntity::ACTIVATION_STATUS  => Status::MERCHANT_NO_DOC_OPEN_STATUSES,
                     FeatureConstants::FEATURE   => FeatureConstants::NO_DOC_ONBOARDING
                 ],
                 self::MILESTONE   => self::HARD_LIMIT_NO_DOC,
