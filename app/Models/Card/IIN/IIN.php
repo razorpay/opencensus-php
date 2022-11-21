@@ -108805,4 +108805,16 @@ class IIN
     {
         return in_array($iin, self::$prepaidIins);
     }
+
+    public static function isDomesticBin($binCountry='IN', $merchantCountry='IN')
+    {
+        $binCountry = $binCountry ?? 'IN';
+        $merchantCountry = $merchantCountry ?? 'IN';
+        return $binCountry === $merchantCountry;
+    }
+
+    public static function isInternational($binCountry='IN', $merchantCountry='IN')
+    {
+        return self::isDomesticBin($binCountry,$merchantCountry) === false;
+    }
 }

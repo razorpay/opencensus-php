@@ -10,6 +10,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card;
+use RZP\Models\Card\IIN;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
@@ -1066,7 +1067,7 @@ class Entity extends Base\PublicEntity
     //disabled dcc for optimiser merchants because of money leak incidents
     public function isDCCEnabled()
     {
-        return $this->hasCard() and (new Payment\Service)->isDccEnabledIIN($this->card->iinRelation) and ($this->merchant->isFeatureEnabled(Feature\Constants::RAAS) === false);
+        return $this->hasCard() and (new Payment\Service)->isDccEnabledIIN($this->card->iinRelation, $this->merchant) and ($this->merchant->isFeatureEnabled(Feature\Constants::RAAS) === false);
     }
 
     public function getBillingAddress()

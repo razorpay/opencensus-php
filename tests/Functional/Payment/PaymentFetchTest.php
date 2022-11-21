@@ -1211,6 +1211,8 @@ class PaymentFetchTest extends TestCase
 
         $paymentArray["currency"] = "MYR";
 
+        $this->fixtures->edit('iin', '401200', [ 'country' => 'MY']);
+
         $response = $this->doAuthAndCapturePayment($paymentArray);
 
         $paymentId = $response['id'];
@@ -1229,6 +1231,8 @@ class PaymentFetchTest extends TestCase
             'country_code' => 'MY']);
 
         $paymentArray = $this->getDefaultPaymentArray();
+
+        $this->fixtures->edit('iin', '401200', [ 'country' => 'MY']);
 
         $response = $this->doAuthAndCapturePayment($paymentArray);
 

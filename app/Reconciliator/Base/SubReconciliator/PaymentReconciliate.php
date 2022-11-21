@@ -1871,7 +1871,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             $reconInternational = false;
         }
 
-        $currentInternational = $this->paymentIin->isInternational();
+        $currentInternational = IIN\IIN::isInternational($this->paymentIin->getCountry(), $this->merchant->getCountry());
 
         if (($shouldPersistCardLocale === true) and
             ($currentInternational === false) and

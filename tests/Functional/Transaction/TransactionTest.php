@@ -169,7 +169,7 @@ class TransactionTest extends TestCase
 
     public function testTransactionAfterCapturingPaymentMalaysia()
     {
-        $this->fixtures->merchant->edit('10000000000000', ['country_code' => 'MY']);
+        $this->fixtures->merchant->edit('10000000000000', ['country_code' => 'MY', 'convert_currency' => true]);
 
         $payment = $this->getDefaultPaymentArray();
 

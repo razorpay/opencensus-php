@@ -8,6 +8,7 @@ use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Card\IIN;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
@@ -630,12 +631,18 @@ class Service extends Base\Service
             Entity::NETWORK         => $iin->getNetwork(),
             Entity::TYPE            => $iin->getType(),
             Entity::SUBTYPE         => $iin->getSubType(),
-            Entity::ISSUER_CODE     => $iin->isInternational()=== false ? $iin->getIssuer() : Entity::UNKNOWN,
-            Entity::ISSUER_NAME     => $iin->isInternational()=== false ? $iin->getIssuerName() : Entity::UNKNOWN,
-            Entity::INTERNATIONAL   => $iin->isInternational(),
             Entity::CARD_IIN        => "null"
         ];
 
+        if(IIN\IIN::isDomesticBin($iin->getCountry(), 'IN')){
+            $data[ENTITY::ISSUER_CODE] = $iin->getIssuer();
+            $data[ENTITY::ISSUER_NAME] = $iin->getIssuerName();
+            $data[ENTITY::INTERNATIONAL] = false;
+        }else{
+            $data[ENTITY::ISSUER_CODE] = Entity::UNKNOWN;
+            $data[ENTITY::ISSUER_NAME] = Entity::UNKNOWN;
+            $data[ENTITY::INTERNATIONAL] = true;
+        }
         $this->formatResponses($data);
 
         return $data;

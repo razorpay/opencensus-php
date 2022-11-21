@@ -1019,6 +1019,71 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($card['international'], true);
     }
 
+    public function testInternationalPaymentMyMerchantMyCard()
+    {
+        $this->fixtures->merchant->setCountry('MY');
+
+        $this->fixtures->iin->create([
+            'iin' => '514024',
+            'country' => 'MY',
+            'network' => 'MasterCard',
+            'type'    => 'credit',
+        ]);
+
+        $this->payment['card']['number'] = '5140241918501669';
+
+        $this->doAuthPayment($this->payment);
+
+        $card = $this->getLastEntity('card', true);
+        $this->assertEquals($card['international'], false);
+    }
+
+    public function testInternationalPaymentMyMerchantIndianCard()
+    {
+        $this->fixtures->merchant->setCountry('MY');
+        $this->payment['card']['number'] = '4111111111111111';
+
+        $this->doAuthPayment($this->payment);
+
+        $card = $this->getLastEntity('card', true);
+        $this->assertEquals($card['international'], true);
+    }
+
+
+    public function testInternationalPaymentINMerchantINCard()
+    {
+        $this->fixtures->merchant->setCountry('IN');
+
+        $this->payment['card']['number'] = '4111111111111111';
+
+        $this->doAuthPayment($this->payment);
+
+        $card = $this->getLastEntity('card', true);
+        $this->assertEquals($card['international'], false);
+    }
+
+    public function testInternationalPaymentINMerchantMYCard()
+    {
+        $this->fixtures->merchant->enableInternational();
+        $this->fixtures->merchant->setCountry('IN');
+
+        $this->fixtures->iin->create([
+            'iin' => '514024',
+            'country' => 'MY',
+            'network' => 'MasterCard',
+            'type'    => 'credit',
+        ]);
+
+        $this->payment['card']['number'] = '5140241918501669';
+
+        $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
+
+        $this->doAuthPayment($this->payment);
+
+        $card = $this->getLastEntity('card', true);
+        $this->assertEquals($card['international'], true);
+    }
+
     public function testRaaSInternationalPayment()
     {
         $this->fixtures->merchant->enableInternational();
@@ -5218,6 +5283,10 @@ class PaymentCreateTest extends TestCase
         $payment['amount'] = '1001';
 
         $payment['currency'] = 'MYR';
+
+        $this->fixtures->edit('iin', 401200, [
+            'country' => 'MY'
+        ]);
 
         $this->doAuthPayment($payment);
 

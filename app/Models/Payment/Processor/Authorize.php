@@ -3456,7 +3456,7 @@ trait Authorize
             case Method::CARD :
                 if (($payment->isCard() === false) or
                     ($payment->card === null) or
-                    ((new Payment\Service)->isDccEnabledIIN($payment->card->iinRelation) === false))
+                    ((new Payment\Service)->isDccEnabledIIN($payment->card->iinRelation, $payment->merchant) === false))
                 {
                     return;
                 }
@@ -4105,7 +4105,7 @@ trait Authorize
             return;
         }
 
-        if($payment->card === null or (new Payment\Service)->isDccEnabledIIN($payment->card->iinRelation) === false)
+        if($payment->card === null or (new Payment\Service)->isDccEnabledIIN($payment->card->iinRelation, $payment->merchant) === false)
         {
             return;
         }
@@ -6080,7 +6080,7 @@ trait Authorize
                     if ($maxAmount === null)
                     {
                         if (($inn !== null) and
-                            ($inn->isInternational() === false))
+                            (IIN\IIN::isDomesticBin($inn->getCountry(), $payment->merchant->getCountry())))
                         {
                             $maxAmount =  SubscriptionRegistration\Entity::CARD_MANDATE_DEFAULT_MAX_AMOUNT;
                         }
@@ -6090,7 +6090,7 @@ trait Authorize
                         }
                     }
                     elseif (($inn !== null) and
-                            ($inn->isInternational() === false) and
+                            (IIN\IIN::isDomesticBin($inn->getCountry(), $payment->merchant->getCountry())) and
                             ($maxAmount > SubscriptionRegistration\Entity::CARD_MANDATE_DEFAULT_MAX_AMOUNT))
                     {
                         throw new Exception\BadRequestValidationFailureException(
@@ -10348,7 +10348,7 @@ trait Authorize
             return false;
         }
 
-        if($payment->card === null or (new Payment\Service)->isDccEnabledIIN($payment->card->iinRelation) === false)
+        if($payment->card === null or (new Payment\Service)->isDccEnabledIIN($payment->card->iinRelation, $payment->merchant) === false)
         {
             return false;
         }
@@ -12376,7 +12376,7 @@ trait Authorize
             return false;
         }
 
-        if($payment->card === null or $payment->card->getCountry() === null or (new Payment\Service)->isDccEnabledIIN($payment->card->iinRelation) === false)
+        if($payment->card === null or $payment->card->getCountry() === null or (new Payment\Service)->isDccEnabledIIN($payment->card->iinRelation, $payment->merchant) === false)
         {
             return false;
         }

@@ -10,6 +10,7 @@ use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Card\IIN;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Customer\Token\Entity;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -379,6 +380,8 @@ class CardVault extends Base\Core
             {
                 $iin = $this->repo->card->retrieveIinDetails($input['iin']);
 
+                $merchantCountry = $this->merchant != null ? $this->merchant->getCountry() : 'IN';
+
                 if (empty($iin) == false)
                 {
                     $this->trace->info(
@@ -391,7 +394,7 @@ class CardVault extends Base\Core
                                 'category'      => $iin->getCategory(),
                                 'type'          => $iin->getType(),
                                 'country'       => $iin->getCountry(),
-                                'international' => $iin->isInternational(),
+                                'international' => IIN\IIN::isInternational($iin->getCountry(), $merchantCountry),
                             ],
                             'trivia'        => $input['trivia'] ?? "",
                             'international' => $input['international'] ?? "",

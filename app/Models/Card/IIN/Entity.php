@@ -204,11 +204,6 @@ class Entity extends Base\PublicEntity
         return $this->supports(Flow::OTP);
     }
 
-    public function isInternational()
-    {
-        return $this->getInternationalAttribute();
-    }
-
     public function isTokenised()
     {
         return $this->getAttribute(self::TOKENISED);
@@ -450,13 +445,6 @@ class Entity extends Base\PublicEntity
     protected function getOtpReadAttribute()
     {
         return (bool) $this->attributes[self::OTP_READ];
-    }
-
-    protected function getInternationalAttribute()
-    {
-        $country = $this->getCountry();
-
-        return ($country !== 'IN');
     }
 
     protected function getEmiAttribute()

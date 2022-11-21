@@ -11,6 +11,7 @@ use RZP\Jobs\SavedCardTokenisationJob;
 use RZP\Models\Base;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card;
+use RZP\Models\Card\IIN;
 use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -751,7 +752,8 @@ class Core extends Base\Core
 
             // Since AMEX is handled as a different case,
             // mark all amex cards as non international
-            $isInternational = $iin->isInternational();
+
+            $isInternational =  IIN\IIN::isInternational($iin->getCountry(), $card->merchant->getCountry());
 
             if ($network === Card\Network::AMEX)
             {

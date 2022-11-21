@@ -14,6 +14,7 @@ use RZP\Mail\Payment\Failed;
 use RZP\Models\Address\Type;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card\Network;
+use RZP\Models\Card\IIN;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\FeeBearer;
@@ -5745,7 +5746,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 return false;
             }
 
-            if ($iin->isInternational() === true)
+            if (IIN\IIN::isInternational($iin->getCountry(), $this->merchant->getCountry()) === true)
             {
                 return true;
             }

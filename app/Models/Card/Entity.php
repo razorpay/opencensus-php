@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Constants\Timezone;
 
 use RZP\Models\Card;
+use RZP\Models\Card\IIN;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
@@ -1379,7 +1380,7 @@ class Entity extends Base\PublicEntity
         // allow international IIN
         // allow domestic card if razorX is disabled
         // for fail safety, razorX retry count is 3
-        if (((($iin->isInternational() === false) and ($app['rzp.mode'] !== Mode::TEST))
+        if (((IIN\IIN::isDomesticBin($iin->getCountry(), $merchant->getCountry()) and ($app['rzp.mode'] !== Mode::TEST))
                 or ($iin->isAmex() === true))
             and ($isInitial === true))
         {
@@ -1500,7 +1501,6 @@ class Entity extends Base\PublicEntity
             $data['expiry_year']  = empty($data['token_expiry_year']) ? $data['expiry_year'] : intval($data ['token_expiry_year']);
             $data['last4']        = empty($data['token_last4']) ? $data['last4'] : $data ['token_last4'];
         }
-
         return $data;
     }
 
@@ -1646,7 +1646,9 @@ class Entity extends Base\PublicEntity
 
             $card[Card\Entity::ISSUER] = $iinEntity->getIssuer();
 
-            $card[Card\Entity::INTERNATIONAL] = $iinEntity->isInternational();
+            $merchantCountry = $this->merchant != null ? $this->merchant->getCountry() : 'IN';
+
+            $card[Card\Entity::INTERNATIONAL] = IIN\IIN::isInternational($iinEntity->getCountry(), $merchantCountry);
 
             $card[Card\Entity::VAULT_TOKEN] = 'XXXXXXXXXXX';
 

@@ -856,6 +856,11 @@ class Merchant extends Base
         return $this->edit($id, ['international' => '0']);
     }
 
+    public function setCountry($country, $id = '10000000000000')
+    {
+        return $this->edit($id, ['country_code' => $country]);
+    }
+
     public function markPartner($type = 'fully_managed', $id = '10000000000000')
     {
         return $this->edit($id, ['partner_type' => $type]);

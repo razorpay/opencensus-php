@@ -88,6 +88,10 @@ class ValidationTest extends TestCase
             'country' => 'US'
         ]);
 
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->card->merchant()->associate($merchant);
+
         $core = new Card\Core;
 
         $map = array(

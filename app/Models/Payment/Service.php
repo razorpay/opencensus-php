@@ -2436,7 +2436,7 @@ class Service extends Base\Service
                 1. iin is dcc enabled and international(i.e country != IN)
                 2. merchant's currency != card currency
             */
-            if (($this->isDccEnabledIIN($iinEntity) === true)
+            if (($this->isDccEnabledIIN($iinEntity, $merchant) === true)
                 and ($currency !== $iinEntity->getIinCurrency()))
             {
                 $isThreeDecimalCurrencySupported = false;
@@ -2579,10 +2579,10 @@ class Service extends Base\Service
         return false;
     }
 
-    public function isDccEnabledIIN($iinEntity): bool
+    public function isDccEnabledIIN($iinEntity, $merchant): bool
     {
         if (($iinEntity !== null) and
-            ($iinEntity->isInternational() === true) and
+            (IIN\IIN::isInternational($iinEntity->getCountry(), $merchant->getCountry()))  === true and
             (Card\Network::isDCCSupportedNetwork($iinEntity->getNetworkCode())) === true)
         {
             return true;
@@ -4998,12 +4998,15 @@ class Service extends Base\Service
             ($merchant !== null) and ($merchant->isInternational() === true)
             and ($merchant->isAddressRequiredEnabled() === true)
         ) {
-            if (($iinEntity !== null) and ($iinEntity->isInternational() === true)
-                and (empty($iinEntity->getCountry()) === false)
-                and ($iinEntity->getCountry() !== null)
-                and (Country::isAddressRequiredCountry($iinEntity->getCountry()))
-            ) {
-                return true;
+            if ($iinEntity !== null)
+            {
+                if((IIN\IIN::isInternational($iinEntity->getCountry(), $merchant->getCountry()) === true)
+                    and (empty($iinEntity->getCountry()) === false)
+                    and ($iinEntity->getCountry() !== null)
+                    and (Country::isAddressRequiredCountry($iinEntity->getCountry())))
+                {
+                    return true;
+                }
             }
         }
 

@@ -18,6 +18,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Http\RequestHeader;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card;
+use RZP\Models\Card\IIN;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Merchant\Entity;
 use RZP\Jobs\Order\OrderUpdate;
@@ -611,7 +612,7 @@ class Processor
             ];
 
             if ((($iin->isAmex() === false) and
-                 ($iin->isInternational() === true)) or
+                    IIN\IIN::isInternational($iin->getCountry(), $merchant->getCountry()) === true) or
                 (in_array($iin->getNetworkCode(), $supportedNetworks, true) === false))
             {
                 return false;
