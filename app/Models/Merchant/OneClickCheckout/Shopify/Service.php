@@ -75,14 +75,34 @@ class Service extends Base\Service
         //Cart line items for the modal
         $lineItems = $checkout['lineItems']['edges'];
 
+        $cartLineItems = [];
+
+        $isCartDiscountApplied = false;
+
         foreach ($lineItems as $key => $item)
         {
             $item=$item['node'];
+
+            $offerPrice = round(floatval($item['variant']['price']) * 100);
+
+            if (empty($item['discountAllocations']) === false)
+            {
+                $offerPrice = round(floatval($item['variant']['price']) * 100) - round(floatval($item['discountAllocations'][0]['allocatedAmount']['amount']) * 100);
+
+                if ($offerPrice < 0)
+                {
+                    $offerPrice = 0;
+                }
+
+                $isCartDiscountApplied = true;
+            }
+
             $cartLineItems[] = [
                 'variant_id'        => mb_substr(strval($item['variant']['id']), 0, 128, 'UTF-8'),
                 'tax_amount'        => 0,
                 'sku'               => mb_substr(strval($item['variant']['sku']), 0, 128, 'UTF-8'),
                 'price'             => round(floatval($item['variant']['price']) * 100),
+                'offer_price'       => $offerPrice,
                 'quantity'          => (int)floatval($item['quantity']),
                 'name'              => mb_substr(strval($item['title']), 0, 128, 'UTF-8'),
                 'description'       => mb_substr($item['variant']['product']['description'], 0, 256, 'UTF-8'),
@@ -91,7 +111,10 @@ class Service extends Base\Service
             ];
         }
 
-        return $cartLineItems;
+        return [
+            'cart_line_items' => $cartLineItems,
+            'is_cart_discount_applied' => $isCartDiscountApplied
+        ];
     }
 
     public function shopifyScriptCartLineItems(array $checkout, $cartFromCache) : array
@@ -134,7 +157,9 @@ class Service extends Base\Service
             }
         }
 
-        return $cartLineItems;
+        return [
+            'cart_line_items' => $cartLineItems
+        ];
     }
 
     /**
@@ -151,7 +176,7 @@ class Service extends Base\Service
     {
         $start = millitime();
         (new Checkout)->validateCreateCheckout($input);
-        $isScriptDiscountApplied = false;
+        $isAutoDiscountApplied = false;
         $cart = $input['cart'];
         $cartId = $cart['token'];
 
@@ -159,9 +184,9 @@ class Service extends Base\Service
 
         $checkoutAmount = round(floatval($checkout['totalPriceV2']['amount']) * 100);
 
-        $isScriptDiscountApplied = $this->isScriptDiscountApplied($cart);
+        $isAutoDiscountApplied = $this->isScriptDiscountApplied($cart);
 
-        if ($isScriptDiscountApplied)
+        if ($isAutoDiscountApplied)
         {
             $cartPrice = (int)(floatval($cart['total_price']));
 
@@ -175,11 +200,15 @@ class Service extends Base\Service
         }
         else
         {
-            $lineItemsData = $this->shopifyCartLineItems($checkout);
+            $cartLineItemsData = $this->shopifyCartLineItems($checkout);
+
+            $isAutoDiscountApplied = $cartLineItemsData['is_cart_discount_applied'];
+
+            $lineItemsData = $cartLineItemsData['cart_line_items'];
 
             $amount = $checkoutAmount;
 
-            $orderNotes = (new Checkout)->getNotesForCheckout($checkout, $cartId);
+            $orderNotes = (new Checkout)->getNotesForCheckout($checkout, $cartId, $cart);
         }
 
         $order = (new RzpOrders)->createOrder(
@@ -200,7 +229,7 @@ class Service extends Base\Service
             'name'                  => $this->merchant->getBillingLabel(),
             'one_click_checkout'    => true,
             'customer_cart'         => (new Pixels)->getDataForFbPixels($checkout),
-            'script_coupon_applied' => $isScriptDiscountApplied,
+            'script_coupon_applied' => $isAutoDiscountApplied,
         ];
 
         $this->trace->info(
@@ -282,7 +311,9 @@ class Service extends Base\Service
         {
             $amount = $checkoutAmount;
 
-            $lineItemsData = $this->shopifyCartLineItems($checkout);
+            $cartLineItemsData = $this->shopifyCartLineItems($checkout);
+
+            $lineItemsData = $cartLineItemsData['cart_line_items'];
 
             $orderNotes = (new Checkout)->getNotesForCheckout($checkout, $cartId);
 
@@ -305,7 +336,9 @@ class Service extends Base\Service
 
             $this->monitoring->addTraceCount(Metric::SCRIPT_DISCOUNT_FETCH_SUCCESS_COUNT, []);
 
-            $lineItemsData = $this->shopifyScriptCartLineItems($checkout, $cart);
+            $cartLineItemsData = $this->shopifyScriptCartLineItems($checkout, $cart);
+
+            $lineItemsData = $cartLineItemsData['cart_line_items'];
 
             $orderNotes = (new Checkout)->getNotesForCheckout($checkout, $cartId, $cart);
         }
@@ -334,7 +367,7 @@ class Service extends Base\Service
 
     public function getCheckoutOptions(array $input): array
     {
-        $isScriptDiscountApplied = false;
+        $isAutoDiscountApplied = false;
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_RETARGETING_URL_HIT,
@@ -352,7 +385,7 @@ class Service extends Base\Service
 
         if ($scriptDiscountAmount > 0)
         {
-            $isScriptDiscountApplied = true;
+            $isAutoDiscountApplied = true;
         }
 
         $checkoutParams = [
@@ -365,7 +398,7 @@ class Service extends Base\Service
                 'email'   => $checkout['email'] ?? '',
                 'contact' => $checkout['phone'] ?? '',
             ],
-            'script_coupon_applied' => $isScriptDiscountApplied,
+            'script_coupon_applied' => $isAutoDiscountApplied,
         ];
 
         return $checkoutParams;

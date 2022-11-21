@@ -189,9 +189,23 @@ class Checkout extends Base\Core
             $discountFromScript = 0;
             $discountTitle = null;
 
-            foreach ($cartObj['line_items'] as $lineItem)
+            //For script editor application the cart obj will be fetched through admin api and other cases the cart obj will be fetch from cart.js so the structure will be different here.
+            if (array_key_exists("line_items", $cartObj) === true)
             {
-                $discountFromScript += $lineItem['total_discount'];
+                $cartLineItem = $cartObj['line_items'];
+                //By default amount will be in Rupees.
+                $denominator = 1;
+            }
+            else
+            {
+                $cartLineItem = $cartObj['items'];
+                //By default amount will be in Paisa. So need to convert it to Rupees.
+                $denominator = 100;
+            }
+
+            foreach ($cartLineItem as $lineItem)
+            {
+                $discountFromScript += $lineItem['total_discount'] / $denominator;
 
                 if (empty($lineItem['discounts']) === false)
                 {
