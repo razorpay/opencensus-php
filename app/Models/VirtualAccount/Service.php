@@ -106,6 +106,12 @@ class Service extends Base\Service
 
         if ($isOfflineChallan and ($this->mode === Mode::LIVE))
         {
+
+            $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_CREATE_REQUEST,
+                [
+                    '$isoffline'   => $isOfflineChallan,
+                ]);
+
             $order = $this->app['pg_router']->fetch(EntityConstants::ORDER, $orderId, $this->merchant->getId(), $input);
         }
         else
@@ -113,7 +119,12 @@ class Service extends Base\Service
             $order = $this->repo
                 ->order
                 ->findByPublicIdAndMerchant($orderId, $this->merchant);
-        }
+      }
+
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_CREATE_REQUEST,
+            [
+                '$order'   => $order->toArrayPublic(),
+            ]);
 
         $offlineInfo = null;
 
@@ -194,7 +205,12 @@ class Service extends Base\Service
         {
             if($offlineInfo !== null) {
 
-                $response[EntityConstants::ORDER][Order\Entity::CUSTOMER_ADDITIONAL_INFO] = $offlineInfo->value;
+                $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_CREATE_REQUEST,
+                    [
+                        '$order'   => $offlineInfo['value'],
+                    ]);
+
+                $response[EntityConstants::ORDER][Order\Entity::CUSTOMER_ADDITIONAL_INFO] = $offlineInfo['value'];
 
                 if (!empty($response[Order\Entity::CUSTOMER_ID])){
 
