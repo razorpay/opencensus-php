@@ -2296,6 +2296,35 @@ class PayoutServiceTest extends TestCase
         //$this->assertEquals('processed', $payout->getStatus());
     }
 
+    public function testUpdateFTAAndPayoutInitiated()
+    {
+        $psPayout = $this->testCreatePayout();
+
+        /** @var Entity $payout */
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->testData[__FUNCTION__]['request']['content']['source_id'] = substr($psPayout['id'], 5);
+
+        $this->mockPayoutServiceDetails();
+
+        $this->mockPayoutServiceStatus('initiated');
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+
+        // Assert that payout status didn't update
+        $this->assertEquals('created', $payout->getStatus());
+
+        $ftaForPayout = $this->getDbEntities('fund_transfer_attempt',
+                                             [
+                                                 'source_id'   => substr($psPayout['id'], 5),
+                                                 'source_type' => 'payout',
+                                             ], 'live')->first();
+
+        $this->assertEquals('initiated', $ftaForPayout->getStatus());
+    }
+
     public function testUpdateFTAAndPayoutToFailed()
     {
         $payout = $this->testCreatePayout();

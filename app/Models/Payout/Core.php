@@ -6035,8 +6035,8 @@ class Core extends Base\Core
                 Attempt\Constants::FTA_STATUS       => $ftaData[Attempt\Constants::FTA_STATUS] ?? null,
                 Entity::STATUS_DETAILS              => [
                     'beneficiary_bank'      => $payout->provideBeneBankName() ?? 'beneficiary bank',
-                    'processed_by_time'     => $ftaData[Attempt\Entity::PARAMETERS][Attempt\Constants::PROCESSED_BY_TIME] ?? null,
-                    'reason'                => $ftaData[Attempt\Entity::REASON] ?? '',
+                    'processed_by_time'     => $ftaData[Attempt\Entity::STATUS_DETAILS][Attempt\Entity::PARAMETERS][Attempt\Constants::PROCESSED_BY_TIME] ?? null,
+                    'reason'                => $ftaData[Attempt\Entity::STATUS_DETAILS][Attempt\Entity::REASON] ?? '',
                 ]
             ];
 
