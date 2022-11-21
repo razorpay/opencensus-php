@@ -629,7 +629,13 @@ class Service extends Base\Service
 
                 (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::CREATE);
 
-                return $token->toArrayPublicTokenizedCard($serviceProviderTokens);
+                $response = $token->toArrayPublicTokenizedCard($serviceProviderTokens);
+
+                if($this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_NETWORK_TOKENS) === false) {
+                    unset($response['service_provider_tokens']);
+                }
+
+                return $response;
             }
 
             $this->validateMode();

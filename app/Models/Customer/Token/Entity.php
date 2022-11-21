@@ -1248,13 +1248,17 @@ class Entity extends Base\PublicEntity
                     $provider[self::PROVIDER_DATA][self::TOKEN_IIN] = substr($provider[self::PROVIDER_DATA][self::TOKEN_IIN], 0, $this->getTokenLengthWithNetwork($provider["provider_name"]));
                 }
 
+                if(isset($provider['tokenised_terminal_id'])){
+                    unset($provider['tokenised_terminal_id']);
+                }
+
                 array_push($serviceProviderTokensArray, $provider);
             }
 
             $publicArray[self::SERVICE_PROVIDER_TOKENS] = $serviceProviderTokensArray;
 
             // todo: when more than one tokens are come into picture, take union of statuses
-            $publicArray[self::STATUS] = $serviceProviderTokens[0][self::STATUS];
+            $publicArray[self::STATUS] = $serviceProviderTokensArray[0][self::STATUS];
 
             if (array_key_exists(self::TOKEN_IIN, $provider[self::PROVIDER_DATA]))
             {
