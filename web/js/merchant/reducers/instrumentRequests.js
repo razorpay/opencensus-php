@@ -3,7 +3,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { set } from 'common/utils/immutable';
 import lodashset from 'lodash/set';
 import cloneDeep from 'lodash/cloneDeep';
-import { REQUESTED } from '../views/Settings/PaymentMethods/constants';
+import { REQUESTED } from 'merchant/views/Settings/PaymentMethods/constants';
 
 const SET_LEAF_INSTRUMENT = 'SET_LEAF_INSTRUMENT';
 const SET_INTERMEDIATE_INSTRUMENT = 'SET_INTERMEDIATE_INSTRUMENT';
@@ -649,6 +649,13 @@ const initialState = {
               status: 'greyed',
               slug: 'debit.hdfc',
               icon: 'https://cdn.razorpay.com/paylater-sq/hdfc.svg',
+            },
+            {
+              name: 'KOTAK Bank',
+              description: '',
+              status: 'Request',
+              slug: 'debit.kotak',
+              icon: 'https://cdn.razorpay.com/paylater-sq/kkbk.svg',
             },
           ],
         },
