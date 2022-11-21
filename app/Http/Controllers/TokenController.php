@@ -74,6 +74,15 @@ class TokenController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateTokenOnAuthorized()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateTokenOnAuthorized($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function recurringTokenPreDebitNotify($id)
     {
         $input = Request::all();

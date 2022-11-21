@@ -40,6 +40,7 @@ use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Currency;
 use RZP\Models\Terminal;
+use RZP\Models\Customer\Token;
 use RZP\Services\Doppler;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
@@ -300,6 +301,11 @@ class Processor
     const FEE_BEARER_CARD_PAYMENTS_VIA_PGROUTER = 'fee_bearer_card_payments_via_pg_router';
 
     /**
+     * Razorx flag to indicate if a saved card token payment should go via PG Router and CPS or just via API service
+     */
+    const SAVED_CARD_TOKEN_PAYMENTS_VIA_PGROUTER = 'saved_card_token_payments_via_pg_router';
+
+    /**
      * Razorx flag to indicate which method and gateway are supported by barricade service
      */
     const BARRICADE_PAYMENT_METHOD = 'barricade_payment_method';
@@ -480,7 +486,7 @@ class Processor
         $this->subscription = null;
     }
 
-    private function canRouteThroughRearchFlow(array $input)
+    private function canRouteThroughRearchFlow(array & $input)
     {
         try
         {
@@ -527,7 +533,6 @@ class Processor
                 (empty($input[Payment\Entity::INVOICE_ID]) === false) or
                 (empty($input[Payment\Entity::PAYMENT_LINK_ID]) === false) or
                 (empty($input[Payment\Entity::TOKEN_ID]) === false) or
-                (empty($input[Payment\Entity::TOKEN]) === false) or
                 (empty($input[Payment\Entity::SAVE]) === false) or
                 (empty($input[Payment\Entity::OFFER_ID]) === false) or
                 (empty($input[Payment\Entity::CHARGE_ACCOUNT]) === false) or
@@ -553,10 +558,10 @@ class Processor
                 // offers are not supported in initial ramp
                 if ((empty($order) === false) and
                     (($order->hasOffers() === true) or
-                     ($order->isDiscountApplicable() === true) or
-                     ($order->getProductId() !== null) or
-                     ($order->getFeeConfigId() !== null) or
-                     ($order->invoice !== null)))
+                        ($order->isDiscountApplicable() === true) or
+                        ($order->getProductId() !== null) or
+                        ($order->getFeeConfigId() !== null) or
+                        ($order->invoice !== null)))
                 {
                     return false;
                 }
@@ -567,7 +572,6 @@ class Processor
                     return false;
                 }
             }
-
 
             if (($input[Payment\Entity::METHOD] == Payment\METHOD::CARD) and
                 ($merchant->isFeatureEnabled('skip_cvv') === true))
@@ -581,18 +585,79 @@ class Processor
                 return false;
             }
 
+            //Check for saved card token payments
+            $tokenId = $input[Payment\Entity::TOKEN];
+            if(empty($tokenId) === false) {
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::SAVED_CARD_TOKEN_PAYMENTS_VIA_PGROUTER, $this->mode);
+                if ($result === 'off') {
+                    return false;
+                }
+
+                try {
+
+                    // First fetch the relevant customer (global or local)
+                    list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp(
+                        $input, $merchant, false);
+                    if ($customer !== null)
+                    {
+                        $token = (new Token\Core)->getByTokenIdAndCustomer($tokenId, $customer);
+                    }
+                    else
+                    {
+                        $token = (new Token\Core)->getByTokenIdAndMerchant($tokenId, $merchant);
+                    }
+
+                    if ($token !== null && $token->isLocal() && $token->isRecurring() === false) {
+                        $this->trace->info(
+                            TraceCode::PAYMENT_PROCESS_FROM_SAVED_LOCAL,
+                            [
+                                'token_id' => $input[Payment\Entity::TOKEN]
+                            ]);
+
+                        $card = $this->repo->card->fetchForToken($token);
+
+                        //check if card is not null
+                        if(empty($card) === true) {
+                            return false;
+                        }
+                        if ($card->isNetworkTokenisedCard() === true) {
+                            $this->trace->info(TraceCode::TOKENISED_CARD_PAYMENT_ROUTING_INFO, [
+                                'tokenId'       => $token->getId(),
+                                'isGlobal'      => $token->isGlobal(),
+                                'routedThrough' => 'tokenisedCard',
+                                'cardInfo'      => [
+                                    'issuer'    => $card->getIssuer(),
+                                    'network'   => $card->getNetworkCode(),
+                                    'type'      => $card->getType(),
+                                ],
+                            ]);
+                            $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $merchant);
+                            $cardInput = $this->getCardInputForRearch($cryptogram, $card, $input);
+                            //modify input for cards
+                            $input[Payment\Entity::CARD] = $cardInput;
+                            return true;
+                        }
+                    } else {
+                        return false;
+                    }
+                } catch (\Throwable $e) {
+                    //If anything fails while using saved card token then fallback to api flow
+                    $this->trace->traceException(
+                        $e,
+                        Trace::CRITICAL,
+                        TraceCode::REARCH_CRITIERIA_SAVE_CARD_CHECK_FAILED,
+                        []);
+
+                    return false;
+                }
+            }
+
+            //transaction from cryptogram value
             $iinId = substr($input[Payment\Entity::CARD][Card\Entity::NUMBER], 0, 6);
             if ($this->isPaymentViaTokenisedCard($input))
             {
                 $tokenIin = substr($input[Payment\Entity::CARD][Card\Entity::NUMBER], 0, 9);
                 $iinId = Card\IIN\IIN::getTransactingIinforRange($tokenIin) ?? $iinId;
-                $this->trace->info(
-                    TraceCode::DEBUG_LOGGING,
-                    [
-                       'isPaymentViaTokenisedCard' => 'true',
-                       'tokenised' => 'true' ,
-                       'merchant' =>  $merchant->getId()
-                    ]);
             }
 
             $iin = $this->repo->iin->find($iinId);
@@ -709,19 +774,50 @@ class Processor
 
             return ($result === 'on');
 
-
-
         }
         catch(\Throwable $e)
         {
-             $this->trace->traceException(
-                    $e,
-                    Trace::CRITICAL,
-                    TraceCode::REARCH_CRITIERIA_CHECK_FAILED,
-                    []);
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::REARCH_CRITIERIA_CHECK_FAILED,
+                []);
         }
 
         return false;
+    }
+
+    protected function getCardInputForRearch($cryptogram, $card, $input)
+    {
+        $input = [
+            Card\Entity::NUMBER                 => $cryptogram['token_number'] ?? $cryptogram['card']['number'],
+            Card\Entity::NAME                   => $card->getName(),
+            Card\Entity::EXPIRY_MONTH           => $cryptogram['token_expiry_month'] ?? null,
+            Card\Entity::EXPIRY_YEAR            => $cryptogram['token_expiry_year'] ?? null,
+            Card\Entity::LAST4                  => $card->getLast4(),
+            Card\Entity::CRYPTOGRAM_VALUE       => $cryptogram['cryptogram_value'] ?? null,
+            Card\Entity::TOKENISED              => true,
+            Card\Entity::VAULT                  => "rzpvault",
+            Card\Entity::CVV                    => $input['card']['cvv'] ?? "123", // adding dummy cvv
+            Card\Entity::TOKEN_PROVIDER         => 'Razorpay'
+        ];
+
+        if ( $card->getVault() === Card\Vault::HDFC)
+        {
+            $input[Card\Entity::TOKEN_EXPIRY_MONTH ] = $cryptogram['card']['expiry_month'] ?? null;
+            $input[Card\Entity::TOKEN_EXPIRY_YEAR ] =  $cryptogram['card']['expiry_year'] ?? null;
+        }
+
+        if ($card->getVault() === Card\Vault::AXIS) {
+            $input[Card\Entity::NUMBER] = Card\Entity::DUMMY_AXIS_TOKENHQ_CARD;
+        }
+
+        if(isset($cryptogram["cvv"]) === true && Card\Network::getFullName(Network::AMEX) === $card->getNetwork())
+        {
+            $input["cvv"] = $cryptogram["cvv"];
+        }
+
+        return $input;
     }
 
 

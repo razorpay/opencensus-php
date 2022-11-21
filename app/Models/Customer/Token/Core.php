@@ -2351,6 +2351,32 @@ class Core extends Base\Core
         return $token;
     }
 
+    public function updateTokenOnAuthorized($tokenData) {
+        
+        if (empty($tokenData['token_id']) === false)
+        {
+            $token = $this->repo->token->findOrFailPublic($tokenData['token_id']);
+        } else {
+            $this->trace->info(TraceCode::SAVED_CARD_TOKEN_NOT_FOUND,
+                [
+                    'token_data' => $tokenData
+                ]);
+            return null;
+        }
+        $token->setUsedAt(Carbon::now()->getTimestamp());
+
+        $token->incrementUsedCount();
+
+        if (($token->isRecurring() === false) and
+            ($token->getRecurringStatus() === null))
+        {
+            $token->setRecurringStatus(Token\RecurringStatus::NOT_APPLICABLE);
+        }
+        $this->repo->saveOrFail($token);
+
+        return  $token;
+    }
+
     public function getExpiryTimestamp($expiryMonth, $expiryYear)
     {
         return Carbon::createFromDate($expiryYear, $expiryMonth, 1, Constants\Timezone::IST)

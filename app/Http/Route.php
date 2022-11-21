@@ -3845,6 +3845,7 @@ class Route
         'token_fetch_cryptogram'                  => ['post',        'tokens/service_provider_tokens/token_transactional_data',  'TokenController@fetchCryptoGram'                          ],
         'token_delete'                            => ['post',        'tokens/delete',                                            'TokenController@delete'                                   ],
         'token_status'                            => ['post',        'internal/tokens/status',                                   'TokenController@updateStatus'                             ],
+        'update_token_on_authorized'              => ['post',        'internal/tokens/update_on_authorized',                     'TokenController@updateTokenOnAuthorized'                  ],
         'par_api'                                 => ['post',        'cards/fingerprints',                                       'TokenController@fetchParValue'                            ],
 
         'vault_migrate_token_bulk'                => ['post',        'tokens/vault/migrate/namespace',                           'TokenController@migrateVaultTokenViaBatch'                ],
@@ -5303,6 +5304,8 @@ class Route
         'internal_merchant_risk_notification',
         'internal_sign_payload',
         'internal_generate_coproto',
+        'update_token_on_authorized',
+
 
 
         // cron to send emails about pending payouts
@@ -14194,6 +14197,7 @@ class Route
             'internal_merchant_risk_notification',
             'fetch_iin_by_token_iin',
             'payment_fetch_card_metadata',
+            'update_token_on_authorized',
         ],
 
         'nbplus_payment_service' => [

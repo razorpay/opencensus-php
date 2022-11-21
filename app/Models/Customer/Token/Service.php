@@ -1080,6 +1080,22 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function updateTokenOnAuthorized($input) {
+
+        $token = $this->core->updateTokenOnAuthorized($input);
+
+        $response = [
+            'token_id' => $input['token_id'],
+        ];
+
+        $oldRecurringStatus = $token->getRecurringStatus();
+        (new Payment\Processor\Processor($token->merchant))->eventTokenStatus($token, $oldRecurringStatus);
+
+        $response['vault_token'] = $token->card['vault_token'];
+
+        return $response;
+    }
+
     protected function unsetSensitiveCardMetaDetails(array & $input)
     {
         unset($input[Card\Entity::IIN]);
