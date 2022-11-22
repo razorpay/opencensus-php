@@ -68,13 +68,7 @@ class ModalCloseReasons extends Component {
 
     return (
       <div class="reasons-close-modal">
-        <ModalHeader
-          class="header"
-          title="Reason"
-          onCloseClick={() => {
-            this.props.closeModal();
-          }}
-        />
+        <ModalHeader class="header" title="Reason" />
         <div class="modal-body">
           {CLOSE_OPTIONS.map((choice) => {
             return (
