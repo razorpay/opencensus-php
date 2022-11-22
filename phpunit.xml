@@ -508,6 +508,9 @@
             <file>./tests/Unit/Models/Merchant/Detail/NeedsClarificationTest.php</file>
             <file>./tests/Unit/Models/Merchant/Escalations/CoreTest.php</file>
         </testsuite>
+        <testsuite name="SMEP Partnerships Test Suite">
+            <directory>./tests/Functional/Partner/</directory>
+        </testsuite>
     </testsuites>
     <listeners>
         <listener class="\Symfony\Bridge\PhpUnit\SymfonyTestsListener">
