@@ -93,7 +93,7 @@ class RouteJournalEvents extends BaseJournalEvents
 
     public static function fetchRulesForTransferCredits(Transaction\Entity $transaction)
     {
-        $rule = null;
+        $rule = [];
 
         if($transaction->isGratis() === true)
         {
