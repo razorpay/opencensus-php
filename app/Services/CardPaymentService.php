@@ -71,7 +71,10 @@ class CardPaymentService
      * Default OTP attempts limit
      * @var integer
      */
-    const OTP_ATTEMPTS_LIMIT = 3;
+    protected static $GatewayOtpAttemptLimit = [
+        Payment\Gateway::KOTAK_DEBIT_EMI => 3,
+        Payment\Gateway::INDUSIND_DEBIT_EMI => 5,
+    ];
 
     // Entities fetch params
     const RRN = 'rrn';
@@ -330,11 +333,11 @@ class CardPaymentService
     }
 
 
-    protected function verifyOtpAttempts($payment, $limit = null)
+    protected function verifyOtpAttempts(string $gateway,$payment, $limit = 3)
     {
-        if ($limit === null)
+        if (array_key_exists($gateway,self::$GatewayOtpAttemptLimit))
         {
-            $limit = self::OTP_ATTEMPTS_LIMIT;
+            $limit = self::$GatewayOtpAttemptLimit[$gateway];
         }
 
         if ($payment['otp_attempts'] >= $limit)
@@ -353,9 +356,9 @@ class CardPaymentService
 
         $this->input = $input;
 
-        if ($this->action === Action::CALLBACK and $gateway === Payment\Gateway::KOTAK_DEBIT_EMI)
+        if ($this->action === Action::CALLBACK and ($gateway === Payment\Gateway::KOTAK_DEBIT_EMI or $gateway === Payment\Gateway::INDUSIND_DEBIT_EMI))
         {
-            $this->verifyOtpAttempts($input['payment']);
+            $this->verifyOtpAttempts($gateway,$input['payment']);
         }
 
         if (empty($input[Entity::TERMINAL]) === false)

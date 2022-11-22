@@ -10,16 +10,19 @@ class DebitProvider
 
     const HDFC = 'HDFC';
     const KKBK = 'KKBK';
+    const INDB = 'INDB';
 
     protected static $providers = [
         self::HDFC,
         self::KKBK,
+        self::INDB,
     ];
 
 
     protected static $providerBitPositionMap = [
         self::HDFC => 1,
         self::KKBK => 2,
+        self::INDB => 3,
     ];
 
     public static function checkProviderValidity($provider)

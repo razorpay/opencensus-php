@@ -339,6 +339,7 @@
             <file>/tests/Functional/Payment/HdfcDebitEmiTest.php</file>
             <file>/tests/Functional/Payment/HdfcVasPaymentTest.php</file>
             <file>/tests/Functional/Payment/KotakDebitEmiTest.php</file>
+            <file>/tests/Functional/Payment/IndusindDebitEmiTest.php</file>
             <file>/tests/Functional/Payment/MismatchAmountTest.php</file>
             <file>/tests/Functional/Payment/MutexTest.php</file>
 
@@ -401,6 +402,7 @@
             <exclude>/tests/Functional/Payment/HdfcDebitEmiTest.php</exclude>
             <exclude>/tests/Functional/Payment/HdfcVasPaymentTest.php</exclude>
             <exclude>/tests/Functional/Payment/KotakDebitEmiTest.php</exclude>
+            <exclude>/tests/Functional/Payment/IndusindDebitEmiTest.php</exclude>
             <exclude>/tests/Functional/Payment/MismatchAmountTest.php</exclude>
             <exclude>/tests/Functional/Payment/MutexTest.php</exclude>
             <exclude>/tests/Functional/Payment/NetBankingTest.php</exclude>

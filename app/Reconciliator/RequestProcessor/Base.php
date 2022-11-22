@@ -140,6 +140,7 @@ class Base extends Core
     const VAS_AXIS                 = 'VasAxis';
     const YES_BANK                 = 'YesBank';
     const HDFC_DEBIT_EMI           = 'HdfcDebitEmi';
+    const INDUSIND_DEBIT_EMI       = 'IndusindDebitEmi';
     const UPI_JUSPAY               = 'UpiJuspay';
     const UPI_AIRTEL               = 'UpiAirtel';
     const CRED                     = 'Cred';
@@ -393,6 +394,7 @@ class Base extends Core
         ],
         Gateway::BAJAJFINSERV           => self::BAJAJFINSERV,
         Gateway::HDFC_DEBIT_EMI         => self::HDFC_DEBIT_EMI,
+        Gateway::INDUSIND_DEBIT_EMI      => self::INDUSIND_DEBIT_EMI,
         Gateway::WORLDLINE              => self::VAS_AXIS,
         Gateway::TWID                   => self::TWID,
         Gateway::CHECKOUT_DOT_COM       => self::CHECKOUT_DOT_COM,

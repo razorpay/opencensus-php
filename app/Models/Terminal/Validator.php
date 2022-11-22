@@ -175,6 +175,7 @@ class Validator extends Base\Validator
         Payment\Gateway::INGENICO,
         Payment\Gateway::BILLDESK_OPTIMIZER,
         Payment\Gateway::KOTAK_DEBIT_EMI,
+        Payment\Gateway::INDUSIND_DEBIT_EMI,
         Payment\Gateway::HDFC_EZETAP,
         Payment\Gateway::AXIS_TOKENHQ,
     ];
@@ -2504,6 +2505,29 @@ class Validator extends Base\Validator
 
     ];
 
+    protected static $indusindDebitEmiTerminalRules = [
+        Entity::GATEWAY               => 'required|in:indusind_debit_emi',
+        Entity::GATEWAY_ACQUIRER      => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID   => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2  => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_ID   => 'sometimes|string',
+        Entity::CATEGORY              => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE   => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET => 'sometimes|string',
+        Entity::MODE                  => 'sometimes|in:3',
+        Entity::EMI                   => 'required|boolean',
+        Entity::TYPE                  => 'sometimes|string',
+        Entity::EMI_SUBVENTION        => 'sometimes|in:customer,merchant',
+        Entity::PLAN_NAME             => 'sometimes|string',
+    ];
+    protected static $indusindDebitEmiEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID   => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2  => 'sometimes|string',
+        Entity::CATEGORY              => 'sometimes|string',
+        Entity::EMI                   => 'sometimes|boolean',
+        Entity::EMI_SUBVENTION        => 'sometimes|in:customer,merchant',
+    ];
+
     protected static $updateTerminalsBulkRules = [
         'terminal_ids' => 'required|sequential_array',
         'attributes'   => 'sometimes|associative_array',
@@ -2956,7 +2980,8 @@ class Validator extends Base\Validator
             ($input[Entity::GATEWAY] === Gateway::HDFC_DEBIT_EMI) or
             ($input[Entity::GATEWAY] === Gateway::AXIS_MIGS) or
             ($input[Entity::GATEWAY] === Gateway::PAYU) or
-            ($input[Entity::GATEWAY] === Gateway::KOTAK_DEBIT_EMI))
+            ($input[Entity::GATEWAY] === Gateway::KOTAK_DEBIT_EMI) or
+            ($input[Entity::GATEWAY] === Gateway::INDUSIND_DEBIT_EMI))
         {
             return;
         }

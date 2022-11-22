@@ -8377,7 +8377,7 @@ trait Authorize
                     return true;
                 }
 
-                if($this->canRunKotakDebitEMIOTP($payment) === true)
+                if($this->canRunDebitEMIOTP($payment) === true)
                 {
                     return true;
                 }
@@ -8489,10 +8489,10 @@ trait Authorize
         return false;
     }
 
-    protected function canRunKotakDebitEMIOTP(Payment\Entity $payment)
+    protected function canRunDebitEMIOTP(Payment\Entity $payment)
     {
-        if (($payment->getGateway() === Payment\Gateway::KOTAK_DEBIT_EMI) and
-            ($payment->getAuthType() === Payment\AuthType::OTP))
+
+        if(in_array($payment->getGateway(),Payment\Gateway::$OtpSupportDebitEmiGateways) and $payment->getAuthType() === Payment\AuthType::OTP)
         {
             return true;
         }

@@ -844,6 +844,7 @@ return [
                 'emi' => [
                     ['type' => 'debit', 'provider' => 'HDFC'],
                     ['type' => 'debit', 'provider' => 'KKBK'],
+                    ['type' => 'debit', 'provider' => 'INDB'],
                     ['type' => 'credit', 'provider' => null],
                 ],
                 'paylater' => [

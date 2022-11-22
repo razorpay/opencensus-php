@@ -572,13 +572,15 @@ class TransactionFilter extends Terminal\Filter
             return false;
         }
 
-        // check for Kotak Debit EMI
-        if (($bank === 'KKBK') and ($payment->card->isDebit()) and ($payment->getMethod() === Method::EMI))
+        // check for Debit Emi Gateways
+
+        if (empty($bank) === false and (array_key_exists($bank,GATEWAY::$debitEmiGateways)) and ($payment->card->isDebit()))
         {
-            if ($terminal->getGateway() === Gateway::KOTAK_DEBIT_EMI)
+            if(GATEWAY::$debitEmiGateways[$bank] === $terminal->getGateway())
             {
                 return true;
             }
+
             return false;
         }
 

@@ -202,6 +202,7 @@ class Gateway
     // Debit emi gateways
     const HDFC_DEBIT_EMI     = 'hdfc_debit_emi';
     const KOTAK_DEBIT_EMI    = 'kotak_debit_emi';
+    const INDUSIND_DEBIT_EMI = 'indusind_debit_emi';
     const CURRENCY_CLOUD     = 'currency_cloud';
 
     const VA_USD             = 'va_usd';
@@ -520,6 +521,7 @@ class Gateway
         self::CCAVENUE,
         self::ZAAKPAY,
         self::BILLDESK_OPTIMIZER,
+        self::INDUSIND_DEBIT_EMI,
     ];
 
     const OPTIMIZER_CARD_GATEWAYS = [
@@ -1625,6 +1627,7 @@ class Gateway
             self::FIRST_DATA,
             self::HDFC_DEBIT_EMI,
             self::KOTAK_DEBIT_EMI,
+            self::INDUSIND_DEBIT_EMI,
         ],
 
         Method::UPI => [
@@ -1821,6 +1824,7 @@ class Gateway
     public static $s2sGateways = [
         self::HDFC_DEBIT_EMI,
         self::KOTAK_DEBIT_EMI,
+        self::INDUSIND_DEBIT_EMI,
     ];
 
     public static $verifyMissingGateways = [
@@ -1831,8 +1835,8 @@ class Gateway
     public static $otpPostFormSubmitGateways = [
         self::HDFC_DEBIT_EMI,
         self::KOTAK_DEBIT_EMI,
+        self::INDUSIND_DEBIT_EMI,
         self::BAJAJ,
-        self::KOTAK_DEBIT_EMI,
     ];
 
     // in case of any changes in gateway config, please contact smart routing team
@@ -1887,6 +1891,9 @@ class Gateway
         ],
         Issuer::KKBK =>[
             self::KOTAK_DEBIT_EMI
+        ],
+        Issuer::INDB =>[
+            self::INDUSIND_DEBIT_EMI
         ]
     ];
 
@@ -2339,6 +2346,7 @@ class Gateway
     public static $partialRefundDisabledGateways = [
         self::HDFC_DEBIT_EMI,
         self::KOTAK_DEBIT_EMI,
+        self::INDUSIND_DEBIT_EMI,
     ];
 
     // in case of any changes in gateway config, please contact smart routing team
@@ -3271,6 +3279,9 @@ class Gateway
         ],
         IFSC::KKBK => [
             Emi\Type::DEBIT => Gateway::KOTAK_DEBIT_EMI,
+        ],
+        IFSC::INDB => [
+            Emi\Type::DEBIT => Gateway::INDUSIND_DEBIT_EMI,
         ]
     ];
 
@@ -3445,6 +3456,7 @@ class Gateway
     public static $contactMandatoryGateways = [
         Gateway::HDFC_DEBIT_EMI,
         Gateway::KOTAK_DEBIT_EMI,
+        Gateway::INDUSIND_DEBIT_EMI
     ];
 
     public static $upiOtmGateways = [
@@ -3534,6 +3546,12 @@ class Gateway
     // List of partially migrated gateways
     const PARTIALLY_MIGRATED_PAYMENTGATEWAY = [
         Gateway::WALLET_PAYPAL
+    ];
+
+    // List of Debit Emi Gateways that support the OTP flow for a given payment
+    public static $OtpSupportDebitEmiGateways =[
+        Payment\Gateway::KOTAK_DEBIT_EMI,
+        Payment\Gateway::INDUSIND_DEBIT_EMI
     ];
 
     public static function isNonTerminalGateway(string $gateway)
@@ -4320,6 +4338,7 @@ class Gateway
             self::INGENICO,
             self::BILLDESK_OPTIMIZER,
             self::KOTAK_DEBIT_EMI,
+            self::INDUSIND_DEBIT_EMI,
             self::AXIS_TOKENHQ,
         ];
 
@@ -4362,6 +4381,7 @@ class Gateway
             self::INGENICO,
             self::BILLDESK_OPTIMIZER,
             self::KOTAK_DEBIT_EMI,
+            self::INDUSIND_DEBIT_EMI,
             self::AXIS_TOKENHQ,
         ];
 
@@ -4762,5 +4782,13 @@ class Gateway
     {
         return (in_array($currency, self::INTERNATIONAL_BANK_TRANSFER_SUPPORTED_CURRENCIES, true));
     }
+
+    /**
+     List of Debit Emi Gateways
+     */
+    public static $debitEmiGateways = array(
+        IFSC::KKBK => Gateway::KOTAK_DEBIT_EMI,
+        IFSC::INDB => Gateway::INDUSIND_DEBIT_EMI
+    );
 
 }

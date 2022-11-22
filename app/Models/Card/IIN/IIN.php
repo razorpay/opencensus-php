@@ -25,6 +25,9 @@ class IIN
         ],
         Issuer::KKBK => [
             Type::DEBIT,
+        ],
+        Issuer::INDB => [
+            Type::DEBIT,
         ]
     ];
 
