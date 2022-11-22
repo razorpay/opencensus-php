@@ -20,7 +20,8 @@ class AccountAsvClientTest extends TestCase
             'host' => 'https://acs-web.razorpay.com',
             'user' => 'dummy',
             'password' => 'dummy',
-            'account_contact_delete_route_http_timeout_sec' => 2
+            'account_contact_delete_route_http_timeout_sec' => 2,
+            'asv_fetch_route_http_timeout_sec' => 2
         ];
         Config::set('applications', ['acs' => $asvConfig]);
     }

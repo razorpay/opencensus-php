@@ -37,6 +37,7 @@ class Metric
     const ASV_ROLLBACK_EVENT_PUBLISH_FAILED     = 'asv_rollback_event_publish_failed';
     const ASV_HTTP_CLIENT_REQUEST_TOTAL         = 'asv_http_client_request_total';
     const ASV_HTTP_CLIENT_RESPONSE_TOTAL        = 'asv_http_client_response_total';
+    const ASV_COMPARE_MISMATCH                  = 'asv_compare_mismatch';
     const DB_REQUESTS_BEFORE_MIGRATION          = 'db_requests_before_migration';
     const ASV_SYNC_ACCOUNT_DEVIATION_FAILED     = 'asv_sync_account_deviation_failed';
     const DUAL_WRITES_TOTAL                     = 'dual_writes_total';

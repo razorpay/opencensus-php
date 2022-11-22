@@ -1,0 +1,74 @@
+<?php
+
+namespace RZP\Modules\Acs;
+
+use http\Exception\RuntimeException;
+use RZP\Models\Base\PublicCollection;
+
+class ASVEntityMapper {
+    public static function OverwriteWithAsvEntities($entityClass, $primaryKeyField, $entitiesFromAPI, $entitiesFromASV) {
+        $asvEntityMap = [];
+        foreach ($entitiesFromASV as $entityFromASV) {
+            $asvEntityMap[$entityFromASV[$primaryKeyField]] = $entityFromASV;
+        }
+        $mergedEntities = [];
+        foreach ($entitiesFromAPI as $entityFromAPI) {
+            if (array_key_exists($entityFromAPI[$primaryKeyField], $asvEntityMap) === false) {
+                continue;
+            }
+            $entityFromASV = $asvEntityMap[$entityFromAPI[$primaryKeyField]];
+            array_push($mergedEntities, self::OverwriteWithAsvEntity($entityFromAPI, $entityFromASV, $entityClass));
+        }
+        return new PublicCollection($mergedEntities);
+    }
+
+    public static function OverwriteWithAsvEntity($entityFromAPI, $entityFromASV, $entityClass) {
+        return ASVEntityMapper::MapDataArrayToEntity(array_merge($entityFromAPI,$entityFromASV),$entityClass);
+    }
+
+    public static function MapProtoObjectToEntity($protoObject, $entityClass) {
+        $protoString = $protoObject->serializeToJsonString();
+        $protoAsArray = json_decode($protoString, true);
+        $protoAsArray = ASVEntityMapper::snakeCase($protoAsArray);
+        return ASVEntityMapper::MapDataArrayToEntity($protoAsArray, $entityClass);
+    }
+
+    public static function MapDataArrayToEntity($dataArray, $entityClass) {
+        try {
+            $entityClass::unguard();
+            $mappedEntity = new $entityClass($dataArray);
+        } catch(\Error $e) {
+            throw new RuntimeException('Could not map proto response to entity');
+        } finally {
+            $entityClass::reguard();
+        }
+        return $mappedEntity;
+    }
+
+    private static function snakeCase(array $array): array
+    {
+        return array_map(
+            function($item) {
+                if (is_array($item)) {
+                    $item = ASVEntityMapper::snakeCase($item);
+                }
+
+                return $item;
+            },
+            ASVEntityMapper::doSnakeCase($array)
+        );
+    }
+
+    private static function doSnakeCase(array $array): array
+    {
+        $result = [];
+
+        foreach ($array as $key => $value) {
+            $key = strtolower(preg_replace('~(?<=\\w)([A-Z])~', '_$1', $key));
+
+            $result[$key] = $value;
+        }
+
+        return $result;
+    }
+}

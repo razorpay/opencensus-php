@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Email;
 
 use RZP\Models\Base;
+use RZP\Modules\Acs\ASVEntityMapper;
 use RZP\Modules\Acs\Wrapper\MerchantEmail;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
 use RZP\Models\Merchant\Email\Entity as MerchantEmailEntity;
@@ -74,6 +75,30 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /**
+     * This function fetched MerchantEmail for API DB and AccountService
+     * and
+     * this function get all the emails by type except 'partner_dummy' type
+     * @param  string  $merchantId
+     *
+     * @return mixed
+     */
+    public function __getEmailByMerchantId(string $merchantId)
+    {
+        return $this->repo->transactionOnLiveAndTest(function () use ($merchantId) {
+            $merchantEmails = $this->getEmailByMerchantId($merchantId);
+            $merchantEmailWrapper = new MerchantEmail();
+            if ($merchantEmailWrapper->isReadShadowOrReverseShadowOn($merchantId, "shadow")) {
+                $asvEmails = $merchantEmailWrapper->FetchAndCompareMerchantEmailsFromMerchantId($merchantId, $merchantEmails);
+                return $merchantEmails;
+            }
+            if ($merchantEmailWrapper->isReadShadowOrReverseShadowOn($merchantId, "reverse_shadow")) {
+                $asvEmails = $merchantEmailWrapper->FetchAndCompareMerchantEmailsFromMerchantId($merchantId, $merchantEmails);
+                return ASVEntityMapper::OverwriteWithAsvEntities(MerchantEmailEntity::class, 'id', $merchantEmails->toArray(), $asvEmails->toArray());
+            }
+            return $merchantEmails;
+        });
+    }
     /**
      * @param array $merchantIds
      * @param array $types

@@ -8,6 +8,10 @@ class Base
     // need not be considered in final difference list.
     protected $excludedKeys = [];
 
+    function __construct()
+    {
+    }
+
     /**
      *
      * returns difference of two arrays, without considering keys as in $excludedKeys
@@ -30,6 +34,10 @@ class Base
         $difference = [];
         foreach($array1 as $key => $value)
         {
+            // skip if value in array1 is null
+            if($value === null) {
+                continue;
+            }
             // checks if we need to find diff in this element.
             $keyWithParent = $key;
             if($parentKey !== ""){

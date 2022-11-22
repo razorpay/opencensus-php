@@ -7466,6 +7466,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ASV_HTTP_CLIENT_REQUEST                               = 'ASV_HTTP_CLIENT_REQUEST';
     const ASV_HTTP_CLIENT_RESPONSE                              = 'ASV_HTTP_CLIENT_RESPONSE';
     const ASV_HTTP_CLIENT_ERROR                                 = 'ASV_HTTP_CLIENT_ERROR';
+    const ASV_COMPARE_MISMATCH                                  = 'ASV_COMPARE_MISMATCH';
 
 
     # ASV Migration
