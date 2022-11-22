@@ -48,7 +48,7 @@ trait PartitionRepo
 
             foreach ($partitionsData as $newPartitionName => $newPartitionMaxCreatedAt)
             {
-                $query = "ALTER TABLE " . $this->entity . "
+                $query = "ALTER TABLE " . $this->getTableName() . "
                 REORGANIZE PARTITION `$partitionNameMax` INTO (
                     PARTITION `$newPartitionName` VALUES LESS THAN ($newPartitionMaxCreatedAt),
                     PARTITION `$partitionNameMax` VALUES LESS THAN MAXVALUE
@@ -69,7 +69,7 @@ trait PartitionRepo
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_ERROR,
                     null,
-                    ['entity' => $this->entity],
+                    ['table' => $this->getTableName()],
                     'Duplicate partition name');
             }
             else
@@ -79,7 +79,7 @@ trait PartitionRepo
                 throw new Exception\ServerErrorException(
                     ErrorCode::SERVER_ERROR,
                     $e->getCode(),
-                    ['entity' => $this->entity]
+                    ['table' => $this->getTableName()]
                 );
             }
         }
@@ -90,7 +90,7 @@ trait PartitionRepo
             throw new Exception\ServerErrorException(
                 ErrorCode::SERVER_ERROR,
                 $e->getCode(),
-                ['entity' => $this->entity]
+                ['table' => $this->getTableName()]
             );
         }
     }
@@ -107,7 +107,7 @@ trait PartitionRepo
 
             foreach ($oldestPartitions as $partition)
             {
-                $query = "ALTER TABLE " . $this->entity . " DROP PARTITION `$partition`";
+                $query = "ALTER TABLE " . $this->getTableName() . " DROP PARTITION `$partition`";
 
                 $this->trace->info(TraceCode::TABLE_PARTITION_DROP_QUERY, ['query' => $query]);
 
@@ -121,7 +121,7 @@ trait PartitionRepo
             throw new Exception\ServerErrorException(
                 ErrorCode::SERVER_ERROR,
                 $e->getCode(),
-                ['entity' => $this->entity]
+                ['table' => $this->getTableName()]
             );
         }
     }
@@ -253,7 +253,7 @@ trait PartitionRepo
             $this->trace->error(
                 TraceCode::INVALID_PARTITIONING_TYPE,
                 [
-                    'entity' => $this->entity,
+                    'table' => $this->getTableName(),
                     'strategy' => $strategy,
                 ]);
 
@@ -261,7 +261,7 @@ trait PartitionRepo
                 ErrorCode::BAD_REQUEST_ERROR,
                 null,
                 [
-                    'entity' => $this->entity,
+                    'table' => $this->getTableName(),
                 ],
                 'invalid partitioning type.');
         }
@@ -279,7 +279,7 @@ trait PartitionRepo
             $this->trace->error(
                 TraceCode::NO_RANGE_PARTITIONING,
                 [
-                    'entity' => $this->entity,
+                    'table' => $this->getTableName(),
                     'error' => 'No range partitioning found'
                 ]);
 
@@ -287,7 +287,7 @@ trait PartitionRepo
                 ErrorCode::BAD_REQUEST_ERROR,
                 null,
                 [
-                    'entity' => $this->entity,
+                    'table' => $this->getTableName(),
                 ],
                 'no range partitioning found.');
         }
@@ -303,7 +303,7 @@ trait PartitionRepo
             DB::RAW(
                 "SELECT * FROM information_schema.PARTITIONS WHERE PARTITION_METHOD = 'RANGE'
                                               AND TABLE_SCHEMA = '$db'
-                                              AND TABLE_NAME = '" . $this->entity . "'
+                                              AND TABLE_NAME = '" . $this->getTableName() . "'
                                               ORDER BY PARTITION_ORDINAL_POSITION ASC"
             )
         );
@@ -383,6 +383,6 @@ trait PartitionRepo
 
     protected function getPartitionNameFromFormat($format = 'Max') : string
     {
-        return 'p_' . $this->entity . '_' . $format;
+        return 'p_' . $this->getTableName() . '_' . $format;
     }
 }
