@@ -224,8 +224,10 @@ export const canShowAadharDoc = (
   businessType = '',
   isAadharLinked: number | boolean | undefined,
   esignStatus: string | undefined,
+  activationFormMilestone: string | undefined,
 ): boolean => {
-  const shouldShowEsignFlow = ['11', '1', '3'].includes(businessType);
+  const shouldShowEsignFlow =
+    ['11', '1', '3'].includes(businessType) && activationFormMilestone === 'L2';
   const canSkipAddressProofDoc = !(shouldShowEsignFlow && isAadharLinked);
 
   return (

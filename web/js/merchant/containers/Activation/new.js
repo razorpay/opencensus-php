@@ -670,6 +670,15 @@ export default class ActivationContainer extends React.Component {
     })
       .then((response) => {
         if (response.data) {
+          // make aadhar_linked 0 as we are removing aadhar esign verification
+          if (response.data.stakeholder?.aadhaar_linked === 1) {
+            this.saveStep({
+              stakeholder: {
+                aadhaar_linked: 0,
+              },
+            });
+          }
+
           this.props.showNotification({
             type: 'success',
             message: 'File uploaded successfully',

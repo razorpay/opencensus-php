@@ -131,12 +131,12 @@ test('should show aadhaar error message', async () => {
   expect(screen.queryByText(/Input document does not match Aadhaar back/i)).toBeInTheDocument();
 });
 
-test('should show aadhaar ekyc for Trust Business Type', async () => {
+test('should not show aadhaar ekyc for Trust Business Type', async () => {
   ActivationDB.update({
     business_type: '9',
     activation_form_milestone: 'L1',
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.queryByText('Aadhaar Verification ( via OTP )')).toBeInTheDocument();
+  expect(screen.queryByText('Aadhaar Verification ( via OTP )')).toBeNull();
 });

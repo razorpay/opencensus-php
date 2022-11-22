@@ -43,7 +43,12 @@ const eKycAdharRequired = (activation, currentBusinessType) => {
     E_SIGN_AADHAR.push(...ORG_BusinessTypes);
   }
 
-  if (E_SIGN_AADHAR.includes(Number(currentBusinessType))) {
+  // disable e-aadhar verification. Show it only when user has Submitted L2
+  if (
+    activation.props.user?.activation_form_milestone === 'L2' &&
+    E_SIGN_AADHAR.includes(Number(currentBusinessType)) &&
+    activation.props.user?.stakeholder?.aadhaar_esign_status === 'verified'
+  ) {
     return true;
   }
   return false;

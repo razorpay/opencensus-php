@@ -52,6 +52,7 @@ const isVisible = (fieldName, context): boolean => {
         context.business_type,
         context.stakeholder?.aadhaar_linked,
         context.stakeholder?.aadhaar_esign_status,
+        context.activation_form_milestone,
       );
     case 'business_proof_url':
       return isBusinessProofUrlVisible(context);

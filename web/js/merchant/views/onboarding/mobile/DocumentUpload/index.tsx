@@ -173,6 +173,14 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
       isUpdatedLiteOnboarding,
     );
     setDocumentUploadCompleted(isComplete);
+
+    if (data.stakeholder?.aadhaar_linked === 1) {
+      postData({
+        stakeholder: {
+          aadhaar_linked: 0,
+        },
+      });
+    }
   };
 
   const onDeleteFile = async (fileName: string) => {
@@ -355,9 +363,11 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
     ekycRequiredforBusinessType.push(...ORG_BusinessTypes);
   }
 
-  const shouldShowEsignFlow = ekycRequiredforBusinessType.includes(
-    parseInt(data.business_type, 10),
-  );
+  // disable e-aadhar verification. Show it only when user has Submitted L2
+  const shouldShowEsignFlow =
+    data.activation_form_milestone === 'L2' &&
+    ekycRequiredforBusinessType.includes(parseInt(data.business_type, 10)) &&
+    data.stakeholder.aadhaar_esign_status === 'verified';
 
   const shouldShowAddressProofField = !(
     shouldShowEsignFlow &&
