@@ -232,19 +232,19 @@ const LeafList = ({
           <div>
             <img
               src={`${window.cdnBaseUrl}/static/assets/firc/blue_vector.svg`}
-              alt="FIRC Icon"
+              alt="FIRS Icon"
               height="24"
               width="24"
             />
           </div>
           <div className="instrument-firc-content">
             <div>
-              Download monthly <b>e-FIRC </b> directly from the dashboard now!
+              Download monthly <b>e-FIRS </b> directly from the dashboard now!
             </div>
             <div>
               <u>
                 <Link to="/profile/view_firc" onClick={fircClickHandler}>
-                  View FIRC
+                  View FIRS
                 </Link>
               </u>
             </div>

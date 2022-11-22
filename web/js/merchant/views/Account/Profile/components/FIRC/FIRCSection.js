@@ -50,7 +50,7 @@ const SelectPurposeCode = ({ clickHandler }) => (
         <>
           <span>To get</span>
           <b>
-            <i> purpose code on FIRC</i>
+            <i> purpose code on FIRS</i>
           </b>
           <span>, please update your code here.</span>
         </>
@@ -90,7 +90,7 @@ const DownloadText = ({ clickHandler }) => (
     <i className="i i-download-blue p-l" />
     <Popover align="top" theme="dark">
       <PopoverBody>
-        <span>Download your FIRC from here.</span>
+        <span>Download your FIRS from here.</span>
       </PopoverBody>
     </Popover>
   </a>
@@ -159,7 +159,7 @@ const FIRCSection = (props) => {
   return (
     <div className="panel panel-default">
       <div className="panel-heading">
-        <b>Forward Inwards Remittance Certificate </b>&nbsp;(Proof of Foreign Transfers)
+        <b>Forward Inwards Remittance Statement </b>&nbsp;(Proof of Foreign Transfers)
         <Spinner loading={loading} />
       </div>
 
@@ -210,13 +210,13 @@ const FIRCSection = (props) => {
             )}
 
             <DetailRow
-              label="FIRC Certificate"
+              label="FIRS Certificate"
               value={() => <DownloadText clickHandler={openDownloadFIRCModal} />}
             />
           </div>
 
           <div className="panel-heading background-highlight">
-            Note: FIRC without purpose code could lead to rejections on GST refunds. Update your
+            Note: FIRS without purpose code could lead to rejections on GST refunds. Update your
             purpose code now!
           </div>
         </>

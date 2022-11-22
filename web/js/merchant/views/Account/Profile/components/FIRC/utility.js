@@ -41,14 +41,14 @@ export const organiseFiles = (files) => {
     transformed_files = transformed_files.concat(
       single_files.map((file, index) => ({
         ...file,
-        name: `FIRC - ${index + 1}`,
+        name: `FIRS - ${index + 1}`,
       })),
     );
 
     transformed_files = transformed_files.concat(
       zip_files.map((file, index) => ({
         ...file,
-        name: `FIRC - ZIP - ${index + 1}`,
+        name: `FIRS - ZIP - ${index + 1}`,
       })),
     );
   }

@@ -73,7 +73,7 @@ const DownloadFIRCForm = ({ closeModal }) => {
 
   return (
     <Form>
-      <ModalHeader title="Download FIRC" onCloseClick={closeModal} />
+      <ModalHeader title="Download FIRS" onCloseClick={closeModal} />
       <div className="firc-form-container">
         <div className="dropdown-container">
           <Dropdown label="Year" list={YEARS} value={year} handleChange={handleYear} />
