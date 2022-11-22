@@ -743,6 +743,10 @@ class Service extends Base\Service
         $checkoutId = $input['order_id'];
         $address = $input['address'];
 
+        $address['city'] = empty($address['city']) === false ? $address['city'] : 'NA';
+
+        $address['zipcode'] = empty($address['zipcode']) === false ? $address['zipcode'] : $address['state_code']; //handles null check
+
         return $this->getShippingForOneAddress($checkoutId, $address);
     }
 

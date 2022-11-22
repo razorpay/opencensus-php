@@ -11,6 +11,7 @@ use RZP\Jobs\OneCCReviewCODOrder;
 use RZP\Models\Order\OrderMeta\Order1cc;
 use RZP\Models\Merchant\ShippingInfo;
 use RZP\Models\Merchant\Metric;
+use RZP\Services\LocationService;
 use RZP\Services\Mutex;
 use RZP\Trace\TraceCode;
 use RZP\Models\Order;
@@ -66,9 +67,14 @@ class Service extends \RZP\Models\Base\Service
             $orderMetaInput = [];
             $customerInfo = $input[Order1cc\Fields::CUSTOMER_DETAILS];
             if (isset($customerInfo[Order1cc\Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS]) === true) {
+                $country = $customerInfo[Order1cc\Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS]['country'];
+                $state = $customerInfo[Order1cc\Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS]['state'];
                 $address[0] = [
                     "zipcode" => $customerInfo[Order1cc\Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS]['zipcode'],
-                    "country" => $customerInfo[Order1cc\Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS]['country']];
+                    "country" => $country,
+                    "state"   => $state,
+                    "state_code" => $this->getStateCodeFromCountryAndState($country, $state)
+                ];
                 $shippingInfoReq = [
                     'order_id' => $orderId,
                     'addresses' => $address,
@@ -508,5 +514,20 @@ class Service extends \RZP\Models\Base\Service
     protected function get1ccOrderMutex(string $orderId) : string
     {
         return self::MUTEX_PREFIX_1CC . $orderId;
+    }
+
+    protected function getStateCodeFromCountryAndState($country, $stateName)
+    {
+        $states = (new LocationService($this->app))->getStatesByCountry($country);
+
+        foreach ($states as $state)
+        {
+            if (strtolower($state['name']) === strtolower($stateName))
+            {
+                return $state['state_code'];
+            }
+        }
+
+        return 'NA';
     }
 }

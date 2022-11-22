@@ -21,6 +21,7 @@ use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\OneClickCheckout\DomainUtils;
 use RZP\Models\Merchant\OneClickCheckout\ShippingMethodProvider\Type;
 use RZP\Models\Merchant\OneClickCheckout\ShippingMethodProvider\Constants;
+use RZP\Models\Merchant\ShippingInfo\Constants as ShippingInfoConstants;
 
 class Service extends Base\Service
 {
@@ -131,7 +132,9 @@ class Service extends Base\Service
             $address = $addresses[0];
             (new Validator())->setStrictFalse()->validateInput("shippingInfoRequest", $address);
 
-            $address = $this->getPincodeAndState($address);
+            (new Validator())->validateStateCode($address);
+
+            $address = $this->getCountryAndStateBasedOnZipcode($address);
 
             $cachedResponse = $this->getShippingInfoFromCache($orderId, $address);
 
@@ -477,6 +480,14 @@ class Service extends Base\Service
     }
 
     public function getShippingInfoFromCache($orderId, $address){
+
+        $olderKeyCachedResponse = $this->app['cache']->get(
+            $this->getShippingInfoOldCacheKey($orderId, $address));
+
+        if (!empty($olderKeyCachedResponse)) {
+            return $olderKeyCachedResponse;
+        }
+
         return $this->app['cache']->get(
             $this->getShippingInfoCacheKey($orderId, $address));
     }
@@ -698,6 +709,11 @@ class Service extends Base\Service
             $this->getShippingInfoCacheKey($orderId, $address),
             $address,
             self::SHIPPING_INFO_CACHE_VALIDITY);
+
+        $this->app['cache']->put(
+            $this->getShippingInfoOldCacheKey($orderId, $address),
+            $address,
+            self::SHIPPING_INFO_CACHE_VALIDITY);
     }
 
     /**
@@ -706,6 +722,28 @@ class Service extends Base\Service
      * @return string
      */
     private function getShippingInfoCacheKey($orderId, $address): string
+    {
+        $zipcode = $address['zipcode'] ?? "";
+        $state = $address['state'] ?? "";
+
+        return self::SHIPPING_INFO_CACHE_KEY_PREFIX
+            . $this->merchant->getId()
+            . "_"
+            . $orderId
+            . "_"
+            . $zipcode
+            . "_"
+            . $state
+            . "_"
+            . $address['country'];
+    }
+
+    /**
+     * @param $orderId
+     * @param $address
+     * @return string
+     */
+    private function getShippingInfoOldCacheKey($orderId, $address): string
     {
         $zipcode = $address['zipcode'] ?? "";
 
@@ -792,6 +830,22 @@ class Service extends Base\Service
             ]);
 
         $this->trace->histogram($metric, $duration, $dimensions);
+    }
+
+
+    /**
+     * If country does not have zipcodes, will return the $address, with city=NA , if empty
+     * If country is india, we'll use location API
+     * If non of the above, we'll use location API
+     */
+    protected function getCountryAndStateBasedOnZipcode($address)
+    {
+        if (in_array(strtoupper($address['country']),ShippingInfoConstants::countryWithNoZipcodes) === true)
+        {
+            return $address;
+        }
+
+        return $this->getPincodeAndState($address);
     }
 
 }

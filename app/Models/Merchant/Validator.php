@@ -52,6 +52,7 @@ use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\VirtualAccount\Entity as VAEntity;
 use RZP\Models\Adjustment;
 use RZP\Models\Payment;
+use RZP\Models\Merchant\ShippingInfo\Constants as ShippingInfoConstants;
 
 /**
  * Class Validator
@@ -628,8 +629,10 @@ class Validator extends Base\Validator
     ];
 
     protected static $shippingInfoRequestRules = [
-        Address\Entity::ZIPCODE => 'sometimes|string|between:0,16',
-        Address\Entity::COUNTRY => 'sometimes|string|between:2,64|custom',
+        'zipcode'       => 'sometimes|string|between:0,16',
+        'country'       => 'required|string|between:2,64',
+        'state'         => 'sometimes|string|between:2,64',
+        'state_code'    => 'sometimes|string|between:2,64',
     ];
 
     protected static $addressShippingInfoResponseRules = [
@@ -3162,6 +3165,32 @@ class Validator extends Base\Validator
                     'parent_mid'    =>  $merchant->getId(),
                 ]
             );
+        }
+    }
+
+    /**
+     * If country does not have zipcodes, state and state code are mandatory
+     * If country is india, zipcode is necessary
+     */
+    public function validateStateCode(array $address)
+    {
+
+        if (in_array(strtoupper($address['country']),ShippingInfoConstants::countryWithNoZipcodes) === true && (empty($address['state_code']) === true || empty($address['state']) === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                'State and State-code are required');
+        }
+
+        if (strtoupper($address['country']) === 'IN' &&  empty($address['zipcode']) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                'zipcode is required for India');
         }
     }
 }
