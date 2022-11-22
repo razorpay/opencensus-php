@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Checkout\Order\Entity as CheckoutOrder;
 use RZP\Models\Order\Entity as Order;
+use RZP\Models\EntityOrigin;
 use RZP\Models\QrCode;
 use RZP\Models\QrPayment;
 use RZP\Trace\TraceCode;
@@ -47,6 +48,11 @@ class Service extends QrCode\Service
             });
 
             $this->publishQrCodeEvent($qrCode, Event::CREATED);
+
+            // Creates entity origin when QR code is created
+            // added in the service layer as core function is commonly used in other flows
+            // QR code creation won't be failed even if origin is not set.
+            (new EntityOrigin\Core)->createEntityOrigin($qrCode);
         }
         catch (\Exception $ex)
         {

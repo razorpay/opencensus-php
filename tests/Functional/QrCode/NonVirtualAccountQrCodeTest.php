@@ -86,6 +86,22 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->runEntityAssertions($response);
     }
 
+    public function testCreateBharatQrCodeWithEntityOrigin()
+    {
+        $response = $this->createQrCode();
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->runEntityAssertions($response);
+
+        $entityOriginEntity = $this->getLastEntity('entity_origin', true);
+
+        $this->fixtures->stripSign($response['id']);
+        $this->assertEquals($entityOriginEntity['entity_id'], $response['id']);
+    }
+
     public function testCreateQrCodeInvalidCustomer()
     {
         $this->expectException(BadRequestException::class);

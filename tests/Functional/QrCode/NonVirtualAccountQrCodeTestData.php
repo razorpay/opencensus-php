@@ -14,6 +14,12 @@ return [
         ],
     ],
 
+    'testCreateBharatQrCodeWithEntityOrigin' => [
+        'usage'          => 'multiple_use',
+        'type'           => 'bharat_qr',
+        'fixed_amount'   => false,
+    ],
+
     'processOrNotifyBankTransfer' => [
         'url'     => '/ecollect/validate/test',
         'method'  => 'post',

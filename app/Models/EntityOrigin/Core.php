@@ -189,6 +189,11 @@ class Core extends Base\Core
 
         $originEntity = optional($vaEntityOrigin)->origin;
 
+        // incase of non VA QR code we need to fetch entity origin from QR code Id.
+        if(empty($virtualAccount) === true && $receiver->getEntity() === 'qr_code')
+        {
+            return $this->getOriginEntityFromQrCode($receiver->getId());
+        }
         return $originEntity;
     }
 
@@ -236,6 +241,19 @@ class Core extends Base\Core
         return optional($entityOrigin)->origin;
     }
 
+    /**
+     * Returns origin entity for the Qr code  if present
+     *
+     * @param string $qrCodeId
+     *
+     * @return mixed|null
+     */
+    protected function getOriginEntityFromQrCode(string $qrCodeId)
+    {
+        $entityOrigin = $this->repo->entity_origin->fetchByEntityTypeAndEntityId('qr_code', $qrCodeId);
+
+        return optional($entityOrigin)->origin;
+    }
     /**
      * Extracts the origin entity from BasicAuth
      *

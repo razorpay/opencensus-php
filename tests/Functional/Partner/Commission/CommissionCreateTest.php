@@ -49,16 +49,17 @@ class CommissionCreateTest extends TestCase
         $this->app->make(Factory::class)->load($factoryPath);
     }
 
-    private function enableVirtualAccountAndMethods(string $merchantId, string $appId) {
+    private function enableVirtualAccountQrcodeAndMethods(string $merchantId, string $appId) {
         $this->fixtures->merchant->enableMethod($merchantId, 'bank_transfer');
         $this->fixtures->merchant->enableMethod($merchantId, 'upi');
 
-        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'qr_codes'], $merchantId);
+        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'qr_codes', 'bharat_qr_v2', 'bharat_qr'], $merchantId);
         $this->fixtures->merchant->addFeatures(['virtual_accounts'], $appId, 'application');
 
         $this->fixtures->create('terminal:shared_bank_account_terminal');
         $this->fixtures->create('terminal:shared_sharp_terminal');
         $this->fixtures->create('terminal:bharat_qr_terminal_upi');
+        $this->fixtures->create('terminal:vpa_shared_terminal_icici');
     }
 
     private function createVirtualAccountWithPartnerAuth(string $subMerchantId, string $clientId, string $clientSecret, string $type) {
@@ -128,7 +129,7 @@ class CommissionCreateTest extends TestCase
 
         $client = $this->setUpNonPurePlatformPartnerAndSubmerchant($partnerId, $subMerchantId);
 
-        $this->enableVirtualAccountAndMethods($subMerchantId, $client->getApplicationId());
+        $this->enableVirtualAccountQrcodeAndMethods($subMerchantId, $client->getApplicationId());
 
         $this->fixtures->pricing->createBankTransferPercentPricingPlan([
            'plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
@@ -184,7 +185,7 @@ class CommissionCreateTest extends TestCase
 
         $client = $this->setUpNonPurePlatformPartnerAndSubmerchant($partnerId, $subMerchantId);
 
-        $this->enableVirtualAccountAndMethods($subMerchantId, $client->getApplicationId());
+        $this->enableVirtualAccountQrcodeAndMethods($subMerchantId, $client->getApplicationId());
 
         $this->fixtures->pricing->createUpiTransferPricingPlan([
            'plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
@@ -1820,6 +1821,72 @@ class CommissionCreateTest extends TestCase
         // check that fund transfer attempt is created
         $attempt = $this->getDbLastEntity('fund_transfer_attempt');
         $this->assertEquals('NEFT', $attempt->getMode());
+    }
+
+
+    private function createQrCode($subMerchantId, $clientId, $clientSecret)
+    {
+        $this->ba->partnerAuth($subMerchantId, 'rzp_test_partner_' . $clientId, $clientSecret);
+
+        $QrCode =  $this->makeRequestAndGetContent($this->testData['createBharatQrCode']);
+
+        $this->fixtures->stripSign($QrCode['id']);
+
+        $this->ba->deleteAccountAuth();
+
+        return $QrCode;
+    }
+
+    /**
+     * This testcase validates the following,
+     *    (in this we create non virtual account qrcode with partner auth
+     *          and payment from qrcode)
+     *
+     * 1. If payment is created for non virtual account qrcode from partner auth with
+     *      entity origin as partner application
+     * 2. validates if commission is generated and belongs to made payment
+     * 3. verifies if the partner to which commission is granted is same as partner who created qrcode
+     */
+    public function testCreateCommissionForBharatQrCode()
+    {
+        $partnerId = Constants::DEFAULT_MERCHANT_ID;
+        $subMerchantId = Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
+
+        $client = $this->setUpNonPurePlatformPartnerAndSubmerchant($partnerId, $subMerchantId);
+
+        $this->enableVirtualAccountQrcodeAndMethods($subMerchantId,$client->getApplicationId());
+        $response = $this->createQrCode($subMerchantId,$client->getId(),$client->getSecret());
+
+        // set up implict pricing plan
+        $this->fixtures->pricing->createUpiTransferPricingPlan([
+                                                                   'plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
+                                                                   'percent_rate' => 200,
+                                                                   'receiver_type' => 'qr_code',
+                                                               ]);
+        $this->fixtures->pricing->createUpiTransferPricingPlan([
+                                                                   'plan_id' => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+                                                                   'percent_rate' => 100,
+                                                                   'receiver_type' => 'qr_code',
+                                                               ]);
+        $this->createConfigForPartnerApp($client->getApplicationId(), null, [
+            'implicit_plan_id' => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+        ]);
+        // create payment for qr code
+        $qrPaymentAttributes = $this->testData['createBharatQrCodePayment'];
+        $qrPaymentAttributes['content']['merchantTranId'] =  $response['id'] . 'qrv2';
+        $qrPaymentAttributes['raw'] = $this->getMockServer('upi_icici')->getAsyncCallbackContentForBharatQr($qrPaymentAttributes['content']);
+        $this->makeRequestAndGetContent($qrPaymentAttributes);
+
+        // entity origin should be application
+        $payment = $this->getDbLastEntity('payment');
+        $paymentEntityOrigin = $this->getDbEntity('entity_origin', ['entity_id' => $payment['id']]);
+        $this->assertEquals('application', $paymentEntityOrigin['origin_type']);
+
+        $commission = $this->getDbLastEntity('commission');
+        // assert commission for payment id
+        $this->assertEquals($commission['source_id'], $payment['id']);
+        $this->assertEquals('captured', $commission['status']);
+        $this->assertEquals($partnerId, $commission['partner_id']);
     }
 
     protected function tearDown(): void

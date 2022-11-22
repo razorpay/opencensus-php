@@ -593,7 +593,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
-
+    
     'createInvoiceDataForLessSubM' => [
         'request' => [
             'method' => 'POST',
@@ -604,6 +604,40 @@ return [
                 'status' => 'captured',
                 'entity' => 'payment',
             ],
+        ],
+    ],
+
+    'createBharatQrCode' => [
+        'method'  => 'POST',
+        'url'     => '/payments/qr_codes',
+        'content' => [
+            'name'         => 'Test QR Code',
+            'description'  => 'QR code for tests',
+            'usage'        => 'multiple_use',
+            'type'         => 'bharat_qr',
+            'fixed_amount' => '0',
+            'notes'        => [
+                'a' => 'b',
+            ],
+        ],
+    ],
+
+    'createBharatQrCodePayment' => [
+        'method'  => 'POST',
+        'url'     => '/payment/callback/bharatqr/upi_icici',
+        'content' => [
+            'merchantId'         => 'abcd_bharat_qr',
+            'subMerchantId'     => '78965412',
+            'BankRRN'           => '000011100101',
+            'merchantTranId'    => 'qrv2',
+            'PayerVA'           => '74889837470@ybl',
+            'PayerAmount'       => 1000,
+            'TxnStatus'         => 'SUCCESS',
+            'TxnInitDate'       => '20201108230300',
+            'TxnCompletionDate' =>'20201108230300',
+            'terminalId'        => null,
+            'PayerName'         => null,
+            'PayerMobile'       => '0000000000',
         ],
     ],
 
