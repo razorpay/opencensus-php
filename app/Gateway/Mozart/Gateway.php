@@ -1348,26 +1348,8 @@ class Gateway extends Base\Gateway
         $verify = new Verify($gateway, $input);
 
         $verify->payment = $entity;
-        $gatewayPayment = $this->getPaymentToVerify($verify);
 
-        if (($gatewayPayment === null) and
-            ($this->shouldReturnIfPaymentNullInVerifyFlow($verify)))
-        {
-            $this->trace->warning(
-                TraceCode::GATEWAY_PAYMENT_VERIFY,
-                [
-                    'payment_id' => $verify->input['payment']['id'],
-                    'message'    => 'payment id not found in the gateway database',
-                    'gateway'    => $this->gateway
-                ]
-            );
-
-            return null;
-        }
-
-        $this->sendPaymentVerifyRequestGateway($verify);
-
-        return $verify->getDataToTrace();
+        return $this->runPaymentVerifyFlowGateway($verify);
     }
 
     public function forceAuthorizeFailed(array $input)

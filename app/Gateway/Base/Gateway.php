@@ -1105,6 +1105,32 @@ class Gateway
         return $verify->getDataToTrace();
     }
 
+    protected function runPaymentVerifyFlowGateway($verify)
+    {
+        // This payment is the gateway entity payment.
+        // Also sets this gateway payment in the verify object's payment.
+        $gatewayPayment = $this->getPaymentToVerify($verify);
+
+        if (($gatewayPayment === null) and
+            ($this->shouldReturnIfPaymentNullInVerifyFlow($verify)))
+        {
+            $this->trace->warning(
+                TraceCode::GATEWAY_PAYMENT_VERIFY,
+                [
+                    'payment_id' => $verify->input['payment']['id'],
+                    'message'    => 'payment id not found in the gateway database',
+                    'gateway'    => $this->gateway
+                ]
+            );
+
+            return null;
+        }
+
+        $this->sendPaymentVerifyRequestGateway($verify);
+
+        return $verify->getDataToTrace();
+    }
+
     /**
      *
      * @param Verify $verify
