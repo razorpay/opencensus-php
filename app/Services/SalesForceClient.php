@@ -773,7 +773,7 @@ class SalesForceClient
     {
         try
         {
-            $this->trace->info(TraceCode::SALESFORCE_INTEGRATION_API_REQUEST, $this->getTraceableRequestWithoutPayload($request));
+            $this->trace->info(TraceCode::SALESFORCE_INTEGRATION_API_REQUEST, $this->getTraceableRequest($request));
 
             $response = $this->getResponse($request);
 
@@ -785,7 +785,7 @@ class SalesForceClient
                 $ex,
                 Trace::ERROR,
                 TraceCode::SALESFORCE_INTEGRATION_ERROR,
-                $this->getTraceableRequestWithoutPayload($request));
+                $this->getTraceableRequest($request));
 
             throw new Exception\IntegrationException('Fail to fetch Salesforce Data');
         }
@@ -847,9 +847,9 @@ class SalesForceClient
     {
         $content = $request['content'];
 
-        if (in_array($request['method'], self::JSON_METHOD))
+        if ((in_array($request['method'], self::JSON_METHOD)) and (is_array($content) === true))
         {
-            $content = json_encode($request['content']);
+            $content = json_encode($content);
         }
 
         $response = Requests::request(
