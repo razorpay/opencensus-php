@@ -173,7 +173,7 @@ abstract class AbstractEventClient extends Base\Core
             foreach ($eventChunks as $eventChunk)
             {
                 $eventData = [
-                    'mode'      => $this->mode,
+                    'mode'      => $this->mode ?? $this->app['rzp.mode'],
                     'events'    => $eventChunk
                 ];
 
