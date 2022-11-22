@@ -14314,6 +14314,9 @@ class Route
             'internal_fd_create_ticket',
             'internal_fd_post_ticket_reply',
             'internal_fetch_merchant_freshdesk_tickets',
+            'setl_fetch_multiple',
+            'refund_fetch_multiple',
+            'merchant_fetch_keys',
         ],
 
         'cmma' => [
