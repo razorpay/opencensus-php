@@ -69,6 +69,12 @@ class Bucket extends Job
     {
         parent::handle();
 
+        $this->trace->debug(TraceCode::SETTLEMENT_TXN_MIGRATION_NSS_DEBUG_LOG, [
+            'merchant_id'       => $this->merchantId,
+            'transaction_id'    => $this->transactionId,
+            'message'           => 'transaction picked from bucket worker'
+        ]);
+
         try
         {
             $txn = $this->repoManager->transaction->findOrFail($this->transactionId);

@@ -628,13 +628,40 @@ class Core extends Base\Core
 
         $transactionIdBatches = array_chunk($transactionIds, $batchSize);
 
+        $pushJobStart= microtime(true);
+
+        $totalPushTimeTaken=0;
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_DEBUG_LOG,
+            [
+                'merchant_id'            => $merchantId,
+                'transactions_count'     => $txnCount,
+                'push_job_start_time'    => $pushJobStart,
+            ]);
+
         foreach ($transactionIdBatches as $transactionIdBatch)
         {
             $opt['transaction_ids'] = $transactionIdBatch;
 
+            $currentPushStartTime = microtime(true);
+
             TransactionMigrationPublish::dispatch($mode, $merchantId, $opt);
 
+            $timeforCurrentPush = microtime(true) - $currentPushStartTime;
+
+            $totalPushTimeTaken=$totalPushTimeTaken+$timeforCurrentPush;
+
             $batch++;
+
+            $this->trace->info(
+                TraceCode::SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_DEBUG_LOG,
+                [
+                    'merchant_id'            => $merchantId,
+                    'batch_number'           => $batch,
+                    'current_batch_push_time'=> $timeforCurrentPush,
+                    'current_time_taken'     => $totalPushTimeTaken
+                ]);
         }
 
         $this->trace->info(
@@ -644,6 +671,7 @@ class Core extends Base\Core
                 'batch_count'            => $batch,
                 'transactions_count'     => $txnCount,
                 'time_taken'             => microtime(true) - $startTime,
+                'total_push_time_taken'  => $totalPushTimeTaken,
             ]);
 
         return [
