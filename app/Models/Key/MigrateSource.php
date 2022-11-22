@@ -3,6 +3,7 @@
 namespace RZP\Models\Key;
 
 use Generator;
+use DB;
 
 use RZP\Modules\Migrate\Source;
 use RZP\Modules\Migrate\Record;
@@ -43,11 +44,9 @@ class MigrateSource implements Source
         $iter = 0;
         while (true)
         {
-            $entities = Entity::select(Entity::ID)
-                ->orderBy(Entity::CREATED_AT)
-                ->offset($iter * self::CHUNK_SIZE_IDS)
-                ->take(self::CHUNK_SIZE_IDS)
-                ->get();
+            $offset = $iter * self::CHUNK_SIZE_IDS;
+            $limit = self::CHUNK_SIZE_IDS;
+            $entities = DB::select(DB::RAW("SELECT id FROM keys order by created_at limit $offset,$limit"));
 
             if ($entities->count() === 0)
             {
@@ -70,7 +69,9 @@ class MigrateSource implements Source
         $ids = $opts['ids'] ?? null;
         if ($ids !== null)
         {
-            $keys = $repo->findMany($ids);
+            $key_ids = "'" . implode("','", $ids) . "'";
+            $keys = DB::select(DB::RAW("SELECT * FROM keys WHERE id in ($key_ids)"));
+
             foreach ($keys as $key)
             {
                 yield new Record($key->getId(), $key);
@@ -83,7 +84,8 @@ class MigrateSource implements Source
         $mids = $opts['mids'] ?? null;
         if ($mids !== null)
         {
-            $keys = $repo->findManyByMerchantIds($mids);
+            $select_mids = "'" . implode("','", $mids) . "'";
+            $keys = DB::select(DB::RAW("SELECT * FROM keys WHERE merchant_id in ($select_mids)"));
             foreach ($keys as $key)
             {
                 yield new Record($key->getId(), $key);
