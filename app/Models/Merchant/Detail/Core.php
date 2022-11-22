@@ -330,7 +330,7 @@ class Core extends Base\Core
             $merchant->getId(),
             function() use ($input, $merchantDetails, $merchant, $originProduct, $oldMerchantDetails, $activationFormMilestone, $startTime,$oldBusinessDetail) {
 
-                return $this->repo->transactionOnLiveAndTest(function() use (
+                $result = $this->repo->transactionOnLiveAndTest(function() use (
                     $input,
                     $merchantDetails,
                     $merchant,
@@ -405,6 +405,29 @@ class Core extends Base\Core
 
                     return $response;
                 });
+
+                $this->repo->transactionOnLiveAndTest(function() use(
+                    $result,
+                    $merchantDetails,
+                    $activationFormMilestone,
+                    $merchant,
+                    $input)
+                {
+                    if ($this->canSubmit($input, $result, $activationFormMilestone) === true)
+                    {
+                        try
+                        {
+                            $this->submitPartnerActivationFormIfApplicable($merchant, $input);
+                        }
+                        catch (Exception\EarlyWorkflowResponse $e)
+                        {
+                            $workflowActionData = json_decode($e->getMessage(), true);
+                            $this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);
+                        }
+                    }
+                });
+
+                return $result;
             },
             Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
@@ -1011,8 +1034,6 @@ class Core extends Base\Core
         {
             UpdateMerchantContext::dispatch(Mode::LIVE, $this->merchant->getId(), null);
         }
-
-        $this->submitPartnerActivationFormIfApplicable($merchant, $input);
 
         $this->trace->info(TraceCode::MERCHANT_FORM_SUBMIT_LATENCY, [
             'merchant_id' => $merchant->getId(),
@@ -7013,7 +7034,7 @@ class Core extends Base\Core
      *
      * @throws \Throwable
      */
-    private function submitPartnerActivationFormIfApplicable(Merchant\Entity $merchant, ?array $input)
+    public function submitPartnerActivationFormIfApplicable(Merchant\Entity $merchant, ?array $input)
     {
         $partnerCore = (new PartnerCore());
 

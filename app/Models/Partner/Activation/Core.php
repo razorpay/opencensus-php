@@ -9,10 +9,12 @@ use RZP\Models\Base;
 use RZP\Models\State;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Services\Workflow;
 use RZP\Models\State\Reason;
 use RZP\Models\Partner\Metric;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Partner\Activation;
+use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Workflow\Action\Core as ActionCore;
@@ -491,10 +493,17 @@ class Core extends Base\Core
                 unset($original[Activation\Entity::ALLOWED_NEXT_ACTIVATION_STATUSES]);
                 unset($dirty[Activation\Entity::ALLOWED_NEXT_ACTIVATION_STATUSES]);
 
+                $this->resetWorkflowSingleton();
+
                 $this->app['workflow']
+                    ->setPermission(Permission\Name::EDIT_ACTIVATE_PARTNER)
+                    ->setRouteName(Activation\Constants::ACTIVATION_ROUTE_NAME)
+                    ->setController(Activation\Constants::PARTNER_CONTROLLER)
                     ->setEntity($partnerActivation->getEntity())
                     ->setEntityId($partnerActivation->getMerchantId())
                     ->setOriginal($original)
+                    ->setRouteParams(['id' => $merchant->getId()])
+                    ->setInput([Entity::ACTIVATION_STATUS => $input[Entity::ACTIVATION_STATUS]])
                     ->setDirty($dirty);
 
                 $this->activate($partnerActivation, $merchant, $triggerWorkflow);
@@ -669,6 +678,11 @@ class Core extends Base\Core
         $email = new ActivationMail($merchant->getId());
 
         Mail::queue($email);
+    }
+
+    private function resetWorkflowSingleton()
+    {
+        $this->app['workflow'] =  new Workflow\Service($this->app);
     }
 }
 
