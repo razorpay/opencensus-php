@@ -34,7 +34,8 @@ class Validator extends Base\Validator
         'merchant_type'         => 'required',
         'merchant_name'         => 'required',
         'contact_name'          => 'required',
-        'dba_name'              => 'required'
+        'dba_name'              => 'required',
+        'country_code'          => 'required|in:IN,MY'
     ];
 
     public $isOrgSpecificValidationSupported = false;

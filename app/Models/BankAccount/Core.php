@@ -441,6 +441,11 @@ class Core extends Base\Core
 
     public function createTestBankAccount($merchant)
     {
+
+        if($merchant->getCountry() === 'MY'){
+            return;
+        }
+
         $input = array(
             'ifsc_code'             => Entity::SPECIAL_IFSC_CODE,
             'beneficiary_name'      => 'Test ' . $merchant->getId(),

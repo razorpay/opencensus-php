@@ -126,6 +126,8 @@ class Service extends Base\Service
 
         $heimdallTokenData = $this->handleHeimdallInvitation($input);
 
+        $countryCode = $input['country_code'] ?? 'IN';
+
         if (empty($input[Entity::OAUTH_PROVIDER]) === false)
         {
             $this->core->verifyOauthIdToken($input);
@@ -163,6 +165,8 @@ class Service extends Base\Service
 
             unset($input['business_name']);
 
+            unset($input['country_code']);
+
             $user = $this->create($input, $operation);
         }
 
@@ -195,7 +199,7 @@ class Service extends Base\Service
         }
         else
         {
-            $data = $this->createMerchant($user, $referrer, $businessName, $partnerIntent, $input, $heimdallTokenData, $sendConfirmation);
+            $data = $this->createMerchant($user, $referrer, $businessName, $countryCode, $partnerIntent, $input, $heimdallTokenData, $sendConfirmation);
 
             $merchantId = $data['id'];
 
@@ -378,6 +382,11 @@ class Service extends Base\Service
             }
 
             unset($input['merchant_invitation']);
+
+            if(!isset($input[Merchant\Entity::COUNTRY_CODE]) &&
+                isset($heimdallTokenData['form_data']) && isset($heimdallTokenData['form_data'][Merchant\Entity::COUNTRY_CODE])){
+                $input[Merchant\Entity::COUNTRY_CODE] = $heimdallTokenData['form_data'][Merchant\Entity::COUNTRY_CODE];
+            }
         }
         return $heimdallTokenData;
 
@@ -486,11 +495,12 @@ class Service extends Base\Service
         $this->core->subscribeToMailingList($user);
     }
 
-    protected function createMerchant(array $user, string $referrer, string $businessName, bool $partnerIntent, array $input, $heimdallTokenData, bool $sendConfirmation): array
+    protected function createMerchant(array $user, string $referrer, string $businessName, String $countryCode, bool $partnerIntent, array $input, $heimdallTokenData, bool $sendConfirmation): array
     {
         $merchantInputData = [
             Merchant\Entity::NAME          => $businessName,
             Merchant\Entity::SIGNUP_SOURCE => $this->auth->getRequestOriginProduct(),
+            Merchant\Entity::COUNTRY_CODE          => $countryCode ?? 'IN',
         ];
 
         $merchantDetailInputData = [];
@@ -593,6 +603,8 @@ class Service extends Base\Service
         {
             $heimdallTokenData = $this->handleHeimdallInvitation($input);
 
+            $countryCode = $input['country_code'] ?? 'IN';
+
             if (empty($user) === true)
             {
                 $input[Entity::NAME] = $input[Entity::NAME] ?? '';
@@ -628,6 +640,8 @@ class Service extends Base\Service
 
                 unset($input['business_name']);
 
+                unset($input['country_code']);
+
                 $user = $this->create($input, $operation);
 
                 $userEntity = $this->repo->user->findByPublicId($user[Entity::ID]);
@@ -645,7 +659,7 @@ class Service extends Base\Service
             }
             else
             {
-                $merchantData = $this->createMerchant($user, $referrer, $businessName, $partnerIntent, $input, $heimdallTokenData, false);
+                $merchantData = $this->createMerchant($user, $referrer, $businessName, $countryCode, $partnerIntent, $input, $heimdallTokenData, false);
 
                 if (empty($signupCampaign) === false)
                 {

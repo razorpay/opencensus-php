@@ -680,20 +680,30 @@ class Core extends Base\Core
 
             if ($methodsEnabled === false)
             {
-                $methods->setCreditCard(true);
-                $methods->setDebitCard(true);
-                $methods->setPrepaidCard(true);
-                $methods->setMobikwik(true);
-                $methods->setPayzapp(true);
-                $methods->setPayumoney(true);
-                $methods->setOlamoney(true);
-                $methods->setFreecharge(true);
-                $methods->setAirtelmoney(true);
-                $methods->setAmazonpay(false);
-                $methods->setBankTransfer(true);
-                $methods->setJiomoney(true);
-                $methods->setPayLater(true);
-                $methods->setPhonepeSwitch(true);
+                if($merchant->getCountry() === 'MY'){
+                    $methods->setCreditCard(true);
+                    $methods->setDebitCard(true);
+                    $methods->setUpi(false);
+                    $methods->setNetbanking(false);
+                    $methods->setMobikwik(false);
+                    $methods->setPrepaidCard(false);
+                    $methods->setBankTransfer(false);
+                }else{
+                    $methods->setCreditCard(true);
+                    $methods->setDebitCard(true);
+                    $methods->setPrepaidCard(true);
+                    $methods->setMobikwik(true);
+                    $methods->setPayzapp(true);
+                    $methods->setPayumoney(true);
+                    $methods->setOlamoney(true);
+                    $methods->setFreecharge(true);
+                    $methods->setAirtelmoney(true);
+                    $methods->setAmazonpay(false);
+                    $methods->setBankTransfer(true);
+                    $methods->setJiomoney(true);
+                    $methods->setPayLater(true);
+                    $methods->setPhonepeSwitch(true);
+                }
             }
         }
         else
