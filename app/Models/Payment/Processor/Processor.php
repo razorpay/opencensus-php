@@ -712,9 +712,9 @@ class Processor
                 return false;
             }
 
-            if ($this->isPaymentViaTokenisedCard($input))
+            if ($merchant->isFeeBearerCustomerOrDynamic() === true )
             {
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::NON_SAVED_TOKENISED_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::FEE_BEARER_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
 
                 return ($result === 'on');
             }
@@ -722,6 +722,13 @@ class Processor
             if ($merchant->isFeatureEnabled('raas') === true)
             {
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::RAAS_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+                return ($result === 'on');
+            }
+
+            if ($this->isPaymentViaTokenisedCard($input))
+            {
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::NON_SAVED_TOKENISED_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
 
                 return ($result === 'on');
             }
@@ -752,13 +759,6 @@ class Processor
             if ($this->ba->isPartnerAuth() === true)
             {
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::PARTNER_AUTH_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-
-                return ($result === 'on');
-            }
-
-            if ($merchant->isFeeBearerCustomerOrDynamic() ===true )
-            {
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::FEE_BEARER_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
 
                 return ($result === 'on');
             }
