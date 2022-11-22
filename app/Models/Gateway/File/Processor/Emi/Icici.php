@@ -18,6 +18,7 @@ use RZP\Models\Payment;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Services\Beam\Service;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\PublicCollection;
 
 class Icici extends Base
 {
@@ -38,6 +39,35 @@ class Icici extends Base
     protected $emiFilePassword;
 
     protected $totalTransactions;
+
+    /**
+     * Implements \RZP\Models\Gateway\File\Processor\Base::fetchEntities().
+     */
+    public function fetchEntities(): PublicCollection
+    {
+        $begin = $this->gatewayFile->getBegin();
+        $end = $this->gatewayFile->getEnd();
+        $gateway = Payment\Gateway::AMEX;
+        $acquirer = Payment\Gateway::AMEX;
+
+        $emiPaymentsForBank = $this->repo
+            ->payment
+            ->fetchEmiPaymentsWithCardTerminalsBetween(
+                $begin,
+                $end,
+                static::BANK_CODE);
+
+        $emiPaymentsForAmexGateway = $this->repo
+            ->payment
+            ->fetchEmiPaymentsWithGatewayAndAcquirerBetween(
+                $begin,
+                $end,
+                static::BANK_CODE,
+                $gateway,
+                $acquirer);
+
+        return $emiPaymentsForBank->merge($emiPaymentsForAmexGateway);
+    }
 
     protected function getFileToWriteName()
     {
@@ -171,6 +201,11 @@ class Icici extends Base
                 else if($gateway === 'card_fss' && $payment_acquirer === 'sbin')
                 {
                     $finalTid = $mid;
+                    $finalMid = $mid;
+                }
+                else if($gateway === 'amex' && $payment_acquirer === 'amex')
+                {
+                    $finalTid = $tid;
                     $finalMid = $mid;
                 }
                 else

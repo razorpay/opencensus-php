@@ -12,6 +12,7 @@ use Database\Connection;
 
 use RZP\Base\ConnectionType;
 use RZP\Constants\Environment;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Exception;
 use RZP\Constants;
@@ -371,6 +372,47 @@ EOT;
                     ->with('card.globalCard', 'emiPlan', 'merchant', 'terminal')
                     ->select($paymentData)
                     ->get();
+    }
+
+    /**
+     * Returns all captured payments between timestamps
+     * with gateway, acquirer and bank code
+     * @param  int $from        timestamp for start of interval
+     * @param  int $to          timestamp for end of interval
+     * @param  string $bank     bank code
+     * @param  string $gateway  terminal gateway
+     * @param  string $acquirer terminal gateway acquirer
+     * @return PublicCollection of Payment
+     */
+    public function fetchEmiPaymentsWithGatewayAndAcquirerBetween($from, $to, $bank, $gateway, $acquirer): PublicCollection
+    {
+        $tRepo = $this->repo->terminal;
+
+        $tTableName = $tRepo->getTableName();
+
+        $terminalGateway = $tRepo->dbColumn(Terminal\Entity::GATEWAY);
+
+        $terminalGatewayAcquirer = $tRepo->dbColumn(Terminal\Entity::GATEWAY_ACQUIRER);
+
+        $paymentTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
+
+        $paymentData = $this->dbColumn('*');
+
+        $terminalId = $tRepo->dbColumn(Terminal\Entity::ID);
+
+        $paymentStatus = $this->dbColumn(Entity::STATUS);
+
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+            ->join($tTableName, $paymentTerminalId, '=', $terminalId)
+            ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
+            ->where($paymentStatus, '=', Status::CAPTURED)
+            ->where(Entity::BANK, '=', $bank)
+            ->where(Entity::METHOD, '=', Method::EMI)
+            ->where($terminalGateway, '=', $gateway)
+            ->where($terminalGatewayAcquirer, '=', $acquirer)
+            ->with('card.globalCard', 'emiPlan', 'merchant', 'terminal')
+            ->select($paymentData)
+            ->get();
     }
 
     public function fetchCardPaymentsForGatewayAndMerchantBetween($from, $to, $merchantIds)
