@@ -13,8 +13,8 @@ import {
   trackApiLogsSearchHttpStatusChanged,
   trackApiLogsSearched,
   trackApiLogsSearchKeywordChanged,
-} from '../events';
-import StatusLabel from '../../components/StatusLabel';
+} from 'merchant/views/Developers/Api/events';
+import StatusLabel from 'merchant/views/Developers/components/StatusLabel';
 
 @withRouter
 @connect((state) => ({ ...state.apiLogs }), {
@@ -103,7 +103,9 @@ export default class RequestLogs extends ListContainer {
             <select
               class="form-control input-sm"
               value={this.state.httpStatus}
-              onChange={(e) => this.setState({ httpStatus: e.target.value })}
+              onChange={(e) =>
+                this.setState({ httpStatus: e.target.value === 'all' ? '' : e.target.value })
+              }
               onBlur={() => trackApiLogsSearchHttpStatusChanged()}
               disabled={shouldCtasBeDisabled}
             >
