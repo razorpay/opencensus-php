@@ -92,8 +92,7 @@ class SplitzService extends BaseSplitz
 
     public function bulkCallsToSplitz($input)
     {
-        $code = 200;
-        $body = json_encode(['bulk_evaluate_response' => [
+        return [
             [
                 "id" => "A",
                 "project_id" => "HHhdsBjOfdFmSR",
@@ -134,9 +133,7 @@ class SplitzService extends BaseSplitz
                 "Reason" => "bucketer",
                 "steps" => ["sampler", "exclusion", "audience", "assign_bucket"]
             ]
-        ]]);
-        $res = json_decode($body, true);
-        return ['status_code' => $code, 'response' => $res];
+        ];
 
     }
 

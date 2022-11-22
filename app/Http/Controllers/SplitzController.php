@@ -100,40 +100,7 @@ class SplitzController extends Controller
     {
         $parameters = Request::all();
 
-        $response = [];
-        try
-        {
-
-            if (empty($parameters) === false)
-            {
-
-                $bulkEvaluateArray['bulk_evaluate'] = [];
-
-                $chunkExperimentArray = array_chunk($parameters, 10);
-
-                foreach ($chunkExperimentArray as $batchExperimentArray)
-                {
-                    $bulkEvaluateArray = json_encode($batchExperimentArray, JSON_UNESCAPED_SLASHES);
-
-                    $bulk_evaluate = '{"bulk_evaluate":' . $bulkEvaluateArray . '}';
-
-                    $result = $this->app->splitzService->bulkCallsToSplitz($bulk_evaluate);
-
-                    foreach ($result as $resultValue)
-                    {
-                        if (isset($resultValue['bulk_evaluate_response']) == true)
-                        {
-                            $response = array_merge($response, $resultValue['bulk_evaluate_response']);
-                        }
-                    }
-                }
-            }
-        } catch (\Throwable $e)
-        {
-            throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_SPLITZ_BULK_FAILURE, null, $e);
-        }
-
-        return $response;
+        return $this->app->splitzService->bulkCallsToSplitz($parameters);
     }
 
     public function evaluateRequest()

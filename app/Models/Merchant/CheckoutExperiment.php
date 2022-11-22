@@ -225,7 +225,7 @@ class CheckoutExperiment
      */
     private function handleExperimentResponses($response): array
     {
-        foreach ($response['response']['bulk_evaluate_response'] as $experimentResponse)
+        foreach ($response as $experimentResponse)
         {
             $experimentId = $experimentResponse['experiment']['id'];
 

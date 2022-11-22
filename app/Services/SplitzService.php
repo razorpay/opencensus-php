@@ -222,36 +222,28 @@ class SplitzService extends Base\Service
         ];
     }
 
-    public function bulkCallsToSplitz($input)
+    public function bulkCallsToSplitz($parameters)
     {
-        $headers['Content-Type'] = self::CONTENT_TYPE_JSON;
-        $headers[self::X_PASSPORT_JWT_V1] = $this->ba->getPassportJwt($this->baseUrl);
+        $response = [];
 
-
-        $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
-
-        $options = [
-            'timeout' => $this->requestTimeout,
-            'auth'    => [$this->key, $this->secret],
-        ];
-
-        $url = $this->baseUrl . self::EVALUATE_BULK_URL;
-
-        try
+        if (empty($parameters) === false)
         {
-            $response = Requests::request(
-                $url,
-                $headers,
-                $input,
-                Requests::POST,
-                $options);
+            $chunkExperimentArray = array_chunk($parameters, 10);
 
-            return $this->parseAndReturnResponse($response);
+            foreach ($chunkExperimentArray as $batchExperimentArray)
+            {
+                $bulk_evaluate = ['bulk_evaluate' => $batchExperimentArray];
+
+                $result = $this->sendRequest($bulk_evaluate, self::EVALUATE_BULK_URL, Requests::POST);
+
+                if (isset($result['response']['bulk_evaluate_response']) == true)
+                {
+                    $response = array_merge($response, $result['response']['bulk_evaluate_response']);
+                }
+            }
         }
-        catch (\Throwable $e)
-        {
-            throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_SPLITZ_BULK_FAILURE, null, $e);
-        }
+
+        return $response;
     }
 
     public function allowCors()
