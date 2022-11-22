@@ -78,6 +78,7 @@ class MerchantDetailTest extends OAuthTestCase
     use WorkflowTrait;
     use MocksSplitz;
     use MocksDiagTrait;
+    use CreateLegalDocumentsTrait;
 
     const PARTNER                = 'partner';
     const ACTIVATION             = 'activation';
