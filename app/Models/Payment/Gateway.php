@@ -789,6 +789,9 @@ class Gateway
         IFSC::PSIB,
         IFSC::SYNB,
         IFSC::UJVN,
+        IFSC::UCBA,
+        IFSC::IOBA,
+        IFSC::UBIN,
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [
