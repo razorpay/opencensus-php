@@ -45,7 +45,7 @@ const ReasonsPanel = ({ isLoading, title = '', heading = '', data = [], tab, pan
     const csvData = arrayObjToCsv(res);
     fileDownload(csvData, `${tab?.name}_Errors_Report.csv`);
     trackSuccessRateEvents(downloadSRErrorReport({ fileName: `${tab?.name}_Errors_Report.csv` }));
-  }, [tab.name]);
+  }, [panelData, tab.name]);
 
   if (isLoading) return LoadingState;
 

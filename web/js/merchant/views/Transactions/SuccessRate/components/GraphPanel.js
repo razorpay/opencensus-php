@@ -144,7 +144,7 @@ const GraphPanel = (props) => {
     const csvData = arrayObjToCsv(res);
     fileDownload(csvData, `SR_${tab?.name}_Report.csv`);
     trackSuccessRateEvents(downloadSRGraphReport({ fileName: `SR_${tab?.name}_Report.csv` }));
-  }, [tab.name]);
+  }, [tab.histogram.datasets, tab.name]);
 
   return (
     <GenericPanel

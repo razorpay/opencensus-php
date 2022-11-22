@@ -11,6 +11,7 @@ $widget-border = #E8EAEB
 $pill-color = #132644
 $btn-disabled-border = #CFDADD73
 $btn-disabled-text = #58666E73
+$btn-border-focus = #DEE5E7
 $refresh-disabled = #C4CBD7
 $tooltip-shadow = #0A1D3826
 $spacer = 8px
@@ -39,6 +40,10 @@ $tooltip-border-color = #E0E8F4
     padding: 9px 12px
     background-color: $bg-white
     margin-left: "calc(%s / 2)" % $spacer
+
+    &:focus,
+    &:hover
+      border-color: $btn-border-focus
 
 .sr-filter
   padding-bottom: $spacer * 3
