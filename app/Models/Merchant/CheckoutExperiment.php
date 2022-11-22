@@ -71,11 +71,7 @@ class CheckoutExperiment
         {
             $this->fillSplitzExperimentsData();
 
-            $bulkEvaluateArray = json_encode($this->experimentsData, JSON_UNESCAPED_SLASHES);
-
-            $bulkEvaluate = '{"bulk_evaluate":' . $bulkEvaluateArray . '}';
-
-            $response = $this->app['splitzService']->bulkCallsToSplitz($bulkEvaluate);
+            $response = $this->app['splitzService']->bulkCallsToSplitz($this->experimentsData);
 
             return $this->handleExperimentResponses($response);
         }
