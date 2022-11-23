@@ -124,26 +124,26 @@ class PartnerActivationTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function testSubmitPartnerActivationForNonRegisteredBusinessActivated()
-    {
-        $this->createMerchant(self::MERCHANT_ID, false, null);
-
-        $this->fillAllRequirements(self::MERCHANT_ID, false);
-
-        $this->fillStatusForRequirements(self::MERCHANT_ID, false, 'verified');
-
-        $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
-
-        $this->startTest();
-
-        $state = $this->getDbEntity('action_state');
-
-        $this->assertEquals(self::MERCHANT_ID, $state['merchant_id']);
-
-        $this->assertEquals('activated', $state['name']);
-
-        $this->assertEquals('partner_activation', $state['entity_type']);
-    }
+//    public function testSubmitPartnerActivationForNonRegisteredBusinessActivated()
+//    {
+//        $this->createMerchant(self::MERCHANT_ID, false, null);
+//
+//        $this->fillAllRequirements(self::MERCHANT_ID, false);
+//
+//        $this->fillStatusForRequirements(self::MERCHANT_ID, false, 'verified');
+//
+//        $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
+//
+//        $this->startTest();
+//
+//        $state = $this->getDbEntity('action_state');
+//
+//        $this->assertEquals(self::MERCHANT_ID, $state['merchant_id']);
+//
+//        $this->assertEquals('activated', $state['name']);
+//
+//        $this->assertEquals('partner_activation', $state['entity_type']);
+//    }
 
     public function testSubmitPartnerActivationForNonRegisteredBusinessUnderReview()
     {
