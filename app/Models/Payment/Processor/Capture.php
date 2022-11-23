@@ -1177,7 +1177,7 @@ trait Capture
             return;
         }
 
-        $receiver = $payment->receiver;
+        $receiver = $payment->getReceiver();
 
         if ($receiver->getRequestSource() === NonVAQr\RequestSource::CHECKOUT)
         {

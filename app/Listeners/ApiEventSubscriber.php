@@ -1463,7 +1463,7 @@ class ApiEventSubscriber extends Base\Core
 
     protected function getQrCodePaymentPayload(Payment\Entity $payment)
     {
-        $receiver = $payment->receiver;
+        $receiver = $payment->getReceiver();
 
         $partialPayload[Constants\Entity::PAYMENT] = [
             'entity' => $payment->toArrayPublic()

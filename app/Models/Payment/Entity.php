@@ -27,6 +27,7 @@ use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Order;
 use RZP\Models\Offer;
+use RZP\Models\QrCode;
 use RZP\Models\Feature;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
@@ -2690,11 +2691,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function isQrV2Payment()
     {
-        $receiver = $this->receiver;
+        $receiver = $this->getReceiver();
 
         return (($receiver !== null) and
                 ($receiver instanceof QrV2\Entity) and
                 ($receiver->getStatus() !== null));
+    }
+
+    public function getReceiver()
+    {
+        return (new QrCode\Repository)->find($this->toArray()[self::RECEIVER_ID]);
     }
 
     public function isVisaSafeClickPayment()
