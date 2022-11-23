@@ -20,12 +20,12 @@ class Request extends BaseRequest
 
     public function request($method, $url, $data = null)
     {
-        $url = Api::$baseUrl . $url;
+        $url = Api::getBaseUrl() . $url;
 
         if ($data === null)
             $data = array();
 
-        $this->setOption('auth', [Api::$key, Api::$secret]);
+        $this->setOption('auth', [Api::getKey(), Api::getSecret()]);
 
         $response = \Requests::request($url, self::$headers, $data, $method, $this->options);
 
@@ -36,12 +36,12 @@ class Request extends BaseRequest
 
     public function rawRequest($method, $url, $data = null)
     {
-        $url = Api::$baseUrl . $url;
+        $url = Api::getBaseUrl() . $url;
 
         if ($data === null)
             $data = array();
 
-        $this->setOption('auth', [Api::$key, Api::$secret]);
+        $this->setOption('auth', [Api::getKey(), Api::getSecret()]);
 
         $this->setOption('follow_redirects', false);
 
