@@ -58,7 +58,7 @@ class AccountDocumentAsvClient extends BaseClient
             return $response;
 
         } catch (Error $e) {
-            $httpClientTxnMetric->end(true, $e->getErrorCode());
+            $httpClientTxnMetric->end(false, $e->getErrorCode());
 
             $this->trace->traceException($e, null, TraceCode::ASV_HTTP_CLIENT_ERROR, [
                 Constant::ROUTE_NAME => Constant::ACCOUNT_DOCUMENT_DELETE_ROUTE,

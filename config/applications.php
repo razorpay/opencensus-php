@@ -1361,6 +1361,7 @@ return [
         'sync_deviation_route_http_timeout_sec' => env('ASV_SYNC_DEVIATION_ROUTE_HTTP_TIMEOUT_SEC', 4),
         'document_delete_route_http_timeout_sec' => env('ASV_DOCUMENT_DELETE_ROUTE_HTTP_TIMEOUT_SEC',2),
         'account_contact_delete_route_http_timeout_sec' => env('ASV_ACCOUNT_CONTACT_DELETE_ROUTE_HTTP_TIMEOUT_SEC', 2),
+        'asv_save_api_route_http_timeout_sec' => env('ASV_SAVE_API_ROUTE_HTTP_TIMEOUT_SEC', 2),
         'asv_fetch_route_http_timeout_sec' => env('ASV_MERCHANT_FETCH_ROUTE_HTTP_TIMEOUT_SEC', 2)
     ],
 

@@ -32,12 +32,16 @@ class Constant
     const DOCUMENT_DELETE_ROUTE_HTTP_TIMEOUT_SEC = 'document_delete_route_http_timeout_sec';
     const ASV_FETCH_ROUTE_HTTP_TIMEOUT_SEC = 'asv_fetch_route_http_timeout_sec';
     const ACCOUNT_CONTACT_DELETE_ROUTE_HTTP_TIMEOUT_SEC = 'account_contact_delete_route_http_timeout_sec';
+    const ASV_SAVE_API_ROUTE_HTTP_TIMEOUT_SEC = 'asv_save_api_route_http_timeout_sec';
 
     // Account Document Api Routes
     const ACCOUNT_DOCUMENT_DELETE_ROUTE = 'twirp/rzp.accounts.account.v1.DocumentAPI/Delete';
 
     //Account Api Routes
     const ACCOUNT_CONTACT_DELETE_ROUTE = 'twirp/rzp.accounts.account.v1.AccountAPI/DeleteAccountContact';
-
     const MERCHANT_FETCH_ROUTE = 'twirp/rzp.accounts.account.v1.AccountAPI/FetchMerchant';
+
+    //Asv Save Api Routes
+     const ASV_SAVE_API_ROUTE = 'twirp/rzp.accounts.account.v1.SaveApi/Save';
+
 }

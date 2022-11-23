@@ -53,7 +53,7 @@ class AccountDocumentAsvClientTest extends TestCase
         $traceMock->expects($this->exactly(1))->method('info');
         $traceMock->expects($this->exactly(1))->method('histogram');
         $traceMock->expects($this->exactly(2))->method('count');
-        $traceMock->expects($this->exactly(1))->method('histogram');
+        $traceMock->expects($this->exactly(1))->method('traceException');
 
         $mockError = new accountDocumentV1\TwirpError('invalid_argument', "id doesn't exists hence can't be deleted");
         $expectedError = new IntegrationException('Could not receive proper response from Account service');

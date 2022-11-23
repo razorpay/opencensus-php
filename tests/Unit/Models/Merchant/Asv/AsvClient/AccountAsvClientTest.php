@@ -54,7 +54,7 @@ class AccountAsvClientTest extends TestCase
         $traceMock->expects($this->exactly(1))->method('info');
         $traceMock->expects($this->exactly(1))->method('histogram');
         $traceMock->expects($this->exactly(2))->method('count');
-        $traceMock->expects($this->exactly(1))->method('histogram');
+        $traceMock->expects($this->exactly(1))->method('traceException');
 
         $mockError = new accountV1\TwirpError('invalid_argument', "account doesn't exists hence contact can't be deleted");
         $expectedError = new IntegrationException('Could not receive proper response from Account service');
