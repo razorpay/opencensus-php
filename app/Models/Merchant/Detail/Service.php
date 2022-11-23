@@ -3270,6 +3270,11 @@ class Service extends Base\Service
         return $core->getMerchantInfo($merchant_id);
     }
 
+    public function getMerchantPlugin($merchant_id)
+    {
+        return (new Core())->getMerchantPlugin($merchant_id);
+    }
+
     /**
      * This is used as part of ITF test cases to mock penny testing validation events from BVS.
      * Sample Input

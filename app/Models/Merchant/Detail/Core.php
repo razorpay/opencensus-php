@@ -7616,6 +7616,14 @@ class Core extends Base\Core
         return $response;
     }
 
+    public function getMerchantPlugin( $merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $businessDetail = optional($merchant->merchantBusinessDetail);
+
+        return $businessDetail->getPluginDetails();
+    }
     public function pushSelfServeSuccessEventsToSegment()
     {
         $segmentProperties = [];

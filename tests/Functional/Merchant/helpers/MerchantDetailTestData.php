@@ -49,6 +49,23 @@ return [
         ],
     ],
 
+    'testGetMerchantPlugin' => [
+        'request'  => [
+            'url'    => '/onboarding/merchants/10000000000156/plugin',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' =>
+                [
+                    [
+                        'website'                  => 'www.google.com',
+                        'merchant_selected_plugin' => 'shopify',
+                        'suggested_plugin'         => 'whmcs'
+                    ]
+                ],
+        ],
+    ],
+
     'testIfSubMerchant' => [
         'request'  => [
             'url'    => '/merchant/activation',

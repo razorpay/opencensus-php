@@ -1190,6 +1190,13 @@ class MerchantController extends Controller
         return $response;
     }
 
+    public function getMerchantPlugin($id)
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getMerchantPlugin($id);
+
+        return ApiResponse::json($response);
+    }
+
     public function createLogSearch()
     {
 

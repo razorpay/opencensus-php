@@ -141,6 +141,27 @@ class MerchantDetailTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testGetMerchantPlugin()
+    {
+        $merchant = $this->fixtures->create('merchant', ['id' => '10000000000156']);
+
+        $this->fixtures->create('merchant_business_detail', [
+            'merchant_id' => '10000000000156',
+            'plugin_details' => [
+                [
+                    'website' => "www.google.com",
+                    'merchant_selected_plugin' => "shopify",
+                    'suggested_plugin' => "whmcs"
+                ]
+            ]
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->id);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant->id, $merchantUser['id']);
+
+        $this->startTest();
+    }
     public function testUpdateIfscCode()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');

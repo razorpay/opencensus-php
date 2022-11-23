@@ -711,6 +711,7 @@ class UserRolesScope
             'linked_account_update_bank_account'                   => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
             'list_low_balance_config'                              => [Role::OWNER, Role::ADMIN],
             'list_merchant_notification_config'                    => [Role::OWNER, Role::ADMIN],
+            'merchant_plugin_fetch'                                => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_business_types'                              => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES,Role::RBL_ROLES),
             'merchant_business_types_admin'                        => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES,Role::RBL_ROLES),
             'merchant_info'                                        => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES,Role::RBL_ROLES),
