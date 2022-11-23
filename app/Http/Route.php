@@ -4185,6 +4185,14 @@ class Route
         'mob_admin_routes',
         'merchant_create_lead_to_salesforce_admin',
         'salesforce_event_admin',
+        'mob_intent_apply_application',
+        'mob_fetch_application',
+        'mob_fetch_multiple_applications',
+        'mob_create_intent',
+        'mob_fetch_intent',
+        'mob_fetch_multiple_intents',
+        'mob_get_workflow',
+        'mob_save_workflow',
         'merchant_consents_admin_fetch'
     ];
 
@@ -9007,6 +9015,15 @@ class Route
         'workflow_config_create_bulk_admin'         => Permission::SELF_SERVE_WORKFLOW_CONFIG,
 
         'salesforce_event_admin'                    => Permission::VIEW_ACTIVATION_FORM,
+
+        'mob_intent_apply_application'              => Permission::VIEW_ACTIVATION_FORM,
+        'mob_fetch_application'                     => Permission::VIEW_ACTIVATION_FORM,
+        'mob_fetch_multiple_applications'           => Permission::VIEW_ACTIVATION_FORM,
+        'mob_create_intent'                         => Permission::VIEW_ACTIVATION_FORM,
+        'mob_fetch_intent'                          => Permission::VIEW_ACTIVATION_FORM,
+        'mob_fetch_multiple_intents'                => Permission::VIEW_ACTIVATION_FORM,
+        'mob_get_workflow'                          => Permission::VIEW_ACTIVATION_FORM,
+        'mob_save_workflow'                         => Permission::VIEW_ACTIVATION_FORM,
     ];
 
     public static $bankLmsRoutePermissions = [
@@ -12136,6 +12153,14 @@ class Route
             'migrate_tokens_to_gateway_tokens',
             'mir_instrument_set',
             'mir_instruments_get',
+            'mob_intent_apply_application',
+            'mob_fetch_application',
+            'mob_fetch_multiple_applications',
+            'mob_create_intent',
+            'mob_fetch_intent',
+            'mob_fetch_multiple_intents',
+            'mob_get_workflow',
+            'mob_save_workflow',
             'mock_acs',
             'mock_aeps_payment',
             'mock_amex_payment',

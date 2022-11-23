@@ -241,6 +241,16 @@ class MasterOnboardingService
                     ]
                 ]
             ];
+        } else if (($path === 'get_workflow/IfyrSDmvEmnA0N') and
+            ($method === 'GET')) {
+            $result = [
+              'id' => 'IfyrSDmvEmnA0N'
+            ];
+        } else if (($path === 'save_workflow') and
+            ($method === 'POST')) {
+            $result = [
+                'id' => 'IfyrSDmvEmnA0N'
+            ];
         }
 
         return $result;

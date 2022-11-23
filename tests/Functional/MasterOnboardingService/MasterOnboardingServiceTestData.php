@@ -320,6 +320,39 @@ return [
         ],
     ],
 
+    'testProxyGetWorkflow' => [
+        'request'  => [
+            'url'     => '/mob/get_workflow/IfyrSDmvEmnA0N',
+            'method'  => 'GET',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'IfyrSDmvEmnA0N'
+            ]
+        ]
+    ],
+
+    'testProxySaveWorkflow' => [
+        'request'  => [
+            'url'     => '/mob/save_workflow',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'content' => [
+                'id' => 'IfyrSDmvEmnA0N'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'IfyrSDmvEmnA0N'
+            ]
+        ]
+    ],
+
     'testAdminIntentApplyApplication' => [
         'request'  => [
             'url'     => '/mob/admin/intents/intent00000001/application/apply',

@@ -26,30 +26,72 @@ class MasterOnboardingServiceTest extends TestCase
     public function testProxyIntentApplyApplication()
     {
         $this->startTest();
+
+        $this->ba->adminProxyAuth();
+
+        $this->startTest();
     }
 
     public function testProxyFetchApplication()
     {
+        $this->startTest();
+
+        $this->ba->adminProxyAuth();
+
         $this->startTest();
     }
 
     public function testProxyFetchMultipleApplications()
     {
         $this->startTest();
+
+        $this->ba->adminProxyAuth();
+
+        $this->startTest();
     }
 
     public function testProxyCreateIntent()
     {
+        $this->startTest();
+
+        $this->ba->adminProxyAuth();
+
         $this->startTest();
     }
 
     public function testProxyFetchIntent()
     {
         $this->startTest();
+
+        $this->ba->adminProxyAuth();
+
+        $this->startTest();
     }
 
     public function testProxyFetchMultipleIntents()
     {
+        $this->startTest();
+
+        $this->ba->adminProxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testProxyGetWorkflow()
+    {
+        $this->startTest();
+
+        $this->ba->adminProxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testProxySaveWorkflow()
+    {
+        $this->startTest();
+
+        $this->ba->adminProxyAuth();
+
         $this->startTest();
     }
 
