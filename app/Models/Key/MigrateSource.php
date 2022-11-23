@@ -44,9 +44,10 @@ class MigrateSource implements Source
         $iter = 0;
         while (true)
         {
-            $offset = $iter * self::CHUNK_SIZE_IDS;
-            $limit = self::CHUNK_SIZE_IDS;
-            $entities = DB::select(DB::RAW("SELECT id FROM keys order by created_at limit $offset,$limit"));
+            $offset   = $iter * self::CHUNK_SIZE_IDS;
+            $limit    = self::CHUNK_SIZE_IDS;
+            $results  = DB::select(DB::RAW("SELECT id FROM `keys` order by created_at limit $offset, $limit"));
+            $entities = Entity::hydrate($results);
 
             if ($entities->count() === 0)
             {
@@ -70,7 +71,8 @@ class MigrateSource implements Source
         if ($ids !== null)
         {
             $key_ids = "'" . implode("','", $ids) . "'";
-            $keys = DB::select(DB::RAW("SELECT * FROM keys WHERE id in ($key_ids)"));
+            $results = DB::select(DB::RAW("SELECT * FROM `keys` WHERE id in ($key_ids)"));
+            $keys    = Entity::hydrate($results);
 
             foreach ($keys as $key)
             {
@@ -85,7 +87,9 @@ class MigrateSource implements Source
         if ($mids !== null)
         {
             $select_mids = "'" . implode("','", $mids) . "'";
-            $keys = DB::select(DB::RAW("SELECT * FROM keys WHERE merchant_id in ($select_mids)"));
+            $results = DB::select(DB::RAW("SELECT * FROM `keys` WHERE merchant_id in ($select_mids)"));
+            $keys = Entity::hydrate($results);
+
             foreach ($keys as $key)
             {
                 yield new Record($key->getId(), $key);
