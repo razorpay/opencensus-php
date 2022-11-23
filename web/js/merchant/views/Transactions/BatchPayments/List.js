@@ -26,6 +26,7 @@ class BatchListContainer extends Component {
         renderUploadModal={this.renderUploadModal}
         gaEvents={gaEvents}
         {...this.props}
+        showUploadForAdminOrOwner
       />
     );
   }

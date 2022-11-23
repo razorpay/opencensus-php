@@ -93,8 +93,10 @@ class BatchList extends ListContainer {
       gaEvents,
       onSearchAnalytics = () => {},
       trackPagination,
+      showUploadForAdminOrOwner = false,
     } = this.props;
     const { user } = session;
+    const showBatchUploadButton = showUploadForAdminOrOwner ? user?.isAdminOrOwner : true;
 
     return (
       <div class="content-wrapper batch-upload-wrapper">
@@ -117,7 +119,7 @@ class BatchList extends ListContainer {
             )}
           </ShowWhen>
 
-          {user.isAdminOrOwner &&
+          {showBatchUploadButton &&
             (this.props.multiBatch ? (
               <div class="pull-right MultiBatch--action">
                 <div class="btn btn-primary">Upload New Batch</div>
@@ -166,7 +168,7 @@ class BatchList extends ListContainer {
               )}
             </ShowWhen>
 
-            {user.isAdminOrOwner &&
+            {showBatchUploadButton &&
               (this.props.multiBatch ? (
                 <div class="pull-right MultiBatch--action">
                   <span className="cta-container">
