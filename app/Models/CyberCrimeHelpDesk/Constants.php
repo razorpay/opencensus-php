@@ -32,4 +32,8 @@ class Constants
 
     const PREFIX_CYBER_CRIME_PAYMENT_DETAILS_COMMENT                    =   'agent_approved_payment_details_';
 
+    const MERCHANT_RESPOND_BY_IN_SECONDS     = (24 * 60 * 60);
+
+    const IST_DIFF = (5*60 + 30)*60;
+
 }

@@ -181,7 +181,9 @@ class Service extends Base\Service
             'mid'               => $merchant->getId(),
             'date_time_stamp'   => date('Y-m-d H:i:s'),
             'amount'            => $paymentDetails->getBaseAmount(),
-            'payment_id'        => $paymentDetails->getId()
+            'payment_id'        => $paymentDetails->getId(),
+            'payment_created_at' => epoch_format($paymentDetails->created_at + Constants::IST_DIFF),
+            'respond_by'        => date('d F Y', time()+Constants::MERCHANT_RESPOND_BY_IN_SECONDS + Constants::IST_DIFF),
         ])->render();
 
         $fdOutboundEmailRequest = [

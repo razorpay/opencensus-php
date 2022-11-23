@@ -1,182 +1,274 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head>
+  <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width" />
-</head>
-<style>
-    table {
-        border-collapse: collapse;
-        width: 100%;
-    }
-    td, tr, th {
-        padding: 4px;
-        border: 1px solid #cccccc;
-    }
-</style>
-<body style="font-family: Trebuchet MS">
-<div
-    style="
-         background-image: linear-gradient(
-         to bottom,
-         #1b3fa6 0%,
-         #1b3fa6 200px,
-         #f8f9f9 200px,
-         #f8f9f9 90%
-         );
-         height: 100%;
-         "
->
-    <!-- Razorpay logo -->
-    <div style="text-align: center; margin-bottom: 30px">
-        <img
-            style="margin-top: 30px; height: 30px"
+  </head>
+  <body style="margin: 0; padding: 0">
+    <div
+      style="
+        background-color: #eaebed;
+        font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+        font-size: 100%;
+        line-height: 1.3em;
+        margin: 0;
+        padding: 0;
+      "
+    >
+      <div
+        style="
+          background-image: linear-gradient(
+            to bottom,
+            #1b3fa6 0%,
+            #1b3fa6 200px,
+            #f8f9f9 200px,
+            #f8f9f9 90%
+          );
+        "
+      >
+        <div
+          style="
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+          "
+        >
+          <img
+            style="height: 30px"
             src="https://cdn.razorpay.com/logo_invert.png"
-        />
-    </div>
-    <div style="max-width: 750px; margin: auto">
-        <!-- header -->
-        <div style="max-width: 750px; margin: auto">
-            <div
-                style="
-                  background-color: #ffffff;
-                  margin-bottom: 20px;
-                  padding: 15px;
-                  max-width: 550px;
-                  text-align: center;
-                  margin-left: auto;
-                  margin-right: auto;
-                  "
-            >
-                <h4
-                    style="
-                     color: #0d2366;
-                     font-family: Trebuchet MS;
-                     font-style: normal;
-                     font-weight: bold;
-                     font-size: 25px;
-                     line-height: 24px;
-                     margin-bottom: 5px
-                     "
-                >
-                    Razorpay Response to LEA
-                </h4>
-                <h5 style="margin-top: 0; color: #0d2366;">
-                    {{$fd_ticket_id}}_{{$current_date_time}}
-                </h5>
-            </div>
-            <!-- body -->
-            <div
-                style="
-                  background-color: #ffffff;
-                  margin-bottom: 6px;
-                  padding: 20px;
-                  max-width: 550px;
-                  margin-left: auto;
-                  margin-right: auto;
-                  "
-            >
-                <p>Respected Sir/Madam, </p>
-                <div style="font-size: 14px; color: #7b8199">
-                    <p>Thank You for reaching out to Razorpay. </p>
-                    <p>We have escalated the issue to the merchant meanwhile please find below the beneficiary details as requested against the transaction details submitted by you:</p>
-                    <div style="overflow: scroll">
-                        <table>
-                            <tr>
-                                <th colspan="10">
-                                    <p style="font-size: 14px; margin: 0">A) Transaction(s)  traced against the input received from the LEA</p>
-                                </th>
-                            </tr>
-                            <tr>
-                                <th>Date (DD/MM/YY)</th>
-                                <th>Card/ method</th>
-                                <th>Payment ID</th>
-                                <th>Status</th>
-                                <th>Amount</th>
-                                <th>Buyer's Email address</th>
-                                <th>Buyer's Phone #</th>
-                                <th>Buyer's IP address</th>
-                                <th>Merchant Website</th>
-                                <th>Merchant name</th>
-                            </tr>
-                            <tr>
-                                <td>{{date("Y-m-d H:i:s", $payment_details->getCreatedAt())}}</td>
-                                <td>{{$payment_details->getMethod()}}</td>
-                                <td>{{$payment_details->getId()}}</td>
-                                <td>{{$payment_details->getStatus()}}</td>
-                                <td>{{number_format((float)$payment_details->getBaseAmount()/100, 2, '.', '')}}</td>
-                                <td>{{$payment_details->getEmail()}}</td>
-                                <td>{{$payment_details->getContact()}}</td>
-                                <td>{{$customer_ip_address}}</td>
-                                <td>{{$merchant->getWebsite()}}</td>
-                                <td>{{$merchant->getName()}}</td>
-                            </tr>
-                        </table>
-                    </div>
-                    <p>(B) Beneficiary Contact Details</p>
-                    <div style="overflow: scroll">
-                        <table>
-                            <tr>
-                                <th colspan="3">
-                                    <p style="font-size: 14px; margin: 0">(B) Beneficiary Contact Details</p>
-                                </th>
-                            </tr>
-                            <tr>
-                                <th>Merchant contact name
-                                </th>
-                                <th>Merchant contact number
-                                </th>
-                                <th>Merchant contact email
-                                </th>
-                                @if(empty($share_beneficary_account_details) === false)
-                                    <th>Beneficiary Name
-                                    </th>
-                                    <th>Bank Account No.
-                                    </th>
-                                    <th>IFSC Code
-                                    </th>
-                                @endif
-                            </tr>
-                            <tr>
-                                <td>{{$merchant_details->getContactName()}}</td>
-                                <td>{{$merchant_details->getContactMobile()}}</td>
-                                <td>{{$merchant_details->getContactEmail()}}</td>
-                                @if(empty($share_beneficary_account_details) === false)
-                                    <td>{{$beneficiary_bank_account_details->getBeneficiaryName()}}</td>
-                                    <td>{{$beneficiary_bank_account_details->getAccountNumber()}}</td>
-                                    <td>{{$beneficiary_bank_account_details->getIfscCode()}}</td>
-                                @endif
-                            </tr>
-                        </table>
-                    </div>
-                    <p>Should you need any further details for your investigation in this regard, we request you to write back to us at "fraud.alerts@razorpay.com" along with the complaint / FIR copy and the ticket number in the subject line. Thank you for your cooperation.</p>
-                    <p>We are available on call. You may reach out to us on +91 84476 40209. You may use the extension mentioned in the signature to connect with the agent handling the case.</p>
-                    <p>हम कॉल्स पर उपलब्ध हैं। आप हमसे +91 8447640209 पर संपर्क कर सकते हैं। आप मामले को संभालने वाले एजेंट से जुड़ने के लिए निम्नलिखित एक्सटेंशन का उपयोग कर सकते हैं।</p>
-                </div>
-                <p>Best</p>
-            </div>
-            <!-- footer -->
-            <div style="max-width: 750px; margin: auto; border: 1px solid #CCCCCC; border-left: none; border-right: none">
-                <div style="display: flex;">
-                    <div style="padding: 0 20px; border-right: 1px solid #CCCCCC">
-                        <img
-                            style="margin-top: 10px; height: 20px"
-                            src="https://cdn.razorpay.com/logo.png"
-                        />
-                        <h5 style="margin-top: 0; color: #0d2366;">
-                            The Future of Payments is Here
-                        </h5>
-                    </div>
-                    <div style="font-weight: 100; padding: 0 20px; font-weight: bold; font-size: 11px; color: #0d2366;">
-                        <p style="margin-bottom: 0;">Risk Management Team</p>
-                        <p style="margin: 0;">(Law Enforcement Liaison) </p>
-                        <p style="margin-top: 5px">Contact : +91 +91 8447640209                </p>
-                    </div>
-                </div>
-            </div>
-            <!-- footer -->
+          />
         </div>
+
+        <div
+          style="
+            background-color: #ffffff;
+            padding: 20px 20px 0px 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+            color: #0d2366;
+            font-size: 24px;
+          "
+        >
+          <img
+            style="height: 40px"
+            src="https://cdn.razorpay.com/static/assets/email/notification.png"
+          />
+          <p style="margin: 0; margin-top: 15px">Razorpay Response to LEA</p>
+        </div>
+      </div>
+      <div
+        style="
+          background-color: #ffffff;
+          padding: 10px 20px 20px 20px;
+          max-width: 600px;
+          margin: 0 auto;
+          text-align: center;
+          color: #0d2366;
+          font-size: 14px;
+        "
+      >
+        {{$fd_ticket_id}}_{{$current_date_time}}
+      </div>
+
+      <div
+        style="
+          background-color: #ffffff;
+          padding: 20px;
+          max-width: 600px;
+          margin: 0 auto;
+          margin-top: 10px;
+          border-top: 2px solid #528ff0;
+          color: #7b8199;
+          font-size: 13px;
+        "
+      >
+        <p style="font-size: 15px; margin: 5px 0">Respected Sir/Madam,</p>
+        <p style="margin: 0">Thank You for reaching out to Razorpay.</p>
+        <p style="margin: 10px 0">
+          We have escalated the issue to the merchant meanwhile please find
+          below the beneficiary details as requested against the transaction
+          details submitted by you:
+        </p>
+
+        <div style="overflow: scroll; margin: 15px 0">
+          <table
+            style="
+              border-collapse: collapse;
+              width: 100%;
+              padding: 5px;
+              border: 1px solid #cccccc;
+            "
+          >
+            <tr style="padding: 5px; border: 1px solid #cccccc">
+              <th style="padding: 5px; border: 1px solid #cccccc" colspan="10">
+                <p style="font-size: 14px; margin: 0">
+                  A) Transaction(s) traced against the input received from the
+                  LEA
+                </p>
+              </th>
+            </tr>
+            <tr style="padding: 5px; border: 1px solid #cccccc">
+              <th style="padding: 5px; border: 1px solid #cccccc">
+                Date (DD/MM/YY)
+              </th>
+              <th style="padding: 5px; border: 1px solid #cccccc">
+                Card/ method
+              </th>
+              <th style="padding: 5px; border: 1px solid #cccccc">
+                Payment ID
+              </th>
+              <th style="padding: 5px; border: 1px solid #cccccc">Status</th>
+              <th style="padding: 5px; border: 1px solid #cccccc">Amount</th>
+              <th style="padding: 5px; border: 1px solid #cccccc">
+                Buyer's Email address
+              </th>
+              <th style="padding: 5px; border: 1px solid #cccccc">
+                Buyer's Phone #
+              </th>
+              <th style="padding: 5px; border: 1px solid #cccccc">
+                Buyer's IP address
+              </th>
+              <th style="padding: 5px; border: 1px solid #cccccc">
+                Merchant Website
+              </th>
+              <th style="padding: 5px; border: 1px solid #cccccc">
+                Merchant name
+              </th>
+            </tr>
+            <tr style="padding: 5px; border: 1px solid #cccccc">
+              <td style="padding: 5px; border: 1px solid #cccccc">
+                {{date("Y-m-d H:i:s", $payment_details->getCreatedAt())}}
+              </td>
+              <td style="padding: 5px; border: 1px solid #cccccc">
+                {{$payment_details->getMethod()}}
+              </td>
+              <td style="padding: 5px; border: 1px solid #cccccc">
+                {{$payment_details->getId()}}
+              </td>
+              <td style="padding: 5px; border: 1px solid #cccccc">
+                {{$payment_details->getStatus()}}
+              </td>
+              <td style="padding: 5px; border: 1px solid #cccccc">
+                {{number_format((float)$payment_details->getBaseAmount()/100, 2,
+                '.', '')}}
+              </td>
+              <td style="padding: 5px; border: 1px solid #cccccc">
+                {{$payment_details->getEmail()}}
+              </td>
+              <td style="padding: 5px; border: 1px solid #cccccc">
+                {{$payment_details->getContact()}}
+              </td>
+              <td style="padding: 5px; border: 1px solid #cccccc">
+                {{$customer_ip_address}}
+              </td>
+              <td style="padding: 5px; border: 1px solid #cccccc">
+                {{$merchant->getWebsite()}}
+              </td>
+              <td style="padding: 5px; border: 1px solid #cccccc">
+                {{$merchant->getName()}}
+              </td>
+            </tr>
+          </table>
+        </div>
+        <p style="margin: 0">(B) Beneficiary Contact Details</p>
+        <div style="overflow: scroll; margin: 15px 0">
+          <table
+            style="
+              border-collapse: collapse;
+              width: 100%;
+              padding: 5px;
+              border: 1px solid #cccccc;
+            "
+          >
+            <tr style="padding: 5px; border: 1px solid #cccccc">
+              <th style="padding: 5px; border: 1px solid #cccccc" colspan="3">
+                <p style="font-size: 14px; margin: 0">
+                  (B) Beneficiary Contact Details
+                </p>
+              </th>
+            </tr>
+            <tr style="padding: 5px; border: 1px solid #cccccc">
+              <th style="padding: 5px; border: 1px solid #cccccc">
+                Merchant contact name
+              </th>
+              <th style="padding: 5px; border: 1px solid #cccccc">
+                Merchant contact number
+              </th>
+              <th style="padding: 5px; border: 1px solid #cccccc">
+                Merchant contact email
+              </th>
+              @if(empty($share_beneficary_account_details) === false)
+                <th style="padding: 5px; border: 1px solid #cccccc">
+                  Beneficiary Name
+                </th>
+                <th style="padding: 5px; border: 1px solid #cccccc">
+                  Bank Account No.
+                </th>
+                <th style="padding: 5px; border: 1px solid #cccccc">IFSC Code</th>
+              @endif
+            </tr>
+            <tr style="padding: 5px; border: 1px solid #cccccc">
+              <td style="padding: 5px; border: 1px solid #cccccc">
+                {{$merchant_details->getContactName()}}
+              </td>
+              <td style="padding: 5px; border: 1px solid #cccccc">
+                {{$merchant_details->getContactMobile()}}
+              </td>
+              <td style="padding: 5px; border: 1px solid #cccccc">
+                {{$merchant_details->getContactEmail()}}
+              </td>
+              @if(empty($share_beneficary_account_details) === false)
+                <td style="padding: 5px; border: 1px solid #cccccc">
+                  {{$beneficiary_bank_account_details->getBeneficiaryName()}}
+                </td>
+                <td style="padding: 5px; border: 1px solid #cccccc">
+                  {{$beneficiary_bank_account_details->getAccountNumber()}}
+                </td>
+                <td style="padding: 5px; border: 1px solid #cccccc">
+                  {{$beneficiary_bank_account_details->getIfscCode()}}
+                </td>
+              @endif
+            </tr>
+          </table>
+        </div>
+
+        <p style="margin: 0">
+          Should you need any further details for your investigation in this
+          regard, we request you to write back to us at
+          "fraud.alerts@razorpay.com" along with the complaint / FIR copy and
+          the ticket number in the subject line. Thank you for your cooperation.
+        </p>
+        <p style="margin: 10px 0">
+          We are available on call. You may reach out to us on +91 84476 40209.
+          You may use the extension mentioned in the signature to connect with
+          the agent handling the case.
+        </p>
+        <p style="margin: 0">
+          हम कॉल्स पर उपलब्ध हैं। आप हमसे +91 8447640209 पर संपर्क कर सकते हैं।
+          आप मामले को संभालने वाले एजेंट से जुड़ने के लिए निम्नलिखित एक्सटेंशन
+          का उपयोग कर सकते हैं।
+        </p>
+        <p style="font-size: 15px; margin: 15px 0 0 0">Best</p>
+      </div>
+
+      <div
+        style="
+          background-color: #eaebed;
+          padding: 20px;
+          max-width: 600px;
+          margin: 10px auto;
+          color: #7b8199;
+          font-size: 13px;
+          text-align: center;
+        "
+      >
+        <img style="height: 20px" src="https://cdn.razorpay.com/logo.png" />
+        <p style="margin: 0">The Future of Payments is Here</p>
+        <p style="margin: 0">Risk Management Team (Law Enforcement Liaison)</p>
+        <p style="margin: 0">Contact : +91 8447640209</p>
+      </div>
     </div>
-</div>
-</body>
+  </body>
 </html>
