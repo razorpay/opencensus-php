@@ -228,6 +228,7 @@ class RefundModal extends Component {
               : ' | Unchecked Checkbox'
             : ''
         }${default_speed === 'normal' ? ' | Default Speed Normal' : ' | Default Speed Instant'}`;
+        /* istanbul ignore next */
         if (
           (partial && this.analytics.comment && is_normal) ||
           (partial && this.analytics.comment && is_instant) ||
@@ -255,10 +256,12 @@ class RefundModal extends Component {
           closeTimeout: 5000,
         });
 
+        /* istanbul ignore else */
         if (typeof this.props.onRefund === 'function') {
           this.props.onRefund();
         }
 
+        /* istanbul ignore else */
         if (this.props.afterRefund)
           this.props.afterRefund({
             amount: data.amount,
@@ -268,14 +271,16 @@ class RefundModal extends Component {
 
         this.props.closeModal();
       })
-      .catch(({ errors }) => {
-        if (errors)
-          this.props.showNotification({
-            type: 'error',
-            message: errors,
-            closeTimeout: 5000,
-          });
-      });
+      .catch(
+        /* istanbul ignore next */ ({ errors }) => {
+          if (errors)
+            this.props.showNotification({
+              type: 'error',
+              message: errors,
+              closeTimeout: 5000,
+            });
+        },
+      );
   }
 
   save = (props) => {
@@ -344,14 +349,16 @@ class RefundModal extends Component {
               this.refund('optimum', props, partial);
             },
           })
-          .catch(() => {
-            window.rzpAnalytics?.({
-              eventCategory: 'Dashboard - Payments',
-              eventAction: 'Click - Cancel Refund',
-              eventLabel: `payment_id=${this.props.payment.id}`,
-              speed_requested: 'optimum',
-            });
-          });
+          .catch(
+            /* istanbul ignore next */ () => {
+              window.rzpAnalytics?.({
+                eventCategory: 'Dashboard - Payments',
+                eventAction: 'Click - Cancel Refund',
+                eventLabel: `payment_id=${this.props.payment.id}`,
+                speed_requested: 'optimum',
+              });
+            },
+          );
       });
     } else {
       this.context
@@ -376,14 +383,16 @@ class RefundModal extends Component {
             this.refund('normal', props, partial);
           },
         })
-        .catch(() => {
-          window.rzpAnalytics?.({
-            eventCategory: 'Dashboard - Payments',
-            eventAction: 'Click - Cancel Refund',
-            eventLabel: `payment_id=${this.props.payment.id}`,
-            speed_requested: 'normal',
-          });
-        });
+        .catch(
+          /* istanbul ignore next */ () => {
+            window.rzpAnalytics?.({
+              eventCategory: 'Dashboard - Payments',
+              eventAction: 'Click - Cancel Refund',
+              eventLabel: `payment_id=${this.props.payment.id}`,
+              speed_requested: 'normal',
+            });
+          },
+        );
     }
   };
 
@@ -426,12 +435,13 @@ class RefundModal extends Component {
   };
 
   getInstantRefundClassNames = (Val) => {
+    /* istanbul ignore else */
     if (Val) {
       return 'checkbox instant-refund-disable';
     } else if (this.props.current_balance.loading === true || Val === false) {
       return 'checkbox';
     }
-
+    /* istanbul ignore next */
     return '';
   };
 
@@ -476,9 +486,11 @@ class RefundModal extends Component {
                       <Fragment>
                         <i
                           class="i i-help"
-                          onMouseEnter={() => {
-                            this.analytics.hovered = true;
-                          }}
+                          onMouseEnter={
+                            /* istanbul ignore next */ () => {
+                              this.analytics.hovered = true;
+                            }
+                          }
                         />
                         <PopoverComponent
                           theme="dark"
@@ -537,6 +549,7 @@ class RefundModal extends Component {
                   </div>
                 );
               }
+              /* istanbul ignore else */
               if (!instant_refund_supported) {
                 return (
                   <div className="low-funds">
@@ -545,7 +558,7 @@ class RefundModal extends Component {
                   </div>
                 );
               }
-
+              /* istanbul ignore next */
               return null;
             })()
           ) : null}
@@ -574,9 +587,11 @@ class RefundModal extends Component {
                     )}
                   <div style={{ display: 'inline', marginLeft: '5px' }}>
                     <i
-                      onMouseEnter={() => {
-                        this.analytics.hover_breakup = true;
-                      }}
+                      onMouseEnter={
+                        /* istanbul ignore next */ () => {
+                          this.analytics.hover_breakup = true;
+                        }
+                      }
                       class="i i-info-circle"
                     />
                     <PopoverComponent
@@ -661,34 +676,13 @@ class RefundModal extends Component {
 
   onInstantRefundCheckboxClick = (e) => {
     this.analytics.check_box = e.target.checked;
+    /* istanbul ignore next */
     window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payments',
       eventAction: e.target.value ? 'Unchecked - Instant Refund' : 'Checked - Instant Refund',
       eventLabel: `payment_id=${this.props.payment.id}`,
     });
     this.setState({ instantChecked: e.target.checked });
-  };
-
-  onInstantRefundTooltipHover = () => {
-    window.rzpAnalytics?.({
-      eventCategory: 'Dashboard - Payments',
-      eventAction: 'Hover - Instant Refund Tooltip',
-      eventLabel: `payment_id=${this.props.payment.id}`,
-    });
-  };
-
-  isPaymentOlderThanSixMonths = () => {
-    // created_at is in epoch time
-    const { created_at } = this.props.payment;
-
-    // convert both to moment objs
-    const createdAt = moment.unix(created_at);
-    const today = moment(new Date());
-
-    const monthDiff = today.diff(createdAt, 'months');
-
-    if (monthDiff >= 6) return true;
-    else return false;
   };
 
   isRefundButtonDisabled = () => {
