@@ -1,7 +1,7 @@
 import React from 'react';
 import Tabs from 'merchant/views/Settlements/v2/components/Tabs';
 import { fireEvent, render, screen } from 'test-utils';
-import * as SettlementsDB from 'merchant/views/Settlements/tests/data/SettlementsDB';
+import * as SettlementsDB from 'merchant/views/Settlements/__test__/data/SettlementsDB';
 
 const handleTabChange = jest.fn();
 

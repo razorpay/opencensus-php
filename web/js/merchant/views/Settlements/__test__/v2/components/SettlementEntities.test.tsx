@@ -2,7 +2,7 @@ import * as SettlementActions from 'merchant/reducers/settlements/details';
 import React, { useEffect } from 'react';
 import SettlementEntities from 'merchant/views/Settlements/v2/components/SettlementEntities';
 import { connect } from 'react-redux';
-import * as SettlementsDB from 'merchant/views/Settlements/tests/data/SettlementsDB';
+import * as SettlementsDB from 'merchant/views/Settlements/__test__/data/SettlementsDB';
 
 import {
   screen,

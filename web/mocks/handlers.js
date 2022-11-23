@@ -8,7 +8,7 @@ import * as BusinessCategoryDB from 'merchant/views/onboarding/mobile/services/d
 import * as PaymentEscalationDB from 'merchant/views/onboarding/mobile/services/data/PaymentEscalationDB';
 import * as GstinDetailsDB from 'merchant/views/onboarding/mobile/services/data/GstinDetailsDB';
 import * as TermsAndConditionDB from 'merchant/views/TermsAndCondition/services/TermsAndConditionDB';
-import * as SettlementsDB from 'merchant/views/Settlements/tests/data/SettlementsDB';
+import * as SettlementsDB from 'merchant/views/Settlements/__test__/data/SettlementsDB';
 import WEBHOOK_HANDLERS from 'merchant/views/Settings/Webhooks/__test__/mocks/handlers';
 import logHandlers from 'merchant_common/containers/ReportsAsync/Logs/__test__/mocks/handlers';
 import { payoutDetailsHandlers } from 'merchant/views/Settlements/InstantSettlements/PayoutDetails/__test__/mocks/handlers';

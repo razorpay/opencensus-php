@@ -1,4 +1,4 @@
-import * as SettlementsDB from 'merchant/views/Settlements/tests/data/SettlementsDB';
+import * as SettlementsDB from 'merchant/views/Settlements/__test__/data/SettlementsDB';
 import React from 'react';
 import SettlementBreakup from 'merchant/views/Settlements/v2/components/SettlementBreakup';
 import { errorHandlers, render, screen, server, waitForLoadingToFinish } from 'test-utils';
