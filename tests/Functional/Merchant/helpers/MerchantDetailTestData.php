@@ -36,7 +36,91 @@ return [
         ],
     ],
 
-    'testIsAdminLoggedInAsMerchant' => [
+    'testGetMerchantSupportedPlugins' => [
+        'request'  => [
+            'url'    => '/onboarding/merchant/supported_plugins',
+            'method' => 'GET'
+        ],
+        'response' => [
+            "content" => [
+                [
+                    "name"              => "Arastta",
+                    "icon"              => "https://cdn.razorpay.com/static/assets/product-led-onboarding/Arastta.svg",
+                    "integration_guide" => "https://razorpay.com/docs/payments/payment-gateway/ecommerce-plugins/arastta/",
+                    "integration_url"   => ""
+                ],
+                [
+                    "name"              => "EasyDigitalDownloads",
+                    "icon"              => "https://cdn.razorpay.com/static/assets/product-led-onboarding/EasyDigitalDownload.svg",
+                    "integration_guide" => "https://razorpay.com/docs/payments/payment-gateway/ecommerce-plugins/easy-digital-downloads/",
+                    "integration_url"   => ""
+                ],
+                [
+                    "name"              => "CS-Cart",
+                    "icon"              => "https://cdn.razorpay.com/static/assets/product-led-onboarding/CSCart.svg",
+                    "integration_guide" => "https://razorpay.com/docs/payments/payment-gateway/ecommerce-plugins/cs-cart/",
+                    "integration_url"   => ""
+                ],
+                [
+                    "name"              => "gravityforms",
+                    "icon"              => "https://cdn.razorpay.com/static/assets/product-led-onboarding/GravityForms.svg",
+                    "integration_guide" => "https://razorpay.com/docs/payments/payment-gateway/ecommerce-plugins/gravity-forms",
+                    "integration_url"   => ""
+                ],
+                [
+                    "name"              => "Magento",
+                    "icon"              => "https://cdn.razorpay.com/static/assets/product-led-onboarding/Magento.svg",
+                    "integration_guide" => "https://razorpay.com/docs/payments/payment-gateway/ecommerce-plugins/magento/",
+                    "integration_url"   => ""
+                ],
+                [
+                    "name"              => "OpenCart",
+                    "icon"              => "https://cdn.razorpay.com/static/assets/product-led-onboarding/OpenCart.svg",
+                    "integration_guide" => "https://razorpay.com/docs/payments/payment-gateway/ecommerce-plugins/open-cart/",
+                    "integration_url"   => ""
+                ],
+                [
+                    "name"              => "PrestaShop",
+                    "icon"              => "https://cdn.razorpay.com/static/assets/product-led-onboarding/Prestashop.svg",
+                    "integration_guide" => "https://razorpay.com/docs/payments/payment-gateway/ecommerce-plugins/prestashop/",
+                    "integration_url"   => ""
+                ],
+                [
+                    "name"              => "Shopify",
+                    "icon"              => "https://cdn.razorpay.com/static/assets/product-led-onboarding/Shopify.svg",
+                    "integration_guide" => "https://razorpay.com/docs/payments/payment-gateway/ecommerce-plugins/shopify/",
+                    "integration_url"   => "https://www.google.com/admin/settings/payments/alternative-providers/1058840"
+                ],
+                [
+                    "name"              => "WHMCS",
+                    "icon"              => "https://cdn.razorpay.com/static/assets/product-led-onboarding/WHMCS.svg",
+                    "integration_guide" => "https://razorpay.com/docs/payments/payment-gateway/ecommerce-plugins/whmcs/",
+                    "integration_url"   => ""
+                ],
+                [
+                    "name"              => "Wix",
+                    "icon"              => "https://cdn.razorpay.com/static/assets/product-led-onboarding/Wix.svg",
+                    "integration_guide" => "https://razorpay.com/docs/payments/payment-gateway/ecommerce-plugins/wix/",
+                    "integration_url"   => "https://support.wix.com/en/article/connecting-razorpay-as-a-payment-provider"
+                ],
+                [
+                    "name"              => "WooCommerce",
+                    "icon"              => "https://cdn.razorpay.com/static/assets/product-led-onboarding/WooCommerce.svg",
+                    "integration_guide" => "https://razorpay.com/docs/payments/payment-gateway/ecommerce-plugins/woocommerce/",
+                    "integration_url"   => ""
+                ],
+                [
+                    "name"              => "WordPress",
+                    "icon"              => "https://cdn.razorpay.com/static/assets/product-led-onboarding/Wordpress.svg",
+                    "integration_guide" => "https://razorpay.com/docs/payments/payment-gateway/ecommerce-plugins/wordpress/",
+                    "integration_url"   => ""
+                ]
+            ]
+        ]
+    ],
+
+
+'testIsAdminLoggedInAsMerchant' => [
         'request'  => [
             'url'    => '/merchant/is_admin_as_merchant',
             'method' => 'GET',

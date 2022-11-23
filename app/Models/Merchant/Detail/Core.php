@@ -51,7 +51,7 @@ use RZP\Models\State\Reason;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Metric;
-use RZP\Service\WhatCmsService;
+use RZP\Services\WhatCmsService;
 use RZP\Constants\IndianStates;
 use RZP\Models\Merchant\AutoKyc;
 use RZP\Models\MerchantRiskAlert;
@@ -7413,6 +7413,40 @@ class Core extends Base\Core
                     );
                 }
             }
+        }
+
+        return $result;
+    }
+
+    public function getMerchantSupportedPlugins(Merchant\Entity $merchant): array
+    {
+        $result  = [];
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $businessWebsite = null;
+
+        if (empty($merchantDetails->getWebsite()) === false)
+        {
+          $businessWebsite =  trim(strtolower($merchantDetails->getWebsite()), '/');
+
+          $this->trace->info(TraceCode::MERCHANT_BUSINESS_WEBSITE_DETAILS,[
+              "Business Website" => $businessWebsite,
+          ]);
+        }
+
+        foreach (WhatCmsService::merchantPluginTypesMap as $pluginValue)
+        {
+                if (empty($businessWebsite) === false)
+                {
+                    $pluginValue['integration_url'] = sprintf($pluginValue['integration_url'], $businessWebsite);
+                }
+
+                $this->trace->info(TraceCode::WHATCMS_API_RESPONSE,[
+                    "Plugin Value" => $pluginValue,
+                ]);
+
+            $result[] = $pluginValue;
         }
 
         return $result;

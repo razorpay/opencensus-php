@@ -250,6 +250,7 @@ class RouteTeamMap
         'merchant_activation_company_search'              => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_activation_gst_details'                 => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_business_types'                         => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_supported_plugins'                      => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_business_types_admin'                   => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_info'                                   => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_audit_info'                             => [self::TEAM_PAYMENTS_GROWTH],

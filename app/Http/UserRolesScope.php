@@ -714,6 +714,7 @@ class UserRolesScope
             'merchant_plugin_fetch'                                => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_business_types'                              => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES,Role::RBL_ROLES),
             'merchant_business_types_admin'                        => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES,Role::RBL_ROLES),
+            'merchant_supported_plugins'                           => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_info'                                        => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES,Role::RBL_ROLES),
             'merchant_audit_info'                                  => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES,Role::RBL_ROLES),
             'entity_audit_info'                                    => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES,Role::RBL_ROLES),

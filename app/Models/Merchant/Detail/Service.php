@@ -3263,6 +3263,15 @@ class Service extends Base\Service
 
     }
 
+    public function getMerchantSupportedPlugins()
+    {
+
+        $merchant = $this->merchant;
+
+        return (new Core())->getMerchantSupportedPlugins($merchant);
+
+    }
+
     public function getMerchantInfo($merchant_id)
     {
         $core = new Core();

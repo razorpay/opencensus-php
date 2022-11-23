@@ -7530,6 +7530,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_CREATE_BUSINESS_DETAILS                               = 'MERCHANT_CREATE_BUSINESS_DETAILS';
     const MERCHANT_EDIT_BUSINESS_DETAILS                               = 'MERCHANT_EDIT_BUSINESS_DETAILS';
     const BUSINESS_DETAIL_DOES_NOT_EXIST                                 = 'BUSINESS_DETAIL_DOES_NOT_EXIST';
+    const MERCHANT_BUSINESS_WEBSITE_DETAILS                             = 'MERCHANT_BUSINESS_WEBSITE_DETAILS';
 
     const FETCHED_GATEWAY_DOWNTIMES_FROM_DB                             = 'FETCHED_GATEWAY_DOWNTIMES_FROM_DB';
     const FILTERED_METHOD_PROC_SPECIFICS                                = 'FILTERED_METHOD_PROC_SPECIFICS';

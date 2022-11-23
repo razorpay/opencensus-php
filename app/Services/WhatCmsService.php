@@ -1,9 +1,8 @@
 <?php
 
-namespace RZP\Service;
+namespace RZP\Services;
 
 use RZP\Models\Base;
-use RZP\Services\WhatCmsClient;
 use RZP\Trace\TraceCode;
 
 class WhatCmsService extends Base\Service
@@ -36,6 +35,82 @@ class WhatCmsService extends Base\Service
         self::WOOCOMMERCE,
         self::WORDPRESS,
     ];
+
+    const merchantPluginTypesMap  = [
+        [
+            "name"              => self::ARASTTA,
+            "icon"              => "https://cdn.razorpay.com/static/assets/product-led-onboarding/Arastta.svg",
+            "integration_guide" => "https://razorpay.com/docs/payments/payment-gateway/ecommerce-plugins/arastta/",
+            "integration_url"   => ""
+        ],
+        [
+            "name"              => self::EASYDIGITALDOWNLOADS,
+            "icon"              =>"https://cdn.razorpay.com/static/assets/product-led-onboarding/EasyDigitalDownload.svg",
+            "integration_guide" => "https://razorpay.com/docs/payments/payment-gateway/ecommerce-plugins/easy-digital-downloads/",
+            "integration_url"   => ""
+        ],
+        [
+            "name"              => self::CSCART,
+            "icon"              =>"https://cdn.razorpay.com/static/assets/product-led-onboarding/CSCart.svg",
+            "integration_guide" => "https://razorpay.com/docs/payments/payment-gateway/ecommerce-plugins/cs-cart/",
+            "integration_url"   => ""
+        ],
+        [
+            "name"              => self::GRAVITYFORMS,
+            "icon"              =>"https://cdn.razorpay.com/static/assets/product-led-onboarding/GravityForms.svg",
+            "integration_guide" => "https://razorpay.com/docs/payments/payment-gateway/ecommerce-plugins/gravity-forms",
+            "integration_url"   => ""
+        ],
+        [
+            "name"              => self::MAGENTO,
+            "icon"              =>"https://cdn.razorpay.com/static/assets/product-led-onboarding/Magento.svg",
+            "integration_guide" => "https://razorpay.com/docs/payments/payment-gateway/ecommerce-plugins/magento/",
+            "integration_url"   => ""
+        ],
+        [
+            "name"              => self::OPENCART,
+            "icon"              =>"https://cdn.razorpay.com/static/assets/product-led-onboarding/OpenCart.svg",
+            "integration_guide" => "https://razorpay.com/docs/payments/payment-gateway/ecommerce-plugins/open-cart/",
+            "integration_url"   => ""
+        ],
+        [
+            "name"              => self::PRESTASHOP,
+            "icon"              =>"https://cdn.razorpay.com/static/assets/product-led-onboarding/Prestashop.svg",
+            "integration_guide" => "https://razorpay.com/docs/payments/payment-gateway/ecommerce-plugins/prestashop/",
+            "integration_url"   => ""
+        ],
+        [
+            "name"              => self::SHOPIFY,
+            "icon"              =>"https://cdn.razorpay.com/static/assets/product-led-onboarding/Shopify.svg",
+            "integration_guide" => "https://razorpay.com/docs/payments/payment-gateway/ecommerce-plugins/shopify/",
+            "integration_url"   => "%s/admin/settings/payments/alternative-providers/1058840"
+        ],
+        [
+            "name"              => self::WHMCS,
+            "icon"              =>"https://cdn.razorpay.com/static/assets/product-led-onboarding/WHMCS.svg",
+            "integration_guide" => "https://razorpay.com/docs/payments/payment-gateway/ecommerce-plugins/whmcs/",
+            "integration_url"   => ""
+        ],
+        [
+            "name"              => self::WIX,
+            "icon"              =>"https://cdn.razorpay.com/static/assets/product-led-onboarding/Wix.svg",
+            "integration_guide" => "https://razorpay.com/docs/payments/payment-gateway/ecommerce-plugins/wix/",
+            "integration_url"   => "https://support.wix.com/en/article/connecting-razorpay-as-a-payment-provider"
+        ],
+        [
+            "name"              => self::WOOCOMMERCE,
+            "icon"              =>"https://cdn.razorpay.com/static/assets/product-led-onboarding/WooCommerce.svg",
+            "integration_guide" => "https://razorpay.com/docs/payments/payment-gateway/ecommerce-plugins/woocommerce/",
+            "integration_url"   => ""
+        ],
+        [
+            "name"              => self::WORDPRESS,
+            "icon"              =>"https://cdn.razorpay.com/static/assets/product-led-onboarding/Wordpress.svg",
+            "integration_guide" => "https://razorpay.com/docs/payments/payment-gateway/ecommerce-plugins/wordpress/",
+            "integration_url"   => ""
+        ],
+    ];
+
 
     protected static $plugintypeIndexMap = [
         self::ARASTTA               => 1,
