@@ -585,71 +585,83 @@ class Processor
                 return false;
             }
 
+            if ($merchant->isFeeBearerCustomerOrDynamic() === true )
+            {
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::FEE_BEARER_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+                return ($result === 'on');
+            }
+
             //Check for saved card token payments
-            $tokenId = $input[Payment\Entity::TOKEN];
-            if(empty($tokenId) === false) {
+            if(empty($input[Payment\Entity::TOKEN]) === false)
+            {
+                $tokenId = $input[Payment\Entity::TOKEN];
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::SAVED_CARD_TOKEN_PAYMENTS_VIA_PGROUTER, $this->mode);
-                if ($result === 'off') {
-                    return false;
-                }
+                if ($result === 'on')
+                {
+                    try {
+                        // First fetch the relevant customer (global or local)
+                        list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp(
+                            $input, $merchant, false);
+                        if ($customer !== null)
+                        {
+                            $token = (new Token\Core)->getByTokenIdAndCustomer($tokenId, $customer);
+                        }
+                        else
+                        {
+                            $token = (new Token\Core)->getByTokenIdAndMerchant($tokenId, $merchant);
+                        }
 
-                try {
+                        if ($token !== null && $token->isLocal() && $token->isRecurring() === false)
+                        {
+                            $this->trace->info(
+                                TraceCode::PAYMENT_PROCESS_FROM_SAVED_LOCAL,
+                                [
+                                    'token_id' => $input[Payment\Entity::TOKEN]
+                                ]);
 
-                    // First fetch the relevant customer (global or local)
-                    list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp(
-                        $input, $merchant, false);
-                    if ($customer !== null)
-                    {
-                        $token = (new Token\Core)->getByTokenIdAndCustomer($tokenId, $customer);
-                    }
-                    else
-                    {
-                        $token = (new Token\Core)->getByTokenIdAndMerchant($tokenId, $merchant);
-                    }
+                            $card = $this->repo->card->fetchForToken($token);
 
-                    if ($token !== null && $token->isLocal() && $token->isRecurring() === false) {
-                        $this->trace->info(
-                            TraceCode::PAYMENT_PROCESS_FROM_SAVED_LOCAL,
-                            [
-                                'token_id' => $input[Payment\Entity::TOKEN]
-                            ]);
-
-                        $card = $this->repo->card->fetchForToken($token);
-
-                        //check if card is not null
-                        if(empty($card) === true) {
+                            //check if card is not null
+                            if(empty($card) === true)
+                            {
+                                return false;
+                            }
+                            if ($card->isNetworkTokenisedCard() === true)
+                            {
+                                $this->trace->info(TraceCode::TOKENISED_CARD_PAYMENT_ROUTING_INFO, [
+                                    'tokenId'       => $token->getId(),
+                                    'isGlobal'      => $token->isGlobal(),
+                                    'routedThrough' => 'tokenisedCard',
+                                    'cardInfo'      => [
+                                        'issuer'    => $card->getIssuer(),
+                                        'network'   => $card->getNetworkCode(),
+                                        'type'      => $card->getType(),
+                                    ],
+                                ]);
+                                $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $merchant);
+                                $cardInput = $this->getCardInputForRearch($cryptogram, $card, $input);
+                                //modify input for cards
+                                $input[Payment\Entity::CARD] = $cardInput;
+                                return true;
+                            }
+                        } else {
                             return false;
                         }
-                        if ($card->isNetworkTokenisedCard() === true) {
-                            $this->trace->info(TraceCode::TOKENISED_CARD_PAYMENT_ROUTING_INFO, [
-                                'tokenId'       => $token->getId(),
-                                'isGlobal'      => $token->isGlobal(),
-                                'routedThrough' => 'tokenisedCard',
-                                'cardInfo'      => [
-                                    'issuer'    => $card->getIssuer(),
-                                    'network'   => $card->getNetworkCode(),
-                                    'type'      => $card->getType(),
-                                ],
-                            ]);
-                            $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $merchant);
-                            $cardInput = $this->getCardInputForRearch($cryptogram, $card, $input);
-                            //modify input for cards
-                            $input[Payment\Entity::CARD] = $cardInput;
-                            return true;
-                        }
-                    } else {
+                    }
+                    catch (\Throwable $e)
+                    {
+                        //If anything fails while using saved card token then fallback to api flow
+                        $this->trace->traceException(
+                            $e,
+                            Trace::CRITICAL,
+                            TraceCode::REARCH_CRITIERIA_SAVE_CARD_CHECK_FAILED,
+                            []);
+
                         return false;
                     }
-                } catch (\Throwable $e) {
-                    //If anything fails while using saved card token then fallback to api flow
-                    $this->trace->traceException(
-                        $e,
-                        Trace::CRITICAL,
-                        TraceCode::REARCH_CRITIERIA_SAVE_CARD_CHECK_FAILED,
-                        []);
-
-                    return false;
                 }
+                return false;
             }
 
             //transaction from cryptogram value
@@ -710,13 +722,6 @@ class Processor
                 ((bool) Admin\ConfigKey::get(Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED, false) === false))
             {
                 return false;
-            }
-
-            if ($merchant->isFeeBearerCustomerOrDynamic() === true )
-            {
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::FEE_BEARER_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-
-                return ($result === 'on');
             }
 
             if ($merchant->isFeatureEnabled('raas') === true)
