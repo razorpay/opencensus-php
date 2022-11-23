@@ -668,7 +668,12 @@ class Validator extends Base\Validator
 
             $url = 'https://www.google.com/recaptcha/api/siteverify?'. $captchaQuery;
 
+            $start_time = microtime(true) ;
             $response = $this->getCaptchaVerificationResponse($url);
+            $end_time = microtime(true);
+            $captcha_validation_duration = ($end_time - $start_time) * 1000; // in milliseconds
+
+            $app['trace']->histogram(Metric::CAPTCHA_VALIDATION_DURATION, $captcha_validation_duration);
 
             $output = json_decode($response->body);
 
