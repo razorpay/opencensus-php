@@ -415,15 +415,7 @@ class Core extends Base\Core
                 {
                     if ($this->canSubmit($input, $result, $activationFormMilestone) === true)
                     {
-                        try
-                        {
-                            $this->submitPartnerActivationFormIfApplicable($merchant, $input);
-                        }
-                        catch (Exception\EarlyWorkflowResponse $e)
-                        {
-                            $workflowActionData = json_decode($e->getMessage(), true);
-                            $this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);
-                        }
+                        $this->submitPartnerActivationFormIfApplicable($merchant, $input);
                     }
                 });
 
@@ -7070,7 +7062,22 @@ class Core extends Base\Core
             $partnerActivation->setKycClarificationReasons($kycClarificationReasons);
         }
 
-        $partnerCore->submitPartnerActivationForm($merchant, $merchant->merchantDetail, $partnerActivation, $input, Constants::MERCHANT);
+        try
+        {
+            $partnerCore->submitPartnerActivationForm($merchant, $merchant->merchantDetail, $partnerActivation, $input, Constants::MERCHANT);
+        }
+        catch (Exception\EarlyWorkflowResponse $e)
+        {
+            $isPartnerWorkFlowFixEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
+                $merchant->getId(), RazorxTreatment::PARTNER_ACTIVATION_WORKFLOW_BUGFIX);
+            
+            if (!$isPartnerWorkFlowFixEnabled) {
+                $workflowActionData = json_decode($e->getMessage(), true);
+                $this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);
+            } else {
+                throw  $e;
+            }
+        }
     }
 
     public function postAddAdditionalWebsiteSelfServe(Entity $merchantDetails, string $urlType, array $input)

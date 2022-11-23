@@ -140,15 +140,7 @@ class Core extends Merchant\Core
         {
             if ($partner->isKycHandledByPartner() === true)
             {
-                try
-                {
-                    (new Detail\Core())->submitPartnerActivationFormIfApplicable($subMerchant, $input);
-                }
-                catch (Exception\EarlyWorkflowResponse $e)
-                {
-                    $workflowActionData = json_decode($e->getMessage(), true);
-                    $this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);
-                }
+                (new Detail\Core())->submitPartnerActivationFormIfApplicable($subMerchant, $input);
             }
         });
 

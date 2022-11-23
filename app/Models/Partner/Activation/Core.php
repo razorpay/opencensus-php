@@ -495,16 +495,23 @@ class Core extends Base\Core
 
                 $this->resetWorkflowSingleton();
 
+                $isPartnerWorkFlowFixEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
+                    $merchant->getId(), RazorxTreatment::PARTNER_ACTIVATION_WORKFLOW_BUGFIX);
+
                 $this->app['workflow']
-                    ->setPermission(Permission\Name::EDIT_ACTIVATE_PARTNER)
-                    ->setRouteName(Activation\Constants::ACTIVATION_ROUTE_NAME)
-                    ->setController(Activation\Constants::PARTNER_CONTROLLER)
                     ->setEntity($partnerActivation->getEntity())
                     ->setEntityId($partnerActivation->getMerchantId())
                     ->setOriginal($original)
-                    ->setRouteParams(['id' => $merchant->getId()])
-                    ->setInput([Entity::ACTIVATION_STATUS => $input[Entity::ACTIVATION_STATUS]])
                     ->setDirty($dirty);
+
+                if (!$isPartnerWorkFlowFixEnabled) {
+                    $this->app['workflow']
+                        ->setPermission(Permission\Name::EDIT_ACTIVATE_PARTNER)
+                        ->setRouteName(Activation\Constants::ACTIVATION_ROUTE_NAME)
+                        ->setController(Activation\Constants::PARTNER_CONTROLLER)
+                        ->setRouteParams(['id' => $merchant->getId()])
+                        ->setInput([Entity::ACTIVATION_STATUS => $input[Entity::ACTIVATION_STATUS]]);
+                }
 
                 $this->activate($partnerActivation, $merchant, $triggerWorkflow);
             }

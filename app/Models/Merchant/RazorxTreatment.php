@@ -661,4 +661,6 @@ final class RazorxTreatment
 
     //Experiment used to control whether requests route to DCS or NOT
     const DCS_ENABLED_NEW_USECASE = 'dcs_new_usecases_enabled';
+
+    const PARTNER_ACTIVATION_WORKFLOW_BUGFIX = 'partner_activation_workflow_bugfix';
 }
