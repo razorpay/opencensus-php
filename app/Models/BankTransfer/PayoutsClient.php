@@ -53,7 +53,6 @@ class PayoutsClient extends Core
                            [
                                Payout\Entity::ID                  => $payoutCreationResponse['id'],
                                Payout\Entity::STATUS              => $payoutCreationResponse['status'],
-                               FundAccount\Entity::ACCOUNT_NUMBER => $payoutCreationResponse['fund_account']['bank_account']['account_number'],
                                Payout\Entity::AMOUNT              => $payoutCreationResponse['amount']
                            ]);
     }

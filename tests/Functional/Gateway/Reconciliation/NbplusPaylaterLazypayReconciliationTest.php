@@ -252,7 +252,6 @@ class NbplusPaylaterLazypayReconciliationTest extends NbPlusPaymentServicePaylat
             $url,
             $fileName,
             $mime,
-            filesize($url),
             null,
             true);
     }

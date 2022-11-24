@@ -20,7 +20,7 @@ class PersonalisationService
             return null;
         }
 
-        $response = (new \Requests_Response());
+        $response = (new \WpOrg\Requests\Response());
 
         $upiIntrument = [
             'instrument' => 'abcd@okhdfc',

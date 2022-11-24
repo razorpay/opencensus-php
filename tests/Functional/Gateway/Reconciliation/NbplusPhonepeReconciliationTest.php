@@ -106,7 +106,6 @@ class NbplusWalletPhonepeReconciliationTest extends TestCase
             $url,
             $fileName,
             $mime,
-            filesize($url),
             null,
             true);
     }

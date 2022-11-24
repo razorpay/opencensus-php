@@ -308,7 +308,7 @@ class ScheduledPayoutTest extends TestCase
                         break;
                 }
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->times(1);
 
         // Timestamp of 9 AM, 2 months from current time
@@ -377,7 +377,7 @@ class ScheduledPayoutTest extends TestCase
                         break;
                 }
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->times(2);
 
         // Timestamp of 9 AM, 2 months from current time
@@ -1341,7 +1341,7 @@ class ScheduledPayoutTest extends TestCase
                         break;
                 }
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             });
 
         $payout = $this->testScheduledPayoutProcessingLowBalance();
@@ -1378,7 +1378,7 @@ class ScheduledPayoutTest extends TestCase
                         break;
                 }
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             });
 
         $payout = $this->testScheduledPayoutProcessingLowBalance('live');

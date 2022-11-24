@@ -23,7 +23,7 @@ jobs:
     runs-on: [ api-public ]
     needs: [ cancel ]
     container:
-      image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
+      image: c.rzp.io/razorpay/onggi:php-8.1-api-web
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -150,7 +150,7 @@ jobs:
     runs-on: [ api-public ]
     needs: [ cancel ]
     container:
-      image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
+      image: c.rzp.io/razorpay/onggi:php-8.1-api-web
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -277,7 +277,7 @@ jobs:
     runs-on: [ api-public ]
     needs: [ cancel ]
     container:
-      image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
+      image: c.rzp.io/razorpay/onggi:php-8.1-api-web
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -404,7 +404,7 @@ jobs:
     runs-on: [ api-public ]
     needs: [ cancel ]
     container:
-      image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
+      image: c.rzp.io/razorpay/onggi:php-8.1-api-web
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}

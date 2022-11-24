@@ -3,6 +3,8 @@
 namespace RZP\Mail\Gateway;
 
 use Carbon\Carbon;
+use Symfony\Component\Mime\Email;
+
 use RZP\Constants\Timezone;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
@@ -99,7 +101,7 @@ class DailyFile extends Mailable
     {
         $mailTag = $this->getMailTag();
 
-        $this->withSwiftMessage(function ($message) use ($mailTag)
+        $this->withSymfonyMessage(function (Email $message) use ($mailTag)
         {
             $headers = $message->getHeaders();
 

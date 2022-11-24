@@ -127,11 +127,11 @@ class Beneficiary extends Base
     /**
      * Process the response from the beneficiary request and report if the bene registration failed
      *
-     * @param \Requests_Response $response
+     * @param \WpOrg\Requests\Response $response
      * @return array
      * @throws LogicException
      */
-    public function processResponse(\Requests_Response $response): array
+    public function processResponse($response): array
     {
         $responseBody = $this->parseResponseBody($response->body);
 

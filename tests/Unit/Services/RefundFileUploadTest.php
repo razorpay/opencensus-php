@@ -14,7 +14,7 @@ class RefundFileUploadTest extends TestCase
 
     public function testUploadFile()
     {
-        $file = new UploadedFile(__DIR__ . '/RefundTestFile.csv', 'RefundTestFile.csv', 'csv', null, null, true);
+        $file = new UploadedFile(__DIR__ . '/RefundTestFile.csv', 'RefundTestFile.csv', 'csv', null, true);
 
         $fileName        = $file->getClientOriginalName();
         $storageFileName = $this->storageFilePath . '/' . $fileName;

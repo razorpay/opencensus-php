@@ -1,14 +1,27 @@
 <?php
 
-use Faker\Generator as Faker;
+namespace Database\Factories;
+
 use RZP\Models\Merchant\Account;
 use RZP\Models\P2p\Device\RegisterToken\Status;
 use RZP\Models\P2p\Device\RegisterToken\Entity;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-$factory->define(Entity::class, function (Faker $faker) {
-    return [
-        Entity::MERCHANT_ID     => Account::SHARED_ACCOUNT,
-        Entity::HANDLE          => $faker->randomElement(['rzpaxis', 'razoraxis']),
-        Entity::STATUS          => Status::PENDING,
-    ];
-});
+class P2pRegisterTokenFactory extends Factory
+{
+    protected $model = Entity::class;
+
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition()
+    {
+        return [
+            Entity::MERCHANT_ID     => Account::SHARED_ACCOUNT,
+            Entity::HANDLE          => fake()->randomElement(['rzpaxis', 'razoraxis']),
+            Entity::STATUS          => Status::PENDING,
+        ];
+    }
+}

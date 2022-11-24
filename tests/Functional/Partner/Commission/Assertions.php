@@ -126,8 +126,8 @@ class Assertions extends TestCase
         $amount          = 400000; // INR 4000
         $merchantPricing = 3.5; // 2% base pricing + 1.5% early settlement
 
-        $this->assertEquals($this->getFee($amount, $merchantPricing), $calculator->getMerchantFee());
-        $this->assertEquals($this->getTax($amount, $merchantPricing), $calculator->getMerchantTax());
+        $this->assertEqualsWithDelta($this->getFee($amount, $merchantPricing), $calculator->getMerchantFee(), 0.00000000001);
+        $this->assertEqualsWithDelta($this->getTax($amount, $merchantPricing), $calculator->getMerchantTax(), 0.00000000001);
 
         $this->assertEquals(3304, $commission->getFee());
         $this->assertEquals(504, $commission->getTax());

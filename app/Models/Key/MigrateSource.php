@@ -100,7 +100,7 @@ class MigrateSource implements Source
     }
 
     /** {@inheritDoc} */
-    public function find(Record $targetRecord): Record
+    public function find(Record $targetRecord): ?Record
     {
         // TODO: To implement for recon.
         return null;

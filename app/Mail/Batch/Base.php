@@ -3,6 +3,7 @@
 namespace RZP\Mail\Batch;
 
 use Carbon\Carbon;
+use Symfony\Component\Mime\Email;
 
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
@@ -152,7 +153,7 @@ class Base extends Mailable
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function ($message)
+        $this->withSymfonyMessage(function (Email $message)
         {
             $headers = $message->getHeaders();
 

@@ -314,7 +314,7 @@ class SmartRouting
 
                 break;
             }
-            catch(\Requests_Exception $e)
+            catch(\WpOrg\Requests\Exception $e)
             {
                 // check curl error, increase retry count if timeout
                 // throw the error if retry count reaches max allowed value

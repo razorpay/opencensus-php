@@ -317,7 +317,6 @@ class AccountV2DocumentsTest extends OAuthTestCase
             __DIR__ . '/../Storage/k.png',
             'a.png',
             'image/png',
-            filesize(__DIR__ . '/../Storage/k.png'),
             null,
             true);
     }

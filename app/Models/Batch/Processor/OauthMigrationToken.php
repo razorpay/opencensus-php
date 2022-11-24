@@ -7,6 +7,7 @@ use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Models\Merchant;
 use RZP\Services\AuthService;
+use RZP\Exception\BaseException;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\AccessMap;
 use RZP\Models\Batch\Helpers\OauthMigration as H;
@@ -135,7 +136,14 @@ class OauthMigrationToken extends Base
     {
         try
         {
-            return $this->authService->createOAuthMigrationToken($entry);
+             $token = $this->authService->createOAuthMigrationToken($entry);
+
+             if (empty($token) === false)
+             {
+                return  $token;
+             }
+
+             throw new BaseException('Empty token received');
         }
         catch (\Throwable $t)
         {

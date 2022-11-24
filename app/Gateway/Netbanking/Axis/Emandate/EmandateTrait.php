@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Axis\Emandate;
 
-use Requests_Hooks;
+use \WpOrg\Requests\Hooks as Requests_Hooks;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;

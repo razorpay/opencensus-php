@@ -3,14 +3,14 @@
 
 namespace RZP\Services\Mock;
 
-use Requests_Response;
+use \WpOrg\Requests\Response;
 use RZP\Services\GrowthService as BaseGrowth;
 
 class GrowthService extends BaseGrowth
 {
 public function getAssetDetails($parameters)
 {
-    $resp = new Requests_Response;
+    $resp = new \WpOrg\Requests\Response;
     $resp->success     = true;
     $resp->status_code = 200;
     $resp->body        = json_encode([

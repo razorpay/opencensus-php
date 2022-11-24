@@ -305,7 +305,7 @@ class Core extends Base\Core
         return $this->ufhService;
     }
 
-    private function renameAttachments($payoutId, array $attachments)
+    public function renameAttachments($payoutId, array $attachments)
     {
         foreach ($attachments as $attachment)
         {

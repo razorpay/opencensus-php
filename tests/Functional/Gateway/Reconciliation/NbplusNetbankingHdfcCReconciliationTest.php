@@ -87,7 +87,6 @@ class NbplusNetbankingHdfcCorpReconciliationTest extends StaticCallbackNbplusGat
             $url,
             $fileName,
             $mime,
-            filesize($url),
             null,
             true);
     }

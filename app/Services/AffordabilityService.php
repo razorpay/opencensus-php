@@ -4,7 +4,7 @@ namespace RZP\Services;
 
 use Illuminate\Http\Response;
 use Razorpay\Trace\Logger as Trace;
-use Requests_Exception;
+use \WpOrg\Requests\Exception as Requests_Exception;
 use RZP\DTO\AffordabilityServiceConfig;
 use RZP\Http\Request\Requests;
 use RZP\Trace\TraceCode;

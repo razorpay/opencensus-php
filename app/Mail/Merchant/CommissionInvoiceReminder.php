@@ -2,6 +2,8 @@
 
 namespace RZP\Mail\Merchant;
 
+use Symfony\Component\Mime\Email;
+
 use RZP\Models\Merchant;
 use RZP\Mail\Base\Constants;
 use RZP\Mail\Base\Mailable;
@@ -55,7 +57,7 @@ class CommissionInvoiceReminder extends Mailable
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function ($message)
+        $this->withSymfonyMessage(function (Email $message)
         {
             $headers = $message->getHeaders();
 

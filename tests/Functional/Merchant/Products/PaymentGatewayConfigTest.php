@@ -1200,7 +1200,7 @@ class PaymentGatewayConfigTest extends OAuthTestCase
             function($path, $payload) use ($merchantProductResponse, $merchantId) {
                 $this->validateStorkWebhookFireEvent($merchantProductResponse, $payload, $merchantId);
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             });
 
         $this->runRequestResponseFlow($testData);
@@ -1482,7 +1482,6 @@ class PaymentGatewayConfigTest extends OAuthTestCase
             __DIR__ . '/../../Storage/k.png',
             'a.png',
             'image/png',
-            filesize(__DIR__ . '/../../Storage/k.png'),
             null,
             true);
     }

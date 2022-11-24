@@ -48,9 +48,7 @@ class WebhookTest extends TestCase
 
         parent::setUp();
 
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
-        $this->app->make(Factory::class)->load($factoryPath);
 
         $this->ba->proxyAuth();
     }

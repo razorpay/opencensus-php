@@ -98,7 +98,7 @@ class Nodal
 
             return $response;
         }
-        catch (\Requests_Exception $e)
+        catch (\WpOrg\Requests\Exception $e)
         {
             $this->exception = $e;
 

@@ -3,6 +3,7 @@
 namespace RZP\Mail\Base;
 
 use App;
+use Illuminate\Contracts\Mail\Factory as MailFactory;
 use Illuminate\Contracts\Mail\Mailer as MailerContract;
 use Illuminate\Mail\SendQueuedMailable as BaseSendQueuedMailable;
 
@@ -12,7 +13,7 @@ class SendQueuedMailable extends BaseSendQueuedMailable
      * For queued mails, we want to generate new request id and use the task id
      * of api request sending the mail. Hence overriding the handle method to do this
      */
-    public function handle(MailerContract $mailer)
+    public function handle(MailFactory $factory)
     {
         $app = App::getFacadeRoot();
 
@@ -42,6 +43,6 @@ class SendQueuedMailable extends BaseSendQueuedMailable
 
         $repo->resetConnectionAttributes();
 
-        parent::handle($mailer);
+        parent::handle($factory);
     }
 }

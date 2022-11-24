@@ -152,10 +152,10 @@ class DeveloperConsole
     /**
      * @param array $request
      *
-     * @return \Requests_Response
+     * @return \WpOrg\Requests\Response
      * @throws \Throwable
      */
-    protected function sendDevConsoleRequest(array $request): \Requests_Response
+    protected function sendDevConsoleRequest(array $request)
     {
         try
         {

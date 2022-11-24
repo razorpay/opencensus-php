@@ -1,15 +1,28 @@
 <?php
 
-use Faker\Generator as Faker;
+namespace Database\Factories;
+
 use RZP\Models\Merchant\Account;
 use RZP\Models\P2p\Vpa\Handle\Entity;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-$factory->define(Entity::class, function (Faker $faker) {
-    return [
-        Entity::CODE            => $faker->randomElement(['rzpsharp', 'razorsharp']),
-        Entity::MERCHANT_ID     => Account::SHARED_ACCOUNT,
-        Entity::BANK            => $faker->randomElement(['ARZP', 'BRZP']),
-        Entity::ACQUIRER        => 'p2p_upi_sharp',
-        Entity::ACTIVE          => true,
-    ];
-});
+class P2pHandleFactory extends Factory
+{
+    protected $model = Entity::class;
+
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition()
+    {
+        return [
+            Entity::CODE            => fake()->randomElement(['rzpsharp', 'razorsharp']),
+            Entity::MERCHANT_ID     => Account::SHARED_ACCOUNT,
+            Entity::BANK            => fake()->randomElement(['ARZP', 'BRZP']),
+            Entity::ACQUIRER        => 'p2p_upi_sharp',
+            Entity::ACTIVE          => true,
+        ];
+    }
+}

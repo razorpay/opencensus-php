@@ -74,7 +74,7 @@ class DebitNoteTest extends TestCase
             )
             ->andReturnUsing(function ()
             {
-                $response = new \Requests_Response;
+                $response = new \WpOrg\Requests\Response;
 
                 $response->body = json_encode(['key' => 'value']);
 
@@ -211,7 +211,7 @@ class DebitNoteTest extends TestCase
 
                 return true;
             }))
-            ->times(1)
+            ->zeroOrMoreTimes(1)
             ->andReturnUsing(function ()
             {
                 return [

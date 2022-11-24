@@ -81,6 +81,7 @@ class ThirdWatchClientTest extends TestCase
     public function testTWAddressServiceabilityCallback()
 
     {
+        $this->markTestSkipped("No live traffic.");
         $this->ba->privateAuth('rzp_test', getenv("THIRDWATCH_COD_SCORE_SERVICE_SECRET"));
         $this->startTest();
 

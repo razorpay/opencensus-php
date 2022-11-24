@@ -38,6 +38,11 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'schedule_task';
 
+    /**
+     * Indicates if the IDs are auto-incrementing.
+     *
+     * @var bool
+     */
     public $incrementing = true;
 
     protected $fillable = [
@@ -397,5 +402,10 @@ class Entity extends Base\PublicEntity
     public function isTypeSettlement()
     {
         return ($this->getType() === Type::SETTLEMENT);
+    }
+
+    public function getIncrementing()
+    {
+        return $this->incrementing;
     }
 }

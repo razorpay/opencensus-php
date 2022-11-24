@@ -4,7 +4,7 @@ namespace RZP\Http\Middleware;
 
 use Closure;
 use ApiResponse;
-use Requests_Session;
+use \WpOrg\Requests\Session as Requests_Session;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Razorpay\Edge\Passport\Passport;
@@ -176,7 +176,7 @@ class SubscriptionProxy
                 $method,
                 $options);
         }
-        catch (\Requests_Exception $e)
+        catch (\WpOrg\Requests\Exception $e)
         {
             $errorCode = ($this->hasRequestTimedOut($e) === true) ?
                 ErrorCode::SERVER_ERROR_SUBSCRIPTION_SERVICE_TIMEOUT :
@@ -224,7 +224,7 @@ class SubscriptionProxy
         return \Response::make($body);
     }
 
-    protected function hasRequestTimedOut(\Requests_Exception $e): bool
+    protected function hasRequestTimedOut(\WpOrg\Requests\Exception $e): bool
     {
         $message = $e->getMessage();
 

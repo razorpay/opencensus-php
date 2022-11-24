@@ -105,7 +105,7 @@ class Gateway extends Base\Gateway
                 $method,
                 $options);
         }
-        catch (\Requests_Exception $e)
+        catch (\WpOrg\Requests\Exception $e)
         {
             throw $e;
         }

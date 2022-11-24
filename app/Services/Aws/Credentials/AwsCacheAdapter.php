@@ -21,8 +21,10 @@ class AwsCacheAdapter implements CacheInterface
 
     /**
      * @inheritdoc
+     *
+     * @return mixed
      */
-    public function get($key)
+    public function get($key): mixed
     {
         $value = $this->getCache()->get($key);
 

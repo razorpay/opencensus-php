@@ -179,7 +179,7 @@ class PartnerFUXTest extends OAuthTestCase
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
-        $app = factory(Application\Entity::class)->create([
+        $app = Application\Entity::factory()->create([
             'id' => random_integer(10),
             'merchant_id' => self::DEFAULT_MERCHANT_ID,
             'type' => 'partner'
@@ -221,7 +221,7 @@ class PartnerFUXTest extends OAuthTestCase
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
-        $app = factory(Application\Entity::class)->create([
+        $app = Application\Entity::factory()->create([
             'id' => random_integer(10),
             'merchant_id' => self::DEFAULT_MERCHANT_ID,
             'type' => 'partner'

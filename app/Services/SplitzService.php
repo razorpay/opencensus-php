@@ -129,7 +129,10 @@ class SplitzService extends Base\Service
         $parameters = json_encode($parameters);
 
         $headers['Content-Type'] = self::CONTENT_TYPE_JSON;
-        $headers[self::X_PASSPORT_JWT_V1] = $this->ba->getPassportJwt($this->baseUrl);
+        if (empty($this->ba) === false)
+        {
+            $headers[self::X_PASSPORT_JWT_V1] = $this->ba->getPassportJwt($this->baseUrl);
+        }
 
         $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
 

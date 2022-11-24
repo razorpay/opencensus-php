@@ -101,7 +101,7 @@ class MigrateTarget implements \RZP\Modules\Migrate\Target
         ]);
     }
 
-    private function traceAfterUpdateRequestMadeToStork(\Requests_Response $resp)
+    private function traceAfterUpdateRequestMadeToStork($resp)
     {
         $resp = json_decode($resp->body, true);
 

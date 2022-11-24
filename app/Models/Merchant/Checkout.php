@@ -779,7 +779,17 @@ class Checkout
 
     protected function tracePreferencesRequest(Entity $merchant, $mode, array $input)
     {
-        $sessionData = optional($this->app['request']->getSession())->all();
+        $sessionData = "";
+
+        try
+        {
+            $sessionData = optional($this->app['request']->session())->all();
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex, Trace::ERROR, TraceCode::NO_SESSION_FOUND_EXCEPTION, $input);
+        }
 
         $this->trace->info(
             TraceCode::CHECKOUT_PREFERENCES_REQUEST,
@@ -797,7 +807,16 @@ class Checkout
 
     protected function tracePersonalisationRequest(Entity $merchant, $mode, array $input)
     {
-        $sessionData = optional($this->app['request']->getSession())->all();
+        $sessionData = "";
+        try
+        {
+            $sessionData = optional($this->app['request']->session())->all();
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex, Trace::ERROR, TraceCode::NO_SESSION_FOUND_EXCEPTION, $input);
+        }
 
         $this->trace->info(
             TraceCode::PERSONALISATION_REQUEST,
@@ -991,6 +1010,8 @@ class Checkout
 
                     if (isset($response['tokens']) === true)
                     {
+                        // NOTE: $tokens is an array over here as $tokens->toArrayPublic()
+                        // is done in validateDeviceToken()
                         $tokens = $response['tokens'];
 
                         $tokenCore = (new Customer\Token\Core());
@@ -1248,7 +1269,16 @@ class Checkout
         {
             $key = $mode . '_checkcookie';
 
-            $session = $this->app['request']->getSession();
+            $session = null;
+            try
+            {
+                $session = optional($this->app['request']->session());
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException(
+                    $ex, Trace::ERROR, TraceCode::NO_SESSION_FOUND_EXCEPTION, []);
+            }
 
             if ($session === null)
             {

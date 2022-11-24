@@ -36,6 +36,14 @@ class NbplusNetbankingNsdlCombinedFileTest extends NbPlusPaymentServiceNetbankin
 
         Queue::fake();
 
+        $this->mockBeam(function ($pushData, $intervalInfo, $mailInfo, $synchronous)
+        {
+            return [
+                'failed' => null,
+                'success' => $pushData['files'],
+            ];
+        });
+
         $refunds = $this->createRefundForFileGeneration();
 
         $this->setFetchFileBasedRefundsFromScroogeMockResponse($refunds);

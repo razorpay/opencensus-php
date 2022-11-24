@@ -2,7 +2,7 @@
 
 namespace RZP\Services\Mock\NbPlus;
 
-use Requests_Response;
+use \WpOrg\Requests\Response;
 
 use RZP\Services\NbPlus\Wallet as WalletBase;
 
@@ -238,7 +238,7 @@ class Wallet extends WalletBase
 
     protected function makeJsonResponse(array $content)
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         $response->headers = ['Content-Type' => 'application/json', 'Cache-Control' => 'no-cache'];
 

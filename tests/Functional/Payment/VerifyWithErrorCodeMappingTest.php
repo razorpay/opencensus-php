@@ -431,6 +431,8 @@ class VerifyWithErrorCodeMappingTest extends TestCase
 
     public function testPaymentVerifyBulkBlockTest()
     {
+        $this->markTestSkipped("The payments/verify/{filter} route is not live in production");
+
         $filter = 'new_bulk';
 
         $expectedContent = [
@@ -732,8 +734,6 @@ class VerifyWithErrorCodeMappingTest extends TestCase
     {
 
         $this->setMockGatewayTrue();
-
-        $this->setupRedisMockForBlockedGateway();
 
         $this->ba->cronAuth();
 

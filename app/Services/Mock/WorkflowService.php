@@ -2,11 +2,11 @@
 
 namespace RZP\Services\Mock;
 
-use Requests_Response;
+use \WpOrg\Requests\Response;
 
 class WorkflowService extends \RZP\Services\WorkflowService
 {
-    public function request(string $path, array $payload): Requests_Response
+    public function request(string $path, array $payload)
     {
         return $this->mockedResponse($path, $payload);
     }
@@ -65,12 +65,12 @@ class WorkflowService extends \RZP\Services\WorkflowService
             return $this->sendUpdateMockResponse();
         }
 
-        return new Requests_Response;
+        return new \WpOrg\Requests\Response;
     }
 
-    private function sendCreateMockResponse(): Requests_Response
+    private function sendCreateMockResponse()
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         $response->body = '{
                                 "id": "FQE6Xw4ZpoM21X",
@@ -328,9 +328,9 @@ class WorkflowService extends \RZP\Services\WorkflowService
         return $response;
     }
 
-    private function sendDeleteMockResponse(): Requests_Response
+    private function sendDeleteMockResponse()
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         $response->body = '{}';
 
@@ -339,9 +339,9 @@ class WorkflowService extends \RZP\Services\WorkflowService
         return $response;
     }
 
-    private function sendUpdateMockResponse(): Requests_Response
+    private function sendUpdateMockResponse()
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         $response->body = '{
                                 "id": "FQE6Xw4ZpoM21X",
@@ -599,9 +599,9 @@ class WorkflowService extends \RZP\Services\WorkflowService
         return $response;
     }
 
-    private function sendWFApproveMockResponse(): Requests_Response
+    private function sendWFApproveMockResponse()
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         $response->body = '{
                               "count": 1,
@@ -632,9 +632,9 @@ class WorkflowService extends \RZP\Services\WorkflowService
 
     }
 
-    private function sendWFRejectMockResponse(): Requests_Response
+    private function sendWFRejectMockResponse()
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         $response->body = '{
                               "count": 1,
@@ -665,9 +665,9 @@ class WorkflowService extends \RZP\Services\WorkflowService
 
     }
 
-    private function sendWFGetResponse(): Requests_Response
+    private function sendWFGetResponse()
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         $response->status_code = 200;
 
@@ -813,9 +813,9 @@ class WorkflowService extends \RZP\Services\WorkflowService
         return $response;
     }
 
-    private function sendWFCreateMockResponse(): Requests_Response
+    private function sendWFCreateMockResponse()
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         $response->body = '{
                                 "id": "FQE6Xw4ZpoM21X",

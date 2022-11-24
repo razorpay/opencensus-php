@@ -2,6 +2,8 @@
 
 namespace RZP\Mail\Banking;
 
+use Symfony\Component\Mime\Email;
+
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Models\BankAccount\Entity as BankAccount;
@@ -91,7 +93,7 @@ class BeneficiaryFile extends Mailable
     {
         $mailtag = Constants::MAILTAG_MAP[$this->channel];
 
-        $this->withSwiftMessage(function ($message) use ($mailtag)
+        $this->withSymfonyMessage(function (Email $message) use ($mailtag)
         {
             $headers = $message->getHeaders();
 

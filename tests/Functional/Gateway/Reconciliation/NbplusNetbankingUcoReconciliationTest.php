@@ -142,7 +142,6 @@ class NbplusNetbankingUcoReconciliationTest extends StaticCallbackNbplusGatewayT
             $url,
             $fileName,
             $mime,
-            filesize($url),
             null,
             true);
     }

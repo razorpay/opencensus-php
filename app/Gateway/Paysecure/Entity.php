@@ -80,4 +80,9 @@ class Entity extends Base\Entity
     {
         return $this->getAttribute(self::RRN);
     }
+
+    public function getIncrementing()
+    {
+        return $this->incrementing;
+    }
 }

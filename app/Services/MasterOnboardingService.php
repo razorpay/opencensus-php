@@ -215,7 +215,7 @@ class MasterOnboardingService
 
             return $this->formatResponse($response);
         }
-        catch (\Requests_Exception $e)
+        catch (\WpOrg\Requests\Exception $e)
         {
             $data = [
                 'exception'     => $e->getMessage(),

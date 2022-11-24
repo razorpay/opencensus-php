@@ -2,8 +2,8 @@
 
 namespace RZP\Services;
 use App;
-use Requests_Exception;
-use Requests_Response;
+use \WpOrg\Requests\Exception as Requests_Exception;
+use \WpOrg\Requests\Response;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
@@ -154,7 +154,7 @@ class WhatCmsClient
         return $response;
     }
 
-    protected function traceResponse(Requests_Response $response)
+    protected function traceResponse($response)
     {
         $responseArr = json_decode($response->body, true);
 

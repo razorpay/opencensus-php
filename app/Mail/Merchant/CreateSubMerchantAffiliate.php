@@ -2,6 +2,8 @@
 
 namespace RZP\Mail\Merchant;
 
+use Symfony\Component\Mime\Email;
+
 use RZP\Models\User;
 use RZP\Mail\Base\Common;
 use RZP\Mail\Base\Mailable;
@@ -85,7 +87,7 @@ class CreateSubMerchantAffiliate extends Mailable
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function ($message)
+        $this->withSymfonyMessage(function (Email $message)
         {
             $headers = $message->getHeaders();
 

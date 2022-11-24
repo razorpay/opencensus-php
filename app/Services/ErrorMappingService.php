@@ -63,7 +63,7 @@ class ErrorMappingService
         $errorMappingArray = array();
 
         if ((isset($method) === true) and
-            (array_search($method, array_values(self::EMM_NAMESPACES_PATH_VS_JSON_MAPPING))) !== false)
+            in_array($method, array_values(self::EMM_NAMESPACES_PATH_VS_JSON_MAPPING)) !== false)
         {
             $namespaceFilePath = sprintf(self::KEY_VALUE_ERROR_CODES_PATH,$method);
 

@@ -3,6 +3,8 @@
 namespace RZP\Mail\Merchant;
 
 use App;
+use Symfony\Component\Mime\Email;
+
 use RZP\Models\Merchant;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
@@ -83,7 +85,7 @@ class DailyReport extends Mailable
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function ($message)
+        $this->withSymfonyMessage(function (Email $message)
         {
             $headers = $message->getHeaders();
 

@@ -3,7 +3,7 @@
 namespace Unit\Services\PayoutService;
 
 use Mockery;
-use Requests_Response;
+use \WpOrg\Requests\Response;
 
 use RZP\Error\ErrorCode;
 use RZP\Tests\Functional\TestCase;
@@ -183,7 +183,7 @@ class PayoutServiceTest extends TestCase
 
     protected function adminGetResponseForService($entity, $id, $fail = false)
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         if ($fail === true)
         {

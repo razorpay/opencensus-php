@@ -3,7 +3,7 @@
 namespace RZP\Models\Batch\Processor;
 
 use Box\Spout\Common\Type;
-use Box\Spout\Reader\ReaderFactory;
+use Box\Spout\Reader\Common\Creator\ReaderFactory;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Batch\Entity;
@@ -71,7 +71,7 @@ class RawAddress extends Base
 
     protected function getRowsFromExcelSheetsSpout($filePath, int $endRow = 1): array
     {
-        $reader = ReaderFactory::create(Type::XLSX);
+        $reader = ReaderFactory::createFromType(Type::XLSX);
         $reader->open($filePath);
 
         return $this->getRowsFromExcelSheetsWithIndicesSpout($reader, $endRow);
@@ -105,6 +105,8 @@ class RawAddress extends Base
 
         foreach ($rowIterator as $row)
         {
+            $row = $row->toArray();
+
             if ($rowIterator->key()  === 1)
             {
                 $sheetHeaders = array_filter($convertor->normalizeHeaders($row));

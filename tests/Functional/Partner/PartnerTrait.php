@@ -289,9 +289,7 @@ trait PartnerTrait
      */
     protected function setUpPartnerAuthForPayment()
     {
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
-        $this->app->make(Factory::class)->load($factoryPath);
 
         $partnerId = '100000Razorpay';
 
@@ -314,9 +312,7 @@ trait PartnerTrait
 
     public function setUpPartnerAuthAndGetSubMerchantId($activated = true, $category = 4722)
     {
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
-        $this->app->make(Factory::class)->load($factoryPath);
 
         if ($activated === true)
         {

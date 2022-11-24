@@ -1,18 +1,29 @@
 <?php
 
+namespace Database\Factories;
 
-use Faker\Generator as Faker;
-use RZP\Models\Merchant\Account;
-use RZP\Models\P2p\Base\Upi\ClientLibrary;
 use RZP\Models\P2p\Device\DeviceToken\Entity;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-$factory->define(Entity::class, function (Faker $faker) {
-    return [
-        Entity::ID              => Entity::generateUniqueId(),
-        Entity::DEVICE_ID       => 'factory:' . \RZP\Models\P2p\Device\Entity::class,
-        Entity::HANDLE          => $faker->randomElement(['rzpsharp', 'razorsharp']),
-        Entity::GATEWAY_DATA    => $faker->randomElements(['a' => 1, 'b' => 2]),
-        Entity::STATUS          => 'pending',
-        Entity::REFRESHED_AT    => $faker->numerify('154222####'),
-    ];
-});
+class P2pDeviceTokenFactory extends Factory
+{
+
+    protected $model = Entity::class;
+
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition()
+    {
+        return [
+            Entity::ID              => Entity::generateUniqueId(),
+            Entity::DEVICE_ID       => 'factory:' . \RZP\Models\P2p\Device\Entity::class,
+            Entity::HANDLE          => fake()->randomElement(['rzpsharp', 'razorsharp']),
+            Entity::GATEWAY_DATA    => fake()->randomElements(['a' => 1, 'b' => 2]),
+            Entity::STATUS          => 'pending',
+            Entity::REFRESHED_AT    => fake()->numerify('154222####'),
+        ];
+    }
+}

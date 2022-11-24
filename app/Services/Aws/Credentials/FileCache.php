@@ -16,8 +16,10 @@ final class FileCache implements CacheInterface
 
     /**
      * {@inheritDoc}
+     *
+     * @return mixed
      */
-    public function get($key)
+    public function get($key): mixed
     {
         return $this->getCache()->get($this->getNamespacedKey($key));
     }

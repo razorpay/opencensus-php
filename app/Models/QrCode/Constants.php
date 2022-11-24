@@ -12,15 +12,17 @@ class Constants
 
     // TODO: Find out what should
     // be the best size
-    const QR_CODE_WIDTH         = 220;
-    const QR_CODE_HEIGHT        = 320;
-    const UPI_QR_CODE_WIDTH     = 240;
-    const UPI_QR_CODE_HEIGHT    = 240;
+    const QR_CODE_WIDTH         = 210;
+    const QR_CODE_HEIGHT        = 210;
+    const QR_CODE_SIZE          = 210;
+    const UPI_QR_CODE_WIDTH     = 210;
+    const UPI_QR_CODE_HEIGHT    = 210;
+    const UPI_QR_CODE_SIZE      = 210;
 
-    const UPI_QR_DEST_X         = 100;
-    const UPI_QR_DEST_Y         = 180;
-    const QR_DEST_X             = 30;
-    const QR_DEST_Y             = 180;
+    const UPI_QR_DEST_X         = 115;
+    const UPI_QR_DEST_Y         = 195;
+    const QR_DEST_X             = 37;
+    const QR_DEST_Y             = 245;
     const SORCE_X               = 0;
     const SORCE_Y               = 0;
     const MARGIN                = 0;
@@ -48,6 +50,7 @@ class Constants
     const SHORT_MODE_LIVE = 'l';
     const SHORT_MODE_TEST = 't';
 
+    const QR_V2_UPI_QR_CODE_SIZE   = 380;
     const QR_V2_UPI_QR_CODE_WIDTH  = 380;
     const QR_V2_UPI_QR_CODE_HEIGHT = 380;
 

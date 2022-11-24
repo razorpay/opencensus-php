@@ -2,7 +2,7 @@
 
 namespace RZP\Services\Mock;
 
-use Requests_Response;
+use \WpOrg\Requests\Response;
 use RZP\Services\SplitzService as BaseSplitz;
 
 
@@ -11,7 +11,7 @@ class SplitzService extends BaseSplitz
 
     public function createSegment($preSignedUrl, $segmentName, $s3Path)
     {
-        $resp = new Requests_Response;
+        $resp = new \WpOrg\Requests\Response;
         $resp->success     = true;
         $resp->status_code = 200;
         $resp->body        = json_encode([
@@ -29,7 +29,7 @@ class SplitzService extends BaseSplitz
 
     public function updateSegment($preSignedUrl, $segmentName, $id, $s3Path)
     {
-        $resp = new Requests_Response;
+        $resp = new \WpOrg\Requests\Response;
         $resp->success     = true;
         $resp->status_code = 200;
         $resp->body        = json_encode([
@@ -74,7 +74,7 @@ class SplitzService extends BaseSplitz
 
     public function getSegmentFromName($segmentName)
     {
-        $resp = new Requests_Response;
+        $resp = new \WpOrg\Requests\Response;
         $resp->success     = true;
         $resp->status_code = 200;
         $resp->body        = json_encode([

@@ -4,24 +4,24 @@ phpcodecoverage=6.1.4
 
 function init_setup
 {
-    pecl install xdebug-2.9.0 && echo 'zend_extension=/usr/lib/php7/modules/xdebug.so' >> /etc/php7/php.ini
+    pecl install xdebug-2.9.0 && echo 'zend_extension=/usr/lib/php81/modules/xdebug.so' >> /etc/php81/php.ini
     mkdir -p /opt/razorpay/certs/first_data
-    touch /etc/php7/conf.d/assertion.ini
-    echo "zend.assertions=1" >> /etc/php7/conf.d/assertion.ini
-    echo "assert.exception=1" >> /etc/php7/conf.d/assertion.ini
-    sed -i 's/max_execution_time.*/max_execution_time=120/' /etc/php7/php.ini
-    sed -i 's/memory_limit.*/memory_limit=-1/' /etc/php7/php.ini
+    touch /etc/php81/conf.d/assertion.ini
+    echo "zend.assertions=1" >> /etc/php81/conf.d/assertion.ini
+    echo "assert.exception=1" >> /etc/php81/conf.d/assertion.ini
+    sed -i 's/max_execution_time.*/max_execution_time=120/' /etc/php81/php.ini
+    sed -i 's/memory_limit.*/memory_limit=-1/' /etc/php81/php.ini
     composer config --global github-oauth.github.com $GIT_TOKEN
     composer global require hirak/prestissimo
     composer remove --dev orchestra/testbench phpunit/phpunit-mock-objects --no-interaction
-    composer require --dev phpunit/phpunit:"$phpunit" phpunit/php-code-coverage:"$phpcodecoverage" codedungeon/phpunit-result-printer:^0.15.5 symfony/phpunit-bridge  --update-with-dependencies
+    composer require --dev phpunit/phpunit:"$phpunit" phpunit/php-code-coverage:"$phpcodecoverage" symfony/phpunit-bridge  --update-with-dependencies
     composer require --dev pcov/clobber
     composer dump-autoload -og
 }
 
 function run_tests
 {
-    php vendor/phpunit/phpunit/phpunit -d memory_limit=-1 --testsuite "$TEST_SUITE_NAME" --printer="Codedungeon\PHPUnitPrettyResultPrinter\Printer" --debug --verbose  --coverage-clover clover.xml
+    php vendor/phpunit/phpunit/phpunit -d memory_limit=4096 --testsuite "$TEST_SUITE_NAME"  --debug --verbose  --coverage-clover clover.xml
 }
 
 function push_to_sonar

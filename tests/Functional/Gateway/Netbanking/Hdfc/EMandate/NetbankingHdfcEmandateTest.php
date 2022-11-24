@@ -5,25 +5,25 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Hdfc\Emandate;
 use Mail;
 use Excel;
 use Carbon\Carbon;
+use Illuminate\Http\Testing\File as TestingFile;
+
+use RZP\Excel\Import;
 use RZP\Models\Payment;
-use RZP\Excel\ChunkImport;
+use RZP\Mail\Base\Mailable;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Method;
 use RZP\Services\RazorXClient;
+use RZP\Models\FileStore\Utility;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Order\Entity as Order;
 use RZP\Mail\Gateway\EMandate\Base as Email;
-use Illuminate\Http\Testing\File as TestingFile;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 use RZP\Mail\Gateway\EMandate\Constants as EmailConstants;
-use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings;
-use RZP\Mail\Gateway\RefundFile\Constants as RefundFileMailConstants;
 
 class NetbankingHdfcEmandateTest extends TestCase
 {
@@ -238,7 +238,7 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertQueued(Email::class, function ($mail) use ($file)
+        Mail::assertQueued(Email::class, function (Mailable $mail) use ($file)
         {
             $key = Payment\Gateway::NETBANKING_HDFC . '_register';
 
@@ -310,9 +310,15 @@ class NetbankingHdfcEmandateTest extends TestCase
             'merchant_unique_reference_no' => $payment['id'],
         ];
 
-        Mail::assertQueued(Email::class, function ($mail) use ($expectedFileContent)
+        Mail::assertQueued(Email::class, function (Mailable $mail) use ($expectedFileContent)
         {
-            $fileContents = $this->parseExcel($mail->viewData['signed_url']);
+            $fileName = $mail->viewData['signed_url'];
+
+            s($mail->viewData['signed_url']);
+            s($fileName);
+            $fileName = $mail->viewData['signed_url'];
+
+            $fileContents = (new Import)->toArray($fileName)[0];
 
             // Assert that the late auth payment actually exists in the file we send
             $this->assertArraySelectiveEquals($expectedFileContent, $fileContents[0]);
@@ -400,10 +406,10 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $file = $this->generateEmandateRegisterReconFile($entities);
 
-        $this->assertEquals($entities[0]['payment']['status'], 'captured');
-        $this->assertEquals($entities[1]['payment']['status'], 'captured');
-        $this->assertEquals($entities[0]['token']['recurring_status'], 'initiated');
-        $this->assertEquals($entities[1]['token']['recurring_status'], 'initiated');
+        $this->assertEquals('captured', $entities[0]['payment']['status']);
+        $this->assertEquals('captured', $entities[1]['payment']['status']);
+        $this->assertEquals('initiated', $entities[0]['token']['recurring_status']);
+        $this->assertEquals('initiated', $entities[1]['token']['recurring_status']);
 
         $this->makeBatchRequest(
             [
@@ -580,7 +586,7 @@ class NetbankingHdfcEmandateTest extends TestCase
         $this->assertEquals($gatewayPayment['amount'], $debitPayment['amount']);
 
         // Verify email
-        Mail::assertQueued(Email::class, function ($mail) use ($file)
+        Mail::assertQueued(Email::class, function (Mailable $mail) use ($file)
         {
             $key = Payment\Gateway::NETBANKING_HDFC . '_debit';
 
@@ -642,7 +648,6 @@ class NetbankingHdfcEmandateTest extends TestCase
         $netbanking = $this->getDbEntityById('netbanking', $entities[0]['netbanking']['id'])->toArray();
 
         $this->assertEquals('success', $netbanking[Netbanking::STATUS]);
-
     }
 
     public function testEmandateDebitFailureRecon()
@@ -680,7 +685,6 @@ class NetbankingHdfcEmandateTest extends TestCase
         $netbanking = $this->getDbEntityById('netbanking', $entities[0]['netbanking']['id'])->toArray();
 
         $this->assertEquals('failure', $netbanking[Netbanking::STATUS]);
-
     }
 
     public function testEmandateDebitRejectedRecon()
@@ -718,7 +722,6 @@ class NetbankingHdfcEmandateTest extends TestCase
         $netbanking = $this->getDbEntityById('netbanking', $entities[0]['netbanking']['id'])->toArray();
 
         $this->assertEquals('rejected', $netbanking[Netbanking::STATUS]);
-
     }
 
     public function testSecondRecurringPaymentVerify()
@@ -853,7 +856,7 @@ class NetbankingHdfcEmandateTest extends TestCase
         $this->assertEquals($gatewayPaymentLast['id'], $gatewayPayment['id']);
 
         // Verify email
-        Mail::assertQueued(Email::class, function ($mail) use ($file)
+        Mail::assertQueued(Email::class, function (Mailable $mail) use ($file)
         {
             $key = Payment\Gateway::NETBANKING_HDFC . '_debit';
 
@@ -878,7 +881,7 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $this->capturePayment($debitPayment['id'], $debitPayment['amount']);
 
-        $refund = $this->refundPayment($debitPayment['id'], $debitPayment['amount'], ['is_fta' => true]);
+        $this->refundPayment($debitPayment['id'], $debitPayment['amount'], ['is_fta' => true]);
 
         $debitPayment = $this->getLastEntity('payment', true);
 
@@ -1110,7 +1113,7 @@ class NetbankingHdfcEmandateTest extends TestCase
      *
      * @return array
      */
-    protected function createRegistrationConfirmedEntities()
+    protected function createRegistrationConfirmedEntities(): array
     {
         $token = $this->fixtures->create(
             'token:emandate_registration_confirmed',
@@ -1145,7 +1148,7 @@ class NetbankingHdfcEmandateTest extends TestCase
      * @param $entities - Fill the current payment's token entity from here
      * @return array
      */
-    protected function createDebitInitiatedEntities($entities)
+    protected function createDebitInitiatedEntities($entities): array
     {
         $order = $this->fixtures->create('order:emandate_order', ['amount' => 4000]);
 
@@ -1181,30 +1184,6 @@ class NetbankingHdfcEmandateTest extends TestCase
         ];
     }
 
-    protected function parseExcel($filePath)
-    {
-        $allSheetsContent = [];
-
-        (new ChunkImport())
-            ->setSheets(0)
-            ->setChunk(self::ROW_CHUNK_SIZE, function ($results) use (& $allSheetsContent)
-            {
-                // We get a collection consisting of collections
-                // in results now, so using all() to get it's items.
-                foreach ($results->all() as $row)
-                {
-                    // Currently, since it returns an array of rows, there's no
-                    // way to get the sheet names. And we cannot let it return
-                    // an array of sheets because chunk works only on a
-                    // cell collection (rows) and not on a row collection (sheets)
-                    $allSheetsContent[] = $row->all();
-                }
-           })
-           ->import($filePath);
-
-        return $allSheetsContent;
-    }
-
     public function runWithData($entries, $batchId)
     {
         $this->ba->batchAppAuth();
@@ -1218,7 +1197,7 @@ class NetbankingHdfcEmandateTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
-    public function createBatchRequestData($entityList, $type, $subType, $gateway, $count)
+    public function createBatchRequestData($entityList, $type, $subType, $gateway, $count): array
     {
 
         $item = [
@@ -1257,5 +1236,4 @@ class NetbankingHdfcEmandateTest extends TestCase
         $this->app->razorx->method('getTreatment')
             ->willReturn($returnValue);
     }
-
 }

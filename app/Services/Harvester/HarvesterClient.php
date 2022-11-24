@@ -274,7 +274,7 @@ class HarvesterClient extends AbstractEventClient
             {
                 $response = $this->getResponse($request);
             }
-            catch(\Requests_Exception $e)
+            catch(\WpOrg\Requests\Exception $e)
             {
                 $this->trace->info(
                     TraceCode::HARVESTER_RETRY,

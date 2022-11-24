@@ -2,16 +2,19 @@
 
 namespace RZP\Models\P2p\Device;
 
+use Database\Factories\P2PDeviceFactory;
 use RZP\Models\P2p\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\P2p\Client;
 use RZP\Models\P2p\Vpa\Handle;
 use RZP\Models\P2p\Base\Traits;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Entity extends Base\Entity
 {
     use Traits\HasMerchant;
+    use HasFactory;
 
     const CUSTOMER_ID  = 'customer_id';
     const MERCHANT_ID  = 'merchant_id';
@@ -410,5 +413,10 @@ class Entity extends Base\Entity
         }
 
         return array_except($array, [self::AUTH_TOKEN]);
+    }
+
+    protected static function newFactory(): P2PDeviceFactory
+    {
+        return P2PDeviceFactory::new();
     }
 }

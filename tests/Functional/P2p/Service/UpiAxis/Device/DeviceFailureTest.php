@@ -2,7 +2,7 @@
 
 namespace RZP\Tests\P2p\Service\UpiAxis\Device;
 
-use Illuminate\Foundation\Testing\TestResponse;
+use Illuminate\Testing\TestResponse;
 use RZP\Models\P2p\Device;
 use RZP\Models\P2p\Client;
 use RZP\Gateway\P2p\Upi\Axis\Fields;

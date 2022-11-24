@@ -3,8 +3,8 @@
 namespace RZP\Services;
 
 use Carbon\Carbon;
-use Requests_Exception;
-use Requests_Response;
+use \WpOrg\Requests\Exception as Requests_Exception;
+use \WpOrg\Requests\Response;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
@@ -769,7 +769,7 @@ class SalesForceClient
         return $response_body;
     }
 
-    public function sendRequest(array $request): Requests_Response
+    public function sendRequest(array $request): \WpOrg\Requests\Response
     {
         try
         {
@@ -793,7 +793,7 @@ class SalesForceClient
         return $response;
     }
 
-    protected function traceResponse(Requests_Response $response)
+    protected function traceResponse($response)
     {
         $responseArr = json_decode($response->body, true);
 

@@ -2,6 +2,8 @@
 
 namespace RZP\Mail\Dispute\Admin;
 
+use Symfony\Component\Mime\Email;
+
 use RZP\Constants\MailTags;
 
 class SubmittedAdmin extends Base
@@ -24,7 +26,7 @@ class SubmittedAdmin extends Base
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function ($message)
+        $this->withSymfonyMessage(function (Email $message)
         {
             $disputeId = $this->data['dispute']['id'];
 

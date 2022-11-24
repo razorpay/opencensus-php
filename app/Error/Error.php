@@ -13,7 +13,7 @@ use RZP\Models\Merchant;
 use RZP\Constants\Product;
 use \JsonMachine\JsonMachine;
 use RZP\Services\DowntimeMetric;
-use RZP\Error\Twirp\ErrorCodeMap;
+use RZP\Error\twirp\ErrorCodeMap;
 use RZP\Models\Payout\PayoutError;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment\DetailedError;
@@ -362,7 +362,7 @@ class Error extends Support\Fluent
         $this->setDescForLocale();
     }
 
-    protected function setErrorDetailsFromCentralRepo($code, $method = '', $network)
+    protected function setErrorDetailsFromCentralRepo($code, $method, $network)
     {
         list($errorCodeJson, $this->errorFolder) = $this->errorMapper->getErrorMapping($code,$method);
 

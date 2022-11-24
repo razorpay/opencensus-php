@@ -140,4 +140,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::MAX_PASSWORD_RETAIN);
     }
+
+    public function getIncrementing()
+    {
+        return $this->incrementing;
+    }
 }

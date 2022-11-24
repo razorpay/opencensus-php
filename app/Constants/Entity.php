@@ -1778,7 +1778,7 @@ class Entity
         return new $class;
     }
 
-    public static function getEntityRepository(string $entity, $repositoryType = 'Repository')
+    public static function getEntityRepository(string $entity, $repositoryType = 'Repository'): string
     {
         $class = self::getEntityNamespace($entity) . '\\' . $repositoryType;
         if (class_exists($class) === false)

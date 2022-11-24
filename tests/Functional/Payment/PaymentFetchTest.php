@@ -45,9 +45,7 @@ class PaymentFetchTest extends TestCase
 
         $this->repo = (new Payment\Repository);
 
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
-        $this->app->make(Factory::class)->load($factoryPath);
 
         $this->payment = $this->getDefaultPaymentArray();
 

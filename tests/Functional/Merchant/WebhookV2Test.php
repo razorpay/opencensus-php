@@ -35,9 +35,7 @@ class WebhookV2Test extends TestCase
 
         parent::setUp();
 
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
-        $this->app->make(Factory::class)->load($factoryPath);
 
         $this->ba->proxyAuth();
 
@@ -453,7 +451,7 @@ class WebhookV2Test extends TestCase
     public function testProcessWebhookEventsFromCsv()
     {
         $filepath = __DIR__.'/helpers/webhook_events.csv';
-        $file = new UploadedFile($filepath, 'webhook_events.csv', 'text/csv', filesize($filepath), null, true);
+        $file = new UploadedFile($filepath, 'webhook_events.csv', 'text/csv', null, true);
         $this->testData[__FUNCTION__]['request']['files']['file'] = $file;
 
         $this->expectWebhookEvent('payment.created');
@@ -471,7 +469,7 @@ class WebhookV2Test extends TestCase
         $contents = str_replace('payment.failed', 'unknown.event', $contents);
         $filepath = '/tmp/webhook_events.csv';
         file_put_contents($filepath, $contents);
-        $file = new UploadedFile($filepath, 'webhook_events.csv', 'text/csv', filesize($filepath), null, true);
+        $file = new UploadedFile($filepath, 'webhook_events.csv', 'text/csv', null, true);
         $this->testData[__FUNCTION__]['request']['files']['file'] = $file;
 
         $this->dontExpectAnyWebhookEvent();
@@ -797,6 +795,6 @@ class WebhookV2Test extends TestCase
             ],
             $client);
 
-        $this->ba->oauthBearerAuth($token);
+        $this->ba->oauthBearerAuth($token->toString());
     }
 }

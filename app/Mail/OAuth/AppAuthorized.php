@@ -2,6 +2,8 @@
 
 namespace RZP\Mail\OAuth;
 
+use Symfony\Component\Mime\Email;
+
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 
@@ -46,7 +48,7 @@ class AppAuthorized extends Mailable
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function ($message)
+        $this->withSymfonyMessage(function (Email $message)
         {
             $headers = $message->getHeaders();
             $headers->addTextHeader(MailTags::HEADER, MailTags::OAUTH_APP_AUTHORIZED);

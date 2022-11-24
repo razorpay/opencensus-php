@@ -105,10 +105,10 @@ class EInvoice
     /**
      * @param array $request
      *
-     * @return \Requests_Response
-     * @throws \Requests_Exception
+     * @return \WpOrg\Requests\Response
+     * @throws \WpOrg\Requests\Exception
      */
-    protected function makeRequest(array $request): \Requests_Response
+    protected function makeRequest(array $request)
     {
         $this->traceRequest($request);
 
@@ -121,7 +121,7 @@ class EInvoice
                 $request['method'],
                 $request['options']);
         }
-        catch(\Requests_Exception $e)
+        catch(\WpOrg\Requests\Exception $e)
         {
             $this->trace->traceException(
                 $e,
@@ -151,12 +151,12 @@ class EInvoice
     }
 
     /**
-     * @param \Requests_Response $response
+     * @param \WpOrg\Requests\Response $response
      *
      * @return array
      * @throws RuntimeException
      */
-    protected function parseResponse(\Requests_Response $response): array
+    protected function parseResponse($response): array
     {
         $code = $response->status_code;
 

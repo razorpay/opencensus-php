@@ -435,7 +435,7 @@ class ShieldClient implements ExternalService
 
             return $this->parseAndReturnResponse($response, $data);
         }
-        catch(\Requests_Exception $e)
+        catch(\WpOrg\Requests\Exception $e)
         {
             $data = [
                 'exception'     => $e->getMessage(),
@@ -552,7 +552,7 @@ class ShieldClient implements ExternalService
 
             return $this->formatResponse($response);
         }
-        catch (\Requests_Exception $e)
+        catch (\WpOrg\Requests\Exception $e)
         {
             $data = [
                 'exception'     => $e->getMessage(),
@@ -616,7 +616,7 @@ class ShieldClient implements ExternalService
 
             return $formattedResponse;
         }
-        catch (\Requests_Exception $e)
+        catch (\WpOrg\Requests\Exception $e)
         {
             $data = [
                 'exception'     => $e->getMessage(),

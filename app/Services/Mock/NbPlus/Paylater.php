@@ -2,7 +2,7 @@
 
 namespace RZP\Services\Mock\NbPlus;
 use App;
-use Requests_Response;
+use \WpOrg\Requests\Response;
 
 use RZP\Models\Payment\Gateway;
 use RZP\Services\NbPlus\Paylater as PaylaterBase;
@@ -121,7 +121,7 @@ class Paylater extends PaylaterBase
 
     protected function makeJsonResponse(array $content)
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         $response->headers = ['Content-Type' => 'application/json', 'Cache-Control' => 'no-cache'];
 

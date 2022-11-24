@@ -2,6 +2,8 @@
 
 namespace RZP\Mail\User;
 
+use Symfony\Component\Mime\Email;
+
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
@@ -71,7 +73,7 @@ class AccountLockedWrongAttempt extends Mailable
 
   protected function addHeaders()
   {
-      $this->withSwiftMessage(function ($message)
+      $this->withSymfonyMessage(function (Email $message)
       {
           $headers = $message->getHeaders();
 

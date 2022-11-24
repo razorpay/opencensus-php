@@ -2,7 +2,7 @@
 
 namespace RZP\Services;
 
-use Http\Adapter\Guzzle6\Client as GuzzleClient;
+use Http\Adapter\Guzzle7\Client as GuzzleClient;
 use Mailgun\Mailgun as MgClient;
 use RZP\Exception;
 use RZP\Diag\EventCode;
@@ -44,9 +44,7 @@ class Mailgun
 
         $key = $this->config['key'];
 
-        $client = new GuzzleClient;
-
-        $this->mgClient = new MgClient($key, $client);
+        $this->mgClient = MgClient::create($key);
 
         return $this->mgClient;
     }
@@ -59,7 +57,7 @@ class Mailgun
 
         if ($this->config['mock'] === false)
         {
-            $res = $this->getMailgunInstance()->sendMessage($domain, $mailData);
+            $res = $this->getMailgunInstance()->messages()->send($domain, $mailData);
 
             if ((isset($res['message']) === false) or
                 (isset($res['id']) === false))

@@ -20,6 +20,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base as GatewayBase;
 use RZP\Gateway\Base\AuthorizeFailed;
+use \WpOrg\Requests\Hooks as Requests_Hooks;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Gateway\Upi\Axis\ErrorCodes\ErrorCodes;
 
@@ -1407,16 +1408,31 @@ class Gateway extends Base\Gateway
         return $this->aesCrypto->decryptString($stringToDecrypt);
     }
 
+    public function setCurlOptions($curl)
+    {
+        curl_setopt($curl, CURLOPT_ENCODING, null);
+    }
+
+    protected function getRequestOptions()
+    {
+        $hooks = new Requests_Hooks();
+
+        $hooks->register('curl.before_send', [$this, 'setCurlOptions']);
+
+        $options = [
+            'hooks' => $hooks
+        ];
+
+        return $options;
+    }
+
     protected function getStandardRequestArray($content = [], $method = 'post', $type = null)
     {
         $request = parent::getStandardRequestArray($content, $method, $type);
 
         $request['headers']['Content-Type'] = 'application/json';
 
-        // Axis gateway firewall is not accepting any value for encoding
-        // And the default curl transport is forcing the encoding to be compressed
-        // thus we have overridden the transporter and suppress the encoding
-        $request['options']['transport'] = Curl::class;
+        $request['options'] = $this->getRequestOptions();
 
         return $request;
     }

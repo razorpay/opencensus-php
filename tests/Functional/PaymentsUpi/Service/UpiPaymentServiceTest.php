@@ -1091,7 +1091,6 @@ class UpiPaymentServiceTest extends TestCase
             $file,
             $fileName,
             $mimeType,
-            filesize($file),
             null,
             true
         );

@@ -73,8 +73,8 @@ class Service extends BaseService
         foreach ($entities as $entity)
         {
             // We need fetch originals as the data is swapped in the getter
-            $npciReferenceId    = $entity->getOriginal(Entity::NPCI_REFERENCE_ID);
-            $gatewayPaymentId   = $entity->getOriginal(Entity::GATEWAY_PAYMENT_ID);
+            $npciReferenceId    = $entity->getRawOriginal(Entity::NPCI_REFERENCE_ID);
+            $gatewayPaymentId   = $entity->getRawOriginal(Entity::GATEWAY_PAYMENT_ID);
 
             // If gateway payment id is not rrn, we need stop processing there itself.
             // And in order to fix the data we will need to pass the filter skipping the id

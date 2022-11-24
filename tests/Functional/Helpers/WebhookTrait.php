@@ -27,7 +27,7 @@ trait WebhookTrait
 
     protected function getStorkListResponseEmpty()
     {
-        $res = new \Requests_Response();
+        $res = new \WpOrg\Requests\Response();
         $res->body = json_encode([]);
 
         return $res;
@@ -35,7 +35,7 @@ trait WebhookTrait
 
     protected function getStorkListResponse()
     {
-        $res = new \Requests_Response();
+        $res = new \WpOrg\Requests\Response();
 
         $body =  [
             'webhooks' => [
@@ -66,7 +66,7 @@ trait WebhookTrait
 
     protected function getStorkGetResponse()
     {
-        $res = new \Requests_Response();
+        $res = new \WpOrg\Requests\Response();
 
         $body =  [
             'webhook' => [
@@ -95,7 +95,7 @@ trait WebhookTrait
 
     protected function getStorkGetResponseProductPrimary()
     {
-        $res = new \Requests_Response();
+        $res = new \WpOrg\Requests\Response();
 
         $body =  [
             'webhook' => [
@@ -124,7 +124,7 @@ trait WebhookTrait
 
     protected function getStorkCreateResponse(string $service, string $url, array $events)
     {
-        $res = new \Requests_Response();
+        $res = new \WpOrg\Requests\Response();
 
         $subscriptions = [];
         foreach ($events as $event)
@@ -153,7 +153,7 @@ trait WebhookTrait
 
     protected function getStorkUpdateResponse()
     {
-        $res = new \Requests_Response();
+        $res = new \WpOrg\Requests\Response();
         $body =  [
             'webhook' => [
                 'id'            => 'EZ4ezgl4124qKu',

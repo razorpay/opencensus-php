@@ -746,7 +746,7 @@ class CardMandateTest extends TestCase
             {
                 $webhookPayload = $payload;
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->times(1);
 
         $this->startTest();
@@ -781,7 +781,7 @@ class CardMandateTest extends TestCase
             {
                 $webhookPayload = $payload;
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->times(1);
 
         $this->startTest();
@@ -818,7 +818,7 @@ class CardMandateTest extends TestCase
             {
                 $webhookPayload = $payload;
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->times(1);
 
         $this->startTest();
@@ -855,7 +855,7 @@ class CardMandateTest extends TestCase
             {
                 $webhookPayload = $payload;
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->times(1);
 
         $this->startTest();

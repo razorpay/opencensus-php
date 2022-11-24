@@ -2,14 +2,14 @@
 
 namespace RZP\Services\Mock;
 
-use Requests_Response;
+use \WpOrg\Requests\Response;
 use \RZP\Services\Partnerships\PartnershipsService as BasePartnerships;
 
 class PartnershipsService extends BasePartnerships
 {
     public function createAuditLog($parameters)
     {
-        $resp = new Requests_Response;
+        $resp = new \WpOrg\Requests\Response;
         $resp->success     = true;
         $resp->status_code = 200;
         $resp->body        = json_encode([
@@ -33,7 +33,7 @@ class PartnershipsService extends BasePartnerships
 
     public function listAuditLogByEntityIds($parameters)
     {
-        $resp = new Requests_Response;
+        $resp = new \WpOrg\Requests\Response;
         $resp->success     = true;
         $resp->status_code = 200;
         $resp->body        = json_encode([
@@ -73,7 +73,7 @@ class PartnershipsService extends BasePartnerships
 
     public function listAuditLogByEntityId($parameters)
     {
-        $resp = new Requests_Response;
+        $resp = new \WpOrg\Requests\Response;
         $resp->success     = true;
         $resp->status_code = 200;
         $resp->body        = json_encode([

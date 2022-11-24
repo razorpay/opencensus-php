@@ -22,7 +22,7 @@ jobs:
       HARBOR_DOCKER_USERNAME : ${{ secrets.HARBOR_DOCKER_USERNAME }}
       HARBOR_DOCKER_PASSWORD : ${{ secrets.HARBOR_DOCKER_PASSWORD }}
       BHADRA_TOKEN : ${{ secrets.BHADRA_TOKEN }}
-      DOCKER_IMAGE_INIT_COMMAND : c.rzp.io/razorpay/api:trivyimage-web --build-arg GIT_COMMIT_HASH=${{ github.sha }} --build-arg GIT_TOKEN=${{ secrets.GIT_TOKEN }} --build-arg GIT_USERNAME=rzp --build-arg ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web-v3 --build-arg ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182 --build-arg OPENCENSUS_IMAGE=c.rzp.io/razorpay/onggi:opencensus-php-v2020.10.28 -f Dockerfile.web
+      DOCKER_IMAGE_INIT_COMMAND : c.rzp.io/razorpay/api:trivyimage-web --build-arg GIT_COMMIT_HASH=${{ github.sha }} --build-arg GIT_TOKEN=${{ secrets.GIT_TOKEN }} --build-arg GIT_USERNAME=rzp --build-arg ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-8.1-api-web --build-arg ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182 --build-arg OPENCENSUS_IMAGE=c.rzp.io/razorpay/onggi:opencensus-php-v2020.10.28 -f Dockerfile.web
       GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
       SLACK_HOOK: ${{ secrets.SLACK_HOOK }}
 
@@ -36,7 +36,7 @@ jobs:
       HARBOR_DOCKER_USERNAME : ${{ secrets.HARBOR_DOCKER_USERNAME }}
       HARBOR_DOCKER_PASSWORD : ${{ secrets.HARBOR_DOCKER_PASSWORD }}
       BHADRA_TOKEN : ${{ secrets.BHADRA_TOKEN }}
-      DOCKER_IMAGE_INIT_COMMAND : c.rzp.io/razorpay/api:trivyimage-worker --build-arg GIT_COMMIT_HASH=${{ github.sha }} --build-arg GIT_TOKEN=${{ secrets.GIT_TOKEN }} --build-arg GIT_USERNAME=rzp --build-arg ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web-v3 --build-arg ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182 --build-arg OPENCENSUS_IMAGE=c.rzp.io/razorpay/onggi:opencensus-php-v2020.10.28 -f Dockerfile.worker
+      DOCKER_IMAGE_INIT_COMMAND : c.rzp.io/razorpay/api:trivyimage-worker --build-arg GIT_COMMIT_HASH=${{ github.sha }} --build-arg GIT_TOKEN=${{ secrets.GIT_TOKEN }} --build-arg GIT_USERNAME=rzp --build-arg ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-8.1-api-web --build-arg ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182 --build-arg OPENCENSUS_IMAGE=c.rzp.io/razorpay/onggi:opencensus-php-v2020.10.28 -f Dockerfile.worker
       GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
       SLACK_HOOK: ${{ secrets.SLACK_HOOK }}
 
@@ -50,7 +50,7 @@ jobs:
       HARBOR_DOCKER_USERNAME : ${{ secrets.HARBOR_DOCKER_USERNAME }}
       HARBOR_DOCKER_PASSWORD : ${{ secrets.HARBOR_DOCKER_PASSWORD }}
       BHADRA_TOKEN : ${{ secrets.BHADRA_TOKEN }}
-      DOCKER_IMAGE_INIT_COMMAND : c.rzp.io/razorpay/api:trivyimage-checkout --build-arg GIT_COMMIT_HASH=${{ github.sha }} --build-arg GIT_TOKEN=${{ secrets.GIT_TOKEN }} --build-arg GIT_USERNAME=rzp --build-arg ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web-v3 --build-arg ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182 --build-arg OPENCENSUS_IMAGE=c.rzp.io/razorpay/onggi:opencensus-php-v2020.10.28 -f Dockerfile.checkout
+      DOCKER_IMAGE_INIT_COMMAND : c.rzp.io/razorpay/api:trivyimage-checkout --build-arg GIT_COMMIT_HASH=${{ github.sha }} --build-arg GIT_TOKEN=${{ secrets.GIT_TOKEN }} --build-arg GIT_USERNAME=rzp --build-arg ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-8.1-api-web --build-arg ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182 --build-arg OPENCENSUS_IMAGE=c.rzp.io/razorpay/onggi:opencensus-php-v2020.10.28 -f Dockerfile.checkout
       GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
       SLACK_HOOK: ${{ secrets.SLACK_HOOK }}
 
@@ -64,7 +64,7 @@ jobs:
       HARBOR_DOCKER_USERNAME : ${{ secrets.HARBOR_DOCKER_USERNAME }}
       HARBOR_DOCKER_PASSWORD : ${{ secrets.HARBOR_DOCKER_PASSWORD }}
       BHADRA_TOKEN : ${{ secrets.BHADRA_TOKEN }}
-      DOCKER_IMAGE_INIT_COMMAND : c.rzp.io/razorpay/api:trivyimage-openresty --build-arg GIT_COMMIT_HASH=${{ github.sha }} --build-arg GIT_TOKEN=${{ secrets.GIT_TOKEN }} --build-arg GIT_USERNAME=rzp --build-arg ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web-v3 --build-arg ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182 --build-arg OPENCENSUS_IMAGE=c.rzp.io/razorpay/onggi:opencensus-php-v2020.10.28 -f Dockerfile.openresty
+      DOCKER_IMAGE_INIT_COMMAND : c.rzp.io/razorpay/api:trivyimage-openresty --build-arg GIT_COMMIT_HASH=${{ github.sha }} --build-arg GIT_TOKEN=${{ secrets.GIT_TOKEN }} --build-arg GIT_USERNAME=rzp --build-arg ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-8.1-api-web --build-arg ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182 --build-arg OPENCENSUS_IMAGE=c.rzp.io/razorpay/onggi:opencensus-php-v2020.10.28 -f Dockerfile.openresty
       GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
       SLACK_HOOK: ${{ secrets.SLACK_HOOK }}
 

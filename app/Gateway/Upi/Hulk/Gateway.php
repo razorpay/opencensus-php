@@ -5,7 +5,7 @@ namespace RZP\Gateway\Upi\Hulk;
 use Request;
 use Carbon\Carbon;
 use RZP\Exception;
-use Requests_Hooks;
+use \WpOrg\Requests\Hooks as Requests_Hooks;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\BharatQr;

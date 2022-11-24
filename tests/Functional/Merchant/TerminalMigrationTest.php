@@ -78,7 +78,7 @@ class TerminalMigrationTest extends TestCase
 
     protected function getTerminalsServiceResponseForEntityNotFound()
     {
-        $response = new \Requests_Response;
+        $response = new \WpOrg\Requests\Response;
 
         $response->body = '
    {
@@ -97,7 +97,7 @@ class TerminalMigrationTest extends TestCase
 
     protected function getTerminalsServiceResponseForEntityDeleted()
     {
-        $response = new \Requests_Response;
+        $response = new \WpOrg\Requests\Response;
 
         $response->body = '{"data": null}';
 
@@ -112,7 +112,7 @@ class TerminalMigrationTest extends TestCase
     {
 
 
-        $response = new \Requests_Response;
+        $response = new \WpOrg\Requests\Response;
 
         $format= '
        {
@@ -245,7 +245,7 @@ class TerminalMigrationTest extends TestCase
 //
 //            $body = json_encode(['data' => [$data]]);
 //
-//            $response = new \Requests_Response;
+//            $response = new \WpOrg\Requests\Response;
 //
 //            $response->body = $body;
 //
@@ -424,7 +424,7 @@ class TerminalMigrationTest extends TestCase
 
         $newTerminaEntity = Terminal\Service::getEntityFromTerminalServiceResponse($terminalArray);
 
-        $encryptedPassword = $newTerminaEntity->getOriginal()['gateway_terminal_password'];
+        $encryptedPassword = $newTerminaEntity->getRawOriginal()['gateway_terminal_password'];
 
         // assert that password got encrypted using axis key
         $orgKey = '5dlTd5lQhN56CkSrnyrRBtRMsXS9exWS'; // ENCRYPTION_KEY_AXIS
@@ -582,7 +582,7 @@ class TerminalMigrationTest extends TestCase
         $this->app['config']->set('applications.terminals_service.sync', true);
 
         $this->mockTerminalsServiceSendRequest(function () {
-            throw new \Requests_Exception_Transport_cURL('curl timed out', 1);
+            throw new \WpOrg\Requests\Exception\Transport\Curl('curl timed out', 1);
         }, 1);
 
         $this->razorxValue = 'migrate';
@@ -591,7 +591,7 @@ class TerminalMigrationTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $this->expectException(\Requests_Exception_Transport_cURL::class);
+        $this->expectException(\WpOrg\Requests\Exception\Transport\Curl::class);
 
         $this->expectExceptionMessage('curl timed out');
 
@@ -753,10 +753,10 @@ class TerminalMigrationTest extends TestCase
         $this->razorxValue = 'migrate';
 
         $this->mockTerminalsServiceSendRequest(function () use ($tid) {
-            throw new \Requests_Exception_Transport_cURL('curl timed out', 1);
+            throw new \WpOrg\Requests\Exception\Transport\Curl('curl timed out', 1);
         }, 1);
 
-        $this->expectException(\Requests_Exception_Transport_cURL::class);
+        $this->expectException(\WpOrg\Requests\Exception\Transport\Curl::class);
 
         $this->expectExceptionMessage('timed out');
 
@@ -899,7 +899,7 @@ class TerminalMigrationTest extends TestCase
         $this->app['config']->set('applications.terminals_service.sync', true);
 
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid) {
-            $response = new  \Requests_Response;
+            $response = new  \WpOrg\Requests\Response;
 
             $this->assertStringEndsWith('/' . $tid, $path);
 
@@ -941,13 +941,13 @@ class TerminalMigrationTest extends TestCase
         $this->app['config']->set('applications.terminals_service.sync', true);
 
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid) {
-            $response = new  \Requests_Response;
+            $response = new  \WpOrg\Requests\Response;
 
             $this->assertStringEndsWith('/' . $tid, $path);
 
             if ($method == \Requests::DELETE)
             {
-                $response = new \Requests_Response;
+                $response = new \WpOrg\Requests\Response;
 
                 $response->status_code = Response::HTTP_BAD_REQUEST;
 
@@ -1017,10 +1017,10 @@ class TerminalMigrationTest extends TestCase
         $this->razorxValue = 'migrate';
 
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) {
-            throw new \Requests_Exception_Transport_cURL('curl timed out', 1);
+            throw new \WpOrg\Requests\Exception\Transport\Curl('curl timed out', 1);
         }, 1);
 
-        $this->expectException(\Requests_Exception_Transport_cURL::class);
+        $this->expectException(\WpOrg\Requests\Exception\Transport\Curl::class);
 
         $this->expectExceptionMessage('curl');
 
@@ -1183,10 +1183,10 @@ class TerminalMigrationTest extends TestCase
         $this->razorxValue = 'migrate';
 
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) {
-            throw new \Requests_Exception_Transport_cURL('curl timed out', 1);
+            throw new \WpOrg\Requests\Exception\Transport\Curl('curl timed out', 1);
         }, 1);
 
-        $this->expectException(\Requests_Exception_Transport_cURL::class);
+        $this->expectException(\WpOrg\Requests\Exception\Transport\Curl::class);
 
         $this->expectExceptionMessage('curl');
 
@@ -1391,10 +1391,10 @@ class TerminalMigrationTest extends TestCase
         $tid = $terminal['id'];
 
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid){
-            throw new \Requests_Exception_Transport_cURL('curl timed out', 1);
+            throw new \WpOrg\Requests\Exception\Transport\Curl('curl timed out', 1);
         }, 1);
 
-        $this->expectException(\Requests_Exception_Transport_cURL::class);
+        $this->expectException(\WpOrg\Requests\Exception\Transport\Curl::class);
 
         $this->expectExceptionMessage('curl timed out');
 
@@ -1500,7 +1500,7 @@ class TerminalMigrationTest extends TestCase
 
                 $this->assertEquals('10000000000000', $content[Terminal\Entity::MERCHANT_ID]);
 
-                $response = new \Requests_Response;
+                $response = new \WpOrg\Requests\Response;
 
                 $response->body = '
                 data : []
@@ -1648,10 +1648,10 @@ class TerminalMigrationTest extends TestCase
 
             $this->assertEquals('10000000000000', $content[Terminal\Entity::MERCHANT_ID]);
 
-            throw new \Requests_Exception_Transport_cURL('curl timed out', 1);
+            throw new \WpOrg\Requests\Exception\Transport\Curl('curl timed out', 1);
         }, 1);
 
-        $this->expectException(\Requests_Exception_Transport_cURL::class);
+        $this->expectException(\WpOrg\Requests\Exception\Transport\Curl::class);
 
         $this->expectExceptionMessage('curl timed out');
 
@@ -1840,7 +1840,7 @@ class TerminalMigrationTest extends TestCase
 //
 //            $body = json_encode(['data' => [$data]]);
 //
-//            $response = new \Requests_Response;
+//            $response = new \WpOrg\Requests\Response;
 //
 //            $response->body = $body;
 //
@@ -1880,7 +1880,7 @@ class TerminalMigrationTest extends TestCase
 //
 //            $this->assertStringEndsWith($terminal['id'], $path);
 //
-//            $response = new \Requests_Response;
+//            $response = new \WpOrg\Requests\Response;
 //
 //            $data = $this->terminalRepository->findOrFail($terminal['id'])->toArrayWithPassword();
 //
@@ -2087,7 +2087,7 @@ class TerminalMigrationTest extends TestCase
 
             $body = json_encode(['data' => $data]);
 
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $response->body = $body;
 
@@ -2145,7 +2145,7 @@ class TerminalMigrationTest extends TestCase
 
             $body = json_encode(['data' => $data]);
 
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $response->body = $body;
 
@@ -2352,7 +2352,7 @@ class TerminalMigrationTest extends TestCase
 
             $body = json_encode(['data' => $data]);
 
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $response->body = $body;
 
@@ -2466,7 +2466,7 @@ class TerminalMigrationTest extends TestCase
 
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal, $data) {
 
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $this->assertEquals("v1/terminals/". $terminal->getId() . "/banks", $path);
 
@@ -2510,7 +2510,7 @@ class TerminalMigrationTest extends TestCase
 
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($data) {
 
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $this->assertEquals("v1/terminals/banks", $path);
 
@@ -2544,7 +2544,7 @@ class TerminalMigrationTest extends TestCase
 
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) {
 
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $data = $this->terminalRepository->find('1n25f6uN5S1Z5a')->toArray();
 
@@ -2586,7 +2586,7 @@ class TerminalMigrationTest extends TestCase
 
             $body = json_encode(['data' => $data]);
 
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $response->body = $body;
 
@@ -2629,7 +2629,7 @@ class TerminalMigrationTest extends TestCase
 
             $body = json_encode(['data' => $data]);
 
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $response->body = $body;
 
@@ -2672,7 +2672,7 @@ class TerminalMigrationTest extends TestCase
         ]);
 
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $this->assertEquals(Requests::POST, $method);
 
@@ -2739,7 +2739,7 @@ class TerminalMigrationTest extends TestCase
         ]);
 
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $this->assertEquals(Requests::POST, $method);
 
@@ -2798,7 +2798,7 @@ class TerminalMigrationTest extends TestCase
         $this->razorxValue = 'terminal_credential_proxy';
 
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminalId)  {
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $this->assertEquals(Requests::GET, $method);
 
@@ -2878,7 +2878,7 @@ class TerminalMigrationTest extends TestCase
             }));
 
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal, $data) {
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $this->assertEquals(Requests::GET, $method);
 
@@ -2997,7 +2997,7 @@ class TerminalMigrationTest extends TestCase
 
         $terminalsServiceMock->shouldReceive('makeRequest')
             ->andReturnUsing(function () {
-                $response = new \Requests_Response();
+                $response = new \WpOrg\Requests\Response();
                 $response->body = '
                     {
                         "error": {
@@ -3019,7 +3019,7 @@ class TerminalMigrationTest extends TestCase
 
         $terminalsServiceMock->shouldReceive('makeRequest')
             ->andReturnUsing(function () {
-                $response = new \Requests_Response();
+                $response = new \WpOrg\Requests\Response();
                 $response->status_code = 500;
                 return $response;
             });

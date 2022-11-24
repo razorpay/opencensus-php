@@ -3,7 +3,7 @@
 namespace RZP\Tests\Traits;
 
 use Mockery;
-use Requests_Response;
+use \WpOrg\Requests\Response;
 use PHPUnit\Framework\ExpectationFailedException;
 
 use RZP\Services\Mock\Stork;
@@ -63,7 +63,7 @@ trait TestsStorkServiceRequests
             }
         };
 
-        $mockedRes = new Requests_Response;
+        $mockedRes = new \WpOrg\Requests\Response;
         $mockedRes->status_code = $mockedResCode;
         $mockedRes->success = $mockedResCode === 200;
         $mockedRes->body = json_encode($mockedResBody);

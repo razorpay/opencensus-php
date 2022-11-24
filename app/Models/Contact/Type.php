@@ -45,6 +45,8 @@ final class Type
         self::CAPITAL_COLLECTIONS_INTERNAL_CONTACT,
         self::XPAYROLL_INTERNAL,
     ];
+    
+    private $settingsAccessor;
 
     public static $internalAppToAllowedInternalContact = [
         'vendor_payments' => [
@@ -221,7 +223,11 @@ final class Type
 
     protected function getSettingsAccessor(Merchant\Entity $merchant): Settings\Accessor
     {
-        return Settings\Accessor::for($merchant, Settings\Module::CONTACT_TYPE, Mode::LIVE);
+        if($this->settingsAccessor == null)
+        {
+            $this->settingsAccessor = Settings\Accessor::for($merchant, Settings\Module::CONTACT_TYPE, Mode::LIVE);
+        }
+        return $this->settingsAccessor;
     }
 
     public static function validateInternalAppAllowedCreatingPayoutsOnType(string $contactType, string $internalAppName)

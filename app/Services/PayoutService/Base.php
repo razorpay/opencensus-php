@@ -3,8 +3,8 @@
 namespace RZP\Services\PayoutService;
 
 use App;
-use Requests_Response;
-use Requests_Exception;
+use \WpOrg\Requests\Response;
+use \WpOrg\Requests\Exception as Requests_Exception;
 use Razorpay\Trace\Logger;
 use Razorpay\Edge\Passport\Passport;
 
@@ -184,7 +184,7 @@ class Base
         $this->trace->info(TraceCode::PAYOUT_SERVICE_REQUEST, $traceRequest);
     }
 
-    public function tracePayoutServiceResponse(Requests_Response $response)
+    public function tracePayoutServiceResponse($response)
     {
         $this->trace->info(TraceCode::PAYOUT_SERVICE_RESPONSE, [
             'response'    => $response->body,

@@ -16,7 +16,7 @@ class StrongPasswordRule extends Base
 
         $strength = $zxcvbn->passwordStrength($password);
 
-        if ($strength['score'] === 0)
+        if ($strength['score'] <= 1)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Password is too weak. Please choose a new password.');

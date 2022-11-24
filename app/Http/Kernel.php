@@ -53,6 +53,7 @@ class Kernel extends HttpKernel
      */
     protected $middlewarePriority = [
         // Route middleware
+        Middleware\ErrorHandlerSetterForPHPLaravelUpgrade::class,
         Middleware\SaveApiDetailsForDocumentation::class,
         Middleware\AddDashboardResponseHeaders::class,
         Middleware\DecodePassportJwt::class,
@@ -109,5 +110,6 @@ class Kernel extends HttpKernel
         'request_context'               => Middleware\RequestContextHandler::class,
         'request_log_handler'           => Middleware\RequestLogHandler::class,
         'dashboard_response_headers'    => Middleware\AddDashboardResponseHeaders::class,
+        'error_handler_setter_for_php_laravel_upgrade' => Middleware\ErrorHandlerSetterForPHPLaravelUpgrade::class,
     ];
 }

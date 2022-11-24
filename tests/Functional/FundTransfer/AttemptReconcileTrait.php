@@ -303,7 +303,6 @@ trait AttemptReconcileTrait
             $file,
             $file,
             $mimeType,
-            filesize($file),
             null,
             true);
 

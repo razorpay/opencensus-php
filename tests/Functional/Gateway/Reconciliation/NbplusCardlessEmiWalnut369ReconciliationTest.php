@@ -65,6 +65,7 @@ class NbplusCardlessEmiWalnut369ReconciliationTest extends NbplusPaymentServiceC
 
     public function testWalnut369CombinedReconSuccessonly()
     {
+        $this->markTestSkipped("This flow is moved to netbanking ");
         $this->doAuthCaptureAndRefundPayment($this->payment);
 
         $refund = $this->getDbLastEntity('refund');
@@ -252,7 +253,6 @@ class NbplusCardlessEmiWalnut369ReconciliationTest extends NbplusPaymentServiceC
             $url,
             $fileName,
             $mime,
-            filesize($url),
             null,
             true);
     }

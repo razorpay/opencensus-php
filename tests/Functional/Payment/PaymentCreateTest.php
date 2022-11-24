@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Mail;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Services\EsClient;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Card\Network;
@@ -61,10 +62,6 @@ class PaymentCreateTest extends TestCase
         $this->testDataFilePath = __DIR__.'/helpers/PaymentCreateTestData.php';
 
         parent::setUp();
-
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
-
-        $this->app->make(Factory::class)->load($factoryPath);
 
         $this->ba->publicAuth();
 
@@ -1139,8 +1136,6 @@ class PaymentCreateTest extends TestCase
 
     public function testCreatePaymentInEs()
     {
-        $esMock = $this->createEsMock(['bulkUpdate']);
-
         $expected = $this->testData[__FUNCTION__];
 
         // Ref to InvoiceTest.testCreateInvoiceAndAssertEsSync() test on why
@@ -1153,21 +1148,29 @@ class PaymentCreateTest extends TestCase
             ],
         ];
 
+        $esMock = $this->getMockBuilder(EsClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['bulkUpdate'])
+            ->getMock();
+
+        $this->app->instance('es', $esMock);
+
         $esMock->expects($this->exactly(2))
-               ->method('bulkUpdate')
-               ->with(
-                    $this->callback(
-                        function ($actual) use ($expected, $expectedNotes)
-                        {
-                            $this->assertArraySelectiveEquals($expected, $actual);
+            ->method('bulkUpdate')
+            ->with(
+                $this->callback(
+                    function ($actual) use ($expected, $expectedNotes)
+                    {
+                        $this->assertArraySelectiveEquals($expected, $actual);
 
-                            $this->assertEquals($expectedNotes, (array) $actual['body'][1]['notes']);
+                        $this->assertEquals($expectedNotes, (array) $actual['body'][1]['notes']);
 
-                            $this->assertNotEmpty($actual['body'][0]['index']['_id']);
-                            $this->assertNotEmpty($actual['body'][1]['id']);
+                        $this->assertNotEmpty($actual['body'][0]['index']['_id']);
+                        $this->assertNotEmpty($actual['body'][1]['id']);
 
-                            return true;
-                        }));
+                        return true;
+                    })
+            );
 
         $this->doAuthPaymentViaCheckoutRoute($this->payment);
     }
@@ -1981,7 +1984,7 @@ class PaymentCreateTest extends TestCase
         // Get raw response
         $response = $this->sendRequest($request)->getContent();
 
-        $this->assertRegexp('/' . preg_quote('"acquirer_data":{"auth_code":"') . '[0-9]{6}' . preg_quote('"}') . '/' , $response);
+        $this->assertMatchesRegularExpression('/' . preg_quote('"acquirer_data":{"auth_code":"') . '[0-9]{6}' . preg_quote('"}') . '/' , $response);
     }
 
     public function testPaymentWithAcquirerData()
@@ -5709,7 +5712,7 @@ class PaymentCreateTest extends TestCase
 
         $rewardTermsResponse = $this->makeRequestAndGetRawContent($rewardTermsRequest, $callback);
 
-        $rewardTermsResponse->assertSee('ERROR: Invalid Payment Id or Reward Id');
+        $rewardTermsResponse->assertSee('ERROR: Invalid Payment Id or Reward Id', false);
     }
 
     public function testOrderNotesAppendedInPaymentNotes()
@@ -8798,8 +8801,6 @@ class PaymentCreateTest extends TestCase
             'method'  => 'post'
         ];
 
-        $esMock = $this->createEsMock(['bulkUpdate']);
-
 
         // Ref to InvoiceTest.testCreateInvoiceAndAssertEsSync() test on why
         // this is being asserted differently.
@@ -8811,19 +8812,27 @@ class PaymentCreateTest extends TestCase
             ],
         ];
 
+        $esMock = $this->getMockBuilder(EsClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['bulkUpdate'])
+            ->getMock();
+
+        $this->app->instance('es', $esMock);
+
         $esMock->expects($this->exactly(2))
-               ->method('bulkUpdate')
-               ->with(
-                    $this->callback(
-                        function ($actual) use ($expectedNotes)
-                        {
-                            $this->assertEquals($expectedNotes, (array) $actual['body'][1]['notes']);
+            ->method('bulkUpdate')
+            ->with(
+                $this->callback(
+                    function ($actual) use ($expectedNotes)
+                    {
+                        $this->assertEquals($expectedNotes, (array) $actual['body'][1]['notes']);
 
-                            $this->assertNotEmpty($actual['body'][0]['index']['_id']);
-                            $this->assertNotEmpty($actual['body'][1]['id']);
+                        $this->assertNotEmpty($actual['body'][0]['index']['_id']);
+                        $this->assertNotEmpty($actual['body'][1]['id']);
 
-                            return true;
-                        }));
+                        return true;
+                    })
+            );
 
         $response = $this->makeRequestParent($request);
 
@@ -9052,8 +9061,6 @@ class PaymentCreateTest extends TestCase
             'method'  => 'post'
         ];
 
-        $esMock = $this->createEsMock(['bulkUpdate']);
-
 
         // Ref to InvoiceTest.testCreateInvoiceAndAssertEsSync() test on why
         // this is being asserted differently.
@@ -9065,19 +9072,27 @@ class PaymentCreateTest extends TestCase
             ],
         ];
 
+        $esMock = $this->getMockBuilder(EsClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['bulkUpdate'])
+            ->getMock();
+
+        $this->app->instance('es', $esMock);
+
         $esMock->expects($this->exactly(1))
-               ->method('bulkUpdate')
-               ->with(
-                    $this->callback(
-                        function ($actual) use ($expectedNotes)
-                        {
-                            $this->assertEquals($expectedNotes, (array) $actual['body'][1]['notes']);
+            ->method('bulkUpdate')
+            ->with(
+                $this->callback(
+                    function ($actual) use ($expectedNotes)
+                    {
+                        $this->assertEquals($expectedNotes, (array) $actual['body'][1]['notes']);
 
-                            $this->assertNotEmpty($actual['body'][0]['index']['_id']);
-                            $this->assertNotEmpty($actual['body'][1]['id']);
+                        $this->assertNotEmpty($actual['body'][0]['index']['_id']);
+                        $this->assertNotEmpty($actual['body'][1]['id']);
 
-                            return true;
-                        }));
+                        return true;
+                    })
+            );
 
         $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
 

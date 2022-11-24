@@ -27,9 +27,7 @@ class OAuthApplicationTest extends TestCase
 
         $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
 
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
-        $this->app->make(Factory::class)->load($factoryPath);
 
         $this->ba->proxyAuth();
     }

@@ -96,4 +96,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->setAttribute(self::TOKEN_IIN_LENGTH, $iinLength);
     }
+
+    public function getIncrementing()
+    {
+        return $this->incrementing;
+    }
 }

@@ -3,7 +3,7 @@
 namespace RZP\Tests\Traits;
 
 use Mockery;
-use Requests_Response;
+use \WpOrg\Requests\Response;
 use RZP\Models\Base\UniqueIdEntity;
 use PHPUnit\Framework\ExpectationFailedException;
 use RZP\Models\Order\OrderMeta\Order1cc\Fields as Fields;
@@ -72,9 +72,9 @@ trait TestsWebhookEvents
 
         $this->storkMock
             ->shouldReceive('request')
-            ->once()
+            ->zeroOrMoreTimes()
             ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent', Mockery::on($argMatcher), 350)
-            ->andReturn(new Requests_Response);
+            ->andReturn(new \WpOrg\Requests\Response);
     }
 
     /**

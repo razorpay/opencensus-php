@@ -6,7 +6,7 @@ use App;
 use Queue;
 
 use Carbon\Carbon;
-use Requests_Hooks;
+use \WpOrg\Requests\Hooks as Requests_Hooks;
 use RZP\Constants\Entity as E;
 use RZP\Reconciliator\Base\InfoCode;
 use SimpleXMLElement;

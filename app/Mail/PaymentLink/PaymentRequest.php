@@ -2,6 +2,8 @@
 
 namespace RZP\Mail\PaymentLink;
 
+use Symfony\Component\Mime\Email;
+
 use RZP\Constants\Entity;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
@@ -75,7 +77,7 @@ class PaymentRequest extends Mailable
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function ($message)
+        $this->withSymfonyMessage(function (Email $message)
         {
             $headers = $message->getHeaders();
 

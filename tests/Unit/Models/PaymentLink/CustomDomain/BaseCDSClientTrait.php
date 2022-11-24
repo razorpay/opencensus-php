@@ -14,7 +14,7 @@ trait BaseCDSClientTrait
      */
     protected $client;
 
-    abstract protected function getResponse($data = []);
+    abstract protected function getResponse($method, $data = []);
     abstract protected function setClient();
 
     /**

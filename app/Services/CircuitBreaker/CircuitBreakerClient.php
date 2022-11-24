@@ -62,7 +62,7 @@ class CircuitBreakerClient
         {
             $circuitState = $this->circuitBreaker->getState($serviceName);
 
-            if ($circuitState === CircuitState::OPEN())
+            if ($circuitState === (new CircuitState())->OPEN())
             {
                 if ($this->settings[Constant::EXCEPTIONS_ON] === true)
                 {
@@ -90,7 +90,7 @@ class CircuitBreakerClient
             $totalFailures = $this->circuitBreaker->getTotalFailures($serviceName);
             $circuitState  = $this->circuitBreaker->getState($serviceName);
 
-            if ($circuitState === CircuitState::HALF_OPEN()
+            if ($circuitState === (new CircuitState())->HALF_OPEN()
                 || $totalFailures >= $this->settings[Constant::TOTAL_FAILURES]
             )
             {

@@ -67,9 +67,7 @@ class MerchantCreateTest extends TestCase
 
         parent::setUp();
 
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
-        $this->app->make(Factory::class)->load($factoryPath);
 
         $this->mockApachePinot();
 
@@ -1207,25 +1205,31 @@ class MerchantCreateTest extends TestCase
 
         $redisKey = (new RateLimitBatch())->getRateLimitRedisKey("10000000000000");
 
-        $razorxMock = $this->getMockBuilder(Core::class)
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
             ->setMethods(['getTreatment'])
             ->getMock();
 
-        $razorxMock->expects($this->any())
-            ->method('isRazorxExperimentEnable')
-            ->willReturn(true);
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
 
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
         $this->app->instance('stork_service', $storkMock);
 
-        (new MerchantTest())->expectStorkSendSmsRequest($storkMock,'sms.onboarding.partner_submerchant_invite', '9876543210');
+        $expectedParams = [
+            'subMerchantName' => 'Submerchant'
+        ];
+
+        (new MerchantTest())->expectStorkSmsRequest($storkMock,'sms.onboarding.partner_submerchant_invite', '9876543210', $expectedParams);
 
         $this->startTest();
 
         $submerchant = $this->getLastEntity('merchant', true);
 
-        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], 'MerchantUser01');
+        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], 'MerchantUser01', 'banking');
 
         $this->assertEquals(1, count($mapping));
 
@@ -1241,7 +1245,7 @@ class MerchantCreateTest extends TestCase
 
         $this->assertEquals('9876543210', $submerchantUser['contact_mobile']);
 
-        $this->assertEquals('banking', $submerchantUser['product']);
+        $this->assertEquals('banking', $mapping->first()->product);
 
         $submerchantDetail = $this->getLastEntity('merchant_detail', true);
 

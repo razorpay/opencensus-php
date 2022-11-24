@@ -330,7 +330,7 @@ class Core extends Base\Core
             $merchant->getId(),
             function() use ($input, $merchantDetails, $merchant, $originProduct, $oldMerchantDetails, $activationFormMilestone, $startTime,$oldBusinessDetail) {
 
-                $result = $this->repo->transactionOnLiveAndTest(function() use (
+                return $this->repo->transactionOnLiveAndTest(function() use (
                     $input,
                     $merchantDetails,
                     $merchant,
@@ -405,21 +405,6 @@ class Core extends Base\Core
 
                     return $response;
                 });
-
-                $this->repo->transactionOnLiveAndTest(function() use(
-                    $result,
-                    $merchantDetails,
-                    $activationFormMilestone,
-                    $merchant,
-                    $input)
-                {
-                    if ($this->canSubmit($input, $result, $activationFormMilestone) === true)
-                    {
-                        $this->submitPartnerActivationFormIfApplicable($merchant, $input);
-                    }
-                });
-
-                return $result;
             },
             Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
@@ -1026,6 +1011,8 @@ class Core extends Base\Core
         {
             UpdateMerchantContext::dispatch(Mode::LIVE, $this->merchant->getId(), null);
         }
+
+        $this->submitPartnerActivationFormIfApplicable($merchant, $input);
 
         $this->trace->info(TraceCode::MERCHANT_FORM_SUBMIT_LATENCY, [
             'merchant_id' => $merchant->getId(),
@@ -3876,7 +3863,7 @@ class Core extends Base\Core
             $response['isHardLimitReached']                           = empty($hardEscalationLevel4) ? false : true;
             $response['activationStatusChangeLogs']                   = $this->getStatusChangeLogs($merchant);
             $response[Entity::MERCHANT_BUSINESS_DETAIL]               = $merchantBusinessDetails;
-            $response[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY] = $merchantBusinessDetails[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY];
+            $response[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY] = isset($merchantBusinessDetails) === true ? $merchantBusinessDetails[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY] : "";
             $response[Entity::PROMOTER_PAN_NAME_SUGGESTED]            = $merchantDetails->getPromoterPanNameSuggested();
             $response[Entity::BUSINESS_NAME_SUGGESTED]                = $merchantDetails->getBusinessNameSuggested();
             $response['business_registered_address_suggested']        = $addressSuggestedFromGSTIN;
@@ -6617,7 +6604,7 @@ class Core extends Base\Core
         $tmpZipFilePath = '/tmp/' . $merchantId . 'zip';
         if (file_put_contents($tmpZipFilePath, file_get_contents($fileUrl)))
         {
-            return new UploadedFile($tmpZipFilePath, 'file.zip', null, null, null, true);
+            return new UploadedFile($tmpZipFilePath, 'file.zip', null, null, true);
         }
 
         throw new Exception\BadRequestValidationFailureException("unable to fetch aadhar zip file");
@@ -6628,7 +6615,7 @@ class Core extends Base\Core
         $tmpZipFilePath = '/tmp/' . $merchantId . 'xml';
         if (file_put_contents($tmpZipFilePath, $xmldata))
         {
-            return new UploadedFile($tmpZipFilePath, 'file.xml', null, null, null, true);
+            return new UploadedFile($tmpZipFilePath, 'file.xml', null, null, true);
         }
 
         throw new Exception\BadRequestValidationFailureException("unable to creare aadhar xml file");
@@ -6653,7 +6640,7 @@ class Core extends Base\Core
                 if (ends_with($xmlFile, 'xml'))
                 {
                     return new UploadedFile($tmpFolder . '/' . $xmlFile,
-                                            'file.xml', null, null, null, true);
+                                            'file.xml', null, null, true);
                 }
             }
         }
@@ -7029,7 +7016,7 @@ class Core extends Base\Core
      *
      * @throws \Throwable
      */
-    public function submitPartnerActivationFormIfApplicable(Merchant\Entity $merchant, ?array $input)
+    private function submitPartnerActivationFormIfApplicable(Merchant\Entity $merchant, ?array $input)
     {
         $partnerCore = (new PartnerCore());
 
@@ -7065,22 +7052,7 @@ class Core extends Base\Core
             $partnerActivation->setKycClarificationReasons($kycClarificationReasons);
         }
 
-        try
-        {
-            $partnerCore->submitPartnerActivationForm($merchant, $merchant->merchantDetail, $partnerActivation, $input, Constants::MERCHANT);
-        }
-        catch (Exception\EarlyWorkflowResponse $e)
-        {
-            $isPartnerWorkFlowFixEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
-                $merchant->getId(), RazorxTreatment::PARTNER_ACTIVATION_WORKFLOW_BUGFIX);
-            
-            if (!$isPartnerWorkFlowFixEnabled) {
-                $workflowActionData = json_decode($e->getMessage(), true);
-                $this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);
-            } else {
-                throw  $e;
-            }
-        }
+        $partnerCore->submitPartnerActivationForm($merchant, $merchant->merchantDetail, $partnerActivation, $input, Constants::MERCHANT);
     }
 
     public function postAddAdditionalWebsiteSelfServe(Entity $merchantDetails, string $urlType, array $input)

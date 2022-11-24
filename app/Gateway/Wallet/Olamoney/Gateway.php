@@ -1332,7 +1332,7 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
-    protected function parseResponseBody(\Requests_Response $response)
+    protected function parseResponseBody($response)
     {
         if ($response->body === '')
         {

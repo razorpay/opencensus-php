@@ -127,7 +127,6 @@ class CalculatorTest extends OAuthTestCase
     public function testImplicitVariableWithSubmerchantPartnerESPricingRules()
     {
         $this->ruleEngine->execute(__FUNCTION__);
-
     }
 
     /**

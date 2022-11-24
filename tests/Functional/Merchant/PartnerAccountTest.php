@@ -44,10 +44,6 @@ class PartnerAccountTest extends TestCase
 
         parent::setUp();
 
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
-
-        $this->app->make(Factory::class)->load($factoryPath);
-
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
         $this->app->instance('stork_service', $storkMock);

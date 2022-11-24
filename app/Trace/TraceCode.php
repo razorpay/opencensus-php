@@ -464,6 +464,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND                 = 'PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND';
     const CHECKOUT_PREFERENCES_RESPONSE                         = 'CHECKOUT_PREFERENCES_RESPONSE';
     const CHECKOUT_PREFERENCES_EXCEPTION                        = 'CHECKOUT_PREFERENCES_EXCEPTION';
+    const NO_SESSION_FOUND_EXCEPTION                            = 'NO_SESSION_FOUND_EXCEPTION';
     const CHECKOUT_PREFERENCES_CURRENCY_ABSENT_EXCEPTION        = 'CHECKOUT_PREFERENCES_CURRENCY_ABSENT_EXCEPTION';
     const CHECKOUT_PREFERENCES_GET_PAYMENT_DOWNTIME_EXCEPTION   = 'CHECKOUT_PREFERENCES_GET_PAYMENT_DOWNTIME_EXCEPTION';
     const CHECKOUT_SPLITZ_ERROR                                 = 'CHECKOUT_SPLITZ_ERROR';
@@ -8748,7 +8749,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         return self::$messages[$code];
     }
 
-    public static function checkCode($code)
+    public static function checkCode($code): void
     {
         if (defined(TraceCode::class.'::'.$code) === false)
         {

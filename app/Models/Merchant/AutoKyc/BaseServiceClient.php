@@ -3,8 +3,8 @@
 namespace RZP\Models\Merchant\AutoKyc;
 
 use RZP\Http\Request\Requests;
-use Requests_Response;
-use Requests_Exception;
+use \WpOrg\Requests\Response;
+use \WpOrg\Requests\Exception as Requests_Exception;
 
 use RZP\Exception;
 use RZP\Trace\TraceCode;
@@ -92,10 +92,10 @@ trait BaseServiceClient
     /**
      * @param array $request
      *
-     * @return Requests_Response
+     * @return \WpOrg\Requests\Response
      * @throws Exception\IntegrationException
      */
-    protected function sendRequest(array $request): Requests_Response
+    protected function sendRequest(array $request)
     {
         try
         {
@@ -146,7 +146,7 @@ trait BaseServiceClient
     /**
      * @param array $request
      *
-     * @return Requests_Response
+     * @return \WpOrg\Requests\Response
      * @throws Requests_Exception
      */
     protected function getResponse(array $request)
@@ -168,7 +168,7 @@ trait BaseServiceClient
         return $response;
     }
 
-    protected function traceResponse(Requests_Response $response)
+    protected function traceResponse($response)
     {
         $payload = [
             'status_code' => $response->status_code,

@@ -2,7 +2,7 @@
 
 namespace RZP\Services;
 
-use Requests_Hooks;
+use \WpOrg\Requests\Hooks as Requests_Hooks;
 use Aws\Kms\KmsClient;
 use RZP\Error\ErrorClass;
 use RZP\Exception;
@@ -542,7 +542,7 @@ class CardVault
 
                 break;
             }
-            catch(\Requests_Exception $e)
+            catch(\WpOrg\Requests\Exception $e)
             {
                 // check curl error, increase retry count if timeout
                 // throw the error if retry count reaches max allowed value

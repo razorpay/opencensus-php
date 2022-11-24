@@ -32,9 +32,7 @@ class SubMerchantBatchTest extends TestCase
 
         $this->ba->adminAuth();
 
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
-        $this->app->make(Factory::class)->load($factoryPath);
     }
 
     public function testCreateSubMerchantBatchAggregator()

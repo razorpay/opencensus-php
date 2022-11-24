@@ -7,7 +7,7 @@ use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
-use Requests_Hooks;
+use \WpOrg\Requests\Hooks as Requests_Hooks;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;

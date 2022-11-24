@@ -103,7 +103,7 @@ class Core extends Base\Core
 
                 throw $e;
             }
-            catch (\Requests_Exception $e)
+            catch (\WpOrg\Requests\Exception $e)
             {
                 if ($retryCount > 0)
                 {
@@ -129,7 +129,7 @@ class Core extends Base\Core
 
             $filePath = $this->createTxtFile($fileName, json_encode($response['data']['raw_report']));
 
-            $file = new UploadedFile($filePath, $fileName, 'text/plain', filesize($filePath), null, true);
+            $file = new UploadedFile($filePath, $fileName, 'text/plain', null, true);
 
             $ufhFile = $this->app['ufh.service']->uploadFileAndGetUrl($file, $fileName, 'bureau_report', $bureauDetail);
 

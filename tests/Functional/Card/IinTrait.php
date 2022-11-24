@@ -113,7 +113,6 @@ trait IinTrait
                                 $file,
                                 $file,
                                 $mimeType,
-                                filesize($file),
                                 null,
                                 true);
 

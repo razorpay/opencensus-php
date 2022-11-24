@@ -7,12 +7,14 @@ use Illuminate\Http\Request;
 
 use RZP\Models\Key;
 use RZP\Constants\Mode;
+use Lcobucci\JWT\Token;
 use RZP\Error\ErrorCode;
 use RZP\Http\BasicAuth\Type;
 use RZP\Foundation\Application;
 use RZP\Base\RepositoryManager;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\BasicAuth\AuthCreds;
+use Lcobucci\JWT\Encoding\JoseEncoder;
 use RZP\Exception\BadRequestException;
 use RZP\Trace\TraceCode;
 
@@ -168,6 +170,8 @@ final class RequestContext
      */
     protected $initialized = false;
 
+    protected static Token\Parser $parser;
+
     public function __construct(Application $app)
     {
         $this->app = $app;
@@ -184,6 +188,8 @@ final class RequestContext
             $this->setAuthVars();
             $this->initialized = true;
         }
+
+        self::$parser    = new Token\Parser(new JoseEncoder());
     }
 
     // There are few cases where getRoute returns null
@@ -540,11 +546,18 @@ final class RequestContext
                           (in_array($this->route, P2pRoute::$private, true)));
         $isProxyRoute   = in_array($this->route, Route::$proxy, true);
 
+        self::$parser = new Token\Parser(new JoseEncoder());
+
         if (($isPrivateRoute === true) and (empty($token = $this->getBearerTokenFromRequest()) === false))
         {
-            $parsed              = (new Parser)->parse($token);
-            $this->oauthClientId = $parsed->getClaim('aud');
-            $this->mid           = $parsed->getClaim('merchant_id');
+            $parsed              = self::$parser->parse($token);
+
+            if (empty($parsed->claims()->get('aud')) === false)
+            {
+                $this->oauthClientId = $parsed->claims()->get('aud')[0];
+            }
+
+            $this->mid           = $parsed->claims()->get('merchant_id');
 
             $this->authFlowType = BasicAuth::OAUTH;
 

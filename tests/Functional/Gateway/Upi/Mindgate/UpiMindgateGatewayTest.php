@@ -1614,7 +1614,7 @@ class UpiMindgateGatewayTest extends TestCase
             GatewayErrorException::class,
             "Payment processing failed due to error at bank or wallet gateway\n" .
             "Gateway Error Code: \n" .
-            "Gateway Error Desc: Uninitialized string offset: -1");
+            "Gateway Error Desc: Invalid input for decryption");
     }
 
     public function testDecryptedContentInCallback()
@@ -1631,7 +1631,7 @@ class UpiMindgateGatewayTest extends TestCase
             GatewayErrorException::class,
             "Payment processing failed due to error at bank or wallet gateway\n" .
             "Gateway Error Code: \n" .
-            "Gateway Error Desc: hex2bin(): Input string must be hexadecimal string");
+            "Gateway Error Desc: Invalid input for decryption");
     }
 
     public function testUpiQrPaymentProcessWithTerminalSecret()

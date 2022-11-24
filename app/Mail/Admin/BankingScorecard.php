@@ -3,6 +3,7 @@
 namespace RZP\Mail\Admin;
 
 use Carbon\Carbon;
+use Symfony\Component\Mime\Email;
 
 use RZP\Constants\Timezone;
 use RZP\Constants\MailTags;
@@ -77,7 +78,7 @@ class BankingScorecard extends Mailable
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function ($message)
+        $this->withSymfonyMessage(function (Email $message)
         {
             $headers = $message->getHeaders();
 

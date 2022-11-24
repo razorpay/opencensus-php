@@ -89,6 +89,7 @@ class HdfcGatewayAuthTest extends TestCase
 
     public function testAcsFailure()
     {
+        $this->markTestSkipped("not being used");
         $this->mockServerContentFunction(function (& $content, $action = null)
         {
             if ($action === 'authenticate')

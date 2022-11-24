@@ -44,6 +44,8 @@ class MpesaReconTest extends TestCase
 
     public function testPaymentReconciliation()
     {
+        $this->markTestSkipped("Mpesa wallet is deprecated");
+
         $payments = $this->makeMpesaPaymentSince();
 
         $fileContents = $this->generateReconFile();
@@ -84,6 +86,8 @@ class MpesaReconTest extends TestCase
 
     public function testReconAmountValidationFailed()
     {
+        $this->markTestSkipped("Mpesa wallet is deprecated");
+
         $payment = $this->makeMpesaPaymentSince(1)[0];
 
         $this->mockReconContentFunction(
@@ -124,6 +128,8 @@ class MpesaReconTest extends TestCase
 
     public function testReconPaymentIdAbsent()
     {
+        $this->markTestSkipped("Mpesa wallet is deprecated");
+
         $payment = $this->makeMpesaPaymentSince(1)[0];
 
         $this->mockReconContentFunction(
@@ -244,7 +250,6 @@ class MpesaReconTest extends TestCase
             $file,
             $file,
             $mimeType,
-            filesize($file),
             null,
             true
         );

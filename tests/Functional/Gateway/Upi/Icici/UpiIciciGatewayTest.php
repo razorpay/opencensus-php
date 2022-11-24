@@ -34,9 +34,7 @@ class UpiIciciGatewayTest extends TestCase
 
         parent::setUp();
 
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
-        $this->app->make(Factory::class)->load($factoryPath);
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_icici_terminal');
 

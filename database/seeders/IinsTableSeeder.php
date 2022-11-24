@@ -1,5 +1,8 @@
 <?php
 
+namespace Database\Seeders;
+
+use Illuminate\Support\Facades\DB;
 use RZP\Constants\Table;
 use RZP\Models\Card\IIN;
 use Illuminate\Database\Seeder;

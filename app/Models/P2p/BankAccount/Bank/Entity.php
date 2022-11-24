@@ -2,11 +2,14 @@
 
 namespace RZP\Models\P2p\BankAccount\Bank;
 
+use Database\Factories\P2PBankFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use RZP\Models\P2p\Base;
 
 class Entity extends Base\Entity
 {
     use Base\Traits\HasHandle;
+    use HasFactory;
 
     const HANDLE           = 'handle';
     const NAME             = 'name';
@@ -208,5 +211,10 @@ class Entity extends Base\Entity
     public function setPublicUpiAttribute(array & $array)
     {
         $array[self::UPI] = true;
+    }
+
+    protected static function newFactory(): P2PBankFactory
+    {
+        return P2PBankFactory::new();
     }
 }

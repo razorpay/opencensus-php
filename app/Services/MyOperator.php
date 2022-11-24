@@ -4,7 +4,7 @@ namespace RZP\Services;
 
 use RZP\Http\Request\Requests;
 use Lib\PhoneBook;
-use Requests_Response;
+use \WpOrg\Requests\Response;
 use Razorpay\Trace\Logger;
 
 use RZP\Http\BasicAuth\BasicAuth;
@@ -96,7 +96,7 @@ class MyOperator
         return $code.$number;
     }
 
-    protected function makeCalLOutboundApiRequest(array $payload, $path, $method): Requests_Response
+    protected function makeCalLOutboundApiRequest(array $payload, $path, $method)
     {
         $this->trace->info(TraceCode::MYOPERATOR_CALL_OUTBOUND_API_REQ, compact('payload'));
         $endpoint = self::API_BASE_URL . $path;
@@ -130,12 +130,12 @@ class MyOperator
     /**
      * Validates remote API response and returns array response.
      *
-     * @param  Requests_Response $resp
+     * @param  \WpOrg\Requests\Response $resp
      *
      * @return array
      * @throws BadRequestValidationFailureException
      */
-    protected function validateResponse(Requests_Response $resp): array
+    protected function validateResponse($resp): array
     {
         $code      = $resp->status_code;
         $body      = $resp->body;

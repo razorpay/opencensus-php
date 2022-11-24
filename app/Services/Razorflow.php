@@ -91,7 +91,7 @@ class Razorflow
      * @param bool $throwExceptionOnFailure
      * @return array
      * @throws Exception\RuntimeException
-     * @throws \Requests_Exception
+     * @throws \WpOrg\Requests\Exception
      */
     public function postSlashCommand(array $input, array $inputHeaders, string $customEndpoint = null, bool $throwExceptionOnFailure = false): array
     {
@@ -147,7 +147,7 @@ class Razorflow
      * @param bool $throwExceptionOnFailure
      * @return array
      * @throws Exception\RuntimeException
-     * @throws \Requests_Exception
+     * @throws \WpOrg\Requests\Exception
      */
     public function invokeSlashCommand(array $input, bool $throwExceptionOnFailure = false): array
     {
@@ -189,7 +189,7 @@ class Razorflow
      * @param bool $throwExceptionOnFailure
      * @return array
      * @throws Exception\RuntimeException
-     * @throws \Requests_Exception
+     * @throws \WpOrg\Requests\Exception
      */
     protected function sendRequest(
         string $endpoint,
@@ -225,10 +225,10 @@ class Razorflow
     /**
      * @param array $request
      *
-     * @return \Requests_Response
-     * @throws \Requests_Exception
+     * @return \WpOrg\Requests\Response
+     * @throws \WpOrg\Requests\Exception
      */
-    protected function sendRazorflowRequest(array $request): \Requests_Response
+    protected function sendRazorflowRequest(array $request)
     {
         $this->traceRequest($request);
 
@@ -242,7 +242,7 @@ class Razorflow
                 $request['options']);
         }
             // TODO: Check why are we catching this and rethrowing
-        catch(\Requests_Exception $e)
+        catch(\WpOrg\Requests\Exception $e)
         {
             $this->trace->traceException(
                 $e,
@@ -271,13 +271,13 @@ class Razorflow
     }
 
     /**
-     * @param \Requests_Response $response
+     * @param \WpOrg\Requests\Response $response
      * @param bool               $throwExceptionOnFailure
      *
      * @return array
      * @throws Exception\RuntimeException
      */
-    protected function parseResponse(\Requests_Response $response, bool $throwExceptionOnFailure = false): array
+    protected function parseResponse($response, bool $throwExceptionOnFailure = false): array
     {
         $code = $response->status_code;
 

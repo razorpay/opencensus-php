@@ -175,7 +175,7 @@ class PaymentLinksConfigTest extends OAuthTestCase
             function($path, $payload) use ($merchantProductResponse, $merchantId, & $eventFired) {
                 $this->validateStorkWebhookFireEvent($merchantProductResponse, $payload, $merchantId, $eventFired);
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             });
 
         (new Detail\Core)->updateActivationStatus($subMerchant, $input, $subMerchant);

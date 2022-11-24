@@ -488,7 +488,6 @@ class UpiSbiGatewayReconTest extends TestCase
             $file,
             $file,
             $mimeType,
-            filesize($file),
             null,
             true
         );
@@ -506,7 +505,6 @@ class UpiSbiGatewayReconTest extends TestCase
             $file,
             'refundreport.xlsx',
             $mimeType,
-            filesize($file),
             null,
             true
         );

@@ -119,7 +119,7 @@ class CareServiceTest extends TestCase
             }))
             ->andReturnUsing(function () use ($respondWithBody, $respondWithStatus)
             {
-                $response = new \Requests_Response;
+                $response = new \WpOrg\Requests\Response;
 
                 $response->body = json_encode($respondWithBody);
 

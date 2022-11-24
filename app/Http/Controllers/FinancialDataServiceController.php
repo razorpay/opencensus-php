@@ -151,7 +151,7 @@ class FinancialDataServiceController extends Controller
                 $defaultOptions
             );
         }
-        catch (\Requests_Exception $e)
+        catch (\WpOrg\Requests\Exception $e)
         {
             $errorCode = ($this->hasRequestTimedOut($e) === true) ?
                 ErrorCode::SERVER_ERROR_FINANCIAL_DATA_SERVICE_TIMEOUT :
@@ -201,7 +201,7 @@ class FinancialDataServiceController extends Controller
                 'multipart' => $body,
             ]);
         }
-        catch (\Requests_Exception $e)
+        catch (\WpOrg\Requests\Exception $e)
         {
             $errorCode = ($this->hasRequestTimedOut($e) === true) ?
                 ErrorCode::SERVER_ERROR_FINANCIAL_DATA_SERVICE_TIMEOUT :
@@ -218,7 +218,7 @@ class FinancialDataServiceController extends Controller
         return json_decode($response->getBody(), true);
     }
 
-    protected function hasRequestTimedOut(\Requests_Exception $e): bool
+    protected function hasRequestTimedOut(\WpOrg\Requests\Exception $e): bool
     {
         $message = $e->getMessage();
 

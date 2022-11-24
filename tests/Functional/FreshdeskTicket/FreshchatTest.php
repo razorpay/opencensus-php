@@ -64,7 +64,7 @@ class FreshchatTest extends TestCase
             }))
             ->andReturnUsing(function () use ($respondWith)
             {
-                $response = new \Requests_Response;
+                $response = new \WpOrg\Requests\Response;
 
                 $response->body = json_encode($respondWith);
 
@@ -180,7 +180,7 @@ class FreshchatTest extends TestCase
     public function testPutChatTimingsConfig()
     {
         $this->ba->adminAuth();
-        
+
         $this->startTest();
 
         $configFromCache = $this->app['cache']->get('chat_timings_cache_config_key');

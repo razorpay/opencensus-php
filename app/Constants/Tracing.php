@@ -516,7 +516,7 @@ class Tracing
     {
         $parsed = parse_url($url);
 
-        if (isset($parsed['query'])) {
+        if (isset($parsed['query']) && $parsed['query'] !== "") {
             $query = $parsed['query'];
             $parsed['query'] = self::maskQueryString($query);
         }

@@ -14,6 +14,7 @@ use Illuminate\Cache\FileStore;
 use Illuminate\Support\Facades\Redis;
 
 use RZP\Services\EsClient;
+use RZP\Services\Mock\BeamService;
 use RZP\Tests\TestCase as ParentTestCase;
 use DMS\PHPUnitExtensions\ArraySubset\ArraySubsetAsserts;
 use RZP\Services\AutoGenerateApiDocs\Constants as ApiDocsConstants;
@@ -299,7 +300,19 @@ class TestCase extends ParentTestCase
 
         if ($regex)
         {
-            $this->assertRegExp($regex, $actual[$key]);
+            $this->assertMatchesRegularExpression($regex, $actual[$key]);
         }
+    }
+
+    public function mockBeam(callable $callback)
+    {
+        $beamServiceMock = $this->getMockBuilder(BeamService::class)
+                                ->setConstructorArgs([$this->app])
+                                ->onlyMethods(['beamPush'])
+                                ->getMock();
+
+        $beamServiceMock->method('beamPush')->will($this->returnCallback($callback));
+
+        $this->app['beam']->setMockService($beamServiceMock);
     }
 }

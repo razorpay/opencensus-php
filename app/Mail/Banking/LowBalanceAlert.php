@@ -2,6 +2,8 @@
 
 namespace RZP\Mail\Banking;
 
+use Symfony\Component\Mime\Email;
+
 use RZP\Models\Merchant;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
@@ -63,7 +65,7 @@ class LowBalanceAlert extends Mailable
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function ($message)
+        $this->withSymfonyMessage(function (Email $message)
         {
             $headers = $message->getHeaders();
 

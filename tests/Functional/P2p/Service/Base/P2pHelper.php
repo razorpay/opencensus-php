@@ -2,10 +2,10 @@
 
 namespace RZP\Tests\P2p\Service\Base;
 
+use Illuminate\Testing\TestResponse;
 use JsonSchema;
 use RZP\Exception\BaseException;
 use RZP\Tests\P2p\Service\Base\Traits;
-use Illuminate\Foundation\Testing\TestResponse;
 
 class P2pHelper
 {

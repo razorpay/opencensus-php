@@ -20,7 +20,7 @@ class MySqlConnectionTest extends TestCase
         $readPdo   = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
         $writePdo  = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
         $statement = $this->getMockBuilder(PDOStatement::class)
-                          ->setMethods(['execute', 'fetchAll', 'bindValue'])
+                          ->setMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
                            ->getMock();
 
         //
@@ -50,7 +50,7 @@ class MySqlConnectionTest extends TestCase
         $readPdo   = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
         $writePdo  = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
         $statement = $this->getMockBuilder(PDOStatement::class)
-                          ->setMethods(['execute', 'fetchAll', 'bindValue'])
+                          ->setMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
                           ->getMock();
 
         //
@@ -69,7 +69,7 @@ class MySqlConnectionTest extends TestCase
         //
         // Set the transaction counter to 1 here, to check if write pdo is selected
         //
-        $mockConnection->transactions = 1;
+        $mockConnection->setTransaction(1);
         $mockConnection->expects($this->once())
                        ->method('prepareBindings')
                        ->with($this->equalTo(['foo' => 'bar']))
@@ -84,7 +84,7 @@ class MySqlConnectionTest extends TestCase
         $readPdo   = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
         $writePdo  = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
         $statement = $this->getMockBuilder(PDOStatement::class)
-                          ->setMethods(['execute', 'fetchAll', 'bindValue'])
+                          ->setMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
                           ->getMock();
 
         //
@@ -110,7 +110,7 @@ class MySqlConnectionTest extends TestCase
         // Sets these attributes on the connection object so that lag check
         // is re-evaluated for the select.
         //
-        $mockConnection->forceCheckReplicaLag = true;
+        $mockConnection->setForceCheckReplicaLag(true);
 
         $results = $mockConnection->select('foo', ['foo' => 'bar']);
         $this->assertEquals(['boom'], $results);
@@ -121,7 +121,7 @@ class MySqlConnectionTest extends TestCase
         $readPdo   = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
         $writePdo  = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
         $statement = $this->getMockBuilder(PDOStatement::class)
-                          ->setMethods(['execute', 'fetchAll', 'bindValue'])
+                          ->setMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
                           ->getMock();
 
         $lagChecker = $this->getMockBuilder(RedisLagChecker::class)->setMethods(['useReadPdoIfApplicable'])->getMock();
@@ -142,7 +142,7 @@ class MySqlConnectionTest extends TestCase
 
         $mockConnection = $this->getMockConnection(['prepareBindings'], $writePdo);
         $mockConnection->setReadPdo($readPdo);
-        $mockConnection->lagChecker = $lagChecker;
+        $mockConnection->setLagChecker($lagChecker);
 
         $mockConnection->expects($this->once())
                        ->method('prepareBindings')
@@ -153,7 +153,7 @@ class MySqlConnectionTest extends TestCase
         // Sets these attributes on the connection object so that lag check
         // is re-evaluated for the select.
         //
-        $mockConnection->forceCheckReplicaLag = true;
+        $mockConnection->setForceCheckReplicaLag(true);
 
         $results = $mockConnection->select('foo', ['foo' => 'bar']);
         $this->assertEquals(['boom'], $results);
@@ -164,7 +164,7 @@ class MySqlConnectionTest extends TestCase
         $readPdo   = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
         $writePdo  = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
         $statement = $this->getMockBuilder(PDOStatement::class)
-                          ->setMethods(['execute', 'fetchAll', 'bindValue'])
+                          ->setMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
                           ->getMock();
 
         //
@@ -185,7 +185,7 @@ class MySqlConnectionTest extends TestCase
         // Sets recordsModified to true to indeicate a previous DML
         // has been executed and the write pdo should be selected.
         //
-        $mockConnection->recordsModified = true;
+        $mockConnection->isRecordsModified(true);
         $mockConnection->expects($this->once())
                        ->method('prepareBindings')
                        ->with($this->equalTo(['foo' => 'bar']))
@@ -200,7 +200,7 @@ class MySqlConnectionTest extends TestCase
         $readPdo   = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
         $writePdo  = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
         $statement = $this->getMockBuilder(PDOStatement::class)
-                          ->setMethods(['execute', 'fetchAll', 'bindValue'])
+                          ->setMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
                           ->getMock();
 
         //
@@ -215,7 +215,7 @@ class MySqlConnectionTest extends TestCase
 
         $mockConnection = $this->getMockConnection(['prepareBindings'], $writePdo);
         $mockConnection->setReadPdo($readPdo);
-        $mockConnection->recordsModified = true;
+        $mockConnection->isRecordsModified(true);
         $mockConnection->forceReadPdo(true);
         $mockConnection->expects($this->once())
                        ->method('prepareBindings')
@@ -230,7 +230,7 @@ class MySqlConnectionTest extends TestCase
         $readPdo   = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
         $writePdo  = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
         $statement = $this->getMockBuilder(PDOStatement::class)
-                          ->setMethods(['execute', 'fetchAll', 'bindValue'])
+                          ->setMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
                           ->getMock();
         $lagChecker = $this->getMockBuilder(RedisLagChecker::class)->setMethods(['useReadPdoIfApplicable'])->getMock();
 
@@ -262,7 +262,7 @@ class MySqlConnectionTest extends TestCase
         // so that the code flow when setting up read connection
         // first time is executed.
         //
-        $mockConnection->lagChecker = $lagChecker;
+        $mockConnection->setLagChecker($lagChecker);
         $mockConnection->expects($this->once())
                        ->method('prepareBindings')
                        ->with($this->equalTo(['foo' => 'bar']))
@@ -276,7 +276,7 @@ class MySqlConnectionTest extends TestCase
         $readPdo   = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
         $writePdo  = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
         $statement = $this->getMockBuilder(PDOStatement::class)
-                          ->setMethods(['execute', 'fetchAll', 'bindValue'])
+                          ->setMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
                           ->getMock();
         $lagChecker = $this->getMockBuilder(RedisLagChecker::class)
                            ->setMethods(['useReadPdoIfApplicable'])
@@ -302,7 +302,7 @@ class MySqlConnectionTest extends TestCase
 
         $mockConnection = $this->getMockConnection(['prepareBindings'], $writePdo);
         $mockConnection->setReadPdo($callback);
-        $mockConnection->lagChecker = $lagChecker;
+        $mockConnection->setLagChecker($lagChecker);
         $mockConnection->expects($this->once())
                        ->method('prepareBindings')
                        ->with($this->equalTo(['foo' => 'bar']))
@@ -316,7 +316,7 @@ class MySqlConnectionTest extends TestCase
         $readPdo   = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
         $writePdo  = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
         $statement = $this->getMockBuilder(PDOStatement::class)
-                          ->setMethods(['execute', 'fetchAll', 'bindValue'])
+                          ->setMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
                           ->getMock();
 
         $lagChecker = $this->getMockBuilder(RedisLagChecker::class)->setMethods(['useReadPdoIfApplicable'])->getMock();
@@ -336,7 +336,7 @@ class MySqlConnectionTest extends TestCase
 
         $mockConnection = $this->getMockConnection(['prepareBindings'], $writePdo);
         $mockConnection->setReadPdo($readPdo);
-        $mockConnection->lagChecker = $lagChecker;
+        $mockConnection->setLagChecker($lagChecker);
 
         $mockConnection->expects($this->once())
                        ->method('prepareBindings')
@@ -347,9 +347,9 @@ class MySqlConnectionTest extends TestCase
         // Sets these attributes on the connection object so that lag check
         // is re-evaluated for the select.
         //
-        $mockConnection->forceCheckReplicaLag = true;
+        $mockConnection->setForceCheckReplicaLag(true);
 
-        $mockConnection->forceReadPdo = true;
+        $mockConnection->setForceReadPdo(true);
 
         $results = $mockConnection->select('foo', ['foo' => 'bar']);
         $this->assertEquals(['boom'], $results);
@@ -360,7 +360,7 @@ class MySqlConnectionTest extends TestCase
         $readPdo   = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
         $writePdo  = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
         $statement = $this->getMockBuilder(PDOStatement::class)
-                          ->setMethods(['execute', 'fetchAll', 'bindValue'])
+                          ->setMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
                           ->getMock();
 
         $lagChecker = $this->getMockBuilder(RedisLagChecker::class)->setMethods(['useReadPdoIfApplicable'])->getMock();
@@ -380,7 +380,7 @@ class MySqlConnectionTest extends TestCase
 
         $mockConnection = $this->getMockConnection(['prepareBindings'], $writePdo);
         $mockConnection->setReadPdo($readPdo);
-        $mockConnection->lagChecker = $lagChecker;
+        $mockConnection->setLagChecker($lagChecker );
 
         $mockConnection->expects($this->once())
                        ->method('prepareBindings')
@@ -391,9 +391,9 @@ class MySqlConnectionTest extends TestCase
         // Sets these attributes on the connection object so that lag check
         // is re-evaluated for the select.
         //
-        $mockConnection->forceCheckReplicaLag = true;
+        $mockConnection->setForceCheckReplicaLag(true);
 
-        $mockConnection->isSlaveRoute = true;
+        $mockConnection->setSlaveRoute(true);
 
         $results = $mockConnection->select('foo', ['foo' => 'bar']);
         $this->assertEquals(['boom'], $results);

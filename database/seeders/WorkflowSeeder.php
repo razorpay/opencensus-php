@@ -1,5 +1,8 @@
 <?php
 
+namespace Database\Seeders;
+
+use Illuminate\Support\Facades\DB;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Permission;
 use Illuminate\Database\Seeder;
@@ -10,13 +13,13 @@ class WorkflowSeeder extends Seeder
     const RAZORPAY_ORG_ID = '100000razorpay';
 
     /**
-     * Run the database seeds.
+     * Run the database seeders.
      *
      * @return void
      */
     public function run()
     {
-        Eloquent::unguard();
+        //Eloquent::unguard();
 
         $this->seed();
     }

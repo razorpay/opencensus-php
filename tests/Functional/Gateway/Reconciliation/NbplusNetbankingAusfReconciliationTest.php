@@ -141,7 +141,6 @@ PAYMENT,PG-20210205195519793000000-610,,RAZORPAY,\''.$data['payment_id'].','.$da
             $url,
             $fileName,
             $mime,
-            filesize($url),
             null,
             true);
     }

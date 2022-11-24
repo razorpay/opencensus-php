@@ -4,7 +4,7 @@ namespace RZP\Modules\Subscriptions;
 
 use Config;
 use RZP\Http\Request\Requests;
-use Requests_Session;
+use \WpOrg\Requests\Session as Requests_Session;
 use Illuminate\Support\Str;
 
 use RZP\Exception;
@@ -322,7 +322,7 @@ class External extends Base
                 $method,
                 $options);
         }
-        catch(\Requests_Exception $e)
+        catch(\WpOrg\Requests\Exception $e)
         {
             $this->trace->traceException($e);
 
@@ -408,7 +408,7 @@ class External extends Base
             $error);
     }
 
-    protected function hasRequestTimedOut(\Requests_Exception $e): bool
+    protected function hasRequestTimedOut(\WpOrg\Requests\Exception $e): bool
     {
         $message = $e->getMessage();
 

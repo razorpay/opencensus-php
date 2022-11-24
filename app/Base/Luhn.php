@@ -94,7 +94,7 @@ class Luhn
         // Sum all the non-even digits from right directly
         for ($i = $length - 1; $i >= 0; $i -= 2)
         {
-            $strDigit = $number{$i};
+            $strDigit = $number[$i];
             $numDigit = self::$baseValues[$strDigit];
 
             $sum += $numDigit;
@@ -104,7 +104,7 @@ class Luhn
         // taking mod.
         for ($i = $length - 2; $i >= 0; $i -= 2)
         {
-            $strDigit = $number{$i};
+            $strDigit = $number[$i];
             $numDigit = self::$baseValues[$strDigit];
 
             $numDigit *= 2;

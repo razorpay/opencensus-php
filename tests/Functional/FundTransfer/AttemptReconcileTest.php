@@ -358,14 +358,17 @@ class AttemptReconcileTest extends TestCase
     {
         $this->createDataForChannel(Channel::AXIS, Attempt\Type::SETTLEMENT, 1, Attempt\Type::SETTLEMENT);
 
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['hGetAll', 'get', 'del', 'set', 'ttl'])
-            ->getMock();
+        $redisMock = \Mockery::mock('Illuminate\Redis\RedisManager', [$this->app, 'driver', []]);
 
-        Redis::shouldReceive('connection')
-            ->andReturn($redisMock);
+        $redisConnmock = \Mockery::mock('Illuminate\Redis\Connections\PredisConnection', [null]);
 
-        $redisMock->method('hGetAll')
-            ->will($this->returnValue(['axis' => 'enable']));
+        $this->app->instance('redis', $redisMock);
+
+        $redisMock->shouldReceive('connection')
+            ->andReturn($redisConnmock);
+
+        $redisConnmock->shouldReceive('hGetAll')
+            ->andReturn(['axis' => 'enable']);
 
         $content = $this->initiateTransfer(Channel::AXIS,
             Attempt\Purpose::SETTLEMENT,
@@ -380,14 +383,17 @@ class AttemptReconcileTest extends TestCase
     {
         $this->createDataForChannel(Channel::AXIS, Attempt\Type::SETTLEMENT, 1, Attempt\Type::SETTLEMENT);
 
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['hGetAll'])
-            ->getMock();
+        $redisMock = \Mockery::mock('Illuminate\Redis\RedisManager', [$this->app, 'driver', []]);
 
-        Redis::shouldReceive('connection')
-            ->andReturn($redisMock);
+        $redisConnmock = \Mockery::mock('Illuminate\Redis\Connections\PredisConnection', [null]);
 
-        $redisMock->method('hGetAll')
-            ->will($this->returnValue(['axis' => 'disable']));
+        $this->app->instance('redis', $redisMock);
+
+        $redisMock->shouldReceive('connection')
+            ->andReturn($redisConnmock);
+
+        $redisConnmock->shouldReceive('hGetAll')
+            ->andReturn(['axis' => 'disable']);
 
         $content = $this->initiateTransfer(Channel::AXIS,
             Attempt\Purpose::SETTLEMENT,

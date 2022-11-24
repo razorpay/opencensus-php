@@ -2,7 +2,7 @@
 
 namespace RZP\Services\Mock;
 
-use Requests_Response as Response;
+use \WpOrg\Requests\Response as Response;
 
 use RZP\Services\Harvester\HarvesterClient as BaseHarvesterClient;
 

@@ -247,7 +247,7 @@ abstract class Processor extends Base\Core
             }
             catch(\Throwable $e)
             {
-                if (($e instanceof \Requests_Exception) and
+                if (($e instanceof \WpOrg\Requests\Exception) and
                     (checkRequestTimeout($e) === true) and
                     ($retryCount < self::FTS_MAX_RETRIES))
                 {
@@ -312,7 +312,7 @@ abstract class Processor extends Base\Core
                 return $response;
 
             } catch (\Throwable $e) {
-                if (($e instanceof \Requests_Exception) and
+                if (($e instanceof \WpOrg\Requests\Exception) and
                     (checkRequestTimeout($e) === true) and
                     ($retryCount < self::FTS_MAX_RETRIES)) {
                     $this->trace->info(
@@ -376,7 +376,7 @@ abstract class Processor extends Base\Core
             }
             catch (\Throwable $e)
             {
-                if (($e instanceof \Requests_Exception) and
+                if (($e instanceof \WpOrg\Requests\Exception) and
                     (checkRequestTimeout($e) === true) and
                     ($retryCount < self::FTS_MAX_RETRIES))
                 {

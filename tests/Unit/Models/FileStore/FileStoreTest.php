@@ -61,7 +61,7 @@ class FileStoreTest extends TestCase
                      ->encrypt($encryptionType, $encryptionData)
                      ->save();
 
-        $this->assertEquals($file->getFileInstance()->getMime(), 'application/pgp');
+        $this->assertEquals('application/pgp-encrypted', $file->getFileInstance()->getMime());
     }
 
     function testEncryptionFailure()

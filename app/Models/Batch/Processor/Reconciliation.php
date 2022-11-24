@@ -6,8 +6,8 @@ use RZP\Reconciliator\Base\InfoCode;
 use RZP\Reconciliator\Metrics\Metric;
 use RZP\Reconciliator\Base\Reconciliate;
 use Symfony\Component\HttpFoundation\File\File;
-use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
-use Symfony\Component\HttpFoundation\File\MimeType\FileBinaryMimeTypeGuesser;
+use Symfony\Component\Mime\MimeTypes;
+use Symfony\Component\Mime\FileBinaryMimeTypeGuesser;
 
 use RZP\Exception;
 use RZP\Models\Batch;
@@ -182,9 +182,9 @@ class Reconciliation extends Base
      */
     protected function registerMimeTypeGuesser()
     {
-        $guesser = MimeTypeGuesser::getInstance();
+        $guesser = new MimeTypes();
 
-        $guesser->register(new FileBinaryMimeTypeGuesser());
+        $guesser->registerGuesser(new FileBinaryMimeTypeGuesser());
     }
 
     protected function saveInputFile(File $file): FileStore\Creator

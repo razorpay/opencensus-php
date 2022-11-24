@@ -347,7 +347,7 @@ class FreshdeskTicketClient
         return 'other';
     }
 
-    protected function getResponse($request) : \Requests_Response
+    protected function getResponse($request)
     {
         $fdInstance = $this->getFdInstanceFromUrl($request['url']);
 

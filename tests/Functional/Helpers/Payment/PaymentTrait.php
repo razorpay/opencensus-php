@@ -1337,6 +1337,11 @@ trait PaymentTrait
             $response['amount'] = $data['amount'];
         }
 
+        if (isset($response['status']) === true)
+        {
+            $content['status'] = $response['status'];
+        }
+
         if (isset($data['status']) === true)
         {
             $content['status'] = $data['status'];
@@ -2689,7 +2694,7 @@ trait PaymentTrait
 
                 throw new Exception\GatewayRequestException(
                     'cURL error 35: LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to upi.hdfcbank.com:443 ',
-                    new \Requests_Exception_Transport_cURL('SSL_ERROR_SYSCALL in connection to upi.hdfcbank.com:443 ',
+                    new \WpOrg\Requests\Exception\Transport\Curl('SSL_ERROR_SYSCALL in connection to upi.hdfcbank.com:443 ',
                         'curlerror',
                         'cURL error 35: LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to upi.hdfcbank.com:443 ',
                         35));

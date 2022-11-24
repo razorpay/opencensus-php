@@ -157,7 +157,7 @@ class Core extends Base\Core
     public function update(Entity $upiMandate): Entity
     {
         $dirty = $upiMandate->getDirty();
-        $original = $upiMandate->getOriginal();
+        $original = $upiMandate->getRawOriginal();
 
         $toTrace = [
             'id'              => $upiMandate->getId(),

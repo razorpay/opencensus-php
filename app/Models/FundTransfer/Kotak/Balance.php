@@ -221,7 +221,7 @@ class Balance
         return $this->formatBalanceResponse($data);
     }
 
-    protected function sendRequest(array $request): \Requests_Response
+    protected function sendRequest(array $request)
     {
         $url = $this->config['url'];
 
@@ -250,7 +250,7 @@ class Balance
      *  4. Account detail response code has to be 00
      */
     protected function validateBalanceResponse(
-            \Requests_Response $response,
+            \WpOrg\Requests\Response $response,
             array $body)
     {
         if ($response->status_code !== 200)

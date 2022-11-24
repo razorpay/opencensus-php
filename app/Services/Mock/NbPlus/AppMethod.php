@@ -2,7 +2,7 @@
 
 namespace RZP\Services\Mock\NbPlus;
 
-use Requests_Response;
+use \WpOrg\Requests\Response;
 
 use RZP\Services\NbPlus\AppMethod as AppBase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -144,7 +144,7 @@ class AppMethod extends AppBase
 
     protected function makeJsonResponse(array $content)
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         $response->headers = ['Content-Type' => 'application/json', 'Cache-Control' => 'no-cache'];
 

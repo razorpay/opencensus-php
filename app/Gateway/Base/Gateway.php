@@ -13,7 +13,7 @@ use Symfony\Component\DomCrawler\Crawler;
 
 use RZP\Exception;
 use RZP\Http\Route;
-use Requests_Hooks;
+use \WpOrg\Requests\Hooks as Requests_Hooks;
 use RZP\Gateway\Upi;
 use RZP\Models\Card;
 use RZP\Constants\Mode;
@@ -308,7 +308,7 @@ class Gateway
 
             $previousExc = $exc->getPrevious();
 
-            if (($previousExc instanceof \Requests_Exception) and
+            if (($previousExc instanceof \WpOrg\Requests\Exception) and
                     ($previousExc->getType() === 'curlerror'))
             {
                 $excData = curl_errno($previousExc->getData());
@@ -830,7 +830,7 @@ class Gateway
                 $method,
                 $request['options']);
         }
-        catch (\Requests_Exception $e)
+        catch (\WpOrg\Requests\Exception $e)
         {
             $this->exception = $e;
 
@@ -928,7 +928,7 @@ class Gateway
 
         $previousExc = $e->getPrevious();
 
-        if (($previousExc instanceof \Requests_Exception) and
+        if (($previousExc instanceof \WpOrg\Requests\Exception) and
                 ($previousExc->getType() === 'curlerror'))
             {
                 $errorNumber = curl_errno($previousExc->getData());
@@ -952,7 +952,7 @@ class Gateway
         return static::MAX_RETRY_COUNT;
     }
 
-    protected function validateResponse(\Requests_Response $response)
+    protected function validateResponse($response)
     {
         if (in_array($response->status_code, [503, 504], true) === true)
         {

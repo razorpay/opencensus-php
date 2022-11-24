@@ -1805,7 +1805,7 @@ class OtpPaymentTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'otp_auth_default', 'json_v2']);
 
-        $cardVault = Mockery::mock('RZP\Services\CardVault')->makePartial();
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
 
         $this->app->instance('card.cardVault', $cardVault);
 

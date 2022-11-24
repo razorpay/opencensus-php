@@ -1255,34 +1255,34 @@ class UpiSbiGatewayTest extends TestCase
         // Last of first batch is corrected
         $i = ($max - $count + 1);
         $entityA = $this->getDbEntityById('upi', $upis[$i]);
-        $this->assertSame($gpid($i), $entityA->getOriginal('gateway_payment_id'));
-        $this->assertSame($nrid($i), $entityA->getOriginal('npci_reference_id'));
+        $this->assertSame($gpid($i), $entityA->getRawOriginal('gateway_payment_id'));
+        $this->assertSame($nrid($i), $entityA->getRawOriginal('npci_reference_id'));
 
         // before last of first batch is not corrected
         $i = ($max - $count);
         $entityB = $this->getDbEntityById('upi', $upis[$i]);
-        $this->assertSame($nrid($i), $entityB->getOriginal('gateway_payment_id'));
-        $this->assertSame($gpid($i), $entityB->getOriginal('npci_reference_id'));
+        $this->assertSame($nrid($i), $entityB->getRawOriginal('gateway_payment_id'));
+        $this->assertSame($gpid($i), $entityB->getRawOriginal('npci_reference_id'));
 
         $this->makeDataCorrectionRequest($count + 5);
 
         // before last of first batch is now corrected
         $i = ($max - $count);
         $entityB = $this->getDbEntityById('upi', $upis[$i]);
-        $this->assertSame($gpid($i), $entityB->getOriginal('gateway_payment_id'));
-        $this->assertSame($nrid($i), $entityB->getOriginal('npci_reference_id'));
+        $this->assertSame($gpid($i), $entityB->getRawOriginal('gateway_payment_id'));
+        $this->assertSame($nrid($i), $entityB->getRawOriginal('npci_reference_id'));
 
         // Last of second batch is corrected
         $i = ($max - ($count * 2) - 4);
         $entityC = $this->getDbEntityById('upi', $upis[$i]);
-        $this->assertSame($gpid($i), $entityC->getOriginal('gateway_payment_id'));
-        $this->assertSame($nrid($i), $entityC->getOriginal('npci_reference_id'));
+        $this->assertSame($gpid($i), $entityC->getRawOriginal('gateway_payment_id'));
+        $this->assertSame($nrid($i), $entityC->getRawOriginal('npci_reference_id'));
 
         // before last of second batch is not corrected
         $i = ($max - ($count * 2) - 5);
         $entityD = $this->getDbEntityById('upi', $upis[$i]);
-        $this->assertSame($nrid($i), $entityD->getOriginal('gateway_payment_id'));
-        $this->assertSame($gpid($i), $entityD->getOriginal('npci_reference_id'));
+        $this->assertSame($nrid($i), $entityD->getRawOriginal('gateway_payment_id'));
+        $this->assertSame($gpid($i), $entityD->getRawOriginal('npci_reference_id'));
 
         $entityD->setGatewayPaymentId('Not12Chars');
         $entityD->saveOrFail();
@@ -1301,14 +1301,14 @@ class UpiSbiGatewayTest extends TestCase
 
         // before last of second batch still not fixed
         $entityD = $this->getDbEntityById('upi', $upis[$i]);
-        $this->assertSame('Not12Chars', $entityD->getOriginal('gateway_payment_id'));
-        $this->assertSame($gpid($i), $entityD->getOriginal('npci_reference_id'));
+        $this->assertSame('Not12Chars', $entityD->getRawOriginal('gateway_payment_id'));
+        $this->assertSame($gpid($i), $entityD->getRawOriginal('npci_reference_id'));
 
         // First in third batch is fixed
         $i = $i - 1;
         $entityE = $this->getDbEntityById('upi', $upis[$i]);
-        $this->assertSame($gpid($i), $entityE->getOriginal('gateway_payment_id'));
-        $this->assertSame($nrid($i), $entityE->getOriginal('npci_reference_id'));
+        $this->assertSame($gpid($i), $entityE->getRawOriginal('gateway_payment_id'));
+        $this->assertSame($nrid($i), $entityE->getRawOriginal('npci_reference_id'));
     }
 
     public function testPaymentWithGstTaxInvoice()

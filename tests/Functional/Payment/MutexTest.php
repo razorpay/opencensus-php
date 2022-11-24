@@ -6,6 +6,8 @@ use DB;
 use Redis;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -40,17 +42,12 @@ class MutexTest extends TestCase
 
     public function testMutexAcquiredCaptureRequest()
     {
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get', 'setex'])
-                          ->getMock();
+        $mutexMockery = \Mockery::mock('RZP\Services\Mutex', [$this->app]);
 
-        Redis::shouldReceive('connection')
-             ->andReturn($redisMock);
+        $this->app->instance('api.mutex', $mutexMockery);
 
-        $redisMock->method('set')
-                  ->will($this->returnValue(null));
-
-        $redisMock->method('get')
-                  ->will($this->returnValue(null));
+        $mutexMockery->shouldReceive('acquireAndRelease')
+            ->andThrow(new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS));
 
         $payment = $this->defaultAuthPayment();
 
@@ -68,17 +65,12 @@ class MutexTest extends TestCase
 
     public function testMutexAcquiredRefundRequest()
     {
-        $redisMock   = $this->getMockBuilder(Redis::class)->setMethods(['get', 'set'])->getMock();
+        $mutexMockery = \Mockery::mock('RZP\Services\Mutex', [$this->app]);
 
-        Redis::shouldReceive('connection')
-               ->andReturn($redisMock);
+        $this->app->instance('api.mutex', $mutexMockery);
 
-        $redisMock->method('get')
-                  ->will($this->returnValue(null));
-
-        $redisMock->method('set')
-                  ->will($this->returnValue(null));
-
+        $mutexMockery->shouldReceive('acquireAndRelease')
+            ->andThrow(new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS));
 
         $payment = $this->fixtures->create('payment:captured');
 
@@ -103,19 +95,6 @@ class MutexTest extends TestCase
 
     public function testCaptureRequestWithException()
     {
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['get', 'set', 'setex', 'del'])
-                          ->getMock();
-
-        Redis::shouldReceive('connection')
-             ->andReturn($redisMock);
-
-        $redisMock->expects($this->exactly(1))
-                  ->method('set')
-                  ->willThrowException(new \Predis\Response\ServerException('Internal Error'));
-
-        $redisMock->method('get')->will($this->returnValue(null));
-
-
         $payment = $this->defaultAuthPayment();
 
         $this->capturePayment($payment['id'], $payment['amount']);
@@ -124,26 +103,6 @@ class MutexTest extends TestCase
     public function testMutexCaptureRequestWithDiffRedisResponse()
     {
         $this->requestId = '';
-
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['get', 'set','del', 'setex'])
-                          ->getMock();
-
-        Redis::shouldReceive('connection')
-               ->andReturn($redisMock);
-
-        $redisMock->expects($this->exactly(1))
-                  ->method('set')->will($this->returnCallback(
-                        function ($resourceId, $requestId)
-                        {
-                            $this->requestId = $requestId;
-
-                            return \Predis\Response\Status::get('QUEUED');
-                        }));
-
-        $redisMock->method('del')->will($this->returnValue(true));
-
-        $redisMock->method('get')->will($this->returnValue($this->requestId));
-
 
         $payment = $this->defaultAuthPayment();
 

@@ -136,7 +136,7 @@ class TerminalTestRunProxyTest extends TestCase
                     $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], $content);
                 }
 
-                $response = new \Requests_Response;
+                $response = new \WpOrg\Requests\Response;
 
                 $response->body = '
                        {

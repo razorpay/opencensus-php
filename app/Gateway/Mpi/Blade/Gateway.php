@@ -8,7 +8,7 @@ use Carbon\Carbon;
 use Lib\Formatters\Xml;
 
 use RZP\Exception;
-use Requests_Hooks;
+use \WpOrg\Requests\Hooks as Requests_Hooks;
 use RZP\Models\Card;
 use RZP\Diag\EventCode;
 use RZP\Constants\Mode;

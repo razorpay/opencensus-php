@@ -164,4 +164,9 @@ class Entity extends Base\Entity
     {
         $this->setAttribute('arn', $arn);
     }
+
+    public function getIncrementing()
+    {
+        return $this->incrementing;
+    }
 }

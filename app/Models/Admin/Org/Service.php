@@ -200,7 +200,7 @@ class Service extends Base\Service
 
         $org['features'] = $enabledFeatures;
 
-        $org['hostname'] = implode($hostnames, ', ');
+        $org['hostname'] = implode(', ', $hostnames);
 
         return $org;
     }

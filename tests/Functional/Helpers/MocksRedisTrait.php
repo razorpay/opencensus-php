@@ -24,7 +24,9 @@ trait MocksRedisTrait
             ->setMethods(array_keys($options))
             ->getMock();
 
-        Redis::shouldReceive('connection')
+        $redisMockery = \Mockery::mock(Redis::class);
+
+        $redisMockery->shouldReceive('connection')
             ->andReturn($redisMock);
 
         foreach ($options as $key => $value)

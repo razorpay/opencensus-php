@@ -110,11 +110,7 @@ class CheckoutPreferencesTest extends TestCase
 
         parent::setUp();
 
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
-
         $this->fixtures->create('org:hdfc_org');
-
-        $this->app->make(Factory::class)->load($factoryPath);
 
         $this->esDao = new EsDao();
 
@@ -138,7 +134,7 @@ class CheckoutPreferencesTest extends TestCase
 
         $this->assertArrayHasKey('upi_otm', $response['methods']);
         $this->assertSame(true, $response['methods']['upi_otm']);
-        $this->assertContains(['upi_otm'], $response['features']);
+        $this->assertArrayHasKey('upi_otm', $response['features']);
         $this->assertSame(true, $response['features']['upi_otm']);
     }
 

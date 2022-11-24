@@ -1,32 +1,44 @@
 <?php
 
-use Faker\Generator as Faker;
-use RZP\Models\Merchant\Account;
+namespace Database\Factories;
+
 use RZP\Models\P2p\BankAccount\Entity;
 use RZP\Models\P2p\BankAccount\Credentials;
 use RZP\Models\P2p\BankAccount\Type;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-$factory->define(Entity::class, function (Faker $faker) {
-    return [
-        Entity::ID                    => Entity::generateUniqueId(),
-        Entity::DEVICE_ID             => 'factory:' . \RZP\Models\P2p\Device\Entity::class,
-        Entity::HANDLE                => $faker->randomElement(['rzpsharp', 'razorsharp']),
-        Entity::GATEWAY_DATA          => $faker->randomElements(['a' => 1, 'b' => 2]),
-        Entity::BANK_ID               => $faker->randomElement(['ARZP', 'BRZP', 'CRZP']),
-        Entity::IFSC                  => $faker->lexify('RZP????????'),
-        Entity::ACCOUNT_NUMBER        => $faker->numerify('###########5555'),
-        Entity::MASKED_ACCOUNT_NUMBER => $faker->numerify('*********#5555'),
-        Entity::BENEFICIARY_NAME      => $faker->name,
-        Entity::CREDS                 => [
-            [
-                Credentials::TYPE           => 'pin',
-                Credentials::SUB_TYPE       => 'upipin',
-                Credentials::SET            => true,
-                Credentials::FORMAT         => $faker->randomElement(['NUM', 'ALPHANUM']),
-                Credentials::LENGTH         => $faker->randomElement([4, 6])
+class P2pBankAccountFactory extends Factory
+{
+    protected $model = Entity::class;
+
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition()
+    {
+        return [
+            Entity::ID                    => Entity::generateUniqueId(),
+            Entity::DEVICE_ID             => 'factory:' . \RZP\Models\P2p\Device\Entity::class,
+            Entity::HANDLE                => fake()->randomElement(['rzpsharp', 'razorsharp']),
+            Entity::GATEWAY_DATA          => fake()->randomElements(['a' => 1, 'b' => 2]),
+            Entity::BANK_ID               => fake()->randomElement(['ARZP', 'BRZP', 'CRZP']),
+            Entity::IFSC                  => fake()->lexify('RZP????????'),
+            Entity::ACCOUNT_NUMBER        => fake()->numerify('###########5555'),
+            Entity::MASKED_ACCOUNT_NUMBER => fake()->numerify('*********#5555'),
+            Entity::BENEFICIARY_NAME      => fake()->name,
+            Entity::CREDS                 => [
+                [
+                    Credentials::TYPE           => 'pin',
+                    Credentials::SUB_TYPE       => 'upipin',
+                    Credentials::SET            => true,
+                    Credentials::FORMAT         => fake()->randomElement(['NUM', 'ALPHANUM']),
+                    Credentials::LENGTH         => fake()->randomElement([4, 6])
+                ],
             ],
-        ],
-        Entity::TYPE                    => $faker->randomElement(Type::BANK_ACCOUNT_TYPES),
-        Entity::REFRESHED_AT            => $faker->numerify('154222####'),
-    ];
-});
+            Entity::TYPE                    => fake()->randomElement(Type::BANK_ACCOUNT_TYPES),
+            Entity::REFRESHED_AT            => fake()->numerify('154222####'),
+        ];
+    }
+}

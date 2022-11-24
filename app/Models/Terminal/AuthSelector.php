@@ -60,6 +60,9 @@ class AuthSelector extends Base\Core
        }
     }
 
+    /**
+     * @throws \Exception
+     */
     public function select()
     {
         $terminals = $this->getTerminals();
@@ -83,6 +86,12 @@ class AuthSelector extends Base\Core
         $this->input['auths'] = array_pluck($applicableTerminals, 'auth_type');
 
         $applicableTerminals = $this->sortTerminals($applicableTerminals, $applicableRules, $verbose);
+
+        if (count($applicableTerminals) === 0 )
+        {
+
+            throw new \Exception;
+        }
 
         return $applicableTerminals[0];
     }

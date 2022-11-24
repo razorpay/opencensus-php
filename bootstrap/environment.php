@@ -24,11 +24,11 @@ $appEnvironment = env('APP_ENV');
 
 $dockerEnvironment = false;
 
-if (strpos($appEnvironment, 'testing') !== false)
+if (empty($appEnvironment) === false and str_contains($appEnvironment, 'testing'))
 {
     $env = 'testing';
 
-    if (strpos($appEnvironment, 'docker') !== false)
+    if (str_contains($appEnvironment, 'docker'))
     {
         $dockerEnvironment = true;
     }
@@ -37,11 +37,11 @@ else if (file_exists($file = __DIR__ . '/../environment/env.php'))
 {
     $appEnvironment = require $file;
 
-    if (strpos($appEnvironment, 'dev') !== false)
+    if (empty($appEnvironment) === false and str_contains($appEnvironment, 'dev'))
     {
         $env = 'dev';
 
-        if (strpos($appEnvironment, 'docker') !== false)
+        if (str_contains($appEnvironment, 'docker'))
         {
             $dockerEnvironment = true;
         }
@@ -82,7 +82,7 @@ if (! function_exists('read_env_file'))
             return;
         }
 
-        $dotenv = Dotenv::create($envDir, $fileName);
+        $dotenv = Dotenv::createImmutable($envDir, $fileName);
 
         $dotenv->load();
     }

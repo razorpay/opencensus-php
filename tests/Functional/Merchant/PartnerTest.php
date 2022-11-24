@@ -19,6 +19,7 @@ use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\Metric as MerchantMetric;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\User\Role;
+use RZP\Services\RazorXClient;
 use Razorpay\OAuth\Application;
 use Illuminate\Http\UploadedFile;
 use RZP\Models\Merchant\Request;
@@ -135,7 +136,6 @@ class PartnerTest extends OAuthTestCase
             __DIR__ . '/../Storage/a.png',
             'a.png',
             'image/png',
-            filesize(__DIR__ . '/../Storage/a.png'),
             null,
             true);
     }
@@ -2146,19 +2146,17 @@ class PartnerTest extends OAuthTestCase
 
         $this->ba->proxyAuth();
 
-        $razorxMock = $this->getMockBuilder(Merchant\Core::class)
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $razorxMock->expects($this->any())
-            ->method('isRazorxExperimentEnable')
-            ->willReturn(true);
+        $this->mockRazorxTreatment();
 
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
         $this->app->instance('stork_service', $storkMock);
 
-        (new MerchantTest())->expectStorkSendSmsRequest($storkMock,'sms.onboarding.partner_submerchant_invite', '9999999999');
+        $expectedParms = [
+            'subMerchantName' => 'random_name_1'
+        ];
+
+        (new MerchantTest())->expectStorkSmsRequest($storkMock,'sms.onboarding.partner_submerchant_invite', '9999999999', $expectedParms);
 
         $this->startTest();
     }
@@ -2233,6 +2231,8 @@ class PartnerTest extends OAuthTestCase
         );
 
         $core = new \RZP\Models\Merchant\Core;
+
+        $this->app['rzp.mode'] = Mode::TEST;
 
         $core->addPartnerAddedFeaturesToSubmerchantOnMode($merchant, $partner, Mode::TEST);
 
@@ -2464,7 +2464,7 @@ class PartnerTest extends OAuthTestCase
             'email' => 'testing@example.com',
         ]);
 
-        $app = factory(Application\Entity::class)->create([
+        $app = Application\Entity::factory()->create([
             'id' => random_integer(10),
             'merchant_id' => self::DEFAULT_MERCHANT_ID,
             'type' => 'partner'
@@ -2518,7 +2518,7 @@ class PartnerTest extends OAuthTestCase
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
-        $app = factory(Application\Entity::class)->create([
+        $app = Application\Entity::factory()->create([
             'id' => random_integer(10),
             'merchant_id' => self::DEFAULT_MERCHANT_ID,
             'type' => 'partner'
@@ -2588,7 +2588,7 @@ class PartnerTest extends OAuthTestCase
 
         $this->ba->proxyAuth('rzp_test_' . $partnerMerchantId, User::MERCHANT_USER_ID);
 
-        $app = factory(Application\Entity::class)->create([
+        $app = Application\Entity::factory()->create([
            'id' => random_integer(10),
            'merchant_id' => self::DEFAULT_MERCHANT_ID,
            'type' => 'partner'
@@ -3480,7 +3480,7 @@ class PartnerTest extends OAuthTestCase
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
-        $app = factory(Application\Entity::class)->create([
+        $app = Application\Entity::factory()->create([
                                                               'id' => random_integer(10),
                                                               'merchant_id' => self::DEFAULT_MERCHANT_ID,
                                                               'type' => 'partner'
@@ -3538,5 +3538,18 @@ class PartnerTest extends OAuthTestCase
             ], $mode);
 
         return $bankingReferral;
+    }
+
+    private function mockRazorxTreatment()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
     }
 }

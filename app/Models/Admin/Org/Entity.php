@@ -239,6 +239,7 @@ class Entity extends Base\Entity
         self::ALLOW_SIGN_UP    => 'bool',
         self::CROSS_ORG_ACCESS => 'bool',
         self::MERCHANT_STYLES => 'array',
+        self::DELETED_AT      => 'int',
     ];
 
     protected $defaults = [

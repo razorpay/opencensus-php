@@ -145,7 +145,9 @@ class CapitalCardsController extends Controller
         $headers['Content-Type'] = 'application/json';
         $headers['X-Task-Id']    = $this->app['request']->getTaskId();
         $headers['Authorization'] = 'Basic '. base64_encode($username . ':' . $password);
-        $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+        if(!empty(Request::header(RequestHeader::DEV_SERVE_USER))){
+            $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+        }
         return $this->sendRequest($headers, $baseUrl . $url, $method, empty($body) ? '' : json_encode($body));
     }
 

@@ -718,7 +718,7 @@ class Service extends Base\Service
                 }
             }
         }
-        catch (\Requests_Exception $exception)
+        catch (\WpOrg\Requests\Exception $exception)
         {
             $this->trace->info(
                 TraceCode::PENDING_PAYOUT_NOTIFICATION_TO_SLACK_APP_FAILED,

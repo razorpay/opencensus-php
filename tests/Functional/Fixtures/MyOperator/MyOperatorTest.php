@@ -186,7 +186,7 @@ class MyOperatorTest extends TestCase
                 }))
                 ->andReturnUsing(function () use ($respondWithBody, $respondWithStatus, $isOldVersion)
                 {
-                    $response = new \Requests_Response;
+                    $response = new \WpOrg\Requests\Response;
 
                     $response->body = json_encode($respondWithBody);
 

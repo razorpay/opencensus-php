@@ -12,7 +12,7 @@ class Validator extends Base\Core
 {
     const ACCEPTED_EXTENSIONS_MAP = [
         'csv'  => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values', 'text/plain'],
-        'txt'  => ['text/plain', 'application/octet-stream', 'audio/x-unknown', 'text/x-Algol68', 'text/x-algol68'],
+        'txt'  => ['text/plain', 'application/octet-stream', 'audio/x-unknown', 'text/x-Algol68', 'text/x-algol68', 'text/csv'],
         // Ensure that this is always above 'xlsx' because of `getExtensionFromContentType`
         'zip'  => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
         'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -27,8 +27,8 @@ class Validator extends Base\Core
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip',
             'application/octet-stream', 'application/vnd.oasis.opendocument.spreadsheet',
         ],
-        'gpg'  => ['application/octet-stream', 'application/pgp'],
-        'pgp'  => ['application/pgp'],
+        'gpg'  => ['application/octet-stream', 'application/pgp', 'application/pgp-encrypted'],
+        'pgp'  => ['application/pgp', 'application/pgp-encrypted'],
         'rpt'  => ['text/plain'],
         'dat'  => ['text/plain'],
         '7z'   => ['application/x-7z-compressed'],
@@ -1065,7 +1065,7 @@ class Validator extends Base\Core
     public function validateExtensionMimeType(string $extension, string $mimeType)
     {
         $acceptedExtensionsMap = self::ACCEPTED_EXTENSIONS_MAP;
-
+     
         if ((isset($acceptedExtensionsMap[$extension]) === false) or
             (in_array($mimeType, $acceptedExtensionsMap[$extension], true) === false))
         {

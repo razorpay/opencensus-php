@@ -23,7 +23,7 @@ class OAuthPublicTokenTest extends OAuthTestCase
 
         parent::setUp();
 
-        $token = factory(Token\Entity::class)->create(['type' => 'access_token', 'scopes' => ['read_only']]);
+        $token = Token\Entity::factory()->create(['type' => 'access_token', 'scopes' => ['read_only']]);
 
         $this->publicToken = $token->getPublicTokenWithPrefix();
     }
@@ -70,7 +70,7 @@ class OAuthPublicTokenTest extends OAuthTestCase
             'expires_at' => time() - 50,
         ];
 
-        $token = factory(Token\Entity::class)->create($tokenData);
+        $token = Token\Entity::factory()->create($tokenData);
 
         $publicToken = $token->getPublicTokenWithPrefix();
 
@@ -86,7 +86,7 @@ class OAuthPublicTokenTest extends OAuthTestCase
             'scopes' => ['dummy'],
         ];
 
-        $token = factory(Token\Entity::class)->create($tokenData);
+        $token = Token\Entity::factory()->create($tokenData);
 
         $publicToken = $token->getPublicTokenWithPrefix();
 
@@ -97,7 +97,7 @@ class OAuthPublicTokenTest extends OAuthTestCase
 
     public function testStatusAfterPaymentOAuth()
     {
-        $client = factory(Client\Entity::class)->create();
+        $client = Client\Entity::factory()->create();
 
         $this->fixtures->create('order', ['amount' => 50000]);
         $order = $this->getLastEntity('order');

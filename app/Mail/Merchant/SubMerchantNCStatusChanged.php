@@ -2,6 +2,8 @@
 
 namespace RZP\Mail\Merchant;
 
+use Symfony\Component\Mime\Email;
+
 use RZP\Models\Admin\Org;
 use RZP\Mail\Base\Mailable;
 use RZP\Constants\MailTags;
@@ -75,7 +77,7 @@ class SubMerchantNCStatusChanged extends Mailable
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function($message) {
+        $this->withSymfonyMessage(function (Email $message) {
             $headers = $message->getHeaders();
 
             $headers->addTextHeader(MailTags::HEADER, MailTags::SUBMERCHANT_NC_STATUS_CHANGED);

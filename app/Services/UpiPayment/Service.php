@@ -19,6 +19,7 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Http\Discovery\Psr18ClientDiscovery;
 use Http\Discovery\Psr17FactoryDiscovery;
+use GuzzleHttp\Psr7\Request as Psr7Request;
 use Psr\Http\Client\NetworkExceptionInterface;
 
 /**
@@ -278,21 +279,13 @@ class Service
         // trace the request
         $this->traceRequest($request);
 
-        $requestFactory = Psr17FactoryDiscovery::findRequestFactory();
-        $streamFactory = Psr17FactoryDiscovery::findStreamFactory();
-
-        // Create a PSR-7 Request Object
-        $req = $requestFactory->createRequest($request[Request::METHOD], $request[Request::URL]);
-
         // Set the headers
         $headers = $this->getRequestHeaders();
-        foreach ($headers as $key => $value) {
-            $req = $req->withHeader($key, $value);
-        }
 
-        // Set the body
-        $body = $streamFactory->createStream($this->arrayToJsonString($request[Request::CONTENT]));
-        $req = $req->withBody($body);
+        // Get body
+        $body = $this->arrayToJsonString($request[Request::CONTENT]);
+
+        $req = new Psr7Request($request[Request::METHOD], $request[Request::URL], $headers, $body);
 
         return $req;
     }
@@ -424,7 +417,7 @@ class Service
     /**
      * throws Server exception in case of request failures
      *
-     * @param  \Requests_Exception $e
+     * @param  \WpOrg\Requests\Exception $e
      * @return void
      */
     protected function throwServerRequestException(\Exception $e)

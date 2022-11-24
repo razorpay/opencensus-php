@@ -2,7 +2,7 @@
 
 namespace Unit\Services;
 
-use Requests_Response;
+use \WpOrg\Requests\Response;
 
 use RZP\Constants\Mode;
 use RZP\Tests\TestCase;
@@ -21,7 +21,7 @@ class LedgerServiceTest extends TestCase
      */
     public function testExceptionForBadRequest()
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
         $obj = new \stdClass();
         $obj->msg = "Validation failure";
         $obj->code = 400;
@@ -38,7 +38,7 @@ class LedgerServiceTest extends TestCase
      */
     public function testResponseForServerError()
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
         $obj = new \stdClass();
         $obj->msg = "Something is wrong";
         $obj->code = 500;
@@ -52,7 +52,7 @@ class LedgerServiceTest extends TestCase
 
     public function testResponseForSuccessCase()
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
         $obj = new \stdClass();
         $obj->msg = "Ledger response";
         $obj->code = 200;

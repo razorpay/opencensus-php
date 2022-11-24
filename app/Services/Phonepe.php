@@ -54,7 +54,7 @@ class Phonepe
                 $request['options']
             );
         }
-        catch (\Requests_Exception $e)
+        catch (\WpOrg\Requests\Exception $e)
         {
             $this->trace->error(
                 TraceCode::PHONEPE_DOWNTIME_FETCH_ERROR,

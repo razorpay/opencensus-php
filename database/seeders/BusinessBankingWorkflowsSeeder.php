@@ -1,7 +1,10 @@
 <?php
 
+namespace Database\Seeders;
+
 use Illuminate\Database\Seeder;
 
+use Illuminate\Support\Facades\DB;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Permission;
 
@@ -10,13 +13,13 @@ class BusinessBankingWorkflowsSeeder extends Seeder
     const RAZORPAY_ORG_ID = '100000razorpay';
 
     /**
-     * Run the database seeds.
+     * Run the database seeders.
      *
      * @return void
      */
     public function run()
     {
-        Eloquent::unguard();
+        //Eloquent::unguard();
 
         DB::transaction(function()
         {

@@ -544,7 +544,6 @@ class UpiAxisReconTest extends TestCase
             $url,
             $file_name,
             $mime,
-            filesize($url),
             null,
             true);
     }
@@ -557,7 +556,6 @@ class UpiAxisReconTest extends TestCase
             $url,
             'REFUND_Razorpay Software Pvt Ltd.xlsx',
             $mime,
-            filesize($url),
             null,
             true);
     }

@@ -1,5 +1,7 @@
 <?php
 
+namespace Database\Seeders;
+
 use Illuminate\Database\Seeder;
 
 use RZP\Models\P2p;
@@ -10,13 +12,13 @@ use RZP\Tests\P2p\Service\Base\Constants;
 class P2pSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Run the database seeders.
      *
      * @return void
      */
     public function run()
     {
-        Eloquent::unguard();
+        //Eloquent::unguard();
 
         $this->seedRzpCustomer();
 
@@ -44,14 +46,14 @@ class P2pSeeder extends Seeder
                 Constants::RZP_LOCAL_CUSTOMER_2
             ])->delete();
 
-        factory(Customer\Entity::class)->create(
+        Customer\Entity::factory()->create(
             [
                 'id'                    => Constants::RZP_LOCAL_CUSTOMER_1,
                 'merchant_id'           => Constants::TEST_MERCHANT,
                 'contact'               => '+919988771111'
             ]);
 
-        factory(Customer\Entity::class)->create(
+        Customer\Entity::factory()->create(
             [
                 'id'                    => Constants::RZP_LOCAL_CUSTOMER_2,
                 'merchant_id'           => Constants::TEST_MERCHANT,
@@ -68,7 +70,7 @@ class P2pSeeder extends Seeder
                 Constants::CUSTOMER_2_DEVICE_1,
             ])->forceDelete();
 
-        factory(P2p\Device\Entity::class)->create(
+        P2p\Device\Entity::factory()->create(
             [
                 'id'                    => Constants::CUSTOMER_1_DEVICE_1,
                 'customer_id'           => Constants::RZP_LOCAL_CUSTOMER_1,
@@ -77,7 +79,7 @@ class P2pSeeder extends Seeder
                 'auth_token'            => Constants::CUSTOMER_1_DEVICE_1
             ]);
 
-        factory(P2p\Device\Entity::class)->create(
+        P2p\Device\Entity::factory()->create(
             [
                 'id'                    => Constants::CUSTOMER_2_DEVICE_1,
                 'customer_id'           => Constants::RZP_LOCAL_CUSTOMER_2,
@@ -102,7 +104,7 @@ class P2pSeeder extends Seeder
                 Constants::CUSTOMER_2_DEVICE_TOKEN_2_AXIS,
             ])->forceDelete();
 
-        factory(P2p\Device\DeviceToken\Entity::class)->create(
+        P2p\Device\DeviceToken\Entity::factory()->create(
             [
                 'id'                    => Constants::CUSTOMER_1_DEVICE_TOKEN_1_SHARP,
                 'device_id'             => Constants::CUSTOMER_1_DEVICE_1,
@@ -110,7 +112,7 @@ class P2pSeeder extends Seeder
                 'status'                => P2p\Device\Status::VERIFIED,
             ]);
 
-        factory(P2p\Device\DeviceToken\Entity::class)->create(
+        P2p\Device\DeviceToken\Entity::factory()->create(
             [
                 'id'                    => Constants::CUSTOMER_1_DEVICE_TOKEN_2_SHARP,
                 'device_id'             => Constants::CUSTOMER_1_DEVICE_1,
@@ -118,7 +120,7 @@ class P2pSeeder extends Seeder
                 'status'                => P2p\Device\Status::PENDING,
             ]);
 
-        factory(P2p\Device\DeviceToken\Entity::class)->create(
+        P2p\Device\DeviceToken\Entity::factory()->create(
             [
                 'id'                    => Constants::CUSTOMER_2_DEVICE_TOKEN_1_SHARP,
                 'device_id'             => Constants::CUSTOMER_2_DEVICE_1,
@@ -126,7 +128,7 @@ class P2pSeeder extends Seeder
                 'status'                => P2p\Device\Status::VERIFIED,
             ]);
 
-        factory(P2p\Device\DeviceToken\Entity::class)->create(
+        P2p\Device\DeviceToken\Entity::factory()->create(
             [
                 'id'                    => Constants::CUSTOMER_1_DEVICE_TOKEN_1_AXIS,
                 'device_id'             => Constants::CUSTOMER_1_DEVICE_1,
@@ -137,7 +139,7 @@ class P2pSeeder extends Seeder
                 ],
             ]);
 
-        factory(P2p\Device\DeviceToken\Entity::class)->create(
+        P2p\Device\DeviceToken\Entity::factory()->create(
             [
                 'id'                    => Constants::CUSTOMER_1_DEVICE_TOKEN_2_AXIS,
                 'device_id'             => Constants::CUSTOMER_1_DEVICE_1,
@@ -145,7 +147,7 @@ class P2pSeeder extends Seeder
                 'status'                => P2p\Device\Status::PENDING,
             ]);
 
-        factory(P2p\Device\DeviceToken\Entity::class)->create(
+        P2p\Device\DeviceToken\Entity::factory()->create(
             [
                 'id'                    => Constants::CUSTOMER_2_DEVICE_TOKEN_1_AXIS,
                 'device_id'             => Constants::CUSTOMER_2_DEVICE_1,
@@ -170,37 +172,37 @@ class P2pSeeder extends Seeder
                 Constants::CRZP_AXIS,
             ])->delete();
 
-        factory(P2p\BankAccount\Bank\Entity::class)->create(
+        P2p\BankAccount\Bank\Entity::factory()->create(
             [
                 'id'                    => Constants::ARZP,
                 'handle'                => Constants::RAZOR_SHARP,
             ]);
 
-        factory(P2p\BankAccount\Bank\Entity::class)->create(
+        P2p\BankAccount\Bank\Entity::factory()->create(
             [
                 'id'                    => Constants::BRZP,
                 'handle'                => Constants::RAZOR_SHARP,
             ]);
 
-        factory(P2p\BankAccount\Bank\Entity::class)->create(
+        P2p\BankAccount\Bank\Entity::factory()->create(
             [
                 'id'                    => Constants::CRZP,
                 'handle'                => Constants::RAZOR_SHARP,
             ]);
 
-        factory(P2p\BankAccount\Bank\Entity::class)->create(
+        P2p\BankAccount\Bank\Entity::factory()->create(
             [
                 'id'                    => Constants::ARZP_AXIS,
                 'handle'                => Constants::RAZOR_AXIS,
             ]);
 
-        factory(P2p\BankAccount\Bank\Entity::class)->create(
+        P2p\BankAccount\Bank\Entity::factory()->create(
             [
                 'id'                    => Constants::BRZP_AXIS,
                 'handle'                => Constants::RAZOR_AXIS,
             ]);
 
-        factory(P2p\BankAccount\Bank\Entity::class)->create(
+        P2p\BankAccount\Bank\Entity::factory()->create(
             [
                 'id'                    => Constants::CRZP_AXIS,
                 'handle'                => Constants::RAZOR_AXIS,
@@ -218,7 +220,7 @@ class P2pSeeder extends Seeder
                 Constants::CUSTOMER_2_BANK_ACCOUNT_1_AXIS,
             ])->forceDelete();
 
-        factory(P2p\BankAccount\Entity::class)->create(
+        P2p\BankAccount\Entity::factory()->create(
             [
                 'id'                    => Constants::CUSTOMER_1_BANK_ACCOUNT_1_SHARP,
                 'device_id'             => Constants::CUSTOMER_1_DEVICE_1,
@@ -230,7 +232,7 @@ class P2pSeeder extends Seeder
                 ],
             ]);
 
-        factory(P2p\BankAccount\Entity::class)->create(
+        P2p\BankAccount\Entity::factory()->create(
             [
                 'id'                    => Constants::CUSTOMER_2_BANK_ACCOUNT_1_SHARP,
                 'device_id'             => Constants::CUSTOMER_2_DEVICE_1,
@@ -242,7 +244,7 @@ class P2pSeeder extends Seeder
                 ]
             ]);
 
-        factory(P2p\BankAccount\Entity::class)->create(
+        P2p\BankAccount\Entity::factory()->create(
             [
                 'id'                    => Constants::CUSTOMER_1_BANK_ACCOUNT_1_AXIS,
                 'device_id'             => Constants::CUSTOMER_1_DEVICE_1,
@@ -254,7 +256,7 @@ class P2pSeeder extends Seeder
                 ],
             ]);
 
-        factory(P2p\BankAccount\Entity::class)->create(
+        P2p\BankAccount\Entity::factory()->create(
             [
                 'id'                    => Constants::CUSTOMER_2_BANK_ACCOUNT_1_AXIS,
                 'device_id'             => Constants::CUSTOMER_2_DEVICE_1,
@@ -280,7 +282,7 @@ class P2pSeeder extends Seeder
                 Constants::NORZP_AXIS,
             ])->delete();
 
-        factory(P2p\Vpa\Handle\Entity::class)->create(
+        P2p\Vpa\Handle\Entity::factory()->create(
             [
                 'code'                  => Constants::RAZOR_SHARP,
                 'acquirer'              => Constants::P2P_UPI_SHARP,
@@ -288,7 +290,7 @@ class P2pSeeder extends Seeder
                 'active'                => true,
             ]);
 
-        factory(P2p\Vpa\Handle\Entity::class)->create(
+        P2p\Vpa\Handle\Entity::factory()->create(
             [
                 'code'                  => Constants::RZP_SHARP,
                 'acquirer'              => Constants::P2P_UPI_SHARP,
@@ -296,7 +298,7 @@ class P2pSeeder extends Seeder
                 'active'                => true,
             ]);
 
-        factory(P2p\Vpa\Handle\Entity::class)->create(
+        P2p\Vpa\Handle\Entity::factory()->create(
             [
                 'code'                  => Constants::NORZP_SHARP,
                 'acquirer'              => Constants::P2P_UPI_SHARP,
@@ -304,7 +306,7 @@ class P2pSeeder extends Seeder
                 'active'                => false,
             ]);
 
-        factory(P2p\Vpa\Handle\Entity::class)->create(
+        P2p\Vpa\Handle\Entity::factory()->create(
             [
                 'code'                  => Constants::RAZOR_AXIS,
                 'acquirer'              => Constants::P2P_UPI_AXIS,
@@ -312,7 +314,7 @@ class P2pSeeder extends Seeder
                 'active'                => true,
             ]);
 
-        factory(P2p\Vpa\Handle\Entity::class)->create(
+        P2p\Vpa\Handle\Entity::factory()->create(
             [
                 'code'                  => Constants::RZP_AXIS,
                 'acquirer'              => Constants::P2P_UPI_AXIS,
@@ -320,7 +322,7 @@ class P2pSeeder extends Seeder
                 'active'                => true,
             ]);
 
-        factory(P2p\Vpa\Handle\Entity::class)->create(
+        P2p\Vpa\Handle\Entity::factory()->create(
             [
                 'code'                  => Constants::NORZP_AXIS,
                 'acquirer'              => Constants::P2P_UPI_AXIS,
@@ -344,7 +346,7 @@ class P2pSeeder extends Seeder
                 Constants::CUSTOMER_2_VPA_2_AXIS,
             ])->forceDelete();
 
-        factory(P2p\Vpa\Entity::class)->create(
+        P2p\Vpa\Entity::factory()->create(
             [
                 'id'                    => Constants::CUSTOMER_1_VPA_1_SHARP,
                 'device_id'             => Constants::CUSTOMER_1_DEVICE_1,
@@ -353,7 +355,7 @@ class P2pSeeder extends Seeder
                 'bank_account_id'       => Constants::CUSTOMER_1_BANK_ACCOUNT_1_SHARP,
             ]);
 
-        factory(P2p\Vpa\Entity::class)->create(
+        P2p\Vpa\Entity::factory()->create(
             [
                 'id'                    => Constants::CUSTOMER_1_VPA_2_SHARP,
                 'device_id'             => Constants::CUSTOMER_1_DEVICE_1,
@@ -362,7 +364,7 @@ class P2pSeeder extends Seeder
                 'bank_account_id'       => null,
             ]);
 
-        factory(P2p\Vpa\Entity::class)->create(
+        P2p\Vpa\Entity::factory()->create(
             [
                 'id'                    => Constants::CUSTOMER_2_VPA_1_SHARP,
                 'device_id'             => Constants::CUSTOMER_2_DEVICE_1,
@@ -371,7 +373,7 @@ class P2pSeeder extends Seeder
                 'bank_account_id'       => Constants::CUSTOMER_2_BANK_ACCOUNT_1_SHARP,
             ]);
 
-        factory(P2p\Vpa\Entity::class)->create(
+        P2p\Vpa\Entity::factory()->create(
             [
                 'id'                    => Constants::CUSTOMER_2_VPA_2_SHARP,
                 'device_id'             => Constants::CUSTOMER_2_DEVICE_1,
@@ -380,7 +382,7 @@ class P2pSeeder extends Seeder
                 'bank_account_id'       => null,
             ]);
 
-        factory(P2p\Vpa\Entity::class)->create(
+        P2p\Vpa\Entity::factory()->create(
             [
                 'id'                    => Constants::CUSTOMER_1_VPA_1_AXIS,
                 'device_id'             => Constants::CUSTOMER_1_DEVICE_1,
@@ -389,7 +391,7 @@ class P2pSeeder extends Seeder
                 'bank_account_id'       => Constants::CUSTOMER_1_BANK_ACCOUNT_1_AXIS,
             ]);
 
-        factory(P2p\Vpa\Entity::class)->create(
+        P2p\Vpa\Entity::factory()->create(
             [
                 'id'                    => Constants::CUSTOMER_1_VPA_2_AXIS,
                 'device_id'             => Constants::CUSTOMER_1_DEVICE_1,
@@ -398,7 +400,7 @@ class P2pSeeder extends Seeder
                 'bank_account_id'       => null,
             ]);
 
-        factory(P2p\Vpa\Entity::class)->create(
+        P2p\Vpa\Entity::factory()->create(
             [
                 'id'                    => Constants::CUSTOMER_2_VPA_1_AXIS,
                 'device_id'             => Constants::CUSTOMER_2_DEVICE_1,
@@ -407,7 +409,7 @@ class P2pSeeder extends Seeder
                 'bank_account_id'       => Constants::CUSTOMER_2_BANK_ACCOUNT_1_AXIS,
             ]);
 
-        factory(P2p\Vpa\Entity::class)->create(
+        P2p\Vpa\Entity::factory()->create(
             [
                 'id'                    => Constants::CUSTOMER_2_VPA_2_AXIS,
                 'device_id'             => Constants::CUSTOMER_2_DEVICE_1,
@@ -427,7 +429,7 @@ class P2pSeeder extends Seeder
                 Constants::CLIENT_1_RAZORSHARP_MER1,
             ])->forceDelete();
 
-        factory(P2p\Client\Entity::class)->create([
+        P2p\Client\Entity::factory()->create([
             'id'            => Constants::CLIENT_1_RAZORAXIS_MER1,
             'handle'        => Constants::RAZOR_AXIS,
             'client_type'                    => 'merchant',
@@ -447,7 +449,7 @@ class P2pSeeder extends Seeder
             ],
         ]);
 
-        factory(P2p\Client\Entity::class)->create([
+        P2p\Client\Entity::factory()->create([
             'id'             => Constants::CLIENT_2_RAZORAXIS_MER2,
             'handle'         => Constants::RAZOR_AXIS,
             'client_type'    => 'merchant',
@@ -465,7 +467,7 @@ class P2pSeeder extends Seeder
             ],
         ]);
 
-        factory(P2p\Client\Entity::class)->create([
+        P2p\Client\Entity::factory()->create([
             'id'             => Constants::CLIENT_1_RAZORSHARP_MER1,
             'handle'         => Constants::RAZOR_SHARP,
             'client_type'    => 'merchant',

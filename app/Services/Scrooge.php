@@ -3,7 +3,7 @@
 namespace RZP\Services;
 
 use RZP\Exception;
-use Requests_Exception;
+use \WpOrg\Requests\Exception as Requests_Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
@@ -914,10 +914,10 @@ class Scrooge
     /**
      * @param array $request
      *
-     * @return \Requests_Response
+     * @return \WpOrg\Requests\Response
      * @throws Requests_Exception
      */
-    protected function sendScroogeRequest(array $request): \Requests_Response
+    protected function sendScroogeRequest(array $request)
     {
         $this->traceRequest($request);
 
@@ -960,13 +960,13 @@ class Scrooge
     }
 
     /**
-     * @param \Requests_Response $response
+     * @param \WpOrg\Requests\Response $response
      * @param bool               $throwExceptionOnFailure
      *
      * @return array
      * @throws Exception\RuntimeException
      */
-    protected function parseResponse(\Requests_Response $response, bool $throwExceptionOnFailure = false): array
+    protected function parseResponse($response, bool $throwExceptionOnFailure = false): array
     {
         $code = $response->status_code;
 

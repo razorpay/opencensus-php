@@ -92,9 +92,7 @@ class VirtualAccountTest extends TestCase
 
         $this->vpaTerminal = $this->fixtures->create('terminal:vpa_shared_terminal_icici');
 
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
-        $this->app->make(Factory::class)->load($factoryPath);
 
         $this->enableRazorXTreatmentForTokenizeQrStringMpans();
     }
@@ -1108,7 +1106,7 @@ class VirtualAccountTest extends TestCase
 
         $this->assertEquals($qrCode['id'], 'qr_' . $qrCode['reference']);
 
-        $this->assertRegExp('^http://dwarf.razorpay.in/^', $qrCode['short_url']);
+        $this->assertMatchesRegularExpression('^http://dwarf.razorpay.in/^', $qrCode['short_url']);
 
         $tlvArray = $this->getTagMappedValues($qrCodeEntity->getQrString());
 
@@ -1372,7 +1370,7 @@ class VirtualAccountTest extends TestCase
 
         $vba = $this->getLastEntity('bank_account', true);
         // Root and handle from numeric shared terminal will be used.
-        $this->assertRegexp('/11122200[0-9]{8}$/', $vba['account_number']);
+        $this->assertMatchesRegularExpression('/11122200[0-9]{8}$/', $vba['account_number']);
 
         $this->createVirtualAccount([], false);
 
@@ -1402,7 +1400,7 @@ class VirtualAccountTest extends TestCase
 
         $vba = $this->getLastEntity('bank_account', true);
         // Alpha Numeric terminal is associated, but numeric accounts can still be created using shared terminal
-        $this->assertRegexp('/11122200[0-9]{8}$/', $vba['account_number']);
+        $this->assertMatchesRegularExpression('/11122200[0-9]{8}$/', $vba['account_number']);
     }
 
     public function testCreateVirtualAccountOldFormat()

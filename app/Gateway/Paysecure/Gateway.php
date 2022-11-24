@@ -347,7 +347,7 @@ class Gateway extends Base\Gateway
 
             $parsed = parse_url($redirectUrl);
 
-            if (isset($parsed['query']) === true)
+            if (isset($parsed['query']) === true && $parsed['query'] !== "" )
             {
                 parse_str($parsed['query'], $parsed);
 

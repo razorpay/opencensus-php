@@ -75,6 +75,10 @@ class Repository extends \Razorpay\Spine\Repository
      */
     protected $auth;
 
+    /**
+     * Trace instance for tracing
+     * @var $trace Trace
+     */
     protected $trace;
 
     protected $manager;
@@ -1203,7 +1207,7 @@ class Repository extends \Razorpay\Spine\Repository
         return false;
     }
 
-    protected function getDataWarehouseConnection(string $cluster = null)
+    protected function getDataWarehouseConnection(string $cluster = null): string
     {
         if (in_array($this->app['env'], [Environment::TESTING, Environment::TESTING_DOCKER], true) === true)
         {

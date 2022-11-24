@@ -161,7 +161,7 @@ class Templating
 
             return $this->handleResponse($response);
         }
-        catch(\Requests_Exception $exception)
+        catch(\WpOrg\Requests\Exception $exception)
         {
             throw new ServerErrorException(
                 'Unable to connect to templating service',

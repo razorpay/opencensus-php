@@ -3,7 +3,7 @@
 namespace RZP\Services\Mock\NbPlus;
 
 use App;
-use Requests_Response;
+use \WpOrg\Requests\Response;
 
 use RZP\Models\Payment;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -255,7 +255,7 @@ class Netbanking extends NetbankingBase
 
     protected function makeJsonResponse(array $content)
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         $response->headers = ['Content-Type' => 'application/json', 'Cache-Control' => 'no-cache'];
 

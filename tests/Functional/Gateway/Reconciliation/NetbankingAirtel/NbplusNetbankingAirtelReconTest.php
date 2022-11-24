@@ -82,7 +82,6 @@ class NbplusNetbankingAirtelReconTest extends NbPlusPaymentServiceNetbankingTest
             $file,
             $fileName,
             $mimeType,
-            filesize($file),
             null,
             true
         );

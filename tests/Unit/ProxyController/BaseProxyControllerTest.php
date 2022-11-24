@@ -87,7 +87,7 @@ class BaseProxyControllerTest extends TestCase
                  'X-Client-ID'   => '',
                  'rzpctx-dev-serve-user' => null,
              ], '{}', "POST", ['timeout' => null])
-             ->will($this->returnValue(new \Requests_Response));
+             ->will($this->returnValue(new \WpOrg\Requests\Response));
 
         $stub->handleAdminProxyRequests('/twirp/rzp.example.user.v1.UserAPI/List');
     }

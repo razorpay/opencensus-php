@@ -131,7 +131,6 @@ class NbplusNetbankingUjjivanReconciliationTest extends NbPlusPaymentServiceNetb
             $url,
             $fileName,
             $mime,
-            filesize($url),
             null,
             true);
     }

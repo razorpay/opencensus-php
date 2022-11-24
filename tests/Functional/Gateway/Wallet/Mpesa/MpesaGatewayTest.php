@@ -8,7 +8,7 @@ use ErrorException;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Wallet\Mpesa\Action;
 use RZP\Gateway\Wallet\Mpesa\SoapAction;
-use Illuminate\Foundation\Testing\TestResponse;
+use Illuminate\Testing\TestResponse;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class MpesaGatewayTest extends TestCase

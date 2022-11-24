@@ -198,7 +198,6 @@ class NbplusAppMethodEmerchantpayReconciliationTest extends NbPlusPaymentService
             $url,
             $fileName,
             $mime,
-            filesize($url),
             null,
             true);
     }

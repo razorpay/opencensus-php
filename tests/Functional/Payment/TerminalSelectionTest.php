@@ -2399,9 +2399,7 @@ class TerminalSelectionTest extends TestCase
 
     protected function setUpPartnerAndGetSubMerchantId()
     {
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
-        $this->app->make(Factory::class)->load($factoryPath);
 
         $subMerchant = $this->fixtures->create('merchant');
 

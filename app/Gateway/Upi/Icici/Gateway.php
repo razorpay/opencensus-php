@@ -479,7 +479,18 @@ class Gateway extends Base\Gateway
 
         $rsa->loadKey($key, RSA::PRIVATE_FORMAT_PKCS1);
 
-        return $rsa->decrypt($data);
+        // Hacky way to retain the behaviour as in php 7.
+        // rsa->decrypt() throws a user_error() which got caught in earlier version but due to the
+        // upgrade (to php 8.1 & laravel 9) the notice is not getting caught as an error,
+        // so we are throwing error manually if decryption is failing.
+        $decryptedResponse =  $rsa->decrypt($data);
+
+        if(!is_string($decryptedResponse))
+        {
+            throw new ErrorException('Decryption error');
+        }
+
+        return $decryptedResponse;
     }
 
     protected function getCipherInstance(): RSA

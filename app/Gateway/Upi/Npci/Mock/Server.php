@@ -377,7 +377,7 @@ EOT;
 
     protected function makeUpiResponse(string $xml, string $url)
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         $response->url = $url;
         $response->headers = ['Content-Type' => 'application/xml'];

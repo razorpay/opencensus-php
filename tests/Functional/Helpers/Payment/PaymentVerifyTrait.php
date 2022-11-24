@@ -12,66 +12,7 @@ trait PaymentVerifyTrait {
 
     protected function setupRedisMock($paymentArray = [])
     {
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['hGetAll', 'set', 'get', 'setex', 'client', 'exists', 'hDel', 'hSet', 'incr', 'expire', 'hGet'])
-            ->getMock();
-
-        Redis::shouldReceive('connection')
-            ->andReturn($redisMock);
-
-        $redisMock->method('hGetAll')
-            ->willReturn([]);
-
-        $redisMock->method('hGet')
-            ->willReturn([]);
-
-        $redisMock->method('hDel')
-            ->willReturn([]);
-
-        $redisMock->method('hSet')
-            ->willReturn(null);
-
-        $redisMock->method('incr')
-            ->willReturn(1);
-
-        $redisMock->method('expire')
-            ->willReturn(true);
-
-        $redisMock->method('set')->willReturnCallback(function($resourceId, $requestId) use ($paymentArray)
-        {
-            foreach($paymentArray as $payment)
-            {
-                if('mutex:' . $payment['id'] . '_verify' === $resourceId)
-                {
-                    return null;
-                }
-            }
-            return true;
-        });
-
-        $store = \Cache::store();
-
-        \Cache::shouldReceive('store')
-            ->withAnyArgs()
-            ->andReturn($store);
-
-
-        \Cache::shouldReceive('get')
-            ->andReturn([]);
-
-        // Assertions for call to cache in getCachedTreatment() method.
-        \Cache::shouldReceive('remember')
-            ->zeroOrMoreTimes()
-            ->andReturn("control");
-
-        \Cache::shouldReceive('driver')
-            ->andReturnUsing(function() use ($store)
-            {
-                return $store;
-            });
-
-        $redisMock->method('get')->will($this->returnValue(''));
-
-        $redisMock->method('exists')->will($this->returnValue(0));
+        return;
     }
 
     protected function setupRedisMockForBlockedGateway($paymentArray = [])

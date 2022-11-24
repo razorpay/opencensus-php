@@ -64,7 +64,7 @@ class NbplusNetbankingIdbiReconciliationTest extends NbPlusPaymentServiceNetbank
 
     protected function generateReconFile($data)
     {
-        $formattedData = 'IDBI|'. $data[ReconFields::PAYMENT_DATE] .'|1|' . '500.00' . "\n" . implode($data, '|');
+        $formattedData = 'IDBI|'. $data[ReconFields::PAYMENT_DATE] .'|1|' . '500.00' . "\n" . implode('|', $data);
 
         return $this->createFile($formattedData);
     }
@@ -77,7 +77,6 @@ class NbplusNetbankingIdbiReconciliationTest extends NbPlusPaymentServiceNetbank
             $url,
             $fileName,
             $mime,
-            filesize($url),
             null,
             true);
     }

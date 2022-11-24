@@ -5,7 +5,7 @@ jobs:
     runs-on: [api-public]
     if: github.event.deployment.environment == 'smartcollectUT'
     container:
-      image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
+      image: c.rzp.io/razorpay/onggi:php-8.1-api-web
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -173,7 +173,7 @@ jobs:
     runs-on: [api-public]
     if: github.event.deployment.environment == 'routeUT'
     container:
-      image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
+      image: c.rzp.io/razorpay/onggi:php-8.1-api-web
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -257,7 +257,7 @@ jobs:
     runs-on: [ api-public ]
     if: github.event.deployment.environment == 'paymentPageUT'
     container:
-      image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
+      image: c.rzp.io/razorpay/onggi:php-8.1-api-web
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -341,7 +341,7 @@ jobs:
     runs-on: [api-public]
     if: github.event.deployment.environment == 'RX_PAYOUTS'
     container:
-      image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
+      image: c.rzp.io/razorpay/onggi:php-8.1-api-web
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -425,7 +425,7 @@ jobs:
     runs-on: [api-public]
     if: github.event.deployment.environment == 'RX_CORE'
     container:
-      image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
+      image: c.rzp.io/razorpay/onggi:php-8.1-api-web
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -509,7 +509,7 @@ jobs:
     runs-on: [ api-public ]
     if: github.event.deployment.environment == 'ES_ONDEMAND'
     container:
-      image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
+      image: c.rzp.io/razorpay/onggi:php-8.1-api-web
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -586,7 +586,7 @@ jobs:
     runs-on: [ api-public ]
     if: github.event.deployment.environment == 'OnboardingAPIsUT'
     container:
-      image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
+      image: c.rzp.io/razorpay/onggi:php-8.1-api-web
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}

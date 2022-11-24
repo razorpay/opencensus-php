@@ -1,5 +1,8 @@
 <?php
 
+namespace Database\Seeders;
+
+use Illuminate\Support\Facades\DB;
 use RZP\Constants\Table;
 use Illuminate\Database\Seeder;
 
@@ -7,13 +10,13 @@ class GroupMapSeeder extends Seeder
 {
 
     /**
-     * Run the database seeds.
+     * Run the database seeders.
      *
      * @return void
      */
     public function run()
     {
-        Eloquent::unguard();
+        //Eloquent::unguard();
 
         $this->seed();
     }

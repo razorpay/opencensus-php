@@ -303,8 +303,8 @@ final class PostAuthenticate
     private function isPublicAuth()
     {
         return (($this->reqCtx->authType == BasicAuth\Type::PUBLIC_AUTH) &&
-                ($this->isPublicCallbackRoute() === false) &&
-                ($this->ba->isKeylessPublicAuth() === false));
+            ($this->isPublicCallbackRoute() === false) &&
+            ($this->ba->isKeylessPublicAuth() === false));
     }
 
     /**

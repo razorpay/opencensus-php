@@ -1,20 +1,29 @@
 FROM c.rzp.io/razorpay/armory:wkhtmltopdf-v182 as wkhtmltopdf
 
-FROM c.rzp.io/razorpay/onggi:php-7.2-api-web-v3 as opencensus-ext
+FROM c.rzp.io/razorpay/onggi:php-8.1-api-web as opencensus-ext
 WORKDIR /
-ARG OPENCENSUS_VERSION_TAG=v0.7.6.4
+ARG OPENCENSUS_VERSION_TAG=v0.8.0-beta
 RUN set -eux && \
     wget -O - https://github.com/razorpay/opencensus-php/tarball/"${OPENCENSUS_VERSION_TAG}" | tar xz --strip=1
-RUN cd /ext && phpize && ./configure --enable-opencensus && make install
+RUN cd /ext && phpize81 && ./configure --enable-opencensus --with-php-config=/usr/bin/php-config81 && make install
 
-FROM c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
+FROM c.rzp.io/razorpay/onggi:php-8.1-api-web
+
+RUN apk add --update wget tar \
+    && wget https://curl.haxx.se/download/curl-7.82.0.tar.gz \
+    && tar -xzf curl-7.82.0.tar.gz \
+    && cd curl-7.82.0 \
+    && ./configure --with-ssl --prefix=/usr \
+    && make && make install \
+    && cd .. && rm -rf curl-7.82.0 \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --from=wkhtmltopdf /bin/wkhtmltopdf /usr/bin/wkhtmltopdf
 
-RUN pear config-set php_ini /etc/php7/php.ini
-RUN pecl install opencensus-alpha
+RUN pear81 config-set php_ini /etc/php81/php.ini
+RUN pecl81 install opencensus-alpha
 
-COPY --from=opencensus-ext /usr/lib/php7/modules/opencensus.so /usr/lib/php7/modules
+COPY --from=opencensus-ext /usr/lib/php81/modules/opencensus.so /usr/lib/php81/modules
 
 VOLUME ['/app']
 

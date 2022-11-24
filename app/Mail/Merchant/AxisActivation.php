@@ -2,6 +2,8 @@
 
 namespace RZP\Mail\Merchant;
 
+use Symfony\Component\Mime\Email;
+
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Constants\MailTags;
@@ -81,7 +83,7 @@ class AxisActivation extends Mailable
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function ($message)
+        $this->withSymfonyMessage(function (Email $message)
         {
             $headers = $message->getHeaders();
             $headers->addTextHeader(MailTags::HEADER, MailTags::ACCOUNT_ACTIVATED);

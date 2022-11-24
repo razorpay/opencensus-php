@@ -202,7 +202,7 @@ class CareServiceClient
         return Requests::request($url, $headers, $content, $method, $options);
     }
 
-    protected function processResponse(\Requests_Response $response): array
+    protected function processResponse($response): array
     {
         if ($response->status_code >= 500)
         {
@@ -260,7 +260,7 @@ class CareServiceClient
         return 'Basic ' . base64_encode('api:' . $this->config['password']);
     }
 
-    protected function parseResponse(\Requests_Response $response)
+    protected function parseResponse($response)
     {
         $responseArray = json_decode($response->body, true);
 

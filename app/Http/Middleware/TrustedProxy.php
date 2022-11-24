@@ -3,7 +3,8 @@
 namespace RZP\Http\Middleware;
 
 use Illuminate\Http\Request;
-use Fideloper\Proxy\TrustProxies as Middleware;
+use Illuminate\Http\Middleware\TrustProxies as Middleware;
+use Symfony\Component\HttpFoundation\Request as RequestAlias;
 
 class TrustedProxy extends Middleware
 {
@@ -22,5 +23,12 @@ class TrustedProxy extends Middleware
      *
      * @var null|string|int
      */
-    protected $headers = Request::HEADER_X_FORWARDED_ALL;
+    protected $headers = RequestAlias::HEADER_FORWARDED           |
+                         RequestAlias::HEADER_X_FORWARDED_FOR     |
+                         RequestAlias::HEADER_X_FORWARDED_HOST    |
+                         RequestAlias::HEADER_X_FORWARDED_PORT    |
+                         RequestAlias::HEADER_X_FORWARDED_PROTO   |
+                         RequestAlias::HEADER_X_FORWARDED_AWS_ELB |
+                         RequestAlias::HEADER_X_FORWARDED_TRAEFIK |
+                         RequestAlias::HEADER_X_FORWARDED_PREFIX;
 }

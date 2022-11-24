@@ -61,7 +61,7 @@ class InstrumentRulesTest extends TestCase
 
             $this->assertArrayKeysExist(json_decode($content, true), self::EVENT_KEYS);
 
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $response->body = '
                        {
@@ -106,7 +106,7 @@ class InstrumentRulesTest extends TestCase
 
             $this->assertArrayKeysExist(json_decode($content, true), self::EVENT_KEYS);
 
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $response->body = '
                        {
@@ -173,7 +173,7 @@ class InstrumentRulesTest extends TestCase
 
             $this->assertArrayKeysExist(json_decode($content, true), self::EVENT_KEYS);
 
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $response->body = '
                        {

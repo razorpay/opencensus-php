@@ -342,7 +342,7 @@ class Service extends Base\Service
             // check in db if slot is already booked for the same id and dateAnTime
             $activationDetail = $this->repo->banking_account_activation_detail->findByBankingAccountId($bankingAccount->getId());
 
-            $this->trace->addDebug(TraceCode::SLOT_BOOKING_AND_SAVED_TIME,
+            $this->trace->debug(TraceCode::SLOT_BOOKING_AND_SAVED_TIME,
                                    [
                                        'booking time' => $epochSlotBookingDateTime,
                                        'Saved time' => $activationDetail['booking_date_and_time']

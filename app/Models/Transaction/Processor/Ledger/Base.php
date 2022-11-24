@@ -284,7 +284,7 @@ class Base extends Core
 
             // For testing retries through LedgerStatus Job, uncomment this
 //            $retryCount = 10; // to skip retry and go to async job
-//            throw new \Requests_Exception(null, "Forced exception for testing");
+//            throw new \WpOrg\Requests\Exception(null, "Forced exception for testing");
         }
         catch (\RZP\Exception\BaseException $e)
         {
@@ -380,7 +380,7 @@ class Base extends Core
             ];
             $response = $ledgerService->fetchByTransactor($payload, $requestHeaders, true);
         }
-        catch (\Requests_Exception $re)
+        catch (\WpOrg\Requests\Exception $re)
         {
             // This is an ambiguous situation, retry the request
             // TODO: An alert here is absolutely essential

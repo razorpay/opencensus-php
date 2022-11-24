@@ -1242,7 +1242,7 @@ class Core extends Base\Core
             }
             catch(\Throwable $e)
             {
-                $this->trace->warn(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['batch' => $batch->getId()]);
+                $this->trace->warning(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['batch' => $batch->getId()]);
                 // do nothing. will try fetching from invoice repo
             }
         }

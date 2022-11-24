@@ -3,12 +3,10 @@
 namespace RZP\Base;
 
 use Carbon\Carbon;
-use Razorpay\Trace\Facades\Trace;
 use Illuminate\Database\Eloquent\Model;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
 
 class EloquentEx extends \Razorpay\Spine\Entity
@@ -201,5 +199,28 @@ class EloquentEx extends \Razorpay\Spine\Entity
         throw new Exception\LogicException('Delete not supported, Use either HardDeletes or SoftDeletes trait', null, [
             'entity' => $this->entity
         ]);
+    }
+
+    /**
+     * Get the format for database stored dates.
+     *
+     * @return string
+     */
+    public function getDateFormat(): string
+    {
+        return $this->dateFormat ?: $this->getConnection()->getQueryGrammar()->getDateFormat();
+    }
+
+    /**
+     * Prepare a date for array / JSON serialization.
+     *
+     * @param mixed $date
+     * @return string
+     */
+    protected function serializeDate($date): string
+    {
+        $date = $this->asDateTime($date);
+
+        return $date->format($this->getDateFormat());
     }
 }

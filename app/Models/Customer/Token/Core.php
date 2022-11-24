@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Customer\Token;
 
+use Illuminate\Support\Arr;
 use RZP\Constants;
 use Carbon\Carbon;
 use RZP\Diag\EventCode;
@@ -723,7 +724,7 @@ class Core extends Base\Core
                 // If item contains field `card` then filter out token with card network in disabled network array
                 //
                 if ((isset($item[Entity::CARD]) === true) and
-                    (isset($item[Entity::CARD][Card\Entity::NETWORK]) === true)
+                    (isset($item[Entity::CARD][Card\Entity::NETWORK]) === true) &&
                     (in_array(Card\Network::getCode($item[Entity::CARD][Card\Entity::NETWORK]), $disabledNetwork, true) === true))
                 {
                     return false;
@@ -3305,7 +3306,7 @@ class Core extends Base\Core
         // Added this log for checking if this edge case occurs
         // If this gets logged, will have to handle that case as well
         // Else will remove it after 1 week
-        $this->trace->warn(TraceCode::TOKENS_NOT_A_PUBLIC_COLLECTION, [
+        $this->trace->warning(TraceCode::TOKENS_NOT_A_PUBLIC_COLLECTION, [
             'tokens_data_type' => gettype($tokens),
         ]);
 
@@ -3316,15 +3317,36 @@ class Core extends Base\Core
      * Removes all the card tokens which are not compliant with the
      * Reserve Bank of India's (RBI) tokenisation guidelines.
      *
-     * @param Base\PublicCollection $tokens
+     * @param Base\PublicCollection|array $tokens
      * @param string $merchantId
      *
-     * @return Base\PublicCollection
+     * @return Base\PublicCollection|array
      */
-    public function removeNonCompliantCardTokens(Base\PublicCollection $tokens, string $merchantId): Base\PublicCollection
+    public function removeNonCompliantCardTokens($tokens, string $merchantId)
     {
         if ((new TokenisationExperiment())->shouldRemoveNonCompliantCardTokens($merchantId) === false)
         {
+            return $tokens;
+        }
+
+        if (!Base\PublicCollection::isPublicCollection($tokens)) {
+            $this->trace->warning(TraceCode::TOKENS_NOT_A_PUBLIC_COLLECTION, [
+                'tokens_data_type' => gettype($tokens),
+            ]);
+
+            $tokenItems = &$tokens['items'];
+
+            $tokenItems = array_filter($tokenItems, static function ($token) {
+                if (
+                    Arr::has($token, [Entity::CARD, Entity::COMPLIANT_WITH_TOKENISATION_GUIDELINES]) &&
+                    $token[Entity::COMPLIANT_WITH_TOKENISATION_GUIDELINES] === false
+                ) {
+                    return false;
+                }
+
+                return true;
+            });
+
             return $tokens;
         }
 

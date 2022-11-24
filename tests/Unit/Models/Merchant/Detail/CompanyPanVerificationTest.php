@@ -39,7 +39,7 @@ class CompanyPanVerificationTest extends TestCase
         $detailCore = $this->getMockBuilder(Detail\Core::class)
             ->onlyMethods(["canSubmit"])
             ->getMock();
-        $detailCore->expects($this->exactly(2))->method('canSubmit')->willReturn(true);
+        $detailCore->expects($this->once())->method('canSubmit')->willReturn(true);
 
         return [$detailCore];
     }

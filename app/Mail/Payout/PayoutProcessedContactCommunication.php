@@ -4,6 +4,8 @@ namespace RZP\Mail\Payout;
 
 use App;
 use Carbon\Carbon;
+use Symfony\Component\Mime\Email;
+
 
 use RZP\Models\Merchant;
 use RZP\Mail\Base\Mailable;
@@ -169,7 +171,7 @@ class PayoutProcessedContactCommunication extends Mailable
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function ($message)
+        $this->withSymfonyMessage(function (Email $message)
         {
             $headers = $message->getHeaders();
 

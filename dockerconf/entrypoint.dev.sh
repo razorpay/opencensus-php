@@ -50,14 +50,14 @@ configure_dev(){
   echo "$(date) Memory Limit"
   ## This is a bad workaround for increasing php's memory to to 3G enable running tests locally
   ## Mac's sed idiosyncrasies :(
-  echo 'memory_limit = 128M' | sed -E 's~memory_limit\s*=\s*\d*M~memory_limit = 3048M~g' /etc/php7/php.ini > /tmp/php.ini
+  echo 'memory_limit = 128M' | sed -E 's~memory_limit\s*=\s*\d*M~memory_limit = 3048M~g' /etc/php81/php.ini > /tmp/php.ini
   echo "$(date) Memory Limit done"
-  mv /tmp/php.ini /etc/php7/php.ini
+  mv /tmp/php.ini /etc/php81/php.ini
 
   # Throw exception on assertion failures
-  touch /etc/php7/conf.d/assertion.ini
-  echo "zend.assertions=1" >> /etc/php7/conf.d/assertion.ini
-  echo "assert.exception=On" >> /etc/php7/conf.d/assertion.ini
+  touch /etc/php81/conf.d/assertion.ini
+  echo "zend.assertions=1" >> /etc/php81/conf.d/assertion.ini
+  echo "assert.exception=On" >> /etc/php81/conf.d/assertion.ini
 }
 
 configure_db_dev(){

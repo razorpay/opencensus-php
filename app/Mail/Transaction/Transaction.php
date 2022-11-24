@@ -2,6 +2,8 @@
 
 namespace RZP\Mail\Transaction;
 
+use Symfony\Component\Mime\Email;
+
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
@@ -71,7 +73,7 @@ class Transaction extends Mailable
 
     protected function addHeaders()
     {
-        return $this->withSwiftMessage(function ($message)
+        return $this->withSymfonyMessage(function (Email $message)
         {
             $headers = $message->getHeaders();
 

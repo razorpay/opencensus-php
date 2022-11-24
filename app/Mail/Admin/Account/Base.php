@@ -2,6 +2,8 @@
 
 namespace RZP\Mail\Admin\Account;
 
+use Symfony\Component\Mime\Email;
+
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
 use RZP\Mail\Base\Mailable;
@@ -55,7 +57,7 @@ class Base extends Mailable
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function ($message)
+        $this->withSymfonyMessage(function (Email $message)
         {
             $mailTag = $this->getMailTag();
 

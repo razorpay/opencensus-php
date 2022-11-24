@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Mozart\NetBankingBob;
+namespace RZP\Gateway\Mozart\NetbankingBob;
 
 class ReconFields
 {

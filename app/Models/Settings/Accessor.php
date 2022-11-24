@@ -3,6 +3,7 @@
 namespace RZP\Models\Settings;
 
 use App;
+use Carbon\Carbon;
 use Razorpay\Spine\DataTypes\Dictionary;
 use anlutro\LaravelSettings\SettingsManager;
 
@@ -44,7 +45,7 @@ class Accessor extends Base\Core
     /**
      * @var SettingsManager
      */
-    protected $laravelSettings;
+    protected SettingsManager $laravelSettings;
 
     public function __construct(Base\PublicEntity $entity, string $module, string $connection = null)
     {
@@ -174,6 +175,8 @@ class Accessor extends Base\Core
     {
         $this->trace->info(TraceCode::SETTINGS_UPSERT_REQUEST, [$key, $value]);
 
+        $this->updateExtraColumnsWithCreatedAndUpdatedAt();
+
         $this->laravelSettings->set($key, $value);
 
         return $this;
@@ -209,6 +212,8 @@ class Accessor extends Base\Core
     public function save()
     {
         $this->laravelSettings->save();
+        
+        $this->setExtraColumns();
     }
 
     protected function validateEntityAndModule()
@@ -226,14 +231,27 @@ class Accessor extends Base\Core
     protected function setExtraColumns()
     {
         $filterColumns = [
-            'entity_type' => $this->entity,
-            'entity_id'   => $this->id,
-            'module'      => $this->module
+            'entity_type'       => $this->entity,
+            'entity_id'         => $this->id,
+            Entity::MODULE      => $this->module,
         ];
 
         $this->laravelSettings->setExtraColumns($filterColumns);
     }
 
+
+    protected function updateExtraColumnsWithCreatedAndUpdatedAt()
+    {
+        $filterColumns = [
+            'entity_type'       => $this->entity,
+            'entity_id'         => $this->id,
+            Entity::MODULE      => $this->module,
+            Entity::CREATED_AT  => Carbon::now()->getTimestamp(),
+            Entity::UPDATED_AT  => Carbon::now()->getTimestamp()
+        ];
+
+        $this->laravelSettings->setExtraColumns($filterColumns);
+    }
     /**
      * Serialize settings
      *

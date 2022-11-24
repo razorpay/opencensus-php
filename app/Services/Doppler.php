@@ -6,7 +6,7 @@ use RZP\Http\Request\Requests;
 use RZP\Error;
 use RZP\Exception;
 use Carbon\Carbon;
-use Requests_Session;
+use \WpOrg\Requests\Session as Requests_Session;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Upi\Base;

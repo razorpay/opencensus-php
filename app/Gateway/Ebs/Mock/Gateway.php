@@ -4,8 +4,8 @@ namespace RZP\Gateway\Ebs\Mock;
 
 use Requests_Cookie;
 use Requests_Cookie_Jar;
-use Requests_Response;
-use Requests_Response_Headers;
+use \WpOrg\Requests\Response;
+use \WpOrg\Requests\Response\Headers;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Ebs;
@@ -131,7 +131,7 @@ class Gateway extends Ebs\Gateway
 
     protected function setHeader($response, $headerValue)
     {
-        $header = new Requests_Response_Headers();
+        $header = new \WpOrg\Requests\Response\Headers();
 
         foreach ($headerValue as $key => $value)
         {
@@ -168,7 +168,7 @@ class Gateway extends Ebs\Gateway
 
     protected function createResponse($statusCode = 200, $success = true)
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         $response->status_code = $statusCode;
         $response->success = $success;

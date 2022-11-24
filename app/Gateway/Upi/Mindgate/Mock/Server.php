@@ -43,6 +43,8 @@ class Server extends Base\Mock\Server
         Action::INTENT_TPV    => 17,
     ];
 
+    const REDIRECT_TO_DARK = 'redirect_to_dark';
+
     const DEFAULT_VPA = 'default@hdfc';
 
     public function intentTpv($input)
@@ -150,19 +152,26 @@ class Server extends Base\Mock\Server
     {
         $action = $this->action;
 
-        // There are lots of empty "additional fields" in the response
-        // that are currently expected to be filled with NA
-        // The number of such fields depends on the request (auth|refund|etc)
-        // We calculate the number of such fields and add it as a padding
-        // with array_merge
+        if ($action !== self::REDIRECT_TO_DARK)
+        {
+            // There are lots of empty "additional fields" in the response
+            // that are currently expected to be filled with NA
+            // The number of such fields depends on the request (auth|refund|etc)
+            // We calculate the number of such fields and add it as a padding
+            // with array_merge
 
-        $paddingCount = self::RESPONSE_FIELD_COUNT[$action] - count($data);
+            $paddingCount = self::RESPONSE_FIELD_COUNT[$action] - count($data);
 
-        $data = array_merge($data, array_fill(count($data), $paddingCount, 'NA'));
+            $data = array_merge($data, array_fill(count($data), $paddingCount, 'NA'));
 
-        $content = implode('|', $data);
+            $content = implode('|', $data);
 
-        $content = $this->encrypt($content, $key);
+            $content = $this->encrypt($content, $key);
+        }
+        else
+        {
+            $content = $data;
+        }
 
         $response = parent::makeResponse($content);
 
@@ -609,6 +618,8 @@ class Server extends Base\Mock\Server
 
     public function redirectToDark($input)
     {
+        $this->action = self::REDIRECT_TO_DARK;
+
         $this->request($input, __FUNCTION__);
 
         $response = ['success' => true];

@@ -1122,10 +1122,8 @@ class Gateway extends Base\Gateway
         try
         {
             $PaRes = $input['gateway']['PaRes'];
-
             $PaRes = base64_decode($PaRes);
-            $PaRes = gzinflate(substr($PaRes, 2));
-
+            $PaRes = gzinflate(substr($PaRes));
             $PaResObject = simplexml_load_string($PaRes);
             $PaRes = json_decode(json_encode($PaResObject), true);
         }

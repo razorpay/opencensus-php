@@ -81,9 +81,7 @@ class PaymentLimitTest extends TestCase
 
         $mimeType = $mimeType ?: 'image/png';
 
-        $fileSize = ($fileSize === -1) ? filesize($filePath) : $fileSize;
-
-        return new UploadedFile($filePath, $filePath, $mimeType, $fileSize, null, true);
+        return new UploadedFile($filePath, $filePath, $mimeType, null, true);
     }
 
     public function testUploadMaxLimitViaFile()

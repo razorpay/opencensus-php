@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Error\Twirp;
+namespace RZP\Error\twirp;
 
 use RZP\Error\ErrorCode;
 

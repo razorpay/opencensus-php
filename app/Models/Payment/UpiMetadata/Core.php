@@ -20,7 +20,7 @@ class Core extends Base\Core
     public function update(Entity $metadata): Entity
     {
         $dirty = $metadata->getDirty();
-        $original = $metadata->getOriginal();
+        $original = $metadata->getRawOriginal();
 
         $toTrace = [
             'payment_id'            => $metadata->getPaymentId(),

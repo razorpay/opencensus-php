@@ -39,7 +39,7 @@ class Notes extends ArrayObject implements  Arrayable,  Jsonable, JsonSerializab
      * For notes, It is an array.
      * @return array
      */
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         return $this->toArray();
     }

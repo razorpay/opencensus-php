@@ -125,7 +125,7 @@ class Client
 
             return $response;
         }
-        catch (\Requests_Exception $e)
+        catch (\WpOrg\Requests\Exception $e)
         {
             $data = [
                 'exception'     => $e->getMessage(),

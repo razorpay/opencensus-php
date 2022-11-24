@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Trace;
+namespace RZP\Models\Customer\Account\Metrics;
 
 final class Metric
 {

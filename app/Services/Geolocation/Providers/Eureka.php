@@ -4,7 +4,7 @@ namespace RZP\Services\Geolocation\Providers;
 
 use RZP\Http\Request\Requests;
 use RZP\Exception;
-use Requests_Response;
+use \WpOrg\Requests\Response;
 use RZP\Trace\TraceCode;
 use RZP\Models\GeoIP\Entity;
 use RZP\Services\GeoLocation\ProviderInterface;

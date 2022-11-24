@@ -2,85 +2,134 @@
 
 namespace Unit\PayoutDetails;
 
-use App;
-use RZP\Trace\TraceCode;
-use RZP\Models\PayoutsDetails\Core;
+use Mockery;
+use RZP\Exception;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\PayoutSource\Entity;
 use RZP\Models\Base\UniqueIdEntity;
-use RZP\Models\PayoutSource\Repository;
+use RZP\Models\Base\PublicCollection;
 
 class CoreTest extends TestCase
 {
-    public function testUpdateAttachments()
+    public function testUpdateAttachmentsWithNoPayoutDetails()
     {
         $auth = $this->app['basicauth'];
 
         $this->app->instance('basicauth', $auth);
 
         $merchant = $this->fixtures->create('merchant',
-                                            [
-                                                'id'    => '12345678901234'
-                                            ]);
+            [
+                'id'    => '12345678901234'
+            ]);
 
         $auth->setMerchant($merchant);
 
-        $psRepoMock = $this->getMockBuilder(Repository::class)
-                           ->setConstructorArgs([$this->app])
-                           ->addMethods(['getPayoutSourceByPayoutIdAndPriority'])
-                           ->getMock();
+        $repoMock = Mockery::mock('\RZP\Base\RepositoryManager', [$this->app])->makePartial();
 
-        $this->app->instance('repo', $psRepoMock);
+        $pdRepoMock =  Mockery::mock('\RZP\Models\PayoutsDetails\Repository');
 
-        // returning payout with source should not allow updates
-        $mockPayoutSource = new Entity();
+        $repoMock->shouldReceive('driver')->with('payouts_details')->andReturn($pdRepoMock);
+
+        $pdRepoMock->shouldReceive('getPayoutDetailsByPayoutId')->andReturn(new PublicCollection());
+
+        $pdRepoMock->shouldReceive('saveOrFail')->andReturn([]);
+
+        $this->app->instance('repo', $repoMock);
 
         $uniqueId = UniqueIdEntity::generateUniqueId();
 
-        $mockPayoutSource->setId($uniqueId);
+        $mock = $this->getMockBuilder('\RZP\Models\PayoutsDetails\Core')
+            ->onlyMethods(array('renameAttachments'))
+            ->getMock();
 
-        $mockPayoutSource->setSourceType('vendor-payment');
+        $mock->method('renameAttachments')->willReturn([]);
 
-        $mockPayoutSource->setSourceId('vdpm_'.UniqueIdEntity::generateUniqueId());
-
-        $psRepoMock->method('getPayoutSourceByPayoutIdAndPriority')->willReturn($mockPayoutSource);
-
-        $payoutDetails = new Core();
-
-        $response = $payoutDetails->updateAttachments('pout_'.$uniqueId, []);
-
-        $this->assertEquals('FAIL', $response['status']);
-
-        $this->assertEquals(TraceCode::PAYOUT_INVALID_UPDATE, $response['error']);
-
-        // in case payout does not have source, updates should be allowed
-
-        $psRepoMock->method('getPayoutSourceByPayoutIdAndPriority')->willReturn(null);
-
-        $payoutRepoMock = $this->getMockBuilder(\RZP\Models\Payout\Repository::class)
-                               ->setConstructorArgs([$this->app])
-                               ->addMethods(['updatePayout'])
-                               ->getMock();
-
-        $payoutRepoMock->method('updatePayout')->willReturn(null);
-
-        $response = $payoutDetails->updateAttachments('pout_'.$uniqueId,
-                                                ['attachments' =>
-                                                     ['file_id' => 'file_yeherkw', 'file_name' => 'abdsh.pdf']]);
+        $response = $mock->updateAttachments($uniqueId, []);
 
         $this->assertEquals('SUCCESS', $response['status']);
+    }
 
-        $this->assertNull($response['error']);
+    public function testUpdateAttachmentsWithPayoutDetails()
+    {
+        $auth = $this->app['basicauth'];
 
-        // error while update should return failure
-        $payoutRepoMock->method('updatePayout')->willThrowException(new \Exception('could not update'));
+        $this->app->instance('basicauth', $auth);
 
-        $response = $payoutDetails->updateAttachments('pout_'.$uniqueId,
-                                                ['attachments' =>
-                                                     ['file_id' => 'file_yeherkw', 'file_name' => 'abdsh.pdf']]);
+        $merchant = $this->fixtures->create('merchant',
+            [
+                'id'    => '12345678901234'
+            ]);
 
-        $this->assertEquals('FAIL', $response['status']);
+        $auth->setMerchant($merchant);
 
-        $this->assertEquals('could not update', $response['error']);
+        $repoMock = Mockery::mock('\RZP\Base\RepositoryManager', [$this->app])->makePartial();
+
+        $pdRepoMock =  Mockery::mock('\RZP\Models\PayoutsDetails\Repository');
+
+        $repoMock->shouldReceive('driver')->with('payouts_details')->andReturn($pdRepoMock);
+
+        $payoutDetails = new PublicCollection();
+
+        $payoutDetails->put('test', '$uniqueId');
+
+        $pdRepoMock->shouldReceive('getPayoutDetailsByPayoutId')->andReturn($payoutDetails);
+
+        $pdRepoMock->shouldReceive('updatePayoutDetails')->andReturn([]);
+
+        $this->app->instance('repo', $repoMock);
+
+        $uniqueId = UniqueIdEntity::generateUniqueId();
+
+        $mock = $this->getMockBuilder('\RZP\Models\PayoutsDetails\Core')
+            ->onlyMethods(array('renameAttachments'))
+            ->getMock();
+
+        $mock->method('renameAttachments')->willReturn([]);
+
+        $response = $mock->updateAttachments($uniqueId, []);
+
+        $this->assertEquals('SUCCESS', $response['status']);
+    }
+
+    public function testUpdateAttachmentsFailed()
+    {
+        $auth = $this->app['basicauth'];
+
+        $this->app->instance('basicauth', $auth);
+
+        $merchant = $this->fixtures->create('merchant',
+            [
+                'id'    => '12345678901234'
+            ]);
+
+        $auth->setMerchant($merchant);
+
+        $repoMock = Mockery::mock('\RZP\Base\RepositoryManager', [$this->app])->makePartial();
+
+        $pdRepoMock =  Mockery::mock('\RZP\Models\PayoutsDetails\Repository');
+
+        $repoMock->shouldReceive('driver')->with('payouts_details')->andReturn($pdRepoMock);
+
+        $payoutDetails = new PublicCollection();
+
+        $payoutDetails->put('test', '$uniqueId');
+
+        $pdRepoMock->shouldReceive('getPayoutDetailsByPayoutId')->andReturn($payoutDetails);
+
+        $this->app->instance('repo', $repoMock);
+
+        $uniqueId = UniqueIdEntity::generateUniqueId();
+
+        $mock = $this->getMockBuilder('\RZP\Models\PayoutsDetails\Core')
+            ->onlyMethods(array('renameAttachments'))
+            ->getMock();
+
+        try
+        {
+            $mock->updateAttachments($uniqueId, []);
+        }
+        catch(\Exception $e)
+        {
+            $this->assertExceptionClass($e, Exception\ServerErrorException::class);
+        }
     }
 }

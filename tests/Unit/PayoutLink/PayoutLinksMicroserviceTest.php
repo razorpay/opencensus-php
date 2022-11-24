@@ -349,7 +349,7 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->disableOriginalConstructor()
-            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getAmazonPayWalletFeatureEnabled", "getEnvironment", "getKeylessHeader"))
+            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getAmazonPayWalletFeatureEnabled", "getEnvironment", "getKeylessHeader", "getModeForPublicPage"))
             ->getMock();
         $mock->method("makeRequest")
             ->willReturn($response);
@@ -388,7 +388,7 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->disableOriginalConstructor()
-            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletFeatureEnabled", "getKeylessHeader"))
+            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletFeatureEnabled", "getKeylessHeader", "getModeForPublicPage"))
             ->getMock();
         $mock->method("makeRequest")
             ->willReturn($response);
@@ -426,7 +426,7 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->disableOriginalConstructor()
-            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletFeatureEnabled", "getKeylessHeader"))
+            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletFeatureEnabled", "getKeylessHeader", "getModeForPublicPage"))
             ->getMock();
         $mock->method("makeRequest")
             ->willReturn($response);
@@ -467,7 +467,7 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->disableOriginalConstructor()
-            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletFeatureEnabled", "getKeylessHeader"))
+            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletFeatureEnabled", "getKeylessHeader", "getModeForPublicPage"))
             ->getMock();
         $mock->method("makeRequest")
             ->willReturn($response);
@@ -988,7 +988,7 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->disableOriginalConstructor()
-            ->setMethods(array('makeRequest', 'getEnvironment', 'getKeylessHeader'))
+            ->setMethods(array('makeRequest', 'getEnvironment', 'getKeylessHeader', "getModeForPublicPage"))
             ->getMock();
 
         $mock->method('makeRequest')
@@ -1530,7 +1530,9 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $data = $mock->getHostedPageData('poutlk_1000000000', $newMerchant);
 
-        $this->assertContains('keyless_header', $data);
+        $this->assertArrayHasKey('payout_link_id', $data);
+
+        $this->assertArrayHasKey('keyless_header', $data);
 
         $this->assertNotNull($data['keyless_header']);
     }
@@ -1560,7 +1562,9 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $data = $mock->getHostedPageData('poutlk_1000000000', $newMerchant);
 
-        $this->assertContains('keyless_header', $data);
+        $this->assertArrayHasKey('payout_link_id', $data);
+
+        $this->assertArrayHasKey('keyless_header', $data);
 
         $this->assertNull($data['keyless_header']);
     }

@@ -4,6 +4,8 @@ namespace RZP\Mail\Downtime;
 
 use Redis;
 use Carbon\Carbon;
+use Symfony\Component\Mime\Email;
+
 use RZP\Constants\MailTags;
 use RZP\Constants\Timezone;
 use RZP\Mail\Base\Mailable;
@@ -348,7 +350,7 @@ class DowntimeNotification extends Mailable
     {
         $mailTag = $this->getMailTag();
 
-        $this->withSwiftMessage(function ($message) use ($mailTag)
+        $this->withSymfonyMessage(function (Email $message) use ($mailTag)
         {
             $headers = $message->getHeaders();
 

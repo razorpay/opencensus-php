@@ -2,7 +2,7 @@
 
 namespace RZP\Services\FTS;
 
-use Requests_Response;
+use \WpOrg\Requests\Response;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
@@ -287,10 +287,10 @@ class Base
      * Method to send request to FTS endpoint
      *
      * @param array $request
-     * @return \Requests_Response
+     * @return \WpOrg\Requests\Response
      * @throws \Throwable
      */
-    protected function sendFtsRequest(array $request): Requests_Response
+    protected function sendFtsRequest(array $request)
     {
         try
         {
@@ -325,7 +325,7 @@ class Base
      * @return array
      * @throws Exception\RuntimeException
      */
-    protected function parseResponse(Requests_Response $response): array
+    protected function parseResponse($response): array
     {
         $code = null;
 
@@ -382,7 +382,7 @@ class Base
 
     public function mockCreateFundTransferResponse()
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         $response->status_code = 201;
 
@@ -400,7 +400,7 @@ class Base
 
     public function mockDirectRoutingRuleGetResponse()
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
         $response->status_code = 200;
         $response -> body= json_encode([
             "direct_account_routing_rules"=> [
@@ -448,7 +448,7 @@ class Base
 
     public function mockUpdateSourceAccountResponse()
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         $response->status_code = 200;
 
@@ -464,7 +464,7 @@ class Base
 
     public function mockCreateOtpRequestResponse()
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         $response->status_code = 200;
 

@@ -313,15 +313,15 @@ class Service extends Base\Service
                     }
                 }
 
-                $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, ["banking"            => $merchant->isBusinessBankingEnabled(),
-                                                                       "business_Website"   => $merchant->merchantDetail->getAttribute(DEntity::BUSINESS_WEBSITE),
-                                                                       "additional_Website" => $merchant->merchantDetail->getAttribute(DEntity::ADDITIONAL_WEBSITES),
-                                                                       "playstore"          => $businessDetail->getAppstoreUrl(),
-                                                                       "appstore"           => $businessDetail->getPlaystoreUrl(),
-                                                                       "variant"            => $variant,
-                                                                       "result"             => $result,
-                                                                       "response"           => $response
-                ]);
+//                $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, ["banking"            => $merchant->isBusinessBankingEnabled(),
+//                                                                       "business_Website"   => $merchant->merchantDetail->getAttribute(DEntity::BUSINESS_WEBSITE),
+//                                                                       "additional_Website" => $merchant->merchantDetail->getAttribute(DEntity::ADDITIONAL_WEBSITES),
+//                                                                       "playstore"          => $businessDetail->getAppstoreUrl(),
+//                                                                       "appstore"           => $businessDetail->getPlaystoreUrl(),
+//                                                                       "variant"            => $variant,
+//                                                                       "result"             => $result,
+//                                                                       "response"           => $response
+//                ]);
 
                 $result = ($result or ($variant === 'enable'));
             }

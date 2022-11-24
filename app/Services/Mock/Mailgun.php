@@ -5,7 +5,7 @@ namespace RZP\Services\Mock;
 use Mockery;
 use Mailgun\Mailgun as MgClient;
 use RZP\Services\Mailgun as BaseMailgun;
-use Http\Adapter\Guzzle6\Client as GuzzleClient;
+use Http\Adapter\Guzzle7\Client as GuzzleClient;
 
 class Mailgun extends BaseMailgun
 {

@@ -2600,16 +2600,16 @@ class UserTest extends TestCase
 
     public function testValidateCaptchaWithAllFailures()
     {
-        $this->expectException(\Requests_Exception::class);
+        $this->expectException(\WpOrg\Requests\Exception::class);
 
         $validatorMock = $this->getMockBuilder(Validator::class)
             ->setMethods(['makeRequestAndGetCaptchaVerificationResponse'])
             ->getMock();
 
         $validatorMock->method('makeRequestAndGetCaptchaVerificationResponse')
-            ->will($this->onConsecutiveCalls($this->throwException(new \Requests_Exception('Error while verifying captcha', 'operation timed out')),
-                                             $this->throwException(new \Requests_Exception('Error while verifying captcha', 'operation timed out')),
-                                             $this->throwException(new \Requests_Exception('Error while verifying captcha', 'operation timed out'))));
+            ->will($this->onConsecutiveCalls($this->throwException(new \WpOrg\Requests\Exception('Error while verifying captcha', 'operation timed out')),
+                                             $this->throwException(new \WpOrg\Requests\Exception('Error while verifying captcha', 'operation timed out')),
+                                             $this->throwException(new \WpOrg\Requests\Exception('Error while verifying captcha', 'operation timed out'))));
 
         $validatorMockReflectionObj = new \ReflectionObject($validatorMock);
 
@@ -2629,8 +2629,8 @@ class UserTest extends TestCase
             ->getMock();
 
         $validatorMock->method('makeRequestAndGetCaptchaVerificationResponse')
-            ->will($this->onConsecutiveCalls($this->throwException(new \Requests_Exception('Error while verifying captcha', 'operation timed out')),
-                                             $this->throwException(new \Requests_Exception('Error while verifying captcha', 'operation timed out')),
+            ->will($this->onConsecutiveCalls($this->throwException(new \WpOrg\Requests\Exception('Error while verifying captcha', 'operation timed out')),
+                                             $this->throwException(new \WpOrg\Requests\Exception('Error while verifying captcha', 'operation timed out')),
                                              $successResponse));
 
         $validatorMockReflectionObj = new \ReflectionObject($validatorMock);
@@ -2653,7 +2653,7 @@ class UserTest extends TestCase
             ->getMock();
 
         $validatorMock->method('makeRequestAndGetCaptchaVerificationResponse')
-            ->will($this->onConsecutiveCalls($this->throwException(new \Requests_Exception('Error while verifying captcha', 'operation timed out')),
+            ->will($this->onConsecutiveCalls($this->throwException(new \WpOrg\Requests\Exception('Error while verifying captcha', 'operation timed out')),
                                              $successResponse));
 
         $validatorMockReflectionObj = new \ReflectionObject($validatorMock);
@@ -2677,8 +2677,8 @@ class UserTest extends TestCase
             ->getMock();
 
         $validatorMock->method('getRavenRequestResponse')
-            ->will($this->onConsecutiveCalls($this->throwException(new \Requests_Exception('Error while sending request to raven', 'operation timed out')),
-                $this->throwException(new \Requests_Exception('Error while sending request to raven', 'operation timed out'))));
+            ->will($this->onConsecutiveCalls($this->throwException(new \WpOrg\Requests\Exception('Error while sending request to raven', 'operation timed out')),
+                $this->throwException(new \WpOrg\Requests\Exception('Error while sending request to raven', 'operation timed out'))));
 
         $validatorMockReflectionObj = new \ReflectionObject($validatorMock);
 
@@ -2699,7 +2699,7 @@ class UserTest extends TestCase
             ->getMock();
 
         $validatorMock->method('getRavenRequestResponse')
-            ->will($this->onConsecutiveCalls($this->throwException(new \Requests_Exception('Error while sending request to raven', 'operation timed out')),
+            ->will($this->onConsecutiveCalls($this->throwException(new \WpOrg\Requests\Exception('Error while sending request to raven', 'operation timed out')),
                 $successResponse));
 
         $validatorMockReflectionObj = new \ReflectionObject($validatorMock);

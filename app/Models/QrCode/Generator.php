@@ -18,35 +18,33 @@ use RZP\Models\BharatQr\Tags;
 use RZP\Models\VirtualAccount;
 use RZP\Models\FileStore\Utility;
 use RZP\Models\BharatQr\Constants as BQRConstants;
+use SimpleSoftwareIO\QrCode\Facades\QrCode as QrCodeWriter;
 
 class Generator extends Base\Core
 {
 
     public function generateBharatQrCodeImage($qrCode)
     {
-        $renderer = new Renderer\Image\Png;
-
-        $renderer->setMargin(Constants::MARGIN);
-
-        $renderer->setHeight(Constants::QR_CODE_HEIGHT);
-
-        $renderer->setWidth(Constants::QR_CODE_WIDTH);
-
-        $writer = new Writer($renderer);
-
-        $localFilePath = $this->getLocalSaveDir() . '/' . $qrCode->getId() . '.' . Constants::QR_CODE_EXTENSION;
-
-        $qrCodeString = $writer->writeString($qrCode->getQrString());
-
         $logoImage = imagecreatefromjpeg(public_path() . '/img/qr.jpg');
 
-        $qrCodeImage = imagecreatefromstring($qrCodeString);
+        $localFilePathQrBasicFilePath = $this->getLocalSaveDir() . '/' . $qrCode->getId() . '_basic.png';
+
+        $qrCodeWriter = QrCodeWriter::format('png');
+
+        $qrCodeWriter->size(Constants::QR_CODE_SIZE)
+                     ->format('png')
+                     ->errorCorrection('M')
+                     ->generate($qrCode->getQrString(), $localFilePathQrBasicFilePath);
+
+        $qrCodeImage = imagecreatefrompng($localFilePathQrBasicFilePath);
 
         imagecopymerge($logoImage, $qrCodeImage,
                        Constants::QR_DEST_X, Constants::QR_DEST_Y,
                        Constants::SORCE_X, Constants::SORCE_Y,
                        Constants::QR_CODE_WIDTH, Constants::QR_CODE_HEIGHT,
                        Constants::OPACITY);
+
+        $localFilePath = $this->getLocalSaveDir() . '/' . $qrCode->getId() . '.' . Constants::QR_CODE_EXTENSION;
 
         imagejpeg($logoImage, $localFilePath);
 
@@ -59,29 +57,26 @@ class Generator extends Base\Core
 
     public function generateUpiQrCodeImage($qrCode)
     {
-        $renderer = new Renderer\Image\Png;
+        $localFilePathQrBasicFilePath = $this->getLocalSaveDir() . '/' . $qrCode->getId() . '_basic.png';
 
-        $renderer->setMargin(Constants::MARGIN);
+        $qrCodeWriter = QrCodeWriter::format('png');
 
-        $renderer->setHeight(Constants::UPI_QR_CODE_WIDTH);
+        $qrCodeWriter->size(Constants::QR_CODE_SIZE)
+                     ->format('png')
+                     ->errorCorrection('M')
+                     ->generate($qrCode->getQrString(), $localFilePathQrBasicFilePath);
 
-        $renderer->setWidth(Constants::UPI_QR_CODE_HEIGHT);
-
-        $writer = new Writer($renderer);
-
-        $localFilePath = $this->getLocalSaveDir() . '/' . $qrCode->getId() . '.' . Constants::QR_CODE_EXTENSION;
-
-        $qrCodeString = $writer->writeString($qrCode->getQrString());
+        $qrCodeImage = imagecreatefrompng($localFilePathQrBasicFilePath);
 
         $logoImage = imagecreatefromjpeg(public_path() . '/img/upi_qr.jpg');
-
-        $qrCodeImage = imagecreatefromstring($qrCodeString);
 
         imagecopymerge($logoImage, $qrCodeImage,
                        Constants::UPI_QR_DEST_X, Constants::UPI_QR_DEST_Y,
                        Constants::SORCE_X, Constants::SORCE_Y,
                        Constants::UPI_QR_CODE_WIDTH, Constants::UPI_QR_CODE_HEIGHT,
                        Constants::OPACITY);
+
+        $localFilePath = $this->getLocalSaveDir() . '/' . $qrCode->getId() . '.' . Constants::QR_CODE_EXTENSION;
 
         imagejpeg($logoImage, $localFilePath);
 

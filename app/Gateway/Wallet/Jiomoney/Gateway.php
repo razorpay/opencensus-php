@@ -14,6 +14,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Wallet\Base;
+use \WpOrg\Requests\Response;
 use RZP\Models\Payment\Status;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base\Entity;
@@ -1085,7 +1086,7 @@ class Gateway extends Base\Gateway
 
     //----------------------------Verify helper methods end--------------------------------
 
-    protected function parseGatewayResponse(\Requests_Response $response)
+    protected function parseGatewayResponse(Response $response)
     {
         $content = $this->jsonToArray($response->body);
 

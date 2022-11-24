@@ -73,6 +73,7 @@ class RouteServiceProvider extends ServiceProvider
         {
             return new Response($app);
         });
+        parent::register();
     }
 
     /**

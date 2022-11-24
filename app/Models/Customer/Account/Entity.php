@@ -3,6 +3,8 @@
 namespace RZP\Models\Customer;
 
 use App;
+use Database\Factories\CustomerFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Address;
@@ -16,6 +18,7 @@ class Entity extends Base\PublicEntity
 {
     use NotesTrait;
     use HardDeletes;
+    use HasFactory;
 
     const NAME                  = 'name';
     const CONTACT               = 'contact';
@@ -258,4 +261,9 @@ class Entity extends Base\PublicEntity
     }
 
     // ----------------------------------- END RELATIONS ----------------------
+
+    protected static function newFactory(): CustomerFactory
+    {
+        return CustomerFactory::new();
+    }
 }

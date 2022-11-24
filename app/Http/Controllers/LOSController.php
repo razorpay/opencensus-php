@@ -149,7 +149,11 @@ class LOSController extends Controller
         $headers['Accept']       = 'application/json';
         $headers['Content-Type'] = 'application/json';
         $headers['X-Task-Id'] = $this->app['request']->getTaskId();
-        $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+
+        if (empty(Request::header(RequestHeader::DEV_SERVE_USER)) === false)
+        {
+            $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+        }
 
         $auth = [$username, $password];
         $defaultOptions = [
@@ -168,7 +172,7 @@ class LOSController extends Controller
                 $defaultOptions
             );
         }
-        catch (\Requests_Exception $e)
+        catch (\WpOrg\Requests\Exception $e)
         {
             $errorCode = ($this->hasRequestTimedOut($e) === true) ?
                 ErrorCode::GATEWAY_ERROR_LOAN_ORIGINATION_SYSTEM_TIMEOUT :
@@ -183,7 +187,7 @@ class LOSController extends Controller
         return $this->parseResponse($response);
     }
 
-    protected function hasRequestTimedOut(\Requests_Exception $e): bool
+    protected function hasRequestTimedOut(\WpOrg\Requests\Exception $e): bool
     {
         $message = $e->getMessage();
         return Str::contains($message, [

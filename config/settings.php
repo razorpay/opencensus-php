@@ -16,5 +16,6 @@ return [
 
     // Custom column names for the database table
     'keyColumn'   => 'key',
-    'valueColumn' => 'value'
+    'valueColumn' => 'value',
+    'defaults'    => []
 ];

@@ -4,7 +4,7 @@ namespace RZP\Services;
 
 use App;
 use Razorpay\Trace\Logger as Trace;
-use Requests_Hooks;
+use \WpOrg\Requests\Hooks as Requests_Hooks;
 use RZP\Constants\Product;
 use RZP\Exception;
 use RZP\Gateway\Hitachi\Status;
@@ -1053,7 +1053,7 @@ class CardPaymentService
 
                 break;
             }
-            catch(\Requests_Exception $e)
+            catch(\WpOrg\Requests\Exception $e)
             {
                 $this->trace->traceException($e);
 
@@ -1371,7 +1371,7 @@ class CardPaymentService
     protected function checkAmountMismatch(Verify &$verify)
     {
         $expectedAmount = $this->input[Entity::PAYMENT][Payment\Entity::AMOUNT];
-        $actualAmount   =  $verify->verifyResponseContent['amount'];
+        $actualAmount   =  $verify->verifyResponseContent['amount'] ?? 0 ;
 
         $verify->amountMismatch = ($expectedAmount !== $actualAmount);
     }

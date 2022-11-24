@@ -14,6 +14,7 @@ use Illuminate\Contracts\Container\Container;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Throwable;
 
 class Handler extends ExceptionHandler
 {
@@ -59,10 +60,10 @@ class Handler extends ExceptionHandler
      *
      * This is a great spot to send exceptions to Sentry, Bugsnag, etc.
      *
-     * @param  \Exception  $e
+     * @param Exception $e
      * @return void
      */
-    public function report(Exception $e)
+    public function report(Exception |\Throwable $e)
     {
         if ($this->shouldntReport($e) === true)
         {
@@ -76,10 +77,11 @@ class Handler extends ExceptionHandler
      * Render an exception into an HTTP response.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \Exception  $e
-     * @return \Illuminate\Http\Response
+     * @param Throwable $e
+     *
+     * @throws Throwable
      */
-    public function render($request, Exception $e)
+    public function render($request, Throwable $e)
     {
         $response = null;
 
@@ -139,7 +141,7 @@ class Handler extends ExceptionHandler
         return $this->genericExceptionHandler($e);
     }
 
-    public function oauthRecoverableErrorResponse(bool $debug, \Exception $exception = null)
+    public function oauthRecoverableErrorResponse(bool $debug, Exception $exception = null)
     {
         $this->traceException($exception, Trace::WARNING, TraceCode::RECOVERABLE_EXCEPTION);
 
@@ -186,7 +188,7 @@ class Handler extends ExceptionHandler
         $this->trace->addRecord($level, $code, $traceData);
     }
 
-    protected function genericExceptionHandler(Exception $exception)
+    protected function genericExceptionHandler(Exception|\Throwable $exception)
     {
         if ($this->isToStringException($exception))
         {
@@ -234,7 +236,7 @@ class Handler extends ExceptionHandler
         }
     }
 
-    protected function baseExceptionHandler(BaseException $exception)
+    public function baseExceptionHandler(BaseException $exception)
     {
         // ServerError is fatal error and shoudn't be encountered
         // Let the higher-ups handle it. This function handles
@@ -359,7 +361,7 @@ class Handler extends ExceptionHandler
             return false;
         }
 
-        $this->trace->warn(
+        $this->trace->warning(
             TraceCode::MISC_TOSTRING_ERROR,
             $this->getExceptionDetails($exception));
 

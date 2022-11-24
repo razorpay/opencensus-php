@@ -220,4 +220,9 @@ class Entity extends Base\Entity
     {
         $this->setAttribute(self::ACQUIRER, $acquirer);
     }
+
+    public function getIncrementing()
+    {
+        return $this->incrementing;
+    }
 }

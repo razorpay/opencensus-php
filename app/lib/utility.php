@@ -498,7 +498,7 @@ if (! function_exists('checkRequestTimeout'))
      *
      * @return boolean              true/false
      */
-    function checkRequestTimeout(\Requests_Exception $e)
+    function checkRequestTimeout(\WpOrg\Requests\Exception $e)
     {
         $msg = $e->getMessage();
         $msg = strtolower($msg);
@@ -985,10 +985,11 @@ if (!function_exists('mask_email'))
      * will get masked
      *
      * @param string $email
-     * @param float $percentageToMask
+     * @param float  $percentageToMask
+     *
      * @return mixed|string
      */
-     function mask_email(string $email = null, float $percentageToMask = 0.7)
+    function mask_email(string $email = null, float $percentageToMask = 0.7)
     {
         $trace = App::getFacadeRoot()['trace'];
 
@@ -1019,15 +1020,16 @@ if (!function_exists('mask_email'))
 
             // replace the name except first 3 characters with *
             $maskedEmailName = substr($emailName, 0, $emailLen - $lengthToMask) .
-                               str_repeat('*', $lengthToMask);
+                               str_repeat('*', max(0,$lengthToMask));
 
             // replace the domain with *, except the first and the last character
-            $maskedDomain = $domain[0] .
-                            str_repeat('*', strlen($domain) - 2) .
-                            $domain[strlen($domain) - 1];
+            $maskedDomain     = $domain[0] .
+                                str_repeat('*', max(0,strlen($domain) - 2)) .
+                                $domain[strlen($domain) - 1];
 
             $maskedEmail = sprintf('%s@%s.%s', $maskedEmailName, $maskedDomain, $topLevelDomain);
-        } catch (\Exception $e)
+        }
+        catch (\Exception $e)
         {
             // Do not want the page load to fail because the email was incorrect
             $trace->traceException($e,

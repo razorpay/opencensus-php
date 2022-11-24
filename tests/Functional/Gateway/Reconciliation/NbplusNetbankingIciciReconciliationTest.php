@@ -222,7 +222,6 @@ class NbplusNetbankingIciciReconciliationTest extends NbPlusPaymentServiceNetban
             $url,
             $fileName,
             $mime,
-            filesize($url),
             null,
             true);
     }

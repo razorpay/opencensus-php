@@ -44,7 +44,7 @@ class Logo extends Base\Core
             'file_name'  => $fileName,
             'extension'  => $extension,
             'mime_type'  => $mimeType,
-            'size'       => $logoImage->getClientSize(),
+            'size'       => $logoImage->getSize(),
             'width'      => \getimagesize($logoImage)[0],
             'height'     => \getimagesize($logoImage)[1],
             'file_path'  => $destinationPath . '/' . $fileName,

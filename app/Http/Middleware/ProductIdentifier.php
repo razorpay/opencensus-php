@@ -8,10 +8,12 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Illuminate\Foundation\Application;
 
+use RZP\Error\ErrorCode;
 use RZP\Http\Route;
 use RZP\Http\RequestHeader;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Merchant\Balance\Type as ProductType;
+use Lcobucci\JWT\Encoding\CannotDecodeContent;
 
 /**
  * Class ProductIdentifier
@@ -62,7 +64,14 @@ class ProductIdentifier
     {
         $start = millitime();
 
-        app('request.ctx')->init();
+        try
+        {
+            app('request.ctx')->init();
+        } catch (CannotDecodeContent $exception)
+        {
+            //in case of bad token $parser->parse($token) throws CannotDecodeContent exception.
+            return ApiResponse::generateErrorResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED_OAUTH_TOKEN_INVALID);
+        }
 
         $this->internalAppName = app('request.ctx')->getInternalAppName();
 

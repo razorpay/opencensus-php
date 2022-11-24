@@ -281,6 +281,8 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
             return (isset($row[$col]) === true);
         });
 
+        $row[ReconciliationFields::CSF_TAX] = ($row[ReconciliationFields::CSF_TAX] === '') ? 0 : $row[ReconciliationFields::CSF_TAX];
+
         $csfTax = (isset($row[$columnMsfAmount]) === true) ? abs($row[ReconciliationFields::CSF_TAX] ?? 0) : 0;
 
         $gstTax = abs($row[ReconciliationFields::GST]);

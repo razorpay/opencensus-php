@@ -288,7 +288,7 @@ class Service extends Base\Service
 
         $fileDetails = $this->fileProcessor->getFileDetails($file, $locationType, false);
 
-        $file = new HttpFoundation\File\UploadedFile($fileDetails['file_path'],$this->fileProcessor->getFileName($file),$fileDetails['mime_type'],$fileDetails['size'],null,true);
+        $file = new HttpFoundation\File\UploadedFile($fileDetails['file_path'],$this->fileProcessor->getFileName($file),$fileDetails['mime_type'],null,true);
 
         $document = $this->uploadFileAndSaveInMerchantDocument($file,$input);
 

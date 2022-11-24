@@ -204,7 +204,7 @@ class Server extends Base\Mock\Server
         else if ($cardNumber === '4000000000000002')
         {
             // mock timeout exception for enroll
-            throw new \Requests_Exception('operation timed out', 'operation timed out');
+            throw new \WpOrg\Requests\Exception('operation timed out', 'operation timed out');
         }
         else
         {

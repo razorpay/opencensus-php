@@ -340,7 +340,6 @@ class UpiAirtelReconTest extends TestCase
             $file,
             $file,
             $mimeType,
-            filesize($file),
             null,
             true
         );

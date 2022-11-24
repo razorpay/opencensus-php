@@ -31,7 +31,7 @@ class CaptureWithNegativeBalanceTest extends TestCase
         parent::setUp();
 
         $payment = $this->fixtures->create('payment:authorized');
-        
+
         $this->payment = $payment->toArrayPublic();
 
         $this->ba->privateAuth();
@@ -59,7 +59,7 @@ class CaptureWithNegativeBalanceTest extends TestCase
         $this->assertEquals(true, $payment['gateway_captured']);
 
         $balance = $this->getDbEntityById('balance', '10000000000000');
-        
+
         $this->assertEquals(-109902, $balance['balance']);
 
         Mail::assertQueued(CapturedMail::class);
@@ -382,7 +382,7 @@ class CaptureWithNegativeBalanceTest extends TestCase
     public function testEmandateCaptureWithFeeCreditsAndReserveBalance()
     {
         Mail::fake();
-        
+
         $paymentId = $this->setUpEmandateFixtures(0, 2000);
 
         $this->fixtures->create('balance',
@@ -428,7 +428,7 @@ class CaptureWithNegativeBalanceTest extends TestCase
     public function testNachCaptureWithFeeCreditsAndReserveBalance()
     {
         Mail::fake();
-        
+
         $paymentId = $this->setUpNachFixtures(0, 2000);
 
         $this->fixtures->create('balance',
@@ -949,9 +949,10 @@ class CaptureWithNegativeBalanceTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $reminderMock = $this->createRemindersMock(['deleteReminder']);
+        //$reminderMock = $this->createRemindersMock(['deleteReminder']);
+        $reminderMock = \Mockery::mock(Reminders::class);
 
-        $reminderMock->expects($this->never())->method('deleteReminder');
+        $reminderMock->shouldReceive('deleteReminder')->never();
 
         $this->startTest();
 
@@ -1212,7 +1213,7 @@ class CaptureWithNegativeBalanceTest extends TestCase
     public function startTest($id = null, $amount = null)
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-        
+
         $name = $trace[1]['function'];
 
         $testData = $this->testData[$name];

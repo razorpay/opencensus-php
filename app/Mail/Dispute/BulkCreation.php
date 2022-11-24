@@ -3,6 +3,8 @@
 namespace RZP\Mail\Dispute;
 
 use Carbon\Carbon;
+use Symfony\Component\Mime\Email;
+
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Constants\MailTags;
@@ -60,7 +62,7 @@ class BulkCreation extends Base
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function ($message)
+        $this->withSymfonyMessage(function (Email $message)
         {
             $headers = $message->getHeaders();
 

@@ -1596,6 +1596,11 @@ class Gateway extends Base\Gateway
 
         $payment = $input['payment'];
 
+        if ($payment instanceof Payment\Entity)
+        {
+            $payment = $payment->toArrayPublic();
+        }
+
         if ((array_key_exists('method',$payment)) and (($gateway === Payment\Gateway::CCAVENUE) or ($gateway === Payment\Gateway::PAYU)) and ($payment['method'] === Payment\Method::WALLET))
         {
             $url = $this->getUrlForMozartRequest($input, 'walletPayments', $mode);

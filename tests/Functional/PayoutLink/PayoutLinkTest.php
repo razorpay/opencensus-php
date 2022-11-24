@@ -154,7 +154,7 @@ class PayoutLinkTest extends TestCase
                         break;
                 }
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             });
 
         $this->startTest();
@@ -199,7 +199,7 @@ class PayoutLinkTest extends TestCase
                         break;
                 }
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             });
 
         $this->startTest();
@@ -233,7 +233,7 @@ class PayoutLinkTest extends TestCase
                         break;
                 }
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             });
 
         $this->startTest();
@@ -682,7 +682,7 @@ class PayoutLinkTest extends TestCase
 
         $token = $response['token'];
 
-        $this->assertRegExp('/' . $payoutLink->getPublicId() . '.*/', $token);
+        $this->assertMatchesRegularExpression('/' . $payoutLink->getPublicId() . '.*/', $token);
     }
 
     public function testVerifyOtpFailedByInvalidOtp()

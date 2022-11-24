@@ -135,8 +135,6 @@ class PaymentMiscTest extends TestCase
     public function testVajraCpsDowntime()
     {
         // Vajra status OK
-        $this->setupRedisMock('0');
-
         $request = [
             'content' => [
                 Vajra::STATUS_KEY => Vajra::STATUS_OK,
@@ -150,9 +148,6 @@ class PaymentMiscTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertTrue((bool) $response[0]['new_value']);
-
-        // Vajra status ALERTING
-        $this->setupRedisMock('1');
 
         $request = [
             'content' => [

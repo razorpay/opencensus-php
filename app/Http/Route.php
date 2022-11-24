@@ -16,6 +16,8 @@ use RZP\Base\Database\LagChecker\HeartbeatLagChecker;
 
 class Route
 {
+    protected $namespace = 'RZP\Http\Controllers';
+
     protected static $apiRoutes = [
         // internal
         'internal_create'    => ['post', 'internal', 'InternalController@create'],
@@ -16430,6 +16432,7 @@ class Route
         //
 
         // We add the web middleware group, conditionally to routes which require cookie / session access.
+        $route->middleware('error_handler_setter_for_php_laravel_upgrade');
         if (in_array($name, self::$dynamicLifeTimeSession, true) === true)
         {
             $route->middleware('sessionMinimumLifetime');

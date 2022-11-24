@@ -2,6 +2,8 @@
 
 namespace RZP\Mail\Merchant\RazorpayX;
 
+use Symfony\Component\Mime\Email;
+
 use RZP\Mail\Base\Common;
 use RZP\Mail\Base\Mailable;
 use RZP\Constants\MailTags;
@@ -58,7 +60,7 @@ class CreateSubMerchantPartner extends Mailable
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function ($message)
+        $this->withSymfonyMessage(function (Email $message)
         {
             $headers = $message->getHeaders();
 

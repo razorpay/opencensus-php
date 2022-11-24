@@ -109,7 +109,7 @@ class Entity extends Base\Entity
         $this->setAttribute(self::FORM_DATA, $formData);
     }
 
-    public function setSignedUpAt(integer $time)
+    public function setSignedUpAt(int $time)
     {
         $this->setAttribute(self::SIGNED_UP_AT, $time);
     }

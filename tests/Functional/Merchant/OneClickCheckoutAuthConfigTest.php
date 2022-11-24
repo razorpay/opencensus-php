@@ -20,15 +20,13 @@ class OneClickCheckoutAuthConfigTest extends TestCase
 
     public function testUpdateMerchant1ccShopifyConfig()
     {
-        $this->ba->privateAuth('rzp_test', getenv("THIRDWATCH_COD_SCORE_SERVICE_SECRET"));
-
+        $this->ba->appAuthTest($this->config['applications.thirdwatch_cod_score.secret']);
         $this->startTest();
     }
 
     public function testUpdateMerchant1ccShopifyConfigInvalidBody()
     {
-        $this->ba->privateAuth('rzp_test', getenv("THIRDWATCH_COD_SCORE_SERVICE_SECRET"));
-
+        $this->ba->appAuthTest($this->config['applications.thirdwatch_cod_score.secret']);
         $this->startTest();
     }
 

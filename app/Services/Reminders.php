@@ -204,7 +204,7 @@ class Reminders
                 $request['method'],
                 $request['options']);
         }
-        catch(\Requests_Exception $e)
+        catch(\WpOrg\Requests\Exception $e)
         {
             throw $e;
         }

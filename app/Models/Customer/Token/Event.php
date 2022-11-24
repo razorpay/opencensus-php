@@ -177,7 +177,7 @@ class Event extends Base\Core
             return $eventData;
         }
 
-        if ($response instanceof \Requests_Response)
+        if ($response instanceof \WpOrg\Requests\Response)
         {
             $response = json_decode($response->body, true);
         }

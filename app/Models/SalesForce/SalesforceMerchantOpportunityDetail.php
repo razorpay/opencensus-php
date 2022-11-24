@@ -114,7 +114,8 @@ class SalesforceMerchantOpportunityDetail implements \JsonSerializable {
     }
 
 
-    public function jsonSerialize() {
+    public function jsonSerialize() : array
+    {
         return [
             'merchantId'                  => $this->getMerchantId(),
             'opportunityName'             => $this->getOpportunityName(),

@@ -61,7 +61,7 @@ class HealthCheck extends Status
         ];
     }
 
-    public function processResponse(\Requests_Response $response): array
+    public function processResponse($response): array
     {
         return [
             'http_status_code' => $response->status_code,

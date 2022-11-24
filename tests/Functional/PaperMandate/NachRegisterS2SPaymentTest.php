@@ -459,7 +459,6 @@ class NachRegisterS2SPaymentTest extends TestCase
             $url,
             $fileName,
             $mime,
-            filesize($url),
             null,
             true
         );

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\P2p\BankAccount;
 
+use Database\Factories\P2pBankAccountFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use RZP\Models\P2p\Base;
 use RZP\Models\P2p\Base\Upi\ClientLibrary;
 
@@ -12,6 +14,7 @@ use RZP\Models\P2p\Base\Upi\ClientLibrary;
  */
 class Entity extends Base\Entity
 {
+    use HasFactory;
     use Base\Traits\HasBank;
     use Base\Traits\HasHandle;
     use Base\Traits\HasDevice;
@@ -401,5 +404,10 @@ class Entity extends Base\Entity
             array_get($input, self::ACCOUNT_NUMBER),
             $handle,
         ]);
+    }
+
+    protected static function newFactory(): P2pBankAccountFactory
+    {
+        return P2pBankAccountFactory::new();
     }
 }

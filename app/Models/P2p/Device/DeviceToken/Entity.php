@@ -2,16 +2,19 @@
 
 namespace RZP\Models\P2p\Device\DeviceToken;
 
+use Database\Factories\P2pDeviceTokenFactory;
 use RZP\Base\BuilderEx;
 use RZP\Models\P2p\Base;
 use RZP\Models\P2p\Device;
 use RZP\Models\P2p\Device\RegisterToken;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Entity extends Base\Entity
 {
     use Base\Traits\HasDevice;
     use Base\Traits\HasHandle;
     use Base\Traits\SoftDeletes;
+    use HasFactory;
 
     const DEVICE_ID        = 'device_id';
     const HANDLE           = 'handle';
@@ -153,5 +156,10 @@ class Entity extends Base\Entity
     public function scopeVerified(BuilderEx $query)
     {
         return $query->where(self::STATUS, RegisterToken\Status::VERIFIED);
+    }
+
+    protected static function newFactory(): P2pDeviceTokenFactory
+    {
+        return P2pDeviceTokenFactory::new();
     }
 }

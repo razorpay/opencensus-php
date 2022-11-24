@@ -4,8 +4,8 @@ namespace RZP\Models\SimilarWeb;
 
 use Request;
 use Throwable;
-use Requests_Session;
-use Requests_Response;
+use \WpOrg\Requests\Session as Requests_Session;
+use \WpOrg\Requests\Response;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Http\RequestHeader;
@@ -178,11 +178,11 @@ class SimilarWebClient
      * @param string $path
      * @param array $payload
      *
-     * @return Requests_Response
+     * @return \WpOrg\Requests\Response
      * @throws ServerErrorException
      */
 
-    public function request(string $path, array $payload): Requests_Response
+    public function request(string $path, array $payload)
     {
         $res = null;
         $exception = null;

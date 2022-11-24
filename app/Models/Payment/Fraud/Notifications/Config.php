@@ -81,14 +81,8 @@ class Config
 
         $notifyInterval = $settings[Constants::EMAIL][Constants::NOTIFY_INTERVAL];
 
-        if ($notifyInterval <= Constants::NOTIFY_INTERVAL)
-        {
-            $this->notifyEmailInterval = Constants::NOTIFY_INTERVAL;
-        }
-        else
-        {
-            $this->notifyEmailInterval = $notifyInterval;
-        }
+        $this->notifyEmailInterval = $notifyInterval;
+
     }
 
     private function processFreshdeskTicketSettings($settings)
@@ -107,14 +101,7 @@ class Config
 
         $notifyInterval = $settings[Constants::FRESHDESK_TICKET][Constants::NOTIFY_INTERVAL];
 
-        if ($notifyInterval <= Constants::NOTIFY_INTERVAL)
-        {
-            $this->notifyFreshdeskTicketInterval = Constants::NOTIFY_INTERVAL;
-        }
-        else
-        {
-            $this->notifyFreshdeskTicketInterval = $notifyInterval;
-        }
+        $this->notifyFreshdeskTicketInterval = $notifyInterval;
     }
 
     private function processSmsSettings($settings)
@@ -135,14 +122,7 @@ class Config
 
         $notifyInterval = $settings[Constants::SMS][Constants::NOTIFY_INTERVAL];
 
-        if ($notifyInterval <= Constants::NOTIFY_INTERVAL)
-        {
-            $this->notifySmsInterval = Constants::NOTIFY_INTERVAL;
-        }
-        else
-        {
-            $this->notifySmsInterval = $notifyInterval;
-        }
+        $this->notifySmsInterval = $notifyInterval;
     }
 
     private function processWhatsappSettings($settings)
@@ -166,14 +146,8 @@ class Config
 
         $notifyInterval = $settings[Constants::WHATSAPP][Constants::NOTIFY_INTERVAL];
 
-        if ($notifyInterval <= Constants::NOTIFY_INTERVAL)
-        {
-            $this->notifyWhatsappInterval = Constants::NOTIFY_INTERVAL;
-        }
-        else
-        {
-            $this->notifyWhatsappInterval = $notifyInterval;
-        }
+        $this->notifyWhatsappInterval = $notifyInterval;
+
     }
 
     public function isSmsEnabled(): bool

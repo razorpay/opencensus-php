@@ -70,9 +70,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->vpaTerminal = $this->fixtures->create('terminal:vpa_shared_terminal_icici');
 
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
-        $this->app->make(Factory::class)->load($factoryPath);
     }
 
     public function testCreateBharatQrCode()

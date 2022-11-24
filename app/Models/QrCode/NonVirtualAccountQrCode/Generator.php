@@ -22,6 +22,7 @@ use RZP\Models\QrCode\Constants as Constants;
 use RZP\Models\BharatQr\Constants as BQRConstants;
 use RZP\Models\Payment\Processor\TerminalProcessor;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as NonVAQrEntity;
+use SimpleSoftwareIO\QrCode\Facades\QrCode as QrCodeWriter;
 
 class Generator extends QrCode\Generator
 {
@@ -118,7 +119,7 @@ class Generator extends QrCode\Generator
 
         return 'upi://pay?' . str_replace(' ', '', urldecode(http_build_query($content)));
     }
-    
+
     public function generateUpiQrCodeImage($qrCode)
     {
         $localFilePath = $this->getLocalSaveDir() . '/' . $qrCode->getId() . '.' . Constants::QR_CODE_EXTENSION;
@@ -183,23 +184,19 @@ class Generator extends QrCode\Generator
 
     public function generateBharatQrCodeImage($qrCode)
     {
-        $renderer = new Renderer\Image\Png;
+        $localFilePathQrBasicFilePath = $this->getLocalSaveDir() . '/' . $qrCode->getId() . '_basic.png';
 
-        $renderer->setMargin(Constants::MARGIN);
+        $qrCodeWriter = QrCodeWriter::format('png');
 
-        $renderer->setHeight(Constants::QR_CODE_HEIGHT);
+        $qrCodeWriter->size(Constants::QR_CODE_SIZE)
+                     ->errorCorrection('M')
+                     ->generate($qrCode->getQrString(), $localFilePathQrBasicFilePath);
 
-        $renderer->setWidth(Constants::QR_CODE_WIDTH);
-
-        $writer = new Writer($renderer);
+        $qrCodeImage = imagecreatefrompng($localFilePathQrBasicFilePath);
 
         $localFilePath = $this->getLocalSaveDir() . '/' . $qrCode->getId() . '.' . Constants::QR_CODE_EXTENSION;
 
-        $qrCodeString = $writer->writeString($qrCode->getQrString());
-
         $logoImage = imagecreatefromjpeg(public_path() . '/img/qr.jpg');
-
-        $qrCodeImage = imagecreatefromstring($qrCodeString);
 
         if ($qrCode->getId() !== NonVAQrEntity::SHARED_ID)
         {
@@ -213,6 +210,7 @@ class Generator extends QrCode\Generator
 
             $this->alignCentre($qrCodeImage, $qrCode->getDescription(), $color, 'Mulish-SemiBold.ttf', $ypos, 8, 50);
         }
+
         imagecopymerge($logoImage, $qrCodeImage,
                        Constants::QR_DEST_X, Constants::QR_DEST_Y,
                        Constants::SORCE_X, Constants::SORCE_Y,
@@ -246,21 +244,17 @@ class Generator extends QrCode\Generator
      */
     protected function getQrCodeStringAndGenerateImage($qrCode)
     {
-        $renderer = new Renderer\Image\Png;
+        $localFilePathQrBasicFilePath = $this->getLocalSaveDir() . '/' . $qrCode->getId() . '_basic.png';
 
-        $renderer->setMargin(Constants::MARGIN);
+        $qrCodeWriter = QrCodeWriter::format('png');
 
-        $renderer->setHeight(Constants::QR_V2_UPI_QR_CODE_WIDTH);
+        $qrCodeWriter->size(Constants::QR_V2_UPI_QR_CODE_SIZE)
+                     ->errorCorrection('M')
+                     ->generate($qrCode->getQrString(), $localFilePathQrBasicFilePath);
 
-        $renderer->setWidth(Constants::QR_V2_UPI_QR_CODE_HEIGHT);
+        $qrCodeImage = imagecreatefrompng($localFilePathQrBasicFilePath);
 
-        $renderer->setForegroundColor(new Renderer\Color\Rgb(4, 9, 63));
-
-        $writer = new Writer($renderer);
-
-        $qrCodeString = $writer->writeString($qrCode->getQrString());
-
-        return imagecreatefromstring($qrCodeString);
+        return $qrCodeImage;
     }
 
     private function alignCentre($logoImage, $text, $color, $font, & $ypos, $size, $width)

@@ -4170,7 +4170,7 @@ class BankTransferTest extends TestCase
         // forcing async retry after all sync retry failures
         $mockLedger->shouldReceive('createJournal')
             ->times(4)
-            ->andThrow(new \Requests_Exception(
+            ->andThrow(new \WpOrg\Requests\Exception(
                 'Unexpected response code received from Ledger service.',
                 null,
                 [
@@ -4300,7 +4300,7 @@ class BankTransferTest extends TestCase
         // forcing async retry after all sync retry failures
         $mockLedger->shouldReceive('createJournal')
             ->times(4)
-            ->andThrow(new \Requests_Exception(
+            ->andThrow(new \WpOrg\Requests\Exception(
                 'Unexpected response code received from Ledger service.',
                 null,
                 [
@@ -4314,7 +4314,7 @@ class BankTransferTest extends TestCase
 
         $mockLedger->shouldReceive('fetchByTransactor')
             ->times(1)
-            ->andThrow(new \Requests_Exception(
+            ->andThrow(new \WpOrg\Requests\Exception(
                 'Unexpected response code received from Ledger service.',
                 null,
                 [
@@ -4394,7 +4394,7 @@ class BankTransferTest extends TestCase
         // forcing async retry after all sync retry failures
         $mockLedger->shouldReceive('createJournal')
             ->times(5)
-            ->andThrow(new \Requests_Exception(
+            ->andThrow(new \WpOrg\Requests\Exception(
                 'Unexpected response code received from Ledger service.',
                 null,
                 [
@@ -4543,7 +4543,7 @@ class BankTransferTest extends TestCase
                             break;
                         default:
                             // 0th-3rd call is made while sync retries, which should fail for this test
-                            throw new \Requests_Exception(
+                            throw new \WpOrg\Requests\Exception(
                                 'Unexpected response code received from Ledger service.',
                                 null,
                                 [
@@ -9408,11 +9408,13 @@ class BankTransferTest extends TestCase
 
         $this->mockMozartResponseForCurrencyCloud();
 
+        $this->ba->directAuth();
+
         $request = $this->testData[__FUNCTION__]['request'];
 
-        $response = $this->sendRequest($request);
+        $response = $this->makeRequestAndGetContent($request);
 
-        $paymentEntity = $this->getLastPayment(true);
+        $paymentEntity = $this->getLastPayment('payment', 'true');
 
         $this->assertEquals($paymentEntity['status'], 'authorized');
         $this->assertEquals($paymentEntity['gateway'], 'currency_cloud');
@@ -9506,10 +9508,12 @@ class BankTransferTest extends TestCase
 
         $this->mockMozartResponseForCurrencyCloud();
 
-        $firstRequest = $this->testData['testCashManagerTransactionNotificationForCurrencyCloud']['request'];
-        $firstResponse = $this->sendRequest($firstRequest);
+        $this->ba->directAuth();
 
-        $paymentEntity = $this->getLastPayment(true);
+        $firstRequest = $this->testData['testCashManagerTransactionNotificationForCurrencyCloud']['request'];
+        $firstResponse = $this->makeRequestAndGetContent($firstRequest);
+
+        $paymentEntity = $this->getLastPayment('payment',true);
 
         $secondRequest = $this->testData[__FUNCTION__]['request'];
 
@@ -9517,9 +9521,9 @@ class BankTransferTest extends TestCase
 
         $secondRequest['content']['reason'] = "Sub Account Transfer to House; " . $paymentEntity['id'];
 
-        $secondResponse = $this->sendRequest($secondRequest);
+        $secondResponse = $this->makeRequestAndGetContent($secondRequest);
 
-        $updatedPaymentEntity = $this->getLastPayment(true);
+        $updatedPaymentEntity = $this->getLastPayment('payment',true);
 
         $this->assertEquals($updatedPaymentEntity['status'],'captured');
     }

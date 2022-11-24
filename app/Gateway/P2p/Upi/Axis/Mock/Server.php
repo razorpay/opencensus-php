@@ -224,7 +224,7 @@ class Server extends Mock\Server
 
     protected function makeResponse($input)
     {
-        $response = new \Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         $response->headers = ['content-type' => 'application/json'];
 

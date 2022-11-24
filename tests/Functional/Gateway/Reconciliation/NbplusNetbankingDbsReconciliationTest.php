@@ -174,7 +174,6 @@ class NbplusNetbankingDbsReconciliationTest extends NbPlusPaymentServiceNetbanki
             $url,
             $fileName,
             $mime,
-            filesize($url),
             null,
             true);
     }

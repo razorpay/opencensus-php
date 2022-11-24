@@ -25,7 +25,7 @@ class CreateKeys extends Migration {
 
             $table->char(Key::MERCHANT_ID, Key::ID_LENGTH);
 
-            $table->string(Key::SECRET);
+            $table->string(Key::SECRET, 256);
 
             $table->integer(Key::CREATED_AT);
             $table->integer(Key::UPDATED_AT);

@@ -165,5 +165,5 @@ return array(
 	|
 	*/
 
-	'secure' => getenv('SESSION_SECURE'),
+	'secure' => env('SESSION_SECURE', null),
 );

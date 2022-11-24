@@ -37,8 +37,7 @@ trait OAuthTrait
         }
 
         // Create Application
-        $application = factory(Application\Entity::class)
-                        ->create($attributes);
+        $application = Application\Entity::factory()->create($attributes);
 
         if ($createMerchantApplication === true)
         {
@@ -57,11 +56,11 @@ trait OAuthTrait
 
         // Create dev Client for the Application
         $clientAttributes['environment'] = 'dev';
-        factory(Client\Entity::class)->create($clientAttributes);
+        Client\Entity::factory()->create($clientAttributes);
 
         // Create prod Client for the Application
         $clientAttributes['environment'] = 'prod';
-        factory(Client\Entity::class)->create($clientAttributes);
+        Client\Entity::factory()->create($clientAttributes);
 
         return $application;
     }
@@ -142,7 +141,7 @@ trait OAuthTrait
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $accessToken = factory(Token\Entity::class)->create($attributes);
+        $accessToken = Token\Entity::factory()->create($attributes);
 
         $jwt = (new OAuthTestHelper)->getJWT($accessToken);
 
@@ -155,7 +154,7 @@ trait OAuthTrait
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $accessToken = factory(Token\Entity::class)->create($attributes);
+        $accessToken = Token\Entity::factory()->create($attributes);
 
         $jwt = (new OAuthTestHelper)->getJWT($accessToken);
 
@@ -164,7 +163,7 @@ trait OAuthTrait
 
     public function tamperExpiryOfAccessToken(JWTToken $accessToken): string
     {
-        $tokenComponents = explode('.', $accessToken);
+        $tokenComponents = explode('.', $accessToken->toString());
 
         $payload = json_decode(base64_decode($tokenComponents[1]), true);
 

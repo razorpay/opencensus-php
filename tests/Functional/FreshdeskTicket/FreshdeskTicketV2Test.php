@@ -175,7 +175,7 @@ class FreshdeskTicketV2Test extends TestCase
                 }))
             ->andReturnUsing(function ()
             {
-                $response = new \Requests_Response;
+                $response = new \WpOrg\Requests\Response;
 
                 $response->body = json_encode(['key' => 'value']);
 
@@ -1815,7 +1815,7 @@ class FreshdeskTicketV2Test extends TestCase
 
         // assert that new average for ticket of category+priority is 2.5 days with a delta of 5000 seconds
         // delta is needed to prevent test failures due to precision errors in tests
-        $this->assertEquals(2.5 * self::DAY, $firstResponseTimeAverage, '', 5000);
+        $this->assertEqualsWithDelta(2.5 * self::DAY, $firstResponseTimeAverage, 5000, '');
     }
 
     public function testReceiveFreshdeskWebhookOnTicketReplyNoRazorpayResponseYet()
@@ -2094,7 +2094,7 @@ class FreshdeskTicketV2Test extends TestCase
                 return $this->validateMethodAndContent($request,$expectedMethod,$expectedContent);
             }))
             ->andReturnUsing(function () use ($respondWith) {
-                $response = new \Requests_Response;
+                $response = new \WpOrg\Requests\Response;
 
                 $response->body = json_encode($respondWith);
 

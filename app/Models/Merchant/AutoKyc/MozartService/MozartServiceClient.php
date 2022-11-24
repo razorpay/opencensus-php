@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant\AutoKyc\MozartService;
 
-use Requests_Response;
+use \WpOrg\Requests\Response;
 
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\AutoKyc\BaseServiceClient;
@@ -15,14 +15,14 @@ trait MozartServiceClient
         sendRequest as protected baseSendRequest;
     }
 
-    protected function sendRequest(array $request): Requests_Response
+    protected function sendRequest(array $request)
     {
         $this->trace->info(TraceCode::CAPITAL_INTEGRATION_API_REQUEST, $this->getTraceableRequest($request));
 
         return $this->baseSendRequest($request);
     }
 
-    protected function traceResponse(Requests_Response $response)
+    protected function traceResponse($response)
     {
         $payload = [
             'status_code' => $response->status_code,

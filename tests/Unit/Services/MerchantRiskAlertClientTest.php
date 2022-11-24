@@ -3,7 +3,7 @@
 namespace RZP\Tests\Unit\Services;
 
 use Mockery;
-use Requests_Response;
+use \WpOrg\Requests\Response;
 use RZP\Services\RazorXClient;
 use RZP\Exception\TwirpException;
 use RZP\Tests\Functional\TestCase;
@@ -306,11 +306,11 @@ class MerchantRiskAlertClientTest extends TestCase
                 };
 
                 break;
-            
+
             default:
                 $closure = function ($path, $payload, $timeoutMs = null)
                 {
-                    $res = new Requests_Response;
+                    $res = new \WpOrg\Requests\Response;
 
                     $res->success = true;
 

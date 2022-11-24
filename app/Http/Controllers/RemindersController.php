@@ -221,10 +221,10 @@ class RemindersController extends Controller
                     return ApiResponse::json($response['response']);
                 }
 
-                $this->trace->warn(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['id' => $id]);
+                $this->trace->warning(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['id' => $id]);
             } catch (\Throwable $e)
             {
-                $this->trace->warn(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['id' => $id]);
+                $this->trace->warning(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['id' => $id]);
                 // do nothing. will try fetching from invoice repo
             }
         }

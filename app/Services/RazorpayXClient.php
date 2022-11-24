@@ -5,7 +5,7 @@ namespace RZP\Services;
 use Config;
 use Request;
 use Throwable;
-use Requests_Exception;
+use \WpOrg\Requests\Exception as Requests_Exception;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -209,7 +209,7 @@ class RazorpayXClient
                 $method,
                 $options);
         }
-        catch (\Requests_Exception $e)
+        catch (\WpOrg\Requests\Exception $e)
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::SERVER_ERROR_RAZORPAYX_FAILURE,

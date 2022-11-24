@@ -272,7 +272,7 @@ class MySqlConnector extends BaseMySqlConnector
             $this->setCustomModes($connection, $config);
         } elseif (isset($config['strict'])) {
             if ($config['strict']) {
-                $connection->exec($this->strictMode($connection));
+                $connection->exec($this->strictMode($connection, $config));
             } else {
                 $connection->exec("set session sql_mode='NO_ENGINE_SUBSTITUTION'");
             }

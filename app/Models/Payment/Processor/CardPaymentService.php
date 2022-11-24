@@ -134,7 +134,7 @@ trait CardPaymentService
         {
             $previousExc = $exc->getPrevious();
 
-            if (($previousExc instanceof \Requests_Exception) and
+            if (($previousExc instanceof \WpOrg\Requests\Exception) and
                     ($previousExc->getType() === 'curlerror'))
             {
                 $excData = curl_errno($previousExc->getData());

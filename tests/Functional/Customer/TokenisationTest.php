@@ -5,7 +5,7 @@ namespace RZP\Tests\Functional\CustomerToken;
 use App;
 use Mockery;
 use Carbon\Carbon;
-use Requests_Response;
+use \WpOrg\Requests\Response;
 use RZP\Constants\Entity;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\Vault;
@@ -1277,7 +1277,7 @@ class TokenisationTest extends TestCase
                 foreach ($gateways as $gateway) {
                     $data[] = ["gateway" => $gateway];
                 }
-                $response =  new Requests_Response;
+                $response =  new \WpOrg\Requests\Response;
                 $responseData = ['data' => $data];
                 $response->body = json_encode($responseData);
                 $response->status_code = 200;

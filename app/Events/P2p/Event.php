@@ -39,7 +39,7 @@ abstract class Event extends Events\Event
 
         $this->entity  = $entity;
 
-        $this->setOriginal($this->entity->getOriginal());
+        $this->setOriginal($this->entity->getRawOriginal());
     }
 
     /**

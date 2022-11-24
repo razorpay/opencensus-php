@@ -309,7 +309,7 @@ class NetbankingEquitasGatewayTest extends TestCase
 
         $paymentEntity = $this->getDbLastEntityToArray('payment', 'test');
 
-        $this->assertTestResponse($paymentEntity, 'testPaymentErrorPaymentEntity');
+        $this->assertTestResponse($paymentEntity, 'testPaymentInvalidPaymentEntity');
     }
 
     public function testVerifyResponseError()

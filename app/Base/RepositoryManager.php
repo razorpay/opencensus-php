@@ -231,11 +231,15 @@ use RZP\Base\Database\Connectors\MySqlConnector;
 
 class RepositoryManager extends Illuminate\Support\Manager
 {
+    protected $app;
+
     public function __construct($app)
     {
         parent::__construct($app);
 
         $this->db = $app['db'];
+
+        $this->app = $app;
     }
 
     public function __get($entity)
@@ -256,11 +260,14 @@ class RepositoryManager extends Illuminate\Support\Manager
         throw new Exception\LogicException('No default repository driver');
     }
 
+    /**
+     * @throws Exception\BadRequestValidationFailureException
+     */
     protected function createDriver($driver)
     {
         $repo = Entity::getEntityRepository($driver);
 
-        return new $repo($this->app);
+        return new $repo;
     }
 
     public function saveOrFail($entity, array $options = array())
@@ -537,11 +544,11 @@ class RepositoryManager extends Illuminate\Support\Manager
 
     public function useSlave(callable $callback)
     {
-        $this->db->connection()->forceReadPdo(true);
+        $this->db->connection()->forceReadPdo = true;
 
         $result = $callback($this);
 
-        $this->db->connection()->forceReadPdo(false);
+        $this->db->connection()->forceReadPdo = false;
 
         return $result;
     }

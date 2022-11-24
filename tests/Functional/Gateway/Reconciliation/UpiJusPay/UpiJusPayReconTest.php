@@ -290,7 +290,6 @@ class UpiJusPayReconTest extends TestCase
             $url,
             $fileName,
             $mime,
-            filesize($url),
             null,
             true);
     }

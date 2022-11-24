@@ -2,6 +2,8 @@
 
 namespace RZP\Mail\Subscription;
 
+use Symfony\Component\Mime\Email;
+
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
@@ -50,7 +52,7 @@ class Base extends Payment\Base
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function ($message)
+        $this->withSymfonyMessage(function (Email $message)
         {
             $subscriptionId = $this->data['subscription']['id'];
 

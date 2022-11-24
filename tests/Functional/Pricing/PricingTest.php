@@ -976,7 +976,7 @@ class PricingTest extends TestCase
 
         $this->mockTerminalsServiceSendRequest(function() use ($id)
         {
-            $response =  new \Requests_Response;
+            $response =  new \WpOrg\Requests\Response;
 
             $data['plan_id'] = $id;
 

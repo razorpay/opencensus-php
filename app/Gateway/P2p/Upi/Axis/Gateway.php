@@ -92,7 +92,7 @@ class Gateway extends Upi\Gateway
         $response->setContent($this->inputSdk());
 
         $response->finish($isValidateSignature);
-        
+
         return $this->input->get(Fields::CALLBACK);
     }
 
@@ -311,7 +311,7 @@ class Gateway extends Upi\Gateway
 
     protected function getSignatureString($content)
     {
-        $str = implode($content, '');
+        $str = implode('', $content);
 
         return $str;
     }
@@ -320,7 +320,7 @@ class Gateway extends Upi\Gateway
     {
         $signer = $this->getMerchantSigner();
 
-        $message = implode($content, '');
+        $message = implode('', $content);
 
         return $signer->verify($message, $signature);
     }

@@ -135,7 +135,7 @@ class FreshchatClient
         return Requests::request($url, $headers, $content, $method, $options);
     }
 
-    protected function processResponse(\Requests_Response $response): array
+    protected function processResponse($response): array
     {
         if ($response->status_code >= 500)
         {
@@ -180,7 +180,7 @@ class FreshchatClient
         return 'Bearer ' . $this->config['token'];
     }
 
-    protected function parseResponse(\Requests_Response $response)
+    protected function parseResponse($response)
     {
         $responseArray = json_decode($response->body, true);
 

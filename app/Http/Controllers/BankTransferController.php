@@ -559,12 +559,14 @@ class BankTransferController extends Controller
     {
         $input = Request::all();
 
-        try {
-            $header = getallheaders()['notification_type'];
+        try 
+        {
+            $request = Request::instance();
+            $header = $request->header('notification_type');
         }
         catch (\Throwable $e)
         {
-            $header = Request::header('notification-type');
+            $header = Request::header('notification_type');
         };
 
         if(isset($header) === false || empty($header) === true)

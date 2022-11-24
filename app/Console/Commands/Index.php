@@ -149,7 +149,7 @@ class Index extends Command
 
             $documents = array_filter(
                             $documents,
-                            function (& $doc)
+                            function ($doc)
                             {
                                 return $this->repo->isEsSyncNeeded(EsRepository::CREATE, $doc);
                             });

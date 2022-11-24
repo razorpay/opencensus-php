@@ -10,7 +10,7 @@ use RZP\Gateway\Base;
 use RZP\Gateway\FirstData;
 use RZP\Gateway\FirstData\Action;
 use RZP\Models\Card;
-use Requests_Response;
+use \WpOrg\Requests\Response;
 use RZP\Models\Payment;
 use RZP\Gateway\FirstData\ApiRequestFields;
 use RZP\Gateway\FirstData\ApiResponseFields;

@@ -3012,7 +3012,6 @@ class DisputeTest extends TestCase
                                         $filePath,
                                         $filePath,
                                         $mimeType,
-                                        $fileSize,
                                         null,
                                         true);
 

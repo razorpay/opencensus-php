@@ -1072,7 +1072,7 @@ class InvitationTest extends TestCase
         {
             $this->assertEquals(VendorPortalInvite::NEW_VENDOR_PORTAL_INVITE, $mail->view);
 
-            $this->assertRegExp('/\/vendor-portal\/signup\?invitation=[a-zA-Z0-9]+/', $mail->viewData['invite_link']);
+            $this->assertMatchesRegularExpression('/\/vendor-portal\/signup\?invitation=[a-zA-Z0-9]+/', $mail->viewData['invite_link']);
 
             return true;
         });
@@ -1107,7 +1107,7 @@ class InvitationTest extends TestCase
         {
             $this->assertEquals(VendorPortalInvite::NEW_VENDOR_PORTAL_INVITE, $mail->view);
 
-            $this->assertRegExp('/\/vendor-portal\/login\?invitation=[a-zA-Z0-9]+/', $mail->viewData['invite_link']);
+            $this->assertMatchesRegularExpression('/\/vendor-portal\/login\?invitation=[a-zA-Z0-9]+/', $mail->viewData['invite_link']);
 
             return true;
         });
@@ -1174,7 +1174,7 @@ class InvitationTest extends TestCase
         {
             $this->assertEquals(VendorPortalInvite::REPEAT_VENDOR_PORTAL_INVITE, $mail->view);
 
-            $this->assertRegExp('/\/vendor-portal\/login\?invitation=[a-zA-Z0-9]+/', $mail->viewData['invite_link']);
+            $this->assertMatchesRegularExpression('/\/vendor-portal\/login\?invitation=[a-zA-Z0-9]+/', $mail->viewData['invite_link']);
 
             return true;
         });
@@ -1217,7 +1217,7 @@ class InvitationTest extends TestCase
         {
             $this->assertEquals(VendorPortalInvite::NEW_VENDOR_PORTAL_INVITE, $mail->view);
 
-            $this->assertRegExp('/\/vendor-portal\/login\?invitation=[a-zA-Z0-9]+/', $mail->viewData['invite_link']);
+            $this->assertMatchesRegularExpression('/\/vendor-portal\/login\?invitation=[a-zA-Z0-9]+/', $mail->viewData['invite_link']);
 
             return true;
         });
@@ -1257,7 +1257,7 @@ class InvitationTest extends TestCase
         {
             $this->assertEquals(VendorPortalInvite::NEW_VENDOR_PORTAL_INVITE, $mail->view);
 
-            $this->assertRegExp('/\/vendor-portal\/signup\?invitation=[a-zA-Z0-9]+/', $mail->viewData['invite_link']);
+            $this->assertMatchesRegularExpression('/\/vendor-portal\/signup\?invitation=[a-zA-Z0-9]+/', $mail->viewData['invite_link']);
 
             return true;
         });
@@ -1498,7 +1498,7 @@ class InvitationTest extends TestCase
         Mail::assertQueued(VendorPortalInvite::class, function ($mail) {
             $this->assertEquals(VendorPortalInvite::NEW_VENDOR_PORTAL_INVITE, $mail->view);
 
-            $this->assertRegExp('/\/vendor-portal\/signup\?invitation=[a-zA-Z0-9]+/', $mail->viewData['invite_link']);
+            $this->assertMatchesRegularExpression('/\/vendor-portal\/signup\?invitation=[a-zA-Z0-9]+/', $mail->viewData['invite_link']);
 
             return true;
         });

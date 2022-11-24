@@ -1,5 +1,8 @@
 <?php
 
+namespace Database\Seeders;
+
+use Illuminate\Support\Facades\DB;
 use RZP\Constants\Mode;
 use RZP\Constants\Table;
 use Illuminate\Database\Seeder;
@@ -8,7 +11,7 @@ use RZP\Models\Merchant\Balance\AccountType;
 class BusinessBankingSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Run the database seeders.
      *
      * @return void
      */

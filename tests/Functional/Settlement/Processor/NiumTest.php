@@ -344,7 +344,6 @@ class NiumTest extends OAuthTestCase
             $url,
             $fileName,
             $mime,
-            filesize($url),
             null,
             true);
     }

@@ -685,11 +685,10 @@ class PGRouter
     /**
      * @param array $request
      *
-     * 
-     * @return \Requests_Response
-     * @throws \Requests_Exception
+     * @return \WpOrg\Requests\Response
+     * @throws \WpOrg\Requests\Exception
      */
-    protected function sendPGRouterRequest(array $request): \Requests_Response
+    protected function sendPGRouterRequest(array $request)
     {
         $this->traceRequest($request);
 
@@ -702,7 +701,7 @@ class PGRouter
                 $request['method'],
                 $request['options']);
         }
-        catch(\Requests_Exception $e)
+        catch(\WpOrg\Requests\Exception $e)
         {
             $this->trace->traceException(
                 $e,
@@ -724,7 +723,7 @@ class PGRouter
         return $response;
     }
 
-    protected function sendPGRouterRequestWithRetry(array $request): \Requests_Response
+    protected function sendPGRouterRequestWithRetry(array $request)
     {
         $this->traceRequest($request);
 

@@ -1,6 +1,8 @@
 <?php
 namespace RZP\Mail\Merchant\InternationalEnablement;
 
+use Symfony\Component\Mime\Email;
+
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
 use RZP\Mail\Base\Mailable;
@@ -44,7 +46,7 @@ class Request extends Mailable
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function ($message)
+        $this->withSymfonyMessage(function (Email $message)
         {
             $headers = $message->getHeaders();
 

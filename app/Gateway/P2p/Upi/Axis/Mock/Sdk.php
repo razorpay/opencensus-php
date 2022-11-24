@@ -149,7 +149,7 @@ class Sdk
 
         $this->content($response, $this->action);
 
-        $stringToSign = implode($response, '');
+        $stringToSign = implode('', $response);
 
         $gateway = new Gateway();
 
@@ -181,7 +181,7 @@ class Sdk
 
         $this->content($response, $this->action);
 
-        $sign = $this->signContent(implode($response, ''));
+        $sign = $this->signContent(implode( '', $response));
 
         $response[Fields::MERCHANT_PAYLOAD_SIGNATURE] = $sign;
 
@@ -209,7 +209,7 @@ class Sdk
 
         $this->content($response, $this->action);
 
-        $sign = $this->signContent(implode($response, ''));
+        $sign = $this->signContent(implode('', $response));
 
         $response[Fields::MERCHANT_PAYLOAD_SIGNATURE] = $sign;
 
@@ -234,7 +234,7 @@ class Sdk
 
         $this->content($response, $this->action);
 
-        $sign = $this->signContent(implode($response, ''));
+        $sign = $this->signContent(implode('', $response));
 
         $response[Fields::MERCHANT_PAYLOAD_SIGNATURE] = $sign;
 
@@ -315,7 +315,7 @@ class Sdk
 
         $this->content($response, $this->action);
 
-        $sign = $this->signContent(implode($response, ''));
+        $sign = $this->signContent(implode('', $response));
 
         $response[Fields::MERCHANT_PAYLOAD_SIGNATURE] = $sign;
 
@@ -367,7 +367,7 @@ class Sdk
 
         $this->content($response, $this->action);
 
-        $sign = $this->signContent(implode($response, ''));
+        $sign = $this->signContent(implode('', $response));
 
         $response[Fields::MERCHANT_PAYLOAD_SIGNATURE] = $sign;
 
@@ -419,7 +419,7 @@ class Sdk
 
         $this->content($response, $this->action);
 
-        $sign = $this->signContent(implode($response, ''));
+        $sign = $this->signContent(implode('', $response));
 
         $response[Fields::MERCHANT_PAYLOAD_SIGNATURE] = $sign;
 
@@ -469,7 +469,7 @@ class Sdk
 
         $this->content($response, $this->action);
 
-        $sign = $this->signContent(implode($response, ''));
+        $sign = $this->signContent(implode( '', $response));
 
         $response[Fields::MERCHANT_PAYLOAD_SIGNATURE] = $sign;
 
@@ -520,7 +520,7 @@ class Sdk
 
         $this->content($response, $this->action);
 
-        $sign = $this->signContent(implode($response, ''));
+        $sign = $this->signContent(implode('', $response ));
 
         $response[Fields::MERCHANT_PAYLOAD_SIGNATURE] = $sign;
 

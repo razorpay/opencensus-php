@@ -106,9 +106,12 @@ class Base extends BaseProcessor
 
             $this->scroogeRefundsData = $scroogeRefundsData;
 
-            $this->scroogeRefundsData = array_sort($this->scroogeRefundsData, function ($refund1, $refund2) {
-                return $refund1['created_at'] <=> $refund2['created_at'];
-            });
+            if (sizeof($this->scroogeRefundsData) > 1)
+            {
+                $this->scroogeRefundsData = array_sort($this->scroogeRefundsData, function ($refund1, $refund2) {
+                    return $refund1['created_at'] <=> $refund2['created_at'];
+                });
+            }
 
             $this->scroogeRefundPaymentIds = array_unique(array_column($this->scroogeRefundsData, RefundConstants::PAYMENT_ID));
 
@@ -739,9 +742,12 @@ class Base extends BaseProcessor
 
         $this->scroogeRefundsData = $scroogeRefundsData;
 
-        $this->scroogeRefundsData = array_sort($this->scroogeRefundsData, function ($refund1, $refund2) {
-            return $refund1['created_at'] <=> $refund2['created_at'];
-        });
+        if (sizeof($this->scroogeRefundsData) > 1)
+        {
+            $this->scroogeRefundsData = array_sort($this->scroogeRefundsData, function ($refund1, $refund2) {
+                return $refund1['created_at'] <=> $refund2['created_at'];
+            });
+        }
     }
 
     // Returns data, success - if scrooge calls fail - success is false

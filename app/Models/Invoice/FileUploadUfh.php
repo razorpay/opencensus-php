@@ -92,7 +92,6 @@ class FileUploadUfh extends Core
                 $localFilePath,
                 $invoice->getPdfFilename(). '.pdf',
                 'application/pdf',
-                filesize($localFilePath),
                 null,
                 true
             );

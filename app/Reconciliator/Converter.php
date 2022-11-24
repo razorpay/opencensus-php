@@ -6,7 +6,7 @@ use Str;
 use Excel;
 use Config;
 use Box\Spout\Common\Type;
-use Box\Spout\Reader\ReaderFactory;
+use Box\Spout\Reader\Common\Creator\ReaderFactory;
 
 use RZP\Exception;
 use RZP\Models\Base;
@@ -54,7 +54,8 @@ class Converter extends Base\Core
     // will use spout library to parse files for these gateways.
     //
     const SPOUT_GATEWAYS = [
-        RequestProcessor\Base::VIRTUAL_ACC_YESBANK
+        RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
+        RequestProcessor\Base::NETBANKING_PNB
     ];
 
     const MAX_SHEETS_ALLOWED = 3;
@@ -186,7 +187,7 @@ class Converter extends Base\Core
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
-        $reader = ReaderFactory::create(Type::XLSX);
+        $reader = ReaderFactory::createFromType(Type::XLSX);
         $reader->setShouldPreserveEmptyRows(false);
         $reader->setShouldFormatDates(true);
         $reader->open($filePath);
@@ -552,6 +553,8 @@ class Converter extends Base\Core
 
         foreach ($rowIterator as $row)
         {
+            $row = $row->toArray();
+
             if ($rowIterator->key() < $startRow)
             {
                 continue;
@@ -611,6 +614,8 @@ class Converter extends Base\Core
 
         foreach ($rowIterator as $row)
         {
+            $row = $row->toArray();
+
             if ($rowIterator->key() < $startRow)
             {
                 continue;

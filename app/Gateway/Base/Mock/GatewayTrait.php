@@ -2,8 +2,8 @@
 
 namespace RZP\Gateway\Base\Mock;
 
-use Requests_Response;
-use Requests_Response_Headers;
+use \WpOrg\Requests\Response;
+use \WpOrg\Requests\Response\Headers;
 
 trait GatewayTrait
 {
@@ -77,7 +77,7 @@ trait GatewayTrait
 
             $parts = parse_url($url);
 
-            if (isset($parts['query']) === true)
+            if (isset($parts['query']) === true && $parts['query'] !== "")
             {
                 parse_str($parts['query'], $input);
             }
@@ -104,10 +104,10 @@ trait GatewayTrait
 
     protected function prepareInternalResponse($serverResponse)
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         $headers = $serverResponse->headers->all();
-        $response->headers = new Requests_Response_Headers();
+        $response->headers = new \WpOrg\Requests\Response\Headers();
 
         foreach ($headers as $key => $value)
         {

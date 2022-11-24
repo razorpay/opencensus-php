@@ -4,6 +4,8 @@ namespace RZP\Mail\Gateway\Nach;
 
 use App;
 use Carbon\Carbon;
+use Symfony\Component\Mime\Email;
+
 use RZP\Constants\MailTags;
 use RZP\Constants\Timezone;
 use RZP\Mail\Base\Mailable;
@@ -80,7 +82,7 @@ class BaseV2 extends Mailable
     {
         $header = Constants::MAILTAG_MAP[$this->type];
 
-        $this->withSwiftMessage(function ($message) use ($header)
+        $this->withSymfonyMessage(function (Email $message) use ($header)
         {
             $headers = $message->getHeaders();
 

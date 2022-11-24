@@ -458,7 +458,12 @@ class Service
         else
         {
             // If eloquent model
-            if (method_exists($originalData, 'toArray') === true)
+            if(isset($originalData) === true and is_array($originalData))
+            {
+                $originalDataArray =  $originalData;
+            }
+
+            else if (isset($originalData) === true and method_exists($originalData, 'toArray') === true)
             {
                 $originalDataArray = $originalData->toArray();
 
@@ -477,7 +482,7 @@ class Service
             }
 
             // If eloquent model
-            if (method_exists($dirtyData, 'toArray') === true)
+            if (is_object($dirtyData) and method_exists($dirtyData, 'toArray') === true)
             {
                 $dirtyDataArray = $dirtyData->toArray();
 
@@ -518,7 +523,8 @@ class Service
 
         $relations = EntityValidator::getRelations($routeName);
 
-        if (method_exists($originalData, 'toArray') === true)
+        if (is_object($originalData) === true
+               and method_exists($originalData, 'toArray') === true)
         {
             foreach ($relations as $relation)
             {

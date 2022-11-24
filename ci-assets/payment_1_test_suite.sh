@@ -3,7 +3,7 @@ TEST_SUITE_STATUS=0
 log_file_name="test-output.log"
 export START_TIME=$(date +%s)
 echo "start-time: ${START_TIME}"
-SUITE_NAME="Payment Test Suite - 1" php vendor/phpunit/phpunit/phpunit -d memory_limit=2048M --testsuite "Payment Test Suite - 1" --printer="Codedungeon\PHPUnitPrettyResultPrinter\Printer" >> $log_file_name
+SUITE_NAME="Payment Test Suite - 1" php vendor/phpunit/phpunit/phpunit -d memory_limit=2048M --testsuite "Payment Test Suite - 1" >> $log_file_name
 export TEST_SUITE_STATUS=$((TEST_SUITE_STATUS + $?))
 export END_TIME=$(date +%s)
 echo "end-time: ${END_TIME}"

@@ -26,25 +26,25 @@ class RedisCircuitBreakerTest extends TestCase
         $keyFailure = 'circuit_breaker:service:total_failures:11111';
 
         $keyHelperMock = \Mockery::mock(KeyHelper::class);
+
         $keyHelperMock->shouldReceive('generateKeyTotalFailuresToStore')
                       ->once()
                       ->with($serviceName)
                       ->andReturn($keyFailure);
 
-
-        $redisMock = $this->getMockBuilder(Redis::class)->getMock();
-
-        Redis::shouldReceive('connection')
-             ->times(4)
-             ->andReturn($redisMock);
+        $mutexMockery = \Mockery::mock('RZP\Services\Mutex', [$this->app]);
 
 
-        $redisMock->shouldReceive('set')
+        $redisMockery = \Mockery::mock('RZP\Services\RedisService', [$this->app])->makePartial();
+
+        $redisMockery->shouldReceive('set')
                   ->once()
                   ->with($keyFailure, true, $timeWindow)
                   ->andReturnTrue();
 
-        $redisCircuitBreaker = new CircuitBreakerRedisStore($redisMock, $keyHelperMock);
+        $this->app->instance('api.redis', $redisMockery);
+
+        $redisCircuitBreaker = new CircuitBreakerRedisStore($keyHelperMock);
 
         $this->assertNull($redisCircuitBreaker->addFailure($serviceName, $timeWindow));
     }
@@ -60,23 +60,23 @@ class RedisCircuitBreakerTest extends TestCase
         $redisErrorMessage = 'UNEXPECTED_ERROR_MESSAGE';
 
         $keyHelperMock = \Mockery::mock(KeyHelper::class);
+
         $keyHelperMock->shouldReceive('generateKeyTotalFailuresToStore')
                       ->once()
                       ->with($serviceName)
                       ->andReturn($keyFailure);
 
-        $redisMock = $this->getMockBuilder(Redis::class)->getMock();
+        $redisMockery = \Mockery::mock('RZP\Services\RedisService', [$this->app])->makePartial();
 
-        Redis::shouldReceive('connection')
-             ->times(4)
-             ->andReturn($redisMock);
+        $redisMockery->shouldReceive('set')
+                     ->once()
+                     ->with($keyFailure, true, $timeWindow)
+                     ->andReturnTrue();
 
-        $redisMock->shouldReceive('set')
-                  ->once()
-                  ->with($keyFailure, true, $timeWindow)
-                  ->andReturnFalse();
+        $this->app->instance('api.redis', $redisMockery);
 
-        $redisCircuitBreaker = new CircuitBreakerRedisStore($redisMock, $keyHelperMock);
+        $redisCircuitBreaker = new CircuitBreakerRedisStore($keyHelperMock);
+
         $redisCircuitBreaker->addFailure($serviceName, $timeWindow);
     }
 
@@ -91,23 +91,23 @@ class RedisCircuitBreakerTest extends TestCase
         $keyCircuitOpen = 'circuit_breaker:service:open';
 
         $keyHelperMock = \Mockery::mock(KeyHelper::class);
+
         $keyHelperMock->shouldReceive('generateKeyOpen')
                       ->once()
                       ->with($serviceName)
                       ->andReturn($keyCircuitOpen);
 
-        $redisMock = $this->getMockBuilder(Redis::class)->getMock();
+        $redisMockery = \Mockery::mock('RZP\Services\RedisService', [$this->app])->makePartial();
 
-        Redis::shouldReceive('connection')
-             ->times(4)
-             ->andReturn($redisMock);
+        $redisMockery->shouldReceive('set')
+                     ->once()
+                     ->with($keyCircuitOpen, true, $timeOpen)
+                     ->andReturnTrue();
 
-        $redisMock->shouldReceive('set')
-                  ->once()
-                  ->with($keyCircuitOpen, true, $timeOpen)
-                  ->andReturnTrue();
+        $this->app->instance('api.redis', $redisMockery);
 
-        $redisCircuitBreaker = new CircuitBreakerRedisStore($redisMock, $keyHelperMock);
+        $redisCircuitBreaker = new CircuitBreakerRedisStore($keyHelperMock);
+
         $this->assertNull($redisCircuitBreaker->openCircuit($serviceName, $timeOpen));
     }
 
@@ -127,19 +127,16 @@ class RedisCircuitBreakerTest extends TestCase
                       ->with($serviceName)
                       ->andReturn($keyCircuitOpen);
 
-        $redisMock = $this->getMockBuilder(Redis::class)->getMock();
+        $redisMockery = \Mockery::mock('RZP\Services\RedisService', [$this->app])->makePartial();
 
-        Redis::shouldReceive('connection')
-             ->times(4)
-             ->andReturn($redisMock);
+        $redisMockery->shouldReceive('set')
+                     ->once()
+                     ->with($keyCircuitOpen, true, $timeOpen)
+                     ->andReturnFalse();
 
-        $redisMock->shouldReceive('set')
-                  ->once()
-                  ->with($keyCircuitOpen, true, $timeOpen)
-                  ->andReturnFalse();
+        $this->app->instance('api.redis', $redisMockery);
 
-
-        $redisCircuitBreaker = new CircuitBreakerRedisStore($redisMock, $keyHelperMock);
+        $redisCircuitBreaker = new CircuitBreakerRedisStore($keyHelperMock);
         $redisCircuitBreaker->openCircuit($serviceName, $timeOpen);
     }
 
@@ -159,18 +156,16 @@ class RedisCircuitBreakerTest extends TestCase
                       ->with($serviceName)
                       ->andReturn($keyHalfOpen);
 
-        $redisMock = $this->getMockBuilder(Redis::class)->getMock();
+        $redisMockery = \Mockery::mock('RZP\Services\RedisService', [$this->app])->makePartial();
 
-        Redis::shouldReceive('connection')
-             ->times(4)
-             ->andReturn($redisMock);
+        $redisMockery->shouldReceive('set')
+                     ->once()
+                     ->with($keyHalfOpen, true, $timeOpen)
+                     ->andReturnTrue();
 
-        $redisMock->shouldReceive('set')
-                  ->once()
-                  ->with($keyHalfOpen, true, $timeOpen)
-                  ->andReturnTrue();
+        $this->app->instance('api.redis', $redisMockery);
 
-        $redisCircuitBreaker = new CircuitBreakerRedisStore($redisMock, $keyHelperMock);
+        $redisCircuitBreaker = new CircuitBreakerRedisStore($keyHelperMock);
         $this->assertNull($redisCircuitBreaker->setCircuitHalfOpen($serviceName, $timeOpen));
     }
 
@@ -190,18 +185,16 @@ class RedisCircuitBreakerTest extends TestCase
                       ->with($serviceName)
                       ->andReturn($keyCircuitHalfOpen);
 
-        $redisMock = $this->getMockBuilder(Redis::class)->getMock();
+        $redisMockery = \Mockery::mock('RZP\Services\RedisService', [$this->app])->makePartial();
 
-        Redis::shouldReceive('connection')
-             ->times(4)
-             ->andReturn($redisMock);
+        $redisMockery->shouldReceive('set')
+                     ->once()
+                     ->with($keyCircuitHalfOpen, true, $timeOpen)
+                     ->andReturnFalse();
 
-        $redisMock->shouldReceive('set')
-                  ->once()
-                  ->with($keyCircuitHalfOpen, true, $timeOpen)
-                  ->andReturnFalse();
+        $this->app->instance('api.redis', $redisMockery);
 
-        $redisCircuitBreaker = new CircuitBreakerRedisStore($redisMock, $keyHelperMock);
+        $redisCircuitBreaker = new CircuitBreakerRedisStore($keyHelperMock);
         $redisCircuitBreaker->setCircuitHalfOpen($serviceName, $timeOpen);
     }
 
@@ -212,12 +205,12 @@ class RedisCircuitBreakerTest extends TestCase
     public function testSuccessClosingCircuit()
     {
         $serviceName = 'SERVICE_NAME';
-        $keyOpen = 'KEY_OPEN';
+        $keyOpen     = 'KEY_OPEN';
         $keyHalfOpen = 'KEY_HALF_OPEN';
 
-        $keyTotalFailures = 'KEY_TOTAL_FAILURES';
+        $keyTotalFailures        = 'KEY_TOTAL_FAILURES';
         $keysFailuresToBeDeleted = ['K1', 'K2', 'K3'];
-        $mergeKeysToDelete = array_merge([$keyOpen, $keyHalfOpen], $keysFailuresToBeDeleted);
+        $mergeKeysToDelete       = array_merge([$keyOpen, $keyHalfOpen], $keysFailuresToBeDeleted);
 
         $keyHelperMock = \Mockery::mock(KeyHelper::class);
         $keyHelperMock->shouldReceive('generateKeyOpen')
@@ -235,24 +228,36 @@ class RedisCircuitBreakerTest extends TestCase
                       ->with($serviceName)
                       ->andReturn($keyTotalFailures);
 
+        $redisMockery = \Mockery::mock('RZP\Services\RedisService', [$this->app])->makePartial();
 
-        $redisMock = $this->getMockBuilder(Redis::class)->getMock();
+        $redisMockery->shouldReceive('get')
+                     ->once()
+                     ->with($keyTotalFailures)
+                     ->andReturn($keysFailuresToBeDeleted);
 
-        Redis::shouldReceive('connection')
-             ->times(4)
-             ->andReturn($redisMock);
+        $redisMockery->shouldReceive('del')
+                     ->once()
+                     ->with($keyOpen)
+                     ->andReturnTrue();
+        $redisMockery->shouldReceive('del')
+                     ->once()
+                     ->with($keyHalfOpen)
+                     ->andReturnTrue();
+        $redisMockery->shouldReceive('del')
+                     ->once()
+                     ->with('K1')
+                     ->andReturnTrue();
+        $redisMockery->shouldReceive('del')
+                     ->once()
+                     ->with('K2')
+                     ->andReturnTrue();
+        $redisMockery->shouldReceive('del')
+                     ->once()
+                     ->with('K3')
+                     ->andReturnTrue();
+        $this->app->instance('api.redis', $redisMockery);
 
-        $redisMock->shouldReceive('keys')
-                  ->once()
-                  ->with($keyTotalFailures)
-                  ->andReturn($keysFailuresToBeDeleted);
-
-        $redisMock->shouldReceive('del')
-                  ->once()
-                  ->with($mergeKeysToDelete)
-                  ->andReturnTrue();
-
-        $redisCircuitBreaker = new CircuitBreakerRedisStore($redisMock, $keyHelperMock);
+        $redisCircuitBreaker = new CircuitBreakerRedisStore($keyHelperMock);
         $this->assertNull($redisCircuitBreaker->closeCircuit($serviceName));
     }
 
@@ -287,23 +292,21 @@ class RedisCircuitBreakerTest extends TestCase
                       ->with($serviceName)
                       ->andReturn($keyTotalFailures);
 
-        $redisMock = $this->getMockBuilder(Redis::class)->getMock();
+        $redisMockery = \Mockery::mock('RZP\Services\RedisService', [$this->app])->makePartial();
 
-        Redis::shouldReceive('connection')
-             ->times(4)
-             ->andReturn($redisMock);
-
-        $redisMock->shouldReceive('keys')
+        $redisMockery->shouldReceive('get')
                   ->once()
                   ->with($keyTotalFailures)
                   ->andReturn($keysFailuresToBeDeleted);
 
-        $redisMock->shouldReceive('del')
+        $redisMockery->shouldReceive('del')
                   ->once()
-                  ->with($mergeKeysToDelete)
+                  ->with($keyOpen)
                   ->andReturnFalse();
 
-        $redisCircuitBreaker = new CircuitBreakerRedisStore($redisMock, $keyHelperMock);
+        $this->app->instance('api.redis', $redisMockery);
+
+        $redisCircuitBreaker = new CircuitBreakerRedisStore($keyHelperMock);
         $this->assertNull($redisCircuitBreaker->closeCircuit($serviceName));
     }
 
@@ -327,18 +330,16 @@ class RedisCircuitBreakerTest extends TestCase
                       ->with($serviceName)
                       ->andReturn($keyTotalFailures);
 
-        $redisMock = $this->getMockBuilder(Redis::class)->getMock();
+        $redisMockery = \Mockery::mock('RZP\Services\RedisService', [$this->app])->makePartial();
 
-        Redis::shouldReceive('connection')
-             ->times(4)
-             ->andReturn($redisMock);
+        $redisMockery->shouldReceive('get')
+                     ->with($keyTotalFailures)
+                     ->andReturn($arrayKeys);
 
-        $redisMock->shouldReceive('keys')
-                  ->once()
-                  ->with($keyTotalFailures)
-                  ->andReturn($arrayKeys);
+        $this->app->instance('api.redis', $redisMockery);
 
-        $redisCircuitBreaker = new CircuitBreakerRedisStore($redisMock, $keyHelperMock);
+        $redisCircuitBreaker = new CircuitBreakerRedisStore($keyHelperMock);
+
         $totalFailuresResult = $redisCircuitBreaker->getTotalFailures($serviceName);
 
         $this->assertEquals($expectedTotalFailures, $totalFailuresResult);
@@ -374,21 +375,20 @@ class RedisCircuitBreakerTest extends TestCase
                       ->with($serviceName)
                       ->andReturn($keyHalfOpen);
 
-        $redisMock = $this->getMockBuilder(Redis::class)->getMock();
+        $redisMockery = \Mockery::mock('RZP\Services\RedisService', [$this->app])->makePartial();
 
-        Redis::shouldReceive('connection')
-             ->times(4)
-             ->andReturn($redisMock);
+        $redisMockery->shouldReceive('get')
+                     ->with($keyHalfOpen)
+                     ->andReturn($isHalfOpen);
 
-        $redisMock->shouldReceive('get')
-                  ->with($keyHalfOpen)
-                  ->andReturn($isHalfOpen);
-
-        $redisMock->shouldReceive('get')
+        $redisMockery->shouldReceive('get')
                   ->with($keyOpen)
                   ->andReturn($isOpen);
 
-        $redisCircuitBreaker = new CircuitBreakerRedisStore($redisMock, $keyHelperMock);
+        $this->app->instance('api.redis', $redisMockery);
+
+        $redisCircuitBreaker = new CircuitBreakerRedisStore($keyHelperMock);
+
         $stateResult = $redisCircuitBreaker->getState($serviceName);
 
         $this->assertEquals($expectedCircuitState, $stateResult);
@@ -403,17 +403,17 @@ class RedisCircuitBreakerTest extends TestCase
     {
         return [
             [
-                'expectedResult' => CircuitState::OPEN(),
+                'expectedResult' => (new CircuitState())->OPEN(),
                 'isOpen' => true,
                 'isHalfOpen' => false,
             ],
             [
-                'expectedResult' => CircuitState::HALF_OPEN(),
+                'expectedResult' => (new CircuitState())->HALF_OPEN(),
                 'isOpen' => false,
                 'isHalfOpen' => true,
             ],
             [
-                'expectedResult' => CircuitState::CLOSED(),
+                'expectedResult' => (new CircuitState())->CLOSED(),
                 'isOpen' => false,
                 'isHalfOpen' => false,
             ]

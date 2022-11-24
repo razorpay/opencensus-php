@@ -20,15 +20,17 @@ class GatewayManager extends \Illuminate\Support\Manager
 
     protected $recons = [];
 
-    public function __construct($app)
+    public function __construct($container)
     {
-        parent::__construct($app);
+        parent::__construct($container);
 
-        $gatewayConfig = $this->app['config']->get('gateway');
+        $gatewayConfig = $container['config']->get('gateway');
 
         $this->gateways = $gatewayConfig['available'];
 
         $this->registerMocks($gatewayConfig);
+
+        $this->container = $container;
     }
 
     public function call($gateway, $action, $input, $mode, $terminal = null)
@@ -68,7 +70,7 @@ class GatewayManager extends \Illuminate\Support\Manager
 
     protected function registerTraceProcessor($input, $action)
     {
-        $gatewayProcessor = $this->app['trace']->processor('gateway');
+        $gatewayProcessor = $this->container['trace']->processor('gateway');
 
         list($this->input, $this->action) = $gatewayProcessor->getInputAction();
 
@@ -146,12 +148,12 @@ class GatewayManager extends \Illuminate\Support\Manager
 
     protected function checkRunningTests(): bool
     {
-        if (empty($this->app) === true)
+        if (empty($this->container) === true)
         {
             return false;
         }
 
-        return ($this->app->runningUnitTests() === true);
+        return ($this->container->runningUnitTests() === true);
     }
 
     public function getDefaultDriver()
@@ -283,7 +285,7 @@ class GatewayManager extends \Illuminate\Support\Manager
 
     protected function getMode()
     {
-        return $this->app['basicauth']->getMode();
+        return $this->container['basicauth']->getMode();
     }
 
     protected function getGateways()

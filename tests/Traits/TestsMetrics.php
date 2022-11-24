@@ -2,11 +2,13 @@
 
 namespace RZP\Tests\Traits;
 
+use Razorpay\Metrics\Manager as MetricManager;
+
 trait TestsMetrics
 {
     protected function createMetricsMock(array $methods = ['count', 'gauge', 'histogram', 'summary'])
     {
-        $mock = $this->getMockBuilder(Razorpay\Metrics\Manager::class)
+        $mock = $this->getMockBuilder(MetricManager::class)
                      ->setMethods($methods)
                      ->getMock();
 

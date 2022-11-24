@@ -3,7 +3,7 @@
 namespace RZP\Models\FundTransfer\Yesbank\Request;
 
 use Config;
-use Requests_Hooks;
+use \WpOrg\Requests\Hooks as Requests_Hooks;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Base as BaseModel;
@@ -184,7 +184,7 @@ abstract class Base extends ApiProcessor
     /**
      * {{@inheritdoc}}
      */
-    public function processResponse(\Requests_Response $response): array
+    public function processResponse($response): array
     {
         $responseBody = json_decode($response->body, true);
 

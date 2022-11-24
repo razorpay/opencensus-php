@@ -108,7 +108,7 @@ class Raven
      * @throws Exception\BadRequestException
      * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\RuntimeException
-     * @throws \Requests_Exception
+     * @throws \WpOrg\Requests\Exception
      */
     public function generateOtp(array $input, $mockInTestMode = true): array
     {
@@ -147,7 +147,7 @@ class Raven
      * @throws Exception\BadRequestException
      * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\RuntimeException
-     * @throws \Requests_Exception
+     * @throws \WpOrg\Requests\Exception
      */
     public function sendSms(array $input, bool $mockInTestMode = true): array
     {
@@ -235,7 +235,7 @@ class Raven
      * @throws Exception\BadRequestException
      * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\RuntimeException
-     * @throws \Requests_Exception
+     * @throws \WpOrg\Requests\Exception
      */
     public function sendRequest($url, $method, $data = null)
     {
@@ -313,7 +313,7 @@ class Raven
 
                 return $response;
             }
-            catch(\Requests_Exception $e)
+            catch(\WpOrg\Requests\Exception $e)
             {
                 if ($currentAttempt == $maxAllowedAttempts)
                 {
@@ -344,7 +344,7 @@ class Raven
                 $request['content'],
                 $request['options']);
         }
-        catch(\Requests_Exception $e)
+        catch(\WpOrg\Requests\Exception $e)
         {
             throw $e;
         }

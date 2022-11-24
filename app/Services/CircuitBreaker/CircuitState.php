@@ -16,17 +16,17 @@ class CircuitState
     /** @var string HALF_OPEN Define that the circuit is half-open. */
     const HALF_OPEN = 'half_open';
 
-    public static function OPEN()
+    public function OPEN()
     {
         return self::OPEN;
     }
 
-    public static function CLOSED()
+    public function CLOSED()
     {
         return self::CLOSED;
     }
 
-    public static function HALF_OPEN()
+    public function HALF_OPEN()
     {
         return self::HALF_OPEN;
     }

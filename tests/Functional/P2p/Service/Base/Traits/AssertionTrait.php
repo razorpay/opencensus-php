@@ -3,7 +3,7 @@
 namespace RZP\Tests\P2p\Service\Base\Traits;
 
 use RZP\Tests\P2p\Service\Base\P2pHelper;
-use Illuminate\Foundation\Testing\TestResponse;
+use Illuminate\Testing\TestResponse;
 
 trait AssertionTrait
 {

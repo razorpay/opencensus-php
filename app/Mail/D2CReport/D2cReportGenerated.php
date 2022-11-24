@@ -2,6 +2,8 @@
 
 namespace RZP\Mail\D2CReport;
 
+use Symfony\Component\Mime\Email;
+
 use RZP\Mail\Base\Constants;
 use RZP\Mail\Base\Mailable;
 use RZP\Constants\MailTags;
@@ -70,7 +72,7 @@ class D2cReportGenerated extends Mailable
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function ($message)
+        $this->withSymfonyMessage(function (Email $message)
         {
             $headers = $message->getHeaders();
 

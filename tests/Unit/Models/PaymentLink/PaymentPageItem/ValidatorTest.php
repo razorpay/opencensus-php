@@ -58,6 +58,10 @@ class ValidatorTest extends BaseTest
         $this->assertException($exceptionClass, $exceptionMessage);
 
         $this->validator->validateAmount("amount", $amount, $currency);
+
+        // validation ideally does not return anything, if the validation fails it throws exeption, which has been
+        // asserted above. If we expect no error, we simply assert true
+        $this->assertTrue(true);
     }
 
     /**
@@ -235,6 +239,10 @@ class ValidatorTest extends BaseTest
         $this->createAndAssignEntity();
 
         $this->validator->validateCurrency("currency", Currency::INR);
+
+        // validation ideally does not return anything, if the validation fails it throws exeption,since we expect no
+        // error, we simply assert true
+        $this->assertTrue(true);
     }
 
     /**
@@ -317,6 +325,13 @@ class ValidatorTest extends BaseTest
         if (empty($exceptionMessage) === false)
         {
             $this->expectExceptionMessage($exceptionMessage);
+        }
+
+        if (empty($exceptionClass) === true && empty($exceptionMessage) === true)
+        {
+            // validation ideally does not return anything, if the validation fails it throws exeption, which has been
+            // asserted above. If we expect no error, we simply assert true
+            $this->assertTrue(true);
         }
     }
 

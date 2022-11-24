@@ -4,7 +4,7 @@ namespace RZP\Reconciliator\NetbankingBobV2;
 
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\FileProcessor;
-use RZP\Gateway\Mozart\NetBankingBob\ReconFields;
+use RZP\Gateway\Mozart\NetbankingBob\ReconFields;
 
 class Reconciliate extends Base\Reconciliate
 {

@@ -55,7 +55,7 @@ abstract class Base extends BaseCore
         // creating the UploadedFile instance in test mode.
         $test = true;
 
-        $object = new UploadedFile($path, $originalName, $mimeType, $size, $error, $test);
+        $object = new UploadedFile($path, $originalName, $mimeType, $error, $test);
 
         return $object;
     }

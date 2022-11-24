@@ -1,5 +1,11 @@
 <?php
 
+namespace Database\Seeders;
+
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+
 use RZP\Constants\Mode;
 use RZP\Models\Pricing;
 use RZP\Constants\Table;
@@ -15,25 +21,25 @@ class DatabaseSeeder extends Seeder
     const RAZORPAY_ORG_ID = '100000razorpay';
 
     /**
-     * Run the database seeds.
+     * Run the database seeders.
      *
      * @return void
      */
     public function run()
     {
-        Eloquent::unguard();
+        //Eloquent::unguard();
 
         $this->seed();
 
-        $this->call('IinsTableSeeder');
-        $this->call('PermissionSeeder');
-        $this->call('GroupMapSeeder');
-        $this->call('WorkflowSeeder');
-        $this->call('TaxGroupAndTaxSeeder');
-        $this->call('DisputeReasonSeeder');
-        $this->call('BusinessBankingSeeder');
-        $this->call('BusinessBankingWorkflowsSeeder');
-        $this->call('CACStaticDataSeeder');
+//        $this->call('IinsTableSeeder');
+//        $this->call('PermissionSeeder');
+//        $this->call('GroupMapSeeder');
+//        $this->call('WorkflowSeeder');
+//        $this->call('TaxGroupAndTaxSeeder');
+//        $this->call('DisputeReasonSeeder');
+//        $this->call('BusinessBankingSeeder');
+//        $this->call('BusinessBankingWorkflowsSeeder');
+        //$this->call('CACStaticDataSeeder');
     }
 
     private function seed()
@@ -365,12 +371,12 @@ class DatabaseSeeder extends Seeder
                     'contact_name'   => 'Test Account',
                     'contact_email'  => 'test@razorpay.com',
                     'contact_mobile' => '9876543210',
-                    RZP\Models\Merchant\Detail\Entity::BUSINESS_REGISTERED_ADDRESS  => 'Flat no 12, opp Adugodi Police Station',
-                    RZP\Models\Merchant\Detail\Entity::BUSINESS_REGISTERED_CITY  => 'Bangalore',
-                    RZP\Models\Merchant\Detail\Entity::BUSINESS_REGISTERED_STATE  => 'KA',
-                    RZP\Models\Merchant\Detail\Entity::BUSINESS_REGISTERED_PIN  => '560030',
-                    RZP\Models\Merchant\Detail\Entity::PROMOTER_PAN  => 'ABCPE1234F',
-                    RZP\Models\Merchant\Detail\Entity::PROMOTER_PAN_NAME  => 'John Doe',
+                    \RZP\Models\Merchant\Detail\Entity::BUSINESS_REGISTERED_ADDRESS  => 'Flat no 12, opp Adugodi Police Station',
+                    \RZP\Models\Merchant\Detail\Entity::BUSINESS_REGISTERED_CITY  => 'Bangalore',
+                    \RZP\Models\Merchant\Detail\Entity::BUSINESS_REGISTERED_STATE  => 'KA',
+                    \RZP\Models\Merchant\Detail\Entity::BUSINESS_REGISTERED_PIN  => '560030',
+                    \RZP\Models\Merchant\Detail\Entity::PROMOTER_PAN  => 'ABCPE1234F',
+                    \RZP\Models\Merchant\Detail\Entity::PROMOTER_PAN_NAME  => 'John Doe',
                     'created_at'     => 1488306599, // 28/02/2017, 11:59:59 PM GMT+5:30; pre signup steps are required for people signing up on/after 01/03/2017
                     'updated_at'     => $currentTime,
                     )

@@ -22,6 +22,8 @@ class CrawlerReconTest extends TestCase
 
     public function testBobCrawlerReconciliation()
     {
+        $this->markTestSkipped('skipping this as the flow in not live');
+
         $this->gateway = 'netbanking_bob';
 
         $terminal = $this->fixtures->create('terminal:shared_netbanking_bob_terminal');

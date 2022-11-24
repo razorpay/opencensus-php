@@ -1459,7 +1459,7 @@ We look forward to transacting with you!
 
             $body = json_encode(['data' => [$data]]);
 
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $response->body = $body;
 
@@ -2634,7 +2634,7 @@ Team Razorpay', '1234567890');
 
         // Put CSV file as UploadedFile instance in request
         $path = __DIR__ . '/helpers/bulk-edit-merchant-attributes.csv';
-        $file = new UploadedFile($path, 'file.csv', 'text/csv', filesize($path), null, true);
+        $file = new UploadedFile($path, 'file.csv', 'text/csv', null, true);
         $this->testData[__FUNCTION__]['request']['files']['file'] = $file;
 
         // Fire api request and assert response and entity state in both modes
@@ -2993,7 +2993,6 @@ Team Razorpay', '1234567890');
             __DIR__ . '/../Storage/a.png',
             'a.png',
             'image/png',
-            filesize(__DIR__ . '/../Storage/a.png'),
             null,
             true);
     }
@@ -6552,7 +6551,7 @@ You can now start accepting payments from https://www.example.com.
                 }))
             ->andReturnUsing(function ()
             {
-                $response = new \Requests_Response;
+                $response = new \WpOrg\Requests\Response;
 
                 $response->body = json_encode(['key' => 'value']);
 

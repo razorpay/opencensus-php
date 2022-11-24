@@ -3,16 +3,18 @@
 namespace RZP\Mail\PayoutDowntime;
 
 use App;
+use Symfony\Component\Mime\Email;
+use Razorpay\Trace\Logger as Trace;
+use Illuminate\Contracts\Mail\Mailer as MailerContract;
+use GuzzleHttp\Exception\ClientException as GuzzleClientException;
+
 use RZP\Trace\TraceCode;
 use RZP\Mail\Base\Common;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Validator;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\PayoutDowntime\Constants;
-use Illuminate\Contracts\Mail\Mailer as MailerContract;
 use RZP\Models\PayoutDowntime\Repository as Repository;
-use GuzzleHttp\Exception\ClientException as GuzzleClientException;
 
 class PayoutDowntimeMail extends Mailable
 {
@@ -79,7 +81,7 @@ class PayoutDowntimeMail extends Mailable
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function($message) {
+        $this->withSymfonyMessage(function (Email $message) {
             $headers = $message->getHeaders();
 
             $headers->addTextHeader(MailTags::HEADER, MailTags::PAYOUT_DOWNTIME_NOTIFICATION);
@@ -88,7 +90,7 @@ class PayoutDowntimeMail extends Mailable
         return $this;
     }
 
-    public function send(MailerContract $mailer)
+    public function send($mailer)
     {
         $app = App::getFacadeRoot();
 

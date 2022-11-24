@@ -10,6 +10,8 @@ use RZP\Models\Terminal\Options as TerminalOptions;
 use Illuminate\Foundation\Testing\TestCase as IlluminateTestCase;
 
 use RZP\Models\Admin;
+use function Complex\theta;
+
 /**
  * Base test case class provided bdy laravel all, test cases inherit it
  * ALl test cases follow, GIVEN, WHEN, THEN structure
@@ -55,6 +57,8 @@ class TestCase extends IlluminateTestCase
         //     $this->markTestSkippedForWercker();
         parent::setUp();
 
+        $this->setErrorHandler();
+        error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
         // Load test data
         $this->loadTestData();
 
@@ -65,6 +69,26 @@ class TestCase extends IlluminateTestCase
         $this->mockCardVault();
 
         $this->disbaleCpsConfig();
+    }
+
+    private function setErrorHandler(): void
+    {
+        set_error_handler(function($errno, $errstr) {
+            // error was suppressed with the @-operator
+            if (0 === error_reporting()) {
+                return false;
+            }
+
+            // $errstr may need to be escaped:
+            $errstr = htmlspecialchars($errstr);
+
+            if ($errstr === "Trying to access array offset on value of type null") {
+                // log to sumo here, so we can fix over time.
+                return true;
+            }
+
+            return false;
+        }, E_WARNING);
     }
 
     protected function tearDown(): void
@@ -78,9 +102,9 @@ class TestCase extends IlluminateTestCase
         $this->resetIniConfiguration();
     }
 
-    protected function setUpTraits()
+    protected function setUpTraits(): array
     {
-        ;
+        return [];
     }
 
     protected function resetIniConfiguration()
@@ -107,11 +131,13 @@ class TestCase extends IlluminateTestCase
     protected function loadTestData()
     {
         static $testData = null;
+        static $previousTestDataFilePath = '';
 
         if (($this->testDataFilePath !== null) and
-            ($testData === null))
+            ($previousTestDataFilePath !== $this->testDataFilePath))
         {
             $testData = require($this->testDataFilePath);
+            $previousTestDataFilePath = $this->testDataFilePath;
         }
 
         $this->testData = $testData;

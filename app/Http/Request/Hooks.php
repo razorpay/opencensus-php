@@ -3,7 +3,7 @@
 namespace RZP\Http\Request;
 
 use App;
-use Requests_Hooks;
+use \WpOrg\Requests\Hooks as Requests_Hooks;
 
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;

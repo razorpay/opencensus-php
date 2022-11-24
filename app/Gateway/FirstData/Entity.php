@@ -107,4 +107,9 @@ class Entity extends Base\Entity
     {
         $this->setAttribute(self::ARN_NO, $arnNo);
     }
+
+    public function getIncrementing()
+    {
+        return $this->incrementing;
+    }
 }

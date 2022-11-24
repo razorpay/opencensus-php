@@ -6,7 +6,7 @@ namespace RZP\Gateway;
 use App;
 use Request;
 use RZP\Exception;
-use Requests_Exception;
+use \WpOrg\Requests\Exception as Requests_Exception;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
 use RZP\Models\Payment\Gateway;
@@ -34,7 +34,7 @@ class Utility
      *
      * @return boolean              true/false
      */
-    public static function checkTimeout(\Requests_Exception $e)
+    public static function checkTimeout(\WpOrg\Requests\Exception $e)
     {
         $msg = $e->getMessage();
         $msg = strtolower($msg);
@@ -58,7 +58,7 @@ class Utility
         return false;
     }
 
-    public static function checkActualTimeout(\Requests_Exception $e)
+    public static function checkActualTimeout(\WpOrg\Requests\Exception $e)
     {
         $msg = $e->getMessage();
         $msg = strtolower($msg);

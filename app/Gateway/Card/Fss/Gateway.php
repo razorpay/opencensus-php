@@ -936,7 +936,7 @@ class Gateway extends Base\Gateway
     /**
      * @param $request
      *
-     * @return \Requests_Response
+     * @return \WpOrg\Requests\Response
      */
     protected function postRequest($request)
     {

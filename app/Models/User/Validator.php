@@ -698,7 +698,7 @@ class Validator extends Base\Validator
                     ]
                 );
             }
-            else if(array_key_exists('score', $output) === true)
+            else if(array_key_exists('score', (array)$output) === true)
             {
                 $threshold = 0.9;
                 if ($output->score < $threshold)
@@ -838,7 +838,7 @@ class Validator extends Base\Validator
 
                 return $response;
             }
-            catch (\Requests_Exception $e)
+            catch (\WpOrg\Requests\Exception $e)
             {
                 $app['trace']->traceException(
                     $e,

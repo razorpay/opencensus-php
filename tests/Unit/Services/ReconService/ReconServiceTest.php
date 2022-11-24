@@ -26,7 +26,7 @@ class ReconServiceTest extends TestCase
     {
         $reconService = $this->getReconServiceWithSendRequestMock();
 
-        $file = new UploadedFile(__DIR__.'/ReconServiceTestFile.csv','ReconServiceTestFile.csv', 'csv', null, null, true);
+        $file = new UploadedFile(__DIR__.'/ReconServiceTestFile.csv','ReconServiceTestFile.csv', 'csv', null, true);
 
         $upload_file_payload = ['merchant_id' => '1000000Razorpay', 'workspace_id' => 'random', 'file_type_id' => 'random', 'file' => $file];
 

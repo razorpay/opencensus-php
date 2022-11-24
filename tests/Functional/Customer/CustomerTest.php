@@ -912,7 +912,7 @@ class customerTest extends TestCase
 
     public function testCreateGlobalCustomerMagicClub()
     {
-        $this->ba->privateAuth('rzp_test', getenv("CONSUMER_APP_SERVICE_SECRET"));
+        $this->ba->appAuthTest($this->config['applications.consumer_app.secret']);
 
         $this->startTest();
 
@@ -929,7 +929,7 @@ class customerTest extends TestCase
 
         $this->testData['testGetGlobalCustomerMagicClub']['request']['content']['id'] = $customer['id'] ;
 
-        $this->ba->privateAuth('rzp_test', getenv('CONSUMER_APP_SERVICE_SECRET'));
+        $this->ba->appAuthTest($this->config['applications.consumer_app.secret']);
 
         $this->startTest();
 
@@ -938,7 +938,7 @@ class customerTest extends TestCase
 
     public function testGetOrCreateGlobalCustomerMagicClubInvalidInput()
     {
-        $this->ba->privateAuth('rzp_test', getenv('CONSUMER_APP_SERVICE_SECRET'));
+        $this->ba->appAuthTest($this->config['applications.consumer_app.secret']);
 
         $this->startTest();
     }
@@ -950,7 +950,7 @@ class customerTest extends TestCase
             'merchant_id' => '100000Razorpay',
             'contact'     => '9988771111']);
         $customer = $this->getLastEntity('customer', true);
-        $this->ba->privateAuth('rzp_test', getenv('CONSUMER_APP_SERVICE_SECRET'));
+        $this->ba->appAuthTest($this->config['applications.consumer_app.secret']);
         $res = $this->startTest();
     }
 }

@@ -14,23 +14,21 @@ First install Brew on your MAC
 
 - Setup Brew: `ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
 - `brew update`
-- Install PHP 7.2.+ `brew install php@7.2`
-- Finally, install composer: `brew install composer`
+- Install PHP 8.1.+ `brew install php@8.1`
+- Finally, install composer 2: `brew install composer`
 
-Note: The above command installs the latest version of composer, which is incompatible with our codebase right now.
-Either download composer 1.x.x directly, or use ``composer self-update 1.10.17`` to downgrade to a supported version.
 
 ###### Verify installation
-- Run `$ php -v`, and check if php 7.2+ is picked up. If a lower version is picked up, adjust the path.
+- Run `$ php -v`, and check if php 8.1+ is picked up. If a lower version is picked up, adjust the path.
      - Unlink any old versions of php using `brew unlink php@<old_version_here>`
-     - Link the path to 7.2 `brew link php@7.2`
+     - Link the path to 8.1 `brew link php@8.1`
 - Run `php -info | grep -i GMP` to check if `php-gmp` extension is installed. Installing php using the above command gets gmp installed with it. If not, run `$ brew install gmp` and re-run php info command.
 - Run `php -info | grep -i rdkafka` to check if extension of kafka is installed. If not, run `brew install librdkafka` and then `sudo pecl install rdkafka`.
 
 ###### Debug installation quirks
     1. To debug any issue with any package, you can run `brew info php@<version>`.
     2. If you are getting seemingly unrelated errors, make sure to update bash/zsh: `brew upgrade bash` and `brew upgrade zsh`.
-    3. If `brew install php@7.2` fails due to any permission issues, run
+    3. If `brew install php@8.1` fails due to any permission issues, run
         `sudo chown -R $(whoami) <parent dir of problematic directory>` and retry installation.
     4. If you are getting error `PHP Startup: Unable to load dynamic library 'rdkafka.so'` then first get the location of `rdkafka.so` file by running command
         `find / -name "rdkafka.so" -print -quit 2>/dev/null`, then move this file to dir that is set as `ext_dir` which you can get by running `pecl config-show | grep 'ext_dir'`.
@@ -176,12 +174,12 @@ $ make test AT="--filter PaymentTest --stop-on-failure"
 8. Your Dockerfile.dev should have the following changes, above EXPOSE 80 line
     ```
     RUN apk add --no-cache php7-xdebug
-    RUN echo 'zend_extension=/usr/lib/php7/modules/xdebug.so' > /etc/php7/conf.d/xdebug.ini
-    RUN echo 'xdebug.remote_port=9000' >> /etc/php7/conf.d/xdebug.ini
-    RUN echo 'xdebug.remote_enable=1' >> /etc/php7/conf.d/xdebug.ini
-    RUN echo 'xdebug.remote_connect_back=0' >> /etc/php7/conf.d/xdebug.ini
-    RUN echo "xdebug.remote_autostart=off" >> /etc/php7/conf.d/xdebug.ini
-    RUN echo "xdebug.idekey=PHPSTORM" >> /etc/php7/conf.d/xdebug.ini
+    RUN echo 'zend_extension=/usr/lib/php81/modules/xdebug.so' > /etc/php81/conf.d/xdebug.ini
+    RUN echo 'xdebug.client_port=9000' >> /etc/php81/conf.d/xdebug.ini
+    RUN echo 'xdebug.mode=debug' >> /etc/php81/conf.d/xdebug.ini
+    RUN echo 'xdebug.discover_client_host=0' >> /etc/php81/conf.d/xdebug.ini
+    RUN echo "xdebug.start_with_request=off" >> /etc/php81/conf.d/xdebug.ini
+    RUN echo "xdebug.idekey=PHPSTORM" >> /etc/php81/conf.d/xdebug.ini
     ```
 9. Your docker-compose.dev.yml should have the following ENV variables
     ```
@@ -229,3 +227,17 @@ above configuration. Do note that the mysql port is going to be `23306`.
 Please file issues regarding Containerization on the local `api`
 issue-tracker and tag @razorpay/devops
 
+
+#### Steps for Upgrading from PHP 7.2 to 8.1
+```
+1. Install php 8.1 and link to the newer version
+    a. brew install php@8.1
+    b. Unlink any old versions of php using brew unlink php@<old_version_here>
+    c. Link the path to 8.1 brew link php@8.1
+2. Upgrade composer (composer self-update --2)
+3. Run command  composer update -W to get the latest vendors (one time)
+4. Run make build after adding your GIT_TOKEN in docker-compose.dev.yml
+5. Replace the content of .env.dev_docker form here
+6. Try running the test case(docker exec --env APP_ENV=testing_docker -it razorpay-api vendor/bin/phpunit --filter <test case name>)
+```
+PS : Ref to [slack thread](https://razorpay.slack.com/archives/C0434UWEE4U/p1665561435959949) for known failures and fixes.

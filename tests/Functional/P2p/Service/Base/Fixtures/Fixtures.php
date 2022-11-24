@@ -196,7 +196,7 @@ class Fixtures extends Constants
             Models\Customer\Entity::MERCHANT_ID => $this->merchant->getId(),
         ];
 
-        $entity = factory(Models\Customer\Entity::class)->create(array_merge($defaults, $attributes));
+        $entity = Models\Customer\Entity::factory()->create(array_merge($defaults, $attributes));
 
         if ($set === true)
         {
@@ -222,7 +222,7 @@ class Fixtures extends Constants
             P2p\Device\Entity::CUSTOMER_ID => $this->current->customer->getId(),
         ];
 
-        $entity = factory(P2p\Device\Entity::class)->create(array_merge($defaults, $attributes));
+        $entity = P2p\Device\Entity::factory()->create(array_merge($defaults, $attributes));
 
         if ($set === true)
         {
@@ -248,7 +248,7 @@ class Fixtures extends Constants
             P2p\BankAccount\Entity::HANDLE       => $this->current->handle->getCode(),
         ];
 
-        $entity = factory(P2p\BankAccount\Entity::class)->create(array_merge($defaults, $attributes));
+        $entity = P2p\BankAccount\Entity::factory()->create(array_merge($defaults, $attributes));
 
         if ($set === true)
         {
@@ -275,7 +275,7 @@ class Fixtures extends Constants
             P2p\BankAccount\Entity::HANDLE  => $this->current->handle->getCode(),
         ];
 
-        $entity = factory(P2p\Vpa\Entity::class)->create(array_merge($defaults, $attributes));
+        $entity = P2p\Vpa\Entity::factory()->create(array_merge($defaults, $attributes));
 
         if ($set === true)
         {
@@ -317,7 +317,7 @@ class Fixtures extends Constants
 
         $create[P2p\Device\RegisterToken\Entity::DEVICE_DATA] = array_merge($defaults, $attributes);
 
-        $entity = factory(P2p\Device\RegisterToken\Entity::class)->create($create);
+        $entity = P2p\Device\RegisterToken\Entity::factory()->create($create);
 
         return $entity;
     }

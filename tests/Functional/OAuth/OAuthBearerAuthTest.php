@@ -46,7 +46,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
     {
         $accessToken = $this->generateOAuthAccessToken();
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $this->fixtures->create('payment', ['id' => '10000000000000']);
 
@@ -95,11 +95,11 @@ class OAuthBearerAuthTest extends OAuthTestCase
         $newAccessToken =  $this->generateOAuthAccessTokenForClient([], $newClient);
 
         // check that both tokens still work
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
         $testData = $this->testData['testBearerAuth'];
         $this->runRequestResponseFlow($testData);
 
-        $this->ba->oauthBearerAuth($newAccessToken);
+        $this->ba->oauthBearerAuth($newAccessToken->toString());
         $testData = $this->testData['testBearerAuth'];
         $this->runRequestResponseFlow($testData);
 
@@ -114,7 +114,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
         $this->flushCache();
 
         // now using old token should give error
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
         $testData = $this->testData['testBearerAuthDeletedClient'];
         $this->runRequestResponseFlow($testData);
     }
@@ -123,7 +123,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
     {
         $accessToken = $this->generateOAuthAccessToken([], 'prod');
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $this->fixtures->create('payment', ['id' => '10000000000000']);
 
@@ -143,7 +143,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
         $accessToken = $this->generateOAuthAccessToken(['scopes' => ['dummy.read']]);
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $this->startTest();
 
@@ -161,7 +161,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
         $accessToken = $this->generateOAuthAccessToken(['scopes' => ['dummy.read']]);
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $this->startTest();
     }
@@ -177,7 +177,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
      */
     public function testDummyFeatureEnabledOnMerchantAndApp()
     {
-        $client = factory(Client\Entity::class)->create();
+        $client = Client\Entity::factory()->create();
 
         $this->fixtures->create(
             'feature',
@@ -196,7 +196,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
         $accessToken = $this->generateOAuthAccessToken(['scopes' => ['dummy.read']]);
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $this->startTest();
     }
@@ -212,7 +212,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
      */
     public function testBearerAuthAllowAppFeaturesRouteAccess()
     {
-        $client = factory(Client\Entity::class)->create();
+        $client = Client\Entity::factory()->create();
 
         $accessToken = $this->generateOAuthAccessToken(
                             [
@@ -228,7 +228,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
                 'name'        => 'dummy'
             ]);
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $this->startTest();
     }
@@ -244,7 +244,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
      */
     public function testAppBlacklistedFeatureEnabledOnMerchant()
     {
-        $client = factory(Client\Entity::class)->create();
+        $client = Client\Entity::factory()->create();
 
         $accessToken = $this->generateOAuthAccessToken(
             [
@@ -260,7 +260,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
         $testData['request']['content'] = $payment;
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $this->startTest($testData);
     }
@@ -276,7 +276,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
      */
     public function testAppBlacklistedFeatureEnabledOnApp()
     {
-        $client = factory(Client\Entity::class)->create();
+        $client = Client\Entity::factory()->create();
 
         $this->mockCardVault();
 
@@ -300,7 +300,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
         $testData['request']['content'] = $payment;
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $response = $this->startTest($testData);
 
@@ -309,7 +309,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
     public function testAppBlacklistedFeatureEnabledOnAppHeadlessOtp()
     {
-        $client = factory(Client\Entity::class)->create();
+        $client = Client\Entity::factory()->create();
 
         $accessToken = $this->generateOAuthAccessToken(
             [
@@ -357,7 +357,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
         $testData['request']['content'] = $payment;
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $this->startTest($testData);
     }
@@ -373,7 +373,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
      */
     public function testAppBlacklistedFeatureEnabledOnAppAndMerchant()
     {
-        $client = factory(Client\Entity::class)->create();
+        $client = Client\Entity::factory()->create();
 
         $this->mockCardVault();
 
@@ -399,7 +399,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
         $testData['request']['content'] = $payment;
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $response = $this->startTest($testData);
 
@@ -418,7 +418,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
         $this->app->razorx->method('getTreatment')
                           ->willReturn('On');
 
-        $client = factory(Client\Entity::class)->create();
+        $client = Client\Entity::factory()->create();
 
         $accessToken = $this->generateOAuthAccessToken(
             [
@@ -469,7 +469,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
             'content' => $payment,
         ];
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $response = $this->makeRequestParent($request);
 
@@ -508,7 +508,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
     {
         $accessToken = $this->generateOAuthAccessToken(['scopes' => ['dummy.read']]);
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $this->startTest();
     }
@@ -517,7 +517,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
     {
         $accessToken = $this->generateOAuthAccessToken(['scopes' => ['read_write']]);
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $this->expectStorkServiceRequestForAction('createWebhook');
 
@@ -528,7 +528,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
     {
         $accessToken = $this->generateOAuthAccessToken(['scopes' => ['read_write']]);
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $this->fixtures->create('payment', ['id' => '10000000000000']);
 
@@ -539,7 +539,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
     {
         $accessToken = $this->generateOAuthAccessToken();
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $this->startTest();
     }
@@ -548,7 +548,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
     {
         $accessToken = $this->generateOAuthAccessToken();
 
-        $this->ba->oauthBearerAuth($accessToken . 'bad');
+        $this->ba->oauthBearerAuth($accessToken->toString() . 'bad');
 
         $this->startTest();
     }
@@ -570,7 +570,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
         $accessToken = $this->generateOAuthAccessToken(['expires_at' => $pastExpiry]);
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $this->startTest();
     }
@@ -579,7 +579,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
     {
         $accessToken = $this->generateOAuthAccessToken(['mode' => 'live']);
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $this->fixtures->create('payment', ['id' => '10000000000000']);
 
@@ -588,7 +588,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
     public function testRestrictedAccessFeatureEnabledOnMerchantOnly()
     {
-        $client = factory(Client\Entity::class)->create();
+        $client = Client\Entity::factory()->create();
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
@@ -605,7 +605,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
                 'client_id' => $client->getId()
             ]);
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -614,7 +614,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
     public function testRestrictedAccessFeatureEnabledOnAppOnly()
     {
-        $client = factory(Client\Entity::class)->create();
+        $client = Client\Entity::factory()->create();
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
@@ -632,7 +632,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
                 'client_id' => $client->getId()
             ]);
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -641,7 +641,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
     public function testRestrictedAccessFeatureEnabledOnMerchantAndApp()
     {
-        $client = factory(Client\Entity::class)->create();
+        $client = Client\Entity::factory()->create();
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
@@ -668,7 +668,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
                 'client_id' => $client->getId()
             ]);
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -683,11 +683,11 @@ class OAuthBearerAuthTest extends OAuthTestCase
     {
         $testAppId = Feature\Type::TEST_APP_ID;
 
-        $application = factory(Application\Entity::class)->create([
+        $application = Application\Entity::factory()->create([
             'id' => $testAppId,
         ]);
 
-        $client = factory(Client\Entity::class)->create([
+        $client = Client\Entity::factory()->create([
             'application_id' => $application->id,
         ]);
 
@@ -713,7 +713,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
         $testData['request']['content'] = $payment;
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $this->startTest($testData);
     }
@@ -726,11 +726,11 @@ class OAuthBearerAuthTest extends OAuthTestCase
     {
         $testAppId = Feature\Type::TEST_APP_ID;
 
-        $application = factory(Application\Entity::class)->create([
+        $application = Application\Entity::factory()->create([
             'id' => $testAppId,
         ]);
 
-        $client = factory(Client\Entity::class)->create([
+        $client = Client\Entity::factory()->create([
             'application_id' => $application->id,
         ]);
 
@@ -758,7 +758,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
         $testData['request']['content'] = $payment;
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $this->startTest($testData);
     }
@@ -770,11 +770,11 @@ class OAuthBearerAuthTest extends OAuthTestCase
     {
         $testAppId = Feature\Type::TEST_APP_ID;
 
-        $application = factory(Application\Entity::class)->create([
+        $application = Application\Entity::factory()->create([
             'id' => $testAppId,
         ]);
 
-        $client = factory(Client\Entity::class)->create([
+        $client = Client\Entity::factory()->create([
             'application_id' => $application->id,
         ]);
 
@@ -784,7 +784,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
                 'client_id' => $client->getId()
             ]);
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $this->fixtures->create('payment', ['id' => '10000000000000']);
 
@@ -798,9 +798,9 @@ class OAuthBearerAuthTest extends OAuthTestCase
         Event::fake();
         $accessToken = $this->generateOAuthAccessToken();
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
-        $tokenTag = $this->getCacheTagsForToken($accessToken);
+        $tokenTag = $this->getCacheTagsForToken($accessToken->toString());
 
         $this->fixtures->create('payment', ['id' => '10000000000000']);
 
@@ -846,7 +846,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
             return false;
         });
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $this->fixtures->create('payment', ['id' => '10000000000001']);
 
@@ -870,7 +870,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
     //Testing oauth related functionality to support slack app for X
     public function testSendOtpWithBearerAuth()
     {
-        $client = factory(Client\Entity::class)->create(['environment' => 'dev']);
+        $client = Client\Entity::factory()->create(['environment' => 'dev']);
 
         $accessToken = $this->generateOAuthAccessToken(['scopes'    => ['rx_read_write', 'read_write'], 'client_id' => $client->getId()], 'dev');
 
@@ -879,7 +879,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
             'entity_type' => 'application',
             'name'  => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH]);
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $this->fixtures->create('user', ['id' => '20000000000000', 'contact_mobile' => 9999999999]);
 
@@ -905,7 +905,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
         $tokenEntityAttributes = $tokenEntity->toArrayAdmin();
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $this->fixtures->create('payment', ['id' => '10000000000000']);
 
@@ -947,7 +947,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
         $tokenEntityAttributes = $tokenEntity->toArrayAdmin();
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $this->fixtures->create('payment', ['id' => '10000000000000']);
 

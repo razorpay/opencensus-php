@@ -1038,7 +1038,7 @@ class BulkFraudNotifyTest extends TestCase
 
         $this->assertContains('send_mail', $csvRows[0]);
 
-        $this->assertContains(1635379200, $csvRows[1]); // corresponds to 28-Oct-21 [fraud post date] in input file
+        $this->assertContains('1635379200', $csvRows[1]); // corresponds to 28-Oct-21 [fraud post date] in input file
 
         $this->assertContains('74110751299033415520957', $csvRows[1]);
 
@@ -1178,7 +1178,7 @@ class BulkFraudNotifyTest extends TestCase
 
         $fileSize = ($fileSize === -1) ? filesize($filePath) : $fileSize;
 
-        return new UploadedFile($filePath, $filePath, $mimeType, $fileSize, null, true);
+        return new UploadedFile($filePath, $filePath, $mimeType, null, true);
     }
 
     private function mockFreshdesk(int $expectFdCallCount): void

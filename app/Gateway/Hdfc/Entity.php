@@ -154,4 +154,9 @@ class Entity extends Base\Entity
     {
         $this->setAttribute('arn_no', $arnNo);
     }
+
+    public function getIncrementing()
+    {
+        return $this->incrementing;
+    }
 }

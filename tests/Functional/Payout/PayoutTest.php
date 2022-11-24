@@ -9,7 +9,7 @@ use Queue;
 use Redis;
 use Config;
 use Mockery;
-use Requests_Response;
+use \WpOrg\Requests\Response;
 
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
@@ -2047,6 +2047,21 @@ class PayoutTest extends OAuthTestCase
         $this->assertArrayHasKey(Payout\Entity::STATUS_SUMMARY, $payout2);
         $this->assertEquals('beneficiary_bank_confirmation_pending', $payout2['status_summary']['processing'][0]['reason']);
         $this->assertEquals('Confirmation of credit to the beneficiary is pending from beneficiary bank. Please check the status after 09th November 2021, 11:45 PM', $payout2['status_summary']['processing'][0]['description']);
+    }
+
+    public function testStatusSummaryObjectNullCaseInGetPayout()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->ba->proxyAuth();
+        $request        = &$this->testData[__FUNCTION__]['request'];
+        $request['url'] = '/payouts/' . $payout['id'];
+
+        $payout2 = $this->startTest();
+        $this->assertArrayHasKey(Payout\Entity::STATUS_SUMMARY, $payout2);
+        $this->assertNull($payout2[Payout\Entity::STATUS_SUMMARY]);
     }
 
     public function testPayoutStatusReasonMapping()
@@ -5819,7 +5834,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->liveSetUp();
 
-        $client = factory(Client\Entity::class)->create(['environment' => 'prod']);
+        $client = Client\Entity::factory()->create(['environment' => 'prod']);
 
         $accessToken = $this->generateOAuthAccessToken(['scopes' => ['rx_read_write', 'read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
 
@@ -5846,7 +5861,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('key', 'TheTestAuthKey', ['expired_at' => time() + 12000]);
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $expectedProperties = [
             'error_code' => 'SUCCESS',
@@ -5873,7 +5888,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->liveSetUp();
 
-        $client = factory(Client\Entity::class)->create(['environment' => 'prod']);
+        $client = Client\Entity::factory()->create(['environment' => 'prod']);
 
         $accessToken = $this->generateOAuthAccessToken(['scopes' => ['rx_read_write', 'read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
 
@@ -5900,7 +5915,7 @@ class PayoutTest extends OAuthTestCase
 
         $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $expectedProperties = [
             'payout'     => [
@@ -5940,7 +5955,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->liveSetUp();
 
-        $client = factory(Client\Entity::class)->create(['environment' => 'prod']);
+        $client = Client\Entity::factory()->create(['environment' => 'prod']);
 
         $accessToken = $this->generateOAuthAccessToken(['scopes' => ['rx_read_write', 'read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
 
@@ -5967,7 +5982,7 @@ class PayoutTest extends OAuthTestCase
 
         $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $expectedProperties = [
             'payout'     => [
@@ -6007,7 +6022,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->liveSetUp();
 
-        $client = factory(Client\Entity::class)->create(['environment' => 'prod']);
+        $client = Client\Entity::factory()->create(['environment' => 'prod']);
 
         $accessToken = $this->generateOAuthAccessToken(['scopes' => ['apple_watch_read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
 
@@ -6039,7 +6054,7 @@ class PayoutTest extends OAuthTestCase
 
         $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $expectedProperties = [
             'payout'     => [
@@ -6078,7 +6093,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->liveSetUp();
 
-        $client = factory(Client\Entity::class)->create(['environment' => 'prod']);
+        $client = Client\Entity::factory()->create(['environment' => 'prod']);
 
         $this->fixtures->feature->create([
                                              Feature\Entity::ENTITY_TYPE => Feature\Constants::APPLICATION,
@@ -6113,7 +6128,7 @@ class PayoutTest extends OAuthTestCase
 
         $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $expectedProperties = [
             'payout'     => [
@@ -6162,7 +6177,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->on('live')->edit('payout', $p['id'], ['user_id' => $user['id']]);
 
-        $client = factory(Client\Entity::class)->create(['environment' => 'prod']);
+        $client = Client\Entity::factory()->create(['environment' => 'prod']);
 
         $accessToken = $this->generateOAuthAccessToken(['scopes' => ['rx_read_write', 'read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
 
@@ -6206,7 +6221,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->verifyPayoutsEvent($expectedProperties);
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $payout = $this->startTest();
 
@@ -6231,7 +6246,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->on('live')->edit('payout', $p['id'], ['user_id' => $user['id']]);
 
-        $client = factory(Client\Entity::class)->create(['environment' => 'prod']);
+        $client = Client\Entity::factory()->create(['environment' => 'prod']);
 
         $accessToken = $this->generateOAuthAccessToken(['scopes' => ['rx_read_write', 'read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
 
@@ -6249,7 +6264,7 @@ class PayoutTest extends OAuthTestCase
                                                              'role'        => 'owner'
                                                          ], 'live');
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $this->startTest();
     }
@@ -6258,7 +6273,7 @@ class PayoutTest extends OAuthTestCase
     {
         $accessToken = $this->generateOAuthAccessToken(['scopes' => ['read_write', 'rx_read_write']]);
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999]);
 
@@ -6413,7 +6428,17 @@ class PayoutTest extends OAuthTestCase
 
     public function testPayoutRejectWhenWorkflowEdit()
     {
-        $this->setupRedisMock();
+        $redisMock = \Mockery::mock('Illuminate\Redis\RedisManager', [$this->app, 'driver', []]);
+
+        $redisConnmock = \Mockery::mock('Illuminate\Redis\Connections\PredisConnection', [null]);
+
+        $this->app->instance('redis', $redisMock);
+
+        $redisMock->shouldReceive('connection')
+            ->andReturn($redisConnmock);
+
+        $redisConnmock->shouldReceive('get')
+            ->andReturn('abc');
 
         $this->liveSetUp();
 
@@ -10532,7 +10557,7 @@ class PayoutTest extends OAuthTestCase
                         break;
                 }
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->times(7);
 
         $this->testCreateAndProcessQueuedPayout();
@@ -10567,7 +10592,7 @@ class PayoutTest extends OAuthTestCase
 
                 }
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->times(2);
 
         $this->testPayoutStatusUpdate();
@@ -10592,7 +10617,7 @@ class PayoutTest extends OAuthTestCase
             function($path, $payload) use ($eventData) {
                 $this->validateStorkWebhookFireEvent('payout.rejected', $eventData, $payload, 'live');
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->once();
 
         // Reject with Owner role user
@@ -10613,7 +10638,7 @@ class PayoutTest extends OAuthTestCase
             function($path, $payload) use ($testData) {
                 $this->validateStorkWebhookFireEvent('payout.pending', $testData, $payload, 'live');
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->once();
 
         $workflow = $this->setupWorkflowForLiveMode();
@@ -11082,7 +11107,7 @@ class PayoutTest extends OAuthTestCase
 
                 }
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->times(2);
 
         $testData = $this->testData[__FUNCTION__];
@@ -11162,7 +11187,7 @@ class PayoutTest extends OAuthTestCase
                                                      $payoutReversedEventTestDataKey,
                                                      $payload);
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->once();
 
         $testData = $this->testData[__FUNCTION__];
@@ -17261,7 +17286,7 @@ class PayoutTest extends OAuthTestCase
                         break;
                 }
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->times(7);
 
         $this->testCreatePayout();
@@ -17307,7 +17332,7 @@ class PayoutTest extends OAuthTestCase
                         break;
                 }
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->times(7);
 
         $this->testCreatePayoutOnLiveMode();
@@ -17382,7 +17407,17 @@ class PayoutTest extends OAuthTestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
 
-        $this->setupRedisMock();
+        $redisMock = \Mockery::mock('Illuminate\Redis\RedisManager', [$this->app, 'driver', []]);
+
+        $redisConnmock = \Mockery::mock('Illuminate\Redis\Connections\PredisConnection', [null]);
+
+        $this->app->instance('redis', $redisMock);
+
+        $redisMock->shouldReceive('connection')
+            ->andReturn($redisConnmock);
+
+        $redisConnmock->shouldReceive('get')
+            ->andReturn('abc');
 
         $this->liveSetUp();
 
@@ -17415,7 +17450,7 @@ class PayoutTest extends OAuthTestCase
                         break;
                 }
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->times(7);
 
         $this->testCreatePayout();
@@ -17453,7 +17488,7 @@ class PayoutTest extends OAuthTestCase
                         break;
                 }
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->times(7);
 
         $this->testCreatePayoutOnLiveMode();
@@ -17491,7 +17526,7 @@ class PayoutTest extends OAuthTestCase
                         break;
                 }
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->times(5);
 
         $this->testCreatePayout();
@@ -17534,7 +17569,7 @@ class PayoutTest extends OAuthTestCase
                         break;
                 }
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->times(5);
 
         $this->testCreatePayoutOnLiveMode();
@@ -17583,7 +17618,7 @@ class PayoutTest extends OAuthTestCase
                         break;
                 }
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->times(3);
 
         $this->testCreateRblPayoutSuccessfully();
@@ -17666,7 +17701,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->app->instance('workflow_service', $wfsMock);
 
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         $response->status_code = 200;
 
@@ -20938,7 +20973,7 @@ class PayoutTest extends OAuthTestCase
 
                 }
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->times(2);
 
         $testData = $this->testData[__FUNCTION__];
@@ -21359,7 +21394,7 @@ class PayoutTest extends OAuthTestCase
 
     public function getResponseForOnHoldPayoutsServiceMock($fail, $status = 'processing')
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         if ($fail === true)
         {
@@ -22551,7 +22586,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->mockServiceStorkRequest(function($path, $payload) use (&$payloadFailed)
         {
-            $response = new \Requests_Response();
+            $response = new \WpOrg\Requests\Response();
             $response->status_code = 200;
             $response->success = true;
 
@@ -22676,7 +22711,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->mockServiceStorkRequest(function($path, $payload) use (&$payloadReversed)
         {
-            $response = new \Requests_Response();
+            $response = new \WpOrg\Requests\Response();
             $response->status_code = 200;
             $response->success = true;
 
@@ -23008,7 +23043,7 @@ class PayoutTest extends OAuthTestCase
                         break;
                 }
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->times(5);
 
         $this->testCreatePayout();
@@ -23066,7 +23101,7 @@ class PayoutTest extends OAuthTestCase
                         break;
                 }
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->times(5);
 
         $this->testCreatePayout();
@@ -23124,7 +23159,7 @@ class PayoutTest extends OAuthTestCase
                         break;
                 }
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->times(5);
 
         $this->testCreatePayout();
@@ -23179,7 +23214,7 @@ class PayoutTest extends OAuthTestCase
                         break;
                 }
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->times(5);
 
         $this->testCreatePayout();
@@ -23233,7 +23268,7 @@ class PayoutTest extends OAuthTestCase
                         break;
                 }
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->times(5);
 
         $this->testCreatePayout();
@@ -23286,7 +23321,7 @@ class PayoutTest extends OAuthTestCase
                         break;
                 }
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->times(5);
 
         $this->testCreatePayout();
@@ -23395,7 +23430,7 @@ class PayoutTest extends OAuthTestCase
                         break;
                 }
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->times(5);
 
         $this->testCreatePayout();
@@ -23445,7 +23480,7 @@ class PayoutTest extends OAuthTestCase
                         break;
                 }
 
-                return new \Requests_Response();
+                return new \WpOrg\Requests\Response();
             })->times(5);
 
         $this->testCreatePayout();
@@ -23488,7 +23523,7 @@ class PayoutTest extends OAuthTestCase
                                        $payload['count'] === $expected['count']);
                            })->andReturn([]);
 
-        $response = new \Requests_Response;
+        $response = new \WpOrg\Requests\Response;
 
         $response->body = json_encode([
                                           "status" => 1,
@@ -26331,7 +26366,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->mockServiceStorkRequest(function($path, $payload) use (&$payloadFailed)
         {
-            $response = new \Requests_Response();
+            $response = new \WpOrg\Requests\Response();
             $response->status_code = 200;
             $response->success = true;
 
@@ -26415,7 +26450,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->mockServiceStorkRequest(function($path, $payload) use (&$payloadReversed)
         {
-            $response = new \Requests_Response();
+            $response = new \WpOrg\Requests\Response();
             $response->status_code = 200;
             $response->success = true;
 
@@ -26662,7 +26697,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->mockServiceStorkRequest(function($path, $payload) use (&$payloadFailed)
         {
-            $response = new \Requests_Response();
+            $response = new \WpOrg\Requests\Response();
             $response->status_code = 200;
             $response->success = true;
 
@@ -26811,7 +26846,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->mockServiceStorkRequest(function($path, $payload) use (&$payloadReversed)
         {
-            $response = new \Requests_Response();
+            $response = new \WpOrg\Requests\Response();
             $response->status_code = 200;
             $response->success = true;
 
@@ -26998,7 +27033,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->mockServiceStorkRequest(function($path, $payload) use (&$payloadFailed)
         {
-            $response = new \Requests_Response();
+            $response = new \WpOrg\Requests\Response();
             $response->status_code = 200;
             $response->success = true;
 
@@ -27126,7 +27161,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->mockServiceStorkRequest(function($path, $payload) use (&$payloadReversed)
         {
-            $response = new \Requests_Response();
+            $response = new \WpOrg\Requests\Response();
             $response->status_code = 200;
             $response->success = true;
 
@@ -30588,7 +30623,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->mockServiceStorkRequest(function($path, $payload) use ($eventData, &$payloadFailed)
         {
-            $response = new \Requests_Response();
+            $response = new \WpOrg\Requests\Response();
             $response->status_code = 200;
             $response->success = true;
 
@@ -30696,7 +30731,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->mockServiceStorkRequest(function($path, $payload) use (&$payloadReversed)
         {
-            $response = new \Requests_Response();
+            $response = new \WpOrg\Requests\Response();
             $response->status_code = 200;
             $response->success = true;
 
@@ -31624,9 +31659,9 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->createQueuedOrPendingPayout($secondQueuedPayoutAttributes, 'rzp_live_TheLiveAuthKey');
     }
 
-    private function sendWFCreateMockResponse($configId = null): Requests_Response
+    private function sendWFCreateMockResponse($configId = null)
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         $configId = $configId ?? "DGbcgfTgBCGDTJ";
 

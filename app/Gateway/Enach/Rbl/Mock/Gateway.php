@@ -28,7 +28,7 @@ class Gateway extends Rbl\Gateway
             // The key thing now is to replace the url from gateway to our mock one!
             $parts = parse_url($request['url']);
 
-            if (isset($parts['query']) === true)
+            if (isset($parts['query']) === true && $parts['query'] !== "")
             {
                 $url = $url . '?' .$parts['query'];
             }

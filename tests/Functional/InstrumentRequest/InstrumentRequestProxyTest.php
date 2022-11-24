@@ -318,7 +318,7 @@ class InstrumentRequestProxyTest extends TestCase
                 $this->assertArrayHasKey('X-Dashboard-Admin-OrgId', $additionalHeaders);
                 $this->assertEquals('org_100000razorpay', $additionalHeaders['X-Dashboard-Admin-OrgId']);
 
-                $response = new \Requests_Response;
+                $response = new \WpOrg\Requests\Response;
 
                 $response->body = '
                        {
@@ -361,7 +361,7 @@ class InstrumentRequestProxyTest extends TestCase
 
             $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], $content);
 
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $response->body = '
                        {
@@ -404,7 +404,7 @@ class InstrumentRequestProxyTest extends TestCase
 
             $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], $content);
 
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $response->body = '
                        {
@@ -472,7 +472,7 @@ class InstrumentRequestProxyTest extends TestCase
 
             $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], json_decode($content, true));
 
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $response->body = '
                        {
@@ -513,7 +513,7 @@ class InstrumentRequestProxyTest extends TestCase
 
             $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], $content);
 
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $response->body = '
                        {
@@ -612,7 +612,7 @@ class InstrumentRequestProxyTest extends TestCase
 
                 $this->assertEquals('100000razorpay', $additionalHeaders['X-Dashboard-Merchant-OrgId']);
 
-                $response = new \Requests_Response;
+                $response = new \WpOrg\Requests\Response;
 
                 $response->body = '
                        {
@@ -687,7 +687,7 @@ class InstrumentRequestProxyTest extends TestCase
 
                 $this->assertArrayHasKey('X-Dashboard-Admin-Email', $additionalHeaders);
 
-                $response = new \Requests_Response;
+                $response = new \WpOrg\Requests\Response;
 
                 $response->body = '
                        {
@@ -791,7 +791,7 @@ class InstrumentRequestProxyTest extends TestCase
 
                 $this->assertArrayHasKey('X-Dashboard-Admin-Email', $additionalHeaders);
 
-                $response = new \Requests_Response;
+                $response = new \WpOrg\Requests\Response;
 
                 $response->body = '
                        {
@@ -874,7 +874,7 @@ class InstrumentRequestProxyTest extends TestCase
 
             $this->assertArrayHasKey('X-Dashboard-Admin-Email', $additionalHeaders);
 
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $response->body = '
                        {
@@ -1125,7 +1125,7 @@ class InstrumentRequestProxyTest extends TestCase
                         $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], $content);
                     }
 
-                    $response = new \Requests_Response;
+                    $response = new \WpOrg\Requests\Response;
 
                     $response->body = '
                            {
@@ -1235,7 +1235,7 @@ class InstrumentRequestProxyTest extends TestCase
 
                     $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], json_decode($content, true));
 
-                    $response = new \Requests_Response;
+                    $response = new \WpOrg\Requests\Response;
 
                     $response->body = '
                            {
@@ -1282,7 +1282,7 @@ class InstrumentRequestProxyTest extends TestCase
 
             $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], $content);
 
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $response->body = '
                        {
@@ -1327,7 +1327,7 @@ class InstrumentRequestProxyTest extends TestCase
 
             $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], $content);
 
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $response->body = '
                        {

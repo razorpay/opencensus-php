@@ -30,7 +30,7 @@ trait FreshdeskTrait
                 return $this->validateMethodAndContent($request, $expectedMethod, $expectedContent, $checkHtmlTag);
             }))
             ->andReturnUsing(function () use ($respondWith) {
-                $response = new \Requests_Response;
+                $response = new \WpOrg\Requests\Response;
 
                 $response->body = json_encode($respondWith);
 

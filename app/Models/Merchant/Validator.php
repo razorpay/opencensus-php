@@ -2794,14 +2794,14 @@ class Validator extends Base\Validator
 
         $resultArray =(new Core())->getMerchantRiskData($merchantId);
 
-        if(empty($resultArray['domestic_merchant_chargeback_to_sale_ratio_(%)'][0]['lifetime']) === true)
+        if (empty($resultArray['domestic_merchant_chargeback_to_sale_ratio_(%)'][0]['lifetime']) === true)
         {
             $this->getTrace()->info(TraceCode::TRANSACTION_LIMIT_CTS_RATIO_NOT_FOUND, [
                 Constants::MERCHANT_ID => $merchantId
             ]);
         }
 
-        if(empty($resultArray['domestic_merchant_fraud_to_sale_ratio_(%)'][0]['lifetime']) === true)
+        if (empty($resultArray['domestic_merchant_fraud_to_sale_ratio_(%)'][0]['lifetime']) === true)
         {
             $this->getTrace()->info(TraceCode::TRANSACTION_LIMIT_FTS_RATIO_NOT_FOUND, [
                 Constants::MERCHANT_ID => $merchantId

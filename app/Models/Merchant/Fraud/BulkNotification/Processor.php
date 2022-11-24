@@ -52,7 +52,6 @@ class Processor extends Base\Core
             $url,
             'fraud_report.csv',
             'text/csv',
-            filesize($url),
             null,
             true);
 

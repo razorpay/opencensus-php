@@ -2,6 +2,8 @@
 
 namespace RZP\Mail\Payment\Fraud;
 
+use Symfony\Component\Mime\Email;
+
 use RZP\Mail\Payment\Base;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
@@ -31,7 +33,7 @@ class DomainMismatch extends Base
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function ($message)
+        $this->withSymfonyMessage(function (Email $message)
         {
             $merchantId = $this->data['merchant']['id'];
 

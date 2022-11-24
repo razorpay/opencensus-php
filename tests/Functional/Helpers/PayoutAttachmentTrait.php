@@ -41,7 +41,6 @@ trait PayoutAttachmentTrait
                     $localFilePath,
                     $fileName,
                     'image/png',
-                    1234,
                     null,
                     true)
             ]

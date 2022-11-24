@@ -4,7 +4,7 @@ namespace RZP\Services\Wallet;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception;
-use Requests_Response;
+use \WpOrg\Requests\Response;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Http\Request\Requests;
@@ -137,7 +137,7 @@ class Base
      * @param  $response
      * @return array
      */
-    protected function parseResponse(Requests_Response $response): array
+    protected function parseResponse($response): array
     {
         $code = null;
 
@@ -210,7 +210,7 @@ class Base
             return;
         }
 
-        $this->trace->warn(TraceCode::WALLET_REQUEST_EXCEPTION, [
+        $this->trace->warning(TraceCode::WALLET_REQUEST_EXCEPTION, [
             'status_code'   => $code,
             'response_body' => $body,
         ]);

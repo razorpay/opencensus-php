@@ -20,7 +20,6 @@ trait FileUploadTrait
             $file,
             $file,
             $mimeType,
-            filesize($file),
             null,
             true
         );

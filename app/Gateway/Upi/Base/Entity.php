@@ -335,4 +335,9 @@ class Entity extends Base\Entity
             return [$param2, $param1];
         }
     }
+
+    public function getIncrementing()
+    {
+        return $this->incrementing;
+    }
 }

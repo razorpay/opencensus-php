@@ -3,7 +3,7 @@
 namespace RZP\Gateway\Upi\Yesbank;
 
 use Request;
-use Requests_Hooks;
+use \WpOrg\Requests\Hooks as Requests_Hooks;
 use RZP\Trace\TraceCode;
 
 trait RequestTrait

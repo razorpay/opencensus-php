@@ -417,7 +417,7 @@ class RazorXClient
         }
         catch (\Throwable $e)
         {
-            if (($e instanceof \Requests_Exception) and
+            if (($e instanceof \WpOrg\Requests\Exception) and
                 ($this->checkRequestTimeout($e) === true) and
                 ($retryCount > 0))
             {
@@ -525,7 +525,7 @@ class RazorXClient
      *
      * @return boolean              true/false
      */
-    protected function checkRequestTimeout(\Requests_Exception $e)
+    protected function checkRequestTimeout(\WpOrg\Requests\Exception $e)
     {
         if ($e->getType() === 'curlerror')
         {

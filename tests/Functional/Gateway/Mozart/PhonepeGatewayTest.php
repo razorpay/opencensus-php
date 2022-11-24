@@ -138,6 +138,8 @@ class PhonepeGatewayTest extends TestCase
 
     public function testCallbackEmptyResponseBody()
     {
+        $this->markTestSkipped('phonepe wallet normal payment flow has been migrated to nbplus service');
+
         $this->mockServerContentFunction(function(& $content, $action = null)
         {
             if ($action === 'authorize')
@@ -158,8 +160,6 @@ class PhonepeGatewayTest extends TestCase
         $wallet = $this->getLastEntity('wallet', true);
 
         $this->assertNull($wallet);
-
-        $this->markTestSkipped('phonepe wallet normal payment flow has been migrated to nbplus service');
     }
 
 

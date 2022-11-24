@@ -5,11 +5,15 @@ namespace RZP\Http\BasicAuth;
 use Crypt;
 use Config;
 use ApiResponse;
+use DateTimeZone;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
-use Lcobucci\JWT\Builder as JWTBuilder;
+use Lcobucci\Clock\SystemClock;
+use Lcobucci\JWT\Encoding\ChainedFormatter;
+use Lcobucci\JWT\Token\Builder as JWTBuilder;
 use Lcobucci\JWT\Signer as JWTSigner;
-
+use Lcobucci\JWT\Signer\Key\InMemory;
+use Lcobucci\JWT\Encoding\JoseEncoder;
 use Razorpay\OAuth\OAuthServer;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
@@ -736,6 +740,13 @@ class BasicAuth
 
         $key       = $data[self::KEY];
         $accountId = $data[self::ACCOUNT_ID];
+
+       // This is a hacky fix for now to support laravel 9 upgrade as we were getting null pointer exception at L749
+       // Unsure currently how it was was earlier with laravel 8
+        if ($this->authCreds === null)
+        {
+            $this->authCreds = new KeyAuthCreds($this->app);
+        }
 
         $this->authCreds->creds[self::KEY]        = $key;
         $this->authCreds->creds[self::ACCOUNT_ID] = Account::verifyIdAndSilentlyStripSign($accountId);
@@ -3227,7 +3238,7 @@ class BasicAuth
         $passportConfig = $this->app['config']->get('passport');
 
         $issuerId           = $passportConfig['issuer_id'];
-        $privateKey         = new JWTSigner\Key($passportConfig['issuer_private_key']);
+        $privateKey         = InMemory::plainText($passportConfig['issuer_private_key']);
         $privateKeyId       = $passportConfig['issuer_private_key_id'];
         $passportExpirySecs = $passportConfig['issuer_passport_expire_secs'];
 
@@ -3235,17 +3246,21 @@ class BasicAuth
         // using caution since not to have an extremely short lived token set by mistake.
         $passportExpirySecs = ($customExpirySecs > $passportExpirySecs) ? $customExpirySecs : $passportExpirySecs;
 
+        $interval = 'PT'.$passportExpirySecs.'S';
+
         $now = time();
 
+        $sysClock = new SystemClock(new DateTimeZone('UTC'));
         $identifier = (empty($this->request) === false) ? $this->request->getId() : substr(str_shuffle('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'),1,20);
 
-        $builder = (new JWTBuilder)
+        $tokenBuilder = new JWTBuilder(new JoseEncoder(), ChainedFormatter::withUnixTimestampDates());
+        $builder = $tokenBuilder
             ->issuedBy($issuerId)
             ->permittedFor($upstreamHost)
             ->identifiedBy($identifier, true)
-            ->issuedAt($now)
-            ->canOnlyBeUsedAfter($now)
-            ->expiresAt($now + $passportExpirySecs)
+            ->issuedAt($sysClock->now())
+            ->canOnlyBeUsedAfter($sysClock->now())
+            ->expiresAt($sysClock->now()->add(new \DateInterval($interval)))
             ->withHeader('kid', $privateKeyId);
 
         // Appends custom claims.
@@ -3254,7 +3269,7 @@ class BasicAuth
             $builder->withClaim($key, $value);
         }
 
-        return $builder->getToken(new JWTSigner\Rsa\Sha256, $privateKey);
+        return $builder->getToken(new JWTSigner\Rsa\Sha256, $privateKey)->toString();
     }
 
     /**

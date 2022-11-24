@@ -63,7 +63,7 @@ class Handler extends BaseHandler
 
     protected function getStorageDir()
     {
-        $path = Storage::disk('local')->getDriver()->getAdapter()->getPathPrefix();
+        $path = Storage::disk('local')->path('');
 
         return $path;
     }

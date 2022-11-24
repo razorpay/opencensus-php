@@ -3,7 +3,7 @@
 namespace Unit\Services;
 
 use Mockery;
-use Requests_Response;
+use \WpOrg\Requests\Response;
 use Tests\Unit\TestCase;
 use RZP\Services\TerminalsService;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
@@ -38,7 +38,7 @@ class TerminalsServiceTest extends TestCase
                 foreach ($gateways as $gateway) {
                     $data[] = ["gateway" => $gateway];
                 }
-                $response =  new Requests_Response;
+                $response =  new \WpOrg\Requests\Response;
                 $responseData = ['data' => $data];
                 $response->body = json_encode($responseData);
                 $response->status_code = 200;
@@ -69,7 +69,7 @@ class TerminalsServiceTest extends TestCase
                 foreach ($gateways as $gateway) {
                     $data[] = ["gateway" => $gateway];
                 }
-                $response =  new Requests_Response;
+                $response =  new \WpOrg\Requests\Response;
                 $responseData = ['data' => $data];
                 $response->body = json_encode($responseData);
                 $response->status_code = 200;

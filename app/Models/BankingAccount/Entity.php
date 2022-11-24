@@ -379,11 +379,11 @@ class Entity extends Base\PublicEntity
             return;
         }
 
-        $originalStatus = $this->getOriginal(Entity::STATUS);
+        $originalStatus = $this->getRawOriginal(Entity::STATUS);
 
         $newStatus = $this->getStatus();
 
-        $subStatus = $this->getOriginal(Entity::SUB_STATUS);
+        $subStatus = $this->getRawOriginal(Entity::SUB_STATUS);
 
         Status::validatePreviousToCurrentMapping($originalStatus, $newStatus, $subStatus);
 

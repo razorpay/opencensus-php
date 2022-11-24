@@ -397,7 +397,7 @@ class Repository extends Base\Repository
         }
     }
     private function getAppMode() {
-        if(key_exists('rzp.mode', $this->app) === true) {
+        if(isset($this->app) === true) {
             return $this->app['rzp.mode'];
         }
 

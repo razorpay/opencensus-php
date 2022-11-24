@@ -24,7 +24,7 @@ class Gateway extends Digio\Gateway
         $parts = parse_url($request['url']);
 
         // To handle the URL fragment
-        if (isset($parts['fragment']) === true)
+        if (isset($parts['fragment']) === true && $parts['fragment'] !== "")
         {
             $fragmentParts = explode('?', $parts['fragment']);
 

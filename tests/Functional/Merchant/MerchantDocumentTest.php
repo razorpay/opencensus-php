@@ -254,7 +254,6 @@ class MerchantDocumentTest Extends TestCase
             __DIR__ . '/../Storage/a.png',
             'a.png',
             'image/png',
-            filesize(__DIR__ . '/../Storage/a.png'),
             null,
             true);
     }
@@ -267,7 +266,6 @@ class MerchantDocumentTest Extends TestCase
             __DIR__ . '/../Batch/files/input.xlsx',
             'input.xlsx',
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            filesize(__DIR__ . '/../Batch/files/input.xlsx'),
             null,
             true);
     }
@@ -757,7 +755,7 @@ class MerchantDocumentTest Extends TestCase
 
         $this->assertEquals(true,$content['success']);
 
-        Queue::assertPushed(MerchantFirsDocumentsZip::class, 1);
+        Queue::assertPushed(MerchantFirsDocumentsZip::class);
 
     }
 
@@ -873,7 +871,7 @@ class MerchantDocumentTest Extends TestCase
 
         $this->assertEquals(true,$content['success']);
 
-        Queue::assertPushed(MerchantFirsDocumentsZip::class, 1);
+        Queue::assertPushed(MerchantFirsDocumentsZip::class);
 
     }
 

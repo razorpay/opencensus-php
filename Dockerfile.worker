@@ -1,4 +1,4 @@
-ARG ONGGI_IMAGE=razorpay/onggi:php-7.2-api-worker
+ARG ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-8.1-api-worker
 ARG ARMORY_IMAGE=razorpay/armory:wkhtmltopdf-v182
 
 FROM $ARMORY_IMAGE as wkhtmltopdf
@@ -24,7 +24,7 @@ RUN set -eu && \
     composer install --no-dev --no-interaction --no-autoloader --no-scripts && \
     rm -rf /root/.composer && \
     composer clear-cache && \
-    pear config-set php_ini /etc/php7/php.ini && \
+    pear81 config-set php_ini /etc/php81/php.ini && \
     mkdir -p public && echo "${GIT_COMMIT_HASH}" > public/commit.txt
 
 COPY . /app/

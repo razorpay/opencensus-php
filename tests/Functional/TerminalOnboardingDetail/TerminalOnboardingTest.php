@@ -34,7 +34,7 @@ class TerminalOnboardingTest extends TestCase
 
             $this->assertEquals(['foo' => 'bar'], json_decode($content, true));
 
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $response->body = json_encode(['foo' => 'bar']);
 
@@ -54,7 +54,7 @@ class TerminalOnboardingTest extends TestCase
 
         $this->ba->directAuth();
 
-        $this->expectException(\Requests_Exception_Transport_cURL::class);
+        $this->expectException(\WpOrg\Requests\Exception\Transport\Curl::class);
 
         $this->startTest();
     }
@@ -67,7 +67,7 @@ class TerminalOnboardingTest extends TestCase
 
             $this->assertEquals('v2/optimizer/supported_gateways', $path);
 
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $response->body = json_encode([
                 'data' => [
@@ -102,7 +102,7 @@ class TerminalOnboardingTest extends TestCase
 
             $this->assertEquals('v2/optimizer/10000000000000/provider', $path);
 
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $response->body = json_encode([
                 'data' => [
@@ -128,7 +128,7 @@ class TerminalOnboardingTest extends TestCase
 
             $this->assertEquals('v2/optimizer/10000000000000/provider', $path);
 
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $response->body = json_encode([
                 'data' => [
@@ -154,7 +154,7 @@ class TerminalOnboardingTest extends TestCase
 
             $this->assertEquals('v2/optimizer/list/10000000000000/provider', $path);
 
-            $response = new \Requests_Response;
+            $response = new \WpOrg\Requests\Response;
 
             $response->body = json_encode([
                 'data' => [

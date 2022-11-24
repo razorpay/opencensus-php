@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Error\ErrorClass;
 use RZP\Error\PublicErrorDescription;
 use RZP\Error\CustomerErrorDescription;
+use Symfony\Component\ErrorHandler\Error\FatalError;
 
 class ExceptionTest extends TestCase
 {
@@ -109,8 +110,8 @@ class ExceptionTest extends TestCase
 
     public function testExceptionWithToStringError()
     {
-        $exception = new \Symfony\Component\Debug\Exception\FatalErrorException(
-            '... Swift_Message::__toString() ...', 0, 0, 0, 0);
+        $exception = new FatalError(
+            '... Swift_Message::__toString() ...', 0, [], 0, 0);
 
         $handler = $this->app['exception.handler'];
 
@@ -130,7 +131,7 @@ class ExceptionTest extends TestCase
     {
         $reflector = new \ReflectionClass(ErrorCode::class);
 
-        $codesWithoutDescription = [];
+        $codesWithoutDescription = null;
 
         foreach ($reflector->getConstants() as $code => $value)
         {
@@ -151,7 +152,11 @@ class ExceptionTest extends TestCase
             }
         }
 
-        $codeList = implode($codesWithoutDescription, ",\n");
+        $codeList = [];
+        if ($codesWithoutDescription !== null)
+        {
+            $codeList = implode('\n', $codesWithoutDescription);
+        }
 
         $this->assertEmpty($codesWithoutDescription, "Codes without description: " . $codeList);
     }
@@ -218,14 +223,10 @@ class ExceptionTest extends TestCase
     {
         $class = Exception\Handler::class;
 
-        $handler = Mockery::mock($class, [$this->app])->makePartial();
-
-        $handler->shouldReceive('isTesting')
-                ->once()
-                ->andReturnUsing(function ()
-                {
-                    return false;
-                })->mock();
+        $handler = $this->getMockBuilder($class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['isTesting'])
+            ->getMock();
 
         $this->app->instance('exception.handler', $handler);
     }

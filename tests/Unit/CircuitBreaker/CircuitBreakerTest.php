@@ -78,15 +78,15 @@ class CircuitBreakerTest extends \RZP\Tests\TestCase
     {
         return [
             [
-                'state' => CircuitState::CLOSED(),
+                'state' => (new CircuitState())->CLOSED(),
                 'canPass' => true
             ],
             [
-                'state' => CircuitState::HALF_OPEN(),
+                'state' => (new CircuitState())->HALF_OPEN(),
                 'canPass' => true
             ],
             [
-                'state' => CircuitState::OPEN(),
+                'state' => (new CircuitState())->OPEN(),
                 'canPass' => false
             ]
         ];
@@ -111,7 +111,7 @@ class CircuitBreakerTest extends \RZP\Tests\TestCase
         $circuitBreakerAdapterMock->shouldReceive('getState')
                                   ->once()
                                   ->with($serviceName)
-                                  ->andReturn(CircuitState::OPEN());
+                                  ->andReturn((new CircuitState())->OPEN());
 
         $circuitBreaker = new CircuitBreakerClient($circuitBreakerAdapterMock, ['exceptions_on' => true]);
         $circuitBreaker->canPass($serviceName);
@@ -135,7 +135,7 @@ class CircuitBreakerTest extends \RZP\Tests\TestCase
         $circuitBreakerAdapterMock->shouldReceive('getState')
                                   ->once()
                                   ->with($serviceName)
-                                  ->andReturn(CircuitState::OPEN());
+                                  ->andReturn((new CircuitState())->OPEN());
 
         $circuitBreakerAdapterMock->shouldReceive('getTotalFailures')
                                   ->once()
@@ -164,7 +164,7 @@ class CircuitBreakerTest extends \RZP\Tests\TestCase
         $circuitBreakerAdapterMock->shouldReceive('getState')
                                   ->once()
                                   ->with($serviceName)
-                                  ->andReturn(CircuitState::HALF_OPEN());
+                                  ->andReturn((new CircuitState())->HALF_OPEN());
 
         $circuitBreakerAdapterMock->shouldReceive('getTotalFailures')
                                   ->once()
@@ -203,7 +203,7 @@ class CircuitBreakerTest extends \RZP\Tests\TestCase
         $circuitBreakerAdapterMock->shouldReceive('getState')
                                   ->once()
                                   ->with($serviceName)
-                                  ->andReturn(CircuitState::CLOSED());
+                                  ->andReturn((new CircuitState())->CLOSED());
 
         $circuitBreakerAdapterMock->shouldReceive('getTotalFailures')
                                   ->once()
@@ -242,7 +242,7 @@ class CircuitBreakerTest extends \RZP\Tests\TestCase
         $circuitBreakerAdapterMock->shouldReceive('getState')
                                   ->once()
                                   ->with($serviceName)
-                                  ->andReturn(CircuitState::CLOSED());
+                                  ->andReturn((new CircuitState())->CLOSED());
 
         $circuitBreakerAdapterMock->shouldReceive('getTotalFailures')
                                   ->once()

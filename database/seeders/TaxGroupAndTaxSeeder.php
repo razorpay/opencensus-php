@@ -1,7 +1,10 @@
 <?php
 
+namespace Database\Seeders;
+
 use Illuminate\Database\Seeder;
 
+use Illuminate\Support\Facades\DB;
 use RZP\Constants\Table;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Tax\Gst\GstTaxIdMap;
@@ -10,7 +13,7 @@ class TaxGroupAndTaxSeeder extends Seeder
 {
     public function run()
     {
-        Eloquent::unguard();
+        //Eloquent::unguard();
 
         DB::transaction(function() {
             $this->seedTaxGroups();

@@ -32,12 +32,12 @@ class EarlyWorkflowResponse extends \RuntimeException implements HttpExceptionIn
         parent::__construct($message, $code, $previous);
     }
 
-    public function getStatusCode()
+    public function getStatusCode(): int
     {
         return $this->statusCode;
     }
 
-    public function getHeaders()
+    public function getHeaders(): array
     {
         return $this->headers;
     }

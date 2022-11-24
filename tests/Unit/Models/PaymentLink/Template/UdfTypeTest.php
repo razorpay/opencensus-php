@@ -32,5 +32,9 @@ class UdfTypeTest extends BaseTest
         }
 
         UdfType::validate($str);
+
+        // validation ideally does not return anything, if the validation fails it throws exeption, which has been
+        // asserted above. If we expect no error, we simply assert true
+        $this->assertTrue(true);
     }
 }

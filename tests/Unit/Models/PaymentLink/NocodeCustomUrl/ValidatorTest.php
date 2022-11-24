@@ -40,6 +40,13 @@ class ValidatorTest extends BaseTest
         }
 
         $this->validator->validateProduct("product", $product);
+
+        if ($isValid)
+        {
+            // validation ideally does not return anything, if the validation fails it throws exeption, which has been
+            // asserted above. If we expect no error, we simply assert true
+            $this->assertTrue(true);
+        }
     }
 
     /**
@@ -60,5 +67,12 @@ class ValidatorTest extends BaseTest
         }
 
         $this->validator->validateDomain("domain", $domain);
+
+        if ($isvalid)
+        {
+            // validation ideally does not return anything, if the validation fails it throws exeption, which has been
+            // asserted above. If we expect no error, we simply assert true
+            $this->assertTrue(true);
+        }
     }
 }

@@ -3,9 +3,9 @@
 namespace RZP\Services\NbPlus;
 
 use App;
-use Requests_Hooks;
+use \WpOrg\Requests\Hooks as Requests_Hooks;
 use RZP\Exception;
-use Requests_Session;
+use \WpOrg\Requests\Session as Requests_Session;
 
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
@@ -227,7 +227,7 @@ class Service
                 $request['method']);
 
         }
-        catch(\Requests_Exception $e)
+        catch(\WpOrg\Requests\Exception $e)
         {
             $this->trace->traceException($e);
 

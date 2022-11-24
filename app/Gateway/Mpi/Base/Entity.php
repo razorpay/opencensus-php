@@ -185,4 +185,9 @@ class Entity extends Base\Entity
     {
         $this->setAttribute(self::ECI, $eci);
     }
+
+    public function getIncrementing()
+    {
+        return $this->incrementing;
+    }
 }

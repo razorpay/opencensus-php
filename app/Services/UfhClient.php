@@ -4,8 +4,8 @@ namespace RZP\Services;
 
 use App;
 
-use Requests_Response;
-use Requests_Exception;
+use \WpOrg\Requests\Response;
+use \WpOrg\Requests\Exception as Requests_Exception;
 
 use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger as Trace;
@@ -134,7 +134,7 @@ class UfhClient implements ExternalService
         return json_decode($response->body, true);
     }
 
-    protected function traceUfhServiceResponse(Requests_Response $response, $timeTaken)
+    protected function traceUfhServiceResponse($response, $timeTaken)
     {
         $payload = ['status_code' => $response->status_code, 'body' => null];
 
@@ -178,7 +178,7 @@ class UfhClient implements ExternalService
         ];
     }
 
-    protected function sendRequest(array $request): Requests_Response
+    protected function sendRequest(array $request)
     {
         try
         {
@@ -209,7 +209,7 @@ class UfhClient implements ExternalService
         }
     }
 
-    protected function validateResponse(Requests_Response $response)
+    protected function validateResponse($response)
     {
         if ($response->status_code !== 200)
         {

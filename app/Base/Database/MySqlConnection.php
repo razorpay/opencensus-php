@@ -35,7 +35,7 @@ class MySqlConnection extends BaseMySqlConnection
      * Flag to force use the read connection overriding the sticky config.
      * @var boolean
      */
-    protected $forceReadPdo;
+    public $forceReadPdo;
 
     /**
      * @var Trace
@@ -402,5 +402,35 @@ class MySqlConnection extends BaseMySqlConnection
         {
             $this->recordsModified = $value;
         }
+    }
+
+    public function setSlaveRoute(bool $value)
+    {
+        $this->isSlaveRoute = $value;
+    }
+
+    public function setForceCheckReplicaLag(bool $value)
+    {
+        $this->forceCheckReplicaLag = $value;
+    }
+
+    public function setLagChecker($lagChecker)
+    {
+        $this->lagChecker = $lagChecker;
+    }
+
+    public function setForceReadPdo(bool $value)
+    {
+        $this->forceReadPdo = $value;
+    }
+
+    public function isRecordsModified(bool $value)
+    {
+        $this->recordsModified = $value;
+    }
+
+    public function setTransaction(int $value)
+    {
+        $this->transactions = $value;
     }
 }

@@ -106,7 +106,7 @@ abstract class Terminal
         return $this->parseOnboardResponse($input, $response);
     }
 
-    protected function getArrayFromResponse(\Requests_Response $response)
+    protected function getArrayFromResponse($response)
     {
         $body = $response->body;
 
@@ -166,7 +166,7 @@ abstract class Terminal
                 $method,
                 $request['options']);
         }
-        catch (\Requests_Exception $e)
+        catch (\WpOrg\Requests\Exception $e)
         {
             $this->exception = $e;
 
@@ -190,7 +190,7 @@ abstract class Terminal
         return $response;
     }
 
-    protected function validateResponse(\Requests_Response $response)
+    protected function validateResponse($response)
     {
         if (in_array($response->status_code, [503, 504], true) === true)
         {

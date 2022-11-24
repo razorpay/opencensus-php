@@ -2,7 +2,7 @@
 
 namespace RZP\Services\Mock;
 
-use Requests_Response as Response;
+use \WpOrg\Requests\Response as Response;
 use RZP\Services\HealthCheckClient as BaseHealthCheckClient;
 
 class HealthCheckClient extends BaseHealthCheckClient
@@ -23,7 +23,7 @@ class HealthCheckClient extends BaseHealthCheckClient
                 break;
 
             case 'http://www.invalidUrl.com':
-                throw new \Requests_Exception('some error due to gateway downtime', 'curlerror');
+                throw new \WpOrg\Requests\Exception('some error due to gateway downtime', 'curlerror');
                 break;
 
             case 'http://www.ping-giving-500.com':

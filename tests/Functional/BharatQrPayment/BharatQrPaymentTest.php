@@ -932,9 +932,9 @@ class BharatQrPaymentTest extends TestCase
 
         $qrCode = $this->getLastEntity('qr_code', true);
 
-        $this->assertRegExp('/5399/', $qrCode['qr_string']);
+        $this->assertMatchesRegularExpression('/5399/', $qrCode['qr_string']);
 
-        $this->assertRegExp('/2223330048827001/', $qrCode['qr_string']);
+        $this->assertMatchesRegularExpression('/2223330048827001/', $qrCode['qr_string']);
 
         $this->fixtures->merchant->edit('10000000000000', ['max_payment_amount' => 100]);
 

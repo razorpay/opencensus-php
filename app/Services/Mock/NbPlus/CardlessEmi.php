@@ -3,13 +3,13 @@
 namespace RZP\Services\Mock\NbPlus;
 
 use App;
-use Requests_Response;
+use \WpOrg\Requests\Response;
 
 use RZP\Services\NbPlus\CardlessEmi as CardlessEmiBase;
 
 class CardlessEmi extends CardlessEmiBase
 {
-    public function sendRawRequest($request): Requests_Response
+    public function sendRawRequest($request)
     {
         $action  = camel_case(explode('/', $request['url'])[1]);
 
@@ -106,9 +106,9 @@ class CardlessEmi extends CardlessEmiBase
     }
 
 
-    protected function makeJsonResponse(array $content): Requests_Response
+    protected function makeJsonResponse(array $content)
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         $response->headers = ['Content-Type' => 'application/json', 'Cache-Control' => 'no-cache'];
 

@@ -415,7 +415,7 @@ class BankAccount extends Base
                 'validation_status' => $this->validation->getStatus(),
             ];
 
-            $this->trace->warn(TraceCode::BENEFICIARY_NAME_NOT_PRESENT, $traceArray);
+            $this->trace->warning(TraceCode::BENEFICIARY_NAME_NOT_PRESENT, $traceArray);
         }
 
         $ftsSourceAccountInformation = [

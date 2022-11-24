@@ -2,7 +2,7 @@
 
 namespace RZP\Tests\Functional\Payment;
 
-use Illuminate\Foundation\Testing\TestResponse;
+use Illuminate\Testing\TestResponse;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\TestCase;
 

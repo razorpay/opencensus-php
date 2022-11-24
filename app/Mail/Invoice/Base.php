@@ -2,6 +2,8 @@
 
 namespace RZP\Mail\Invoice;
 
+use Symfony\Component\Mime\Email;
+
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
@@ -90,7 +92,7 @@ class Base extends Mailable
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function ($message)
+        $this->withSymfonyMessage(function (Email $message)
         {
             $invoiceType = $this->data['invoice']['type'];
 

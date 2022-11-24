@@ -61,4 +61,9 @@ class Entity extends Base\PublicEntity
     {
         return (bool) $this->attributes['received'];
     }
+
+    public function getIncrementing()
+    {
+        return $this->incrementing;
+    }
 }

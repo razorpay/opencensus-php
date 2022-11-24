@@ -62,7 +62,9 @@ class Core extends Base\Core
         $headers['Authorization'] = 'Basic ' . base64_encode($username . ':' . $password);
         $headers['X-Auth-Type'] = 'proxy';
         $headers['x-dashboard-user-session-id'] = $this->app['request']->session()->get('sessionId') ?? '';
-        $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+        if(!empty(Request::header(RequestHeader::DEV_SERVE_USER))) {
+            $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+        }
         return $this->sendRequest($headers, $baseUrl . $url, $method, empty($body) ? '' : json_encode($body));
     }
 

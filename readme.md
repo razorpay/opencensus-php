@@ -8,7 +8,7 @@
 
 * Install [composer](https://getcomposer.org/download/) PHP package manager
 
-Note: Please ensure that you install composer 1.x.x and not 2.x.x, as the latest version of composer is incompatible with our codebase, and causes issues during ``composer install``. If you are already at composer 2.x.x use ``composer self-update 1.10.17`` to downgrade.
+Note: Please ensure that you upgrade composer 1.x.x to 2.x.x, as the old version of composer is incompatible with our codebase, and causes issues during ``composer install``.  ``composer self-update --2`` to upgrade.
 
 There are 3 Ways to set up, you can choose either:
 
@@ -51,9 +51,9 @@ There are 3 Ways to set up, you can choose either:
 
 *PHP*: Please make sure you have the `gmp`, `bcmath` extensions installed. This is on top of what [laravel requires](https://laravel.com/docs/5.5/installation#server-requirements):
 
-- PHP >= 7.2 and PHP<= 7.3
+- PHP >= 8.1 and PHP< 8.2
 
-  If PHP is already installed and the version is different then 7.2.xx, do the following:
+  If PHP is already installed and the version is different than 8.1.xx, do the following:
 
   1. Check the current version by running `php --version`.
   2. Using homebrew you can downgrade/upgrade your version by running `brew install php@< desired version>`.
@@ -62,10 +62,10 @@ There are 3 Ways to set up, you can choose either:
   4. If you don’t want to uninstall, you can unlink the previous version by running `brew unlink php@< version number>`.
   5. After unlinking you can link the version you want to use  by `brew link php@< desired version>`.
 
-For our use, the desired version must be 7.2.XX.
+For our use, the desired version must be 8.1.XX.
 
 Imp: If you still see some other version installed then you might need to add the php $PATH to your ~/.bash_profile,
-for this Visit [this link](https://vyspiansky.github.io/2018/11/08/set-up-php-7.2-on-macos-mojave-with-homebrew/).
+for this Visit [this link](https://stitcher.io/blog/php-81-upgrade-mac).
 
 Note: If you face the following error {dyld Library not loaded..} ->
 Visit [this link](https://stackoverflow.com/questions/57851117/homebrew-upgrade-drops-php-dyld-library-not-loaded-usr-local-opt-libpsl-lib).
@@ -136,8 +136,8 @@ if you pull master, api will now need redis-cluster to run locally.
 * Opencensus lib is already taken care by `composer.json`.
   Install Opencensus extension by running following:
 
-        pear config-set php_ini /etc/php7/php.ini
-        pecl install opencensus-alpha
+        pear81 config-set php_ini /etc/php81/php.ini
+        pecl81 install opencensus-alpha
 
 * Run `jaegertracing/all-in-one:1.18` container on docker.
 

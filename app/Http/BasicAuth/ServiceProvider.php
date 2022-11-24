@@ -12,7 +12,7 @@ class ServiceProvider extends BaseServiceProvider implements DeferrableProvider
      *
      * @return void
      */
-    public function register()
+    public function register(): void
     {
         $this->app->singleton('basicauth', function($app)
         {
@@ -25,7 +25,7 @@ class ServiceProvider extends BaseServiceProvider implements DeferrableProvider
      *
      * @return array
      */
-    public function provides()
+    public function provides(): array
     {
         return array('basicauth');
     }

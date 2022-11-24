@@ -410,15 +410,10 @@ class TransactionTrackerTest extends TestCase
             ],
         ];
 
-        $esMock->expects($this->at(0))
+        $esMock->expects($this->exactly(2))
             ->method('search')
-            ->with($this->testData['testSearchEsForPaymentNotesExpectedSearchParamsNotFound'])
-            ->willReturn($expectedSearchParamsNotFound);
-
-        $esMock->expects($this->at(1))
-            ->method('search')
-            ->with($expectedSearchParams)
-            ->willReturn($expectedSearchRes);
+            ->withConsecutive([$this->testData['testSearchEsForPaymentNotesExpectedSearchParamsNotFound']], [$expectedSearchParams])
+            ->willReturnOnConsecutiveCalls($expectedSearchParamsNotFound, $expectedSearchRes);
     }
 
     public function setUpEsMockForPaymentNotes($paymentId)
@@ -463,15 +458,10 @@ class TransactionTrackerTest extends TestCase
             ],
         ];
 
-        $esMock->expects($this->at(0))
+        $esMock->expects($this->exactly(2))
             ->method('search')
-            ->with($this->testData['testSearchEsForPaymentNotesExpectedSearchParamsAndNotFound'])
-            ->willReturn($expectedSearchParamsNotFound);
-
-        $esMock->expects($this->at(1))
-            ->method('search')
-            ->with($expectedSearchParams)
-            ->willReturn($expectedSearchRes);
+            ->withConsecutive([$this->testData['testSearchEsForPaymentNotesExpectedSearchParamsAndNotFound']], [$expectedSearchParams])
+            ->willReturnOnConsecutiveCalls($expectedSearchParamsNotFound, $expectedSearchRes);
     }
 
     public function assertMultiplePaymentsMultipleRefundsResponseFromOrderId($callee, $payment1, $payment2, $refund1, $refund2)

@@ -3,8 +3,8 @@
 namespace RZP\Models\Merchant\OneClickCheckout;
 
 use Requests;
-use Requests_Response;
-use Requests_Exception;
+use \WpOrg\Requests\Response;
+use \WpOrg\Requests\Exception as Requests_Exception;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 
@@ -122,7 +122,7 @@ class DomainUtils
      * @throws BadRequestException
      */
     public static function sendExternalRequest($url, $headers = [], $data = [], $type = Requests::GET,
-                                               $options = []): Requests_Response
+                                               $options = [])
     {
         // Verify $url points to public IPs (IPv4)
         if (self::isHostPublic(parse_url($url, PHP_URL_HOST)) === false)

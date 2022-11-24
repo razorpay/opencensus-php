@@ -32,6 +32,7 @@ use RZP\Models\QrCode\Generator as QrCodeGenerator;
 use RZP\Jobs\Invoice\BatchNotify as InvoiceBatchNotifyJob;
 
 use Illuminate\Support\Facades\Storage;
+use SimpleSoftwareIO\QrCode\Facades\QrCode as QrCodeWriter;
 
 class Service extends Base\Service
 {
@@ -257,7 +258,7 @@ class Service extends Base\Service
                 catch(\Throwable $e)
                 {
                     // in case of error, just log and continue for normal API flow
-                    $this->trace->warn(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['batch' => $batchId]);
+                    $this->trace->warning(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['batch' => $batchId]);
                 }
             }
 
@@ -619,21 +620,20 @@ class Service extends Base\Service
 
     public function getSignedUrlForQrCodeImage($input)
     {
-        $renderer = new Renderer\Image\Png;
+        $localSaveDir = (new QrCodeGenerator())->getLocalSaveDir();
 
-        $renderer->setMargin(Constants::MARGIN);
+        $localFilePath = $localSaveDir . '/' . $input['invoice']['id'] . '.' . Constants::QR_CODE_EXTENSION;
 
-        $renderer->setHeight(Constants::QR_EMAIL_HEIGHT);
+        $localFilePathQrBasicFilePath = $localSaveDir . '/' . $input['invoice']['id'] . '_basic.png';
 
-        $renderer->setWidth(Constants::QR_EMAIL_WIDTH);
+        $qrCodeString = $input['intent_url'];
 
-        $writer = new Writer($renderer);
+        $qrCodeWriter = QrCodeWriter::format('png');
 
-        $localFilePath = (new QrCodeGenerator())->getLocalSaveDir() . '/' . $input['invoice']['id'] . '.' . Constants::QR_CODE_EXTENSION;
+        $qrCodeWriter->size(Constants::QR_EMAIL_HEIGHT)
+                     ->generate($qrCodeString, $localFilePathQrBasicFilePath);
 
-        $qrCodeString = $writer->writeString($input['intent_url']);
-
-        $qrCodeImage = imagecreatefromstring($qrCodeString);
+        $qrCodeImage = imagecreatefrompng($localFilePathQrBasicFilePath);
 
         $logoImage = imagecreatefrompng(public_path() . '/img/template_qr_on_email.png');
 
@@ -653,7 +653,6 @@ class Service extends Base\Service
             $localFilePath,
             $input['invoice']['id']. '.jpeg',
             'image/jpeg',
-            filesize($localFilePath),
             null,
             true
         );

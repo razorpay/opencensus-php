@@ -3,7 +3,7 @@
 namespace RZP\Models\FundTransfer\Rbl\Request;
 
 use Config;
-use Requests_Hooks;
+use \WpOrg\Requests\Hooks as Requests_Hooks;
 
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
@@ -160,7 +160,7 @@ abstract class Base extends ApiProcessor
      *
      * @throws LogicException
      */
-    public function processResponse(\Requests_Response $response): array
+    public function processResponse($response): array
     {
         $responseBody = json_decode($response->body, true);
 
@@ -213,11 +213,11 @@ abstract class Base extends ApiProcessor
     /**
      * Validates if the current request was executed successfully or not
      *
-     * @param \Requests_Response $response
+     * @param \WpOrg\Requests\Response $response
      *
      * @return bool
      */
-    public function isValidSuccessResponse(\Requests_Response $response): bool
+    public function isValidSuccessResponse($response): bool
     {
         $response = json_decode($response->body, true);
 

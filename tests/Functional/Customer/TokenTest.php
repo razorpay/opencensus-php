@@ -4,7 +4,7 @@ namespace RZP\Tests\Functional\CustomerToken;
 
 use App;
 use Mockery;
-use Requests_Response;
+use \WpOrg\Requests\Response;
 use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Models\Bank\IFSC;
@@ -873,7 +873,7 @@ class TokenTest extends TestCase
 
         $callable = function ($input)
         {
-            $response = new Requests_Response();
+            $response = new \WpOrg\Requests\Response();
 
             $response->body = '{
                 "success": false,
@@ -937,7 +937,7 @@ class TokenTest extends TestCase
 
         $callable = function ($input)
         {
-            $response = new Requests_Response();
+            $response = new \WpOrg\Requests\Response();
 
             $response->body = '{
                 "success": false,
@@ -1301,7 +1301,7 @@ class TokenTest extends TestCase
 
         $callable = function ($input)
         {
-            $response = new Requests_Response();
+            $response = new \WpOrg\Requests\Response();
 
             $response->body = '{
                 "success": false,
@@ -1384,7 +1384,7 @@ class TokenTest extends TestCase
                     'status' => '',
                 ],
             ];
-            $response = new Requests_Response();
+            $response = new \WpOrg\Requests\Response();
 
             $response->body = json_encode($responsebody, JSON_FORCE_OBJECT);
 
@@ -1452,7 +1452,7 @@ class TokenTest extends TestCase
                     'status' => '',
                 ],
             ];
-            $response = new Requests_Response();
+            $response = new \WpOrg\Requests\Response();
 
             $response->body = json_encode($responsebody, JSON_FORCE_OBJECT);
 
@@ -1507,7 +1507,7 @@ class TokenTest extends TestCase
                 "description"               => "The card is expired"
             ];
 
-            $response = new Requests_Response();
+            $response = new \WpOrg\Requests\Response();
 
             $response->body = json_encode($responsebody, JSON_FORCE_OBJECT);
 
@@ -1576,7 +1576,7 @@ class TokenTest extends TestCase
                 ],
             ];
 
-            $response = new Requests_Response();
+            $response = new \WpOrg\Requests\Response();
 
             $response->body = json_encode($responsebody, JSON_FORCE_OBJECT);
 
@@ -1608,7 +1608,7 @@ class TokenTest extends TestCase
 
         $callable = function ($input)
         {
-            $response = new Requests_Response();
+            $response = new \WpOrg\Requests\Response();
 
             $response->body = '{
                 "success": false,
@@ -1787,7 +1787,7 @@ class TokenTest extends TestCase
 
         $callable = function ($input)
         {
-            $response = new Requests_Response();
+            $response = new \WpOrg\Requests\Response();
 
             $response->body = '{
                 "success": false,
@@ -1891,7 +1891,7 @@ class TokenTest extends TestCase
                     "description" => "The card is expired"
                 ]
             ];
-            $response = new Requests_Response();
+            $response = new \WpOrg\Requests\Response();
 
             $response->body = json_encode($responsebody, JSON_FORCE_OBJECT);
 
@@ -1950,7 +1950,7 @@ class TokenTest extends TestCase
 
         $callable = function ($input)
         {
-            $response = new Requests_Response();
+            $response = new \WpOrg\Requests\Response();
 
             $response->body = '{
                 "success": false,

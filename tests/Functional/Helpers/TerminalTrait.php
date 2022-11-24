@@ -62,10 +62,10 @@ trait TerminalTrait
 
     protected function throwTerminalsServiceIntegrationException()
     {
-        throw new \Requests_Exception_Transport_cURL('curl timed out', []);
+        throw new \WpOrg\Requests\Exception\Transport\Curl('curl timed out', []);
     }
 
-    protected function getDefaultTerminalServiceResponse($data = []) : \Requests_Response
+    protected function getDefaultTerminalServiceResponse($data = [])
     {
         if ($data === [])
         {
@@ -76,7 +76,7 @@ trait TerminalTrait
             Terminal\Entity::verifyIdAndSilentlyStripSign($data['id']);
         }
 
-        $response =  new \Requests_Response;
+        $response =  new \WpOrg\Requests\Response;
 
         $data['entity'] = 'terminal';
 
@@ -87,7 +87,7 @@ trait TerminalTrait
         return $response;
     }
 
-    protected function getTokenisedTerminalServiceResponse($a, $b, $c) : \Requests_Response
+    protected function getTokenisedTerminalServiceResponse($a, $b, $c)
     {
         $data = json_decode($b, true);
 
@@ -96,7 +96,7 @@ trait TerminalTrait
             $data["id"] = "10000000000011";
         }
 
-        $response =  new \Requests_Response;
+        $response =  new \WpOrg\Requests\Response;
 
         $responseData = ['data' => $data];
 
@@ -105,7 +105,7 @@ trait TerminalTrait
         return $response;
     }
 
-    protected function getTerminalServiceCheckSecretResponse() : \Requests_Response
+    protected function getTerminalServiceCheckSecretResponse()
     {
         $data = [
             'gateway_terminal_password' => true,
@@ -114,7 +114,7 @@ trait TerminalTrait
             'gateway_secure_secret2' => true
         ];
 
-        $response = new \Requests_Response;
+        $response = new \WpOrg\Requests\Response;
 
         $responseData = ['data' => $data];
 
@@ -128,13 +128,13 @@ trait TerminalTrait
         $this->throwTerminalsServiceIntegrationException();
     }
 
-    protected function getHitachiOnboardResponse($id) : \Requests_Response
+    protected function getHitachiOnboardResponse($id)
     {
         $data = [];
         $terminal = ["id" => $id, "gateway" => "hitachi"];
         $data["terminal"] = $terminal;
 
-        $response = new \Requests_Response;
+        $response = new \WpOrg\Requests\Response;
 
         $responseData = ['data' => $data];
 
@@ -143,13 +143,13 @@ trait TerminalTrait
         return $response;
     }
 
-    protected function getFulcrumOnboardResponse($id) : \Requests_Response
+    protected function getFulcrumOnboardResponse($id)
     {
         $data = [];
         $terminal = ["id" => $id, "gateway" => "fulcrum"];
         $data["terminal"] = $terminal;
 
-        $response = new \Requests_Response;
+        $response = new \WpOrg\Requests\Response;
 
         $responseData = ['data' => $data];
 
@@ -158,14 +158,14 @@ trait TerminalTrait
         return $response;
     }
 
-    protected function getProxyTerminalOnboardStatusResponse() : \Requests_Response
+    protected function getProxyTerminalOnboardStatusResponse()
     {
         $data = [];
         $terminal = ["id" => "10000000000000", "gateway" => "hitachi"];
         $data["terminal"] = $terminal;
         $data["message"] = "test_message";
 
-        $response = new \Requests_Response;
+        $response = new \WpOrg\Requests\Response;
 
         $responseData = ['data' => [$data]];
 
@@ -207,12 +207,12 @@ trait TerminalTrait
         return $this->getFulcrumOnboardResponse($tid);
     }
 
-    protected function getSyncDeleteTerminalTerminalServiceResponse() : \Requests_Response
+    protected function getSyncDeleteTerminalTerminalServiceResponse()
     {
 
         $data = ["count" => 7];
 
-        $response =  new \Requests_Response;
+        $response =  new \WpOrg\Requests\Response;
 
         $responseData = ['data' => $data];
 
@@ -221,12 +221,12 @@ trait TerminalTrait
         return $response;
     }
 
-    protected function getProxyDeleteTerminalSubmerchantTerminalServiceResponse() : \Requests_Response
+    protected function getProxyDeleteTerminalSubmerchantTerminalServiceResponse()
     {
 
         $data = ["data" => null];
 
-        $response =  new \Requests_Response;
+        $response =  new \WpOrg\Requests\Response;
 
         $responseData = ['data' => $data];
 
@@ -235,17 +235,17 @@ trait TerminalTrait
         return $response;
     }
 
-    protected function getProxyEditTerminalServiceResponseBadRequest() : \Requests_Response
+    protected function getProxyEditTerminalServiceResponseBadRequest()
     {
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TERMINALS_SERVICE_ERROR, null, [], "Terminal doesn't exist with this Id");
     }
 
-    protected function getProxyRestoreTerminalServiceResponse() : \Requests_Response
+    protected function getProxyRestoreTerminalServiceResponse()
     {
 
         $data = ["id" => "123456789asdfg", "gateway" => "payu", 'merchant_id' => '10000000000000'];
 
-        $response =  new \Requests_Response;
+        $response =  new \WpOrg\Requests\Response;
 
         $responseData = ['data' => $data];
 
@@ -254,12 +254,12 @@ trait TerminalTrait
         return $response;
     }
 
-    protected function getProxyReassignTerminalServiceResponse() : \Requests_Response
+    protected function getProxyReassignTerminalServiceResponse()
     {
 
         $data = ["id" => "123456789asdfg", "gateway" => "payu", 'merchant_id' => '100000Razorpay'];
 
-        $response =  new \Requests_Response;
+        $response =  new \WpOrg\Requests\Response;
 
         $responseData = ['data' => $data];
 
@@ -268,12 +268,12 @@ trait TerminalTrait
         return $response;
     }
 
-    protected function getProxyCreateGatewayCredentialTerminalServiceResponse() : \Requests_Response
+    protected function getProxyCreateGatewayCredentialTerminalServiceResponse()
     {
 
         $data = ["id" => "123456789asdfg", "gateway_credential_id" => "12345678901234"];
 
-        $response =  new \Requests_Response;
+        $response =  new \WpOrg\Requests\Response;
 
         $responseData = ['data' => $data];
 
@@ -282,12 +282,12 @@ trait TerminalTrait
         return $response;
     }
 
-    protected function getProxyFetchGatewayCredentialTerminalServiceResponse() : \Requests_Response
+    protected function getProxyFetchGatewayCredentialTerminalServiceResponse()
     {
 
         $data = ["merchant_ids" => ['10000000000000'], "gateway" => "paytm"];
 
-        $response =  new \Requests_Response;
+        $response =  new \WpOrg\Requests\Response;
 
         $responseData = ['data' => $data];
 
@@ -296,14 +296,14 @@ trait TerminalTrait
         return $response;
     }
 
-    protected function getProxyFetchMerchantsTerminalsTerminalServiceResponse() : \Requests_Response
+    protected function getProxyFetchMerchantsTerminalsTerminalServiceResponse()
     {
 
         $data = [
             ["merchant_ids" => '10000000000000', "gateway" => "paysecure"]
         ];
 
-        $response =  new \Requests_Response;
+        $response =  new \WpOrg\Requests\Response;
 
         $responseData = ['data' => $data];
 
@@ -313,12 +313,12 @@ trait TerminalTrait
     }
 
 
-    protected function getProxyCreateTerminalSubmerchantTerminalServiceResponse() : \Requests_Response
+    protected function getProxyCreateTerminalSubmerchantTerminalServiceResponse()
     {
 
         $data = ["data" => ["id" => '1000000000000t', "submerchants" => ['1000000000000m']]];
 
-        $response =  new \Requests_Response;
+        $response =  new \WpOrg\Requests\Response;
 
         $responseData = ['data' => $data];
 
@@ -327,7 +327,7 @@ trait TerminalTrait
         return $response;
     }
 
-    protected function getProxyExecuteTerminalTestRunResponse() : \Requests_Response
+    protected function getProxyExecuteTerminalTestRunResponse()
     {
         $data = ['data' => [
                 'id' => 'trmnlTestRunId',
@@ -364,7 +364,7 @@ trait TerminalTrait
                 'updated_at' => 0,
         ]];
 
-        $response =  new \Requests_Response;
+        $response =  new \WpOrg\Requests\Response;
 
         $responseData = ['data' => $data];
 
@@ -392,7 +392,7 @@ trait TerminalTrait
             });
     }
 
-    protected function getTokenisedTerminalResponseForTrid() : \Requests_Response
+    protected function getTokenisedTerminalResponseForTrid()
     {
         $data = [
             'gateway_merchant_id' => 'mc_trid',
@@ -405,7 +405,7 @@ trait TerminalTrait
             $data["id"] = "10000000000011";
         }
 
-        $response = new \Requests_Response;
+        $response = new \WpOrg\Requests\Response;
 
         $responseData = ['data' => $data];
 

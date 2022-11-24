@@ -3,8 +3,8 @@
 namespace RZP\Tests\P2p\Service\Base;
 
 use Illuminate\Support\Facades\App;
-use Illuminate\Foundation\Testing\TestResponse;
 use Illuminate\Foundation\Testing\Concerns\MakesHttpRequests;
+use Illuminate\Testing\TestResponse;
 
 class P2pRequest
 {

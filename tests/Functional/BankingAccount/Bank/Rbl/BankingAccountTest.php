@@ -126,9 +126,7 @@ class BankingAccountTest extends TestCase
 
     protected function setupBankPartnerMerchant()
     {
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
-        $this->app->make(Factory::class)->load($factoryPath);
 
         $this->fixtures->merchant->edit(self::DefaultPartnerMerchantId, ['partner_type' =>  Merchant\Constants::BANK_CA_ONBOARDING_PARTNER]);
 
@@ -5368,11 +5366,7 @@ class BankingAccountTest extends TestCase
             'balance_id'     => $xBalance1->getId(),
         ]);
 
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
-
-        $this->app->make(Factory::class)->load($factoryPath);
-
-        $client = factory(Client\Entity::class)->create(['environment' => 'prod']);
+        $client = Client\Entity::factory()->create(['environment' => 'prod']);
 
         $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1]);
 
@@ -5384,7 +5378,7 @@ class BankingAccountTest extends TestCase
             Feature\Entity::NAME        => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH
         ]);
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $this->startTest();
     }
@@ -9991,9 +9985,7 @@ class BankingAccountTest extends TestCase
     {
         $merchant = $this->getDbEntityById('merchant', $merchantId);
 
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
-        $this->app->make(Factory::class)->load($factoryPath);
 
         $app = ['id'=>'8ckeirnw84ifke'];
 

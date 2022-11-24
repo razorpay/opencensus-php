@@ -10,8 +10,10 @@ class Application extends \Illuminate\Foundation\Application
      * Used during unit tests to clear out all the data structures
      * that may contain references.
      * Without this phpunit runs out of memory.
+     *
+     * @return void
      */
-    public function flush()
+    public function flush(): void
     {
         parent::flush();
 
@@ -61,5 +63,15 @@ class Application extends \Illuminate\Foundation\Application
     public function isEnvironmentProduction(): bool
     {
         return ($this->env === Environment::PRODUCTION);
+    }
+
+    /**
+     * Determine if the application is running unit tests.
+     *
+     * @return bool
+     */
+    public function runningUnitTests()
+    {
+        return $this->bound('env') && str_contains($this['env'], 'testing');
     }
 }

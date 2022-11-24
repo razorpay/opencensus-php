@@ -100,11 +100,7 @@ class CheckoutFeeCalculationTest extends TestCase
 
         parent::setUp();
 
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
-
         $this->fixtures->create('org:hdfc_org');
-
-        $this->app->make(Factory::class)->load($factoryPath);
 
         $this->esDao = new EsDao();
 

@@ -6,6 +6,8 @@ namespace RZP\Services\CircuitBreaker\Store;
 use Cache;
 use App;
 use RZP\Trace\TraceCode;
+use Illuminate\Support\Facades\Redis;
+use Illuminate\Redis\Connections\Connection;
 use RZP\Services\CircuitBreaker\CircuitState;
 use RZP\Services\CircuitBreaker\KeyHelper;
 use Predis\Client;
@@ -20,6 +22,18 @@ class CircuitBreakerRedisStore implements CircuitBreakerStore
     private $keyHelper;
 
     /**
+     * @var Connection
+     */
+    private $redis;
+
+    private $app;
+
+    /**
+     * @var mixed
+     */
+    private $trace;
+
+    /**
      * RedisCircuitBreaker constructor.
      *
      * @param KeyHelper|null $keyHelper
@@ -27,6 +41,12 @@ class CircuitBreakerRedisStore implements CircuitBreakerStore
     public function __construct(KeyHelper $keyHelper = null)
     {
         $this->keyHelper = $keyHelper ? $keyHelper : new KeyHelper;
+
+        $this->app = App::getFacadeRoot();
+
+        $this->trace = $this->app['trace'];
+
+        $this->redis = $this->app['api.redis'];
     }
 
     /**
@@ -38,26 +58,27 @@ class CircuitBreakerRedisStore implements CircuitBreakerStore
      */
     public function getState(string $serviceName): string
     {
-        $circuitState = CircuitState::CLOSED();
+        $circuitState = (new CircuitState())->CLOSED();
 
         $halfOpenCircuitKey = $this->keyHelper->generateKeyHalfOpen($serviceName);
+
         $openCircuitKey     = $this->keyHelper->generateKeyOpen($serviceName);
 
-        App::getFacadeRoot()['trace']->info(TraceCode::CIRCUIT_BREAKER_STATE,["state"=>"getState",
-                                                                      "halfOpenCircuitKey"=>$halfOpenCircuitKey,
-                                                                      "openCircuitKey"=>$openCircuitKey,
-                                                                      "openCircuitValue"=>Cache::get($openCircuitKey),
-                                                                      "halfOpenCircuitValue"=>Cache::get($halfOpenCircuitKey)]);
+        $this->trace->info(TraceCode::CIRCUIT_BREAKER_STATE, ["state"                => "getState",
+                                                              "halfOpenCircuitKey"   => $halfOpenCircuitKey,
+                                                              "openCircuitKey"       => $openCircuitKey,
+                                                              "openCircuitValue"     => $this->redis->get($openCircuitKey),
+                                                              "halfOpenCircuitValue" => $this->redis->get($halfOpenCircuitKey)]);
 
-        if (empty(Cache::get($openCircuitKey)) === false)
+        if (empty($this->redis->get($openCircuitKey)) === false)
         {
-            $circuitState = CircuitState::OPEN();
+            $circuitState = (new CircuitState())->OPEN();
         }
         else
         {
-            if (empty(Cache::get($halfOpenCircuitKey)) == false)
+            if (empty($this->redis->get($halfOpenCircuitKey)) == false)
             {
-                $circuitState = CircuitState::HALF_OPEN();
+                $circuitState = (new CircuitState())->HALF_OPEN();
             }
         }
 
@@ -75,7 +96,7 @@ class CircuitBreakerRedisStore implements CircuitBreakerStore
     {
         $keyTotalFailures = $this->keyHelper->generateKeyTotalFailuresToStore($serviceName);
 
-        $totalFailures    = Cache::get($keyTotalFailures);
+        $totalFailures = $this->redis->get($keyTotalFailures);
 
         if (empty($totalFailures))
         {
@@ -84,10 +105,12 @@ class CircuitBreakerRedisStore implements CircuitBreakerStore
 
         $totalFailures++;
 
-        $dataInserted = Cache::put($keyTotalFailures, $totalFailures, $timeWindow);
+        $this->redis->set($keyTotalFailures, $totalFailures, $timeWindow);
 
-        App::getFacadeRoot()['trace']->info(TraceCode::CIRCUIT_BREAKER_FAILED,["addFailure"=>$totalFailures,
-                                                                      "keyTotalFailures"=>$keyTotalFailures]);
+        $this->trace->info(TraceCode::CIRCUIT_BREAKER_FAILED, [
+            "addFailure"       => $totalFailures,
+            "keyTotalFailures" => $keyTotalFailures
+        ]);
 
     }
 
@@ -102,11 +125,15 @@ class CircuitBreakerRedisStore implements CircuitBreakerStore
     {
         $key = $this->keyHelper->generateKeyTotalFailuresToStore($serviceName);
 
-        $totalFailures    = Cache::get($key);
 
-        App::getFacadeRoot()['trace']->info(TraceCode::CIRCUIT_BREAKER_TOTAL_FAILURES,["getTotalFailures"=>$totalFailures,
-                                                                      "keyTotalFailures"=>$key]);
-        return $totalFailures;
+        $totalFailures = $this->redis->get($key);
+
+        $this->trace->info(TraceCode::CIRCUIT_BREAKER_TOTAL_FAILURES, [
+            "getTotalFailures" => $totalFailures,
+            "keyTotalFailures" => $key
+        ]);
+
+        return count($totalFailures);
     }
 
     /**
@@ -120,10 +147,12 @@ class CircuitBreakerRedisStore implements CircuitBreakerStore
     {
         $key = $this->keyHelper->generateKeyOpen($serviceName);
 
-        App::getFacadeRoot()['trace']->info(TraceCode::CIRCUIT_BREAKER_OPEN,[
-            "openCircuit"=>$key,"serviceName"=>$serviceName]);
+        $this->trace->info(TraceCode::CIRCUIT_BREAKER_OPEN, [
+            "openCircuit" => $key,
+            "serviceName" => $serviceName
+        ]);
 
-        $dataInserted = Cache::put($key, true, $timeOpen);
+        $this->redis->set($key, true, $timeOpen);
 
     }
 
@@ -135,13 +164,21 @@ class CircuitBreakerRedisStore implements CircuitBreakerStore
      */
     public function closeCircuit(string $serviceName): void
     {
-        App::getFacadeRoot()['trace']->info(TraceCode::CIRCUIT_BREAKER_CLOSED,["step"=>"closeCircuit","serviceName"=>$serviceName]);
+        $this->trace->info(TraceCode::CIRCUIT_BREAKER_CLOSED, [
+            "step"        => "closeCircuit",
+            "serviceName" => $serviceName
+        ]);
 
-        $dataDeleted  = Cache::pull($this->keyHelper->generateKeyOpen($serviceName));
-        $dataDeleted  = Cache::pull($this->keyHelper->generateKeyHalfOpen($serviceName));
+        $this->redis->del($this->keyHelper->generateKeyOpen($serviceName));
 
-        $dataDeleted  = Cache::pull($this->keyHelper->generateKeyTotalFailuresToStore($serviceName));
+        $this->redis->del($this->keyHelper->generateKeyHalfOpen($serviceName));
 
+        $keys = $this->redis->get($this->keyHelper->generateKeyTotalFailuresToStore($serviceName));
+
+        foreach ($keys as $key)
+        {
+            $this->redis->del($key);
+        }
     }
 
     /**
@@ -155,7 +192,7 @@ class CircuitBreakerRedisStore implements CircuitBreakerStore
     {
         $key = $this->keyHelper->generateKeyHalfOpen($serviceName);;
 
-        $dataInserted = Cache::put($key, true, $timeOpen);
+        $this->redis->set($key, true, $timeOpen);
 
     }
 }

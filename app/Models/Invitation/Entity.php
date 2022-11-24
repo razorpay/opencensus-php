@@ -165,4 +165,9 @@ class Entity extends Base\PublicEntity
 
         return $attributes;
     }
+
+    public function getIncrementing()
+    {
+        return $this->incrementing;
+    }
 }

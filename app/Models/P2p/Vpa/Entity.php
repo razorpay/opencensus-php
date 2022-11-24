@@ -2,12 +2,15 @@
 
 namespace RZP\Models\P2p\Vpa;
 
+use Database\Factories\P2pVpaFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use RZP\Base\BuilderEx;
 use RZP\Models\P2p\Base;
 use RZP\Models\P2p\Device;
 
 class Entity extends Base\Entity
 {
+    use HasFactory;
     use Base\Traits\HasDevice;
     use Base\Traits\HasHandle;
     use Base\Traits\SoftDeletes;
@@ -384,5 +387,10 @@ class Entity extends Base\Entity
         }
 
         return $array;
+    }
+
+    protected static function newFactory(): P2pVpaFactory
+    {
+        return P2pVpaFactory::new();
     }
 }

@@ -53,7 +53,6 @@ trait BatchTestTrait
                         $url,
                         $fileName,
                         $mime,
-                        filesize($url),
                         null,
                         true);
     }
@@ -66,7 +65,6 @@ trait BatchTestTrait
             $url,
             $fileName,
             $mime,
-            filesize($url),
             null,
             true);
     }

@@ -119,4 +119,9 @@ class Entity extends Base\Entity
     {
         return $this->hasMany(Workflow\Step\Entity::class, self::WORKFLOW_ID, self::WORKFLOW_ID);
     }
+
+    public function getIncrementing()
+    {
+        return $this->incrementing;
+    }
 }

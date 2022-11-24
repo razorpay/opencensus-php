@@ -111,6 +111,8 @@ class NbplusCardlessEmiWalnut369TransactionTest extends NbplusPaymentServiceCard
 
     public function testWalnut369SourcedByMerchantTransactionFullRefund()
     {
+        $this->markTestSkipped('the test does not test the actual flow');
+
         $this->fixtures->merchant->addFeatures(['sourced_by_walnut369']);
 
         $paymentRefund = $this->doAuthCaptureAndRefundPayment($this->payment);
@@ -140,6 +142,8 @@ class NbplusCardlessEmiWalnut369TransactionTest extends NbplusPaymentServiceCard
 
     public function testWalnut369SourcedByMerchantTransactionPartialRefund()
     {
+        $this->markTestSkipped('the test does not test the actual flow');
+
         $this->fixtures->merchant->addFeatures(['sourced_by_walnut369']);
 
         $paymentRefund = $this->doAuthCaptureAndRefundPayment($this->payment, 25000);

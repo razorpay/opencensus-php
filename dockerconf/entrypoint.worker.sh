@@ -38,7 +38,7 @@ configure(){
   fi
 
   echo "setting max_input_vars to 2000"
-  sed -ie "s/; max_input_vars =.*/max_input_vars = 2000/g" /etc/php7/php.ini
+  sed -ie "s/; max_input_vars =.*/max_input_vars = 2000/g" /etc/php81/php.ini
   echo "Route Cache"
   php artisan route:cache
 }

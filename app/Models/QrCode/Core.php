@@ -268,7 +268,6 @@ class Core extends Base\Core
             $localFilePath,
             $qrCode->getId() . '.jpeg',
             Entity::MIME_TYPE,
-            filesize($localFilePath),
             null,
             true
         );

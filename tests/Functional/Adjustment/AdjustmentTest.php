@@ -1185,7 +1185,7 @@ class AdjustmentTest extends TestCase
         // forcing async retry after all sync retry failures
         $mockLedger->shouldReceive('createJournal')
             ->times(4)
-            ->andThrow(new \Requests_Exception(
+            ->andThrow(new \WpOrg\Requests\Exception(
                 'Unexpected response code received from Ledger service.',
                 null,
                 [
@@ -1302,7 +1302,7 @@ class AdjustmentTest extends TestCase
         // forcing async retry after all sync retry failures
         $mockLedger->shouldReceive('createJournal')
             ->times(4)
-            ->andThrow(new \Requests_Exception(
+            ->andThrow(new \WpOrg\Requests\Exception(
                 'Unexpected response code received from Ledger service.',
                 null,
                 [
@@ -1316,7 +1316,7 @@ class AdjustmentTest extends TestCase
 
         $mockLedger->shouldReceive('fetchByTransactor')
             ->times(1)
-            ->andThrow(new \Requests_Exception(
+            ->andThrow(new \WpOrg\Requests\Exception(
                 'Unexpected response code received from Ledger service.',
                 null,
                 [
@@ -1383,7 +1383,7 @@ class AdjustmentTest extends TestCase
         // forcing async retry after all sync retry failures
         $mockLedger->shouldReceive('createJournal')
             ->times(5)
-            ->andThrow(new \Requests_Exception(
+            ->andThrow(new \WpOrg\Requests\Exception(
                 'Unexpected response code received from Ledger service.',
                 null,
                 [
@@ -1521,7 +1521,7 @@ class AdjustmentTest extends TestCase
                             break;
                         default:
                             // 0th-3rd call is made while sync retries, which should fail for this test
-                            throw new \Requests_Exception(
+                            throw new \WpOrg\Requests\Exception(
                                 'Unexpected response code received from Ledger service.',
                                 null,
                                 [
@@ -1752,7 +1752,7 @@ class AdjustmentTest extends TestCase
         // forcing async retry after all sync retry failures
         $mockLedger->shouldReceive('createJournal')
             ->times(4)
-            ->andThrow(new \Requests_Exception(
+            ->andThrow(new \WpOrg\Requests\Exception(
                 'Unexpected response code received from Ledger service.',
                 null,
                 [
@@ -1869,7 +1869,7 @@ class AdjustmentTest extends TestCase
         // forcing async retry after all sync retry failures
         $mockLedger->shouldReceive('createJournal')
             ->times(4)
-            ->andThrow(new \Requests_Exception(
+            ->andThrow(new \WpOrg\Requests\Exception(
                 'Unexpected response code received from Ledger service.',
                 null,
                 [
@@ -1883,7 +1883,7 @@ class AdjustmentTest extends TestCase
 
         $mockLedger->shouldReceive('fetchByTransactor')
             ->times(1)
-            ->andThrow(new \Requests_Exception(
+            ->andThrow(new \WpOrg\Requests\Exception(
                 'Unexpected response code received from Ledger service.',
                 null,
                 [
@@ -1950,7 +1950,7 @@ class AdjustmentTest extends TestCase
         // forcing async retry after all sync retry failures
         $mockLedger->shouldReceive('createJournal')
             ->times(4)
-            ->andThrow(new \Requests_Exception(
+            ->andThrow(new \WpOrg\Requests\Exception(
                 'Unexpected response code received from Ledger service.',
                 null,
                 [

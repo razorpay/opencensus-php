@@ -7,7 +7,7 @@ use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Action;
 use RZP\Models\Base\PublicEntity;
-use RZP\Gateway\Mozart\NetBankingBob\ReconFields;
+use RZP\Gateway\Mozart\NetbankingBob\ReconFields;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {

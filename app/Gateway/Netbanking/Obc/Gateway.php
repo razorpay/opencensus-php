@@ -246,7 +246,7 @@ class Gateway extends Base\Gateway
         return ($expectedAmount !== $actualAmount);
     }
 
-    protected function parseVerifyResponse(\Requests_Response $response, $payment)
+    protected function parseVerifyResponse($response, $payment)
     {
         if ((strpos($response->body, 'No Records Fetched') !== false) or
             (empty($response->body) === true))

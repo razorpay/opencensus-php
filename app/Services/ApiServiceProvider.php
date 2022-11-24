@@ -582,6 +582,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerApiMutex();
 
+        $this->registerRedis();
+
         $this->registerMaxMind();
 
         $this->registerRaven();
@@ -819,6 +821,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
     {
         return [
             'api.mutex',
+            'api.redis',
             'bitly',
             'razorx',
             'es',
@@ -1123,6 +1126,21 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             $mutex->setRedisClient(Redis::Connection('mutex_redis'));
 
             return $mutex;
+        });
+    }
+
+    protected function registerRedis()
+    {
+        $this->app->singleton('api.redis', function($app) {
+
+            $mock = $app['config']->get('services.redis.mock');
+
+            if ($mock === true)
+            {
+                return Redis::Connection();
+            }
+
+            return new RedisService($app);
         });
     }
 

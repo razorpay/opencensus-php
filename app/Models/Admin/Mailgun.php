@@ -160,7 +160,7 @@ class Mailgun extends Base\Core
 
         $relativeUrl = 'lists/' . $listAddress . '/members.json';
 
-        $this->app['mailgun']->getMailgunInstance()->post($relativeUrl,[
+        $this->app['mailgun']->getMailgunInstance()->mailingList()->create($relativeUrl,[
             'upsert'     => true,
             'members'    => json_encode($merchants)
         ]);
@@ -176,7 +176,7 @@ class Mailgun extends Base\Core
     /**
      * @param string $emailAddress
      * refer-https://documentation.mailgun.com/en/latest/api-mailinglists.html#mailing-lists
-     * 
+     *
      * @param string $list
      * has the mailgun list name to which the mail has to be sent
      */
@@ -193,7 +193,7 @@ class Mailgun extends Base\Core
 
         $relativeUrl = 'lists/' . $listAddress . '/members/' . $emailAddress;
 
-        $this->app['mailgun']->getMailgunInstance()->delete($relativeUrl);
+        $this->app['mailgun']->getMailgunInstance()->mailingList()->delete($relativeUrl);
 
         $this->trace->info(
             TraceCode::DELETED_MEMBER_FROM_MAILING_LIST,

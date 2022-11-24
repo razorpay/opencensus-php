@@ -2,6 +2,8 @@
 
 namespace RZP\Mail\TrustedBadge;
 
+use Symfony\Component\Mime\Email;
+
 use RZP\Constants\MailTags;
 
 /**
@@ -29,7 +31,7 @@ class Welcome extends Base
      */
     protected function addHeaders(): self
     {
-        $this->withSwiftMessage(function ($message) {
+        $this->withSymfonyMessage(function (Email $message) {
             $headers = $message->getHeaders();
             $headers->addTextHeader(MailTags::HEADER, $this->data['merchantId']);
             $headers->addTextHeader(MailTags::HEADER, MailTags::RTB_WELCOME);

@@ -212,6 +212,10 @@ class BladeGatewayTest extends TestCase
 
     public function testSignatureMissingFromValidPARes()
     {
+        $this->markTestSkipped(
+            'This is old flow . IT is migrated to card payment service'
+        );
+
         $this->mockSignatureNotFound();
 
         $this->runRequestResponseFlow(
@@ -232,6 +236,10 @@ class BladeGatewayTest extends TestCase
 
     public function testBlankMessage()
     {
+        $this->markTestSkipped(
+            'This is old flow . IT is migrated to card payment service'
+        );
+
         $this->runRequestResponseFlow(
             $data = $this->testData['testBlankMessage'],
             function()
@@ -310,6 +318,7 @@ class BladeGatewayTest extends TestCase
 
     public function testInvalidIReqCode()
     {
+        $this->markTestSkipped("not being used");
         $response = $this->getInvalidIreqCode();
 
         $this->mockIReqCode($response);

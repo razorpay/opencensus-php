@@ -195,11 +195,7 @@ class MerchantTest extends TestCase
 
         parent::setUp();
 
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
-
         $this->fixtures->create('org:hdfc_org');
-
-        $this->app->make(Factory::class)->load($factoryPath);
 
         $this->esDao = new EsDao();
 
@@ -240,7 +236,7 @@ class MerchantTest extends TestCase
                    }))
             ->andReturnUsing(function () use ($respondWithBody, $respondWithStatus)
             {
-                $response = new \Requests_Response;
+                $response = new \WpOrg\Requests\Response;
 
                 $response->body = json_encode($respondWithBody);
 
@@ -333,8 +329,8 @@ class MerchantTest extends TestCase
         $this->ba->proxyAuth('rzp_test_1X4hRFHFx4UiXt', $user->getId());
 
         $res = $this->startTest();
-        $this->assertRegexp('/rzp_test_\w{14}/', $res['id']);
-        $this->assertRegexp('/\w{24}/', $res['secret']);
+        $this->assertMatchesRegularExpression('/rzp_test_\w{14}/', $res['id']);
+        $this->assertMatchesRegularExpression('/\w{24}/', $res['secret']);
 
         // Assert insertion of api key
         $this->assertCount(2, $this->getDbEntities('key'), 'key present in database');
@@ -766,7 +762,7 @@ class MerchantTest extends TestCase
 
     public function testGetBadgeDetailsForRTBNotEnabled()
     {
-        $this->setupRedisMockWithOptions();
+//        $this->setupRedisMockWithOptions();
         $this->ba->proxyAuthTest();
         $response = $this->startTest();
 
@@ -781,7 +777,7 @@ class MerchantTest extends TestCase
             'entity_id' => '10000000000000',
         ]);
 
-        $this->setupRedisMockWithOptions();
+//        $this->setupRedisMockWithOptions();
         $this->ba->proxyAuthTest();
         $response = $this->startTest();
 
@@ -800,7 +796,7 @@ class MerchantTest extends TestCase
             'get'     => null,
         ];
 
-        $this->setupRedisMockWithOptions($override);
+//        $this->setupRedisMockWithOptions($override);
         $this->ba->proxyAuthTest();
         $response = $this->startTest();
 
@@ -4367,7 +4363,7 @@ IFSC Code  ICIC0001206
                           return true;
                       }))
                   ->andReturnUsing(function() {
-                      $response = new \Requests_Response;
+                     $response = new \WpOrg\Requests\Response;
 
                       $response->body = json_encode(['key' => 'value']);
 
@@ -4679,7 +4675,6 @@ IFSC Code  ICIC0001206
             __DIR__ . '/../Storage/a.png',
             'a.png',
             'image/png',
-            filesize(__DIR__ . '/../Storage/a.png'),
             null,
             true);
     }
@@ -7929,7 +7924,6 @@ IFSC Code  ICIC0001206
             $file,
             $file,
             $mimeType,
-            filesize($file),
             null,
             true
         );
@@ -11209,9 +11203,7 @@ IFSC Code  ICIC0001206
 
     protected function setUpPartnerAndGetSubMerchantId()
     {
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
-        $this->app->make(Factory::class)->load($factoryPath);
 
         $subMerchant = $this->fixtures->merchant->createEntityInTestAndLive('merchant');
 
@@ -15298,6 +15290,8 @@ IFSC Code  ICIC0001206
 
         [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
 
+        $this->mockDruidRiskDataForNonCtsAndNonFtsMerchant();
+
         $this->mockStorkForTransactionLimitSelfServe();
 
         $this->setupWorkflow('increase_transaction_limit', PermissionName::INCREASE_TRANSACTION_LIMIT, 'test');
@@ -15443,6 +15437,8 @@ IFSC Code  ICIC0001206
 
         [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
 
+        $this->mockDruidRiskDataForNonCtsAndNonFtsMerchant();
+
         $this->mockStorkForTransactionLimitSelfServe();
 
         $this->setupWorkflow('increase_international_transaction_limit', PermissionName::INCREASE_INTERNATIONAL_TRANSACTION_LIMIT, 'test');
@@ -15496,21 +15492,7 @@ IFSC Code  ICIC0001206
 
         [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
 
-        $druidService = $this->getMockBuilder(MockDruidService::class)
-            ->setConstructorArgs([$this->app])
-            ->onlyMethods([ 'getDataFromDruid'])
-            ->getMock();
-
-        $this->app->instance('druid.service', $druidService);
-
-        $dataFromDruid = $this->testData['testGetRiskData']['druid_response'];
-
-        $dataFromDruid['Domestic_cts_overall_merchant_id'] = $merchantId;
-
-        $dataFromDruid['Domestic_FTS_merchant_id'] = $merchantId;
-
-        $druidService->method('getDataFromDruid')
-            ->willReturn([null, [$dataFromDruid]]);
+        $this->mockDruidRiskDataForNonCtsAndNonFtsMerchant();
 
         $testData = $this->testData['testUnregisteredIncreaseInternationalTransactionLimitWorkflowApprove'];
 
@@ -15568,21 +15550,7 @@ IFSC Code  ICIC0001206
 
         [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
 
-        $druidService = $this->getMockBuilder(MockDruidService::class)
-            ->setConstructorArgs([$this->app])
-            ->onlyMethods([ 'getDataFromDruid'])
-            ->getMock();
-
-        $this->app->instance('druid.service', $druidService);
-
-        $dataFromDruid = $this->testData['testGetRiskData']['druid_response'];
-
-        $dataFromDruid['Domestic_cts_overall_merchant_id'] = $merchantId;
-
-        $dataFromDruid['Domestic_FTS_merchant_id'] = $merchantId;
-
-        $druidService->method('getDataFromDruid')
-            ->willReturn([null, [$dataFromDruid]]);
+        $this->mockDruidRiskDataForNonCtsAndNonFtsMerchant();
 
         $testData = $this->testData['testUnregisteredIncreaseTransactionLimitWorkflowApprove'];
 
@@ -15816,6 +15784,25 @@ The same has been enabled for the account.
 -Team Razorpay',
             '1234567890'
         );
+    }
+
+    protected function mockDruidRiskDataForNonCtsAndNonFtsMerchant()
+    {
+        $druidService = $this->getMockBuilder(MockDruidService::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods([ 'getDataFromDruid'])
+            ->getMock();
+
+        $this->app->instance('druid.service', $druidService);
+
+        $dataFromDruid = $this->testData['testGetRiskData']['druid_response'];
+
+        $dataFromDruid['Domestic_cts_overall_merchant_id'] = $merchantId;
+
+        $dataFromDruid['Domestic_FTS_merchant_id'] = $merchantId;
+
+        $druidService->method('getDataFromDruid')
+            ->willReturn([null, [$dataFromDruid]]);
     }
 
     public function testKAMMerchantIncreaseTransactionLimitWorkflowApprove()
@@ -16117,6 +16104,8 @@ The same has been enabled for the account.
         ];
 
         [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
+
+        $this->mockDruidRiskDataForNonCtsAndNonFtsMerchant();
 
         $this->setupWorkflow('increase_transaction_limit', PermissionName::INCREASE_TRANSACTION_LIMIT, 'test');
 

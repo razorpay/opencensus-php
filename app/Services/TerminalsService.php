@@ -641,7 +641,7 @@ class TerminalsService
      * @throws Exception\BadRequestException
      */
     protected function sendRequest(string $path, $content = '', string $method = Requests::POST, array $additionalOptions = [],
-                                   array  $additionalHeaders = []): \Requests_Response
+                                   array  $additionalHeaders = [])
     {
         return $this->handleRequestAndResponse($path, $content, $method, $additionalOptions, $additionalHeaders);
     }
@@ -655,7 +655,7 @@ class TerminalsService
      * Ref: mockTerminalsServiceHandleRequestAndResponse method in RZP\Tests\Functional\Helpers\TerminalsTrait.php
      * */
     protected function handleRequestAndResponse(string $path, $content = '', string $method = Requests::POST, array $additionalOptions = [],
-                                                array $additionalHeaders = []): \Requests_Response
+                                                array $additionalHeaders = [])
     {
         $url = $this->getBaseUrl() . $path;
 
@@ -781,7 +781,7 @@ class TerminalsService
         return Requests::request($url, $headers, $content, $method, $options);
     }
 
-    protected function parseAndReturnResponse(\Requests_Response $response)
+    protected function parseAndReturnResponse($response)
     {
         $responseArray = json_decode($response->body, true);
 

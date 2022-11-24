@@ -259,7 +259,6 @@ class GrowthTest extends TestCase
             __DIR__ . '/../Storage/a.png',
             'a.png',
             'image/png',
-            filesize(__DIR__ . '/../Storage/a.png'),
             null,
             true);
 

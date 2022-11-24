@@ -1675,7 +1675,7 @@ class FeaturesTest extends OAuthTestCase
                       }))
                   ->andReturnUsing(function ()
                   {
-                      $response = new \Requests_Response;
+                      $response = new \WpOrg\Requests\Response;
 
                       $response->body = json_encode(['key' => 'value']);
 

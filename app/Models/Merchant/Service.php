@@ -10694,8 +10694,24 @@ class Service extends Base\Service
 
         foreach ($features as $name)
         {
-            try{
-            $featureNames[] = Feature\Constants::$visibleFeaturesMap[$name]['feature'];
+            try
+            {  
+                $featureName = Feature\Constants::$visibleFeaturesMap[$name]['feature'];
+
+                if(isset($featureName) === false || empty($featureName) === true)
+                {
+                    $this->trace->info(
+                        TraceCode::MERCHANT_FEATURE_NOT_EXIST,
+                        [
+                            'purpose'         => "Feature sent doesn't exist",
+                            'features'        =>  $features,
+                        ]
+                    );
+    
+                    return ['FAILED'];
+                }
+
+                $featureNames[] = $featureName;
             }
             catch (\Throwable $e)
             {

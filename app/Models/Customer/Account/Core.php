@@ -22,7 +22,7 @@ use RZP\Models\Upi;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
-use RZP\Trace\Metric as AddressMetric;
+use RZP\Models\Customer\Account\Metrics\Metric as AddressMetric;
 use RZP\Models\Locale\Core as Locale;
 use RZP\Models\Merchant\Metric;
 
@@ -964,7 +964,7 @@ class Core extends Base\Core
                 'app_token' => $appToken->getPublicId()
             ]);
 
-        $session = $this->app['request']->getSession();
+        $session = $this->app['request']->session();
 
         if ($session !== null)
         {

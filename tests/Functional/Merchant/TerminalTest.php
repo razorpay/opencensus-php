@@ -3662,7 +3662,7 @@ class TerminalTest extends TestCase
 
         $terminal = $this->getDbLastEntity('terminal');
 
-        $gatewayTerminalPasswordDb  = $terminal->getOriginal()['gateway_terminal_password'];
+        $gatewayTerminalPasswordDb  = $terminal->getRawOriginal()['gateway_terminal_password'];
 
         $this->assertNotEquals($gatewayTerminalPasswordDb, 'umesh12345678'); // asserts that it got encrypted
 
@@ -3707,7 +3707,7 @@ class TerminalTest extends TestCase
 
         $this->assertEquals($terminal['org_id'], MerchantEntity::AXIS_ORG_ID);
 
-        $gatewayTerminalPasswordDb  = $terminal->getOriginal()['gateway_terminal_password'];
+        $gatewayTerminalPasswordDb  = $terminal->getRawOriginal()['gateway_terminal_password'];
 
         $this->assertNotEquals($gatewayTerminalPasswordDb, 'umesh12345678'); // asserts that it got encrypted
 

@@ -1,23 +1,36 @@
 <?php
 
-use Faker\Generator as Faker;
+namespace Database\Factories;
+
 use RZP\Models\P2p\Vpa\Entity;
 use RZP\Models\Merchant\Account;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-$factory->define(Entity::class, function (Faker $faker) {
-    return [
-        Entity::ID               => Entity::generateUniqueId(),
-        Entity::DEVICE_ID        => 'factory:' . \RZP\Models\P2p\Device\Entity::class,
-        Entity::HANDLE           => $faker->randomElement(['rzpsharp', 'razorsharp']),
-        Entity::GATEWAY_DATA     => $faker->randomElements(['a' => 1, 'b' => 2]),
-        Entity::USERNAME         => $faker->word,
-        Entity::BANK_ACCOUNT_ID  => 'factory:' . \RZP\Models\P2p\BankAccount\Entity::class,
-        Entity::BENEFICIARY_NAME => $faker->name,
-        Entity::FREQUENCY        => 'multiple',
-        Entity::ACTIVE           => true,
-        Entity::VALIDATED        => true,
-        Entity::VERIFIED         => true,
-        Entity::DEFAULT          => true,
-        Entity::PERMISSIONS      => 0,
-    ];
-});
+class P2pVpaFactory extends Factory
+{
+    protected $model = Entity::class;
+
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition()
+    {
+        return [
+            Entity::ID               => Entity::generateUniqueId(),
+            Entity::DEVICE_ID        => 'factory:' . \RZP\Models\P2p\Device\Entity::class,
+            Entity::HANDLE           => fake()->randomElement(['rzpsharp', 'razorsharp']),
+            Entity::GATEWAY_DATA     => fake()->randomElements(['a' => 1, 'b' => 2]),
+            Entity::USERNAME         => fake()->word,
+            Entity::BANK_ACCOUNT_ID  => 'factory:' . \RZP\Models\P2p\BankAccount\Entity::class,
+            Entity::BENEFICIARY_NAME => fake()->name,
+            Entity::FREQUENCY        => 'multiple',
+            Entity::ACTIVE           => true,
+            Entity::VALIDATED        => true,
+            Entity::VERIFIED         => true,
+            Entity::DEFAULT          => true,
+            Entity::PERMISSIONS      => 0,
+        ];
+    }
+}

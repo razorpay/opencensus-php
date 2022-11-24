@@ -307,7 +307,7 @@ class MandateHQ
                 $request['content'],
                 $request['options']);
         }
-        catch(\Requests_Exception $e)
+        catch(\WpOrg\Requests\Exception $e)
         {
             throw new Exception\ServerErrorException(
                 'Mandate HQ error',

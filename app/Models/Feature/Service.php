@@ -786,7 +786,7 @@ class Service extends Base\Service
 
                     $this->trace->traceException($e);
 
-                    $this->trace->warn(
+                    $this->trace->warning(
                         TraceCode::FEATURE_ASSIGNMENT_EXCEPTION,
                         [
                             'msg' => $e->getMessage()

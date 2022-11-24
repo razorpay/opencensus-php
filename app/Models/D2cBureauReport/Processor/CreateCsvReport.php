@@ -220,7 +220,7 @@ class CreateCsvReport
 
         fclose($file);
 
-        $csvFile = new UploadedFile($filePath, $fileName, 'text/csv', filesize($filePath), null, true);
+        $csvFile = new UploadedFile($filePath, $fileName, 'text/csv', null, true);
 
         $ufhFile = $this->app['ufh.service']->uploadFileAndGetUrl($csvFile, $fileName, 'bureau_report_csv', $this->d2cReport);
 

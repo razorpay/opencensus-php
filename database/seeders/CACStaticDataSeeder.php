@@ -1,5 +1,8 @@
 <?php
 
+namespace Database\Seeders;
+
+use Illuminate\Support\Facades\DB;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Permission;
 use Illuminate\Database\Seeder;
@@ -8,13 +11,13 @@ class CACStaticDataSeeder extends Seeder
 {
 
     /**
-     * Run the database seeds.
+     * Run the database seeders.
      *
      * @return void
      */
     public function run()
     {
-        Eloquent::unguard();
+        //Eloquent::unguard();
 
         DB::transaction(function()
         {

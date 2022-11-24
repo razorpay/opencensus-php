@@ -5,7 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use Mail;
 use Mockery;
 use Carbon\Carbon;
-use Requests_Response;
+use \WpOrg\Requests\Response;
 
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Gateway;
@@ -2377,7 +2377,7 @@ class PaymentDowntimeTest extends TestCase
 
         $expectedReqArgs = ['service' => 'api-test', 'owner_type' => 'merchant', 'limit' => 5000, 'active' => true, 'event' => $event];
 
-        $mockedRes = new Requests_Response;
+        $mockedRes = new \WpOrg\Requests\Response;
         $mockedRes->success = true;
         $mockedRes->body = json_encode(["webhooks" => [['owner_id' => '10000000000000'], ['owner_id' => '10000000000000'], ['owner_id' => '10000000000011']]]);
 

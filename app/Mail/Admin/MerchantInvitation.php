@@ -3,6 +3,7 @@
 namespace RZP\Mail\Admin;
 
 use Carbon\Carbon;
+use Symfony\Component\Mime\Email;
 
 use RZP\Mail\Base;
 use RZP\Constants\Timezone;
@@ -93,7 +94,7 @@ class MerchantInvitation extends Base\Mailable
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function ($message)
+        $this->withSymfonyMessage(function (Email $message)
         {
             $headers = $message->getHeaders();
 

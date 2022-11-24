@@ -6,7 +6,7 @@ use DB;
 use Config;
 use Mockery;
 use Carbon\Carbon;
-use Requests_Response;
+use \WpOrg\Requests\Response;
 
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
@@ -372,7 +372,7 @@ class PayoutServiceTest extends TestCase
 
         $this->app->instance(PayoutServiceRetry::PAYOUT_SERVICE_RETRY, $payoutRetryStatusMock);
 
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         if ($fail === true)
         {
@@ -434,7 +434,7 @@ class PayoutServiceTest extends TestCase
 
     public function createResponseForPayoutServiceMock($fail, $status = 'processing', $insufficient_balance = false, $newBankingError = false, $metadata = [])
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         if ($fail === true)
         {
@@ -571,14 +571,14 @@ class PayoutServiceTest extends TestCase
             }
         }
 
-        return new Requests_Response();
+        return new \WpOrg\Requests\Response();
     }
 
     public function getResponseForPayoutByIdServiceMock($fail,
                                                         $status = 'processing',
                                                         $errorDescription = 'Service Failure')
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         if ($fail === true)
         {
@@ -629,7 +629,7 @@ class PayoutServiceTest extends TestCase
                                                                  $status = 'processing',
                                                                  $errorDescription = 'Service Failure')
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         if ($fail === true)
         {
@@ -725,7 +725,7 @@ class PayoutServiceTest extends TestCase
 
     public function createBulkPayoutResponseForPayoutServiceMock($fail)
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         if ($fail === true)
         {
@@ -823,7 +823,7 @@ class PayoutServiceTest extends TestCase
 
     public function freePayoutSetResponseForPayoutServiceMock($fail)
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         if ($fail === true)
         {
@@ -893,7 +893,7 @@ class PayoutServiceTest extends TestCase
 
     public function freePayoutGetResponseForPayoutServiceMock($fail)
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         if ($fail === true)
         {
@@ -955,7 +955,7 @@ class PayoutServiceTest extends TestCase
 
     public function freePayoutMigrationResponseForPayoutServiceMock($fail)
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         if ($fail === true)
         {
@@ -3200,7 +3200,7 @@ class PayoutServiceTest extends TestCase
 
     public function getResponseForPayoutAnalyticsServiceMock($fail, $status = 'processing')
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         if ($fail === true)
         {
@@ -4489,7 +4489,7 @@ class PayoutServiceTest extends TestCase
 
     public function initiateDataConsistencyCheckerResponseForPayoutServiceMock($fail)
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         if ($fail === true)
         {
@@ -4509,7 +4509,7 @@ class PayoutServiceTest extends TestCase
 
     public function payoutsServiceCreateFailureProcessingCronResponseMock($fail)
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         if ($fail === true)
         {
@@ -4529,7 +4529,7 @@ class PayoutServiceTest extends TestCase
 
     public function payoutsServiceUpdateFailureProcessingCronResponseMock($fail)
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         if ($fail === true)
         {
@@ -4599,7 +4599,7 @@ class PayoutServiceTest extends TestCase
 
     public function initiateBatchSubmittedResponseForPayoutServiceMock($fail)
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         if ($fail === true)
         {
@@ -4727,7 +4727,7 @@ class PayoutServiceTest extends TestCase
 
     public function updateMerchantFeatureCacheResponseForPayoutServiceMock($fail)
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         if ($fail === true) {
             $response->body = json_encode(
@@ -4777,7 +4777,7 @@ class PayoutServiceTest extends TestCase
 
         $this->app->instance(PayoutServiceDashboardScheduleTimeSlots::PAYOUT_SERVICE_DASHBOARD_TIME_SLOTS, $payoutServiceDashboardTimeSlotsMock );
 
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         $response->body = json_encode(
             [

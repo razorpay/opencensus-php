@@ -4,8 +4,8 @@ namespace RZP\Services;
 
 use App;
 use Throwable;
-use Requests_Session;
-use Requests_Response;
+use \WpOrg\Requests\Session as Requests_Session;
+use \WpOrg\Requests\Response;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Clouding\Presto\Presto;
@@ -161,11 +161,11 @@ class ApachePinotClient
      *
      * @param int|null $timeoutMs
      *
-     * @return Requests_Response
+     * @return \WpOrg\Requests\Response
      * @throws ServerErrorException
      */
 
-    public function request(string $path, array $payload, int $timeoutMs = null): Requests_Response
+    public function request(string $path, array $payload, int $timeoutMs = null)
     {
         $options = [];
         if ($timeoutMs !== null)

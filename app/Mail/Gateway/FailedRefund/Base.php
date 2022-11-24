@@ -3,6 +3,7 @@
 namespace RZP\Mail\Gateway\FailedRefund;
 
 use Carbon\Carbon;
+use Symfony\Component\Mime\Email;
 
 use RZP\Constants\Timezone;
 use RZP\Constants\MailTags;
@@ -99,7 +100,7 @@ class Base extends Mailable
     {
         $header = Constants::MAILTAG_MAP[$this->type];
 
-        $this->withSwiftMessage(function ($message) use ($header)
+        $this->withSymfonyMessage(function (Email $message) use ($header)
         {
             $headers = $message->getHeaders();
 

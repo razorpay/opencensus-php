@@ -40,8 +40,7 @@ class SlackApp
             try {
                 $this->sendRequestToSlack( $url, 'POST', $payload);
             }
-            catch (\Requests_Exception $exception) {
-
+            catch (\Throwable $exception) {
                 $this->trace->info(
                     TraceCode::CALL_TO_SLACK_APP_FAILED,
                     [
@@ -77,7 +76,7 @@ class SlackApp
 
             $this->sendRequestToSlack( $url, 'POST', $payload);
         }
-        catch (\Requests_Exception $exception) {
+        catch (\Throwable $exception) {
             $this->trace->error(
                 TraceCode::CALL_TO_SLACK_APP_FAILED,
                 [
@@ -106,7 +105,7 @@ class SlackApp
 //
 //            $this->sendRequestToSlack( $url, 'POST', $payload);
 //        }
-//        catch (\Requests_Exception $exception) {
+//        catch (\WpOrg\Requests\Exception $exception) {
 //            $this->trace->error(
 //                TraceCode::CALL_TO_SLACK_APP_FAILED,
 //                [
@@ -138,7 +137,7 @@ class SlackApp
             ]
             );
         }
-        catch (\Requests_Exception $exception) {
+        catch (\Throwable $exception) {
             $this->trace->error(
                 TraceCode::FAILED_FETCHING_SUBSCRIBED_MERCHANT_LIST,
                 [
@@ -183,7 +182,7 @@ class SlackApp
                     ]
                 );
             }
-            catch (\Requests_Exception $exception) {
+            catch (\Throwable $exception) {
                 $this->trace->info(
                     TraceCode::CALL_TO_SLACK_APP_FAILED,
                     [

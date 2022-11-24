@@ -3,7 +3,7 @@
 namespace RZP\Services;
 
 use RZP\Http\Request\Requests;
-use Requests_Session;
+use \WpOrg\Requests\Session as Requests_Session;
 
 use RZP\Exception;
 use RZP\Models\Payment;
@@ -192,7 +192,7 @@ class CorePaymentService
 
                 break;
             }
-            catch(\Requests_Exception $e)
+            catch(\WpOrg\Requests\Exception $e)
             {
                 $this->trace->traceException($e);
 

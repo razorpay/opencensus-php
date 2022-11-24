@@ -15,4 +15,9 @@ class ResponseXml extends Base\Entity
     {
         return $this->belongsTo('RZP\Models\Payment\Entity', 'payment_id', 'id');
     }
+
+    public function getIncrementing()
+    {
+        return $this->incrementing;
+    }
 }

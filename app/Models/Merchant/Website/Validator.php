@@ -58,7 +58,7 @@ class Validator extends Base\Validator
         Entity::ADDITIONAL_DATA . '.' . Constants::SUPPORT_EMAIL                               => 'sometimes|nullable|email|max:255',
         Entity::ADDITIONAL_DATA . '.' . Constants::SUPPORT_PHONE                               => 'sometimes|max:15|nullable|contact_syntax',
         Entity::MERCHANT_WEBSITE_DETAILS                                                       => 'sometimes|array|nullable',
-        Entity::MERCHANT_WEBSITE_DETAILS . '.*'                                                => 'sometimes|array:' . Constants::VALID_MERCHANT_SECTIONS . '|distinct|nullable',
+        Entity::MERCHANT_WEBSITE_DETAILS . '.'                                                => 'sometimes|array:' . Constants::VALID_MERCHANT_SECTIONS . '|distinct|nullable',
         Entity::MERCHANT_WEBSITE_DETAILS . '.*.' . Constants::SECTION_STATUS                   => 'required|integer|in:' . Constants::VALID_SECTION_STATUS,
         Entity::MERCHANT_WEBSITE_DETAILS . '.*.' . Constants::WEBSITE                          => "sometimes|array|nullable",
         Entity::MERCHANT_WEBSITE_DETAILS . '.*.' . Constants::WEBSITE . '.*.' . Constants::URL => 'required|custom:active_url|string|max:255',

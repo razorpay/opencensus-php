@@ -213,12 +213,26 @@ class TypeformParser extends Base implements DataParserInterface
 
                     if($answerType === 'number')
                     {
-                        $questionToAnswer['survey_score'] = $answer['number'];
+                        if(isset($answer['number']))
+                        {
+                            $questionToAnswer['survey_score'] = $answer['number'];
+                        }
+                        else
+                        {
+                            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+                        }
                     }
                     else if($answerType === 'text')
                     {
-                        $question = $formData[$answer['field']['id']]['question'];
-                        $questionToAnswer[$question] = $answer['text'];
+                        if(isset($answer['text']))
+                        {
+                            $question = $formData[$answer['field']['id']]['question'];
+                            $questionToAnswer[$question] = $answer['text'];
+                        }
+                        else
+                        {
+                            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+                        }
                     }
                     else if($answerType === 'choice')
                     {

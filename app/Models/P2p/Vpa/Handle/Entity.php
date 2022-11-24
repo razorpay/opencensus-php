@@ -2,6 +2,8 @@
 
 namespace RZP\Models\P2p\Vpa\Handle;
 
+use Database\Factories\P2pHandleFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use RZP\Base\BuilderEx;
 use RZP\Models\P2p\Base;
 use RZP\Models\Merchant;
@@ -9,6 +11,8 @@ use RZP\Models\P2p\Client;
 
 class Entity extends Base\Entity
 {
+    use HasFactory;
+
     const CODE         = 'code';
     const MERCHANT_ID  = 'merchant_id';
     const BANK         = 'bank';
@@ -231,5 +235,10 @@ class Entity extends Base\Entity
                Client\Entity::CLIENT_TYPE   => $type,
                Client\Entity::CLIENT_ID     => $clientId
             ])->first();
+    }
+
+    protected static function newFactory(): P2pHandleFactory
+    {
+        return P2pHandleFactory::new();
     }
 }

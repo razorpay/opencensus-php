@@ -161,6 +161,6 @@ class NbplusEmandateIciciReconciliationTest extends NbplusPaymentServiceEmandate
     {
         $mime = $mime ?? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
-        return new UploadedFile($url, $fileName, $mime, filesize($url), null, true);
+        return new UploadedFile($url, $fileName, $mime, null, true);
     }
 }

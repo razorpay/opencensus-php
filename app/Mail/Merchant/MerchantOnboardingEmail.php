@@ -2,6 +2,8 @@
 
 namespace RZP\Mail\Merchant;
 
+use Symfony\Component\Mime\Email;
+
 use RZP\Models\Admin\Org;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
@@ -91,7 +93,7 @@ class MerchantOnboardingEmail extends Mailable
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function($message) {
+        $this->withSymfonyMessage(function (Email $message) {
             $headers = $message->getHeaders();
         });
 

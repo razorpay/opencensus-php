@@ -2,6 +2,7 @@
 
 namespace RZP\Mail;
 
+use Mail;
 use \Swift_Mailer;
 use Illuminate\Mail\MailServiceProvider as BaseMailServiceProvider;
 
@@ -19,6 +20,19 @@ class MailServiceProvider extends BaseMailServiceProvider
         $this->registerMailgunTransport();
     }
 
+//    protected function registerSwiftSesTransport()
+//    {
+//        s("check this message");
+//
+//        $swiftMailer = app('mailer')->getSwiftMailer();
+//
+//        $swiftTransport = $swiftMailer->getTransport();
+//
+//        $this->app->singleton('swift.ses_mailer', function ($swiftTransport) {
+//            return new Swift_Mailer($swiftTransport->driver('ses'));
+//        });
+//    }
+
     protected function registerSwiftSesTransport()
     {
         $this->app->singleton('swift.ses_mailer', function ($app) {
@@ -32,4 +46,15 @@ class MailServiceProvider extends BaseMailServiceProvider
             return new Swift_Mailer($app['swift.transport']->driver('mailgun'));
         });
     }
+
+//    protected function registerMailgunTransport()
+//    {
+//        $swiftMailer = app('mailer')->getSwiftMailer();
+//
+//        $swiftTransport = $swiftMailer->getTransport();
+//
+//        $this->app->singleton('swift.mailgun_mailer', function ($swiftTransport) {
+//            return new Swift_Mailer($swiftTransport->driver('mailgun'));
+//        });
+//    }
 }

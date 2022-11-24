@@ -2,7 +2,7 @@
 
 namespace RZP\Tests\Functional;
 
-use Artisan;
+use Illuminate\Support\Facades\Artisan;
 use Database\Connection;
 use Illuminate\Database\DatabaseManager;
 
@@ -76,7 +76,8 @@ class Database
     {
         if ($this->shouldRunFixtures() === false)
         {
-            return $this->beginTransaction();
+            $this->beginTransaction();
+            return;
         }
 
         if ($this->shouldRunFixturesOnce() === true)
@@ -146,22 +147,22 @@ class Database
     {
         $this->createDatabases();
 
-        \Artisan::call('migrate', ['--database' => 'live_migration']);
-        \Artisan::call('migrate', ['--database' => 'test_migration']);
+        Artisan::call('migrate', ['--database' => 'live_migration']);
+        Artisan::call('migrate', ['--database' => 'test_migration']);
 
         // Run Auth DB migrations from the oauth package
-        \Artisan::call('migrate', ['--database' => 'auth', '--path' => '/vendor/razorpay/oauth/database/migrations']);
+        Artisan::call('migrate', ['--database' => 'auth', '--path' => '/vendor/razorpay/oauth/database/migrations', '--force' => true]);
 
         // Run P2P DB migrations from the P2p Service
-        Artisan::call('migrate', ['--database' => 'live_migration', '--path' => 'database/migrations/p2p']);
-        Artisan::call('migrate', ['--database' => 'test_migration', '--path' => 'database/migrations/p2p']);
+        Artisan::call('migrate', ['--database' => 'live_migration', '--path' => 'database/migrations/p2p', '--force' => true]);
+        Artisan::call('migrate', ['--database' => 'test_migration', '--path' => 'database/migrations/p2p', '--force' => true]);
 
         if ($this->isPaymentUpiMocked() === false)
         {
             $path = 'database/migrations/payments_upi';
 
-            Artisan::call('migrate', ['--database' => 'payments_upi_live', '--path' => $path]);
-            Artisan::call('migrate', ['--database' => 'payments_upi_test', '--path' => $path]);
+            Artisan::call('migrate', ['--database' => 'payments_upi_live', '--path' => $path, '--force' => true]);
+            Artisan::call('migrate', ['--database' => 'payments_upi_test', '--path' => $path, '--force' => true]);
         }
     }
 

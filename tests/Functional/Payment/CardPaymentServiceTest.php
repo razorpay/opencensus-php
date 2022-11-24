@@ -8,7 +8,7 @@ use Mockery;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
-use Requests_Response;
+use \WpOrg\Requests\Response;
 use RZP\Exception;
 use RZP\Models\Address\Repository;
 use RZP\Models\Address\Type;
@@ -3321,7 +3321,7 @@ class CardPaymentServiceTest extends TestCase
             ->setMethods(['sendRawRequest'])
             ->getMock();
         $this->app->instance('card.payments', $cardService);
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
         $response->status_code = 401;
         $response->headers = ['Content-Type' => 'application/json'];
         $body = '{
@@ -3339,7 +3339,7 @@ class CardPaymentServiceTest extends TestCase
             ->setMethods(['sendRawRequest'])
             ->getMock();
         $this->app->instance('card.payments', $cardService);
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
         $response->status_code = 400;
         $response->headers = ['Content-Type' => 'application/json'];
         $body = '{
@@ -3366,7 +3366,7 @@ class CardPaymentServiceTest extends TestCase
             ->setMethods(['sendRawRequest'])
             ->getMock();
         $this->app->instance('card.payments', $cardService);
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
         $response->status_code = 200;
         $response->headers = ['Content-Type' => 'application/json'];
         $body = '{

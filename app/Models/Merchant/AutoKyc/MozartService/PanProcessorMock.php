@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Merchant\AutoKyc\MozartService;
 
-use Requests_Response;
-use Requests_Exception;
+use \WpOrg\Requests\Response;
+use \WpOrg\Requests\Exception as Requests_Exception;
 
 use RZP\Models\Merchant\Detail\Constants;
 
@@ -18,7 +18,7 @@ class PanProcessorMock extends PanProcessor
 
     protected function getResponse(array $request)
     {
-        $response = new Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         $response->headers     = ['Content-Type' => 'application/json'];
         $response->status_code = 200;

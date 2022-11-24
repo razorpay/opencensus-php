@@ -56,7 +56,7 @@ jobs:
             GIT_COMMIT_HASH=${{ github.sha }}
             GIT_TOKEN=${{ secrets.GIT_TOKEN }}
             GIT_USERNAME=rzp
-            ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
+            ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-8.1-api-web
             ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182
             OPENCENSUS_IMAGE=c.rzp.io/razorpay/onggi:opencensus-php-v2020.10.28
             CACHEBUST=${{ github.sha }}

@@ -2679,18 +2679,22 @@ class Entity extends Base\PublicEntity
             if ($statusDetails !== null)
             {
                 $source = $this->getSourceForStatusDetails($statusDetails);
+
+                $statusDetailsArray =
+                    [
+                        'reason'      => $statusDetails['reason'],
+                        'description' => $statusDetails['description'],
+                        'source'      => $source,
+                    ];
             }
             else
             {
-                $source = null;
-            }
-
-            $statusDetailsArray =
-                [
-                    'reason' => $statusDetails['reason'],
-                    'description' => $statusDetails['description'],
-                    'source' => $source,
+                $statusDetailsArray = [
+                    'reason'      => null,
+                    'description' => null,
+                    'source'      => null,
                 ];
+            }
         }
 
         $attributes[self::STATUS_DETAILS] = $statusDetailsArray;
@@ -2704,23 +2708,20 @@ class Entity extends Base\PublicEntity
         {
                 $statusDetails = (new PayoutsStatusDetails\Repository())->fetchPayoutStatusDetailsLatest($this->getId());
 
+                // if status details is not null , then only we will populate the status summary
+                // object otherwise we will keep it as null
                 if($statusDetails !== null)
                 {
                     $source = $this->getSourceForStatusDetails($statusDetails);
-                }
 
-                else
-                {
-                    $source = null;
-                }
-
-                $statusSummary [$statusDetails['status']] [] =
+                    $statusSummary [$statusDetails['status']] [] =
                         [
                             PayoutsStatusDetails\Entity::REASON         => $statusDetails['reason'],
                             PayoutsStatusDetails\Entity::DESCRIPTION    => $statusDetails['description'],
                             'timestamp'                                 => $statusDetails['created_at'],
                             'source'                                    => $source,
                         ];
+                }
 
                 $attributes[self::STATUS_SUMMARY] = $statusSummary;
         }

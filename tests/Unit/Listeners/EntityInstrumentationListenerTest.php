@@ -2,7 +2,7 @@
 
 namespace Unit\Listeners;
 
-use Illuminate\Foundation\Testing\Constraints\ArraySubset;
+use Illuminate\Testing\Constraints\ArraySubset;
 use RZP\Events\EntityInstrumentationEvent;
 use RZP\Constants\Metric;
 use RZP\Tests\Functional\CustomAssertions;

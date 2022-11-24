@@ -279,7 +279,6 @@ class NbplusAppMethodTwidReconciliationTest extends NbPlusPaymentServiceAppsTest
             $url,
             $fileName,
             $mime,
-            filesize($url),
             null,
             true);
     }

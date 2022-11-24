@@ -129,7 +129,6 @@ class NbplusNetbankingKotakReconciliationTest extends StaticCallbackNbplusGatewa
             $url,
             $fileName,
             $mime,
-            filesize($url),
             null,
             true);
     }

@@ -724,7 +724,7 @@ class PublicEntity extends UniqueIdEntity
 
         if (empty($dirtyAttributes) === false)
         {
-            $attributes = $this->getOriginal();
+            $attributes = $this->getRawOriginal();
 
             $originalAttributes = array_intersect_key($attributes, $dirtyAttributes);
 
@@ -759,7 +759,7 @@ class PublicEntity extends UniqueIdEntity
 
     public static function verifyIdAndStripSignMultiple(array & $ids)
     {
-        $newIds = array_map(function(&$id)
+        $newIds = array_map(function($id)
         {
             return static::verifyIdAndStripSign($id);
         }, $ids);
@@ -771,7 +771,7 @@ class PublicEntity extends UniqueIdEntity
 
     public static function verifyIdAndSilentlyStripSignMultiple(array & $ids)
     {
-        $newIds = array_map(function(&$id)
+        $newIds = array_map(function($id)
         {
             return static::verifyIdAndSilentlyStripSign($id);
         }, $ids);
@@ -863,7 +863,7 @@ class PublicEntity extends UniqueIdEntity
 
     public static function getSignedIdMultiple(array & $ids)
     {
-        $newIds = array_map(function(& $id)
+        $newIds = array_map(function($id)
         {
             return static::getSignedId($id);
         }, $ids);

@@ -4,7 +4,7 @@ namespace RZP\Services\Relay;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception;
-use Requests_Response;
+use \WpOrg\Requests\Response;
 use RZP\Constants\Mode;
 use RZP\Exception\ServerErrorException;
 use RZP\Http\RequestHeader;
@@ -164,7 +164,7 @@ class Base
      * @param  $response
      * @return array
      */
-    protected function parseResponse(Requests_Response $response): array
+    protected function parseResponse($response): array
     {
         $code = null;
 
@@ -247,7 +247,7 @@ class Base
 
         if ($code !== 200)
         {
-            $this->trace->warn(TraceCode::RELAY_REQUEST_FAILED, [
+            $this->trace->warning(TraceCode::RELAY_REQUEST_FAILED, [
                 'status_code'   => $code,
                 'response_body' => $body,
             ]);

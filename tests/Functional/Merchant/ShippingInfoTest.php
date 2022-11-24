@@ -23,10 +23,7 @@ class ShippingInfoTest extends TestCase
     {
         $this->testDataFilePath = __DIR__.'/helpers/ShippingInfoTestData.php';
         parent::setUp();
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
         $this->fixtures->create('org:hdfc_org');
-        $this->app->make(Factory::class)->load($factoryPath);
-
     }
 
     public function testGetShippingInfo()

@@ -3,7 +3,7 @@
 namespace RZP\Services\Settlements;
 
 use RZP\Exception;
-use Requests_Response;
+use \WpOrg\Requests\Response;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
@@ -183,7 +183,7 @@ class Base
      * @param  $response
      * @return array
      */
-    protected function parseResponse(Requests_Response $response): array
+    protected function parseResponse($response): array
     {
         $code = null;
 
@@ -289,7 +289,7 @@ class Base
 
         if ($code !== 200)
         {
-            $this->trace->warn(TraceCode::SETTLEMENTS_REQUEST_EXCEPTION, [
+            $this->trace->warning(TraceCode::SETTLEMENTS_REQUEST_EXCEPTION, [
                 'status_code'   => $code,
                 'response_body' => $body,
             ]);

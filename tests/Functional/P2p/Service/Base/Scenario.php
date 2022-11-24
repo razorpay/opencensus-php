@@ -7,7 +7,7 @@ use RZP\Error\Error;
 use RZP\Gateway\P2p\Upi\Mock;
 use PHPUnit\Framework\Assert;
 use RZP\Error\PublicErrorCode as Code;
-use Illuminate\Foundation\Testing\TestResponse;
+use Illuminate\Testing\TestResponse;
 use RZP\Error\P2p\PublicErrorDescription as Description;
 use DMS\PHPUnitExtensions\ArraySubset\Assert as ArraySubsetAssert;
 

@@ -799,6 +799,18 @@ class Gateway extends Base\Gateway
      */
     public function decrypt(string $cipherText)
     {
+        if($this->checkForValidInput($cipherText) === false)
+        {
+            throw new Exception\GatewayErrorException(
+            ErrorCode::GATEWAY_ERROR_INVALID_DATA,
+            null,
+            'Invalid input for decryption',
+            [
+                'cipherText' => $cipherText,
+            ]);
+
+        }
+
         $response = $this->getCipherInstance()->decrypt($cipherText);
 
         // In fact the library returns boolean false when decryption fails.
@@ -1659,5 +1671,17 @@ class Gateway extends Base\Gateway
 
             throw $ex;
         }
+    }
+
+    protected function checkForValidInput($ciphertext): bool
+    {
+        // check empty string
+        if($ciphertext === '')
+        {
+            return false;
+        }
+
+        // return true if ciphertext is hexadecimal
+        return ctype_xdigit($ciphertext);
     }
 }

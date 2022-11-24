@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit backupGlobals="false"
-         backupStaticAttributes="false"
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         backupGlobals="false" backupStaticAttributes="false"
          bootstrap="bootstrap/autoload.php"
          colors="true"
          convertErrorsToExceptions="true"
@@ -8,7 +8,19 @@
          convertWarningsToExceptions="true"
          processIsolation="false"
          stopOnFailure="false"
-         cacheResult="true">
+         cacheResult="true"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
+    <coverage>
+        <include>
+            <directory suffix=".php">./app/</directory>
+        </include>
+        <exclude>
+            <file>./app/config/database.php</file>
+            <file>./app/config/testing/database.php</file>
+            <file>./app/gateway/hdfc/HdfcGatewayConfig.php</file>
+            <directory suffix=".php">./app/database/seeds</directory>
+        </exclude>
+    </coverage>
     <testsuites>
         <testsuite name="Application Test Suite">
             <directory>./tests/Functional/AccessControlHistoryLogs/</directory>
@@ -61,7 +73,7 @@
             <directory>./tests/Functional/LocationService/</directory>
             <directory>./tests/Functional/FreshdeskTicket/</directory>
             <directory>./tests/Functional/Partner/</directory>
-            <directory>./tests/Functional/AThirdWatch/</directory>
+            <exclude>./tests/Functional/AThirdWatch/</exclude>
             <exclude>./tests/Functional/Admin/GroupEsTest.php</exclude>
         </testsuite>
         <testsuite name="Application-2 Test Suite">
@@ -115,7 +127,7 @@
             <directory>./tests/Functional/BankingAccountTpv/</directory>
             <directory>./tests/Functional/BankingAccountService/</directory>
             <directory>./tests/Functional/FundLoadingDowntime/</directory>
-            <directory>./tests/Functional/AutoGenerateApiDocsTest/</directory>
+            <!--<directory>./tests/Functional/AutoGenerateApiDocsTest/</directory>-->
         </testsuite>
         <testsuite name="Features-2 Test Suite">
             <file>./tests/Functional/Merchant/AccountTest.php</file>
@@ -252,13 +264,18 @@
             <exclude>./tests/Unit/PaymentsUpi</exclude>
             <exclude>./tests/Unit/Models/Merchant/</exclude>
             <exclude>./tests/Unit/Models/Offers/</exclude>
+            <exclude>./tests/Unit/Services/MutexTest.php</exclude>
+            <exclude>./tests/Unit/Services/RedisDualWriteTest.php</exclude>
+            <exclude>./tests/Unit/CircuitBreaker/RedisCircuitBreakerTest.php</exclude>
+            <exclude>./tests/Unit/Models/User/UserTest.php</exclude>
+            <exclude>./tests/Unit/Services/CredcaseSignerTest.php</exclude>
         </testsuite>
         <testsuite name="Features-4-3 Test Suite">
             <directory>./tests/Unit/Models/Merchant/</directory>
             <directory>./tests/Unit/Models/Offers/</directory>
             <directory>./tests/Unit/AdminFetch</directory>
             <directory>./tests/Unit/CapitalCollections</directory>
-            <directory>./tests/Unit/CircuitBreaker</directory>
+            <exclude>./tests/Unit/CircuitBreaker</exclude>
             <directory>./tests/Unit/EE</directory>
             <directory>./tests/Unit/Elfin</directory>
             <directory>./tests/Unit/Entity</directory>
@@ -279,13 +296,13 @@
             <directory>./tests/Functional/FeeRecovery/</directory>
             <directory>./tests/Functional/PayoutLink/</directory>
             <file>./tests/Functional/Merchant/FeaturesTest.php</file>
-            <file>./tests/Functional/Gateway/Mozart/UpiMindgateRecurringTest.php</file>
+            <!--<file>./tests/Functional/Gateway/Mozart/UpiMindgateRecurringTest.php</file>-->
         </testsuite>
         <testsuite name="Feature-6-1 Test Suite">
             <file>./tests/Functional/Payment/TerminalSelectionTest.php</file>
             <file>./tests/Functional/Merchant/MerchantTest.php</file>
         </testsuite>
-<!--        This is temporary fix to split Feature-2 Test Suite because of OOM issue. Root cause is unknown-->
+        <!--        This is temporary fix to split Feature-2 Test Suite because of OOM issue. Root cause is unknown-->
         <testsuite name="Feature-7 Test Suite">
             <directory>./tests/Functional/Merchant/Activation</directory>
             <!-- <directory>./tests/Functional/Merchant/AutoKyc</directory> -->
@@ -303,70 +320,14 @@
             <directory>./tests/Functional/Merchant/Products</directory>
         </testsuite>
         <testsuite name="Payment Test Suite">
-            <directory>./tests/Functional/Payment/Analytics/</directory>
-            <directory>./tests/Functional/Payment/Config/</directory>
-            <directory>./tests/Functional/Payment/GatewayRule/</directory>
-            <directory>./tests/Functional/Payment/NbPlusService/</directory>
-            <directory>./tests/Functional/Payment/TerminalAuthentication/</directory>
-            <directory>./tests/Functional/Payment/TerminalRotator/</directory>
-            <directory>./tests/Functional/Payment/Transfers/</directory>
-            <file>/tests/Functional/Payment/AcknowledgeTest.php</file>
-            <file>/tests/Functional/Payment/AuthorizeTest.php</file>
-            <file>/tests/Functional/Payment/BajajFinservEmiTest.php</file>
-            <file>/tests/Functional/Payment/CaptureTest.php</file>
-            <file>/tests/Functional/Payment/CaptureVerifyTest.php</file>
-            <file>/tests/Functional/Payment/CaptureWithNegativeBalanceTest.php</file>
-            <file>/tests/Functional/Payment/CardInternalPricingTest.php</file>
-            <file>/tests/Functional/Payment/CardlessEmiTest.php</file>
-            <file>/tests/Functional/Payment/CardPaymentServiceTest.php</file>
-            <file>/tests/Functional/Payment/CardTest.php</file>
-            <file>/tests/Functional/Payment/CashOnDeliveryTest.php</file>
-            <file>/tests/Functional/Payment/CheckoutOnyxTest.php</file>
-            <file>/tests/Functional/Payment/CredTest.php</file>
-            <file>/tests/Functional/Payment/CustomerFeeBearerInternationalPaymentTest.php</file>
-            <file>/tests/Functional/Payment/CustomerFeeBearerInternationalPaymentTest.php</file>
-            <file>/tests/Functional/Payment/EMIPaymentTest.php</file>
-            <file>/tests/Functional/Payment/EventTrackerTest.php</file>
-            <file>/tests/Functional/Payment/FraudDetectionTest.php</file>
-            <file>/tests/Functional/Payment/GatewayDowntimeDetectionTest.php</file>
-            <file>/tests/Functional/Payment/GatewayDowntimeDetectionV2Test.php</file>
-            <file>/tests/Functional/Payment/GatewayDowntimeSorterTest.php</file>
-            <file>/tests/Functional/Payment/GatewayDowntimeTest.php</file>
-            <file>/tests/Functional/Payment/GatewayErrorThrottlerTest.php</file>
-            <file>/tests/Functional/Payment/GooglePayCardTest.php</file>
-            <file>/tests/Functional/Payment/GooglePayOmnichannelTest.php</file>
-            <file>/tests/Functional/Payment/GooglePayProviderCreatePaymentTest.php</file>
-            <file>/tests/Functional/Payment/HdfcDebitEmiTest.php</file>
-            <file>/tests/Functional/Payment/HdfcVasPaymentTest.php</file>
-            <file>/tests/Functional/Payment/KotakDebitEmiTest.php</file>
-            <file>/tests/Functional/Payment/IndusindDebitEmiTest.php</file>
-            <file>/tests/Functional/Payment/MismatchAmountTest.php</file>
-            <file>/tests/Functional/Payment/MutexTest.php</file>
-
-            <file>/tests/Functional/Payment/NetBankingTest.php</file>
-            <file>/tests/Functional/Payment/OneCCShopifyCreateOrderTest.php</file>
-            <file>/tests/Functional/Payment/OpenwalletPaymentTest.php</file>
-            <file>/tests/Functional/Payment/OtpPaymentTest.php</file>
-            <file>/tests/Functional/Payment/PaymentCancelTest.php</file>
-            <file>/tests/Functional/Payment/PaymentCreate3ds2Test.php</file>
-            <file>/tests/Functional/Payment/PaymentCreateAVSTest.php</file>
-            <file>/tests/Functional/Payment/PaymentCreateConvenienceFeeTest.php</file>
-            <file>/tests/Functional/Payment/PaymentCreateDCCTest.php</file>
-
-            <file>/tests/Functional/Payment/PaymentCreateOnyxTest.php</file>
-            <file>/tests/Functional/Payment/PaymentCreateTest.php</file>
-            <file>/tests/Functional/Payment/PaymentFetchTest.php</file>
-            <file>/tests/Functional/Payment/PaymentMiscTest.php</file>
-            <file>/tests/Functional/Payment/PaymentRelatedEntitiesTest.php</file>
-            <file>/tests/Functional/Payment/RecurringPaymentTest.php</file>
-            <file>/tests/Functional/Payment/RetrieveTest.php</file>
-            <file>/tests/Functional/Payment/ReturnTest.php</file>
-        </testsuite>
-        <testsuite name="Payment Test Suite - 1">
             <directory>./tests/Functional/Payment/</directory>
             <!--The tests which need redis-cluster are in a different suite-->
             <exclude>./tests/Functional/Payment/TerminalSelectionTest.php</exclude>
-            <exclude>./tests/Functional/Payment/Analytics/</exclude>
+            <exclude>./tests/Functional/Payment/Analytics/AnalyticsTest.php</exclude>
+        </testsuite>
+        <testsuite name="Payment Test Suite - 1">
+            <exclude>./tests/Functional/Payment/TerminalSelectionTest.php</exclude>
+            <file>./tests/Functional/Payment/Analytics/AnalyticsTest.php</file>
             <exclude>./tests/Functional/Payment/Config/</exclude>
             <exclude>./tests/Functional/Payment/GatewayRule/</exclude>
             <exclude>./tests/Functional/Payment/NbPlusService/</exclude>
@@ -473,7 +434,7 @@
             <file>./tests/Functional/Merchant/AccountTest.php</file>
         </testsuite>
         <testsuite name="Payment Page Test Suite">
-<!--            <directory>./tests/Functional/PaymentLink</directory>-->
+            <directory>./tests/Functional/PaymentLink</directory>
             <directory>./tests/Unit/Models/PaymentLink</directory>
         </testsuite>
         <testsuite name="Rx Test Suite Payouts">
@@ -532,22 +493,8 @@
             </arguments>
         </listener>
     </listeners>
-    <extensions>
-        <extension class="TestDurationListener" file="scripts/TestDurationListener.php"/>
-    </extensions>
-    <filter>
-        <whitelist>
-            <directory suffix=".php">./app/</directory>
-            <exclude>
-                <file>./app/config/database.php</file>
-                <file>./app/config/testing/database.php</file>
-                <file>./app/gateway/hdfc/HdfcGatewayConfig.php</file>
-                <directory suffix=".php">./app/database/seeds</directory>
-            </exclude>
-        </whitelist>
-    </filter>
     <php>
-        <ini name="memory_limit" value="4096M"/>
+        <ini name="memory_limit" value="8192M"/>
         <env name="ENABLE_QUERY_FALLBACK_ON_ARCHIVED_CARD" value="true" force="true" />
     </php>
 </phpunit>

@@ -996,9 +996,7 @@ class SettlementTest extends TestCase
 
     public function createPlatformMerchantsAndSubmerchants()
     {
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
-        $this->app->make(Factory::class)->load($factoryPath);
 
         $this->createPurePlatFormMerchantAndSubMerchant();
         $this->createNonPurePlatFormMerchantAndSubMerchant();
@@ -2527,9 +2525,7 @@ class SettlementTest extends TestCase
 
     public function testGetGlobalConfigFetchWithParent()
     {
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
-        $this->app->make(Factory::class)->load($factoryPath);
 
         $this->createPurePlatFormMerchantAndSubMerchant();
 

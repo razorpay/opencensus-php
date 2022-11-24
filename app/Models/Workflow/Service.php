@@ -196,7 +196,7 @@ class Service extends Base\Service
             // Data not found in ES, assign the fallback payload
             if (empty($workflowData) === true)
             {
-                $this->trace->warn(TraceCode::WORKFLOW_ACTION_NOT_FOUND, [
+                $this->trace->warning(TraceCode::WORKFLOW_ACTION_NOT_FOUND, [
                     'actionId' => $actionId
                 ]);
                 return;

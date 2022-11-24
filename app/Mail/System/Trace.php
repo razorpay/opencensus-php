@@ -2,6 +2,8 @@
 
 namespace RZP\Mail\System;
 
+use Symfony\Component\Mime\Email;
+
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
@@ -68,7 +70,7 @@ class Trace extends Mailable
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function ($message)
+        $this->withSymfonyMessage(function (Email $message)
         {
             $headers = $message->getHeaders();
             $headers->addTextHeader(MailTags::HEADER, MailTags::CRITICAL_ERROR);

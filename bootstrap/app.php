@@ -46,7 +46,7 @@ $app->singleton(
 
 $app->singleton(
     Illuminate\Contracts\Debug\ExceptionHandler::class,
-    RZP\Exception\Handler::class
+    \RZP\Exception\Handler::class
 );
 
 /*

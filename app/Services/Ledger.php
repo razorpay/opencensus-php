@@ -671,10 +671,10 @@ class Ledger
     /**
      * @param array $request
      *
-     * @return \Requests_Response
+     * @return \WpOrg\Requests\Response
      * @throws \Throwable
      */
-    protected function sendLedgerRequest(array $request): \Requests_Response
+    protected function sendLedgerRequest(array $request): \WpOrg\Requests\Response
     {
         $this->traceRequest($request);
 
@@ -714,13 +714,13 @@ class Ledger
     }
 
     /**
-     * @param \Requests_Response $response
+     * @param \WpOrg\Requests\Response $response
      * @param bool               $throwExceptionOnFailure
      *
      * @return array
      * @throws Exception\RuntimeException
      */
-    public function parseResponse(\Requests_Response $response, bool $throwExceptionOnFailure = false): array
+    public function parseResponse($response, bool $throwExceptionOnFailure = false): array
     {
         $code = $response->status_code;
 

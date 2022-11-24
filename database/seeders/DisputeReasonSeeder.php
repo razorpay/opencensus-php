@@ -1,7 +1,10 @@
 <?php
 
+namespace Database\Seeders;
+
 use Illuminate\Database\Seeder;
 
+use Illuminate\Support\Facades\DB;
 use RZP\Constants\Table;
 use RZP\Models\Dispute\Reason\Network;
 
@@ -59,13 +62,13 @@ class DisputeReasonSeeder extends Seeder
     ];
 
     /**
-     * Run the database seeds.
+     * Run the database seeders.
      *
      * @return void
      */
     public function run()
     {
-        Eloquent::unguard();
+        //Eloquent::unguard();
 
         DB::table(Table::DISPUTE_REASON)->delete();
 

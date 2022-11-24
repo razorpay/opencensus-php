@@ -294,7 +294,7 @@ class ReconService
 
     }
 
-    protected function handleResponse(\Requests_Response $response)
+    protected function handleResponse($response)
     {
         $this->trace->info(
             TraceCode::RECON_SERVICE_RESPONSE,

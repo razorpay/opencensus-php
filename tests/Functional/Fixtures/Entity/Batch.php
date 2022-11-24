@@ -197,7 +197,6 @@ class Batch extends Base
                                $url,
                                'file',
                                $mimeType,
-                               filesize($url),
                                null,
                                true);
        return $uploadedFile;

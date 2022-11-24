@@ -1378,7 +1378,7 @@ class Service extends Base\Service
                 $allowGuestAppIDOR = false;
             }
 
-            $this->trace->warn(TraceCode::USER_FETCH_VIA_GUEST_AUTH,
+            $this->trace->warning(TraceCode::USER_FETCH_VIA_GUEST_AUTH,
                 [
                     'route'     => $route,
                     'allowIDOR' => $allowGuestAppIDOR

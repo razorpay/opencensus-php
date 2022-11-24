@@ -4,9 +4,9 @@ namespace RZP\Services;
 
 use Request;
 use Throwable;
-use Requests_Hooks;
-use Requests_Session;
-use Requests_Response;
+use \WpOrg\Requests\Hooks as Requests_Hooks;
+use \WpOrg\Requests\Session as Requests_Session;
+use \WpOrg\Requests\Response;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
@@ -272,12 +272,12 @@ class MerchantRiskClient
     /**
      * @param  string $path
      * @param  array  $payload
-     * @return Requests_Response
+     * @return \WpOrg\Requests\Response
      * @throws ServerErrorException
      * @throws TwirpException
      */
 
-    public function request(string $path, array $payload, int $timeoutMs = null): Requests_Response
+    public function request(string $path, array $payload, int $timeoutMs = null)
     {
         $options = [];
         if ($timeoutMs !== null)

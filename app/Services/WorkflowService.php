@@ -3,8 +3,8 @@
 namespace RZP\Services;
 
 use Throwable;
-use Requests_Session;
-use Requests_Response;
+use \WpOrg\Requests\Session as Requests_Session;
+use \WpOrg\Requests\Response;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Constants\Mode;
@@ -82,10 +82,10 @@ class WorkflowService
     /**
      * @param string $path
      * @param array $payload
-     * @return Requests_Response|null
+     * @return \WpOrg\Requests\Response|null
      * @throws ServerErrorException
      */
-    public function request(string $path, array $payload): Requests_Response
+    public function request(string $path, array $payload)
     {
         $this->init();
         $res = null;

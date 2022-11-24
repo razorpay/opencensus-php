@@ -65,7 +65,7 @@ class EsClient
 
             $this->validateResponse($response);
         }
-        catch(\Requests_Exception $e)
+        catch(\WpOrg\Requests\Exception $e)
         {
             $this->trace->info(
                 TraceCode::HARVESTER_FAILURE,
@@ -79,7 +79,7 @@ class EsClient
         return json_decode($response->body, true);
     }
 
-    protected function validateResponse(\Requests_Response $response)
+    protected function validateResponse($response)
     {
         $this->trace->info(
             TraceCode::HARVESTER_RESPONSE,

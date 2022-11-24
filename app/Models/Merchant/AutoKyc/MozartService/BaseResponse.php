@@ -3,7 +3,6 @@
 namespace RZP\Models\Merchant\AutoKyc\MozartService;
 
 use App;
-use Requests_Response;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -13,7 +12,7 @@ use RZP\Models\Merchant\AutoKyc\Response;
 class BaseResponse implements Response
 {
     /**
-     * @var Requests_Response
+     * @var \WpOrg\Requests\Response
      */
     protected $response;
 
@@ -34,7 +33,7 @@ class BaseResponse implements Response
 
     protected $requestInput;
 
-    public function __construct(Requests_Response $response, array $responseMetaData = [], array $input = [])
+    public function __construct($response, array $responseMetaData = [], array $input = [])
     {
         $this->response = $response;
 

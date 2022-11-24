@@ -140,4 +140,9 @@ class Entity extends Base\Entity
     {
         $this->setAttribute(self::POST_DATE, $date);
     }
+
+    public function getIncrementing()
+    {
+        return $this->incrementing;
+    }
 }

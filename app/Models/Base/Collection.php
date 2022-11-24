@@ -8,9 +8,12 @@ use Illuminate\Database\Eloquent;
 
 class Collection extends Eloquent\Collection
 {
-    public function firstOrFail(callable $callback = null, $default = null)
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function firstOrFail($key = null, $operator = null, $value = null)
     {
-        $first = parent::first($callback, $default);
+        $first = parent::first($key, $operator);
 
         if ($first === null)
         {

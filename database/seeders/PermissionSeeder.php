@@ -1,5 +1,7 @@
 <?php
 
+namespace Database\Seeders;
+
 use Illuminate\Database\Seeder;
 
 use RZP\Constants\Table;
@@ -16,7 +18,7 @@ class PermissionSeeder extends Seeder
     }
 
     /**
-     * Run the database seeds.
+     * Run the database seeders.
      *
      * @return void
      */

@@ -91,9 +91,7 @@ class UserTest extends TestCase
 
         parent::setUp();
 
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
-        $this->app->make(Factory::class)->load($factoryPath);
 
         $this->app['config']->set('applications.banking_account_service.mock', true);
 
@@ -1646,7 +1644,7 @@ class UserTest extends TestCase
         $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
 
         $this->authServiceMock
-            ->expects($this->at(0))
+            ->expects($this->once())
             ->method('sendRequest')
             ->with('applications', 'GET',[
                 'type'        => 'mobile_app',
@@ -4526,12 +4524,12 @@ class UserTest extends TestCase
 
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->onlyMethods(['sendOtp', 'generateOtp'])
+            ->onlyMethods(['sendSms', 'generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
 
-        $this->app['raven']->method('sendOtp')->willThrowException(
+        $this->app['raven']->method('sendSms')->willThrowException(
             new BadRequestException(ErrorCode::BAD_REQUEST_RESOURCE_EXHAUSTED)
         );
 
@@ -8000,7 +7998,7 @@ class UserTest extends TestCase
             '10000000000000',
             ['activated' => true, 'business_banking' => true]);
 
-        $client = factory(Client\Entity::class)->create(['environment' => 'prod']);
+        $client = Client\Entity::factory()->create(['environment' => 'prod']);
 
         $this->fixtures->feature->create([
             Feature\Entity::ENTITY_TYPE => Feature\Constants::APPLICATION,
@@ -8019,7 +8017,7 @@ class UserTest extends TestCase
             'user_id'   => $user['id']
         ], 'prod');
 
-        $this->ba->oauthBearerAuth($accessToken);
+        $this->ba->oauthBearerAuth($accessToken->toString());
 
         $this->startTest();
     }

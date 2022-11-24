@@ -521,13 +521,6 @@ class PaymentCreateController extends Controller
         // Converts all the amounts to rupees
 
         $denominationFactor = Currency::DENOMINATION_FACTOR[$data['currency']];
-        foreach ($data as $key => $value)
-        {
-            if (is_numeric($value))
-            {
-                $data[$key] = $value / $denominationFactor;
-            }
-        }
 
         if(isset($data['customer_fee']) === true)
         {
@@ -538,6 +531,14 @@ class PaymentCreateController extends Controller
             $data['fees'] = $data['razorpay_fee'] +  $data['tax'];
 
             unset($data['customer_fee'], $data['customer_fee_gst']);
+        }
+
+        foreach ($data as $key => $value)
+        {
+            if (is_numeric($value))
+            {
+                $data[$key] = $value / $denominationFactor;
+            }
         }
 
         $data += (new CheckoutView())->addOrgInformationInResponse($merchant);

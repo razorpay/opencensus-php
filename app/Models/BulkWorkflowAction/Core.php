@@ -99,7 +99,6 @@ class Core extends Base\Core
             $url,
             'action_file.csv',
             'text/csv',
-            filesize($url),
             null,
             true);
 

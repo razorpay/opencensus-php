@@ -5,8 +5,8 @@ namespace RZP\Services;
 use App;
 use Request;
 use RZP\Http\Request\Requests;
-use Requests_Response;
-use Requests_Exception;
+use \WpOrg\Requests\Response;
+use \WpOrg\Requests\Exception as Requests_Exception;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
@@ -758,7 +758,7 @@ class Reporting implements ExternalService
         return json_decode($response->body, true);
     }
 
-    protected function sendRequest(array $request): Requests_Response
+    protected function sendRequest(array $request)
     {
         try
         {
@@ -1200,7 +1200,7 @@ class Reporting implements ExternalService
             $this->getTraceableRequest($request));
     }
 
-    protected function traceReportingServiceResponse(Requests_Response $response)
+    protected function traceReportingServiceResponse($response)
     {
         $payload = ['status_code' => $response->status_code, 'body' => null];
 
@@ -1213,7 +1213,7 @@ class Reporting implements ExternalService
         $this->trace->info(TraceCode::REPORTING_SERVICE_API_RESPONSE, $payload);
     }
 
-    protected function validateResponse(Requests_Response $response)
+    protected function validateResponse($response)
     {
         if ($response->status_code !== 200)
         {

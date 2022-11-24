@@ -1079,7 +1079,7 @@ class ReconciliationFileTest extends TestCase
 
         $entries[] = $this->overrideCardFssRefund($gatewayRefund, $gatewayPayment);
 
-        $file = $this->writeToExcelFile($entries, 'AllTransaction', 'files/settlement', 'refund', 'xls');
+        $file = $this->writeToExcelFile($entries, 'AllTransaction', 'files/settlement', 'refund', 'xlsx');
 
         $this->runForFiles([$file], 'CardFssHdfc');
 
@@ -2077,7 +2077,7 @@ class ReconciliationFileTest extends TestCase
 
         $entries2[] = $this->overrideHdfcPayment($gatewayPayment3);
 
-        $file = $this->writeToExcelFile($entries2, 'fss', 'files/settlement', ['Sheet 1'], 'xls');
+        $file = $this->writeToExcelFile($entries2, 'fss', 'files/settlement', ['Sheet 1'], 'xlsx');
         $this->runForFiles([$file], 'HDFC');
 
         $updatedPayment2 = $this->getDbEntityById('payment', $payment3['id']);
@@ -2105,7 +2105,7 @@ class ReconciliationFileTest extends TestCase
 
         $entries[] = $this->overrideFirstDataPayment($payment1);
 
-        $file = $this->writeToExcelFile($entries, 'first_data', 'files/settlement', ['Sheet 1'], 'xls');
+        $file = $this->writeToExcelFile($entries, 'first_data', 'files/settlement', ['Sheet 1'], 'xlsx');
         $this->runForFiles([$file], 'FirstData');
 
         $updatedPayment1 = $this->getDbEntityById('payment', $payment1['id']);
@@ -2721,7 +2721,6 @@ class ReconciliationFileTest extends TestCase
             $url,
             basename($url),
             $mime,
-            filesize($url),
             null,
             true);
     }
@@ -4503,7 +4502,7 @@ class ReconciliationFileTest extends TestCase
         $entries[0]['Settlement date'] = '3-10-2018';
 
         $file = $this->writeToExcelFile($entries, 'Submission_details10032018_023644' , 'files/settlement',
-                                        ['Sheet 1'], 'xls');
+                                        ['Sheet 1'], 'xlsx');
 
         $this->runForFiles([$file], 'Amex');
 
@@ -4560,7 +4559,7 @@ class ReconciliationFileTest extends TestCase
         $entries[] = $paymentData;
 
         $file = $this->writeToExcelFile($entries, 'Submission_details10032018_023644' , 'files/settlement',
-            ['Sheet 1'], 'xls');
+            ['Sheet 1'], 'xlsx');
 
         $this->runForFiles([$file], 'Amex');
 
@@ -4629,7 +4628,7 @@ class ReconciliationFileTest extends TestCase
         $entries[] = $refundData3;
 
         $file = $this->writeToExcelFile($entries, 'Submission_details10032018_023644' , 'files/settlement',
-                                        ['Sheet 1'], 'xls');
+                                        ['Sheet 1'], 'xlsx');
 
         $this->runForFiles([$file], 'Amex');
 

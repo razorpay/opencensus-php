@@ -4,23 +4,26 @@ namespace RZP\Mail\Base;
 
 use App;
 use \Swift_Mailer;
+
+use Illuminate\Bus\Queueable;
+use RZP\Constants\Environment;
+use Symfony\Component\Mime\Email;
+use Illuminate\Container\Container;
+use Razorpay\Trace\Logger as Trace;
+use Illuminate\Mail\Mailable as BaseMailable;
+use Illuminate\Contracts\Queue\Factory as Queue;
+use Illuminate\Contracts\Mail\Factory as MailFactory;
+use Illuminate\Contracts\Mail\Mailer as MailerContract;
+use GuzzleHttp\Exception\ClientException as GuzzleClientException;
+
 use RZP\Diag\EventCode;
 use RZP\Models\Feature;
 use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Constants\MailTags;
 use RZP\Constants\HashAlgo;
-use Illuminate\Bus\Queueable;
-use RZP\Constants\Environment;
-use Illuminate\Container\Container;
-use Illuminate\Mail\Mailable as BaseMailable;
-use Illuminate\Contracts\Queue\Factory as Queue;
-use Illuminate\Contracts\Mail\Mailer as MailerContract;
-use GuzzleHttp\Exception\ClientException as GuzzleClientException;
-use Razorpay\Trace\Logger as Trace;
-
-use RZP\Trace\TraceCode;
-use RZP\Models\Merchant;
 
 class Mailable extends BaseMailable
 {
@@ -96,8 +99,11 @@ class Mailable extends BaseMailable
         return (strtolower(app('razorx')->getTreatment($id, $exp, $mode)) === 'on');
     }
 
-    public function send(MailerContract $mailer)
+    public function send($mailer)
     {
+        $mailer = $mailer instanceof MailFactory
+            ? $mailer->mailer($this->mailer)
+            : $mailer;
         $app = App::getFacadeRoot();
         $trace = $app['trace'];
 
@@ -349,17 +355,15 @@ class Mailable extends BaseMailable
      */
     private function setMailgunDriver(MailerContract &$mailerContract)
     {
-        $app = App::getFacadeRoot();
-        $mailer = $app['swift.mailgun_mailer'] ?? new Swift_Mailer($app['swift.transport']->driver(self::MAILGUN_EMAIL_DRIVER));
-        $mailerContract->setSwiftMailer($mailer);
+        $transport = app('mail.manager')->createSymfonyTransport(['transport' => self::MAILGUN_EMAIL_DRIVER]);
+        $mailerContract->setSymfonyTransport($transport);
     }
 
     private function setSesDriver(MailerContract &$mailerContract)
     {
         $this->replaceMailgunHeadersWithSesHeaders();
-        $app = App::getFacadeRoot();
-        $mailer = $app['swift.ses_mailer'] ?? new Swift_Mailer($app['swift.transport']->driver(self::SES_EMAIL_DRIVER));
-        $mailerContract->setSwiftMailer($mailer);
+        $transport = app('mail.manager')->createSymfonyTransport(['transport' => self::SES_EMAIL_DRIVER]);
+        $mailerContract->setSymfonyTransport($transport);
     }
 
     private function setDefaultDriver(MailerContract &$mailerContract)
@@ -374,9 +378,8 @@ class Mailable extends BaseMailable
                 return;
         }
 
-        $app = App::getFacadeRoot();
-        $mailer = $app['swift.mailer'] ?? new Swift_Mailer($app['swift.transport']->driver());
-        $mailerContract->setSwiftMailer($mailer);
+        $transport = app('mail.manager')->createSymfonyTransport(['transport' => config('mail.driver')]);
+        $mailerContract->setSymfonyTransport($transport);
     }
 
     /**
@@ -553,7 +556,7 @@ class Mailable extends BaseMailable
 
     /**
      * Stub method to add mail headers. To be implemented by child clases
-     * Use the withSwiftMessage method to get the underlying swift message and
+     * Use the withSymfonyMessage method to get the underlying swift message and
      * add any mail headers like Mailgun header
      */
     protected function addHeaders()
@@ -572,7 +575,7 @@ class Mailable extends BaseMailable
         $textTemplate = $this->textView ?? '';
         $htmlTemplate = $this->view ?? '';
 
-        $this->withSwiftMessage(function ($message) use ($textTemplate, $htmlTemplate)
+        $this->withSymfonyMessage(function (Email $message) use ($textTemplate, $htmlTemplate)
         {
             $allHeaders = $message->getHeaders();
 
@@ -594,7 +597,7 @@ class Mailable extends BaseMailable
             }
 
             // 2.2. Push all mailgun headers to the array
-            $mailgunHeaders = $allHeaders->getAll(MailTags::HEADER);
+            $mailgunHeaders = $allHeaders->all(MailTags::HEADER);
             foreach ($mailgunHeaders as $header)
             {
                 array_push($sesHeaders, $header->getValue());
@@ -612,7 +615,7 @@ class Mailable extends BaseMailable
             ));
 
             // 4. remove mailgun headers and ses headers
-            $allHeaders->removeAll(MailTags::HEADER);
+            $allHeaders->remove(MailTags::HEADER);
             $allHeaders->addTextHeader(MailTags::SES_HEADER, $sesHeadersCommaSep);
         });
     }

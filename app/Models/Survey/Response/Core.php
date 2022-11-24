@@ -9,7 +9,7 @@ use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Models\User;
 use RZP\Models\Base;
-use Requests_Response;
+use \WpOrg\Requests\Response;
 use RZP\lib\DataParser;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -232,13 +232,13 @@ class Core extends Base\Core
     /**
      * Validates remote API response and returns array response.
      *
-     * @param Requests_Response $resp
+     * @param \WpOrg\Requests\Response $resp
      *
      * @param $traceCode
      * @return array
      * @throws BadRequestValidationFailureException
      */
-    protected function validateResponse(Requests_Response $resp, string $traceCode): array
+    protected function validateResponse($resp, string $traceCode): array
     {
         $code      = $resp->status_code;
         $body      = $resp->body;
@@ -301,7 +301,7 @@ class Core extends Base\Core
 
         $test = true;
 
-        $object = new UploadedFile($path, $originalName, $mimeType, $size, $error, $test);
+        $object = new UploadedFile($path, $originalName, $mimeType, $error, $test);
 
         return $object;
     }

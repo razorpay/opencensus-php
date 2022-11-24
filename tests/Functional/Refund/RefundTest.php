@@ -2370,8 +2370,10 @@ class RefundTest extends TestCase
 
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
-            $content['bank_txn'] = '99999999';
-            $content['bank_name'] = 'SBIN';
+            if($action !== 'verify_refund') {
+                $content['bank_txn'] = '99999999';
+                $content['bank_name'] = 'SBIN';
+            }
         });
 
         $this->doAuthAndCapturePayment($payment);

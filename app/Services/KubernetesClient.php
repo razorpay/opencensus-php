@@ -6,6 +6,8 @@ use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use Maclof\Kubernetes\Client;
+use GuzzleHttp\Client as GuzzleHttpClient;
+
 use Maclof\Kubernetes\Models\Job;
 use RZP\Models\Batch as BatchModel;
 use RZP\Models\Merchant\Invoice\Core;
@@ -148,11 +150,14 @@ class KubernetesClient
 
             $job = new Job($jobSpec);
 
+            $httpClient = new GuzzleHttpClient([
+                'verify' => $this->caCert,
+            ]);
+
             $this->client = new Client([
                 'master'  => $this->masterUrl,
-                'ca_cert' => $this->caCert,
                 'token'   => $this->token,
-            ]);
+            ], null, $httpClient);
 
             // Set Namespace if provided
             if ($this->namespace !== null and file_exists($this->namespace))
@@ -219,11 +224,14 @@ class KubernetesClient
 
             $job = new Job($jobSpec);
 
+            $httpClient = new GuzzleHttpClient([
+                'verify' => $this->caCert,
+            ]);
+
             $this->client = new Client([
                 'master'  => $this->masterUrl,
-                'ca_cert' => $this->caCert,
                 'token'   => $this->token,
-            ]);
+            ], null, $httpClient);
 
             // Set Namespace if provided
             if (($this->namespace !== null) and (file_exists($this->namespace) === true))

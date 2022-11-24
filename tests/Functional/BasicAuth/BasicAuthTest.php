@@ -2,8 +2,12 @@
 
 namespace RZP\Tests\Functional\BasicAuth;
 
+use DateTimeZone;
 use Carbon\Carbon;
-use Lcobucci\JWT\Builder;
+use Lcobucci\Clock\SystemClock;
+use Lcobucci\JWT\Token\Builder;
+use Lcobucci\JWT\Encoding\ChainedFormatter;
+use Lcobucci\JWT\Encoding\JoseEncoder;
 use Razorpay\Edge\Passport\Kid;
 use Razorpay\Edge\Passport\Passport;
 use Illuminate\Database\Eloquent\Factory;
@@ -49,9 +53,7 @@ class BasicAuthTest extends TestCase
 
         parent::setUp();
 
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
-        $this->app->make(Factory::class)->load($factoryPath);
 
         $this->ba->privateAuth();
     }
@@ -962,14 +964,15 @@ class BasicAuthTest extends TestCase
                                                       string $mode = 'live', bool $identified = true,
                                                       bool $authenticated = true): string
     {
-        $builder = (new Builder)
-            // Reserved/standard claims follows.
+        $sysClock = new SystemClock(new DateTimeZone('UTC'));
+        $builder = new Builder(new JoseEncoder(), ChainedFormatter::withUnixTimestampDates());
+        $builder=  $builder
             ->issuedBy('https://edge.razorpay.com')
             ->permittedFor('https://api.razorpay.com')
             ->identifiedBy('per-req-uuid', true)
-            ->issuedAt(time())
-            ->canOnlyBeUsedAfter(time())
-            ->expiresAt(time() + 15)
+            ->issuedAt($sysClock->now())
+            ->canOnlyBeUsedAfter($sysClock->now())
+            ->expiresAt($sysClock->now()->add(new \DateInterval('P15M')))
             ->withHeader('kid', 'edgev1')
             // Custom claims follows.
             ->withClaim('identified', $identified)

@@ -4,7 +4,7 @@ namespace RZP\Services;
 
 use RZP\Http\Request\Requests;
 use Throwable;
-use Requests_Exception;
+use \WpOrg\Requests\Exception as Requests_Exception;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -288,7 +288,7 @@ class Mozart
             ];
     }
 
-    protected function validateResponse(\Requests_Response $response)
+    protected function validateResponse($response)
     {
         $statusCode = $response->status_code;
 

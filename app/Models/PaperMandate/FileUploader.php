@@ -153,7 +153,6 @@ class FileUploader extends Base\Core
             $url,
             $fileName,
             $mime,
-            filesize($url),
             null,
             true
         );
@@ -181,7 +180,7 @@ class FileUploader extends Base\Core
 
     protected function getStorageDir()
     {
-        $path = Storage::disk('local')->getAdapter()->getPathPrefix();
+        $path = Storage::disk('local')->path('');
 
         return $path;
     }

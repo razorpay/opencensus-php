@@ -3,8 +3,9 @@
 namespace RZP\Mail\Admin;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
+use Symfony\Component\Mime\Email;
 
+use RZP\Constants\Timezone;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
@@ -117,7 +118,7 @@ class Scorecard extends Mailable
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function ($message)
+        $this->withSymfonyMessage(function (Email $message)
         {
             $headers = $message->getHeaders();
 

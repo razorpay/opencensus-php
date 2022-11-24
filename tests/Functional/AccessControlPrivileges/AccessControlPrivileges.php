@@ -3,7 +3,7 @@
 namespace RZP\Tests\Functional\AccessControlPrivileges;
 
 use DB;
-use Requests_Response;
+use \WpOrg\Requests\Response;
 
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\TestCase;

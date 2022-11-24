@@ -4,7 +4,7 @@ namespace RZP\Gateway\AxisMigs;
 
 use Str;
 use Carbon\Carbon;
-use Requests_Hooks;
+use \WpOrg\Requests\Hooks as Requests_Hooks;
 
 use RZP\Diag\EventCode;
 use RZP\Gateway\Mpi;

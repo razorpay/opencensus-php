@@ -3,8 +3,8 @@
 namespace RZP\Services;
 
 use App;
-use Requests_Hooks;
-use Requests_Session;
+use \WpOrg\Requests\Hooks as Requests_Hooks;
+use \WpOrg\Requests\Session as Requests_Session;
 
 use RZP\Http\Request\Requests;
 use RZP\Exception;
@@ -215,7 +215,7 @@ class GovernorService
 
                 break;
             }
-            catch(\Requests_Exception $e)
+            catch(\WpOrg\Requests\Exception $e)
             {
                 $this->trace->traceException($e);
 

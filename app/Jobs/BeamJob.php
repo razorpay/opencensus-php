@@ -4,7 +4,7 @@ namespace RZP\Jobs;
 
 use Illuminate\Support\Facades\Config;
 use Mail;
-use Requests_Response;
+use \WpOrg\Requests\Response;
 
 use Carbon\Carbon;
 use RZP\Diag\EventCode;
@@ -49,7 +49,7 @@ class BeamJob extends Job
     protected $mailInfo;
 
     /**
-     * @var Requests_Response
+     * @var \WpOrg\Requests\Response
      */
     protected $response;
 

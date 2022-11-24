@@ -9,8 +9,6 @@ use RZP\Tests\Functional\TestCase;
 
 trait PaymentAxisGeniusTrait
 {
-    use PaymentAxisGeniusTrait;
-
     protected function runPaymentCallbackFlowAxisGenius($response, &$callback = null)
     {
         $mock = $this->isGatewayMocked();

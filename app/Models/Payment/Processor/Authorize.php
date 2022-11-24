@@ -3683,7 +3683,7 @@ trait Authorize
                 {
                     $shieldFailure = true;
                 }
-                catch (\Requests_Exception $exception)
+                catch (\WpOrg\Requests\Exception $exception)
                 {
                     $shieldFailure = true;
                 }
@@ -6605,7 +6605,7 @@ trait Authorize
             'version'       => 1,
             'payment_id'    => $id,
             'gateway'       => $this->getEncryptedGatewayText($payment->getGateway()),
-            'data'          => $request['data'],
+            'data'          => is_array($request) === true ? $request['data'] : $request,
             'request'       => [
                 'url'    => $this->route->getUrlWithPublicAuthInQueryParam('payment_get_status', ['x_entity_id' => $id]),
                 'method' => 'GET',
@@ -7353,7 +7353,7 @@ trait Authorize
         }
         catch (\Throwable $e)
         {
-            $this->trace->warn(TraceCode::VAULT_TOKEN_MIGRATION_DISPATCH_FAILED, [
+            $this->trace->warning(TraceCode::VAULT_TOKEN_MIGRATION_DISPATCH_FAILED, [
                 'error' => $e,
                 'level' => Trace::WARNING,
                 'payment_id' => $payment->getId()

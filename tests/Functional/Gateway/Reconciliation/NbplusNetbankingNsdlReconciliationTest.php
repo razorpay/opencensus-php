@@ -75,7 +75,6 @@ class NbplusNetbankingNsdlReconciliationTest extends NbPlusPaymentServiceNetbank
             $url,
             $fileName,
             $mime,
-            filesize($url),
             null,
             true);
     }

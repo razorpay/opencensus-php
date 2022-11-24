@@ -470,7 +470,7 @@ class Core extends Base\Core
 
         $test = true;
 
-        $object = new UploadedFile($path, $originalName, $mimeType, $size, $error, $test);
+        $object = new UploadedFile($path, $originalName, $mimeType, $error, $test);
 
         return $object;
     }

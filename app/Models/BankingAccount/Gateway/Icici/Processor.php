@@ -15,6 +15,7 @@ use RZP\Services\BankingAccountService;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\BankingAccountStatement\Details as BasDetails;
 use RZP\Models\BankingAccount\Gateway\Processor as BaseProcessor;
+use RZP\Models\BankingAccountStatement\Processor\Icici\Validator;
 
 class Processor extends BaseProcessor
 {
@@ -54,6 +55,8 @@ class Processor extends BaseProcessor
             $channel       = $setUpForBalanceFetch[BasDetails\Entity::CHANNEL];
 
             $this->accountCredentials = $bas->fetchBankingCredentials($merchantId, $channel, $accountNumber);
+
+            (new Validator)->validateInput('icici_credentials', $this->accountCredentials);
 
             $this->accountNumber = $accountNumber;
         }

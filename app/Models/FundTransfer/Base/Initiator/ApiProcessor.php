@@ -56,7 +56,7 @@ abstract class ApiProcessor extends NodalAccount
     /**
      * Holds the response object
      *
-     * @var \Requests_Response
+     * @var \WpOrg\Requests\Response
      */
     protected $response = null;
 
@@ -262,11 +262,11 @@ abstract class ApiProcessor extends NodalAccount
         return $this->processResponse($response);
     }
 
-    protected function handleEmptyResponse($response): \Requests_Response
+    protected function handleEmptyResponse($response)
     {
         if (empty($response) === true)
         {
-            return new \Requests_Response();
+            return new \WpOrg\Requests\Response();
         }
 
         return $response;
@@ -336,9 +336,9 @@ abstract class ApiProcessor extends NodalAccount
      * Trace response if `responseTraceCode` is set
      * Response will be traced against the `responseTraceCode` set
      *
-     * @param \Requests_Response $response
+     * @param \WpOrg\Requests\Response $response
      */
-    protected function traceResponse(\Requests_Response $response)
+    protected function traceResponse($response)
     {
         $this->maskedResponseBody = $this->getMaskedResponseBody($response->body);
 
@@ -410,9 +410,9 @@ abstract class ApiProcessor extends NodalAccount
     /**
      * Creates dummy response from the array received from `responseGenerator`
      *
-     * @return \Requests_Response
+     * @return \WpOrg\Requests\Response
      */
-    private function sendMockRequest(): \Requests_Response
+    private function sendMockRequest()
     {
         $input = Request::all();
 
@@ -425,7 +425,7 @@ abstract class ApiProcessor extends NodalAccount
 
         $content = $this->mockResponseGenerator($input);
 
-        $response = new \Requests_Response();
+        $response = new \WpOrg\Requests\Response();
 
         $response->body = $content;
 
@@ -584,11 +584,11 @@ abstract class ApiProcessor extends NodalAccount
      * Should be implemented in the clild class to process the response of current request
      * Processing should have the status check and other required validations
      *
-     * @param \Requests_Response $response
+     * @param \WpOrg\Requests\Response $response
      *
      * @return array
      */
-    public abstract function processResponse(\Requests_Response $response): array;
+    public abstract function processResponse($response): array;
 
     public abstract function processGatewayResponse(array $response): array;
 

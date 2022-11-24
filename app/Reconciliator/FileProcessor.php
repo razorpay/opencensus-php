@@ -5,8 +5,8 @@ namespace RZP\Reconciliator;
 use App;
 use RZP\Http\Request\Requests;
 use SplFileInfo;
-use Symfony\Component\HttpFoundation\File\MimeType\FileBinaryMimeTypeGuesser;
-use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
+use Symfony\Component\Mime\FileBinaryMimeTypeGuesser;
+use Symfony\Component\Mime\MimeTypes;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use ZipArchive;
 use Storage;
@@ -112,9 +112,9 @@ class FileProcessor
      */
     protected function registerMimeTypeGuesser()
     {
-        $guesser = MimeTypeGuesser::getInstance();
+        $guesser = new MimeTypes();
 
-        $guesser->register(new FileBinaryMimeTypeGuesser());
+        $guesser->registerGuesser(new FileBinaryMimeTypeGuesser());
     }
 
     public function getFileDetails($file, $type = self::UPLOADED, bool $move = true)
@@ -380,7 +380,7 @@ class FileProcessor
         $fileName = strtolower($file->getClientOriginalName());
         $extension = strtolower($file->getClientOriginalExtension());
         $mimeType = strtolower($file->getMimeType());
-        $size = $file->getClientSize();
+        $size = $file->getSize();
 
         if ($move === true)
         {

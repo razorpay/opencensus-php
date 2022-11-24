@@ -27,9 +27,7 @@ class OauthMigrationTokenBatchTest extends TestCase
 
         $this->ba->proxyAuth();
 
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
-        $this->app->make(Factory::class)->load($factoryPath);
 
         $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
     }

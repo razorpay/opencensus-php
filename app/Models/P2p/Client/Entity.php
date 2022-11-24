@@ -3,10 +3,14 @@
 namespace RZP\Models\P2p\Client;
 
 use Crypt;
+use Database\Factories\P2pClientFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use RZP\Models\P2p\Base;
 
 class Entity extends Base\Entity
 {
+    use HasFactory;
+
     const ID           = 'id';
     const HANDLE       = 'handle';
     const CLIENT_TYPE  = 'client_type';
@@ -207,5 +211,10 @@ class Entity extends Base\Entity
         $secrets = (new Secrets($data))->encrypt();
 
         $this->attributes[self::SECRETS] = $secrets->toJson();
+    }
+
+    protected static function newFactory(): P2pClientFactory
+    {
+        return P2pClientFactory::new();
     }
 }

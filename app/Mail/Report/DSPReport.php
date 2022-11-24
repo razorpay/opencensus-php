@@ -3,6 +3,8 @@
 namespace RZP\Mail\Report;
 
 use Carbon\Carbon;
+use Symfony\Component\Mime\Email;
+
 use RZP\Mail\Base\Common;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
@@ -62,7 +64,7 @@ class DSPReport extends Mailable
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function ($message)
+        $this->withSymfonyMessage(function (Email $message)
         {
             $headers = $message->getHeaders();
 

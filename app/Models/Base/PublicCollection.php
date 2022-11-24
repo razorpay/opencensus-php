@@ -435,9 +435,9 @@ class PublicCollection extends Collection
         $array[static::HAS_MORE] = $hasMore;
     }
 
-    public static function isPublicCollection($object)
+    public static function isPublicCollection($object): bool
     {
-        if (empty($object) === true)
+        if (empty($object) === true || !is_object($object))
         {
             return false;
         }

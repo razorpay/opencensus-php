@@ -43,9 +43,7 @@ class AccountV2Test extends TestCase
 
         parent::setUp();
 
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
-        $this->app->make(Factory::class)->load($factoryPath);
     }
 
     public function testCreateAccountV2ForMandatoryFilledRequest()
