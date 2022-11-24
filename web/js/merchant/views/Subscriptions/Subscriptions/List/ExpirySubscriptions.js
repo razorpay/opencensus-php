@@ -4,7 +4,7 @@ import Alert from 'common/ui/Forms/Alert';
 import { fetchSubscriptionsOverview } from 'merchant/reducers/subscriptions';
 import { classList, stringifyQueryParams } from 'common/utils/rzp-utils';
 import moment from 'moment';
-import analytics from '../../analytics';
+import analytics from 'merchant/views/Subscriptions/analytics';
 
 const next7Days = moment().add(7, 'days').unix();
 
@@ -30,7 +30,7 @@ const CARDS = [
       </span>
     ),
     color: '#D12D2D',
-    key: 'failed',
+    key: 'halted',
     filter: {
       key: 'status',
       value: 'halted',
@@ -72,7 +72,7 @@ export default class ExpirySubscriptions extends React.Component {
     selectedQuickFilter: this.props.selectedQuickFilter,
     data: {
       active: null,
-      failed: null,
+      halted: null,
       complete_before: null,
       token_expire_before: null,
     },
@@ -88,7 +88,7 @@ export default class ExpirySubscriptions extends React.Component {
         this.setState({
           data: {
             active: data.subscriptions_active,
-            failed: data.subscriptions_failed,
+            halted: data.subscriptions_halted,
             complete_before: data.subscriptions_completing,
             token_expire_before: data.cards_expiring,
           },
