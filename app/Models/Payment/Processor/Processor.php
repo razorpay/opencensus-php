@@ -3975,11 +3975,6 @@ class Processor
         {
             return;
         }
-        // Skip if payment is not gateway captured and gateway is not Authorize Verify
-        if ( $payment->isCard() === true && $payment->isGatewayCaptured() === false )
-        {
-            return;
-        }
         // To Avoid duplicate Verification
         if ( $payment->isUpi() === true && $payment->getStatus() !== "authorized" && $upiRamp !== 'on' ){
             return;
@@ -3995,7 +3990,12 @@ class Processor
         $authorizeVerifyCardGateways = $this->app->razorx->getTreatment($payment->terminal->getGateway(),self::BARRICADE_AUTHORIZE_VERIFY_CARD_GATEWAY, $this->mode);
         $gatewayResult = $this->app->razorx->getTreatment($payment->terminal->getGateway(), self::BARRICADE_PAYMENT_GATEWAY, $this->mode);
         $demoMerchant  = $this->app->razorx->getTreatment($payment->getMerchantId(),self::DEMO_MERCHANT, $this->mode);
-
+        // Skip push on capture for AuthorizeVerify Gateways
+        // Change it to avoide duplicate payment from card gateway
+        if ($payment->isCard() === true && $authorizeVerifyCardGateways === 'on' && $payment->getStatus() !== "authorized" ){
+            return;
+        }
+        // To check card payment is gateway captured if gateway is not autorized
         if ( $payment->isCard() === true && $authorizeVerifyCardGateways === 'control' && $payment->isGatewayCaptured() === false )
         {
             return;
