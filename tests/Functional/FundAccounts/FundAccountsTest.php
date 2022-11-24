@@ -52,6 +52,17 @@ class FundAccountsTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetFundAccountAssociatedWithCard()
+    {
+        $this->fixtures->create('fund_account:card', ['id' => '100000000000fa']);
+
+        $testData = &$this->testData['testGetFundAccounts'];
+
+        $testData['response']['content']['account_type'] = 'card';
+
+        $this->startTest($testData);
+    }
+
     public function testGetFundAccountForPayoutsService()
     {
         $this->fixtures->create('fund_account:bank_account', ['id' => '100000000000fa']);

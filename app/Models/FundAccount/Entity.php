@@ -529,6 +529,41 @@ class Entity extends Base\PublicEntity
         return $accountAttributes;
     }
 
+    /**
+     * This function was written to fetch card from archived table for cards made during card migration on Sept 30, 2022.
+     * The findOrFail function call goes to archived table, if card entity is not found in cards table.
+     */
+    public function getAccountAttribute()
+    {
+        if ($this->relationLoaded('account') === true)
+        {
+            $account = $this->getRelation('account');
+        }
+
+        if (empty($account) === false)
+        {
+            return $account;
+        }
+
+        if ($this->getAccountType() === Type::CARD)
+        {
+            $card = app('repo')->card->findOrFail($this->getAccountId());
+
+            $this->account()->associate($card);
+
+            return $card;
+        }
+
+        $account = $this->account()->first();
+
+        if (empty($account) === false)
+        {
+            return $account;
+        }
+
+        return null;
+    }
+
     public function isAccountVirtualBankAccount(): bool
     {
         if ($this->getAccountType() === Constants\Entity::BANK_ACCOUNT)

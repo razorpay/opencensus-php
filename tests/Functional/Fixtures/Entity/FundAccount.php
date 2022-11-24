@@ -29,6 +29,19 @@ class FundAccount extends Base
         return parent::create(array_merge($attributes, $defaultAttrs));
     }
 
+    public function createCard(array $attributes = [], array $cardAttributes = null)
+    {
+        // Why ?: operator is used below & $bankAccountAttributes defaults to null, check Fixtures/Fixtures::create().
+        $card = $this->fixtures->create('card', $cardAttributes ?: []);
+
+        $defaultAttrs = [
+            'account_id'   => $card['id'],
+            'account_type' => 'card',
+        ];
+
+        return parent::create(array_merge($attributes, $defaultAttrs));
+    }
+
     public function createWalletAccount(array $attributes = [])
     {
         $walletAccount = $this->fixtures->create('wallet_account');
