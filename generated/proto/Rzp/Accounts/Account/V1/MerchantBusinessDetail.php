@@ -22,9 +22,9 @@ class MerchantBusinessDetail extends \Google\Protobuf\Internal\Message
      */
     protected $business_parent_category = '';
     /**
-     * Generated from protobuf field <code>string app_urls = 3;</code>
+     * Generated from protobuf field <code>.google.protobuf.Struct app_urls = 3;</code>
      */
-    protected $app_urls = '';
+    protected $app_urls = null;
 
     /**
      * Constructor.
@@ -34,7 +34,7 @@ class MerchantBusinessDetail extends \Google\Protobuf\Internal\Message
      *
      *     @type string $merchant_id
      *     @type string $business_parent_category
-     *     @type string $app_urls
+     *     @type \Google\Protobuf\Struct $app_urls
      * }
      */
     public function __construct($data = NULL) {
@@ -87,22 +87,32 @@ class MerchantBusinessDetail extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string app_urls = 3;</code>
-     * @return string
+     * Generated from protobuf field <code>.google.protobuf.Struct app_urls = 3;</code>
+     * @return \Google\Protobuf\Struct|null
      */
     public function getAppUrls()
     {
         return $this->app_urls;
     }
 
+    public function hasAppUrls()
+    {
+        return isset($this->app_urls);
+    }
+
+    public function clearAppUrls()
+    {
+        unset($this->app_urls);
+    }
+
     /**
-     * Generated from protobuf field <code>string app_urls = 3;</code>
-     * @param string $var
+     * Generated from protobuf field <code>.google.protobuf.Struct app_urls = 3;</code>
+     * @param \Google\Protobuf\Struct $var
      * @return $this
      */
     public function setAppUrls($var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkMessage($var, \Google\Protobuf\Struct::class);
         $this->app_urls = $var;
 
         return $this;

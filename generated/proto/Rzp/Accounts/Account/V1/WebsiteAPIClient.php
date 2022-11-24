@@ -17,6 +17,17 @@ use Google\Protobuf\Internal\Message;
  */
 final class WebsiteAPIClient extends WebsiteAPIAbstractClient implements WebsiteAPI
 {
+    protected $timeout = 5;
+
+    /**
+     * @inheritDoc
+     */
+
+    public function setTimeout($timeout)
+    {
+        $this->timeout = $timeout;
+    }
+
     /**
      * @inheritDoc
      */
@@ -27,7 +38,7 @@ final class WebsiteAPIClient extends WebsiteAPIAbstractClient implements Website
         $req = $this->newRequest($ctx, $url, $body, 'application/protobuf');
 
         try {
-            $resp = $this->httpClient->sendRequest($req);
+            $resp = $this->httpClient->sendRequest($req, ["timeout" => $this->timeout]);
         } catch (\Throwable $e) {
             throw $this->clientError('failed to send request', $e);
         }

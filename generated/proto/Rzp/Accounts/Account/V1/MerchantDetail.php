@@ -54,9 +54,9 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
      */
     protected $business_website = '';
     /**
-     * Generated from protobuf field <code>string additional_websites = 11;</code>
+     * Generated from protobuf field <code>repeated string additional_websites = 11;</code>
      */
-    protected $additional_websites = '';
+    private $additional_websites;
     /**
      * Generated from protobuf field <code>string business_registered_address = 12;</code>
      */
@@ -198,9 +198,9 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
      */
     protected $shop_establishment_number = '';
     /**
-     * Generated from protobuf field <code>string client_applications = 47;</code>
+     * Generated from protobuf field <code>.google.protobuf.Struct client_applications = 47;</code>
      */
-    protected $client_applications = '';
+    protected $client_applications = null;
     /**
      * Generated from protobuf field <code>string iec_code = 48;</code>
      */
@@ -209,6 +209,10 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>string audit_id = 49;</code>
      */
     protected $audit_id = '';
+    /**
+     * Generated from protobuf field <code>.google.protobuf.Struct custom_fields = 50;</code>
+     */
+    protected $custom_fields = null;
 
     /**
      * Constructor.
@@ -226,7 +230,7 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
      *     @type string $business_description
      *     @type string $business_dba
      *     @type string $business_website
-     *     @type string $additional_websites
+     *     @type array<string>|\Google\Protobuf\Internal\RepeatedField $additional_websites
      *     @type string $business_registered_address
      *     @type string $business_registered_address_l2
      *     @type string $business_registered_state
@@ -262,9 +266,10 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
      *     @type string $platform
      *     @type string $date_of_establishment
      *     @type string $shop_establishment_number
-     *     @type string $client_applications
+     *     @type \Google\Protobuf\Struct $client_applications
      *     @type string $iec_code
      *     @type string $audit_id
+     *     @type \Google\Protobuf\Struct $custom_fields
      * }
      */
     public function __construct($data = NULL) {
@@ -493,8 +498,8 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string additional_websites = 11;</code>
-     * @return string
+     * Generated from protobuf field <code>repeated string additional_websites = 11;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getAdditionalWebsites()
     {
@@ -502,14 +507,14 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string additional_websites = 11;</code>
-     * @param string $var
+     * Generated from protobuf field <code>repeated string additional_websites = 11;</code>
+     * @param array<string>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setAdditionalWebsites($var)
     {
-        GPBUtil::checkString($var, True);
-        $this->additional_websites = $var;
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
+        $this->additional_websites = $arr;
 
         return $this;
     }
@@ -1285,22 +1290,32 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string client_applications = 47;</code>
-     * @return string
+     * Generated from protobuf field <code>.google.protobuf.Struct client_applications = 47;</code>
+     * @return \Google\Protobuf\Struct|null
      */
     public function getClientApplications()
     {
         return $this->client_applications;
     }
 
+    public function hasClientApplications()
+    {
+        return isset($this->client_applications);
+    }
+
+    public function clearClientApplications()
+    {
+        unset($this->client_applications);
+    }
+
     /**
-     * Generated from protobuf field <code>string client_applications = 47;</code>
-     * @param string $var
+     * Generated from protobuf field <code>.google.protobuf.Struct client_applications = 47;</code>
+     * @param \Google\Protobuf\Struct $var
      * @return $this
      */
     public function setClientApplications($var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkMessage($var, \Google\Protobuf\Struct::class);
         $this->client_applications = $var;
 
         return $this;
@@ -1346,6 +1361,38 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->audit_id = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>.google.protobuf.Struct custom_fields = 50;</code>
+     * @return \Google\Protobuf\Struct|null
+     */
+    public function getCustomFields()
+    {
+        return $this->custom_fields;
+    }
+
+    public function hasCustomFields()
+    {
+        return isset($this->custom_fields);
+    }
+
+    public function clearCustomFields()
+    {
+        unset($this->custom_fields);
+    }
+
+    /**
+     * Generated from protobuf field <code>.google.protobuf.Struct custom_fields = 50;</code>
+     * @param \Google\Protobuf\Struct $var
+     * @return $this
+     */
+    public function setCustomFields($var)
+    {
+        GPBUtil::checkMessage($var, \Google\Protobuf\Struct::class);
+        $this->custom_fields = $var;
 
         return $this;
     }

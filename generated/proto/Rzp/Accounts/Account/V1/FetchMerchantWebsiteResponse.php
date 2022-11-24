@@ -14,9 +14,9 @@ use Google\Protobuf\Internal\GPBUtil;
 class FetchMerchantWebsiteResponse extends \Google\Protobuf\Internal\Message
 {
     /**
-     * Generated from protobuf field <code>string id = 1;</code>
+     * Generated from protobuf field <code>string merchant_id = 1;</code>
      */
-    protected $id = '';
+    protected $merchant_id = '';
     /**
      * Generated from protobuf field <code>string audit_id = 2;</code>
      */
@@ -60,7 +60,7 @@ class FetchMerchantWebsiteResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type string $id
+     *     @type string $merchant_id
      *     @type string $audit_id
      *     @type string $deliverable_type
      *     @type string $shipping_period
@@ -78,23 +78,23 @@ class FetchMerchantWebsiteResponse extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string id = 1;</code>
+     * Generated from protobuf field <code>string merchant_id = 1;</code>
      * @return string
      */
-    public function getId()
+    public function getMerchantId()
     {
-        return $this->id;
+        return $this->merchant_id;
     }
 
     /**
-     * Generated from protobuf field <code>string id = 1;</code>
+     * Generated from protobuf field <code>string merchant_id = 1;</code>
      * @param string $var
      * @return $this
      */
-    public function setId($var)
+    public function setMerchantId($var)
     {
         GPBUtil::checkString($var, True);
-        $this->id = $var;
+        $this->merchant_id = $var;
 
         return $this;
     }

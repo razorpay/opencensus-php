@@ -17,10 +17,11 @@ class AccountApi
         \GPBMetadata\Proto\Accounts\Account\V1\Entities::initOnce();
         \GPBMetadata\Google\Protobuf\Timestamp::initOnce();
         \GPBMetadata\Google\Protobuf\FieldMask::initOnce();
+        \GPBMetadata\Google\Protobuf\Struct::initOnce();
         $pool->internalAddGeneratedFile(
             '
-Ô;
-+proto/accounts/account/v1/account_api.protorzp.accounts.account.v1google/protobuf/timestamp.proto google/protobuf/field_mask.proto"ê
+Ô<
++proto/accounts/account/v1/account_api.protorzp.accounts.account.v1google/protobuf/timestamp.proto google/protobuf/field_mask.protogoogle/protobuf/struct.proto"ê
 Account
 
 id (	
@@ -185,17 +186,17 @@ field_mask (2.google.protobuf.FieldMask"¢
 billing_label
  (	
 display_name (	 
-transaction_report_email (	
+transaction_report_email (	
 brand_color (	
 business_banking (
 logo_url (	
 icon_url (	;
 notes (2,.rzp.accounts.account.v1.Merchant.NotesEntry
-whitelisted_ips_live (	
-whitelisted_ips_test (	
-whitelisted_domains (	&
-dashboard_whitelisted_ips_live (	&
-dashboard_whitelisted_ips_test (	
+whitelisted_ips_live (	
+whitelisted_ips_test (	
+whitelisted_domains (	&
+dashboard_whitelisted_ips_live (	&
+dashboard_whitelisted_ips_test (	
 purpose_code (	
 signup_via_email ( 
 amount_credits_threshold (
@@ -203,7 +204,7 @@ field_mask (2.google.protobuf.FieldMask"¢
 
 NotesEntry
 key (	
-value (	:8"—
+value (	:8"à
 MerchantDetail
 merchant_id (	
 contact_name (	
@@ -216,7 +217,7 @@ NotesEntry
 business_dba	 (	
 business_website
  (	
-additional_websites (	#
+additional_websites (	#
 business_registered_address (	&
 business_registered_address_l2 (	!
 business_registered_state (	 
@@ -252,10 +253,11 @@ department& (	!
 authorized_signatory_dob+ (	
 platform, (	
 date_of_establishment- (	!
-shop_establishment_number. (	
-client_applications/ (	
+shop_establishment_number. (	4
+client_applications/ (2.google.protobuf.Struct
 iec_code0 (	
-audit_id1 (	"y
+audit_id1 (	.
+custom_fields2 (2.google.protobuf.Struct"y
 MerchantEmail
 
 id (	
@@ -264,11 +266,11 @@ department& (	!
 phone (	
 policy (	
 url (	
-merchant_id (	"a
+merchant_id (	"z
 MerchantBusinessDetail
 merchant_id (	 
-business_parent_category (	
-app_urls (	"K
+business_parent_category (	)
+app_urls (2.google.protobuf.Struct"K
 DeleteAccountContactRequest
 
 id (	

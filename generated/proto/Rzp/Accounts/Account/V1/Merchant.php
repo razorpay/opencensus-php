@@ -58,9 +58,9 @@ class Merchant extends \Google\Protobuf\Internal\Message
      */
     protected $display_name = '';
     /**
-     * Generated from protobuf field <code>string transaction_report_email = 12;</code>
+     * Generated from protobuf field <code>repeated string transaction_report_email = 12;</code>
      */
-    protected $transaction_report_email = '';
+    private $transaction_report_email;
     /**
      * Generated from protobuf field <code>string brand_color = 13;</code>
      */
@@ -82,25 +82,25 @@ class Merchant extends \Google\Protobuf\Internal\Message
      */
     private $notes;
     /**
-     * Generated from protobuf field <code>string whitelisted_ips_live = 18;</code>
+     * Generated from protobuf field <code>repeated string whitelisted_ips_live = 18;</code>
      */
-    protected $whitelisted_ips_live = '';
+    private $whitelisted_ips_live;
     /**
-     * Generated from protobuf field <code>string whitelisted_ips_test = 19;</code>
+     * Generated from protobuf field <code>repeated string whitelisted_ips_test = 19;</code>
      */
-    protected $whitelisted_ips_test = '';
+    private $whitelisted_ips_test;
     /**
-     * Generated from protobuf field <code>string whitelisted_domains = 20;</code>
+     * Generated from protobuf field <code>repeated string whitelisted_domains = 20;</code>
      */
-    protected $whitelisted_domains = '';
+    private $whitelisted_domains;
     /**
-     * Generated from protobuf field <code>string dashboard_whitelisted_ips_live = 21;</code>
+     * Generated from protobuf field <code>repeated string dashboard_whitelisted_ips_live = 21;</code>
      */
-    protected $dashboard_whitelisted_ips_live = '';
+    private $dashboard_whitelisted_ips_live;
     /**
-     * Generated from protobuf field <code>string dashboard_whitelisted_ips_test = 22;</code>
+     * Generated from protobuf field <code>repeated string dashboard_whitelisted_ips_test = 22;</code>
      */
-    protected $dashboard_whitelisted_ips_test = '';
+    private $dashboard_whitelisted_ips_test;
     /**
      * Generated from protobuf field <code>string purpose_code = 23;</code>
      */
@@ -135,17 +135,17 @@ class Merchant extends \Google\Protobuf\Internal\Message
      *     @type string $website
      *     @type string $billing_label
      *     @type string $display_name
-     *     @type string $transaction_report_email
+     *     @type array<string>|\Google\Protobuf\Internal\RepeatedField $transaction_report_email
      *     @type string $brand_color
      *     @type int $business_banking
      *     @type string $logo_url
      *     @type string $icon_url
      *     @type array|\Google\Protobuf\Internal\MapField $notes
-     *     @type string $whitelisted_ips_live
-     *     @type string $whitelisted_ips_test
-     *     @type string $whitelisted_domains
-     *     @type string $dashboard_whitelisted_ips_live
-     *     @type string $dashboard_whitelisted_ips_test
+     *     @type array<string>|\Google\Protobuf\Internal\RepeatedField $whitelisted_ips_live
+     *     @type array<string>|\Google\Protobuf\Internal\RepeatedField $whitelisted_ips_test
+     *     @type array<string>|\Google\Protobuf\Internal\RepeatedField $whitelisted_domains
+     *     @type array<string>|\Google\Protobuf\Internal\RepeatedField $dashboard_whitelisted_ips_live
+     *     @type array<string>|\Google\Protobuf\Internal\RepeatedField $dashboard_whitelisted_ips_test
      *     @type string $purpose_code
      *     @type bool $signup_via_email
      *     @type int|string $amount_credits_threshold
@@ -400,8 +400,8 @@ class Merchant extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string transaction_report_email = 12;</code>
-     * @return string
+     * Generated from protobuf field <code>repeated string transaction_report_email = 12;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getTransactionReportEmail()
     {
@@ -409,14 +409,14 @@ class Merchant extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string transaction_report_email = 12;</code>
-     * @param string $var
+     * Generated from protobuf field <code>repeated string transaction_report_email = 12;</code>
+     * @param array<string>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setTransactionReportEmail($var)
     {
-        GPBUtil::checkString($var, True);
-        $this->transaction_report_email = $var;
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
+        $this->transaction_report_email = $arr;
 
         return $this;
     }
@@ -532,8 +532,8 @@ class Merchant extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string whitelisted_ips_live = 18;</code>
-     * @return string
+     * Generated from protobuf field <code>repeated string whitelisted_ips_live = 18;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getWhitelistedIpsLive()
     {
@@ -541,21 +541,21 @@ class Merchant extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string whitelisted_ips_live = 18;</code>
-     * @param string $var
+     * Generated from protobuf field <code>repeated string whitelisted_ips_live = 18;</code>
+     * @param array<string>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setWhitelistedIpsLive($var)
     {
-        GPBUtil::checkString($var, True);
-        $this->whitelisted_ips_live = $var;
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
+        $this->whitelisted_ips_live = $arr;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>string whitelisted_ips_test = 19;</code>
-     * @return string
+     * Generated from protobuf field <code>repeated string whitelisted_ips_test = 19;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getWhitelistedIpsTest()
     {
@@ -563,21 +563,21 @@ class Merchant extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string whitelisted_ips_test = 19;</code>
-     * @param string $var
+     * Generated from protobuf field <code>repeated string whitelisted_ips_test = 19;</code>
+     * @param array<string>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setWhitelistedIpsTest($var)
     {
-        GPBUtil::checkString($var, True);
-        $this->whitelisted_ips_test = $var;
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
+        $this->whitelisted_ips_test = $arr;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>string whitelisted_domains = 20;</code>
-     * @return string
+     * Generated from protobuf field <code>repeated string whitelisted_domains = 20;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getWhitelistedDomains()
     {
@@ -585,21 +585,21 @@ class Merchant extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string whitelisted_domains = 20;</code>
-     * @param string $var
+     * Generated from protobuf field <code>repeated string whitelisted_domains = 20;</code>
+     * @param array<string>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setWhitelistedDomains($var)
     {
-        GPBUtil::checkString($var, True);
-        $this->whitelisted_domains = $var;
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
+        $this->whitelisted_domains = $arr;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>string dashboard_whitelisted_ips_live = 21;</code>
-     * @return string
+     * Generated from protobuf field <code>repeated string dashboard_whitelisted_ips_live = 21;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getDashboardWhitelistedIpsLive()
     {
@@ -607,21 +607,21 @@ class Merchant extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string dashboard_whitelisted_ips_live = 21;</code>
-     * @param string $var
+     * Generated from protobuf field <code>repeated string dashboard_whitelisted_ips_live = 21;</code>
+     * @param array<string>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setDashboardWhitelistedIpsLive($var)
     {
-        GPBUtil::checkString($var, True);
-        $this->dashboard_whitelisted_ips_live = $var;
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
+        $this->dashboard_whitelisted_ips_live = $arr;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>string dashboard_whitelisted_ips_test = 22;</code>
-     * @return string
+     * Generated from protobuf field <code>repeated string dashboard_whitelisted_ips_test = 22;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getDashboardWhitelistedIpsTest()
     {
@@ -629,14 +629,14 @@ class Merchant extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string dashboard_whitelisted_ips_test = 22;</code>
-     * @param string $var
+     * Generated from protobuf field <code>repeated string dashboard_whitelisted_ips_test = 22;</code>
+     * @param array<string>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setDashboardWhitelistedIpsTest($var)
     {
-        GPBUtil::checkString($var, True);
-        $this->dashboard_whitelisted_ips_test = $var;
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
+        $this->dashboard_whitelisted_ips_test = $arr;
 
         return $this;
     }

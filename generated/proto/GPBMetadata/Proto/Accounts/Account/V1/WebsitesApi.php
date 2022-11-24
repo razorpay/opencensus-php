@@ -17,7 +17,7 @@ class WebsitesApi
         \GPBMetadata\Google\Protobuf\Struct::initOnce();
         $pool->internalAddGeneratedFile(
             '
-ö
+ÿ
 ,proto/accounts/account/v1/websites_api.protorzp.accounts.account.v1"É
 FetchAccountWebsiteResponse
 
@@ -26,10 +26,9 @@ class WebsitesApi
 account_data (2.google.protobuf.Struct+
 
 admin_data (2.google.protobuf.Struct0
-additional_data (2.google.protobuf.Struct"ë
-FetchMerchantWebsiteResponse
-
-id (	
+additional_data (2.google.protobuf.Struct"ô
+FetchMerchantWebsiteResponse
+merchant_id (	
 audit_id (	
 deliverable_type (	
 shipping_period (	
