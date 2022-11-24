@@ -10,8 +10,9 @@ use RZP\Gateway\Upi\Sbi\Action;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\UniqueIdEntity;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Reconciliator\Base\SubReconciliator\Upi;
 
-class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends Upi\UpiPaymentServiceReconciliate
 {
     use Base\UpiReconTrait;
     /**

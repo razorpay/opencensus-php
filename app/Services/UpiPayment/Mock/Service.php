@@ -125,7 +125,8 @@ class Service extends UpiPaymentService
                                 'description'               => 'INPUT_VALIDATION_FAILED',
                                 'gateway_error_code'        => '',
                                 'gateway_error_description' => '',
-                                'internal_error_code'       => 'BAD_REQUEST_VALIDATION_FAILURE'
+                                'internal_error_code'       => 'BAD_REQUEST_VALIDATION_FAILURE',
+                                'http_code'                 => 400
                             ]
                         ]
                     ];
@@ -347,6 +348,15 @@ class Service extends UpiPaymentService
         $response['entities'] = $entities;
 
         $this->content($response);
+
+        return [$response, 200];
+    }
+
+    protected function forceAuthorizeFailed(array $content)
+    {
+        $response = [
+            'data' => true
+        ];
 
         return [$response, 200];
     }

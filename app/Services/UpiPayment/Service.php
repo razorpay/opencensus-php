@@ -111,9 +111,8 @@ class Service
      *
      * @param  string $action
      * @param  array  $input
-     * @return array
      */
-    public function action(string $action, array $input, string $gateway) : array
+    public function action(string $action, array $input, string $gateway)
     {
         $this->action = $action;
 
@@ -330,6 +329,14 @@ class Service
             case self::MULTIPLE_ENTITY_FETCH:
                 $data = $input;
                 break;
+            case Payment\Action::FORCE_AUTHORIZE_FAILED:
+                $this->convertInputToArray($input);
+                $data = [
+                    'data'      => $input,
+                    'gateway'   => $input['payment']['gateway'],
+                    'action'    => $this->action,
+                ];
+                break;
             default:
                 throw new Exception\LogicException(
                     'No supported actions found for UPS',
@@ -440,9 +447,8 @@ class Service
     /**
      * Process the response received from UPS
      *
-     * @return array
      */
-    protected function processResponse($response, $code): array
+    protected function processResponse($response, $code)
     {
         $this->traceResponse($response);
 
@@ -471,6 +477,8 @@ class Service
                 return $this->processEntityFetchResponse($response);
             case self::MULTIPLE_ENTITY_FETCH:
                 return $this->processMultipleEntityFetchResponse($response);
+            case Payment\Action::FORCE_AUTHORIZE_FAILED:
+                return $response[Response::DATA];
             default:
                 throw new Exception\LogicException(
                     'No supported actions found for UPS',
@@ -589,14 +597,25 @@ class Service
         $description      = $metadata['description'];
         $gatewayErrorCode = $metadata['gateway_error_code'];
         $gatewayErrorDesc = $metadata['gateway_error_description'];
+        $httpCode = $metadata['http_code'] ?? null;
 
-        if (starts_with($internalErrorCode, 'BAD_REQUEST') === true)
+        if ($httpCode !== null)
         {
-            throw new Exception\BadRequestException(
-                $internalErrorCode,
-                null,
-                $error,
-                $description);
+            $httpCode = (int) ($httpCode);
+            if ($httpCode === 400)
+            {
+                throw new Exception\BadRequestException(
+                    $internalErrorCode,
+                    null,
+                    $error,
+                    $description);
+            }
+            elseif ($httpCode === 500)
+            {
+                throw new Exception\ServerErrorException(
+                    'received 500 from client',
+                    $internalErrorCode);
+            }
         }
 
         // We do not process gateway failures for pre-process
@@ -846,6 +865,9 @@ class Service
             case self::MULTIPLE_ENTITY_FETCH:
                 $traceData += $request[Request::CONTENT];
                 break;
+            case Payment\Action::FORCE_AUTHORIZE_FAILED:
+                $traceData += $this->getForceAuthorizedTraceData($request[Request::CONTENT]);
+                break;
             default:
                 throw new Exception\LogicException(
                     'No supported actions found for UPS',
@@ -990,6 +1012,34 @@ class Service
         ];
 
         $data[self::METADATA] = $content[self::METADATA] ?? [];
+
+        return $data;
+    }
+
+    /**
+     * get trace data for verify action send to UPS
+     *
+     * @param  array $content
+     * @return array
+     */
+    protected function getForceAuthorizedTraceData(array $content): array
+    {
+    $content = $content['data'];
+
+        $data = [
+            Payment\Entity::GATEWAY    => $content[Entity::PAYMENT][Payment\Entity::GATEWAY] ?? null,
+            Entity::PAYMENT     => [
+                Payment\Entity::ID        => $content[Entity::PAYMENT][Payment\Entity::ID] ?? null,
+                Payment\Entity::AMOUNT    => $content[Entity::PAYMENT][Payment\Entity::AMOUNT] ?? null,
+                Payment\Entity::CURRENCY  => $content[Entity::PAYMENT][Payment\Entity::CURRENCY] ?? null,
+                Payment\Entity::CPS_ROUTE => $content[Entity::PAYMENT][Payment\Entity::CPS_ROUTE] ?? null,
+                Payment\Entity::VPA       => mask_vpa($content[Entity::PAYMENT][Payment\Entity::VPA] ?? null),
+            ],
+            Entity::MERCHANT   => [
+                Merchant\Entity::BILLING_LABEL  => $content[Entity::MERCHANT][Merchant\Entity::BILLING_LABEL] ?? null,
+            ],
+            Base\Entity::GATEWAY_DATA   => $content['gateway']
+        ];
 
         return $data;
     }

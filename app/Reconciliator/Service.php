@@ -919,6 +919,12 @@ class Service extends Base\Service
 
         $topic = UpsConstants::ART_RECON_ENTITY_UPDATE . '-'. $this->mode;
 
+        // Skip the metro call for bvt and automation env
+        if ($this->app['env'] === 'bvt' or $this->app['env'] === 'automation')
+        {
+            return;
+        }
+
         $data = [
             UpsConstants::PAYMENT_ID   => $payment->getId(),
             UpsConstants::GATEWAY_DATA => $dataToUpdate,

@@ -1673,4 +1673,113 @@ class UpiPaymentServiceTest extends TestCase
 
         return $this->makeRequestAndGetContent($request);
     }
+
+    public function testPaymentSbiReconciliation(){
+
+        $this->fixtures->terminal->disableTerminal($this->terminal->getID());
+
+        $this->terminal = $this->fixtures->create('terminal:shared_upi_mindgate_sbi_terminal');
+
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $this->gateway = 'upi_sbi';
+
+        $this->makeUpiSbiPaymentsSince($createdAt, 1);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->mockReconContentFunction(function(& $content, $action = null) {
+            if ($action === 'sbi_recon')
+            {
+                $content[0]['Customer Ref No.']          = '227121351902';
+            }
+        });
+
+        $fileContents = $this->generateReconFile();
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path'], $fileContents['local_file_path'], 'application/octet-stream');
+
+        $this->reconcile($uploadedFile, 'UpiSbi');
+
+        $payment = $this->getDbEntity('payment', ['id' => $payment['id']]);
+
+        $this->assertEquals(true, $payment['gateway_captured']);
+
+        $this->assertEquals($payment['reference16'], '227121351902');
+
+        $transactionEntity = $this->getDbEntity('transaction', ['entity_id' => $payment['id']]);
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'type'            => 'reconciliation',
+                'gateway'         => 'UpiSbi',
+                'status'          => 'processed',
+                'total_count'     => 1,
+                'success_count'   => 1,
+                'processed_count' => 1,
+                'failure_count'   => 0,
+            ],
+            $batch
+        );
+    }
+
+    public function testSbiForceAuthorizePayment()
+    {
+        $this->fixtures->terminal->disableTerminal($this->terminal->getID());
+
+        $this->terminal = $this->fixtures->create('terminal:shared_upi_mindgate_sbi_terminal');
+
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $this->gateway = 'upi_sbi';
+
+        $this->makeUpiSbiPaymentsSince($createdAt, 1);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->fixtures->payment->edit($payment->getId(),
+            [
+                'status'                => 'failed',
+                'error_code'            => 'BAD_REQUEST_ERROR',
+                'internal_error_code'   => 'BAD_REQUEST_PAYMENT_TIMED_OUT',
+                'error_description'     => 'Payment was not completed on time.',
+                'authorized_at'         => NULL,
+            ]);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $this->assertNull($payment['reference16']);
+
+        $this->mockReconContentFunction( function(& $content, $action = null) {
+            if ($action === 'sbi_recon')
+            {
+                $content[0]['Customer Ref No.']          = '227121351902';
+                $content[0]['Payer Virtual Address']     = 'vishnu@icici';
+            }
+        });
+
+        $fileContents = $this->generateReconFile();
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path'], $fileContents['local_file_path'], 'application/octet-stream');
+
+        $this->reconcile($uploadedFile, 'UpiSbi', ['pay_'. $payment['id']]);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
+
+        $this->assertEquals('227121351902', $updatedPayment['reference16']);
+
+        $this->assertEquals('vishnu@icici', $updatedPayment['vpa']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+    }
 }
