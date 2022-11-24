@@ -82,6 +82,18 @@ class AccountingPayoutsTest extends TestCase
         $apMock->shouldHaveReceived('getIntegrationURL');
     }
 
+    public function testOperationsCannotAccessUpdateBankMapping()
+    {
+        $this->mockRazorx();
+
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->opsRoleUser->getId());
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+    }
 
     public function testInitiateIntegrationServiceMethod()
     {
@@ -816,4 +828,31 @@ class AccountingPayoutsTest extends TestCase
 
         $apMock->shouldHaveReceived('checkIfBankMappingRequired');
     }
+
+    /**
+     *  added for RAZORPAY_X_ACL_DENY_UNAUTHORISED which was added to
+     *  identify impact on other clients if unauthorised requests are blocked.
+     *  check UserAccess.php -> validateBankingUserAccess for better understanding
+     */
+    protected function mockRazorx()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'razorpay_x_acl_deny_unauthorised')
+                    {
+                        return 'on';
+                    }
+                    return 'on';
+                }));
+    }
 }
+

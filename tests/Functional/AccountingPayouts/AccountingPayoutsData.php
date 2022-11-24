@@ -1,6 +1,30 @@
 <?php
 
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
+
 return [
+    'testOperationsCannotAccessUpdateBankMapping' => [
+        'request'  => [
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'method' => 'POST',
+            'url'    => '/accounting-integration/cashflow/update-bank-mapping',
+
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED,
+                ],
+            ],
+            'status_code' => 400,
+        ]
+    ],
+
     'testGetIntegrationUrlServiceMethod' => [
         'request'  => [
             'server' => [

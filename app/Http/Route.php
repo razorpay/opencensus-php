@@ -9065,7 +9065,7 @@ class Route
         'merchant_create_lead_to_salesforce'           => '*',
         'accounting_payouts_integration_status'        => Permission::VIEW_ACCOUNTING_INTEGRATION,
         'accounting_payouts_cash_flow_list_ba'         => Permission::SYNC_ACCOUNTING_INTEGRATION,
-        'accounting_payouts_cash_flow_update_ba_mapping'=>Permission::SYNC_ACCOUNTING_INTEGRATION,
+        'accounting_payouts_cash_flow_update_ba_mapping'=>Permission::CREATE_ACCOUNTING_INTEGRATION,
         'accounting_payouts_integration_app_get_url'   => Permission::VIEW_ACCOUNTING_INTEGRATION,
         'accounting_payouts_integration_app_initiate'  => Permission::CREATE_ACCOUNTING_INTEGRATION,
         'accounting_payouts_integration_status_app'    => Permission::VIEW_ACCOUNTING_INTEGRATION,
