@@ -3478,8 +3478,6 @@ class Service extends Base\Service
             ]
         ];
 
-        $documentsDetail = $this->getDocumentsDetails($input);
-
         // Sends Legal documents to BVS & creates merchant_consents
         // Merchant_consents should be created in 'Pending' state. If BVS call succeeds, we update status of this record.
         $this->storeConsents($merchant->getId(), $input);
@@ -3487,6 +3485,8 @@ class Service extends Base\Service
         // Surrounding this with a try-catch to prevent failure of pre_signup due to any BVS related issue
         try
         {
+            $documentsDetail = $this->getDocumentsDetails($input);
+
             $processor = (new ProcessorFactory())->getLegalDocumentProcessor();
 
             $response = $processor->processLegalDocuments($documentsDetail, DEConstants::RX);

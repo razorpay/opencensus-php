@@ -1812,7 +1812,7 @@ We look forward to transacting with you!
             'request' => [
                 'cookies' => [
                     'rzp_utm' => json_encode([
-                        'website' => 'razorpay.com/x/current-accounts/'
+                        'website' => 'razorpay.com/x/current-accounts/' // Similar logic will be carried for other CA_PAGES
                     ])
                 ]
             ]
