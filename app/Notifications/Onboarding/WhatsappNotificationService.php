@@ -15,12 +15,7 @@ class WhatsappNotificationService extends BaseNotificationService
     public function send(): void
     {
         $isExperimentEnabled = true;
-        //        $destination = $this->getPhone();
 
-        //        if(empty($destination) === true)
-        //        {
-        //            return;
-        //        }
         $merchantCore = new Core();
         //use the experiment if we need to block specific whatsapp templates
         if (isset(Events::WHATSAPP_TEMPLATES_NEW_EXPERIMENTS[$this->event]) === true)
@@ -38,7 +33,7 @@ class WhatsappNotificationService extends BaseNotificationService
 
             $properties = [
                 'id'            => $merchant->getId(),
-                'experiment_id' => $this->app['config']->get($experimentKey),
+                'experiment_id' => $this->app['config']->get('app.'.$experimentKey),
             ];
 
             $isExperimentEnabled = $merchantCore->isSplitzExperimentEnable($properties, 'enable');

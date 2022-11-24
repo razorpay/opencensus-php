@@ -20,11 +20,6 @@ class SmsNotificationService extends BaseNotificationService
         $merchant     = $this->args[Constants::MERCHANT];
         $merchantCore = new Core();
 
-        //        $destination = $payload[OnboardingConstants::DESTINATION];
-        //        if (empty($destination) === true)
-        //        {
-        //            return;
-        //        }
         $isExperimentEnabled = true;
         if (isset(Events::SMS_TEMPLATES_SPLITZ_EXPERIMENTS[$this->event]) === true)
         {
@@ -32,7 +27,7 @@ class SmsNotificationService extends BaseNotificationService
 
             $properties = [
                 'id'            => $merchant->getId(),
-                'experiment_id' => $this->app['config']->get($experimentKey),
+                'experiment_id' => $this->app['config']->get('app.'.$experimentKey),
             ];
 
             $isExperimentEnabled = $merchantCore->isSplitzExperimentEnable($properties, 'enable');
