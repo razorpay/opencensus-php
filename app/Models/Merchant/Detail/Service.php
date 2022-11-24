@@ -433,10 +433,10 @@ class Service extends Base\Service
                         ]);
                     }
                 }
-                catch (\Exception $exception)
+                catch (\Throwable $e)
                 {
-                    $this->trace->info(TraceCode::BVS_INTEGRATION_ERROR, [
-                        'message' => 'Request to BVS was unsuccessful.'
+                    $this->trace->info(TraceCode::CONSENT_CREATION_ERROR, [
+                        'message' => 'Something went wrong while creating consents.'
                     ]);
                 }
             }
