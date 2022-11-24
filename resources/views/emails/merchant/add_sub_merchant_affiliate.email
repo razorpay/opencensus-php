@@ -76,7 +76,7 @@
   <br>
   To get started with your Razorpay account, please create a password. After that, you will need to submit the activation form with KYC details to start transacting.
   <br>
-  <a href="{{ 'https://' . $org['hostname'] . '/#/access/resetpassword?email='.$subMerchant['email'].'&token='.$token }}" target="_blank">Create a Password</a>
+  <a href="{{ 'https://' . $org['hostname'] . '/#/access/resetpassword?email='.urlencode($subMerchant['email']).'&token='.$token }}" target="_blank">Create a Password</a>
   @else
   You can {{$token}} login to your account with your existing credentials and submit the activation form with KYC details to start transacting.
   @endif
