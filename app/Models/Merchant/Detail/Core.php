@@ -3852,7 +3852,10 @@ class Core extends Base\Core
 
             try
             {
-                $addressSuggestedFromGSTIN = (new Merchant\Detail\Service)->getRegisteredBusinessAddressFromBvsForGstinUpdateSelfServe($merchant->getMerchantId(), null);
+                if ($merchantDetails->getGstinVerificationStatus() === BvsValidationConstants::VERIFIED)
+                {
+                    $addressSuggestedFromGSTIN = (new Merchant\Detail\Service)->getRegisteredBusinessAddressFromBvsForGstinUpdateSelfServe($merchant->getMerchantId(), null);
+                }
             }
             catch (\Throwable $ex)
             {
