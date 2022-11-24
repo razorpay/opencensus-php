@@ -30,7 +30,8 @@ class Region
     const Punjab             = 'punjab';
     const Rajasthan          = 'rajasthan';
     const Sikkim             = 'sikkim';
-    const Tamil_Nadu         = 'tamilnadu';
+    const Tamil_Nadu         = 'tamil nadu';
+    const TamilNadu          = 'tamilnadu';
     const Telangana          = 'telangana';
     const Tripura            = 'tripura';
     const Uttar_Pradesh      = 'uttar pradesh';
@@ -76,6 +77,7 @@ class Region
          self::Rajasthan          => self::NORTH,
          self::Sikkim             => self::EAST,
          self::Tamil_Nadu         => self::SOUTH,
+         self::TamilNadu          => self::SOUTH,
          self::Telangana          => self::SOUTH,
          self::Tripura            => self::SOUTH,
          self::Uttar_Pradesh      => self::NORTH,

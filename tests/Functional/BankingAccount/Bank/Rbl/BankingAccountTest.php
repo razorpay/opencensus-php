@@ -4300,7 +4300,7 @@ class BankingAccountTest extends TestCase
     protected function createBankingAccountFromDashboard(array $attributes = [])
     {
         $data = [
-            Entity::PINCODE => '560030',
+            Entity::PINCODE => '560030', // Pincode Search Mock will be used
             Entity::CHANNEL => 'rbl',
             'activation_detail' => [
                 ActivationDetail\Entity::BUSINESS_CATEGORY => 'partnership',
