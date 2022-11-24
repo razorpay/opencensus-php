@@ -1,5 +1,15 @@
 import { connect } from 'react-redux';
 import TetherComponent from 'react-tether';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+
+const FallbackComponent = ({ eventId }) => {
+  return (
+    <div className="inline-fallback">
+      <div>There was an issue, please try later!</div>
+      <div>Error code : {eventId}</div>
+    </div>
+  );
+};
 
 const HeaderAction = ({ children, org, responsive, isMobile }) => {
   /* 
@@ -10,7 +20,7 @@ const HeaderAction = ({ children, org, responsive, isMobile }) => {
   const mweb = responsive && isMobile;
   return mweb ? (
     <div className={`tabbed-header-actions${org.custom_code ? ` ${org.custom_code}` : ''}`}>
-      {children}
+      <ErrorBoundary FallbackComponent={FallbackComponent}>{children}</ErrorBoundary>
     </div>
   ) : (
     <TetherComponent
@@ -21,7 +31,7 @@ const HeaderAction = ({ children, org, responsive, isMobile }) => {
       class={org.custom_code}
     >
       <div />
-      {children}
+      <ErrorBoundary FallbackComponent={FallbackComponent}>{children}</ErrorBoundary>
     </TetherComponent>
   );
 };
