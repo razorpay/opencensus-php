@@ -16982,6 +16982,53 @@ The same has been enabled for the account.
         $this->assertNotEquals('risk_review_watchlist_tag', $merchantDetails['fraud_type']);
     }
 
+    public function testMerchantSuspendInternal()
+    {
+        $merchantId = '10000000000000';
+
+        $this->fixtures->edit('merchant', $merchantId,[
+            'suspended_at' => null
+        ]);
+
+        $admin = $this->fixtures->create('admin', [
+            'email' => 'testadmin@rzp.com',
+            'org_id'              => Org::RZP_ORG,
+        ]);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->ba->cmmaAppAuth();
+
+        $this->setupWorkflow('suspend_merchant', PermissionName::EDIT_MERCHANT_SUSPEND, "test");
+
+        $this->testData[__FUNCTION__] = $this->testData['testTagsWhitelistForMerchantSuspend'];
+        $this->testData[__FUNCTION__]['responseWorkflowActionCreation']['content']['maker']['id'] ='admin_'.$admin->getId();
+        $request = $this->testData[__FUNCTION__]['requestWorkflowActionCreation'];
+
+        $request['url'] = '/internal/risk-actions/create';
+        $request['content']['maker_admin_id'] =  'admin_'.$admin->getId();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $expectedResponse = $this->testData[__FUNCTION__]['responseWorkflowActionCreation']['content'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->assertEquals('10000000000000', $response['entity_id']);
+
+        $workflowActionId = $response['id'];
+
+        $this->performWorkflowAction($workflowActionId, true, 'test');
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $merchant =  $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertNotNull($merchant->getSuspendedAt());
+
+        $this->assertNotEquals('risk_review_watchlist_tag', $merchantDetails['fraud_type']);
+    }
+
     public function testHsCodeDetails(){
         $hsCode = '1234567890';
 

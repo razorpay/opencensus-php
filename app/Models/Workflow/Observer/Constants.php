@@ -15,6 +15,8 @@ class Constants
     const MERCHANT_ACTIVATION_STATUS            = 'merchant_activation_status';
     const INTERNAL_MERCHANT_ACTIVATION_STATUS   = 'internal_merchant_activation_status';
 
+    const INTERNAL_CREATE_RISK_ACTION           = 'internal_create_risk_action';
+
     const MERCHANT_SAVE_BUSINESS_WEBSITE        = 'merchant_save_business_website';
 
     const MERCHANT_ACTIVATION_UPDATE_WEBSITE    = 'merchant_activation_update_website';
@@ -50,6 +52,8 @@ class Constants
         self::SCHEDULED_SETTLEMENT                  => ScheduleSettlementObserver::class,
 
         self::MERCHANT_ACTION                       => MerchantActionObserver::class,
+
+        self::INTERNAL_CREATE_RISK_ACTION           => MerchantActionObserver::class,
 
         self::EDIT_PAYMENT_METHOD                   => PaymentMethodChangeObserver::class,
 

@@ -32,4 +32,13 @@ class RiskActionController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function createRiskActionInternal()
+    {
+        $input = Request::all();
+
+        $response = (new Service())->createRiskWorkflowActionInternal($input);
+
+        return ApiResponse::json($response);
+    }
 }

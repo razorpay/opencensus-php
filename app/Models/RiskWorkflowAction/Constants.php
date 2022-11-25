@@ -234,4 +234,6 @@ class Constants
     const EXECUTED    = 'EXECUTED';
     const INVALIDATED = 'INVALIDATED';
     const FAILED      = 'FAILED';
+
+    const MAKER_ADMIN_ID = 'maker_admin_id';
 }

@@ -14,6 +14,13 @@ class Validator extends Base\Validator
         Constants::RISK_ATTRIBUTES  => 'required|',
     ];
 
+    protected static $createRiskActionInternalRules                    = [
+        'merchant_id'               => 'required|string|size:14',
+        Constants::ACTION           => 'required|string|in:' . Constants::RISK_ACTIONS_CSV,
+        Constants::RISK_ATTRIBUTES  => 'required|',
+        Constants::MAKER_ADMIN_ID   => 'required|string|size:20'
+    ];
+
     protected static $createDestructiveRiskAttributesRules         = [
         Constants::RISK_REASON           => 'required|string',
         Constants::RISK_SUB_REASON       => 'required|string',

@@ -4,8 +4,13 @@
 namespace RZP\Models\Workflow\Observer;
 
 use App;
+use Monolog\Logger;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Action;
+use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Workflow\Action\Differ\Entity;
+use RZP\Models\Admin\Permission\Name as PermissionName;
+use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
 use RZP\Models\Merchant\FreshdeskTicket\Service as FDService;
 use RZP\Models\Merchant\FreshdeskTicket\Constants as FDConstants;
 
@@ -22,9 +27,17 @@ class MerchantActionObserver implements WorkflowObserverInterface
 
     protected $fdService;
 
+    protected $permissionName;
+
+    protected $entityName;
+
+    protected $app;
+
     public function __construct($input)
     {
         $app = App::getFacadeRoot();
+
+        $this->app = $app;
 
         $this->repo = $app['repo'];
 
@@ -33,6 +46,10 @@ class MerchantActionObserver implements WorkflowObserverInterface
         $this->merchantAction   = $input[Entity::PAYLOAD]['action'] ?? "";
 
         $this->entityId         = $input[Entity::ENTITY_ID];
+
+        $this->entityName       = $input[Entity::ENTITY_NAME];
+
+        $this->permissionName   = $input[DifferEntity::PERMISSION];
     }
 
     public function onApprove(array $observerData)
@@ -61,7 +78,20 @@ class MerchantActionObserver implements WorkflowObserverInterface
 
     public function onReject(array $observerData)
     {
-        // TODO: Implement onReject() method.
+        if( $this->permissionName === PermissionName::EDIT_MERCHANT_SUSPEND)
+        {
+            $data = [
+                DifferEntity::ENTITY_ID       => $this->entityId,
+                DifferEntity::ENTITY_NAME     => $this->entityName,
+                Constants::WORKFLOW_ACTION_ID => 'w_action_' . $observerData[DifferEntity::ACTION_ID],
+                Constants::PERMISSION_NAME    => $this->permissionName,
+                Constants::STATUS             => Status::REJECTED,
+                Constants::AGENT_Id           => optional($this->app['basicauth']->getAdmin())->getPublicId() ?? Constants::UNDEFINED_AGENT,
+                Constants::AGENT_NAME          => optional($this->app['basicauth']->getAdmin())->getName() ?? Constants::UNDEFINED_AGENT,
+            ];
+
+            $this->publishToMetroTopic($data, Constants::CMMA_WORKFLOW_METRO_TOPIC);
+        }
     }
 
     public function onCreate(array $observerData)
@@ -71,7 +101,20 @@ class MerchantActionObserver implements WorkflowObserverInterface
 
     public function onExecute(array $observerData)
     {
-        // TODO: Implement onExecute() method.
+        if($this->permissionName === PermissionName::EDIT_MERCHANT_SUSPEND)
+        {
+            $data = [
+                DifferEntity::ENTITY_ID       => $this->entityId,
+                DifferEntity::ENTITY_NAME     => $this->entityName,
+                Constants::WORKFLOW_ACTION_ID => 'w_action_' . $observerData[DifferEntity::ACTION_ID],
+                Constants::PERMISSION_NAME    => $this->permissionName,
+                Constants::STATUS             => Constants::EXECUTED,
+                Constants::AGENT_Id           => optional($this->app['basicauth']->getAdmin())->getPublicId() ?? Constants::UNDEFINED_AGENT,
+                Constants::AGENT_NAME          => optional($this->app['basicauth']->getAdmin())->getName() ?? Constants::UNDEFINED_AGENT,
+            ];
+
+            $this->publishToMetroTopic($data, Constants::CMMA_WORKFLOW_METRO_TOPIC);
+        }
     }
 
     public function getMerchantId()
@@ -115,5 +158,41 @@ class MerchantActionObserver implements WorkflowObserverInterface
         }
 
         return array();
+    }
+
+    public function publishToMetroTopic($data, $topic) {
+        // publish message on the metro topic business-banking-enabled
+
+        $this->app['trace']->info(
+            TraceCode::MERCHANT_ACTION_OBSERVER_METRO_PUBLISH,
+            [
+                'data' => $data
+            ]
+        );
+
+        $encodedData = [
+            'data' => json_encode($data)
+        ];
+
+        try
+        {
+            $response = $this->app['metro']->publish($topic, $encodedData);
+
+            $this->app['trace']->info(
+                TraceCode::MERCHANT_ACTION_OBSERVER_METRO_PUBLISH,
+                [
+                    'response' => $response
+                ]
+            );
+
+        } catch (\Throwable $exception)
+        {
+
+            $this->app['trace']->traceException(
+                $exception,
+                Logger::CRITICAL,
+                TraceCode::MERCHANT_ACTION_OBSERVER_METRO_PUBLISH);
+            // usual flow will not fail if the message publish to metro fails
+        }
     }
 }

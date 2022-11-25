@@ -10,6 +10,7 @@ use Razorpay\Trace\Logger;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Workflow\Action\Differ;
+use RZP\Models\Admin\Admin\Entity as AdminEntity;
 
 class Service extends Base\Service
 {
@@ -173,6 +174,19 @@ class Service extends Base\Service
         (new Core())->validateRiskAttributes($input);
 
         return (new Core())->createRiskWorkflowAction($input);
+    }
+
+    public function createRiskWorkflowActionInternal($input)
+    {
+        (new Validator())->validateInput('create_risk_action_internal', $input);
+
+        (new Core())->validateRiskAttributes($input);
+
+        $maker = $this->repo->admin->findOrFailPublic(AdminEntity::stripDefaultSign($input[Constants::MAKER_ADMIN_ID]));
+
+        $routeName = app('request.ctx')->getRoute();
+
+        return (new Core())->createRiskWorkflowAction($input, $maker, $routeName);
     }
 
     public function getIndividualRiskWorkflowMaker()

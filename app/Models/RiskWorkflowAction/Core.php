@@ -137,7 +137,7 @@ class Core extends Base\Core
         }
     }
 
-    public function createRiskWorkflowAction($input, $maker = null)
+    public function createRiskWorkflowAction($input, $maker = null, $routeName = null)
     {
         try {
             $riskAction = $input[Constants::ACTION];
@@ -200,11 +200,16 @@ class Core extends Base\Core
                     ->setWorkflowMaker($maker);
             }
 
+            if (isset($routeName) == false)
+            {
+                $routeName = Constants::RISK_ACTION_ROUTE_NAME;
+            }
+
             $workflowAction = $workflowAction
                 ->setPermission($routePermission)
                 ->setTags($tags)
                 ->setWorkflowMakerType(MakerType::ADMIN)
-                ->setRouteName(Constants::RISK_ACTION_ROUTE_NAME)
+                ->setRouteName($routeName)
                 ->setController(Constants::RISK_ACTION_ROUTE_CONTROLLER)
                 ->setRouteParams(['id' => $merchantId])
                 ->setEntityAndId($merchant->getEntity(), $merchantId)

@@ -3876,6 +3876,7 @@ class Route
 
         // Risk Actions
         'create_risk_action'                        => ['post',       'risk-actions/create',                                     'RiskActionController@createRiskAction'                        ],
+        'internal_create_risk_action'               => ['post',       'internal/risk-actions/create',                            'RiskActionController@createRiskActionInternal'                        ],
         'create_exec_risk_action'                   => ['post',       'risk-actions/execute',                                    'RiskActionController@createAndExecuteRiskAction'              ],
         'risk_attributes_get'                       => ['get',        'risk-actions/risk_attributes',                            'RiskActionController@getRiskAttributes'                       ],
         'bulk_risk_action_status_comment'           => ['post',       'bulk-action/comment',                                     'BulkActionController@addBulkRiskActionCommentPostExecution'   ],
@@ -5436,6 +5437,7 @@ class Route
 
         'bank_transfer_process_internal',
         'internal_merchant_activation_status',
+        'internal_create_risk_action',
 
         // Magic Club
         'customer_one_cc_get_or_create_global',
@@ -14364,6 +14366,7 @@ class Route
             'internal_fd_fetch_agents',
             'internal_fd_add_note',
             'internal_fd_fetch_agent_detail_for_ticket',
+            'internal_create_risk_action'
         ],
 
         'banking_account_service' => [
