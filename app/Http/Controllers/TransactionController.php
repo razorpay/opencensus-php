@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use RZP\Models\Transaction;
 use ApiResponse;
 use Request;
+use RZP\Models\Transaction\FeeBreakup;
 
 class TransactionController extends Controller
 {
@@ -114,5 +115,12 @@ class TransactionController extends Controller
         $entities = $this->service()->fetchMultiple($input);
 
         return ApiResponse::json($entities);
+    }
+
+    public function createFeesBreakupPartition()
+    {
+        $response = $this->service()->createFeesBreakupPartition();
+
+        return ApiResponse::json($response);
     }
 }

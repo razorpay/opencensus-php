@@ -843,6 +843,7 @@ class Route
         'schedule_assign'                          => ['post',     'merchants/{id}/schedules',                       'MerchantController@assignSettlementSchedule'                       ],
         'schedule_process_tasks'                   => ['post',     'schedules/process_tasks',                        'ScheduleController@processTasks'                                   ],
         'transaction_create_fees_breakup'          => ['post',     'transactions/fees_breakup',                      'TransactionController@postCreateFeeBreakup'                        ],
+        'fees_breakup_partition_cron'              => ['post',     'transaction/fees_breakup/partition',             'TransactionController@createFeesBreakupPartition'                  ],
         'transaction_bulk_update'                  => ['put',      'transactions/bulk',                              'TransactionController@updateMultipleTransactions'                  ],
         'mark_transactions_postpaid'               => ['post',     'transactions/postpaid',                          'TransactionController@markTransactionPostpaid'                     ],
         'toggle_transaction_hold'                  => ['patch',    'transactions/hold',                              'TransactionController@toggleTransactionHold'                       ],
@@ -5288,6 +5289,7 @@ class Route
         // payout outbox cron creates a new partition and drops oldest partition, runs daily
         'payout_outbox_partition_cron',
         'audit_info_partition_cron',
+        'fees_breakup_partition_cron',
 
          'orphan_payouts_count_cron',
 
@@ -13706,6 +13708,7 @@ class Route
             'checkout_orders_partition_cron',
             'payout_outbox_partition_cron',
             'audit_info_partition_cron',
+            'fees_breakup_partition_cron',
             'orphan_payouts_count_cron',
             'banking_account_service_cron_routes',
             'merchant_methods_hdfc_debit_emi',

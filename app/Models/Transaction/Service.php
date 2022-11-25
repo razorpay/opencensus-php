@@ -27,6 +27,7 @@ use RZP\Jobs\Settlement\LedgerReconJob2;
 use RZP\Models\FundAccount\Validation\Core;
 use RZP\Models\Report\Types\BasicEntityReport;
 use Razorpay\Spine\Exception\DbQueryException;
+use RZP\Models\Transaction\FeeBreakup\Repository as FeesBreakupRepo;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
 class Service extends Base\Service
@@ -692,5 +693,21 @@ class Service extends Base\Service
         );
 
         return $output;
+    }
+
+    public function createFeesBreakupPartition() : array
+    {
+        try
+        {
+            (new FeesBreakupRepo())->managePartitions();
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::TABLE_PARTITION_ERROR);
+
+            return ['success' => false];
+        }
+
+        return ['success' => true];
     }
 }

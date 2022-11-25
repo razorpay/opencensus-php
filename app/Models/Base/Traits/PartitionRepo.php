@@ -48,7 +48,7 @@ trait PartitionRepo
 
             foreach ($partitionsData as $newPartitionName => $newPartitionMaxCreatedAt)
             {
-                $query = "ALTER TABLE " . $this->getTableName() . "
+                $query = "ALTER TABLE `" . $this->getTableName() . "`
                 REORGANIZE PARTITION `$partitionNameMax` INTO (
                     PARTITION `$newPartitionName` VALUES LESS THAN ($newPartitionMaxCreatedAt),
                     PARTITION `$partitionNameMax` VALUES LESS THAN MAXVALUE
@@ -107,7 +107,7 @@ trait PartitionRepo
 
             foreach ($oldestPartitions as $partition)
             {
-                $query = "ALTER TABLE " . $this->getTableName() . " DROP PARTITION `$partition`";
+                $query = "ALTER TABLE `" . $this->getTableName() . "` DROP PARTITION `$partition`";
 
                 $this->trace->info(TraceCode::TABLE_PARTITION_DROP_QUERY, ['query' => $query]);
 

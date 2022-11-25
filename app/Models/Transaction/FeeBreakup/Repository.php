@@ -7,9 +7,13 @@ use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
+use RZP\Constants\Partitions;
+use RZP\Models\Base\Traits\PartitionRepo;
 
 class Repository extends Base\Repository
 {
+    use PartitionRepo;
+
     protected $entity = 'fee_breakup';
 
     protected $appFetchParamRules = array(
@@ -91,5 +95,15 @@ class Repository extends Base\Repository
         $this->newQuery()
             ->where(Entity::ID, $id)
             ->delete();
+    }
+
+    protected function getPartitionStrategy() : string
+    {
+        return Partitions::DAILY;
+    }
+
+    protected function getDesiredOldPartitionsCount() : int
+    {
+        return 7;
     }
 }
