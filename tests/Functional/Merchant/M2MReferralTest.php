@@ -53,11 +53,19 @@ class M2MReferralTest extends TestCase
     }
 
 
-    private function createMerchant($merchantId)
+    private function createMerchant($merchantId,$atributes=[])
     {
 
-        $merchant = $this->fixtures->on(Mode::LIVE)->create('merchant', ['id' => $merchantId]);
+        $atributes['id'] = $merchantId;
 
+        $merchant = $this->fixtures->on(Mode::LIVE)->create('merchant', $atributes);
+
+        $balance = $this->fixtures->on('live')->create('balance', [
+            'id'            => $merchant->getId(),
+            'balance'       => 0,
+            'type'          => 'primary',
+            'merchant_id'   => $merchant->getId()
+        ]);
         return $merchant;
     }
 
@@ -369,8 +377,8 @@ class M2MReferralTest extends TestCase
     public function testRewardValidation()
     {
         $this->app['rzp.mode'] = 'live';
-        $refereeMerchant       = $this->createMerchant('I0qYGdG9IGaVxz');
-        $referrerMerchant      = $this->createMerchant('Hm9Bv6kFufFS36');
+        $refereeMerchant       = $this->createMerchant('I0qYGdG9IGaVxz',['activated'=>1]);
+        $referrerMerchant      = $this->createMerchant('Hm9Bv6kFufFS36',['activated'=>1]);
 
         $input = [
             M2MReferralEntity::MERCHANT_ID => $refereeMerchant->getId(),

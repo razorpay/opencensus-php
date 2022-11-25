@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant\Cron\Jobs;
 
-use RZP\Models\Merchant\Cron\Actions\SendNotificationAction;
+use RZP\Models\Merchant\Cron\Actions\FirstPaymentOfferAction;
 use RZP\Notifications\Onboarding\Events as OnboardingEvents;
 use RZP\Models\Merchant\Cron\Collectors\FirstPaymentOfferDataCollector;
 
@@ -12,7 +12,7 @@ class FirstPaymentOfferCronJob extends BaseCronJob
         "merchant_notification_data" => FirstPaymentOfferDataCollector::class
     ];
 
-    protected $actions = [SendNotificationAction::class];
+    protected $actions = [FirstPaymentOfferAction::class];
 
     protected $lastCronTimestampCacheKey = "first_payment_offer_cron_timestamp";
 

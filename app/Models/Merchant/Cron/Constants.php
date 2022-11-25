@@ -20,6 +20,7 @@ class Constants
     # cron job names
     const ENABLE_M2M_REFERRAL_CRON_JOB_NAME                          = "enable_m2m_referral";
     const BVS_PARTLY_EXECUTED_VALIDATION_CRON_JOB                    = "bvs_partly_executed_validation_cron";
+    const FIRST_PAYMENT_OFFER_DAILY_NOTIFICATION                     = 'first-payment-offer-daily-notification';
     const FRIEND_BUY_SEND_PURCHASE_EVENTS_CRON_JOB_NAME              = "friend-buy-send-purchase-events-cron";
     const MERCHANT_SEGMENT_TYPE_CRON_JOB_NAME                        = 'save-merchant-segment-type-cron';
     const MERCHANT_WEBSITE_INCOMPLETE_PAYMENTS_ENABLED_CRON_JOB_NAME = 'website_incomplete_payments_enabled_cron';
@@ -33,7 +34,7 @@ class Constants
     # map keys
     const AUTO_KYC_FAILURE_DATA = "auto_kyc_failure_data";
     const MERCHANT_IDS          = "merchant_ids";
-    const CASE_TYPE            = "case_type";
+    const CASE_TYPE             = "case_type";
     const LEVEL                 = 1;
 
     # cron cache keys

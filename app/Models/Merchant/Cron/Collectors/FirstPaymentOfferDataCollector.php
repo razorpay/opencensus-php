@@ -19,24 +19,52 @@ class FirstPaymentOfferDataCollector extends TimeBoundDbDataCollector
         $this->app['rzp.mode'] = Mode::LIVE;
 
         $this->app['trace']->info(TraceCode::CRON_ATTEMPT_STARTED, [
-            'args'          => $this->args,
-            'start_time'    => $startTime,
-            'end_time'      => $endTime
+            'args'       => $this->args,
+            'start_time' => $startTime,
+            'end_time'   => $endTime
         ]);
 
         $merchantIdList = $this->repo->merchant->fetchAllLiveActivatedRegularMerchantsOfOrg($startTime, $endTime);
 
+        $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
+            'args'         => $this->args,
+            'type'         => 'offermtu_communication',
+            "step"         => 'fetchAllLiveActivatedRegularMerchantsOfOrg',
+            'allmidscount' => count($merchantIdList)
+        ]);
+
         $merchantIdList = $this->repo->user_device_detail->filterSignupCampaignAndSourceFromMerchantIdList($merchantIdList, Constants::EASY_ONBOARDING, Constants::MOBILE_APP_SOURCES);
+
+        $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
+            'args'         => $this->args,
+            'type'         => 'offermtu_communication',
+            "step"         => 'filterSignupCampaignAndSourceFromMerchantIdList',
+            'allmidscount' => count($merchantIdList)
+        ]);
 
         $subMerchants = $this->repo->merchant_access_map->fetchSubMerchants($merchantIdList);
 
         $merchantIdList = array_diff($merchantIdList, $subMerchants);
+
+        $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
+            'args'         => $this->args,
+            'type'         => 'offermtu_communication',
+            "step"         => 'fetchSubMerchants',
+            'allmidscount' => count($merchantIdList)
+        ]);
 
         $merchantList = $this->repo
             ->merchant_promotion
             ->fetchMerchantIdsWithAnyPromotion($merchantIdList);
 
         $merchantList = array_diff($merchantIdList, $merchantList);
+
+        $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
+            'args'         => $this->args,
+            'type'         => 'offermtu_communication',
+            "step"         => 'fetchSubMerchants',
+            'allmidscount' => count($merchantList)
+        ]);
 
         $merchantIdChunks = array_chunk($merchantList, 100);
 
@@ -54,58 +82,60 @@ class FirstPaymentOfferDataCollector extends TimeBoundDbDataCollector
             if (empty($queryResponse) === true)
             {
                 $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
-                    'type'          => 'first_payment_offer',
-                    'reason'        => 'no merchants found',
-                    'step'          => 'first_transaction_timestamp',
-                    'args'          => $this->args,
-                    'start_time'    => $startTime,
-                    'end_time'      => $endTime
+                    'type'       => 'first_payment_offer',
+                    'reason'     => 'no merchants found',
+                    'step'       => 'first_transaction_timestamp',
+                    'args'       => $this->args,
+                    'start_time' => $startTime,
+                    'end_time'   => $endTime
                 ]);
 
-                return CollectorDto::create(null);
             }
+            else
+            {
 
-            $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
-                'merchants_count' => count($queryResponse),
-                'type'            => 'first_payment_offer',
-                'step'            => 'first_transaction_timestamp',
-                'args'            => $this->args,
-                'start_time'      => $startTime,
-                'end_time'        => $endTime,
-            ]);
 
-            $transactedMerchants = array_merge($transactedMerchants, array_keys(
-                array_filter(
-                    array_column($queryResponse, 'first_transaction_timestamp', Entity::MERCHANT_ID),
-                    function ($firstTxnTimestamp) use ($startTime)
-                    {
-                        return $firstTxnTimestamp >= $startTime;
-                    }
-                )
-            ));
+                $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
+                    'merchants_count' => count($queryResponse),
+                    'type'            => 'first_payment_offer',
+                    'step'            => 'first_transaction_timestamp',
+                    'args'            => $this->args,
+                    'start_time'      => $startTime,
+                    'end_time'        => $endTime,
+                ]);
+
+                $transactedMerchants = array_merge($transactedMerchants, array_keys(
+                    array_filter(
+                        array_column($queryResponse, 'first_transaction_timestamp', Entity::MERCHANT_ID),
+                        function($firstTxnTimestamp) use ($startTime) {
+                            return $firstTxnTimestamp >= $startTime;
+                        }
+                    )
+                ));
+            }
         }
 
-        $merchantIdList =  array_diff($merchantList, $transactedMerchants);
+        $merchantIdList = array_diff($merchantList, $transactedMerchants);
 
         $m2mMerchants = $this->repo->m2m_referral->filterMerchants($merchantIdList);
 
         $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
-            'args'          => $this->args,
-            'start_time'    => $startTime,
-            'end_time'      => $endTime,
+            'args'         => $this->args,
+            'start_time'   => $startTime,
+            'end_time'     => $endTime,
             'm2mMerchants' => count($m2mMerchants)
         ]);
 
-        $merchantIdList =  array_diff($merchantIdList, $m2mMerchants);
+        $merchantIdList = array_diff($merchantIdList, $m2mMerchants);
 
         $finalMidList = [];
 
-        foreach($merchantIdList as $merchantId)
+        foreach ($merchantIdList as $merchantId)
         {
             $isMtuCouponExperimentEnabled = (new MerchantCore())->isRazorxExperimentEnable($merchantId,
-                RazorxTreatment::MTU_COUPON_CODE);
+                                                                                           RazorxTreatment::MTU_COUPON_CODE);
 
-            if($isMtuCouponExperimentEnabled === true)
+            if ($isMtuCouponExperimentEnabled === true)
             {
                 array_push($finalMidList, $merchantId);
             }

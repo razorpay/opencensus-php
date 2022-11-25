@@ -158,13 +158,19 @@ class Entity extends Base\PublicEntity
     {
         $merchantWebsiteDetail = $this->getAttribute(self::MERCHANT_WEBSITE_DETAILS);
 
-        foreach ($merchantWebsiteDetail[$sectionName][$urlType] as $url => $constant)
+        if (isset($merchantWebsiteDetail[$sectionName][$urlType]) === true)
         {
-            if (trim(strtolower($url), '/') === $inputUrl)
+            foreach ($merchantWebsiteDetail[$sectionName][$urlType] as $url => $constant)
             {
-                return $merchantWebsiteDetail[$sectionName][$urlType][$url][$constant] ?? null;
+                if (trim(strtolower($url), '/') === $inputUrl)
+                {
+                    return isset($merchantWebsiteDetail[$sectionName][$urlType][$url][$constant]) === true ?
+                        $merchantWebsiteDetail[$sectionName][$urlType][$url][$constant] :
+                        null;
+                }
             }
         }
+
         return null;
     }
 
@@ -182,11 +188,16 @@ class Entity extends Base\PublicEntity
     {
         $adminWebsiteDetail = $this->getAttribute(self::ADMIN_WEBSITE_DETAILS);
 
-        foreach ($adminWebsiteDetail[$urlType] as $url => $data)
+        if (isset($adminWebsiteDetail[$urlType]) === true)
         {
-            if (trim(strtolower($url), '/') === $inputUrl)
+            foreach ($adminWebsiteDetail[$urlType] as $url => $data)
             {
-                return $data[$sectionName][Constants::DOCUMENT_ID] ?? null;
+                if (trim(strtolower($url), '/') === $inputUrl)
+                {
+                    return isset($data[$sectionName][Constants::DOCUMENT_ID]) === true ?
+                        $data[$sectionName][Constants::DOCUMENT_ID] :
+                        null;
+                }
             }
         }
 
@@ -207,13 +218,19 @@ class Entity extends Base\PublicEntity
     {
         $adminWebsiteDetail = $this->getAttribute(self::ADMIN_WEBSITE_DETAILS);
 
-        foreach ($adminWebsiteDetail[$urlType] as $url => $data)
+        if (isset($adminWebsiteDetail[$urlType]) === true)
         {
-            if (trim(strtolower($url), '/') === $inputUrl)
+            foreach ($adminWebsiteDetail[$urlType] as $url => $data)
             {
-                return $data[$sectionName][Constants::URL] ?? null;
+                if (trim(strtolower($url), '/') === $inputUrl)
+                {
+                    return isset($data[$sectionName][Constants::URL]) === true ?
+                        $data[$sectionName][Constants::URL] :
+                        null;
+                }
             }
         }
+
         return null;
     }
 
@@ -272,7 +289,8 @@ class Entity extends Base\PublicEntity
     {
         $merchantWebsiteDetail = $this->getAttribute(self::MERCHANT_WEBSITE_DETAILS);
 
-        return $merchantWebsiteDetail[$sectionName][Constants::UPDATED_AT] ?? null;
+        return isset($merchantWebsiteDetail[$sectionName][Constants::UPDATED_AT]) === true ?
+            $merchantWebsiteDetail[$sectionName][Constants::UPDATED_AT] : null;
     }
 
 
@@ -290,6 +308,8 @@ class Entity extends Base\PublicEntity
     {
         $merchantWebsiteDetail = $this->getAttribute(self::MERCHANT_WEBSITE_DETAILS);
 
-        return $merchantWebsiteDetail[$sectionName][Constants::PUBLISHED_URL] ?? null;
+        return isset($merchantWebsiteDetail[$sectionName][Constants::PUBLISHED_URL])  === true?
+            $merchantWebsiteDetail[$sectionName][Constants::PUBLISHED_URL] :
+            null;
     }
 }

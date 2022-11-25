@@ -4,14 +4,18 @@ namespace Unit\Models\Merchant\Detail;
 
 use App;
 use Config;
+use Mockery;
 use ReflectionClass;
 use Carbon\Carbon;
 use RZP\Models\Coupon;
 use RZP\Constants\Mode;
+use RZP\Services\Stork;
 use RZP\Models\Merchant\Store;
 use RZP\Models\Coupon\Constants;
 use RZP\Models\Merchant\Detail\Core;
 use RZP\Services\Mock\ApachePinotClient;
+use RZP\Tests\Traits\TestsStorkServiceRequests;
+use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Merchant\Website\Service as WebsiteService;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Models\Merchant\Detail\Entity;
@@ -53,7 +57,9 @@ class CoreTest extends TestCase
 {
     protected $repo;
     protected $app;
+
     use DbEntityFetchTrait;
+    use TestsStorkServiceRequests;
 
     protected function setUp(): void
     {
@@ -62,6 +68,18 @@ class CoreTest extends TestCase
         parent::setUp();
         $this->app = App::getFacadeRoot();
         $this->repo = $this->app['repo'];
+    }
+    protected function mockRazorxTreatment(string $returnValue = 'on')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn($returnValue);
     }
 
     protected function createAndFetchMocks()
@@ -2745,18 +2763,6 @@ class CoreTest extends TestCase
 
     }
 
-    protected function mockRazorxTreatment(string $returnValue = 'on')
-    {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn($returnValue);
-    }
 
     public function testM2MOfferMtuCronJob()
     {
@@ -2764,19 +2770,31 @@ class CoreTest extends TestCase
         $this->mockRazorxTreatment();
 
         $merchant = $this->repo->merchant->findorfail('10000000000011');
-        $input = [
+        $input    = [
             M2MReferralEntity::MERCHANT_ID => '10000000000011',
             M2MReferralEntity::STATUS      => M2MEntityStatus::MTU_EVENT_SENT
         ];
 
         $m2m = (new \RZP\Models\Merchant\M2MReferral\Core())->createM2MReferral($merchant, $input);
 
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['pushIdentifyAndTrackEvent'])
+                            ->getMock();
 
-        (new CronJobHandler\Core())->handleCron("first-payment-offer-daily-notification", [
+        $this->app['rzp.mode'] = Mode::LIVE;
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(0))
+                    ->method('pushIdentifyAndTrackEvent');
+
+
+        $this->dontExpectAnyStorkServiceRequest();
+
+        (new CronJobHandler\Core())->handleCron(CronConstants::FIRST_PAYMENT_OFFER_DAILY_NOTIFICATION, [
             "start_time" => Carbon::now()->subDecade()->getTimestamp(),
             "end_time"   => Carbon::now()->getTimestamp(),
         ]);
-
 
     }
 
@@ -2804,5 +2822,57 @@ class CoreTest extends TestCase
         $result = $method->invokeArgs($detailCore, [$fieldMap, & $noDocConfig]);
 
         $this->assertEquals ($expectedpayload['value'], $result[0]['value']);
+    }
+
+
+    public function testFirstPaymentOfferCommunicationJob()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $merchantId = '1X4hRFHFx4UiXt';
+
+        $merchantAttributes = [
+            'id'           => $merchantId,
+            'activated'    => 1,
+            'live'         => 1,
+            'activated_at' => Carbon::now()->subDays(2)->getTimestamp()
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id'    => $merchantId,
+            'contact_mobile' => '9980004017'
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchantId,
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['pushIdentifyAndTrackEvent'])
+                            ->getMock();
+
+        $this->app['rzp.mode'] = Mode::LIVE;
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(1))
+                    ->method('pushIdentifyAndTrackEvent')
+                    ->will($this->returnCallback(function($merchant, $properties, $eventName) {
+                        $this->assertNotNull($properties);
+                        $this->assertTrue(in_array($eventName, [SegmentEvent::OFFERMTU_TARGETED_MERCHANT], true));
+                    }));
+
+        $this->expectAnyStorkServiceRequest();
+
+        (new CronJobHandler\Core())->handleCron(CronConstants::FIRST_PAYMENT_OFFER_DAILY_NOTIFICATION, [
+            "start_time" => Carbon::now()->subDecade()->getTimestamp(),
+            "end_time"   => Carbon::now()->getTimestamp(),
+        ]);
     }
 }

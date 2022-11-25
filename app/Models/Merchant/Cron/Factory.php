@@ -88,7 +88,8 @@ class Factory
                 return (new FriendBuySendPurchaseEventsCronJob($input));
             case Constants::ENABLE_M2M_REFERRAL_CRON_JOB_NAME:
                 return (new EnableM2MReferralCronJob($input));
-            case "first-payment-offer-daily-notification":
+            case Constants::FIRST_PAYMENT_OFFER_DAILY_NOTIFICATION:
+                RuntimeManager::setMaxExecTime(1200);
                 return (new FirstPaymentOfferCronJob($input));
             case Constants::BVS_PARTLY_EXECUTED_VALIDATION_CRON_JOB:
                 // since a number of queries are fired ensure enough time is provided to complete them.

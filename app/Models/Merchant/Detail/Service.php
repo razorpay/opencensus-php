@@ -433,10 +433,10 @@ class Service extends Base\Service
                         ]);
                     }
                 }
-                catch (\Throwable $e)
+                catch (\Throwable $exception)
                 {
                     $this->trace->info(TraceCode::CONSENT_CREATION_ERROR, [
-                        'message' => 'Something went wrong while creating consents.'
+                        'message' => $exception->getMessage()
                     ]);
                 }
             }

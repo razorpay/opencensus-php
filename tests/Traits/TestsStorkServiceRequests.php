@@ -22,7 +22,7 @@ trait TestsStorkServiceRequests
      */
     protected function createStorkMock(): Mockery\MockInterface
     {
-        $this->storkMock = Mockery::mock(Stork::class)->makePartial();
+        $this->storkMock = Mockery::mock(Stork::class)->makePartial()->shouldAllowMockingProtectedMethods();
         $this->app->instance('stork_service', $this->storkMock);
 
         return $this->storkMock;
@@ -91,6 +91,28 @@ trait TestsStorkServiceRequests
         $mockedResBody = $testData['mocked_response']['body'];
 
         $this->expectStorkServiceRequest($path, $payload, $matcher, $mockedResCode, $mockedResBody);
+    }
+    /**
+     * @return void
+     */
+    protected function expectAnyStorkServiceRequest()
+    {
+        $this->storkMock = $this->storkMock ?: $this->createStorkMock();
+
+        $mockedRes = new Requests_Response;
+        $mockedRes->status_code = 200;
+        $mockedRes->success = true;
+        $mockedRes->body = json_encode([]);
+
+        $this->storkMock
+            ->shouldReceive('traceWhatsAppRequest')
+            ->andReturn([]);
+
+        $this->storkMock
+            ->shouldReceive('request')
+            ->times(1)
+            ->with(Mockery::any(), Mockery::any())
+            ->andReturn($mockedRes);
     }
 
     /**
