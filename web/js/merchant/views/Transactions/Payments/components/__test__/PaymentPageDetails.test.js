@@ -1,7 +1,7 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import PaymentPageDetails from 'merchant/views/Transactions/Payments/components/PaymentPageDetails';
-import { render, screen, waitFor, delay } from 'test-utils';
+import { render, screen, waitFor, delay, checkIfComponentIsEmpty } from 'test-utils';
 
 describe('PaymentPageDetails', () => {
   const defaultProps = {
@@ -22,7 +22,7 @@ describe('PaymentPageDetails', () => {
   });
 
   test('should not render payment page details when not present', async () => {
-    const { container } = render(
+    render(
       <App
         payment={{
           order_id: '123',
@@ -31,6 +31,6 @@ describe('PaymentPageDetails', () => {
     );
     // wait for the API call to be completed, can't use waitFor here as initially DOM is empty only
     await delay();
-    expect(container.firstChild).toBeEmptyDOMElement();
+    checkIfComponentIsEmpty();
   });
 });

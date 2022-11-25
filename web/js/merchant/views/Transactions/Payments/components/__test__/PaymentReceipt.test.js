@@ -1,6 +1,13 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import { render, screen, waitFor, fireEvent } from 'test-utils';
+import {
+  render,
+  screen,
+  waitFor,
+  fireEvent,
+  checkIfComponentIsEmpty,
+  COMPONENT_WRAPPER_TESTID,
+} from 'test-utils';
 import {
   AppWithRouter,
   defaultProps,
@@ -9,8 +16,8 @@ import {
 
 describe('PaymentReceipt', () => {
   test('should not render payment receipt details when showReceiptActions is false', () => {
-    const { container } = render(<AppWithRouter hash="" />);
-    expect(container.firstChild).toBeEmptyDOMElement();
+    render(<AppWithRouter hash="" />);
+    checkIfComponentIsEmpty();
   });
 
   test('should render payment receipt details when showReceiptActions is true', async () => {
@@ -22,9 +29,9 @@ describe('PaymentReceipt', () => {
 
   describe('Send button', () => {
     test('should send receipt when send button is clicked', async () => {
-      const { container } = render(<AppWithRouter />);
+      render(<AppWithRouter />);
       await waitFor(() => {
-        expect(container.firstChild).not.toBeEmptyDOMElement();
+        expect(screen.getByTestId(COMPONENT_WRAPPER_TESTID)).not.toBeEmptyDOMElement();
       });
       fireEvent.click(screen.getByText('Send'));
       await waitFor(() => {

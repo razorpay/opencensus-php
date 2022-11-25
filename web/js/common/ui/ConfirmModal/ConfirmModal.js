@@ -17,7 +17,9 @@ const ConfirmModal = (props) => {
         style={confirmModelStyle}
         onRequestClose={props.onAbort}
         closeTimeoutMS={300}
-        className={`${props.org.custom_code} Modal Modal--small Modal--confirm ${className}`}
+        className={`${
+          props?.org?.custom_code || ''
+        } Modal Modal--small Modal--confirm ${className}`}
         contentLabel="ConfirmModal"
         ariaHideApp={false}
       >

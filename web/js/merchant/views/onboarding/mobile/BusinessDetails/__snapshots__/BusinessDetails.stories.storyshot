@@ -4,14 +4,21 @@ exports[`Storyshots Onboarding/BusinessDetails Default 1`] = `
 <div>
   <div>
     <div>
-      <div>
-        Loading...
+      <div />
+      <div
+        data-testid="component-wrapper"
+      >
+        <div>
+          <div>
+            Loading...
+          </div>
+        </div>
+        <div
+          data-testid="layerTestId"
+          id="layerHost"
+        />
       </div>
     </div>
-    <div
-      data-testid="layerTestId"
-      id="layerHost"
-    />
   </div>
   <div
     data-testid="layerTestId"

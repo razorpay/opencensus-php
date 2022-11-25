@@ -4,37 +4,44 @@ exports[`Storyshots referral/ReferaAndEarn Default 1`] = `
 <div>
   <div>
     <div>
+      <div />
       <div
-        class="Viewweb__View-sc-1o0hmxm-0 eayzPs Sizeweb__Size-sc-1e5yf1-0 bGblSu Flexweb__Flex-sc-1yhcoea-0 eYznJc"
+        data-testid="component-wrapper"
       >
-        <div
-          class="Textweb__Text-sc-1qrdpx3-0 fyAYeP"
-          color="shade.980"
-          data-testid="ds-text"
-        >
-          Refer & earn Rs.5L worth of transaction credits
-        </div>
-        <div
-          class="Textweb__Text-sc-1qrdpx3-0 gLAvwL Spaceweb__Space-sc-1abqisc-0 cthgwQ"
-          color="shade.970"
-          data-testid="ds-text"
-        >
-          Refer your friends who needs online payments and earn Rs.50,000 transaction Credits for every referral 
-          <a
-            class="Textweb__Text-sc-1qrdpx3-0 Linkweb__StyledText-c2kinr-0 biSdwx"
-            color="shade.980"
-            data-testid="ds-text"
-            target="_self"
+        <div>
+          <div
+            class="Viewweb__View-sc-1o0hmxm-0 eayzPs Sizeweb__Size-sc-1e5yf1-0 bGblSu Flexweb__Flex-sc-1yhcoea-0 eYznJc"
           >
-            More Details
-          </a>
+            <div
+              class="Textweb__Text-sc-1qrdpx3-0 fyAYeP"
+              color="shade.980"
+              data-testid="ds-text"
+            >
+              Refer & earn Rs.5L worth of transaction credits
+            </div>
+            <div
+              class="Textweb__Text-sc-1qrdpx3-0 gLAvwL Spaceweb__Space-sc-1abqisc-0 cthgwQ"
+              color="shade.970"
+              data-testid="ds-text"
+            >
+              Refer your friends who needs online payments and earn Rs.50,000 transaction Credits for every referral 
+              <a
+                class="Textweb__Text-sc-1qrdpx3-0 Linkweb__StyledText-c2kinr-0 biSdwx"
+                color="shade.980"
+                data-testid="ds-text"
+                target="_self"
+              >
+                More Details
+              </a>
+            </div>
+          </div>
         </div>
+        <div
+          data-testid="layerTestId"
+          id="layerHost"
+        />
       </div>
     </div>
-    <div
-      data-testid="layerTestId"
-      id="layerHost"
-    />
   </div>
   <div
     data-testid="layerTestId"
@@ -47,22 +54,29 @@ exports[`Storyshots referral/ReferaAndEarn Home Page Referral Done 1`] = `
 <div>
   <div>
     <div>
+      <div />
       <div
-        class="Viewweb__View-sc-1o0hmxm-0 eayzPs Sizeweb__Size-sc-1e5yf1-0 kqYdGh Flexweb__Flex-sc-1yhcoea-0 eYznJc"
+        data-testid="component-wrapper"
       >
-        <div
-          class="Textweb__Text-sc-1qrdpx3-0 fyAYeP"
-          color="shade.980"
-          data-testid="ds-text"
-        >
-          Refer 5 businesses and earn extra ₹2,50,000 bonus credits
+        <div>
+          <div
+            class="Viewweb__View-sc-1o0hmxm-0 eayzPs Sizeweb__Size-sc-1e5yf1-0 kqYdGh Flexweb__Flex-sc-1yhcoea-0 eYznJc"
+          >
+            <div
+              class="Textweb__Text-sc-1qrdpx3-0 fyAYeP"
+              color="shade.980"
+              data-testid="ds-text"
+            >
+              Refer 5 businesses and earn extra ₹2,50,000 bonus credits
+            </div>
+          </div>
         </div>
+        <div
+          data-testid="layerTestId"
+          id="layerHost"
+        />
       </div>
     </div>
-    <div
-      data-testid="layerTestId"
-      id="layerHost"
-    />
   </div>
   <div
     data-testid="layerTestId"
@@ -75,37 +89,44 @@ exports[`Storyshots referral/ReferaAndEarn Refer Section 1`] = `
 <div>
   <div>
     <div>
+      <div />
       <div
-        class="Viewweb__View-sc-1o0hmxm-0 eayzPs Sizeweb__Size-sc-1e5yf1-0 kqYdGh Flexweb__Flex-sc-1yhcoea-0 eYznJc"
+        data-testid="component-wrapper"
       >
-        <div
-          class="Textweb__Text-sc-1qrdpx3-0 fyAYeP"
-          color="shade.980"
-          data-testid="ds-text"
-        >
-          Refer and earn Rs.50,000 transaction Credits for every referral
-        </div>
-        <div
-          class="Textweb__Text-sc-1qrdpx3-0 gLAvwL Spaceweb__Space-sc-1abqisc-0 cthgwQ"
-          color="shade.970"
-          data-testid="ds-text"
-        >
-          Know a business who needs to setup online payments? You will both receive ₹50,000 transaction credits.
-          <a
-            class="Textweb__Text-sc-1qrdpx3-0 Linkweb__StyledText-c2kinr-0 biSdwx"
-            color="shade.980"
-            data-testid="ds-text"
-            target="_self"
+        <div>
+          <div
+            class="Viewweb__View-sc-1o0hmxm-0 eayzPs Sizeweb__Size-sc-1e5yf1-0 kqYdGh Flexweb__Flex-sc-1yhcoea-0 eYznJc"
           >
-            Terms apply
-          </a>
+            <div
+              class="Textweb__Text-sc-1qrdpx3-0 fyAYeP"
+              color="shade.980"
+              data-testid="ds-text"
+            >
+              Refer and earn Rs.50,000 transaction Credits for every referral
+            </div>
+            <div
+              class="Textweb__Text-sc-1qrdpx3-0 gLAvwL Spaceweb__Space-sc-1abqisc-0 cthgwQ"
+              color="shade.970"
+              data-testid="ds-text"
+            >
+              Know a business who needs to setup online payments? You will both receive ₹50,000 transaction credits.
+              <a
+                class="Textweb__Text-sc-1qrdpx3-0 Linkweb__StyledText-c2kinr-0 biSdwx"
+                color="shade.980"
+                data-testid="ds-text"
+                target="_self"
+              >
+                Terms apply
+              </a>
+            </div>
+          </div>
         </div>
+        <div
+          data-testid="layerTestId"
+          id="layerHost"
+        />
       </div>
     </div>
-    <div
-      data-testid="layerTestId"
-      id="layerHost"
-    />
   </div>
   <div
     data-testid="layerTestId"

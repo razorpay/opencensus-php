@@ -1,7 +1,7 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import PaymentMethod from 'merchant/views/Transactions/Payments/components/PaymentMethod';
-import { render, screen, fireEvent } from 'test-utils';
+import { render, screen, fireEvent, checkIfComponentIsEmpty } from 'test-utils';
 
 describe('PaymentMethod', () => {
   const defaultProps = {
@@ -13,8 +13,8 @@ describe('PaymentMethod', () => {
   };
 
   test('should not render payment method details when payment method is not present', () => {
-    const { container } = render(<App card={null} />);
-    expect(container.firstChild).toBeEmptyDOMElement();
+    render(<App card={null} />);
+    checkIfComponentIsEmpty();
   });
 
   test('should render payment method details when payment method is netbanking', () => {

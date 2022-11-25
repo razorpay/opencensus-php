@@ -1,12 +1,8 @@
 import { render, screen, fireEvent } from 'common/services/test/test-utils';
 import EmailReport from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/EmailReport';
-import { getByRole } from '@testing-library/dom';
 import * as analytics from 'common/utils/analytics';
 import * as selfServeAnalytics from 'common/utils/selfServeAnalytics';
 import RolesList from 'merchant/helpers/permissions/roles-list';
-import { storeWithInitialState } from 'merchant/store';
-import { Provider } from 'react-redux';
-import ModalDialog from 'common/ui/ModalDialog';
 
 describe('Email Report', () => {
   const emails = ['test1@gmail.com', 'test2@gmail.com', 'test3@gmail.com'];
@@ -21,19 +17,15 @@ describe('Email Report', () => {
     isFormDisabled: false,
   };
 
-  const App = (props = {}) => {
-    return (
-      <Provider store={storeWithInitialState({ session: { user: { role: RolesList.OWNER } } })}>
-        <>
-          <ModalDialog />
-          <EmailReport ref={(ref) => (appRef = ref)} {...defaultProps} {...props} />
-        </>
-      </Provider>
-    );
+  const renderApp = (props = {}) => {
+    return render(<EmailReport ref={(ref) => (appRef = ref)} {...defaultProps} {...props} />, {
+      showModal: true,
+      initialState: { session: { user: { role: RolesList.OWNER } } },
+    });
   };
 
   test('should render Email report', () => {
-    render(<App />);
+    renderApp();
     expect(screen.getByText('Email Report To')).toBeInTheDocument();
     expect(screen.getByText(emails[0])).toBeInTheDocument();
     expect(screen.queryByText(emails[1])).not.toBeInTheDocument();
@@ -41,13 +33,12 @@ describe('Email Report', () => {
   });
 
   test('should open ChooseEmail modal and validate onChange', () => {
-    render(<App />);
+    renderApp();
     fireEvent.click(screen.getByRole('button', { name: 'Choose email' }));
     // validate against openModal content as openModal cannot be jest.spy'ed
     expect(document.querySelector('h3.modal-title')).toHaveTextContent('Choose Email');
 
-    const modalContainer = document.getElementsByClassName('ReactModalPortal')[0];
-    const emailOneElement = getByRole(modalContainer, 'checkbox', { name: emails[0] });
+    const emailOneElement = screen.getAllByRole('checkbox', { name: emails[0] })[1];
     const emailTwoElement = screen.getByRole('checkbox', { name: emails[1] });
     const emailThreeElement = screen.getByRole('checkbox', { name: emails[2] });
     fireEvent.click(emailOneElement);
@@ -88,7 +79,7 @@ describe('Email Report', () => {
   });
 
   test('should show Add Email button and open AddEmail Modal', () => {
-    render(<App emails={[]} />);
+    renderApp({ emails: [] });
     const addEmailButton = screen.getByRole('button', { name: 'Add Email' });
     fireEvent.click(addEmailButton);
 
@@ -101,7 +92,7 @@ describe('Email Report', () => {
   });
 
   test('should check for formDisabled class', () => {
-    const { container } = render(<App isFormDisabled />);
+    const { container } = renderApp({ isFormDisabled: true });
     expect(container.querySelector('.Input--disabled')).toBeInTheDocument();
   });
 });

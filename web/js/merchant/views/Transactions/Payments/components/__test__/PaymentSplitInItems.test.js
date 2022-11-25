@@ -1,7 +1,7 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import PaymentSplitInItems from 'merchant/views/Transactions/Payments/components/PaymentSplitInItems';
-import { render, screen, waitFor } from 'test-utils';
+import { render, screen, waitFor, checkIfComponentIsEmpty } from 'test-utils';
 import { createMemoryHistory } from 'history';
 
 describe('PaymentSplitInItems', () => {
@@ -21,10 +21,10 @@ describe('PaymentSplitInItems', () => {
 
   describe('When the provided section is not allowed', () => {
     test('should not render payment split items', () => {
-      const { container } = renderApp({
+      renderApp({
         hash: '',
       });
-      expect(container.firstChild).toBeEmptyDOMElement();
+      checkIfComponentIsEmpty();
     });
   });
 

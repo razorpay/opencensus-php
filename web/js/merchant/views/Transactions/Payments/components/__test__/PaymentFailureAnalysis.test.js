@@ -1,7 +1,7 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import PaymentFailureAnalysis from 'merchant/views/Transactions/Payments/components/PaymentFailureAnalysis';
-import { render, screen } from 'test-utils';
+import { render, screen, checkIfComponentIsEmpty } from 'test-utils';
 
 describe('PaymentFailureAnalysis', () => {
   const defaultProps = {
@@ -47,8 +47,8 @@ describe('PaymentFailureAnalysis', () => {
   });
 
   test('should not render payment failure analysis when there is no data', () => {
-    const { container } = render(<App data={{}} />);
-    expect(container.firstChild).toBeEmptyDOMElement();
+    render(<App data={{}} />);
+    checkIfComponentIsEmpty();
   });
 
   test('should render Razorpay Failures', () => {

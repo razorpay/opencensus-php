@@ -4,19 +4,26 @@ exports[`Storyshots Onboarding/ActivationProgress Greylisted Merchant 1`] = `
 <div>
   <div>
     <div>
+      <div />
       <div
-        class="Viewweb__View-sc-1o0hmxm-0 Loader__FullPageView-sc-18rhxgm-1 nVPNj Flexweb__Flex-sc-1yhcoea-0 jXNfqs"
+        data-testid="component-wrapper"
       >
+        <div>
+          <div
+            class="Viewweb__View-sc-1o0hmxm-0 Loader__FullPageView-sc-18rhxgm-1 nVPNj Flexweb__Flex-sc-1yhcoea-0 jXNfqs"
+          >
+            <div
+              class="Viewweb__View-sc-1o0hmxm-0 Loader__StyledLoader-sc-18rhxgm-0 gZPbHp Sizeweb__Size-sc-1e5yf1-0 fkEnIw"
+              role="loader"
+            />
+          </div>
+        </div>
         <div
-          class="Viewweb__View-sc-1o0hmxm-0 Loader__StyledLoader-sc-18rhxgm-0 gZPbHp Sizeweb__Size-sc-1e5yf1-0 fkEnIw"
-          role="loader"
+          data-testid="layerTestId"
+          id="layerHost"
         />
       </div>
     </div>
-    <div
-      data-testid="layerTestId"
-      id="layerHost"
-    />
   </div>
   <div
     data-testid="layerTestId"
@@ -29,19 +36,26 @@ exports[`Storyshots Onboarding/ActivationProgress Whitelisted Merchant 1`] = `
 <div>
   <div>
     <div>
+      <div />
       <div
-        class="Viewweb__View-sc-1o0hmxm-0 Loader__FullPageView-sc-18rhxgm-1 nVPNj Flexweb__Flex-sc-1yhcoea-0 jXNfqs"
+        data-testid="component-wrapper"
       >
+        <div>
+          <div
+            class="Viewweb__View-sc-1o0hmxm-0 Loader__FullPageView-sc-18rhxgm-1 nVPNj Flexweb__Flex-sc-1yhcoea-0 jXNfqs"
+          >
+            <div
+              class="Viewweb__View-sc-1o0hmxm-0 Loader__StyledLoader-sc-18rhxgm-0 gZPbHp Sizeweb__Size-sc-1e5yf1-0 fkEnIw"
+              role="loader"
+            />
+          </div>
+        </div>
         <div
-          class="Viewweb__View-sc-1o0hmxm-0 Loader__StyledLoader-sc-18rhxgm-0 gZPbHp Sizeweb__Size-sc-1e5yf1-0 fkEnIw"
-          role="loader"
+          data-testid="layerTestId"
+          id="layerHost"
         />
       </div>
     </div>
-    <div
-      data-testid="layerTestId"
-      id="layerHost"
-    />
   </div>
   <div
     data-testid="layerTestId"

@@ -4,68 +4,75 @@ exports[`Storyshots Onboarding/OnboardingCard Default 1`] = `
 <div>
   <div>
     <div>
+      <div />
       <div
-        class="Viewweb__View-sc-1o0hmxm-0 eayzPs"
-        role="shimmer"
+        data-testid="component-wrapper"
       >
-        <div
-          class="Viewweb__View-sc-1o0hmxm-0 Card__StyledCard-sc-1tygnup-0 jiZCa-d Spaceweb__Space-sc-1abqisc-0 eiHYzf"
-        >
-          <div
-            class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 eSXEJE"
-          >
-            <div
-              class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__HeadingContainer-h67uoz-1 hrJYDM"
-            >
-              <div
-                class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__HeadingContainer-h67uoz-1 hrJYDM Spaceweb__Space-sc-1abqisc-0 ekUIxk"
-              >
-                <div
-                  class="Textweb__Text-sc-1qrdpx3-0 iAZzAb"
-                  color="shade.980"
-                  data-testid="ds-text"
-                >
-                  Account Activation
-                </div>
-              </div>
-              <div
-                class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-h67uoz-2 kXejWt Sizeweb__Size-sc-1e5yf1-0 eAGDot Spaceweb__Space-sc-1abqisc-0 eWXaAy"
-              />
-            </div>
-            <img
-              alt="fill_activation_form_icon"
-              src="form_icon.svg"
-            />
-          </div>
-          <div
-            class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Separator-h67uoz-0 pKBln"
-          />
+        <div>
           <div
             class="Viewweb__View-sc-1o0hmxm-0 eayzPs"
+            role="shimmer"
           >
             <div
-              class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-h67uoz-2 kXejWt Sizeweb__Size-sc-1e5yf1-0 dmNVka Spaceweb__Space-sc-1abqisc-0 jxpzzb"
-            />
-            <div
-              class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-h67uoz-2 kXejWt Sizeweb__Size-sc-1e5yf1-0 cBoAPd Spaceweb__Space-sc-1abqisc-0 jxpzzb"
-            />
-            <div
-              class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-h67uoz-2 kXejWt Sizeweb__Size-sc-1e5yf1-0 dmNVka Spaceweb__Space-sc-1abqisc-0 jxpzzb"
-            />
-            <div
-              class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-h67uoz-2 kXejWt Sizeweb__Size-sc-1e5yf1-0 cBoAPd Spaceweb__Space-sc-1abqisc-0 jxpzzb"
-            />
-            <div
-              class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-h67uoz-2 kXejWt Sizeweb__Size-sc-1e5yf1-0 dmNVka"
-            />
+              class="Viewweb__View-sc-1o0hmxm-0 Card__StyledCard-sc-1tygnup-0 jiZCa-d Spaceweb__Space-sc-1abqisc-0 eiHYzf"
+            >
+              <div
+                class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 eSXEJE"
+              >
+                <div
+                  class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__HeadingContainer-h67uoz-1 hrJYDM"
+                >
+                  <div
+                    class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__HeadingContainer-h67uoz-1 hrJYDM Spaceweb__Space-sc-1abqisc-0 ekUIxk"
+                  >
+                    <div
+                      class="Textweb__Text-sc-1qrdpx3-0 iAZzAb"
+                      color="shade.980"
+                      data-testid="ds-text"
+                    >
+                      Account Activation
+                    </div>
+                  </div>
+                  <div
+                    class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-h67uoz-2 kXejWt Sizeweb__Size-sc-1e5yf1-0 eAGDot Spaceweb__Space-sc-1abqisc-0 eWXaAy"
+                  />
+                </div>
+                <img
+                  alt="fill_activation_form_icon"
+                  src="form_icon.svg"
+                />
+              </div>
+              <div
+                class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Separator-h67uoz-0 pKBln"
+              />
+              <div
+                class="Viewweb__View-sc-1o0hmxm-0 eayzPs"
+              >
+                <div
+                  class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-h67uoz-2 kXejWt Sizeweb__Size-sc-1e5yf1-0 dmNVka Spaceweb__Space-sc-1abqisc-0 jxpzzb"
+                />
+                <div
+                  class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-h67uoz-2 kXejWt Sizeweb__Size-sc-1e5yf1-0 cBoAPd Spaceweb__Space-sc-1abqisc-0 jxpzzb"
+                />
+                <div
+                  class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-h67uoz-2 kXejWt Sizeweb__Size-sc-1e5yf1-0 dmNVka Spaceweb__Space-sc-1abqisc-0 jxpzzb"
+                />
+                <div
+                  class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-h67uoz-2 kXejWt Sizeweb__Size-sc-1e5yf1-0 cBoAPd Spaceweb__Space-sc-1abqisc-0 jxpzzb"
+                />
+                <div
+                  class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-h67uoz-2 kXejWt Sizeweb__Size-sc-1e5yf1-0 dmNVka"
+                />
+              </div>
+            </div>
           </div>
         </div>
+        <div
+          data-testid="layerTestId"
+          id="layerHost"
+        />
       </div>
     </div>
-    <div
-      data-testid="layerTestId"
-      id="layerHost"
-    />
   </div>
   <div
     data-testid="layerTestId"

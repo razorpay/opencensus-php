@@ -1,6 +1,6 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import { render, screen, fireEvent } from 'test-utils';
+import { render, screen, fireEvent, checkIfComponentIsEmpty } from 'test-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import { refund } from 'merchant/views/Transactions/Refunds/__test__/mocks/fixtures';
 import {
@@ -11,8 +11,8 @@ import {
 
 describe('PaymentRefund', () => {
   test('should not render payment refund details when there is no payment status', () => {
-    const { container } = render(<App card={null} />);
-    expect(container.firstChild).toBeEmptyDOMElement();
+    render(<App card={null} />);
+    checkIfComponentIsEmpty();
   });
 
   test.each(['created', 'authorized', 'failed'])(

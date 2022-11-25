@@ -20,4 +20,4 @@ web/entry/pokedex-entry.js
 web/js/pokedex/index.js
 web/entry/razorx-entry.js
 public/js/services.js
-
+web/js/common/ui/ConfirmModal/ConfirmModalProvider.js

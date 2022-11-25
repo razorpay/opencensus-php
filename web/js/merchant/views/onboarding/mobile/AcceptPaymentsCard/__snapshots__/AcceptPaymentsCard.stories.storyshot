@@ -3,11 +3,18 @@
 exports[`Storyshots Onboarding/AcceptpaymentsCard Default 1`] = `
 <div>
   <div>
-    <div />
-    <div
-      data-testid="layerTestId"
-      id="layerHost"
-    />
+    <div>
+      <div />
+      <div
+        data-testid="component-wrapper"
+      >
+        <div />
+        <div
+          data-testid="layerTestId"
+          id="layerHost"
+        />
+      </div>
+    </div>
   </div>
   <div
     data-testid="layerTestId"

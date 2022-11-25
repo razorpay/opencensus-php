@@ -12,6 +12,9 @@ import ModalDialog from 'common/ui/ModalDialog';
 import Notifications from 'common/ui/Notifications';
 import Wrapper from 'common/components/Bootstrap/Wrapper';
 import userEvent from '@testing-library/user-event';
+// eslint-disable-next-line
+import ConfirmModalProvider from 'common/ui/ConfirmModal/ConfirmModalProvider';
+import { mockContext, COMPONENT_WRAPPER_TESTID } from 'common/services/test/constants';
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 const customRender = (
@@ -25,50 +28,28 @@ const customRender = (
     reduxStore = storeWithInitialState(initialState),
     historyOptions = { initialEntries: ['/'] },
     history = createMemoryHistory(historyOptions),
+    context = mockContext,
     ...restOptions
   }: any = {},
 ) => {
   const AllTheProviders: React.FC<{
     children: ReactElement<any, any> | null;
   }> = ({ children }) => {
-    const mockRazorXExp = {
-      isInstantActivationEnabled: true,
-      canSkipPoiValidation: false,
-      canGenerateTnCPage: true,
-      isBDAndAovEnabled: true,
-      isAadharEkycMandatory: true,
-      isSyncBankVerificationEnabled: true,
-      isEmailMandatoryOnL1: true,
-      isEmailNonMandatoryOnL1: false,
-      isEmailNonMandatoryOnL2Form: false,
-      isActivationFormFullView: true,
-      isGstinSyncFlowEnabled: true,
-      isLlpinSyncFlowEnabled: true,
-      isCinSyncFlowEnabled: true,
-      isActivationMccPendingProgressbarDisabled: true,
-      isMsmeDisabled: true,
-      isAdharEkycRequiredForTrustSocietyNgo: true,
-    };
     return (
-      <Wrapper
-        context={{
-          mode: 'test',
-          org: { id: '123' },
-          user: { contact_name: 'prashant' },
-          experiments: mockRazorXExp,
-        }}
-      >
+      <Wrapper context={context}>
         <Provider store={reduxStore}>
-          <>
+          <ConfirmModalProvider>
             <Router history={history}>
               <>
                 {showModal && <ModalDialog />}
                 <Notifications />
-
-                <Route path={path} component={() => children} />
+                <Route
+                  path={path}
+                  component={() => <div data-testid={COMPONENT_WRAPPER_TESTID}>{children}</div>}
+                />
               </>
             </Router>
-          </>
+          </ConfirmModalProvider>
         </Provider>
       </Wrapper>
     );
@@ -80,6 +61,9 @@ const customRender = (
 
 const waitForLoadingToFinish = (): Promise<void> =>
   waitForElementToBeRemoved(screen.queryAllByTestId('spinner'));
+
+const checkIfComponentIsEmpty = () =>
+  expect(screen.getByTestId(COMPONENT_WRAPPER_TESTID)).toBeEmptyDOMElement();
 
 const delay = (time = 1000): Promise<void> => new Promise((r) => setTimeout(r, time));
 // re-export everything
@@ -94,4 +78,6 @@ export {
   delay,
   waitFor,
   userEvent,
+  checkIfComponentIsEmpty,
+  COMPONENT_WRAPPER_TESTID,
 };

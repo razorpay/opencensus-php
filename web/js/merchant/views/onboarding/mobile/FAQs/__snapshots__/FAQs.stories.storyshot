@@ -4,24 +4,31 @@ exports[`Storyshots onboarding/FAQs Faq 1`] = `
 <div>
   <div>
     <div>
-      <button
-        class="Buttonweb__StyledButton-sc-18xf15a-0 kRiGXp Spaceweb__Space-sc-1abqisc-0 dBqoYd Sizeweb__Size-sc-1e5yf1-0 jdvRfl Flexweb__Flex-sc-1yhcoea-0 biKCWz"
-        data-testid="ds-button"
-        type="button"
+      <div />
+      <div
+        data-testid="component-wrapper"
       >
-        <div
-          class="Textweb__Text-sc-1qrdpx3-0 gdNKCE"
-          color="light.900"
-          data-testid="ds-text"
-        >
-          All FAQs
+        <div>
+          <button
+            class="Buttonweb__StyledButton-sc-18xf15a-0 kRiGXp Spaceweb__Space-sc-1abqisc-0 dBqoYd Sizeweb__Size-sc-1e5yf1-0 jdvRfl Flexweb__Flex-sc-1yhcoea-0 biKCWz"
+            data-testid="ds-button"
+            type="button"
+          >
+            <div
+              class="Textweb__Text-sc-1qrdpx3-0 gdNKCE"
+              color="light.900"
+              data-testid="ds-text"
+            >
+              All FAQs
+            </div>
+          </button>
         </div>
-      </button>
+        <div
+          data-testid="layerTestId"
+          id="layerHost"
+        />
+      </div>
     </div>
-    <div
-      data-testid="layerTestId"
-      id="layerHost"
-    />
   </div>
   <div
     data-testid="layerTestId"
@@ -34,39 +41,46 @@ exports[`Storyshots onboarding/FAQs Specific Section Faq 1`] = `
 <div>
   <div>
     <div>
-      <button
-        class="Buttonweb__StyledButton-sc-18xf15a-0 kRiGXp Spaceweb__Space-sc-1abqisc-0 dBqoYd Sizeweb__Size-sc-1e5yf1-0 jdvRfl Flexweb__Flex-sc-1yhcoea-0 biKCWz"
-        data-testid="ds-button"
-        type="button"
+      <div />
+      <div
+        data-testid="component-wrapper"
       >
-        <div
-          class="Textweb__Text-sc-1qrdpx3-0 gdNKCE"
-          color="light.900"
-          data-testid="ds-text"
-        >
-          billing - label
+        <div>
+          <button
+            class="Buttonweb__StyledButton-sc-18xf15a-0 kRiGXp Spaceweb__Space-sc-1abqisc-0 dBqoYd Sizeweb__Size-sc-1e5yf1-0 jdvRfl Flexweb__Flex-sc-1yhcoea-0 biKCWz"
+            data-testid="ds-button"
+            type="button"
+          >
+            <div
+              class="Textweb__Text-sc-1qrdpx3-0 gdNKCE"
+              color="light.900"
+              data-testid="ds-text"
+            >
+              billing - label
+            </div>
+          </button>
+          <br />
+          <br />
+          <button
+            class="Buttonweb__StyledButton-sc-18xf15a-0 kRiGXp Spaceweb__Space-sc-1abqisc-0 dBqoYd Sizeweb__Size-sc-1e5yf1-0 jdvRfl Flexweb__Flex-sc-1yhcoea-0 biKCWz"
+            data-testid="ds-button"
+            type="button"
+          >
+            <div
+              class="Textweb__Text-sc-1qrdpx3-0 gdNKCE"
+              color="light.900"
+              data-testid="ds-text"
+            >
+              website details
+            </div>
+          </button>
         </div>
-      </button>
-      <br />
-      <br />
-      <button
-        class="Buttonweb__StyledButton-sc-18xf15a-0 kRiGXp Spaceweb__Space-sc-1abqisc-0 dBqoYd Sizeweb__Size-sc-1e5yf1-0 jdvRfl Flexweb__Flex-sc-1yhcoea-0 biKCWz"
-        data-testid="ds-button"
-        type="button"
-      >
         <div
-          class="Textweb__Text-sc-1qrdpx3-0 gdNKCE"
-          color="light.900"
-          data-testid="ds-text"
-        >
-          website details
-        </div>
-      </button>
+          data-testid="layerTestId"
+          id="layerHost"
+        />
+      </div>
     </div>
-    <div
-      data-testid="layerTestId"
-      id="layerHost"
-    />
   </div>
   <div
     data-testid="layerTestId"

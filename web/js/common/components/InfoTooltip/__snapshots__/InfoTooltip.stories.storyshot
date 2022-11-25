@@ -4,22 +4,29 @@ exports[`Storyshots Info Tooltip Default Info Tooltip 1`] = `
 <div>
   <div>
     <div>
+      <div />
       <div
-        class="Viewweb__View-sc-1o0hmxm-0 InfoTooltipstories__Container-sc-57g1f4-0 gCAFa"
+        data-testid="component-wrapper"
       >
-        <div
-          class="Viewweb__View-sc-1o0hmxm-0 Styled__TooltipContainer-e8dfvw-0 eA-dNWx"
-        >
-          <input
-            placeholder="Click to view info tooltip"
-          />
+        <div>
+          <div
+            class="Viewweb__View-sc-1o0hmxm-0 InfoTooltipstories__Container-sc-57g1f4-0 gCAFa"
+          >
+            <div
+              class="Viewweb__View-sc-1o0hmxm-0 Styled__TooltipContainer-e8dfvw-0 eA-dNWx"
+            >
+              <input
+                placeholder="Click to view info tooltip"
+              />
+            </div>
+          </div>
         </div>
+        <div
+          data-testid="layerTestId"
+          id="layerHost"
+        />
       </div>
     </div>
-    <div
-      data-testid="layerTestId"
-      id="layerHost"
-    />
   </div>
   <div
     data-testid="layerTestId"
