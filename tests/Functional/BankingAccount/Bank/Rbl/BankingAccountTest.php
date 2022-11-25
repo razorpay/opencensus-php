@@ -45,6 +45,7 @@ use RZP\Mail\BankingAccount\StatusNotifications\Rejected;
 use RZP\Mail\BankingAccount\StatusNotifications\Processed;
 use RZP\Mail\BankingAccount\StatusNotifications\Cancelled;
 use RZP\Mail\BankingAccount\StatusNotifications\Activated;
+use RZP\Models\BankingAccount\Activation\Detail\Validator;
 use RZP\Models\BankingAccount\Core as BankingAccountCore;
 use RZP\Mail\BankingAccount\Activation as ActivationMails;
 use RZP\Mail\BankingAccount\StatusNotifications\Processing;
@@ -10711,6 +10712,72 @@ class BankingAccountTest extends TestCase
                 'content' => [
                     'entity' => 'collection',
                     'count' => 0,
+                    'items' => [
+                    ],
+                ],
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testFilterSkipDwt()
+    {
+
+        $ba1 = $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => self::DefaultMerchantId,
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '560038',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->fixtures->create('banking_account_activation_detail', [
+            'banking_account_id'        => $ba1->getId(),
+            'merchant_poc_email'        => 'rzp@gmail.com',
+            'merchant_poc_phone_number' => '9177278079',
+            'sales_team'                => Validator::SELF_SERVE,
+            'additional_details'        => json_encode([
+                'skip_dwt' => 1
+            ])
+        ]);
+
+        $ba2 = $this->fixtures->create('banking_account', [
+            'id'                    => '01234567890125',
+            'account_number'        => '2224440041626906',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000001',
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '560038',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->fixtures->create('banking_account_activation_detail', [
+            'banking_account_id'        => $ba2->getId(),
+            'merchant_poc_email'        => 'rzp@gmail.com',
+            'merchant_poc_phone_number' => '9177278079',
+            'sales_team'                => Validator::SELF_SERVE,
+        ]);
+
+        $this->ba->adminAuth();
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/admin/banking_account?skip_dwt=1',
+                'method'  => 'GET',
+                'content' => [
+                    'expand' => ['merchant','merchant.merchantDetail'],
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'entity' => 'collection',
+                    'count' => 1,
                     'items' => [
                     ],
                 ],

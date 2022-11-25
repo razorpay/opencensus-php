@@ -175,6 +175,7 @@ class Entity extends Base\PublicEntity
     const FOS_CITY = 'fos_city';
     const FROM_OPS_FOLLOW_UP_DATE = 'from_ops_follow_up_date';
     const TO_OPS_FOLLOW_UP_DATE = 'to_ops_follow_up_date';
+    const SKIP_DWT = 'skip_dwt';
 
     // For experimentation - resolved from merchant preferences - group x_merchant_current_accounts
     const USING_NEW_STATES = 'using_new_states';
@@ -959,7 +960,7 @@ class Entity extends Base\PublicEntity
 
     /**
      * Returns the reference date for banking account based on the current status
-     * 
+     *
      * By default ActivationDetail is extracted from banking account.
      * But since activation detail can be changing with banking account,
      * we can pass the latest activation detail from which reference date will be taken
@@ -1029,9 +1030,9 @@ class Entity extends Base\PublicEntity
 
     /**
      * This is for experimentation on leads for intruducing new state framework during Post STB
-     * Read more here: 
+     * Read more here:
      * https://docs.google.com/spreadsheets/d/1theXYFolRsplp-mDbONthOKRXc0j4waSdQNf6UyqEdg/edit#gid=0
-     * 
+     *
      * TODO:
      * M2 States Experiment
      * Remove this when all new leads are onboarded to new terminal states
@@ -1041,9 +1042,9 @@ class Entity extends Base\PublicEntity
     {
         // From merchant attributes, we need value for group:x_merchant_current_accounts, type:ca_onboarding_state_machine
         $preferences = (new Attribute\Core)->fetchKeyValues(
-            $this->merchant, 
-            Product::BANKING, 
-            Attribute\Group::X_MERCHANT_CURRENT_ACCOUNTS, 
+            $this->merchant,
+            Product::BANKING,
+            Attribute\Group::X_MERCHANT_CURRENT_ACCOUNTS,
             [Attribute\Type::CA_ONBOARDING_STATE_MACHINE]
         );
 
@@ -1053,7 +1054,7 @@ class Entity extends Base\PublicEntity
         {
             return $preferences[0][Attribute\Entity::VALUE] === self::NEW_STATE_MACHINE;
         }
-        
+
         return false;
     }
 

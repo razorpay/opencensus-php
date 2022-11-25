@@ -48,6 +48,7 @@ class Fetch extends BaseFetch
             Entity::PENDING_ON                          => 'sometimes|string',
             Entity::FROM_OPS_FOLLOW_UP_DATE             => 'sometimes|epoch',
             Entity::TO_OPS_FOLLOW_UP_DATE               => 'sometimes|epoch',
+            Entity::SKIP_DWT                            => 'sometimes|int'
         ],
     ];
 
@@ -90,6 +91,7 @@ class Fetch extends BaseFetch
             Entity::APPLICATION_TYPE,
             Entity::FROM_OPS_FOLLOW_UP_DATE,
             Entity::TO_OPS_FOLLOW_UP_DATE,
+            Entity::SKIP_DWT,
             self::EXPAND_EACH,
         ]
     ];

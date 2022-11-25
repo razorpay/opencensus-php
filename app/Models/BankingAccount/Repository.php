@@ -999,7 +999,7 @@ class Repository extends Base\Repository
 
         $query->select($this->dbColumn('*'));
 
-        $query->whereRaw('JSON_UNQUOTE(JSON_EXTRACT(additional_details, \'$."ops_follow_up_date"\')) != \'\' AND ' . 
+        $query->whereRaw('JSON_UNQUOTE(JSON_EXTRACT(additional_details, \'$."ops_follow_up_date"\')) != \'\' AND ' .
             'JSON_UNQUOTE(JSON_EXTRACT(additional_details, \'$."ops_follow_up_date"\')) >= \''.$fromOpsFollowUpDate.'\'');
     }
 
@@ -1011,8 +1011,30 @@ class Repository extends Base\Repository
 
         $query->select($this->dbColumn('*'));
 
-        $query->whereRaw('JSON_UNQUOTE(JSON_EXTRACT(additional_details, \'$."ops_follow_up_date"\')) != \'\' AND ' . 
+        $query->whereRaw('JSON_UNQUOTE(JSON_EXTRACT(additional_details, \'$."ops_follow_up_date"\')) != \'\' AND ' .
             'JSON_UNQUOTE(JSON_EXTRACT(additional_details, \'$."ops_follow_up_date"\')) <= \''.$toOpsFollowUpDate.'\'');
+    }
+
+    public function addQueryParamSkipDwt(Base\BuilderEx $query, $params)
+    {
+        $skipDwtValue = (int)$params[Entity::SKIP_DWT];
+
+        $this->joinQueryActivationDetail($query);
+
+        $query->select($this->dbColumn('*'));
+
+        // skip_dwt = 0 should return all app with null value and 0 value
+        if ($skipDwtValue === 1)
+        {
+            $query->whereRaw('JSON_UNQUOTE(JSON_EXTRACT(additional_details, \'$."skip_dwt"\')) != \'\' AND ' .
+                'JSON_UNQUOTE(JSON_EXTRACT(additional_details, \'$."skip_dwt"\')) = ?',[$skipDwtValue]);
+        } else
+        {
+            $query->whereRaw('JSON_UNQUOTE(JSON_EXTRACT(additional_details, \'$."skip_dwt"\')) == \'\' OR ' .
+                'JSON_UNQUOTE(JSON_EXTRACT(additional_details, \'$."skip_dwt"\')) = ?',[$skipDwtValue]);
+        }
+
+
     }
 
     /**
