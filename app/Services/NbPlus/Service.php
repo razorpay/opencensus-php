@@ -203,9 +203,10 @@ class Service
         {
             $meta_data['order_id'] = $input['order_id'];
         }
-
-        $meta_data['payment_id'] = $input['payment']['id'];
-
+        if(isset($this->action) and $this->action !== Action::CHECK_ACCOUNT)
+        {
+            $meta_data['payment_id'] = $input['payment']['id'];
+        }
         return $meta_data;
     }
 
