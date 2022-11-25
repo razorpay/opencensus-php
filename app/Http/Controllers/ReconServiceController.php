@@ -68,6 +68,7 @@ class ReconServiceController extends Controller
             '^reports$',
             '^entities$',
             '^reports\/[[:alnum:]]{14}\/retry',
+            '^json_logic_validation$',
         ],
         self::PATCH => [
             '^file_types\/[[:alnum:]]{14}$',
