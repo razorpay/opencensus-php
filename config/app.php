@@ -403,8 +403,6 @@ return array(
 
     '1cc_city_autopopulate_splitz_experiment_id' => env('MAGIC_CHECKOUT_DISABLE_AUTOPOPULATE_EXP_ID'),
 
-    '1cc_cart_items_splitz_experiment_id' => env('MAGIC_CHECKOUT_CART_ITEMS_EXP_ID'),
-
     '1cc_address_flow_exp_splitz_experiment_id' => env('MAGIC_CHECKOUT_ADDRESS_FLOW_EXP_ID'),
 
     '1cc_pg_router_ramp_up_exp_id' => env('MAGIC_CHECKOUT_PG_ROUTER_RAMP_EXP_ID'),
