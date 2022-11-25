@@ -4,18 +4,21 @@ import { titleCase } from 'common/utils/rzp-utils';
 import Input from 'common/new-ui/Input';
 
 const ComponentListFilter = (props, ref) => {
+  const activeTabLabel = `${titleCase(sanitizeTabName(props.activeTab))} Id`;
   return (
     <form ref={ref} onSubmit={props.submit}>
       <div class="settlement-components-filter">
         <div>
-          <Input
-            label={`${titleCase(sanitizeTabName(props.activeTab))} Id`}
-            name="id"
-            type="text"
-          />
+          <Input label={activeTabLabel} name="id" type="text" aria-label={activeTabLabel} />
         </div>
         <div>
-          <Input label="Count" name="count" type="number" defaultValue={props.count} />
+          <Input
+            label="Count"
+            name="count"
+            type="number"
+            defaultValue={props.count}
+            aria-label="Count"
+          />
         </div>
         <div>
           <button class="btn btn-primary" type="submit">

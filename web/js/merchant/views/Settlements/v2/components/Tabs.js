@@ -11,7 +11,7 @@ const Tabs = (props) => {
     const tabNamesObj = items.reduce((acc, tab) => {
       if (!tab.count) return acc;
 
-      const tabName = tab.component.split('_')[0];
+      const tabName = sanitizeTabName(tab.component);
       if (!acc[tabName]) {
         acc[tabName] = tab.count;
       } else {

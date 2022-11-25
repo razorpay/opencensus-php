@@ -13,7 +13,7 @@ const Pagination = ({ next, prev, listData, skip, count }) => {
           type="button"
           aria-label="previous"
           class="btn btn-default btn-sm i"
-          disabled={skip === 0 && true}
+          disabled={skip === 0}
           onClick={prev}
         >
           <i class="i i-chevron-left" />
@@ -22,7 +22,7 @@ const Pagination = ({ next, prev, listData, skip, count }) => {
           type="button"
           aria-label="next"
           class="btn btn-default btn-sm i"
-          disabled={listData.length < count && true}
+          disabled={listData.length < count}
           onClick={next}
         >
           <i class="i i-chevron-right" />

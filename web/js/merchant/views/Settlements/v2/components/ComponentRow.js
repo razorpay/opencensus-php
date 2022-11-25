@@ -14,9 +14,11 @@ const RenderColumn = ({ title, comp }) => (
 const ComponentRow = ({ breakupItem, newResponse }) => {
   const { type, component, count, amount, fee, tax, settled_amount } = breakupItem;
   let customClass = 'highlight-debit';
+  /* istanbul ignore else */
   if (type === 'credit') {
     customClass = 'highlight-credit';
   }
+  /* istanbul ignore else */
   if (component === 'unreconciled') {
     customClass = 'highlight-unreconciled';
   }
