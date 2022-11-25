@@ -1,0 +1,87 @@
+<?php
+
+namespace RZP\Models\Merchant\Acs\AsvClient;
+
+use Twirp\Context;
+use Twirp\Error;
+use RZP\Trace\TraceCode;
+use RZP\Exception\IntegrationException;
+use Rzp\Accounts\Account\V1 as accountV1;
+use RZP\Models\Merchant\Acs\AsvClient\Metrics\HttpClientTxn;
+
+class WebsiteAsvClient extends BaseClient
+{
+
+    private $merchantWebsiteClient;
+
+    /**
+     * WebsiteAsvClient Constructor
+     */
+    function __construct(accountV1\WebsiteAPIClient $merchantWebsiteClient = null)
+    {
+        parent::__construct();
+        if ($merchantWebsiteClient === null) {
+            $this->merchantWebsiteClient = new accountV1\WebsiteAPIClient($this->host, $this->httpClient);
+        } else {
+            $this->merchantWebsiteClient = $merchantWebsiteClient;
+        }
+    }
+
+    /**
+     * @throws IntegrationException
+     */
+    public function FetchMerchantWebsite(string $merchantId): accountV1\FetchMerchantWebsiteResponse
+    {
+        $this->trace->info(TraceCode::ASV_HTTP_CLIENT_REQUEST, [
+            Constant::ROUTE_NAME => Constant::ACCOUNT_WEBSITE_FETCH_ROUTE,
+            'merchant_id' => $merchantId
+        ]);
+
+        // Set Timeout for Fetch Merchant Website Route
+        $this->setHttpTimeoutBasedOnRoute(Constant::ACCOUNT_WEBSITE_FETCH_ROUTE);
+
+        $httpClientTxnMetric = new HttpClientTxn(Constant::ACCOUNT_WEBSITE_FETCH_ROUTE);
+
+        $this->asvClientCtx = Context::withHttpRequestHeaders([], $this->headers);
+
+        try {
+            $fetchMerchantWebsiteRequest = new accountV1\FetchAccountWebsiteRequest();
+            $fetchMerchantWebsiteRequest->setId($merchantId);
+
+            $httpClientTxnMetric->start();
+            $response = $this->merchantWebsiteClient->FetchMerchantWebsite($this->asvClientCtx,
+                $fetchMerchantWebsiteRequest);
+
+            $httpClientTxnMetric->end(true, '');
+
+            $this->trace->info(
+                TraceCode::ASV_HTTP_CLIENT_RESPONSE,
+                [
+                    Constant::ROUTE_NAME => Constant::ACCOUNT_WEBSITE_FETCH_ROUTE,
+                    'merchant_id' => $merchantId
+                ]
+            );
+
+            return $response;
+
+        } catch (Error $e) {
+            $httpClientTxnMetric->end(false, $e->getErrorCode());
+
+            $this->trace->traceException($e, null, TraceCode::ASV_HTTP_CLIENT_ERROR, [
+                Constant::ROUTE_NAME => Constant::ACCOUNT_WEBSITE_FETCH_ROUTE,
+            ]);
+
+            throw new IntegrationException($e->getMessage());
+        }
+    }
+
+    protected function setHttpTimeoutBasedOnRoute(string $route)
+    {
+        $timeout = 2;
+        switch($route) {
+            case  Constant::ACCOUNT_WEBSITE_FETCH_ROUTE:
+                $timeout = floatval($this->asvConfig[Constant::ASV_FETCH_ROUTE_HTTP_TIMEOUT_SEC]);
+        }
+        $this->merchantWebsiteClient->setTimeout($timeout);
+    }
+}

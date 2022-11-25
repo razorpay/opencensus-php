@@ -64,102 +64,20 @@ class BaseTest extends TestCase
         #T5 ends
     }
 
-
-    public function testIsWriteShadowOn()
+    public function testIsShadowOrReverseShadowOnForReadOperation()
     {
-        $allRouteOrJobNameWriteMigrationConfigEnabled = [
-            'write' => [
-                'enabled' => true,
-                'full_enabled' => false,
-                'splitz_experiment_id' => 'K1ZaAGS9JfAUHj'
-            ]
-        ];
-
-        $allRouteOrJobNameWriteMigrationConfigDiabled = [
-            'write' => [
-                'enabled' => false,
-                'full_enabled' => false,
-                'splitz_experiment_id' => 'K1ZaAGS9JfAUHj'
-            ]
-        ];
-
-        $bvsValidationJobWriteMigrationConfigEnabled = [
-            'write' => [
-                'enabled' => true,
-                'full_enabled' => false,
-                'splitz_experiment_id' => 'K1ZaAGS9JfAUHj'
-            ]
-        ];
-
-        $bvsValidationJobWriteMigrationConfigFullEnabled = [
-            'write' => [
-                'enabled' => true,
-                'full_enabled' => true,
-                'splitz_experiment_id' => 'K1ZaAGS9JfAUHj'
-            ]
-        ];
-
-        $bvsValidationJobWriteMigrationConfigDisabled = [
-            'write' => [
-                'enabled' => false,
-                'full_enabled' => false,
-                'splitz_experiment_id' => 'K1ZaAGS9JfAUHj'
-            ]
-        ];
-
-        #T1 starts - All Route Or Job Name Migration Config Enabled - Shadow On
-        Config::set('asv_migration', ['all_route_or_job' => $allRouteOrJobNameWriteMigrationConfigEnabled]);
-
-        $mockedBaseWrapper = $this->getMockedBaseWrapper(['getRouteOrJobName', 'isSplitzOn']);
-        $mockedBaseWrapper->expects($this->exactly(1))->method('getRouteOrJobName')->willReturn('bvs_validation_job');
-        $mockedBaseWrapper->expects($this->exactly(1))->method('isSplitzOn')->willReturn(true);
-        $isWriteShadowOn = $mockedBaseWrapper->isWriteShadowOn('10000000000000');
-        $this->assertTrue($isWriteShadowOn);
-        #T1 ends
-
-        #T2 starts - All Route Or Job Name Migration Config Enabled - Shadow Off
-        Config::set('asv_migration', ['all_route_or_job' => $allRouteOrJobNameWriteMigrationConfigEnabled]);
-
-        $mockedBaseWrapper = $this->getMockedBaseWrapper(['getRouteOrJobName', 'isSplitzOn']);
-        $mockedBaseWrapper->expects($this->exactly(1))->method('getRouteOrJobName')->willReturn('bvs_validation_job');
-        $mockedBaseWrapper->expects($this->exactly(1))->method('isSplitzOn')->willReturn(false);
-        $isWriteShadowOn = $mockedBaseWrapper->isWriteShadowOn('10000000000000');
-        $this->assertFalse($isWriteShadowOn);
-        #T2 ends
-
-        #T3 starts - All Route Or Job Name Migration Config Disabled Evaluate Using Specific config Enabled - Splitz True  - Shadow On
-        Config::set('asv_migration', ['all_route_or_job' => $allRouteOrJobNameWriteMigrationConfigDiabled, 'bvs_validation_job' => $bvsValidationJobWriteMigrationConfigEnabled]);
-        $mockedBaseWrapper = $this->getMockedBaseWrapper(['getRouteOrJobName', 'isSplitzOn']);
-        $mockedBaseWrapper->expects($this->exactly(1))->method('getRouteOrJobName')->willReturn('bvs_validation_job');
-        $mockedBaseWrapper->expects($this->exactly(1))->method('isSplitzOn')->willReturn(true);
-        $isWriteShadowOn = $mockedBaseWrapper->isWriteShadowOn('10000000000000');
-        $this->assertTrue($isWriteShadowOn);
-        #T3 ends
-
-        #T4 starts - All Route Or Job Name Migration Config Disabled Evaluate Using Specific config Disabled - Shadow Off
-        Config::set('asv_migration', ['all_route_or_job' => $allRouteOrJobNameWriteMigrationConfigDiabled, 'bvs_validation_job' => $bvsValidationJobWriteMigrationConfigDisabled]);
-        $mockedBaseWrapper = $this->getMockedBaseWrapper(['getRouteOrJobName', 'isSplitzOn']);
-        $mockedBaseWrapper->expects($this->exactly(1))->method('getRouteOrJobName')->willReturn('bvs_validation_job');
-        $mockedBaseWrapper->expects($this->never())->method('isSplitzOn');
-        $isWriteShadowOn = $mockedBaseWrapper->isWriteShadowOn('10000000000000');
-        $this->assertFalse($isWriteShadowOn);
-        #T4 ends
-
-
-        #T5 starts - All Route Or Job Name Migration Config Disabled Evaluate Using Specific config Full Enabled - Shadow On
-        Config::set('asv_migration', ['all_route_or_job' => $allRouteOrJobNameWriteMigrationConfigDiabled, 'bvs_validation_job' => $bvsValidationJobWriteMigrationConfigFullEnabled]);
-        $mockedBaseWrapper = $this->getMockedBaseWrapper(['getRouteOrJobName', 'isSplitzOn']);
-        $mockedBaseWrapper->expects($this->exactly(1))->method('getRouteOrJobName')->willReturn('bvs_validation_job');
-        $mockedBaseWrapper->expects($this->never())->method('isSplitzOn');
-        $isWriteShadowOn = $mockedBaseWrapper->isWriteShadowOn('10000000000000');
-        $this->assertTrue($isWriteShadowOn);
-        #T5 ends
+        $this->performTestOnIsShadowOrReverseShadowOnForOperation('read');
     }
 
-    public function testIsWriteShadowOrReverseShadowOn()
+    public function testIsShadowOrReverseShadowOnForWriteOperation()
+    {
+        $this->performTestOnIsShadowOrReverseShadowOnForOperation('write');
+    }
+
+    public function performTestOnIsShadowOrReverseShadowOnForOperation($operation = 'read')
     {
         $allRouteOrJobNameReadShadowMigrationConfigEnabled = [
-            'read' => [
+            $operation => [
                 'shadow' => [
                     'enabled' => true,
                     'full_enabled' => false,
@@ -169,7 +87,7 @@ class BaseTest extends TestCase
 
 
         $bvsValidationJobReadShadowMigrationConfigEnabled = [
-            'read' => [
+            $operation => [
                 'shadow' => [
                     'enabled' => true,
                     'full_enabled' => false,
@@ -180,7 +98,7 @@ class BaseTest extends TestCase
 
 
         $bvsValidationJobReadShadowMigrationConfigFullEnabled = [
-            'read' => [
+            $operation => [
                 'shadow' => [
                     'enabled' => true,
                     'full_enabled' => true,
@@ -191,7 +109,7 @@ class BaseTest extends TestCase
 
 
         $allRouteOrJobNameReadReverseShadowMigrationConfigEnabled = [
-            'read' => [
+            $operation => [
                 'reverse_shadow' => [
                     'enabled' => true,
                     'full_enabled' => false,
@@ -201,7 +119,7 @@ class BaseTest extends TestCase
 
 
         $bvsValidationJobReadReverseShadowMigrationConfigEnabled = [
-            'read' => [
+            $operation => [
                 'reverse_shadow' => [
                     'enabled' => true,
                     'full_enabled' => false,
@@ -212,7 +130,7 @@ class BaseTest extends TestCase
 
 
         $bvsValidationJobReadReverseShadowMigrationConfigFullEnabled = [
-            'read' => [
+            $operation => [
                 'reverse_shadow' => [
                     'enabled' => true,
                     'full_enabled' => true,
@@ -227,8 +145,8 @@ class BaseTest extends TestCase
         $mockedBaseWrapper = $this->getMockedBaseWrapper(['getRouteOrJobName', 'isSplitzOn']);
         $mockedBaseWrapper->expects($this->exactly(1))->method('getRouteOrJobName')->willReturn('bvs_validation_job');
         $mockedBaseWrapper->expects($this->exactly(1))->method('isSplitzOn')->willReturn(true);
-        $isWriteShadowOn = $mockedBaseWrapper->isReadShadowOrReverseShadowOn('10000000000000', 'shadow');
-        $this->assertTrue($isWriteShadowOn);
+        $isShadowOrReverseShadowOnForOperation = $mockedBaseWrapper->isShadowOrReverseShadowOnForOperation('10000000000000', 'shadow', $operation);
+        $this->assertTrue($isShadowOrReverseShadowOnForOperation);
         #T1 ends
 
 
@@ -237,8 +155,8 @@ class BaseTest extends TestCase
         $mockedBaseWrapper = $this->getMockedBaseWrapper(['getRouteOrJobName', 'isSplitzOn']);
         $mockedBaseWrapper->expects($this->exactly(1))->method('getRouteOrJobName')->willReturn('bvs_validation_job');
         $mockedBaseWrapper->expects($this->exactly(1))->method('isSplitzOn')->willReturn(true);
-        $isWriteShadowOn = $mockedBaseWrapper->isReadShadowOrReverseShadowOn('10000000000000', 'shadow');
-        $this->assertTrue($isWriteShadowOn);
+        $isShadowOrReverseShadowOnForOperation = $mockedBaseWrapper->isShadowOrReverseShadowOnForOperation('10000000000000', 'shadow', $operation);
+        $this->assertTrue($isShadowOrReverseShadowOnForOperation);
         #T2 ends
 
         #T3 starts - All Route Or Job Name Migration Config Disabled Evaluate Using Specific config Enabled - Splitz False  - Shadow Off
@@ -246,8 +164,8 @@ class BaseTest extends TestCase
         $mockedBaseWrapper = $this->getMockedBaseWrapper(['getRouteOrJobName', 'isSplitzOn']);
         $mockedBaseWrapper->expects($this->exactly(1))->method('getRouteOrJobName')->willReturn('bvs_validation_job');
         $mockedBaseWrapper->expects($this->exactly(1))->method('isSplitzOn')->willReturn(false);
-        $isWriteShadowOn = $mockedBaseWrapper->isReadShadowOrReverseShadowOn('10000000000000', 'shadow');
-        $this->assertFalse($isWriteShadowOn);
+        $isShadowOrReverseShadowOnForOperation = $mockedBaseWrapper->isShadowOrReverseShadowOnForOperation('10000000000000', 'shadow', $operation);
+        $this->assertFalse($isShadowOrReverseShadowOnForOperation);
         #T3 ends
 
         #T4 starts - All Route Or Job Name Migration Config Disabled Evaluate Using Specific config Full Enabled - Shadow On
@@ -255,8 +173,8 @@ class BaseTest extends TestCase
         $mockedBaseWrapper = $this->getMockedBaseWrapper(['getRouteOrJobName', 'isSplitzOn']);
         $mockedBaseWrapper->expects($this->exactly(1))->method('getRouteOrJobName')->willReturn('bvs_validation_job');
         $mockedBaseWrapper->expects($this->never())->method('isSplitzOn');
-        $isWriteShadowOn = $mockedBaseWrapper->isReadShadowOrReverseShadowOn('10000000000000', 'shadow');
-        $this->assertTrue($isWriteShadowOn);
+        $isShadowOrReverseShadowOnForOperation = $mockedBaseWrapper->isShadowOrReverseShadowOnForOperation('10000000000000', 'shadow', $operation);
+        $this->assertTrue($isShadowOrReverseShadowOnForOperation);
         #T4 ends
 
 
@@ -266,8 +184,8 @@ class BaseTest extends TestCase
         $mockedBaseWrapper = $this->getMockedBaseWrapper(['getRouteOrJobName', 'isSplitzOn']);
         $mockedBaseWrapper->expects($this->exactly(1))->method('getRouteOrJobName')->willReturn('bvs_validation_job');
         $mockedBaseWrapper->expects($this->exactly(1))->method('isSplitzOn')->willReturn(true);
-        $isWriteShadowOn = $mockedBaseWrapper->isReadShadowOrReverseShadowOn('10000000000000', 'reverse_shadow');
-        $this->assertTrue($isWriteShadowOn);
+        $isShadowOrReverseShadowOnForOperation = $mockedBaseWrapper->isShadowOrReverseShadowOnForOperation('10000000000000', 'reverse_shadow', $operation);
+        $this->assertTrue($isShadowOrReverseShadowOnForOperation);
         #T5 ends
 
         #T6 starts - All Route Or Job Name Migration Config Disabled Evaluate Using Specific config Enabled - Splitz True  - ReverseShadow On
@@ -275,8 +193,8 @@ class BaseTest extends TestCase
         $mockedBaseWrapper = $this->getMockedBaseWrapper(['getRouteOrJobName', 'isSplitzOn']);
         $mockedBaseWrapper->expects($this->exactly(1))->method('getRouteOrJobName')->willReturn('bvs_validation_job');
         $mockedBaseWrapper->expects($this->exactly(1))->method('isSplitzOn')->willReturn(true);
-        $isWriteShadowOn = $mockedBaseWrapper->isReadShadowOrReverseShadowOn('10000000000000', 'reverse_shadow');
-        $this->assertTrue($isWriteShadowOn);
+        $isShadowOrReverseShadowOnForOperation = $mockedBaseWrapper->isShadowOrReverseShadowOnForOperation('10000000000000', 'reverse_shadow', $operation);
+        $this->assertTrue($isShadowOrReverseShadowOnForOperation);
         #T6 ends
 
         #T7 starts - All Route Or Job Name Migration Config Disabled Evaluate Using Specific config Enabled - Splitz False  - Reverse Shadow Off
@@ -284,8 +202,8 @@ class BaseTest extends TestCase
         $mockedBaseWrapper = $this->getMockedBaseWrapper(['getRouteOrJobName', 'isSplitzOn']);
         $mockedBaseWrapper->expects($this->exactly(1))->method('getRouteOrJobName')->willReturn('bvs_validation_job');
         $mockedBaseWrapper->expects($this->exactly(1))->method('isSplitzOn')->willReturn(false);
-        $isWriteShadowOn = $mockedBaseWrapper->isReadShadowOrReverseShadowOn('10000000000000', 'reverse_shadow');
-        $this->assertFalse($isWriteShadowOn);
+        $isShadowOrReverseShadowOnForOperation = $mockedBaseWrapper->isShadowOrReverseShadowOnForOperation('10000000000000', 'reverse_shadow', $operation);
+        $this->assertFalse($isShadowOrReverseShadowOnForOperation);
         #T7 ends
 
         #T8 starts - All Route Or Job Name Migration Config Disabled Evaluate Using Specific config Full Enabled - Reverse Shadow On
@@ -293,8 +211,8 @@ class BaseTest extends TestCase
         $mockedBaseWrapper = $this->getMockedBaseWrapper(['getRouteOrJobName', 'isSplitzOn']);
         $mockedBaseWrapper->expects($this->exactly(1))->method('getRouteOrJobName')->willReturn('bvs_validation_job');
         $mockedBaseWrapper->expects($this->never())->method('isSplitzOn');
-        $isWriteShadowOn = $mockedBaseWrapper->isReadShadowOrReverseShadowOn('10000000000000', 'reverse_shadow');
-        $this->assertTrue($isWriteShadowOn);
+        $isShadowOrReverseShadowOnForOperation = $mockedBaseWrapper->isShadowOrReverseShadowOnForOperation('10000000000000', 'reverse_shadow', $operation);
+        $this->assertTrue($isShadowOrReverseShadowOnForOperation);
         #T8 ends
     }
 

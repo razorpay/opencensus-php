@@ -27,11 +27,8 @@ class Repository extends Base\Repository
     {
         $this->repo->transactionOnLiveAndTest(function () use ($entity) {
             $this->repo->deleteOrFail($entity);
-
             $merchantDocumentWrapper = new MerchantDocument();
-            if ($merchantDocumentWrapper->isWriteShadowOn($entity->getMerchantId())) {
-                $merchantDocumentWrapper->DeleteOrFail($entity);
-            }
+            $merchantDocumentWrapper->DeleteOrFail($entity);
         });
     }
 

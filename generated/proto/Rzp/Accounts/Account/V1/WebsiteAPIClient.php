@@ -17,7 +17,7 @@ use Google\Protobuf\Internal\Message;
  */
 final class WebsiteAPIClient extends WebsiteAPIAbstractClient implements WebsiteAPI
 {
-    protected $timeout = 5;
+    protected $timeout = 2;
 
     /**
      * @inheritDoc

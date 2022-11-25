@@ -29,9 +29,16 @@ class Base
 
     protected $defaultMigrationConfig = [
         'write' => [
-            'enabled' => false,
-            'full_enabled' => false,
-            'splitz_experiment_id' => '',
+            'shadow' => [
+                'enabled' => false,
+                'full_enabled' => false,
+                'splitz_experiment_id' => '',
+            ],
+            'reverse_shadow' => [
+                'enabled' => false,
+                'full_enabled' => false,
+                'splitz_experiment_id' => '',
+            ]
         ],
         'read' => [
             'shadow' => [
@@ -80,56 +87,31 @@ class Base
 
     /**
      * @param string $id
-     * @return bool - returns true if Write Shadow is enabled for given route or job name
-     */
-    public function isWriteShadowOn(string $id)
-    {
-        $routeOrJobName = $this->getRouteOrJobName();
-        $metadata = [Constant::ROUTE_OR_JOB_NAME => $routeOrJobName, Constant::OPERATION => Constant::WRITE];
-        $asvMigrationConfigForAllRouteOrJobName = $this->asvMigrationConfig[Constant::ALL_ROUTE_OR_JOB] ?? $this->defaultMigrationConfig;
-
-        // Check whether enabled flag is true for All Route Or Job Name Config, If true evaluate based on All Route Or Job Config
-        $asvWriteMigrationConfigForAllRouteOrJobName = $asvMigrationConfigForAllRouteOrJobName[Constant::WRITE] ?? [];
-        $metadata[Constant::MIGRATION_CONFIG] = $asvWriteMigrationConfigForAllRouteOrJobName;
-        $allRouteOrFlowEnabled = $asvWriteMigrationConfigForAllRouteOrJobName[Constant::ENABLED] ?? false;
-        if ($allRouteOrFlowEnabled === true) {
-            return $this->evaluateConfig($id, $asvWriteMigrationConfigForAllRouteOrJobName, $metadata);
-        }
-
-        // Fallback to specific Route Level evaluation of Migration of Write as All Route Or Job Migration is not enabled yet
-        $asvMigrationConfigForRouteOrJobName = $this->asvMigrationConfig[$routeOrJobName] ?? $this->defaultMigrationConfig;
-        $asvWriteMigrationConfigForRouteOrJobName = $asvMigrationConfigForRouteOrJobName[Constant::WRITE] ?? [];
-        $metadata[Constant::MIGRATION_CONFIG] = $asvWriteMigrationConfigForRouteOrJobName;
-
-        return $this->evaluateConfig($id, $asvWriteMigrationConfigForRouteOrJobName, $metadata);
-    }
-
-    /**
-     * @param string $id
      * @param string $mode - whether shadow or reverse shadow {shadow, reverse_shadow}
-     * @return bool - returns true if Read Shadow or Reverse Shadow is enabled for given route or job name
+     * @param string $operation - read or write
+     * @return bool - returns true if  Shadow or Reverse Shadow is enabled for given route or job name for given operation
      */
-    public function isReadShadowOrReverseShadowOn(string $id, string $mode)
+    public function isShadowOrReverseShadowOnForOperation(string $id, string $mode, string $operation)
     {
         $routeOrJobName = $this->getRouteOrJobName();
-        $metadata = [Constant::ROUTE_OR_JOB_NAME => $routeOrJobName, Constant::OPERATION => Constant::READ, Constant::MODE => $mode];
+        $metadata = [Constant::ROUTE_OR_JOB_NAME => $routeOrJobName, Constant::OPERATION => $operation, Constant::MODE => $mode];
         $asvMigrationConfigForAllRouteOrJobName = $this->asvMigrationConfig[Constant::ALL_ROUTE_OR_JOB] ?? $this->defaultMigrationConfig;
 
         // Check whether enabled flag is true for All Route Or Job Name Config, If true evaluate based on All Route Or Job Config
-        $asvReadMigrationConfigForAllRouteOrJobName = $asvMigrationConfigForAllRouteOrJobName[Constant::READ][$mode] ?? [];
-        $metadata[Constant::MIGRATION_CONFIG] = $asvReadMigrationConfigForAllRouteOrJobName;
+        $asvMigrationConfigForAllRouteOrJobName = $asvMigrationConfigForAllRouteOrJobName[$operation][$mode] ?? [];
+        $metadata[Constant::MIGRATION_CONFIG] = $asvMigrationConfigForAllRouteOrJobName;
 
-        $allRouteOrFlowEnabled = $asvReadMigrationConfigForAllRouteOrJobName[Constant::ENABLED] ?? false;
+        $allRouteOrFlowEnabled = $asvMigrationConfigForAllRouteOrJobName[Constant::ENABLED] ?? false;
         if ($allRouteOrFlowEnabled === true) {
-            return $this->evaluateConfig($id, $asvReadMigrationConfigForAllRouteOrJobName, $metadata);
+            return $this->evaluateConfig($id, $asvMigrationConfigForAllRouteOrJobName, $metadata);
         }
 
-        // Fallback to specific Route Level evaluation of Migration of Read as All Route Or Job Migration is not enabled yet
+        // Fallback to specific Route Level evaluation of Migration of Operation as All Route Or Job Migration is not enabled yet
         $asvMigrationConfigForRouteOrJobName = $this->asvMigrationConfig[$routeOrJobName] ?? $this->defaultMigrationConfig;
-        $asvReadMigrationConfigForRouteOrJobName = $asvMigrationConfigForRouteOrJobName[Constant::READ][$mode] ?? [];
-        $metadata[Constant::MIGRATION_CONFIG] = $asvReadMigrationConfigForRouteOrJobName;
+        $asvMigrationConfigForRouteOrJobName = $asvMigrationConfigForRouteOrJobName[$operation][$mode] ?? [];
+        $metadata[Constant::MIGRATION_CONFIG] = $asvMigrationConfigForRouteOrJobName;
 
-        return $this->evaluateConfig($id, $asvReadMigrationConfigForRouteOrJobName, $metadata);
+        return $this->evaluateConfig($id, $asvMigrationConfigForRouteOrJobName, $metadata);
     }
 
     /**

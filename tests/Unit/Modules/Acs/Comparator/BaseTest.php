@@ -103,10 +103,16 @@ class BaseTest extends TestCase
         "e" => NULL
     ];
 
+    private $array7 = [
+        "a" => "b",
+        "c" => 3,
+        "e" => 5
+    ];
+
 
     protected function setUp(): void
     {
-        parent::setUp();
+       parent::setUp();
     }
 
     function testGetDifferenceBaseNoDiff() {
@@ -230,12 +236,18 @@ class BaseTest extends TestCase
         $this->assertEquals(["e->f", "e->l", "e->m"], $diff);
     }
 
-    function testGetDifferenceBaseComparatorNullArray() {
+    function testGetDifferenceBaseComparatorNullArrayOrValue() {
 
         $diff = (new Base())->getDifference($this->array4, $this->array5);
+        $this->assertEquals([], $diff);
+
+        $diff = (new Base())->getDifference($this->array5, $this->array4);
+        $this->assertEquals([], $diff);
+
+        $diff = (new Base())->getDifference($this->array6, $this->array7);
         $this->assertEquals(["e"], $diff);
 
-        $diff = (new Base())->getDifference($this->array4, $this->array5);
+        $diff = (new Base())->getDifference($this->array7, $this->array6);
         $this->assertEquals(["e"], $diff);
     }
 

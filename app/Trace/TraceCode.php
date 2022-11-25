@@ -7450,6 +7450,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ACS_ENTITY_FETCH_EXCEPTION                            = 'ACS_ENTITY_FETCH_EXCEPTION';
     const ASV_FETCH_UPDATED_ACCOUNT_IDS_REQUEST                 = 'ASV_FETCH_UPDATED_ACCOUNT_IDS_REQUEST';
     const ASV_FETCH_UPDATED_ACCOUNT_IDS_RESPONSE                = 'ASV_FETCH_UPDATED_ACCOUNT_IDS_RESPONSE';
+    const ASV_READ_SHADOW_EXCEPTION                             = 'ASV_READ_SHADOW_EXCEPTION';
+    const ASV_REVERSE_SHADOW_EXCEPTION                          = 'ASV_REVERSE_SHADOW_EXCEPTION';
     const RECORDED_ACCOUNT_ID                                   = 'RECORDED_ACCOUNT_ID';
     const ASV_SYNC_ACCOUNT_DEVIATION_REQUEST                    = 'ASV_SYNC_ACCOUNT_DEVIATION_REQUEST';
     const ASV_SYNC_ACCOUNT_DEVIATION_RESPONSE                   = 'ASV_SYNC_ACCOUNT_DEVIATION_RESPONSE';
@@ -7470,6 +7472,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ASV_HTTP_CLIENT_RESPONSE                              = 'ASV_HTTP_CLIENT_RESPONSE';
     const ASV_HTTP_CLIENT_ERROR                                 = 'ASV_HTTP_CLIENT_ERROR';
     const ASV_COMPARE_MISMATCH                                  = 'ASV_COMPARE_MISMATCH';
+    const ASV_WRITE_EXCEPTION                                   = 'ASV_WRITE_EXCEPTION';
 
 
     # ASV Migration

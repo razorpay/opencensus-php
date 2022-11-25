@@ -34,6 +34,9 @@ class Constant
     const ACCOUNT_CONTACT_DELETE_ROUTE_HTTP_TIMEOUT_SEC = 'account_contact_delete_route_http_timeout_sec';
     const ASV_SAVE_API_ROUTE_HTTP_TIMEOUT_SEC = 'asv_save_api_route_http_timeout_sec';
 
+    // Account Website w
+    const ACCOUNT_WEBSITE_FETCH_ROUTE = 'twirp/rzp.accounts.account.v1.WebsiteAPI/FetchMerchanWebsite';
+
     // Account Document Api Routes
     const ACCOUNT_DOCUMENT_DELETE_ROUTE = 'twirp/rzp.accounts.account.v1.DocumentAPI/Delete';
 

@@ -34,11 +34,22 @@ class Repository extends Base\Repository
     {
         $this->repo->transactionOnLiveAndTest(function () use ($entity) {
             $this->repo->delete($entity);
-
             $merchantEmailWrapper = new MerchantEmail();
-            if ($merchantEmailWrapper->isWriteShadowOn($entity->getMerchantId())) {
-                $merchantEmailWrapper->Delete($entity);
-            }
+            $merchantEmailWrapper->Delete($entity);
+        });
+    }
+
+    /**
+     * __saveOrFail -  Keeping the method name not same with base repository method, this to be renamed  and used in merchant email core while ramp-up
+     * @param MerchantEmailEntity $entity
+     * @throws \Throwable
+     */
+    public function __saveOrFail(MerchantEmailEntity $entity)
+    {
+        $this->repo->transactionOnLiveAndTest(function () use ($entity) {
+            $this->repo->saveOrFail($entity);
+            $merchantEmailWrapper = new MerchantEmail();
+            $merchantEmailWrapper->SaveOrFail($entity);
         });
     }
 
@@ -88,11 +99,11 @@ class Repository extends Base\Repository
         return $this->repo->transactionOnLiveAndTest(function () use ($merchantId) {
             $merchantEmails = $this->getEmailByMerchantId($merchantId);
             $merchantEmailWrapper = new MerchantEmail();
-            if ($merchantEmailWrapper->isReadShadowOrReverseShadowOn($merchantId, "shadow")) {
+            if ($merchantEmailWrapper->isShadowOrReverseShadowOnForOperation($merchantId, "shadow", "read")) {
                 $asvEmails = $merchantEmailWrapper->FetchAndCompareMerchantEmailsFromMerchantId($merchantId, $merchantEmails);
                 return $merchantEmails;
             }
-            if ($merchantEmailWrapper->isReadShadowOrReverseShadowOn($merchantId, "reverse_shadow")) {
+            if ($merchantEmailWrapper->isShadowOrReverseShadowOnForOperation($merchantId, "reverse_shadow", "read")) {
                 $asvEmails = $merchantEmailWrapper->FetchAndCompareMerchantEmailsFromMerchantId($merchantId, $merchantEmails);
                 return ASVEntityMapper::OverwriteWithAsvEntities(MerchantEmailEntity::class, 'id', $merchantEmails->toArray(), $asvEmails->toArray());
             }

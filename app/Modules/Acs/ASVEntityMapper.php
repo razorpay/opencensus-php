@@ -29,7 +29,7 @@ class ASVEntityMapper {
     public static function MapProtoObjectToEntity($protoObject, $entityClass) {
         $protoString = $protoObject->serializeToJsonString();
         $protoAsArray = json_decode($protoString, true);
-        $protoAsArray = ASVEntityMapper::snakeCase($protoAsArray);
+        $protoAsArray = ASVEntityMapper::doSnakeCase($protoAsArray);
         return ASVEntityMapper::MapDataArrayToEntity($protoAsArray, $entityClass);
     }
 
@@ -43,20 +43,6 @@ class ASVEntityMapper {
             $entityClass::reguard();
         }
         return $mappedEntity;
-    }
-
-    private static function snakeCase(array $array): array
-    {
-        return array_map(
-            function($item) {
-                if (is_array($item)) {
-                    $item = ASVEntityMapper::snakeCase($item);
-                }
-
-                return $item;
-            },
-            ASVEntityMapper::doSnakeCase($array)
-        );
     }
 
     private static function doSnakeCase(array $array): array

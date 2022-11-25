@@ -48,7 +48,7 @@ class Base
                 continue;
             }
 
-            if(array_key_exists($key, $array2) === false){
+            if(array_key_exists($key, $array2) === false) {
                 $difference[] = $key;
                 continue;
             }
@@ -56,6 +56,13 @@ class Base
             // calculates diff recursively
             if(is_array($value) === true)
             {
+
+                // if array1=>value is empty array ([]) and array2=>value is NULL
+                // do-not mark it as diff.
+                if(count($value)==0 and $array2[$key]==null){
+                    continue;
+                }
+
                 if((is_array($array2[$key]) === false))
                 {
                     $difference[] = $key;
@@ -63,10 +70,8 @@ class Base
                 else
                 {
                     $childDifference = $this->arrayDifference($value, $array2[$key], $keyWithParent);
-                    if(count($childDifference) !== 0) {
-                        foreach($childDifference as $childDifferenceKey => $childDifferenceValue) {
+                    foreach($childDifference as $childDifferenceKey => $childDifferenceValue) {
                             $difference[] = $key."->".$childDifferenceValue;
-                        }
                     }
                 }
             }
