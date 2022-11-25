@@ -5892,6 +5892,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PROXY_REQUEST     = 'PROXY_REQUEST';
     const PROXY_RESPONSE    = 'PROXY_RESPONSE';
 
+    const PROXY_CRON_REQUEST              = 'PROXY_CRON_REQUEST';
+    const CRON_LAST_RUN_TIMESTAMP_UPDATED = 'CRON_LAST_RUN_TIMESTAMP_UPDATED';
+
     // ICICI Integration
     const ICICI_VA_CALLBACK                                     = 'ICICI_VA_CALLBACK';
     const ICICI_VA_CALLBACK_RESPONSE                            = 'ICICI_VA_CALLBACK_RESPONSE';

@@ -20,6 +20,9 @@ class CmmaProxyController extends BaseProxyController
     const UPDATE_TASK                     = 'UpdateTask';
     const UPDATE_USER_TASK_LIST           = 'UpdateUserTaskList';
     const CLOSE_CASE                      = 'CloseCase';
+    const CREATE_DISPUTE_CASE_CRON        = 'CreateDisputeCasesCron';
+
+    const CREATE_DISPUT_CASE_CRON_CACHE_KEY = 'dispute_representation_automation_case_create_cron';
 
     const ROUTES_URL_MAP    = [
         self::GET_PROCESS_INSTANCE            => "/twirp\/rzp.cmma.process.v1.ProcessManagementServiceAdminCalls\/GetProcessInstanceById/",
@@ -35,6 +38,7 @@ class CmmaProxyController extends BaseProxyController
         self::GET_PROCESS_INSTANCE_RESOURCES  => "/twirp\/rzp.cmma.process.v1.ProcessManagementServiceAdminCalls\/GetResources/",
         self::UPDATE_USER_TASK_LIST           => "/twirp\/rzp.cmma.userTask.v1.UserTaskService\/UpdateUserTaskList/",
         self::CLOSE_CASE                      => "/twirp\/rzp.cmma.process.v1.ProcessManagementService\/CloseCase/",
+        self::CREATE_DISPUTE_CASE_CRON        => "/twirp\/rzp.cmma.cron.v1.CronService\/CreateDisputeCases/",
     ];
 
     const ADMIN_ROUTES   = [
@@ -51,9 +55,14 @@ class CmmaProxyController extends BaseProxyController
         self::CLOSE_CASE,
     ];
 
+    const CRON_ROUTES_CACHE_KEYS = [
+        self::CREATE_DISPUTE_CASE_CRON => self::CREATE_DISPUT_CASE_CRON_CACHE_KEY,
+    ];
+
     const CRON_ROUTES   = [
         self::CRON_UPDATE_PROCESS_ASSIGNED_TO,
-        self::CREATE_PROCESS_INSTANCE // In api it is called via a cron script
+        self::CREATE_PROCESS_INSTANCE, // In api it is called via a cron script
+        self::CREATE_DISPUTE_CASE_CRON,
     ];
 
     const ADMIN_ROUTES_VS_PERMISSION   = [
@@ -70,6 +79,13 @@ class CmmaProxyController extends BaseProxyController
         self::CLOSE_CASE                     => Name::CMMA_LEADS_SOP,
     ];
 
+    /*
+    * timeout in seconds
+    */
+    const PATH_TIMEOUT_MAP  = [
+        self::CREATE_DISPUTE_CASE_CRON                  => 1800, // half hour
+    ];
+
 
     public function __construct()
     {
@@ -78,8 +94,10 @@ class CmmaProxyController extends BaseProxyController
         $this->registerRoutesMap(self::ROUTES_URL_MAP);
         $this->registerAdminRoutes(self::ADMIN_ROUTES, self::ADMIN_ROUTES_VS_PERMISSION);
         $this->registerCronRoutes(self::CRON_ROUTES);
+        $this->setCacheKeysForRoutes(self::CRON_ROUTES_CACHE_KEYS);
 
         $this->setDefaultTimeout(30);
+        $this->setPathTimeoutMap(self::PATH_TIMEOUT_MAP);
 
     }
 

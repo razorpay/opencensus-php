@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use App;
 use Request;
 use ApiResponse;
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
@@ -30,6 +31,8 @@ abstract class BaseProxyController extends Controller
     protected $adminRoutes = [];
     protected $cronRoutes = [];
     protected $adminRouteVsPermission;
+
+    protected $routesVsCacheKeys = [];
 
     protected $preProcessor;
 
@@ -123,6 +126,11 @@ abstract class BaseProxyController extends Controller
         $this->pathTimeoutMap = $pathTimeoutMap;
     }
 
+    protected function setCacheKeysForRoutes($routesVsCacheKeys)
+    {
+            $this->routesVsCacheKeys = $routesVsCacheKeys;
+    }
+
     protected function getHeadersForDashboardRequest(array $body = [])
     {
         return [
@@ -210,14 +218,82 @@ abstract class BaseProxyController extends Controller
 
         $route = $this->getRoute($path);
 
+        if (empty($route) === true || in_array($route, $this->cronRoutes) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
         if ($request->method() === 'GET')
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED);
         }
 
+        $body = $this->addCronParamsInPayload($body, $route);
+
+        $this->trace->info(TraceCode::PROXY_CRON_REQUEST, [
+            'route'    => $route,
+            'body'     => $body,
+        ]);
+
         $headers = $this->getHeadersForCronRequest($body);
 
-        return $this->sendRequestAndParseResponse($route, $request->method(), $path, $body, $headers);
+        $cronStartTime = Carbon::now()->getTimestamp();
+
+        $res = $this->sendRequestAndParseResponse($route, $request->method(), $path, $body, $headers);
+
+        $this->updateLastCronRunTimeIfApplicable($route, $cronStartTime);
+
+        return $res;
+    }
+
+    protected function addCronParamsInPayload($body, $route)
+    {
+        if (key_exists($route, $this->routesVsCacheKeys) === true)
+        {
+            $cacheKey = $this->routesVsCacheKeys[$route];
+
+            $body = array_merge($body, [
+                'last_cron_run_time' => $this->getLastCronTime($cacheKey),
+            ]);
+        }
+
+        return $body;
+    }
+
+    protected function getLastCronTime($cacheKey): ?int
+    {
+
+        $cacheValue = $this->app['cache']->get($cacheKey);
+
+        // if value fetched from cache is null check a default value for cron time is provided.
+        // if not provided set current time - 15 minutes as default value
+        if($cacheValue === null)
+        {
+            $defaultLastCronValue = $this->getDefaultLastCronValue();
+            return is_null($defaultLastCronValue) ? Carbon::now()->subMinutes(15)->getTimestamp() :
+                $defaultLastCronValue;
+        }
+
+        return $cacheValue;
+    }
+
+    protected function getDefaultLastCronValue(): ?int
+    {
+        return null;
+    }
+
+    protected function updateLastCronRunTimeIfApplicable($route, $cronStartTime)
+    {
+        if (key_exists($route, $this->routesVsCacheKeys) === true)
+        {
+            $cacheKey = $this->routesVsCacheKeys[$route];
+
+            $this->app['cache']->put($cacheKey, $cronStartTime);
+
+            $this->trace->info(TraceCode::CRON_LAST_RUN_TIMESTAMP_UPDATED, [
+                'updated_last_cron_time'    => $cronStartTime,
+            ]);
+        }
     }
 
     public function handleInternalCronProxyRequests($path, $body) {
