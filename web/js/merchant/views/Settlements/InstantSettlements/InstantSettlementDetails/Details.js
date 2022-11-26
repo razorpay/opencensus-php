@@ -86,6 +86,7 @@ const Details = ({
                   <PlaceholderLoader />
                   <i
                     className="i i-info-outline total-settlement-info-icon ml-8"
+                    data-testid="total-settled-amount-popover"
                     onMouseEnter={() => {
                       trackIS.hoverLoadingTotalSettledAmountIconSettlementDetails();
                       trackOnDemandHoverInfo();
