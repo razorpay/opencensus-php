@@ -594,7 +594,7 @@ class Core extends Base\Core
             $this->updateDeductionSourceTypeAndId($dispute, $adjustment->getEntityName(), $adjustment->getId());
 
             $dispute_public_id = $dispute->getPublicId();
-            
+
             $this->createLedgerEntriesForRazorpayDisputeDeduct($adjustment, $dispute_public_id);
         }
 
@@ -1580,9 +1580,12 @@ class Core extends Base\Core
 
         $newBaseAmountRefunded = max($payment->getBaseAmountRefunded() - $dispute->getBaseAmount(), 0);
 
-        $payment->setAmountRefunded($newAmountRefunded);
+        if ($dispute->getDeductAtOnset() === false)
+        {
+            $payment->setAmountRefunded($newAmountRefunded);
 
-        $payment->setBaseAmountRefunded($newBaseAmountRefunded);
+            $payment->setBaseAmountRefunded($newBaseAmountRefunded);
+        }
 
         if ($payment->getAmountUnrefunded() === $payment->getAmount())
         {

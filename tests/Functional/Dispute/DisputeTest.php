@@ -4106,6 +4106,55 @@ class DisputeTest extends TestCase
         $this->startTest();
     }
 
+    /*
+     * create a DAO on partial refunded payment, mark the DAO as win
+     */
+    public function testDeductAtOnsetRefundedAmountForWin()
+    {
+        // testDisputeReversalLostLogic create a partial Deduct at onset dispute of 10100 and mark that as lost
+        $this->testDisputeReversalLostLogic();
+
+        $payment = $this->getLastPayment('payment', true);
+        $this->assertArraySelectiveEquals([
+                                              'disputed'        => false,
+                                              'amount_refunded' => 10100,
+                                              'refund_status'   => 'partial',
+                                              'amount'  =>1000000,
+                                          ], $payment);
+
+        $input = [
+            'amount'                => 5000,
+            'deduct_at_onset'       => 1,
+            'payment_id'            => substr($payment['id'], 4)
+        ];
+        $testdata = $this->updateEditTestData($input);
+
+        $content = $this->runRequestResponseFlow($testdata);
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $payment = $this->getEntityById('payment', $payment['id'], true);
+
+
+        //no change in refund amount of the payment
+        $this->assertArraySelectiveEquals([
+                                              'disputed'        => false,
+                                              'amount_refunded' => 10100,
+                                              'refund_status'   => 'partial',
+                                              'amount'  =>1000000,
+                                          ], $payment);
+
+
+
+        $this->assertEquals($dispute['id'], $content['id']);
+        $this->assertEquals($testdata['request']['content']['status'], $content['status']);
+        $this->assertEquals(5000, $dispute['amount_deducted']);
+        $this->assertEquals(5000, $dispute['amount_reversed']);
+        $this->assertEquals('adjustment', $txn['type']);
+    }
+
     protected function mockSalesforceRequest($expectedMerchantIds, $expectedResponse): void
     {
         $this->salesforceMock->shouldReceive('getSalesForceTeamNameForMerchantID')
