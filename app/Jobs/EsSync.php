@@ -63,8 +63,6 @@ class EsSync extends Job
 
         try
         {
-            $this->trace->debug(TraceCode::ES_SYNC_REQUEST, $tracePayload);
-
             $this->setRepoAndEsRepo();
 
             $this->sync();
