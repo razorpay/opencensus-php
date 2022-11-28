@@ -4,6 +4,7 @@ import { Field } from 'redux-form';
 import { useState } from 'react';
 import ProviderSelector from 'merchant/components/ProviderSelector';
 import { handleChangeTrack } from 'merchant/views/Transactions/AnalyticsTrack';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 const dateRangePresets = [
   ['Past 7 Days', -7, 'days'],
@@ -117,17 +118,19 @@ export default ({ showBatchIdFilter, ...props }) => {
         />
       </div>
 
-      <div class="form-group list-filter-item">
-        <label>Bank Reference Number</label>
-        <Field
-          name="va_transaction_id"
-          component="input"
-          class="form-control input-sm"
-          onChange={(...args) => {
-            track({ type: 'search', args });
-          }}
-        />
-      </div>
+      <ShowWhen additionalCondition={(usr) => !usr.findTag('i18_hide_payment.bank_reference_id')}>
+        <div class="form-group list-filter-item">
+          <label>Bank Reference Number</label>
+          <Field
+            name="va_transaction_id"
+            component="input"
+            class="form-control input-sm"
+            onChange={(...args) => {
+              track({ type: 'search', args });
+            }}
+          />
+        </div>
+      </ShowWhen>
 
       <div class="form-group list-filter-item count">
         <label>Count</label>

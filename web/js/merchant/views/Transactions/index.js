@@ -177,7 +177,11 @@ class TransactionsContainer extends Component {
                 Batch Payments
               </NavLink>
             </ShowWhen>
-            <ShowWhen additionalCondition={(usr) => usr.isAllowedView('refunds')}>
+            <ShowWhen
+              additionalCondition={(usr) =>
+                usr.isAllowedView('refunds') && !usr.findTag('i18_hide_refunds')
+              }
+            >
               <NavLink
                 to="/refunds"
                 exact
@@ -196,7 +200,11 @@ class TransactionsContainer extends Component {
                 Refunds
               </NavLink>
             </ShowWhen>
-            <ShowWhen additionalCondition={(usr) => usr.isAllowedView('refunds_batch_uploads')}>
+            <ShowWhen
+              additionalCondition={(usr) =>
+                usr.isAllowedView('refunds_batch_uploads') && !usr.findTag('i18_hide_refunds')
+              }
+            >
               <NavLink
                 to="/refunds/batchuploads"
                 isActive={(match, { pathname: path }) =>
@@ -235,35 +243,37 @@ class TransactionsContainer extends Component {
                 Orders
               </NavLink>
             </ShowWhen>
-            <NavLink
-              to="/disputes"
-              onClick={() => {
-                analyticsTrack({
-                  objectName: 'transactions tab',
-                  actionName: 'clicked',
-                  screen: 'transactions',
-                  properties: {
-                    tabName: 'disputes',
-                    ...getCommonAnalyticsProperties(window.rzp_user),
-                  },
-                });
-              }}
-            >
-              Disputes&nbsp;
-              {openDisputes !== 0 ? (
-                <div className="open-disputes">
-                  <span>{openDisputes}</span>
-                  <PopoverComponent theme="dark" align="bottom">
-                    <PopoverBody>
-                      <div>
-                        There are {openDisputes} pending disputes. Take action immediately before
-                        the deadline
-                      </div>
-                    </PopoverBody>
-                  </PopoverComponent>
-                </div>
-              ) : null}
-            </NavLink>
+            <ShowWhen additionalCondition={(usr) => !usr.findTag('i18_hide_disputes')}>
+              <NavLink
+                to="/disputes"
+                onClick={() => {
+                  analyticsTrack({
+                    objectName: 'transactions tab',
+                    actionName: 'clicked',
+                    screen: 'transactions',
+                    properties: {
+                      tabName: 'disputes',
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
+                  });
+                }}
+              >
+                Disputes&nbsp;
+                {openDisputes !== 0 ? (
+                  <div className="open-disputes">
+                    <span>{openDisputes}</span>
+                    <PopoverComponent theme="dark" align="bottom">
+                      <PopoverBody>
+                        <div>
+                          There are {openDisputes} pending disputes. Take action immediately before
+                          the deadline
+                        </div>
+                      </PopoverBody>
+                    </PopoverComponent>
+                  </div>
+                ) : null}
+              </NavLink>
+            </ShowWhen>
             <ShowWhen additionalCondition={(usr) => mode === 'live' && usr.findTag('success_rate')}>
               <NavLink
                 to="/success-rate"
@@ -377,23 +387,41 @@ class TransactionsContainer extends Component {
           <content>
             <ErrorBoundary resetOnProps>
               <Switch>
-                <Route path="/refunds/batchupload" component={BatchRefundsUpload} />
-                <Route path="/refunds/batchuploads" component={BatchRefundsList} />
-                <Route path="/refunds" component={RefundsList} />
+                <ShowWhenRoute
+                  path="/refunds/batchupload"
+                  component={BatchRefundsUpload}
+                  additionalCondition={(usr) => !usr.findTag('i18_hide_refunds')}
+                />
+                <ShowWhenRoute
+                  path="/refunds/batchuploads"
+                  component={BatchRefundsList}
+                  additionalCondition={(usr) => !usr.findTag('i18_hide_refunds')}
+                />
+                <ShowWhenRoute
+                  path="/refunds"
+                  component={RefundsList}
+                  additionalCondition={(usr) => !usr.findTag('i18_hide_refunds')}
+                />
                 <ShowWhenRoute
                   path="/orders"
                   component={OrdersList}
                   additionalCondition={(usr) => usr.isAllowedView('orders')}
                 />
-                <Route path="/payments/batchuploads/:mode" component={BatchPaymentsList} />
-                <Route path="/payments/batchuploads" component={BatchPaymentsList} />
+                <ShowWhenRoute path="/payments/batchuploads/:mode" component={BatchPaymentsList} />
+                <ShowWhenRoute path="/payments/batchuploads" component={BatchPaymentsList} />
                 <ShowWhenRoute
                   path="/payments/b2b-exports"
                   component={B2bPaymentsList}
                   additionalCondition={(usr) => usr.isAllowedView('b2b_payments')}
                 />
                 <Route path="/payments" component={PaymentsList} />
-                <Route path="/disputes" component={DisputesList} />
+                <Route
+                  path="/disputes"
+                  component={DisputesList}
+                  additionalCondition={(usr) =>
+                    usr.isAllowedView('refunds') && !usr.findTag('i18_hide_disputes')
+                  }
+                />
                 <ShowWhenRoute
                   path="/success-rate"
                   component={SuccessRate}

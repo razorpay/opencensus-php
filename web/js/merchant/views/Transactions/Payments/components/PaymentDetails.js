@@ -260,7 +260,10 @@ function PaymentDetails(props) {
                   </EntityDetailRow>
                 )}
 
-                <ShowWhen apiFeatureEnabled="Marketplace">
+                <ShowWhen
+                  apiFeatureEnabled="Marketplace"
+                  additionalCondition={(usr) => !usr.findTag('i18_hide_payment.transfers')}
+                >
                   <EntityDetailRow label="Transfer">
                     <PaymentTransfers
                       payment={payment}
@@ -270,16 +273,18 @@ function PaymentDetails(props) {
                   </EntityDetailRow>
                 </ShowWhen>
 
-                {payment.method !== 'cod' && (
-                  <EntityDetailRow label="Refunds">
-                    <PaymentRefund
-                      payment={payment}
-                      refunds={refunds}
-                      openRefundModal={openRefundModal}
-                      onToggleClick={onRefundDetailsToggleClick}
-                    />
-                  </EntityDetailRow>
-                )}
+                <ShowWhen additionalCondition={(usr) => !usr.findTag('i18_hide_refunds')}>
+                  {payment.method !== 'cod' && (
+                    <EntityDetailRow label="Refunds">
+                      <PaymentRefund
+                        payment={payment}
+                        refunds={refunds}
+                        openRefundModal={openRefundModal}
+                        onToggleClick={onRefundDetailsToggleClick}
+                      />
+                    </EntityDetailRow>
+                  )}
+                </ShowWhen>
 
                 <EntityDetailRow label="Payment Method">
                   <PaymentMethod
@@ -340,7 +345,8 @@ function PaymentDetails(props) {
                 </ShowWhen>
 
                 <ShowWhen
-                  additionalCondition={() =>
+                  additionalCondition={(currUser) =>
+                    !currUser.findTag('i18_hide_settlements') &&
                     user.isUxRevampPhase2Enabled &&
                     payment.transaction &&
                     (!user.isSingleReconEnabled ||
@@ -370,16 +376,18 @@ function PaymentDetails(props) {
                 </ShowWhen>
                 <EntityDetailRow label="Description">{payment.description}</EntityDetailRow>
 
-                <EntityDetailRow label="Disputes">
-                  {payment.disputes && payment.disputes.count ? (
-                    <PaymentDisputes
-                      disputes={payment.disputes.items}
-                      onDisputeClick={props.goToLink}
-                    />
-                  ) : (
-                    '--'
-                  )}
-                </EntityDetailRow>
+                <ShowWhen additionalCondition={(usr) => !usr.findTag('i18_hide_disputes')}>
+                  <EntityDetailRow label="Disputes">
+                    {payment.disputes && payment.disputes.count ? (
+                      <PaymentDisputes
+                        disputes={payment.disputes.items}
+                        onDisputeClick={props.goToLink}
+                      />
+                    ) : (
+                      '--'
+                    )}
+                  </EntityDetailRow>
+                </ShowWhen>
 
                 <EntityDetailRow label="Customer">
                   <Definition placeholder="No customer linked">
@@ -388,18 +396,22 @@ function PaymentDetails(props) {
                   </Definition>
                 </EntityDetailRow>
 
-                <EntityDetailRow label="Total Fee">
-                  <Definition>
-                    <Amount value={payment.fee} />
-                    <span>
-                      {hideRazorpayTextLink ? '' : 'Razorpay '}Fee -&nbsp;
-                      <Amount value={payment.fee - payment.tax} currency="INR" />
-                    </span>
-                    <span>
-                      GST - <Amount value={payment.tax} currency="INR" />
-                    </span>
-                  </Definition>
-                </EntityDetailRow>
+                <ShowWhen
+                  additionalCondition={(user) => !user.findTag('i18_hide_payment.total_fee')}
+                >
+                  <EntityDetailRow label="Total Fee">
+                    <Definition>
+                      <Amount value={payment.fee} />
+                      <span>
+                        {hideRazorpayTextLink ? '' : 'Razorpay '}Fee -&nbsp;
+                        <Amount value={payment.fee - payment.tax} currency="INR" />
+                      </span>
+                      <span>
+                        GST - <Amount value={payment.tax} currency="INR" />
+                      </span>
+                    </Definition>
+                  </EntityDetailRow>
+                </ShowWhen>
 
                 {isInteger(payment?.customer_fee) && isInteger(payment?.customer_fee_gst) && (
                   <EntityDetailRow label="Total Convenience Fee">
