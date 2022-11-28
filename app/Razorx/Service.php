@@ -228,6 +228,7 @@ class Service extends Base\Service
             'rx_cohesive_invoice',
             'rx_custom_access_control_enabled',
             'rx_self_serve_workflow',
+            'rx_self_serve_workflow_for_icici_2fa',
             'easy_onboarding',
             'capital_virtual_card',
             'capital_addon_cards_status_tracker',
