@@ -727,6 +727,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CARD_SUBTYPE);
     }
 
+    public static function isTpvMethod(string $method): bool
+    {
+        return in_array($method, [self::UPI, self::NETBANKING], true);
+    }
+
     // ----------------------- Getters --------------------------------------------
     protected function setCardSubTypeAttribute($subtypes)
     {

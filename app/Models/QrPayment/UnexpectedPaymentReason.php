@@ -35,6 +35,9 @@ class UnexpectedPaymentReason
         PublicErrorDescription::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH,
         PublicErrorDescription::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD,
         PublicErrorDescription::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD_WEBSITE_MISMATCH,
+        PublicErrorDescription::BAD_REQUEST_PAYMENT_LINK_NOT_PAYABLE,
+        PublicErrorDescription::BAD_REQUEST_PAYMENT_UPI_COLLECT_NOT_ENABLED_FOR_MERCHANT,
+        PublicErrorDescription::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
     ];
 
     public static function shouldCreateUnexpectedPayment(string $message): bool

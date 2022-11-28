@@ -3,11 +3,13 @@
 namespace RZP\Models\Checkout\Order;
 
 use Carbon\Carbon;
+use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\Invoice\Entity as Invoice;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Methods\Entity as MethodsEntity;
 
 class Core extends BaseCore
 {
@@ -144,6 +146,16 @@ class Core extends BaseCore
         $orderId = $checkoutOrder->order_id;
 
         if (empty($orderId)) {
+            if (
+                $this->merchant->isTPVRequired() &&
+                MethodsEntity::isTpvMethod($checkoutOrder->getMethod())
+            ) {
+                throw new BadRequestValidationFailureException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
+                    Entity::ORDER_ID
+                );
+            }
+
             return;
         }
 

@@ -146,6 +146,16 @@ class CheckoutOrdersTest extends TestCase
         $this->createCheckoutOrder(['order_id' => 'abcdefi1234567']);
 }
 
+    public function testCreateCheckoutOrderShouldFailForTpvMerchantWithoutOrder(): void
+    {
+        $this->expectException(BadRequestValidationFailureException::class);
+        $this->expectExceptionMessage('Order id is mandatory for payment');
+
+        $this->fixtures->merchant->addFeatures(['tpv']);
+
+        $this->createCheckoutOrder();
+    }
+
     public function testCreateCheckoutOrderShouldFailWithExtraInputParameters(): void
     {
         $this->expectException(ExtraFieldsException::class);

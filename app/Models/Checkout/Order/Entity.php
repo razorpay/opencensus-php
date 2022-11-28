@@ -493,6 +493,11 @@ class Entity extends PublicEntity
         return $this->getAttribute(self::META_DATA)[self::RECEIVER_TYPE] ?? '';
     }
 
+    public function getMethod(): string
+    {
+        return $this->getAttribute(self::META_DATA)[self::METHOD] ?? '';
+    }
+
     // ------------------------------ GETTERS END ------------------------------
     // --------------------------------------------------------------------------------
     // ------------------------------ SETTERS START ------------------------------
