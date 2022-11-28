@@ -96,7 +96,7 @@ class OndemandModal extends Component {
     window.rzpAnalytics?.(eventObject);
   };
 
-  openConfirmSettlement = () => {
+  openConfirmSettlement = async () => {
     const { hasChangedAmount, checkedBreakup, amount } = this.state;
     const { user, fromWhere } = this.props;
     this.setState({
@@ -120,29 +120,33 @@ class OndemandModal extends Component {
       } -confirm`,
     });
 
-    this.context.confirm({
-      header: 'Are you sure you want to do this settlement?',
-      message: this.renderConfirmation,
-      affirmativeLabel: 'Yes, Settle',
-      abortLabel: "No, Don't ",
-      action: () => {
-        this.gaEventDispatcher({
-          eventAction: `second confirmation`,
-          eventLabel: `Yes,Settle | Second Confirm`,
-        });
-        trackEsSettlementAction(user.current, fromWhere, true);
-        onDemandModalTrackEvents.trackSettleNowSecondConfirm(fromWhere);
-        this.onSubmit();
-      },
-      abort: () => {
-        this.gaEventDispatcher({
-          eventAction: `second confirmation`,
-          eventLabel: `No, Don't | Second Confirm`,
-        });
-        trackEsSettlementAction(user.current, fromWhere);
-        onDemandModalTrackEvents.trackSettleNowCancelConfirm(fromWhere);
-      },
-    });
+    try {
+      await this.context.confirm({
+        header: 'Are you sure you want to do this settlement?',
+        message: this.renderConfirmation,
+        affirmativeLabel: 'Yes, Settle',
+        abortLabel: "No, Don't ",
+        action: () => {
+          this.gaEventDispatcher({
+            eventAction: `second confirmation`,
+            eventLabel: `Yes,Settle | Second Confirm`,
+          });
+          trackEsSettlementAction(user.current, fromWhere, true);
+          onDemandModalTrackEvents.trackSettleNowSecondConfirm(fromWhere);
+          this.onSubmit();
+        },
+        abort: () => {
+          this.gaEventDispatcher({
+            eventAction: `second confirmation`,
+            eventLabel: `No, Don't | Second Confirm`,
+          });
+          trackEsSettlementAction(user.current, fromWhere);
+          onDemandModalTrackEvents.trackSettleNowCancelConfirm(fromWhere);
+        },
+      });
+    } catch (error) {
+      // empty catch
+    }
   };
 
   breakup = () => {

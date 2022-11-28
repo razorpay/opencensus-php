@@ -14,6 +14,7 @@ import logHandlers from 'merchant_common/containers/ReportsAsync/Logs/__test__/m
 import { payoutDetailsHandlers } from 'merchant/views/Settlements/InstantSettlements/PayoutDetails/__test__/mocks/handlers';
 import { instantDetailsHandlers } from 'merchant/views/Settlements/InstantSettlements/InstantSettlementDetails/__test__/mocks/handlers';
 import reportsHandlers from 'merchant_common/containers/ReportsAsync/__test__/mocks/handlers';
+import ONDEMAND_SETTLEMENTS_HANDLERS from 'merchant/views/Settlements/Settlements/components/__test__/mocks/handlers';
 
 export const handlers = [
   // Handles a "Login" mutation
@@ -764,7 +765,39 @@ export const handlers = [
       ctx.delay(50),
     );
   }),
+
+  // generic handler to be used across app
+  rest.get('*/merchant/api/test/balance', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        success: true,
+        data: {
+          id: 'HFwYCSNr1Ke0rC',
+          merchant_id: 'HFQ3S14NsDs3Ti',
+          type: 'primary',
+          currency: 'INR',
+          name: null,
+          balance: 990000000,
+          credits: 0,
+          fee_credits: 0,
+          refund_credits: 0,
+          account_number: null,
+          account_type: null,
+          channel: null,
+          updated_at: 1643017682,
+          locked_balance: 0,
+          last_fetched_at: null,
+        },
+      }),
+      ctx.delay(50),
+    );
+  }),
+
+  ...ONDEMAND_SETTLEMENTS_HANDLERS,
   ...WEBHOOK_HANDLERS,
+
   ...paymentHandlers,
   ...logHandlers,
   ...payoutDetailsHandlers,
