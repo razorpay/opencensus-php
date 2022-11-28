@@ -812,6 +812,13 @@ class Service extends Base\Service
 
             $gracePeriodCheck = false;
 
+            $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, [
+                'URLS' => $urls,
+                'WebsiteDetails' => $websiteDetail
+            ]);
+
+            // Check For Website Null todo
+
             foreach (Constants::MANDATORY_ADMIN_SECTIONS as $sectionName)
             {
                 foreach ($urls as $url => $url_type)
@@ -822,12 +829,15 @@ class Service extends Base\Service
 
                     $sectionStatus = $websiteDetail->getSectionStatus($sectionName);
 
-                    $this->trace->info(TraceCode::WEBSITE_SECTION_ERROR, [
-                            'Section Status' => $sectionStatus,
-                            'Section Url'    => $sectionUrl
+                    $sectionSubmissionStatus = $websiteDetail->getSectionSubmissionStatus($sectionName);
+
+                    $this->trace->info(TraceCode::WEBSITE_SECTION_RESPONSE, [
+                        'Section Status' => $sectionStatus,
+                        'Section Url'    => $sectionUrl,
+                        'Section Submission Status' => $sectionSubmissionStatus
                     ]);
 
-                    if ($sectionStatus === 3)
+                    if ($sectionStatus === 3 and $sectionSubmissionStatus===Constants::SUBMITTED)
                     {
                         $gracePeriodCheck = true;
                     }
@@ -838,11 +848,13 @@ class Service extends Base\Service
 
                         $refundSectionStatus = $websiteDetail->getSectionStatus($refundSectionName);
 
-                        if ($refundSectionStatus === 3)
+                        $refundSectionSubmissionStatus = $websiteDetail->getSectionSubmissionStatus($refundSectionName);
+
+                        if ($refundSectionStatus === 3 and $refundSectionSubmissionStatus===Constants::SUBMITTED)
                         {
                             $gracePeriodCheck = true;
                         }
-                        if (empty($sectionUrl) === true and $refundSectionStatus === 3)
+                        if (empty($sectionUrl) === true and $refundSectionStatus === 3 and $refundSectionSubmissionStatus===Constants::SUBMITTED)
                         {
                             continue;
                         }
