@@ -108,6 +108,10 @@ class BulkUploadClient extends Job
         {
             $rawAddresses = (new RawAddress\Repository())->fetchRawAddressesForContact($contact['contact'],
                                                                                        self::STATUS_PROCESSING);
+            if (sizeof($rawAddresses) == 0)
+            {
+                continue;
+            }
 
             $customer = (new Customer\Repository())->findByContactAndMerchantId($contact['contact'],Account::SHARED_ACCOUNT);
 
