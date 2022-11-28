@@ -290,7 +290,7 @@ const CustomURL = ({
                   </div>
                   <span class="action">
                     <button
-                      class="btn Button--primary--invert Button"
+                      class="Button--primary--invert Button"
                       onClick={handleConnectDomain}
                       type="button"
                     >
