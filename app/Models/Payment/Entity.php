@@ -2691,13 +2691,23 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function isQrV2Payment()
     {
-        $receiver = $this->getReceiver();
+        $receiver = $this->receiver;
 
         return (($receiver !== null) and
                 ($receiver instanceof QrV2\Entity) and
                 ($receiver->getStatus() !== null));
     }
 
+    /**
+     * @ToDo: Refactor to remove this ambiguous method. `getReceiver()` isn't
+     *        necessary as we already have `receiver()` relationship defined.
+     *        Also, the responsibility of `getReceiver()` shouldn't just be
+     *        limited to QrCode as there are multiple payment receivers.
+     *
+     * @deprecated Please use receiver relationship instead.
+     *
+     * @return null|QrCode\Entity|QrV2\Entity
+     */
     public function getReceiver()
     {
         return (new QrCode\Repository)->find($this->toArray()[self::RECEIVER_ID]);

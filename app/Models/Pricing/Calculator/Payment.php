@@ -9,6 +9,7 @@ use RZP\Models\Card;
 use RZP\Models\Currency\Core;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Pricing;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as QrV2Entity;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
@@ -486,6 +487,7 @@ class Payment extends Base
 
     protected function getRelevantPricingRuleForUPI($rules)
     {
+        /** @var PaymentModel\Entity $payment */
         $payment = $this->entity;
 
         $order = $payment->order;
@@ -499,6 +501,17 @@ class Payment extends Base
         if((empty($order) === false) and ($order->getProductType() === ProductType::PAYMENT_LINK_V2))
         {
             $receiverType = null;
+        }
+
+        if ($payment->isUpiQr() && $payment->isQrV2UpiPayment()) {
+            /** @var QrV2Entity $qrCode */
+            $qrCode = $payment->receiver;
+
+            // In case of QrV2 payments received on checkout we need to fetch
+            // default pricing for UPI (no qr_code fallback pricing).
+            if ($qrCode !== null && $qrCode->isCheckoutQrCode()) {
+                $receiverType = null;
+            }
         }
 
         $filters1 = [

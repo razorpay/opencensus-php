@@ -9,6 +9,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Exception\ExtraFieldsException;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\Method;
+use RZP\Models\Pricing\Fee;
 use RZP\Models\QrPayment\UnexpectedPaymentReason;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\MocksRedisTrait;
@@ -247,6 +248,165 @@ class CheckoutOrdersTest extends TestCase
         $this->assertEquals('intent', $upiMetadata['flow']);
         $this->assertEquals('default', $upiMetadata['type']);
         $this->assertEquals('upi_qr', $upiMetadata['mode']);
+    }
+
+    /**
+     * Ensure that default QrCode Pricing from Plan Id: 'A8UwvIbaL8n4Q8' isn't
+     * applied to QrV2 payments originating from standard checkout.
+     *
+     * @return void
+     */
+    public function testDefaultQrCodePricingIsNotChargedForCheckoutOrderQrCodePayments(): void
+    {
+        $upiPricingPlan = [
+            'plan_id'             => 'TestPlan1',
+            'plan_name'           => 'TestMerchantUPIPricingPlan1',
+            'payment_method'      => 'upi',
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'feature'             => 'payment',
+            'receiver_type'       => null,
+            'fee_bearer'          => 'platform',
+            'percent_rate'        => 0,
+            'fixed_rate'          => 0,
+        ];
+
+        $this->fixtures->create('pricing', $upiPricingPlan);
+
+        $defaultQrPricingPlan = [
+            'plan_id'             => Fee::DEFAULT_QR_CODE_PLAN_ID,
+            'plan_name'           => 'TestDefaultQrCodePricingPlan1',
+            'payment_method'      => 'upi',
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'feature'             => 'payment',
+            'fee_bearer'          => 'platform',
+            'receiver_type'       => 'qr_code',
+            'percent_rate'        => 99, // 99 base points i.e. 0.99%
+            'fixed_rate'          => 0,
+        ];
+
+        $this->fixtures->create('pricing', $defaultQrPricingPlan);
+
+        $this->fixtures->merchant->editPricingPlanId('TestPlan1', Account::TEST_ACCOUNT);
+
+        $order = $this->fixtures->create('order', [
+            'amount' => 100000,
+            'payment_capture' => 1,
+        ]);
+
+        $response = $this->createCheckoutOrder(['order_id' => $order['id']]);
+
+        $qrCodeId = $response['qr_code']['id'];
+
+        $this->assertNotNull($qrCodeId);
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+        $request['content']['PayerAmount'] = $order['amount'] / 100;
+
+        $this->makeUpiIciciPayment($request);
+
+        $payment = $this->getDbLastPayment();
+        $feeBreakup = $this->getDbEntities('fee_breakup', ['transaction_id' => $payment->getTransactionId()]);
+
+        // Payment assertions
+        $this->assertEquals(Account::TEST_ACCOUNT, $payment->getMerchantId());
+        $this->assertEquals(100000, $payment->getAmount());
+        $this->assertEquals(0, $payment->getFee());
+        $this->assertEquals(0, $payment->getTax());
+        // Fee Breakup Assertions
+        $this->assertCount(2, $feeBreakup);
+        $this->assertEquals('payment', $feeBreakup[0]['name']);
+        $this->assertEquals(0, $feeBreakup[0]['amount']);
+        $this->assertEquals('tax', $feeBreakup[1]['name']);
+        $this->assertEquals(0, $feeBreakup[1]['amount']);
+    }
+
+    /**
+     * Ensure that if a merchant has QrCode pricing defined in their pricing
+     * plan even then the default UPI pricing is only applied & QrV2 pricing
+     * isn't considered for QrV2 payments originating from checkout.
+     *
+     * @return void
+     */
+    public function testMerchantSpecificQrCodePricingIsNotChargedForCheckoutOrderQrCodePayments(): void
+    {
+        $upiPricingPlan = [
+            'plan_id'             => 'TestPlan1',
+            'plan_name'           => 'TestMerchantUPIPricingPlan1',
+            'payment_method'      => 'upi',
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'feature'             => 'payment',
+            'receiver_type'       => null,
+            'fee_bearer'          => 'platform',
+            'percent_rate'        => 200, // 200 base points i.e. 2.00%
+            'fixed_rate'          => 0,
+        ];
+
+        $this->fixtures->create('pricing', $upiPricingPlan);
+
+        $qrPricingPlan = [
+            'plan_id'             => 'TestPlan1',
+            'plan_name'           => 'TestMerchantQrCodePricingPlan1',
+            'payment_method'      => 'upi',
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'feature'             => 'payment',
+            'receiver_type'       => 'qr_code',
+            'fee_bearer'          => 'platform',
+            'percent_rate'        => 165, // 165 base points i.e. 1.65%
+            'fixed_rate'          => 0,
+        ];
+
+        $this->fixtures->create('pricing', $qrPricingPlan);
+
+        $this->fixtures->merchant->editPricingPlanId('TestPlan1', Account::TEST_ACCOUNT);
+
+        $order = $this->fixtures->create('order', [
+            'amount' => 100000,
+            'payment_capture' => 1,
+        ]);
+
+        $response = $this->createCheckoutOrder([
+            'order_id' => $order['id'],
+            'amount' => 100000,
+        ]);
+
+        $qrCodeId = $response['qr_code']['id'];
+
+        $this->assertNotNull($qrCodeId);
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+        $request['content']['PayerAmount'] = $order['amount'] / 100;
+
+        $this->makeUpiIciciPayment($request);
+
+        $payment = $this->getDbLastPayment();
+        $feeBreakup = $this->getDbEntities('fee_breakup', ['transaction_id' => $payment->getTransactionId()]);
+        // Payment Assertions
+        $this->assertEquals(Account::TEST_ACCOUNT, $payment->getMerchantId());
+        $this->assertEquals(100000, $payment->getAmount());
+        $this->assertEquals('captured', $payment->getStatus());
+        // Ensure Default UPI Fees is Charged i.e. 2.00%
+        $this->assertEquals(2360, $payment->getFee());
+        $this->assertEquals(360, $payment->getTax());
+        // Fee Breakup Assertions
+        $this->assertCount(2, $feeBreakup);
+        $this->assertEquals('payment', $feeBreakup[0]['name']);
+        $this->assertEquals(2000, $feeBreakup[0]['amount']); // 2.00% of 100000
+        $this->assertEquals('tax', $feeBreakup[1]['name']);
+        $this->assertEquals(360, $feeBreakup[1]['amount']); // 18% GST on Fee = 18% of 2000
     }
 
     public function testCheckoutOrderPaymentWithCustomerId(): void

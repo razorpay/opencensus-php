@@ -1264,6 +1264,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
             'payouts_batch'             => RZP\Models\Payout\Batch\Entity::class,
 
+            'qr_code'                   => RZP\Models\QrCode\NonVirtualAccountQrCode\Entity::class,
         ]);
     }
 
