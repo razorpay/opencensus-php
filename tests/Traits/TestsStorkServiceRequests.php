@@ -99,7 +99,7 @@ trait TestsStorkServiceRequests
     {
         $this->storkMock = $this->storkMock ?: $this->createStorkMock();
 
-        $mockedRes = new Requests_Response;
+        $mockedRes = new \WpOrg\Requests\Response;
         $mockedRes->status_code = 200;
         $mockedRes->success = true;
         $mockedRes->body = json_encode([]);
