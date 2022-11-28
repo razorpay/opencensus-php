@@ -15,7 +15,7 @@ use Google\Protobuf\Internal\Message;
  *
  * Generated from protobuf service <code>rzp.accounts.account.v1.SaveApi</code>
  */
-final class SaveApiClient extends SaveApiAbstractClient implements SaveApi
+class SaveApiClient extends SaveApiAbstractClient implements SaveApi
 {
     protected $timeout = 5;
 

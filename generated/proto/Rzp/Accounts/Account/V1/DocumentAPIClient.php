@@ -15,7 +15,7 @@ use Google\Protobuf\Internal\Message;
  *
  * Generated from protobuf service <code>rzp.accounts.account.v1.DocumentAPI</code>
  */
-final class DocumentAPIClient extends DocumentAPIAbstractClient implements DocumentAPI
+class DocumentAPIClient extends DocumentAPIAbstractClient implements DocumentAPI
 {
     protected $timeout = 5;
 
