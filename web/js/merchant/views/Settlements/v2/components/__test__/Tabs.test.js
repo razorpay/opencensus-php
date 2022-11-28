@@ -1,7 +1,7 @@
 import React from 'react';
 import Tabs from 'merchant/views/Settlements/v2/components/Tabs';
 import { userEvent, render, screen, waitFor } from 'test-utils';
-import * as SettlementsDB from 'merchant/views/Settlements/tests/data/SettlementsDB';
+import * as SettlementsDB from 'merchant/views/Settlements/__test__/data/SettlementsDB';
 import { titleCase } from 'common/utils/rzp-utils';
 import { sanitizeTabName } from 'merchant/views/Settlements/v2/util';
 

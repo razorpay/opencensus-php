@@ -1,7 +1,7 @@
 import React from 'react';
 import Pagination from 'merchant/views/Settlements/v2/components/Pagination';
 import { screen, render, userEvent } from 'test-utils';
-import * as SettlementsDB from 'merchant/views/Settlements/tests/data/SettlementsDB';
+import * as SettlementsDB from 'merchant/views/Settlements/__test__/data/SettlementsDB';
 
 const defaultProps = {
   next: jest.fn(),
