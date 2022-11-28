@@ -13,6 +13,7 @@ use RZP\Http\Request\Requests;
 use RZP\Models\Base;
 use RZP\Models\Merchant\OneClickCheckout;
 use RZP\Models\Merchant\OneClickCheckout\AuthConfig;
+use RZP\Models\Customer\CustomerConsent1cc;
 use RZP\Models\Payment\Method as PaymentMethod;
 use RZP\Models\Payment\Status as PaymentStatus;
 use RZP\Models\Order\OrderMeta\Type as OrderMetaType;
@@ -34,6 +35,10 @@ class Core extends Base\Core
     const ORDER_CACHE_KEY_TTL = 1 * 1440; // 1 day
 
     const MUTEX_KEY = 'shopify_1cc_place_order_mutex';
+
+    const gupShupEnabledMids = [
+        '7E6oragoxHFlvV',  //Go Noise
+    ];
 
     protected $monitoring;
 
@@ -685,6 +690,8 @@ class Core extends Base\Core
 
             $this->updateShopifyTransaction($order['order']['id'], $rzpPayment);
 
+            $this->updateShopifyCustomer($client, $order);
+
             $this->trace->info(
                 TraceCode::SHOPIFY_1CC_PLACE_ORDER_RETRY_RES,
                 [
@@ -809,6 +816,8 @@ class Core extends Base\Core
 
         $this->updateShopifyTransaction($order['order']['id'], $rzpPayment);
 
+        $this->updateShopifyCustomer($client, $order);
+
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_PLACE_ORDER_RES,
             [
@@ -820,6 +829,101 @@ class Core extends Base\Core
         );
 
         return $order;
+    }
+
+    protected function updateShopifyCustomer($client, $order)
+    {
+        $customerId = $order['order']['customer']['id'];
+
+        $rzpCustomerPhone = $order['order']['phone'];
+
+        $shopifyCustomerPhone = $order['order']['customer']['phone'];
+
+        $shopifyCustomerEmail = $order['order']['customer']['email'];
+
+        $emailMarketing = isset($order['order']['customer']['email_marketing_consent']['state']) ?? null;
+
+        $smsMarketing = isset($order['order']['customer']['sms_marketing_consent']['state']) ?? null;
+
+        $start = millitime();
+
+        $customerConsent = $this->fetchCustomerConsentFor1CC($rzpCustomerPhone, $this->merchant->getId());
+
+        if ($customerConsent == 0 || $customerConsent == null || $customerConsent == false)
+        {
+            $this->trace->info(
+                TraceCode::SHOPIFY_1CC_UPDATE_CUSTOMER,
+                [
+                  'type' => 'no_customer_consent',
+                  'customerConsent' => $customerConsent,
+                ]
+              );
+            return;
+        }
+
+        // Udate customer consent state, incase either email or sms is not subscribed.
+        if ($emailMarketing != 'subscribed' || $smsMarketing != 'subscribed')
+        {
+            $body = $this->getCustomerUpdateBody($customerId, $shopifyCustomerPhone, $shopifyCustomerEmail);
+
+            try
+            {
+              $customer = $client->sendRestApiRequest(
+                  json_encode($body),
+                  Client::PUT,
+                  '/customers/' . strval($customerId) . '.json'
+              );
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->info(
+                    TraceCode::SHOPIFY_1CC_API_CUSTOMER_ERROR,
+                    [
+                        'type' => 'update_customer_failed',
+                        'error' => $e->getMessage()
+                    ]
+                );
+            }
+        }
+
+        $merchantId = $this->merchant->getId();
+
+        // Call GupShup consent API for enabled MID's
+        if (isset($merchantId) === true and in_array($merchantId, self::gupShupEnabledMids) === true and $shopifyCustomerPhone != null)
+        {
+            (new GupShup)->callGupShupConsent($shopifyCustomerPhone);
+        }
+    }
+
+    protected function getCustomerUpdateBody($customerId, $shopifyCustomerPhone, $shopifyCustomerEmail)
+    {
+        $customer = [
+            'id'                     => $customerId,
+            'accepts_marketing'      => true,
+            'marketing_opt_in_level' => 'single_opt_in'
+        ];
+
+        if ($shopifyCustomerEmail != null || empty($shopifyCustomerEmail) === false)
+        {
+            $customer = array_merge($customer, [
+                'email_marketing_consent' => [
+                    'state'        => 'subscribed',
+                    'opt_in_level' => 'single_opt_in'
+                ]
+            ]);
+        }
+
+        if ($shopifyCustomerPhone != null)
+        {
+            $customer = array_merge($customer, [
+                'sms_marketing_consent' => [
+                    'state'        => 'subscribed',
+                    'opt_in_level' => 'single_opt_in'
+                ]
+            ]);
+        }
+
+        return ['customer' => $customer];
     }
 
     protected function getCreateOrderPayload($rzpOrder, string $paymentMethod): array
@@ -958,6 +1062,16 @@ class Core extends Base\Core
             ]
         );
         return $body;
+    }
+
+    protected function fetchCustomerConsentFor1CC($contact, $merchantId)
+    {
+        $customerConsent = (new CustomerConsent1cc\Core())->fetchCustomerConsent1cc($contact, $merchantId);
+
+        if (empty($customerConsent) == false) {
+            return $customerConsent['status'];
+        }
+       return 0;
     }
 
     public function splitName(string $name): array

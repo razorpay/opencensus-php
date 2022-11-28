@@ -7925,6 +7925,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SHOPIFY_1CC_API_CART_FETCH                          = 'SHOPIFY_1CC_API_CART_FETCH';
     const SHOPIFY_1CC_CACHE_CART_FETCH_FAIL                   = 'SHOPIFY_1CC_CACHE_CART_FETCH_FAIL';
     const SHOPIFY_1CC_SCRIPT_DISCOUNT_FETCH_FAIL              = 'SHOPIFY_1CC_SCRIPT_DISCOUNT_FETCH_FAIL';
+    const SHOPIFY_1CC_UPDATE_CUSTOMER                         = 'SHOPIFY_1CC_UPDATE_CUSTOMER';
+    const SHOPIFY_1CC_API_CUSTOMER_ERROR                      = 'SHOPIFY_1CC_API_CUSTOMER_ERROR';
 
     const SHOPIFY_1CC_RATE_LIMIT                              = 'SHOPIFY_1CC_RATE_LIMIT';
     const SHOPIFY_1CC_API_RETRY                               = 'SHOPIFY_1CC_API_RETRY';
