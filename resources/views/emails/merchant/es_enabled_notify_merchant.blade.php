@@ -13,9 +13,6 @@
                 <br>
                 Early Settlements has now been enabled for your account for an additional cost of <strong>{{{$percent_rate}}}%</strong> on your domestic transactions.<br>
                 <br>
-                To enable <strong>International Early Settlements</strong> and for any other queries, kindly get in touch with our support team on <a href="https://razorpay.com/support" style="color:#1aace5" target="_blank"> https://razorpay.com/support</a>.
-                <br>
-                <br>
                 Regards,<br>
                 Team Razorpay<br>
                 &nbsp;</p>
