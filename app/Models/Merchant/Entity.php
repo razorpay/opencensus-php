@@ -338,6 +338,7 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_REPORT_EMAIL,
         self::INVOICE_CODE,
         self::ACCOUNT_CODE,
+        self::CONVERT_CURRENCY
     ];
 
     protected $embeddedRelations = [
@@ -725,6 +726,18 @@ class Entity extends Base\PublicEntity
         $invoiceCode = strtoupper($first8 . $last4);
 
         $this->setAttribute(self::INVOICE_CODE, $invoiceCode);
+    }
+
+
+    // Currently we are setting convert currency as false for every merchant by default
+    // Which means that we are supporting MCC by default on every merchant. Now in case of MY merchants,
+    // We need to set this as null to disable MCC flow on them and enable only when required
+    protected function generateConvertCurrency($input)
+    {
+        if(isset($input[self::COUNTRY_CODE]) === true && $input[self::COUNTRY_CODE] === "MY")
+        {
+            $this->setAttribute(self::CONVERT_CURRENCY, null);
+        }
     }
 
     protected function generateAccountCode($input)
@@ -3633,7 +3646,7 @@ class Entity extends Base\PublicEntity
 
         return $name;
     }
-    
+
     /**
      * This function can be used while preparing payload to send notifications via stork (to fit 160 char limit for SMS)
      *

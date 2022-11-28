@@ -21,6 +21,12 @@ class MerchantEsCreateTest extends TestCase
     {
         list($response, $testEsDoc, $liveEsDoc) = $this->startTestAndMakeAssertionsOnEsDoc(__FUNCTION__, '1X4hRFHFx4UiXt');
 
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $this->assertEquals($merchant["convert_currency"], false);
+
+        $this->assertEquals($merchant["country_code"], "IN");
+
         $this->assertNotEmpty($testEsDoc['created_at']);
         $this->assertNotEmpty($testEsDoc['updated_at']);
         $this->assertNotEmpty($testEsDoc['merchant_detail']['updated_at']);
@@ -35,6 +41,12 @@ class MerchantEsCreateTest extends TestCase
         list($response, $testEsDoc, $liveEsDoc) = $this->startTestAndMakeAssertionsOnEsDoc(__FUNCTION__, '1X4hRFHFx4UiXt');
 
         $balance = $this->getLastEntity('balance', true);
+
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $this->assertEquals($merchant["convert_currency"], null);
+
+        $this->assertEquals($merchant["country_code"], "MY");
 
         $this->assertEquals($balance['currency'], 'MYR');
         $this->assertEquals($balance['type'], 'primary');
