@@ -31,8 +31,7 @@ class Service extends Base\Service
         $startTime = millitime();
 
         $dimensions =[
-            "merchant_id" => $this->merchant->getId(),
-            "mode" => $this->mode
+            "mode" => $this->mode,
         ];
         $decodedResponse = [];
         $ex = '';
@@ -77,6 +76,8 @@ class Service extends Base\Service
 
             $externalCallStart = millitime();
 
+            $dimensions = $this->addPlatformDimension($platformConfig, $dimensions);
+
             if ($platformConfig !== null and $platformConfig->getValue() === Merchant1ccConfig\Type::SHOPIFY)
             {
                 // TODO: critical error if not found !
@@ -117,7 +118,7 @@ class Service extends Base\Service
             $this->traceResponseTime(
                 Metric::MERCHANT_EXTERNAL_COUPONS_REQUEST_DURATION_MILLIS,
                 $externalCallStart,
-                $this->addPlatformDimension($platformConfig)
+                $dimensions
             );
 
             $validator = (new Validator);
@@ -136,7 +137,7 @@ class Service extends Base\Service
             $this->traceResponseTime(
                 Metric::MERCHANT_COUPONS_REQUEST_DURATION_MILLIS,
                 $startTime,
-                $this->addPlatformDimension($platformConfig)
+                $dimensions
             );
 
             return $decodedResponse;
@@ -155,7 +156,7 @@ class Service extends Base\Service
                         [
                             'request' => $this->getMaskedContactDetails($input),
                             'response' => $this->getMaskedCoupons($decodedResponse) ,
-                            'exception'=> $ex
+                            'exception'=> $ex,
                         ]
                     )
                 );
@@ -198,7 +199,6 @@ class Service extends Base\Service
         $startTimeMillis = millitime();
 
         $dimensions = [
-            "merchant_id" => $this->merchant->getId(),
             "mode" => $this->mode
         ];
 
@@ -241,6 +241,8 @@ class Service extends Base\Service
             $platformConfig = $this->merchant->getMerchantPlatformConfig();
 
             $externalRequestStart = millitime();
+
+            $dimensions = $this->addPlatformDimension($platformConfig, $dimensions);
 
             if ($platformConfig !== null and $platformConfig->getValue() === Merchant1ccConfig\Type::SHOPIFY) {
                 // TODO: critical error if not found !
@@ -287,13 +289,13 @@ class Service extends Base\Service
             $this->traceResponseTime(
                 Metric::MERCHANT_EXTERNAL_COUPON_VALIDITY_REQUEST_TIME_MILLIS,
                 $externalRequestStart,
-                $this->addPlatformDimension($platformConfig)
+                $dimensions
             );
 
             $this->traceResponseTime(
                 Metric::MERCHANT_COUPON_VALIDITY_REQUEST_DURATION_MILLIS,
                 $startTimeMillis,
-                $this->addPlatformDimension($platformConfig)
+                $dimensions
             );
 
             try {
@@ -427,16 +429,9 @@ class Service extends Base\Service
     }
 
     // NOTE: At scale we will remove merchant_id to reduce cardinality
-    protected function traceResponseTime(string $metric, int $startTime, $extraDimensions = [])
+    protected function traceResponseTime(string $metric, int $startTime, $dimensions = [])
     {
         $duration = millitime() - $startTime;
-
-        $dimensions = array_merge(
-            $extraDimensions,
-            [
-                'merchant_id' => $this->merchant->getId(),
-            ]
-        );
 
         $this->trace->histogram($metric, $duration, $dimensions);
     }
