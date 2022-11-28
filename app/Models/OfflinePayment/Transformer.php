@@ -64,13 +64,13 @@ class Transformer extends Base\Service
 
         return [
             'challan_number' => $input['challan_no'],
-            'amount' => $input['amount'],
+            'amount' => stringify($input['amount']),
             'mode' => $mode,
             'status' => $status,
             'description' => $input['description'] ?? null,
             'bank_reference_number' => $input['bank_reference_number'] ?? null,
-            'payment_instrument_details' => $input['payment_instrument_details'],
-            'payer_details' => $input['payer_details'],
+            'payment_instrument_details' => $input['payment_instrument_details'] ?? '',
+            'payer_details' => $input['payer_details'] ?? '',
             'payment_timestamp' => $time ?? null,
             'additional_info' => $input['additional_info'] ?? null,
             'client_code' => $input['client_code'] ?? null,

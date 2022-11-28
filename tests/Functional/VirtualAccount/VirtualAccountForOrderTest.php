@@ -489,6 +489,46 @@ class VirtualAccountForOrderTest extends TestCase
 
     }
 
+    public function testHdfcOfflinePaymentCreditWithoutPaymentDetails()
+    {
+        $challan_number = $this->setUpOfflinePayment();
+
+        $content = [
+            'challan_no' =>  $challan_number,
+            'amount' => 1000,
+            'mode' => 'cash',
+            'status' => 'processed',
+            'payment_date' => '28-jan-2022',
+            'payment_time' => '21:30:45',
+            'client_code'  =>  '12345678',
+        ];
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'url'     => '/credit/ecollect/offline',
+            'method'  => 'post',
+            'content' => $content,
+        ];
+
+        $offlineChallan = (new OfflineChallanRepo)->fetchByChallanNumber($challan_number);
+
+        $offlineChallan->setStatus('validated');
+
+        (new OfflineChallanRepo)->saveOrfail($offlineChallan);
+
+        $this->ba->hdfcOtcAuth();
+
+        $this->testData[__FUNCTION__]['request']['headers']['HTTP_X-Forwarded-Tls-Client-Cert'] = [self::CERT_HEADER];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+                'challan_no' => $challan_number,
+                'status' => 0
+            ],
+        ];
+
+        $this->startTest();
+    }
+
     public function testHdfcOfflinePaymentCreditAmountValidationFail()
     {
         $challan_number = $this->setUpOfflinePayment();

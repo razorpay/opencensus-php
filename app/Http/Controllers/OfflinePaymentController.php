@@ -68,6 +68,11 @@ class OfflinePaymentController extends Controller
 
         $response = $this->createOfflineResponse($request[Entity::CHALLAN_NUMBER],StatusCode::SUCCESS,0);
 
+        $this->trace->info(TraceCode::OFFLINE_PAYMENT_CREDIT_RESPONSE,
+            [
+                'Response'     => $response ?? null,
+            ]);
+
         $resp = ApiResponse::json($response);
 
         $resp->headers->set('content-security-policy', "default-src 'self' https:");

@@ -292,6 +292,11 @@ class VirtualAccountController extends Controller
                 null, 'SERVER_ER');
         }
 
+        $this->trace->info(TraceCode::OTC_VALIDATION_BANK_RESPONSE,
+            [
+                'Response'     => $response ?? null,
+            ]);
+
         $resp = ApiResponse::json($response);
 
         $resp->headers->set('content-security-policy', "default-src 'self' https:");
