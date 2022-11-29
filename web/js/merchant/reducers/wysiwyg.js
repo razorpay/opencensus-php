@@ -312,6 +312,14 @@ export default (state = initialState, action) => {
 
       entityData.receipt = receiptSettings;
 
+      // 8. if checkout_options missing somehow, reinitiate
+      if (!entityData.settings.checkout_options) {
+        entityData.settings.checkout_options = {
+          email: FIXED_FIELDS.email.name,
+          phone: FIXED_FIELDS.phone.name,
+        };
+      }
+
       const storeState = {
         ...initialState,
         magicCheckout: {

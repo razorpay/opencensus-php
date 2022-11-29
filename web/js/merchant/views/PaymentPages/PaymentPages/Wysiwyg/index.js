@@ -61,7 +61,6 @@ import {
   SHIPROCKET_FORM_ITEMS,
   checkIsMagicCheckoutField,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers';
-
 import {
   trackWYSIWYGCloseIntent,
   trackConfirmWYSIWYGCloseIntent,
@@ -71,7 +70,9 @@ import {
   isFormItemOfTypeAmount,
 } from './FormSection/Amount/helpers';
 import { transfeeRuleToApiFormat } from 'merchant/views/PaymentPages/PaymentPages/helpers';
+
 import { DEFAULT_RULE } from 'merchant/views/MagicCheckout/constants';
+import { FIXED_FIELDS } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers/preAddedFields';
 
 const MagicCheckoutEnabledModal = lazy(() =>
   import(
@@ -634,7 +635,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     }
 
     reqPayload.settings.checkout_options = {
-      ...settings.checkout_options,
+      email: settings.checkout_options?.email || FIXED_FIELDS.email.name,
+      phone: settings.checkout_options?.phone || FIXED_FIELDS.phone.name,
     };
 
     if (this.props.user.isPaymentPageCustomDomainEnabled) {
