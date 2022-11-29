@@ -3449,10 +3449,21 @@ class Core extends Base\Core
 
         if ( $isCACEnabled === true)
         {
+            try
+            {
+                $authzRoles = (new \RZP\Models\RoleAccessPolicyMap\Service())->getAuthzRolesForRoleId($merchant[Entity::BANKING_ROLE]);
 
-            $authzRoles = (new \RZP\Models\RoleAccessPolicyMap\Service())->getAuthzRolesForRoleId($merchant[Entity::BANKING_ROLE]);
-
-            return (new AuthzAdmin\Service())->adminAPIListPolicy($authzRoles);
+                return (new AuthzAdmin\Service())->adminAPIListPolicy($authzRoles);
+            }
+            catch (\Exception $exception)
+            {
+                $this->trace->error(TraceCode::FETCH_AUTHZ_ROLES_FAILED,
+                    [
+                        'merchant_id' => $merchant[Entity::ID],
+                        'role_id' => $merchant[Entity::BANKING_ROLE],
+                        'exception' => $exception
+                    ]);
+            }
         }
 
         // Fetch static role permissions map

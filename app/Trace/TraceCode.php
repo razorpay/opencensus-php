@@ -3049,6 +3049,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Trace codes for Users module
     const USER_EDIT                                             = 'USER_EDIT';
+    const FETCH_AUTHZ_ROLES_FAILED                              = 'FETCH_AUTHZ_ROLES_FAILED';
+    const AUTHZ_ENFORCER_API_FAILED                             = 'AUTHZ_ENFORCER_API_FAILED';
     const MERCHANT_USER_EMAIL_CHANGE                            = 'MERCHANT_USER_EMAIL_CHANGE';
     const MERCHANT_USER_NUMBER_CHANGE                           = 'MERCHANT_USER_NUMBER_CHANGE';
     const USERS_SEND_OTP_FOR_ACTION                             = 'USERS_SEND_OTP_FOR_ACTION';

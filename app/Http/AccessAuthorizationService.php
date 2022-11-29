@@ -2,6 +2,8 @@
 
 namespace RZP\Http;
 
+use Monolog\Logger;
+use RZP\Trace\TraceCode;
 use RZP\Models\AuthzEnforcer;
 
 class AccessAuthorizationService
@@ -55,11 +57,23 @@ class AccessAuthorizationService
                                             string $subject = self:: RAZORPAYX_SYSTEM_SUBJECT,
                                             string $org = self::RAZORPAYX_ORG_NAME) : bool
     {
-        $resourceAndAction = [$permission, self::AUTHZ_ACTION];
+        try
+        {
+            $resourceAndAction = [$permission, self::AUTHZ_ACTION];
 
-        $response = (new AuthzEnforcer\Service())->enforcerAPIEnforce($resourceAndAction, $role, $subject, $org);
+            $response = (new AuthzEnforcer\Service())->enforcerAPIEnforce($resourceAndAction, $role, $subject, $org);
 
-        return $response->getIsAllowed();
+            return $response->getIsAllowed();
+        }
+        catch (\Exception $exception)
+        {
+            app('trace')->traceException($exception, Logger::ERROR, TraceCode::AUTHZ_ENFORCER_API_FAILED,
+                [
+                    'permission' => $permission,
+                    'role' => $role,
+                    'subject' => $subject
+                ]);
+        }
     }
 
     public static function hasAccessAllowed(string $routeName,
@@ -67,11 +81,23 @@ class AccessAuthorizationService
                                                     string $subject = self:: RAZORPAYX_SYSTEM_SUBJECT,
                                                     string $org = self::RAZORPAYX_ORG_NAME) : bool
     {
-        $resourceAndAction = self::getResourceAndActionForRouteName($routeName);
+        try
+        {
+            $resourceAndAction = self::getResourceAndActionForRouteName($routeName);
 
-        $response = (new AuthzEnforcer\Service())->enforcerAPIEnforce($resourceAndAction, $role, $subject, $org);
+            $response = (new AuthzEnforcer\Service())->enforcerAPIEnforce($resourceAndAction, $role, $subject, $org);
 
-        return $response->getIsAllowed();
+            return $response->getIsAllowed();
+        }
+        catch (\Exception $exception)
+        {
+            app('trace')->traceException($exception, Logger::ERROR, TraceCode::AUTHZ_ENFORCER_API_FAILED,
+                [
+                    'route_name' => $routeName,
+                    'role' => $role,
+                    'subject' => $subject
+                ]);
+        }
     }
 
     public static function isAuthorizationEnabled($route): bool
