@@ -1,0 +1,277 @@
+<?php
+
+namespace RZP\Tests\Functional\PaymentsUpi\Service;
+
+
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
+use RZP\Models\Payment\Entity;
+use RZP\Models\Merchant\Account;
+
+class UpiYesbankPaymentServiceTest extends UpiPaymentServiceTest
+{
+
+    public function testPaymentYesbankReconciliation()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $this->gateway = 'upi_yesbank';
+
+        $this->makeUpiYesbankPaymentsSince($createdAt, 1);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->mockReconContentFunction(
+            function(&$content, $action = null)
+           {
+                if ($action === 'yesbank_recon')
+                {
+                    $content[0]['Customer Ref No']          = '227121351902';
+                }
+            });
+
+        $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile($uploadedFile, 'UpiYesBank');
+
+        $this->paymentReconAsserts($payment->toArray());
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertArraySelectiveEquals
+        (
+            [
+                    'type'            => 'reconciliation',
+                    'gateway'         => 'UpiYesBank',
+                    'status'          => 'processed',
+                    'total_count'     => 1,
+                    'success_count'   => 1,
+                    'processed_count' => 1,
+                    'failure_count'   => 0,
+                ],
+            $batch
+        );
+    }
+
+    public function testUpiYesBankUnexpectedPaymentRecon()
+    {
+        $this->fixtures->merchant->createAccount(Account::DEMO_ACCOUNT);
+        $this->fixtures->merchant->enableUpi(Account::DEMO_ACCOUNT);
+
+        $terminal = $this->fixtures->create('terminal:shared_upi_yesbank_terminal');
+
+        $this->gateway = 'upi_yesbank';
+
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $payments = $this->makeUpiYesBankPaymentsSince($createdAt,1);
+
+        $paymentEntity = $this->getDbLastpayment();
+
+        $this->mockReconContentFunction(
+            function(&$content, $action = null)
+            {
+                if ($action === 'yesbank_recon')
+                {
+                    $content[0]['PG Merchant ID']       = 'vpa_merchantsVpaId';
+                    $content[0]['Order No']             = 'YESB12WE34RDSQ187';
+                    $content[0]['Customer Ref No.']     = '123456789013'; // rrn is used to mock for unexpected payment
+                }
+            });
+
+        $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile($uploadedFile, 'UpiYesBank');
+
+        $unexpectedPayment = $this->getLastEntity('payment', true);
+
+        $this->assertNotEquals($unexpectedPayment['id'], $paymentEntity['id']);
+
+        $this->assertNotNull($unexpectedPayment['reference16']);
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        $unexpectedUpiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('YESB12WE34RDSQ187', $unexpectedUpiEntity['merchant_reference']);
+
+        $this->assertEquals('123456789013', $unexpectedUpiEntity['npci_reference_id']);
+
+        $this->assertNotNull($unexpectedUpiEntity['reconciled_at']);
+    }
+
+    public function testUpsYesBankDuplicateUnexpectedPayment()
+    {
+        $this->fixtures->merchant->createAccount(Account::DEMO_ACCOUNT);
+        $this->fixtures->merchant->enableUpi(Account::DEMO_ACCOUNT);
+
+        $terminal = $this->fixtures->create('terminal:shared_upi_yesbank_terminal');
+
+        $this->gateway = 'upi_yesbank';
+
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $payments = $this->makeUpiYesBankPaymentsSince($createdAt,1);
+
+        $paymentEntity = $this->getDbLastEntityToArray('payment');
+
+        // Changes a rrn of entity fetch response
+        $this->mockServerContentFunction(function (&$content) use ($paymentEntity)
+        {
+            $content['payment_id'] = $paymentEntity['id'];
+        });
+
+        $this->mockReconContentFunction(
+            function(&$content, $action = null)
+            {
+                if ($action === 'yesbank_recon')
+                {
+                    $content[0]['PG Merchant ID']       = 'vpa_merchantsVpaId';
+                    $content[0]['Order No']             = 'YESB12WE34RDSQ187';
+                    $content[0]['Customer Ref No.']     = '123456789013'; // rrn is used to mock for unexpected payment
+                }
+            });
+
+        $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile($uploadedFile, 'UpiYesBank');
+
+        $unexpectedPayment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals($unexpectedPayment['id'], $paymentEntity['id']);
+
+        $this->assertNotNull($unexpectedPayment['reference16']);
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transaction['reconciled_at']);
+    }
+
+    public function testUpsYesBankMultipleRrn()
+    {
+        $this->fixtures->merchant->createAccount(Account::DEMO_ACCOUNT);
+        $this->fixtures->merchant->enableUpi(Account::DEMO_ACCOUNT);
+
+        $terminal = $this->fixtures->create('terminal:shared_upi_yesbank_terminal');
+
+        $this->gateway = 'upi_yesbank';
+
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $payments = $this->makeUpiYesBankPaymentsSince($createdAt,1);
+
+        $paymentEntity = $this->getDbLastEntityToArray('payment');
+
+        // Mark reconciled_at of entity fetch response for multiple rrn scenario
+        $this->mockServerContentFunction(function (&$content)
+        {
+            $content['reconciled_at'] = Carbon::now(Timezone::IST)->getTimestamp();
+        });
+
+        $this->mockReconContentFunction(
+            function(&$content, $action = null) use ($paymentEntity)
+            {
+                if ($action === 'yesbank_recon')
+                {
+                    $content[0]['PG Merchant ID']           = 'vpa_merchantsVpaId';
+                    $content[0]['Order No']                 = $paymentEntity['id'];
+                    $content[0]['Customer Ref No']          = '123456789012';
+                }
+            });
+
+        $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile($uploadedFile, 'UpiYesBank');
+
+        $unexpectedPayment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertNotEquals($unexpectedPayment['id'], $paymentEntity['id']);
+
+        $this->assertNotNull($unexpectedPayment['reference16']);
+
+        $transaction = $this->getDbLastEntityToArray('transaction');
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        $unexpectedUpiEntity = $this->getDbLastEntityToArray('upi');
+
+        $this->assertEquals($paymentEntity['id'], $unexpectedUpiEntity['merchant_reference']);
+
+        $this->assertEquals('123456789012', $unexpectedUpiEntity['npci_reference_id']);
+
+        $this->assertNotNull($unexpectedUpiEntity['reconciled_at']);
+    }
+
+
+    private function makeUpiYesbankPaymentsSince(int $createdAt, int $count = 3)
+    {
+        for ($i = 0; $i < $count; $i++)
+        {
+            $payments[] = $this->doUpiYesbankPayment();
+        }
+
+        foreach ($payments as $payment)
+        {
+            $this->fixtures->edit('payment', $payment, ['created_at' => $createdAt]);
+        }
+
+        return $payments;
+    }
+
+    private function doUpiYesbankPayment()
+    {
+            $attributes = [
+                    'terminal_id'       => $this->terminal->getId(),
+                    'method'            => 'upi',
+                    'amount'            => $this->payment['amount'],
+                    'base_amount'       => $this->payment['amount'],
+                    'amount_authorized' => $this->payment['amount'],
+                    'status'            => 'captured',
+                    'gateway'           => $this->gateway,
+                    'authorized_at'     => time(),
+                    'cps_route'         => Entity::UPI_PAYMENT_SERVICE,
+                ];
+
+            $payment = $this->fixtures->create('payment', $attributes);
+
+            $transaction = $this->fixtures->create('transaction',
+                    ['entity_id' => $payment->getId(), 'merchant_id' => '10000000000000']);
+
+            $this->fixtures->edit('payment', $payment->getId(), ['transaction_id' => $transaction->getId()]);
+
+            $this->fixtures->create(
+                    'mozart',
+                    array(
+                            'payment_id' => $payment['id'],
+                            'action' => 'authorize',
+                            'gateway' => 'upi_yesbank',
+                            'amount' => $payment['amount'],
+                            'raw' => json_encode(
+                                        [
+                                                'rrn' => '227121351902',
+                                                'type' => 'MERCHANT_CREDITED_VIA_PAY',
+                                                'amount' => $payment['amount'],
+                                                'status' => 'payment_successful',
+                                                'payeeVpa' => 'billpayments@abfspay',
+                                                'payerVpa' => '',
+                                                'payerName' => 'JOHN MILLER',
+                                                'paymentId' => $payment['id'],
+                                                'gatewayResponseCode' => '00',
+                                                'gatewayTransactionId' => 'FT2022712537204137'
+                                                ]
+                                    )
+                            )
+                );
+        return $payment->getId();
+    }
+}
