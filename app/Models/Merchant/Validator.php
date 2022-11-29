@@ -1347,10 +1347,11 @@ class Validator extends Base\Validator
 
     public function validateLinkedAccountCreation(bool $linkedAccount, $merchant)
     {
-        if(($linkedAccount === true) and
-            ($merchant->getCategory() === Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Entity::CATEGORY]) and
-            ($merchant->getCategory2() === Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Entity::CATEGORY2]) and
-            (app('worker.ctx')->getJobName() !== self::AUTO_AMC_LINKED_ACCOUNT_CREATION_JOB))
+        if (($linkedAccount === true) and
+            (in_array($merchant->getCategory(),Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Entity::CATEGORY]) === true) and
+            (in_array($merchant->getCategory2(), Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Entity::CATEGORY2]) ===true) and
+            (app('worker.ctx')->getJobName() !== self::AUTO_AMC_LINKED_ACCOUNT_CREATION_JOB) and
+            (app('basicauth')->isAdminAuth() === false))
         {
             App::getFacadeRoot()['trace']->info(TraceCode::AMC_LINKED_ACCOUNT_CREATION_JOB, [
                 'job_name' => app('worker.ctx')->getJobName()
@@ -1364,9 +1365,9 @@ class Validator extends Base\Validator
 
     public function validateLinkedAccountUpdation(Entity $merchant)
     {
-        if($merchant->getCategory() === Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Entity::CATEGORY] and
-            $merchant->getCategory2() === Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Entity::CATEGORY2]
-            )
+        if ((in_array($merchant->getCategory(),Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Entity::CATEGORY]) === true) and
+            (in_array($merchant->getCategory2(), Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Entity::CATEGORY2]) ===true) and
+            (app('basicauth')->isAdminAuth() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_UPDATION_NOT_ALLOWED

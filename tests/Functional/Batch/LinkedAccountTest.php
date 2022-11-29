@@ -42,8 +42,8 @@ class LinkedAccountTest extends TestCase
     public function testBatchValidationLinkedAccountForMutualFundDistributorMerchant()
     {
         $this->fixtures->merchant->edit('10000000000000', [
-            'category' => Merchant\Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category'],
-            'category2' =>  Merchant\Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category2']]);
+            'category' => Merchant\Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category'][0],
+            'category2' =>  Merchant\Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category2'][0]]);
 
         $this->createAndPutExcelFileInRequest([], __FUNCTION__);
 
@@ -57,8 +57,8 @@ class LinkedAccountTest extends TestCase
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
         $this->fixtures->merchant->edit('10000000000000', [
-            'category' => Merchant\Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category'],
-            'category2' =>  Merchant\Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category2']]);
+            'category' => Merchant\Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category'][0],
+            'category2' =>  Merchant\Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category2'][0]]);
 
         $this->startTest();
     }

@@ -713,6 +713,7 @@ class Type
         self::ICICI_STP_MIS                       => Name::ADMIN_BATCH_CREATE,
         self::PAYMENT_TRANSFER_RETRY              => Name::ADMIN_BATCH_CREATE,
         self::COLLECT_LOCAL_CONSENTS_TO_CREATE_TOKENS => Name::ADMIN_BATCH_CREATE,
+        self::LINKED_ACCOUNT                      => Name::ADMIN_BATCH_CREATE
     ];
 
     public static $workflowApplicableBatchTypes = [

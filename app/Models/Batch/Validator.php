@@ -2771,8 +2771,9 @@ class Validator extends Base\Validator
     public function validateLinkedAccountBatchActionAllowed($input, Merchant\Entity $merchant)
     {
         if(($input[Entity::TYPE] === Type::LINKED_ACCOUNT_CREATE) and
-            ($merchant->getCategory() === Merchant\Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Merchant\Entity::CATEGORY]) and
-            ($merchant->getCategory2() === Merchant\Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Merchant\Entity::CATEGORY2]))
+            (in_array($merchant->getCategory(), Merchant\Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Merchant\Entity::CATEGORY]) === true) and
+            (in_array($merchant->getCategory2(), Merchant\Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Merchant\Entity::CATEGORY2]) === true) and
+            (app('basicauth')->isAdminAuth() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CREATION_NOT_ALLOWED

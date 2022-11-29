@@ -553,8 +553,8 @@ final class Constants
     ];
 
     const LINKED_ACCOUNT_ACTIONS_BLOCKED = [
-        Entity::CATEGORY     => '6211',
-        Entity::CATEGORY2    => Category::MUTUAL_FUNDS,
+        Entity::CATEGORY     => ['6211', '6012',],
+        Entity::CATEGORY2    => [Category::MUTUAL_FUNDS, Category::LENDING,]
     ];
 
     const MERCHANT_WORKFLOWS = [

@@ -1773,8 +1773,8 @@ class MerchantCreateTest extends TestCase
         $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $account['id'];
 
         $this->fixtures->merchant->edit('10000000000000', [
-            'category' => MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category'],
-            'category2' =>  MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category2']]);
+            'category' => MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category'][0],
+            'category2' =>  MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category2'][0]]);
 
         $this->startTest();
     }
@@ -1788,8 +1788,8 @@ class MerchantCreateTest extends TestCase
         $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
 
         $this->fixtures->merchant->edit('10000000000000', [
-            'category' => MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category'],
-            'category2' =>  MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category2']]);
+            'category' => MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category'][0],
+            'category2' =>  MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category2'][0]]);
 
         $this->ba->proxyAuth('rzp_test_10000000000000');
 
@@ -1819,8 +1819,8 @@ class MerchantCreateTest extends TestCase
         $this->ba->privateAuth();
 
         $this->fixtures->merchant->edit('10000000000000', [
-            'category' => MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category'],
-            'category2' =>  MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category2']]);
+            'category' => MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category'][0],
+            'category2' =>  MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category2'][0]]);
 
         $this->runRequestResponseFlow($testData);
     }
@@ -1830,8 +1830,8 @@ class MerchantCreateTest extends TestCase
         $this->createLinkedAccountReferenceData();
 
         $this->fixtures->merchant->edit('10000000000000', [
-            'category' => MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category'],
-            'category2' =>  MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category2']]);
+            'category' => MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category'][0],
+            'category2' =>  MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category2'][0]]);
 
         $request = [
             'url'     => '/merchants/me/features',
@@ -2924,8 +2924,8 @@ class MerchantCreateTest extends TestCase
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $this->fixtures->merchant->edit('10000000000000', [
-            'category' => MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category'],
-            'category2' =>  MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category2']]);
+            'category' => MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category'][0],
+            'category2' =>  MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category2'][0]]);
 
         $this->ba->proxyAuth();
 
@@ -2939,8 +2939,8 @@ class MerchantCreateTest extends TestCase
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $this->fixtures->merchant->edit('10000000000000', [
-            'category' => MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category'],
-            'category2' =>  MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category2']]);
+            'category' => MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category'][0],
+            'category2' =>  MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category2'][0]]);
 
         $this->ba->proxyAuth();
 
@@ -3057,8 +3057,8 @@ class MerchantCreateTest extends TestCase
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $this->fixtures->merchant->edit('10000000000000', [
-            'category' => MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category'],
-            'category2' =>  MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category2']]);
+            'category' => MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category'][0],
+            'category2' =>  MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category2'][0]]);
 
         $this->fixtures->merchant->activate('10000000000000');
 
