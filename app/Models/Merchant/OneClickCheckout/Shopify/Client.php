@@ -347,7 +347,7 @@ class Client
     protected function getConsumptionCost(array $cost): string
     {
         // TODO: Trim the trace log once issue is identified.
-        $estimatedCostPending = $cost['requestedQueryCost'] - $cost['requestedQueryCost']['throttleStatus']['currentlyAvailable'];
-        return strval($estimatedCostPending);
+        $estimatedCostPending = $cost['requestedQueryCost'] - $cost['throttleStatus']['currentlyAvailable'];
+        return strval(abs($estimatedCostPending));
     }
 }
