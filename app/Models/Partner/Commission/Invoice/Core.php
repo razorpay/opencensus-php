@@ -18,6 +18,7 @@ use RZP\Models\LineItem;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\HyperTrace;
+use RZP\Models\Merchant\Metric;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Pricing\Calculator;
@@ -111,21 +112,61 @@ class Core extends Base\Core
         if (($this->app['api.route']->isWorkflowExecuteOrApproveCall() === true) or
             (($env === 'testing') and ($input[Entity::ACTION] === Status::APPROVED)))
         {
-            $invoice->setStatus(Status::APPROVED);
-
-            $this->repo->saveOrFail($invoice);
-
-            Tracer::inspan(['name' => HyperTrace::CLEAR_ON_HOLD_FOR_PARTNER_CORE], function () use ($merchant, $invoice) {
-
-                // clear on Hold For Partner after workflow is approved
-                (new Commission\Core)->clearOnHoldForPartner($merchant, [Commission\Constants::INVOICE_ID => $invoice->getId()]);
-            });
-
-            return ['success' => 'true'];
+            return $this->approveInvoiceForProcessing($invoice, $merchant);
         }
 
         (new Validator())->validateMerchantToAllowChangeAction($input[Entity::ACTION]);
 
+        if (
+            $this->isPartialFinanceApprovalRemovalExpEnabled($merchant->getId()) and
+            $invoice->getGrossAmount() <= Entity::MAX_AUTO_APPROVAL_AMOUNT
+        )
+        {
+            $result = $this->approveInvoiceForProcessing($invoice, $merchant);
+
+            $this->trace->info(
+                TraceCode::COMMISSION_INVOICE_FINANCE_AUTO_APPROVED,
+                [
+                    "partner_id" => $merchant->getId(),
+                    "invoice_id" => $invoice->getId()
+                ]
+            );
+            $this->trace->count(Metric::COMMISSION_INVOICE_FINANCE_AUTO_APPROVED);
+
+            return $result;
+        }
+
+        return $this->markInvoiceUnderReview($invoice, $input, $merchant);
+    }
+
+    /**
+     * Approves the invoice and clears onHold status of invoice settlement.
+     *
+     * @param   Entity              $invoice    The invoice entity
+     * @param   Merchant\Entity     $merchant   The partner merchant entity
+     *
+     * @return  string[]            Success response as true
+     *
+     * @throws  Exception\LogicException    Throws Exception\LogicException
+     */
+    private function approveInvoiceForProcessing(Entity $invoice, Merchant\Entity $merchant)
+    {
+        $invoice->setStatus(Status::APPROVED);
+
+        $this->repo->saveOrFail($invoice);
+
+        Tracer::inspan(['name' => HyperTrace::CLEAR_ON_HOLD_FOR_PARTNER_CORE], function () use ($merchant, $invoice) {
+            // clear on Hold For Partner after workflow is approved
+            (new Commission\Core)->clearOnHoldForPartner(
+                $merchant, [ Commission\Constants::INVOICE_ID => $invoice->getId() ]
+            );
+        });
+
+        return ['success' => 'true'];
+    }
+
+    private function markInvoiceUnderReview($invoice, $input, $merchant)
+    {
         $invoice->setStatus($input[Entity::ACTION]);
 
         $this->repo->saveOrFail($invoice);
@@ -137,13 +178,23 @@ class Core extends Base\Core
         ];
         Tracer::inspan(['name' => HyperTrace::COMMISSION_INVOICE_ACTION, 'attributes' => $attrs], function () use ($invoice) {
 
-            CommissionInvoiceAction::dispatch($this->mode, $invoice->getStatus(), $invoice->getId())->delay(self::COMMISSION_INVOICE_ACTION_DELAY);
+            CommissionInvoiceAction::dispatch(
+                $this->mode, $invoice->getStatus(), $invoice->getId()
+            )->delay(self::COMMISSION_INVOICE_ACTION_DELAY);
         });
 
         Tracer::inspan(['name' => HyperTrace::TRIGGER_COMMISSION_INVOICE_ACTION, 'attributes' => $attrs], function () use ($invoice, $merchant) {
 
             $this->triggerWorkflowAction($invoice, $merchant);
         });
+        $this->trace->info(
+            TraceCode::COMMISSION_INVOICE_FINANCE_UNDER_REVIEW,
+            [
+                "partner_id" => $merchant->getId(),
+                "invoice_id" => $invoice->getId()
+            ]
+        );
+        $this->trace->count(Metric::COMMISSION_INVOICE_FINANCE_UNDER_REVIEW);
 
         return ['success' => 'true'];
     }
@@ -886,5 +937,22 @@ class Core extends Base\Core
 
         $invoice->setGrossAmount($grossAmount);
         $invoice->setTaxAmount((int) round($taxAmount));
+    }
+
+    /**
+     * Checks whether merchant is allowed for auto invoice disbursal.
+     *
+     * @param string $merchantId
+     *
+     * @return bool
+     */
+    private function isPartialFinanceApprovalRemovalExpEnabled(string $merchantId): bool
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.finance_approval_removal_exp_id'),
+        ];
+
+        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
     }
 }

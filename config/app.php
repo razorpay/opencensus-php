@@ -448,11 +448,11 @@ return array(
 
     'db_migration_metrics_sampling_percent' => env('DB_MIGRATION_METRIC_SAMPLING_PERCENT', 1.0),
 
-    'product_config_issue_exp_id' => env('PRODUCT_CONFIG_ISSUE_EXP_ID'),
-
-    'user_role_migration_for_x_exp_id' => env('USER_ROLE_MIGRATION_FOR_X_EXP_ID'),
-    'partner_type_migration_exp_id' => env('PARTNER_TYPE_MIGRATION_EXP_ID'),
-    'merchant_policies_exp_id' => env('MERCHANT_POLICIES_EXP_ID'),
+    'product_config_issue_exp_id'       => env('PRODUCT_CONFIG_ISSUE_EXP_ID'),
+    'user_role_migration_for_x_exp_id'  => env('USER_ROLE_MIGRATION_FOR_X_EXP_ID'),
+    'partner_type_migration_exp_id'     => env('PARTNER_TYPE_MIGRATION_EXP_ID'),
+    'finance_approval_removal_exp_id'   => env('FINANCE_APPROVAL_REMOVAL_EXP_ID'),
+    'merchant_policies_exp_id'          => env('MERCHANT_POLICIES_EXP_ID'),
 
     'merchant_kyc_update_to_partner_exp_id'            => env('MERCHANT_KYC_UPDATE_TO_PARTNER_EXP_ID'),
     'send_weekly_activation_summary_to_partner_exp_id' => env('SEND_WEEKLY_ACTIVATION_SUMMARY_TO_PARTNER_EXP_ID'),

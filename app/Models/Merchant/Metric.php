@@ -207,6 +207,9 @@ final class Metric
     const RESELLER_TO_AGGREGATOR_MIGRATION_SUCCESS = 'reseller_to_aggregator_migration_success';
     const RESELLER_TO_AGGREGATOR_MIGRATION_FAILURE = 'reseller_to_aggregator_migration_failure';
 
+    const COMMISSION_INVOICE_FINANCE_AUTO_APPROVED = 'commission_invoice_finance_auto_approved';
+    const COMMISSION_INVOICE_FINANCE_UNDER_REVIEW  = 'commission_invoice_finance_under_review';
+
     const UPDATE_CUSTOMERS_DETAILS_REQUEST_COUNT = 'update_customers_details_request_count';
     const UPDATE_CUSTOMERS_DETAILS_ERROR_COUNT   = 'update_customers_details_error_count';
     const UPDATE_CUSTOMERS_DETAILS_REQUEST_FAULT_COUNT = 'update_customers_details_request_fault_count';

@@ -775,6 +775,174 @@ class CommissionCreateTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    /**
+     * Check that when invoice gross amount is less than Entity::MAX_AUTO_APPROVAL_AMOUNT,
+     * invoice is auto approved and marked as processed after partner approves the invoice.
+     * Invoice doesn't go to finance for approval.
+     */
+    public function testInvoiceAutoApprovedWhenExpEnabled()
+    {
+        Mail::fake();
+
+        list($partner, $subMerchant, $payment, $config, $commission) = $this->createSampleCommission([],[],[],[
+            'credit' => 1770,
+            'debit'  => 0,
+            'fee'    => 1770,
+            'tax'    => 270,
+        ]);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData['testCaptureCommission'];
+        $testData['request']['url'] = '/commissions/'.$commission->getPublicId().'/capture';
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testInvoiceGenerate'];
+        $now = Carbon::now(Timezone::IST);
+        $testData['request']['content']['month']        = $now->month;
+        $testData['request']['content']['year']         = $now->year;
+        $testData['request']['content']['merchant_ids'] = [$partner->getId()];
+
+        $this->createTaxes();
+        $this->startTest($testData);
+
+        // calling generate invoice twice should still create only one invoice
+        $this->startTest($testData);
+
+        $invoices = $this->getDbEntities('commission_invoice');
+        $this->assertCount(1, $invoices);
+
+        // check that invoice is created with line items and amounts
+        $invoice = $this->getDbLastEntity('commission_invoice');
+        $invoiceExpectedData = [
+            'merchant_id'   => 'DefaultPartner',
+            'month'         => $now->month,
+            'year'          => $now->year,
+            'status'        => 'issued',
+            'gross_amount'  => 1770,
+            'tax_amount'    => 270,
+        ];
+        $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
+
+        $lineItemExpectedData = [
+            [
+                'amount'        => 1770,
+                'gross_amount'  => 1770,
+                'tax_amount'    => 270,
+                'net_amount'    => 1770,
+                'tax_inclusive' => true,
+            ]
+        ];
+        $this->assertArraySelectiveEquals($lineItemExpectedData, $invoice->lineItems->toArray());
+
+        $this->fixtures->merchant->addFeatures('automated_comm_payout', $partner->getId());
+        $this->mockAutoApprovalFinanceExp($partner->getId());
+        $testData = $this->testData['testInvoiceAction'];
+
+        $testData['request']['url'] = '/commissions/invoice/' . $invoice->getId();
+
+        $this->ba->proxyAuth('rzp_test_' . $partner->getId());
+
+        $this->runRequestResponseFlow($testData);
+
+        $invoice = $this->getDbLastEntity('commission_invoice');
+
+        $this->assertEquals('processed', $invoice['status']);
+        Mail::assertNotSent(CommissionOpsInvoice::class);
+        Mail::assertNotSent(CommissionInvoice::class);
+
+        $testData = $this->testData['testInvoiceFetchAfterAutoApproved'];
+        $testData['request']['url'] = '/commissions/invoice/' . $invoice->getId();
+        $this->runRequestResponseFlow($testData);
+    }
+
+    /**
+     * Check that when invoice gross amount is greater than Entity::MAX_AUTO_APPROVAL_AMOUNT,
+     * invoice goes to under_review status after partner approves the invoice.
+     */
+    public function testInvoiceMarkUnderReviewWhenExpEnabled()
+    {
+        Mail::fake();
+
+        $grossAmount = ( Invoice\Entity::MAX_AUTO_APPROVAL_AMOUNT + 100 );
+        list($partner, $subMerchant, $payment, $config, $commission) = $this->createSampleCommission([],[],[],[
+            'credit' => $grossAmount,
+            'debit'  => 0,
+            'fee'    => $grossAmount,
+            'tax'    => 762727,
+        ]);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData['testCaptureCommission'];
+        $testData['request']['url'] = '/commissions/'.$commission->getPublicId().'/capture';
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testInvoiceGenerate'];
+        $now = Carbon::now(Timezone::IST);
+        $testData['request']['content']['month']        = $now->month;
+        $testData['request']['content']['year']         = $now->year;
+        $testData['request']['content']['merchant_ids'] = [$partner->getId()];
+
+        $this->createTaxes();
+        $this->startTest($testData);
+
+        // calling generate invoice twice should still create only one invoice
+        $this->startTest($testData);
+        $invoices = $this->getDbEntities('commission_invoice');
+        $this->assertCount(1, $invoices);
+
+        // check that invoice is created with line items and amounts
+        $invoice = $this->getDbLastEntity('commission_invoice');
+        $invoiceExpectedData = [
+            'merchant_id'   => 'DefaultPartner',
+            'month'         => $now->month,
+            'year'          => $now->year,
+            'status'        => 'issued',
+            'gross_amount'  => $grossAmount,
+            'tax_amount'    => 762727,
+        ];
+        $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
+
+        $lineItemExpectedData = [
+            [
+                'amount'        => $grossAmount,
+                'gross_amount'  => $grossAmount,
+                'tax_amount'    => 762727,
+                'net_amount'    => $grossAmount,
+                'tax_inclusive' => true,
+            ]
+        ];
+        $this->assertArraySelectiveEquals($lineItemExpectedData, $invoice->lineItems->toArray());
+
+        $this->fixtures->merchant->addFeatures('automated_comm_payout', Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->mockAutoApprovalFinanceExp($partner->getId());
+
+        $testData = $this->testData['testInvoiceAction'];
+        $testData['request']['url'] = '/commissions/invoice/' . $invoice->getId();
+        $this->ba->proxyAuth('rzp_test_' . $partner->getId());
+        $this->runRequestResponseFlow($testData);
+
+        $invoice = $this->getDbLastEntity('commission_invoice');
+        $this->assertEquals('under_review', $invoice['status']);
+
+        $app = App::getFacadeRoot();
+        $app['workflow']->setMethod('DELETE');
+        $testData = $this->testData['testInvoiceActionApproved'];
+        $testData['request']['url'] = '/commissions/invoice/' . $invoice->getId();
+        $this->ba->proxyAuth('rzp_test_' . $partner->getId());
+        $this->runRequestResponseFlow($testData);
+
+        // Check that when the CommissionTdsSettlement job is triggered,
+        // the dirty data set in the workflow singleton should be reset or get updated as per the job flow.
+        // Taking an example of workflow data gets resetted as the HTTP method wouldn't be DELETE in the flow above
+        $this->assertFalse($app['workflow']->getMethod() === 'DELETE');
+
+        $invoice = $this->getDbLastEntity('commission_invoice');
+        $this->assertEquals('processed', $invoice['status']);
+    }
+
     public function testMigrateInvoiceBucketByInvoiceId()
     {
         $invoice = $this->createCommissionInvoice();
@@ -1893,5 +2061,23 @@ class CommissionCreateTest extends TestCase
         parent::tearDown();
 
         Carbon::setTestNow();
+    }
+
+    private function mockAutoApprovalFinanceExp(string $merchantId)
+    {
+        $input = [
+            "experiment_id" => "KjN1fFEK7MA7r3",
+            "id"            => $merchantId,
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
     }
 }

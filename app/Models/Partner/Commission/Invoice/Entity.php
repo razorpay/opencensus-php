@@ -14,17 +14,18 @@ class Entity extends Base\PublicEntity
     use HasBalance;
     use HardDeletes;
 
-    const ID                = 'id';
-    const MERCHANT_ID       = 'merchant_id';
-    const MONTH             = 'month';
-    const YEAR              = 'year';
-    const GROSS_AMOUNT      = 'gross_amount';
-    const TAX_AMOUNT        = 'tax_amount';
-    const STATUS            = 'status';
-    const BALANCE_ID        = 'balance_id';
-    const NOTES             = 'notes';
-    const TNC               = 'tnc';
-    const ACTION            = 'action';
+    const ID                  = 'id';
+    const MERCHANT_ID         = 'merchant_id';
+    const MONTH               = 'month';
+    const YEAR                = 'year';
+    const GROSS_AMOUNT        = 'gross_amount';
+    const TAX_AMOUNT          = 'tax_amount';
+    const STATUS              = 'status';
+    const BALANCE_ID          = 'balance_id';
+    const NOTES               = 'notes';
+    const TNC                 = 'tnc';
+    const ACTION              = 'action';
+    const MAX_AUTO_APPROVAL_AMOUNT = 5000000;
     /**
      * Prefix for pdf file name
      */

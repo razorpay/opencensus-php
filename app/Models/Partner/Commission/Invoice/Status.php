@@ -20,7 +20,7 @@ class Status
     ];
 
     const ALLOWED_NEXT_STATUSES_MAPPING = [
-        self::ISSUED       => [self::UNDER_REVIEW],
+        self::ISSUED       => [self::UNDER_REVIEW, self::APPROVED],
         self::UNDER_REVIEW => [self::APPROVED, self::PROCESSED],
         self::APPROVED     => [self::PROCESSED],
         self::PROCESSED    => [],
