@@ -3960,14 +3960,12 @@ class Processor
                 $this->createLedgerEntriesForGatewayCapture($this->payment);
             }, 20);
 
-        $this->publishMessageToMetro($payment);
+        $this->publishMessageToSqsBarricade($payment);
     }
 
-    protected function publishMessageToMetro($payment)
+    protected function publishMessageToSqsBarricade($payment)
     {
         $methodResult = $this->app->razorx->getTreatment($payment->getMethod(), self::BARRICADE_PAYMENT_METHOD, $this->mode);
-
-        $sqsPush = $this->app->razorx->getTreatment($payment->getMethod(), self::BARRICADE_SQS_PUSH, $this->mode);
 
         $upiRamp = $this->app->razorx->getTreatment($payment->getId(), self::BARRICADE_UPI_RAMP, $this->mode);
 
@@ -4026,37 +4024,35 @@ class Processor
                 $data = $this->getCaptureVerifyData($payment);
             }
 
-            if ($sqsPush === 'on')
-            {
-                //Add delay of 10 minutes
-                $waitTime = 600;
 
-                //if card gateway is authorizeVerify then waitTime is 0
-                if ($authorizeVerifyCardGateways === 'on'){
-                    $waitTime = 60;
-                }
+            //Add delay of 10 minutes
+            $waitTime = 600;
 
-                $queueName = $this->app['config']->get('queue.barricade_verify.' . $this->mode);
-
-                $this->app['queue']->connection('sqs')->later($waitTime, "Barricade Queue Push", json_encode($data), $queueName);
-
-                $this->trace->info(TraceCode::BARRICADE_SQS_PUSH_SUCCESS,
-                    [
-                        'queueName' => $queueName,
-                        'data'      => $data,
-                    ]);
-                return;
+            //if card gateway is authorizeVerify then waitTime is 0
+            if ($authorizeVerifyCardGateways === 'on'){
+                $waitTime = 60;
             }
 
-            $publishData['data'] = json_encode($data);
+            $queueName = $this->app['config']->get('queue.barricade_verify.' . $this->mode);
 
-            $response = $this->app['metro']->publish(self::CAPTURE_VERIFY_METRO_TOPIC, $publishData);
+            $this->app['queue']->connection('sqs')->later($waitTime, "Barricade Queue Push", json_encode($data), $queueName);
 
-            $this->trace->info(TraceCode::METRO_PUBLISH_FOR_CAPTURE_VERIFY,
+            $this->trace->info(TraceCode::BARRICADE_SQS_PUSH_SUCCESS,
                 [
-                    'topic'    => self::CAPTURE_VERIFY_METRO_TOPIC,
-                    'response' => $response,
+                    'queueName' => $queueName,
+                    'data'      => $data,
                 ]);
+
+
+//            $publishData['data'] = json_encode($data);
+//
+//            $response = $this->app['metro']->publish(self::CAPTURE_VERIFY_METRO_TOPIC, $publishData);
+//
+//            $this->trace->info(TraceCode::METRO_PUBLISH_FOR_CAPTURE_VERIFY,
+//                [
+//                    'topic'    => self::CAPTURE_VERIFY_METRO_TOPIC,
+//                    'response' => $response,
+//                ]);
 
         }
         catch (\Throwable $e)
@@ -4064,7 +4060,7 @@ class Processor
             $this->trace->traceException(
                 $e,
                 Trace::CRITICAL,
-                TraceCode::METRO_PUBLISH_FOR_CAPTURE_VERIFY,
+                TraceCode::BARRICADE_SQS_PUSH_FAILURE,
                 []);
         }
 
@@ -4145,6 +4141,7 @@ class Processor
             'dcc_mark_up_percent'=>$dcc_mark_up_percent,
             'fee_bearer' => $payment->getFeeBearer(),
             'fee' => $payment->getFee(),
+            'is_hdfc_vas' => $payment->isHdfcVasDSCustomerFeeBearerSurcharge(),
         ];
         $terminal = $payment->terminal;
 

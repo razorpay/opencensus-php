@@ -332,7 +332,7 @@ trait Capture
                             [
                                 'payment_id'        => $this->payment->getId(),
                             ]);
-                        $this->publishMessageToMetro($this->payment);
+                        $this->publishMessageToSqsBarricade($this->payment);
                         $this->createLedgerEntriesForGatewayCapture($this->payment);
                     }
 
@@ -447,7 +447,7 @@ trait Capture
 
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CAPTURE_PROCESSED, $payment);
 
-            $this->publishMessageToMetro($payment);
+            $this->publishMessageToSqsBarricade($payment);
 
             return $payment;
         }
@@ -660,7 +660,7 @@ trait Capture
                             'payment_id'        => $this->payment->getId(),
                         ]);
 
-                    $this->publishMessageToMetro($this->payment);
+                    $this->publishMessageToSqsBarricade($this->payment);
                     $this->createLedgerEntriesForGatewayCapture($this->payment);
                 }
             }
