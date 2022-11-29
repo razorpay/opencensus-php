@@ -201,6 +201,11 @@ class UserController extends Controller
             return false;
         }
 
+        if (ApiUrl::isBankingOriginRequest() === true)
+        {
+            return false;
+        }
+
         $uuid = Cookie::get('rzp_ab_uuid') ?? UniqueIdEntity::generateUniqueId();
 
         Cookie::queue('rzp_ab_uuid', $uuid);
@@ -294,6 +299,11 @@ class UserController extends Controller
     private function isRedirectionApplicable($details): bool
     {
         if ($this->isEasyOnboardingExperimentEnable() === false)
+        {
+            return false;
+        }
+
+        if (ApiUrl::isBankingOriginRequest() === true)
         {
             return false;
         }
