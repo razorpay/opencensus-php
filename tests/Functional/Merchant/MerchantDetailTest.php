@@ -1403,6 +1403,16 @@ We look forward to transacting with you!
         $this->startTest();
     }
 
+    public function testMerchantDataFetch()
+    {
+        $merchant = $this->fixtures->create('merchant', ['id' => '10000000000002',
+            'email' => 'razorpay@razorpay.com', 'country_code' => 'MY']);
+
+        $data = $merchant->toArrayPublic();
+
+        $this->assertEquals('MYR', $data['currency']);
+    }
+
     public function testExternalGetMerchantCompositeDetails()
     {
         $merchant = $this->fixtures->create('merchant',[

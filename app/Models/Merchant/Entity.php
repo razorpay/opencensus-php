@@ -148,6 +148,7 @@ class Entity extends Base\PublicEntity
     const CA_STATUS                      = 'ca_status';
     const VA_STATUS                      = 'va_status';
     const AUDIT_ID                       = 'audit_id';
+    const CURRENCY                       = 'currency';
 
     // Source denotes if a merchant activation request came from PG or business banking.
     const ACTIVATION_SOURCE        = 'activation_source';
@@ -494,7 +495,8 @@ class Entity extends Base\PublicEntity
         self::SIGNUP_SOURCE,
         self::DCC_MARKUP_PERCENTAGE,
         self::PURPOSE_CODE,
-        self::COUNTRY_CODE
+        self::COUNTRY_CODE,
+        self::CURRENCY
      ];
 
     protected $defaults = [
@@ -550,6 +552,7 @@ class Entity extends Base\PublicEntity
         self::LOGO_URL,
         self::DCC,
         self::RISK_THRESHOLD,
+        self::CURRENCY,
     ];
 
     protected $casts = [
@@ -2601,6 +2604,10 @@ class Entity extends Base\PublicEntity
         {
             $array[self::LOGO_URL] = $this->getFullLogoUrlWithSize(self::ORIGINAL_SIZE);
         }
+    }
+
+    protected  function setPublicCurrencyAttribute(array & $array) {
+        $array[self::CURRENCY] = $this->getCurrency();
     }
 
     public function setPublicDCCAttribute(array & $array)
