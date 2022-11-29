@@ -6,19 +6,22 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class Merchant extends Base
 {
+    public $saveApiHelper;
 
     function __construct()
     {
         parent::__construct();
-        // Initialize Required classes
+        $this->saveApiHelper = new SaveApiHelper();
     }
 
-    //TODO: This is just a skeleton for SaveOrFail Wrapper, update the logic  wherever required
-    // This is to be called from  saveOrFail repo method of merchant entity as calling it from repo will require change in
-    // repo only else it should be called at every place where merchant SaveOrFail is being called
+    /**
+     * @param MerchantEntity $entity
+     * @throws \Google\ApiCore\ValidationException
+     * @throws \RZP\Exception\IntegrationException
+     */
     function SaveOrFail(MerchantEntity $entity)
     {
-        //TODO: Call the Save Api Of Account Service
+        $this->saveApiHelper->saveOrFail($entity->getMerchantId(), $entity->getEntityName(), $entity->getEntityName(), $entity->toArray());
     }
 
     function FindOrFail(string $id)

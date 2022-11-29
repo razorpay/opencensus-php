@@ -34,6 +34,8 @@ use RZP\Models\Base\QueryCache\CacheQueries;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Fraud\HealthChecker as HealthChecker;
+use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Modules\Acs\Wrapper\Merchant as MerchantWrapper;
 
 class Repository extends Base\Repository
 {
@@ -1820,6 +1822,25 @@ class Repository extends Base\Repository
                 ->get()
                 ->pluck(Entity::ID)
                 ->toArray();
+        });
+    }
+
+    /**
+     * __saveOrFail -  Keeping the method name not same with base repository method, this to be renamed  and used in merchant core while ramp-up
+     *Once stakeholder saveOrFail is migrated to Account service only this method should be used while saving the merchant entity any save on merchant entity has to be called at any new place
+     * @param MerchantEntity $entity
+     * @param bool $testAndLive - If true saveEntity on both test and live db else only live db
+     * @throws \Throwable
+     */
+    public function __saveOrFail(MerchantEntity $entity, bool $testAndLive)
+    {
+        $this->repo->transactionOnLiveAndTest(function () use ($testAndLive, $entity) {
+            if ($testAndLive === true) {
+                $this->saveOrFail($entity);
+            } else {
+                $this->repo->saveOrFail($entity);
+            }
+            (new MerchantWrapper())->SaveOrFail($entity);
         });
     }
 }

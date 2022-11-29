@@ -13,7 +13,7 @@ use Throwable;
 
 class MerchantWebsite extends Base
 {
-    public $saveApiAsvClient;
+    public $saveApiHelper;
     public $merchantWebsiteClient;
     protected $merchantWebsiteComparator;
     protected $entityName = "merchant_website";
@@ -23,7 +23,7 @@ class MerchantWebsite extends Base
         parent::__construct();
         $this->merchantWebsiteClient = new AsvClient\WebsiteAsvClient;
         $this->merchantWebsiteComparator = new MerchantWebsiteComparator();
-        $this->saveApiAsvClient = new AsvClient\SaveApiAsvClient();
+        $this->saveApiHelper = new SaveApiHelper();
     }
 
     /**
@@ -33,24 +33,7 @@ class MerchantWebsite extends Base
      */
     public function SaveOrFail(MerchantWebsiteEntity $entity)
     {
-        if ($this->isShadowOrReverseShadowOnForOperation($entity->getMerchantId(), 'shadow', 'write') === true) {
-            try {
-                $this->saveApiAsvClient->SaveEntity($entity->getMerchantId(), $entity->getEntityName(), $entity->toArray());
-            } catch (\Exception $e) {
-                $this->trace->traceException($e, Trace::ERROR, TraceCode::ASV_WRITE_EXCEPTION, [
-                    'merchant_id' => $entity->getMerchantId(), 'entity_name' => $entity->getEntityName(), 'operation' => 'write->save', 'mode' => 'shadow'
-                ]);
-            }
-        } else if ($this->isShadowOrReverseShadowOnForOperation($entity->getMerchantId(), 'reverse_shadow', 'write') === true) {
-            try {
-                $this->saveApiAsvClient->SaveEntity($entity->getMerchantId(), $entity->getEntityName(), $entity->toArray());
-            } catch (\Exception $e) {
-                $this->trace->traceException($e, Trace::CRITICAL, TraceCode::ASV_WRITE_EXCEPTION, [
-                    'merchant_id' => $entity->getMerchantId(), 'entity_name' => $entity->getEntityName(), 'operation' => 'write->save', 'mode' => 'reverse_shadow'
-                ]);
-                throw $e;
-            }
-        }
+        $this->saveApiHelper->saveOrFail($entity->getMerchantId(), $entity->getEntityName(), $entity->getEntityName(), $entity->toArray());
     }
 
     /**
@@ -61,8 +44,7 @@ class MerchantWebsite extends Base
         if ($this->isShadowOrReverseShadowOnForOperation($merchantId, CONSTANT::SHADOW, CONSTANT::READ)) {
             $this->processReadShadowGetWebsiteDetailsForMerchantId($merchantId, $apiMerchantWebsiteEntity);
             return $apiMerchantWebsiteEntity;
-        }
-        else if ($this->isShadowOrReverseShadowOnForOperation($merchantId, CONSTANT::REVERSE_SHADOW, CONSTANT::READ)) {
+        } else if ($this->isShadowOrReverseShadowOnForOperation($merchantId, CONSTANT::REVERSE_SHADOW, CONSTANT::READ)) {
             return $this->processReverseShadowGetWebsiteDetailsForMerchantId($merchantId, $apiMerchantWebsiteEntity);
         }
 
@@ -73,7 +55,7 @@ class MerchantWebsite extends Base
     {
         try {
             $this->FetchByMerchantIdAndCompare($merchantId, $apiMerchantWebsiteEntity);
-        }catch (Throwable $ex) {
+        } catch (Throwable $ex) {
             $this->trace->traceException(
                 $ex,
                 Trace::ERROR,

@@ -5,6 +5,9 @@ namespace RZP\Models\Address;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
+use RZP\Models\Address\Entity as AddressEntity;
+use RZP\Models\Merchant\Stakeholder\Entity as MerchantStakeholderEntity;
+use RZP\Modules\Acs\Wrapper\MerchantStakeholder as MerchantStakeholderWrapper;
 
 class Repository extends Base\Repository
 {
@@ -171,4 +174,17 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /**
+     * __saveOrFail -  Keeping the method name not same with base repository method, this to be renamed  and used for saving the stakeholder address
+     * @param MerchantStakeholderEntity $stakeholderEntity
+     * @param Entity $addressEntity
+     * @throws \Throwable
+     */
+    public function __saveOrFail(MerchantStakeholderEntity $stakeholderEntity, AddressEntity $addressEntity)
+    {
+        $this->repo->transactionOnLiveAndTest(function () use ($stakeholderEntity, $addressEntity) {
+            $this->repo->saveOrFail($addressEntity);
+            (new MerchantStakeholderWrapper())->SaveOrFailAddress($stakeholderEntity, $addressEntity);
+        });
+    }
 }

@@ -18,14 +18,14 @@ class MerchantEmail extends Base
      */
     private $merchantEmailComparator;
 
-    public $saveApiAsvClient;
+    public $saveApiHelper;
 
     function __construct()
     {
         parent::__construct();
         $this->accountAsvClient = new AsvClient\AccountAsvClient();
         $this->merchantEmailComparator = new MerchantEmailComparator();
-        $this->saveApiAsvClient = new AsvClient\SaveApiAsvClient();
+        $this->saveApiHelper = new SaveApiHelper();
     }
 
     /**
@@ -61,24 +61,7 @@ class MerchantEmail extends Base
      */
     public function SaveOrFail(MerchantEmailEntity $entity)
     {
-        if ($this->isShadowOrReverseShadowOnForOperation($entity->getMerchantId(), 'shadow', 'write') === true) {
-            try {
-                $this->saveApiAsvClient->SaveEntity($entity->getMerchantId(), $entity->getEntityName(), $entity->toArray());
-            } catch (\Exception $e) {
-                $this->trace->traceException($e, Trace::ERROR, TraceCode::ASV_WRITE_EXCEPTION, [
-                    'merchant_id' => $entity->getMerchantId(), 'entity_name' => $entity->getEntityName(), 'operation' => 'write->save', 'mode' => 'shadow'
-                ]);
-            }
-        } else if ($this->isShadowOrReverseShadowOnForOperation($entity->getMerchantId(), 'reverse_shadow', 'write') === true) {
-            try {
-                $this->saveApiAsvClient->SaveEntity($entity->getMerchantId(), $entity->getEntityName(), $entity->toArray());
-            } catch (\Exception $e) {
-                $this->trace->traceException($e, Trace::CRITICAL, TraceCode::ASV_WRITE_EXCEPTION, [
-                    'merchant_id' => $entity->getMerchantId(), 'entity_name' => $entity->getEntityName(), 'operation' => 'write->save', 'mode' => 'reverse_shadow'
-                ]);
-                throw $e;
-            }
-        }
+        $this->saveApiHelper->saveOrFail($entity->getMerchantId(), $entity->getEntityName(), $entity->getEntityName(), $entity->toArray());
     }
 
     /**

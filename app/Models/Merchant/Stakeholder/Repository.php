@@ -4,6 +4,8 @@ namespace RZP\Models\Merchant\Stakeholder;
 
 use RZP\Models\Base;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
+use RZP\Models\Merchant\Stakeholder\Entity as MerchantStakeholderEntity;
+use RZP\Modules\Acs\Wrapper\MerchantStakeholder as MerchantStakeholderWrapper;
 
 class Repository extends Base\Repository
 {
@@ -30,5 +32,24 @@ class Repository extends Base\Repository
             ->get()
             ->pluck(Entity::MERCHANT_ID)
             ->toArray();
+    }
+
+    /**
+     * __saveOrFail -  Keeping the method name not same with base repository method, this to be renamed  and used in stakeholder core while ramp-up
+     *Once stakeholder saveOrFail is migrated to Account service only this method should be used while saving the stakeholder entity any save on stakeholder has to be called at any new place
+     * @param MerchantStakeholderEntity $entity
+     * @param bool $testAndLive - If true saveEntity on both test and live db else only live db
+     * @throws \Throwable
+     */
+    public function __saveOrFail(MerchantStakeholderEntity $entity, bool $testAndLive)
+    {
+        $this->repo->transactionOnLiveAndTest(function () use ($testAndLive, $entity) {
+            if ($testAndLive === true) {
+                $this->saveOrFail($entity);
+            } else {
+                $this->repo->saveOrFail($entity);
+            }
+            (new MerchantStakeholderWrapper())->SaveOrFail($entity);
+        });
     }
 }
