@@ -82,6 +82,7 @@ class Entity extends Base\PublicEntity
     const CONTACTS          = 'contacts';
     const EMAILS            = 'emails';
     const CONTACT           = 'contact';
+    const PHONE             = 'phone';
     const EMAIL             = 'email';
     const USER              = 'user';
     const SLUG              = 'slug';

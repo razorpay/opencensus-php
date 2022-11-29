@@ -5934,4 +5934,71 @@ return [
             ],
         ],
     ],
+
+    'testUpdatePaymentPageWithWrongCheckoutOptions' => [
+        'request' => [
+            'url' => '/payment_pages/pl_'. PaymentLinkTest::TEST_PL_ID,
+            'method' => 'patch',
+            'content' => [
+                'settings' => [
+                    "checkout_options" => [
+                        0 => 'A',
+                        1 => 'r'
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
+
+    'testUpdatePaymentPageWithCheckoutOptionsNoEmail' => [
+        'request' => [
+            'url' => '/payment_pages/pl_'. PaymentLinkTest::TEST_PL_ID,
+            'method' => 'patch',
+            'content' => [
+                'settings' => [
+                    "checkout_options" => [
+                        "phone" => "phone"
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdatePaymentPageWithWrongCheckoutOptionsNoPhone' => [
+        'request' => [
+            'url' => '/payment_pages/pl_'. PaymentLinkTest::TEST_PL_ID,
+            'method' => 'patch',
+            'content' => [
+                'settings' => [
+                    "checkout_options" => [
+                        "email" => "email"
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

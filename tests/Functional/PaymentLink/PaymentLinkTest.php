@@ -1326,6 +1326,33 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdatePaymentPageWithWrongCheckoutOptions()
+    {
+        $this->createPaymentLink();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdatePaymentPageWithCheckoutOptionsNoEmail()
+    {
+        $this->createPaymentLink();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdatePaymentPageWithWrongCheckoutOptionsNoPhone()
+    {
+        $this->createPaymentLink();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testBrandColorInPaymentPageHosted()
     {
         $this->createPaymentLinkWithMultipleItem();

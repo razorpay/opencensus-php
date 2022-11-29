@@ -199,6 +199,7 @@ class Validator extends Base\Validator
         Entity::PAYMENT_PAGE_ITEMS,
         Entity::GOAL_TRACKER,
         Entity::PARTNER_WEBHOOK_SETTINGS,
+        Entity::CHECKOUT_OPTIONS,
     ];
 
     protected static $editValidators = [
@@ -206,6 +207,7 @@ class Validator extends Base\Validator
         'min_amount', // Since currency will not be available in edit PP sending currency from custom func.
         Entity::GOAL_TRACKER,
         Entity::PARTNER_WEBHOOK_SETTINGS,
+        Entity::CHECKOUT_OPTIONS,
     ];
 
     protected static $createOrderRules = [
@@ -265,6 +267,11 @@ class Validator extends Base\Validator
         Entity::META_DATA.'.'.Entity::GOAL_END_TIMESTAMP        => 'required_if:'.Entity::META_DATA.'.'.Entity::DISPLAY_DAYS_LEFT.',1',
         Entity::META_DATA.'.'.Entity::DISPLAY_DAYS_LEFT         => 'required',
         Entity::META_DATA.'.'.Entity::DISPLAY_SUPPORTER_COUNT   => 'required',
+    ];
+
+    protected static $checkoutOptionsRules = [
+        Entity::EMAIL  => 'required',
+        Entity::PHONE  => 'required',
     ];
 
     /**
@@ -573,6 +580,18 @@ class Validator extends Base\Validator
 
         // Additionally, validates UDF schema
         $this->validateUdfSchema($input);
+    }
+
+    public function validateCheckoutOptions(array $input): void
+    {
+        $checkoutOptions = array_get($input, Entity::SETTINGS . '.' . Entity::CHECKOUT_OPTIONS, []);
+
+        if( $checkoutOptions === [])
+        {
+            return;
+        }
+
+        $this->validateInput('checkoutOptions', $checkoutOptions);
     }
 
     /**
