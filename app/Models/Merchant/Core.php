@@ -6466,12 +6466,19 @@ class Core extends Base\Core
             return false;
         }
 
-        // in case of link account if kyc is handled by merchant then don't do auto kyc
         $parentMerchant = $merchant->parent;
 
-        if ((empty($parentMerchant)) === false and ($parentMerchant->linkedAccountsRequireKyc() === false))
+        //
+        // In case of linked accounts, if KYC is required at parent merchant level or the `route_no_doc_kyc`
+        // feature flag is assigned to the parent merchant, that implies auto KYC is enabled.
+        //
+        if (empty($parentMerchant) === false)
         {
-            return false;
+            if (($parentMerchant->linkedAccountsRequireKyc() === true) or
+                ($parentMerchant->isRouteNoDocKycEnabled() === true))
+            {
+                return true;
+            }
         }
 
         // if kyc is handled my partner then don't do auto kyc

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Detail;
 
+use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Document\Type;
 
 class ValidationFields
@@ -282,6 +283,25 @@ class ValidationFields
         ],
     ];
 
+    const ROUTE_NO_DOC_KYC_FIELDS = [
+        Constants::UNREGISTERED_AND_PROPRIETORSHIP => [
+            Entity::BUSINESS_NAME,
+            Entity::PROMOTER_PAN_NAME,
+            Entity::PROMOTER_PAN,
+            Entity::BANK_ACCOUNT_NAME,
+            Entity::BANK_ACCOUNT_NUMBER,
+            Entity::BANK_BRANCH_IFSC,
+        ],
+        Constants::REGISTERED => [
+            Entity::PROMOTER_PAN_NAME,
+            Entity::BUSINESS_NAME,
+            Entity::COMPANY_PAN,
+            Entity::BANK_ACCOUNT_NAME,
+            Entity::BANK_ACCOUNT_NUMBER,
+            Entity::BANK_BRANCH_IFSC,
+        ],
+    ];
+
     /**
      *
      * Returns list of document required for a particular field/ document group .
@@ -356,8 +376,37 @@ class ValidationFields
         return [$requiredFields, $selectiveRequiredFields, $optionalFields];
     }
 
-    public static function getRequiredFieldsForNoDocOnboarding(string $businessType) : array
+    public static function getRequiredFieldsForNoDocOnboarding(string $businessType, bool $isLinkedAccount = false) : array
     {
+        if ($isLinkedAccount === true)
+        {
+            switch ($businessType)
+            {
+                case BusinessType::NOT_YET_REGISTERED:
+                case BusinessType::INDIVIDUAL:
+                case BusinessType::PROPRIETORSHIP:
+                {
+                    return self::ROUTE_NO_DOC_KYC_FIELDS[Constants::UNREGISTERED_AND_PROPRIETORSHIP];
+                }
+
+                case BusinessType::PUBLIC_LIMITED:
+                case BusinessType::PRIVATE_LIMITED:
+                case BusinessType::LLP:
+                case BusinessType::PARTNERSHIP:
+                case BusinessType::TRUST:
+                case BusinessType::NGO:
+                case BusinessType::SOCIETY:
+                {
+                    return self::ROUTE_NO_DOC_KYC_FIELDS[Constants::REGISTERED];
+                }
+
+                default:
+                {
+                    throw new LogicException('Invalid business type for linked account creation.');
+                }
+            }
+        }
+
         switch ($businessType)
         {
             case BusinessType::NOT_YET_REGISTERED:

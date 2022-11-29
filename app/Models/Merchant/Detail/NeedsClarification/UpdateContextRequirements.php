@@ -19,6 +19,7 @@ use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Partner\Activation\Constants as PAConstants;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater\GstInStatusUpdater;
+use RZP\Trace\TraceCode;
 
 
 class UpdateContextRequirements
@@ -91,6 +92,25 @@ class UpdateContextRequirements
             [self::BANK_DETAILS_VERIFICATION],
         ],
         BusinessType::NOT_YET_REGISTERED  => [
+            [self::PERSONAL_PAN_VERIFICATION],
+            [self::BANK_DETAILS_VERIFICATION],
+        ],
+    ];
+
+    const UPDATE_ROUTE_NO_DOC_MERCHANT_CONTEXT_REQUIREMENTS = [
+        self::default => [
+            [self::COMPANY_PAN_VERIFICATION],
+            [self::BANK_DETAILS_VERIFICATION],
+        ],
+        BusinessType::PROPRIETORSHIP      => [
+            [self::PERSONAL_PAN_VERIFICATION],
+            [self::BANK_DETAILS_VERIFICATION],
+        ],
+        BusinessType::NOT_YET_REGISTERED  => [
+            [self::PERSONAL_PAN_VERIFICATION],
+            [self::BANK_DETAILS_VERIFICATION],
+        ],
+        BusinessType::INDIVIDUAL  => [
             [self::PERSONAL_PAN_VERIFICATION],
             [self::BANK_DETAILS_VERIFICATION],
         ],
@@ -388,7 +408,8 @@ class UpdateContextRequirements
                 break;
 
             case E::MERCHANT_DETAIL:
-                if ($entity->merchant->isNoDocOnboardingEnabled() === true)
+                if (($entity->merchant->isNoDocOnboardingEnabled() === true) or
+                    ($entity->merchant->isRouteNoDocKycEnabledForParentMerchant() === true))
                 {
                     return $this->getNoDocUpdateContextRequirement($entity);
                 }
@@ -413,7 +434,9 @@ class UpdateContextRequirements
 
     public function getNoDocUpdateContextRequirement(Entity $merchantDetails): array
     {
-        $updateContextRequirements = self::UPDATE_NO_DOC_MERCHANT_CONTEXT_REQUIREMENTS;
+        $isLinkedAccount = $merchantDetails->merchant->isLinkedAccount();
+
+        $updateContextRequirements = ($isLinkedAccount === true) ? self::UPDATE_ROUTE_NO_DOC_MERCHANT_CONTEXT_REQUIREMENTS : self::UPDATE_NO_DOC_MERCHANT_CONTEXT_REQUIREMENTS;
 
         $businessType = $merchantDetails->getBusinessType();
 
@@ -451,12 +474,23 @@ class UpdateContextRequirements
 
         $isGstStatusInTerminalState = $this->isArtifactStatusInTerminalState($merchantDetails->getGstinVerificationStatus());
 
-        // add GST under requirements if it is verified or all GSTs fetched from personal/company pan have failed
-        if ($isGstValidationCompleted === true and $isGstStatusInTerminalState === true)
+        if(($merchantDetails->merchant->isRouteNoDocKycEnabledForParentMerchant() === true))
         {
-            array_push($requirementList, [self::GSTIN_VERIFICATION]);
+            // For Route no doc kyc, for registered business,  always add gstin condition irrespective of $isGstStatusInTerminalState
+            // For unregistered and proprietorship skip gstin requirement.
+            if ($isGstValidationCompleted === true and
+                BusinessType::isGstinVerificationExcludedBusinessTypes($merchantDetails->getBusinessTypeValue()) === false)
+            {
+                array_push($requirementList, [self::GSTIN_VERIFICATION]);
+            }
         }
-
+        else
+        {
+            // add GST under requirements if it is verified or all GSTs fetched from personal/company pan have failed
+            if ($isGstValidationCompleted === true and $isGstStatusInTerminalState === true) {
+                array_push($requirementList, [self::GSTIN_VERIFICATION]);
+            }
+        }
         return $requirementList;
     }
 
@@ -502,6 +536,27 @@ class UpdateContextRequirements
         $isPersonalPanStatusInTerminalState = $this->isArtifactStatusInTerminalState($merchantDetails->getPoiVerificationStatus());
 
         $isCompanyPanStatusInTerminalState = $this->isArtifactStatusInTerminalState($merchantDetails->getCompanyPanVerificationStatus());
+
+        if($merchantDetails->merchant->isLinkedAccount() === true)
+        {
+            switch ($merchantDetails->getBusinessType())
+            {
+                case BusinessType::PROPRIETORSHIP:
+                case BusinessType::NOT_YET_REGISTERED:
+                case BusinessType::INDIVIDUAL:
+                    if (($merchantDetails->getPan() === null and $isPersonalPanStatusInTerminalState === true) or
+                        ($merchantDetails->getPromoterPan() === null and $isCompanyPanStatusInTerminalState === true) or
+                        ($isPersonalPanStatusInTerminalState === true and $isCompanyPanStatusInTerminalState === true))
+                    {
+                        return true;
+                    }
+
+                    return false;
+
+                default:
+                    return ($isCompanyPanStatusInTerminalState === true);
+            }
+        }
 
         switch ($merchantDetails->getBusinessType())
         {

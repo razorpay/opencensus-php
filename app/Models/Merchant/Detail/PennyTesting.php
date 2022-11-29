@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Merchant\Detail;
 
+use Throwable;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
-use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\lib\FuzzyMatcher;
@@ -24,7 +24,6 @@ use RZP\Models\FundAccount\Validation\Core as FundAccountValidationCore;
 use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 use RZP\Models\FundAccount\Validation\Entity as FundAccountValidationEntity;
 use RZP\Models\FundAccount\Validation\AccountStatus as FundAccountValidationAccountStatus;
-use Throwable;
 
 class PennyTesting extends Base\Core
 {
@@ -705,12 +704,56 @@ class PennyTesting extends Base\Core
             }
         }
 
-        // For linked accounts, we don't have promoter pan name so directly sending Business name.
-        if($merchantDetails->merchant->isLinkedAccount() === true)
+        //
+        // Promoter PAN name is not available for linked accounts created
+        // without no doc KYC. Hence, sending business name directly.
+        //
+        if (($merchantDetails->merchant->isLinkedAccount() === true) and
+            ($merchantDetails->merchant->parent->isRouteNoDocKycEnabled() === false))
         {
             return [
                 Constants::COMPANY_PAN_NAME  => $merchantDetails->getBusinessName()
             ];
+        }
+        else if (($merchantDetails->merchant->isLinkedAccount() === true) and
+                 ($merchantDetails->merchant->parent->isRouteNoDocKycEnabled() === true))
+        {
+            switch ($merchantDetails->getBusinessType())
+            {
+                case BusinessType::NOT_YET_REGISTERED:
+                case BusinessType::INDIVIDUAL:
+                {
+                    return [
+                        Constants::PROMOTER_PAN_NAME => $merchantDetails->getPromoterPanName(),
+                    ];
+                }
+
+                case BusinessType::PUBLIC_LIMITED:
+                case BusinessType::PRIVATE_LIMITED:
+                case BusinessType::LLP:
+                case BusinessType::PARTNERSHIP:
+                case BusinessType::TRUST:
+                case BusinessType::NGO:
+                case BusinessType::SOCIETY:
+                {
+                    return [
+                        Constants::COMPANY_PAN_NAME => $merchantDetails->getBusinessName(),
+                    ];
+                }
+
+                case BusinessType::PROPRIETORSHIP:
+                {
+                    return [
+                        Constants::PROMOTER_PAN_NAME    => $merchantDetails->getPromoterPanName(),
+                        Constants::COMPANY_PAN_NAME     => $merchantDetails->getBusinessName(),
+                    ];
+                }
+
+                default :
+                {
+                    throw new LogicException('Invalid business type for linked account creation.');
+                }
+            }
         }
 
         switch ($merchantDetails->getBusinessType())

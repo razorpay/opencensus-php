@@ -13,6 +13,7 @@ use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Models\Merchant\BvsValidation\Repository;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BvsConstants;
 
 
 class RouteConfigTest extends TestCase
@@ -198,6 +199,12 @@ class RouteConfigTest extends TestCase
 
         $this->runRequestResponseFlow($testData);
 
+        $testData = $this->testData['testCreateStakeholder'];
+
+        $testData['request']['url'] = '/v2/accounts/acc_' . $merchantId . '/stakeholders';
+
+        $this->runRequestResponseFlow($testData);
+
         $this->assertTrue($eventFired);
     }
     public function testProductConfigUpdateAfterActivation()
@@ -212,9 +219,7 @@ class RouteConfigTest extends TestCase
 
         $accountId = Account\Entity::verifyIdAndSilentlyStripSign($response['id']);
 
-        $this->triggerMockPennyTestingResponse($accountId);
-
-        print_r($accountId. $accountIdPublic);
+        $this->mockBVSResponse($accountId);
 
         $testData = $this->testData['testRouteDefaultConfig'];
 
@@ -230,17 +235,13 @@ class RouteConfigTest extends TestCase
 
         $this->runRequestResponseFlow($testData);
 
-        $this->triggerMockPennyTestingResponse($accountId);
+        $this->mockBVSResponse($accountId);
 
         $testData = $this->testData['testFetchRouteConfig'];
 
         $testData['request']['url'] = '/v2/accounts/' .$accountIdPublic . '/products/' . $merchantProductResponse['id'];
 
         $response = $this->makeRequestAndGetContent($testData['request']);
-
-        print_r(
-            ['fetch response' => $response]
-        );
 
         $this->assertEquals('activated', $response['activation_status']);
 
@@ -273,29 +274,19 @@ class RouteConfigTest extends TestCase
         $this->fixtures->on('test')->edit('merchant_detail', $subMerchant->getId(), ['activation_status' => $status]);
     }
 
-    private function triggerMockPennyTestingResponse($ownerId, $ownerType = 'merchant', $response = 'success')
+    private function mockBVSResponse($ownerId,
+                                     $artefactType = 'bank_account',
+                                     $response = 'success')
     {
-        $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($ownerId, 'merchant', 'bank_account');
-
-        print_r(['bvs' => $bvsValidation]);
+        $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($ownerId, 'merchant', $artefactType);
 
         $this->assertNotEmpty($bvsValidation);
 
-        $inputData = [
-            'success'   => [
-                "validation_id" => $bvsValidation->getValidationId(),
-                "error_code" => "",
-                "error_description" => "",
-                "status" => "success"
-            ],
-            'failed'    => [
-                "validation_id" => $bvsValidation->getValidationId(),
-                "error_code" => "INPUT_DATA_ISSUE",
-                "error_description" => "KC03::Incorrect beneficiary name",
-                "status" => "failed"
-            ]
-        ];
-        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_BVS_EVENTS, ['data' => $inputData[$response]], Mode::TEST);
+        $mockBvsValidationInput  =  $this->testData['mockBVSInputData'][$artefactType][$response];
+
+        $mockBvsValidationInput['validation_id']    = $bvsValidation->getValidationId();
+
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_BVS_EVENTS, ['data' => $mockBvsValidationInput], Mode::TEST);
     }
 }
 

@@ -892,6 +892,11 @@ class Entity extends Base\PublicEntity
         return $this->isFeatureEnabled(Feature\Constants::DISPLAY_LA_PARENT_PAYMENT_ID);
     }
 
+    public function isRouteNoDocKycEnabled() : bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::ROUTE_NO_DOC_KYC);
+    }
+
     public function isAxisExpressPayEnabled(): bool
     {
         return $this->isFeatureEnabled(Feature\Constants::AXIS_EXPRESS_PAY);
@@ -1041,6 +1046,11 @@ class Entity extends Base\PublicEntity
         $parentMerchant = $this->parent;
 
         return isset($parentMerchant) ? $parentMerchant->isFeatureEnabled($featureName) : false;
+    }
+
+    public function isRouteNoDocKycEnabledForParentMerchant()
+    {
+        return $this->isFeatureEnabledOnParentMerchant(Feature\Constants::ROUTE_NO_DOC_KYC);
     }
 
     public function isAtLeastOneFeatureEnabled(array $features): bool

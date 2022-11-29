@@ -326,6 +326,20 @@ class BusinessType
         return in_array($businessTypeName, self::$businessTypeBuckets[self::REGISTERED], true);
     }
 
+    public static function isGstinVerificationExcludedBusinessTypes($businessTypeValue): bool
+    {
+        if (empty($businessTypeValue) === true)
+        {
+            return false;
+        }
+
+        $businessTypeName = self::getKeyFromIndex($businessTypeValue);
+
+        $excludedBusinessType = array_merge(self::$businessTypeBuckets[self::UNREGISTERED], [self::PROPRIETORSHIP,]);
+
+        return in_array($businessTypeName, $excludedBusinessType, true);
+    }
+
     public static function isCinVerificationEnableBusinessTypes($businessType): bool
     {
         if (empty($businessType) === true)

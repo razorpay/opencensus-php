@@ -72,6 +72,17 @@ class Core extends Merchant\Core
 
         $this->trace->count(Metric::ACCOUNT_V2_CREATE_SUCCESS_TOTAL, $dimensions);
 
+        if($account->isLinkedAccount() === true)
+        {
+            $traceCode = ($account->isRouteNoDocKycEnabledForParentMerchant() === true) ? TraceCode::LINKED_ACCOUNT_CREATED_VIA_PUBLIC_API_NO_DOC_KYC :
+                                                                         TraceCode::LINKED_ACCOUNT_CREATED_VIA_PUBLIC_API;
+
+            $this->trace->info($traceCode, [
+                'parent_mid'        =>  $account->parent->getId(),
+                'linked_account_id' => $account->getId()
+            ]);
+        }
+
         return $account;
     }
 

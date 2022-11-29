@@ -48,7 +48,8 @@ class GstInStatusUpdater extends DefaultStatusUpdater
             $merchantDetailCore->generateLeadScoreForMerchant($this->merchant, $this->merchantDetails);
         }
 
-        if($this->merchant->isNoDocOnboardingEnabled() === true)
+        if(($this->merchant->isNoDocOnboardingEnabled() === true) or
+            ($this->merchant->isRouteNoDocKycEnabledForParentMerchant() === true))
         {
             $this->gstValidationForNoDocOnboarding();
         }

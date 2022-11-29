@@ -127,12 +127,75 @@ return [
                         "resolution_url" => "/accounts/{accountId}/products/{merchantProductConfigId}",
                         "reason_code" => "field_missing",
                         "status" => "required"
-                    ]
+                    ],
+                    [
+                        'field_reference' => 'name',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
                 ],
                 "product_name" => "route",
             ],
         ],
     ],
+    'testRouteProductConfigWithRouteNoDocEnabled'    =>  [
+        'request'   =>  [
+            'method'    =>   'POST',
+            'content'   =>  [
+                'product_name'  =>  'route',
+                'tnc_accepted'  =>  true
+            ],
+        ],
+        'response'  =>  [
+            'content'   =>  [
+                "active_configuration" => [
+                    "settlements" => [
+                        "account_number" => null,
+                        "ifsc_code" => null,
+                        "beneficiary_name" => null
+                    ]
+                ],
+                "requirements" => [
+                    [
+                        "field_reference" => "name",
+                        "resolution_url" => "/accounts/{accountId}/stakeholders",
+                        "status" => "required",
+                        "reason_code" => "field_missing",
+                    ],
+                    [
+                        "field_reference" => "settlements.account_number",
+                        "resolution_url" => "/accounts/{accountId}/products/{merchantProductConfigId}",
+                        "reason_code" => "field_missing",
+                        "status" => "required",
+                    ],
+                    [
+                        "field_reference" => "settlements.beneficiary_name",
+                        "resolution_url" => "/accounts/{accountId}/products/{merchantProductConfigId}",
+                        "reason_code" => "field_missing",
+                        "status" => "required",
+                    ],
+                    [
+                        "field_reference" => "settlements.ifsc_code",
+                        "resolution_url" => "/accounts/{accountId}/products/{merchantProductConfigId}",
+                        "reason_code" => "field_missing",
+                        "status" => "required",
+                    ],
+                ],
+                "product_name"          => "route",
+                "activation_status"     =>  'needs_clarification'
+            ],
+        ],
+    ],
+    'testUpdateAccountV2'   => [
+      'request'     =>  [
+          'url'     =>  '/v2/accounts/{accountId}',
+          'method'  =>  'PATCH',
+          'content' =>  [],
+      ],
+      'response'    =>  [],
+    ],
+
     'testRequestRouteProductLinkedAccountWithDifferentParentMId'    =>  [
         'request'   =>  [
             'method'    =>   'POST',
@@ -221,6 +284,72 @@ return [
         'exception' =>  [
             'class'               => RZP\Exception\ExtraFieldsException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
+    'testCreateStakeholder' =>  [
+      'request'     =>  [
+          'url'     =>  '/v2/accounts/{accountId}/stakeholders',
+          'method'  => 'POST',
+          'content' => [
+              'name'    =>  'Shubham gupta',
+              'email'   =>  'shubham.gupta@email.com'
+          ]
+      ],
+      'response'    =>  [
+          'content' =>  [
+              'name'    => 'Shubham gupta',
+              'email'   => 'shubham.gupta@email.com'
+          ]
+      ],
+    ],
+    'mockBVSInputData' => [
+        'bank_account' => [
+            'success'   => [
+                "error_code" => "",
+                "error_description" => "",
+                "status" => "success"
+            ],
+            'failed'    => [
+                "error_code" => "INPUT_DATA_ISSUE",
+                "error_description" => "KC03::Incorrect beneficiary name",
+                "status" => "failed"
+            ]
+        ],
+        'business_pan'  =>  [
+            'success'   => [
+                "error_code" => "",
+                "error_description" => "",
+                "status" => "success"
+            ],
+            'failed'    => [
+                "error_code" => "INPUT_DATA_ISSUE",
+                "error_description" => "invalid data submitted or PAN is new which is issued in last 10 days, please retry after 15 minutes",
+                "status" => "failed"
+            ]
+        ],
+        'personal_pan'  =>  [
+            'success'   => [
+                "error_code" => "",
+                "error_description" => "",
+                "status" => "success"
+            ],
+            'failed'    => [
+                "error_code" => "INPUT_DATA_ISSUE",
+                "error_description" => "invalid data submitted or PAN is new which is issued in last 10 days, please retry after 15 minutes",
+                "status" => "failed"
+            ]
+        ],
+        'gstin'  =>  [
+            'success'   => [
+                "error_code" => "",
+                "error_description" => "",
+                "status" => "success"
+            ],
+            'failed'    => [
+                "error_code" => "INPUT_DATA_ISSUE",
+                "error_description" => "invalid data submitted",
+                "status" => "failed"
+            ]
         ],
     ],
 ];

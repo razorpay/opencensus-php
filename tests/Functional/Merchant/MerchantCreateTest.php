@@ -3070,9 +3070,9 @@ class MerchantCreateTest extends TestCase
 
         $linkedAccount = $this->getLastEntity('merchant', true);
 
-        $this->assertEquals($linkedAccount['name'],'Test Asset Management Limited' );
+        $this->assertEquals('test+1@gmail.com', $linkedAccount['email']);
 
-        $this->assertEquals($linkedAccount['parent_id'],'10000000000000' );
+        $this->assertEquals('10000000000000', $linkedAccount['parent_id']);
     }
 
     protected function createLinkedAccountReferenceData()

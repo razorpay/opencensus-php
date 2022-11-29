@@ -153,6 +153,8 @@ class DetailServiceTest extends TestCase
         $this->merchantDetailEntityMock->shouldReceive('getBankBranchIfsc')->andReturn();
         $this->repoMock->shouldReceive('driver')->with('merchant_detail')->andReturn($this->merchantDetailRepositoryMock);
         $this->merchantDetailEntityMock->shouldReceive('getAttribute')->andReturn();
+        $this->merchantDetailEntityMock->shouldReceive('isLocked')->andReturn();
+        $this->merchantEntityMock->shouldReceive('isRouteNoDocKycEnabledForParentMerchant')->andReturn(false);
         $this->merchantDetailRepositoryMock->shouldReceive('findOrFailPublic')->withAnyArgs()->andReturn($this->merchantDetailEntityMock);
         $this->merchantEntityMock->shouldReceive('getOrgId')->withAnyArgs()->andReturn();
         $this->repoMock->shouldReceive('driver')->with('merchant_attribute')->andReturn($this->merchantAttributeRepoMock);
@@ -203,6 +205,8 @@ class DetailServiceTest extends TestCase
         $this->merchantDetailEntityMock->shouldReceive('getBankAccountNumber')->andReturn();
         $this->merchantDetailEntityMock->shouldReceive('getBankBranchIfsc')->andReturn();
         $this->merchantDetailEntityMock->shouldReceive('getAttribute')->andReturn();
+        $this->merchantDetailEntityMock->shouldReceive('isLocked')->andReturn();
+        $this->merchantEntityMock->shouldReceive('isRouteNoDocKycEnabledForParentMerchant')->andReturn(false);
         $this->merchantDetailRepositoryMock->shouldReceive('findOrFailPublic')->withAnyArgs()->andReturn($this->merchantDetailEntityMock);
         $this->merchantEntityMock->shouldReceive('getOrgId')->withAnyArgs()->andReturn();
         $this->repoMock->shouldReceive('driver')->with('merchant_detail')->andReturn($this->merchantDetailRepositoryMock);
@@ -279,6 +283,8 @@ class DetailServiceTest extends TestCase
         $this->app->instance('eventManager', $harvesterMock);
 
         $this->merchantDetailEntityMock->shouldReceive('getActivationFlow')->andReturn('whitelist');
+
+        $this->merchantEntityMock->shouldReceive('isRouteNoDocKycEnabledForParentMerchant')->andReturn(false);
 
         $this->merchantDetailEntityMock->shouldReceive('getAttribute')->andReturn();
 

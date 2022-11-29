@@ -261,7 +261,7 @@ class Core extends Base\Core
 
         $this->convertStatesToStatesCode($input);
 
-        $this->unlockLinkedAccountFormIfApplicable($merchant, $merchantDetails);
+        $this->unlockLinkedAccountFormIfApplicable($merchant, $merchantDetails, $input);
 
         $merchantDetails->getValidator()->validateIsNotLocked($merchant);
 
@@ -1089,11 +1089,22 @@ class Core extends Base\Core
         $bvsVerificationConfig[Entity::GSTIN] = $gstConfig;
         $bvsVerificationConfig[Entity::BANK_ACCOUNT_NUMBER] = $bankConfig;
 
-
-        $noDocData = [
-            DetailConstants::DEDUPE       => $dedupeConfig,
-            DetailConstants::VERIFICATION => $bvsVerificationConfig
-        ];
+        //
+        // -skip dedupe checks for marketplace linked accounts.
+        // - A merchant can be linked account to multiple parent merchants
+        //
+        if ($merchantDetail->merchant->isLinkedAccount() === true){
+            $noDocData = [
+                DetailConstants::VERIFICATION => $bvsVerificationConfig
+            ];
+        }
+        else
+        {
+            $noDocData = [
+                DetailConstants::DEDUPE => $dedupeConfig,
+                DetailConstants::VERIFICATION => $bvsVerificationConfig
+            ];
+        }
 
         $data = [
             ConfigKey::NO_DOC_ONBOARDING_INFO => $noDocData,
@@ -1836,8 +1847,9 @@ class Core extends Base\Core
     protected function verifyCompanyPanDetailsIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant, array $input)
     {
         // For handling business type switch
-        if (BusinessType::isCompanyPanEnableBusinessTypes($merchantDetails->getBusinessTypeValue()) === false and
-            $merchant->isNoDocOnboardingEnabled() === false)
+        if ((BusinessType::isCompanyPanEnableBusinessTypes($merchantDetails->getBusinessTypeValue()) === false) and
+            ($merchant->isNoDocOnboardingEnabled() === false) and
+            ($merchant->isRouteNoDocKycEnabledForParentMerchant() === false))
         {
             $merchantDetails->setCompanyPanVerificationStatus(null);
 
@@ -3602,18 +3614,33 @@ class Core extends Base\Core
      */
     public function isSubmittedViaProductConfigApi()
     {
+        $jobName = $onboardingApi = null;
+
+        $runningInQueue = app()->runningInQueue();
+
+        if ($runningInQueue === true)
+        {
+            $jobName = app('worker.ctx')->getJobName();
+        }
+        else
+        {
+            $onboardingApi = app('api.route')->isRoutePublicApi();
+        }
+
         $this->trace->info(
             TraceCode::LINKED_ACCOUNT_FORM_SUBMISSION_JOB_NAME,
             [
-                'job_name'          =>  $this->app['worker.ctx']->getJobName(),
-                'onboarding_api'    =>  $this->app['api.route']->isRoutePublicApi()
+                'job_name'          => $jobName,
+                'onboarding_api'    => $onboardingApi,
             ]
         );
-        if (($this->app['worker.ctx']->getJobName() === Constants::AUTO_UPDATE_MERCHANT_PRODUCTS) or
-            ($this->app['api.route']->isRoutePublicApi() === true))
+
+        if (($jobName === Constants::AUTO_UPDATE_MERCHANT_PRODUCTS) or
+            ($onboardingApi === true))
         {
             return true;
         }
+
         return false;
     }
 
@@ -3684,6 +3711,20 @@ class Core extends Base\Core
                 $kycValidationFields = RequiredFields::MARKETPLACE_ACCOUNT_KYC_FIELDS;
 
                 $validationFields = array_merge($validationFields, $kycValidationFields);
+            }
+
+            if ($this->isSubmittedViaProductConfigApi() === true)
+            {
+                $validationFields = array_merge($validationFields,[Entity::PROMOTER_PAN_NAME]);
+            }
+
+            if ($parentMerchant->isRouteNoDocKycEnabled() === true)
+            {
+                $noDocValidationFields = ValidationFields::getRequiredFieldsForNoDocOnboarding($merchantDetails->getBusinessType(), true);
+
+                $noDocOptionalValidationFields = array_diff(array_merge($validationFields, $validationOptionalFields), $noDocValidationFields);
+
+                return [$noDocValidationFields, $validationSelectiveRequiredFields, $noDocOptionalValidationFields];
             }
         }
 
@@ -4342,8 +4383,8 @@ class Core extends Base\Core
 
         if (($merchantDetails->getBankDetailsVerificationStatus() === DetailConstants::VERIFIED or
              $merchantDetails->getBankDetailsVerificationStatus() === BvsValidationConstants::INITIATED) and
-            ($isAutoKycAttemptRequired === false) and
-            ($merchant->isLinkedAccount() === false))         // Route linked accounts can have bank account update requests even when previous one is verified
+            ($isAutoKycAttemptRequired === false)
+            )         // Route linked accounts can have bank account update requests even when previous one is verified
         {
             return;
         }
@@ -4469,6 +4510,11 @@ class Core extends Base\Core
                 case BusinessType::TRUST:
                 case BusinessType::SOCIETY:
                     return $this->getApplicableActivationStatusForRegisteredMerchant($merchantDetails);
+                case BusinessType::NGO:
+                    if($merchantDetails->merchant->isLinkedAccount() === true)
+                    {
+                        return $this->getApplicableActivationStatusForRegisteredMerchant($merchantDetails);
+                    }
             }
         }
 
@@ -4622,6 +4668,23 @@ class Core extends Base\Core
                 'business_type' => $businessType,
             ]);
         }
+        else if (($merchantDetails->merchant->isLinkedAccount() === true) and
+            ($merchantDetails->merchant->isRouteNoDocKycEnabledForParentMerchant() === true))
+        {
+            $gstValidationCompleted = (new UpdateContextRequirements())->isNoDocGstValidationCompleted($merchantDetails);
+
+            if ($gstValidationCompleted === false  and
+                (BusinessType::isGstinVerificationExcludedBusinessTypes($merchantDetails->getBusinessTypeValue()) === false))
+            {
+                return false;
+            }
+            $conditions = $this->fetchAutoKycConditionsForRouteNoDocKyc($merchantDetails);
+
+            $this->trace->info(TraceCode::AUTO_KYC_CONDITIONS_FOR_ROUTE_NO_DOC, [
+                'merchant_id'   => $merchantDetails->getId(),
+                'business_type' => $businessType,
+            ]);
+        }
         else
         {
             //
@@ -4714,6 +4777,34 @@ class Core extends Base\Core
         $isGstStatusInTerminalState = $updateContextRequirement->isArtifactStatusInTerminalState($merchantDetails->getGstinVerificationStatus());
 
         if ($isGstValidationCompleted === true and $isGstStatusInTerminalState === true)
+        {
+            $conditions = array_merge($conditions[Operator:: AND], [Entity::GSTIN_VERIFICATION_STATUS => AutoKyc\Constants::GSTIN_CONDITION]);
+        }
+
+        return $conditions;
+    }
+
+    private function fetchAutoKycConditionsForRouteNoDocKyc(Entity $merchantDetails)
+    {
+        $businessType = $merchantDetails->getBusinessType();
+
+        $conditions = AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS_ROUTE_NO_DOC[Constants::DEFAULT];
+
+        if (isset(AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS_ROUTE_NO_DOC[$businessType]) === true)
+        {
+            $conditions = AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS_ROUTE_NO_DOC[$businessType];
+        }
+
+        $updateContextRequirement = (new UpdateContextRequirements());
+
+        $isGstValidationCompleted = $updateContextRequirement->isNoDocGstValidationCompleted($merchantDetails);
+
+        $isGstStatusInTerminalState = $updateContextRequirement->isArtifactStatusInTerminalState($merchantDetails->getGstinVerificationStatus());
+
+        // - For registered business type, gstin verification is mandatory even if gstins are not found for pan
+        // - For unregistered business types, skip 3 way verification only if gst is found and validated.
+        // - For Propreitership, add condition only if gstin is in terminal state.
+        if (($isGstValidationCompleted === true and BusinessType::isGstinVerificationExcludedBusinessTypes($merchantDetails->getBusinessTypeValue()) === false))
         {
             $conditions = array_merge($conditions[Operator:: AND], [Entity::GSTIN_VERIFICATION_STATUS => AutoKyc\Constants::GSTIN_CONDITION]);
         }
@@ -6475,18 +6566,30 @@ class Core extends Base\Core
     }
 
     /**
-     * Linked Account merchant detail fields can be update by the merchant
-     * even when account is activated and locked. Check EPA-168 on Jira
+     * Linked Account Bank Account details can be updated by the merchant
+     * even after account is activated and locked. Check EPA-168 on Jira
      *
      * This function unlocks the submission form if linked account is activated and if form is locked.
      * @param Merchant\Entity $merchant
      * @param Entity $merchantDetails
+     * @param array $input
      */
-    private function unlockLinkedAccountFormIfApplicable(Merchant\Entity $merchant, Entity $merchantDetails)
+    private function unlockLinkedAccountFormIfApplicable(Merchant\Entity $merchant, Entity $merchantDetails, array $input)
     {
+        if ($merchantDetails->isLocked() === false)
+        {
+            return;
+        }
+
+        // Allow updating only Bank Account detail fields after linked account activation.
+        // Return without unlocking the activation form if extra fields other than bank details are present in $input .
+        if (count(array_diff(array_keys($input), RequiredFields::BANK_ACCOUNT_FIELDS)) > 0)
+        {
+            return;
+        }
+
         if (($merchant->isLinkedAccount() === true) and
-            ($merchantDetails->getActivationStatus() === Status::ACTIVATED) and
-            ($merchantDetails->isLocked() === true))
+            ($merchantDetails->getActivationStatus() === Status::ACTIVATED))
         {
             $input = [
                 'locked'  =>  false,
@@ -7800,6 +7903,13 @@ class Core extends Base\Core
      */
     public function processDedupeResponse(array $requiredFieldsforNoDocOnboarding, array $dedupeResponse, array & $noDocConfig)
     {
+        // skip dedupe checks for Marketplace linked accounts.
+        // Multiple parent merchants can have same linked account details.
+        if($this->merchant->isLinkedAccount() === true)
+        {
+            return;
+        }
+
         $merchantCore = new Merchant\Core();
         $dedupeConfig = $noDocConfig[DetailConstants::DEDUPE];
         foreach ($requiredFieldsforNoDocOnboarding as $field)

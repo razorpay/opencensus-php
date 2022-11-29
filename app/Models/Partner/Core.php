@@ -200,6 +200,13 @@ class Core extends Detail\Core
      */
     public function isSmsBlockedSubmerchant(Merchant\Entity $merchant): bool
     {
+        //
+        // - Block sms notifications to linked accounts always
+        //
+        if($merchant->isLinkedAccount() === true)
+        {
+            return true;
+        }
         $partners = (new Merchant\Core())->fetchAffiliatedPartners($merchant->getId());
 
         //
@@ -228,6 +235,15 @@ class Core extends Detail\Core
      */
     public function isSubMerchantNotificationBlocked(string $merchantId): bool
     {
+        //
+        // - skip notifications to linked accounts always
+        //
+        $merchant = $this->repo->merchant->find($merchantId);
+
+        if($merchant->isLinkedAccount() === true)
+        {
+            return true;
+        }
         $partners = (new Merchant\Core())->fetchAffiliatedPartners($merchantId);
 
         $partner = $partners->first();

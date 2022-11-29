@@ -123,6 +123,10 @@ class Constants
 
     const LOCK_COMMON_FIELDS = 'lock_common_fields';
 
+    // For Route no doc KYC feature.
+    const UNREGISTERED_AND_PROPRIETORSHIP   = 'unregistered_and_proprietorship';
+    const REGISTERED                        = 'registered';
+
     //kyc integration constants
     const ENTITY_ID              = 'entity_id';
     const KYC_ID                 = 'kyc_id';

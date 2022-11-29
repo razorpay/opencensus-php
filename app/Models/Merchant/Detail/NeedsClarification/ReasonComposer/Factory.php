@@ -95,6 +95,13 @@ class Factory
             return new DedupeClarificationReasonComposer($needsClarificationMetaData, $noDocData);
         }
 
+        if((empty($validation) === true) and
+            ($this->merchantDetails->merchant->isRouteNoDocKycEnabledForParentMerchant() === true) and
+            ($artefactType === Constant::GSTIN))
+        {
+            return new GstinMissingReasonComposer($needsClarificationMetaData);
+        }
+
         if (empty($validation) === true)
         {
             return new DefaultClarificationReasonComposer();

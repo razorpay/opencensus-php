@@ -53,6 +53,26 @@ class GstinAuth extends Base
                     return Constant::GSTIN_WITH_BUSINESS_PAN_FOR_NO_DOC;
             }
         }
+
+        if (($this->merchant->isLinkedAccount() === true) and
+            ($this->merchant->parent->isRouteNoDocKycEnabled() === true))
+        {
+            switch($this->merchantDetails->getBusinessType())
+            {
+                case BusinessType::NOT_YET_REGISTERED:
+                case BusinessType::INDIVIDUAL:
+                case BusinessType::PROPRIETORSHIP:
+                {
+                    return Constant::GSTIN;
+                }
+
+                default:
+                {
+                    return Constant::GSTIN_WITH_BUSINESS_PAN_FOR_NO_DOC;
+                }
+            }
+        }
+
         return Constant::GSTIN;
     }
 

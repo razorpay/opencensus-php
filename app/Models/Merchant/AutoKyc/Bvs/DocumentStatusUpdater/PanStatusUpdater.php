@@ -13,6 +13,7 @@ use RZP\Models\Merchant\BvsValidation\Entity;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use RZP\Models\Merchant\Detail\NeedsClarification\UpdateContextRequirements;
@@ -52,7 +53,8 @@ class PanStatusUpdater extends DefaultStatusUpdater
        }
 
        // If merchant is enabled with NoDocOnboarding feature then we fetch gst from verified pan and trigger BVS request.
-       if($this->merchant->isNoDocOnboardingEnabled() === true)
+       if(($this->merchant->isNoDocOnboardingEnabled() === true) or
+           ($this->isGstVerificationEnabledLinkedAccount() === true))
        {
            $this->fetchGstAndTriggerValidationIfApplicable();
        }
@@ -60,6 +62,17 @@ class PanStatusUpdater extends DefaultStatusUpdater
        // Updates merchant context and send Segment event.
        $this->postUpdateValidationStatus();
    }
+
+    protected function isGstVerificationEnabledLinkedAccount() : bool
+    {
+        if($this->merchant->isLinkedAccount() === true and
+            $this->merchant->isRouteNoDocKycEnabledForParentMerchant() === true and
+            Detail\BusinessType::isGstinVerificationEnableBusinessTypes($this->merchantDetails->getBusinessTypeValue()))
+        {
+            return true;
+        }
+        return false;
+    }
 
    protected function fetchGstAndTriggerValidationIfApplicable()
    {

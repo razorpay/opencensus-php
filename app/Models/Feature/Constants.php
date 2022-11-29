@@ -326,6 +326,11 @@ class Constants
     const SUBMERCHANT_ONBOARDING_V2 = 'submerchant_onboarding_v2';
 
     /**
+     * This feature is assigned for marketplace parent merchants for linked account kyc verifications.
+     */
+    const ROUTE_NO_DOC_KYC = 'route_no_doc_kyc';
+
+    /**
      * This feature will be assinged to all submerchants onboarded via V2 onboarding APIs
      */
     const CREATE_SOURCE_V2 = 'create_source_v2';
@@ -2260,6 +2265,7 @@ class Constants
         self::SUB_VA_FOR_DIRECT_BANKING       => true,
         self::SPR_DISABLE_METHOD_RESET        => true,
         self::ONE_CC_DISABLE_EMAIL_COOKIE       => true,
+        self::ROUTE_NO_DOC_KYC                => true,
         \RZP\Services\Dcs\Constants::RefundEnabled => true,  // Example Feature for DCS
         \RZP\Services\Dcs\Constants::DisableAutoRefund => true,  // Example Feature for DCS
         \RZP\Services\Dcs\Constants::EligibilityEnabled => true,  // Example Feature for DCS
@@ -3125,6 +3131,11 @@ class Constants
         self::SPR_DISABLE_METHOD_RESET  => [
             'feature'       => self::SPR_DISABLE_METHOD_RESET,
             'display_name'  => 'Special pricing plan assigned to the merchant',
+            'documentation' => '',
+        ],
+        self::ROUTE_NO_DOC_KYC  => [
+            'feature'       => self::ROUTE_NO_DOC_KYC,
+            'display_name'  => 'route_no_doc_kyc',
             'documentation' => '',
         ],
 

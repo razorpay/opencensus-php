@@ -2,26 +2,22 @@
 
 namespace RZP\Models\Merchant\Detail\NeedsClarification\ReasonComposer;
 
-use RZP\Models\Merchant\Detail\Entity;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Constants;
-use RZP\Models\Merchant\Detail\NeedsClarificationMetaData;
+use RZP\Models\Merchant\Detail\Entity;
+use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstant;
 use RZP\Models\Merchant\Detail\NeedsClarification\Constants as ClarificationConstants;
 
-class IncorrectDetailsReasonComposer extends BaseClarificationReasonComposer
+class GstinMissingReasonComposer extends BaseClarificationReasonComposer
 {
-    private $validation;
-
     /**
      * @var array
      */
     private $clarificationMetaData;
 
-    public function __construct($validation, array $needsClarificationMetaData)
+    public function __construct(array $needsClarificationMetaData)
     {
         parent::__construct();
-
-        $this->validation = $validation;
 
         $this->clarificationMetaData = $needsClarificationMetaData;
     }
@@ -33,7 +29,7 @@ class IncorrectDetailsReasonComposer extends BaseClarificationReasonComposer
             return [];
         }
 
-        $errorCode = $this->validation->getErrorCode();
+        $errorCode = BvsValidationConstant::DATA_UNAVAILABLE;
 
         //
         // If Message mapping is not there then just log and continue,
@@ -54,10 +50,10 @@ class IncorrectDetailsReasonComposer extends BaseClarificationReasonComposer
         return [
             Entity::CLARIFICATION_REASONS => [
                 $fieldName => [[
-                                   Constants::REASON_TYPE => Constants::PREDEFINED_REASON_TYPE,
-                                   Constants::FIELD_TYPE  => $fieldType,
-                                   Constants::REASON_CODE => $reasonCode,
-                               ]],
+                    Constants::REASON_TYPE => Constants::PREDEFINED_REASON_TYPE,
+                    Constants::FIELD_TYPE  => $fieldType,
+                    Constants::REASON_CODE => $reasonCode,
+                ]],
             ]
         ];
     }

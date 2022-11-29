@@ -16,6 +16,9 @@ class CompanyPan extends Base
         $businessTypeValue = $this->merchantDetails->getBusinessTypeValue();
 
         $isNoDocOnboarding = $this->merchant->isNoDocOnboardingEnabled();
+
+        $isRouteNoDocKycEnabled = $this->merchant->isRouteNoDocKycEnabledForParentMerchant();
+
         if ($isNoDocOnboarding === true and $this->isDedupeCheckForNoDocOnboardingPass(Entity::COMPANY_PAN) === false)
         {
             return false;
@@ -24,7 +27,7 @@ class CompanyPan extends Base
         //We trigger company pan BVS request for all business types if No Doc Onboarding feature is enabled.
         return (($this->merchantDetails->getCompanyPanVerificationStatus() === BvsValidationConstants::PENDING) and
                 (BusinessType::isCompanyPanEnableBusinessTypes($businessTypeValue) === true or
-                 $isNoDocOnboarding === true));
+                 $isNoDocOnboarding === true or $isRouteNoDocKycEnabled === true));
     }
 
     public function getRequestPayload(): array

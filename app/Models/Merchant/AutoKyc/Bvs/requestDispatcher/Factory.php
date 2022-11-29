@@ -6,10 +6,11 @@ use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Document\Type;
-use RZP\Models\Merchant\Detail\Constants as DetailConstants;
-use RZP\Models\Merchant\Document\Entity as DocumentEntity;
-use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
+use RZP\Models\Merchant\Document\Entity as DocumentEntity;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 
 class Factory
 {
@@ -112,9 +113,13 @@ class Factory
             ];
         }
 
-        // For Linked accounts, we only validate Bank Account details with BVS.
-        // Other validations are not required.
-        if ($merchant->isLinkedAccount() === true)
+        //
+        // Linked accounts onboarded via the no doc KYC flow will have the `route_no_doc_kyc` feature flag assigned to
+        // their parent merchant. These linked accounts need to go through bank account, PAN, GSTIN verifications. Other
+        // linked accounts will go through only bank account verification even when PAN or GSTIN details are present.
+        //
+        if (($merchant->isLinkedAccount() === true) and
+            ($merchant->parent->isRouteNoDocKycEnabled() === false))
         {
             return [
                 new BankAccount($merchant, $merchantDetails),
