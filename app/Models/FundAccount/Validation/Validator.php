@@ -68,6 +68,14 @@ class Validator extends Base\Validator
         FtaEntity::BANK_ACCOUNT_TYPE  => 'sometimes',
     ];
 
+    protected static $createValidators = [
+        'amount_as_integer',
+    ];
+
+    protected static $bankingBankAccountValidators = [
+        'amount_as_integer',
+    ];
+
     /**
      * @param $attribute
      * @param $value

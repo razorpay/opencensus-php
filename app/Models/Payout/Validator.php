@@ -122,8 +122,6 @@ class Validator extends Base\Validator
 
     const PAYOUT_2FA_OTP_SEND_REQUEST  =  'payout_2fa_otp_send_request';
 
-    const AMOUNT_REGEX = '/[^0-9]/';
-
     const TDS_CATEGORY_ID_CACHE_KEY = 'tds_category_id_list';
     const TDS_CATEGORY_ID_CACHE_TTL = 12 * 60 * 60;
 
@@ -1589,42 +1587,6 @@ class Validator extends Base\Validator
                         Entity::AMOUNT => $input[Entity::AMOUNT],
                     ]
                 );
-            }
-        }
-    }
-
-    public function validateAmountAsInteger($input)
-    {
-        if (isset($input[Entity::AMOUNT]) === true)
-        {
-            $amount = $input[Entity::AMOUNT];
-
-            if (is_string($amount) === true)
-            {
-                if ((empty($amount) === true) or
-                    (preg_match(self::AMOUNT_REGEX, $amount) !== 0))
-                {
-                    throw new Exception\BadRequestValidationFailureException(
-                        "The amount must be an integer.",
-                        Entity::AMOUNT,
-                        [
-                            Entity::AMOUNT => $input[Entity::AMOUNT],
-                        ]
-                    );
-                }
-            }
-            else
-            {
-                if (is_int($amount) === false)
-                {
-                    throw new Exception\BadRequestValidationFailureException(
-                        "The amount must be an integer.",
-                        Entity::AMOUNT,
-                        [
-                            Entity::AMOUNT => $input[Entity::AMOUNT],
-                        ]
-                    );
-                }
             }
         }
     }

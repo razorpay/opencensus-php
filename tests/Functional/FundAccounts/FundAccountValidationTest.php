@@ -188,6 +188,16 @@ class FundAccountValidationTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateValidationWithAmountInDecimalString()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateValidationWithAmountInDecimalFloat()
+    {
+        $this->startTest();
+    }
+
     public function testCreateValidationForCustomerFeeBearer()
     {
         // Fee Bearer doesn't have any effect on Fund Account Validation.

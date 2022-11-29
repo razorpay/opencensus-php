@@ -16,6 +16,9 @@ use RZP\Models\Payout\BatchHelper;
 
 class Validator extends \Razorpay\Spine\Validation\Validator
 {
+    const AMOUNT_REGEX                          = '/[^0-9]/';
+    const AMOUNT                                = 'amount';
+
     protected function throwExtraFieldsException($extraFields)
     {
         throw new Exception\ExtraFieldsException($extraFields);
@@ -180,6 +183,50 @@ class Validator extends \Razorpay\Spine\Validation\Validator
                     Entity::BATCH_ID        => $batchId,
                 ]
             );
+        }
+    }
+
+    /**
+     * Used for Payout and FuncAccount Amount validation.
+     * This is added where Laravel "integer" validation failed like 112.99999999999999
+     * @param $input
+     *
+     * @return void
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateAmountAsInteger($input)
+    {
+        if (isset($input[self::AMOUNT]) === true)
+        {
+            $amount = $input[self::AMOUNT];
+
+            if (is_string($amount) === true)
+            {
+                if ((empty($amount) === true) or
+                    (preg_match(self::AMOUNT_REGEX, $amount) !== 0))
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        "The amount must be an integer.",
+                        self::AMOUNT,
+                        [
+                            self::AMOUNT => $input[self::AMOUNT],
+                        ]
+                    );
+                }
+            }
+            else
+            {
+                if (is_int($amount) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        "The amount must be an integer.",
+                        self::AMOUNT,
+                        [
+                            self::AMOUNT => $input[self::AMOUNT],
+                        ]
+                    );
+                }
+            }
         }
     }
 }
