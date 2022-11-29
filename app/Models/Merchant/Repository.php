@@ -229,14 +229,14 @@ class Repository extends Base\Repository
 
     public function fetchMerchantsWithPricingPlan($planId)
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
                     ->where(Entity::PRICING_PLAN_ID, '=', $planId)
                     ->get();
     }
 
     public function fetchFeeBearersForPlanId($planId)
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
                     ->where(Entity::PRICING_PLAN_ID, '=', $planId)
                     ->select(Entity::FEE_BEARER)
                     ->distinct()
@@ -247,7 +247,7 @@ class Repository extends Base\Repository
 
     public function fetchMerchantsCountWithPricingPlanId($planId)
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
                     ->where(Entity::PRICING_PLAN_ID, '=', $planId)
                     ->count();
     }
