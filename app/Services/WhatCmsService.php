@@ -2,6 +2,7 @@
 
 namespace RZP\Services;
 
+use App;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 
@@ -150,17 +151,27 @@ class WhatCmsService extends Base\Service
 
     public function checkForPluginType(string $merchantId, string $websiteUrl)
     {
-        $whatcmsResponse = (new WhatCmsClient())->getWebsiteInfo($websiteUrl);
+        $app = App::getFacadeRoot();
+
+        $mock = $app['config']['services.whatCMS.mock'];
+
+        if($mock === true)
+        {
+            return 'DummyTestPluginType';
+        }
+
+        $whatCMSResponse = (new WhatCmsClient())->getWebsiteInfo($websiteUrl);
 
         $this->trace->info(TraceCode::WHATCMS_RESPONSE, [
             "mid" => $merchantId,
-            "response" => $whatcmsResponse
+            "response" => $whatCMSResponse
         ]);
 
         $pluginType = null;
 
-        if($whatcmsResponse !== null){
-            $pluginType = $this->getPluginType($whatcmsResponse);
+        if ($whatCMSResponse !== null)
+        {
+            $pluginType = $this->getPluginType($whatCMSResponse);
         }
 
         return $pluginType;

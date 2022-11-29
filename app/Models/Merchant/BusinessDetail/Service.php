@@ -5,8 +5,10 @@ namespace RZP\Models\Merchant\BusinessDetail;
 use Throwable;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Detail;
+use RZP\Services\WhatCmsService;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
@@ -109,6 +111,18 @@ class Service extends Base\Service
         ]);
 
         return $businessDetail;
+    }
+
+    public function checkForPlugin($merchantId, $businessWebsite)
+    {
+        $pluginType = (new WhatCmsService())->checkForPluginType($merchantId, $businessWebsite);
+
+        $businessDetailsInput[BusinessDetailEntity::PLUGIN_DETAILS] = [
+            'website'          => $businessWebsite,
+            'suggested_plugin' => $pluginType
+        ];
+
+        $this->saveBusinessDetailsForMerchant($merchantId, $businessDetailsInput);
     }
 
     /**

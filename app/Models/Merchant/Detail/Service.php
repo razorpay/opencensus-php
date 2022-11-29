@@ -1391,14 +1391,6 @@ class Service extends Base\Service
             ]
         ];
 
-        $websiteInput = [
-            Entity::BUSINESS_WEBSITE => $newUrl
-        ];
-
-        $businessDetailsInput = $this->core->handlePluginDetails($this->merchant, $websiteInput);
-
-        (new BusinessDetail\Service())->saveBusinessDetailsForMerchant($this->merchant->getId(), $businessDetailsInput);
-
         if($event === DashboardEvents::MERCHANT_BUSINESS_WEBSITE_UPDATE)
         {
             $args[Constants::PARAMS][DashboardNotificationConstants::PREVIOUS_BUSINESS_WEBSITE] = $previousWebsite;

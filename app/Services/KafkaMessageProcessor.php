@@ -13,10 +13,11 @@ use RZP\Trace\Tracer;
 class KafkaMessageProcessor
 {
     // Topic name constants to map job
-    const API_BVS_EVENTS = 'api-bvs-validation-result-events';
-    const ADDRESS_DEDUPE_EVENT = 'address-dedupe-response';
-    const RAW_ADDRESS_CONTACTS = 'raw-address-contacts';
-    const LEGAL_DOCUMENTS_EVENTS = 'api-bvs-legal-document-result-events';
+    const API_BVS_EVENTS            = 'api-bvs-validation-result-events';
+    const ADDRESS_DEDUPE_EVENT      = 'address-dedupe-response';
+    const RAW_ADDRESS_CONTACTS      = 'raw-address-contacts';
+    const MERCHANT_WEBSITE_INFO     = 'merchant-website-info-result';
+    const LEGAL_DOCUMENTS_EVENTS    = 'api-bvs-legal-document-result-events';
 
     /** @var Application $app */
     protected $app;
@@ -108,15 +109,23 @@ class KafkaMessageProcessor
 
     protected function getJob(string $topic, array $payload, string $mode = null)
     {
-        switch ($topic) {
+        switch ($topic)
+        {
             case self::API_BVS_EVENTS:
                 return new KafkaJobs\BvsValidationJob($payload['data'], $mode);
+
             case self::ADDRESS_DEDUPE_EVENT:
                 return new BulkUploadConsumer($payload, $mode);
+
             case self::RAW_ADDRESS_CONTACTS:
                 return new RawAddressContactsConsumer($payload, $mode);
+
+            case self::MERCHANT_WEBSITE_INFO:
+                return new WhatCMSProcessor($payload, $mode);
+
             case self::LEGAL_DOCUMENTS_EVENTS:
                 return new KafkaJobs\BvsLegalDocumentsJob($payload['data'], $mode);
+
             default:
                 return null;
         }

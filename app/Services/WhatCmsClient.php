@@ -63,9 +63,7 @@ class WhatCmsClient
             ]
         ];
 
-        $response = $this->makeRequestAndGetResponse($request);
-
-        return $response;
+        return $this->makeRequestAndGetResponse($request);
     }
 
     protected function makeRequestAndGetResponse(array $request)

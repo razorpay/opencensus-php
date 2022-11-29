@@ -3782,5 +3782,18 @@ return [
             'success'     => true,
             'status_code' => 200,
         ]
-    ]
+    ],
+
+    'testMerchantWebsitePluginProducerCalled' => [
+        'request'  => [
+            'content' => [
+                'website'           => 'www.liotec.ch',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
 ];

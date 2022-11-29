@@ -8,10 +8,13 @@ use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\SalesforceConverge\SalesforceConvergeService;
 use RZP\Models\SalesforceConverge\SalesforceMerchantUpdatesRequest;
+use RZP\Models\Merchant\Detail\Core as DetailCore;
 
 class MerchantObserver
 {
     const HOLD_FUNDS = 'hold_funds';
+
+    const WEBSITE    = 'website';
 
     public function updated(Entity $entity)
     {
@@ -20,7 +23,8 @@ class MerchantObserver
 
         try
         {
-            if ($entity->getConnectionName() == Mode::TEST or $this->isFohUpdated($entity) === false)
+            if ($entity->getConnectionName() == Mode::TEST or ($this->isFohUpdated($entity) === false
+                                                               and $this->isWebsiteUpdated($entity) === false))
             {
                 return;
             }
@@ -30,22 +34,40 @@ class MerchantObserver
                              'merchantId' => $entity
                          ]);
 
-            $retval = (new SalesforceConvergeService())->pushUpdatesToSalesforce(new SalesforceMerchantUpdatesRequest($entity, 'FOH'));
-
-            if ($retval == true)
+            if($this->isFohUpdated($entity) === true)
             {
-                $trace->info(TraceCode::SALESFORCE_CONVERGE_FOH_TRIGGER_SUCCESS,
+                $retval = (new SalesforceConvergeService())->pushUpdatesToSalesforce(new SalesforceMerchantUpdatesRequest($entity, 'FOH'));
+
+                if ($retval == true)
+                {
+                    $trace->info(TraceCode::SALESFORCE_CONVERGE_FOH_TRIGGER_SUCCESS,
+                                 [
+                                     'merchantId' => $entity
+                                 ]);
+                }
+            }
+
+            if($this->isWebsiteUpdated($entity) === true)
+            {
+                $businessWebsite = $entity->getWebsite();
+
+                (new DetailCore())->handlePluginDetails($entity, $businessWebsite);
+
+                $trace->info(TraceCode::WHATCMS_KAFKA_PRODUCE_SUCCESS,
                              [
-                                 'merchantId' => $entity
+                                 'merchantId' => $entity,
+                                 'input'      => $input
                              ]);
             }
-        } catch (\Throwable $e)
+
+        }
+        catch (\Throwable $e)
         {
             $trace->traceException($e, Trace::ERROR,
-                                 TraceCode::SALESFORCE_CONVERGE_FOH_TRIGGER_ERROR,
-                                 [
-                                     "merchantId" => $entity->getId()
-                                 ]
+                                   TraceCode::SALESFORCE_CONVERGE_FOH_TRIGGER_ERROR,
+                                   [
+                                       "merchantId" => $entity->getId()
+                                   ]
             );
         }
     }
@@ -56,6 +78,18 @@ class MerchantObserver
         $dirty = $entity->getDirty();
 
         if ((count($dirty) > 0) and isset($dirty[self::HOLD_FUNDS]))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isWebsiteUpdated(Entity $entity): bool
+    {
+        $dirty = $entity->getDirty();
+
+        if ((count($dirty) > 0) and isset($dirty[self::WEBSITE]))
         {
             return true;
         }

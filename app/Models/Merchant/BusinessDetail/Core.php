@@ -2,15 +2,11 @@
 
 namespace RZP\Models\Merchant\BusinessDetail;
 
-
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Detail;
-use RZP\Models\Merchant\Detail\Entity;
-use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 
 class Core extends Base\Core
@@ -35,14 +31,14 @@ class Core extends Base\Core
                 function() use ($merchantDetails, $input) {
                     $businessDetail = $merchantDetails->businessDetail;
 
-                    if (empty($input[BusinessDetailEntity::WEBSITE_DETAILS]) === false)
+                    if (empty($input[Entity::WEBSITE_DETAILS]) === false)
                     {
-                        $input[BusinessDetailEntity::WEBSITE_DETAILS] = $this->mergeJson($businessDetail->getWebsiteDetails(), $input[BusinessDetailEntity::WEBSITE_DETAILS]);
+                        $input[Entity::WEBSITE_DETAILS] = $this->mergeJson($businessDetail->getWebsiteDetails(), $input[Entity::WEBSITE_DETAILS]);
                     }
 
-                    if (empty($input[BusinessDetailEntity::APP_URLS]) === false)
+                    if (empty($input[Entity::APP_URLS]) === false)
                     {
-                        $input[BusinessDetailEntity::APP_URLS] = $this->mergeJson($businessDetail->getAppUrls(), $input[BusinessDetailEntity::APP_URLS]);
+                        $input[Entity::APP_URLS] = $this->mergeJson($businessDetail->getAppUrls(), $input[Entity::APP_URLS]);
                     }
 
                     if (isset($input[Constants::TXN_URL]) === true)
@@ -51,15 +47,15 @@ class Core extends Base\Core
 
                         if ($appUrls !== null)
                         {
-                            $input[BusinessDetailEntity::APP_URLS] = $appUrls;
+                            $input[Entity::APP_URLS] = $appUrls;
                         }
 
                         unset($input[Constants::TXN_URL]);
                     }
 
-                    if (empty($input[BusinessDetailEntity::PLUGIN_DETAILS]) === false)
+                    if (empty($input[Entity::PLUGIN_DETAILS]) === false)
                     {
-                        $input[BusinessDetailEntity::PLUGIN_DETAILS] = $this->setPluginDetails($businessDetail, $input);
+                        $input[Entity::PLUGIN_DETAILS] = $this->setPluginDetails($businessDetail, $input);
                     }
 
                     $businessDetail->edit($input, MerchantConstants::EDIT);
@@ -101,7 +97,7 @@ class Core extends Base\Core
 
                 function() use ($merchantDetails, $input) {
 
-                    $businessDetail = new BusinessDetailEntity;
+                    $businessDetail = new Entity;
 
                     $businessDetail->generateId();
 
@@ -112,19 +108,19 @@ class Core extends Base\Core
                                            MerchantConstants::INPUT => $input
                                        ]);
 
-                    if (empty($input[BusinessDetailEntity::WEBSITE_DETAILS]) === false)
+                    if (empty($input[Entity::WEBSITE_DETAILS]) === false)
                     {
-                        $input[BusinessDetailEntity::WEBSITE_DETAILS] = $this->mergeJson(BusinessDetailEntity::getDefaultWebsiteDetails(), $input[BusinessDetailEntity::WEBSITE_DETAILS]);
+                        $input[Entity::WEBSITE_DETAILS] = $this->mergeJson(Entity::getDefaultWebsiteDetails(), $input[Entity::WEBSITE_DETAILS]);
                     }
 
-                    if (empty($input[BusinessDetailEntity::APP_URLS]) === false)
+                    if (empty($input[Entity::APP_URLS]) === false)
                     {
-                        $input[BusinessDetailEntity::APP_URLS] = $this->mergeJson(BusinessDetailEntity::getDefaultAppUrls(), $input[BusinessDetailEntity::APP_URLS]);
+                        $input[Entity::APP_URLS] = $this->mergeJson(Entity::getDefaultAppUrls(), $input[Entity::APP_URLS]);
                     }
 
                     if (isset($input[Constants::TXN_URL]) === true)
                     {
-                        $input[BusinessDetailEntity::APP_URLS] = [
+                        $input[Entity::APP_URLS] = [
                             Constants::TXN_PLAYSTORE_URLS   => [$input[Constants::TXN_URL]],
                         ];
 
@@ -218,7 +214,7 @@ class Core extends Base\Core
                     }
                     else
                     {
-                        $this->createBusinessDetail($merchantDetails, [BusinessDetailEntity::LEAD_SCORE_COMPONENTS => $newLeadScore]);
+                        $this->createBusinessDetail($merchantDetails, [Entity::LEAD_SCORE_COMPONENTS => $newLeadScore]);
                     }
                 },
                 MerchantConstants::MERCHANT_MUTEX_LOCK_TIMEOUT,

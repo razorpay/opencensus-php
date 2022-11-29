@@ -30,6 +30,7 @@ use RZP\Models\Merchant\AutoKyc\Bvs\Factory;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
+use RZP\Services\KafkaProducer;
 use RZP\Models\SimilarWeb\SimilarWebRequest;
 use RZP\Models\SimilarWeb\SimilarWebService;
 use RZP\Trace\Tracer;
@@ -132,6 +133,7 @@ use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\ManualVerificationRequestDispatcher;
 use RZP\Models\Merchant\Document\Type as DocumentType;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\BankAccount as BankAccountRequestDispatcher;
+use RZP\Models\Merchant\Website;
 
 class Core extends Base\Core
 {
@@ -480,8 +482,6 @@ class Core extends Base\Core
 
         $businessDetailsInput = array_merge($businessDetailsInput, $this->handleWebsiteDetails($input));
 
-        $businessDetailsInput = array_merge($businessDetailsInput, $this->handlePluginDetails($merchant, $input));
-
         $businessDetailsInput = array_merge($businessDetailsInput, $this->handleBusinessDetailFields($input));
 
         if (empty($businessDetailsInput) === true)
@@ -557,29 +557,25 @@ class Core extends Base\Core
         return $businessDetailsInput;
     }
 
-    public function handlePluginDetails(Merchant\Entity $merchant, &$input): array
+    public function handlePluginDetails(Merchant\Entity $merchant, $businessWebsite)
     {
         $whatCMSExperiment = (new Merchant\Core)->isRazorxExperimentEnable(
             $merchant->getId(),
             RazorxTreatment::WHATCMS_EXPERIMENT);
 
-        $businessDetailsInput = [];
-
-        if ((empty($input[Entity::BUSINESS_WEBSITE]) === false) && ($whatCMSExperiment === true))
+        if ($whatCMSExperiment === false)
         {
-            $businessWebsite = $input[Entity::BUSINESS_WEBSITE];
-
-            $domain = (new Merchant\TLDExtract)->getEffectiveTLDPlusOne($businessWebsite);
-
-            $pluginType = (new WhatCmsService())->checkForPluginType($merchant->getId(), $domain);
-
-            $businessDetailsInput[BusinessDetailEntity::PLUGIN_DETAILS] = [
-                'website'     => $businessWebsite,
-                'suggested_plugin' => $pluginType
-            ];
+            return;
         }
 
-        return $businessDetailsInput;
+        $topic = env('WHATCMS_KAFKA_TOPIC_NAME');
+
+        $event = [
+            'merchant_id'   =>  $merchant->getId(),
+            'website_url'   =>  $businessWebsite
+        ];
+
+        app('kafkaProducerClient')->produce($topic, stringify($event));
     }
 
     private function handleBusinessDetailFields(&$input): array
@@ -4988,14 +4984,6 @@ class Core extends Base\Core
         $domain = (new Merchant\TLDExtract)->getEffectiveTLDPlusOne($input[Entity::ADDITIONAL_WEBSITE]);
 
         $merchantCore->addDomainInWhitelistedDomain($merchant, $domain);
-
-        $websiteInput = [
-            Entity::BUSINESS_WEBSITE => $input[Entity::ADDITIONAL_WEBSITE]
-        ];
-
-        $businessDetailsInput = $this->handlePluginDetails($merchant, $websiteInput);
-
-        (new Service())->saveBusinessDetailsForMerchant($merchant->getId(), $businessDetailsInput);
 
         return $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input, $merchant) {
 

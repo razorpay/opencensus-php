@@ -884,6 +884,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             'smartcollect',
             'cds_http_client',
             AsvConstant::ASV_HTTP_CLIENT,
+            'kafkaProducerClient'
         ];
     }
 
@@ -2131,6 +2132,19 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton('bvs_legal_document_manager', function($app)
         {
             return new Merchant\AutoKyc\Bvs\BvsClient\BvsLegalDocumentManagerClient();
+        });
+    }
+
+    public function registerKafkaProducerClient()
+    {
+        $this->app->singleton('kafkaProducerClient', function($app)
+        {
+            if ($app['config']->get('services.kafka.producer.mock') === true)
+            {
+                return new Mock\KafkaProducerClient;
+            }
+
+            return new KafkaProducerClient();
         });
     }
 

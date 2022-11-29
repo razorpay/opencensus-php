@@ -18,6 +18,8 @@ use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Core;
 use RZP\Models\User\Role;
 use RZP\Services\DiagClient;
+use RZP\Services\KafkaProducer;
+use RZP\Services\KafkaProducerClient;
 use RZP\Services\FreshdeskTicketClient;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
@@ -31,6 +33,7 @@ use RZP\Mail\Merchant as MerchantMail;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Exception\ServerErrorException;
+use RZP\Services\KafkaMessageProcessor;
 use RZP\Models\Merchant\Document\Source;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Mail\Merchant\MerchantDashboardEmail;
@@ -8009,5 +8012,69 @@ We look forward to transacting with you!
         ];
 
         $this->assertEquals($expectedData, $businessDetail['plugin_details']);
+    }
+
+    public function testMerchantWebsitePluginResult()
+    {
+        Config::set('services.whatCMS.mock', true);
+
+        $merchantId = '10000000000000';
+
+        $website = 'www.liotec.ch';
+
+        $this->fixtures->edit('merchant', $merchantId, ['website' => $website, 'whitelisted_domains' => ['www.liotec.ch']]);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId, 'business_website' => $website, 'issue_fields' => 'business_website']);
+
+        $this->fixtures->create('merchant_business_detail', ['merchant_id' => $merchantId]);
+
+        $kafkaEventPayload = [
+            'merchant_id'=>'10000000000000',
+            'website_url'=>'www.liotec.ch'
+        ];
+
+        (new KafkaMessageProcessor)->process('merchant-website-info-result', $kafkaEventPayload, 'live');
+
+        $businessDetail = $this->getDbLastEntity('merchant_business_detail', 'live');
+
+        $expectedData = [
+            'website' => 'www.liotec.ch',
+            'suggested_plugin' => 'DummyTestPluginType'
+        ];
+
+        $this->assertEquals($expectedData, $businessDetail['plugin_details']);
+    }
+
+    public function testMerchantWebsitePluginProducerCalled()
+    {
+        Config::set('services.kafka.producer.mock', true);
+
+        $merchantId = '10000000000000';
+
+        $website = 'www.liotec.ch';
+
+        $this->setMockRazorxTreatment(['WHATCMS_EXPERIMENT' => 'on']);
+
+        $kafkaEventPayload = [
+            'merchant_id'=>'IY31FYZ48vP1vc',
+            'website_url'=>'www.liotec.ch'
+        ];
+
+        $kafkaProducerMock = $this->getMockBuilder(KafkaProducerClient::class)
+                                  ->onlyMethods(['produce'])
+                                  ->getMock();
+        $response = [
+            'topicName' => 'merchant-website-info-result',
+            'message' => $kafkaEventPayload
+        ];
+
+        $kafkaProducerMock->method('produce')
+             ->willReturn($response);
+
+        $this->app->instance('kafkaProducerClient', $kafkaProducerMock);
+
+        $kafkaProducerMock->expects($this->once())->method('produce')->withAnyParameters();
+
+        $this->fixtures->on('live')->edit('merchant', $merchantId, ['website' => $website]);
     }
 }
