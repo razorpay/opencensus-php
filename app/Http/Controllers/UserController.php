@@ -100,6 +100,15 @@ class UserController extends Controller
                 ]);
             }
 
+            $signupCampaign = $details['user']['signup_campaign'] ?? null;
+
+            if (($details['submitted'] == 0) and
+                ($details['activation_form_milestone'] !== 'L2') and
+                ($signupCampaign === 'p2pm_onboarding'))
+            {
+                return redirect(env('EASY_DASHBOARD_URL') . '/onboarding/p2pm');
+            }
+
             if ($this->canCookieSetForEasyOnboardingPostL1Submit($details) === true)
             {
                 $ttl = 12 * 60;
