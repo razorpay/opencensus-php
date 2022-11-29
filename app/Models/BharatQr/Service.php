@@ -103,6 +103,31 @@ class Service extends Base\Service
 
     private function processQrCodePayment($gatewayResponse, $terminal, $qrPaymentRequest)
     {
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        if (($routeName === 'gateway_payment_callback_bharatqr') and
+            (isset($gatewayResponse['qr_data']) === true))
+        {
+            $qrData = $gatewayResponse['qr_data'];
+
+            if (((isset($qrData[GatewayResponseParams::GATEWAY]) === true) and
+                 ($qrData[GatewayResponseParams::GATEWAY] === Gateway::UPI_ICICI)) and
+                (isset($qrData[GatewayResponseParams::VPA]) === true))
+            {
+                $vpa = $qrData[GatewayResponseParams::VPA];
+
+                $vpaParts = explode('@', $vpa);
+
+                if (str_contains($vpaParts[1], 'abfspay') === true)
+                {
+                    $this->trace->info(TraceCode::QR_PAYMENT_CALLBACK_SKIPPED,
+                                       $qrPaymentRequest->toArrayPublic());
+
+                    return true;
+                }
+            }
+        }
+
         $isQrCodeV2 = $this->isNonVAQrCodePayment($gatewayResponse);
 
         if ($isQrCodeV2 === true)
