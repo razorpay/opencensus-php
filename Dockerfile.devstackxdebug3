@@ -5,12 +5,21 @@ FROM $ARMORY_IMAGE as wkhtmltopdf
 
 FROM $ONGGI_IMAGE as opencensus-ext
 WORKDIR /
-ARG OPENCENSUS_VERSION_TAG=v0.7.6.4
+ARG OPENCENSUS_VERSION_TAG=v0.8.0-beta
 RUN set -eux && \
     wget -O - https://github.com/razorpay/opencensus-php/tarball/"${OPENCENSUS_VERSION_TAG}" | tar xz --strip=1
-RUN cd /ext && phpize && ./configure --enable-opencensus && make install
+RUN cd /ext && phpize81 && ./configure --enable-opencensus --with-php-config=/usr/bin/php-config81 && make install
 
 FROM $ONGGI_IMAGE
+
+RUN apk add --update wget tar \
+    && wget https://curl.haxx.se/download/curl-7.82.0.tar.gz \
+    && tar -xzf curl-7.82.0.tar.gz \
+    && cd curl-7.82.0 \
+    && ./configure --with-ssl --prefix=/usr \
+    && make && make install \
+    && cd .. && rm -rf curl-7.82.0 \
+    && rm -rf /var/lib/apt/lists/*
 
 ARG GIT_COMMIT_HASH
 ARG GIT_TOKEN
@@ -32,11 +41,13 @@ RUN set -eu && \
     composer install --no-dev --no-interaction --no-autoloader --no-scripts && \
     rm -rf /root/.composer && \
     composer clear-cache && \
-    pear config-set php_ini /etc/php7/php.ini && \
-    pecl install opencensus-alpha && \
+    pear81 config-set php_ini /etc/php81/php.ini && \
+    pecl81 install opencensus-alpha && \
     mkdir -p public && echo "${GIT_COMMIT_HASH}" > public/commit.txt
 
-COPY --from=opencensus-ext /usr/lib/php7/modules/opencensus.so /usr/lib/php7/modules
+ENV PHP_MEMORY_LIMIT=4096M
+
+COPY --from=opencensus-ext /usr/lib/php81/modules/opencensus.so /usr/lib/php81/modules
 
 COPY --chown=apache:www-data . /app/
 
@@ -51,9 +62,9 @@ RUN make error-module-clean
 RUN make error-module-fetch
 
 # Install and configure XDebug
-RUN pecl install xdebug
+RUN pecl81 install xdebug
 
-RUN echo -e 'zend_extension=/usr/lib/php7/modules/xdebug.so\nxdebug.client_port=9000\nxdebug.mode=debug\nxdebug.start_with_request=yes\nxdebug.idekey=PHPSTORM\nxdebug.log=/tmp/xdebug.log' >> /etc/php7/conf.d/xdebug.ini
+RUN echo -e 'zend_extension=/usr/lib/php81/modules/xdebug.so\nxdebug.client_port=9000\nxdebug.mode=debug\nxdebug.start_with_request=yes\nxdebug.idekey=PHPSTORM\nxdebug.log=/tmp/xdebug.log' >> /etc/php81/conf.d/xdebug.ini
 
 ENV XDEBUG_SESSION=1
 ENV PHP_IDE_CONFIG serverName=Devstack
