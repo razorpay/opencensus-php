@@ -793,7 +793,6 @@ class Gateway
         IFSC::UJVN,
         IFSC::UCBA,
         IFSC::IOBA,
-        IFSC::UBIN,
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [
@@ -1391,7 +1390,7 @@ class Gateway
         IFSC::UUCX,
         IFSC::VEDX,
         IFSC::VIJX,
-        Netbanking::BARB_R,
+        //Netbanking::BARB_R,
     ];
 
     // Esigner Digio is added here just for test cases
