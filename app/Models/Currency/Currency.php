@@ -843,7 +843,7 @@ class Currency
         self::AWG => 'Afl.',
         self::BBD => '$',
         self::BDT => '৳',
-        self::BHD => '.د.ب',
+        self::BHD => 'د.ب',
         self::BMD => '$',
         self::BND => 'BND',
         self::BOB => 'Bs',
