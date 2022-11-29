@@ -5,6 +5,25 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
+    'testOperationsCannotCreateIntegrationURLMapping' => [
+        'request'  => [
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'method' => 'POST',
+            'url'    => '/accounting-payouts/integration/zoho',
+
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED,
+                ],
+            ],
+            'status_code' => 400,
+        ]
+    ],
     'testOperationsCannotAccessUpdateBankMapping' => [
         'request'  => [
             'server' => [

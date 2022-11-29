@@ -95,6 +95,19 @@ class AccountingPayoutsTest extends TestCase
         $this->startTest();
     }
 
+    public function testOperationsCannotCreateIntegrationURLMapping()
+    {
+        $this->mockRazorx();
+
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->opsRoleUser->getId());
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+    }
+
     public function testInitiateIntegrationServiceMethod()
     {
         $this->ba->proxyAuth();

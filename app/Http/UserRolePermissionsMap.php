@@ -556,7 +556,13 @@ class UserRolePermissionsMap
                  Permission::HAS_APP_ACCESS,
                  Permission::VIEW_PRIVILEGES,
                  Permission::VIEW_ALL_ROLES,
-                 Permission::CUSTOMER_SUPPORT_FULL_ACCESS
+                 Permission::CUSTOMER_SUPPORT_FULL_ACCESS,
+
+                 Permission::CREATE_ACCOUNTING_INTEGRATION,
+                 Permission::DELETE_ACCOUNTING_INTEGRATION,
+                 Permission::SYNC_ACCOUNTING_INTEGRATION,
+                 Permission::VIEW_ACCOUNTING_INTEGRATION,
+                 Permission::UPDATE_ACCOUNTING_INTEGRATION,
              ],
 
              BankingRole::VIEW_ONLY => [
