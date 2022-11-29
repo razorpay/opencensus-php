@@ -661,4 +661,7 @@ final class RazorxTreatment
 
     //Experiment used to control whether requests route to DCS or NOT
     const DCS_ENABLED_NEW_USECASE = 'dcs_new_usecases_enabled';
+
+    // Experiment to trigger updateActivationStatus after validation fails
+    const UPDATE_ACTIVATION_STATUS_AFTER_VERIFICATION_FAILS = 'update_activation_status_after_verification_fails';
 }

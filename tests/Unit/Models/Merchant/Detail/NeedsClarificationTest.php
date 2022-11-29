@@ -7,6 +7,7 @@ use RZP\Constants\Mode;
 use Mockery\MockInterface;
 use RZP\Models\Feature\Entity;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
+use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Store;
 use RZP\Models\Merchant\Service;
@@ -2260,5 +2261,45 @@ class NeedsClarificationTest extends TestCase
                     ->get()
                     ->last();
     }
+
+    public function testNoDocActivationStatusAfterVerificationFailure()
+    {
+        $detailCore = (new DetailCore());
+
+        $reflection = new ReflectionClass($detailCore);
+
+        $this->app['rzp.mode']= 'test';
+
+        $method = $reflection->getMethod('handleFlowForRiskyMerchant');
+        $method->setAccessible(true);
+
+        $input = [
+            'activation_status'         => 'activated_kyc_pending'
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $input);
+
+        $mid = $merchantDetail->getId();
+
+        $featureParams = [
+            Entity::ENTITY_ID   => $mid,
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'no_doc_onboarding',
+        ];
+
+        (new \RZP\Models\Feature\Core())->create($featureParams,true);
+
+        $merchant = $merchantDetail->merchant;
+
+        $detailCore->getMerchantAndSetBasicAuth($merchantDetail->getMerchantId());
+
+        $method->invokeArgs($detailCore, [$merchant, $merchantDetail, null]);
+
+        $detailCore->processFlowForNoDocRiskyMerchant($merchant);
+
+        $this->assertEquals(Status::UNDER_REVIEW, (new DetailCore)->getApplicableActivationStatus($merchantDetail));
+
+    }
+
 
 }

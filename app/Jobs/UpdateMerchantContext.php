@@ -21,6 +21,7 @@ use RZP\Models\Merchant\Detail\NeedsClarification\Core;
 use RZP\Models\Merchant\Detail\NeedsClarification\Metrics;
 use RZP\Models\Merchant\Detail\Constants as DetailConstant;
 use RZP\Models\Partner\Activation\Core as PartnerActivationCore;
+use RZP\Models\Merchant\Detail\NeedsClarificationReasonsList;
 use RZP\Models\Merchant\Detail\NeedsClarification\UpdateContextRequirements;
 
 class UpdateMerchantContext extends Job
@@ -171,7 +172,7 @@ class UpdateMerchantContext extends Job
                         $this->trace->count(Metrics::NEEDS_CLARIFICATION_TRIGGERED_TOTAL);
                     }
 
-                    $clarificationCore->removeNoDocFeatureIfApplicable($merchant, $merchantDetail);
+                    $clarificationCore->removeNoDocFeatureIfApplicable($merchant, $merchantDetail, NeedsClarificationReasonsList::NO_DOC_RETRY_EXHAUSTED);
                 }
             }
 

@@ -49,6 +49,10 @@ class NeedsClarificationReasonsList
     const NO_DOC_LIMIT_BREACH                               = 'no_doc_limit_breach';
     const GMV_LIMIT_BREACHED_FOR_NO_DOC_ONBOARDING          = 'Your GMV limit has been breached, kindly share additional details to get your account reactivated.';
 
+    const NO_DOC_RETRY_EXHAUSTED                            = 'no_doc_retry_exhausted';
+    const NO_DOC_RETRY_EXHAUSTED_MESSAGE                    = 'You have exhausted all your retry attempts, kindly share additional details to get your account reactivated.';
+
+
     //Not Used please use these fields if required in future.
     const SHOP_ESTABLISHMENT_DATA_NOT_MATCHED               = 'shop_establishment_data_not_matched';
     const GSTIN_DATA_NOT_MATCHED                            = 'gstin_not_matched';
@@ -166,7 +170,9 @@ class NeedsClarificationReasonsList
             NeedsClarificationMetaData::DESCRIPTION => 'Your GMV limit has been breached, kindly share additional details to get your account reactivated.',],
         self::FIELD_ALREADY_EXIST                                     => [
             NeedsClarificationMetaData::DESCRIPTION => 'Field value already exist',],
-        ];
+        self::NO_DOC_RETRY_EXHAUSTED => [
+            NeedsClarificationMetaData::DESCRIPTION => 'You have exhausted all your retry attempts, kindly share additional details to get your account reactivated.',],
+    ];
 
 
     /**

@@ -127,6 +127,7 @@ use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
 use RZP\Models\Merchant\Detail\NeedsClarification\UpdateContextRequirements;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use RZP\Notifications\Dashboard\Constants as DashboardNotificationConstants;
+use RZP\Models\Merchant\Detail\NeedsClarification\Core as ClarificationCore;
 use RZP\Models\Merchant\Fraud\HealthChecker\Constants as HealthCheckerConstants;
 use RZP\Models\Merchant\Detail\NeedsClarification\Constants as NCConstants;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
@@ -915,6 +916,8 @@ class Core extends Base\Core
         if ($isRiskyMerchant === true)
         {
             $this->handleFlowForRiskyMerchant($merchant, $merchantDetails, $action);
+
+            $this->processFlowForNoDocRiskyMerchant($merchant);
         }
 
         // If a merchant does not have website or app, we would need to activate them
@@ -1018,6 +1021,20 @@ class Core extends Base\Core
 
         return $response;
     }
+
+    /**
+     * @param Merchant\Entity $merchant
+     */
+    public function processFlowForNoDocRiskyMerchant(Merchant\Entity $merchant)
+    {
+        if ($merchant->isNoDocOnboardingEnabled() === true)
+        {
+            $featureCore = (new FeatureCore());
+
+            $featureCore->removeFeature(FeatureConstants::NO_DOC_ONBOARDING, true);
+        }
+    }
+
 
     /**
      * It initialize redis json for no doc onboarded merchant. In redis it maintains json that contains retry count for
@@ -5639,6 +5656,15 @@ class Core extends Base\Core
 
     protected function verifyGSTINIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant, array $input)
     {
+
+        // For no doc onboarding we are merging gst sent through api request, GSTIN verification trigger one by one after pan verification.
+        if ($merchant->isNoDocOnboardingEnabled() === true)
+        {
+            $merchantDetails->setGstinVerificationStatus(null);
+
+            return;
+        }
+
         if (((new Merchant\Core())->isAutoKycEnabled($merchantDetails, $merchant) === false) or
             ((array_key_exists(Entity::GSTIN, $input) === true) and
              (empty($input[Entity::GSTIN]) === true)))
@@ -7884,10 +7910,12 @@ class Core extends Base\Core
 
     /**
      * This function process dedupe response, update retrycount incase of dedupe failure, mark dedupe blocked
-     * deactivate merchant if retry count exceeds 1
+     * deactivate merchant if retry count exceeds
      * @param array $requiredFieldsforNoDocOnboarding
      * @param array $dedupeResponse
      * @param array $noDocConfig
+     *
+     * @throws \Throwable
      */
     public function processDedupeResponse(array $requiredFieldsforNoDocOnboarding, array $dedupeResponse, array & $noDocConfig)
     {
@@ -7925,6 +7953,10 @@ class Core extends Base\Core
                     $featureCore = (new FeatureCore());
 
                     $featureCore->removeFeature(FeatureConstants::NO_DOC_ONBOARDING, true);
+
+                    $clarificationCore = (new ClarificationCore());
+
+                    $clarificationCore->updateActivationStatusForNoDoc($this->merchant, $this->merchant->merchantDetail, NeedsClarificationReasonsList::NO_DOC_RETRY_EXHAUSTED);
 
                     $this->trace->info(TraceCode::DEDUPE_FAILED_FOR_XPRESS_ONBOARDING, [
                         'merchantId'                            => $this->merchant->getId(),

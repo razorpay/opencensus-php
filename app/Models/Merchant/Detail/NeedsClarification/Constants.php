@@ -44,4 +44,6 @@ class Constants
     const CONTACT_MOBILE                    = 'contact_mobile';
 
     const DEDUPE_CHECK_KEY                  = 'dedupe_check_key';
+
+    const NO_DOC_UPDATE_ACT_EXPERIMENT_ON_VARIANT = 'on';
 }

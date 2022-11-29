@@ -2,13 +2,16 @@
 
 namespace RZP\Models\Merchant\Detail\NeedsClarification;
 
+use Throwable;
 use RZP\Models\Base;
 use RZP\Trace\Tracer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity as E;
+use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Document;
 use RZP\Models\Merchant\Detail\Status;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Feature\Core as FeatureCore;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -63,7 +66,15 @@ class Core extends Base\Core
         return (new UpdateContextRequirements())->shouldTriggerNeedsClarification($entity);
     }
 
-    public function removeNoDocFeatureIfApplicable(Merchant\Entity $merchant, DetailEntity $merchantDetail)
+    /**
+     * Remove No doc feature if retry exhausted for dedupe or verification
+     * @param Merchant\Entity $merchant
+     * @param DetailEntity    $merchantDetail
+     * @param string|null     $reasonCode
+     *
+     * @throws Throwable
+     */
+    public function removeNoDocFeatureIfApplicable(Merchant\Entity $merchant, DetailEntity $merchantDetail, string $reasonCode = null)
     {
 
         if ($merchant->isNoDocOnboardingEnabled() === false)
@@ -81,6 +92,11 @@ class Core extends Base\Core
             $featureCore = (new FeatureCore());
 
             $featureCore->removeFeature(FeatureConstants::NO_DOC_ONBOARDING, true);
+
+            if (empty($reasonCode) === false)
+            {
+                $this->updateActivationStatusForNoDoc($merchant, $merchantDetail, $reasonCode);
+            }
         }
     }
 
@@ -572,19 +588,105 @@ class Core extends Base\Core
         return true;
     }
 
+    /**
+     * This function compose NC Based on Reason code and update activation status
+     * @param Merchant\Entity $merchant
+     * @param DetailEntity    $merchantDetail
+     * @param string          $reasonCode
+     *
+     * @throws Throwable
+     */
+    public function updateActivationStatusForNoDoc(Merchant\Entity $merchant, DetailEntity $merchantDetail, string $reasonCode)
+    {
+        try
+        {
+            $accessMaps = $this->repo->merchant_access_map->fetchAffiliatedPartnersForSubmerchant($merchant->getId());
+
+            if (empty($accessMaps) === false)
+            {
+                $partnerMerchant = $accessMaps->filter(function($value, $key) {
+                    return ($value->entityOwner->isAggregatorPartner() === true);
+                })->first();
+
+                if (empty($partnerMerchant) === false)
+                {
+                    $experimentResult    = $this->app->razorx->getTreatment($partnerMerchant->entityOwner->getId(),
+                                                                            RazorxTreatment::UPDATE_ACTIVATION_STATUS_AFTER_VERIFICATION_FAILS, $this->mode);
+                    if ($experimentResult !== Constants::NO_DOC_UPDATE_ACT_EXPERIMENT_ON_VARIANT)
+                    {
+                        return;
+                    }
+                }
+            }
+
+            $this->trace->info(TraceCode::NO_DOC_UPDATE_ACTIVATION_STATUS_AFTER_VERIFICATION_FAILS, ['merchant_id' => $merchant->getId(), 'reason_code' => $reasonCode]);
+
+            $merchantId = $merchantDetail->getMerchantId();
+
+            $kycClarificationReasons = $this->composeNeedsClarificationForNoDoc($merchant, $reasonCode);
+
+            $updatedKycClarificationReasons = (new MerchantDetailCore())->getUpdatedKycClarificationReasons($kycClarificationReasons, $merchantId, DetailConstant::SYSTEM);
+
+            if (empty($updatedKycClarificationReasons) === false)
+            {
+                $merchantDetail->setKycClarificationReasons($updatedKycClarificationReasons);
+            }
+
+            if ($kycClarificationReasons[DetailEntity::KYC_CLARIFICATION_REASONS][DetailEntity::CLARIFICATION_REASONS] != null)
+            {
+                $activationStatusData = [
+                    DetailEntity::ACTIVATION_STATUS => Status::NEEDS_CLARIFICATION
+                ];
+            }
+            else
+            {
+                $activationStatusData = [
+                    DetailEntity::ACTIVATION_STATUS => Status::UNDER_REVIEW
+                ];
+            }
+
+            (new MerchantDetailCore())->updateActivationStatus($merchant, $activationStatusData, $merchant);
+
+            if ($merchantDetail->getActivationStatus() !== $activationStatusData[DetailEntity::ACTIVATION_STATUS])
+            {
+                throw new LogicException('activation status not changed to ' . $activationStatusData[DetailEntity::ACTIVATION_STATUS] . ' with reason code '.$reasonCode. ' for merchant with id ' . $merchantId);
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::FAILED_TO_UPDATE_ACTIVATION_STATUS_AFTER_VERFICATION_FAILS, ['merchant_id' => $merchant->getId(), 'reason_code' => $reasonCode]);
+        }
+    }
+
+    /**
+     * Compose NC after limit breach for no doc
+     * @param Merchant\Entity $merchant
+     * @return array[]
+     */
     public function composeNeedsClarificationForNoDocLimitBreach(Merchant\Entity $merchant): array
+    {
+        return $this->composeNeedsClarificationForNoDoc($merchant, NeedsClarificationReasonsList::NO_DOC_LIMIT_BREACH);
+
+    }
+
+    /**
+     * Compose NC for No doc after verification and dedupe failure after retry
+     * @param Merchant\Entity $merchant
+     * @param string          $reasonCode
+     *
+     * @return array[]
+     */
+    public function composeNeedsClarificationForNoDoc(Merchant\Entity $merchant, string $reasonCode): array
     {
         $verificationResponse = (new MerchantDetailCore())->setVerificationDetails($merchant->merchantDetail, $merchant, [], true);
 
-        $requiredFields = $verificationResponse['verification']['required_fields'] ?? [];
-
+        $requiredFields          = $verificationResponse['verification']['required_fields'] ?? [];
         $kycClarificationReasons = [];
-
-        $clarificationReasons = [];
+        $clarificationReasons    = [];
 
         $baseReasons = [
             Constants::REASON_TYPE => MerchantConstant::PREDEFINED_REASON_TYPE,
-            Constants::REASON_CODE => NeedsClarificationReasonsList::NO_DOC_LIMIT_BREACH,
+            Constants::REASON_CODE => $reasonCode,
             Constants::FIELD_VALUE => null
         ];
 
@@ -592,7 +694,6 @@ class Core extends Base\Core
         {
             $clarificationReasons[$requiredField] = [$baseReasons];
         }
-
         $kycClarificationReasons[DetailEntity::CLARIFICATION_REASONS] = $clarificationReasons;
 
         return [

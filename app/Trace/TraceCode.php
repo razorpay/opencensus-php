@@ -8552,6 +8552,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const HANDLE_WORKFLOW_ACTION_IF_OPEN                = 'HANDLE_WORKFLOW_ACTION_IF_OPEN';
 
+    const NO_DOC_UPDATE_ACTIVATION_STATUS_AFTER_VERIFICATION_FAILS = 'NO_DOC_UPDATE_ACTIVATION_STATUS_AFTER_VERIFICATION_FAILS';
+
+    const FAILED_TO_UPDATE_ACTIVATION_STATUS_AFTER_VERFICATION_FAILS = 'FAILED_TO_UPDATE_ACTIVATION_STATUS_AFTER_VERFICATION_FAILS';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
