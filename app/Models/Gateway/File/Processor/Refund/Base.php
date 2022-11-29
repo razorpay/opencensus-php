@@ -39,7 +39,7 @@ class Base extends BaseProcessor
      *
      * @var array
      */
-    protected $scroogeRefundsData = [];
+    protected array $scroogeRefundsData = [];
 
     /**
      * Being used to populate the scrooge refunds' payment_ids
@@ -108,8 +108,8 @@ class Base extends BaseProcessor
 
             if (sizeof($this->scroogeRefundsData) > 1)
             {
-                $this->scroogeRefundsData = array_sort($this->scroogeRefundsData, function ($refund1, $refund2) {
-                    return $refund1['created_at'] <=> $refund2['created_at'];
+                $this->scroogeRefundsData = array_sort($this->scroogeRefundsData, function (array $refund) {
+                    return $refund['created_at'];
                 });
             }
 
@@ -744,8 +744,8 @@ class Base extends BaseProcessor
 
         if (sizeof($this->scroogeRefundsData) > 1)
         {
-            $this->scroogeRefundsData = array_sort($this->scroogeRefundsData, function ($refund1, $refund2) {
-                return $refund1['created_at'] <=> $refund2['created_at'];
+            $this->scroogeRefundsData = array_sort($this->scroogeRefundsData, function (array $refund) {
+                return $refund['created_at'];
             });
         }
     }
