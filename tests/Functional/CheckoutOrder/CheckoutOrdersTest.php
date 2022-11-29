@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\CheckoutOrder;
 
 use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Exception\ExtraFieldsException;
@@ -149,7 +150,8 @@ class CheckoutOrdersTest extends TestCase
     public function testCreateCheckoutOrderShouldFailForTpvMerchantWithoutOrder(): void
     {
         $this->expectException(BadRequestValidationFailureException::class);
-        $this->expectExceptionMessage('Order id is mandatory for payment');
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+        $this->expectExceptionMessage(ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED);
 
         $this->fixtures->merchant->addFeatures(['tpv']);
 
