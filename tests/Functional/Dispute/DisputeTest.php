@@ -3676,10 +3676,10 @@ class DisputeTest extends TestCase
 
 
         $this->assertArraySelectiveEquals([
-            'amount_refunded'      => 1000000,
-            'base_amount_refunded' => 1000000,
+            'amount_refunded'      => 0,
+            'base_amount_refunded' => 0,
             'disputed'             => true,
-            'refund_status'        => 'FULL',
+            'refund_status'        => null,
         ], $payment);
     }
 
@@ -3706,10 +3706,10 @@ class DisputeTest extends TestCase
 
 
         $this->assertArraySelectiveEquals([
-            'amount_refunded'      => 1000000,
-            'base_amount_refunded' => 1000000,
+            'amount_refunded'      => 0,
+            'base_amount_refunded' => 0,
             'disputed'             => true,
-            'refund_status'        => 'FULL',
+            'refund_status'        => null,
         ], $payment);
 
         $this->assertGreaterThanOrEqual($tPlusFortyFive, $dispute['deduction_reversal_at']);
@@ -3898,9 +3898,9 @@ class DisputeTest extends TestCase
             'deduction_source_type' => 'adjustment',
             'deduction_source_id'   => 'randomAdjId123',
         ], 'payment:captured', [
-                'amount_refunded'      => 1000000,
-                'base_amount_refunded' => 1000000,
-                'refund_status'        => 'FULL',
+                'amount_refunded'      => 0,
+                'base_amount_refunded' => 0,
+                'refund_status'        => null,
             ]
         );
     }
@@ -4127,6 +4127,7 @@ class DisputeTest extends TestCase
             'deduct_at_onset'       => 1,
             'payment_id'            => substr($payment['id'], 4)
         ];
+
         $testdata = $this->updateEditTestData($input);
 
         $content = $this->runRequestResponseFlow($testdata);

@@ -1091,6 +1091,22 @@ return [
         ],
     ],
 
+    'testDeductAtOnsetRefundedAmountForWin' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'status'        => 'won'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'amount_deducted' => 5000,
+                'amount_reversed' => 5000,
+                'status' => 'won',
+            ],
+        ],
+    ],
+
     'testDisputeEditForNoInitialParent' => [
         'request' => [
             'method'  => 'post',
