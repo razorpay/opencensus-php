@@ -13,7 +13,6 @@ import SettlementGuideText from 'merchant_common/components/SettlementGuideText'
 import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import Alert from 'common/ui/Forms/Alert';
-import SettlementScheduleV2 from 'merchant/views/Settlements/components/SettlementScheduleV2';
 import EmptySettleNow from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/EmptySettleNow';
 import InstantSettlementListFilter from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/ListFilter';
 import trackIS, {
@@ -54,6 +53,7 @@ class InstantSettlements extends ListContainer {
     return this.props.user.isFeatureEnabled('es_on_demand_restricted') || this.isOnDemandDisabled;
   }
 
+  /* istanbul ignore next */
   get settleNowRestrictionMsg() {
     if (!this.settlementRestricted) return null;
 
@@ -167,19 +167,6 @@ class InstantSettlements extends ListContainer {
       queryParams: {
         [ACTION_QUERY_PARAM_KEY]: INSTANT_SETTLEMENT,
       },
-    });
-  };
-
-  viewSettlementCycle = () => {
-    this.props.openModal({
-      size: 'medium',
-      component: <SettlementScheduleV2 />,
-    });
-
-    window.rzpAnalytics?.({
-      eventCategory: 'Settlement Revamp',
-      eventAction: 'View Settlement Cycle',
-      eventLabel: 'Settlements',
     });
   };
 
