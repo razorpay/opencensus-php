@@ -15,6 +15,7 @@ use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Modules\Acs\Wrapper\MerchantDetail as MerchantDetailWrapper;
 use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
@@ -67,6 +68,15 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->first();
+    }
+
+
+    public function __getByMerchantId($merchantId)
+    {
+        return $this->repo->transactionOnLiveAndTest(function () use ($merchantId) {
+            $merchantDetailsFromApi = $this->getByMerchantId($merchantId);
+            return (new MerchantDetailWrapper())->getByMerchantId($merchantId, $merchantDetailsFromApi);
+        });
     }
 
     protected function validateEntitiesMatch($liveEntity, $testEntity)
