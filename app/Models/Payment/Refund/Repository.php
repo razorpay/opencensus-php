@@ -26,6 +26,7 @@ use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Base\Traits\ExternalScroogeRepo;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
@@ -87,6 +88,10 @@ class Repository extends Base\Repository
 
     public function fetchEmiRefundsWithCardTerminalsBetween($from, $to, $bank)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'fetchEmiRefundsWithCardTerminalsBetween',
+            'route'        => $this->route
+        ]);
         $tRepo = $this->repo->terminal;
 
         $paymentRepo = $this->repo->payment;
@@ -126,6 +131,11 @@ class Repository extends Base\Repository
 
     public function fetchCardRefundsForMerchantAndGatewayBetween($from, $to, $merchantIds)
     {
+
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'fetchCardRefundsForMerchantAndGatewayBetween',
+            'route'        => $this->route
+        ]);
         $paymentRepo = $this->repo->payment;
 
         $pTableName = $paymentRepo->getTableName();
@@ -220,6 +230,10 @@ class Repository extends Base\Repository
 
     public function findOrFailPublicByParams($id, $merchantId, $paymentId = null)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'findOrFailPublicByParams',
+            'route'        => $this->route
+        ]);
         $query = $this->newQuery()->where(Refund\Entity::MERCHANT_ID, '=', $merchantId);
 
         if ($paymentId !== null)
@@ -232,6 +246,10 @@ class Repository extends Base\Repository
 
     public function findForPaymentAndMerchant(Payment\Entity $payment, Merchant\Entity $merchant)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'findForPaymentAndMerchant',
+            'route'        => $this->route
+        ]);
         return $this->newQuery()
                     ->where(Refund\Entity::PAYMENT_ID, '=', $payment->getId())
                     ->merchantId($merchant->getId())
@@ -245,6 +263,10 @@ class Repository extends Base\Repository
 
     public function findForPaymentIdFromAPI(string $paymentId)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'findForPaymentIdFromAPI',
+            'route'        => $this->route
+        ]);
         return $this->newQuery()
                     ->where(Refund\Entity::PAYMENT_ID, '=', $paymentId)
                     ->get();
@@ -252,6 +274,10 @@ class Repository extends Base\Repository
 
     public function fetchFirstForPaymentId(string $paymentId)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'fetchFirstForPaymentId',
+            'route'        => $this->route
+        ]);
         return $this->newQuery()
                     ->where(Refund\Entity::PAYMENT_ID, '=', $paymentId)
                     ->first();
@@ -259,6 +285,10 @@ class Repository extends Base\Repository
 
     public function findBetweenTimestamps($from, $to)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'findBetweenTimestamps',
+            'route'        => $this->route
+        ]);
         return $this->newQuery()
                     ->where(Refund\Entity::CREATED_AT, '>=', $from)
                     ->where(Refund\Entity::CREATED_AT, '<=', $to)
@@ -267,6 +297,10 @@ class Repository extends Base\Repository
 
     public function findBetweenTimestampsForGateway($from, $to, $gateway)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'findBetweenTimestampsForGateway',
+            'route'        => $this->route
+        ]);
         return $this->newQuery()
                     ->where('refunds.created_at', '>=', $from)
                     ->where('refunds.created_at', '<=', $to)
@@ -276,6 +310,10 @@ class Repository extends Base\Repository
 
     public function getRefundedAmountByGateway(string $gateway, int $from, int $to)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'getRefundedAmountByGateway',
+            'route'        => $this->route
+        ]);
         $refundPaymentId = $this->dbColumn(Entity::PAYMENT_ID);
         $refundAmount = $this->dbColumn(Entity::BASE_AMOUNT);
         $refundCreatedAt = $this->dbColumn(Entity::CREATED_AT);
@@ -294,6 +332,10 @@ class Repository extends Base\Repository
 
     public function fetchByIdPaymentIdMerchantId($id, $paymentId, $merchantId)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'fetchByIdPaymentIdMerchantId',
+            'route'        => $this->route
+        ]);
         return $this->newQuery()
                     ->where(Refund\Entity::PAYMENT_ID, '=', $paymentId)
                     ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)
@@ -312,6 +354,10 @@ class Repository extends Base\Repository
                                             string $accountId,
                                             array $relations = []): Refund\Entity
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'findByReversalIdAndMerchant',
+            'route'        => $this->route
+        ]);
         return $this->newQuery()
                     ->where(Entity::REVERSAL_ID, $reversalId)
                     ->merchantId($accountId)
@@ -320,6 +366,10 @@ class Repository extends Base\Repository
     }
     public function findForPaymentAndAmount($paymentId, $amount)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'findForPaymentAndAmount',
+            'route'        => $this->route
+        ]);
         return $this->newQuery()
                     ->where(Refund\Entity::PAYMENT_ID, $paymentId)
                     ->where(Refund\Entity::AMOUNT, $amount)
@@ -328,6 +378,10 @@ class Repository extends Base\Repository
 
     public function findForPaymentAndBaseAmount($paymentId, $amount)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'findForPaymentAndBaseAmount',
+            'route'        => $this->route
+        ]);
         return $this->newQuery()
                     ->where(Refund\Entity::PAYMENT_ID, $paymentId)
                     ->where(Refund\Entity::BASE_AMOUNT, $amount)
@@ -336,12 +390,20 @@ class Repository extends Base\Repository
 
     public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $relations = [])
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'fetchEntitiesForReport',
+            'route'        => $this->route
+        ]);
         return $this->fetchBetweenTimestampWithRelations(
                         $merchantId, $from, $to, $count, $skip, $relations);
     }
 
     public function fetchRefundSummaryBetweenTimestamp($from, $to)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'fetchRefundSummaryBetweenTimestamp',
+            'route'        => $this->route
+        ]);
         return $this->newQuery()
                     ->whereBetween(Entity::CREATED_AT, [$from, $to])
                     ->groupBy(Entity::MERCHANT_ID)
@@ -360,6 +422,10 @@ class Repository extends Base\Repository
      */
     public function fetchRefundsWithoutTransactionsAndWithPaymentTransactions()
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'fetchRefundsWithoutTransactionsAndWithPaymentTransactions',
+            'route'        => $this->route
+        ]);
         return $this->newQuery()
                     ->join(
                                 Table::PAYMENT,
@@ -381,6 +447,10 @@ class Repository extends Base\Repository
      */
     public function fetchRefundByRefundIds($refundIds)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'fetchRefundByRefundIds',
+            'route'        => $this->route
+        ]);
         return $this->newQuery()
                     ->select(Table::REFUND. '.' . Refund\Entity::PAYMENT_ID,
                              Table::REFUND. '.' . Refund\Entity::REFERENCE1,
@@ -391,6 +461,10 @@ class Repository extends Base\Repository
 
     public function fetchRefundsForGatewayBetweenTimestamps($type, $gatewayCode, $from, $to, $gateway)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'fetchRefundsForGatewayBetweenTimestamps',
+            'route'        => $this->route
+        ]);
         $attrs = $this->dbColumn('*');
 
         $query = $this->newQuery();
@@ -423,6 +497,10 @@ class Repository extends Base\Repository
 
     public function fetchRefundsForGatewaysBetweenTimestamps($type, $gatewayCodes, $from, $to, $gateway)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'fetchRefundsForGatewaysBetweenTimestamps',
+            'route'        => $this->route
+        ]);
         $attrs = $this->dbColumn('*');
 
         // replication lag threshold of 5 minutes
@@ -463,6 +541,10 @@ class Repository extends Base\Repository
         $gateway,
         $method = 'netbanking')
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'fetchRefundsForMethodGatewaysBetweenTimestamps',
+            'route'        => $this->route
+        ]);
         $attrs = $this->dbColumn('*');
 
         $query = $this->newQuery();
@@ -498,6 +580,10 @@ class Repository extends Base\Repository
 
     public function fetchFailedRefundsByGateway()
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'fetchFailedRefundsByGateway',
+            'route'        => $this->route
+        ]);
         $refundPaymentIdAttr = $this->dbColumn(Entity::PAYMENT_ID);
 
         $refundStatus = $this->dbColumn(Refund\Entity::STATUS);
@@ -518,6 +604,10 @@ class Repository extends Base\Repository
 
     public function fetchFailedRefundsForGatewayBetweenTimestamps($from, $to, $gateway)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'fetchFailedRefundsForGatewayBetweenTimestamps',
+            'route'        => $this->route
+        ]);
         $refundAttrs = $this->dbColumn('*');
 
         $refundPaymentIdAttr = $this->dbColumn(Entity::PAYMENT_ID);
@@ -560,6 +650,10 @@ class Repository extends Base\Repository
      */
     public function fetchFailedCardRefundsToProcessManually($from, $to, $gateway, $acquirer, $timeRange)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'fetchFailedCardRefundsToProcessManually',
+            'route'        => $this->route
+        ]);
         $refundAttributes = $this->dbColumn('*');
 
         $refundPaymentIdAttr = $this->dbColumn(Entity::PAYMENT_ID);
@@ -613,6 +707,10 @@ class Repository extends Base\Repository
         string $gateway,
         bool $tpvEnabled = false)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'fetchRefundsForTpvBetweenTimestamps',
+            'route'        => $this->route
+        ]);
         // SELECT `refunds`.*
         // FROM `refunds`
         // INNER JOIN `payments` ON `refunds`.`payment_id` = `payments`.`id`
@@ -664,6 +762,10 @@ class Repository extends Base\Repository
         int $to,
         string $gateway)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'fetchCorporateRefundsBetweenTimestamps',
+            'route'        => $this->route
+        ]);
         // SELECT `refunds`.*
         // FROM `refunds`
         // INNER JOIN `payments` ON `refunds`.`payment_id` = `payments`.`id`
@@ -708,6 +810,10 @@ class Repository extends Base\Repository
 
     public function fetchRefundsByBatchAndPayment($batch, $payment)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'fetchRefundsByBatchAndPayment',
+            'route'        => $this->route
+        ]);
         return $this->newQuery()
                     ->where(Refund\Entity::PAYMENT_ID, '=', $payment->getId())
                     ->where(Refund\Entity::MERCHANT_ID, '=', $batch->getMerchantId())
@@ -717,6 +823,10 @@ class Repository extends Base\Repository
 
     public function fetchFailedRefundsByMethod(string $method)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'fetchFailedRefundsByMethod',
+            'route'        => $this->route
+        ]);
         $refundPaymentId = $this->dbColumn(Refund\Entity::PAYMENT_ID);
         $refundStatus    = $this->dbColumn(Refund\Entity::STATUS);
 
@@ -737,6 +847,10 @@ class Repository extends Base\Repository
 
     public function fetchIrctcDeltaRefunds(string $merchantId, int $from, int $to)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'fetchIrctcDeltaRefunds',
+            'route'        => $this->route
+        ]);
         $query = $this->newQuery()
                       ->select($this->dbColumn('*'))
                       ->whereIn(Entity::ID, function ($query) use($merchantId, $from, $to)
@@ -774,6 +888,10 @@ class Repository extends Base\Repository
 
     public function findByPaymentIdAndReference3(string $paymentId, int $seqNo)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'findByPaymentIdAndReference3',
+            'route'        => $this->route
+        ]);
         return $this->newQuery()
                     ->where(Refund\Entity::PAYMENT_ID, '=', $paymentId)
                     ->where(Refund\Entity::REFERENCE3, '=', $seqNo)
@@ -792,6 +910,10 @@ class Repository extends Base\Repository
      */
     public function updateProcessedAt($limit, $createdAt)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'updateProcessedAt',
+            'route'        => $this->route
+        ]);
         $count = $this->newQueryWithoutTimestamps()
                       ->whereNull(Refund\Entity::PROCESSED_AT)
                       ->whereNotNull(Refund\Entity::LAST_ATTEMPTED_AT)
@@ -808,6 +930,10 @@ class Repository extends Base\Repository
 
     public function updateRefundReference1(array $refund)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'updateRefundReference1',
+            'route'        => $this->route
+        ]);
         return $this->newQueryWithoutTimestamps()
                     ->where(Refund\Entity::ID, $refund[Refund\Entity::ID])
                     ->where(Refund\Entity::STATUS, Refund\Status::PROCESSED)
@@ -818,6 +944,10 @@ class Repository extends Base\Repository
 
     public function findByReceiptAndMerchant(string $receipt, string $merchantId)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'findByReceiptAndMerchant',
+            'route'        => $this->route
+        ]);
         return $this->newQuery()
                     ->where(Refund\Entity::RECEIPT, '=', $receipt)
                     ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)

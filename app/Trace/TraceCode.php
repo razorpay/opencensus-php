@@ -6229,6 +6229,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QUERY_TIME_FOR_LEDGER_TRANSACTION_API                  = 'QUERY_TIME_FOR_LEDGER_TRANSACTION_API';
     const QUERY_TIME_FOR_DIRECT_ACCOUNT_TRANSACTION_API          = 'QUERY_TIME_FOR_DIRECT_ACCOUNT_TRANSACTION_API';
 
+    const QUERY_REFUNDS_TABLE                                    = 'QUERY_REFUNDS_TABLE';
+
     const ES_SEARCH_RESPONSE_DURATION                            = 'ES_SEARCH_RESPONSE_DURATION';
     const PAGINATED_RESPONSE_DURATION                            = 'PAGINATED_RESPONSE_DURATION';
     const ES_SEARCH_DURATION                                     = 'ES_SEARCH_DURATION';
