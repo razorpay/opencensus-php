@@ -142,7 +142,7 @@ class Service extends Base\Service
             {
                 $this->trace->debug(TraceCode::MERCHANT_SHIPPING_INFO_NO_UNCACHED_ADDRESS, ["order_id" => $orderId]);
 
-                $this->traceResponseTime(Metric::MERCHANT_SHIPPING_INFO_CHECK_TIME_MILLIS, $serviceabilityCheckStartTime, ['merchant_id' => $this->merchant->getId()]);
+                $this->traceResponseTime(Metric::MERCHANT_SHIPPING_INFO_CHECK_TIME_MILLIS, $serviceabilityCheckStartTime, $dimensions);
 
                 /*
                 * // Will be enabled once multiple shipping is launched
@@ -170,6 +170,10 @@ class Service extends Base\Service
             else
             {
             $platformConfig = $this->merchant->getMerchantPlatformConfig();
+            if ($platformConfig !== null)
+            {
+                $dimensions = array_merge($dimensions, ['platform' => $platformConfig->getValue()]);
+            }
             $shippingMethodProviderConfig = $this->merchant->getShippingMethodProvider();
             // shopify configs take priority over all Rzp serviceability features
             if ($platformConfig !== null and $platformConfig->getValue() === Merchant1ccConfig\Type::SHOPIFY)
@@ -224,7 +228,8 @@ class Service extends Base\Service
                             $merchantOrderId,
                             [array_merge($address, [self::SHIPPING_INFO_ID => 0])],
                             $serviceabilityUrl,
-                            $mockResponse);
+                            $mockResponse,
+                            $dimensions);
 
                         $decodedResponse = json_decode($response->body, true);
                         $decodedResponse = $decodedResponse[self::SHIPPING_INFO_ADDRESSES][0];
@@ -261,7 +266,11 @@ class Service extends Base\Service
                     catch (Throwable $e)
                     {
                         $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT,
-                            ['errorcode' => ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION]);
+                            array_merge(
+                                $dimensions,
+                                ['errorcode' => ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION]
+                            )
+                        );
 
                         $ex = new Exception\BadRequestException(
                             ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION, null,null, 'Unable to check pincode serviceability right now. Try again in some time');
@@ -301,17 +310,10 @@ class Service extends Base\Service
                 }
             }
 
-            $platform = [];
-
-            if ($platformConfig !== null)
-            {
-                $platform = ['platform' => $platformConfig->getValue()];
-            }
-
             $this->traceResponseTime(
                 Metric::MERCHANT_SHIPPING_INFO_CHECK_TIME_MILLIS,
                 $serviceabilityCheckStartTime,
-                $platform
+                $dimensions
             );
 
             // TODO: Remove this once the api contract change is finalized
@@ -356,17 +358,18 @@ class Service extends Base\Service
                     $internalErrorCode = $ex->getError()->getInternalErrorCode();
                 }
                 $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT,
-                    array_merge($dimensions,
-                        [
-                            'internal_error_code' => $internalErrorCode,
-                        ])
+                    array_merge(
+                        $dimensions,
+                        ['internal_error_code' => $internalErrorCode]
+                    )
                 );
                 $this->trace->error(TraceCode::MERCHANT_ADDRESS_SHIPPING_INFO_ERROR,
-                    array_merge($dimensions,
+                    array_merge(
+                        $dimensions,
                         [
                             'response' => $decodedResponse,
                             'internal_error_code' => $internalErrorCode,
-                            'exception' => $ex->getTrace()
+                            'exception' => $ex->getTrace(),
                         ])
                 );
             }
@@ -513,7 +516,7 @@ class Service extends Base\Service
      * @return mixed
      * @throws Exception\ServerErrorException
      */
-    protected function sendMerchantShippingInfoRequest(string $merchantOrderId, array $addresses, string $serviceabilityUrl, array $mockResponse = null)
+    protected function sendMerchantShippingInfoRequest(string $merchantOrderId, array $addresses, string $serviceabilityUrl, array $mockResponse = null, array $dimensions = [])
     {
         if (!is_null($mockResponse))
         {
@@ -529,19 +532,23 @@ class Service extends Base\Service
             'headers' => $headers,
             'content' => json_encode(['order_id' => $merchantOrderId, 'addresses' => $addresses])
         );
-        $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_COUNT);
+        $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_COUNT, $dimensions);
         $externalRequeststartTime = millitime();
         try
         {
             $response = $this->sendRequest($request);
-            $this->traceResponseTime(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_TIME_MILLIS, $externalRequeststartTime);
+            $this->traceResponseTime(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_TIME_MILLIS, $externalRequeststartTime, $dimensions);
             $this->trace->info(TraceCode::MERCHANT_ADDRESS_SHIPPING_INFO_RESPONSE, (array)$response);
             return $response;
         }
         catch (Exception\ServerErrorException $e)
         {
             $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT,
-                ['errorcode' => $e->getCode()]);
+                array_merge(
+                    $dimensions,
+                    ['errorcode' => $e->getCode()]
+                )
+            );
             throw $e;
         }
     }
@@ -819,15 +826,9 @@ class Service extends Base\Service
         return $address;
     }
 
-    protected function traceResponseTime(string $metric, int $startTime, $extraDimensions = [])
+    protected function traceResponseTime(string $metric, int $startTime, $dimensions = [])
     {
         $duration = millitime() - $startTime;
-
-        $dimensions = array_merge(
-            $extraDimensions,
-            [
-                'merchant_id' => $this->merchant->getId(),
-            ]);
 
         $this->trace->histogram($metric, $duration, $dimensions);
     }
