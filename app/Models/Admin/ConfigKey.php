@@ -344,6 +344,8 @@ class ConfigKey
 
     const SET_CARD_METADATA_NULL = SELF::PREFIX. 'set_card_metadata_null';
 
+    const RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA = self::PREFIX . 'rx_block_non_2fa_non_baas_for_ca';
+
     const PUBLIC_KEYS = [
         self::TENANT_ROLES_ENTITY,
         self::TENANT_ROLES_ROUTES,
@@ -490,6 +492,7 @@ class ConfigKey
         self::MCC_DEFAULT_MARKDOWN_PERCENTAGE,
         self::DEFAULT_OPGSP_TRANSACTION_LIMIT_USD,
         self::PAYOUT_SERVICE_DATA_MIGRATION_BUFFER,
+        self::RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA
     ];
 
     const REDIS_CONFIG_MAP = [

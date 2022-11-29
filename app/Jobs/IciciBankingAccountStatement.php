@@ -6,13 +6,11 @@ use App;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
-use RZP\Models\Admin;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\BankingAccountStatement as BAS;
-use RZP\Models\BankingAccountStatement\Details as BASD;
 
 class IciciBankingAccountStatement extends Job
 {
@@ -83,75 +81,85 @@ class IciciBankingAccountStatement extends Job
                 $this->trace->info(TraceCode::BAS_DETAILS_NOT_FOUND);
 
                 $this->delete();
+
+                return;
+            }
+
+            $this->params['merchant_id'] = $basDetails->getMerchantId();
+
+            if ($BASCore->shouldBlockNon2faAndNonBaasMerchants($this->params) === true)
+            {
+                $this->delete();
+
+                return;
+            }
+
+            $enableRateLimit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_ENABLE_RATE_LIMIT_FLOW]);
+
+            if ($enableRateLimit === 1)
+            {
+                list($passRateLimit, $rateLimitRequestNumber, $redisKeyName) = $this->checkRateLimit($this->params['channel']);
             }
             else
             {
-                $enableRateLimit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_ENABLE_RATE_LIMIT_FLOW]);
-
-                if ($enableRateLimit === 1)
-                {
-                    list($passRateLimit, $rateLimitRequestNumber, $redisKeyName) = $this->checkRateLimit($this->params['channel']);
-                }
-                else
-                {
-                    list($passRateLimit, $rateLimitRequestNumber, $redisKeyName) = [true, 0, ''];
-                }
-
-                if ($passRateLimit === false)
-                {
-                    $this->trace->debug(
-                        TraceCode::BANKING_ACCOUNT_STATEMENT_RATE_LIMITED,
-                        [
-                            BAS\Entity::CHANNEL            => $this->params['channel'],
-                            BAS\Entity::MERCHANT_ID        => $BASCore->getBasDetails()->getMerchantId(),
-                            BAS\Details\Entity::BALANCE_ID => $BASCore->getBasDetails()->getBalanceId(),
-                            'rate_limit_request_number'    => $rateLimitRequestNumber,
-                            'redis_key_name'               => $redisKeyName
-                        ]);
-
-                    $rateLimitReleaseDelay = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_STATEMENT_FETCH_RATE_LIMIT_RELEASE_DELAY]);
-
-                    if (empty($rateLimitReleaseDelay) == true)
-                    {
-                        $rateLimitReleaseDelay = 0;
-                    }
-
-                    $this->release($rateLimitReleaseDelay);
-                }
-                else
-                {
-                    $this->trace->info(
-                        TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_INIT,
-                        [
-                            BAS\Entity::CHANNEL            => $this->params['channel'],
-                            BAS\Entity::ACCOUNT_NUMBER     => $this->params['account_number'],
-                            BAS\Entity::MERCHANT_ID        => $BASCore->getBasDetails()->getMerchantId(),
-                            BAS\Details\Entity::BALANCE_ID => $BASCore->getBasDetails()->getBalanceId(),
-                            'rate_limit_request_number'    => $rateLimitRequestNumber,
-                            'redis_key_name'               => $redisKeyName
-                        ]);
-
-                    $workerStartTime = Carbon::now()->getTimestamp();
-
-                    (new BAS\Core)->fetchAccountStatementV2($this->params);
-
-                    $workerEndTime = Carbon::now()->getTimestamp();
-
-                    $this->trace->info(TraceCode::BAS_FETCH_PROCESSED_BY_QUEUE,
-                                       [
-                                           BAS\Entity::CHANNEL            => $this->params['channel'],
-                                           BAS\Entity::ACCOUNT_NUMBER     => $this->params['account_number'],
-                                           BAS\Entity::MERCHANT_ID        => $BASCore->getBasDetails()->getMerchantId(),
-                                           BAS\Details\Entity::BALANCE_ID => $BASCore->getBasDetails()->getBalanceId(),
-                                           'start_time'                   => $workerStartTime,
-                                           'end_time'                     => $workerEndTime
-                                       ]);
-
-                    $this->dispatchJobForStatementProcessing($this->params);
-
-                    $this->delete();
-                }
+                list($passRateLimit, $rateLimitRequestNumber, $redisKeyName) = [true, 0, ''];
             }
+
+            if ($passRateLimit === false)
+            {
+                $this->trace->debug(
+                    TraceCode::BANKING_ACCOUNT_STATEMENT_RATE_LIMITED,
+                    [
+                        BAS\Entity::CHANNEL            => $this->params['channel'],
+                        BAS\Entity::MERCHANT_ID        => $BASCore->getBasDetails()->getMerchantId(),
+                        BAS\Details\Entity::BALANCE_ID => $BASCore->getBasDetails()->getBalanceId(),
+                        'rate_limit_request_number'    => $rateLimitRequestNumber,
+                        'redis_key_name'               => $redisKeyName
+                    ]);
+
+                $rateLimitReleaseDelay = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_STATEMENT_FETCH_RATE_LIMIT_RELEASE_DELAY]);
+
+                if (empty($rateLimitReleaseDelay) == true)
+                {
+                    $rateLimitReleaseDelay = 0;
+                }
+
+                $this->release($rateLimitReleaseDelay);
+
+                return;
+            }
+
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_INIT,
+                [
+                    BAS\Entity::CHANNEL            => $this->params['channel'],
+                    BAS\Entity::ACCOUNT_NUMBER     => $this->params['account_number'],
+                    BAS\Entity::MERCHANT_ID        => $BASCore->getBasDetails()->getMerchantId(),
+                    BAS\Details\Entity::BALANCE_ID => $BASCore->getBasDetails()->getBalanceId(),
+                    'rate_limit_request_number'    => $rateLimitRequestNumber,
+                    'redis_key_name'               => $redisKeyName
+                ]);
+
+            $workerStartTime = Carbon::now()->getTimestamp();
+
+            (new BAS\Core)->fetchAccountStatementV2($this->params);
+
+            $workerEndTime = Carbon::now()->getTimestamp();
+
+            $this->trace->info(TraceCode::BAS_FETCH_PROCESSED_BY_QUEUE,
+                               [
+                                   BAS\Entity::CHANNEL            => $this->params['channel'],
+                                   BAS\Entity::ACCOUNT_NUMBER     => $this->params['account_number'],
+                                   BAS\Entity::MERCHANT_ID        => $BASCore->getBasDetails()->getMerchantId(),
+                                   BAS\Details\Entity::BALANCE_ID => $BASCore->getBasDetails()->getBalanceId(),
+                                   'start_time'                   => $workerStartTime,
+                                   'end_time'                     => $workerEndTime
+                               ]);
+
+            $this->dispatchJobForStatementProcessing($this->params);
+
+            $this->delete();
+
         }
         catch (\Throwable $e)
         {

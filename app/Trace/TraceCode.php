@@ -3158,6 +3158,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ADMIN_BULK_ASSIGN_ROLE_EXCEPTION                       = 'ADMIN_BULK_ASSIGN_ROLE_EXCEPTION';
     const ADMIN_ADD_ROLES_REQUEST                                = 'ADMIN_ADD_ROLES_REQUEST';
 
+    // Trace codes for Icici BAAS
+    const BLOCKED_BALANCE_FETCH_FOR_NON_2FA_NON_BAAS_MERCHANTS   = 'BLOCKED_BALANCE_FETCH_FOR_NON_2FA_NON_BAAS_MERCHANTS';
+    const BLOCKED_STATEMENT_FETCH_FOR_NON_2FA_NON_BAAS_MERCHANTS = 'BLOCKED_STATEMENT_FETCH_FOR_NON_2FA_NON_BAAS_MERCHANTS';
+    const BAAS_CREDS_FOR_BALANCE_FETCH_NOT_RECEIVED_FROM_BAS     = 'BAAS_CREDS_FOR_BALANCE_FETCH_NOT_RECEIVED_FROM_BAS';
+    const BAAS_CREDS_FOR_STATEMENT_FETCH_NOT_RECEIVED_FROM_BAS   = 'BAAS_CREDS_FOR_STATEMENT_FETCH_NOT_RECEIVED_FROM_BAS';
+    const BAS_INVALID_CREDENTIALS_ERROR                          = 'BAS_INVALID_CREDENTIALS_ERROR';
+
     // Trace code for Invitation
     const INVITATION_CREATE                                     = 'INVITATION_CREATE';
     const INVITATION_EDIT                                       = 'INVITATION_EDIT';
@@ -8730,6 +8737,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::STATUS_OF_TEST_PAYOUTS                                         => 'status of test payouts in last five minutes',
         self::LEDGER_STATUS_CRON_SKIP_REVERSAL_CREDIT_FOR_UNDEBITED_PAYOUT   => 'Skipped creation of ledger journal for reversal via cron as payout does not have a transaction ID',
         self::LEDGER_STATUS_CRON_SKIP_REVERSAL_CREDIT_FOR_UNDEBITED_FAV      => 'Skipped creation of ledger journal for reversal via cron as FAV does not have a transaction ID',
+        self::BAS_INVALID_CREDENTIALS_ERROR                                  => 'BAAS credentials not received from BAS',
     ];
 
     public static $fileBasedReconTraceCodes = [

@@ -4,6 +4,7 @@ namespace Functional\Payout;
 
 use Mail;
 use Queue;
+use Mockery;
 use Carbon\Carbon;
 
 use RZP\Models\Admin;
@@ -33,6 +34,9 @@ use RZP\Models\BankingAccount\Gateway\Icici;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Admin\Service as AdminService;
+use RZP\Models\BankingAccount\Gateway\Fields;
+use RZP\Models\Feature\Constants as Features;
+use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Models\BankingAccountStatement\Details;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
@@ -1107,7 +1111,7 @@ class IciciCaPayoutTest extends TestCase
         $this->assertEquals(0, $basDetailsAfterCronRuns->getBalanceLastFetchedAt());
     }
 
-    public function testCreatePayout()
+    public function testCreatePayout($testData = [])
     {
         $this->ba->privateAuth();
 
@@ -1118,7 +1122,7 @@ class IciciCaPayoutTest extends TestCase
 
         $this->fixtures->create('merchant_detail', $attributes);
 
-        $this->startTest();
+        $this->startTest($testData);
 
         $payout = $this->getLastEntity('payout', true);
 
@@ -3031,5 +3035,266 @@ class IciciCaPayoutTest extends TestCase
 
             return true;
         });
+    }
+
+    public function testProcessGatewayBalanceUpdateFor2FAMerchants()
+    {
+        /** @var Details\Entity $basDetailsBeforeCronRuns */
+        $basDetailsBeforeCronRuns = $this->getDbEntity('banking_account_statement_details',
+            ['account_number' => 2224440041626905]);
+
+        $this->assertEquals(0, $basDetailsBeforeCronRuns->getBalanceLastFetchedAt());
+
+        $this->mockMozartResponseForFetchingBalanceFromIciciGateway(500);
+
+        $this->fixtures->create('feature', [
+            'name'        => Features::ICICI_2FA,
+            'entity_id'   => $basDetailsBeforeCronRuns->getMerchantId(),
+            'entity_type' => 'merchant',
+        ]);
+
+        $response = $this->setupIciciDispatchGatewayBalanceUpdateForMerchants();
+
+        /** @var Details\Entity $basDetailsAfterCronRuns */
+        $basDetailsAfterCronRuns = $this->getDbEntity('banking_account_statement_details',
+            ['account_number' => 2224440041626905]);
+
+        $this->assertEquals(50000, $basDetailsAfterCronRuns->getGatewayBalance());
+
+        $this->assertNotNull($basDetailsAfterCronRuns->getBalanceLastFetchedAt());
+
+        $this->assertNotNull($basDetailsAfterCronRuns->getGatewayBalanceChangeAt());
+    }
+
+    public function testProcessGatewayBalanceUpdateForNon2FAMerchantsIfBlockIsEnabled()
+    {
+        (new AdminService)->setConfigKeys([ConfigKey::RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA => true]);
+
+        /** @var Details\Entity $basDetailsBeforeCronRuns */
+        $basDetailsBeforeCronRuns = $this->getDbEntity('banking_account_statement_details',
+            ['account_number' => 2224440041626905]);
+
+        $this->assertEquals(0, $basDetailsBeforeCronRuns->getBalanceLastFetchedAt());
+
+        $mock = Mockery::mock(\RZP\Services\Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        // Assert that mozart call was not made
+        $mock->shouldNotHaveBeenCalled([
+            'sendMozartRequest'
+        ]);
+
+        $this->app->instance('mozart', $mock);
+
+        $response = $this->setupIciciDispatchGatewayBalanceUpdateForMerchants();
+
+        /** @var Details\Entity $basDetailsAfterCronRuns */
+        $basDetailsAfterCronRuns = $this->getDbEntity('banking_account_statement_details',
+            ['account_number' => 2224440041626905]);
+
+        $this->assertNull($basDetailsAfterCronRuns->getGatewayBalance());
+
+        $this->assertNull($basDetailsAfterCronRuns->getBalanceLastFetchedAt());
+
+        $this->assertNull($basDetailsAfterCronRuns->getGatewayBalanceChangeAt());
+    }
+
+    public function testProcessGatewayBalanceUpdateForBaasMerchantsWhenCredentialsIsReturnedByBas()
+    {
+        (new AdminService)->setConfigKeys([ConfigKey::RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA => true]);
+
+        /** @var Details\Entity $basDetailsBeforeCronRuns */
+        $basDetailsBeforeCronRuns = $this->getDbEntity('banking_account_statement_details',
+            ['account_number' => 2224440041626905]);
+
+        $this->assertEquals(0, $basDetailsBeforeCronRuns->getBalanceLastFetchedAt());
+
+        $this->mockMozartResponseForFetchingBalanceFromIciciGateway(500);
+
+        // mock BAS
+        $mock = Mockery::mock(BankingAccountService::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mock->shouldReceive('fetchBankingCredentials')
+             ->andReturn([
+                             Icici\Fields::CORP_ID   => 'RAZORPAY12345',
+                             Icici\Fields::CORP_USER => 'USER12345',
+                             Icici\Fields::URN       => 'URN12345',
+                             Fields::CREDENTIALS     => [
+                                 "AGGR_ID"           => "BAAS0123",
+                                 "AGGR_NAME"         => "ACMECORP",
+                                 "beneficiaryApikey" => "wfeg34t34t34t3r43t34GG"
+                             ],
+                         ]);
+
+        $this->app->instance('banking_account_service', $mock);
+
+        $this->fixtures->create('feature', [
+            'name'        => Features::ICICI_BAAS,
+            'entity_id'   => $basDetailsBeforeCronRuns->getMerchantId(),
+            'entity_type' => 'merchant',
+        ]);
+
+        $response = $this->setupIciciDispatchGatewayBalanceUpdateForMerchants();
+
+        /** @var Details\Entity $basDetailsAfterCronRuns */
+        $basDetailsAfterCronRuns = $this->getDbEntity('banking_account_statement_details',
+            ['account_number' => 2224440041626905]);
+
+        $this->assertEquals(50000, $basDetailsAfterCronRuns->getGatewayBalance());
+
+        $this->assertNotNull($basDetailsAfterCronRuns->getBalanceLastFetchedAt());
+
+        $this->assertNotNull($basDetailsAfterCronRuns->getGatewayBalanceChangeAt());
+    }
+
+    public function testProcessGatewayBalanceUpdateForBaasMerchantsWhenCredentialsIsNotReturnedByBas()
+    {
+        (new AdminService)->setConfigKeys([ConfigKey::RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA => true]);
+
+        /** @var Details\Entity $basDetailsBeforeCronRuns */
+        $basDetailsBeforeCronRuns = $this->getDbEntity('banking_account_statement_details',
+            ['account_number' => 2224440041626905]);
+
+        $this->assertEquals(0, $basDetailsBeforeCronRuns->getBalanceLastFetchedAt());
+
+        $mock = Mockery::mock(\RZP\Services\Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        // Assert that mozart call was not made
+        $mock->shouldNotHaveBeenCalled([
+            'sendMozartRequest' => []
+        ]);
+
+        $this->app->instance('mozart', $mock);
+
+        $this->fixtures->create('feature', [
+            'name'        => Features::ICICI_BAAS,
+            'entity_id'   => $basDetailsBeforeCronRuns->getMerchantId(),
+            'entity_type' => 'merchant',
+        ]);
+
+        $response = $this->setupIciciDispatchGatewayBalanceUpdateForMerchants();
+
+        /** @var Details\Entity $basDetailsAfterCronRuns */
+        $basDetailsAfterCronRuns = $this->getDbEntity('banking_account_statement_details',
+            ['account_number' => 2224440041626905]);
+
+        $this->assertNull($basDetailsAfterCronRuns->getGatewayBalance());
+
+        $this->assertNull($basDetailsAfterCronRuns->getBalanceLastFetchedAt());
+
+        $this->assertNull($basDetailsAfterCronRuns->getGatewayBalanceChangeAt());
+    }
+
+    public function testBlockingOfApiPayoutsWhenNeither2faNorBaasFeatureIsEnabledAndRedisKeySet()
+    {
+        $this->ba->privateAuth();
+
+        (new AdminService)->setConfigKeys([ConfigKey::RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA => 1]);
+
+        $this->startTest();
+    }
+
+    public function testSuccessfulApiPayoutCreationWhenBaasFeatureIsEnabled()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ICICI_BAAS]);
+
+        $testData = $this->testData['testCreatePayout'];
+        $testData['request']['content']['queue_if_low_balance'] = true;
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $this->mockFTSFundTransfer();
+
+        $this->mockBASCredentialsFetchForBaaSMerchants();
+
+        $this->mockMozartResponseForFetchingBalanceFromIciciGateway(50000);
+
+        /** @var Details\Entity $basDetailsBeforeCronRuns */
+        $basDetailsBeforeCronRuns = $this->getDbEntity('banking_account_statement_details',
+                                                       ['account_number' => 2224440041626905]);
+
+        $this->assertEquals(0, $basDetailsBeforeCronRuns->getBalanceLastFetchedAt());
+
+        $this->testCreatePayout($testData);
+
+        /** @var Details\Entity $basDetailsAfterCronRuns */
+        $basDetailsAfterCronRuns = $this->getDbEntity('banking_account_statement_details',
+                                                      ['account_number' => 2224440041626905]);
+
+        $this->assertEquals(5000000, $basDetailsAfterCronRuns->getGatewayBalance());
+
+        $this->assertNotNull($basDetailsAfterCronRuns->getBalanceLastFetchedAt());
+
+        $this->assertNotNull($basDetailsAfterCronRuns->getGatewayBalanceChangeAt());
+    }
+
+    public function testBlockingOfDashboardPayoutIfBaasFeatureIsNotEnableAndRedisKeySet()
+    {
+        $this->ba->proxyAuth();
+
+        (new AdminService)->setConfigKeys([ConfigKey::RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA => 1]);
+
+        $testData = $this->testData['testBlockingOfApiPayoutsWhenNeither2faNorBaasFeatureIsEnabledAndRedisKeySet'];
+
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $testData['request']['content']['otp']   = '0007';
+
+        $testData['response']['content']['error']['description'] = 'Dashboard payouts are not available for this account';
+
+        $this->startTest($testData);
+    }
+
+    public function testSuccessfulDashboardPayoutCreationIfBaasFeatureIsEnabled()
+    {
+        $this->ba->proxyAuth();
+
+        (new AdminService)->setConfigKeys([ConfigKey::RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA => 1]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Features::ICICI_BAAS,
+            'entity_id'   => $this->merchant->getId(),
+            'entity_type' => 'merchant',
+        ]);
+
+        $testData = $this->testData['testPayoutCreateWithIcici2FaSuccess'];
+
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $testData['request']['content']['otp']   = '0007';
+
+        $testData['response']['content']['status'] = 'processing';
+        $testData['response']['content']['fees'] = 1062;
+        $testData['response']['content']['tax'] = 162;
+
+        $this->startTest($testData);
+    }
+
+    public function mockFTSFundTransfer()
+    {
+        $ftsMock = Mockery::mock('RZP\Services\FTS\FundTransfer', [$this->app])->makePartial();
+
+        $ftsMock->shouldReceive('shouldAllowTransfersViaFts')
+                ->andReturn([true, 'Dummy']);
+
+        $this->app->instance('fts_fund_transfer', $ftsMock);
+    }
+
+    public function mockBASCredentialsFetchForBaaSMerchants()
+    {
+        $basMock = Mockery::mock(BankingAccountService::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $basMock->shouldReceive('fetchBankingCredentials')
+                ->andReturn([
+                                Icici\Fields::CORP_ID   => 'RAZORPAY12345',
+                                Icici\Fields::CORP_USER => 'USER12345',
+                                Icici\Fields::URN       => 'URN12345',
+                                Fields::CREDENTIALS     => [
+                                    "AGGR_ID"           => "BAAS0123",
+                                    "AGGR_NAME"         => "ACMECORP",
+                                    "beneficiaryApikey" => "wfeg34t34t34t3r43t34GG"
+                                ]
+                            ]);
+
+        $this->app->instance('banking_account_service', $basMock);
     }
 }

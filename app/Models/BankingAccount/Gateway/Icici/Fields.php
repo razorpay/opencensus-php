@@ -16,6 +16,7 @@ class Fields
     const AGGR_NAME             = 'AGGR_NAME';
     const URN                   = 'URN';
     const BENEFICIARY_API_KEY   = 'beneficiaryApikey';
+    const MERCHANT_ID           = 'merchant_id';
 
     // Response for balance fetch api
     const DATA    = 'data';

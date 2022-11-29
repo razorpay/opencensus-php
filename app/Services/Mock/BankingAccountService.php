@@ -59,9 +59,10 @@ class BankingAccountService
             case Channel::ICICI:
                 //ICICI test ca credentials required for payouts testing in dark.
                 return [
-                    Icici\Fields::CORP_ID   => 'RAZORPAY12345',
-                    Icici\Fields::CORP_USER => 'USER12345',
-                    Icici\Fields::URN       => 'URN12345',
+                    Icici\Fields::CORP_ID       => 'RAZORPAY12345',
+                    Icici\Fields::CORP_USER     => 'USER12345',
+                    Icici\Fields::URN           => 'URN12345',
+                    Icici\Fields::CREDENTIALS   => null
                 ];
 
             case Channel::YESBANK:

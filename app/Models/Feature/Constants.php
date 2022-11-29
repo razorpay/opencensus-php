@@ -1627,6 +1627,11 @@ class Constants
     const ICICI_2FA = 'icici_2fa';
 
     /**
+     * Feature flag for enabling BAAS flows for ICICI CA merchants;
+     */
+    const ICICI_BAAS = 'icici_baas';
+
+    /**
      * Feature flag for new currency support
      */
     const SHAADI_COM_NEW_CURRENCY = 'shaadi_com_new_currency';
@@ -2242,6 +2247,7 @@ class Constants
         self::ONE_CC_COUPON_DISABLE_COD       => true,
         self::CAMS_MERCHANT_REPORT            => true,
         self::ICICI_2FA                       => true,
+        self::ICICI_BAAS                      => true,
         self::BSE_MERCHANT_REPORT             => true,
         self::SHAADI_COM_NEW_CURRENCY         => true,
         self::CONSOLIDATED_ORG_REPORTS        => true,

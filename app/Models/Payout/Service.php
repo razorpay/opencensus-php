@@ -977,6 +977,7 @@ class Service extends Base\Service
             $payoutInput[Entity::ORIGIN] = Entity::DASHBOARD;
         }
 
+        $this->blockIciciDirectAccountPayoutsIfApplicable($payoutInput[Merchant\Balance\Entity::BALANCE_ID], $this->merchant);
         /*
          * If Undo payout feature is enabled for the merchant, then create payout in pending state else go with core payout create flow
         */
@@ -1000,6 +1001,23 @@ class Service extends Base\Service
             }
 
             return $payout->toArrayPublic();
+        }
+    }
+
+    public function blockIciciDirectAccountPayoutsIfApplicable(string $balanceId, Merchant\Entity $merchant)
+    {
+        /** @var Merchant\Balance\Entity $balance */
+        $balance = $this->repo->balance->findByPublicIdAndMerchant($balanceId, $merchant);
+
+        if (($this->app['basicauth']->isProxyAuth() === true) and
+            (Payout\Core::shouldBlockIciciDirectAccountPayoutsForNonBaasMerchants($balance, $merchant) === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                'Dashboard payouts are not available for this account'
+            );
         }
     }
 
@@ -3443,9 +3461,10 @@ class Service extends Base\Service
 
         $isCapitalCollectionsApp = $internal === true and $this->auth->isCapitalCollectionsApp();
 
-        if (Payout\Core::checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa($balance, $this->merchant) === true and
-            $isVendorPaymentApp === false and
-            $isCapitalCollectionsApp === false)
+        if (((Payout\Core::checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa($balance, $this->merchant) === true) and
+             ($isVendorPaymentApp === false) and
+             ($isCapitalCollectionsApp === false)) or
+            (Payout\Core::shouldBlockIciciDirectAccountPayoutsForNonBaasMerchants($balance, $this->merchant) === true))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ERROR,

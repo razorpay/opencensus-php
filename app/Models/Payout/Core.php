@@ -7928,6 +7928,30 @@ class Core extends Base\Core
         return false;
     }
 
+    public static function shouldBlockIciciDirectAccountPayoutsForNonBaasMerchants(Balance\Entity $balance, Merchant\Entity $merchant)
+    {
+        if (($balance->getType() !== Balance\Type::BANKING) or
+            ($balance->getAccountType() !== Balance\AccountType::DIRECT) or
+            ($balance->getChannel() !== Channel::ICICI))
+        {
+            return false;
+        }
+
+        $isBaasEnabled = $merchant->isFeatureEnabled(FeatureConstants::ICICI_BAAS);
+
+        if ($isBaasEnabled === false)
+        {
+            $blockPayout = (bool) Admin\ConfigKey::get(Admin\ConfigKey::RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA, false);
+
+            if ($blockPayout == true)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     // since this is only used by ledger reverse shadow flow
     // this function assumes that we are only dealing with X banking balance based fund account payouts
     // this needs to be checked to decide how to call stork when merchant/customer wallet payouts are involved later.

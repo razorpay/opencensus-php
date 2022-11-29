@@ -30,8 +30,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $iciciCredentialsRules = [
-        Icici\Fields::CORP_USER => 'required',
-        Icici\Fields::CORP_ID   => 'required',
-        Icici\Fields::URN       => 'required'
+        Icici\Fields::CORP_USER     => 'required',
+        Icici\Fields::CORP_ID       => 'required',
+        Icici\Fields::URN           => 'required',
+        Icici\Fields::CREDENTIALS   => 'present|nullable',
     ];
 }

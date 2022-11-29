@@ -20,6 +20,7 @@ class RequestResponseFields
     const ACCOUNT_STATEMENT_APIKEY = 'accountStatementApiKey';
     const LAST_TRANSACTION         = 'last_transaction';
     const LASTTRID                 = 'lasttrid';
+    const MERCHANT_ID              = 'merchant_id';
 
     // response fields
     const DATA              = 'data';

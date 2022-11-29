@@ -12,10 +12,13 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccount\Entity;
 use RZP\Exception\BadRequestException;
 use RZP\Services\BankingAccountService;
+use RZP\Exception\ServerErrorException;
 use RZP\Exception\GatewayErrorException;
+use RZP\Models\BankingAccount\Gateway\Icici;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Models\BankingAccountStatement\Details as BasDetails;
-use RZP\Models\BankingAccount\Gateway\Processor as BaseProcessor;
 use RZP\Models\BankingAccountStatement\Processor\Icici\Validator;
+use RZP\Models\BankingAccount\Gateway\Processor as BaseProcessor;
 
 class Processor extends BaseProcessor
 {
@@ -39,6 +42,8 @@ class Processor extends BaseProcessor
 
     protected $accountNumber;
 
+    protected $merchantId;
+
     public function __construct(array $setUpForBalanceFetch = [])
     {
         parent::__construct();
@@ -59,24 +64,40 @@ class Processor extends BaseProcessor
             (new Validator)->validateInput('icici_credentials', $this->accountCredentials);
 
             $this->accountNumber = $accountNumber;
+
+            $this->merchantId = $merchantId;
         }
     }
 
     protected function formatDataForMozartBalanceFetchApi()
     {
-        //AGGR_ID, AGGR_NAME, BENEFICIARY_API_KEY are common for all merchants . so fetching these from credstash
+        // If AGGR_ID, AGGR_NAME, BENEFICIARY_API_KEY are available from BAS then we use those, else we fetch them from credstash
+        // These creds will only be available from BAS for merchants on BaaS flow
+        $aggrId            = $this->config['banking_account']['icici'][Fields::AGGR_ID_CONFIG];
+        $aggrName          = $this->config['banking_account']['icici'][Fields::AGGR_NAME_CONFIG];
+        $beneficiaryApikey = $this->config['banking_account']['icici'][Fields::BENEFICIARY_API_KEY_CONFIG];
+
+        if ((array_key_exists(Icici\Fields::CREDENTIALS, $this->accountCredentials) === true) and
+            ($this->accountCredentials[Icici\Fields::CREDENTIALS] !== null))
+        {
+            $aggrId            = $this->accountCredentials[Icici\Fields::CREDENTIALS][Icici\Fields::AGGR_ID];
+            $aggrName          = $this->accountCredentials[Icici\Fields::CREDENTIALS][Icici\Fields::AGGR_NAME];
+            $beneficiaryApikey = $this->accountCredentials[Icici\Fields::CREDENTIALS][Icici\Fields::BENEFICIARY_API_KEY];
+        }
+
         $data = [
             Fields::SOURCE_ACCOUNT => [
                 Fields::SOURCE_ACCOUNT_NUMBER => $this->accountNumber,
                 Fields::CREDENTIALS           => [
                     Fields::CORP_ID             => $this->accountCredentials[Fields::CORP_ID],
                     Fields::CORP_USER           => $this->accountCredentials[Fields::CORP_USER],
-                    Fields::AGGR_ID             => $this->config['banking_account']['icici'][Fields::AGGR_ID_CONFIG],
-                    Fields::AGGR_NAME           => $this->config['banking_account']['icici'][Fields::AGGR_NAME_CONFIG],
                     Fields::URN                 => $this->accountCredentials[Fields::URN],
-                    Fields::BENEFICIARY_API_KEY => $this->config['banking_account']['icici'][Fields::BENEFICIARY_API_KEY_CONFIG],
+                    Fields::AGGR_ID             => $aggrId,
+                    Fields::AGGR_NAME           => $aggrName,
+                    Fields::BENEFICIARY_API_KEY => $beneficiaryApikey,
                 ],
-            ]
+            ],
+            Fields::MERCHANT_ID => $this->merchantId
         ];
 
         return $data;
@@ -94,6 +115,15 @@ class Processor extends BaseProcessor
 
     protected function verifyCredentials()
     {
+        (new Validator)->validateInput('icici_credentials', $this->accountCredentials);
+
+        $merchant = $this->repo->merchant->getMerchant($this->merchantId);
+
+        if ($merchant->isFeatureEnabled(Features::ICICI_BAAS) === true)
+        {
+            $this->validateCredentialsForBaasMerchants($this->accountCredentials[Icici\Fields::CREDENTIALS]);
+        }
+
         $request = $this->formatDataForMozartBalanceFetchApi();
 
         $retryCount = 0;
@@ -263,5 +293,32 @@ class Processor extends BaseProcessor
         }
 
         return $request;
+    }
+
+    public function validateCredentialsForBaasMerchants($baasCredentials)
+    {
+        if (($baasCredentials === null) or
+            (empty($baasCredentials[Icici\Fields::AGGR_ID]) === true) or
+            (empty($baasCredentials[Icici\Fields::AGGR_NAME]) === true) or
+            (empty($baasCredentials[Icici\Fields::BENEFICIARY_API_KEY]) === true))
+        {
+            $errorMessage = TraceCode::getMessage(TraceCode::BAS_INVALID_CREDENTIALS_ERROR);
+
+            $this->trace->error(
+                TraceCode::BAS_INVALID_CREDENTIALS_ERROR,
+                [
+                    'merchant_id'   => $this->merchantId,
+                    'creds_present' => isset($baasCredentials),
+                ]
+            );
+
+            throw new ServerErrorException(
+                $errorMessage,
+                ErrorCode::SERVER_ERROR,
+                [
+                    'merchant_id' => $this->merchantId
+                ]
+            );
+        }
     }
 }

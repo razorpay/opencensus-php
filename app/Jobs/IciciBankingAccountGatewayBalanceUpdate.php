@@ -5,6 +5,7 @@ namespace RZP\Jobs;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankingAccount;
 use RZP\Models\Settlement\SlackNotification;
+use RZP\Models\BankingAccountStatement\Core as BASCore;
 
 class IciciBankingAccountGatewayBalanceUpdate extends Job
 {
@@ -56,6 +57,15 @@ class IciciBankingAccountGatewayBalanceUpdate extends Job
                         'channel'     => $this->params[BankingAccount\Entity::CHANNEL],
                         'merchant_id' => $this->params[BankingAccount\Entity::MERCHANT_ID],
                     ]);
+
+                $BASCore = new BASCore();
+
+                if ($BASCore->shouldBlockNon2faAndNonBaasMerchants($this->params) === true)
+                {
+                    $this->delete();
+
+                    return;
+                }
 
                 $response = (new BankingAccount\Core)->fetchAndUpdateGatewayBalanceWrapper($this->params);
             }

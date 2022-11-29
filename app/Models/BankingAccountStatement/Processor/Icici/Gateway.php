@@ -4,6 +4,7 @@ namespace RZP\Models\BankingAccountStatement\Processor\Icici;
 
 use Carbon\Carbon;
 
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
@@ -12,11 +13,13 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\IntegrationException;
+use RZP\Exception\ServerErrorException;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\BankingAccountStatement\Type;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\BankingAccount\Gateway\Icici;
 use RZP\Models\Admin\Service as AdminService;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Models\BankingAccountStatement\Entity;
 use RZP\Models\BankingAccountStatement\Channel;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -222,7 +225,7 @@ class Gateway extends BaseProcessor
             // We don't have any bank response for the first request.
             $lastFormattedResponse = last($finalFormattedResponse) ?: $lastBankTransaction;
 
-            $requestData = $this->getRequestDataForMozart($requestData, $lastFormattedResponse, $previousLasttrid, $credentials);
+            $requestData = $this->getRequestDataForMozart($requestData, $lastFormattedResponse, $previousLasttrid, $credentials, $merchantId);
 
             try
             {
@@ -532,9 +535,14 @@ class Gateway extends BaseProcessor
     protected function validateCredentialsResponse(array $input)
     {
         (new Validator)->validateInput('icici_credentials', $input);
+
+        if ($this->basDetails->merchant->isFeatureEnabled(Features::ICICI_BAAS) === true)
+        {
+            (new Icici\Processor)->validateCredentialsForBaasMerchants($input[Icici\Fields::CREDENTIALS]);
+        }
     }
 
-    protected function getRequestDataForMozart($requestData, array $lastTransaction, $previousLasttrid, array $credentials)
+    protected function getRequestDataForMozart($requestData, array $lastTransaction, $previousLasttrid, array $credentials, $merchantId)
     {
         $secondsPerDay = Carbon::HOURS_PER_DAY * Carbon::MINUTES_PER_HOUR * Carbon::SECONDS_PER_MINUTE;
 
@@ -564,6 +572,16 @@ class Gateway extends BaseProcessor
             min($endTime, $startTime + $allowedDateDiff),
             self::DATE_FORMAT);
 
+        $aggrId = $this->config['banking_account']['icici'][Fields::AGGR_ID_CONFIG];
+        $beneficiaryApikey = $this->config['banking_account']['icici'][Fields::ACCOUNT_STATEMENT_API_KEY_CONFIG];
+
+        if ((array_key_exists(Icici\Fields::CREDENTIALS, $credentials) === true) and
+            ($credentials[Icici\Fields::CREDENTIALS] !== null))
+        {
+            $aggrId            = $credentials[Icici\Fields::CREDENTIALS][Icici\Fields::AGGR_ID];
+            $beneficiaryApikey = $credentials[Icici\Fields::CREDENTIALS][Icici\Fields::BENEFICIARY_API_KEY];
+        }
+
         $data = [
             Fields::ATTEMPT => [
                 Fields::FROM_DATE => $from_date,
@@ -575,14 +593,15 @@ class Gateway extends BaseProcessor
                 Fields::CREDENTIALS => [
                     Fields::CORP_ID                  => $credentials[Icici\Fields::CORP_ID],
                     Fields::USER_ID                  => $credentials[Icici\Fields::CORP_USER],
-                    Fields::AGGR_ID                  => $this->config['banking_account']['icici'][Fields::AGGR_ID_CONFIG],
+                    Fields::AGGR_ID                  => $aggrId,
                     Fields::URN                      => $credentials[Icici\Fields::URN],
-                    Fields::ACCOUNT_STATEMENT_APIKEY => $this->config['banking_account']['icici'][Fields::ACCOUNT_STATEMENT_API_KEY_CONFIG],
+                    Fields::ACCOUNT_STATEMENT_APIKEY => $beneficiaryApikey,
                 ]
             ],
             Fields::LAST_TRANSACTION => [
                 Fields::LASTTRID => ''
-            ]
+            ],
+            Fields::MERCHANT_ID => $merchantId
         ];
 
         if ($previousLasttrid === null)

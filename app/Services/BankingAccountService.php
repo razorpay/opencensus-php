@@ -111,9 +111,10 @@ class BankingAccountService
             if ($channel === Channel::ICICI)
             {
                 $response = [
-                    Icici\Fields::CORP_ID   => $response['data']['corp_id'],
-                    Icici\Fields::CORP_USER => $response['data']['user_id'],
-                    Icici\Fields::URN       => $response['data']['urn'],
+                    Icici\Fields::CORP_ID     => $response['data']['corp_id'] ?? null,
+                    Icici\Fields::CORP_USER   => $response['data']['user_id'] ?? null,
+                    Icici\Fields::URN         => $response['data']['urn'] ?? null,
+                    Icici\Fields::CREDENTIALS => $response['data']['credentials'] ?? null,
                 ];
             }
             else

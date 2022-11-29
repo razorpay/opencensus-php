@@ -21,8 +21,10 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Exception\GatewayErrorException;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Services\Mock\BankingAccountService;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Models\BankingAccount\Gateway\Fields;
 use RZP\Services\Mock\Mutex as MockMutexService;
 use RZP\Models\BankingAccount\Entity as BaEntity;
 use RZP\Models\External\Entity as ExternalEntity;
@@ -2999,5 +3001,123 @@ class IciciBankingAccountStatementTest extends TestCase
         $this->assertEquals($initialStatement2[0][BasEntity::BALANCE], $finalStatement2[0][BasEntity::BALANCE]);
 
         $this->assertEquals($initialStatement3[0][BasEntity::BALANCE], $finalStatement3[0][BasEntity::BALANCE]);
+    }
+
+    public function testICICIStatementFetchFor2FAMerchants()
+    {
+        $this->fixtures->merchant->addFeatures([Features::ICICI_2FA]);
+
+        $this->testIciciAccountStatementCase1();
+    }
+
+    public function testICICIStatementShouldNotFetchForNon2FAMerchantsIfBlockIsEnabled()
+    {
+        (new AdminService)->setConfigKeys([ConfigKey::RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA => true]);
+
+        $mockedResponse = $this->getIciciDataResponse();
+
+        // Mock mozart
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $mock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        // Assert that mozart call was not made
+        $mock->shouldNotHaveBeenCalled([
+            'sendRawRequest' => json_encode($mockedResponse)
+        ]);
+
+        $this->app->instance('mozart', $mock);
+
+        $basdBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNull($basdBeforeTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $basActual = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
+
+        $basdAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        // assert that basd and bas, both are null since the statement fetch was blocked
+        $this->assertNull($basdAfterTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->assertNull($basActual);
+    }
+
+    public function testICICIStatementFetchForBaasMerchantsWhenCredentialsIsReturnedByBas()
+    {
+        (new AdminService)->setConfigKeys([ConfigKey::RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA => true]);
+
+        $this->fixtures->merchant->addFeatures([Features::ICICI_BAAS]);
+
+        // mock BAS
+        $mock = Mockery::mock(BankingAccountService::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mock->shouldReceive('fetchBankingCredentials')
+             ->andReturn([
+                             \RZP\Models\BankingAccount\Gateway\Icici\Fields::CORP_ID   => 'RAZORPAY12345',
+                             \RZP\Models\BankingAccount\Gateway\Icici\Fields::CORP_USER => 'USER12345',
+                             \RZP\Models\BankingAccount\Gateway\Icici\Fields::URN       => 'URN12345',
+                             Fields::CREDENTIALS                                        => [
+                                 "AGGR_ID"           => "BAAS0123",
+                                 "AGGR_NAME"         => "ACMECORP",
+                                 "beneficiaryApikey" => "wfeg34t34t34t3r43t34GG"
+                             ]
+                         ]);
+
+        $this->app->instance('banking_account_service', $mock);
+
+        $this->testIciciAccountStatementCase1();
+    }
+
+    public function testICICIStatementShouldNotFetchForBaasMerchantsWhenCredentialsIsNotReturnedByBas()
+    {
+        (new AdminService)->setConfigKeys([ConfigKey::RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA => true]);
+
+        $mockedResponse = $this->getIciciDataResponse();
+
+        // Mock mozart
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $mock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        // Assert that mozart call was not made
+        $mock->shouldNotHaveBeenCalled([
+            'sendRawRequest' => json_encode($mockedResponse)
+        ]);
+
+        $this->app->instance('mozart', $mock);
+
+        $basdBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->fixtures->create('feature', [
+            'name'        => Features::ICICI_BAAS,
+            'entity_id'   => $basdBeforeTest["merchant_id"],
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->assertNull($basdBeforeTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $basActual = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
+
+        $basdAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        // assert that basd and bas, both are null since the statement fetch was blocked
+        $this->assertNotNull($basdAfterTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->assertNull($basActual);
+    }
+
+    public function testICICIStatementFetchForNon2FANonBaasMerchantsIfBlockIsDisabled()
+    {
+        (new AdminService)->setConfigKeys([ConfigKey::RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA => false]);
+
+        $this->testIciciAccountStatementCase1();
     }
 }

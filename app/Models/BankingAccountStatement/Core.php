@@ -3903,4 +3903,47 @@ class Core extends Base\Core
 
         return $data;
     }
+
+    public function shouldBlockNon2faAndNonBaasMerchants(array $params)
+    {
+        /** @var Merchant\Entity $merchant */
+        $merchant      = $this->repo->merchant->findOrFail($params['merchant_id']);
+        $is2FAEnabled  = $merchant->isFeatureEnabled(FeatureConstants::ICICI_2FA);
+        $isBaasEnabled = $merchant->isFeatureEnabled(FeatureConstants::ICICI_BAAS);
+
+        if (($is2FAEnabled === false) and
+            ($isBaasEnabled === false))
+        {
+            $blockFetching = (bool) Admin\ConfigKey::get(Admin\ConfigKey::RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA, false);
+
+            if ($blockFetching === true)
+            {
+                $calledClass = get_called_class();
+
+                if (strpos($calledClass, 'BankingAccountStatement') !== false)
+                {
+                    $this->trace->warning(
+                        TraceCode::BLOCKED_STATEMENT_FETCH_FOR_NON_2FA_NON_BAAS_MERCHANTS,
+                        [
+                            'merchant_id' => $params['merchant_id'],
+                            'channel'     => $params['channel'],
+                        ]);
+                }
+
+                if (strpos($calledClass, 'GatewayBalanceUpdate') !== false)
+                {
+                    $this->trace->warning(
+                        TraceCode::BLOCKED_BALANCE_FETCH_FOR_NON_2FA_NON_BAAS_MERCHANTS,
+                        [
+                            'merchant_id' => $params['merchant_id'],
+                            'channel'     => $params['channel'],
+                        ]);
+                }
+
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
