@@ -49,8 +49,12 @@ function WebsiteComplianceBanner({ activationData, websiteSectionDetailsData, us
       <div className="website-compliance-announcement-container">
         <div className="announcement-content">
           <p>
-            Terms & Conditions, Privacy Policy, Contact Us, Cancellation & Refund Policy, and
-            Shipping and Delivery Policy pages & required as per RBI guidelines.
+            <span>
+              Terms & Conditions, Privacy Policy, Contact Us, Cancellation & Refund Policy, and
+              Shipping & Delivery Policy pages are required as per RBI guidelines.
+            </span>
+            <span className="separator separator-small" />
+            <span>Don’t have these details? We’ll help you create them.</span>
           </p>
         </div>
         <div className="separator" />

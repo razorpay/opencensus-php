@@ -1,3 +1,6 @@
+.product-onboarding-card-container
+  padding: 20px
+
 .product-onboarding-card
   background: #FFF
   border-radius: 4px
@@ -45,29 +48,40 @@
     font-size: 18px
     font-weight: 700
     color: rgb(22 47 86 / 0.74)
+    z-index: 2;
+    position: relative;
 
 .card-container
-  padding-top: 16px
-  padding-bottom: 5px
+  padding: 16px 4px 4px
   white-space: nowrap
   overflow: auto
   position: relative
   z-index: 5
+  display: flex
 
-  .card
-    width: 358px
+  &::-webkit-scrollbar
+    display: none;
+
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  .plo-card
+    min-width: 368px
     height: 220px
-    display: inline-block
     background: rgb(255 255 255 / 1)
     border-radius: 4px
     box-shadow: 0 0 0 1px #C4CBD7
     padding: 16px 20px
-    margin-right: 23px
-    margin-left: 2px
+    margin-right: 25px
+    flex-grow: 1
+    flex-basis: 0
+
+    &:last-child
+      margin-right: 0
 
     @media (max-width 768px)
-      width: 270px
-      box-shadow: 0 3px 8px rgb(21 45 75 / 0.2), 0 0 1px rgb(21 45 75 / 0.2);
+      min-width: 270px
+      padding: 16px
       margin-right: 13px
 
     .wrapper
@@ -106,17 +120,14 @@
       display: flex
       justify-content: space-between
       padding-top: 15px
+      gap: 16px
 
       .btn
-        width: 152px
+        margin: 0
 
-        @media (max-width 768px)
-          width: 110px
-
-    .placeholder
-      height: 72px
-      width: 72px
-      background: #EEE
+    .card-illustration
+      height: 80px
+      width: 80px
 
       @media (max-width 768px)
         display: none
@@ -138,49 +149,75 @@
     border-radius: 4px
     display: flex
     align-items: center
-    padding-left: 8px
+    padding: 0 8px
+
+    & > *
+      overflow: hidden
 
 .quick-options
   .bg-right
     height: 145px
 
   .card-container
-    display: flex
-    justify-content: space-between
-    width: 100%
+    white-space: initial
 
-    .card
-      flex-grow: 1
-      width: initial
+    .plo-card
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
       height: initial
-      display: block
       padding: 16px 20px
-      margin-right: 20px
-      margin-left: 2px
 
-      &:last-child
-        margin-right: 2px
+      @media (max-width 768px)
+        width: 256px
 
     .card-description
       font-size: 14px
       font-weight: 700
       line-height: 25px
-      padding-bottom: 10px
+      padding-bottom: 8px
       color: #213554
+
+      @media (max-width 768px)
+        line-height: 20px
+        white-space: normal
+        width: 220px
 
     .handle-link
       height: 28px
       flex-grow: 1
+      overflow: hidden
+
+      @media (max-width 768px)
+        font-size: 12px
 
     .cta-container
       display: flex
-      align-items: center
-      justify-content: space-between
-      padding-top: 8px
+      column-gap: 16px
+      row-gap: 8px
+      flex-wrap: wrap
+
+      .button-container
+        display: flex
+        gap: 16px
+
+        @media (max-width 768px)
+          width: 100%
 
       .btn
-        padding: 3px 12px
-        margin-left: 16px
+        padding: 3px 16px
+        height: initial
 
-    .no-margin
-      margin: 0
+        @media (max-width 768px)
+          font-size: 12px
+
+      .ph-btn
+        @media (max-width 768px)
+          flex-grow: 1;
+          flex-basis: 0;
+
+      .payment-link-cta
+        margin: 0
+
+        @media (max-width 768px)
+          margin-top: 12px

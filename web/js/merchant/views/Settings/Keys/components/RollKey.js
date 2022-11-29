@@ -52,7 +52,7 @@ class RollKey extends Component {
     return (
       <div>
         <ModalHeader
-          title="Roll Key"
+          title="Confirm and deactivate current key?"
           onCloseClick={() => {
             analyticsTrack({
               objectName: 'regenerate key popup',
@@ -71,13 +71,13 @@ class RollKey extends Component {
         <form class="form-horizontal" onSubmit={handleSubmit(this.save)}>
           <div class="modal-body">
             <Alert type="error" message={this.state.errors} />
-
+            <p>This is required to get a new key.</p>
             <div class="radio rollkey" data-test="deactivate-immediately">
               <Field
                 component={RadioButton}
                 name="delay_roll"
                 htmlValue="0"
-                label={() => <span>De-activate old key immediately</span>}
+                label={() => <span>Deactivate old key immediately</span>}
               />
             </div>
             <div class="radio">
@@ -85,7 +85,7 @@ class RollKey extends Component {
                 component={RadioButton}
                 name="delay_roll"
                 htmlValue="1"
-                label={() => <span>De-activate old key in 24 hours</span>}
+                label={() => <span>Deactivate old key in 24 hours</span>}
               />
             </div>
           </div>
@@ -114,7 +114,7 @@ class RollKey extends Component {
             <AsyncButton
               type="submit"
               class="btn btn-primary"
-              text="OK"
+              text="Confirm and deactivate"
               onClick={handleSubmit(this.save)}
             />
           </div>

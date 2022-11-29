@@ -23,6 +23,11 @@ import RepaymentsSchedule from 'merchant/views/Capital/CashAdvance/RepaymentsSch
 import HandleIndex from './HandleIndex';
 import lazy from './LazyLoader';
 import { getXCAStatus } from 'common/ui/NotificationsDropdown/Neostone/common/utils';
+
+const ApiKeysAndPlugins = lazy(() =>
+  import(/* webpackChunkName: "ApiKeysAndPlugins" */ 'merchant/views/ApiKeysAndPlugins'),
+);
+
 const PartnerDashboard = lazy(() =>
   import(/* webpackChunkName: "PartnerDashboard" */ 'merchant/views/PartnerDashboard'),
 );
@@ -470,6 +475,14 @@ export default class Content extends Component {
             path="/stores"
             component={Stores}
             additionalCondition={(_user) => _user.isAllowedView('stores') && _user.isStoresEnabled}
+          />
+
+          <ShowWhenRoute
+            path="/api-keys"
+            component={ApiKeysAndPlugins}
+            additionalCondition={(_user) =>
+              _user.isProductLedOnboardingRZP || _user.isApiKeysRevampEnabled
+            }
           />
 
           <ShowWhenRoute

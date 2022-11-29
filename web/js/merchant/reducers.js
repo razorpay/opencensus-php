@@ -130,6 +130,7 @@ import non3dsCardsActivationReducer from 'merchant/reducers/non3dsCardsActivatio
 import apiLogsReducer from 'merchant/reducers/developers/apiLogs';
 import apiStatsReducer from 'merchant/reducers/developers/apiStats';
 import websiteComplianceReducer from 'merchant/reducers/websitecompliance';
+import pluginReducer from 'merchant/reducers/plugins';
 
 export default combineReducers({
   modal: modalReducer,
@@ -254,4 +255,5 @@ export default combineReducers({
   apiLogs: apiLogsReducer,
   apiStats: apiStatsReducer,
   websiteCompliance: websiteComplianceReducer,
+  plugins: pluginReducer,
 });

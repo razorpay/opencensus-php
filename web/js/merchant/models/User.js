@@ -1694,6 +1694,18 @@ export default class User {
     const variant = getSplitzExperimentVariant('invoice_currentFY');
     return variant?.name === 'exposed';
   }
+
+  get isApiKeysRevampEnabled() {
+    return getSplitzExperimentVariant('api_keys_revamp')?.variables?.result === 'on';
+  }
+
+  get isProductLedOnboarding() {
+    return getSplitzExperimentVariant('product_led_onboarding')?.variables?.result === 'on';
+  }
+
+  get isProductLedOnboardingRZP() {
+    return this.isProductLedOnboarding && this.isOrgRZP;
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

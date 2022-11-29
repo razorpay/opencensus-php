@@ -2,9 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
-import { classList } from 'common/utils/rzp-utils';
+import { classList, getURLQueryParams } from 'common/utils/rzp-utils';
 
-import track from '../track';
+import track from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/track';
 
 import StandardLinkImage from 'assets/payment_links/standard_link.svg';
 import UpiLinkImage from 'assets/payment_links/upi.png';
@@ -78,9 +78,10 @@ export default class PaymentLinkSelector extends React.PureComponent {
     );
 
     if (props.isModalView) {
+      const { redirect } = getURLQueryParams(props?.history?.location?.search);
       return (
         <ModalMask class="PaymentLinks--CreateV2--LinkTypeSelection" maskClosable={false}>
-          <Link class="back-btn" to="/paymentlinks/">
+          <Link class="back-btn" to={redirect ?? '/paymentlinks'}>
             <i class="i i-chevron-left" />
             Back to Dashboard
           </Link>

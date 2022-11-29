@@ -211,7 +211,14 @@ return [
 
         //Frontend care Quick Link
         'QUICK_LINKS_CARE' => env('QUICK_LINKS_CARE', ''),
+
         //migrating apis to care ,this change is for adding reply api migration
-        'ADD_REPLY_MIGRATION' => env('ADD_REPLY_MIGRATION', '')
+        'ADD_REPLY_MIGRATION' => env('ADD_REPLY_MIGRATION', ''),
+
+        // API Keys Page Revamp
+        'API_KEYS_REVAMP' => env('API_KEYS_REVAMP', ''),
+
+        // enable product led onboarding
+        'PRODUCT_LED_ONBOARDING' => env('PRODUCT_LED_ONBOARDING', '')
     ]
 ];

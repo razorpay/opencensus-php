@@ -716,6 +716,22 @@ const removeRecommendedProduct = () => {
   LocalStorageService.removeItem('default_product_page');
 };
 
+const isPgMerchant = (userData) => {
+  const { business_website, playstore_url, appstore_url, merchant_business_detail } =
+    userData || {};
+  const { website_present, ios_app_present, android_app_present } =
+    merchant_business_detail?.website_details || {};
+
+  return (
+    business_website ||
+    playstore_url ||
+    appstore_url ||
+    website_present ||
+    ios_app_present ||
+    android_app_present
+  );
+};
+
 export {
   differentAddress,
   isUnregisteredBusiness,
@@ -767,4 +783,5 @@ export {
   getRecommendedProductDetails,
   setRecommendedProduct,
   removeRecommendedProduct,
+  isPgMerchant,
 };

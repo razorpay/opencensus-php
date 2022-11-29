@@ -1,0 +1,59 @@
+// sidebars
+.i.i-api-keys-plugins
+  color: #29E2AD;
+
+.keys-plugins-page-wrapper
+  @media (max-width $screen-sm-max)
+    padding-top: 12px
+
+  > .tabbed-container
+    > .content
+      @media (max-width $screen-sm-max) {
+        background: transparent;
+        border: none;
+      }
+
+  .hidden-sm
+    @media (max-width $screen-sm-max)
+      display: none;
+
+  .display-sm
+    display: none;
+
+    @media (max-width $screen-sm-max)
+      display: initial;
+
+// add your wrappers here to get the new button styles
+.add-link-modal-content,
+.product-led-onboarding
+  .btn
+    background: transparent;
+    height: 40px;
+    padding: 8px 24px;
+    line-height: 20px;
+    border-radius: 2px;
+    text-align: center;
+    font-weight: bold;
+
+    &-primary
+      background: #2B83EA;
+      color: #FFF;
+
+      &:hover
+        color: #FFF;
+
+    &-outline
+      background: #0B70E70D;
+      border: 1px solid $highlight-color;
+      color: $primary-color;
+
+      &:hover
+        color: $primary-color;
+
+    &-block
+      display: block;
+      width: 100%;
+
+    &-link
+      padding: 0;
+      height: initial;

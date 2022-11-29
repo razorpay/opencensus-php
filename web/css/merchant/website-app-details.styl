@@ -1,3 +1,10 @@
+// stylelint-disable no-descending-specificity
+$separator-color = #536582;
+$primary-shadow = #0B70E70D;
+$blue = #2B83EA;
+$nudge = #162F56;
+$white = #FFF;
+
 .website-app-details-container
   width: 100%
   display: flex
@@ -7,18 +14,18 @@
   .section-content
     width: 100%
     height: 100%
-    background-color: white
-    box-shadow: 0 4px 10px #0b70e70d
-    margin: 20px 0px
+    background-color: $white
+    box-shadow: 0 4px 10px $primary-shadow;
+    margin: 20px 0
 
     .section-footer
       padding: 30px 45px
 
     .section-footer
-      button{
-        background: #0b70e70d;
-        color #2B83EA
-        border: 1px solid #0b70e7bd
+      button {
+        background: $primary-shadow;
+        color $blue;
+        border: 1px solid #0B70E7BD
         border-radius: 2px
         padding: 8px
         width: 100%
@@ -29,34 +36,34 @@
       padding-left: 45px
       padding-right: 45px
 
-      span{
-        color:#162F56
+      span {
+        color: #162F56
         font-weight: 400
         font-size: 12px
-        opacity:.54
+        opacity: 0.54
       }
 
-      p{
+      p {
         font-weight: 700
         font-size: 14px
         line-height: 20px
-        color: #536582
+        color: $separator-color;
         overflow-wrap: break-word
       }
 
-      >div{
+      >div {
         margin-bottom: 12px
       }
 
     .section-header
-      padding: 30px 45px 20px 45px
+      padding: 30px 45px 20px
 
-      > p{
+      > p {
         font-size: 14px
         font-weight: 700
         line-height: 20px
         color: #162F56
-        opacity:.87
+        opacity: 0.87
         margin-top: 15px
       }
 
@@ -68,11 +75,11 @@
         font-size: 14px
         line-height: 20px
         margin-top: 10px
-        color: #162f56de
+        color: #162F56DE
 
-        p{
+        p {
           display: inline-block
-          color: #2B83EA
+          color: $blue;
           font-weight: 400
         }
 
@@ -81,7 +88,7 @@
 
     .modal-header
       background-color: #F08A0A
-      color: #FFFFFF
+      color: $white
       font-size: 18px
       font-weight: 700
       line-height: 22px
@@ -93,7 +100,7 @@
       position: absolute
       top: -10px
       right: 15px
-      color: white
+      color: $white
       cursor: pointer
 
     .image-container
@@ -106,7 +113,9 @@
         width: 100%
       }
 
-    .prompt-description, .prompt-title, .prompt-footer
+    .prompt-description,
+    .prompt-title,
+    .prompt-footer
       font-size: 14px
       line-height: 20px
       padding: 10px 20px
@@ -114,8 +123,8 @@
 
     .prompt-footer
       color: #162F56
-      opacity: .6
-      margin: 0px 5px
+      opacity: 0.6
+      margin: 0 5px
       padding-top: 15px
       padding-bottom: 25px
       text-align: center
@@ -130,7 +139,7 @@
       font-weight: 400
 
     .actions
-      padding: 5px 0 25px 0
+      padding: 5px 0 25px
       display: flex
       flex-direction: column
       align-items: center
@@ -140,7 +149,7 @@
         width: 80%
       }
 
-      span{
+      span {
         margin-top: 15px
         font-weight: 700
         font-size: 14px
@@ -148,22 +157,21 @@
 
   .nudge-container
     width: 100%
-    background: white
-    margin-bottom: 15px
-    box-shadow: 0 4px 10px #0b70e70d
+    background: $white
+    box-shadow: 0 4px 10px $primary-shadow;
     border-radius: 4px
     padding: 20px
-    margin: 0 16px 16px 16px
+    margin: 0 16px 16px
 
     .nudge-footer
-      color:#162F56
-      opacity: .7
+      color: $nudge
+      opacity: 0.7
       font-size: 14px
       margin-bottom: 15px
 
     div:nth-of-type(1)
-      color: #162F56
-      opacity: .87
+      color: $nudge
+      opacity: 0.87
       font-size: 16px
       line-height: 24px
       font-weight: 700
@@ -176,12 +184,11 @@
       font-weight: 400
       margin-bottom: 15px
 
-    button{
+    button {
       width: 100%
     }
 
   .view-nc-comments-container
-
     .content
       padding: 25px 0 0 25px
 
@@ -191,12 +198,12 @@
 
       .comment
         color: #213554
-        opacity: .67
+        opacity: 0.67
         font-weight: 400
         font-size: 16px
 
     .actions
-      padding: 5px 0 25px 0
+      padding: 5px 0 25px
       display: flex
       flex-direction: column
       align-items: center
@@ -206,7 +213,7 @@
         width: 80%
       }
 
-      span{
+      span {
         margin-top: 15px
         font-weight: 700
         font-size: 14px
@@ -217,50 +224,52 @@
   padding: 5px 10px
 
   &.verified
-    background-color: #1f890e1a
+    background-color: #1F890E1A
     color: #1F890E
 
-  &.action-required, &.rejected
-    background-color: #d12d2d1a
+  &.action-required,
+  &.rejected
+    background-color: #D12D2D1A
     color: #D12D2D
 
   &.under-review
-    background-color: #f9fbfe
-    color:#2A8CFF
+    background-color: #F9FBFE
+    color: #2A8CFF
 
   &.details-required
-    background-color: #cd82141a
+    background-color: #CD82141A
     color: #CD8214
 
-  p{
+  p {
     display: inline-block
     font-weight: 700
     line-height: 14px
     font-size: 10px
   }
 
-@media (max-width:500px ) {
-  .website-app-details-container{
+@media (max-width 500px) {
+  .website-app-details-container {
     margin-top: 20px
 
-    .section-content{
+    .section-content {
       margin: 0
 
-      .section-footer, .section-body, .section-header{
-        padding: 15px 15px
+      .section-footer,
+      .section-body,
+      .section-header {
+        padding: 15px
       }
     }
   }
 }
 
-@media (min-width:500px ) {
-  .website-app-details-container{
-    .section-content{
+@media (min-width 500px) {
+  .website-app-details-container {
+    .section-content {
       width: 45%
     }
   }
 }
-
 
 .website-compliance-announcement-container
   display: flex
@@ -269,13 +278,20 @@
 
   .separator
     display: inline-block
-    width: 12px
-    height: 10px
-    margin: 0px 24px
-    background-color: #536582
+    width: 9px
+    height: 9px
+    margin: 0 24px
+    background-color: $separator-color;
     border-radius: 50%
+    flex-shrink: 0
 
-  .announcement-content p{
+    &-small
+      margin: 0 5px
+      height: 6px
+      width: 6px
+      vertical-align: middle
+
+  .announcement-content p {
     font-size: 14px
     line-height: 20px
     font-weight: 400
@@ -284,14 +300,13 @@
   .cta
     width: 15%
 
-  a{
+  a {
     font-weight: bold
   }
 
-
-@media (max-width:900px ) {
-  .website-compliance-announcement-container{
-    .separator{
+@media (max-width 900px) {
+  .website-compliance-announcement-container {
+    > .separator {
       display: none
     }
   }

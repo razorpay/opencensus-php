@@ -1,6 +1,10 @@
-tabbed-container {
+// stylelint-disable stylus/selector-type-no-unknown
+
+tabbed-container,
+.tabbed-container {
   padding: 20px;
   display: block;
+
   @media (max-width $screen-sm-min) {
     padding: 10px;
   }
@@ -9,12 +13,8 @@ tabbed-container {
     line-height: 50px;
     border: 1px solid #E2E8EA;
     position: relative;
-    background-color: #fff;
+    background-color: #FFF;
     padding: 0 12px 0 24px;
-
-    > a:first-child {
-      margin-left: 0;
-    }
 
     a {
       color: #555;
@@ -30,21 +30,27 @@ tabbed-container {
         border-color: $primary-color;
       }
     }
+
+    > a:first-child {
+      margin-left: 0;
+    }
   }
 
   footer {
     padding: 20px 15px 0;
   }
 
-  content {
+  content,
+  .content {
     display: block;
-    background-color: #f9fafb;
-    border: 1px solid #e2e8ea;
+    background-color: #F9FAFB;
+    border: 1px solid #E2E8EA;
     border-top: 0;
   }
 
-  content > .content-wrapper {
-    background-color: #fff;
+  content > .content-wrapper,
+  .content > .content-wrapper {
+    background-color: #FFF;
   }
 }
 
@@ -59,11 +65,13 @@ tabbed-container.updated {
     .header-left {
       padding-left: 12px;
     }
+
     .header-right {
       padding-left: 16px;
       padding-right: 12px;
+
       &.mobile {
-        background-color: #f8f9fb;
+        background-color: #F8F9FB;
         padding: 10px;
         padding-left: 26px;
         width: 100%

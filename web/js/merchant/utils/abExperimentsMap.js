@@ -428,4 +428,16 @@ export default {
     // prod
     'Kd8w0C0X88RE2K',
   ],
+  api_keys_revamp: [
+    // beta experiment ids
+    'JcBbXBKBU6cFdf',
+    // prod experiment ids
+    'JcXjyldJIfumzD',
+  ],
+  product_led_onboarding: [
+    // beta experiment ids
+    'KDU9Zk7cp7SGQy',
+    // prod experiment ids
+    'KE6QIX5uyJrKOq',
+  ],
 };

@@ -15,8 +15,8 @@ import TemplatesMask from './components/Templates';
 import SideBar from './components/SideBar';
 import Form from './components/Form';
 import Preview from './components/Preview';
-import SettingsModal from '../components/SettingsModal';
-import SuccessView from '../components/SuccessView';
+import SettingsModal from 'merchant/views/PaymentButton/PaymentButton/components/SettingsModal';
+import SuccessView from 'merchant/views/PaymentButton/PaymentButton/components/SuccessView';
 
 import {
   fetchPaymentButtonDetails,
@@ -39,7 +39,7 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { getURLQueryParams, rupeesToPaise } from 'common/utils/rzp-utils';
 
 import track from './track';
-import track_details from '../Details/track';
+import track_details from 'merchant/views/PaymentButton/PaymentButton/Details/track';
 
 const docTitles = {
   DEFAULT: 'Razorpay Dashboard',
@@ -659,6 +659,7 @@ export default class PaymentButtonCreate extends React.Component {
           this.props.updateTemplateType(null, templateKey);
           track.templateSelect(templateKey);
         }}
+        history={this.props.history}
       />
     );
   }

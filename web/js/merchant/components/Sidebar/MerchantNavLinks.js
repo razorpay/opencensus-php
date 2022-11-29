@@ -136,6 +136,18 @@ function MerchantNavLinks(props) {
         }
         isNew={true}
       />
+
+      <MainNavLink
+        label="API Keys & Plugins"
+        icon="i i-api-keys-plugins"
+        type="product"
+        to={routes.apiKeys}
+        additionalCondition={(currentUser) =>
+          currentUser.isProductLedOnboardingRZP || currentUser.isApiKeysRevampEnabled
+        }
+        isNew={true}
+      />
+
       <MainNavLink
         type="product"
         label="Payment Button"

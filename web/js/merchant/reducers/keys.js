@@ -6,7 +6,7 @@ const KEY_GENERATE = 'KEY_GENERATE';
 const KEY_ROLL = 'KEY_ROLL';
 
 export const fetchKeys = (params = {}, hasKeyAccess) => {
-  let key = new Key();
+  const key = new Key();
 
   let request;
 
@@ -25,8 +25,8 @@ export const fetchKeys = (params = {}, hasKeyAccess) => {
   };
 };
 
-export const generateKey = params => {
-  var key = new Key(params);
+export const generateKey = (params) => {
+  const key = new Key(params);
 
   return {
     type: key.isNew ? KEY_GENERATE : KEY_ROLL,
@@ -34,13 +34,14 @@ export const generateKey = params => {
   };
 };
 
-let initialState = {
+const initialState = {
   loading: true,
+  isLoaded: false,
   keys: [],
   count: 0,
 };
 
-export default function(state = initialState, action) {
+export default (state = initialState, action) => {
   switch (action.type) {
     case `${KEYS_FETCH}::PENDING`:
     case `${KEY_GENERATE}::PENDING`:
@@ -52,6 +53,7 @@ export default function(state = initialState, action) {
     case `${KEYS_FETCH}::SUCCESS`:
       return merge(state, {
         loading: false,
+        isLoaded: true,
         keys: action.payload.data.items,
         count: action.payload.data.count,
       });
@@ -62,27 +64,25 @@ export default function(state = initialState, action) {
         keys: [action.payload],
       });
     case `${KEY_ROLL}::SUCCESS`:
+      // eslint-disable-next-line no-case-declarations
       let tmpState = set(state, `loading`, false);
-      let oldKey = action.payload.old;
+      // eslint-disable-next-line no-case-declarations
+      const oldKey = action.payload.old;
       if (!action.payload.delayRoll) {
         tmpState = set(
           tmpState,
           'keys',
-          remove(tmpState.keys, key => key.id === oldKey.id)
+          remove(tmpState.keys, (key) => key.id === oldKey.id),
         );
       } else {
-        let keyIndex = tmpState.keys.findIndex(item => item.id === oldKey.id);
+        const keyIndex = tmpState.keys.findIndex((item) => item.id === oldKey.id);
         tmpState = set(tmpState, `keys.${keyIndex}`, oldKey);
       }
 
-      tmpState = set(
-        tmpState,
-        'keys',
-        unshift(tmpState.keys, action.payload.new)
-      );
+      tmpState = set(tmpState, 'keys', unshift(tmpState.keys, action.payload.new));
 
       return tmpState;
     default:
       return state;
   }
-}
+};

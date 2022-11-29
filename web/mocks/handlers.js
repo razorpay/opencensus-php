@@ -15,6 +15,11 @@ import { payoutDetailsHandlers } from 'merchant/views/Settlements/InstantSettlem
 import { instantDetailsHandlers } from 'merchant/views/Settlements/InstantSettlements/InstantSettlementDetails/__test__/mocks/handlers';
 import reportsHandlers from 'merchant_common/containers/ReportsAsync/__test__/mocks/handlers';
 import ONDEMAND_SETTLEMENTS_HANDLERS from 'merchant/views/Settlements/Settlements/components/__test__/mocks/handlers';
+import {
+  keyHandlers,
+  pluginHandlers,
+} from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/__test__/mocks/handlers';
+import { paymentHandleHandlers } from '../js/merchant/containers/Home/ProductOnboardingCard/__test__/mocks/handlers';
 
 export const handlers = [
   // Handles a "Login" mutation
@@ -803,4 +808,7 @@ export const handlers = [
   ...payoutDetailsHandlers,
   ...instantDetailsHandlers,
   ...reportsHandlers,
+  ...keyHandlers,
+  ...pluginHandlers,
+  ...paymentHandleHandlers,
 ];

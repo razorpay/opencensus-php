@@ -2,9 +2,9 @@ import React from 'react';
 
 import { Link } from 'react-router-dom';
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
-import { classList } from 'common/utils/rzp-utils';
+import { classList, getURLQueryParams } from 'common/utils/rzp-utils';
 import META from './meta';
-import track from '../../track';
+import track from 'merchant/views/PaymentButton/PaymentButton/Create/track';
 
 export default class TemplateSelection extends React.PureComponent {
   selectTemplate = (templateKey) => () => {
@@ -13,13 +13,14 @@ export default class TemplateSelection extends React.PureComponent {
   };
 
   render() {
+    const { redirect } = getURLQueryParams(this.props?.history?.location?.search);
     return (
       <ModalMask
         maskClosable={false}
         class={classList('payment-pages-v2-templates', 'view-1', 'PaymentButton--Templates')}
         isBlur={true}
       >
-        <Link class="back-btn" to="/paymentbuttons">
+        <Link class="back-btn" to={redirect ?? '/paymentbuttons'}>
           <i class="i i-chevron-left" />
           Back to Dashboard
         </Link>

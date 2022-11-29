@@ -34,7 +34,7 @@ import { fetchGST } from 'merchant/reducers/profile';
 import { fireAnalyticsEvents, setTrackData } from 'common/utils/googleAnalytics';
 import { resizeWindow, updateMerchantLiveTransactionFlag } from 'merchant/reducers/app';
 import { matchFullPageView } from 'merchant/routes';
-import { classList, isPresent } from 'common/utils/rzp-utils';
+import { classList, isPresent, isNone, paiseToRupees } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import rolesList from 'merchant/helpers/permissions/roles-list';
@@ -48,6 +48,7 @@ import LogoutDialog from 'merchant/components/LogoutDialog';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { fetchMerchantReferralDetail } from 'merchant/reducers/merchantReferral';
 import { fetchInstantSettlements, fetchPayments } from 'merchant/reducers/collection';
+import { fetchAmount } from 'merchant/reducers/fetchTransaction';
 import { bindActionCreators, compose } from 'redux';
 import PartnerActivationRequiredModal from 'merchant/views/PartnerDashboard/Activation/Components/ActivationRequiredModal';
 import _refiner from 'refiner-js';
@@ -55,6 +56,7 @@ import { getCookie, setCookie } from 'common/utils/cookies';
 import RequestEmailModal from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/AddEmail/RequestEmailModal';
 import { isPartnerPage } from 'merchant/utils/isPartnerPage';
 import getMobileDetect from 'common/utils/mobileDetect';
+import { isPgMerchant } from 'merchant/components/Activation/ActivationUtils';
 import currencies from '../constants/currency';
 import { setRecommendedProduct } from 'merchant/components/Activation/ActivationUtils';
 
@@ -192,6 +194,27 @@ class App extends Component {
     ) {
       LocalStorageService.setItem(`is_activated--${user.current}`, 'true');
       isActivated = 'true';
+    }
+
+    if (this.props.user?.isProductLedOnboarding) {
+      Promise.all([this.props.fetchTransactionAmount(user?.created_at), this.fetchOrg()])
+        .then((response) => {
+          const isOrgRZP = response?.[1]?.data?.custom_code === 'rzp';
+          const transactionAmount = response?.[0]?.data?.firstTransaction?.result?.length
+            ? paiseToRupees(data.firstTransaction.result[0].base_amount)
+            : 0;
+
+          const pathname = this.props.history.location.pathname;
+          if (
+            transactionAmount === 0 &&
+            isPgMerchant(user) &&
+            isOrgRZP &&
+            pathname !== '/api-keys'
+          ) {
+            this.props.history.push('/api-keys');
+          }
+        })
+        .catch(() => {});
     }
 
     Promise.all([
@@ -1141,6 +1164,7 @@ const mapDispatchToProps = (dispatch) =>
       fetchTrustedBadgeStatus,
       fetchMerchantReferralDetail,
       fetchPayments,
+      fetchTransactionAmount: fetchAmount,
     },
     dispatch,
   );

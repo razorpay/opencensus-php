@@ -15,6 +15,9 @@ const SETTLEMENT_AMOUNT_FETCH = 'SETTLEMENT_AMOUNT_FETCH';
 const BALANCE_CONFIG_FETCH = 'BALANCE_CONFIG_FETCH';
 const ONDEMAND_RESTRICTIONS_FETCH = 'ONDEMAND_RESTRICTIONS_FETCH';
 
+// product led onboarding actions
+const PAYMENT_HANDLE_FETCH = 'PAYMENT_HANDLE_FETCH';
+
 // Instant activation actions
 const SHOW_IA_SUCCESS = 'SHOW_IA_SUCCESS';
 const SHOW_KYC_DETAILS = 'SHOW_KYC_DETAILS';
@@ -97,6 +100,10 @@ const initialState = {
     kycStatusModalType: '',
     kycStatusActivationDuration: '1-2 working days',
     showKYCStatus: false,
+  },
+  paymentHandle: {
+    loading: true,
+    data: {},
   },
 };
 
@@ -285,6 +292,16 @@ export const fetchBalanceConfig = () => {
   };
 };
 
+export const fetchPaymentHandle = () => {
+  return {
+    type: PAYMENT_HANDLE_FETCH,
+    payload: merchantFetch({
+      url: 'payment_handle',
+      mode: 'live',
+    }),
+  };
+};
+
 export const showFraudDetectionModal = () => ({
   type: SHOW_FRAUD_DETECTION_MODAL,
 });
@@ -427,6 +444,19 @@ export default function homeReducer(state = initialState, action) {
         loading: false,
         error: action.payload.errors,
         data: initialState.ondemand_restrictions.data,
+      });
+
+    case `${PAYMENT_HANDLE_FETCH}::SUCCESS`:
+      return set(state, 'paymentHandle', {
+        loading: false,
+        data: action.payload.data,
+      });
+
+    case `${PAYMENT_HANDLE_FETCH}::ERROR`:
+      return merge(state, {
+        paymentHandle: {
+          loading: false,
+        },
       });
 
     case `SHOW_IA_SUCCESS`:

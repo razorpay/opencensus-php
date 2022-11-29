@@ -40,6 +40,7 @@ const BASE_ROUTES = {
   marketplace: '/route/payments',
   paymentlinks: '/paymentlinks',
   paymentpages: '/paymentpages',
+  apiKeys: '/api-keys',
   paymentbuttons: '/paymentbuttons',
   subscription_buttons: '/subscription_buttons',
   subscriptions: '/subscriptions',

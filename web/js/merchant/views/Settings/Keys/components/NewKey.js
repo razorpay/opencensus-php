@@ -12,6 +12,7 @@ import fileDownload from 'common/utils/file-download';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
+// eslint-disable-next-line react/no-unsafe
 class NewKey extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -37,7 +38,7 @@ class NewKey extends Component {
   save = () => {
     this.context.confirm({
       message:
-        'Are you sure you have saved the key details? ' +
+        'This key can only be downloaded once to keep your account secure.' +
         'This is the last time we will show you the key secret.',
       affirmativeLabel: 'OK',
       action: () => this.props.closeModal(),

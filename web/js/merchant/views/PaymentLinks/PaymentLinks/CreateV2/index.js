@@ -20,7 +20,7 @@ import { updateFeatures } from 'merchant/reducers/config';
 import { updateUserFeatures } from 'merchant/reducers/session';
 import { fetchPaymentLinkV2Details } from 'merchant/reducers/paymentlinks/details';
 import { luminateRow } from 'merchant/reducers/app';
-import { createPaymentLinkV2 } from '../model';
+import { createPaymentLinkV2 } from 'merchant/views/PaymentLinks/PaymentLinks/model';
 import { getURLQueryParams, paiseToRupees } from 'common/utils/rzp-utils';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import track from './track';
@@ -370,6 +370,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
             isTestMode={props.isTestMode}
             isModalView={isModalView}
             selectTemplate={this.selectTemplate}
+            history={props.history}
           />
         )}
 

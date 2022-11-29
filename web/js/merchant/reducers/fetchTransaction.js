@@ -1,6 +1,6 @@
 import { merchantFetch } from 'merchant/utils/ajax';
 import { paiseToRupees } from 'common/utils/rzp-utils';
-import { set, merge } from 'common/utils/immutable';
+import { merge } from 'common/utils/immutable';
 
 const FETCH_TRANSACTION = 'FETCH_TRANSACTION';
 const TIMEOUT_ANALYTICS_API = 6000;
@@ -39,6 +39,7 @@ export const fetchAmount = (activatedAt) => {
 };
 
 const initialState = {
+  loading: false,
   amount: null,
   amountWhenAPITimeout: 0,
 };
@@ -47,23 +48,23 @@ const updateAmount = (state, response) => {
   const payment = response?.data?.firstTransaction?.result?.length
     ? paiseToRupees(response.data.firstTransaction.result[0].base_amount)
     : 0;
-  return merge(state, { amount: payment });
+  return merge(state, { loading: false, amount: payment });
 };
 
 /*eslint func-names: ["error", "never"]*/
 export default function (state = initialState, action) {
   switch (action.type) {
     case `${FETCH_TRANSACTION}::PENDING`:
-      return set(state, 'amount', initialState.amount);
+      return merge(state, { loading: true, amount: initialState.amount });
 
     case `${FETCH_TRANSACTION}::SUCCESS`:
       return updateAmount(state, action.payload);
 
     case `${FETCH_TRANSACTION}::ERROR`:
       if (action.payload && action.payload.code === 'ECONNABORTED') {
-        return set(state, 'amount', initialState.amountWhenAPITimeout);
+        return merge(state, { loading: false, amount: initialState.amountWhenAPITimeout });
       } else {
-        return set(state, 'amount', initialState.amount);
+        return merge(state, { loading: false, amount: initialState.amount });
       }
 
     default:

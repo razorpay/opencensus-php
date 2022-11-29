@@ -312,9 +312,8 @@ class AnalyticsMobile extends Component {
               <PersonaliseBanner track={trackPersonaliseBanner} />
             </div>
           )}
-          {/* add conditions to show product onboarding card */}
-          {false && (
-            <div style={{ padding: '20px' }}>
+          {this.props.user?.isProductLedOnboardingRZP && user?.activated && (
+            <div className="product-onboarding-card-container">
               <ProductOnboardingCard />
             </div>
           )}

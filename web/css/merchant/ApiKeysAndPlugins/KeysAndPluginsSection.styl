@@ -1,0 +1,244 @@
+$border-color = #162F561A;
+$highlight-color = #0B70E7BD;
+$icon-color = #4B95ED;
+$off-white = #E7F1FD;
+
+.keys-plugins-section-wrapper
+  padding: 24px 0;
+
+  @media (max-width $screen-sm-max)
+    padding: 0;
+
+.add-link-modal-content
+  padding: 24px;
+  width: 375px;
+  display: flex;
+  flex-direction: column;
+
+  button.close
+    border: none;
+    background: transparent;
+    align-self: end;
+
+  .heading
+    margin-bottom: 16px;
+    font-size: 20px;
+    font-weight: bold;
+
+  .form-group
+    margin-bottom: 24px;
+
+  .btn
+    margin-top: 28px;
+
+.keys-plugins-section
+  display: flex;
+  flex-direction: column;
+  padding: 32px 24px;
+  gap: 32px;
+  border-radius: 2px;
+  background: #FFF;
+  border: 1px solid #E2E8EA;
+  margin: 0 auto;
+  max-width: 586px;
+
+  @media (max-width $screen-sm-max) {
+    padding: 24px;
+  }
+
+  &--empty
+    text-align: center;
+
+    .heading
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 4px;
+
+    .subheading
+      margin-bottom: 24px;
+
+    .i.i-anchor
+      font-size: 60px;
+      margin-bottom: 24px;
+      display: inline-block;
+      color: $off-white;
+
+  & hr
+    margin: 0;
+    border: none;
+    border-bottom: 1px solid $border-color;
+
+  &__label,
+  &__helper-text
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 18px;
+    color: #162F568A;
+
+  &__helper-text
+    margin-top: 4px;
+
+  &__field-text
+    margin-top: 8px;
+
+  &__field
+    display: flex;
+    justify-content: space-between;
+    border: none;
+    border-bottom: 1px solid $border-color;
+    background: #E0E4F91A;
+    border-radius: 2px 2px 0 0;
+    padding: 8px;
+    color: #162F56BD;
+
+    & i
+      color: $primary-color;
+      cursor: pointer;
+
+      &.i-done-all
+        color: #27C24C
+
+  &__header
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+  &__heading
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 30px;
+    color: #536582;
+
+  .PowerSelect__Trigger
+    height: 48px;
+
+    .PowerSelect__TriggerLabel
+      padding: 0;
+
+  .PowerSelect__Trigger--empty
+    .PowerSelect__TriggerLabel
+      padding: 14px;
+
+.keys-plugins-step
+  display: flex;
+
+  &__number
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #FFF;
+    font-weight: bold;
+    background: #21355461;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    margin-right: 16px;
+    flex-shrink: 0;
+
+  &__container
+    flex-grow: 1;
+
+  &__heading
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 16px;
+
+  &__content
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+
+.key-details
+  display: flex;
+  gap: 50px;
+
+  @media (max-width $screen-sm-max) {
+    gap: 30px;
+  }
+
+.plugin-select
+  &__option
+    height: 48px;
+    display: inline-flex;
+    font-size: 16px;
+    align-items: center;
+    cursor: pointer;
+
+  &__icon
+    margin: 0 12px;
+    height: auto;
+    width: 24px;
+
+.tab-switcher
+  display: flex;
+  border-radius: 4px;
+
+  .tab-new
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 16px;
+    gap: 12px;
+    font-weight: 700;
+    flex-grow: 1;
+    flex-basis: 0;
+    border-style: solid;
+    border-color: #5D6D8680;
+    border-width: 1px;
+    cursor: pointer;
+
+    @media screen and (max-width $screen-sm-min)
+      flex-direction: column;
+      gap: 8px;
+
+    i.i
+      font-size: 20px;
+      display: inline-flex;
+      color: $icon-color;
+      background-color: $off-white;
+      border-radius: 50%;
+      height: 32px;
+      width: 32px;
+      justify-content: center;
+      align-items: center;
+
+    &.active
+      background: #1566F114;
+      border-color: #528FF0;
+
+      i.i
+        color: $off-white;
+        background-color: $icon-color;
+
+    &:first-child
+      border-width: 1px 0 1px 1px;
+      border-radius: 4px 0 0 4px;
+
+      &.active
+        margin-right: -1px;
+        border-width: 1px;
+
+    &:last-child
+      border-width: 1px 1px 1px 0;
+      border-radius: 0 4px 4px 0;
+
+      &.active
+        margin-left: -1px;
+        border-width: 1px;
+
+.keys-plugins-generate
+  .Alert
+    margin: 0;
+
+  .i.alert-icon
+    font-size: 20px;
+
+  .alert-text
+    padding-left: 16px;
+
+.keys-plugins-integrate
+  .keys-plugins-step
+    &__content
+      align-items: start;
+      gap: 24px;
