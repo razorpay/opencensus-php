@@ -10,6 +10,8 @@ use RZP\Constants\HyperTrace;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Mode;
 use RZP\Models\QrCode\Constants;
+use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\QrCode\Service as QrCodeService;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Service as NonVAQrCodeService;
 use RZP\Trace\Tracer;
 
@@ -56,7 +58,12 @@ class QrCodeController extends Controller
     {
         $input = Request::all();
 
-        $entities = (new NonVAQrCodeService)->fetchMultiple($input);
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        if($merchant !== null and $merchant->isFeatureEnabled(Feature::UPIQR_V1_HDFC) === true)
+            $entities = (new QrCodeService)->fetch($input);
+        else
+            $entities = (new NonVAQrCodeService)->fetchMultiple($input);
 
         return ApiResponse::json($entities);
     }

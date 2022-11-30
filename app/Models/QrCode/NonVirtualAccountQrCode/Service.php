@@ -302,11 +302,6 @@ class Service extends QrCode\Service
 
         $input[Entity::ENTITY_TYPE] = 'qr_code';
 
-        if($this->merchant->isFeatureEnabled(FeatureConstants::UPIQR_V1_HDFC) === true)
-        {
-            unset($input[Entity::ENTITY_TYPE]);
-        }
-
         $qrCodes = Tracer::inspan(['name' => HyperTrace::QR_CODES_FETCH_MULTIPLE_FETCH_ALL], function () use ($input) {
             return (new Repository)->fetch($input, $this->merchant->getId());
         });

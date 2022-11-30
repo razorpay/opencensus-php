@@ -138,4 +138,13 @@ class Service extends Base\Service
 
         return $qrCode;
     }
+
+    public function fetch($input)
+    {
+        $input[Entity::ENTITY_TYPE] = 'virtual_account';
+
+        $qrCodes = (new Repository)->fetchQrCodes($input, $this->merchant->getId());
+
+        return $qrCodes->toArrayPublic();
+    }
 }
