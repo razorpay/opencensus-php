@@ -16034,7 +16034,6 @@ class Route
            'update_fts_fund_transfer',
      ];
 
-
     public static $skipApiDocumentation = [
 
     ];
@@ -16357,6 +16356,15 @@ class Route
 
         //TODO: When v3 version of public onboarding routes are created, include them here.
         return (in_array($routeName, self::$routesWithV2Prefix, true) === true);
+    }
+
+    public function isRazorpayXRoute(): bool
+    {
+        $routeName = $this->getCurrentRouteName();
+
+        $pos = strpos($routeName, 'payout');
+
+        return ($pos !== false);
     }
 
     public function isApplicableForMerchantIdempotency(): bool

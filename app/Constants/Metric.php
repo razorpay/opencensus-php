@@ -46,6 +46,7 @@ class Metric
     const ARCHIVED_ENTITY_FETCH_TOTAL           = 'archived_entity_fetch_total';
     const ARCHIVED_ENTITY_FETCH_SUCCESS         = 'archived_entity_fetch_success';
     const ARCHIVED_ENTITY_FETCH_TIME_TAKEN      = 'archived_entity_fetch_time_taken';
+    const DB_CONNECTION_CLASSIFICATION          = 'db_connection_classification';
     const MERCHANT_RELATED_ENTITIES_READ_TRAFFIC_TOTAL    = 'merchant_related_entities_read_traffic_total';
 
 

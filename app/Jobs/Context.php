@@ -58,4 +58,14 @@ class Context
     {
         return $this->jobName;
     }
+
+    /**
+     * @return bool
+     */
+    public function isRazorpayXJob() : bool
+    {
+        $pos = strpos($this->jobName, 'payout');
+
+        return ($pos !== false);
+    }
 }
