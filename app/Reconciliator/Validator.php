@@ -29,7 +29,7 @@ class Validator extends Base\Core
         ],
         'gpg'  => ['application/octet-stream', 'application/pgp', 'application/pgp-encrypted'],
         'pgp'  => ['application/pgp', 'application/pgp-encrypted'],
-        'rpt'  => ['text/plain'],
+        'rpt'  => ['text/plain', 'text/csv'],
         'dat'  => ['text/plain'],
         '7z'   => ['application/x-7z-compressed'],
         'iob'  => ['text/plain'],
@@ -525,7 +525,7 @@ class Validator extends Base\Core
 
     public function validateNetbankingSbiEmail(array $emailDetails)
     {
-        
+
         $validSubject = $this->validateEmailSubject(
             $emailDetails[RequestProcessor\Mailgun::SUBJECT],
             RequestProcessor\Base::NETBANKING_SBI);
@@ -533,7 +533,7 @@ class Validator extends Base\Core
         $validBody = $this->validateEmailBody(
             $emailDetails[RequestProcessor\Mailgun::BODY],
             RequestProcessor\Base::NETBANKING_SBI);
-        
+
 
         //
         // There isn't a need to validate the attachment count because
@@ -1065,7 +1065,7 @@ class Validator extends Base\Core
     public function validateExtensionMimeType(string $extension, string $mimeType)
     {
         $acceptedExtensionsMap = self::ACCEPTED_EXTENSIONS_MAP;
-     
+
         if ((isset($acceptedExtensionsMap[$extension]) === false) or
             (in_array($mimeType, $acceptedExtensionsMap[$extension], true) === false))
         {

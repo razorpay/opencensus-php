@@ -116,7 +116,7 @@ class Format
         self::DOC     => ['application/msword'],
         self::DOCX    => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
         self::XML     => ['application/xml'],
-        self::RPT     => ['text/plain'],
+        self::RPT     => ['text/plain', 'text/csv'],
         self::DAT     => ['text/plain', 'application/octet-stream'],
         self::NONE    => ['text/plain'],
         self::SEVEN_Z => ['application/x-7z-compressed'],

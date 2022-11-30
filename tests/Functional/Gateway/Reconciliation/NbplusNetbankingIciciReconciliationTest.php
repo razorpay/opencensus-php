@@ -7,6 +7,7 @@ use Illuminate\Http\UploadedFile;
 use Mail;
 
 use RZP\Constants\Entity;
+use RZP\Models\FileStore;
 use RZP\Models\Payment as PaymentClass;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Transaction\Entity as Txn;
@@ -37,8 +38,8 @@ class NbplusNetbankingIciciReconciliationTest extends NbPlusPaymentServiceNetban
 
         $payment = $this->getDbLastEntityToArray(Entity::PAYMENT);
 
-        $this->assertEquals($payment[Payment::CPS_ROUTE], Payment::NB_PLUS_SERVICE);
-        $this->assertEquals($payment[Payment::STATUS], Payment::CAPTURED);
+        $this->assertEquals(Payment::NB_PLUS_SERVICE, $payment[Payment::CPS_ROUTE]);
+        $this->assertEquals(Payment::CAPTURED, $payment[Payment::STATUS]);
 
         $data = $this->testData[__FUNCTION__];
 
@@ -59,9 +60,9 @@ class NbplusNetbankingIciciReconciliationTest extends NbPlusPaymentServiceNetban
 
         $reconFile = $this->generateReconFile($data, $data2);
 
-        $fileName = 'razorpayreports_test_'.Carbon::today()->format("m-d-Y").'.txt';
+        $fileName = 'razorpayreports_test_'.Carbon::today()->format("m-d-Y").'.rpt';
 
-        $uploadedFile = $this->createUploadedFile($reconFile['local_file_path'], $fileName, "text/plain");
+        $uploadedFile = $this->createUploadedFile($reconFile['local_file_path'], $fileName, 'text/csv');
 
         $this->reconcile($uploadedFile, Base::NETBANKING_ICICI);
 
@@ -71,7 +72,10 @@ class NbplusNetbankingIciciReconciliationTest extends NbPlusPaymentServiceNetban
 
         $batch = $this->getDbLastEntityToArray('batch');
 
-        $this->assertEquals($batch['status'], 'processed');
+        $this->assertEquals('processed', $batch['status']);
+        $this->assertEquals(2, $batch['total_count']);
+        $this->assertEquals(2, $batch['processed_count']);
+        $this->assertEquals(2, $batch['success_count']);
     }
 
     public function testIciciEmiSuccessReconMailgun()
@@ -224,5 +228,22 @@ class NbplusNetbankingIciciReconciliationTest extends NbPlusPaymentServiceNetban
             $mime,
             null,
             true);
+    }
+
+    protected function createFile($content): array
+    {
+        $creator = new FileStore\Creator;
+
+        $creator->extension(FileStore\Format::TXT)
+                ->mime('text/csv')
+                ->content($content)
+                ->name('testReconFile')
+                ->store(FileStore\Store::S3)
+                ->type(FileStore\Type::MOCK_RECONCILIATION_FILE)
+                ->save();
+
+        $file = $creator->get();
+
+        return ['local_file_path' => $file['local_file_path']];
     }
 }
