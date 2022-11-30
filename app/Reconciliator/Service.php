@@ -1042,7 +1042,7 @@ class Service extends Base\Service
             $dataToUpdate[UpsConstants::CUSTOMER_REFERENCE] = $input['upi']['npci_reference_id'];
         }
 
-        $dataToUpdate[UpsConstants::RECONCILED_AT] = $input[UpsConstants::RECONCILED_AT];
+        $dataToUpdate[UpsConstants::RECONCILED_AT] = (int) $input[UpsConstants::RECONCILED_AT];
 
         $this->publishToMetro($dataToUpdate, $payment);
     }
