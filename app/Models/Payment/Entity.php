@@ -15,6 +15,7 @@ use RZP\Models\Address\Type;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\IIN;
+use RZP\Models\Vpa\Entity as VpaEntity;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\FeeBearer;
@@ -81,6 +82,9 @@ use RZP\Models\Partner\Commission\CommissionSourceInterface;
  * @property Customer\Token\Entity  $localToken
  * @property Customer\Token\Entity  $globalToken
  * @property CardMandateNotification\Entity $cardMandateNotification
+ * @property string                 $receiver_type
+ * @property string                 $receiver_id
+ * @property VpaEntity|QrV2\Entity  $receiver
  */
 class Entity extends Base\PublicEntity implements CommissionSourceInterface
 {
@@ -2650,6 +2654,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::POS);
     }
 
+    /**
+     * @ToDo: This method needs fixing as it doesn't return the correct value
+     *        during manual capture of payments as $metadata is empty.
+     *
+     * @return bool
+     */
     public function isFlowIntent(): bool
     {
         if ($this->isGooglePayMethodSupported(Method::UPI))
@@ -2679,7 +2689,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::VPA));
     }
 
-    public function isQrV2UpiPayment()
+    public function isQrV2UpiPayment(): bool
     {
         if ($this->isUpi() === false)
         {
@@ -2689,8 +2699,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->isQrV2Payment();
     }
 
-    public function isQrV2Payment()
+    public function isQrV2Payment(): bool
     {
+        if ($this->receiver_type !== Receiver::QR_CODE) {
+            return false;
+        }
+
         $receiver = $this->receiver;
 
         return (($receiver !== null) and

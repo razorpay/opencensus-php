@@ -503,7 +503,7 @@ class Payment extends Base
             $receiverType = null;
         }
 
-        if ($payment->isUpiQr() && $payment->isQrV2UpiPayment()) {
+        if ($payment->isQrV2UpiPayment()) {
             /** @var QrV2Entity $qrCode */
             $qrCode = $payment->receiver;
 

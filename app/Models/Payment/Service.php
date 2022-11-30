@@ -1482,6 +1482,7 @@ class Service extends Base\Service
      */
     public function capture($id, $input)
     {
+        /** @var Entity $payment */
         $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
         if ($payment->isExternal() === true)
