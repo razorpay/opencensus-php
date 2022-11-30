@@ -1209,6 +1209,8 @@ class Route
         'capital_lender_admin'                     => ['any',      'lender/admin/{path?}',                           'CapitalLenderController@handleAdminRequests'                       ],
         'capital_lender_dev_admin'                 => ['any',      'lender/dev_admin/{path?}',                       'CapitalLenderController@handleDevAdminRequests'                    ],
         'capital_es_service'                       => ['any',      'capital_es/service/{path?}',                     'CapitalESController@handleProxyRequests'                           ],
+        'capital_es_dev_admin'                     => ['any',      'capital_es/dev_admin/{path?}',                   'CapitalESController@handleDevAdminRequests'                        ],
+
 
 
         'merchants_risk_service'                   => ['any',      'merchants-risk/service/{path?}',                 'MerchantsRiskController@handleProxyRequests'                       ],
@@ -6520,6 +6522,7 @@ class Route
         'capital_marketplace_dev_admin',
         'capital_scorecard_dev_admin',
         'capital_lender_dev_admin',
+        'capital_es_dev_admin',
         'settlement_ondemand_reverse',
         'recon_service_request_proxy',
         'recon_service_file_upload_proxy',
@@ -7710,6 +7713,7 @@ class Route
         'capital_marketplace_dev_admin'            => Permission::CAPITAL_DEVELOPER,
         'capital_scorecard_dev_admin'              => Permission::CAPITAL_DEVELOPER,
         'capital_lender_dev_admin'                 => Permission::CAPITAL_DEVELOPER,
+        'capital_es_dev_admin'                     => Permission::CAPITAL_DEVELOPER,
         'settlement_ondemand_reverse'              => Permission::CAPITAL_DEVELOPER,
         'admin_merchant_get_preferences'           => Permission::VIEW_MERCHANT,
         'recon_service_request_proxy'              => Permission::RECON_SERVICE_REQUEST,
@@ -11957,6 +11961,7 @@ class Route
             'capital_marketplace_dev_admin',
             'capital_scorecard_dev_admin',
             'capital_lender_dev_admin',
+            'capital_es_dev_admin',
             'settlement_ondemand_reverse',
             'los_service',
             'los_service_admin',
