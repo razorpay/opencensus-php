@@ -89,7 +89,7 @@ return [
                     "name"              => "Shopify",
                     "icon"              => "https://cdn.razorpay.com/static/assets/product-led-onboarding/Shopify.svg",
                     "integration_guide" => "https://razorpay.com/docs/payments/payment-gateway/ecommerce-plugins/shopify/",
-                    "integration_url"   => "https://www.google.com/admin/settings/payments/alternative-providers/1058840"
+                    "integration_url"   => "https://www.google.com/admin/settings/payments/alternative-providers/1058839"
                 ],
                 [
                     "name"              => "WHMCS",

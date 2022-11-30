@@ -84,7 +84,7 @@ class WhatCmsService extends Base\Service
             "name"              => self::SHOPIFY,
             "icon"              =>"https://cdn.razorpay.com/static/assets/product-led-onboarding/Shopify.svg",
             "integration_guide" => "https://razorpay.com/docs/payments/payment-gateway/ecommerce-plugins/shopify/",
-            "integration_url"   => "%s/admin/settings/payments/alternative-providers/1058840"
+            "integration_url"   => "%s/admin/settings/payments/alternative-providers/1058839"
         ],
         [
             "name"              => self::WHMCS,
