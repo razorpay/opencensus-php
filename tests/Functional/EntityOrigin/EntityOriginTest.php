@@ -187,6 +187,34 @@ class EntityOriginTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testCreateApplicationOriginByInternalAppForPaymentLink()
+    {
+        $this->ba->proxyAuth();
+
+        $client = $this->setUpPartnerMerchantAppAndGetClient();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['origin_id']  = $client->getApplicationId();
+        $testData['response']['content']['origin_id'] = $client->getApplicationId();
+
+        $this->startTest($testData);
+    }
+
+    public function testCreateMerchantOriginByInternalAppForPaymentLink()
+    {
+        $client = $this->setUpPartnerMerchantAppAndGetClient();
+
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['origin_id']  = $client->application->getMerchantId();
+        $testData['response']['content']['origin_id'] = $client->application->getMerchantId();
+
+        $this->startTest($testData);
+    }
+
     public function testCreateOriginInvalidIdByInternalApp()
     {
         $this->ba->subscriptionsAuth();

@@ -7,6 +7,8 @@ use Razorpay\OAuth\Application as OAuthApp;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\PaymentLink;
+use RZP\Models\Order;
 use RZP\Constants\Entity as E;
 use RZP\Models\Plan\Subscription;
 
@@ -96,6 +98,10 @@ class Core extends Base\Core
         else if (empty($receiver) === false)
         {
             $originEntity = $this->getOriginEntityFromReceiver($receiver);
+        }
+        else if (optional($entity->order)->getProductType() === Order\ProductType::PAYMENT_LINK_V2)
+        {
+            $originEntity = $this->getOriginEntityFromPaymentLinkId($entity->order->getProductId());
         }
         else
         {
@@ -217,6 +223,12 @@ class Core extends Base\Core
 
                 break;
 
+            case Constants::PAYMENT_LINK:
+                // Creating dummy payment link entity since this is created in non-api db
+                // fetching in api master db will not find the pl.
+                $entity = (new PaymentLink\Entity())->setId($entityId);
+                break;
+
             default:
                 $entityClass = E::getEntityObject($entityType);
                 $entityId    = $entityClass->verifyIdAndSilentlyStripSign($entityId);
@@ -254,6 +266,22 @@ class Core extends Base\Core
 
         return optional($entityOrigin)->origin;
     }
+    /**
+     * Returns origin entity for the payment link if present
+     *
+     * @param string $paymentLinkId
+     *
+     * @return mixed|null
+     */
+    protected function getOriginEntityFromPaymentLinkId(string $paymentLinkId)
+    {
+        $entityOrigin = $this->repo->entity_origin->fetchByEntityTypeAndEntityId('payment_link', $paymentLinkId);
+
+        $origin = optional($entityOrigin)->origin ?? $this->getOriginEntityFromAuth();
+
+        return $origin;
+    }
+
     /**
      * Extracts the origin entity from BasicAuth
      *

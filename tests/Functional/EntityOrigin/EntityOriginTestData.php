@@ -87,6 +87,48 @@ return [
         ],
     ],
 
+    'testCreateApplicationOriginByInternalAppForPaymentLink' => [
+        'request'  => [
+            'url'     => '/entity_origins',
+            'method'  => 'POST',
+            'content' => [
+                'entity_type' => 'payment_link',
+                'entity_id'   => 'randPaymentId1',
+                'origin_type' => 'application',
+                'origin_id'   => 'randPaymentId1',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_type' => 'payment_link',
+                'entity_id'   => 'randPaymentId1',
+                'origin_type' => 'application',
+                'origin_id'   => 'randPaymentId1',
+            ],
+        ],
+    ],
+
+    'testCreateMerchantOriginByInternalAppForPaymentLink' => [
+        'request'  => [
+            'url'     => '/entity_origins',
+            'method'  => 'POST',
+            'content' => [
+                'entity_type' => 'payment_link',
+                'entity_id'   => 'randPaymentId1',
+                'origin_type' => 'merchant',
+                'origin_id'   => '10000000000000',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_type' => 'payment_link',
+                'entity_id'   => 'randPaymentId1',
+                'origin_type' => 'merchant',
+                'origin_id'   => '10000000000000',
+            ],
+        ],
+    ],
+
     'testCreateOriginInvalidIdByInternalApp' => [
         'request'  => [
             'url'     => '/entity_origins',

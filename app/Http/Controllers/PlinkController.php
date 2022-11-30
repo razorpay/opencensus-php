@@ -274,6 +274,8 @@ class PlinkController extends Controller
 
         $headers['X-Razorpay-Public-Key'] = $this->ba->getPublicKey();
 
+        $headers['X-Razorpay-Application-Id'] = $this->ba->getOAuthApplicationId();
+
         $requester = $request->header('X-Razorpay-Requester');
 
         if (empty($requester) === false)

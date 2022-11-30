@@ -13816,6 +13816,7 @@ class Route
             'virtual_account_create_for_internal',
             'payment_links_sign_payload_internal',
             'payment_refund',
+            'entity_origin_create',
         ],
 
         'mandate_hq' => [
