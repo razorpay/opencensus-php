@@ -5305,6 +5305,43 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('Test Merchant Fund Transfer', $payoutAttempt['narration']);
     }
 
+    public function testCreateCompositePayoutWithOtp()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals("MerchantUser01", $payout['user_id']);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals('Batman', $payoutAttempt['narration']);
+    }
+
+    public function testCreateCompositePayoutWithOtpAndWithoutQueueIfLowBalanceInput()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals("MerchantUser01", $payout['user_id']);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals('Batman', $payoutAttempt['narration']);
+    }
+
+    public function testCreateCompositePayoutWithOtpAndWithoutOtpInput()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function mockRaven($expectedContext, $receiver = null, $source = 'api')
     {
         $ravenMock = Mockery::mock(\RZP\Services\Raven::class, [$this->app])->makePartial();
@@ -5366,6 +5403,57 @@ class PayoutTest extends OAuthTestCase
         $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals('Test Merchant Fund Transfer', $payoutAttempt['narration']);
+    }
+
+    public function testCreateCompositePayoutWithOtpWithSecureContextIncorrectAmount()
+    {
+        $testData = &$this->testData[__FUNCTION__];
+
+        unset($testData['request']['content']['amount']);
+
+        $expectedContext = sprintf('%s:%s:%s:%s:%s:%s:%s',
+            '10000000000000',
+            'MerchantUser01',
+            User\Constants::CREATE_PAYOUT,
+            'BUIj3m2Nx2VvVj',
+            200,
+            'test@ybl',
+            '2224440041626905');
+
+        $expectedContext = hash('sha3-512', $expectedContext);
+
+        $user = $this->getDbEntity('user', ['id' => 'MerchantUser01']);
+
+        $this->mockRaven($expectedContext);
+
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testCreateCompositePayoutWithOtpWithSecureContextIncorrectVpa()
+    {
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        unset($testData['request']['content']['vpa']);
+
+        $expectedContext = sprintf('%s:%s:%s:%s:%s:%s:%s',
+            '10000000000000',
+            'MerchantUser01',
+            User\Constants::CREATE_PAYOUT,
+            'BUIj3m2Nx2VvVj',
+            100,
+            'testabc@ybl',
+            '2224440041626905');
+
+        $expectedContext = hash('sha3-512', $expectedContext);
+
+        $user = $this->getDbEntity('user', ['id' => 'MerchantUser01']);
+
+        $this->mockRaven($expectedContext);
+
+        $this->ba->proxyAuth();
+        $this->startTest();
     }
 
     public function testCreatePayoutWithOtpWithInvalidParameters()

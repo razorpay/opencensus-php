@@ -97,9 +97,11 @@ class Constants
 
     // OTP Actions
 
-    const CREATE_PAYOUT                = 'create_payout';
-    const APPROVE_PAYOUT               = 'approve_payout';
-    const CREATE_PAYOUT_LINK           = 'create_payout_link';
+    const CREATE_PAYOUT                                 = 'create_payout';
+    const APPROVE_PAYOUT                                = 'approve_payout';
+    const CREATE_PAYOUT_LINK                            = 'create_payout_link';
+
+    const CREATE_COMPOSITE_PAYOUT_WITH_OTP              = 'create_composite_payout_with_otp';
 
     // oauth constants end
 

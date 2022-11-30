@@ -9,6 +9,7 @@ use RZP\Base;
 use Lib\PhoneBook;
 use RZP\Exception;
 use Carbon\Carbon;
+use RZP\Models\Vpa;
 use RZP\Models\Roles;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
@@ -16,6 +17,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Hashing\BcryptHasher;
+use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Exception\BadRequestException;
 use libphonenumber\NumberParseException;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -353,6 +355,7 @@ class Validator extends Base\Validator
                                  . 'verify_email,'
                                  . 'x_verify_email,'
                                  . 'create_payout,'
+                                 . 'create_composite_payout_with_otp,'
                                  . 'sub_virtual_account_transfer,'
                                  . 'create_payout_link,'
                                  . 'create_payout_batch,'
@@ -370,12 +373,12 @@ class Validator extends Base\Validator
         Entity::TOKEN         => 'sometimes|filled',
 
         // Applicable to select actions: Need to send these payloads for raven's sms content.
-        'amount'                  => 'required_if:action,create_payout,sub_virtual_account_transfer,approve_payout,create_payout_link|integer|min:100',
-        'account_number'          => 'required_if:action,create_payout,create_payout_batch,approve_payout,approve_payout_bulk,create_payout_link,create_bulk_payout_link|alpha_num|between:5,22',
+        'amount'                  => 'required_if:action,create_payout,create_composite_payout_with_otp,sub_virtual_account_transfer,approve_payout,create_payout_link|integer|min:100',
+        'account_number'          => 'required_if:action,create_payout,create_composite_payout_with_otp,create_payout_batch,approve_payout,approve_payout_bulk,create_payout_link,create_bulk_payout_link|alpha_num|between:5,22',
         'master_account_number'   => 'required_if:action,sub_virtual_account_transfer|alpha_num|between:5,22',
         'sub_account_number'      => 'required_if:action,sub_virtual_account_transfer|alpha_num|between:5,22',
         'fund_account_id'         => 'required_if:action,create_payout|public_id|size:17',
-        'purpose'                 => 'required_if:action,create_payout,create_payout_link|string|max:30|alpha_dash_space',
+        'purpose'                 => 'required_if:action,create_payout,create_composite_payout_with_otp,create_payout_link|string|max:30|alpha_dash_space',
         'payout_id'               => 'required_if:action,approve_payout|public_id|size:19',
         'payout_total_amount'     => 'required_if:action,approve_payout_bulk|integer|min:100',
         'payout_count'            => 'required_if:action,approve_payout_bulk|integer|min:1',
@@ -384,6 +387,7 @@ class Validator extends Base\Validator
         'rejected_payout_count'   => 'required_if:action,bulk_payout_approve|integer',
         'rejected_payout_amount'  => 'required_if:action,bulk_payout_approve|numeric',
         'total_payout_amount'     => 'sometimes|integer|min:100',
+        'vpa'                     => 'required_if:action,create_composite_payout_with_otp|string|max:100|custom',
         'contact'                 => 'sometimes_if:action,create_payout_link',
         'total_payout_link_amount'=> 'required_if:action,create_bulk_payout_link|integer',
     ];
@@ -887,6 +891,23 @@ class Validator extends Base\Validator
         return;
     }
 
+    protected function validateVpa($attribute, $vpa)
+    {
+        (new Vpa\Validator)->validateAddress($attribute, $vpa);
+
+        $vpaParts = explode('@', $vpa);
+
+        if ((ProviderCode::validate($vpaParts[1]) === false))
+        {
+            // Invalid VPA
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
+                $attribute,
+                [
+                    'vpa' => $vpa
+                ]);
+        }
+    }
 
     protected function validateAction(string $attribute, string $action)
     {

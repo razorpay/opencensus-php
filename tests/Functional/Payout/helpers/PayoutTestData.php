@@ -1770,6 +1770,124 @@ return [
         ],
     ],
 
+    'testCreateCompositePayoutWithOtp' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/composite_payout_with_otp',
+            'content' => [
+                'otp'                       =>'0007',
+                'token'                     => 'BUIj3m2Nx2VvVj',
+                'mode'                      => 'UPI',
+                'account_number'            => '2224440041626905',
+                'amount'                    => 100,
+                'currency'                  => 'INR',
+                'purpose'                   => 'refund',
+                'narration'                 => 'Batman',
+                "queue_if_low_balance"      => true,
+                'fund_account'   => [
+                    'account_type' => 'vpa',
+                    'vpa' => [
+                        'address'           => 'test@ybl',
+                    ],
+                    'contact'      => [
+                        'name'    => 'Shashi Kumar',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'UPI',
+            ],
+        ],
+    ],
+
+
+    'testCreateCompositePayoutWithOtpWithSecureContextIncorrectAmount' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/composite_payout_with_otp',
+            'content' => [
+                'otp'                       =>'0007',
+                'token'                     => 'BUIj3m2Nx2VvVj',
+                'mode'                      => 'UPI',
+                'account_number'            => '2224440041626905',
+                'amount'                    => 100,
+                'currency'                  => 'INR',
+                'purpose'                   => 'refund',
+                'narration'                 => 'Batman',
+                "queue_if_low_balance"      => true,
+                'fund_account'   => [
+                    'account_type' => 'vpa',
+                    'vpa' => [
+                        'address'           => 'test@ybl',
+                    ],
+                    'contact'      => [
+                        'name'    => 'Shashi Kumar',
+                    ],
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'description' => 'Verification failed because of incorrect OTP.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP
+        ],
+    ],
+
+
+    'testCreateCompositePayoutWithOtpWithSecureContextIncorrectVpa' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/composite_payout_with_otp',
+            'content' => [
+                'otp'                       =>'0007',
+                'token'                     => 'BUIj3m2Nx2VvVj',
+                'mode'                      => 'UPI',
+                'account_number'            => '2224440041626905',
+                'amount'                    => 100,
+                'currency'                  => 'INR',
+                'purpose'                   => 'refund',
+                'narration'                 => 'Batman',
+                "queue_if_low_balance"      => true,
+                'fund_account'   => [
+                    'account_type' => 'vpa',
+                    'vpa' => [
+                        'address'           => 'test@ybl',
+                    ],
+                    'contact'      => [
+                        'name'    => 'Shashi Kumar',
+                    ],
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'description' => 'Verification failed because of incorrect OTP.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP
+        ],
+    ],
+
+
     'testApprovePayoutWithBearerAuth' => [
         'request'  => [
             'server' => [
@@ -17808,6 +17926,109 @@ return [
             ],
         ],
     ],
+
+    'testCreateCompositePayoutWithOtpAndWithoutQueueIfLowBalanceInput' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/composite_payout_with_otp',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'amount'         => '2000',
+                'currency'       => 'INR',
+                'purpose'        => 'refund',
+                'narration'      => 'Batman',
+                'mode'           => 'UPI',
+                'otp'            => '0007',
+                'token'          => 'BUIj3m2Nx2VvVj',
+                'fund_account'   => [
+                    'account_type' => 'vpa',
+                    'vpa' => [
+                        'address'  => 'test@ybl',
+                    ],
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'type'    => 'employee',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'payout',
+                'amount'       => 2000,
+                'currency'     => 'INR',
+                'narration'    => 'Batman',
+                'purpose'      => 'refund',
+                'status'       => 'processing',
+                'mode'         => 'UPI',
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'vpa',
+                    'vpa' => [
+                        'address'  => 'test@ybl',
+                    ],
+                    'batch_id'     => null,
+                    'active'       => true,
+                    'contact'      => [
+                        'entity'       => 'contact',
+                        'name'         => 'Prashanth YV',
+                        'type'         => 'employee',
+                        'reference_id' => 'test@ybl',
+                        'batch_id'     => null,
+                        'active'       => true,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+
+    'testCreateCompositePayoutWithOtpAndWithoutOtpInput' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/composite_payout_with_otp',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'amount'         => '2000000',
+                'currency'       => 'INR',
+                'purpose'        => 'refund',
+                'narration'      => 'Batman',
+                'mode'           => 'UPI',
+                'notes'          => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account'   => [
+                    'account_type' => 'vpa',
+                    'vpa' => [
+                        'address'  => 'mehulisa10xdev@razorpay',
+                    ],
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The otp field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
 
     'testCompositePayoutCreationViaNewCompositeFlowV1ForPayoutsToCard' => [
         'request'  => [

@@ -80,6 +80,15 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postCompositePayoutWithOtp()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->postCompositePayoutWithOtp($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function validatePayout()
     {
         $input = Request::all();

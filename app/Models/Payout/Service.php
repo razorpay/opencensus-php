@@ -12,6 +12,7 @@ use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Http\Route;
+use RZP\Models\Vpa;
 use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\User;
@@ -471,7 +472,111 @@ class Service extends Base\Service
         return $payout->toArrayPublic();
     }
 
+    /**
+     *Composite Payout Creation after verifying user's otp for the action.
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function postCompositePayoutWithOtp(array $input, bool $internal = false): array
+    {
+        $this->user->validateInput('verifyOtp', array_only($input, ['otp', 'token']));
 
+        $otpInput = $this->addVpaToVerifyOtp($input);
+
+        (new User\Core)->verifyOtp($otpInput + ['action' => 'create_composite_payout_with_otp'],
+            $this->merchant,
+            $this->user,
+            $this->mode === Constants\Mode::TEST);
+
+        (new Validator)->setStrictFalse()
+            ->validateInput(Validator::FUND_ACCOUNT_PAYOUT_COMPOSITE, $input);
+
+        $input = $this->addReferenceIdForCompositePayout($input);
+
+        $input = array_except($input, ['otp', 'token']);
+
+        $payoutInput = $input;
+
+        $requestTime = microtime(true);
+
+        $this->trace->info(
+            TraceCode::COMPOSITE_PAYOUT_WITH_OTP_REQUEST,
+            [
+                'input' => $payoutInput,
+                'time'  => $requestTime
+            ]);
+
+        // Proxy auth on this flow has been added to support composite payout creation with OTP
+        if ($this->auth->isProxyAuth() === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
+        }
+
+        // Only allowed for Rx payouts, mandates account number
+        // TODO: Cache the Balance ID
+        $balance = $this->processAccountNumber($input);
+
+        (new Validator)->setStrictFalse()
+            ->validateInput(Validator::BEFORE_CREATE_FUND_ACCOUNT_PAYOUT, $input);
+
+        $isCompositePayout = false;
+
+        if (isset($input[Entity::FUND_ACCOUNT]) === true)
+        {
+            $isCompositePayout = true;
+        }
+        else
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
+        }
+
+        $this->checkIfPayoutIsAllowed($isCompositePayout, $input, $internal, $balance);
+
+        $input = $this->createContactAndFundAccountAndGetPayoutInputForCompositeRequest($input);
+
+        $payout = $this->core->createPayoutToFundAccount($input, $this->merchant, null, $internal);
+
+        if ($payout->getIsPayoutService() === true)
+        {
+            if (array_key_exists(Entity::FUND_ACCOUNT_ID, $payout->payoutServiceResponse) === true)
+            {
+                $fundAccountId = $payout->payoutServiceResponse[Entity::FUND_ACCOUNT_ID];
+
+                $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
+
+                $payout->fundAccount()->associate($fundAccount);
+
+                $payout = $this->postCreationProcessingForCompositePayout($payout);
+
+                $payout->payoutServiceResponse[Entity::FUND_ACCOUNT] = $payout->fundAccount->toArrayPublic();
+            }
+        }
+        else
+        {
+            $payout = $this->postCreationProcessingForCompositePayout($payout);
+        }
+
+        $responseTime = microtime(true);
+
+        $this->trace->info(
+            TraceCode::COMPOSITE_PAYOUT_WITH_OTP_RESPONSE,
+            [
+                'input'         => $input,
+                'payout_id'     => $payout->getId(),
+                'is_composite'  => $isCompositePayout,
+                'time'          => $responseTime,
+                'response_time' => $responseTime - $requestTime
+            ]);
+
+        if ($payout->getIsPayoutService() === true)
+        {
+            return $payout->payoutServiceResponse;
+        }
+
+        return $payout->toArrayPublic();
+    }
 
     public function fundAccountCompositePayoutForHighTpsMerchants(array $input,
                                                                   string $merchantId,
@@ -945,6 +1050,43 @@ class Service extends Base\Service
             'processed_ids' => $processedIds,
             'failed_ids'    => $failedIds,
         ];
+    }
+
+    /**
+     * Adds vpa to reference_id in contact to avoid creation of duplicate contacts
+     * @param array $input
+     *
+     * @return array
+     */
+    public function addReferenceIdForCompositePayout(array $input): array
+    {
+        $fundAccountVpa = $input[Entity::FUND_ACCOUNT][FundAccount\Entity::VPA];
+
+        if (isset($fundAccountVpa[Vpa\Entity::ADDRESS]) === true)
+        {
+            $input[Entity::FUND_ACCOUNT][FundAccount\Entity::CONTACT][Contact\Entity::REFERENCE_ID] = $fundAccountVpa[Vpa\Entity::ADDRESS];
+        }
+
+        return $input;
+    }
+
+
+    /**
+     * Adds VPA on input for Otp Verfication
+     * @param array $input
+     *
+     * @return array
+     */
+    public function addVpaToVerifyOtp(array $input): array
+    {
+        $fundAccountVpa = $input[Entity::FUND_ACCOUNT][FundAccount\Entity::VPA];
+
+        if (isset($fundAccountVpa[Vpa\Entity::ADDRESS]) === true)
+        {
+            $input[FundAccount\Entity::VPA] = $fundAccountVpa[Vpa\Entity::ADDRESS];
+        }
+
+        return $input;
     }
 
     /**

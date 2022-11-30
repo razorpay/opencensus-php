@@ -4389,6 +4389,33 @@ class Core extends Base\Core
 
                 break;
 
+            case Constants::CREATE_COMPOSITE_PAYOUT_WITH_OTP:
+                $requiredParams = [Payout\Entity::AMOUNT,
+                    Payout\Entity::VPA,
+                    Payout\Entity::ACCOUNT_NUMBER];
+
+                $action = Constants::CREATE_PAYOUT;
+
+                if (empty(array_diff_key(array_flip($requiredParams), $input)) === true)
+                {
+                    $context = sprintf('%s:%s:%s:%s:%s:%s:%s',
+                        $merchant->getId(),
+                        $user->getId(),
+                        $action,
+                        $token,
+                        $input[Payout\Entity::AMOUNT],
+                        $input[Payout\Entity::VPA],
+                        $input[Payout\Entity::ACCOUNT_NUMBER]);
+
+                    $context = hash('sha3-512', $context);
+                }
+                else
+                {
+                    $context = $this->getDefaultContextFromActionWithMerchant($merchant, $user, $action, $token);
+                }
+
+                break;
+
             case Constants::APPROVE_PAYOUT:
                 if (empty($input[Payout\Entity::PAYOUT_ID]) === false)
                 {

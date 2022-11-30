@@ -131,6 +131,7 @@ class Entity extends Base\PublicEntity
     const SOURCE_TYPE_EXCLUDE                   = 'source_type_exclude';
     const ON_HOLD_AT                            = 'on_hold_at';
     const PAYOUT_FETCH_MULTIPLE                 = 'payout_fetch_multiple';
+    const VPA                                   = 'vpa';
 
     // string constants
     const PARTNER_APPLICATION    = 'partner_application';
