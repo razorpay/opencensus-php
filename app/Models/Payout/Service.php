@@ -1287,9 +1287,7 @@ class Service extends Base\Service
         // And if the filter applied on custom role this will fail to find role in Admin/Roles table
         // hence flow will break if we don't skip.
 
-        $isCacEnabled = $this->app['razorx']->getTreatment($this->merchant->getId(),
-                Merchant\RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED,
-                Mode::LIVE) === Workflow\Constants::ON;
+        $isCacEnabled = $this->merchant->isCACEnabled();
 
         $payouts = new Base\PublicCollection;
 
@@ -1529,9 +1527,7 @@ class Service extends Base\Service
 
             $this->app['basicauth']->setMerchant($this->merchant);
 
-            $isCacEnabled = $this->app['razorx']->getTreatment($this->merchant->getId(),
-                Merchant\RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED,
-                Mode::LIVE) === Workflow\Constants::ON;
+            $isCacEnabled = $this->merchant->isCACEnabled();
 
             $newConfig = (new WorkflowMigration())->convertOldSummaryIntoNew($this->merchant, $skipFetchFromWfs, $returnOld, $isCacEnabled);
 

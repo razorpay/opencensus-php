@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\VendorPortal;
 use App;
 use Mockery;
 use RZP\Models\User\Entity as UserEntity;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\Fixtures\Entity\User as UserFixture;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
@@ -148,6 +149,24 @@ class VendorPortalTest extends TestCase
         $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
 
         $this->fixtures->create('user',[ 'id' => 'ExistingUserId', 'email' => 'vendorportal@razorpay.com' ]);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode) {
+                    if ($feature === 'rx_custom_access_control_disabled')
+                    {
+                        return 'on';
+                    }
+
+                    return 'control';
+                }));
 
         $this->fixtures->user->createUserMerchantMapping([
             'merchant_id' => '1DummyMerchant',

@@ -183,10 +183,14 @@ class WorkflowPayoutAmountRulesTest extends TestCase
             'max_amount'  => null
         ]);
 
+        $this->mockRazorxTreatment();
+
         $this->testData[__FUNCTION__]['request']['content']['workflows'][0]['permissions'][0] = "perm_" . $this->permissionId;
         $this->testData[__FUNCTION__]['request']['content']['workflows'][0]['levels'][0]['steps'][0]['role_id'] = "role_" . $this->makerRole->getId();
 
         $this->startTest();
+
+        Step\Entity::setCacStatus(false);
     }
 
     public function testEditPayoutWorkflowForCAC()
@@ -208,7 +212,29 @@ class WorkflowPayoutAmountRulesTest extends TestCase
             'max_amount'  => null
         ]);
 
-        $this->mockRazorxTreatment();
+//        $this->mockRazorxTreatment();
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode) {
+                    if ($feature === 'rx_custom_access_control_enabled')
+                    {
+                        return 'on';
+                    }
+
+                    if ($feature === 'rx_custom_access_control_disabled')
+                    {
+                        return 'off';
+                    }
+
+                    return 'on';
+                }));
 
         $this->testData[__FUNCTION__]['request']['content']['workflows'][0]['permissions'][0] = "perm_" . $this->permissionId;
         $this->testData[__FUNCTION__]['request']['content']['workflows'][0]['levels'][0]['steps'][0]['role_id'] = "role_finance_l1";
@@ -228,7 +254,20 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')
-            ->willReturn($returnValue);
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode) use ($returnValue) {
+                    if ($feature === 'rx_custom_access_control_disabled')
+                    {
+                        return 'on';
+                    }
+
+                    if ($feature === 'rx_custom_access_control_enabled')
+                    {
+                        return 'off';
+                    }
+
+                    return $returnValue;
+                }));
     }
 
     public function testEditActivePayoutWorkflow()

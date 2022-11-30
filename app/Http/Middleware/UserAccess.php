@@ -236,15 +236,6 @@ class UserAccess
         }
     }
 
-    private function isCACEnabled() :bool
-    {
-        $isCACExperimentEnabled = $this->razorx->getTreatment($this->ba->getMerchant()->getId(),
-                RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED,
-                MODE::LIVE);
-
-        return $isCACExperimentEnabled === RazorxTreatment::RAZORX_VARIANT_ON;
-    }
-
     private function isCACDisabledForGithubTestSuites() :bool
     {
         $isCACExperimentEnabled = $this->razorx->getTreatment($this->ba->getMerchant()->getId(),
@@ -280,7 +271,7 @@ class UserAccess
             }
 
             // check if cac is enabled
-            $isCACEnabled = $this->isCACEnabled();
+            $isCACEnabled = $this->ba->getMerchant()->isCACEnabled();
 
             // check if disable cac for gihub test suites is on. We are checking this in order to bypass the
             // authorization from authz when the test cases are running via github actions.

@@ -3654,6 +3654,29 @@ class PayoutServiceTest extends TestCase
         $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::PAYOUT_WORKFLOWS]);
         $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::WORKFLOW_VIA_PAYOUTS_MS]);
 
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function($mid, $feature, $mode) {
+                    if ($feature === 'rx_custom_access_control_disabled')
+                    {
+                        return 'on';
+                    }
+
+                    if ($feature === 'rx_custom_access_control_enabled')
+                    {
+                        return 'off';
+                    }
+
+                    return 'control';
+                }));
+
         $this->ba->appAuthLive($this->config['applications.payout_links.secret']);
 
         $this->startTest();

@@ -167,6 +167,30 @@ trait PayoutTrait
 
         $workflow = $this->setupWorkflowForLiveMode();
 
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === Merchant\RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_DISABLED)
+                    {
+                        return 'on';
+                    }
+
+                    if ($feature === Merchant\RazorxTreatment::SECURE_OTP_CONTEXT)
+                    {
+                        return 'on';
+                    }
+
+                    return 'control';
+                }));
+
         $steps = $workflow->steps()->get()->toArrayPublic();
 
         // Creating Owner role corresponding to banking owner role
@@ -423,6 +447,30 @@ trait PayoutTrait
     protected function setupWorkflowForLiveMode(array $workflow = null)
     {
         $this->fixtures->merchant->addFeatures([Constants::PAYOUT_WORKFLOWS]);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === Merchant\RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_DISABLED)
+                    {
+                        return 'on';
+                    }
+
+                    if ($feature === Merchant\RazorxTreatment::SECURE_OTP_CONTEXT)
+                    {
+                        return 'on';
+                    }
+
+                    return 'control';
+                }));
 
         $permission = $this->fixtures->on('live')->create('permission',
             [

@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Transaction;
 
 use RZP\Models\Feature;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Tests\Functional\Fixtures\Entity\User;
@@ -216,6 +217,28 @@ class StatementTest extends TestCase
     //merchant has rules and hitting a route with access control policies allowed with role not allowed
     public function testFetchStatementWithAttributesPermissionFalse()
     {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function($mid, $feature, $mode) {
+                    if ($feature === 'rx_custom_access_control_disabled')
+                    {
+                        return 'on';
+                    }
+
+                    if ($feature === 'rx_custom_access_control_enabled')
+                    {
+                        return 'off';
+                    }
+
+                    return 'control';
+                }));
 
         $this->createBankTransferTransaction();
 
@@ -266,6 +289,29 @@ class StatementTest extends TestCase
     public function testFetchStatementWithNoAttributesWithOperationsRole()
     {
         $this->createBankTransferTransaction();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function($mid, $feature, $mode) {
+                    if ($feature === 'rx_custom_access_control_disabled')
+                    {
+                        return 'on';
+                    }
+
+                    if ($feature === 'rx_custom_access_control_enabled')
+                    {
+                        return 'off';
+                    }
+
+                    return 'control';
+                }));
 
         $transaction = $this->getDbLastEntity('transaction');
 

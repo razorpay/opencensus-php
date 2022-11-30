@@ -7,6 +7,7 @@ use Config;
 use Carbon\Carbon;
 use Conner\Tagging\Taggable;
 use Razorpay\Trace\Logger;
+use RZP\Constants\Mode;
 use RZP\Constants\Product;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
@@ -1306,6 +1307,33 @@ class Entity extends Base\PublicEntity
         $this->setHoldFunds(false);
 
         $this->fireEventWithMerchantPayload('api.account.unsuspended');
+    }
+
+    public function isCACEnabled() :bool
+    {
+        $isCACExperimentEnabledVariant = app('razorx')->getTreatment($this->getId(),
+            RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED,
+            MODE::LIVE);
+
+        $isCACExperimentDisabledVariant = app('razorx')->getTreatment($this->getId(),
+            RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_DISABLED,
+            MODE::LIVE);
+
+        app('trace')->info(TraceCode::CAC_EXPERIMENT_VARIANTS_STATUS,
+            [
+                'isCACExperimentEnabledVariant' => $isCACExperimentEnabledVariant,
+                'isCACExperimentDisabledVariant' => $isCACExperimentDisabledVariant,
+                'merchant_id' => $this->getId()
+            ]);
+
+        if ($isCACExperimentEnabledVariant != RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            return $isCACExperimentDisabledVariant != RazorxTreatment::RAZORX_VARIANT_ON;
+        }
+        else
+        {
+            return $isCACExperimentEnabledVariant === RazorxTreatment::RAZORX_VARIANT_ON;
+        }
     }
 
     public function liveEnable()

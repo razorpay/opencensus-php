@@ -342,7 +342,8 @@ trait TestsBusinessBanking
                                            string $payoutsToFtsSync = 'off',
                                            string $enableOnHoldPayoutsViaPayoutsService = 'control',
                                            string $cacEnabled = 'off',
-                                           string $disableCACForAuthentication = 'off')
+                                           string $disableCACForAuthentication = 'off',
+                                           string $cacDisabled = 'on')
 
     {
         // Mock Razorx
@@ -376,7 +377,8 @@ trait TestsBusinessBanking
                     $payoutsToFtsSync,
                     $enableOnHoldPayoutsViaPayoutsService,
                     $cacEnabled,
-                    $disableCACForAuthentication
+                    $disableCACForAuthentication,
+                    $cacDisabled
                 )
                 {
                     if (ends_with($feature, 'mode_payout_filter'))
@@ -462,6 +464,11 @@ trait TestsBusinessBanking
                     if ($feature === 'disable_cac_for_github_test_suites')
                     {
                         return strtolower($disableCACForAuthentication);
+                    }
+
+                    if ($feature === 'rx_custom_access_control_disabled')
+                    {
+                        return strtolower($cacDisabled);
                     }
 
                     return strtolower($defaultBehaviour);

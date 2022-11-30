@@ -6,6 +6,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Workflow;
 use RZP\Models\Merchant;
 use RZP\Models\Workflow\Base;
+use RZP\Models\Merchant\RazorxTreatment;
 
 class Core extends Base\Core
 {
@@ -23,9 +24,7 @@ class Core extends Base\Core
 
         if (empty($this->merchant) === false)
         {
-            $isCacEnabled = $this->app['razorx']->getTreatment($this->merchant->getId(),
-                    Merchant\RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED,
-                    Mode::LIVE) === Workflow\Constants::ON;
+            $isCacEnabled = $this->merchant->isCACEnabled();
         }
 
         Entity::setCacStatus($isCacEnabled);

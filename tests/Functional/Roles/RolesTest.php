@@ -7,6 +7,7 @@ use Mail;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Permission;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -543,6 +544,25 @@ class RolesTest extends TestCase
             'merchant_id'       => self::DEFAULT_X_MERCHANT_ID,
             'business_type'     => '2',
         ]);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'rx_custom_access_control_disabled')
+                    {
+                        return 'on';
+                    }
+
+                    return 'control';
+                }));
 
         $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = '100000merchant';
 

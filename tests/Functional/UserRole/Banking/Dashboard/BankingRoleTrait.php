@@ -394,6 +394,27 @@ trait BankingRoleTrait
                                     }));
     }
 
+    protected function disableRazorXTreatmentCAC()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode) {
+                    if ($feature === 'rx_custom_access_control_disabled')
+                    {
+                        return 'on';
+                    }
+
+                    return 'control';
+                }));
+    }
+
     protected function getLegacyRoles()
     {
         return [

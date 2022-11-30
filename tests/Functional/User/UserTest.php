@@ -743,6 +743,8 @@ class UserTest extends TestCase
             'activated' => true,
         ]);
 
+        $this->disableRazorXTreatmentCAC();
+
         $this->fixtures->terminal->createRXTerminal();
 
         $this->testData[__FUNCTION__] = $this->testData['testGet'];
@@ -799,6 +801,8 @@ class UserTest extends TestCase
         $this->fixtures->edit('merchant', $user->merchants()->get()[0]->getId(), [
             'activated' => true,
         ]);
+
+        $this->disableRazorXTreatmentCAC();
 
         $this->fixtures->terminal->createRXTerminal();
 
@@ -866,6 +870,8 @@ class UserTest extends TestCase
         ];
 
         $this->fixtures->user->createUserMerchantMapping($mappingData);
+
+        $this->disableRazorXTreatmentCAC();
 
         $this->testData[__FUNCTION__] = $this->testData['testGet'];
 
@@ -1105,6 +1111,8 @@ class UserTest extends TestCase
             'role'        => 'owner',
             'product'     => 'banking',
         ];
+
+        $this->disableRazorXTreatmentCAC();
 
         $this->fixtures->create('user:user_merchant_mapping', $mappingData);
 
@@ -2139,6 +2147,8 @@ class UserTest extends TestCase
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
+
+        $this->disableRazorXTreatmentCAC();
 
         $ravenMock->expects($this->once())->method('verifyOtp');
 
@@ -3551,6 +3561,8 @@ class UserTest extends TestCase
 
         $merchant = $this->fixtures->create('merchant');
 
+        $this->disableRazorXTreatmentCAC();
+
         $mappingData = [
             'user_id'     => $user->getId(),
             'merchant_id' => $merchant->getId(),
@@ -3586,6 +3598,8 @@ class UserTest extends TestCase
         $user = $this->fixtures->create('user');
 
         $merchant = $this->fixtures->create('merchant');
+
+        $this->disableRazorXTreatmentCAC();
 
         $mappingDataForPrimaryProduct = [
             'user_id'     => $user->getId(),
@@ -6977,6 +6991,27 @@ class UserTest extends TestCase
                           ->willReturn('on');
     }
 
+    protected function disableRazorXTreatmentCAC()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode) {
+                    if ($feature === 'rx_custom_access_control_disabled')
+                    {
+                        return 'on';
+                    }
+
+                    return 'control';
+                }));
+    }
+
     protected function enableRazorXTreatmentForBlockBankingRoutes()
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -7189,6 +7224,8 @@ class UserTest extends TestCase
 
         $this->createBankingAccount($bankingAccountAttributes);
 
+        $this->disableRazorXTreatmentCAC();
+
         $merchantUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000',
                                                             $attributes = ['id' => '30000000000000'],
                                                             $role = 'owner',
@@ -7220,6 +7257,8 @@ class UserTest extends TestCase
 
         $this->setUpMerchantForBusinessBanking(false, 1000000, AccountType::DIRECT,
         Channel::RBL);
+
+        $this->disableRazorXTreatmentCAC();
 
         $basd = $this->fixtures->create('banking_account_statement_details', [
             'id'                      => 'xbasd000000003',
@@ -7259,6 +7298,8 @@ class UserTest extends TestCase
                                                             $role = 'owner',
                                                             $mode = 'test');
 
+        $this->disableRazorXTreatmentCAC();
+
         $this->fixtures->create('banking_account_statement_details',[
             Details\Entity::ID             => 'xbas0000000002',
             Details\Entity::MERCHANT_ID    => '10000000000000',
@@ -7277,7 +7318,7 @@ class UserTest extends TestCase
 
     public function testGetForUsersWithBankingAccountForCAHavingGatewayBalance()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::USE_GATEWAY_BALANCE    => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::USE_GATEWAY_BALANCE    => 'on', RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_DISABLED => 'on', RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED => 'off']);
 
         $this->setUpMerchantForBusinessBanking(false, 1000000, AccountType::DIRECT,
                                                Channel::ICICI);
@@ -7308,6 +7349,8 @@ class UserTest extends TestCase
         $user = $this->fixtures->create('user');
 
         $merchant = $this->fixtures->create('merchant');
+
+        $this->disableRazorXTreatmentCAC();
 
         $mappingData = [
             'user_id'     => $user->getId(),
@@ -7344,6 +7387,8 @@ class UserTest extends TestCase
 
         $merchant = $this->fixtures->create('merchant');
 
+        $this->disableRazorXTreatmentCAC();
+
         $mappingData = [
             'user_id'     => $user->getId(),
             'merchant_id' => $merchant->getId(),
@@ -7378,6 +7423,8 @@ class UserTest extends TestCase
         $user = $this->fixtures->create('user');
 
         $merchant = $this->fixtures->create('merchant');
+
+        $this->disableRazorXTreatmentCAC();
 
         $mappingData = [
             'user_id'     => $user->getId(),
@@ -7423,6 +7470,8 @@ class UserTest extends TestCase
 
         $merchant = $this->fixtures->create('merchant');
 
+        $this->disableRazorXTreatmentCAC();
+
         $mappingData = [
             'user_id'     => $user->getId(),
             'merchant_id' => $merchant->getId(),
@@ -7466,6 +7515,8 @@ class UserTest extends TestCase
         $user = $this->fixtures->create('user');
 
         $merchant = $this->fixtures->create('merchant');
+
+        $this->disableRazorXTreatmentCAC();
 
         $mappingData = [
             'user_id'     => $user->getId(),
@@ -8033,6 +8084,8 @@ class UserTest extends TestCase
                 UserEntity::PASSWORD                => 'hello123',
             ]);
 
+        $this->disableRazorXTreatmentCAC();
+
         $this->fixtures->edit('org', '100000razorpay', [OrgEntity::MERCHANT_SECOND_FACTOR_AUTH => 1]);
 
         $this->fixtures->edit('merchant', '10000000000000', [
@@ -8151,6 +8204,8 @@ class UserTest extends TestCase
         $user = $this->fixtures->create('user');
 
         $merchant = $this->fixtures->create('merchant');
+
+        $this->disableRazorXTreatmentCAC();
 
         $mappingData = [
             'user_id'     => $user->getId(),
@@ -8743,6 +8798,8 @@ class UserTest extends TestCase
             ]
         );
 
+        $this->disableRazorXTreatmentCAC();
+
         $testData = & $this->testData[__FUNCTION__];
 
         $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
@@ -8814,6 +8871,8 @@ class UserTest extends TestCase
                 UserEntity::SECOND_FACTOR_AUTH => 1
             ]
         );
+
+        $this->disableRazorXTreatmentCAC();
 
         $merchant = $this->fixtures->create('merchant');
 
@@ -9969,7 +10028,33 @@ class UserTest extends TestCase
 
     public function testMerchantFetchTpvsRouteViaBankingProductForViewOnlyRole()
     {
-        $this->enableRazorXTreatmentForRxAclDenyUnauthorized();
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode) {
+                    if ($feature === 'rx_custom_access_control_enabled')
+                    {
+                        return 'off';
+                    }
+
+                    if ($feature === 'rx_custom_access_control_disabled')
+                    {
+                        return 'on';
+                    }
+
+                    if ($feature === 'razorpay_x_acl_deny_unauthorised')
+                    {
+                        return 'on';
+                    }
+
+                    return 'control';
+                }));
 
         $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'view_only');
 

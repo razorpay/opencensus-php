@@ -58,9 +58,7 @@ class Service extends Base\Service
 
     public function listRolesMapForAdmin($input)
     {
-        $isCacEnabled = $this->app['razorx']->getTreatment($this->merchant->getId(),
-                RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED,
-                Mode::LIVE) === 'on';
+        $isCacEnabled = $this->merchant->isCACEnabled();
 
         if ($isCacEnabled === true)
         {

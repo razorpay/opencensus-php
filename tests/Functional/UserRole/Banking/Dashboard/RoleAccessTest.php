@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\UserRole;
 use RZP\Http\Route;
 use RZP\Models\User\BankingRole;
 use RZP\Models\User\Constants;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Http\Middleware\UserAccess;
 use RZP\Http\UserRolePermissionsMap;
@@ -65,7 +66,33 @@ class RoleAccessTest extends TestCase
 
         $this->fixtures->create('user:user_merchant_mapping', $mappingData);
 
-        $this->mockRazorXTreatmentAccessDenyUnauthorised("on");
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode) {
+                    if ($feature === 'rx_custom_access_control_enabled')
+                    {
+                        return 'off';
+                    }
+
+                    if ($feature === 'rx_custom_access_control_disabled')
+                    {
+                        return 'on';
+                    }
+
+                    if ($feature === 'razorpay_x_acl_deny_unauthorised')
+                    {
+                        return 'on';
+                    }
+
+                    return 'control';
+                }));
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
 
@@ -97,6 +124,8 @@ class RoleAccessTest extends TestCase
     public function testCheckPermissionsForBankingLegacyRoles()
     {
         $legacyRoles = $this->getLegacyRoles();
+
+        $this->disableRazorXTreatmentCAC();
 
         foreach ($legacyRoles as $role)
         {

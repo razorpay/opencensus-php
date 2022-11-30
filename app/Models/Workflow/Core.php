@@ -4,12 +4,14 @@ namespace RZP\Models\Workflow;
 
 use RZP\Error;
 use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Role;
 use RZP\Models\Workflow\Step;
 use RZP\Models\Workflow\Base;
 use RZP\Models\Admin\Permission;
+use RZP\Models\Merchant\RazorxTreatment;
 
 class Core extends Base\Core
 {
@@ -27,9 +29,7 @@ class Core extends Base\Core
 
         if (empty($merchant) === false)
         {
-            $isCacEnabled = $this->app['razorx']->getTreatment($merchant->getId(),
-                    Merchant\RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED,
-                    'live') === 'on';
+            $isCacEnabled = $merchant->isCACEnabled();
         }
 
         Step\Entity::setCacStatus($isCacEnabled);

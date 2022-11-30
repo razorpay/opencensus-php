@@ -1853,9 +1853,7 @@ class Base extends BaseCore
                 // Remove workflow fallback for self-serve feature
                 // TODO: Make this default (removing the API fallback) for all the flows
 
-                $isCacEnabled = $this->app['razorx']->getTreatment($this->merchant->getId(),
-                        Merchant\RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED,
-                        Mode::LIVE) === Workflow\Constants::ON;
+                $isCacEnabled = $this->merchant->isCACEnabled();
 
                 $isIcici2faEnabled = $this->merchant->isFeatureEnabled(Features::ICICI_2FA);
 

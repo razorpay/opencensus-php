@@ -78,6 +78,8 @@ class WorkflowTest extends TestCase
 
         $this->merchantEntityMock->shouldReceive('getId')->andReturn('10000000000000');
 
+        $this->merchantEntityMock->shouldReceive('isCACEnabled')->andReturn(false);
+
         $this->merchantRepoMock->shouldReceive('findOrFailPublic')->andReturn($this->merchantEntityMock);
 
         $this->workflowConfigService->shouldReceive('create')->with($obj)->andReturn(['id' => '123456']);
@@ -101,6 +103,8 @@ class WorkflowTest extends TestCase
         $this->permissionRepoMock->shouldReceive('retrieveIdsByNamesAndOrg')->andReturn($collection);
 
         $this->merchantEntityMock->shouldReceive('getId')->andReturn('10000000000000');
+
+        $this->merchantEntityMock->shouldReceive('isCACEnabled')->andReturn(false);
 
         $this->merchantRepoMock->shouldReceive('findOrFailPublic')->andReturn($this->merchantEntityMock);
 
