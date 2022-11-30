@@ -519,6 +519,27 @@ final class Metric
             $metricDimensions);
     }
 
+    protected static function pushPendingToPendingOnOtpMetrics(Entity $payout)
+    {
+        // Nothing to do here as we don't track pending_on_otp timestamp currently.
+        // This function is added to suppress the `PAYOUT_METRIC_PUSH_EXCEPTION`
+        // exception that occurs without this.
+    }
+
+    protected static function pushPendingOnOtpToCreatedMetrics(Entity $payout)
+    {
+        // Nothing to do here as we don't track pending_on_otp timestamp currently.
+        // This function is added to suppress the `PAYOUT_METRIC_PUSH_EXCEPTION`
+        // exception that occurs without this.
+    }
+
+    protected static function pushPendingOnOtptoFailedMetrics(Entity $payout)
+    {
+        // Nothing to do here as we don't track pending_on_otp timestamp currently.
+        // This function is added to suppress the `PAYOUT_METRIC_PUSH_EXCEPTION`
+        // exception that occurs without this.
+    }
+
     protected static function getMetricDimensions(Entity $payout, array $extra = []): array
     {
         $dimensions = $extra + [

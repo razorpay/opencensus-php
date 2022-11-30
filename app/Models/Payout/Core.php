@@ -5443,7 +5443,7 @@ class Core extends Base\Core
 
             $this->workflowService->createActionOnEntity($payout, $input, $optional_input);
 
-            $this->trace->error(TraceCode::PAYOUT_WORKFLOW_OWNER_APPROVE_SUCCESS_ICICI_CA, [
+            $this->trace->info(TraceCode::PAYOUT_WORKFLOW_OWNER_APPROVE_SUCCESS_ICICI_CA, [
                 'payout_id'     => $payout_id,
                 'action'        => WorkflowConstants::APPROVED,
                 'merchant_id'   => $merchant_id,

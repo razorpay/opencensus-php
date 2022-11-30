@@ -4208,6 +4208,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_UPDATE_STATUS_AFTER_FTA_INITIATED_SKIPPED      = 'PAYOUT_UPDATE_STATUS_AFTER_FTA_INITIATED_SKIPPED';
     const HANDLE_ICICI_2FA_PAYOUT_WEBHOOK                       = 'HANDLE_ICICI_2FA_PAYOUT_WEBHOOK';
     const PAYOUT_STATUS_AFTER_MASTER_FETCH                      = 'PAYOUT_STATUS_AFTER_MASTER_FETCH';
+    const API_PAYOUTS_ARE_NOT_ALLOWED                           = 'API_PAYOUTS_ARE_NOT_ALLOWED';
 
     const VENDOR_PAYMENT_REQUEST                                = 'VENDOR_PAYMENT_REQUEST';
     const VENDOR_PAYMENT_RESPONSE                               = 'VENDOR_PAYMENT_RESPONSE';

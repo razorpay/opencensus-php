@@ -3604,6 +3604,13 @@ class Service extends Base\Service
              ($isCapitalCollectionsApp === false)) or
             (Payout\Core::shouldBlockIciciDirectAccountPayoutsForNonBaasMerchants($balance, $this->merchant) === true))
         {
+            $this->trace->error(TraceCode::API_PAYOUTS_ARE_NOT_ALLOWED,
+                [
+                    'is_vendor_payment_app'      => $isVendorPaymentApp,
+                    'is_capital_collections_app' => $isCapitalCollectionsApp,
+                    'is_internal'                => $internal
+                ]);
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ERROR,
                 null,
