@@ -95,6 +95,9 @@ class CareProxyController extends Controller
     const CREATE_QUICKLINKS      = 'twirp/rzp.care.quicklink.v1.QuicklinkService/CreateQuickLinks';
     const RETRIEVE_QUICKLINKS    = 'twirp/rzp.care.quicklink.v1.QuicklinkService/RetrieveQuickLinks';
 
+    //CSM
+    const RETRIEVE_CSM    = 'twirp/rzp.care.csm.v1.CsmService/GetKeyAccountOwners';
+
     //Freshdesk
     const FRESHDESK_MERCHANT_CONVERSATIONS = 'twirp/rzp.care.freshdesk.v1.FreshdeskService/GetTicketConversations';
     const FRESHDESK_MERCHANT_ADD_REPLY = 'twirp/rzp.care.freshdesk.v1.FreshdeskService/PostTicketReply';
@@ -156,6 +159,7 @@ class CareProxyController extends Controller
         self::RETRIEVE_QUICKLINKS,
         self::FRESHDESK_MERCHANT_CONVERSATIONS,
         self::FRESHDESK_MERCHANT_ADD_REPLY,
+        self::RETRIEVE_CSM,
     ];
 
     const CRON_ROUTES = [
