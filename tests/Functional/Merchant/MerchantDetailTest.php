@@ -5461,6 +5461,23 @@ Team Razorpay',
         $this->startTest();
     }
 
+    public function testGetNCAdditionalDocuments()
+    {
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchant = $merchantDetail->merchant;
+
+        // allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testRequestOriginInHubspotPreSignupDetailsForPrimary()
     {
         $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = 'https://dashboard.razorpay.com';

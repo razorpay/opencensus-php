@@ -1285,6 +1285,12 @@ class Service extends Base\Service
      *
      * @return array
      */
+
+    public function getNCAdditionalDocuments(){
+
+        return (new Core())->getNCAdditionalDocuments();
+    }
+
     public function updateActivationStatusInternal(string $merchantId, array $input): array
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);

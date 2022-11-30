@@ -1442,6 +1442,13 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getNCAdditionalDocuments()
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getNCAdditionalDocuments();
+
+        return ApiResponse::json($response);
+    }
+
     public function updateActivationStatusInternal(string $id)
     {
         $input = Request::all();

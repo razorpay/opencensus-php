@@ -3214,7 +3214,24 @@ class Core extends Base\Core
 
         return $merchantDetails;
     }
+    public function getNCAdditionalDocuments() : array
+    {
+        $response = [];
 
+        foreach (DocumentType::NC_ADDITIONAL_DOCUMENTS as $DOCUMENT_NAME)
+        {
+            if (isset(DocumentType::DOCUMENT_DESCRIPTION_MAP[$DOCUMENT_NAME]) === true)
+            {
+                $response[$DOCUMENT_NAME] = DocumentType::DOCUMENT_DESCRIPTION_MAP[$DOCUMENT_NAME];
+            }
+        }
+
+        $this->trace->info(TraceCode::NC_ADDITIONAL_DOCUMENTS,[
+            'DocumentList' => $response
+        ]);
+
+        return $response;
+    }
     public function syncNoDocOnboardedMerchantDetailsToEs(Entity $merchantDetail)
     {
         $esRepo = new EsRepository(DetailConstants::DEDUPE_ES_INDEX);

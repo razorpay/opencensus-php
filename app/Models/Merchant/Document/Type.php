@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Document;
 
+use phpDocumentor\Reflection\Types\Self_;
 use RZP\Constants\Entity as E;
 
 class Type
@@ -24,38 +25,38 @@ class Type
     const AFFILIATION_CERTIFICATE = 'affiliation_certificate';
     const IATA_CERTIFICATE        = 'iata_certificate';
 
-    const PPI_LICENSE                    = 'ppi_license';
-    const DRIVER_LICENSE_FRONT           = 'driver_license_front';
-    const DRIVER_LICENSE_BACK            = 'driver_license_back';
-    const AADHAR_FRONT                   = 'aadhar_front';
-    const AADHAR_BACK                    = 'aadhar_back';
-    const AADHAR_XML                     = 'aadhar_xml';
-    const AADHAR_ZIP                     = 'aadhar_zip';
-    const PASSPORT_BACK                  = 'passport_back';
-    const PASSPORT_FRONT                 = 'passport_front';
-    const VOTER_ID_FRONT                 = 'voter_id_front';
-    const VOTER_ID_BACK                  = 'voter_id_back';
-    const CANCELLED_CHEQUE               = 'cancelled_cheque';
-    const BUSINESS_PROOF_URL             = 'business_proof_url';
-    const BUSINESS_OPERATION_PROOF_URL   = 'business_operation_proof_url';
-    const BUSINESS_PAN_URL               = 'business_pan_url';
-    const ADDRESS_PROOF_URL              = 'address_proof_url';
-    const PROMOTER_PROOF_URL             = 'promoter_proof_url';
-    const PROMOTER_PAN_URL               = 'promoter_pan_url';
-    const PROMOTER_ADDRESS_URL           = 'promoter_address_url';
-    const FORM_12A_URL                   = 'form_12a_url';
-    const FORM_80G_URL                   = 'form_80g_url';
-    const MEMORANDUM_OF_ASSOCIATION      = 'memorandum_of_association';
-    const ARTICLE_OF_ASSOCIATION         = 'article_of_association';
-    const BOARD_RESOLUTION               = 'board_resolution';
-    const BANK_VERIFICATION_LETTER       = 'bank_verification_letter';
+    const PPI_LICENSE                  = 'ppi_license';
+    const DRIVER_LICENSE_FRONT         = 'driver_license_front';
+    const DRIVER_LICENSE_BACK          = 'driver_license_back';
+    const AADHAR_FRONT                 = 'aadhar_front';
+    const AADHAR_BACK                  = 'aadhar_back';
+    const AADHAR_XML                   = 'aadhar_xml';
+    const AADHAR_ZIP                   = 'aadhar_zip';
+    const PASSPORT_BACK                = 'passport_back';
+    const PASSPORT_FRONT               = 'passport_front';
+    const VOTER_ID_FRONT               = 'voter_id_front';
+    const VOTER_ID_BACK                = 'voter_id_back';
+    const CANCELLED_CHEQUE             = 'cancelled_cheque';
+    const BUSINESS_PROOF_URL           = 'business_proof_url';
+    const BUSINESS_OPERATION_PROOF_URL = 'business_operation_proof_url';
+    const BUSINESS_PAN_URL             = 'business_pan_url';
+    const ADDRESS_PROOF_URL            = 'address_proof_url';
+    const PROMOTER_PROOF_URL           = 'promoter_proof_url';
+    const PROMOTER_PAN_URL             = 'promoter_pan_url';
+    const PROMOTER_ADDRESS_URL         = 'promoter_address_url';
+    const FORM_12A_URL                 = 'form_12a_url';
+    const FORM_80G_URL                 = 'form_80g_url';
+    const MEMORANDUM_OF_ASSOCIATION    = 'memorandum_of_association';
+    const ARTICLE_OF_ASSOCIATION       = 'article_of_association';
+    const BOARD_RESOLUTION             = 'board_resolution';
+    const BANK_VERIFICATION_LETTER     = 'bank_verification_letter';
 
     // For KYC service integration
-    const PERSONAL_PAN                   = 'personal_pan';
-    const AADHAAR                        = 'aadhaar';
-    const PASSPORT                       = 'passport';
-    const VOTERS_ID                      = 'voters_id';
-    const DRIVERS_LICENSE                = 'drivers_license';
+    const PERSONAL_PAN    = 'personal_pan';
+    const AADHAAR         = 'aadhaar';
+    const PASSPORT        = 'passport';
+    const VOTERS_ID       = 'voters_id';
+    const DRIVERS_LICENSE = 'drivers_license';
 
     const SHOP_ESTABLISHMENT_CERTIFICATE = "shop_establishment_certificate";
     const GST_CERTIFICATE                = "gst_certificate";
@@ -63,13 +64,13 @@ class Type
     const BANK_STATEMENT                 = "bank_statement";
 
     //proof types
-    const INDIVIDUAL_PROOF_OF_ADDRESS           = 'individual_proof_of_address';
-    const INDIVIDUAL_PROOF_OF_IDENTIFICATION    = 'individual_proof_of_identification';
-    const BUSINESS_PROOF_OF_IDENTIFICATION      = 'business_proof_of_identification';
-    const ADDITIONAL_DOCUMENTS                  = 'additional_documents';
-    const POI_IDENTIFICATION_NUMBER             = 'poi_identification_number';
-    const POA_IDENTIFICATION_NUMBER             = 'poa_identification_number';
-    const IDENTIFICATION_NUMBER                 = 'identification_number';
+    const INDIVIDUAL_PROOF_OF_ADDRESS        = 'individual_proof_of_address';
+    const INDIVIDUAL_PROOF_OF_IDENTIFICATION = 'individual_proof_of_identification';
+    const BUSINESS_PROOF_OF_IDENTIFICATION   = 'business_proof_of_identification';
+    const ADDITIONAL_DOCUMENTS               = 'additional_documents';
+    const POI_IDENTIFICATION_NUMBER          = 'poi_identification_number';
+    const POA_IDENTIFICATION_NUMBER          = 'poa_identification_number';
+    const IDENTIFICATION_NUMBER              = 'identification_number';
 
     const OTHER                  = 'other';
     const WEBSITE_SCREENSHOT     = 'website_screenshot';
@@ -79,19 +80,190 @@ class Type
 
 
     //FIRS Documents
-    const FIRS_FILE                             = 'firs_file';
-    const FIRS_ZIP                              = 'firs_zip';
+    const FIRS_FILE = 'firs_file';
+    const FIRS_ZIP  = 'firs_zip';
 
-    const FIRS_ICICI_FILE                             = 'firs_icici_file';
-    const FIRS_ICICI_ZIP                              = 'firs_icici_zip';
+    const FIRS_ICICI_FILE = 'firs_icici_file';
+    const FIRS_ICICI_ZIP  = 'firs_icici_zip';
 
     // EmerchantPay Onboarding Documents
 
-    const EMERCHANTPAY_GST_CERTIFICATE      = 'emerchantpay_gst_certificate';
-    const EMERCHANTPAY_PROOF_OF_OWNERSHIP   = 'emerchantpay_proof_of_ownership';
-    const EMERCHANTPAY_AADHAAR              = 'emerchantpay_aadhaar';
-    const EMERCHANTPAY_PAN                  = 'emerchantpay_pan';
-    const EMERCHANTPAY_PASSPORT             = 'emerchantpay_passport';
+    const EMERCHANTPAY_GST_CERTIFICATE    = 'emerchantpay_gst_certificate';
+    const EMERCHANTPAY_PROOF_OF_OWNERSHIP = 'emerchantpay_proof_of_ownership';
+    const EMERCHANTPAY_AADHAAR            = 'emerchantpay_aadhaar';
+    const EMERCHANTPAY_PAN                = 'emerchantpay_pan';
+    const EMERCHANTPAY_PASSPORT           = 'emerchantpay_passport';
+
+
+    const FSSAI_CERTIFICATE                 = 'fssai_certificate';
+    const AYUSH_CERTIFICATE                 = 'ayush_certificate';
+    const IRDA_CERTIFICATE                  = 'irda_certificate';
+    const FDA_CERTIFICATE                   = 'fda_certificate';
+    const DOT_CERTIFICATE                   = 'dot_certificate';
+    const TRAI_CERTIFICATE                  = 'trai_certificate';
+    const RBI_CERTIFICATE                   = 'rbi_certificate';
+    const DGCA_CERTIFICATE                  = 'dgca_certifcate';
+    const NATIONAL_HOUSING_BANK_CERTIFICATE = 'national_housing_bank_certificate';
+    const DEALERSHIP_RIGHTS_CERTIFCATE      = 'dealership_rights_certificate';
+    const PCI_DSS_CERTIFICATE               = 'pci_dss_certificate';
+    const GII_CERTIFICATE                   = 'gii_certificate';
+    const PHARMACY_DRUG_LICENSE             = 'pharmacy_drug_license';
+    const FORM_20_20b_21_21b                = 'form_20_20b_21_21b';
+    const INVOICE                           = 'invoice';
+    const SLA_DEALERSHIP_AGREEMENT          = 'sla_dealership_agreement';
+    const RESELLER_AGREEMENT                = 'reseller_agreeement';
+    const LIQUOR_LICENSE                    = 'liquor_license';
+    const FORM_8                            = 'form_8a';
+    const FORM_10AC                         = 'form_10ac';
+    const IRCTC_AGENT_AGREEMENT             = 'irctc_agent_agreement';
+    const UNDERTAKING                       = 'undertaking';
+    const EPF_SCHEME_CERTIFICATE            = 'epf_scheme_certificate';
+    const PROOF_OF_PROFESSION               = 'proof_of_profession';
+    const BIS_CERTIFICATE                   = 'bis_certificate';
+    const GIA_CERTIFICATE                   = 'gia_certificate';
+    const PM_WANI_CERTIFICATE               = 'pm_wani_certificate';
+    const PESCO_LICENSE                     = 'pesco_license';
+    const DOMAIN_OWNERSHIP_DOCUMENT         = 'domain_ownership_document';
+    const IEC_LICENSE                       = 'iec_license';
+    const BUSINESS_CORRESPONDENT_DOCUMENT   = 'business_correspondent_document';
+    const MMTC_PAMP_LICENSE                 = 'mmtc_pamp_license';
+    const SAFEGOLD_PARTNERSHIP_DOCUMENT     = 'safegold_partnership_document';
+    const BRAND_TIE_UP_DOCUMENT             = 'brand_tie_up_document';
+    const FDA_LICENSE                       = 'fda_license';
+    const FSSAI_LICENSE                     = 'fssai_license';
+    const MERCHANT_SERVICE_ARGUMENT         = 'merchant_service_agreement';
+    const LEGAL_OPINION_DOCUMENT            = 'legal_opinion_document';
+    const UNDERTAKING_DOCUMENT              = 'undertaking_document';
+    const MANUFACTURING_LICENSE             = 'manufacturing_license';
+    const SLA_DOCUMENT                      = 'sla_document';
+    const RERA_LICENSE                      = 'rera_license';
+    const COPYWRITE_LICENSE                 = 'copywrite_license';
+    const TRADE_LICENSE                     = 'trade_license';
+    const IATO_LICENSE                      = 'iato_license';
+    const BBPS_DOCUMENT                     = 'bbps_document';
+    const MSO_DOCUMENT                      = 'mso_document';
+    const GOVT_AUTHORISATION_LETTER         = 'govt_authorisation_letter';
+
+    const NC_ADDITIONAL_DOCUMENTS = [
+
+        self::FSSAI_CERTIFICATE,
+        self::AYUSH_CERTIFICATE,
+        self::SEBI_REGISTRATION_CERTIFICATE,
+        self::FFMC_LICENSE,
+        self::FORM_12A_URL,
+        self::FORM_80G_URL,
+        self::NBFC_REGISTRATION_CERTIFICATE,
+        self::BIS_CERTIFICATE,
+        self::IRDA_CERTIFICATE,
+        self::AMFI_CERTIFICATE,
+        self::IATA_CERTIFICATE,
+        self::FDA_CERTIFICATE,
+        self::DOT_CERTIFICATE,
+        self::TRAI_CERTIFICATE,
+        self::RBI_CERTIFICATE,
+        self::DGCA_CERTIFICATE,
+        self::NATIONAL_HOUSING_BANK_CERTIFICATE,
+        self::AFFILIATION_CERTIFICATE,
+        self::DEALERSHIP_RIGHTS_CERTIFCATE,
+        self::PCI_DSS_CERTIFICATE,
+        self::GII_CERTIFICATE,
+        self::PHARMACY_DRUG_LICENSE,
+        self::FORM_20_20b_21_21b,
+        self::INVOICE,
+        self::SLA_DEALERSHIP_AGREEMENT,
+        self::RESELLER_AGREEMENT,
+        self::LIQUOR_LICENSE,
+        self::FORM_8,
+        self::FORM_10AC,
+        self::IRCTC_AGENT_AGREEMENT,
+        self::UNDERTAKING,
+        self::EPF_SCHEME_CERTIFICATE,
+        self::PROOF_OF_PROFESSION,
+        self::GIA_CERTIFICATE,
+        self::PM_WANI_CERTIFICATE,
+        self::PESCO_LICENSE,
+        self::DOMAIN_OWNERSHIP_DOCUMENT,
+        self::IEC_LICENSE,
+        self::BUSINESS_CORRESPONDENT_DOCUMENT,
+        self::MMTC_PAMP_LICENSE,
+        self::SAFEGOLD_PARTNERSHIP_DOCUMENT,
+        self::PPI_LICENSE,
+        self::BRAND_TIE_UP_DOCUMENT,
+        self::FDA_LICENSE,
+        self::FSSAI_LICENSE,
+        self::MERCHANT_SERVICE_ARGUMENT,
+        self::LEGAL_OPINION_DOCUMENT,
+        self::UNDERTAKING_DOCUMENT,
+        self::MANUFACTURING_LICENSE,
+        self::SLA_DOCUMENT,
+        self::RERA_LICENSE,
+        self::COPYWRITE_LICENSE,
+        self::TRADE_LICENSE,
+        self::IATO_LICENSE,
+        self::BBPS_DOCUMENT,
+        self::MSO_DOCUMENT,
+        self::GOVT_AUTHORISATION_LETTER
+    ];
+
+    const DOCUMENT_DESCRIPTION_MAP = [
+        self::FSSAI_CERTIFICATE                 => "FSSAI certificate",
+        self::AYUSH_CERTIFICATE                 => "Ayush certificate",
+        self::SEBI_REGISTRATION_CERTIFICATE     => "SEBI Registration Certificate",
+        self::FFMC_LICENSE                      => "FFMC License",
+        self::FORM_12A_URL                      => "Form 12A Allotment Letter",
+        self::FORM_80G_URL                      => "Form 80G Allotment Letter",
+        self::NBFC_REGISTRATION_CERTIFICATE     => "NBFC Registration Certificatee",
+        self::BIS_CERTIFICATE                   => "BIS certificate",
+        self::IRDA_CERTIFICATE                  => "IRDA certificate",
+        self::AMFI_CERTIFICATE                  => "AMFI Certificate",
+        self::IATA_CERTIFICATE                  => "IATA Certificate",
+        self::FDA_CERTIFICATE                   => "FDA certificate",
+        self::DOT_CERTIFICATE                   => "DOT certificate",
+        self::TRAI_CERTIFICATE                  => "TRAI certificate",
+        self::RBI_CERTIFICATE                   => "RBI certificate",
+        self::DGCA_CERTIFICATE                  => "DGCA certificate",
+        self::NATIONAL_HOUSING_BANK_CERTIFICATE => "Certificate issued by National Housing Bank",
+        self::AFFILIATION_CERTIFICATE           => "Affiliation Certificate",
+        self::DEALERSHIP_RIGHTS_CERTIFCATE      => "Dealership rights",
+        self::PCI_DSS_CERTIFICATE               => "AOC/Certificate PCI-DSS",
+        self::GII_CERTIFICATE                   => "GII certificate",
+        self::PHARMACY_DRUG_LICENSE             => "Pharmacy or Retail/wholesale Drug License",
+        self::FORM_20_20b_21_21b                => "Form 20/21/20B/21B",
+        self::INVOICE                           => "Invoice",
+        self::SLA_DEALERSHIP_AGREEMENT          => "SLA/Dealership agreement",
+        self::RESELLER_AGREEMENT                => "Re-seller agreement",
+        self::LIQUOR_LICENSE                    => "Brewery addendum or Liquor license",
+        self::FORM_8                            => "Form 8A",
+        self::FORM_10AC                         => "Form 10AC",
+        self::IRCTC_AGENT_AGREEMENT             => "IRCTC agent agreement",
+        self::UNDERTAKING                       => "Undertaking",
+        self::EPF_SCHEME_CERTIFICATE            => "EPF scheme certificate",
+        self::PROOF_OF_PROFESSION               => "Proof of profession",
+        self::GIA_CERTIFICATE                   => "GIA certificate",
+        self::PM_WANI_CERTIFICATE               => "PM WANI certificate",
+        self::PESCO_LICENSE                     => "PESCO license",
+        self::DOMAIN_OWNERSHIP_DOCUMENT         => "Domain ownership invoice / Self Declaration / AOC for PCI DSS",
+        self::IEC_LICENSE                       => "IEC license",
+        self::BUSINESS_CORRESPONDENT_DOCUMENT   => "Business correspondent document",
+        self::MMTC_PAMP_LICENSE                 => "MMTC PAMP license",
+        self::SAFEGOLD_PARTNERSHIP_DOCUMENT     => "Partnership document with safegold",
+        self::PPI_LICENSE                       => "PPI license ( open and semi-closed )",
+        self::BRAND_TIE_UP_DOCUMENT             => "Tie-up with brands for gift Vouchers/Paper",
+        self::FDA_LICENSE                       => "FDA license",
+        self::FSSAI_LICENSE                     => "FSSAI license",
+        self::MERCHANT_SERVICE_ARGUMENT         => "Merchant Service Agreement (MSA)",
+        self::LEGAL_OPINION_DOCUMENT            => "Legal Opinion from Legal firm",
+        self::UNDERTAKING_DOCUMENT              => "Undertaking document",
+        self::MANUFACTURING_LICENSE             => "Manufacturing License",
+        self::SLA_DOCUMENT                      => "Service level Agreement/tie-up document",
+        self::RERA_LICENSE                      => "RERA License",
+        self::COPYWRITE_LICENSE                 => "Copywrite License",
+        self::TRADE_LICENSE                     => "Trade license",
+        self::IATO_LICENSE                      => "IATO license",
+        self::BBPS_DOCUMENT                     => "BBPS document",
+        self::MSO_DOCUMENT                      => "MSO/ Local cable opertor",
+        self::GOVT_AUTHORISATION_LETTER         => "Govt authorisation Letter"
+    ];
 
     const PROOF_TYPES = [
         self::INDIVIDUAL_PROOF_OF_ADDRESS,

@@ -264,6 +264,7 @@ class RouteTeamMap
         'merchant_activation_update'                      => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_activation_status'                      => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_activation_status_change_log'           => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_activation_document_type'               => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_get_rejection_reasons'                  => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_tnc_details'                            => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_tnc_save'                               => [self::TEAM_PAYMENTS_GROWTH],
