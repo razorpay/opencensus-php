@@ -8,6 +8,7 @@ use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Invoice\Type;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Preferences;
 use RZP\Constants as C;
 
@@ -184,7 +185,19 @@ class Base extends Mailable
             $template = $this->getPpMailSubject();
 
             $args = [];
+
+            app('trace')->info(TraceCode::PAYMENT_PAGE_EMAIL_SUBJECT_SET_UP, []);
         }
+
+        app('trace')->info(TraceCode::PAYMENT_PAGE_SUBJECT_CREATION_FOR_INVOICE, [
+            "template"      => $template,
+            "args"          => $args,
+            "type"          => $type,
+            "entity_type"   => array_get($this->data, "invoice.entity_type"),
+            "receipt"       => array_get($this->data, "invoice.receipt"),
+        ]);
+
+
 
         return sprintf($template, ...$args);
     }

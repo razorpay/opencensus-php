@@ -1461,6 +1461,11 @@ class Core extends Base\Core
 
         if ($shouldSendEmail === true)
         {
+            $this->trace->info(TraceCode::PAYMENT_PAGE_SEND_NOTIF_SOURCE, [
+                "view_type" => $paymentLink->getViewType(),
+                "invoice_id" => $invoice->getId()
+            ]);
+
             $invoice->setRelation('entity', $invoice->entity);
 
             return $invoiceCore->sendNotification($invoice, Invoice\NotifyMedium::EMAIL, true);
