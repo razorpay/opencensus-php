@@ -949,6 +949,28 @@ class Core extends Base\Core
         }
         $body = $this->getOrderFromCheckout($checkout['data']['node']);
 
+        $noteAttributes = $body['note_attributes'];
+
+        if (empty($rzpOrder['notes']['gstin']) === false)
+        {
+            array_push($noteAttributes,
+            [   
+                'name'  => 'GSTIN',
+                'value' => $rzpOrder['notes']['gstin']
+            ]);
+        }
+
+        if (empty($rzpOrder['notes']['order_instructions']) === false)
+        {
+            array_push($noteAttributes,
+            [
+                'name'  => 'Additional Notes',
+                'value' => $rzpOrder['notes']['order_instructions']
+            ]);
+        }
+
+        $body['note_attributes'] = $noteAttributes;
+
         // We override the subtotal price to account for the Re 1 payment in case of 100% discount coupons
         $body['current_subtotal_price'] = strval($rzpOrder['amount']/100);
 
