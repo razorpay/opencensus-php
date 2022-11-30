@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Invoice;
 
+use RZP\Models\Merchant\RazorxTreatment;
 use View;
 use Carbon\Carbon;
 
@@ -189,7 +190,13 @@ class PdfGenerator extends Base\Core
     {
         $data = (new Core())->getTemplateDataForPgInvoice($merchant, $month, $year, $invoiceBreakup, $eInvoiceData) ;
 
-        $view = ($data['isGstApplicable'] === true) ?'merchant.pg_invoice.invoice' : 'merchant.pg_invoice.invoice_old';
+        if($this->isMerchantPGInvoiceV2($merchant->getId()) === true && empty($eInvoiceData)===false)
+        {
+            $view = ($data['isGstApplicable'] === true) ?'merchant.pg_invoice.invoiceV2' : 'merchant.pg_invoice.invoice_old';
+        }
+        else {
+            $view = ($data['isGstApplicable'] === true) ?'merchant.pg_invoice.invoice' : 'merchant.pg_invoice.invoice_old';
+        }
 
         return view($view, $data)->render();
     }
@@ -225,5 +232,23 @@ class PdfGenerator extends Base\Core
     public function getNameForMerchantPgRevisedInvoice(int $year, int $month, $merchantId)
     {
         return self::MERCHANT_INVOICE_PG_PDF_PREFIX . '/revised/' . $year . '/'. $month . '/' . $merchantId;
+    }
+
+    public function isMerchantPGInvoiceV2($merchantId): bool
+    {
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $result = $this->app->razorx->getTreatment(
+            $merchantId, RazorxTreatment::MERCHANT_PG_INVOICE_V2, $mode);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_PG_INVOICE_V2_RAZORX,
+            [
+                'result' => $result,
+                'mode' => $mode,
+                'merchant_id' => $merchantId,
+            ]);
+
+        return (strtolower($result) === RazorxTreatment::RAZORX_VARIANT_ON);
     }
 }

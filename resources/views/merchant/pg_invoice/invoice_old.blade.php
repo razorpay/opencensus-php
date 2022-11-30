@@ -448,7 +448,7 @@
 
             @if ($isGstApplicable)
                 GSTIN: {{{$gst}}} <br>
-        @endif
+            @endif
 
         <td class=xl82>{{{$invoice_id}}}</td>
         <td class=xl83>{{{$dates['billingDate']}}}</td>
