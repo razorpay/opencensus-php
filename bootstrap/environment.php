@@ -73,18 +73,39 @@ if ($dockerEnvironment === true)
 
 if (! function_exists('read_env_file'))
 {
-    function read_env_file($envDir, $fileName)
+    // Ref the link to understand the reason behind adding the check
+    // https://github.com/vlucas/phpdotenv#putenv-and-getenv
+    if ($env !== 'production')
     {
-        $file = $envDir . '/' . $fileName;
-
-        if (file_exists($file) === false)
+        function read_env_file($envDir, $fileName)
         {
-            return;
+            $file = $envDir . '/' . $fileName;
+
+            if (file_exists($file) === false)
+            {
+                return;
+            }
+
+            $dotenv = Dotenv::createUnsafeImmutable($envDir, $fileName);
+
+            $dotenv->load();
         }
+    }
+    else
+    {
+        function read_env_file($envDir, $fileName)
+        {
+            $file = $envDir . '/' . $fileName;
 
-        $dotenv = Dotenv::createImmutable($envDir, $fileName);
+            if (file_exists($file) === false)
+            {
+                return;
+            }
 
-        $dotenv->load();
+            $dotenv = Dotenv::createImmutable($envDir, $fileName);
+
+            $dotenv->load();
+        }
     }
 }
 

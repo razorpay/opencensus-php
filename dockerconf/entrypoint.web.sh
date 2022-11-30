@@ -153,6 +153,7 @@ main() {
     start_apache
   elif [[ "${app_type}" == "web-hallmark" ]]; then
     configure_hallmark
+    create_kafka_credentials_dir
     echo "Starting web app"
     start_apache
   else
