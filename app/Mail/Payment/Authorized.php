@@ -129,6 +129,11 @@ class Authorized extends Base
             $storkParams['template_name'] = 'customer.payment.authorized_without_rewards';
         }
 
+        if (isset($data['qr_customer']) === true)
+        {
+            $storkParams['params']['qr_customer'] = $data['qr_customer'];
+        }
+
         return $storkParams;
     }
 }

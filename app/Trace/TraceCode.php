@@ -3699,6 +3699,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKEN_CACHE_STORE_ERROR                               = 'TOKEN_CACHE_STORE_ERROR';
     const INSTRUMENT_ENTITY_EVENT_ERROR                         = 'INSTRUMENT_ENTITY_EVENT_ERROR';
     const MERCHANT_PAYMENT_INSTRUMENTS_FETCH_RESPONSE           = 'MERCHANT_PAYMENT_INSTRUMENTS_FETCH_RESPONSE';
+    const QR_PAYER_NAME_EMPTY                                   = 'Payer name is empty in the request payload';
+    const QR_REQUEST_PAYLOAD_EMPTY                              = 'Request payload field is empty';
+    const QR_JSON_REQUEST_PAYLOAD_EMPTY                         = 'Json request payload field is empty';
 
     //upi status cache
     const UPI_CACHE_STORE_ERROR                                 = 'UPI_CACHE_STORE_ERROR';

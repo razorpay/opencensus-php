@@ -119,6 +119,7 @@ main() {
     run_migration_job
   elif [[ "${app_type}" == "batch-job" ]]; then
     echo "Starting K8s Job"
+    create_kafka_credentials_dir
     command=$2
     batch_id=$3
     mode=$4

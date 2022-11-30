@@ -212,4 +212,9 @@ class Entity extends Base\PublicEntity
 
         $this->setRequestSource(json_encode($requestSource));
     }
+
+    public function getRequestPayload()
+    {
+        return $this->getAttribute(self::REQUEST_PAYLOAD);
+    }
 }

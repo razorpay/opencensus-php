@@ -63,4 +63,51 @@ class Core extends Base\Core
 
         $this->repo->save($qrPaymentRequest);
     }
+
+    public function getPayerNameBasedOnRefId($reference_id)
+    {
+        try
+        {
+            $qrPaymentRequest = $this->repo->fetchPaymentReference($reference_id);
+            $reqPayload = $qrPaymentRequest->getRequestPayload();
+
+            if (empty($reqPayload) === true)
+            {
+                $this->trace->traceException(
+                    TraceCode::QR_REQUEST_PAYLOAD_EMPTY,
+                    []);
+                return null;
+            }
+
+            $jsonReqPayload = json_decode($reqPayload);
+
+            if (empty($jsonReqPayload) === true)
+            {
+                $this->trace->traceException(
+                    TraceCode::QR_JSON_REQUEST_PAYLOAD_EMPTY,
+                    []);
+                return null;
+            }
+
+            $jsonReqPayloadArray = get_object_vars($jsonReqPayload);
+
+            if (array_key_exists('PayerName',$jsonReqPayloadArray) === false)
+            {
+                $this->trace->traceException(
+                    TraceCode::QR_PAYER_NAME_EMPTY,
+                    []);
+                return null;
+            }
+
+            return $jsonReqPayloadArray['PayerName'];
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                TraceCode::QR_PAYER_NAME_EMPTY,
+                []);
+            return null;
+        }
+    }
 }

@@ -3,6 +3,7 @@
 namespace Functional\QrCode;
 
 use Carbon\Carbon;
+use RZP\Mail\Payment\Authorized as AuthorizedMail;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Order;
 use RZP\Error\ErrorCode;
@@ -16,6 +17,7 @@ use RZP\Models\Merchant\FeeBearer;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
 use RZP\Models\Merchant\RazorxTreatment;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Models\QrPayment\UnexpectedPaymentReason;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -1786,5 +1788,70 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals(1, $qrPayment['expected']);
         $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
         $this->assertEquals($rrn, $payment['reference16']);
+    }
+    public function testProcessIciciQrPaymentToFetchPayerName()
+    {
+        Mail::fake();
+
+        $this->fixtures->merchant->addFeatures(['send_name_in_email_for_qr']);
+
+        $qrCode = $this->createQrCode(['customer_id' => 'cust_100000customer']);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData[__FUNCTION__];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+
+        $this->makeUpiIciciPayment($request);
+
+        Mail::assertQueued(AuthorizedMail::class, function ($mail)
+        {
+            $reflection = new \ReflectionClass($mail);
+            $property = $reflection->getProperty('data');
+            $property->setAccessible(true);
+            $mailData = $property->getValue($mail);
+
+            self::assertArrayHasKey('qr_customer', $mailData);
+
+            return true;
+        });
+    }
+
+    public function testProcessIciciQrPaymentToFetchNotPayerName()
+    {
+        Mail::fake();
+
+        $this->fixtures->merchant->addFeatures(['send_name_in_email_for_qr']);
+
+        $qrCode = $this->createQrCode(['customer_id' => 'cust_100000customer']);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData[__FUNCTION__];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+
+        $this->makeUpiIciciPayment($request);
+
+        Mail::assertQueued(AuthorizedMail::class, function ($mail)
+        {
+            $reflection = new \ReflectionClass($mail);
+            $property = $reflection->getProperty('data');
+            $property->setAccessible(true);
+            $mailData = $property->getValue($mail);
+
+            self::assertArrayNotHasKey('qr_customer', $mailData);
+
+            return true;
+        });
     }
 }

@@ -1656,6 +1656,9 @@ class Constants
      */
     const IMPORT_FLOW_OPEX_REPORT = 'import_flow_opex_report';
 
+    //Feature flag for sending payer name in payment email notification for QR payments
+    const SEND_NAME_IN_EMAIL_FOR_QR = 'send_name_in_email_for_qr';
+
     /**
      * Feature flag to enable account <> sub-account setup. This is used when payouts are to be initiated from
      * a virtual account (read as sub VA) where as balance deduction happens from parent DA (read as master DA).
@@ -2264,6 +2267,7 @@ class Constants
         self::CYBERSOURCE_SI_TXN_TEST         => true,
         self::SUB_VA_FOR_DIRECT_BANKING       => true,
         self::SPR_DISABLE_METHOD_RESET        => true,
+        self::SEND_NAME_IN_EMAIL_FOR_QR       => true,
         self::ONE_CC_DISABLE_EMAIL_COOKIE       => true,
         self::ROUTE_NO_DOC_KYC                => true,
         \RZP\Services\Dcs\Constants::RefundEnabled => true,  // Example Feature for DCS
