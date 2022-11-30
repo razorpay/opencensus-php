@@ -1430,6 +1430,34 @@ class Gateway extends Base\Gateway
         return $verify->verifyResponseContent;
     }
 
+    public function sendPaymentVerifyRequestGateway($verify)
+    {
+        $input = $verify->input;
+
+        $request = $this->getMozartRequestArray($input);
+
+        $traceReq = [
+            'method' => $request['method'],
+            'url' => $request['url'],
+        ];
+
+        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $traceRes = $this->getRedactedData($response);
+
+        $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE);
+
+        $verify->verifyResponseContent = $response;
+
+        $verify->verifyResponse = null;
+
+        $verify->verifyResponseBody = null;
+
+        return $verify->verifyResponseContent;
+    }
+
     protected function verifyPayment($verify)
     {
         if ($this->isUpiRecurringPayment($verify->input['payment']) === true)
