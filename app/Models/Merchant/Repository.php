@@ -91,6 +91,23 @@ class Repository extends Base\Repository
         Constants::TAGS                 => 'sometimes|array'
     ];
 
+    public function __findOrFail($id) {
+
+        return $this->repo->transactionOnLiveAndTest(function () use ($id) {
+            $merchantFromApi = $this->findOrFail($id);
+            return (new MerchantWrapper())->FindOrFail($id, $merchantFromApi);
+        });
+    }
+
+    public function __findOrFailPublic($id) {
+
+        return $this->repo->transactionOnLiveAndTest(function () use ($id) {
+            $merchantFromApi = $this->findOrFailPublic($id);
+            $id = Entity::stripDefaultSign($id);
+            return (new MerchantWrapper())->FindOrFail($id, $merchantFromApi);
+        });
+    }
+
     public function addQueryParamTags($query, $params)
     {
         $tags = $params[Constants::TAGS];
