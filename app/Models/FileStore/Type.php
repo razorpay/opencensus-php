@@ -102,9 +102,6 @@ class Type
     const IBK_NETBANKING_CLAIM              = 'ibk_netbanking_claim';
 
     const AUBL_NETBANKING_CLAIM             = 'aubl_netbanking_claim';
-
-    const AUBL_NETBANKING_REFUND            = 'AUBL_NETBANKING_REFUND';
-
     const AUBL_NETBANKING_COMBINED          = 'aubl_netbanking_combined';
 
     const AUBL_CORP_NETBANKING_CLAIM        = 'aubl_corp_netbanking_claim';
@@ -451,7 +448,6 @@ class Type
             self::BULK_RAW_ADDRESS_FILE,
             self::PAYOUT_SAMPLE,
             self::AUBL_NETBANKING_CLAIM,
-            self::AUBL_NETBANKING_REFUND,
             self::AUBL_NETBANKING_COMBINED,
             self::DLB_NETBAKING_REFUND,
             self::TMB_NETBANKING_REFUND,
@@ -654,7 +650,6 @@ class Type
         self::FIRST_DATA_PARES_FILE,
         self::BULK_DISPUTES_FILE,
         self::AUBL_NETBANKING_CLAIM,
-        self::AUBL_NETBANKING_REFUND,
         self::AUBL_NETBANKING_COMBINED,
         self::AUBL_CORP_NETBANKING_CLAIM,
         self::AUBL_CORP_NETBANKING_REFUND,
@@ -833,7 +828,6 @@ class Type
             self::DCB_NETBANKING_REFUND,
             self::IBK_NETBANKING_REFUND,
             self::IBK_NETBANKING_CLAIM,
-            self::AUBL_NETBANKING_REFUND,
             self::AUBL_NETBANKING_CLAIM,
             self::AUBL_NETBANKING_COMBINED,
             self::AUBL_CORP_NETBANKING_REFUND,

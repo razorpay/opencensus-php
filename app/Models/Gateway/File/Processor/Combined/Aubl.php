@@ -15,14 +15,12 @@ use RZP\Reconciliator\NetbankingAusf\Constants;
 
 class Aubl extends Base
 {
-    const FILE_TYPE               = FileStore\Type::AUBL_NETBANKING_COMBINED;
-    const EXTENSION               = FileStore\Format::XLSX;
-    const FILE_NAME               = 'ALL_TXN_REPORT_AUBL';
-
+    const FILE_TYPE = FileStore\Type::AUBL_NETBANKING_COMBINED;
+    const EXTENSION = FileStore\Format::XLSX;
+    const FILE_NAME = 'ALL_TXN_REPORT_AUBL';
 
     protected function formatDataForMail(array $data)
     {
-
         $amount = [
             'claims'  => 0,
             'refunds' => 0,
@@ -36,7 +34,6 @@ class Aubl extends Base
         ];
 
         $claimsFile = [];
-        $refundsFile = [];
         $summaryFile = [];
 
         if (isset($data['refunds']) === true)

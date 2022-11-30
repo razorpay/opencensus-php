@@ -2,77 +2,114 @@
 
 namespace RZP\Models\Gateway\File\Processor\Refund;
 
-use Carbon\Carbon;
+use Monolog\Logger;
 
 use RZP\Models\Payment;
-use RZP\Models\Bank\IFSC;
-use RZP\Models\FileStore;
-use RZP\Constants\Timezone;
-use RZP\Services\NbPlus\Netbanking;
-use RZP\Models\Gateway\File\Processor\FileHandler;
+use RZP\Trace\TraceCode;
+use RZP\Services\Scrooge;
+use RZP\Models\Payment\Refund\Constants;
 
 class Aubl extends Base
 {
+    const GATEWAY = Payment\Gateway::NETBANKING_AUSF;
 
-    use FileHandler;
-
-    const SR_NO                 = 'Sr.No';
-    const REFUND_ID             = 'Refund ID';
-    const TXN_DATE              = 'Txn Date';
-    const BAK_REFERENCE_NUMBER  = 'Bank Ref No.';
-    const PGI_REFERENCE_NO      = 'RZP Reference No.';
-    const TXN_AMT               = 'Txn Amount (Rs Ps)';
-    const REFUND_AMOUNT         = 'Refund Amount (Rs Ps)';
-
-    const FILE_NAME                  = 'AUBL_Refund_';
-    const EXTENSION                  = FileStore\Format::XLS;
-    const FILE_TYPE                  = FileStore\Type::AUBL_NETBANKING_REFUND;
-    const PAYMENT_TYPE_ATTRIBUTE     = Payment\Entity::BANK;
-    const GATEWAY_CODE               = IFSC::AUBL;
-    const GATEWAY                    = Payment\Gateway::NETBANKING_AUSF;
-    const BASE_STORAGE_DIRECTORY     = 'Aubl/Refund/Netbanking/';
-
-    protected function formatDataForFile(array $data)
-    {
-        $content = [];
-
-        $count = 1;
-
-        foreach ($data as $row)
-        {
-            $transactionDate = Carbon::createFromTimestamp($row['payment']['created_at'], Timezone::IST)->format('d/m/Y H:i:s');
-
-            $bankRefNo = $row['gateway'][Netbanking::BANK_TRANSACTION_ID]; // payment through nbplus service
-
-            $content[] = [
-                self::SR_NO                 => $count++,
-                self::REFUND_ID             => $row['refund']['id'],
-                self::TXN_DATE              => $transactionDate,
-                self::BAK_REFERENCE_NUMBER  => $bankRefNo,
-                self::PGI_REFERENCE_NO      => $row['payment']['id'],
-                self::TXN_AMT               => $this->getFormattedAmount($row['payment']['amount']),
-                self::REFUND_AMOUNT         => $this->getFormattedAmount($row['refund']['amount']),
-            ];
-        }
-
-        return $content;
-    }
-
-    protected function getFileToWriteNameWithoutExt()
-    {
-        $date = Carbon::now(Timezone::IST)->format('Ymd');
-
-        return self::BASE_STORAGE_DIRECTORY . self::FILE_NAME . $date;
-    }
-
-    protected function addGatewayEntitiesToDataWithPaymentIds(array $data, array $paymentIds)
+    protected function addGatewayEntitiesToDataWithPaymentIds(array $data, array $paymentIds): array
     {
         return $data;
     }
 
-    protected function getFormattedAmount($amount): String
+    public function createFile($data)
     {
-        return number_format($amount / 100, 2, '.', '');
+
     }
 
+    protected function getScroogeQuery(int $from, int $to, $refundIds = []): array
+    {
+        return [
+            Constants::SCROOGE_QUERY => [
+                Constants::SCROOGE_REFUNDS => [
+                    Constants::SCROOGE_GATEWAY    => static::GATEWAY,
+                    Constants::SCROOGE_CREATED_AT => [
+                        Constants::SCROOGE_GTE => $from,
+                        Constants::SCROOGE_LTE => $to,
+                    ],
+                    Constants::SCROOGE_BASE_AMOUNT => [
+                        Constants::SCROOGE_GT => 0,
+                    ],
+                    Constants::SCROOGE_PROCESSED_SOURCE => 'GATEWAY_API'
+                ],
+            ],
+            Constants::SCROOGE_COUNT => $this->fetchFromScroogeCount,
+        ];
+    }
+
+    protected function getRefundsFromScrooge(array $input): array
+    {
+        $returnData = [];
+
+        $fetchFromScrooge = true;
+
+        $skip = 0;
+
+        do
+        {
+            $input[Constants::SCROOGE_SKIP] = $skip;
+
+            try
+            {
+                $response = $this->app['scrooge']->getRefunds($input);
+
+                $code = $response[Constants::RESPONSE_CODE];
+
+                if (in_array($code, Scrooge::RESPONSE_SUCCESS_CODES, true) === true)
+                {
+                    $data = $response[Constants::RESPONSE_BODY][Constants::RESPONSE_DATA];
+
+                    if (empty($data) === false)
+                    {
+                        foreach ($data as $value)
+                        {
+                            $returnData[] = $value;
+                        }
+
+                        if (count($data) < $this->fetchFromScroogeCount)
+                        {
+                            // Data is complete
+                            $fetchFromScrooge = false;
+                        }
+                        else
+                        {
+                            $skip += $this->fetchFromScroogeCount;
+                        }
+                    }
+                    else
+                    {
+                        // Data is complete
+                        $fetchFromScrooge = false;
+                    }
+                }
+                else
+                {
+                    return [[], false];
+                }
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Logger::ERROR,
+                    TraceCode::SCROOGE_FETCH_FILE_BASED_REFUNDS_FAILED,
+                    [
+                        'input' => $input,
+                        'id'    => $this->gatewayFile->getId(),
+                    ]
+                );
+
+                return [[], false];
+            }
+        }
+        while ($fetchFromScrooge === true);
+
+        return [$returnData, true];
+    }
 }

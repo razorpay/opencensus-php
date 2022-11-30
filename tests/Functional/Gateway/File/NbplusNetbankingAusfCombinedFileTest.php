@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\File;
 use Mail;
 use Carbon\Carbon;
 
+use RZP\Services\Scrooge;
 use RZP\Constants\Entity;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
@@ -43,8 +44,6 @@ class NbplusNetbankingAusfCombinedFileTest extends NbPlusPaymentServiceNetbankin
 
         $this->refundPayment($transaction1['entity_id']);
 
-        $refundTransaction1 = $this->getLastEntity('transaction', true);
-
         $paymentEntity1 = $this->getDbLastPayment();
 
         $refundEntity1 = $this->getDbLastRefund();
@@ -58,8 +57,6 @@ class NbplusNetbankingAusfCombinedFileTest extends NbPlusPaymentServiceNetbankin
         ]);
 
         $this->refundPayment($transaction2['entity_id'], 500);
-
-        $refundTransaction2 = $this->getLastEntity('transaction', true);
 
         $paymentEntity2 = $this->getDbLastPayment();
 
@@ -87,31 +84,24 @@ class NbplusNetbankingAusfCombinedFileTest extends NbPlusPaymentServiceNetbankin
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-        $file = $this->getEntities(Entity::FILE_STORE, ['count' => 3], true);
-
-        $refundsFile = $file['items'][2]['location'];
-
-        $refundsFileLocation = 'storage/files/filestore/' . $refundsFile;
+        $file = $this->getEntities(Entity::FILE_STORE, ['entity_id' => $content[File\Entity::ID]], true);
 
         $expectedFilesContent = [
             'entity' => 'collection',
-            'count'  => 3,
+            'count'  => 2,
             'items'  => [
                 [
                     'type' => 'aubl_netbanking_combined',
                 ],
                 [
                     'type' => 'aubl_netbanking_claim',
-                ],
-                [
-                    'type' => 'AUBL_NETBANKING_REFUND',
-                ],
+                ]
             ],
         ];
 
         $this->assertArraySelectiveEquals($expectedFilesContent, $file);
 
-        Mail::assertSent(DailyFile::class, function ($mail) use ($paymentEntity1, $refundEntity1, $paymentEntity2, $refundEntity2, $refundsFileLocation)
+        Mail::assertSent(DailyFile::class, function ($mail) use ($paymentEntity1, $refundEntity1, $paymentEntity2, $refundEntity2)
         {
             $date = Carbon::today(Timezone::IST)->format('d-m-Y');
 
@@ -123,8 +113,8 @@ class NbplusNetbankingAusfCombinedFileTest extends NbPlusPaymentServiceNetbankin
 
             $this->assertCount(2, $mail->attachments);
 
-            $this->checkRefundsFile(
-                $refundsFileLocation,
+            $this->checkSummaryFile(
+                $mail->viewData['summaryFile'],
                 $paymentEntity1,
                 $paymentEntity2,
                 $refundEntity1,
@@ -135,40 +125,57 @@ class NbplusNetbankingAusfCombinedFileTest extends NbPlusPaymentServiceNetbankin
                 $paymentEntity1,
                 $paymentEntity2);
 
-            //
-            // Marking netbanking transaction as reconciled after sending in bank file
-            //
-            $refundTransaction = $this->getLastEntity('transaction', true);
-
-            $this->assertNotNull($refundTransaction['reconciled_at']);
-
             return true;
         });
     }
 
-    protected function checkRefundsFile($refundsFileLocation, $payment1, $payment2, $fullRefund, $partialRefund)
+    protected function checkSummaryFile($summaryFileLocation, $payment1, $payment2, $fullRefund, $partialRefund)
     {
-        $refundsFileContents = (new ExcelImport)->toArray($refundsFileLocation)[0];
+        $summaryFileContents = (new ExcelImport)->toArray($summaryFileLocation['url'])[0];
 
-        $this->assertCount(2, $refundsFileContents);
+        $this->assertCount(4, $summaryFileContents);
 
-        $refundFileRow1 = $refundsFileContents[0];
+        $summaryFileRow1 = $summaryFileContents[0];
 
-        $this->assertCount(7, $refundFileRow1);
-        $this->assertEquals($refundFileRow1['refund_id'], $fullRefund['id']);
-        $this->assertNotNull($refundFileRow1['bank_ref_no']);
-        $this->assertEquals($refundFileRow1['rzp_reference_no'], $payment1['id']);
-        $this->assertEquals($refundFileRow1['txn_amount_rs_ps'], $this->getFormattedAmount($payment1['amount']));
-        $this->assertEquals($refundFileRow1['refund_amount_rs_ps'], $this->getFormattedAmount($fullRefund['amount']));
+        $this->assertCount(16, $summaryFileRow1);
+        $this->assertEquals($this->getFormattedDate($payment1['created_at'], 'd/m/Y'), $summaryFileRow1['date']);
+        $this->assertEquals('PAYMENT', $summaryFileRow1['transaction_type']);
+        $this->assertEquals($payment1['id'], $summaryFileRow1['payment_id']);
+        $this->assertEquals($payment1['id'], $summaryFileRow1['userreferenceno']);
+        $this->assertNotEmpty($summaryFileRow1['externalreferenceid']);
+        $this->assertEquals($this->getFormattedAmount($payment1['amount']), $summaryFileRow1['amount']);
 
-        $refundFileRow2 = $refundsFileContents[1];
+        $summaryFileRow2 = $summaryFileContents[1];
 
-        $this->assertCount(7, $refundFileRow1);
-        $this->assertEquals($refundFileRow2['refund_id'], $partialRefund['id']);
-        $this->assertNotNull($refundFileRow2['bank_ref_no']);
-        $this->assertEquals($refundFileRow2['rzp_reference_no'], $payment2['id']);
-        $this->assertEquals($refundFileRow2['txn_amount_rs_ps'], $this->getFormattedAmount($payment2['amount']));
-        $this->assertEquals($refundFileRow2['refund_amount_rs_ps'], $this->getFormattedAmount($partialRefund['amount']));
+        $this->assertCount(16, $summaryFileRow2);
+        $this->assertEquals($this->getFormattedDate($payment2['created_at'], 'd/m/Y'), $summaryFileRow2['date']);
+        $this->assertEquals('PAYMENT', $summaryFileRow2['transaction_type']);
+        $this->assertEquals($payment2['id'], $summaryFileRow2['payment_id']);
+        $this->assertEquals($payment2['id'], $summaryFileRow2['userreferenceno']);
+        $this->assertNotEmpty($summaryFileRow2['externalreferenceid']);
+        $this->assertEquals($this->getFormattedAmount($payment2['amount']), $summaryFileRow2['amount']);
+
+        $summaryFileRow3 = $summaryFileContents[2];
+
+        $this->assertCount(16, $summaryFileRow3);
+        $this->assertEquals($this->getFormattedDate($fullRefund->payment->getCreatedAt(), 'd/m/Y'), $summaryFileRow3['date']);
+        $this->assertEquals('REFUND', $summaryFileRow3['transaction_type']);
+        $this->assertEquals($fullRefund['payment_id'], $summaryFileRow3['payment_id']);
+        $this->assertEquals($fullRefund['payment_id'], $summaryFileRow3['userreferenceno']);
+        $this->assertNotNull($summaryFileRow3['externalreferenceid']);
+        $this->assertEquals($this->getFormattedAmount($fullRefund->payment->getAmount()), $summaryFileRow3['amount']);
+        $this->assertEquals($summaryFileRow3['refund_amount'], $this->getFormattedAmount($fullRefund['amount']));
+
+        $summaryFileRow4 = $summaryFileContents[3];
+
+        $this->assertCount(16, $summaryFileRow4);
+        $this->assertEquals($this->getFormattedDate($partialRefund->payment->getCreatedAt(), 'd/m/Y'), $summaryFileRow4['date']);
+        $this->assertEquals('REFUND', $summaryFileRow4['transaction_type']);
+        $this->assertEquals($partialRefund['payment_id'], $summaryFileRow4['payment_id']);
+        $this->assertEquals($partialRefund['payment_id'], $summaryFileRow4['userreferenceno']);
+        $this->assertNotNull($summaryFileRow4['externalreferenceid']);
+        $this->assertEquals($this->getFormattedAmount($partialRefund->payment->getAmount()), $summaryFileRow4['amount']);
+        $this->assertEquals($summaryFileRow4['refund_amount'], $this->getFormattedAmount($partialRefund['amount']));
     }
 
     protected function checkClaimFile(array $claimData, $payment1, $payment2)
@@ -194,13 +201,62 @@ class NbplusNetbankingAusfCombinedFileTest extends NbPlusPaymentServiceNetbankin
         $this->assertEquals($this->getFormattedAmount($payment2['amount']), $claimFileRow2['amount']);
     }
 
-    protected function getFormattedDate($date, $format)
+    protected function getFormattedDate($date, $format): string
     {
         return Carbon::createFromTimestamp($date, Timezone::IST)->format($format);
     }
 
-    protected function getFormattedAmount($amount)
+    protected function getFormattedAmount($amount): string
     {
         return number_format($amount / 100, 2, '.', '');
+    }
+
+    protected function setFetchFileBasedRefundsFromScroogeMockResponse(array $refundEntities)
+    {
+        $scroogeResponse = [
+            'code' => 200,
+            'body' => [
+                'data' => [],
+            ],
+        ];
+
+        $scroogeResponseForRef1Update = json_decode('{
+            "api_failed_count": 0,
+            "api_failures": [],
+            "scrooge_failed_count": 0,
+            "scrooge_failures": [],
+            "success_count": 2,
+            "time_taken": 0.24121499061584473
+        }', true);
+
+        foreach ($refundEntities as $refundEntity)
+        {
+            $scroogeResponse['body']['data'][] = [
+                'id'               => $refundEntity['id'],
+                'amount'           => $refundEntity['amount'],
+                'base_amount'      => $refundEntity['base_amount'],
+                'payment_id'       => $refundEntity['payment_id'],
+                'bank'             => $refundEntity->payment['bank'],
+                'gateway'          => $refundEntity['gateway'],
+                'currency'         => $refundEntity['currency'],
+                'gateway_amount'   => $refundEntity['gateway_amount'],
+                'gateway_currency' => $refundEntity['gateway_currency'],
+                'method'           => $refundEntity->payment['method'],
+                'created_at'       => $refundEntity['created_at'],
+            ];
+        }
+
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+                            ->setConstructorArgs([$this->app])
+                            ->onlyMethods(['getRefunds', 'bulkUpdateRefundReference1'])
+                            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->app->scrooge->method('getRefunds')
+                           ->willReturn($scroogeResponse);
+
+        $this->app->scrooge->method('bulkUpdateRefundReference1')
+                           ->willReturn($scroogeResponseForRef1Update);
     }
 }

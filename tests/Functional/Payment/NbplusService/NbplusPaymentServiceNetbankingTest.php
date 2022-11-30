@@ -69,6 +69,11 @@ class NbPlusPaymentServiceNetbankingTest extends TestCase
                           {
                               return 'enablewebhooks';
                           }
+                          if (($feature === 'fetch_refunds_data_from_scrooge') and
+                              ($mid === 'netbanking_ausf'))
+                          {
+                              return 'on';
+                          }
                           return 'nbplusps';
                       })
                   );
