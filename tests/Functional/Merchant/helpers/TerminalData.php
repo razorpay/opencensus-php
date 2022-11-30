@@ -2574,7 +2574,6 @@ return [
         'response' => [
             'content' => [
                 'enabled' => [
-                    'ANDB'   => 'Andhra Bank',
                     'BKID'   => 'Bank of India',
                     'MAHB'   => 'Bank of Maharashtra',
                     'CNRB'   => 'Canara Bank',
@@ -2650,7 +2649,6 @@ return [
         'response' => [
             'content' => [
                 'enabled' => [
-                    'ANDB'   => 'Andhra Bank',
                     'BKID'   => 'Bank of India',
                     'MAHB'   => 'Bank of Maharashtra',
                     'CNRB'   => 'Canara Bank',
@@ -2765,7 +2763,6 @@ return [
                     'SBIN'   => 'State Bank of India',
                 ],
                 'disabled' => [
-                    'ANDB'   => 'Andhra Bank',
                     'BKID'   => 'Bank of India',
                     'MAHB'   => 'Bank of Maharashtra',
                     'CNRB'   => 'Canara Bank',

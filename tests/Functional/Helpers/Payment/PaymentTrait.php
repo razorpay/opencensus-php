@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Helpers\Payment;
 
 use App;
 use Mockery;
+use Razorpay\IFSC\Bank;
 use Requests;
 use Carbon\Carbon;
 use RZP\Models\Pricing\Entity;

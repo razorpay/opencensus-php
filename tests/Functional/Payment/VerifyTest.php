@@ -12,6 +12,7 @@ use RZP\Tests\Functional\Helpers\MocksRedisTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentVerifyTrait;
+use Razorpay\IFSC\Bank;
 
 class VerifyTest extends TestCase
 {
@@ -601,7 +602,7 @@ class VerifyTest extends TestCase
 
         $this->getErrorInCallback();
 
-        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
+        $payment = $this->getDefaultNetbankingPaymentArray(Bank::UBIN);
 
         $this->runRequestResponseFlow(
             $data,
@@ -645,7 +646,7 @@ class VerifyTest extends TestCase
 
         $this->getErrorInCallback();
 
-        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
+        $payment = $this->getDefaultNetbankingPaymentArray(Bank::UBIN);
 
         $this->runRequestResponseFlow(
             $data,
@@ -716,7 +717,7 @@ class VerifyTest extends TestCase
 
         $this->getErrorInCallback();
 
-        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
+        $payment = $this->getDefaultNetbankingPaymentArray(Bank::UBIN);
 
         $this->runRequestResponseFlow(
             $data,
@@ -1012,7 +1013,7 @@ class VerifyTest extends TestCase
 
         $this->getErrorInCallback();
 
-        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
+        $payment = $this->getDefaultNetbankingPaymentArray(Bank::UBIN);
 
         $this->runRequestResponseFlow(
             $data,
@@ -1079,7 +1080,7 @@ class VerifyTest extends TestCase
 
         $this->getErrorInCallback();
 
-        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
+        $payment = $this->getDefaultNetbankingPaymentArray(Bank::UBIN);
 
         $this->runRequestResponseFlow(
             $data,
@@ -1155,7 +1156,7 @@ class VerifyTest extends TestCase
 
         $this->getErrorInCallback();
 
-        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
+        $payment = $this->getDefaultNetbankingPaymentArray(Bank::UBIN);
 
         $this->runRequestResponseFlow(
             $data,

@@ -3044,7 +3044,6 @@ class Gateway
         Netbanking::BARB_C => Gateway::NETBANKING_BOB,
         Netbanking::PUNB_C => Gateway::NETBANKING_PNB,
         Netbanking::KKBK_C => Gateway::NETBANKING_KOTAK,
-        Netbanking::ANDB_C => Gateway::NETBANKING_UBI,
         Netbanking::IDIB_C => Gateway::NETBANKING_IBK,
         Netbanking::RATN_C => Gateway::NETBANKING_RBL,
         Netbanking::HDFC_C => Gateway::NETBANKING_HDFC,

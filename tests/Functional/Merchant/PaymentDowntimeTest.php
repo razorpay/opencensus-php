@@ -15,6 +15,7 @@ use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Helpers\DowntimeTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Downtime\DowntimeNotification as DowntimeNotification;
+use Razorpay\IFSC\Bank;
 
 class PaymentDowntimeTest extends TestCase
 {
@@ -356,7 +357,7 @@ class PaymentDowntimeTest extends TestCase
             'content' => [
                 'gateway'     => 'billdesk',
                 'method'      => 'netbanking',
-                'issuer'      => 'ANDB',
+                'issuer'      => Bank::ALLA,
                 'source'      => 'dummy',
                 'reason_code' => 'OTHER',
                 'begin'       => strval(Carbon::now()->subMinutes(60)->timestamp),

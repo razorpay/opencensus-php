@@ -16,6 +16,7 @@ use RZP\Exception\PaymentVerificationException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentVerifyTrait;
+use Razorpay\IFSC\Bank;
 
 class VerifyWithErrorCodeMappingTest extends TestCase
 {
@@ -635,7 +636,7 @@ class VerifyWithErrorCodeMappingTest extends TestCase
 
         $data = $this->testData['testCapturedPaymentVerify'];
 
-        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
+        $payment = $this->getDefaultNetbankingPaymentArray(Bank::MAHB);
 
         $this->doAuthAndCapturePayment($payment);
 
@@ -676,7 +677,7 @@ class VerifyWithErrorCodeMappingTest extends TestCase
 
         $data = $this->testData['testCapturedPaymentVerify'];
 
-        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
+        $payment = $this->getDefaultNetbankingPaymentArray(Bank::MAHB);
 
         $this->doAuthAndCapturePayment($payment);
 
@@ -855,7 +856,7 @@ class VerifyWithErrorCodeMappingTest extends TestCase
         switch($method)
         {
             case 'netbanking':
-                $paymentArray = $this->getDefaultNetbankingPaymentArray('ANDB');
+                $paymentArray = $this->getDefaultNetbankingPaymentArray(Bank::MAHB);
                 break;
             case 'card':
                 $paymentArray = $this->getDefaultPaymentArray();

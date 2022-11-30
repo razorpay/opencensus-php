@@ -44,7 +44,6 @@ class Netbanking
     ];
 
     public static $inconsistentIfsc = [
-        self::ANDB_C,
         self::BARB_C,
         self::BARB_R,
         self::BKID_C,
@@ -64,7 +63,6 @@ class Netbanking
     ];
 
     protected static $names = [
-        self::ANDB_C => 'Andhra Bank - Corporate Banking',
         self::BARB_C => 'Bank of Baroda - Corporate Banking',
         self::BARB_R => 'Bank of Baroda - Retail Banking',
         self::BKID_C => 'Bank of India - Corporate Banking',
@@ -135,7 +133,6 @@ class Netbanking
         IFSC::IOBA,
         IFSC::FSFB,
         IFSC::DCBL,
-        IFSC::ANDB,   // due to bank merger, will be routed through UBIN direct integration
         IFSC::SYNB,   // due to bank merger, will be routed through CNRB direct integration
         IFSC::CORP,   // due to bank merger, will be routed through UBIN direct integration
         IFSC::AUBL,
@@ -158,7 +155,6 @@ class Netbanking
         self::BARB_C,
         self::PUNB_C,
         self::KKBK_C,
-        self::ANDB_C,
         self::IDIB_C,
         self::RATN_C,
         self::HDFC_C,
@@ -199,7 +195,6 @@ class Netbanking
         IFSC::ESFB,
         IFSC::UBIN,
         IFSC::SCBL,
-        IFSC::ANDB,     // due to bank merger, will be routed through UBIN direct integration
         IFSC::CORP,     // due to bank merger, will be routed through UBIN direct integration
         IFSC::AUBL,
         IFSC::DLXB,
@@ -254,7 +249,6 @@ class Netbanking
         Gateway::BILLDESK => [
             'retail' => [
                 IFSC::ALLA,
-                IFSC::ANDB,
                 IFSC::AUBL,
                 IFSC::BACB,
                 IFSC::BBKM,
@@ -324,7 +318,6 @@ class Netbanking
                 IFSC::VARA,
                 IFSC::YESB,
                 IFSC::ZCBL,
-                self::ANDB_C,
                 self::BARB_C,
                 self::BARB_R,
                 self::DLXB_C,
@@ -338,7 +331,6 @@ class Netbanking
                 self::YESB_C,
             ],
             'tpv' => [
-                IFSC::ANDB,
                 IFSC::BKID,
                 IFSC::CIUB,
                 /*As CORP is now redirected to UBIN. For this, We are Removing CORP
@@ -372,7 +364,6 @@ class Netbanking
                 // IFSC::ORBC,
                 // IFSC::RATN,
                 IFSC::ABNA,
-                IFSC::ANDB,
                 IFSC::BKID,
                 IFSC::CBIN,
                 IFSC::CIUB,
@@ -439,7 +430,6 @@ class Netbanking
         ],
         Gateway::EBS => [
             'retail' => [
-                IFSC::ANDB,
                 IFSC::CBIN,
                 IFSC::CNRB,
                 IFSC::DLXB,
@@ -479,7 +469,6 @@ class Netbanking
                 IFSC::AIRP,
                 IFSC::ABNA,
                 IFSC::ALLA,
-                IFSC::ANDB,
                 self::BARB_R,
                 IFSC::BBKM,
                 IFSC::BKID,
@@ -853,16 +842,11 @@ class Netbanking
         Gateway::NETBANKING_UBI => [
             'retail' => [
                 IFSC::UBIN,
-                IFSC::ANDB,
                 IFSC::CORP,
             ],
             'tpv'   => [
                 IFSC::UBIN,
-                IFSC::ANDB,
                 IFSC::CORP,
-            ],
-            'corp' => [
-                self::ANDB_C,
             ],
         ],
         Gateway::NETBANKING_SCB => [
@@ -1213,7 +1197,6 @@ class Netbanking
         self::UTIB_C,
         self::IBKL_C,
         self::YESB_C,
-        self::ANDB_C,
         self::RATN_C,
         self::DLXB_C,
         self::SVCB_C,

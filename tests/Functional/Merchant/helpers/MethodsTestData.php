@@ -509,7 +509,7 @@ return [
                 'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
             ],
     ],
-   
+
     'testMerchantsMethodUpdateInternal' => [
         'request' => [
             'url' => '/internal/methods/bulkupdate',
@@ -753,8 +753,6 @@ return [
                     ['bank' => 'AUBL'],
                     ['bank' => 'AUBL_C'],
                     ['bank' => 'AIRP'],
-                    ['bank' => 'ANDB'],
-                    ['bank' => 'ANDB_C'],
                     ['bank' => 'UTIB'],
                     ['bank' => 'UTIB_C'],
                     ['bank' => 'BDBL'],

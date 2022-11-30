@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Helpers\Payment;
 
+use Razorpay\IFSC\Bank;
 use Redis;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
@@ -285,7 +286,7 @@ trait PaymentVerifyTrait {
 
         $this->getErrorInCallback();
 
-        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
+        $payment = $this->getDefaultNetbankingPaymentArray(Bank::UBIN);
 
         $this->runRequestResponseFlow(
             $data,
@@ -312,7 +313,7 @@ trait PaymentVerifyTrait {
 
         $this->assertEquals('created', $order['status']);
 
-        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
+        $payment = $this->getDefaultNetbankingPaymentArray(Bank::UBIN);
 
         $payment["order_id"] = 'order_' . $order["id"];
 
@@ -352,11 +353,11 @@ trait PaymentVerifyTrait {
 
         $this->getErrorInCallback();
 
-        $order = $this->createOrderForBank('ANDB', $configArr);
+        $order = $this->createOrderForBank(Bank::UBIN, $configArr);
 
         $this->assertEquals('created', $order['status']);
 
-        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
+        $payment = $this->getDefaultNetbankingPaymentArray(Bank::UBIN);
 
         $payment["order_id"] = $order["id"];
 

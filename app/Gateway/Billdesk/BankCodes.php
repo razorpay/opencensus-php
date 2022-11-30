@@ -77,7 +77,7 @@ class BankCodes
         IFSC::VIJB => 'VJB',                    // Vijaya Bank
         IFSC::YESB => 'YBK',                    // Yes Bank
         IFSC::ZCBL => 'ZOB',                    // Zoroastrian Bank
-        Netbanking::ANDB_C => 'UBI',            // Andhra Bank Corporate - migrated to UBI
+       // Netbanking::ANDB_C => 'UBI',            // Andhra Bank Corporate - migrated to UBI
         Netbanking::BARB_C => 'BBC',            // Bank of Baroda - Corporate
         Netbanking::BARB_R => 'BBR',            // Bank of Baroda - Retail
         Netbanking::DLXB_C => 'DL2',            // Dhanlakshmi Bank Corporate

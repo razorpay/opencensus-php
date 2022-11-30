@@ -4678,7 +4678,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 27,
+                'count' => 26,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -4810,13 +4810,6 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'ANDB_C',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'BARB_C',
                         ],
                     ],
@@ -4882,7 +4875,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 28,
+                'count' => 27,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -5015,13 +5008,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'ZCBL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'ANDB_C',
                         ],
                     ],
                     [
@@ -5314,7 +5300,6 @@ return [
                                 'TNSC',
                                 'VARA',
                                 'ZCBL',
-                                'ANDB_C',
                                 'BARB_C',
                                 'DLXB_C',
                                 'IBKL_C',

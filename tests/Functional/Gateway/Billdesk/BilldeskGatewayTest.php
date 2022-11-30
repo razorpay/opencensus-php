@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Billdesk;
 use DB;
 use Carbon\Carbon;
 
+use Razorpay\IFSC\Bank;
 use RZP\Exception;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
@@ -362,7 +363,8 @@ class BilldeskGatewayTest extends TestCase
 
         $payment = $this->getDefaultNetbankingPaymentArray();
 
-        $payment['bank'] = 'ANDB';
+
+        $payment['bank'] = Bank::UBIN;
 
         $payment = $this->doAuthAndCapturePayment($payment);
 
@@ -386,7 +388,7 @@ class BilldeskGatewayTest extends TestCase
 
         $payment = $this->getDefaultNetbankingPaymentArray();
 
-        $payment['bank'] = 'ANDB';
+        $payment['bank'] = Bank::UBIN;
 
         $this->runRequestResponseFlow($data, function () use ($payment)
         {
@@ -452,7 +454,7 @@ class BilldeskGatewayTest extends TestCase
 
         $count = count($content['netbanking']);
 
-        $this->assertEquals(90, $count);
+        $this->assertEquals(88, $count);
     }
 
     public function testServerToServerCallback()
