@@ -133,7 +133,7 @@
                     {{{ $pageName }}}
                 </div>
                 <div>
-                    @include('merchant/pg_invoice/components/pageheader')
+                    @include('merchant/pg_invoice/components/pageheaderV2')
                 </div>
                 <div style=“position:absolute;bottom:350px;“>
                     @if (isset($einvoice_data[$pageName]['Irn']))
