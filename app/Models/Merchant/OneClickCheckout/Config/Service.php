@@ -16,6 +16,24 @@ use RZP\Models\Merchant\Service as MerchantService;
 
 class Service extends Base\Service
 {
+
+    const MUTEX_LOCK_TTL_SEC = 60;
+
+    const MAX_RETRY_COUNT = 1;
+
+    const MAX_RETRY_DELAY_MILLIS = 1 * 30 * 1000;
+
+    protected $mutex;
+
+    const MUTEX_KEY = 'merchant_1cc_configs';
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
+
     /**
      * @throws \Throwable
      */
@@ -155,53 +173,8 @@ class Service extends Base\Service
                     }
                 }
 
-                $updatedCodIntelligenceEnabledFlag = isset($input[Type::COD_INTELLIGENCE]) &&
-                    $input[Type::COD_INTELLIGENCE] === true;
-
-                $currentCodIntelligenceEnabledFlag = $this->merchant->getCODIntelligenceConfig();
-
                 $updatedManualControlCodOrderFlag = isset($input[Type::MANUAL_CONTROL_COD_ORDER]) &&
                     $input[Type::MANUAL_CONTROL_COD_ORDER] === true;
-
-                $currentManualControlCodOrderFlag = $this->merchant->getManualControlCodOrderConfig();
-
-                if((isset($input[Type::COD_INTELLIGENCE]) && ($currentCodIntelligenceEnabledFlag !== $updatedCodIntelligenceEnabledFlag))||
-                    (isset($input[Type::MANUAL_CONTROL_COD_ORDER]) && ($currentManualControlCodOrderFlag !== $updatedManualControlCodOrderFlag)) )
-                {
-                    if (($updatedCodIntelligenceEnabledFlag xor $updatedManualControlCodOrderFlag) &&
-                        ($currentCodIntelligenceEnabledFlag === false && $currentManualControlCodOrderFlag === false))
-                    {
-                        $topic =  env('APP_MODE', 'prod').'-'. Constants::RTO_MLMODEL_ASSIGNMENT;
-                        try
-                        {
-                            $this->trace->info(TraceCode::STARTING_RTO_MLMODEL_ASSIGNMENT_KAFKA_UPLOAD,
-                                [
-                                    'merchant_id' => $this->merchant->getId(),
-                                    'topic' => $topic
-                                ]);
-                            $message = array("merchant_id" => $this->merchant->getId());
-                            (new KafkaProducer($topic, stringify($message)))->Produce();
-                        }
-                        catch (\Exception $e)
-                        {
-                            $this->trace->error(TraceCode::RTO_MLMODEL_ASSIGNMENT_KAFKA_UPLOAD_FAILED,
-                                [
-                                    'error' => $e->getMessage(),
-                                    'merchant_id' => $this->merchant->getId(),
-                                    'topic' => $topic
-                                ]
-                            );
-                        }
-                    }
-                    (new Core)->associateMerchant1ccConfig(
-                        Type::COD_INTELLIGENCE,
-                        $updatedCodIntelligenceEnabledFlag
-                    );
-                    (new Core)->associateMerchant1ccConfig(
-                        Type::MANUAL_CONTROL_COD_ORDER,
-                        $updatedManualControlCodOrderFlag
-                    );
-                }
 
                 if ($updatePlatform === Constants::WOOCOMMERCE)
                 {
@@ -299,6 +272,8 @@ class Service extends Base\Service
             }
         );
 
+        $this->update1ccIntelligenceConfig($input);
+
         if ( $input['platform'] === Constants::SHOPIFY && (isset($input[Type::ONE_CLICK_CHECKOUT]) || isset($input[Type::ONE_CC_BUY_NOW_BUTTON]))) {
 
             $configOneClickCheckout = $this->merchant->get1ccConfig(Type::ONE_CLICK_CHECKOUT);
@@ -321,6 +296,71 @@ class Service extends Base\Service
                     'merchant_id' => $this->merchant->getId(),
                     'BUY_NOW_ENABLED/DISABLED' => $buyNowValue
                 ]);
+        }
+    }
+
+    protected function update1ccIntelligenceConfig($input)
+    {
+        $updatedCodIntelligenceEnabledFlag = isset($input[Type::COD_INTELLIGENCE]) &&
+            $input[Type::COD_INTELLIGENCE] === true;
+
+        $updatedManualControlCodOrderFlag = isset($input[Type::MANUAL_CONTROL_COD_ORDER]) &&
+            $input[Type::MANUAL_CONTROL_COD_ORDER] === true;
+
+        $currentCodIntelligenceEnabledFlag = $this->merchant->getCODIntelligenceConfig();
+
+        $currentManualControlCodOrderFlag = $this->merchant->getManualControlCodOrderConfig();
+
+        if((isset($input[Type::COD_INTELLIGENCE]) && ($currentCodIntelligenceEnabledFlag !== $updatedCodIntelligenceEnabledFlag))||
+            (isset($input[Type::MANUAL_CONTROL_COD_ORDER]) && ($currentManualControlCodOrderFlag !== $updatedManualControlCodOrderFlag)) )
+        {
+            if (($updatedCodIntelligenceEnabledFlag xor $updatedManualControlCodOrderFlag) &&
+                ($currentCodIntelligenceEnabledFlag === false && $currentManualControlCodOrderFlag === false))
+            {
+                $topic =  env('APP_MODE', 'prod').'-'. Constants::RTO_MLMODEL_ASSIGNMENT;
+                try
+                {
+                    $this->trace->info(TraceCode::STARTING_RTO_MLMODEL_ASSIGNMENT_KAFKA_UPLOAD,
+                        [
+                            'merchant_id' => $this->merchant->getId(),
+                            'topic' => $topic
+                        ]);
+                    $message = array("merchant_id" => $this->merchant->getId());
+                    (new KafkaProducer($topic, stringify($message)))->Produce();
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->error(TraceCode::RTO_MLMODEL_ASSIGNMENT_KAFKA_UPLOAD_FAILED,
+                        [
+                            'error' => $e->getMessage(),
+                            'merchant_id' => $this->merchant->getId(),
+                            'topic' => $topic
+                        ]
+                    );
+                }
+            }
+
+            $this->mutex->acquireAndRelease(
+                self::MUTEX_KEY . ':' . $this->merchant->getId() . ':' . Type::COD_INTELLIGENCE . ':' .
+                Type::MANUAL_CONTROL_COD_ORDER,
+                function () use ($updatedCodIntelligenceEnabledFlag, $updatedManualControlCodOrderFlag)
+                {
+                    (new Core())->associateMerchant1ccIntelligenceConfig(
+                        Type::COD_INTELLIGENCE,
+                        $updatedCodIntelligenceEnabledFlag
+                    );
+                    (new Core())->associateMerchant1ccIntelligenceConfig(
+                        Type::MANUAL_CONTROL_COD_ORDER,
+                        $updatedManualControlCodOrderFlag
+                    );
+                },
+                self::MUTEX_LOCK_TTL_SEC,
+                ErrorCode::BAD_REQUEST_ANOTHER_1CC_CONFIG_OPERATION_IN_PROGRESS,
+                self::MAX_RETRY_COUNT,
+                self::MAX_RETRY_DELAY_MILLIS - 500,
+                self::MAX_RETRY_DELAY_MILLIS,
+                true
+            );
         }
     }
 

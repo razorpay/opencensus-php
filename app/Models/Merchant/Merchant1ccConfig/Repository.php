@@ -14,7 +14,17 @@ class Repository extends Base\Repository
             ->where(Entity::MERCHANT_ID, '=', $merchantId)
             ->where(Entity::CONFIG, '=', $config)
             ->where(Entity::DELETED_AT, '=', null)
+            ->orderBy(Entity::UPDATED_AT, 'desc')
             ->first();
+    }
+
+    public function findAllByMerchantAndConfigType($merchantId, $config)
+    {
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Entity::CONFIG, '=', $config)
+            ->where(Entity::DELETED_AT, '=', null)
+            ->get();
     }
 
     public function findByMerchantId($merchantId)

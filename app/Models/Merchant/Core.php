@@ -7542,6 +7542,37 @@ class Core extends Base\Core
         );
     }
 
+    public function associateMerchant1ccIntelligenceConfig(string $type, string $value, array $value_json = [])
+    {
+        $input = [
+            'config'     => $type,
+            'value'      => $value,
+            'value_json' => $value_json,
+        ];
+
+        return $this->transaction(
+            function () use ($input)
+            {
+                $configs = $this->repo->merchant_1cc_configs->findAllByMerchantAndConfigType(
+                    $this->merchant->getId(),
+                    $input['config']
+                );
+
+                foreach ($configs as $config)
+                {
+                    $config->delete();
+                }
+
+                $newConfig =  (new Merchant1ccConfig\Core())->createAndSaveConfig($this->merchant, $input);
+                if ($newConfig == null)
+                {
+                    $this->trace->info(TraceCode::MERCHANT_1CC_INTELLIGENCE_CONFIG_CREATE_FAILED);
+                }
+                return $newConfig;
+            }
+        );
+    }
+
     public function associateMerchant1ccComments(string $type, string $value)
     {
         $input = [
