@@ -4141,7 +4141,8 @@ class Processor
             'dcc_mark_up_percent'=>$dcc_mark_up_percent,
             'fee_bearer' => $payment->getFeeBearer(),
             'fee' => $payment->getFee(),
-            'is_hdfc_vas' => $payment->isHdfcVasDSCustomerFeeBearerSurcharge(),
+            'is_vas_merchant' => $payment->isVasMerchantWithDirectSettlement(),
+            'settled_by' => $payment->getSettledBy(),
         ];
         $terminal = $payment->terminal;
 
