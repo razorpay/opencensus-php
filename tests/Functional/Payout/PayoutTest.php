@@ -12310,7 +12310,11 @@ class PayoutTest extends OAuthTestCase
 
         $this->ba->adminAuth();
 
-        $this->startTest();
+        $testData = &$this->testData['testFundAccountTypeValidationForManualPayoutStatusUpdate'];
+
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/manual/status';
+
+        $this->startTest($testData);
 
         $payout->reload();
 
