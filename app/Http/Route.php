@@ -14030,6 +14030,7 @@ class Route
             'webhook_fetch',
             'webhook_fetch_multiple',
             'internal_feature_bulk_assign',
+            'internal_feature_bulk_remove',
         ],
 
         //
