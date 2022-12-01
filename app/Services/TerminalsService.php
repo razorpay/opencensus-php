@@ -100,6 +100,10 @@ class TerminalsService
         self::CREATE_TERMINAL       =>   [
             self::PATH   => 'v1/terminals',
             self::METHOD => Requests::POST,
+            self::OPTIONS => [
+                self::TIMEOUT         => 5, // 5 seconds
+                self::CONNECT_TIMEOUT => 5, // 5 seconds
+            ],
         ],
         self::FETCH_TERMINAL_BY_ID  =>   [
             self::PATH   => 'v1/terminals/%s',
