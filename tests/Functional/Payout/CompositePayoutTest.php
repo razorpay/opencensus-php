@@ -473,7 +473,7 @@ class CompositePayoutTest extends TestCase
         // Processed Webhook sent from FTS
         $ftsWebhook = [
             'bank_processed_time' => '',
-            'bank_account_type'   => 'NODAL',
+            'bank_account_type'   => null,
             'bank_status_code'    => 'SUCCESS',
             'channel'             => 'ICICI',
             'extra_info'          => [

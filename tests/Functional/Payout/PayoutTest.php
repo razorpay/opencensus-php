@@ -12295,6 +12295,34 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('processed', $fta->getStatus());
     }
 
+    public function testFundAccountTypeValidationForManualPayoutStatusUpdate()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $fta = $payout->fundTransferAttempts()->first();
+
+        // Assert that fta status was initiated (FTS sync call).
+        $this->assertEquals('initiated', $fta->getStatus());
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $payout->reload();
+
+        // Assert that payout status was not updated.
+        $this->assertEquals('initiated', $payout->getStatus());
+
+        $fta->reload();
+
+        // Assert that fta status was also not updated along with payout status.
+        $this->assertEquals('initiated', $fta->getStatus());
+    }
+
     public function testPayoutWithoutFtaManualStatusUpdateToFailed()
     {
         $this->testCreatePayoutForRequestSubmitted();

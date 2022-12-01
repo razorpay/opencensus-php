@@ -461,7 +461,7 @@ class Validator extends Base\Validator
     protected static $payoutStatusManualRules = [
         Entity::STATUS                  => 'required|string',
         Entity::FAILURE_REASON          => 'sometimes|string',
-        Constants::FTS_ACCOUNT_TYPE     => 'sometimes|string',
+        Constants::FTS_ACCOUNT_TYPE     => 'sometimes|string|custom',
         Constants::FTS_FUND_ACCOUNT_ID  => 'sometimes|string'
     ];
 
@@ -544,7 +544,7 @@ class Validator extends Base\Validator
         Entity::STATUS                  => 'required|string',
         Entity::FAILURE_REASON          => 'sometimes|string',
         Constants::FTS_FUND_ACCOUNT_ID  => 'sometimes|string',
-        Constants::FTS_ACCOUNT_TYPE     => 'sometimes|string',
+        Constants::FTS_ACCOUNT_TYPE     => 'sometimes|string|custom',
     ];
 
     protected static $payoutBulkStatusUpdateManualValidators = [
@@ -563,6 +563,14 @@ class Validator extends Base\Validator
     protected static $payout2faOtpSendRequestRules = [
         Payout\Entity::PAYOUT_ID  => 'required|filled|string'
     ];
+
+    protected function validateFtsAccountType($attribute, $ftsAccountType)
+    {
+        if (in_array(strtolower($ftsAccountType), ['current', 'nodal'], true) === false)
+        {
+            throw new BadRequestValidationFailureException('Fts Account Type can be either current or nodal');
+        }
+    }
 
     protected function validateMethod($attribute, $method)
     {

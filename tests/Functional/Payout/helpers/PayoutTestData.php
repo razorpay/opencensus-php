@@ -199,6 +199,30 @@ return [
         ],
     ],
 
+    'testFundAccountTypeValidationForManualPayoutStatusUpdate' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts/id/manual/status',
+            'content' => [
+                'status'              => 'processed',
+                'fts_fund_account_id' => '12345',
+                'fts_account_type'    => 'DIRECT',
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'description' => 'Fts Account Type can be either current or nodal',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreatePayoutWithNarrationNull' => [
         'request'  => [
             'method'  => 'POST',
