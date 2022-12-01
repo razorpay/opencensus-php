@@ -197,7 +197,7 @@ class Core extends Base\Core
         return $appUrls;
     }
 
-    public function updateLeadScoreComponents(Entity $merchantDetails, $newLeadScore)
+    public function updateLeadScoreComponents(Detail\Entity $merchantDetails, $newLeadScore)
     {
         return $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $newLeadScore) {
             $mutexResource = self::BUSINESS_DETAIL_CREATE_MUTEX_PREFIX . $merchantDetails->getMerchantId();
