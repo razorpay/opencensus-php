@@ -7465,6 +7465,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ACS_SYNC_UNKNOWN_TRIGGER                              = 'ACS_SYNC_UNKNOWN_TRIGGER';
     const ACS_SYNC_METADATA_ERROR                               = 'ACS_SYNC_METADATA_ERROR';
     const ACS_FETCH_ACCOUNT_DETAILS                             = 'ACS_FETCH_ACCOUNT_DETAILS';
+    const ACS_FETCH_ACCOUNT_DETAILS_EXCEPTION                   = 'ACS_FETCH_ACCOUNT_DETAILS_EXCEPTION';
     const ACS_TRIGGER_SYNC                                      = 'ACS_TRIGGER_SYNC';
     const ACS_TRIGGER_SYNC_ERROR                                = 'ACS_TRIGGER_SYNC_ERROR';
     const ACS_ENTITY_FETCH                                      = 'ACS_ENTITY_FETCH';

@@ -735,6 +735,13 @@ class MerchantDetailTest extends OAuthTestCase
         ], $response[MerchantConstants::MERCHANT_DETAILS][18]);
     }
 
+    public function testMerchantDetailsFetchAccountServiceAccountDoesNotExist() {
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/account_service/accounts/'. '10000000000001';
+        $this->ba->accountServiceAuth();
+        $this->startTest($testData);
+    }
+
     public function testMerchantDetailsFetchAccountService()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail', ['business_category' => 'financial_services']);

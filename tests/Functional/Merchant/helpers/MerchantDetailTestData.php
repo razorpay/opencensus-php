@@ -604,6 +604,32 @@ return [
         ],
     ],
 
+    'testMerchantDetailsFetchAccountServiceAccountDoesNotExist' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/account_service/accounts/{accountId}',
+            'content' => [],
+        ],
+        'response' => [
+            'content' =>  [
+                "error" => [
+                    "code" => "BAD_REQUEST_ERROR",
+                    "description" => "The merchant id does not exist or invalid",
+                    "source" => "NA",
+                    "step" => "NA",
+                    "reason" => "NA",
+                    "metadata"=> [],
+                    "field" => "id",
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ID_DOES_NOT_EXIST,
+        ],
+     ],
+
     'testMerchantDetailsFetchAccountService' => [
         'request' => [
             'method' => 'GET',

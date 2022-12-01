@@ -8871,13 +8871,32 @@ class Service extends Base\Service
         return array_values(array_unique($updatedMerchantIds));
     }
 
+    /**
+     * @throws BadRequestException
+     */
     public function getMerchantDetailsForAccountService(string $accountId): array
     {
         $this->trace->info(TraceCode::ACS_FETCH_ACCOUNT_DETAILS, ['id' => $accountId]);
 
         $data = [];
-        $merchant = $this->repo->merchant->findOrFailPublic($accountId);
-        $merchantDetails = $this->repo->merchant_detail->findOrFailPublic($accountId);
+
+        try {
+            $merchant = $this->repo->merchant->findOrFailPublic($accountId);
+            $merchantDetails = $this->repo->merchant_detail->findOrFailPublic($accountId);
+        } catch (BadRequestException $ex){
+
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::ACS_FETCH_ACCOUNT_DETAILS_EXCEPTION,
+                [
+                    "id" => $accountId,
+                ]
+            );
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_ID_DOES_NOT_EXIST, "id");
+        }
+
         $stakeholders = $this->repo->stakeholder->findManyByMerchantIds([$accountId]);
         $documents = $this->repo->merchant_document->findManyByMerchantIds([$accountId]);
         $merchantEmails = $this->repo->merchant_email->getEmailByMerchantId($accountId);
@@ -10695,7 +10714,7 @@ class Service extends Base\Service
         foreach ($features as $name)
         {
             try
-            {  
+            {
                 $featureName = Feature\Constants::$visibleFeaturesMap[$name]['feature'];
 
                 if(isset($featureName) === false || empty($featureName) === true)
@@ -10707,7 +10726,7 @@ class Service extends Base\Service
                             'features'        =>  $features,
                         ]
                     );
-    
+
                     return ['FAILED'];
                 }
 
