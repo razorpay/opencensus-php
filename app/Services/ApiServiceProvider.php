@@ -796,6 +796,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerSmartCollect();
 
         $this->registerCdsHttpClients();
+
+        $this->registerKafkaProducerClient();
     }
 
     protected function registerCacheManager()
@@ -812,6 +814,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             return new Psr16Adapter($app['cache.store']);
         });
     }
+
     /**
      * Get the services provided by the provider.
      *
