@@ -21,7 +21,7 @@ function init_setup
 
 function run_tests
 {
-    php vendor/phpunit/phpunit/phpunit -d memory_limit=4096 --testsuite "$TEST_SUITE_NAME"  --debug --verbose  --coverage-clover clover.xml
+    php vendor/phpunit/phpunit/phpunit -d memory_limit=4096M --testsuite "$TEST_SUITE_NAME"  --debug --verbose  --coverage-clover clover.xml
 }
 
 function push_to_sonar
