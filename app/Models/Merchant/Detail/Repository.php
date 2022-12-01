@@ -58,6 +58,24 @@ class Repository extends Base\Repository
         $this->repo->merchant->syncToEsLiveAndTest($merchant, Merchant\EsRepository::UPDATE);
     }
 
+    /**
+     * __saveOrFail - Saves MerchantDetail Entity in API DB and ASV
+     * @param Entity $merchantDetail
+     * $param boll $testAndLive
+     * @param bool $testAndLive - If true saveEntity on both test and live db else only live db
+     * @throws \Throwable
+     */
+    public function __saveOrFail(Entity $merchantDetail, $testAndLive, array $options = []) {
+        $this->repo->transactionOnLiveAndTest(function () use ($merchantDetail, $testAndLive, $options) {
+            if ($testAndLive === true) {
+                $this->saveOrFail($merchantDetail, $options);
+            } else {
+                $this->repo->saveOrFail($merchantDetail, $options);
+            }
+            (new MerchantDetailWrapper())->SaveOrFail($merchantDetail);
+        });
+    }
+
     protected function addQueryOrder($query)
     {
         $query->orderBy(Entity::MERCHANT_ID, 'desc');

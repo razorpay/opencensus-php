@@ -19,12 +19,14 @@ class MerchantDetail extends Base
      * @var MerchantDetailComparator
      */
     private $merchantDetailComparator;
+    public $saveApiHelper;
 
     function __construct()
     {
         parent::__construct();
         $this->accountAsvClient = new AsvClient\AccountAsvClient();
         $this->merchantDetailComparator = new MerchantDetailComparator();
+        $this->saveApiHelper = new SaveApiHelper();
     }
     /**
      * @throws Throwable
@@ -40,6 +42,17 @@ class MerchantDetail extends Base
         }
 
         return $apiMerchantDetailEntity;
+    }
+
+
+    /**
+     * @param MerchantDetailEntity $entity
+     * @throws \RZP\Exception\IntegrationException
+     * @throws \Google\ApiCore\ValidationException
+     */
+    public function SaveOrFail(MerchantDetailEntity $entity)
+    {
+        $this->saveApiHelper->saveOrFail($entity->getMerchantId(), $entity->getEntityName(), $entity->getEntityName(), $entity->toArray());
     }
 
     public function processReadShadow(string $merchantId, $apiMerchantDetailEntity)
