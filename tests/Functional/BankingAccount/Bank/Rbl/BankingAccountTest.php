@@ -10,6 +10,7 @@ use RZP\Constants\Table;
 use Razorpay\OAuth\Client;
 use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\HubspotClient;
 use RZP\Models\Admin\Permission;
 use RZP\Services\Mock\Mozart;
@@ -3962,6 +3963,126 @@ class BankingAccountTest extends TestCase
             'average_monthly_balance' => 0,
             'business_category' => 'partnership',
             'sales_team' => 'self_serve',
+            ]
+        ];
+
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->ba->addXOriginHeader();
+
+        $bankingAccount = $this->createBankingAccountFromDashboard($activationDetails);
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/' . $bankingAccount['id'],
+                'method'  => 'GET',
+
+            ],
+        ];
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals('560030', $bankingAccount->getPincode());
+    }
+
+    public function testGetBankingAccountOnNewStateIfExpEnabled()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if ($featureFlag === (RazorxTreatment::RBL_CA_USE_NEW_STATE_MACHINE))
+                {
+                    return '10';
+                }
+                return 'control';
+            });
+
+        $activationDetails = [
+            'activation_detail' => [
+                'merchant_poc_name' => 'Sample Name',
+                'merchant_poc_designation' => 'Financial Consultant',
+                'merchant_poc_email' => 'sample@sample.com',
+                'merchant_poc_phone_number' => '9876556789',
+                'merchant_documents_address' => 'x, y, z',
+                'business_type' => 'ecommerce',
+                'account_type' => 'insignia',
+                'merchant_city' => 'Bangalore',
+                'is_documents_walkthrough_complete' => true,
+                'merchant_region' => 'South',
+                'expected_monthly_gmv' => 10000,
+                'average_monthly_balance' => 0,
+                'business_category' => 'partnership',
+                'sales_team' => 'self_serve',
+            ]
+        ];
+
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->ba->addXOriginHeader();
+
+        $bankingAccount = $this->createBankingAccountFromDashboard($activationDetails);
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/' . $bankingAccount['id'],
+                'method'  => 'GET',
+
+            ],
+        ];
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals('560030', $bankingAccount->getPincode());
+    }
+
+    public function testGetBankingAccountOnNewStateFalseIfExpDisabled()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if ($featureFlag === (RazorxTreatment::RBL_CA_USE_NEW_STATE_MACHINE))
+                {
+                    return '3000000000';
+                }
+                return 'control';
+            });
+
+        $activationDetails = [
+            'activation_detail' => [
+                'merchant_poc_name' => 'Sample Name',
+                'merchant_poc_designation' => 'Financial Consultant',
+                'merchant_poc_email' => 'sample@sample.com',
+                'merchant_poc_phone_number' => '9876556789',
+                'merchant_documents_address' => 'x, y, z',
+                'business_type' => 'ecommerce',
+                'account_type' => 'insignia',
+                'merchant_city' => 'Bangalore',
+                'is_documents_walkthrough_complete' => true,
+                'merchant_region' => 'South',
+                'expected_monthly_gmv' => 10000,
+                'average_monthly_balance' => 0,
+                'business_category' => 'partnership',
+                'sales_team' => 'self_serve',
             ]
         ];
 

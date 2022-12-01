@@ -2,7 +2,9 @@
 
 namespace RZP\Models\BankingAccount;
 
+use RZP\Constants\Mode;
 use RZP\Models\Base;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payout;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
@@ -1040,6 +1042,18 @@ class Entity extends Base\PublicEntity
      */
     public function usingNewStates()
     {
+        // This is hack to use Razorx as a config service
+        // Experiment returns an epoch timestamp
+        $expVal = intval(app('razorx')->getTreatment($this->getMerchantId(), RazorxTreatment::RBL_CA_USE_NEW_STATE_MACHINE, Mode::LIVE));
+
+        // intval() returns 0 incase of non-number inputs
+        if ($this->getCreatedAtAttribute() > $expVal &&
+            $expVal !== 0)
+        {
+            return true;
+        }
+
+
         // From merchant attributes, we need value for group:x_merchant_current_accounts, type:ca_onboarding_state_machine
         $preferences = (new Attribute\Core)->fetchKeyValues(
             $this->merchant,
