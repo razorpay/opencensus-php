@@ -8074,7 +8074,7 @@ class Core extends Base\Core
                 (new SalesforceConvergeService())->pushUpdatesToSalesforce(new SalesforceMerchantUpdatesRequest($merchant, 'LeadScore'));
             }
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace->error(TraceCode::LEAD_SCORE_CALCULATION_FAILURE, [
                 'merchantId'     => $merchant->getId(),
