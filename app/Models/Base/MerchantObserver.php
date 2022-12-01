@@ -56,7 +56,7 @@ class MerchantObserver
                 $trace->info(TraceCode::WHATCMS_KAFKA_PRODUCE_SUCCESS,
                              [
                                  'merchantId' => $entity,
-                                 'input'      => $input
+                                 'website'    => $businessWebsite
                              ]);
             }
 
