@@ -20,6 +20,7 @@ class CmmaProxyController extends BaseProxyController
     const UPDATE_TASK                     = 'UpdateTask';
     const UPDATE_USER_TASK_LIST           = 'UpdateUserTaskList';
     const CLOSE_CASE                      = 'CloseCase';
+    const GET_AUDIT_DETAILS               = 'GetAuditDetails';
     const CREATE_DISPUTE_CASE_CRON        = 'CreateDisputeCasesCron';
 
     const CREATE_DISPUT_CASE_CRON_CACHE_KEY = 'dispute_representation_automation_case_create_cron';
@@ -36,6 +37,7 @@ class CmmaProxyController extends BaseProxyController
         self::FETCH_PROCESS_INSTANCES         => "/twirp\/rzp.cmma.process.v1.ProcessManagementServiceAdminCalls\/FetchProcessInstances/",
         self::GET_PROCESS_INSTANCE_DETAILS    => "/twirp\/rzp.cmma.process.v1.ProcessManagementServiceAdminCalls\/GetProcessInstanceDetails/",
         self::GET_PROCESS_INSTANCE_RESOURCES  => "/twirp\/rzp.cmma.process.v1.ProcessManagementServiceAdminCalls\/GetResources/",
+        self::GET_AUDIT_DETAILS               => "/twirp\/rzp.cmma.process.v1.ProcessManagementServiceAdminCalls\/GetAuditDetails/",
         self::UPDATE_USER_TASK_LIST           => "/twirp\/rzp.cmma.userTask.v1.UserTaskService\/UpdateUserTaskList/",
         self::CLOSE_CASE                      => "/twirp\/rzp.cmma.process.v1.ProcessManagementService\/CloseCase/",
         self::CREATE_DISPUTE_CASE_CRON        => "/twirp\/rzp.cmma.cron.v1.CronService\/CreateDisputeCases/",
@@ -53,6 +55,7 @@ class CmmaProxyController extends BaseProxyController
         self::UPDATE_USER_TASK_LIST,
         self::UPDATE_PROCESS_ASSIGNED_TO,
         self::CLOSE_CASE,
+        self::GET_AUDIT_DETAILS,
     ];
 
     const CRON_ROUTES_CACHE_KEYS = [
@@ -77,6 +80,7 @@ class CmmaProxyController extends BaseProxyController
         self::UPDATE_USER_TASK_LIST          => Name::CMMA_PROCESS_EDIT,
         self::UPDATE_PROCESS_ASSIGNED_TO     => Name::CMMA_PROCESS_EDIT,
         self::CLOSE_CASE                     => Name::CMMA_LEADS_SOP,
+        self::GET_AUDIT_DETAILS              => Name::CMMA_PROCESS_VIEW,
     ];
 
     /*
