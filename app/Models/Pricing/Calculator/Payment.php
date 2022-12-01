@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Card;
 use RZP\Models\Currency\Core;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Pricing;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as QrV2Entity;
@@ -796,7 +797,14 @@ class Payment extends Base
             $fee = $this->entity->getFee();
             $currency = $this->entity->getCurrency();
 
-            $amount = $amount - (new Core)->getBaseAmount($fee, $currency);
+            $baseCurrency = Currency::INR;
+
+            if (isset($this->entity) === true && isset($this->entity->merchant) === true)
+            {
+                $baseCurrency = $this->entity->merchant->getCurrency();
+            }
+
+            $amount = $amount - (new Core)->getBaseAmount($fee, $currency, $baseCurrency);
         }
 
         if($this->entity->getEntity() === (Entity::PAYMENT))

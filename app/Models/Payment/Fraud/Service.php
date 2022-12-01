@@ -42,6 +42,12 @@ class Service extends Base\Service
 
         $input[Entity::PAYMENT_ID] = Payment::verifyIdAndSilentlyStripSign($input[Entity::PAYMENT_ID]);
 
+        $payment = $this->repo->payment->findOrFailPublic($input[Entity::PAYMENT_ID]);
+
+        $baseCurrency = $payment->merchant->getCurrency();
+
+        $input[Entity::PAYMENT_ID] = $payment->getID();
+
         $input[Entity::CHARGEBACK_CODE] = ($input[Constants::HAS_CHARGEBACK] === '1')
             ? Constants::INTERNAL_CHARGEBACK_CODE : null;
 
@@ -51,7 +57,8 @@ class Service extends Base\Service
 
         $input[Entity::BASE_AMOUNT] = (new Currency\Core)->getBaseAmount(
             $input[Entity::AMOUNT],
-            $input[Entity::CURRENCY]);
+            $input[Entity::CURRENCY],
+            $baseCurrency);
 
         $skipMerchantEmail = $input[Constants::SKIP_MERCHANT_EMAIL];
 

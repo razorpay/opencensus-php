@@ -132,9 +132,11 @@ class Core extends Base\Core
         return $conversionRate;
     }
 
-    public function getBaseAmount($amount, $currency, &$input = null)
+    // In case of non domestic payment in reference to merchant, here we calculate value of payment amount in merchant's currency
+    // Since base amount is used in the settlement process, hence need to calculate the payment amount in merchant currency itself
+    public function getBaseAmount($amount, $currency, $merchantCurrency = "INR", &$input = null)
     {
-        if ($currency === Currency::INR)
+        if ($currency === $merchantCurrency)
         {
             return $amount;
         }
@@ -148,13 +150,13 @@ class Core extends Base\Core
             $rates = $this->getOrUpdateRates($currency, $input);
         }
 
-        $denominationFactorINR = Currency::DENOMINATION_FACTOR[Currency::INR];
+        $denominationFactorMerchantCurrency = Currency::DENOMINATION_FACTOR[$merchantCurrency];
 
         $denominationFactorInputCurr = Currency::DENOMINATION_FACTOR[$currency];
 
-        $denominationFactor = $denominationFactorINR / $denominationFactorInputCurr;
+        $denominationFactor = $denominationFactorMerchantCurrency / $denominationFactorInputCurr;
 
-        $baseAmount = $amount * $rates[Currency::INR] * $denominationFactor;
+        $baseAmount = $amount * $rates[$merchantCurrency] * $denominationFactor;
 
         $baseAmount = (int) ceil($baseAmount);
 

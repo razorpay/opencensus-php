@@ -234,6 +234,36 @@ class OrderTest extends TestCase
         return $order;
     }
 
+    public function testCreateOrderMYRMerchantMY()
+    {
+        $this->fixtures->edit('merchant', 10000000000000, [
+            'country_code' => 'MY',
+            'convert_currency' => true
+        ]);
+
+        $order = $this->startTest();
+
+        $this->assertEquals($order['amount'], 50000);
+        $this->assertEquals($order['status'], 'created');
+        $this->assertEquals($order['currency'], 'MYR');
+        $this->assertEquals($order['receipt'], 'rcptid42');
+    }
+
+    public function testCreateOrderINRMerchantMY()
+    {
+        $this->fixtures->edit('merchant', 10000000000000, [
+            'convert_currency' => true,
+            'country_code' => 'MY'
+        ]);
+
+        $order = $this->startTest();
+
+        $this->assertEquals($order['amount'], 50000);
+        $this->assertEquals($order['status'], 'created');
+        $this->assertEquals($order['currency'], 'INR');
+        $this->assertEquals($order['receipt'], 'rcptid42');
+    }
+
     public function testCreateOrderAdminAuthRoute()
     {
         $merchant = $this->fixtures->create('merchant');

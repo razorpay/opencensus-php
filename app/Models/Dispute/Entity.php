@@ -302,7 +302,8 @@ class Entity extends Base\PublicEntity
 
         $baseAmount = (new Currency\Core)->getBaseAmount(
                                 $input[self::GATEWAY_AMOUNT],
-                                $input[self::GATEWAY_CURRENCY]);
+                                $input[self::GATEWAY_CURRENCY],
+                                $this->merchant->getCurrency());
 
         // 1% markup charged only when currency conversion happens.
         if ($input[self::GATEWAY_CURRENCY] !== Currency\Currency::INR)

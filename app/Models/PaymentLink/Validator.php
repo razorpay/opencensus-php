@@ -533,9 +533,11 @@ class Validator extends Base\Validator
         {
             $currency = $paymentLink['currency'];
 
-            if ($currency != Currency::INR)
+            $merchantCurrency = $paymentLink->merchant->getCurrency();
+
+            if ($currency !== $merchantCurrency)
             {
-                $baseAmount = (new CurrencyCore)->getBaseAmount($amount, $currency);
+                $baseAmount = (new CurrencyCore)->getBaseAmount($amount, $currency, $merchantCurrency);
             }
         }
 

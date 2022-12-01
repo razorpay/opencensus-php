@@ -171,7 +171,7 @@ class Core extends Base\Core
         {
             $payment->setAmount($input['order_amount']);
 
-            $baseAmount = (new CurrencyCore())->getBaseAmount($input['order_amount'], $input['currency']);
+            $baseAmount = (new CurrencyCore())->getBaseAmount($input['order_amount'], $input['currency'], $payment->merchant->getCurrency());
 
             $payment->setBaseAmount($baseAmount);
         }

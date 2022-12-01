@@ -1130,7 +1130,7 @@ class Validator extends Base\Validator
 
         if ($currency != $this->entity->merchant->getCurrency())
         {
-            $baseAmount = (new CurrencyCore)->getBaseAmount($amount, $currency);
+            $baseAmount = (new CurrencyCore)->getBaseAmount($amount, $currency, $this->entity->merchant->getCurrency());
         }
 
         if (($baseAmount > $maxAmountAllowed) === true)

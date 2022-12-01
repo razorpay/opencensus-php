@@ -169,7 +169,7 @@ class TransactionTest extends TestCase
 
     public function testTransactionAfterCapturingPaymentMalaysia()
     {
-        $this->fixtures->merchant->edit('10000000000000', ['country_code' => 'MY', 'convert_currency' => true]);
+        $this->fixtures->merchant->edit('10000000000000', ['country_code' => 'MY', 'convert_currency' => null]);
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -182,6 +182,7 @@ class TransactionTest extends TestCase
         $txn = $this->getLastTransaction(true);
 
         $testData = $this->testData['txnDataAfterCapturingPaymentMalaysia'];
+
         $testData['entity_id'] = $payment['id'];
 
         $this->assertArraySelectiveEquals($testData, $txn);

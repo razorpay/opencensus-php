@@ -20,7 +20,7 @@ use RZP\Jobs\Transactions;
 use RZP\Models\Transaction;
 use RZP\Models\BankAccount;
 use RZP\Models\VirtualAccount;
-use RZP\Models\Currency\Currency;
+use RZP\Models\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankTransferRequest;
 use RZP\Models\Payment\Refund as PaymentRefund;
@@ -628,7 +628,7 @@ class Core extends Base\Core
     public function getFeesForBankTransfer(Entity $bankTransfer, Merchant\Entity $merchant)
     {
         // TODO: Change the third parameter below once we add currency support in Bank Transfer
-        return $this->getFees($bankTransfer->getAmount(), $merchant, Currency::INR);
+        return $this->getFees($bankTransfer->getAmount(), $merchant, Currency\Currency::INR);
     }
 
     /**
@@ -948,13 +948,13 @@ class Core extends Base\Core
 
         $currency = $payment->getCurrency();
 
-        $baseAmount = (new \RZP\Models\Currency\Core)->getBaseAmount($amount, $currency);
+        $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency, $this->merchant->getCurrency());
 
         // if gateway is doing currency conversions, actual rate used by gateway
         // will use lower than current rates hence we also use merchant / default
         // level percentage for lower values in base_amount for settlement.
         if ($payment->getConvertCurrency() === false ||
-            ($currency !== Currency::INR && $payment->getConvertCurrency() === null))
+            ($currency !== Currency\Currency::INR && $payment->getConvertCurrency() === null))
         {
             $mccMarkdownPercentage = 1 - $this->merchant->getMccMarkdownMarkdownPercentage() / 100;
             $baseAmount = (int) ceil($baseAmount * $mccMarkdownPercentage);

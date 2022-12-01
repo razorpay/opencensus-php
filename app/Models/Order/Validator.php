@@ -198,9 +198,9 @@ class Validator extends Base\Validator
 
         $baseAmount = $amount;
 
-        if ($currency != Currency::INR)
+        if ($currency != $merchant->getCurrency())
         {
-            $baseAmount = (new CurrencyCore)->getBaseAmount($amount, $currency);
+            $baseAmount = (new CurrencyCore)->getBaseAmount($amount, $currency, $merchant->getCurrency());
         }
 
         if (($baseAmount > $maxAmountAllowed) === true)
@@ -230,7 +230,7 @@ class Validator extends Base\Validator
         // if currency conversion is not enabled allow only INR
         // if currency conversion is enabled, it should be a valid currency
         if ((($merchant->convertOnApi() === null) and
-            ($currency !== Currency::INR)) or
+            ($currency !== $merchant->getCurrency())) or
             (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === false) or
             ((in_array($currency, Currency::THREE_DECIMAL_CURRENCIES, true) === true) and
                 $this->merchant->isFeatureEnabled(Feature\Constants::SHAADI_COM_NEW_CURRENCY) === false))

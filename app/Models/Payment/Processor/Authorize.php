@@ -4441,7 +4441,7 @@ trait Authorize
 
         // For card and App method payments, check all conditions
         // and for rest payment methods check only if currency != INR
-        if (($currency !== Currency\Currency::INR && !$merchant->isCustomerFeeBearerAllowedOnInternational()) &&
+        if (($currency !== $merchant->getCurrency() && !$merchant->isCustomerFeeBearerAllowedOnInternational()) &&
             ((($payment->getMethod() != Method::CARD) && ($payment->getMethod() != Method::APP)) ||
              ($merchant->isDCCEnabledInternationalMerchant() === false ||
               $payment->isInternational() === false)))
@@ -4496,7 +4496,7 @@ trait Authorize
          */
 
         if ($payment->isInternational() and
-            $currency !== Currency\Currency::INR and
+            $currency !== $merchant->getCurrency() and
             $merchant->isFeeBearerCustomerOrDynamic())
         {
             if($merchant->isCustomerFeeBearerAllowedOnInternational())
@@ -4516,13 +4516,13 @@ trait Authorize
             }
         }
 
-        $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency, $input);
+        $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency, $merchant->getCurrency(), $input);
 
         // if gateway is doing currency conversions, actual rate used by gateway
         // will use lower than current rates hence we also use merchant / default
         // level percentage for lower values in base_amount for settlement.
         if ($payment->getConvertCurrency() === false ||
-            ($currency !== Currency\Currency::INR && $payment->getConvertCurrency() === null))
+            ($currency !== $merchant->getCurrency() && $payment->getConvertCurrency() === null))
         {
             $mccMarkdownPercentage = 1 - $merchant->getMccMarkdownMarkdownPercentage() / 100;
             $baseAmount = (int) ceil($baseAmount * $mccMarkdownPercentage);
@@ -4534,12 +4534,12 @@ trait Authorize
          */
 
         if ($payment->isInternational() and
-            $currency !== Currency\Currency::INR and
+            $currency !== $merchant->getCurrency() and
             $merchant->isFeeBearerCustomerOrDynamic())
         {
             if($merchant->isCustomerFeeBearerAllowedOnInternational())
             {
-                $baseFee = (new Currency\Core)->getBaseAmount($payment->getFee(), $currency, $input);
+                $baseFee = (new Currency\Core)->getBaseAmount($payment->getFee(), $currency, $merchant->getCurrency(), $input);
                 $baseAmount = $baseAmount + $baseFee;
             }
             else

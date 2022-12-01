@@ -74,7 +74,14 @@ class Terminal extends Payment
 
         $currency = $this->entity->getCurrency();
 
-        $this->amount = (new Currency\Core)->getBaseAmount($amount, $currency);
+        $merchantCurrency = Currency\Currency::INR;
+
+        if(isset($this->entity) === true && isset($this->entity->merchant) === true)
+        {
+        $merchantCurrency = $this->entity->merchant->getCurrency();
+        }
+
+        $this->amount = (new Currency\Core)->getBaseAmount($amount, $currency, $merchantCurrency);
     }
 
     protected function isEligibleForGst($fee): bool

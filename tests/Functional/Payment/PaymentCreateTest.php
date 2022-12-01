@@ -241,6 +241,159 @@ class PaymentCreateTest extends TestCase
         $this->doAuthPayment($payment);
     }
 
+    public function testCreatePaymentWithValidOrderIdINRMerchantMYR()
+    {
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::MCC_DEFAULT_MARKDOWN_PERCENTAGE => "3"
+            ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['currency'] = 'INR';
+
+        $payment['amount'] = 100;
+
+        $this->fixtures->edit('iin', 401200, [ 'country' => 'IN', ]);
+
+        $this->fixtures->create('order', ['id' => '100000000order', 'currency' => 'INR', 'amount' => 100]);
+
+        $payment['order_id'] = 'order_100000000order';
+
+        $this->fixtures->merchant->addFeatures(['order_id_mandatory']);
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'country_code' => 'MY',
+            'convert_currency' => false
+        ]);
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['currency'], "INR");
+
+        $this->assertEquals($payment['status'], "authorized");
+
+        $this->assertEquals($payment["base_amount"], 970);
+    }
+
+    public function testCreatePaymentWithValidOrderIdUSDMerchantMYR()
+    {
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::MCC_DEFAULT_MARKDOWN_PERCENTAGE => "3"
+            ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['currency'] = 'USD';
+
+        $payment['amount'] = 100;
+
+        $this->fixtures->edit('iin', 401200, [ 'country' => 'US']);
+
+        $this->fixtures->create('order', ['id' => '100000000order', 'currency' => 'USD', 'amount' => 100]);
+
+        $payment['order_id'] = 'order_100000000order';
+
+        $this->fixtures->merchant->addFeatures(['order_id_mandatory']);
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'country_code' => 'MY']);
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['currency'], "USD");
+
+        $this->assertEquals($payment['status'], "authorized");
+
+        $this->assertEquals($payment["base_amount"], 970);
+    }
+
+
+    public function testCreatePaymentWithValidOrderIdMYR()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['currency'] = 'MYR';
+
+        $this->fixtures->edit('iin', 401200, ['country' => 'MY']);
+
+        $order = $this->fixtures->create('order', ['id' => '100000000order', 'currency' => 'MYR']);
+
+        $payment['amount'] = 1000000;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->fixtures->merchant->addFeatures(['order_id_mandatory']);
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'country_code' => 'MY']);
+
+        $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['currency'], "MYR");
+
+        $this->assertEquals($payment['status'], "authorized");
+
+        $this->assertEquals($payment["base_amount"], $payment["amount"]);
+    }
+
+    public function testCreatePaymentWithInvalidPaymentCurrency()
+    {
+        $this->fixtures->edit('iin', 401200, [ 'country' => 'MY']);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->create('order', ['id' => '100000000order', 'currency' => 'MYR']);
+
+        $payment['amount'] = 1000000;
+
+        $payment['order_id'] = 'order_100000000order';
+
+        $this->fixtures->merchant->addFeatures(['order_id_mandatory']);
+
+        try {
+
+            $this->doAuthPayment($payment);
+        }
+        catch(\Throwable $e) {
+           $this->assertEquals($e->getCode(), "BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH");
+        }
+
+    }
+
+    public function testCreatePaymentWithInvalidOrderCurrency()
+    {
+        $this->fixtures->edit('iin', 401200, [ 'country' => 'MY']);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['currency'] = 'MYR';
+
+        $this->fixtures->create('order', ['id' => '100000000order', 'currency' => 'INR']);
+
+        $payment['amount'] = 1000000;
+
+        $payment['order_id'] = 'order_100000000order';
+
+        $this->fixtures->merchant->addFeatures(['order_id_mandatory']);
+
+        try {
+
+            $this->doAuthPayment($payment);
+        }
+        catch(\Throwable $e) {
+            $this->assertEquals($e->getCode(), "BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH");
+        }
+
+    }
+
     public function testCreateGooglePayCardPayment()
     {
         $this->enableCpsConfig();
@@ -1019,6 +1172,12 @@ class PaymentCreateTest extends TestCase
     public function testInternationalPaymentMyMerchantMyCard()
     {
         $this->fixtures->merchant->setCountry('MY');
+
+        $this->fixtures->merchant->edit('10000000000000',
+            [
+                'convert_currency' => false
+            ]
+        );
 
         $this->fixtures->iin->create([
             'iin' => '514024',

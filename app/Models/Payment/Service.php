@@ -2427,6 +2427,8 @@ class Service extends Base\Service
             return;
         }
 
+        $this->merchant = $merchant;
+
         if ((isset($input['currency']) === true) and
             (isset($input['amount']) === true))
         {
