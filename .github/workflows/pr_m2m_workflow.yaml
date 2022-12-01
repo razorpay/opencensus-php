@@ -3,25 +3,46 @@ name: PR Approval Workflow For Partner LMS
 on:
   pull_request_review:
     types: [ submitted ]
-
+  pull_request:
+    types: [ opened, synchronize, reopened, unlabeled, labeled ]
+env:
+  commit_id: ${{ github.event.pull_request.head.sha }}
 jobs:
   cancel:
-    name: Cancel Previous Runs
+    name: Cancel or Skip workflow
     if: always()
     runs-on: [ self-hosted ]
-    timeout-minutes: 3
     steps:
-      - uses: styfle/cancel-workflow-action@0.9.0
+      - name: Label Check
+        if: contains(github.event.pull_request.labels.*.name, 'razorpay_bank_lms')
+        id: labelPresent
+        run: echo "::set-output name=label::true"
+
+      - name: Skip tests workflow check if label not present
+        if: ${{ !steps.labelPresent.outputs.label }}
+        run: |
+          echo "Step skipped as no test file added or change"
+          echo "label named *razorpay_bank_lms* not added in pr to skip this step before approval"
+          curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${{ github.token }}" \
+          -d '{ "state" : "success" , "context" : "pr-approval-workflow/argo/partner-lms-tests" , "description" : "Skipped suite as bank LMS label not present", "target_url" : "https://github.com/${{ github.repository }}" }' \
+          https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }}
+          exit 0
+
+      - name: Cancel Previous Runs
+        if: ${{ steps.labelPresent.outputs.label }}
+        timeout-minutes: 3
+        uses: styfle/cancel-workflow-action@0.9.0
         with:
           workflow_id: "pr_m2m_workflow.yaml"
           access_token: ${{ secrets.GIT_TOKEN }}
 
   run_partnerLms_sanity_on_pr_approval:
     name: Partner LMS sanity workflow
-    if: ${{ github.event.review.state == 'approved' && github.event.pull_request.base.ref == 'master' }}
+    if: ${{ (github.event.review.state == 'approved' || contains(github.event.pull_request.labels.*.name, 'approved')) && github.event.pull_request.base.ref == 'master' && contains(github.event.pull_request.labels.*.name, 'razorpay_bank_lms') }}
     runs-on: [ self-hosted ]
     needs: [ cancel ]
     steps:
+
       - name: Checkout Codebase
         uses: actions/checkout@v2
         with:
@@ -52,12 +73,22 @@ jobs:
 
       - name: Check Pre Condition for BVT
         id: bvt_pre_conditions
-        if: ${{ !steps.hotfix.outputs.flag && !steps.revert.outputs.flag && !startsWith(github.event.pull_request.head.ref, 'beta_') && env.GIT_NEW_COMMIT_AFTER_MERGE == env.commit_id }}
+        if: ${{ !steps.hotfix.outputs.flag && !steps.revert.outputs.flag && !steps.skipLmsRuns.outputs.flag && !startsWith(github.event.pull_request.head.ref, 'beta_') && env.GIT_NEW_COMMIT_AFTER_MERGE == env.commit_id }}
         run: |
           echo "::set-output name=flag::true"
 
+      - name: Skip check if BVT conditions not met
+        if: ${{ !steps.bvt_pre_conditions.outputs.flag }}
+        run: |
+          echo "Step skipped as no test file added or change"
+          echo "BVT condition not met hence skip this step before approval"
+          curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${{ github.token }}" \
+          -d '{ "state" : "success" , "context" : "pr-approval-workflow/argo/partner-lms-tests" , "description" : "Skipped as BVT Conditions not met", "target_url" : "https://github.com/${{ github.repository }}" }' \
+          https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }}
+          exit 0
+
       - name: Get Latest Master Commit for Dashboard
-        if: ${{ !steps.hotfix.outputs.flag && !steps.revert.outputs.flag && !steps.skipLmsRuns.outputs.flag }}
+        if: ${{ steps.bvt_pre_conditions.outputs.flag }}
         uses: actions/github-script@v3
         id: DASHBOARD_COMMIT_ID
         with:
@@ -92,7 +123,7 @@ jobs:
             return commit_id
 
       - name: Get Latest Master Commit for Partner-LMS
-        if: ${{ !steps.hotfix.outputs.flag && !steps.revert.outputs.flag && !steps.skipLmsRuns.outputs.flag }}
+        if: ${{ steps.bvt_pre_conditions.outputs.flag }}
         uses: actions/github-script@v3
         id: PARTNER_LMS_COMMIT_ID
         with:
@@ -128,7 +159,7 @@ jobs:
             return commit_id
 
       - name: Execute Partner LMS Sanity tests
-        if: ${{ !steps.hotfix.outputs.flag && !steps.revert.outputs.flag && !steps.skipLmsRuns.outputs.flag }}
+        if: ${{ steps.bvt_pre_conditions.outputs.flag }}
         uses: fjogeleit/http-request-action@52ba495021567f279f4a6577ac8fb73672197af8
         with:
           url: 'https://argo.dev.razorpay.in/api/v1/events/argo-workflows/partner-lms'
@@ -137,7 +168,7 @@ jobs:
           data: >
             {
                 "meta": {
-                    "kube_manifests_ref": "adding-partner-lms-apps"
+                    "kube_manifests_ref": "master"
                 },
                 "roast": {
                     "roast_commit_id": "latest",
