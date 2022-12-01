@@ -3295,6 +3295,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FRESHDESK_GET_AGENTS_REQUEST                          = 'FRESHDESK_GET_AGENTS_REQUEST';
     const FRESHDESK_GET_AGENTS_RESPONSE                         = 'FRESHDESK_GET_AGENTS_RESPONSE';
 
+    const FRESHDESK_MISSING_ATTRIBUTES                          = 'FRESHDESK_MISSING_ATTRIBUTES';
+
     const DISPUTE_BULK_MAIL_CRON_START                          = 'DISPUTE_BULK_MAIL_CRON_START';
     const DISPUTE_BULK_MAIL_CRON_END                            = 'DISPUTE_BULK_MAIL_CRON_END';
     const DISPUTE_BULK_MAIL_QUEUED                              = 'DISPUTE_BULK_MAIL_QUEUED';

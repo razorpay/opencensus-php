@@ -67,6 +67,7 @@ class Type
     const CHARTERED_ACCOUNTANT          = 'chartered_accountant';
 
     // CA Onboarding flow values
+    const SALES_LED                     = 'SALES_LED';
     const ONE_CA                        = 'ONE_CA';
 
     //Network Types

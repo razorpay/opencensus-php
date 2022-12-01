@@ -265,6 +265,32 @@ class Validator extends Base\Validator
         Entity::ADDITIONAL_DETAILS    => 'required|array',
     ];
 
+    protected static $freshDeskActivationDetailsRules = [
+        Entity::MERCHANT_POC_NAME                   =>  'required|string|max:255',
+        Entity::MERCHANT_POC_DESIGNATION            =>  'required|string|max:255',
+        Entity::MERCHANT_POC_EMAIL                  =>  'required|string|max:255',
+        Entity::MERCHANT_POC_PHONE_NUMBER           =>  'required|string|max:255',
+        Entity::MERCHANT_DOCUMENTS_ADDRESS          =>  'required|string|max:255',
+        Entity::MERCHANT_CITY                       =>  'required|string|max:255',
+        Entity::MERCHANT_REGION                     =>  'required|string|max:255',
+        Entity::COMMENT                             =>  'required|string',
+        Entity::SALES_TEAM                          =>  'required|string|max:255|custom',
+        Entity::BUSINESS_NAME                       =>  'required|string|max:255',
+        Entity::BUSINESS_CATEGORY                   =>  'required|string|max:255|custom',
+        Entity::ACCOUNT_TYPE                        =>  'required|string|max:255',
+        Entity::SALES_POC_PHONE_NUMBER              =>  'required|string|max:255',
+        Entity::EXPECTED_MONTHLY_GMV                =>  'required|integer|min:0',
+        Entity::AVERAGE_MONTHLY_BALANCE             =>  'required|integer|min:0',
+        Entity::INITIAL_CHEQUE_VALUE                =>  'required|integer|min:0',
+        Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE   =>  'required|boolean',
+    ];
+
+    protected static $freshDeskAdditionalDetailsRules = [
+        Entity::SALES_PITCH_COMPLETED               => 'required|integer',
+        Entity::CALENDLY_SLOT_BOOKING_COMPLETED     => 'required|integer',
+        Entity::GREEN_CHANNEL                       => 'required|boolean'
+    ];
+
     protected static $verifyOtpRules = [
         \RZP\Models\User\Entity::OTP                  => 'required|filled|min:4',
         \RZP\Models\User\Entity::TOKEN                => 'required|unsigned_id',
@@ -355,6 +381,32 @@ class Validator extends Base\Validator
         self::NIT_PARTNERSHIPS,
     ];
 
+    protected static $requiredActivationDetailsKeysFreshDesk = [
+        Entity::MERCHANT_POC_NAME,
+        Entity::MERCHANT_POC_DESIGNATION,
+        Entity::MERCHANT_POC_EMAIL,
+        Entity::MERCHANT_POC_PHONE_NUMBER,
+        Entity::MERCHANT_DOCUMENTS_ADDRESS,
+        Entity::MERCHANT_CITY,
+        Entity::MERCHANT_REGION,
+        Entity::COMMENT,
+        Entity::SALES_TEAM,
+        Entity::BUSINESS_NAME,
+        Entity::BUSINESS_CATEGORY,
+        Entity::ACCOUNT_TYPE,
+        Entity::SALES_POC_PHONE_NUMBER,
+        Entity::EXPECTED_MONTHLY_GMV,
+        Entity::AVERAGE_MONTHLY_BALANCE,
+        Entity::INITIAL_CHEQUE_VALUE,
+        Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE,
+    ];
+
+    protected static $requiredAdditionalDetailsKeysFreshDesk = [
+        Entity::SALES_PITCH_COMPLETED,
+        Entity::CALENDLY_SLOT_BOOKING_COMPLETED,
+        Entity::GREEN_CHANNEL
+    ];
+
     public function validateBusinessCategory($attribute, $value)
     {
         if (in_array($value, self::$allowedBusinessCategories) === false)
@@ -412,5 +464,15 @@ class Validator extends Base\Validator
         {
            throw new BadRequestValidationFailureException("Comment is required when changing Assignee team");
         }
+    }
+
+    public function getRequiredActivationDetailsKeysFreshDesk()
+    {
+        return self::$requiredActivationDetailsKeysFreshDesk;
+    }
+
+    public function getRequiredAdditionalDetailsKeysFreshDesk()
+    {
+        return self::$requiredAdditionalDetailsKeysFreshDesk;
     }
 }

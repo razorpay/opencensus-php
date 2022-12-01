@@ -116,6 +116,8 @@ class Entity extends Base\PublicEntity
 
     const SALES_PITCH_COMPLETED = 'sales_pitch_completed';
 
+    const CALENDLY_SLOT_BOOKING_COMPLETED = 'calendly_slot_booking_completed';
+
     const COMMENT = 'comment'; //Latest comment. This is to support backward compatibility
 
     const COMMENTS = 'comments'; //All comments

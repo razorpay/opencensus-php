@@ -1118,6 +1118,8 @@ class Core extends Base\Core
         /** @var ActivationDetail\Entity $activationDetail */
         $activationDetail = $bankingAccount->bankingAccountActivationDetails;
 
+        $caOnboardingFlow = null;
+
         try
         {
             // This has been added so that sales_pitch_completed check can be
@@ -1129,9 +1131,9 @@ class Core extends Base\Core
             $caOnboardingFlow = $attributeCore->fetch($bankingAccount->merchant,
                                                       Product::BANKING,
                                                       Merchant\Attribute\Group::X_MERCHANT_CURRENT_ACCOUNTS,
-                                                      Merchant\Attribute\Type::CA_ONBOARDING_FLOW);
+                                                      Merchant\Attribute\Type::CA_ONBOARDING_FLOW)->getValue();
 
-            $isOneCaFlow = ($caOnboardingFlow->getValue() === MerchantAttributeType::ONE_CA);
+            $isOneCaFlow = ($caOnboardingFlow === MerchantAttributeType::ONE_CA);
         }
         catch (\Throwable $e)
         {
@@ -1167,8 +1169,18 @@ class Core extends Base\Core
 
         // check if form is readyToBePickedForRazorpayProcessing(i.e.. declarationStep & salesPitch steps are completed)
         // and also check if this the first submission post form completion
-        if (($readyToBePickedForRazorpayProcessing === true) and
-            ($formWasAlreadySubmittedEarlier === false))
+        if ($readyToBePickedForRazorpayProcessing and !$formWasAlreadySubmittedEarlier)
+        {
+            $this->sendFreshDeskTicketAndMoveApplicationToPicked($bankingAccount);
+            return;
+        }
+
+        // If application is initiated from x dashboard in saled_led flow, there's no concept of declaration_step. Hence, on
+        // each application update check if sufficient information is available. If yes, create FD ticket and move application to
+        // picked status. Perform this check only if application is in created state
+        if ($bankingAccount->getStatus() === Status::CREATED &&
+            $caOnboardingFlow === MerchantAttributeType::SALES_LED &&
+            $this->shouldSendFreshDeskTicketForSalesLed($bankingAccount, $activationDetail, $activationDetailInput))
         {
             $this->sendFreshDeskTicketAndMoveApplicationToPicked($bankingAccount);
         }
@@ -2766,5 +2778,84 @@ class Core extends Base\Core
 
         $attributes[Entity::STATUS] = Status::API_ONBOARDING;
         $attributes[Entity::SUB_STATUS] = Status::IN_REVIEW;
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    private function shouldSendFreshDeskTicketForSalesLed(Entity $bankingAccount, ActivationDetail\Entity $activationDetail, array $activationDetailInput) : bool
+    {
+        // merchant_id & pincode are also required fields for banking_account entity but since a banking_account cannot exist without these,
+        // we don't have to check for them.
+        if (array_key_exists(ActivationDetail\Entity::ADDITIONAL_DETAILS, $activationDetailInput))
+        {
+            $activationDetailInput = (new ActivationDetail\Service(new Notifier()))->updateAdditionalDetailsPayload($activationDetail, $activationDetailInput);
+        }
+
+        // convert to array
+        $existingActivationDetail = $activationDetail->toArray();
+
+        // calculate additionalDetails
+        $oldAdditionalDetails = json_decode(optional($activationDetail)->getAdditionalDetails() ?? '{}', true);
+        $newAdditionalDetails = json_decode($activationDetailInput[ActivationDetail\Entity::ADDITIONAL_DETAILS] ?? '{}', true);
+
+        // validate required fields
+        $validator = new ActivationDetail\Validator();
+
+        $activationDetailsPresent = $this->checkRequiredFieldsPresentForFreshDeskTicket(array_merge($existingActivationDetail, $activationDetailInput),
+            $validator->getRequiredActivationDetailsKeysFreshDesk(),
+            'freshDeskActivationDetails',
+            $validator);
+
+        $additionalDetailsPresent = $this->checkRequiredFieldsPresentForFreshDeskTicket(array_merge($oldAdditionalDetails, $newAdditionalDetails),
+            $validator->getRequiredAdditionalDetailsKeysFreshDesk(),
+            'freshDeskAdditionalDetails',
+            $validator);
+
+        // check conditions
+        if (!$this->checkSpocPresentForBankingAccount($bankingAccount,$activationDetailInput)
+            || !$activationDetailsPresent
+            || !$additionalDetailsPresent)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function checkRequiredFieldsPresentForFreshDeskTicket(array $checker, array $requiredFields, string $validatorOp, ActivationDetail\Validator $validator): bool
+    {
+        $checker = array_intersect_key($checker, array_fill_keys($requiredFields, ''));
+
+        try
+        {
+            $validator->validateInput($validatorOp, $checker);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->info(TraceCode::FRESHDESK_MISSING_ATTRIBUTES, [
+                'checker'               => $checker,
+                'error'                 => $e
+            ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private function checkSpocPresentForBankingAccount(Entity $bankingAccount, array $activationDetailInput): bool
+    {
+        $existingSpoc = $bankingAccount->spocs()
+            ->where(Entity::AUDITOR_TYPE, '=', 'spoc')
+            ->first();
+
+        if (empty($existingSpoc) && !array_key_exists(ActivationDetail\Entity::SALES_POC_ID, $activationDetailInput))
+        {
+            // SalesPoc is not set for application & it is not present in input payload. Return
+            return false;
+        }
+
+        return true;
     }
 }

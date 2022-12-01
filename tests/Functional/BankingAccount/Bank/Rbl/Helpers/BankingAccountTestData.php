@@ -5027,6 +5027,20 @@ return [
                 'status'      => 'picked'
             ],
         ],
+    ],
+
+    'testFreshDeskTicketCreationBehaviourForSalesLed' => [
+        'request' => [
+            'url'    => '/banking_accounts_internal/activation/{id}/details',
+            'method' => 'PATCH',
+            'content' => [],
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
     ]
 
 ];

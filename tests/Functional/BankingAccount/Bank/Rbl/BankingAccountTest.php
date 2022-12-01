@@ -10908,4 +10908,150 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
+    public function verifyFreshDeskTicketCreationBehaviourForSalesLed(string $baId, string $baActivationDetailId, array $activationDetail, array $reqContent, Admin\Admin\Entity $admin)
+    {
+        $this->fixtures->edit('banking_account', $baId, ['status' => 'created']);
+
+        $this->fixtures->edit('banking_account_activation_detail', $baActivationDetailId, $activationDetail);
+
+        $this->ba->mobAppAuthForInternalRoutes();
+
+        $this->testData[__FUNCTION__] = $this->testData['testFreshDeskTicketCreationBehaviourForSalesLed'];
+
+        Mail::fake();
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/banking_accounts_internal/activation/bacc_'. $baId .'/details',
+                'server'  => [
+                    'HTTP_X-Admin-Email' => $admin->getEmail(),
+                ],
+                'content' => $reqContent
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+
+        Mail::assertQueued(XProActivation::class, 1);
+
+        // calling update once more with all details
+        $content = array_merge($activationDetail, $reqContent);
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/banking_accounts_internal/activation/bacc_'. $baId .'/details',
+                'server'  => [
+                    'HTTP_X-Admin-Email' => $admin->getEmail(),
+                ],
+                'content' => $content
+            ]
+        ];
+
+        Mail::fake();
+
+        $this->startTest($dataToReplace);
+
+        // Mail should not be queued again
+        Mail::assertQueued(XProActivation::class, 0);
+    }
+
+    public function testFreshDeskTicketCreationBehaviourForSalesLed()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $this->fixtures->edit('merchant_detail', self::DefaultMerchantId, $attribute);
+
+        $this->createMerchantAttribute(self::DefaultMerchantId, 'banking', 'x_merchant_current_accounts', 'ca_onboarding_flow', 'SALES_LED');
+
+        $ba = $this->fixtures->create('banking_account', [
+            'account_number' => '2224440041626905',
+            'account_type' => 'current',
+            'merchant_id' => self::DefaultMerchantId,
+            'channel' => 'rbl',
+            'status' => 'created',
+            'pincode' => '560038',
+            'bank_reference_number' => '',
+            'account_ifsc' => 'RATN0000156',
+        ]);
+
+        $baActivationDetail = $this->fixtures->create('banking_account_activation_detail', [
+            'banking_account_id' => $ba->getId(),
+        ]);
+
+        $admin = $this->fixtures->create('admin', ['org_id' => Org::RZP_ORG, 'email' => 'abc@razorpay.com']);
+
+        $activationDetail = [
+            ActivationDetail\Entity::MERCHANT_POC_NAME => 'name',
+            ActivationDetail\Entity::MERCHANT_POC_DESIGNATION => 'designation',
+            ActivationDetail\Entity::MERCHANT_POC_EMAIL => 'email@gmail.com',
+            ActivationDetail\Entity::MERCHANT_POC_PHONE_NUMBER => '1234567890',
+            ActivationDetail\Entity::MERCHANT_DOCUMENTS_ADDRESS => 'doc address',
+            ActivationDetail\Entity::MERCHANT_CITY => 'Bengaluru',
+            ActivationDetail\Entity::MERCHANT_REGION => 'East',
+            ActivationDetail\Entity::COMMENT => 'Sample comment',
+            ActivationDetail\Entity::SALES_TEAM => 'sme',
+            ActivationDetail\Entity::BUSINESS_NAME => 'businessname',
+            ActivationDetail\Entity::BUSINESS_CATEGORY => 'sole_proprietorship',
+            ActivationDetail\Entity::ACCOUNT_TYPE => 'insignia',
+            ActivationDetail\Entity::SALES_POC_PHONE_NUMBER => '1234567890',
+            ActivationDetail\Entity::EXPECTED_MONTHLY_GMV => '123456',
+            ActivationDetail\Entity::AVERAGE_MONTHLY_BALANCE => '123456',
+            ActivationDetail\Entity::INITIAL_CHEQUE_VALUE => '123456',
+            ActivationDetail\Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE => true,
+            ActivationDetail\Entity::ADDITIONAL_DETAILS => [
+                ActivationDetail\Entity::SALES_PITCH_COMPLETED => 0,
+                ActivationDetail\Entity::CALENDLY_SLOT_BOOKING_COMPLETED => 0,
+                ActivationDetail\Entity::GREEN_CHANNEL => false
+            ],
+        ];
+
+        // test all activation details except sales_poc_id
+        $keys = array_keys($activationDetail);
+        for ($index = 0; $index < count($keys); $index++)
+        {
+            $unsetAttr = $keys[$index];
+
+            $unsetAttrVal = $activationDetail[$unsetAttr];
+
+            unset($activationDetail[$unsetAttr]);
+
+            $reqContent = [
+                ActivationDetail\Entity::SALES_POC_ID => 'admin_' . ORG::SUPER_ADMIN,
+                $unsetAttr => $unsetAttrVal,
+            ];
+            $this->verifyFreshDeskTicketCreationBehaviourForSalesLed($ba->getId(), $baActivationDetail->getId(), $activationDetail, $reqContent, $admin);
+
+            $activationDetail[$unsetAttr] = $unsetAttrVal;
+        }
+
+        // test each additional_detail separately
+        $keys = array_keys($activationDetail[ActivationDetail\Entity::ADDITIONAL_DETAILS]);
+
+        for ($index = 0; $index < count($keys); $index++)
+        {
+            $unsetAttr = $keys[$index];
+
+            $unsetAttrVal = $activationDetail[ActivationDetail\Entity::ADDITIONAL_DETAILS][$unsetAttr];
+
+            unset($activationDetail[ActivationDetail\Entity::ADDITIONAL_DETAILS][$unsetAttr]);
+
+            $reqContent = [
+                ActivationDetail\Entity::SALES_POC_ID => 'admin_' . ORG::SUPER_ADMIN,
+                ActivationDetail\Entity::ADDITIONAL_DETAILS => [
+                    $unsetAttr => $unsetAttrVal
+                ]
+            ];
+
+            $this->verifyFreshDeskTicketCreationBehaviourForSalesLed($ba->getId(), $baActivationDetail->getId(), $activationDetail, $reqContent, $admin);
+
+            $activationDetail[ActivationDetail\Entity::ADDITIONAL_DETAILS] = array_merge($activationDetail[ActivationDetail\Entity::ADDITIONAL_DETAILS], $reqContent[ActivationDetail\Entity::ADDITIONAL_DETAILS]);
+        }
+
+        // test sales_poc already assigned
+        $core = new BankingAccountCore();
+
+        $core->addSalesPOCToBankingAccount($ba, 'admin_' . ORG::SUPER_ADMIN);
+
+        $this->verifyFreshDeskTicketCreationBehaviourForSalesLed($ba->getId(), $baActivationDetail->getId(), [], $activationDetail, $admin);
+    }
 }
