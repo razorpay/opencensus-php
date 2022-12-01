@@ -7338,6 +7338,8 @@ trait Authorize
 
                 SavedCardTokenisationJob::dispatch($this->mode, $token->getId(), $asyncTokenisationJobId,  $payment->getId());
 
+                $core->updateTokenStatus($token->getId(), Token\Constants::INITIATED);
+
                 $this->trace->info(TraceCode::TRACE_TOKEN_DISPATCH_LOG, [
                     'tokenid'     =>  $token->getId(),
                     'async'       =>  $asyncTokenisationJobId,

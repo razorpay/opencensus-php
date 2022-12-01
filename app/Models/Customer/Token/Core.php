@@ -3368,4 +3368,11 @@ class Core extends Base\Core
 
         return $tokensWithoutNonCompliantCards;
     }
+
+    public function updateTokenStatus($tokenId , $status ,$error_code = null, $description = null)
+    {
+        $updateData[Token\Entity::STATUS] = $status;
+
+        $rowsAffected = (new Token\Repository)->updateById($tokenId, $updateData);
+    }
 }
