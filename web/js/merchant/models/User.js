@@ -885,6 +885,14 @@ export default class User {
     return this.getExpStatus('optimizer_onboarding');
   }
 
+  get isHidePIDetails() {
+    return this.getExpStatus('hide_PI_details');
+  }
+
+  get isCareHealthOwner() {
+    return this.userRole === rolesList.OWNER && this.current === 'Icmg54HpdK0fdT';
+  }
+
   get isSingleReconEnabled() {
     return this.isFeatureEnabled('enable_single_recon');
   }

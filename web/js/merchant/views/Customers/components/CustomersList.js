@@ -1,40 +1,29 @@
+import { email, contact } from 'common/ui/item/pair';
 import TableBody from 'common/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
+import { action, customerId, customerName } from 'merchant/views/Customers/item';
 
-const CustomersListItem = ({ customer, onEdit }) => {
+const CustomersListItem = ({ customer, onEdit, columns }) => {
   return (
     <EntityItemRow id={customer.id}>
-      <td>
-        <a onClick={onEdit}>{customer.id}</a>
-      </td>
-      <td>
-        <a onClick={onEdit}>{customer.name}</a>
-      </td>
-      <td>{customer.email}</td>
-      <td>{customer.contact}</td>
-      <td class="row-action">
-        <div class="btn-group">
-          <button class="btn btn-xs btn-default" onClick={onEdit}>
-            <i class="i i-edit" />
-            <span>edit</span>
-          </button>
-        </div>
-      </td>
+      {columns.map(({ title, value }) => (
+        <td key={title}>{value(customer, onEdit)}</td>
+      ))}
     </EntityItemRow>
   );
 };
 
 export default ({ customers, isLoading, onEdit, onDelete }) => {
+  const columns = [customerId, customerName, email, contact, action];
+
   return (
-    <div class="table-responsive">
-      <table class="table table-hover">
+    <div className="table-responsive">
+      <table className="table table-hover">
         <thead>
           <tr>
-            <th>Customer Id</th>
-            <th>Customer Name</th>
-            <th>Email</th>
-            <th>Contact</th>
-            <th>Actions</th>
+            {columns.map(({ title }) => (
+              <th key={title}>{title}</th>
+            ))}
           </tr>
         </thead>
         <TableBody
@@ -43,10 +32,11 @@ export default ({ customers, isLoading, onEdit, onDelete }) => {
           rows={customers}
           emptyTableMsg="No Customers found!"
         >
-          {customers.map(customer => (
+          {customers.map((customer) => (
             <CustomersListItem
               key={customer.id}
               customer={customer}
+              columns={columns}
               onEdit={() => onEdit(customer)}
               onDelete={() => onDelete(customer)}
             />

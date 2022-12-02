@@ -296,7 +296,9 @@ function MerchantNavLinks(props) {
         icon="i i-books text-danger"
         type="general"
         to="/reports"
-        additionalCondition={(currentUser) => currentUser.isAllowedView('reports')}
+        additionalCondition={(currentUser) =>
+          currentUser.isAllowedView('reports') || currentUser.isCareHealthOwner
+        }
         isPending={isReportsPending}
       />
       <MainNavLink

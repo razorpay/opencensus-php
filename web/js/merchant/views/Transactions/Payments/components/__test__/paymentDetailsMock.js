@@ -60,6 +60,9 @@ jest.mock('merchant/views/Transactions/Payments/components/PaymentDisputes', () 
   <div>PaymentDisputes</div>
 ));
 
+jest.mock('merchant/components/Mask/Email', () => () => <div>Masked Email</div>);
+jest.mock('merchant/components/Mask/Contact', () => () => <div>Masked Contact</div>);
+
 jest.mock(
   'merchant/views/Transactions/Payments/components/PaymentMethod',
   () => ({ onUPIClick }) => (

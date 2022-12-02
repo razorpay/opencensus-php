@@ -19,6 +19,8 @@ import PaymentSplitInItems from './PaymentSplitInItems';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import SettlementOverview from './SettlementOverview';
 import AnnouncementBar from 'merchant/components/AnnouncementBar';
+import MaskedEmail from 'merchant/components/Mask/Email';
+import MaskedContact from 'merchant/components/Mask/Contact';
 import SettlementInfo from 'merchant/views/Settlements/components/SettlementInfo';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { OptimizerDetails } from 'merchant/views/Transactions/Payments/components/OptimizerDetails';
@@ -391,8 +393,8 @@ function PaymentDetails(props) {
 
                 <EntityDetailRow label="Customer">
                   <Definition placeholder="No customer linked">
-                    {payment.email}
-                    {payment.contact}
+                    <MaskedEmail email={payment.email} />
+                    <MaskedContact contact={payment.contact} />
                   </Definition>
                 </EntityDetailRow>
 

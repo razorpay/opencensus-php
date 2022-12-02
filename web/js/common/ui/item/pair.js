@@ -1,12 +1,16 @@
 import { NavLink } from 'react-router-dom';
 
-import * as items from './index';
-import * as id from './id';
 import { getAmount, getTime } from 'common/ui/item';
 import { makeIdLink } from 'common/ui/item/id';
 import { getIntervalCycle, subString, titleCase } from 'common/utils/rzp-utils';
+
 import { roles, agentRole, RBLRoles, RegistrationLinkRoles } from 'merchant/helpers/data';
 import { RefundStatusLabel, OfferStatusLabel } from 'merchant/components/StatusLabel';
+import MaskedEmail from 'merchant/components/Mask/Email';
+import MaskedContact from 'merchant/components/Mask/Contact';
+
+import * as id from './id';
+import * as items from './index';
 
 const allRoles = {
   ...roles,
@@ -51,8 +55,11 @@ export const customer = {
   ),
 };
 
-export const email = { title: 'Email', value: (item) => item.email };
-export const contact = { title: 'Contact', value: (item) => item.contact };
+export const email = { title: 'Email', value: (item) => <MaskedEmail email={item.email} /> };
+export const contact = {
+  title: 'Contact',
+  value: (item) => <MaskedContact contact={item.contact} />,
+};
 export const currency = { title: 'Currency', value: (item) => item.currency };
 export const status = { title: 'Status', value: items.status };
 export const public_status = {

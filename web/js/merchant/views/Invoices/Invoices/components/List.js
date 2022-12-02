@@ -1,56 +1,35 @@
-import Time from 'common/ui/Time';
-import { NavLink } from 'react-router-dom';
-import TableBody from 'common/ui/TableBody';
-import Amount from 'common/ui/Amount';
-import CopyLink from 'merchant/components/CopyLink';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
-import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
-import EntityItemRow from 'merchant/containers/EntityItemRow';
 import Icon from '@razorpay/blade-old/src/atoms/Icon';
-import { getCustomerDisplayName, truncatedString } from 'common/utils/rzp-utils';
+
+import TableBody from 'common/ui/TableBody';
 import MobileListView from 'common/ui/MobileListView';
-import copyToClipboard from 'common/utils/copyToClipboard';
+import { amount, createdAt } from 'common/ui/item/pair';
+
+import EntityItemRow from 'merchant/containers/EntityItemRow';
 import { isMobileDevice } from 'merchant/components/Home/data';
-
-const shareURL = (url, title) => {
-  if (navigator.share) {
-    navigator
-      .share({
-        title,
-        url,
-      })
-      .catch(console.error);
-  } else {
-    // fallback
-    copyToClipboard(url);
-  }
-};
-
-const commonListItem = {
-  amount: (item) => (
-    <td>
-      <Amount value={item?.amount} currency={item?.currency} />
-    </td>
-  ),
-  statusLabel: (item) => (
-    <td>
-      <InvoiceStatusLabel status={item?.status ? item.status.toLowerCase() : null} />
-    </td>
-  ),
-};
+import {
+  customer,
+  invoiceId,
+  invoiveStatus,
+  paymentLink,
+  paymentLinkId,
+  receiptNumber,
+  referenceId,
+} from 'merchant/views/Invoices/Invoices/item';
+import { shareURL } from 'merchant/views/Invoices/Invoices/helpers';
 
 const PaymentLinkMobileTableListView = (items) => {
   const { item, onShareLinkSuccess = () => {} } = items;
+
   return (
     <EntityItemRow id={item?.id}>
       <td>
-        <NavLink to={`/paymentlinks/${item?.id}`}>
-          <code>{item?.id}</code>
-        </NavLink>
-        <tr class="mobile-text">{item?.customer_details?.customer_contact}</tr>
-        <tr class="mobile-text">{truncatedString(item?.customer_details?.customer_email)}</tr>
+        {paymentLinkId.value(item)}
+
+        {item?.customer_details && customer.value(item)}
+
         {item?.short_url && (
           <View
             className="link-container"
@@ -71,55 +50,21 @@ const PaymentLinkMobileTableListView = (items) => {
           </View>
         )}
       </td>
-      {commonListItem.amount(item)}
-      {commonListItem.statusLabel(item)}
+
+      <td>{amount.value(item)}</td>
+      <td>{invoiveStatus.value(item)}</td>
     </EntityItemRow>
   );
 };
 
 const InvoiceListItem = (props) => {
-  const { invoice, onCopy } = props;
-  const customer = invoice.customer_details;
+  const { invoice, columns } = props;
 
   return (
     <EntityItemRow id={invoice.id}>
-      <td>
-        <NavLink
-          to={
-            ['link', 'ecod'].indexOf(invoice.type) !== -1
-              ? `/paymentlinks/${invoice.id}`
-              : `/invoices/${invoice.id}`
-          }
-        >
-          <code>{invoice.id}</code>
-        </NavLink>
-      </td>
-      <td>
-        <Time value={invoice.date || invoice.created_at} />
-      </td>
-      {commonListItem.amount(invoice)}
-      <td>{invoice.receipt}</td>
-      <td>
-        {getCustomerDisplayName({
-          name: customer?.customer_name,
-          contact: customer?.customer_contact,
-          email: customer?.customer_email,
-        })}
-      </td>
-      <td>
-        {invoice.short_url && (
-          <CopyLink
-            onCopy={(text) => {
-              onCopy({
-                invoiceId: invoice.id,
-                text,
-              });
-            }}
-            url={invoice.short_url}
-          />
-        )}
-      </td>
-      {commonListItem.statusLabel(invoice)}
+      {columns.map(({ title, value }) => (
+        <td key={title}>{value(invoice)}</td>
+      ))}
     </EntityItemRow>
   );
 };
@@ -133,10 +78,15 @@ export default (props) => {
     EmptyList,
     isPaymentlinksV2Enabled,
   } = props;
+
   const isPaymentLinksType = type === 'link';
-  const label = isPaymentLinksType ? 'Payment Link' : 'Invoice';
-  const listStyle = label === 'Payment Link' ? 'Payment-link-list' : 'Invoice-list';
-  return isMobileDevice() && label === 'Payment Link' ? (
+  const label = isPaymentLinksType ? paymentLinkId : invoiceId;
+  const listStyle = isPaymentLinksType ? 'Payment-link-list' : 'Invoice-list';
+  const receipt = isPaymentlinksV2Enabled ? referenceId : receiptNumber;
+
+  const columns = [label, createdAt, amount, receipt, customer, paymentLink(onCopy), invoiveStatus];
+
+  return isMobileDevice() && isPaymentLinksType ? (
     <MobileListView
       headers={['Payment Link Id', 'Amount', 'Status']}
       TableListItem={PaymentLinkMobileTableListView}
@@ -145,29 +95,18 @@ export default (props) => {
       {...props}
     />
   ) : (
-    <div class="table-responsive">
-      <table class="table table-hover">
+    <div className="table-responsive">
+      <table className="table table-hover">
         <thead>
           <tr>
-            <th>{label} Id</th>
-            <th>Created Date</th>
-            <th>Amount</th>
-            <th>{isPaymentlinksV2Enabled ? 'Reference Id' : 'Receipt No.'}</th>
-            <th>Customer</th>
-            <th>Payment Link</th>
-            <th>Status</th>
+            {columns.map(({ title }) => (
+              <th key={title}>{title}</th>
+            ))}
           </tr>
         </thead>
         <TableBody isLoading={isLoading} colSpan={8} rows={invoices} emptyTableRow={EmptyList}>
           {invoices.map((invoice) => (
-            <InvoiceListItem
-              label={label}
-              key={invoice.id}
-              invoice={invoice}
-              onDeleteClick={() => props.onDelete(invoice)}
-              onCopy={onCopy}
-              type={type}
-            />
+            <InvoiceListItem key={invoice.id} invoice={invoice} columns={columns} />
           ))}
         </TableBody>
       </table>

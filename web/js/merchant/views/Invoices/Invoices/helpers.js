@@ -1,3 +1,5 @@
+import copyToClipboard from 'common/utils/copyToClipboard';
+
 export function removeTaxForNonINRItems(props, invoiceCurrency) {
   const updatedProps = { ...props };
 
@@ -32,3 +34,17 @@ export function removeTaxForNonINRItems(props, invoiceCurrency) {
 
   return updatedProps;
 }
+
+export const shareURL = (url, title) => {
+  if (navigator.share) {
+    navigator
+      .share({
+        title,
+        url,
+      })
+      .catch(console.error);
+  } else {
+    // fallback
+    copyToClipboard(url);
+  }
+};

@@ -546,10 +546,11 @@ export default class Content extends Component {
             additionalCondition={(user) => user.isAllowedView('virtual_accounts')}
           />
 
+          {/* Allowing only care health merchant having role owner and disabling for every other user roles */}
           <ShowWhenRoute
             path="/reports"
             component={ReportsAsync}
-            additionalCondition={(user) => user.isAllowedView('reports')}
+            additionalCondition={(user) => user.isAllowedView('reports') || user.isCareHealthOwner}
           />
 
           <ShowWhenRoute
