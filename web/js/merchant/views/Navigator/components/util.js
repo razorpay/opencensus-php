@@ -676,64 +676,292 @@ export const parameters = [
     id: 8,
     values: [
       {
-        value: 'SBIN',
-      },
-      {
-        value: 'HDFC',
-      },
-      {
-        value: 'ICIC',
-      },
-      {
-        value: 'UTIB',
-      },
-      {
-        value: 'KKBK',
-      },
-      {
-        value: 'BARB_R',
-      },
-      {
-        value: 'BKID',
-      },
-      {
-        value: 'CNRB',
-      },
-      {
-        value: 'PUNB_R',
-      },
-      {
-        value: 'UBIN',
-      },
-      {
-        value: 'IDIB',
+        value: 'AIRP',
+        label: 'Airtel Payments Bank',
       },
       {
         value: 'ALLA',
-      },
-      {
-        value: 'CBIN',
-      },
-      {
-        value: 'IOBA',
-      },
-      {
-        value: 'IBKL',
-      },
-      {
-        value: 'YESB',
+        label: 'Allahabad Bank',
       },
       {
         value: 'ANDB',
+        label: 'Andhra Bank',
       },
       {
-        value: 'AIRP',
+        value: 'AUBL',
+        label: 'AU Small Finance Bank',
+      },
+      {
+        value: 'BARB_R',
+        label: 'Bank of Baroda - Retail Banking',
+      },
+      {
+        value: 'BBKM',
+        label: 'Bank of Bahrain and Kuwait',
+      },
+      {
+        value: 'BCBM',
+        label: 'Bharat Co-Operative Bank',
+      },
+      {
+        value: 'BDBL',
+        label: 'Bandhan Bank',
+      },
+      {
+        value: 'BKDN',
+        label: 'Dena Bank',
+      },
+      {
+        value: 'BKID',
+        label: 'Bank of India',
+      },
+      {
+        value: 'CBIN',
+        label: 'Central Bank of India',
+      },
+      {
+        value: 'CIUB',
+        label: 'City Union Bank',
+      },
+      {
+        value: 'CNRB',
+        label: 'Canara Bank',
+      },
+      {
+        value: 'CORP',
+        label: 'Corporation Bank',
+      },
+      {
+        value: 'COSB',
+        label: 'Cosmos Co-operative Bank',
+      },
+      {
+        value: 'CSBK',
+        label: 'Catholic Syrian Bank',
+      },
+      {
+        value: 'DBSS',
+        label: 'Development Bank of Singapore',
+      },
+      {
+        value: 'DCBL',
+        label: 'DCB Bank',
+      },
+      {
+        value: 'DEUT',
+        label: 'Deutsche Bank',
+      },
+      {
+        value: 'DLXB',
+        label: 'Dhanlaxmi Bank',
+      },
+      {
+        value: 'ESAF',
+        label: 'ESAF Small Finance Bank',
+      },
+      {
+        value: 'ESFB',
+        label: 'Equitas Small Finance Bank',
       },
       {
         value: 'FDRL',
+        label: 'Federal Bank',
+      },
+      {
+        value: 'FSFB',
+        label: 'Fincare Small Finance Bank',
+      },
+      {
+        value: 'HDFC',
+        label: 'HDFC Bank',
+      },
+      {
+        value: 'HSBC',
+        label: 'HSBC',
+      },
+      {
+        value: 'IBKL',
+        label: 'IDBI',
+      },
+      {
+        value: 'ICIC',
+        label: 'ICICI Bank',
+      },
+      {
+        value: 'IDFB',
+        label: 'IDFC FIRST Bank',
+      },
+      {
+        value: 'IDIB',
+        label: 'Indian Bank',
+      },
+      {
+        value: 'INDB',
+        label: 'Indusind Bank',
+      },
+      {
+        value: 'IOBA',
+        label: 'Indian Overseas Bank',
+      },
+      {
+        value: 'JAKA',
+        label: 'Jammu and Kashmir Bank',
+      },
+      {
+        value: 'JSBP',
+        label: 'Janata Sahakari Bank (Pune)',
+      },
+      {
+        value: 'JSFB',
+        label: 'Jana Small Finance Bank',
+      },
+      {
+        value: 'KARB',
+        label: 'Karnataka Bank',
+      },
+      {
+        value: 'KCCB',
+        label: 'The Kalupur Commercial Co-Operative Bank',
+      },
+      {
+        value: 'KJSB',
+        label: 'Kalyan Janata Sahakari Bank',
+      },
+      {
+        value: 'KKBK',
+        label: 'Kotak Mahindra Bank',
+      },
+      {
+        value: 'KVBL',
+        label: 'Karur Vysya Bank',
+      },
+      {
+        value: 'LAVB_R',
+        label: 'Lakshmi Vilas Bank - Retail Banking',
       },
       {
         value: 'MAHB',
+        label: 'Bank of Maharashtra',
+      },
+      {
+        value: 'MSNU',
+        label: 'Mehsana Urban Bank',
+      },
+      {
+        value: 'NESF',
+        label: 'North East Small Finance Bank',
+      },
+      {
+        value: 'NKGS',
+        label: 'NKGSB Co-operative Bank',
+      },
+      {
+        value: 'NSPB',
+        label: 'NSDL Payments Bank',
+      },
+      {
+        value: 'ORBC',
+        label: 'Oriental Bank of Commerce',
+      },
+      {
+        value: 'PMCB',
+        label: 'Punjab & Maharashtra Co-operative Bank',
+      },
+      {
+        value: 'PSIB',
+        label: 'Punjab & Sind Bank',
+      },
+      {
+        value: 'PUNB_R',
+        label: 'Punjab National Bank - Retail Banking',
+      },
+      {
+        value: 'RATN',
+        label: 'RBL Bank',
+      },
+      {
+        value: 'SRCB',
+        label: 'Saraswat Co-operative Bank',
+      },
+      {
+        value: 'SBBJ',
+        label: 'State Bank of Bikaner and Jaipur',
+      },
+      {
+        value: 'SBHY',
+        label: 'State Bank of Hyderabad',
+      },
+      {
+        value: 'SBIN',
+        label: 'State Bank of India',
+      },
+      {
+        value: 'SBMY',
+        label: 'State Bank of Mysore',
+      },
+      {
+        value: 'SBTR',
+        label: 'State Bank of Travancore',
+      },
+      {
+        value: 'SCBL',
+        label: 'Standard Chartered Bank',
+      },
+      {
+        value: 'SIBL',
+        label: 'South Indian Bank',
+      },
+      {
+        value: 'STBP',
+        label: 'State Bank of Patiala',
+      },
+      {
+        value: 'SURY',
+        label: 'Suryoday Small Finance Bank',
+      },
+      {
+        value: 'SVCB',
+        label: 'Shamrao Vithal Co-operative Bank',
+      },
+      {
+        value: 'SYNB',
+        label: 'Syndicate Bank',
+      },
+      {
+        value: 'TJSB',
+        label: 'Thane Janata Sahakari Bank',
+      },
+      {
+        value: 'TMBL',
+        label: 'Tamilnadu Mercantile Bank',
+      },
+      {
+        value: 'TNSC',
+        label: 'Tamilnadu State Apex Co-operative Bank',
+      },
+      {
+        value: 'UBIN',
+        label: 'Union Bank of India',
+      },
+      {
+        value: 'UCBA',
+        label: 'UCO Bank',
+      },
+      {
+        value: 'UTBI',
+        label: 'United Bank of India',
+      },
+      {
+        value: 'UTIB',
+        label: 'Axis Bank',
+      },
+      {
+        value: 'VARA',
+        label: 'Varachha Co-operative Bank Limited',
+      },
+      {
+        value: 'YESB',
+        label: 'Yes Bank',
       },
     ],
     operators: {

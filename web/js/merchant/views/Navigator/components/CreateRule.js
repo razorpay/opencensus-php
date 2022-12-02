@@ -40,7 +40,7 @@ import {
   getRuleStatus,
   rzpGateways,
 } from './util';
-import { PreconditionModel } from '../models/PreconditionModel';
+import { PreconditionModel } from 'merchant/views/Navigator/models/PreconditionModel';
 import FullPageCover from './FullPageCover';
 import FullPageCoverHeader from './FullPageCoverHeader';
 

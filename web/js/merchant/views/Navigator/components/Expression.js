@@ -6,12 +6,7 @@ import Amount, { AmountTooltip } from 'common/ui/Amount';
 import { operators, getValue } from './util';
 
 export default class Expression extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      showBinNumberErorr: false,
-    };
-  }
+  state = { showBinNumberErorr: false };
 
   getValue = (value) => {
     const r = this.props.parameters;
@@ -96,6 +91,7 @@ export default class Expression extends React.Component {
         VALUE_TYPE = 'array';
       }
     }
+
     return (
       <div
         className={`expression-row ${this.props.readonly ? 'expression-row-readonly' : ''}`}
@@ -157,9 +153,7 @@ export default class Expression extends React.Component {
               <Select
                 placeholder="Select Connection"
                 options={OPERATORS}
-                selected={operators.filter((o) => {
-                  return o.value == this.props.expression.value;
-                })}
+                selected={operators.filter(({ value }) => value === this.props?.expression?.value)}
                 select={(values) => {
                   this.props.update({
                     ...this.props.expression,
@@ -186,6 +180,7 @@ export default class Expression extends React.Component {
                     multiple={RHS_TYPE.multiple}
                     placeholder="Select Comparing Value"
                     options={VALUES}
+                    searchable
                     selected={this.props.expression.operands[1].value
                       .split(',')
                       .map((v) => VALUES.find((p) => p.value == v))
