@@ -1455,7 +1455,7 @@ class Gateway extends Base\Gateway
 
         $verify->verifyResponseBody = null;
 
-        return $verify->verifyResponseContent;
+        return $verify;
     }
 
     protected function verifyPayment($verify)
