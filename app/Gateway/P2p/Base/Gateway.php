@@ -3,7 +3,11 @@
 namespace RZP\Gateway\P2p\Base;
 
 use Carbon\Carbon;
+use RZP\Models\P2p;
 use RZP\Gateway\Base;
+use RZP\Error\P2p\ErrorCode;
+use RZP\Exception\RuntimeException;
+use RZP\Exception\P2p\BadRequestException;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
 use RZP\Models\P2p\Base\Libraries\Context;
 
@@ -137,5 +141,51 @@ class Gateway extends Base\Gateway
     protected function getContextHandleCode()
     {
         return $this->context->handleCode();
+    }
+
+    /**
+     * @param array $data 1D flatten array containing key-value data to be validated
+     * @param array $keys attribute => index mapping of $data
+     *
+     * @throws BadRequestException
+     * @throws RuntimeException
+     */
+    protected function validateFields(array $data, array $keys)
+    {
+        foreach ($keys as $attribute => $index)
+        {
+            switch ($attribute)
+            {
+                case P2p\Device\Entity::CONTACT:
+                    $contact = $data[$index];
+                    $this->validateContact($contact);
+                    break;
+            }
+        }
+    }
+
+    /**
+     * @param string $contact
+     *
+     * @throws BadRequestException
+     * @throws RuntimeException
+     */
+    protected function validateContact(string $contact)
+    {
+        $contactRegex = '/^91[\d*]{10}$/';
+
+        $isValid = preg_match($contactRegex, $contact);
+
+        if ($isValid === 0)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED);
+        }
+
+        // preg_match returns false if any error is occurred.
+        if (($isValid === false) or
+            ($isValid !== 1))
+        {
+            throw new RuntimeException('invalid response from preg_match');
+        }
     }
 }

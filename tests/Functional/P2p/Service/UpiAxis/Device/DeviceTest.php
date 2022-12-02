@@ -5,6 +5,7 @@ namespace RZP\Tests\P2p\Service\UpiAxis\Device;
 use RZP\Models\P2p\Device;
 use RZP\Gateway\P2p\Upi\Axis\Fields;
 use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Exception\P2p\BadRequestException;
 use RZP\Tests\P2p\Service\UpiAxis\TestCase;
 use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
 use RZP\Tests\P2p\Service\Base\Traits\MetricsTrait;
@@ -302,6 +303,48 @@ class DeviceTest extends TestCase
         $this->assertArraySubset([
             Device\DeviceToken\Entity::STATUS => 'verified',
         ], $response);
+    }
+
+    public function testVerificationWithInvalidContactWithSpecialCharacters()
+    {
+        $helper = $this->getDeviceHelper();
+
+        $initiate = $helper->initiateVerification([
+            Fields::SDK => [
+                Fields::SIM_ID => '0',
+            ]
+        ]);
+
+        $helper->withSchemaValidated();
+
+        $request = $helper->verification($initiate['callback'], [
+            Fields::SDK => [
+                Fields::STATUS => 'SUCCESS',
+                Fields::IS_DEVICE_BOUND => 'false',
+                Fields::IS_DEVICE_ACTIVATED => 'false',
+                Fields::VPA_ACCOUNTS => [],
+                Fields::UDF_PARAMETERS => [],
+            ]
+        ]);
+
+        $this->assertSame('BIND_DEVICE', $request['request']['action']);
+
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionMessage('Customer contact number is not set');
+
+        // Passing invalid contact in customer_mobile_number field
+        $helper->verification($request['callback'], [
+            Fields::SDK => [
+                Fields::STATUS => 'SUCCESS',
+                Fields::IS_DEVICE_BOUND => 'true',
+                Fields::IS_DEVICE_ACTIVATED => 'false',
+                Fields::DEVICE_FINGERPRINT => '61F275C82A0AECC4788FA',
+                Fields::CUSTOMER_MOBILE_NUMBER => '919742417121<img>',
+                Fields::VPA_ACCOUNTS => [],
+                Fields::UDF_PARAMETERS => [],
+            ]
+        ]);
     }
 
     public function testDeregister()

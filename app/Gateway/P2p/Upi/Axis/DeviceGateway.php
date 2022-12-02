@@ -208,6 +208,10 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
     {
         $sdk = $this->handleInputSdk();
 
+        $this->validateFields($activateBindingRequest, [
+            Device\Entity::CONTACT => Fields::CUSTOMER_MOBILE_NUMBER,
+        ]);
+
         if (($this->isDeviceBound($sdk) === false))
         {
             // Should never come here as sdk can not be success for non bound device
@@ -239,6 +243,10 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
         $activateBindingRequest)
     {
         $sdk = $this->handleInputSdk();
+
+        $this->validateFields($activateBindingRequest, [
+            Device\Entity::CONTACT => Fields::CUSTOMER_MOBILE_NUMBER,
+        ]);
 
         if (($this->isDeviceActivated($sdk) === false))
         {
