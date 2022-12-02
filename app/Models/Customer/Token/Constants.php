@@ -9,6 +9,7 @@ class Constants
     const BATCH_ERROR_CODE            = 'code';
     const BATCH_ERROR_DESCRIPTION     = 'description';
     const BATCH_SUCCESS               = 'success';
+    const INITIATED                   = 'initiated';
 
     //global customer local cards tokenisation
     const GLOBAL_CUSTOMER_LOCAL_ASYNC_TOKENISATION_QUERY_LIMIT = 20000;
