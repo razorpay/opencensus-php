@@ -42,6 +42,9 @@ configure_dev(){
   sed -i 's~^DB_AUTH_DATABASE=auth~DB_AUTH_DATABASE=auth_test~' environment/.env.testing_docker
   sed -i 's~^SLAVE_DB_LIVE_DATABASE=api_live~SLAVE_DB_LIVE_DATABASE=api_testing_live~' environment/.env.testing_docker
   sed -i 's~^SLAVE_DB_TEST_DATABASE=api_test~SLAVE_DB_TEST_DATABASE=api_testing_test~' environment/.env.testing_docker
+  sed -i 's~^DB_LIVE_VIEW_DATABASE=api_live~DB_LIVE_VIEW_DATABASE=api_testing_live~' environment/.env.testing_docker
+  sed -i 's~^DB_TEST_VIEW_DATABASE=api_test~DB_TEST_VIEW_DATABASE=api_testing_test~' environment/.env.testing_docker
+
   echo "$(date) db names change done"
 
   # Remove temp file
