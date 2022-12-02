@@ -58,12 +58,12 @@ class ApiRouteCircuitBreaker
         self::TIME_WINDOW            => 60,
 
         // The failure rate threshold in percentage that changes CircuitBreaker's state to `OPEN`.
-        self::FAILURE_RATE_THRESHOLD => 50,
+        self::FAILURE_RATE_THRESHOLD => 80,
 
         // The minimum number of requests to detect failures.
         // Even if `failureRateThreshold` exceeds the threshold,
         // CircuitBreaker remains in `CLOSED` if `minimumRequests` is below this threshold.
-        self::MINIMUM_REQUESTS       => 10,
+        self::MINIMUM_REQUESTS       => 20,
 
         // The interval (seconds) to change CircuitBreaker's state from `OPEN` to `HALF_OPEN`.
         self::INTERVAL_TO_HALF_OPEN  => 5,
