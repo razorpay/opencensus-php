@@ -42,6 +42,7 @@ class UpiTerminalCreationBulkTest extends TestCase
                 Batch\Header::UPI_TERMINAL_ONBOARDING_GATEWAY_ACCESS_CODE  => 'parentChannelId',
                 Batch\Header::UPI_TERMINAL_ONBOARDING_EXPECTED             => 1,
                 Batch\Header::UPI_TERMINAL_ONBOARDING_VPA_HANDLE           => '',
+                Batch\Header::UPI_TERMINAL_ONBOARDING_RECURRING            => '',
             ],
         ];
     }

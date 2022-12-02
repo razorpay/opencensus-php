@@ -484,6 +484,7 @@ return [
         'live_private_key'                  => env('UPI_ICICI_LIVE_PRIVATE_KEY'),
         'ut_test_private_key'               => env('UPI_ICICI_UPI_TRANSFER_TEST_PRIVATE_KEY'),
         'ut_live_private_key'               => env('UPI_ICICI_UPI_TRANSFER_LIVE_PRIVATE_KEY'),
+        'live_recurring_onboarding_api_key' => env('UPI_ICICI_RECURRING_ONBOARDING_API_KEY'),
         'recurring_oksbi_test_merchants'    => [
             'EOQRaXICwJIuoy',   // Srikant's Test Merchant
             '2aTeFCKTYWwfrF',   // RZP Demo Merchant

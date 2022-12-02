@@ -21,7 +21,7 @@ class UpiTerminalOnboarding extends Base
         $gatewayAccessCode  = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_GATEWAY_ACCESS_CODE];
         $expected           = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_EXPECTED];
         $vpaHandle          = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_VPA_HANDLE];
-
+        $recurring          = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_RECURRING] ?? false;
 
         $identifiers = [
             Terminal\Entity::VPA                  => $vpa,
@@ -34,7 +34,25 @@ class UpiTerminalOnboarding extends Base
             Terminal\Entity::EXPECTED   =>  $expected
         ];
 
-        $response = $this->app['terminals_service']->initiateOnboarding($merchantId, $gateway, $identifiers, $features, [], []);
+        $otherInputs = [];
+
+        if (($gateway === Payment\Gateway::UPI_ICICI) and
+            (boolval($recurring) === true))
+        {
+            $features['recurring'] = '1';
+
+            $identifiers[Terminal\Entity::GATEWAY_ACCESS_CODE] = 'v4';
+
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            $identifiers[Terminal\Entity::CATEGORY] = $merchant->getCategory() ?? "";
+
+            $identifiers[Terminal\Entity::NETWORK_CATEGORY] = $merchant->getCategory2() ?? "";
+
+            $otherInputs[Terminal\Entity::SECRETS] = [Terminal\Entity::GATEWAY_TERMINAL_PASSWORD => app('config')->get("gateway.upi_icici.live_recurring_onboarding_api_key")];
+        }
+
+        $response = $this->app['terminals_service']->initiateOnboarding($merchantId, $gateway, $identifiers, $features, [], $otherInputs);
 
         if (isset($response['terminal'][Terminal\Entity::ID]) === true)
         {

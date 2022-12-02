@@ -997,6 +997,7 @@ class Header
     const UPI_TERMINAL_ONBOARDING_GATEWAY_ACCESS_CODE  = 'Gateway Access Code';
     const UPI_TERMINAL_ONBOARDING_EXPECTED             = 'Expected';
     const UPI_TERMINAL_ONBOARDING_VPA_HANDLE           = 'Vpa Handle';
+    const UPI_TERMINAL_ONBOARDING_RECURRING            = 'Recurring';
 
 
     // Pricing Rules Addition Headers
@@ -1711,6 +1712,7 @@ class Header
                 self::UPI_TERMINAL_ONBOARDING_GATEWAY_ACCESS_CODE,
                 self::UPI_TERMINAL_ONBOARDING_EXPECTED,
                 self::UPI_TERMINAL_ONBOARDING_VPA_HANDLE,
+                self::UPI_TERMINAL_ONBOARDING_RECURRING
             ],
             self::OUTPUT => [
                 self::UPI_TERMINAL_ONBOARDING_MERCHANT_ID,
