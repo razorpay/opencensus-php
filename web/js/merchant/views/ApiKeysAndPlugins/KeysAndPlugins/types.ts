@@ -1,6 +1,6 @@
 export type Plugin = {
   name: string;
-  icon: string;
+  icon?: string;
   integration_guide?: string;
   integration_url?: string;
 };

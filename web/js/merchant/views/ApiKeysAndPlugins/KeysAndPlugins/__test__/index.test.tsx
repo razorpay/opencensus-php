@@ -246,6 +246,64 @@ describe('Keys and Plugins Section', () => {
     },
   );
 
+  test('should show None of the above plugin if merchant selected plugin is empty string', async () => {
+    const initialState = getInitialState({
+      userDetails: {
+        business_website: PLATFORM_LINKS.SUCCESS.business_website,
+      },
+      pluginDetails: {
+        details: {
+          items: {
+            [PLATFORM_LINKS.SUCCESS.business_website]: {
+              website: PLATFORM_LINKS.SUCCESS.business_website,
+              merchant_selected_plugin: '',
+              suggested_plugin: null,
+            },
+          },
+        },
+      },
+    });
+
+    const { getByTestId } = renderApp({ initialState });
+
+    await waitFor(() => {
+      expect(getByTestId('plugin-selected-None of the above')).toBeVisible();
+    });
+  });
+
+  test('should send empty string plugin if None of the above plugin selected', async () => {
+    const initialState = getInitialState({
+      userDetails: {
+        business_website: PLATFORM_LINKS.SUCCESS.business_website,
+      },
+      pluginDetails: {
+        details: {
+          items: {
+            [PLATFORM_LINKS.SUCCESS.business_website]: {
+              website: PLATFORM_LINKS.SUCCESS.business_website,
+              merchant_selected_plugin: 'Shopify',
+              suggested_plugin: null,
+            },
+          },
+        },
+      },
+    });
+
+    const { getByTestId, getByText } = renderApp({ initialState });
+    expect(getByText(/website platform/i)).toBeVisible();
+
+    await userEvent.click(getByTestId('plugin-selected-Shopify'));
+
+    await waitFor(() => {
+      expect(getByTestId('plugin-option-None of the above')).toBeVisible();
+    });
+    await userEvent.click(getByTestId('plugin-option-None of the above'));
+
+    await waitFor(() => {
+      expect(getByTestId('plugin-selected-None of the above')).toBeVisible();
+    });
+  });
+
   test('should not trigger event if same plugin is selected again', async () => {
     const initialState = getInitialState({
       userDetails: {

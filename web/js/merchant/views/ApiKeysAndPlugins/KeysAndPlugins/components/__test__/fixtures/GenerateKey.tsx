@@ -4,7 +4,9 @@ import { Provider } from 'react-redux';
 import { KEYS } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/__test__/mocks/fixtures';
 import { storeWithInitialState } from 'merchant/store';
 
-import GenerateKey from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/components/GenerateKey';
+import GenerateKey, {
+  GenerateKeyProps,
+} from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/components/GenerateKey';
 import { render } from 'test-utils';
 
 export const stateWithNoKeys = {
@@ -25,9 +27,12 @@ export const stateWithKeys = {
   },
 };
 
-export const renderApp = ({ initialState = {} } = {}) =>
+interface RenderAppProps extends Partial<GenerateKeyProps> {
+  initialState: any;
+}
+export const renderApp = ({ initialState = {}, ...rest }: RenderAppProps) =>
   render(
     <Provider store={storeWithInitialState(initialState)}>
-      <GenerateKey />
+      <GenerateKey {...rest} />
     </Provider>,
   );

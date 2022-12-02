@@ -8,7 +8,7 @@ import isEmpty from '@universe/utils/isEmpty';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { isPgMerchant } from 'merchant/components/Activation/ActivationUtils';
 import { Platform, Plugins } from './types';
-import { INTEGRATION_TITLE, PLATFORM_TITLE } from './constants';
+import { INTEGRATION_TITLE, NO_PLUGIN_OPTION, PLATFORM_TITLE } from './constants';
 import { getAvailablePlatform, getAvailablePlugin } from './utils';
 import { trackCTAClick, trackPluginSelect } from './events';
 import {
@@ -24,8 +24,9 @@ import {
 const KeysAndPluginsSection = ({
   // state from redux
   keys,
-  session,
-  merchantPlugins,
+  mode,
+  user,
+  pluginDetails,
   supportedPlugins,
   // action from redux
   fetchKeys,
@@ -34,7 +35,6 @@ const KeysAndPluginsSection = ({
   fetchSupportedPlugins,
   showNotification,
 }) => {
-  const { user } = session;
   const defaultPlatform = getAvailablePlatform(user);
   const [selectedPlatform, setSelectedPlatform] = useState<Platform>(defaultPlatform);
   const platformURL = user[selectedPlatform];
@@ -42,13 +42,17 @@ const KeysAndPluginsSection = ({
   const product = isPgMerchant(user) ? 'PG' : 'PH';
 
   //* Priority for showing default plugin - Merchant Selected Plugin > WhatCMS Suggested Plugin > Empty Select box
-  const availablePlugin = getAvailablePlugin(supportedPlugins.items, [
-    merchantPlugins.items[platformURL]?.merchant_selected_plugin,
-    merchantPlugins.items[platformURL]?.suggested_plugin,
-  ]);
+
+  const availablePlugin = getAvailablePlugin({
+    supportedPlugins: supportedPlugins.items,
+    merchantSelectedPlugin: pluginDetails.items[platformURL]?.merchant_selected_plugin,
+    suggestedPlugin: pluginDetails.items[platformURL]?.suggested_plugin,
+  });
 
   const [plugin, setPlugin] = useState<string | null>(null);
   const selectedPlugin = plugin ?? availablePlugin;
+
+  const options = Object.values(supportedPlugins.items).concat([NO_PLUGIN_OPTION]);
 
   const getSteps = useCallback(() => {
     const pluginSteps: JSX.Element[] = [];
@@ -66,11 +70,11 @@ const KeysAndPluginsSection = ({
     );
 
     return pluginSteps;
-  }, [selectedPlugin, isWebsitePlatform, selectedPlatform]);
+  }, [selectedPlugin, isWebsitePlatform, product, selectedPlatform]);
 
   useEffect(() => {
-    fetchKeys({ mode: session.mode }, session.user?.has_key_access);
-    fetchMerchantPlugin({ merchantId: session.user.current });
+    fetchKeys({ mode }, user?.has_key_access);
+    fetchMerchantPlugin({ merchantId: user.current });
     if (isEmpty(supportedPlugins.items)) {
       fetchSupportedPlugins();
     }
@@ -94,10 +98,10 @@ const KeysAndPluginsSection = ({
       product,
     });
     saveMerchantPlugin({
-      merchantId: session.user?.current,
+      merchantId: user?.current,
       data: {
-        website: session.user?.[selectedPlatform],
-        plugin_name: updatedPlugin,
+        website: user?.[selectedPlatform],
+        plugin_name: updatedPlugin === NO_PLUGIN_OPTION.name ? '' : updatedPlugin,
       },
     })
       .then(() => {
@@ -105,7 +109,7 @@ const KeysAndPluginsSection = ({
           type: 'success',
           message: 'Plugin saved successfully',
         });
-        fetchMerchantPlugin({ merchantId: session.user.current });
+        fetchMerchantPlugin({ merchantId: user?.current });
       })
       .catch(({ errors }) => {
         showNotification({
@@ -116,7 +120,7 @@ const KeysAndPluginsSection = ({
       });
   };
 
-  if (!keys.isLoaded || supportedPlugins.loading || merchantPlugins.loading) {
+  if (!keys.isLoaded || supportedPlugins.loading || pluginDetails.loading) {
     return (
       <div className="page-spinner-container">
         <Spinner />
@@ -150,21 +154,29 @@ const KeysAndPluginsSection = ({
               <label className="control-label">Website platform</label>
 
               <PowerSelect
-                onChange={(args) => onPluginChange(args.option.name)}
+                onChange={(args) => onPluginChange(args.option?.name)}
                 optionLabelPath="name"
                 selected={selectedPlugin}
                 placeholder="-- Select Platform --"
                 showClear={false}
                 searchEnabled={false}
-                options={Object.values(supportedPlugins.items)}
+                options={options}
                 optionComponent={({ option }) => <PluginOption plugin={option} />}
                 selectedOptionComponent={({ option }) => (
-                  <PluginOption plugin={supportedPlugins.items[option]} selected={true} />
+                  <PluginOption
+                    plugin={
+                      option === NO_PLUGIN_OPTION.name
+                        ? NO_PLUGIN_OPTION
+                        : supportedPlugins.items[option]
+                    }
+                    selected={true}
+                  />
                 )}
               />
             </div>
           )}
         </div>
+
         {!!platformURL ? (
           getSteps().map((component, index, steps) => (
             <Step step={index + 1} borderBottom={index !== steps.length - 1} key={index}>
@@ -181,9 +193,10 @@ const KeysAndPluginsSection = ({
 
 export default connect(
   (state) => ({
-    session: state.session,
+    mode: state.session.mode,
+    user: state.session.user,
     supportedPlugins: state.plugins.supported,
-    merchantPlugins: state.plugins.details,
+    pluginDetails: state.plugins.details,
     keys: state.keys,
   }),
   { ...KeyActions, ...PluginActions, ...NotificationsActions },

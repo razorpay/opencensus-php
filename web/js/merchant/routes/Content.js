@@ -481,7 +481,7 @@ export default class Content extends Component {
             path="/api-keys"
             component={ApiKeysAndPlugins}
             additionalCondition={(_user) =>
-              _user.isProductLedOnboardingRZP || _user.isApiKeysRevampEnabled
+              (_user.isProductLedOnboardingRZP || _user.isApiKeysRevampEnabled) && _user.activated
             }
           />
 

@@ -105,60 +105,64 @@ const ProductOnboardingCard = ({
 
   if (hasMerchantTransacted) {
     return (
-      <QuickActionsCard
-        paymentHandleData={paymentHandleData}
-        showCustomizeModal={() => showCustomizeModal({ section: 'QuickAction' })}
-        goToPaymentLinks={() => goToPaymentLinks({ section: 'QuickAction' })}
-        onCopyHandle={() => onCopyHandle({ section: 'QuickAction' })}
-        isCTADisabled={paymentHandle.loading}
-        isHandleCopied={isHandleCopied}
-      />
+      <div className="product-onboarding-card-container">
+        <QuickActionsCard
+          paymentHandleData={paymentHandleData}
+          showCustomizeModal={() => showCustomizeModal({ section: 'QuickAction' })}
+          goToPaymentLinks={() => goToPaymentLinks({ section: 'QuickAction' })}
+          onCopyHandle={() => onCopyHandle({ section: 'QuickAction' })}
+          isCTADisabled={paymentHandle.loading}
+          isHandleCopied={isHandleCopied}
+        />
+      </div>
     );
   }
 
   return (
-    <div className="product-onboarding-card product-led-onboarding">
-      <div className="illustration-top">
-        <img src={ImgTopBg} alt="Top" />
-      </div>
-      <div className="illustration-bottom">
-        <img src={BottomBgImage} />
-      </div>
-      <div className="illustration-right">
-        <img src={OverviewImage} />
-      </div>
-      <p className="title">
-        Congratulations {user.contact_name}! You can start collecting payments
-      </p>
-      <div className="card-container">
-        {pgMerchant ? (
-          <>
-            <PaymentGatewayCard history={history} product="PG" />
-            <PaymentButtonsCard history={history} product="PG" />
-            <PaymentHandleCard
-              paymentHandleData={paymentHandleData}
-              showCustomizeModal={() => showCustomizeModal({ section: 'Regular' })}
-              onCopyHandle={() => onCopyHandle({ section: 'Regular' })}
-              isCTADisabled={paymentHandle.loading}
-              isHandleCopied={isHandleCopied}
-            />
-          </>
-        ) : (
-          <>
-            <PaymentHandleCard
-              paymentHandleData={paymentHandleData}
-              showCustomizeModal={() => showCustomizeModal({ section: 'Regular' })}
-              onCopyHandle={() => onCopyHandle({ section: 'Regular' })}
-              isCTADisabled={paymentHandle.loading}
-              isHandleCopied={isHandleCopied}
-            />
-            <PaymentButtonsCard history={history} product="PH" />
-            <PaymentLinksCard
-              goToPaymentLinks={() => goToPaymentLinks({ section: 'Regular' })}
-              product="PH"
-            />
-          </>
-        )}
+    <div className="product-onboarding-card-container">
+      <div className="product-onboarding-card product-led-onboarding">
+        <div className="illustration-top">
+          <img src={ImgTopBg} alt="Top" />
+        </div>
+        <div className="illustration-bottom">
+          <img src={BottomBgImage} />
+        </div>
+        <div className="illustration-right">
+          <img src={OverviewImage} />
+        </div>
+        <p className="title">
+          Congratulations {user.contact_name}! You can start collecting payments
+        </p>
+        <div className="card-container">
+          {pgMerchant ? (
+            <>
+              <PaymentGatewayCard history={history} product="PG" />
+              <PaymentButtonsCard history={history} product="PG" />
+              <PaymentHandleCard
+                paymentHandleData={paymentHandleData}
+                showCustomizeModal={() => showCustomizeModal({ section: 'Regular' })}
+                onCopyHandle={() => onCopyHandle({ section: 'Regular' })}
+                isCTADisabled={paymentHandle.loading}
+                isHandleCopied={isHandleCopied}
+              />
+            </>
+          ) : (
+            <>
+              <PaymentHandleCard
+                paymentHandleData={paymentHandleData}
+                showCustomizeModal={() => showCustomizeModal({ section: 'Regular' })}
+                onCopyHandle={() => onCopyHandle({ section: 'Regular' })}
+                isCTADisabled={paymentHandle.loading}
+                isHandleCopied={isHandleCopied}
+              />
+              <PaymentButtonsCard history={history} product="PH" />
+              <PaymentLinksCard
+                goToPaymentLinks={() => goToPaymentLinks({ section: 'Regular' })}
+                product="PH"
+              />
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

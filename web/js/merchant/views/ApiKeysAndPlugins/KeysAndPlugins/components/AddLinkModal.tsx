@@ -21,6 +21,7 @@ import {
   PLATFORM_TITLE,
 } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/constants';
 import { MerchantProduct, Platform } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/types';
+import { fetchMerchantPlugin } from 'merchant/reducers/plugins';
 
 interface AddLinkModalProps {
   platform: Platform;
@@ -30,6 +31,7 @@ interface AddLinkModalProps {
   handleSubmit: any;
   updateSession: any;
   showNotification: any;
+  fetchMerchantPlugin: any;
 }
 
 const AddLinkModal = ({
@@ -42,6 +44,7 @@ const AddLinkModal = ({
   closeModal,
   showNotification,
   updateSession,
+  fetchMerchantPlugin,
 }: AddLinkModalProps): JSX.Element => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -50,7 +53,7 @@ const AddLinkModal = ({
   const onSubmit = (data) => {
     trackCTAClick('Save Link', { paymentChannel: INTEGRATION_TITLE[platform], product });
     setIsSubmitting(true);
-    const payload = { [platform]: data?.link };
+    const payload = { [platform]: data.link.trim() };
 
     return merchantFetch({
       url: 'merchant/activation',
@@ -71,6 +74,9 @@ const AddLinkModal = ({
           type: 'success',
           message: 'Link added successfully',
         });
+        if (platform === Platform.WEBSITE) {
+          fetchMerchantPlugin({ merchantId: user.current });
+        }
       })
       .catch(({ errors }) => {
         trackAsyncResult('Save Link', {
@@ -122,6 +128,7 @@ const mapDispatchToProps = (dispatch) =>
       ...ModalActions,
       ...NotificationsActions,
       updateSession,
+      fetchMerchantPlugin,
     },
     dispatch,
   );

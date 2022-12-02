@@ -11,7 +11,7 @@ import {
 } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/constants';
 import { bindActionCreators } from 'redux';
 
-export type AddLinkProps = {
+type AddLinkProps = {
   product: MerchantProduct;
   platform: Platform;
   openModal: any;

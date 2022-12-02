@@ -13,6 +13,7 @@ import {
   KEY,
   PLATFORM_LINKS,
 } from './mocks/fixtures';
+import { NO_PLUGIN_OPTION } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/constants';
 
 const getStateSpy = jest.spyOn(store, 'getState');
 
@@ -91,21 +92,57 @@ describe('getAvailablePlugin', () => {
     getStateSpy.mockReset();
   });
 
-  test('should return empty string if Merchant Selected and Suggeted Plugin are null', () => {
+  test('should return null if Merchant Selected and Suggeted Plugin are null', () => {
     const merchantSelectedPlugin = null;
     const suggestedPlugin = null;
 
     populateSupportedPlugins(getStateSpy);
     const { items: supportedPlugins } = store.getState().plugins.supported;
-    const plugin = getAvailablePlugin(supportedPlugins, [merchantSelectedPlugin, suggestedPlugin]);
-    expect(plugin).toBe('');
+    const plugin = getAvailablePlugin({
+      supportedPlugins,
+      merchantSelectedPlugin,
+      suggestedPlugin,
+    });
+    expect(plugin).toBeNull();
+  });
+
+  test('should return No Plugin Option if Merchant Selected is empty string and Suggeted Plugin is null', () => {
+    const merchantSelectedPlugin = '';
+    const suggestedPlugin = null;
+
+    populateSupportedPlugins(getStateSpy);
+    const { items: supportedPlugins } = store.getState().plugins.supported;
+    const plugin = getAvailablePlugin({
+      supportedPlugins,
+      merchantSelectedPlugin,
+      suggestedPlugin,
+    });
+    expect(plugin).toBe(NO_PLUGIN_OPTION.name);
+  });
+
+  test('should return empty string if Merchant Selected is null and Suggeted Plugin is empty string', () => {
+    const merchantSelectedPlugin = null;
+    const suggestedPlugin = '';
+
+    populateSupportedPlugins(getStateSpy);
+    const { items: supportedPlugins } = store.getState().plugins.supported;
+    const plugin = getAvailablePlugin({
+      supportedPlugins,
+      merchantSelectedPlugin,
+      suggestedPlugin,
+    });
+    expect(plugin).toBeNull();
   });
 
   test('should return empty string if plugin is not supported', () => {
     populateSupportedPlugins(getStateSpy);
     const { items: supportedPlugins } = store.getState().plugins.supported;
-    const plugin = getAvailablePlugin(supportedPlugins, ['OpenCart']);
-    expect(plugin).toBe('');
+    const plugin = getAvailablePlugin({
+      supportedPlugins,
+      merchantSelectedPlugin: 'OpenCart',
+      suggestedPlugin: null,
+    });
+    expect(plugin).toBeNull();
   });
 
   test('should return Suggested Plugin if present', () => {
@@ -114,7 +151,11 @@ describe('getAvailablePlugin', () => {
 
     populateSupportedPlugins(getStateSpy);
     const { items: supportedPlugins } = store.getState().plugins.supported;
-    const plugin = getAvailablePlugin(supportedPlugins, [merchantSelectedPlugin, suggestedPlugin]);
+    const plugin = getAvailablePlugin({
+      supportedPlugins,
+      merchantSelectedPlugin,
+      suggestedPlugin,
+    });
     expect(plugin).toBe(suggestedPlugin);
   });
 
@@ -124,7 +165,11 @@ describe('getAvailablePlugin', () => {
 
     populateSupportedPlugins(getStateSpy);
     const { items: supportedPlugins } = store.getState().plugins.supported;
-    const plugin = getAvailablePlugin(supportedPlugins, [merchantSelectedPlugin, suggestedPlugin]);
+    const plugin = getAvailablePlugin({
+      supportedPlugins,
+      merchantSelectedPlugin,
+      suggestedPlugin,
+    });
     expect(plugin).toBe(merchantSelectedPlugin);
   });
 });

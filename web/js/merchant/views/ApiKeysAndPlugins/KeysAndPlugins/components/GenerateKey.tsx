@@ -42,9 +42,10 @@ const copyReducer = (
   }
 };
 
-interface GenerateKeyProps {
+export interface GenerateKeyProps {
   selectedPlatform: Platform;
   product: MerchantProduct;
+  user: any;
   keys: any;
   mode: string;
   merchantId: string;
@@ -59,6 +60,7 @@ const GenerateKey = ({
   selectedPlatform,
   product,
   // state from redux
+  user,
   keys: keysState,
   mode,
   merchantId,
@@ -74,6 +76,7 @@ const GenerateKey = ({
 
   const context = useTwoFactorVerificationContext();
   const { keys } = keysState;
+  const platformURL = user[selectedPlatform];
 
   const trackProps = {
     paymentChannel: INTEGRATION_TITLE[selectedPlatform],
@@ -208,7 +211,15 @@ const GenerateKey = ({
         {latestKey && !currentKeySecret ? <>API key downloaded &#11015;</> : 'Get API key'}
       </div>
       <div className="keys-plugins-step__content">
-        {latestKey ? (
+        {mode.toLowerCase() === 'live' && platformURL && !user?.has_key_access ? (
+          <div>
+            <strong>You can generate API keys in Test Mode</strong>
+            <br />
+            <br />
+            The website/app details that you have provided are under review. You can generate API
+            keys here once the details are approved.
+          </div>
+        ) : latestKey ? (
           <>
             {currentKeySecret && (
               <Alert.Warning iconBefore="i i-triangle-alert alert-icon">
@@ -259,11 +270,11 @@ const GenerateKey = ({
             {!currentKeySecret && (
               <div className="key-details">
                 <div className="keys-plugins-section__field-group">
-                  <div className="keys-plugins-section__label">Created At</div>
+                  <div className="keys-plugins-section__label">Created on</div>
                   <Time value={latestKey?.created_at} format="MMM Do, YYYY" />
                 </div>
                 <div className="keys-plugins-section__field-group">
-                  <div className="keys-plugins-section__label">Expires At</div>
+                  <div className="keys-plugins-section__label">Expiry on</div>
                   {latestKey?.expired_at ? (
                     <Time value={latestKey?.expired_at} format="MMM Do, YYYY" />
                   ) : (
@@ -313,6 +324,7 @@ const GenerateKey = ({
 
 export default connect(
   (state) => ({
+    user: state.session.user,
     keys: state.keys,
     mode: state.session.modeFormatted,
     merchantId: state.session.user?.current,

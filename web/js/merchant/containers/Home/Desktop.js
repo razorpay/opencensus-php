@@ -364,7 +364,7 @@ class AnalyticsDesktop extends Component {
     }
   };
 
-  renderOnboardingAndRecommendationWidget = () => {
+  renderOnboardingWidgets = () => {
     const {
       user,
       showOnboardingBannerFirstStep,
@@ -391,15 +391,21 @@ class AnalyticsDesktop extends Component {
         )}
       </div>
     );
+
+    const ProductLedOnboardingWidget =
+      user?.isProductLedOnboardingRZP && !!user?.activated ? <ProductOnboardingCard /> : null;
+
     /* Recommended product widget */
     const ProductRecommendationWidget = user.isProductRecommendationEnabled && (
       <ProductRecommendationnCard user={user} />
     );
+    const widget = ProductLedOnboardingWidget ?? ProductRecommendationWidget;
 
+    // if Payment Enabled Merchant - switch the order of the widgets
     if (user.activation_form_milestone && user.activated) {
-      return [ProductRecommendationWidget, onboardingCard];
+      return [widget, onboardingCard];
     }
-    return [onboardingCard, ProductRecommendationWidget];
+    return [onboardingCard, widget];
   };
 
   onKnowMoreClick = () => {
@@ -435,13 +441,9 @@ class AnalyticsDesktop extends Component {
       oldestTransactionDate,
       dateRangePresets,
       showGroupingByPtfm,
-      showOnboardingBannerFirstStep,
-      expandOnboardingBanner,
       payments,
       showOnboardingBanner,
       showInstantActivation,
-      onHideOnboardingBanner,
-      onFirstStepClose,
       onDatesChange,
       onFetchPayments,
       onExtraContentMount,
@@ -791,33 +793,7 @@ class AnalyticsDesktop extends Component {
             ) : null}
           </GrowthAssetEB>
 
-          {this.props.user?.isProductLedOnboardingRZP && user?.activated && (
-            <div className="product-onboarding-card-container">
-              <ProductOnboardingCard />
-            </div>
-          )}
-
-          {user.canSwitchOnboardingCard ? (
-            this.renderOnboardingAndRecommendationWidget()
-          ) : (
-            <>
-              <div className={`v2-onboarding-card${expandOnboardingBanner ? ' expand' : ''}`}>
-                {showOnboardingBanner && (
-                  <NewUserOnboardingCard
-                    payments={payments}
-                    onClose={onHideOnboardingBanner}
-                    onFirstStepClose={onFirstStepClose}
-                    isFirstStep={showOnboardingBannerFirstStep}
-                    showInstantActivation={showInstantActivation}
-                    limitBreach={limitBreach}
-                  />
-                )}
-              </div>
-
-              {/* Recommended product widget */}
-              {user.isProductRecommendationEnabled && <ProductRecommendationnCard user={user} />}
-            </>
-          )}
+          {this.renderOnboardingWidgets()}
           <ShowWhen additionalCondition={(usr) => usr.isOrgRZP && Boolean(usr.activated)}>
             <IntlPaymentsRecommendation
               user={user}

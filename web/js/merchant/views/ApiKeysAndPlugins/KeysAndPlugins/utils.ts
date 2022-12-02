@@ -1,5 +1,5 @@
 import { Platform } from './types';
-
+import { NO_PLUGIN_OPTION } from './constants';
 /**
  * Get available platform submitted by the merchant
  * Priority - Website > Android > iOS
@@ -15,6 +15,11 @@ export const getAvailablePlatform = (user): Platform => {
   return Platform.WEBSITE;
 };
 
+interface GetAvailablePluginProps {
+  supportedPlugins: Record<string, unknown>;
+  merchantSelectedPlugin: string | null;
+  suggestedPlugin: string | null;
+}
 /**
  * Returns the first plugin from plugins array that is present in supportedPlugins map
  * @param {Record<string, any>} supportedPlugins - Hashmap of supported plugins
@@ -25,16 +30,17 @@ export const getAvailablePlatform = (user): Platform => {
  * getAvailablePlugin({'Woocommerce': {...}, 'Shopify': {...}, ['Wix', 'Shopify']})
  * // returns 'Shopify'
  */
-export const getAvailablePlugin = (
-  supportedPlugins: Record<string, unknown>,
-  plugins: (string | null)[],
-): string => {
-  for (const plugin of plugins) {
-    if (plugin && plugin in supportedPlugins) {
-      return plugin;
-    }
-  }
-  return '';
+export const getAvailablePlugin = ({
+  supportedPlugins,
+  merchantSelectedPlugin,
+  suggestedPlugin,
+}: GetAvailablePluginProps): string | null => {
+  if (merchantSelectedPlugin === '') return NO_PLUGIN_OPTION.name;
+  if (merchantSelectedPlugin && merchantSelectedPlugin in supportedPlugins)
+    return merchantSelectedPlugin;
+
+  if (suggestedPlugin && suggestedPlugin in supportedPlugins) return suggestedPlugin;
+  return null;
 };
 
 /**

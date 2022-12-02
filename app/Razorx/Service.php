@@ -169,7 +169,6 @@ class Service extends Base\Service
             'mob_welcome_ca_card',
             'smart_collect_search_v1',
             'missed_order_pl_banner',
-            'switch_onboarding_card',
             'additional_domain_whitelist_self_serve',
             'remove_presignup_functionality',
             'rx_ca_self_serve_flow',

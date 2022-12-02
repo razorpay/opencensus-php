@@ -195,9 +195,7 @@ const RecommendationWidget = ({
       {payment === 0 ? (
         <div
           className={`recommendation-widget ${
-            user.activation_form_milestone && user.activated && user.canSwitchOnboardingCard
-              ? 'post-l1'
-              : 'pre-l1'
+            user.activation_form_milestone && user.activated ? 'post-l1' : 'pre-l1'
           }`}
         >
           <div className="recommend-product">

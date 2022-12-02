@@ -1,4 +1,4 @@
-import { Platform } from './types';
+import { Platform, Plugin } from './types';
 
 export const PLATFORM_TITLE: Record<Platform, string> = {
   [Platform.WEBSITE]: 'Website',
@@ -19,4 +19,8 @@ export const INTEGRATION_GUIDE: Record<Platform, string> = {
     'https://razorpay.com/docs/payments/payment-gateway/react-native-integration/standard/build-integration-ios/',
   [Platform.ANDROID]:
     'https://razorpay.com/docs/payments/payment-gateway/react-native-integration/standard/build-integration-android/',
+};
+
+export const NO_PLUGIN_OPTION: Plugin = {
+  name: 'None of the above',
 };

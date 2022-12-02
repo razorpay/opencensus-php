@@ -4,6 +4,8 @@ import { getKeys } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/__test_
 import { stateWithKeys, stateWithNoKeys, renderApp } from './fixtures/GenerateKey';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import * as ModalActions from 'merchant_common/reducers/modals';
+import { titleCase } from 'common/utils/rzp-utils';
+import { Platform } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/types';
 
 let showNotificationSpy, openModalSpy, closeModalSpy;
 
@@ -121,6 +123,42 @@ describe('API Keys & Plugins - GenerateKey', () => {
     expect(openModalSpy).toHaveBeenCalledTimes(1);
   });
 
+  test('should show under review status if Merchant does not have key access and is in live mode', () => {
+    const { getByText } = renderApp({
+      initialState: {
+        ...stateWithNoKeys,
+        session: {
+          modeFormatted: 'Live',
+          user: {
+            ...getUser(),
+            has_key_access: false,
+            business_website: 'https://google.com',
+          },
+        },
+      },
+      selectedPlatform: Platform.WEBSITE,
+    });
+    expect(getByText(/You can generate API keys in Test Mode/i)).toBeInTheDocument();
+  });
+
+  test('should show Generate Key if Merchant does not have key access and is in test mode', () => {
+    const { getByRole } = renderApp({
+      initialState: {
+        ...stateWithNoKeys,
+        session: {
+          modeFormatted: 'Test',
+          user: {
+            ...getUser(),
+            has_key_access: false,
+            business_website: 'https://google.com',
+          },
+        },
+      },
+      selectedPlatform: Platform.WEBSITE,
+    });
+    expect(getByRole('button', { name: /Generate Key/i })).toBeInTheDocument();
+  });
+
   test.each(['live', 'test'])('should have %s id if mode is %s', (mode) => {
     const initialState = {
       keys: {
@@ -128,7 +166,7 @@ describe('API Keys & Plugins - GenerateKey', () => {
         keys: getKeys(mode as 'live' | 'test'),
       },
       session: {
-        modeFormatted: mode,
+        modeFormatted: titleCase(mode),
         user: getUser(),
       },
     };

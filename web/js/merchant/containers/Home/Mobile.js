@@ -143,12 +143,16 @@ class AnalyticsMobile extends Component {
     });
   }
 
-  renderRecommendationWidget = () => {
+  renderOnboardingWidgets = () => {
     const { user } = this.props;
+
+    const ProductLedOnboardingWidget =
+      user?.isProductLedOnboardingRZP && !!user?.activated ? <ProductOnboardingCard /> : null;
+
     const ProductRecommendationWidget = user.isProductRecommendationEnabled && (
       <ProductRecommendationnCard user={user} />
     );
-    return ProductRecommendationWidget;
+    return ProductLedOnboardingWidget ?? ProductRecommendationWidget;
   };
 
   renderWebsiteCompliancePrompt = () => {
@@ -312,12 +316,8 @@ class AnalyticsMobile extends Component {
               <PersonaliseBanner track={trackPersonaliseBanner} />
             </div>
           )}
-          {this.props.user?.isProductLedOnboardingRZP && user?.activated && (
-            <div className="product-onboarding-card-container">
-              <ProductOnboardingCard />
-            </div>
-          )}
-          {this.renderRecommendationWidget()}
+
+          {this.renderOnboardingWidgets()}
           <Header className="clearfix" title="" showMode={false}>
             <div className={`pull-left ${this.props.user.isOndemandSettlementEnabled && 'm-t'}`}>
               Balance:{' '}

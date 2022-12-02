@@ -143,7 +143,8 @@ function MerchantNavLinks(props) {
         type="product"
         to={routes.apiKeys}
         additionalCondition={(currentUser) =>
-          currentUser.isProductLedOnboardingRZP || currentUser.isApiKeysRevampEnabled
+          (currentUser.isProductLedOnboardingRZP || currentUser.isApiKeysRevampEnabled) &&
+          currentUser.activated
         }
         isNew={true}
       />

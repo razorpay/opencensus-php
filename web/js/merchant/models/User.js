@@ -1598,10 +1598,6 @@ export default class User {
     return this.getExpStatus('product_recommendation');
   }
 
-  get canSwitchOnboardingCard() {
-    return this.getExpStatus('switch_onboarding_card');
-  }
-
   get isLoansCollectionsEnabled() {
     return this.getExpStatus('loans_collections_dashboard');
   }

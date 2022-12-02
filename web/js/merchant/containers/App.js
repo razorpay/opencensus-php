@@ -208,8 +208,9 @@ class App extends Component {
           if (
             transactionAmount === 0 &&
             isPgMerchant(user) &&
+            user?.activated &&
             isOrgRZP &&
-            pathname !== '/api-keys'
+            (!pathname || ['/', '/dashboard'].includes(pathname))
           ) {
             this.props.history.push('/api-keys');
           }
