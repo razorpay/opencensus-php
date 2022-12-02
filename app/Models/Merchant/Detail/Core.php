@@ -3754,6 +3754,14 @@ class Core extends Base\Core
 
                 $noDocOptionalValidationFields = array_diff(array_merge($validationFields, $validationOptionalFields), $noDocValidationFields);
 
+                if ($merchantDetails->getBusinessType() === BusinessType::PROPRIETORSHIP)
+                {
+                    if (empty($merchantDetails->getPan()) === false)
+                    {
+                        $noDocValidationFields = array_diff($noDocValidationFields, [Entity::PROMOTER_PAN]);
+                        $noDocValidationFields = array_merge($noDocValidationFields, [Entity::COMPANY_PAN]);
+                    }
+                }
                 return [$noDocValidationFields, $validationSelectiveRequiredFields, $noDocOptionalValidationFields];
             }
         }

@@ -147,6 +147,15 @@ class UpdateMerchantContext extends Job
             {
                 $clarificationCore = new Core();
 
+                if ($merchant->isLinkedAccount() === true)
+                {
+                    $this->trace->info(TraceCode::SHOULD_TRIGGER_NEEDS_CLARIFICATION,
+                        [
+                            'shouldTriggerNeedsClarification'   =>  $clarificationCore->shouldTriggerNeedsClarification($merchantDetail),
+                            '$kycClarificationReasons'          =>  (new Core())->composeNeedsClarificationReason($merchantDetail)
+                        ]);
+                }
+
                 if ($clarificationCore->shouldTriggerNeedsClarification($merchantDetail) === true)
                 {
                     $kycClarificationReasons = (new Core())->composeNeedsClarificationReason($merchantDetail);

@@ -4858,6 +4858,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const UPDATE_MERCHANT_CONTEXT_JOB_COMPLETION                = 'UPDATE_MERCHANT_CONTEXT_JOB_COMPLETION';
     const UPDATE_ACTIVATION_STATUS_DURATION                     = 'UPDATE_ACTIVATION_STATUS_DURATION';
 
+    //route no doc kyc temp logs
+    const IS_NO_DOC_GST_VALIDATION_COMPLETED                    = 'IS_NO_DOC_GST_VALIDATION_COMPLETED';
+    const GST_STATUS_IN_TERMINAL_STATE                          = 'GST_STATUS_IN_TERMINAL_STATE';
+    const REQUIREMENT_LIST_ROUTE_NO_DOC                         = 'REQUIREMENT_LIST_ROUTE_NO_DOC';
+    const SHOULD_TRIGGER_NEEDS_CLARIFICATION                    = 'SHOULD_TRIGGER_NEEDS_CLARIFICATION';
+
     // Salesforce integration
     const SALESFORCE_ACCESS_TOKEN_ERROR                         = 'SALESFORCE_ACCESS_TOKEN_ERROR';
     const SALESFORCE_INTEGRATION_ERROR                          = 'SALESFORCE_INTEGRATION_ERROR';

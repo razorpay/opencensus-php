@@ -345,6 +345,12 @@ class UpdateContextRequirements
                                                 ($isRequirementGroupSatisfied === false));
         }
 
+        app('trace')->info(TraceCode::REQUIREMENT_LIST_ROUTE_NO_DOC,
+        [
+            '$requirementList'  =>  $requirementList,
+            '$shouldTriggerNeedsClarification'  =>  $shouldTriggerNeedsClarification
+        ]);
+
         return $shouldTriggerNeedsClarification;
     }
 
@@ -474,6 +480,13 @@ class UpdateContextRequirements
 
         $isGstStatusInTerminalState = $this->isArtifactStatusInTerminalState($merchantDetails->getGstinVerificationStatus());
 
+        app('trace')->info(TraceCode::GST_STATUS_IN_TERMINAL_STATE,
+        [
+            'merchant_id'                   => $merchantDetails->getId(),
+            '$isGstValidationCompleted'     =>  $isGstValidationCompleted,
+            '$isGstStatusInTerminalState'   =>  $isGstStatusInTerminalState
+        ]);
+
         if(($merchantDetails->merchant->isRouteNoDocKycEnabledForParentMerchant() === true))
         {
             // For Route no doc kyc, for registered business,  always add gstin condition irrespective of $isGstStatusInTerminalState
@@ -520,6 +533,15 @@ class UpdateContextRequirements
         $gstVerificationStatus = $merchantDetails->getGstinVerificationStatus();
 
         $isGstStatusInTerminalState = (new UpdateContextRequirements())->isArtifactStatusInTerminalState($gstVerificationStatus);
+
+        app('trace')->info(TraceCode::IS_NO_DOC_GST_VALIDATION_COMPLETED,[
+            'merchant_id'                   => $merchantDetails->getId(),
+            '$isPanValidationDone'          =>  $isPanValidationDone,
+            'count $noDocGsts'              => count($noDocGsts),
+            '$currentGstIndex'              =>  $currentGstIndex,
+            '$isGstStatusInTerminalState'   =>  $isGstStatusInTerminalState,
+            '$gstVerificationStatus'        =>  $gstVerificationStatus
+        ]);
 
         if (($isPanValidationDone === true and count($noDocGsts) === 0) or
             (($currentGstIndex + 1 === count($noDocGsts)) and ($isGstStatusInTerminalState === true)) or
