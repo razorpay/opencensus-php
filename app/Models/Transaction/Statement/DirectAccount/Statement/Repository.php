@@ -36,7 +36,7 @@ use RZP\Models\Merchant\RazorxTreatment as Experiment;
 class Repository extends Base\Repository
 {
 
-    private $removeExpands = false;
+    private $updateExpands = false;
     /**
      * {@inheritDoc}
      */
@@ -47,6 +47,10 @@ class Repository extends Base\Repository
      */
     protected $expands = [
         Entity::SOURCE,
+        Entity::ACCOUNT_BALANCE,
+    ];
+
+    protected array $expandsForTransactionList = [
         Entity::ACCOUNT_BALANCE,
     ];
 
@@ -66,6 +70,8 @@ class Repository extends Base\Repository
      */
     protected $expandsForTypePayoutForDashboard = [
         'source.fundAccount.contact',
+        'source.fundAccount.account',
+        'source.balance'
     ];
 
     /**
@@ -124,21 +130,16 @@ class Repository extends Base\Repository
     public function fetch(array $input,
                           string $merchantId = null,
                           string $connectionType = null,
-                          bool $isReArchExperimentEnabled = false,
                           bool $isTransactionBankingApi = false): PublicCollection
     {
         $connection = $this->getConnectionFromType($connectionType);
 
+        $this->updateExpands = true;
+
         $this->baseQuery = $this->newQueryWithConnection($connection);
 
-        if($isReArchExperimentEnabled === true)
-        {
-            // remove expands from the list
-            $this->removeExpands = $isReArchExperimentEnabled;
-
-            $this->baseQuery = $this->baseQuery
-                                    ->from(\DB::raw(Table::BANKING_ACCOUNT_STATEMENT.' USE INDEX (banking_account_statement_merchant_id_created_at_index)'));
-        }
+        $this->baseQuery = $this->baseQuery
+                                ->from(\DB::raw(Table::BANKING_ACCOUNT_STATEMENT.' USE INDEX (banking_account_statement_merchant_id_created_at_index)'));
 
         $this->baseQuery = $this->baseQuery
                                 ->whereNotNull($this->repo->direct_account_statement->dbColumn(Entity::ENTITY_ID));
@@ -156,18 +157,13 @@ class Repository extends Base\Repository
             'merchantId'     => $merchantId,
         ]);
 
-        $payoutExpands = (($isReArchExperimentEnabled === true) and
-                          ($isTransactionBankingApi === true)) ?
+        $payoutExpands = ($isTransactionBankingApi === true) ?
                             $this->expandsForTypePayoutForDashboard : $this->expandsForTypePayout;
 
         // After fetching settlement collection, we lazy load source relations for payout.
         $statements->where(Entity::ENTITY_TYPE, E::PAYOUT)->load($payoutExpands);
-
-        if($isReArchExperimentEnabled === true)
-        {
-            $statements->where(Entity::ENTITY_TYPE, E::REVERSAL)->load($this->expandsForTypeReversal);
-            $statements->where(Entity::ENTITY_TYPE, E::EXTERNAL)->load($this->expandsForTypeExternal);
-        }
+        $statements->where(Entity::ENTITY_TYPE, E::REVERSAL)->load($this->expandsForTypeReversal);
+        $statements->where(Entity::ENTITY_TYPE, E::EXTERNAL)->load($this->expandsForTypeExternal);
 
         return $statements;
     }
@@ -611,7 +607,7 @@ class Repository extends Base\Repository
 
     public function getExpandsForQuery(array $extra = []): array
     {
-        return $this->removeExpands === true  ? array() : parent::getExpandsForQuery($extra);
+        return $this->updateExpands === true  ? camel_case_array($this->expandsForTransactionList) : parent::getExpandsForQuery($extra);
     }
 
 }

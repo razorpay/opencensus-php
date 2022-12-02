@@ -483,8 +483,6 @@ final class RazorxTreatment
     // Experiment to block customer prefill on authlink checkout
     const BLOCK_CUSTOMER_PREFILL_IN_AUTHLINK = 'block_customer_prefill_in_authlink';
 
-    const RX_DA_ACC_STMT_REARCH_EXPERIMENT = 'rx_da_acc_stmt_rearch_experiment';
-
     //Experiment for enabling dcc on various libraries
     const DCC_ON_INTERNATIONAL = 'dcc_on_international';
 

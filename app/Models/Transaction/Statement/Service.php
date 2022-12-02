@@ -132,8 +132,8 @@ class Service extends Transaction\Service
         $dimension = $this->getDimensions();
 
         // Route request to ledger statement if ledger read feature is enabled
-        if (($this->merchant->isFeatureEnabled(Constants::LEDGER_REVERSE_SHADOW) === true) and
-            ($balance->isAccountTypeShared() === true))
+        if (($balance->isAccountTypeShared() === true) and
+            ($this->merchant->isFeatureEnabled(Constants::LEDGER_REVERSE_SHADOW) === true))
         {
             $startTime = millitime();
 
@@ -170,8 +170,6 @@ class Service extends Transaction\Service
         {
             $this->trace->count(TxnMetric::TRANSACTION_CA_REQUEST_TOTAL, $dimension);
 
-            $isReArchExperimentEnabled = $this->isExperimentEnabled(Merchant\RazorxTreatment::RX_DA_ACC_STMT_REARCH_EXPERIMENT);
-
             $startTime = millitime();
 
             $this->trace->info(
@@ -181,13 +179,11 @@ class Service extends Transaction\Service
                     'balance_id'           => $balance->getId(),
                     'balance_type'         => $balance->getType(),
                     'balance_account_type' => $balance->getAccountType(),
-                    'is_rearch_enabled'    => $isReArchExperimentEnabled,
                 ]
             );
 
             $response = $this->repo->direct_account_statement
-                ->fetch($input, $this->merchant->getId(), ConnectionType::SLAVE,
-                        $isReArchExperimentEnabled, true)->toArrayPublic();
+                ->fetch($input, $this->merchant->getId(), ConnectionType::SLAVE, true)->toArrayPublic();
 
             $endTime = millitime() - $startTime;
 

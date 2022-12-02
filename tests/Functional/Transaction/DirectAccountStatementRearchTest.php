@@ -14,7 +14,7 @@ use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountTrait;
 
-class DirectAccountStatementForBankingRearchTest extends TestCase
+class DirectAccountStatementRearchTest extends TestCase
 {
     use PaymentTrait;
     use FundAccountTrait;
@@ -23,15 +23,13 @@ class DirectAccountStatementForBankingRearchTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->testDataFilePath = __DIR__.'/helpers/DirectAccountStatementForBankingRearchTestData.php';
+        $this->testDataFilePath = __DIR__.'/helpers/DirectAccountStatementRearchTestData.php';
 
         parent::setUp();
 
         $this->app['config']->set('applications.banking_account_service.mock', true);
 
         $this->setUpMerchantForBusinessBanking(false, 10000000, 'direct', 'rbl');
-
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_DA_ACC_STMT_REARCH_EXPERIMENT => 'on']);
 
         $this->app['rzp.mode'] = Mode::TEST;
     }
