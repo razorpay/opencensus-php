@@ -163,6 +163,7 @@ class Entity extends Base\PublicEntity
     const API_ONBOARDING_TAT_EXCEPTION = 'api_onboarding_tat_exception';
     const API_ONBOARDING_TAT_EXCEPTION_REASON = 'api_onboarding_tat_exception_reason';
     const BANK_DUE_DATE = 'bank_due_date';
+    const PCARM_MANAGER_NAME = 'pcarm_manager_name';
 
 
     const CUSTOMER_APPOINTMENT_DATE = 'customer_appointment_date';

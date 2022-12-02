@@ -6,7 +6,7 @@ class Unserviceable extends Base
 {
     const TEMPLATE_PATH = 'emails.banking_account.notify_status_unserviceable';
 
-    const SUBJECT = 'Your RazorpayX CA request could not been approved :(';
+    const SUBJECT = 'Your RazorpayX CA request could not be approved :(';
 
 
     protected function addMailData()

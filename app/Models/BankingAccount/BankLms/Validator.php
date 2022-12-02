@@ -135,6 +135,7 @@ class Validator extends BankingAccount\Validator
         ActivationDetail::REVISED_DECLARATION                   => 'sometimes|boolean|nullable',
         ActivationDetail::API_IR_NUMBER                         => 'sometimes|alpha_num|nullable',
         ActivationDetail::UPI_CREDENTIAL_NOT_DONE_REMARKS       => 'sometimes|'.self::ALLOWED_STRING_PATTERN,
+        ActivationDetail::PCARM_MANAGER_NAME                    => 'sometimes|'.self::ALLOWED_STRING_PATTERN.'|max:255',
 
         ActivationDetail::PROMO_CODE                            => 'sometimes|alpha_num|nullable',
         ActivationDetail::LEAD_REFERRED_BY_RBL_STAFF            => 'sometimes|boolean|nullable',

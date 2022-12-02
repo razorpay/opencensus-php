@@ -134,7 +134,7 @@ class Status
         BankingAccount\Status::UNSERVICEABLE  => [],
         BankingAccount\Status::CREATED        => [],
         BankingAccount\Status::ACTIVATED      => [
-            null => [
+            self::ALL => [
                 self::ACTIVATED
             ]
         ],

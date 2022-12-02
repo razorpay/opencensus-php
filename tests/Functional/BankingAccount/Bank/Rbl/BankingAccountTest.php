@@ -3060,6 +3060,41 @@ class BankingAccountTest extends TestCase
                 'bank_internal_status' => $initialBankStatus
             ]);
 
+        if (($finalStatus !== $initialStatus)
+            and (in_array($finalStatus, [Status::INITIATED, Status::PICKED]) === false)
+            and ($finalStatus === Status::ARCHIVED 
+            and in_array($finalSubStatus, [
+                Status::NEGATIVE_PROFILE_SVR_ISSUE,
+                Status::NOT_SERVICEABLE,
+                Status::CANCELLED
+            ])
+        ))
+        {
+
+            if (in_array($finalStatus, BankingAccountCore::$notificationStatuses, true) === true) {
+
+                $notificationContent = BankingAccountCore::getStatusUpdatePushNotificationContent($finalStatus, $finalSubStatus);
+
+                $pushNotificationTitle = $notificationContent[0];
+
+                $pushNotificationBody =  $notificationContent[1];
+
+                if (empty($pushNotificationTitle) === false && empty($pushNotificationBody) === false)
+                {
+                    $merchant = $this->getDbEntity('merchant', ['id' => $bankingAccount['merchant_id']]);
+
+                    $this->mockStork();
+
+                    $this->expectStorkSendPushNotificationRequest([
+                        'ownerId' => $merchant->getId(),
+                        'ownerType' => 'merchant',
+                        'title' => $pushNotificationTitle,
+                        'body' => $pushNotificationBody
+                    ]);
+                }
+            }
+        }
+
         $this->startTest($dataToReplace);
 
         $updatedBankingAccount = $this->getDbEntityById('banking_account', $bankingAccount['id']);
@@ -3077,43 +3112,18 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($finalBankStatus, $bankingAccountStateUpdate['bank_status']);
 
         if (($finalStatus !== $initialStatus)
-            and (in_array($finalStatus, [Status::INITIATED, Status::PICKED, Status::ARCHIVED]) === false))
+            and (in_array($finalStatus, [Status::INITIATED, Status::PICKED]) === false)
+            and ($finalStatus === Status::ARCHIVED 
+            and in_array($finalSubStatus, [
+                Status::NEGATIVE_PROFILE_SVR_ISSUE,
+                Status::NOT_SERVICEABLE,
+                Status::CANCELLED
+            ])
+        ))
         {
             $mailableClass = RZP\Mail\BankingAccount\StatusNotifications\Factory::getMailer($updatedBankingAccount);
 
             Mail::assertQueued(get_class($mailableClass));
-
-            // Commenting this, since this is called from shouldNotifyOpsAboutProActivation
-            // which is called only from createBankingAccount flow
-            /**
-                $notificationStatuses = [
-                    Status::PICKED,
-                    Status::INITIATED,
-                    Status::PROCESSING,
-                    Status::CANCELLED,
-                    Status::ACTIVATED,
-                    Status::UNSERVICEABLE,
-                    Status::REJECTED,
-                ];
-
-                $this->mockStork();
-
-                if (in_array($finalStatus, $notificationStatuses, true) === true) {
-
-                    $pushNotificationTitle = BankingAccountCore::$statusUpdatePnTitleMap[$finalStatus];
-
-                    $pushNotificationBody =  BankingAccountCore::$statusUpdatePnBodyMap[$finalStatus];
-
-                    $merchant = $this->getDbEntity('merchant', ['id' => $bankingAccount['merchant_id']]);
-
-                    $this->expectStorkSendPushNotificationRequest([
-                        'ownerId' => $merchant->getId(),
-                        'ownerType' => 'merchant',
-                        'title' => $pushNotificationTitle,
-                        'body' => $pushNotificationBody
-                    ]);
-                }
-             */
         }
         else
         {
@@ -3124,27 +3134,34 @@ class BankingAccountTest extends TestCase
     protected function expectStorkSendPushNotificationRequest($expectInput): void
     {
         $this->storkMock
-            ->shouldReceive('sendPushNotification')
+            ->shouldReceive('init')
+            ->times(1);
+
+        $this->storkMock
+            ->shouldReceive('requestAndGetParsedBody')
             ->times(1)
             ->with(
-                Mockery::on(function ($mode)
+                Mockery::on(function ($route)
                 {
                     return true;
                 }),
-                Mockery::on(function ($input) use ($expectInput)
+                Mockery::on(function ($params) use ($expectInput)
                 {
-                    $this->assertArraySelectiveEquals($expectInput, $input);
+                    $title = $params['message']['push_notification_channels'][0]['clevertap_request']['target_user_campaign_request']['content_title'];
+                    $body = $params['message']['push_notification_channels'][0]['clevertap_request']['target_user_campaign_request']['content_body'];
+                    $this->assertEquals($expectInput['ownerId'], $params['message']['owner_id']);
+                    $this->assertEquals($expectInput['ownerType'], $params['message']['owner_type']);
+                    $this->assertEquals($expectInput['title'], $title);
+                    $this->assertEquals($expectInput['body'], $body);
 
-                    return true;
-                }),
-                Mockery::on(function ($mockInMode)
-                {
                     return true;
                 })
             )
             ->andReturnUsing(function ()
             {
-                return ['success' => true];
+                return [
+                    'success' => true
+                ];
             });
     }
 
@@ -3202,7 +3219,9 @@ class BankingAccountTest extends TestCase
     {
         $this->assertUpdateBankingAccountStatusFromTo(
             Status::PROCESSED,
-            Status::ARCHIVED);
+            Status::ARCHIVED,
+            null,
+            Status::CANCELLED);
     }
 
     public function testUpdateBankingAccountStatusArchivedToProcessed()
@@ -8422,8 +8441,8 @@ class BankingAccountTest extends TestCase
         $this->assertEquals('activated', $response['status']);
     }
 
-   public function testBankLmsEndToEndForFilters()
-   {
+    public function testBankLmsEndToEndForFilters()
+    {
         $response = $this->setupBankLMSTest();
 
         $user = $response['user'];
@@ -8454,7 +8473,7 @@ class BankingAccountTest extends TestCase
         ];
 
         $this->startTest($dataToReplace);
-   }
+    }
 
     public function testBankLmsEndToEndRevivedLeadWithoutSentToBank()
     {
@@ -9036,6 +9055,7 @@ class BankingAccountTest extends TestCase
                     ActivationDetail\Entity::RM_PHONE_NUMBER => '8872581146',
                     ActivationDetail\Entity::RBL_ACTIVATION_DETAILS => [
                         ActivationDetail\Entity::LEAD_IR_NUMBER => 'IR1234ABCD',
+                        ActivationDetail\Entity::PCARM_MANAGER_NAME => 'Umakant Vashishtha',
                         ActivationDetail\Entity::OFFICE_DIFFERENT_LOCATIONS => true,
                     ]
                 ]
@@ -9046,6 +9066,10 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals(Status::DOC_COLLECTION, $bankingAccountResponse[Entity::STATUS]);
         $this->assertEquals(Status::VISIT_DUE, $bankingAccountResponse[Entity::SUB_STATUS]);
+
+        $activationDetailsResponse = $bankingAccountResponse[Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS];
+        $this->assertEquals('Umakant Vashishtha', 
+            $activationDetailsResponse[ActivationDetail\Entity::RBL_ACTIVATION_DETAILS][ActivationDetail\Entity::PCARM_MANAGER_NAME]);
 
         // Bank Due date based on Customer Appointment Date for Doc Collection Stage
         $activationDetailsResponse = $bankingAccountResponse[Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS];

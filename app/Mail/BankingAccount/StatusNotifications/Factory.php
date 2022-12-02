@@ -47,6 +47,21 @@ class Factory
             case Status::REJECTED:
                 return new Rejected($bankingAccountId);
 
+            case Status::ARCHIVED:
+                $substatus = $bankingAccount->getSubStatus();
+
+                switch ($substatus) {
+                    case Status::NEGATIVE_PROFILE_SVR_ISSUE:
+                        return new Rejected($bankingAccountId);
+
+                    case Status::NOT_SERVICEABLE:
+                        return new Unserviceable($bankingAccountId);
+                    
+                    case Status::CANCELLED:
+                        return new Cancelled($bankingAccountId);
+                }
+
+
             default:
                 throw new BadRequestValidationFailureException("Invalid Status, cannot send email, status: $status");
         }

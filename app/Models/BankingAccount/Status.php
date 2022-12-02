@@ -124,6 +124,7 @@ class Status
     const UNSERVICEABLE__PINCODE_EXTERNAL         = 'Unserviceable pincode';
     const NEGATIVE_PROFILE_SVR_ISSUE_EXTERNAL     = 'Negative Profile/SVR issue';
     const UPI_CREDS_PENDING_EXTERNAL              = 'UPI Creds Pending';
+    const CANCELLED_EXTERNAL                      = 'Cancelled';
 
     // Sub-merchant BA status to be shown on partner dashboard
     const PAN_VERIFICATION_IN_PROGRESS      = 'PAN verification in progress';
@@ -144,6 +145,9 @@ class Status
     const PENDING_ON_SALES_MERCHANT_PREPARING_KYC_DOCS              = self::PENDING_ON_SALES_SUB_STRING.'merchant_preparing_kyc_docs';
     const PENDING_ON_SALES_ISSUE_WITH_COMMERCIALS                   = self::PENDING_ON_SALES_SUB_STRING.'issue_with_commercials';
     const PENDING_ON_SALES_MERCHANT_WANTS_BANK_CHANGE               = self::PENDING_ON_SALES_SUB_STRING.'merchant_wants_bank_change';
+    // Shortening the string value for the following substatuses as they exceed the allowed length in DB
+    const PENDING_ON_SALES_DWT_NOT_COMPLETED_MX_NOT_RESPONDING_SPOC_TO_RESCHEDULE         = self::PENDING_ON_SALES_SUB_STRING.'dwt_not_completed_-_mx_not_responding'; // DWT Not Completed - MX Not Responding - SPOC to Reschedule
+    const PENDING_ON_SALES_UNSUPPORTED_MISMATCH_OF_BIZ_TYPE_ON_ADMIN_DASHBOARD_AND_LMS    = self::PENDING_ON_SALES_SUB_STRING.'unsupported/_mismatch_of_biz_type'; // Unsupported/Mismatch of Biz Type on Admin Dashboard And LMS
 
     // Sub-statuses for Stage - Verification Call
     const IN_PROCESSING = 'in_processing';
@@ -174,7 +178,7 @@ class Status
     const CA_OPENED_SUB_STATUS = 'ca_opened';
     const API_IR_CLOSED = 'api_ir_closed';
 
-    // Sub-statuses for Doc Collection
+    // Sub-statuses for Archived
     const IN_PROCESS = 'in_process';
     const CORP_ID_SENT = 'corp_id_sent';
     const CA_ACTIVATED_SUB_STATUS = 'ca_activated';
@@ -203,12 +207,9 @@ class Status
     const CA_OPENED_ORGANICALLY = 'ca_opened_organically';
     const RM_DELAYS_IN_ACCOUNT_OPENING = 'rm_delays_in_account_opening';
 
+    // All Substatuses - Used for mapping status, substatus with other data points
+    const ALL_SUBSTATUSES = '*';
 
-    // Shortening the string value for the following substatuses as they exceed the allowed length in DB
-    const PENDING_ON_SALES_DWT_NOT_COMPLETED_MX_NOT_RESPONDING_SPOC_TO_RESCHEDULE         = self::PENDING_ON_SALES_SUB_STRING.'dwt_not_completed_-_mx_not_responding'; // DWT Not Completed - MX Not Responding - SPOC to Reschedule
-    const PENDING_ON_SALES_UNSUPPORTED_MISMATCH_OF_BIZ_TYPE_ON_ADMIN_DASHBOARD_AND_LMS    = self::PENDING_ON_SALES_SUB_STRING.'unsupported/_mismatch_of_biz_type'; // Unsupported/Mismatch of Biz Type on Admin Dashboard And LMS
-
-    //
     // Account details can be saved only if the status
     // of banking account is in below array
     //
@@ -518,6 +519,7 @@ class Status
         self::CLIENT_NOT_INTERESTED_WANTS_TO_USE_ONLY_VA,
         self::CLIENT_NOT_INTERESTED_RZP_ISSUE,
         self::CLIENT_NOT_INTERESTED_DUE_TO_LONGER_TAT,
+        self::CANCELLED, // User requested to cancel archived/cancelled
         self::ON_HOLD_BY_CLIENT,
         self::BUSINESS_IS_NOT_OPERATIONAL,
         self::NEGATIVE_PROFILE_SVR_ISSUE,
@@ -710,6 +712,7 @@ class Status
             self::CLIENT_NOT_INTERESTED_WANTS_TO_USE_ONLY_VA,
             self::CLIENT_NOT_INTERESTED_RZP_ISSUE,
             self::CLIENT_NOT_INTERESTED_DUE_TO_LONGER_TAT,
+            self::CANCELLED,
             self::ON_HOLD_BY_CLIENT,
             self::BUSINESS_IS_NOT_OPERATIONAL,
             self::NEGATIVE_PROFILE_SVR_ISSUE,
@@ -796,6 +799,7 @@ class Status
             self::CLIENT_NOT_INTERESTED_WANTS_TO_USE_ONLY_VA => null,
             self::CLIENT_NOT_INTERESTED_RZP_ISSUE => null,
             self::CLIENT_NOT_INTERESTED_DUE_TO_LONGER_TAT => null,
+            self::CANCELLED => null,
             self::ON_HOLD_BY_CLIENT => null,
             self::BUSINESS_IS_NOT_OPERATIONAL => null,
             self::NEGATIVE_PROFILE_SVR_ISSUE => null,
@@ -889,9 +893,10 @@ class Status
         self::NONE_EXTERNAL                           => self::NONE,
         self::UPI_ACTIVATED_EXTERNAL                  => self::UPI_ACTIVATED,
         self::OTHER_EXTERNAL                          => self::OTHER,
-        self::UNSERVICEABLE__PINCODE_EXTERNAL         => self::UNSERVICEABLE__PINCODE,
+        self::UNSERVICEABLE__PINCODE_EXTERNAL         => self::NOT_SERVICEABLE,
         self::NEGATIVE_PROFILE_SVR_ISSUE_EXTERNAL     => self::NEGATIVE_PROFILE_SVR_ISSUE,
-        self::UPI_CREDS_PENDING     => self::UPI_CREDS_PENDING,
+        self::UPI_CREDS_PENDING_EXTERNAL              => self::UPI_CREDS_PENDING,
+        self::CANCELLED_EXTERNAL                      => self::CANCELLED,
 
         'null'                                        => null
     ];

@@ -92,7 +92,7 @@ class Core extends Base\Core
      */
     protected $notifier;
 
-    protected static $notificationStatuses = [
+    public static $notificationStatuses = [
         Status::PICKED,
         Status::INITIATED,
         Status::PROCESSING,
@@ -100,6 +100,7 @@ class Core extends Base\Core
         Status::ACTIVATED,
         Status::UNSERVICEABLE,
         Status::REJECTED,
+        Status::ARCHIVED,
     ];
 
     const PICKED_PN_TITLE           = "Your a/c is getting ready 🚀";
@@ -118,24 +119,69 @@ class Core extends Base\Core
     const UNSERVICEABLE_PN_BODY     = "Your current location can't be serviced by our partner bank.️";
     const REJECTED_PN_BODY          = "Oh no! Our partner bank has not approved your KYC documents.️";
 
-    public static $statusUpdatePnTitleMap = [
-        Status::PICKED	        =>	self::PICKED_PN_TITLE,
-        Status::INITIATED	    =>	self::INITIATED_PN_TITLE,
-        Status::PROCESSING	    =>	self::PROCESSING_PN_TITLE,
-        Status::CANCELLED	    =>	self::CANCELLED_PN_TITLE,
-        Status::ACTIVATED	    =>	self::ACTIVATED_PN_TITLE,
-        Status::UNSERVICEABLE	=>	self::UNSERVICEABLE_PN_TITLE,
-        Status::REJECTED    	=>	self::REJECTED_PN_TITLE
-    ];
-
-    public static $statusUpdatePnBodyMap = [
-        Status::PICKED	        =>	self::PICKED_PN_BODY,
-        Status::INITIATED	    =>	self::INITIATED_PN_BODY,
-        Status::PROCESSING	    =>	self::PROCESSING_PN_BODY,
-        Status::CANCELLED	    =>	self::CANCELLED_PN_BODY,
-        Status::ACTIVATED	    =>	self::ACTIVATED_PN_BODY,
-        Status::UNSERVICEABLE	=>	self::UNSERVICEABLE_PN_BODY,
-        Status::REJECTED    	=>	self::REJECTED_PN_BODY
+    public static $statusSubstatusUpdatePnContentMap = [
+        Status::PICKED	        =>	[
+            Status::ALL_SUBSTATUSES       =>  [
+                self::PICKED_PN_TITLE,
+                self::PICKED_PN_BODY
+            ],
+        ],
+        Status::INITIATED	    =>	[
+            Status::ALL_SUBSTATUSES       =>  [
+                self::INITIATED_PN_TITLE,
+                self::INITIATED_PN_BODY
+            ],
+        ],
+        Status::PROCESSING	    =>	[
+            Status::ALL_SUBSTATUSES       =>  [
+                self::PROCESSING_PN_TITLE,
+                self::PROCESSING_PN_BODY
+            ],
+        ],
+        Status::ACCOUNT_OPENING	    =>	[
+            Status::ALL_SUBSTATUSES       =>  [
+                self::PROCESSING_PN_TITLE,
+                self::PROCESSING_PN_BODY
+            ],
+        ],
+        Status::CANCELLED	    =>	[
+            Status::ALL_SUBSTATUSES       =>  [
+                self::CANCELLED_PN_TITLE,
+                self::CANCELLED_PN_BODY
+            ],
+        ],
+        Status::ACTIVATED	    =>	[
+            Status::ALL_SUBSTATUSES       =>  [
+                self::ACTIVATED_PN_TITLE,
+                self::ACTIVATED_PN_BODY
+            ],
+        ],
+        Status::UNSERVICEABLE	=>	[
+            Status::ALL_SUBSTATUSES       =>  [
+                self::UNSERVICEABLE_PN_TITLE,
+                self::UNSERVICEABLE_PN_BODY
+            ],
+        ],
+        Status::REJECTED    	=>	[
+            Status::ALL_SUBSTATUSES       =>  [
+                self::REJECTED_PN_TITLE,
+                self::REJECTED_PN_BODY
+            ],
+        ],
+        Status::ARCHIVED        => [
+            Status::CANCELLED => [
+                self::CANCELLED_PN_TITLE,
+                self::CANCELLED_PN_BODY,
+            ],
+            Status::NOT_SERVICEABLE => [
+                self::UNSERVICEABLE_PN_TITLE,
+                self::UNSERVICEABLE_PN_BODY,
+            ],
+            Status::NEGATIVE_PROFILE_SVR_ISSUE => [
+                self::REJECTED_PN_TITLE,
+                self::REJECTED_PN_BODY,
+            ],
+        ]
     ];
 
     public static $directChannelsForConnectBanking = [
@@ -153,6 +199,30 @@ class Core extends Base\Core
         $this->activationDetailService =  resolve(Activation\Detail\Service::class);
 
         $this->notifier = new Notifier;
+    }
+
+    public static function getStatusUpdatePushNotificationContent($status, $substatus)
+    {
+        $notificationContent = self::$statusSubstatusUpdatePnContentMap[$status];
+
+        if (array_key_exists($substatus, $notificationContent) === true)
+        {
+            $notificationContent = $notificationContent[$substatus];
+        }
+        else if (array_key_exists(Status::ALL_SUBSTATUSES, $notificationContent) === true)
+        {
+            $notificationContent = $notificationContent[Status::ALL_SUBSTATUSES];
+        }
+        else {
+            $notificationContent = null;
+        }
+
+        if ($notificationContent === null)
+        {
+            $notificationContent = [null, null];
+        }
+
+        return $notificationContent;
     }
 
     public function createOrFetchSharedBankingAccountFromVA(VirtualAccount\Entity $virtualAccount): array
@@ -333,6 +403,8 @@ class Core extends Base\Core
     {
         $status = $bankingAccount->getStatus();
 
+        $substatus = $bankingAccount->getSubStatus();
+
         $statusList = self::$notificationStatuses;
 
         if (in_array($status, $statusList, true) === false)
@@ -340,9 +412,16 @@ class Core extends Base\Core
             return;
         }
 
-        $pushNotificationTitle = self::$statusUpdatePnTitleMap[$status];
+        $notificationContent = self::getStatusUpdatePushNotificationContent($status, $substatus);
 
-        $pushNotificationBody =  self::$statusUpdatePnBodyMap[$status];
+        $pushNotificationTitle = $notificationContent[0];
+
+        $pushNotificationBody =  $notificationContent[1];
+
+        if (empty($pushNotificationTitle) || empty($pushNotificationBody))
+        {
+            return;
+        }
 
         $pushNotificationTag = "ca_onboarding_" .  $status;
 
