@@ -38,6 +38,8 @@ const chartOptions = {
 };
 const csvDateFormat = 'DD-MM-YYYY';
 
+// eslint-disable-next-line react/no-unsafe
+@connect((state) => ({ user: state.session.user }))
 class Traffic extends Component {
   constructor(props) {
     super(props);
@@ -124,6 +126,7 @@ class Traffic extends Component {
           isCurrency: meta.isCurrency,
           groupTitleMap: { Mobile: 'mWeb' },
           getColor: getPlatformColor,
+          currency: this.props.user.merchant.currency,
         });
 
         if (labels.length === 0) {
@@ -303,7 +306,7 @@ class Traffic extends Component {
     const { isCurrency } = groupMeta[selectedGrouping.value];
     const { chartData, legendData } = groupState;
     const hasNoData = !chartData || chartData.labels.length === 0;
-    const { sectionTitle, isMobile } = this.props;
+    const { sectionTitle, isMobile, user } = this.props;
 
     if (isMobile) {
       const mobileProps = {
@@ -315,6 +318,7 @@ class Traffic extends Component {
         onAggChange: this.onGroupChange,
         selectedAgg: selectedGrouping,
         isCurrency,
+        user,
       };
       return <Mobile {...mobileProps} />;
     }
@@ -369,6 +373,7 @@ class Traffic extends Component {
                   alignment="vertical"
                   isCurrency={isCurrency}
                   tooltipAlign="right"
+                  user={user}
                 />
               )}
             </div>
@@ -384,4 +389,4 @@ class Traffic extends Component {
   }
 }
 
-export default connect(null, { showNotification })(Traffic);
+export default connect((state) => ({ user: state.session.user }), { showNotification })(Traffic);

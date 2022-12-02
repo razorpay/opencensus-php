@@ -5,15 +5,14 @@ import {
   titleCase,
   isDefined,
   getPercentage,
-  paiseToRupees,
+  i18CurrencyConversionFromMinorUnitToCommonUnit,
   getFixedNumber,
   groupBy,
 } from 'common/utils/rzp-utils';
-import { humanReadableIndian, humanReadableIndianCurrency } from 'common/utils/numerals';
+import { i18HumanReadableNumerals, i18HumanReadableCurrency } from 'common/utils/numerals';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import { showNotification } from 'merchant_common/reducers/notifications';
-
 import { fetch } from 'merchant/reducers/pokedex';
 import {
   API_ERROR,
@@ -71,6 +70,7 @@ const TabContent = ({
   histogram,
   isActive,
   helpText,
+  user,
 }) => {
   /*
    * Description:
@@ -79,10 +79,18 @@ const TabContent = ({
 
   let formattedValue = value;
 
+  const merchantCurrency = user.merchant.currency;
+
   if (!isDefined(percent)) {
-    formattedValue = isCurrency
-      ? humanReadableIndianCurrency(paiseToRupees(value))
-      : humanReadableIndian(value);
+    if (isCurrency) {
+      const convertedAmount = i18CurrencyConversionFromMinorUnitToCommonUnit(
+        value,
+        merchantCurrency,
+      );
+      formattedValue = i18HumanReadableCurrency(convertedAmount, merchantCurrency);
+    } else {
+      formattedValue = i18HumanReadableNumerals(value, merchantCurrency);
+    }
   } else {
     formattedValue = `${getFixedNumber(percent)}%`;
   }
@@ -123,7 +131,7 @@ const TabContent = ({
             ) : (
               <span>
                 {formattedValue}
-                <Tooltip value={value} isCurrency={isCurrency} />
+                <Tooltip currency={user.merchant.currency} value={value} isCurrency={isCurrency} />
               </span>
             )}
           </span>
@@ -312,6 +320,7 @@ class KeyMetricsContainer extends Component {
       isCurrency,
       valueKey,
       noGrouping: isDefined(noGrouping) ? noGrouping : groupByColumnName === CUMULATIVE,
+      currency: this.props.user.merchant.currency,
     };
 
     /*
@@ -1020,6 +1029,7 @@ class KeyMetricsContainer extends Component {
                 }}
               >
                 <TabContent
+                  user={this.props.user}
                   value={tabData.count}
                   name={tabName}
                   helpText={helpText}

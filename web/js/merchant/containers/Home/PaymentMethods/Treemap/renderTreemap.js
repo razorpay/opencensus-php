@@ -1,10 +1,14 @@
-import { titleCase, paiseToRupees, arrayToCsvDataUrl } from 'common/utils/rzp-utils';
-import { humanReadableIndian, humanReadableIndianCurrency } from 'common/utils/numerals';
+import {
+  titleCase,
+  i18CurrencyConversionFromMinorUnitToCommonUnit,
+  arrayToCsvDataUrl,
+} from 'common/utils/rzp-utils';
+import { i18HumanReadableNumerals, i18HumanReadableCurrency } from 'common/utils/numerals';
 
 import { getPaymentMethodColor } from 'merchant/components/Home/data';
 import { paymentMethodsColumns } from 'merchant/containers/Home/PaymentMethods/data';
 
-import { trackTreemapClick } from '../ga';
+import { trackTreemapClick } from 'merchant/containers/Home/PaymentMethods/ga';
 
 const defaults = {
   margin: { top: 0, right: 0, bottom: 0, left: 0 },
@@ -26,12 +30,17 @@ function main(
   onShowTooltip,
   onHideTooltip,
   groupTitleMap,
+  user,
 ) {
   let root, transitioning, g1;
   const opts = { ...defaults, ...o };
   const formatNumber = isCurrency
-    ? (value) => humanReadableIndianCurrency(paiseToRupees(value))
-    : humanReadableIndian;
+    ? (value) =>
+        i18HumanReadableCurrency(
+          i18CurrencyConversionFromMinorUnitToCommonUnit(value, user.merchant.currency),
+          user.merchant.currency,
+        )
+    : i18HumanReadableNumerals;
   const rname = opts.rootname;
   const margin = opts.margin;
 
@@ -462,6 +471,7 @@ export default function renderTreemap(
   onHideTooltip,
   groupTitleMap,
   bankNames,
+  user,
 ) {
   if (!d3 || !bankNames || !node || !res) {
     return {};
@@ -503,6 +513,7 @@ export default function renderTreemap(
     onShowTooltip,
     onHideTooltip,
     groupTitleMap || {},
+    user,
   );
 
   treemapApi.csv = csvUrl;

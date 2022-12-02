@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
 import Chart from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { PowerSelect } from 'react-power-select';
@@ -7,11 +8,16 @@ import Definition from 'common/ui/Definition';
 import Change from 'common/ui/Change';
 import { BtnGroup, Btn } from 'common/ui/BtnGroup/index';
 import { namedColors } from 'common/utils/chart/colors';
-import { isDefined, titleCase, paiseToRupees, getPercentage } from 'common/utils/rzp-utils';
+import {
+  isDefined,
+  titleCase,
+  i18CurrencyConversionFromMinorUnitToCommonUnit,
+  getPercentage,
+} from 'common/utils/rzp-utils';
 import debounce from 'common/utils/debounce';
 import { timeScale } from 'common/utils/chart/new';
 import Group, { GroupItem } from 'common/ui/Group';
-import { humanReadableIndian, humanReadableIndianCurrency } from 'common/utils/numerals';
+import { i18HumanReadableCurrency, i18HumanReadableNumerals } from 'common/utils/numerals';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import GenericTooltip from 'common/ui/Tooltip';
 import { tabsMeta, breakdownVals, breakdownValsMap, PLATFORM, CUMULATIVE } from './data';
@@ -89,6 +95,7 @@ const _getChartData = (data, selectedGrouping, canvas) => {
  */
 
 // eslint-disable-next-line react/no-unsafe
+@connect((state) => ({ user: state.session.user }))
 class Panel extends Component {
   constructor(props) {
     super(props);
@@ -152,14 +159,17 @@ class Panel extends Component {
     return this.handleBreakdownChange(value);
   }
 
-  trackDownload = ({ success }) => () => {
-    const selfServeTrack = success ? selfServeTrackSuccess : selfServeTrackInitiate;
-    selfServeTrack({
-      selfServeAction: 'Payment Details Downloaded',
-      page: 'Home',
-      screen: 'Home',
-    });
-  };
+  // prettier-ignore
+  trackDownload =
+    ({ success }) =>
+    () => {
+      const selfServeTrack = success ? selfServeTrackSuccess : selfServeTrackInitiate;
+      selfServeTrack({
+        selfServeAction: 'Payment Details Downloaded',
+        page: 'Home',
+        screen: 'Home',
+      });
+    };
 
   handleImageExportClick(e) {
     const a = e.target;
@@ -227,6 +237,7 @@ class Panel extends Component {
       isCurrency,
       externalUrl,
       sectionTitle,
+      user,
     } = this.props;
     const { visibleGroups: grouping } = this.state;
     const dateFormat = 'DD MMM YYYY';
@@ -244,6 +255,11 @@ class Panel extends Component {
     let trendText = '';
     let trendAbsValue = 0;
 
+    const convertedAmount = i18CurrencyConversionFromMinorUnitToCommonUnit(
+      trendAbsValue,
+      user.merchant.currency,
+    );
+
     if (trend.show && !trend.loading) {
       const currentCount = trend.currentCount;
 
@@ -251,8 +267,8 @@ class Panel extends Component {
       trendAbsValue = Math.abs(trendValue);
 
       trendText = isCurrency
-        ? humanReadableIndianCurrency(paiseToRupees(trendAbsValue))
-        : humanReadableIndian(trendAbsValue);
+        ? i18HumanReadableCurrency(convertedAmount, user.merchant.currency)
+        : i18HumanReadableNumerals(trendAbsValue, user.merchant.currency);
 
       trendText +=
         // eslint-disable-next-line prefer-template
@@ -272,6 +288,7 @@ class Panel extends Component {
       ...timeScale({
         breakdown: selectedBreakdown,
         startDate,
+        currency: user.merchant.currency,
       }),
     };
 
@@ -302,7 +319,11 @@ class Panel extends Component {
                   ) : (
                     <span>
                       {trendText}
-                      <Tooltip value={trendAbsValue} isCurrency={isCurrency} />
+                      <Tooltip
+                        value={trendAbsValue}
+                        isCurrency={isCurrency}
+                        currency={user.merchant.currency}
+                      />
                     </span>
                   )}
                 </Change>
@@ -414,7 +435,7 @@ class Panel extends Component {
             </div>
             {!noGrouping && !data.loading && data.legendData && (
               <div>
-                <Legend data={data.legendData} isCurrency={isCurrency} />
+                <Legend data={data.legendData} isCurrency={isCurrency} user={user} />
               </div>
             )}
           </div>

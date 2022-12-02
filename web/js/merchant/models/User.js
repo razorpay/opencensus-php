@@ -74,6 +74,11 @@ export default class User {
   merchants = {};
 
   constructor(props) {
+    // Setting default merchant currency is INR if currency is not available.
+    if (props?.merchant) {
+      props.merchant.currency = props.merchant.currency || 'INR';
+    }
+
     Object.assign(this, props);
     if (!this.tags) {
       this.tags = [];

@@ -498,11 +498,8 @@ class App extends Component {
     }
   }
   componentDidUpdate(prevProps) {
-    const {
-      isFeedbackFormCreated,
-      goLiveNPSEnableTypeForm,
-      nonGoLiveNPSEnableTypeForm,
-    } = this.state;
+    const { isFeedbackFormCreated, goLiveNPSEnableTypeForm, nonGoLiveNPSEnableTypeForm } =
+      this.state;
     const { location } = this.props;
     if (prevProps.location.pathname !== location.pathname) {
       if (
@@ -520,11 +517,8 @@ class App extends Component {
     }
   }
   UNSAFE_componentWillReceiveProps({ user, history, location, baseLocation, org }) {
-    const {
-      goLiveNPSEnableTypeForm,
-      nonGoLiveNPSEnableTypeForm,
-      isPartnerModeEnabled,
-    } = this.state;
+    const { goLiveNPSEnableTypeForm, nonGoLiveNPSEnableTypeForm, isPartnerModeEnabled } =
+      this.state;
     if (user.isAuthenticated) {
       const role = user.userRole;
       this.redirectToRoute(role);
@@ -745,6 +739,14 @@ class App extends Component {
   };
 
   fetchUser() {
+    // Test purpose code
+    // window.rzp_user = {
+    //   ...window.rzp_user,
+    //   merchant: {
+    //     ...window.rzp_user.merchant,
+    //     currency: 'MYR',
+    //   },
+    // };
     // This need to be refactored, we should not be using window.rzp_user
     const user = window.rzp_user ? new User(window.rzp_user) : null;
 

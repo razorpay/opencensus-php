@@ -28,6 +28,13 @@ moment.updateLocale('en', {
   },
 });
 
+// https://docs.adyen.com/development-resources/currency-codes
+// Ideally this should come from BE
+const CURRENCY_DECIMALS = {
+  INR: 2,
+  MYR: 2,
+};
+
 export function isMobileResolution() {
   return window && window.innerWidth <= 768;
 }
@@ -272,10 +279,16 @@ export const getFormattedNumber = (value) => {
 export const currencySymbols = {
   INR: '₹',
   USD: 'US$',
+  MYR: 'RM',
 };
 
 export const getFormattedAmountNew = (amount, showCurrency, currency = 'INR') => {
-  const formattedAmount = getFormattedNumber((amount / 100).toFixed(2));
+  let formattedAmount;
+  if (currency === 'INR') {
+    formattedAmount = getFormattedNumber((amount / 100).toFixed(2));
+  } else {
+    formattedAmount = (Number(amount) / 100).toFixed(CURRENCY_DECIMALS[currency]).toLocaleString();
+  }
 
   return (showCurrency ? currencySymbols[currency] : '') + formattedAmount;
 };
@@ -1494,4 +1507,17 @@ export const getYoutubeVideoID = (url = '') => {
 export const updateExtension = (fileUrl, extension) => {
   let url = fileUrl;
   return url?.substr(0, url?.lastIndexOf('.')) + extension;
+};
+
+// converts minor unit of amount to common unit of amount, ex: paise to rupees
+export const i18CurrencyConversionFromMinorUnitToCommonUnit = (amount, currency) => {
+  // Ideally this should come from BE
+  amount = (Number(amount) / 100).toFixed(CURRENCY_DECIMALS[currency]);
+  return Number(amount);
+};
+
+// converts common unit of amount to minor unit of amount, ex: rupees to paise
+export const i18CurrencyConversionFromCommonUnitToMinorUnit = (amount) => {
+  amount = (Number(amount) * 100).toFixed(0);
+  return Number(amount);
 };

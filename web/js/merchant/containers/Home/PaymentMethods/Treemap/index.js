@@ -6,12 +6,13 @@ import Tooltip from 'common/ui/Tooltip';
 import { getFormattedNumber, getFormattedAmountNew } from 'common/utils/rzp-utils';
 import { globalGroupTitleMap as groupTitleMap } from 'common/utils/pokedex';
 
-import { bankNames } from '../data';
+import { bankNames } from 'merchant/containers/Home/PaymentMethods/data';
 import renderTreemap from './renderTreemap';
 
 let timer = null;
 
-@connect(null, null)
+// eslint-disable-next-line react/no-unsafe
+@connect((state) => ({ user: state.session.user }), null)
 export default class Treemap extends Component {
   constructor(props) {
     super(props);
@@ -89,6 +90,7 @@ export default class Treemap extends Component {
       this.onHideTooltip,
       groupTitleMap,
       bankNames,
+      this.props.user,
     );
 
     return typeof this.props.onCSVData === 'function' && this.props.onCSVData(this.treemapApi.csv);
@@ -131,17 +133,18 @@ export default class Treemap extends Component {
 
   render() {
     const { tooltip } = this.state;
-    const { isCurrency } = this.props;
+    const { isCurrency, user } = this.props;
     const amount = (isCurrency ? getFormattedAmountNew : getFormattedNumber)(
       tooltip.data.amount,
       true,
+      user.merchant.currency,
     );
 
     return (
       <div>
         <div id="payment-methods-treemap" ref={(node) => (this.node = node)} />
 
-        <Tooltip followPointer={true} delay={50}>
+        <Tooltip followPointer={true} delay={50} currency={user.merchant.currency}>
           <div>
             <p>
               <span className="payment-label">{tooltip.data.label}</span>

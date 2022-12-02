@@ -47,7 +47,7 @@ const csvDateFormat = 'DD-MM-YYYY';
 const mobileAggKey = 'method';
 
 // eslint-disable-next-line react/no-unsafe
-@connect(null, { ...ModalActions, showNotification })
+@connect((state) => ({ user: state.session.user }), { ...ModalActions, showNotification })
 class PaymentMethods extends Component {
   constructor(props) {
     super(props);
@@ -225,18 +225,21 @@ class PaymentMethods extends Component {
     });
   }
 
-  trackDownload = ({ success }) => () => {
-    const selfServeTrack = success ? selfServeTrackSuccess : selfServeTrackInitiate;
-    selfServeTrack({
-      selfServeAction: 'Payment Insight Downloaded',
-      page: 'Home',
-      screen: 'Home',
-    });
-  };
+  // prettier-ignore
+  trackDownload =
+    ({ success }) =>
+    () => {
+      const selfServeTrack = success ? selfServeTrackSuccess : selfServeTrackInitiate;
+      selfServeTrack({
+        selfServeAction: 'Payment Insight Downloaded',
+        page: 'Home',
+        screen: 'Home',
+      });
+    };
 
   render() {
     const { data, error, levels, csvData, isLoading, selectedAgg } = this.state;
-    const { startDate, endDate, sectionTitle, isMobile } = this.props;
+    const { startDate, endDate, sectionTitle, isMobile, user } = this.props;
     const levelsLength = levels.length;
     const hasNoData = !data || data.length === 0;
 
@@ -248,6 +251,7 @@ class PaymentMethods extends Component {
         error,
         data,
         aggTypes,
+        user,
       };
 
       mobileComponentProps.aggKey = mobileAggKey;

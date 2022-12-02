@@ -95,6 +95,8 @@ const keymetricsSectionTitle = 'Transactions Overview';
 const paymentInsightsTitle = 'Payment Insights';
 const trafficSectionTitle = 'Traffic split on platforms';
 const recentActivityTitle = 'Recent Activity';
+
+// eslint-disable-next-line react/no-unsafe
 @connect(
   (state) => {
     return {
@@ -328,13 +330,11 @@ export default class HomeContainer extends Component {
   }
 
   get settleNowRestrictionMsg() {
+    // prettier-ignore
     if (!this.settlementRestricted) return false;
-    const {
-      attempts_left,
-      settlable_amount,
-      max_amount_limit,
-      settlements_count_limit,
-    } = this.props.ondemand_restrictions.data;
+    // prettier-ignore
+    const { attempts_left, settlable_amount, max_amount_limit, settlements_count_limit } =
+      this.props.ondemand_restrictions.data;
 
     if (this.isOnDemandDisabled) {
       const restrictedItem = this.restrictedFeatures
@@ -357,6 +357,7 @@ export default class HomeContainer extends Component {
             );
           } else {
             return (
+              // eslint-disable-next-line react/jsx-key
               <span className="highlight-tooltip">
                 {item}
                 {i === restrictedItem.length - 1
@@ -381,6 +382,7 @@ export default class HomeContainer extends Component {
       return `You’ve already settled your maximum allowed limit of ${getFormattedAmountNew(
         max_amount_limit,
         true,
+        this.props.user.merchant.currency,
       )} for the day.`;
     } else if (!attempts_left) {
       return `You've already settled your maximum allowed limit of ${settlements_count_limit} times for the day.`;
@@ -388,6 +390,7 @@ export default class HomeContainer extends Component {
       return `You’ve already settled your maximum allowed limit of ${getFormattedAmountNew(
         max_amount_limit,
         true,
+        this.props.user.merchant.currency,
       )} for the day.`;
     } else return '';
   }

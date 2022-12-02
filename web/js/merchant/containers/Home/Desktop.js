@@ -214,13 +214,11 @@ class AnalyticsDesktop extends Component {
     LocalStorageService.setItem(`product_recommendation_modal_shown-${user.current}`, true);
   };
 
+  // prettier-ignore
   renderWebsiteCompliancePrompt = () => {
     if (this.state.isWebsiteComplianceModalShown) return;
-    const {
-      activationData,
-      websiteSectionDetailsData,
-      websiteComplianceModalVisibility,
-    } = this.props;
+    const { activationData, websiteSectionDetailsData, websiteComplianceModalVisibility } =
+      this.props;
 
     if (
       activationData.data &&

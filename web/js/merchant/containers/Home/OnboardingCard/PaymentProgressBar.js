@@ -5,7 +5,7 @@ import rTracking from 'react-tracking';
 import { getActivationState } from 'merchant/components/Activation/ActivationUtils';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { formatNumberWithCommas } from 'common/utils/numerals';
-import { paiseToRupees } from 'common/utils/rzp-utils';
+import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
 import Time from 'common/ui/Time';
 
 const PaymentProgressBar = ({ user, mode, history, limitBreach }) => {
@@ -42,7 +42,9 @@ const PaymentProgressBar = ({ user, mode, history, limitBreach }) => {
       }).then((PaymentProgressData) => {
         if (PaymentProgressData?.data?.transactionVolume) {
           const payment = PaymentProgressData?.data?.transactionVolume?.result[0].value;
-          setPaymentProgress(paiseToRupees(payment));
+          setPaymentProgress(
+            i18CurrencyConversionFromMinorUnitToCommonUnit(payment, user.merchant.currency),
+          );
           setLastUpdateTime(PaymentProgressData?.data?.transactionVolume?.last_updated_at);
         }
       });

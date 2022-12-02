@@ -21,12 +21,26 @@ const currencies = {
     name: 'Euro',
     symbol: '€',
   },
+  MYR: {
+    name: 'Malaysian Ringgit',
+    symbol: 'RM',
+  },
 };
 
 const RTL_CURRENCIES = ['BHD', 'KWD', 'OMR'];
 
 export function getCurrency(currencyISO) {
   return window.currencyList[currencyISO] || {};
+}
+
+export function getCurrencySymbol(currency) {
+  let currencySymbol = currencies[currency] ? currencies[currency].symbol : currency;
+
+  if (window.currencyList && window.currencyList[currency]) {
+    currencySymbol = window.currencyList[currency].symbol;
+  }
+
+  return currencySymbol;
 }
 
 export default ({
@@ -44,11 +58,7 @@ export default ({
 
   const amount = getFormattedAmount(value);
 
-  let currencySymbol = currencies[currency] ? currencies[currency].symbol : currency;
-
-  if (window.currencyList && window.currencyList[currency]) {
-    currencySymbol = window.currencyList[currency].symbol;
-  }
+  const currencySymbol = getCurrencySymbol(currency);
 
   const getDirection = useCallback(() => {
     if (RTL_CURRENCIES.includes(currency)) {
@@ -77,13 +87,16 @@ export default ({
   );
 };
 
-const wrapper = (Component) => ({ ...props }) => {
-  return (
-    <ViewportProvider>
-      <Component {...props} />
-    </ViewportProvider>
-  );
-};
+// prettier-ignore
+const wrapper =
+  (Component) =>
+  ({ ...props }) => {
+    return (
+      <ViewportProvider>
+        <Component {...props} />
+      </ViewportProvider>
+    );
+  };
 
 export const AmountTooltip = wrapper(AmountTooltipContainer);
 

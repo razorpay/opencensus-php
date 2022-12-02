@@ -1,16 +1,8 @@
 import React from 'react';
 
-import Legend, {
-  LegendItem,
-  LegendLabel,
-  LegendTitle,
-  LegendContent,
-} from 'common/ui/Legend';
-import { rupeesToPaise } from 'common/utils/rzp-utils';
-import {
-  humanReadableIndian,
-  humanReadableIndianCurrency,
-} from 'common/utils/numerals';
+import Legend, { LegendItem, LegendLabel, LegendTitle, LegendContent } from 'common/ui/Legend';
+import { i18CurrencyConversionFromCommonUnitToMinorUnit } from 'common/utils/rzp-utils';
+import { i18HumanReadableNumerals, i18HumanReadableCurrency } from 'common/utils/numerals';
 
 import Tooltip from 'merchant/components/Home/Tooltip';
 
@@ -29,11 +21,9 @@ import Tooltip from 'merchant/components/Home/Tooltip';
 export default ({
   data,
   alignment = 'horizontal',
-  // if passed a function, it will be called with value
-  // related to the legend item
-  valueTransformer = null,
   isCurrency = false,
   tooltipAlign = 'bottom',
+  user,
 }) => {
   if (!Array.isArray(data) || data.length === 0) {
     return null;
@@ -52,20 +42,23 @@ export default ({
       {data.map((item, key) => {
         return (
           <LegendItem key={key}>
-            <LegendLabel color={item.color}>
-              {(item.value / total * 100).toFixed(2)}%
-            </LegendLabel>
+            <LegendLabel color={item.color}>{((item.value / total) * 100).toFixed(2)}%</LegendLabel>
             <LegendTitle>{item.label}</LegendTitle>
             <LegendContent>
               <span>
                 {isCurrency
-                  ? humanReadableIndianCurrency(item.value)
-                  : humanReadableIndian(item.value)}
+                  ? i18HumanReadableCurrency(item.value, user.merchant.currency)
+                  : i18HumanReadableNumerals(item.value, user.merchant.currency)}
               </span>
               <Tooltip
-                value={isCurrency ? rupeesToPaise(item.value) : item.value}
+                value={
+                  isCurrency
+                    ? i18CurrencyConversionFromCommonUnitToMinorUnit(item.value)
+                    : item.value
+                }
                 isCurrency={isCurrency}
                 align={tooltipAlign}
+                currency={user.merchant.currency}
               />
             </LegendContent>
           </LegendItem>

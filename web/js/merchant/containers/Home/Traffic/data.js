@@ -1,18 +1,15 @@
-import moment from 'moment';
-
 import {
-  titleCase,
   arrayToCsvDataUrl,
-  paiseToRupees,
+  i18CurrencyConversionFromMinorUnitToCommonUnit,
 } from 'common/utils/rzp-utils';
+// eslint-disable-next-line import/extensions
 import colors from 'common/utils/chart/colors.js';
 import {
   globalGroupTitleMap,
   groupByPlatform,
   getDefaultPaymentFilter,
+  // eslint-disable-next-line import/extensions
 } from 'common/utils/pokedex.js';
-
-const dateFormat = 'Do MMM YYYY';
 
 const groupValues = ['transactionVolume', 'noTransactions'];
 
@@ -53,13 +50,7 @@ const getQuery = ({ startTime, endTime, group }) => {
   };
 };
 
-const getPieData = ({
-  data,
-  groupByColumnName,
-  getColor,
-  groupTitleMap = {},
-  isCurrency,
-}) => {
+const getPieData = ({ data, getColor, groupTitleMap = {}, isCurrency, currency }) => {
   /*
    * @param {Array} data*
    * @param {String} groupByColumnName*
@@ -74,45 +65,44 @@ const getPieData = ({
    * `groupTitleMap` is a dictionary that maps group values to custom names
    */
 
-  const labels = [],
-    datasets = {
-      data: [],
-    },
-    legendData = [];
+  const labels = [];
+  const datasets = {
+    data: [],
+  };
+  const legendData = [];
 
-  let csvHeader = ['', 'Amount', '%Split'],
-    csvData = [],
-    csvGrandTotal = 0;
+  const csvHeader = ['', 'Amount', '%Split'];
+  let csvData = [];
+  let csvGrandTotal = 0;
 
-  const valueReducer = (sum, item) => sum + item.value,
-    groupedData = groupByPlatform(data),
-    colorsToBeUsed = [];
+  const valueReducer = (sum, item) => sum + item.value;
+  const groupedData = groupByPlatform(data);
+  const colorsToBeUsed = [];
 
   Object.keys(groupedData)
-    .map(groupName => {
+    .map((groupName) => {
       groupedData[groupName] = groupedData[groupName].reduce(valueReducer, 0);
       return groupName;
     })
     // sorting groups by share of contribution in desc order
     .sort((groupName1, groupName2) => {
-      let group2Value = groupedData[groupName2],
-        group1Value = groupedData[groupName1];
+      const group2Value = groupedData[groupName2];
+      const group1Value = groupedData[groupName1];
 
       return group2Value - group1Value;
     })
     .forEach((groupName, index) => {
-      const groupTitle =
-          groupTitleMap[groupName] ||
-          globalGroupTitleMap[groupName] ||
-          groupName,
-        groupCSVData = [],
-        color = getColor ? getColor(groupTitle) : colors[index % colors.length];
+      const groupTitle = groupTitleMap[groupName] || globalGroupTitleMap[groupName] || groupName;
+      const groupCSVData = [];
+      const color = getColor ? getColor(groupTitle) : colors[index % colors.length];
 
       labels.push(groupTitle);
       groupCSVData.push(groupTitle);
 
-      let value = groupedData[groupName],
-        displayValue = isCurrency ? paiseToRupees(value) : value;
+      const value = groupedData[groupName];
+      const displayValue = isCurrency
+        ? i18CurrencyConversionFromMinorUnitToCommonUnit(value, currency)
+        : value;
 
       datasets.data.push(displayValue);
       groupCSVData.push(value);
@@ -132,11 +122,9 @@ const getPieData = ({
   datasets.backgroundColor = colorsToBeUsed;
   datasets.hoverBackgroundColor = colorsToBeUsed;
 
-  csvData = csvData.map(row => {
+  csvData = csvData.map((row) => {
     // calculating %share column
-    row.push(
-      `${csvGrandTotal > 0 ? (row[1] / csvGrandTotal * 100).toFixed(2) : 0}%`
-    );
+    row.push(`${csvGrandTotal > 0 ? ((row[1] / csvGrandTotal) * 100).toFixed(2) : 0}%`);
     return row;
   });
 

@@ -3,7 +3,7 @@ import { PowerSelectMultiple } from 'react-power-select';
 import { useField } from 'formik';
 import { classList } from 'common/utils/rzp-utils';
 
-const frequentlyUsedCurrencies = ['INR', 'USD', 'SGD', 'EUR'];
+const frequentlyUsedCurrencies = ['INR', 'USD', 'SGD', 'EUR', 'MYR'];
 
 const CurrencyMultiSelect = ({
   label,

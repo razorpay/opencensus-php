@@ -1,42 +1,38 @@
+/* eslint-disable babel/no-invalid-this */
 import moment from 'moment';
 
 import {
   getFormattedAmountNew,
-  getFormattedNumber,
-  rupeesToPaise,
+  i18CurrencyConversionFromCommonUnitToMinorUnit,
 } from 'common/utils/rzp-utils';
-import { getMillisecondsFromBreakdown } from 'common/utils/chart/new';
-
+import { getUser } from 'merchant/store';
 import { trackTooltipDeepdive } from './ga';
 
 // tooltip element
 const tooltipDOM = document.createElement('div');
 
-let isTooltipHovered = false,
-  isInsertedIntoBody = false,
-  shouldShowTooltip = false; //set unset by chartjs
+let isTooltipHovered = false;
+let isInsertedIntoBody = false;
+let shouldShowTooltip = false; //set unset by chartjs
 
 tooltipDOM.id = 'chartjs-tooltip';
+// eslint-disable-next-line no-useless-concat
 tooltipDOM.innerHTML = '<div class="custom-tooltip-inner">' + '</div>';
 
-const caret = document.createElement('div'),
-  caretWidth = 20,
-  caretHeight = 10;
+const caret = document.createElement('div');
+const caretWidth = 20;
+const caretHeight = 10;
 caret.className = 'caret';
 
-const crossHair = document.createElement('div'),
-  crossHairWidth = 2;
+const crossHair = document.createElement('div');
+const crossHairWidth = 2;
 
 crossHair.className = 'cross-hair';
 
 const hideTooltip = () => {
-    return (
-      !isTooltipHovered &&
-      !shouldShowTooltip &&
-      (tooltipDOM.style.display = 'none')
-    );
-  },
-  showTooltip = () => (tooltipDOM.style.display = 'block');
+  return !isTooltipHovered && !shouldShowTooltip && (tooltipDOM.style.display = 'none');
+};
+const showTooltip = () => (tooltipDOM.style.display = 'block');
 
 tooltipDOM.addEventListener('mouseenter', () => (isTooltipHovered = true));
 tooltipDOM.addEventListener('mouseleave', () => {
@@ -74,7 +70,10 @@ const getDateFormat = (startDate, breakdown) => {
 };
 
 /* function for custom tooltip */
-const customToolTip = function(tooltipModel) {
+// eslint-disable-next-line consistent-return, func-names
+const customToolTip = function (tooltipModel) {
+  const user = getUser();
+
   // Create element on first render
   if (!isInsertedIntoBody) {
     document.body.appendChild(tooltipDOM);
@@ -87,12 +86,12 @@ const customToolTip = function(tooltipModel) {
     shouldShowTooltip = false;
 
     /*
-   * Puts hideTooltip at the end of callback queue
-   * as chartjs tries to hide the tooltip just before
-   * `mouseenter` is fired on `tooltipDOM`, which would
-   * lead to hiding of tooltip just before hovering on it,
-   * and makes the tooltip flicker and not useable
-   */
+     * Puts hideTooltip at the end of callback queue
+     * as chartjs tries to hide the tooltip just before
+     * `mouseenter` is fired on `tooltipDOM`, which would
+     * lead to hiding of tooltip just before hovering on it,
+     * and makes the tooltip flicker and not useable
+     */
     return window.setTimeout(() => {
       hideTooltip();
     });
@@ -101,60 +100,49 @@ const customToolTip = function(tooltipModel) {
     showTooltip();
   }
 
-  const {
-      isCurrency,
-      externalUrl,
-      breakdown,
-      graphStartDate,
-      graphEndDate,
-      noGrouping,
-    } = this._chart.options,
-    datasets = this._chart.data.datasets;
+  // prettier-ignore
+  const { isCurrency, externalUrl, breakdown, graphStartDate, graphEndDate, noGrouping } =
+    this._chart.options;
+  const datasets = this._chart.data.datasets;
 
   /* Setting the body and title of tooltip only if model has body */
   if (tooltipModel.body) {
     // data member to hold going to be rendered html
-    var innerHtml = '';
+    let innerHtml = '';
 
     // calculating the title: sum of all data
     const dataPoints = tooltipModel.dataPoints;
-    const sumOfAllDataPoints = dataPoints.reduce(
-        (tempSum, { yLabel }) => tempSum + yLabel,
-        0
-      ),
-      startMs = datasets[0].data[dataPoints[0].index].t,
-      // start date can not be less than selected start date
-      startDate = moment(Math.max(startMs, graphStartDate)),
-      // end date can not be greater than selected end date
-      endDate = moment(
-        Math.min(
-          startDate
-            .clone()
-            .endOf(breakdownMap[breakdown])
-            .toDate(),
-          graphEndDate
-        )
-      ),
-      dateFormat = getDateFormat(startDate, breakdown),
-      url =
-        `${externalUrl}?from=${startDate.unix()}&to=${endDate.unix()}` +
-        `&ref=home`;
+    const sumOfAllDataPoints = dataPoints.reduce((tempSum, { yLabel }) => tempSum + yLabel, 0);
+    const startMs = datasets[0].data[dataPoints[0].index].t;
+    // start date can not be less than selected start date
+    const startDate = moment(Math.max(startMs, graphStartDate));
+    // prettier-ignore
+    // end date can not be greater than selected end date
+    const endDate = moment(
+      Math.min(startDate.clone().endOf(breakdownMap[breakdown]).toDate(), graphEndDate),
+    );
+    const dateFormat = getDateFormat(startDate, breakdown);
+    const url = `${externalUrl}?from=${startDate.unix()}&to=${endDate.unix()}&ref=home`;
 
     let formattedDate = startDate.format(dateFormat);
 
     if (breakdown !== 'daily') {
-      formattedDate +=
-        ' - ' + endDate.format(breakdown === 'hourly' ? 'HH:mm' : dateFormat);
+      formattedDate += ` - ${endDate.format(breakdown === 'hourly' ? 'HH:mm' : dateFormat)}`;
     }
 
+    const currentMerchantCurrency = user.merchant.currency;
     // appending title to innerHtml
     innerHtml +=
       `<div class="tooltip-title">` +
       `<div>` +
       `<div class="tooltip-amount">${
         isCurrency
-          ? getFormattedAmountNew(rupeesToPaise(sumOfAllDataPoints), true)
-          : getFormattedNumber(sumOfAllDataPoints)
+          ? getFormattedAmountNew(
+              i18CurrencyConversionFromCommonUnitToMinorUnit(sumOfAllDataPoints),
+              true,
+              currentMerchantCurrency,
+            )
+          : getFormattedAmountNew(sumOfAllDataPoints, false, currentMerchantCurrency)
       }</div>` +
       `<div class="sec-text tooltip-date">${formattedDate}</div>` +
       `</div>` +
@@ -172,14 +160,14 @@ const customToolTip = function(tooltipModel) {
     if (!noGrouping) {
       tooltipDOM.className = '';
 
-      let dataPoints = tooltipModel.dataPoints.sort((item1, item2) => {
+      const dataPoints = tooltipModel.dataPoints.sort((item1, item2) => {
         return item1.datasetIndex - item2.datasetIndex;
       });
 
       datasets.forEach((dataset, index) => {
-        const { backgroundColor, label, data } = dataset,
-          dataPoint = dataPoints[index],
-          value = dataPoint.yLabel;
+        const { backgroundColor, label } = dataset;
+        const dataPoint = dataPoints[index];
+        const value = dataPoint.yLabel;
 
         const labelIcon = `<span class="label-icon" style="background-color: ${backgroundColor}"></span>`;
 
@@ -189,8 +177,8 @@ const customToolTip = function(tooltipModel) {
           `<span class="label-value">` +
           `${
             isCurrency
-              ? getFormattedAmountNew(rupeesToPaise(value), true)
-              : getFormattedNumber(value)
+              ? getFormattedAmountNew(value, true, currentMerchantCurrency)
+              : getFormattedAmountNew(value, false, currentMerchantCurrency)
           }` +
           `</span>`;
 
@@ -204,7 +192,7 @@ const customToolTip = function(tooltipModel) {
       tooltipDOM.className = 'no-grouping';
     }
     // inserting innerHtml into inner div of chart js tooltip
-    var innerTooltip = tooltipDOM.querySelector('.custom-tooltip-inner');
+    const innerTooltip = tooltipDOM.querySelector('.custom-tooltip-inner');
     innerTooltip.innerHTML = innerHtml; // nosemgrep : https://semgrep.dev/s/swati31196:rzp-insecure-document-method
 
     innerTooltip.querySelector('.deepdive-link').onclick = trackTooltipDeepdive;
@@ -217,53 +205,50 @@ const customToolTip = function(tooltipModel) {
    * calculation of position of tooltip
    */
   tooltipDOM.style.opacity = 1;
-  tooltipDOM.style.top = tooltipModel.caretY - tooltipDOM.clientHeight + 'px';
-  tooltipDOM.style.left = tooltipModel.caretX + 'px';
-  caret.style.marginLeft = -(caretWidth / 2) + 'px';
+  tooltipDOM.style.top = `${tooltipModel.caretY - tooltipDOM.clientHeight}px`;
+  tooltipDOM.style.left = `${tooltipModel.caretX}px`;
+  caret.style.marginLeft = `${-(caretWidth / 2)}px`;
 
   // correcting overflow of tootip on both the sidesi
-  const tooltipWidth = tooltipDOM.clientWidth,
-    tooltipLeft = tooltipModel.caretX - tooltipWidth / 2,
-    tooltipRight = tooltipModel.caretX + tooltipWidth / 2,
-    xAxisHeight = this._chart.scales['x-axis-0'].height,
-    {
-      left: chartLeft,
-      right: chartRight,
-      bottom: chartBottom,
-    } = this._chart.canvas.getBoundingClientRect(),
-    crossHairHeight =
-      chartBottom - (tooltipModel.caretY + xAxisHeight) + caretHeight;
+  const tooltipWidth = tooltipDOM.clientWidth;
+  const tooltipLeft = tooltipModel.caretX - tooltipWidth / 2;
+  const tooltipRight = tooltipModel.caretX + tooltipWidth / 2;
+  const xAxisHeight = this._chart.scales['x-axis-0'].height;
+  const {
+    left: chartLeft,
+    right: chartRight,
+    bottom: chartBottom,
+  } = this._chart.canvas.getBoundingClientRect();
+  const crossHairHeight = chartBottom - (tooltipModel.caretY + xAxisHeight) + caretHeight;
 
-  crossHair.style.height = crossHairHeight + 'px';
-  crossHair.style.marginLeft = -(crossHairWidth / 2) + 'px';
+  crossHair.style.height = `${crossHairHeight}px`;
+  crossHair.style.marginLeft = `${-(crossHairWidth / 2)}px`;
 
   if (tooltipLeft < chartLeft) {
     const diff = chartLeft - tooltipLeft;
 
-    tooltipDOM.style.left = tooltipModel.caretX + diff + 'px';
-    caret.style.marginLeft = -(caretWidth / 2) - diff + 'px';
-    crossHair.style.marginLeft = -(crossHairWidth / 2) - diff + 'px';
+    tooltipDOM.style.left = `${tooltipModel.caretX + diff}px`;
+    caret.style.marginLeft = `${-(caretWidth / 2) - diff}px`;
+    crossHair.style.marginLeft = `${-(crossHairWidth / 2) - diff}px`;
   } else if (tooltipRight > chartRight) {
     const diff = tooltipRight - chartRight;
 
-    tooltipDOM.style.left = tooltipModel.caretX - diff + 'px';
-    caret.style.marginLeft = -(caretWidth / 2) + diff + 'px';
-    crossHair.style.marginLeft = -(crossHairWidth / 2) + diff + 'px';
+    tooltipDOM.style.left = `${tooltipModel.caretX - diff}px`;
+    caret.style.marginLeft = `${-(caretWidth / 2) + diff}px`;
+    crossHair.style.marginLeft = `${-(crossHairWidth / 2) + diff}px`;
   }
 
   // if there is only one point hide crosshair
   crossHair.style.display = this._data.labels.length === 1 ? 'none' : 'block';
 };
 
-function positioner(elements, eventPosition) {
+function positioner(elements) {
   if (elements.length === 0) {
     return { x: 0, y: 0 };
   }
 
-  const topEle = elements.sort(
-      (ele1, ele2) => ele1._model.y - ele2._model.y
-    )[0],
-    { left, top } = topEle._chart.canvas.getBoundingClientRect();
+  const topEle = elements.sort((ele1, ele2) => ele1._model.y - ele2._model.y)[0];
+  const { left, top } = topEle._chart.canvas.getBoundingClientRect();
 
   return { x: left + topEle._model.x, y: top + topEle._model.y - 10 };
 }

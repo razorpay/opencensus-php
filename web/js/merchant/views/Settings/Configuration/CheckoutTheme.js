@@ -6,6 +6,7 @@ import AsyncButton from 'react-async-button';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import FileUploadButton from 'common/ui/FileUpload/Button';
+import { getCurrencySymbol } from 'common/ui/Amount';
 import {
   uploadLogo,
   fetchLocale,
@@ -487,7 +488,7 @@ class CheckoutTheme extends Component {
                   <div id="merchant" style={{ color: textClr }}>
                     <div id="merchant-name">{this.props.user.contact_name}</div>
                     <div id="merchant-desc">Order ID</div>
-                    <div id="amount">₹1</div>
+                    <div id="amount">{getCurrencySymbol(user.merchant.currency)} 1</div>
                   </div>
                 )}
               </div>

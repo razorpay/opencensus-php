@@ -1,22 +1,11 @@
 import React, { Component } from 'react';
 
-import {
-  getFormattedAmountNew,
-  getFormattedNumber,
-} from 'common/utils/rzp-utils';
-import GenericPanel, {
-  PanelTopbar,
-  PanelBody,
-  PanelFooter,
-} from 'merchant/components/Home/GenericPanel';
+import { getFormattedAmountNew, getFormattedNumber } from 'common/utils/rzp-utils';
+import GenericPanel, { PanelTopbar, PanelBody } from 'merchant/components/Home/GenericPanel';
 import GroupingDropdown from 'merchant/components/Home/GroupingDropdown';
 import StackedBars from 'merchant/containers/Home/StackedBars';
 
 class MobileTraffic extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
     const {
       isLoading,
@@ -27,6 +16,7 @@ class MobileTraffic extends Component {
       error,
       data,
       isCurrency,
+      user,
     } = this.props;
 
     return (
@@ -45,16 +35,14 @@ class MobileTraffic extends Component {
           />
         </PanelTopbar>
         <PanelBody>
-          {!isLoading &&
-            !!data && (
-              <StackedBars
-                data={data}
-                textKey={'label'}
-                formatValue={
-                  (isCurrency && getFormattedAmountNew) || getFormattedNumber
-                }
-              />
-            )}
+          {!isLoading && !!data && (
+            <StackedBars
+              data={data}
+              textKey={'label'}
+              formatValue={(isCurrency && getFormattedAmountNew) || getFormattedNumber}
+              user={user}
+            />
+          )}
         </PanelBody>
       </GenericPanel>
     );

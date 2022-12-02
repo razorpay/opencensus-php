@@ -22,7 +22,7 @@ export function getOrg() {
 }
 
 export function getUser() {
-  return store.getState().session.user;
+  return store?.getState()?.session?.user;
 }
 
 export function getPartnerMode() {

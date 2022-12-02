@@ -8,19 +8,12 @@ import {
   getArraySorterFromArray,
 } from 'common/utils/rzp-utils';
 
-import GenericPanel, {
-  PanelTopbar,
-  PanelBody,
-  PanelFooter,
-} from 'merchant/components/Home/GenericPanel';
+import GenericPanel, { PanelTopbar, PanelBody } from 'merchant/components/Home/GenericPanel';
 import GroupingDropdown from 'merchant/components/Home/GroupingDropdown';
 import StackedBars from 'merchant/containers/Home/StackedBars';
-import {
-  paymentMethodsOrder,
-  getPaymentMethodColor,
-} from 'merchant/components/Home/data';
+import { paymentMethodsOrder, getPaymentMethodColor } from 'merchant/components/Home/data';
 
-const formatText = text => {
+const formatText = (text) => {
   return globalGroupTitleMap[text.toLowerCase()] || titleCase(text);
 };
 
@@ -28,8 +21,8 @@ class MobilePaymentMethods extends Component {
   constructor(props) {
     super(props);
 
-    this.sorter = getArraySorterFromArray(paymentMethodsOrder, item =>
-      item[this.props.aggKey].replace('_', ' ')
+    this.sorter = getArraySorterFromArray(paymentMethodsOrder, (item) =>
+      item[this.props.aggKey].replace('_', ' '),
     );
   }
 
@@ -44,6 +37,7 @@ class MobilePaymentMethods extends Component {
       data,
       aggKey,
       isCurrency,
+      user,
     } = this.props;
 
     return (
@@ -61,19 +55,17 @@ class MobilePaymentMethods extends Component {
           />
         </PanelTopbar>
         <PanelBody>
-          {!isLoading &&
-            !hasNoData && (
-              <StackedBars
-                data={data}
-                textKey={aggKey}
-                getColor={getPaymentMethodColor}
-                formatText={formatText}
-                orderBy={this.sorter}
-                formatValue={
-                  (isCurrency && getFormattedAmountNew) || getFormattedNumber
-                }
-              />
-            )}
+          {!isLoading && !hasNoData && (
+            <StackedBars
+              data={data}
+              textKey={aggKey}
+              getColor={getPaymentMethodColor}
+              formatText={formatText}
+              orderBy={this.sorter}
+              user={user}
+              formatValue={(isCurrency && getFormattedAmountNew) || getFormattedNumber}
+            />
+          )}
         </PanelBody>
       </GenericPanel>
     );

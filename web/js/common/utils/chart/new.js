@@ -1,6 +1,6 @@
 import { defaults } from 'react-chartjs-2';
 import moment from 'moment';
-import { humanReadableIndian } from '../numerals';
+import { i18HumanReadableNumerals } from 'common/utils/numerals';
 
 const global = defaults.global;
 global.maintainAspectRatio = false;
@@ -27,7 +27,7 @@ global.hover.intersect = false;
 
 const gridLineColor = '#f0f3f7';
 
-export const timeScale = ({ xLabel, yLabel, breakdown, startDate }) => {
+export const timeScale = ({ xLabel, yLabel, breakdown, startDate, currency = 'INR' }) => {
   const now = moment();
 
   const scalesObj = {
@@ -94,7 +94,7 @@ export const timeScale = ({ xLabel, yLabel, breakdown, startDate }) => {
             maxTicksLimit: 10,
             callback: (value) => {
               // if spaces are not added, the labels get cut
-              return `${humanReadableIndian(value)}`;
+              return `${i18HumanReadableNumerals(value, currency)}`;
             },
             fontColor: 'rgba(45, 48, 51, 0.5)',
           },

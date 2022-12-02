@@ -286,6 +286,7 @@ const mapStateToProps = (state) => {
     refunds: state.refunds,
     settlements: state.settlements,
     windowWidth: state.app.windowWidth,
+    user: state.session.user,
   };
 };
 
