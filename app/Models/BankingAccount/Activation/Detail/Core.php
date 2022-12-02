@@ -4,8 +4,11 @@
 namespace RZP\Models\BankingAccount\Activation\Detail;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Models\BankingAccount\Activation\Notification\Notifier;
+use RZP\Constants\Product;
+use RZP\Exception\LogicException;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Core extends Base\Core
 {
@@ -82,5 +85,145 @@ class Core extends Base\Core
         $bankingAccountActivationDetails->setBankPOCUserId($bankPocUserId);
 
         $this->repo->saveOrFail($bankingAccountActivationDetails);
+    }
+
+    /*
+     * Returns
+     *  0    if skipDwt is false
+     *  1    if skipDwt is true
+     *  null if value need not be computed
+     *  Logic for Skip DWT
+     *  Address prefilled via GSTIN and
+     *  All four RBL new onboarding declaration are true
+     */
+    /**
+     * @throws LogicException
+     */
+    public function computeSkipDwt(?Entity $bankingAccountActivationDetails, array $input, Merchant\Entity $merchant): ?int
+    {
+        if (empty($bankingAccountActivationDetails))
+        {
+            return null;
+        }
+
+        // since this attribute is being read from a json, it is returned as a string
+        $declarationStepCompleted = ($input[Entity::DECLARATION_STEP] ?? null) == 1;
+
+        if ($declarationStepCompleted === false)
+        {
+            return null;
+        }
+
+        $skipDwtEligibleFlag = $this->isMerchantEligibleForSkipDwtExperiment($merchant);
+
+        if ($skipDwtEligibleFlag === false)
+        {
+            return 0;
+        }
+
+        $additionalDetails = optional($bankingAccountActivationDetails)->getAdditionalDetails() ?? '{}';
+
+        $additionalDetails = json_decode($additionalDetails, true);
+
+        $rblNewOnboardingDeclarations = $additionalDetails[Entity::RBL_NEW_ONBOARDING_FLOW_DECLARATIONS] ?? [];
+
+        $gstinPrefilledAddress = $additionalDetails[Entity::GSTIN_PREFILLED_ADDRESS] ?? null;
+
+        $availableAtPreferredAddressToCollectDocs = $rblNewOnboardingDeclarations[Entity::AVAILABLE_AT_PREFERRED_ADDRESS_TO_COLLECT_DOCS] ?? null;
+
+        $sealAvailable = $rblNewOnboardingDeclarations[Entity::SEAL_AVAILABLE] ?? null;
+
+        $signatoriesAvailableAtPreferredAddress = $rblNewOnboardingDeclarations[Entity::SIGNATORIES_AVAILABLE_AT_PREFERRED_ADDRESS] ?? null;
+
+        $signboardAvailable = $rblNewOnboardingDeclarations[Entity::SIGNBOARD_AVAILABLE] ?? null;
+
+        if (is_null($gstinPrefilledAddress) ||
+            is_null($availableAtPreferredAddressToCollectDocs) ||
+            is_null($sealAvailable) ||
+            is_null($signatoriesAvailableAtPreferredAddress) ||
+            is_null($signboardAvailable)
+        )
+        {
+            throw new LogicException('Declarations cannot be null if merchant is eligible for SKIP_DWT experiment',
+            null,
+                [
+                    'gstin_prefilled_address'                           => $gstinPrefilledAddress,
+                    'available_at_preferred_address_to_collect_docs'    => $availableAtPreferredAddressToCollectDocs,
+                    'seal_available'                                    => $sealAvailable,
+                    'signatories_available_at_preferred_address'        => $signatoriesAvailableAtPreferredAddress,
+                    'signboard_available'                               => $signboardAvailable
+                ]);
+        }
+
+        $skipDwt = 0;
+
+        if ($gstinPrefilledAddress === 1 &&
+            $availableAtPreferredAddressToCollectDocs === 1 &&
+            $sealAvailable === 1 &&
+            $signatoriesAvailableAtPreferredAddress === 1 &&
+            $signboardAvailable === 1)
+        {
+            $skipDwt = 1;
+        }
+
+        $this->trace->info(
+            TraceCode::MERCHANT_ELIGIBLE_FOR_SKIP_DWT_EXPERIMENT,
+            [
+                'skip_dwt'                                          => $skipDwt,
+                'gstin_prefilled_address'                           => $gstinPrefilledAddress,
+                'available_at_preferred_address_to_collect_docs'    => $availableAtPreferredAddressToCollectDocs,
+                'seal_available'                                    => $sealAvailable,
+                'signatories_available_at_preferred_address'        => $signatoriesAvailableAtPreferredAddress,
+                'signboard_available'                               => $signboardAvailable
+            ]);
+
+        return $skipDwt;
+    }
+
+    // This function is used to check if address is being updated and an additional check if value is different from existing value
+    // Returns 0 if address is updated, else null to indicated
+    /**
+     * @throws LogicException
+     */
+    public function checkAddressUpdate(?Entity $bankingAccountActivationDetails, array $input): ?int
+    {
+        if (empty($bankingAccountActivationDetails))
+        {
+            return null;
+        }
+
+        $newMerchantDocumentsAddress = $input[Entity::MERCHANT_DOCUMENTS_ADDRESS] ?? null;
+
+        $oldMerchantDocumentsAddress = $bankingAccountActivationDetails->getMerchantDocumentsAddress();
+
+        if ((empty($oldMerchantDocumentsAddress) === false &&
+            empty($newMerchantDocumentsAddress) === false) &&
+            $oldMerchantDocumentsAddress !== $newMerchantDocumentsAddress)
+        {
+            return 0;
+        }
+
+        return null;
+    }
+
+    public function isMerchantEligibleForSkipDwtExperiment(Merchant\Entity $merchant): bool
+    {
+        try
+        {
+            $attributeCore = new Merchant\Attribute\Core;
+
+            $skipDwtEligible = $attributeCore->fetch($merchant,
+                Product::BANKING,
+                Merchant\Attribute\Group::X_MERCHANT_CURRENT_ACCOUNTS,
+                Merchant\Attribute\Type::SKIP_DWT_ELIGIBLE);
+
+            $skipDwtEligibleFlag = ($skipDwtEligible->getValue() === 'enabled');
+        }
+        catch (\Throwable $e)
+        {
+            $skipDwtEligibleFlag = false;
+        }
+
+        return $skipDwtEligibleFlag;
     }
 }

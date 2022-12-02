@@ -41,6 +41,7 @@ class GroupType
             Type::CA_SALES_LED_ALLOCATED_BANK,
             Type::CA_SALES_LED_ICICI_LEAD_TIMESTAMP,
             Type::CLARITY_CONTEXT,
+            Type::SKIP_DWT_ELIGIBLE,
             Type::CA_ONBOARDING_STATE_MACHINE,
         ],
 

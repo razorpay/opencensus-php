@@ -38,6 +38,7 @@ class Type
     const CA_SALES_LED_ALLOCATED_BANK   = 'ca_sales_led_allocated_bank';
     const CA_SALES_LED_ICICI_LEAD_TIMESTAMP = 'ca_sales_led_icici_lead_timestamp';
     const CLARITY_CONTEXT               = 'clarity_context'; // Valid values - enabled,completed
+    const SKIP_DWT_ELIGIBLE             = 'skip_dwt_eligible';
     const CA_ONBOARDING_STATE_MACHINE   = 'ca_onboarding_state_machine'; // Valid values = new,old
 
     //INTENT Types

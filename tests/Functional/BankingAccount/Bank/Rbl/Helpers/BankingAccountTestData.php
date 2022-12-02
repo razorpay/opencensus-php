@@ -4930,6 +4930,18 @@ return [
         ],
     ],
 
+    'testSkipDwtComputeAndSave' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [
+                'declaration_step' => 1
+            ],
+        ],
+    ],
+
     'testCreateBankingAccountWithActivationDetailWithBusinessTypeAsTrust' => [
         'request'  => [
             'url'     => '/banking_accounts_admin',

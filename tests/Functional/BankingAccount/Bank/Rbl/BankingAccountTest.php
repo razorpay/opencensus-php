@@ -627,6 +627,13 @@ class BankingAccountTest extends TestCase
 
         $additionDetailsResponse = json_encode(['sales_pitch_completed' => $newSalesPitchCompleted]);
 
+        // Adding this because ArraySelective does not work for json strings
+        if ($newDeclarationStep === 1)
+        {
+            $additionDetailsResponse = json_encode(['sales_pitch_completed' => $newSalesPitchCompleted,
+                'skip_dwt' => 0]);
+        }
+
         $dataToReplace = [
             'request'  => [
                 'url'     => '/banking_accounts_internal/activation/bacc_' . $baId . '/details',
@@ -10460,6 +10467,93 @@ class BankingAccountTest extends TestCase
         $this->ba->mobAppAuthForInternalRoutes();
 
         $this->startTest($dataToReplace);
+    }
+
+    public function verifySkipDwtComputeAndSave(array $additonalDetailsInput, string $skipDwtEligble, int $skipDwtValue)
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testSkipDwtComputeAndSave'];
+
+        $bankingAccount = $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->fixtures->create('banking_account_activation_detail', [
+            'banking_account_id'        => $bankingAccount->getId(),
+            'additional_details' => json_encode($additonalDetailsInput)
+        ]);
+
+        $this->createMerchantAttribute(self::DefaultMerchantId, 'banking', 'x_merchant_current_accounts', 'skip_dwt_eligible', $skipDwtEligble);
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts_internal/activation/' . $bankingAccount->getPublicId() . '/details',
+            ],
+            'response' => [
+                'content' => [
+                    'additional_details' => [
+                        'skip_dwt' => $skipDwtValue
+                    ]
+                ],
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+
+    }
+
+    public function testSkipDwtComputeAndSaveSkipDwtTrue()
+    {
+        $additionalDetailsInput = [
+            'gstin_prefilled_address' => 1,
+            'rbl_new_onboarding_flow_declarations' => [
+                'available_at_preferred_address_to_collect_docs' => 1,
+                'seal_available' => 1,
+                'signatories_available_at_preferred_address' => 1,
+                'signboard_available' => 1
+            ]
+        ];
+
+        $this->verifySkipDwtComputeAndSave($additionalDetailsInput,'enabled',1);
+    }
+
+    public function testSkipDwtComputeAndSaveExpDisabled()
+    {
+        $additionalDetailsInput = [
+            'gstin_prefilled_address' => 1,
+            'rbl_new_onboarding_flow_declarations' => [
+                'available_at_preferred_address_to_collect_docs' => 1,
+                'seal_available' => 1,
+                'signatories_available_at_preferred_address' => 1,
+                'signboard_available' => 1
+            ]
+        ];
+
+        $this->verifySkipDwtComputeAndSave($additionalDetailsInput,'disabled',0);
+    }
+
+    public function testSkipDwtComputeAndSaveExpEnabledAndFalseValueInDeclaration()
+    {
+        $additionalDetailsInput = [
+            'gstin_prefilled_address' => 0,
+            'rbl_new_onboarding_flow_declarations' => [
+                'available_at_preferred_address_to_collect_docs' => 1,
+                'seal_available' => 1,
+                'signatories_available_at_preferred_address' => 1,
+                'signboard_available' => 1
+            ]
+        ];
+
+        $this->verifySkipDwtComputeAndSave($additionalDetailsInput,'enabled',0);
+
     }
 
     public function testPreventMetroCallbackForGatewayBalanceFetch()

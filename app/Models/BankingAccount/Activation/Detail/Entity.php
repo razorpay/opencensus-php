@@ -116,6 +116,20 @@ class Entity extends Base\PublicEntity
 
     const SALES_PITCH_COMPLETED = 'sales_pitch_completed';
 
+    const GSTIN_PREFILLED_ADDRESS = 'gstin_prefilled_address';
+
+    const RBL_NEW_ONBOARDING_FLOW_DECLARATIONS = 'rbl_new_onboarding_flow_declarations';
+
+    const AVAILABLE_AT_PREFERRED_ADDRESS_TO_COLLECT_DOCS = 'available_at_preferred_address_to_collect_docs';
+
+    const SEAL_AVAILABLE = 'seal_available';
+
+    const SIGNATORIES_AVAILABLE_AT_PREFERRED_ADDRESS = 'signatories_available_at_preferred_address';
+
+    const SIGNBOARD_AVAILABLE = 'signboard_available';
+
+    const SKIP_DWT = 'skip_dwt';
+
     const CALENDLY_SLOT_BOOKING_COMPLETED = 'calendly_slot_booking_completed';
 
     const COMMENT = 'comment'; //Latest comment. This is to support backward compatibility
@@ -503,6 +517,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttributeValue(self::MERCHANT_POC_PHONE_NUMBER);
     }
 
+    public function getMerchantDocumentsAddress()
+    {
+        return $this->getAttributeValue(self::MERCHANT_DOCUMENTS_ADDRESS);
+    }
+
     public function getBookingDateAndTime()
     {
         return $this->getAttributeValue(self::BOOKING_DATE_AND_TIME);
@@ -543,6 +562,11 @@ class Entity extends Base\PublicEntity
     public function setSalesTeam(string $salesTeam)
     {
         $this->setAttribute(self::SALES_TEAM, $salesTeam);
+    }
+
+    public function setAdditionalDetails(string $additionalDetails)
+    {
+        $this->setAttribute(self::ADDITIONAL_DETAILS, $additionalDetails);
     }
 
     public function getSalesTeam()

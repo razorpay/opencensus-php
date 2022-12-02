@@ -204,6 +204,34 @@ class Service extends Base\Service
         // - change in assignee team requires a comment
         // - update via batch service.
 
+        $addressPrefilledViaGstin = $this->core->checkAddressUpdate($bankingAccount->bankingAccountActivationDetails, $input);
+        // TODO: Remove dupe code
+        // To eliminate dirty reads and reduce nested Db txns we are saving value in to entity
+        if (is_null($addressPrefilledViaGstin) === false)
+        {
+            /** @var Entity $activationDetail */
+            $activationDetail = $bankingAccount->bankingAccountActivationDetails;
+            $activationDetailInput = $this->updateAdditionalDetailsPayload($activationDetail,[
+                Entity::ADDITIONAL_DETAILS => [
+                'gstin_prefilled_address' => $addressPrefilledViaGstin
+            ]]);
+            $activationDetail->setAdditionalDetails($activationDetailInput[Entity::ADDITIONAL_DETAILS]);
+            array_set($input,'additional_details.gstin_prefilled_address',$addressPrefilledViaGstin);
+        }
+
+        $skipDwt = $this->core->computeSkipDwt($bankingAccount->bankingAccountActivationDetails, $input,$bankingAccount->merchant);
+        if (is_null($skipDwt) === false)
+        {
+            /** @var Entity $activationDetail */
+            $activationDetail = $bankingAccount->bankingAccountActivationDetails;
+            $activationDetailInput = $this->updateAdditionalDetailsPayload($activationDetail,[
+                Entity::ADDITIONAL_DETAILS => [
+                'skip_dwt' => $skipDwt
+            ]]);
+            $activationDetail->setAdditionalDetails($activationDetailInput[Entity::ADDITIONAL_DETAILS]);
+            array_set($input,'additional_details.skip_dwt',$skipDwt);
+        }
+
         (new BankingAccount\Core())->checkAndSendFreshDeskEmailIfFormIsSubmitted($bankingAccount, $input);
 
         if ($this->app['basicauth']->isMobApp() === false)
@@ -323,14 +351,14 @@ class Service extends Base\Service
     public function validateAndUpdateAssigneeTeam(Entity $activationDetail, BankingAccount\Entity $bankingAccount, array & $input, &$isAutomatedUpdate)
     {
 
-        $ldapIDMailDate = empty($input[Entity::LDAP_ID_MAIL_DATE]) ? 
-            $activationDetail->getLDAPIDMailDate() : 
+        $ldapIDMailDate = empty($input[Entity::LDAP_ID_MAIL_DATE]) ?
+            $activationDetail->getLDAPIDMailDate() :
             $input[Entity::LDAP_ID_MAIL_DATE];
 
         // Parallel assignees required until LDAP ID Mail date is not filled
         // This should work only in Account Opening & API Onboarding Stages
         if (
-            empty($ldapIDMailDate) && 
+            empty($ldapIDMailDate) &&
             BankingAccount\Status::isStatusUnderParallelAssignee($bankingAccount->getStatus())
         )
         {
