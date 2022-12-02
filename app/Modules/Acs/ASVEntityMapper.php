@@ -33,6 +33,16 @@ class ASVEntityMapper {
         return ASVEntityMapper::MapDataArrayToEntity($protoAsArray, $entityClass);
     }
 
+    public static function MapProtoObjectIteratorToEntityCollection($protoObjectIterator, $entityClass): PublicCollection
+    {
+        $entities = [];
+        foreach($protoObjectIterator as $protoObject) {
+            $entities[] = ASVEntityMapper::MapProtoObjectToEntity($protoObject, $entityClass);
+        }
+
+        return new PublicCollection($entities);
+    }
+
     public static function MapDataArrayToEntity($dataArray, $entityClass) {
         try {
             $entityClass::unguard();

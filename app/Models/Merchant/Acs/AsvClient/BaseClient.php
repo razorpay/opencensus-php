@@ -44,4 +44,12 @@ class BaseClient
             Constant::X_TASK_ID => $this->app['request']->getTaskId()
         ];
     }
+
+    public function getHost() {
+        return $this->host;
+    }
+
+    public function getHttpClient() {
+        return $this->httpClient;
+    }
 }

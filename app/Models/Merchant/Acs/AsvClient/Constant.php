@@ -42,9 +42,14 @@ class Constant
 
     //Account Api Routes
     const ACCOUNT_CONTACT_DELETE_ROUTE = 'twirp/rzp.accounts.account.v1.AccountAPI/DeleteAccountContact';
+
+    const STAKEHOLDER_FETCH_ROUTE = 'twirp/accounts.account.v1.StakeholderAPI/FetchMerchantStakeholders';
+
     const MERCHANT_FETCH_ROUTE = 'twirp/rzp.accounts.account.v1.AccountAPI/FetchMerchant';
 
+    const MERCHANT_DOCUMENTS_FETCH_ROUTE = 'twirp/rzp.accounts.account.v1.AccountAPI/FetchMerchantDocuments';
+
     //Asv Save Api Routes
-     const ASV_SAVE_API_ROUTE = 'twirp/rzp.accounts.account.v1.SaveApi/Save';
+    const ASV_SAVE_API_ROUTE = 'twirp/rzp.accounts.account.v1.SaveApi/Save';
 
 }

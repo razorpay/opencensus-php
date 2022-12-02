@@ -35,6 +35,47 @@ class Repository extends Base\Repository
     }
 
     /**
+     * Important: This function is for migration reads to account service.
+     * Can be used to fetch stakeholder from Account Service given the merchantId
+     *
+     * @throws \Throwable
+     */
+    public function __fetchStakeholders(string $merchantId): Base\PublicCollection
+    {
+        return $this->repo->transactionOnLiveAndTest(function () use ($merchantId) {
+            $apiStakeholders = $this->fetchStakeholders($merchantId);
+            return (new MerchantStakeholderWrapper())->processFetchStakeholdersByMerchantId($merchantId, $apiStakeholders);
+        });
+    }
+
+    /**
+     * Important: This function is for migration reads to account service.
+     * Can be used to fetch stakeholder from Account Service
+     *
+     * @throws \Throwable
+     */
+    public function __findOrFailPublic(string $id) {
+        return $this->repo->transactionOnLiveAndTest(function () use ($id) {
+            $apiStakeholder = $this->findOrFailPublic($id);
+            $id = Entity::stripDefaultSign($id);
+            return (new MerchantStakeholderWrapper())->processFetchStakeholderById($id, $apiStakeholder);
+        });
+    }
+
+    /**
+     * Important: This function is for migration reads to account service.
+     * Can be used to fetch stakeholder from Account Service
+     *
+     * @throws \Throwable
+     */
+    public function __findOrFail(string $id) {
+        return $this->repo->transactionOnLiveAndTest(function () use ($id) {
+            $apiStakeholder = $this->findOrFail($id);
+            return (new MerchantStakeholderWrapper())->processFetchStakeholderById($id, $apiStakeholder);
+        });
+    }
+
+    /**
      * __saveOrFail -  Keeping the method name not same with base repository method, this to be renamed  and used in stakeholder core while ramp-up
      *Once stakeholder saveOrFail is migrated to Account service only this method should be used while saving the stakeholder entity any save on stakeholder has to be called at any new place
      * @param MerchantStakeholderEntity $entity

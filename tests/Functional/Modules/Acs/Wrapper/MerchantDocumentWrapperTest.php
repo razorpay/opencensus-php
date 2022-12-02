@@ -2,12 +2,17 @@
 
 namespace RZP\Tests\Functional\Modules\Acs\Wrapper;
 
+use Rzp\Accounts\Account\V1\FetchMerchantDocumentsResponse;
+use RZP\Constants\Metric;
+use RZP\Models\Base\PublicCollection;
+use RZP\Modules\Acs\Wrapper\Constant;
 use RZP\Tests\Functional\TestCase;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Acs\AsvClient;
 use RZP\Exception\IntegrationException;
 use RZP\Modules\Acs\Wrapper\MerchantDocument;
 use RZP\Models\Merchant\Document\Entity as MerchantDocumentEntity;
+use RZP\Trace\TraceCode;
 
 class MerchantDocumentWrapperTest extends TestCase
 {
@@ -95,6 +100,90 @@ class MerchantDocumentWrapperTest extends TestCase
             self::assertEquals($exception->getMessage(), $e->getMessage());
         }
         #T4 Ends
+    }
+
+    function testFindDocumentsForMerchantId() {
+        $merchantId = "10000000000000";
+        $entityId = "10000000000001";
+        $documentId = "10000000000002";
+        $validationId = "10000000000003";
+        MerchantDocumentEntity::unguard();
+        $merchantDocumentEntityForApi = new MerchantDocumentEntity(['id' => $documentId, 'merchant_id' => $merchantId, 'entity_id' => $entityId, 'entity_type' => 'merchant', 'validation_id' => $validationId]);
+        $merchantDocumentCollectionForApi = new PublicCollection([$merchantDocumentEntityForApi]);
+        $merchantDocumentEntityForAsvWithMismatch = new MerchantDocumentEntity(['id' => $documentId, 'merchant_id' => $merchantId, 'entity_id' => $entityId, 'entity_type' => 'account', 'validation_id' => $validationId]);
+        $merchantDocumentCollectionForAsvWithMismatch = new PublicCollection([$merchantDocumentEntityForAsvWithMismatch]);
+        MerchantDocumentEntity::reguard();
+        $merchantDocumentProto = new \Rzp\Accounts\Account\V1\MerchantDocument(['id' => $documentId, 'merchant_id' => $merchantId, 'entity_id' => $entityId, 'entity_type' => 'merchant']);
+        $fetchMerchantDocumentsResponse = new FetchMerchantDocumentsResponse(['documents'=> [$merchantDocumentProto]]);
+        $merchantDocumentProtoMismatch = new \Rzp\Accounts\Account\V1\MerchantDocument(['id' => $documentId, 'merchant_id' => $merchantId, 'entity_id' => $entityId, 'entity_type' => 'account']);
+        $fetchMerchantDocumentsResponseMismatch = new FetchMerchantDocumentsResponse(['documents'=> [$merchantDocumentProtoMismatch]]);
+
+
+        //Shadow mode returns values from api entity
+        $traceMock = $this->createTraceMock();
+        $traceMock->expects($this->never())->method('traceException');
+        $traceMock->expects($this->never())->method('info');
+        $traceMock->expects($this->never())->method('count');
+        $accountDocumentAsvClientMock = $this->createAccountDocumentAsvClientMock();
+        $accountDocumentAsvClientMock->expects($this->exactly(1))->method('FetchMerchantDocuments')->willReturn($fetchMerchantDocumentsResponse);
+
+        $merchantDocumentWrapperMock = $this->getMockedMerchantDocumentWrapper(['isShadowOrReverseShadowOnForOperation']);
+        $merchantDocumentWrapperMock->accountDocumentAsvClient = $accountDocumentAsvClientMock;
+        $merchantDocumentWrapperMock->expects($this->exactly(1))->method('isShadowOrReverseShadowOnForOperation')->willReturn(true);
+        $returnedCollection = $merchantDocumentWrapperMock->FindDocumentsForMerchantId($merchantId, $merchantDocumentCollectionForApi);
+        self::assertEquals($merchantDocumentCollectionForApi, $returnedCollection);
+
+        //ReverseShadow overrides common fields with values from asv and logs difference
+        $traceMock = $this->createTraceMock();
+        $traceMock->expects($this->never())->method('traceException');
+        $traceMock->expects($this->exactly(1))->method('info')->withConsecutive([TraceCode::ASV_COMPARE_MISMATCH, ["entity_name" => "merchant_document", "document_id" => "", "difference" =>[$documentId =>["entity_type"]], 'merchant_id' => $merchantId]]);
+        $traceMock->expects($this->exactly(1))->method('count')->withConsecutive([Metric::ASV_COMPARE_MISMATCH, ["merchant_document"]]);
+        $accountDocumentAsvClientMock = $this->createAccountDocumentAsvClientMock();
+        $accountDocumentAsvClientMock->expects($this->exactly(1))->method('FetchMerchantDocuments')->willReturn($fetchMerchantDocumentsResponseMismatch);
+
+        $merchantDocumentWrapperMock = $this->getMockedMerchantDocumentWrapper(['isShadowOrReverseShadowOnForOperation']);
+        $merchantDocumentWrapperMock->accountDocumentAsvClient = $accountDocumentAsvClientMock;
+        $merchantDocumentWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->
+        withConsecutive([$merchantId, CONSTANT::SHADOW, CONSTANT::READ], [$merchantId, CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+        $returnedCollection = $merchantDocumentWrapperMock->FindDocumentsForMerchantId($merchantId, $merchantDocumentCollectionForApi);
+        self::assertEquals($merchantDocumentCollectionForAsvWithMismatch, $returnedCollection);
+
+        //Exception in ReadShadow From FetchMerchantDocuments
+        $traceMock = $this->createTraceMock();
+        $exception = new IntegrationException('error in FetchMerchantDocuments');
+        $traceMock->expects($this->exactly(1))->method('traceException')->withConsecutive([$exception, Trace::ERROR, TraceCode::ASV_READ_SHADOW_EXCEPTION, ["id" => $merchantId, "entity" => "merchant_document"]]);
+
+        $accountDocumentAsvClientMock = $this->createAccountDocumentAsvClientMock();
+        $accountDocumentAsvClientMock->expects($this->exactly(1))->method('FetchMerchantDocuments')->willThrowException($exception);
+        $merchantDocumentWrapperMock = $this->getMockedMerchantDocumentWrapper(['isShadowOrReverseShadowOnForOperation']);
+        $merchantDocumentWrapperMock->accountDocumentAsvClient = $accountDocumentAsvClientMock;
+        $merchantDocumentWrapperMock->expects($this->exactly(1))->method('isShadowOrReverseShadowOnForOperation')->willReturn(true);
+        try {
+            $merchantDocumentWrapperMock->FindDocumentsForMerchantId($merchantId, $merchantDocumentCollectionForApi);
+            assertTrue(true);
+        } catch (IntegrationException $e) {
+            //Exception is not raised in shadow if asv call fails
+            assertTrue(false);
+        }
+
+        //Exception in Reverse Shadow From FetchMerchantDocuments
+        $traceMock = $this->createTraceMock();
+        $traceMock->expects($this->exactly(1))->method('traceException')->withConsecutive([$exception, Trace::CRITICAL, TraceCode::ASV_READ_SHADOW_EXCEPTION, ["id" => $merchantId, "entity" => "merchant_document"]]);
+
+        $accountDocumentAsvClientMock = $this->createAccountDocumentAsvClientMock();
+        $accountDocumentAsvClientMock->expects($this->exactly(1))->method('FetchMerchantDocuments')->willThrowException($exception);
+        $merchantDocumentWrapperMock = $this->getMockedMerchantDocumentWrapper(['isShadowOrReverseShadowOnForOperation']);
+        $merchantDocumentWrapperMock->accountDocumentAsvClient = $accountDocumentAsvClientMock;
+        $merchantDocumentWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->
+        withConsecutive([$merchantId, CONSTANT::SHADOW, CONSTANT::READ], [$merchantId, CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+        try {
+            $merchantDocumentWrapperMock->FindDocumentsForMerchantId($merchantId, $merchantDocumentCollectionForApi);
+            assertTrue(true);
+        } catch (IntegrationException $e) {
+            //Exception will be raised in reverse_shadow if asv call fails
+            assertTrue(true);
+            self::assertEquals($exception->getMessage(), $e->getMessage());
+        }
     }
 
     protected function getMockedMerchantDocumentWrapper($methods = [])

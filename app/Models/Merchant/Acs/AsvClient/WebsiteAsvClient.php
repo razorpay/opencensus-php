@@ -12,7 +12,7 @@ use RZP\Models\Merchant\Acs\AsvClient\Metrics\HttpClientTxn;
 class WebsiteAsvClient extends BaseClient
 {
 
-    private $merchantWebsiteClient;
+    public $merchantWebsiteClient;
 
     /**
      * WebsiteAsvClient Constructor
@@ -64,8 +64,8 @@ class WebsiteAsvClient extends BaseClient
 
             return $response;
 
-        } catch (Error $e) {
-            $httpClientTxnMetric->end(false, $e->getErrorCode());
+        } catch (\Throwable $e) {
+            $httpClientTxnMetric->end(false, $e->getCode());
 
             $this->trace->traceException($e, null, TraceCode::ASV_HTTP_CLIENT_ERROR, [
                 Constant::ROUTE_NAME => Constant::ACCOUNT_WEBSITE_FETCH_ROUTE,

@@ -175,6 +175,21 @@ class Repository extends Base\Repository
     }
 
     /**
+     *
+     * Important: This function is for migration reads to account service.
+     * Can be used to fetch residential address of stakeholder from Account Service
+     * @param MerchantStakeholderEntity $entity
+     * @param $type
+     * @throws \Throwable
+     */
+    public function __fetchPrimaryAddressForStakeholder(MerchantStakeholderEntity $entity, $type) {
+        $this->repo->transactionOnLiveAndTest(function () use ($entity, $type) {
+            $primaryAddressOfType = $this->fetchPrimaryAddressOfEntityOfType($entity, $type);
+            return (new MerchantStakeholderWrapper())->processFetchPrimaryResidentialAddressForStakeholder($entity, $primaryAddressOfType);
+        });
+    }
+
+    /**
      * __saveOrFail -  Keeping the method name not same with base repository method, this to be renamed  and used for saving the stakeholder address
      * @param MerchantStakeholderEntity $stakeholderEntity
      * @param Entity $addressEntity

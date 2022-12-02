@@ -33,7 +33,7 @@ class AccountDocumentAsvClient extends BaseClient
         $this->trace->info(TraceCode::ASV_HTTP_CLIENT_REQUEST, [Constant::ROUTE_NAME => Constant::ACCOUNT_DOCUMENT_DELETE_ROUTE, 'request' => ['id' => $id]]);
 
         // Set Timeout for Delete Account Document Route
-        $this->setHttpTimeoutForAccountDocumentDeleteRoute();
+        $this->setHttpTimeoutBasedOnRoute(Constant::ACCOUNT_DOCUMENT_DELETE_ROUTE);
 
         $httpClientTxnMetric = new HttpClientTxn(Constant::ACCOUNT_DOCUMENT_DELETE_ROUTE);
 
@@ -64,13 +64,57 @@ class AccountDocumentAsvClient extends BaseClient
                 Constant::ROUTE_NAME => Constant::ACCOUNT_DOCUMENT_DELETE_ROUTE,
             ]);
 
-            throw new IntegrationException('Could not receive proper response from Account service');
+            throw new IntegrationException($e->getMessage());
         }
     }
 
-    protected function setHttpTimeoutForAccountDocumentDeleteRoute()
+    public function FetchMerchantDocuments(string $merchant_id): accountDocumentV1\FetchMerchantDocumentsResponse {
+        $this->trace->info(TraceCode::ASV_HTTP_CLIENT_REQUEST, [Constant::ROUTE_NAME => Constant::MERCHANT_DOCUMENTS_FETCH_ROUTE, 'request' => ['merchant_id' => $merchant_id]]);
+
+        // Set Timeout for Fetch Merchant Document Route
+        $this->setHttpTimeoutBasedOnRoute(Constant::MERCHANT_DOCUMENTS_FETCH_ROUTE);
+
+        $httpClientTxnMetric = new HttpClientTxn(Constant::MERCHANT_DOCUMENTS_FETCH_ROUTE);
+
+        $this->asvClientCtx = Context::withHttpRequestHeaders([], $this->headers);
+        try {
+
+            $fetchMerchantDocumentsRequest = new accountDocumentV1\FetchMerchantDocumentsRequest();
+            $fetchMerchantDocumentsRequest->setMerchantId($merchant_id);
+
+            $httpClientTxnMetric->start();
+            $response = $this->AccountDocumentAsvClient->FetchMerchantDocuments($this->asvClientCtx, $fetchMerchantDocumentsRequest);
+            $httpClientTxnMetric->end(true, '');
+
+            $this->trace->info(
+                TraceCode::ASV_HTTP_CLIENT_RESPONSE,
+                [
+                    Constant::ROUTE_NAME => Constant::MERCHANT_DOCUMENTS_FETCH_ROUTE,
+                    Constant::RESPONSE => $response->serializeToJsonString()
+                ]
+            );
+
+            return $response;
+
+        } catch (Error $e) {
+            $httpClientTxnMetric->end(false, $e->getErrorCode());
+
+            $this->trace->traceException($e, null, TraceCode::ASV_HTTP_CLIENT_ERROR, [
+                Constant::ROUTE_NAME => Constant::MERCHANT_DOCUMENTS_FETCH_ROUTE,
+            ]);
+
+            throw new IntegrationException($e->getMessage());
+        }
+    }
+    protected function setHttpTimeoutBasedOnRoute($route)
     {
-        $documentDeleteRouteTimeout = floatval($this->asvConfig[Constant::DOCUMENT_DELETE_ROUTE_HTTP_TIMEOUT_SEC]);
-        $this->AccountDocumentAsvClient->setTimeout($documentDeleteRouteTimeout);
+        $timeout = 5;
+        switch ($route) {
+            case Constant::ACCOUNT_DOCUMENT_DELETE_ROUTE:
+                $timeout = floatval($this->asvConfig[Constant::DOCUMENT_DELETE_ROUTE_HTTP_TIMEOUT_SEC]);
+            case Constant::MERCHANT_DOCUMENTS_FETCH_ROUTE:
+                $timeout =  floatval($this->asvConfig[Constant::ASV_FETCH_ROUTE_HTTP_TIMEOUT_SEC]);
+        }
+        $this->AccountDocumentAsvClient->setTimeout($timeout);
     }
 }

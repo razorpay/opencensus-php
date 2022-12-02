@@ -15,7 +15,7 @@ use Google\Protobuf\Internal\Message;
  *
  * Generated from protobuf service <code>rzp.accounts.account.v1.WebsiteAPI</code>
  */
-final class WebsiteAPIClient extends WebsiteAPIAbstractClient implements WebsiteAPI
+class WebsiteAPIClient extends WebsiteAPIAbstractClient implements WebsiteAPI
 {
     protected $timeout = 2;
 

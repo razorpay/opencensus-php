@@ -59,7 +59,7 @@ class Base
 
                 // if array1=>value is empty array ([]) and array2=>value is NULL
                 // do-not mark it as diff.
-                if(count($value)==0 and $array2[$key]==null){
+                if(count($value)==0 and $array2[$key]===null){
                     continue;
                 }
 
@@ -124,4 +124,41 @@ class Base
         return $difference;
     }
 
+    public function getDifferenceCompareByUniqueId(array $array1, array $array2, string $uniqueIdKey): array
+    {
+        $difference = [];
+        $array1Map = $this->convertToArrayWithUniqueId($array1, $uniqueIdKey);
+        $array2Map = $this->convertToArrayWithUniqueId($array2, $uniqueIdKey);
+        $mergedArrayWithKeys = [];
+
+        foreach($array1Map as $uniqueKey => $value) {
+            $mergedArrayWithKeys[$uniqueKey][] = $value;
+        }
+
+        foreach($array2Map as $uniqueKey => $value) {
+            $mergedArrayWithKeys[$uniqueKey][] = $value;
+        }
+
+        foreach($mergedArrayWithKeys as $uniqueArrayKey => $uniqueArrayValue) {
+            if(count($uniqueArrayValue)!==2){
+                $difference[$uniqueArrayKey] = "Entity Present in only one of ASV/API";
+                continue;
+            }
+            $individualDifference = $this->getDifference($uniqueArrayValue[0], $uniqueArrayValue[1]);
+            if(count($individualDifference) > 0) {
+                $difference[$uniqueArrayKey] = $individualDifference;
+            }
+        }
+
+        return $difference;
+    }
+
+    protected function convertToArrayWithUniqueId(array $array, $uniqueId): array
+    {
+        $arrayWithUniqueIds = [];
+        foreach ($array as $element) {
+            $arrayWithUniqueIds[$element[$uniqueId]] = $element;
+        }
+        return $arrayWithUniqueIds;
+    }
 }

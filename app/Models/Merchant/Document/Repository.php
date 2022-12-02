@@ -89,6 +89,33 @@ class Repository extends Base\Repository
     }
 
     /**
+     * Returns all non deleted documents for given merchantId
+     *
+     * @param string $merchantId
+     *
+     * @return mixed
+     */
+    public function __findDocumentsForMerchantId(string $merchantId)
+    {
+        return $this->repo->transactionOnLiveAndTest(function () use ($merchantId) {
+            $documentsFromAPI = $this->findDocumentsForMerchantIds([$merchantId]);
+            return (new MerchantDocument())->FindDocumentsForMerchantId($merchantId, $documentsFromAPI);
+        });
+    }
+
+    /**
+     * __saveOrFail - Saves MerchantDocument Entity in API DB and ASV
+     * @param DocumentEntity $document
+     * @throws \Throwable
+     */
+    public function __saveOrFail($document) {
+        $this->repo->transactionOnLiveAndTest(function () use ($document) {
+            $this->saveOrFail($document);
+            (new MerchantDocument())->SaveOrFail($document);
+        });
+    }
+
+    /**
      * Fetch all the documents by entityId and entityType
      *
      * @param string $entityId

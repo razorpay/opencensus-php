@@ -15,8 +15,16 @@ use Google\Protobuf\Internal\Message;
  *
  * Generated from protobuf service <code>rzp.accounts.account.v1.StakeholderAPI</code>
  */
-final class StakeholderAPIClient extends StakeholderAPIAbstractClient implements StakeholderAPI
+class StakeholderAPIClient extends StakeholderAPIAbstractClient implements StakeholderAPI
 {
+    private $timeout = 2;
+
+    /**
+     * @inheritDoc
+     */
+    public function setTimeout(int $timeout){
+        $this->timeout = $timeout;
+    }
     /**
      * @inheritDoc
      */
@@ -27,7 +35,7 @@ final class StakeholderAPIClient extends StakeholderAPIAbstractClient implements
         $req = $this->newRequest($ctx, $url, $body, 'application/protobuf');
 
         try {
-            $resp = $this->httpClient->sendRequest($req);
+            $resp = $this->httpClient->sendRequest($req,  ["timeout" => $this->timeout]);
         } catch (\Throwable $e) {
             throw $this->clientError('failed to send request', $e);
         }

@@ -14,7 +14,7 @@ use Throwable;
 class MerchantWebsite extends Base
 {
     public $saveApiHelper;
-    public $merchantWebsiteClient;
+    private $merchantWebsiteClient;
     protected $merchantWebsiteComparator;
     protected $entityName = "merchant_website";
 
@@ -24,6 +24,10 @@ class MerchantWebsite extends Base
         $this->merchantWebsiteClient = new AsvClient\WebsiteAsvClient;
         $this->merchantWebsiteComparator = new MerchantWebsiteComparator();
         $this->saveApiHelper = new SaveApiHelper();
+    }
+
+    public function setMerchantWebsiteClient($merchantWebsiteClient){
+        $this->merchantWebsiteClient = $merchantWebsiteClient;
     }
 
     /**
@@ -73,10 +77,10 @@ class MerchantWebsite extends Base
     public function processReverseShadowGetWebsiteDetailsForMerchantId(string $merchantId, $apiMerchantWebsiteEntity): MerchantWebsiteEntity
     {
         try {
-            $asvWebsites = $this->FetchByMerchantIdAndCompare($merchantId, $apiMerchantWebsiteEntity);
+            $asvWebsite = $this->FetchByMerchantIdAndCompare($merchantId, $apiMerchantWebsiteEntity);
             return ASVEntityMapper::OverwriteWithAsvEntity(
                 $apiMerchantWebsiteEntity->toArray(),
-                $asvWebsites->toArray(),
+                $asvWebsite->toArray(),
                 MerchantWebsiteEntity::class
             );
         } catch (Throwable $ex) {
@@ -105,16 +109,21 @@ class MerchantWebsite extends Base
 
         $difference = $this->merchantWebsiteComparator->getDifference($apiMerchantWebsite->toArray(), $asvMerchantWebsiteEntity->toArray());
 
-        if (count($difference) > 0) {
-            $this->trace->info(TraceCode::ASV_COMPARE_MISMATCH, [
-                "entity" => $this->entityName,
-                "id" => $merchantId,
-                "difference" => $difference
-            ]);
-
-            $this->trace->count(Metric::ASV_COMPARE_MISMATCH, [$this->entityName]);
-        }
+        $this->logDifferenceIfRequiredAndPushMetrics($difference, $merchantId);
 
         return $asvMerchantWebsiteEntity;
     }
+
+
+    public function logDifferenceIfRequiredAndPushMetrics(array $difference, string $merchantId) {
+        if (count($difference) > 0) {
+            $this->trace->info(TraceCode::ASV_COMPARE_MISMATCH, [
+                "entity" => $this->entityName,
+                "merchant_id" => $merchantId,
+                "difference" => $difference
+            ]);
+            $this->trace->count(Metric::ASV_COMPARE_MISMATCH, [$this->entityName]);
+        }
+    }
+
 }
