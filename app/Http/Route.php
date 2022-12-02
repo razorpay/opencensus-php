@@ -3950,6 +3950,7 @@ class Route
         '1cc_shopify_checkout_options_preflight'    => ['options',    '1cc/shopify/checkout_options',                          'OneClickCheckoutController@allowCors'                  ],
         '1cc_shopify_oauth_redirect'                => ['get',        '1cc/shopify/oauth/redirect',                            'OneClickCheckoutController@shopifyOAuthRedirect'                ],
         '1cc_shopify_oauth_callback'                => ['get',        '1cc/shopify/oauth/callback',                            'OneClickCheckoutController@shopifyOAuthRedirect'                ],
+        '1cc_shopify_order'                         => ['post',       '1cc/shopify/order',                                     'OneClickCheckoutController@createOrderAndGetPreferences'                ],
         '1cc_process_webhooks'                      => ['post',       '1cc/process_webhooks/{platform}',                                   'OneClickCheckoutController@processWebhook'              ],
         'update_shopify_1cc_config'               => ['post',         'merchant/1cc/shopify/config',                           'MerchantController@updateShopify1ccConfig'                   ],
 
@@ -5448,6 +5449,8 @@ class Route
         // Magic Club
         'customer_one_cc_get_or_create_global',
         'customer_fetch_by_id_global',
+        '1cc_shopify_order',
+
 
         'role_list_admins_internal',
 
@@ -9767,6 +9770,7 @@ class Route
         'customer_record_1cc_address_consent',
         'record_1cc_customer_consent',
         '1cc_shopify_checkout',
+        '1cc_shopify_order',
     ];
 
     /**
@@ -14516,6 +14520,7 @@ class Route
         'consumer_app' => [
             'customer_one_cc_get_or_create_global',
             'customer_fetch_by_id_global',
+            '1cc_shopify_order',
         ],
         'address_service' => [
             'internal_1cc_configs_get',

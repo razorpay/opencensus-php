@@ -226,6 +226,12 @@ class Authorization
         $this->appAuth('rzp_' . $mode, $pwd);
     }
 
+    public function magicConsumerAppAuth($user = 'rzp_test')
+    {
+        // TODO: Change auth config
+        $this->appAuth($user, \Config::get('applications.consumer_app')['secret']);
+    }
+
     public function mandateHQAuth()
     {
         $this->appAuth('rzp_test', \Config::get('applications.mandate_hq')['secret']);

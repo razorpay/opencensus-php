@@ -174,9 +174,66 @@ class Service extends Base\Service
         (new Checkout)->validateCreateCheckout($input);
         $isAutoDiscountApplied = false;
         $cart = $input['cart'];
-        $cartId = $cart['token'];
 
         $checkout = (new Checkout)->placeShopifyCheckout(['cart' => $cart]);
+
+        $preferenceParams = [];
+        if (isset($input['send_preferences']) === true and $input['send_preferences'] == 'true')
+        {
+            $preferenceParams = $this->getParamsForPreferences($input);
+            $preferenceParams['send_preferences'] = true;
+        }
+
+        $response = $this->createOrderAndGetCheckoutPreferences($checkout, $cart, $preferenceParams);
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_CREATE_RZP_ORDER_RES,
+            [
+                'order_id' => $response['order_id'],
+                'time'     => millitime() - $start,
+            ]);
+        return $response;
+    }
+
+
+    /**
+     * Creates a razorpay order for a given shopify checkout and returns order_id, preferences
+     *
+     * @param array $input
+     * @return array
+     */
+    public function createOrderAndGetPreferences(array $input): array
+    {
+        (new Validator)->validateInput('createShopifyOrderAndPreferences', $input);
+
+        // Set Merchant basic auth
+        $merchantId = $input['merchant_id'];
+        $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $this->app['basicauth']->setMerchant($this->merchant);
+
+        $checkout = $input['checkout'];
+        $cart = $input['cart'];
+        $preferenceParams = $input['preference_params'];
+
+        $response = $this->createOrderAndGetCheckoutPreferences(
+            $checkout,
+            $cart,
+            $preferenceParams
+        );
+
+        return [
+            'order_id'   => $response['order_id'],
+            'preferences' => $response['preferences'],
+        ];
+    }
+
+    protected function createOrderAndGetCheckoutPreferences(
+        array $checkout,
+        array $cart,
+        array  $preferenceParams
+    ): array
+    {
+        $cartId = $cart['token'];
 
         $checkoutAmount = round(floatval($checkout['totalPriceV2']['amount']) * 100);
 
@@ -228,18 +285,11 @@ class Service extends Base\Service
             'script_coupon_applied' => $isAutoDiscountApplied,
         ];
 
-        $this->trace->info(
-            TraceCode::SHOPIFY_1CC_CREATE_RZP_ORDER_RES,
-            [
-                'order_id' => $order->getPublicId(),
-                'time' => millitime() - $start,
-            ]);
-
-        // form url encoded sends bool as string!
-        if (isset($input['send_preferences']) === true and $input['send_preferences'] == 'true')
+        if (isset($preferenceParams['send_preferences']) === true and $preferenceParams['send_preferences'] === true)
         {
-            $params = $this->getParamsForPreferences($input, $order);
-            $preferences = (new MerchantService)->getCheckoutPreferences($params);
+            unset($preferenceParams['send_preferences']);
+            $preferenceParams['order_id'] = $order->getPublicId();
+            $preferences = (new MerchantService)->getCheckoutPreferences($preferenceParams);
             $checkoutParams = array_merge($checkoutParams, ['preferences' => $preferences]);
         }
 
@@ -274,15 +324,11 @@ class Service extends Base\Service
      * @param array input - Post body and URL params received
      * @param Order\Entity order - Razorpay order
      */
-    protected function getParamsForPreferences(array $input, Order\Entity $order): array
+    protected function getParamsForPreferences(array $input): array
     {
         unset($input['cart']);
         unset($input['key']);
-        return array_merge(
-            $input,
-            [
-                'order_id' => $order->getPublicId(),
-            ]);
+        return $input;
     }
 
     /**

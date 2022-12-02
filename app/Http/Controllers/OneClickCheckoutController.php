@@ -41,6 +41,30 @@ class OneClickCheckoutController extends Controller
         }
     }
 
+
+    /**
+     * Creates and returns the Rzp order_id for a given Shopify checkout object.
+     * To be called from an internal service such as magic-club/checkout etc.
+     * Although the call itself is made by an internal service, the incoming headers will contain the
+     * customer session headers.
+     *
+     * @return mixed
+     * @throws BaseException
+     */
+    public function createOrderAndGetPreferences()
+    {
+        $input = Request::all();
+        try
+        {
+            $result = (new Shopify\Service)->createOrderAndGetPreferences($input);
+            return ApiResponse::json($result, 200);
+        }
+        catch (\Throwable $e)
+        {
+            return $this->handleError($e);
+        }
+    }
+
     public function getCheckoutOptions()
     {
         $input = Request::all();

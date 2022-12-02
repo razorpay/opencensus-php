@@ -24,4 +24,18 @@ class Validator extends Base\Validator
       'razorpay_order_id'   => 'required|string|size:20',
       'razorpay_payment_id' => 'required|string|size:18',
     ];
+
+    protected static $createShopifyOrderAndPreferencesRules = [
+        'merchant_id'                  => 'required|string|size:14',
+        'checkout'                     => 'required|array',
+        'checkout.id'                  => 'required|string',
+        'checkout.totalPriceV2'        => 'required|array',
+        'checkout.totalPriceV2.amount' => 'required',
+        'checkout.lineItems'           => 'required|array',
+        'checkout.lineItems.edges'     => 'required|array',
+        'preference_params'            => 'required|array',
+        'cart'                         => 'required|array',
+        'cart.items'                   => 'required|array',
+        'cart.token'                   => 'required|string',
+    ];
 }
