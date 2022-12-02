@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import ModalHeader from 'common/ui/ModalHeader';
+import Button from 'common/new-ui/Button';
 import { closeModal } from 'merchant_common/reducers/modals';
 
 export const DisplayNotificationTxt = ({ notificationTxt }) => (
@@ -12,6 +14,12 @@ export const DisplayNotificationTxt = ({ notificationTxt }) => (
 
 const ConfirmationModal = (props) => {
   const { header, subText, desc, affirmativeLabel, abortLabel, onAffirm, closeModal } = props;
+  const [disableCta, setDisableCta] = useState(false);
+
+  const onConfirm = () => {
+    setDisableCta(true);
+    onAffirm();
+  };
 
   return (
     <div className="confirmation-modal">
@@ -19,18 +27,17 @@ const ConfirmationModal = (props) => {
       <div className="font-bold confirmation-modal-subtext">{subText}</div>
       <div className="confirmation-modal-desc">{desc}</div>
       <div className="confirmation-modal-ctas-container">
-        <div
-          className="pointer confirmation-modal-secondary-cta display-inline"
-          onClick={closeModal}
-        >
+        <Button type="button" className="confirmation-modal-secondary-cta" onClick={closeModal}>
           {abortLabel}
-        </div>
-        <div
-          className="pointer color-white confirmation-modal-primary-cta display-inline"
-          onClick={onAffirm}
+        </Button>
+        <Button
+          type="button"
+          className="confirmation-modal-primary-cta"
+          onClick={onConfirm}
+          disabled={disableCta}
         >
           {affirmativeLabel}
-        </div>
+        </Button>
       </div>
     </div>
   );

@@ -24,7 +24,6 @@ const MagicIntelligenceTab = ({
   closeModal,
   showNotification,
   merchantId,
-  user,
 }) => {
   const { cod_intelligence, platform, shop_id, manualControlCodOrder } = settings;
   const [codIntelligence, setCodIntelligence] = useState(cod_intelligence || false);
@@ -215,12 +214,10 @@ const MagicIntelligenceTab = ({
             checked={codIntelligence}
             switchMode={() => onToggleClick('codIntelligence', codIntelligence)}
           />
-          {user.isMagicRTORecommendationEnabled && (
-            <ManualReviewToggle
-              checked={codOrderControl}
-              switchMode={() => onToggleClick('manualReview', codOrderControl)}
-            />
-          )}
+          <ManualReviewToggle
+            checked={codOrderControl}
+            switchMode={() => onToggleClick('manualReview', codOrderControl)}
+          />
         </div>
       </div>
       <div className="magic-intelligence-shiprocket">
@@ -231,7 +228,6 @@ const MagicIntelligenceTab = ({
 };
 
 const mapStateToProps = (state) => ({
-  user: state.session.user,
   settings: state.magic_settings,
   merchantId: state.config?.config?.id,
 });

@@ -40,7 +40,6 @@ const routes = [
   {
     tabName: 'COD Orders',
     path: '/magic/cod-orders',
-    condition: (_user) => _user.isMagicRTORecommendationEnabled,
     Component: CODOrdersTab,
   },
 ];
