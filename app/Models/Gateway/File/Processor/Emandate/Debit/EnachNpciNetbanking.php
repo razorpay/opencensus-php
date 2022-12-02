@@ -12,8 +12,10 @@ use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
+use RZP\Models\Gateway\File\Type;
 use RZP\Models\Base as ModelBase;
 use RZP\Models\Gateway\File\Status;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Constants;
 use RZP\Exception\GatewayFileException;
@@ -36,11 +38,15 @@ class EnachNpciNetbanking extends Base
 
     const BASE_STORAGE_DIRECTORY = 'Npci/Enach/Netbanking/';
 
-    const FILE_NAME = 'yesbank/nach/input_file/NACH_DR_{$date}_{$utilityCode}_RAZORPAY_001';
+    const FILE_NAME = 'yesbank/nach/input_file/NACH_DR_{$date}_{$utilityCode}_RAZORPAY_{$serialNumber}';
 
     protected $fileStore;
 
     const STEP = 'debit';
+
+    const FILE_CACHE_KEY    = 'enach_yesb_gateway_file_index';
+
+    const YES_NACH_EARLY_SHARING = 'yes_nach_early_sharing';
 
     const FILE_METADATA  = [
         'gid'   => '10000',
@@ -82,9 +88,24 @@ class EnachNpciNetbanking extends Base
 
     protected function getFileToWriteNameWithoutExt(array $data): string
     {
+        $this->trace->info(TraceCode::EMANDATE_FILE_DATA, [
+            'data'    => $data
+        ]);
+
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
-        $fileName = strtr(static::FILE_NAME, ['{$date}' => $date, '{$utilityCode}' => $data['utilityCode']]);
+        $serialNumber = $this->formatSerialNumber($data['serialNumber']);
+
+        $fileName = strtr(static::FILE_NAME,
+            [
+                '{$date}' => $date,
+                '{$utilityCode}' => $data['utilityCode'],
+                '{$serialNumber}' => $serialNumber,
+            ]);
+
+        $this->trace->info(TraceCode::EMANDATE_FILE_NAME, [
+            'fileName'    => $fileName
+        ]);
 
         return self::BASE_STORAGE_DIRECTORY . $fileName;
     }
@@ -180,10 +201,36 @@ class EnachNpciNetbanking extends Base
 
             $fileStoreIds = [];
 
+            $variant = $this->app['razorx']->getTreatment(
+                UniqueIdEntity::generateUniqueId(), self::YES_NACH_EARLY_SHARING,
+                $this->app['basicauth']->getMode()
+            );
+
             foreach ($allFilesData as $key => $fileData)
             {
+                // get serial no if key present for current date
+                if($variant === 'on' and
+                    $this->gatewayFile->getTarget() === Constants::ENACH_NPCI_NETBANKING)
+                {
+                    $cacheKey = $this->getCacheKeyForFileIndex($key);
+
+                    $serialNumber = $this->cache->increment($cacheKey);
+
+                    $this->trace->info(TraceCode::CACHE_KEY_GET, [
+                        'key'    => $cacheKey,
+                        'result' => $serialNumber,
+                    ]);
+                }
+                else
+                {
+                    $serialNumber = 1;
+                }
+
                 // since file data is grouped based on utility code, it will be part of the file name
-                $fileName = $this->getFileToWriteNameWithoutExt(['utilityCode' => $key]);
+                $fileName = $this->getFileToWriteNameWithoutExt([
+                    'utilityCode' => $key,
+                    'serialNumber' => $serialNumber
+                ]);
 
                 $creator = new FileStore\Creator;
 
@@ -291,6 +338,18 @@ class EnachNpciNetbanking extends Base
             ]);
 
         return $tokens;
+    }
+
+    protected function getCacheKeyForFileIndex($utilityCode): string
+    {
+        $date = Carbon::now(Timezone::IST)->startOfDay()->timestamp;
+
+        return self::FILE_CACHE_KEY . "_" . $utilityCode . "_" . $this->mode . "_" . $date;
+    }
+
+    protected function formatSerialNumber($serialNumber): string
+    {
+        return str_pad($serialNumber, 3, "0", STR_PAD_LEFT);
     }
 
     protected function increaseAllowedSystemLimits()

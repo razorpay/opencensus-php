@@ -93,6 +93,17 @@ class Service extends Base\Service
             return;
         }
 
+        // Adding special case for yes mandate file generation to accommodate high load on file generation.
+        // if begin and end is sent from cron request consider that else continue
+        if (($this->app['basicauth']->isCron() === true) and
+            ($input[Entity::TYPE] === Type::EMANDATE_DEBIT) and
+            (in_array(Constants::ENACH_NPCI_NETBANKING, $targets) === true) and
+            (empty($input[Entity::BEGIN]) === false) and
+            (empty($input[Entity::END]) === false))
+        {
+            return;
+        }
+
         if (($input[Entity::TYPE] === Type::CARDSETTLEMENT) and
             (in_array(Constants::AXIS, $targets) === true))
         {
