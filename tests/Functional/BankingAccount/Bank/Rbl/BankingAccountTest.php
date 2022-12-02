@@ -3069,7 +3069,7 @@ class BankingAccountTest extends TestCase
 
         if (($finalStatus !== $initialStatus)
             and (in_array($finalStatus, [Status::INITIATED, Status::PICKED]) === false)
-            and ($finalStatus === Status::ARCHIVED 
+            and ($finalStatus === Status::ARCHIVED
             and in_array($finalSubStatus, [
                 Status::NEGATIVE_PROFILE_SVR_ISSUE,
                 Status::NOT_SERVICEABLE,
@@ -3120,7 +3120,7 @@ class BankingAccountTest extends TestCase
 
         if (($finalStatus !== $initialStatus)
             and (in_array($finalStatus, [Status::INITIATED, Status::PICKED]) === false)
-            and ($finalStatus === Status::ARCHIVED 
+            and ($finalStatus === Status::ARCHIVED
             and in_array($finalSubStatus, [
                 Status::NEGATIVE_PROFILE_SVR_ISSUE,
                 Status::NOT_SERVICEABLE,
@@ -9075,7 +9075,7 @@ class BankingAccountTest extends TestCase
         $this->assertEquals(Status::VISIT_DUE, $bankingAccountResponse[Entity::SUB_STATUS]);
 
         $activationDetailsResponse = $bankingAccountResponse[Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS];
-        $this->assertEquals('Umakant Vashishtha', 
+        $this->assertEquals('Umakant Vashishtha',
             $activationDetailsResponse[ActivationDetail\Entity::RBL_ACTIVATION_DETAILS][ActivationDetail\Entity::PCARM_MANAGER_NAME]);
 
         // Bank Due date based on Customer Appointment Date for Doc Collection Stage

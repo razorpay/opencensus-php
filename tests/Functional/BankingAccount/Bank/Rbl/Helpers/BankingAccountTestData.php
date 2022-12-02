@@ -439,6 +439,27 @@ return [
         ]
     ],
 
+    'testFreshDeskTicketNewMail' => [
+        'request'  => [
+            'url'     => '/banking_accounts_dashboard',
+            'method'  => 'PATCH',
+            'server' => [
+                'X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'content' => [
+                'activation_detail' => [
+                    'declaration_step' => 1
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'channel'     => 'rbl',
+                'status'      => 'picked'
+            ],
+        ],
+    ],
+
     'testFreshDeskTicketforSalesAssistedFlow' => [
         'request'  => [
             'url'     => '/banking_accounts_dashboard',

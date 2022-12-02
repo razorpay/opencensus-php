@@ -10,7 +10,7 @@ use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
 use RZP\Models\BankingAccount\Entity;
 use RZP\Models\BankingAccount\Activation\Detail;
-
+use RZP\Models\BankingAccount\Constants as BankingAccountConstants;
 
 class XProActivation extends Base
 {
@@ -18,7 +18,16 @@ class XProActivation extends Base
 
     const MAIL_TAG      = MailTags::BANKING_ACCOUNT_X_PRO_ACTIVATION;
 
-    const SUBJECT       = 'Merchant with MID: %s has requested CA on %s';
+    const SUBJECT       = 'RazorpayX | Current Account [%s | %s]';
+
+    // Constants used within Mail
+    const SKIP_DWT_STATUS                                  = 'skip_dwt_status';
+
+    const DOCKET_ADDRESS_DIFFERENT_FROM_REGISTERED_ADDRESS = 'docket_address_different_from_registered_address';
+
+    const ELIGIBLE_FOR_SKIP_DWT                            = 'ELIGIBLE_FOR_SKIP_DWT';
+
+    const PROCEED_WITH_DWT                                 = 'PROCEED_WITH_DWT';
 
     /**
      * This email is sent to ops to notify them about the interest merchant has shown in
@@ -39,11 +48,9 @@ class XProActivation extends Base
     {
         $merchantId = $this->data[Entity::MERCHANT][Entity::ID];
 
-        $createdAt = $this->data[Entity::CREATED_AT];
+        $merchantName = $this->data[Entity::MERCHANT]['name'];
 
-        $dateTime = Carbon::createFromTimestamp($createdAt, Timezone::IST)->format('d-M-y H:i');
-
-        return sprintf(self::SUBJECT, $merchantId, $dateTime);
+        return sprintf(self::SUBJECT, $merchantId, $merchantName);
     }
 
     protected function getMailData()
@@ -74,6 +81,8 @@ class XProActivation extends Base
 
         $green_channel_value = "No";
 
+        $skipDwtExpFields = [];
+
         if ($data[Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][Detail\Entity::ADDITIONAL_DETAILS] != null)
         {
 
@@ -82,6 +91,25 @@ class XProActivation extends Base
             if (array_key_exists("green_channel", $additional_details))
             {
                 $green_channel_value = ($additional_details["green_channel"]) ? "Yes" : "No";
+            }
+
+            if (isset($additional_details[Detail\Entity::SKIP_DWT]))
+            {
+                $skipDwtStatus = $additional_details[Detail\Entity::SKIP_DWT] === 1 ?
+                    self::ELIGIBLE_FOR_SKIP_DWT : self::PROCEED_WITH_DWT;
+
+                $skipDwtExpFields = array_merge($skipDwtExpFields,
+                    [self::SKIP_DWT_STATUS => $skipDwtStatus]);
+            }
+
+            if (isset($additional_details[Detail\Entity::RBL_NEW_ONBOARDING_FLOW_DECLARATIONS]
+                [Detail\Entity::AVAILABLE_AT_PREFERRED_ADDRESS_TO_COLLECT_DOCS]))
+            {
+                $availableAtPreferredAddressToCollectDocs = $additional_details[Detail\Entity::RBL_NEW_ONBOARDING_FLOW_DECLARATIONS]
+                    [Detail\Entity::AVAILABLE_AT_PREFERRED_ADDRESS_TO_COLLECT_DOCS] === 1 ? 'YES' : 'NO';
+
+                $skipDwtExpFields = array_merge($skipDwtExpFields,
+                    [self::DOCKET_ADDRESS_DIFFERENT_FROM_REGISTERED_ADDRESS => $availableAtPreferredAddressToCollectDocs]);
             }
 
         }
@@ -101,6 +129,6 @@ class XProActivation extends Base
             'green_channel'             => $green_channel_value,
         ];
 
-        return $data;
+        return array_merge($data,$skipDwtExpFields);
     }
 }
