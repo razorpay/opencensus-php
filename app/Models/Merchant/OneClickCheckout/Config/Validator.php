@@ -5,10 +5,13 @@ namespace RZP\Models\Merchant\OneClickCheckout\Config;
 use RZP\Base;
 use RZP\Models\Merchant\OneClickCheckout\DomainUtils;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Merchant\OneClickCheckout\Constants;
 
 class Validator extends Base\Validator
 {
     const RZP_DOMAIN_URL_VALIDATION_MESSAGE = "Domain should not belong to razorpay.";
+    const MERCHANT_CONFIG_KEY_NOT_ALLOWED   = 'No Such Merchant Config Key Allowed';
+
     protected static $nativeRules = [
         "shipping_info"                  => 'sometimes|url|custom:non_rzp_domain',
         "list_promotions"                => 'sometimes|url|custom:non_rzp_domain',
@@ -53,6 +56,11 @@ class Validator extends Base\Validator
         'merchant_id'              => 'required|string|size:14',
    ];
 
+    protected static $gettingShopifyConfigRules = [
+         'key_id'                        => 'required|string',
+         'keys'                          => 'sometimes|string|custom:keys',
+    ];
+
     /**
      * @throws BadRequestValidationFailureException
      */
@@ -61,6 +69,26 @@ class Validator extends Base\Validator
         if (DomainUtils::verifyNonRZPDomain($url) === false)
         {
             throw new BadRequestValidationFailureException(self::RZP_DOMAIN_URL_VALIDATION_MESSAGE);
+        }
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateKeys($attribute, $keys)
+    {
+        $allowedConfigs = Constants::CONFIG_FLAGS;
+
+        $allowedAuthConfigKeys = Constants::SHOPIFY_AUTH;
+
+        $keysRequested = explode(',', $keys);
+
+        foreach ($keysRequested as $key)
+        {
+            if (in_array($key, $allowedConfigs) === false && in_array($key, $allowedAuthConfigKeys) === false)
+            {
+                throw new BadRequestValidationFailureException(self::MERCHANT_CONFIG_KEY_NOT_ALLOWED);
+            }
         }
     }
 }

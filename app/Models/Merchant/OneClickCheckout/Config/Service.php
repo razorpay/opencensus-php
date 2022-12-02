@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\OneClickCheckout\Config;
 
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Core;
@@ -13,6 +14,7 @@ use RZP\Models\Merchant;
 use RZP\Services\KafkaProducer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Service as MerchantService;
+use RZP\Models\Key;
 
 class Service extends Base\Service
 {
@@ -443,13 +445,6 @@ class Service extends Base\Service
             "apply_promotion" => $applyCouponUrl,
             "cod_slabs"       => $codSlabs,
             "platform"        => $merchantPlatform,
-            Constants::COD_INTELLIGENCE => $configFlagsResponse[Constants::COD_INTELLIGENCE],
-            Constants::ONE_CC_AUTO_FETCH_COUPONS => $configFlagsResponse[Constants::ONE_CC_AUTO_FETCH_COUPONS],
-            Constants::ONE_CC_INTERNATIONAL_SHIPPING => $configFlagsResponse[Constants::ONE_CC_INTERNATIONAL_SHIPPING],
-            Constants::ONE_CC_CAPTURE_BILLING_ADDRESS => $configFlagsResponse[Constants::ONE_CC_CAPTURE_BILLING_ADDRESS],
-            Constants::MANUAL_CONTROL_COD_ORDER => $configFlagsResponse[Constants::MANUAL_CONTROL_COD_ORDER],
-            Constants::ONE_CC_CAPTURE_GSTIN => $configFlagsResponse[Constants::ONE_CC_CAPTURE_GSTIN],
-            Constants::ONE_CC_CAPTURE_ORDER_INSTRUCTIONS => $configFlagsResponse[Constants::ONE_CC_CAPTURE_ORDER_INSTRUCTIONS]
         ];
 
         if ($merchantPlatformConfig !== null and $merchantPlatformConfig->getValue() === Constants::NATIVE)
@@ -458,6 +453,13 @@ class Service extends Base\Service
             if ($orderStatusUpdateUrlConfig !== null)
             {
                 $configs[Constants::ORDER_STATUS_UPDATE_URL] = $orderStatusUpdateUrlConfig->getValue();
+            }
+        }
+
+        foreach ($configFlagsResponse as $config => $value) {
+            if (in_array($config, Constants::CONFIG_FLAGS) === true &&
+                in_array($config, Constants::SHOPIFY_SPECIFIC_CONFIGS) === false) {
+                $result[$config] = $value;
             }
         }
 
@@ -621,22 +623,32 @@ class Service extends Base\Service
 
     public function get1ccConfigFlagsStatus(Merchant\Entity $merchant, $internal = false) {
         $response = [];
+        $merchantId = $merchant->getId();
+        $allConfigs = $this->repo->merchant_1cc_configs->findByMerchantId($merchantId)->getModels();
+        $platform = null;
 
-        foreach(Constants::CONFIG_CUM_FEATURE_FLAGS as $flag)
+        /**
+         *  Getting platform
+         */
+        foreach ($allConfigs as $config)
         {
-            $storedConfig = $merchant->get1ccConfig($flag);
-            $featureStatus = $merchant->isFeatureEnabled($flag);
-            if ($storedConfig !== null)
-            {
-                $featureStatus = $storedConfig->getValue() === "1";
+            $configName = $config['config'];
+            if ($configName === Constants::PLATFORM) {
+                $platform = $config->getValue();
+                break;
             }
-            $response[$flag] = $featureStatus;
         }
 
-        foreach (Constants::CONFIG_FLAGS_ACROSS_ALL_PLATFORMS as $flag)
+        /**
+         * config flags which are not feature flags
+         *  will have default value as false, except for fetch coupons
+         */
+        foreach (Constants::COMMON_CONFIGS as $flag)
         {
-            $configStatus = $merchant->get1ccConfigFlagStatus($flag);
-            $response[$flag] = $configStatus;
+            $response[$flag] = false;
+            if ($flag == Constants::ONE_CC_AUTO_FETCH_COUPONS) {
+                $response[$flag] = true;
+            }
         }
 
         if ($internal)
@@ -647,19 +659,32 @@ class Service extends Base\Service
                $response[$flag] = $featureStatus;
            }
         }
-
-        // If Config not present then by default the value should be true.
-        $autoFetchCouponsConfig = $merchant->get1ccConfig(Constants::ONE_CC_AUTO_FETCH_COUPONS);
-        $autoFetchCouponsConfigStatus = true;
-        if ($autoFetchCouponsConfig !== null)
+        
+        /** config flags which are also feature flags
+         *  will have default value of features if config
+         *  not present
+         */
+        foreach (Constants::SHOPIFY_SPECIFIC_CONFIGS as $flag)
         {
-            $autoFetchCouponsConfigStatus = $autoFetchCouponsConfig->getValue() === "1";
+            $response[$flag] = false;
+            if (in_array($flag, Constants::CONFIG_CUM_FEATURE_FLAGS) === true) {
+                $response[$flag] = $merchant->isFeatureEnabled($flag);
+            }
         }
 
-        $oneClickBuyNowConfigStatus = $merchant->get1ccConfigFlagStatus(Constants::ONE_CC_BUY_NOW_BUTTON);
 
-        $response[Constants::ONE_CC_AUTO_FETCH_COUPONS]  = $autoFetchCouponsConfigStatus;
-        $response[Constants::ONE_CC_BUY_NOW_BUTTON]      = $oneClickBuyNowConfigStatus;
+        /**
+         * Give config values if present
+         */
+        foreach ($allConfigs as $config)
+        {
+            $configName = $config['config'];
+            $configValue = $config->getValue() === '1';
+
+            if (in_array($configName, Constants::CONFIG_FLAGS) === true) {
+                $response[$configName] =  $configValue;
+            }
+        }
 
         return $response;
     }
@@ -682,4 +707,48 @@ class Service extends Base\Service
 
         return (new MerchantService)->updateShippingMethodProviderConfig($input)->getValueJson();
     }
+
+    public function getShopify1ccConfigs($input)
+    {
+        (new Validator())->setStrictFalse()->validateInput('gettingShopifyConfig', $input);
+
+        $keyId = $input['key_id'];
+
+        Key\Entity::verifyIdAndStripSign($keyId);
+
+        $key = $this->repo->key->findOrFailPublic($keyId);
+
+        $this->merchant = $this->repo->merchant->findOrFail($key->getMerchantId());
+
+        $result[Constants::MERCHANT_ID] = $this->merchant->getId();
+
+        if (empty($input[Constants::KEYS]) === true) {
+              return $result;
+        }
+
+        $merchantAuthConfigs = (new Merchant\OneClickCheckout\AuthConfig\Core)->getShopify1ccConfig($this->merchant->getId());
+
+        $merchantConfigs = $this->get1ccConfigFlagsStatus($this->merchant);
+
+        $requestedKeys = explode(',', $input[Constants::KEYS]);
+
+        foreach ($merchantConfigs as $config => $value)
+        {
+            if (in_array($config, $requestedKeys) === true) {
+                $result[$config] = $value;
+            }
+        }
+
+        foreach ($merchantAuthConfigs as $key => $value)
+        {
+            if (in_array($key, $requestedKeys) === true) {
+                $result[$key] = $value;
+            }
+        }
+
+        return $result;
+    }
+
+
+
 }

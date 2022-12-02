@@ -117,18 +117,28 @@ class Constants
         self::ONE_CC_INTERNATIONAL_SHIPPING,
         self::ONE_CC_BUY_NOW_BUTTON,
         self::ONE_CC_AUTO_FETCH_COUPONS,
+        self::MANUAL_CONTROL_COD_ORDER,
         self::ONE_CC_CAPTURE_GSTIN,
         self::ONE_CC_CAPTURE_ORDER_INSTRUCTIONS,
+        self::ONE_CC_ADDRESS_SYNC_OFF,
     ];
 
     const CONFIG_CUM_FEATURE_FLAGS = [
         self::ONE_CLICK_CHECKOUT,
         self::ONE_CC_GA_ANALYTICS,
-        self::ONE_CC_FB_ANALYTICS
+        self::ONE_CC_FB_ANALYTICS,
     ];
 
-    const CONFIG_FLAGS_ACROSS_ALL_PLATFORMS = [
+    const SHOPIFY_SPECIFIC_CONFIGS = [
+        self::ONE_CLICK_CHECKOUT,
+        self::ONE_CC_GA_ANALYTICS,
+        self::ONE_CC_FB_ANALYTICS,
+        self::ONE_CC_BUY_NOW_BUTTON,
+    ];
+
+    const COMMON_CONFIGS = [
         self::COD_INTELLIGENCE,
+        self::ONE_CC_AUTO_FETCH_COUPONS,
         self::ONE_CC_CAPTURE_BILLING_ADDRESS,
         self::ONE_CC_INTERNATIONAL_SHIPPING,
         self::MANUAL_CONTROL_COD_ORDER,
@@ -190,5 +200,7 @@ class Constants
     const MERCHANT_ID        = 'merchant_id';
     const MODE              = 'mode';
 
+    // used for getting merchant keys
+    const KEYS = 'keys';
 
 }

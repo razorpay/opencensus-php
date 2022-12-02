@@ -3690,4 +3690,10 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getShopify1ccConfigs()
+    {
+        $input = Request::all();
+
+        return (new Merchant\OneClickCheckout\Config\Service())->getShopify1ccConfigs($input);
+    }
 }

@@ -3917,6 +3917,7 @@ class Route
         '1cc_order_notes_update'                    => ['patch',      'orders/1cc/{id}/order-notes',                             'OrderController@update1CCOrderNotes'             ],
         'update_merchant_1cc_coupon_config'         => ['post',       '1cc/merchant/coupon/configs',                             'MerchantController@updateMerchant1ccCouponConfig'],
         '1cc_update_shipping_provider_config'       => ['post',       '1cc/shipping-provider/configs',                           'MerchantController@updateShippingProviderConfig'],
+        '1cc_get_shopify_configs'                   => ['get',        '1cc/merchant/shopify/configs',                            'MerchantController@getShopify1ccConfigs'],
         'internal_1cc_shopify_customer_addresses_get' => ['get',        'internal/1cc/shopify/merchants/{id}/customer_addresses',                   'MerchantController@getInternalShopifyCustomerAddresses'],
 
         '1cc_shipping_service_merchant_config_create'               => ['post',      '1cc/shipping_service/merchant_config/create',                     'MerchantConfigController@create'],
@@ -5475,6 +5476,8 @@ class Route
         'get_or_create_customer_internal',
 
         'customer_fetch_by_id_internal',
+        
+        '1cc_get_shopify_configs',
 
         // Address Service
         'internal_1cc_configs_get',
@@ -14520,6 +14523,7 @@ class Route
         'consumer_app' => [
             'customer_one_cc_get_or_create_global',
             'customer_fetch_by_id_global',
+            '1cc_get_shopify_configs',
             '1cc_shopify_order',
         ],
         'address_service' => [
