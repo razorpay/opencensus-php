@@ -147,16 +147,16 @@ export const SHOPIFY_CHECKOUT_SETTINGS = [
     key: 'one_cc_capture_billing_address',
     description: 'Ask customers to enter billing address separately',
   },
-  // {
-  //   label: 'Capture GSTIN',
-  //   value: false,
-  //   key: 'one_cc_capture_gstin',
-  // },
-  // {
-  //   label: 'Capture order instructions',
-  //   value: false,
-  //   key: 'one_cc_capture_order_instructions',
-  // },
+  {
+    label: 'Capture GSTIN',
+    value: false,
+    key: 'one_cc_capture_gstin',
+  },
+  {
+    label: 'Capture order instructions',
+    value: false,
+    key: 'one_cc_capture_order_instructions',
+  },
 ];
 
 export const SHOPIFY_ANALYTICS_SETTINGS = [
