@@ -1541,9 +1541,17 @@ class Service extends Base\Service
     {
         $input['merchant_id'] = $this->merchant->getId();
 
+        $role = '';
+
+        if (array_key_exists(Entity::ROLE, $input))
+        {
+            $role = $input[Entity::ROLE];
+        }
+
         $teamData = [
             'merchant_id' => $input['merchant_id'],
             'user_id'     => $userId,
+            'role'        => $role,
         ];
 
         $this->validator->validateInput('teamManagement', $teamData);

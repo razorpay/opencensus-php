@@ -3634,6 +3634,46 @@ return [
         ]
     ],
 
+    'testUpdateToOwnerRole' => [
+        'request' => [
+            'url'    => '/users/id/update',
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Action not allowed for owner role',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACTION_NOT_ALLOWED_FOR_OWNER_ROLE,
+        ],
+    ],
+
+    'testUpdateOwnerRole' => [
+        'request' => [
+            'url'    => '/users/id/update',
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Action not allowed for owner role',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACTION_NOT_ALLOWED_FOR_OWNER_ROLE,
+        ],
+    ],
+
     'testUpdateMerchant' => [
         'request' => [
             'url'    => '/users/id/update',

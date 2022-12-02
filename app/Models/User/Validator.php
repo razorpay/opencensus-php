@@ -15,6 +15,7 @@ use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Constants\Product;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Hashing\BcryptHasher;
 use RZP\Gateway\Upi\Base\ProviderCode;
@@ -254,6 +255,7 @@ class Validator extends Base\Validator
     protected static $teamManagementRules = [
         Entity::MERCHANT_ID => 'required|alpha_num|size:14',
         Entity::USER_ID     => 'required|alpha_num|size:14',
+        Entity::ROLE        => 'sometimes|string',
     ];
 
     protected static $changePasswordTokenRules = [
@@ -443,6 +445,7 @@ class Validator extends Base\Validator
     protected static $teamManagementValidators = [
         'self_user',
         'team_user',
+        'owner'
     ];
 
     protected static $createValidators = [
@@ -514,6 +517,35 @@ class Validator extends Base\Validator
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ACTION_NOT_ALLOWED_FOR_SELF_USER);
         }
+    }
+
+    /**
+     * any user role cannot update the owner role
+     * @param array $input
+     *
+     * @throws BadRequestException
+     */
+    protected function validateOwner(array $input)
+    {
+        $app = App::getFacadeRoot();
+
+        $product = $app['basicauth']->getRequestOriginProduct();
+
+        if ($product === Product::BANKING)
+        {
+            $user = (new Merchant\Repository)->getMerchantUserMapping($input['merchant_id'], $input['user_id'], null, Product::BANKING);
+
+            if ($user->pivot->role === 'owner')
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_ACTION_NOT_ALLOWED_FOR_OWNER_ROLE);
+            }
+
+            if ($input[Entity::ROLE] === 'owner')
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_ACTION_NOT_ALLOWED_FOR_OWNER_ROLE);
+            }
+        }
+
     }
 
     protected function validateProductRole(array $input)
