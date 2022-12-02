@@ -3,17 +3,19 @@
 namespace RZP\Models\Transaction\Statement\DirectAccount\Statement;
 
 use Db;
-
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Base\Common;
 use RZP\Constants\Es;
 use RZP\Models\Payout;
+use RZP\Constants\Mode;
 use RZP\Models\Contact;
 use RZP\Base\BuilderEx;
 use RZP\Constants\Table;
 use RZP\Models\Reversal;
 use RZP\Models\External;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\FundAccount;
 use RZP\Constants\Entity as E;
@@ -24,6 +26,7 @@ use RZP\Models\Base\PublicCollection;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Contracts\Support\Arrayable;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Merchant\RazorxTreatment as Experiment;
 
 /**
  * Class Repository
@@ -288,14 +291,48 @@ class Repository extends Base\Repository
 
     protected function addQueryParamFrom($query, $params)
     {
-        $postedDate = $this->dbColumn(Entity::POSTED_DATE);
-        $query      = $query->where($postedDate, '>=', $params['from']);
+        $postedDate      = $this->dbColumn(Entity::POSTED_DATE);
+        $transactionDate = $this->dbColumn(Entity::TRANSACTION_DATE);
+
+        $variant = $this->app['razorx']->getTreatment(
+            $this->app['basicauth']->getMerchantId(),
+            Experiment::RAZORX_FLAG_TO_ENHANCE_FETCH_LOGIC, $app['rzp.mode'] ?? Mode::LIVE);
+
+        if ($variant === 'on')
+        {
+            return $query->whereExists(function($q) use ($params, $postedDate, $transactionDate) {
+                $q->where($postedDate, '>=', $params['from'])
+                  ->where($transactionDate, '>=', $params['from']);
+            });
+        }
+        else
+        {
+            $query->where($postedDate, '>=', $params['from']);
+        }
     }
 
     protected function addQueryParamTo($query, $params)
     {
-        $postedDate = $this->dbColumn(Entity::POSTED_DATE);
-        $query      = $query->where($postedDate, '<=', $params['to']);
+        $postedDate       = $this->dbColumn(Entity::POSTED_DATE);
+        $transactionDate  = $this->dbColumn(Entity::TRANSACTION_DATE);
+        // offest posted date is to add a buffer of 24 hours for posted date while fetching
+        $offsetPostedDate = Carbon::createFromTimestamp($params['to'], Timezone::IST)->addHours(24)->getTimestamp();
+
+        $variant = $this->app['razorx']->getTreatment(
+            $this->app['basicauth']->getMerchantId(),
+            Experiment::RAZORX_FLAG_TO_ENHANCE_FETCH_LOGIC, $app['rzp.mode'] ?? Mode::LIVE);
+
+        if ($variant === 'on')
+        {
+            return $query->whereExists(function($q) use ($params, $postedDate, $offsetPostedDate, $transactionDate) {
+                $q->where($postedDate, '<=', $offsetPostedDate)
+                  ->where($transactionDate, '<=', $params['to']);
+            });
+        }
+        else
+        {
+            $query->where($postedDate, '<=', $params['to']);
+        }
     }
 
     protected function addQueryParamBalanceId(BuilderEx $query, array $params)

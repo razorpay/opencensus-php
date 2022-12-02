@@ -246,6 +246,109 @@ class DirectAccountStatementTest extends TestCase
         $this->startTest();
     }
 
+    public function testStatementsFetchLogicForBankingForDirectAccount()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', ['business_banking' => true]);
+
+        $user = (new User())->createBankingUserForMerchant('10000000000000', [
+            'contact_mobile' => '8888888888'
+        ], 'admin');
+
+        $this->fixtures->create('merchant_attribute',
+                                [
+                                    'merchant_id' => '10000000000000',
+                                    'product'     => 'banking',
+                                    'group'       => 'x_transaction_view',
+                                    'type'        => 'admin',
+                                    'value'       => 'true'
+                                ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'      => '10000000000000',
+            'business_name'    => 'Test Name Private Limited ltd ltd. Liability partnership',
+            'business_website' => 'https://shopify.secondleveldomain.edu.in'
+        ]);
+
+        $this->createPayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        for ($i = 0; $i < 5; $i++)
+        {
+            $this->fixtures->create('banking_account_statement',
+                                    [
+                                        'entity_id'           => $payout->getId(),
+                                        'entity_type'         => 'payout',
+                                        'utr'                 => $payout->getUtr(),
+                                        'amount'              => $payout->getAmount(),
+                                        'balance'             => $this->bankingBalance->getBalance() - $payout->getAmount(),
+                                        'channel'             => 'rbl',
+                                        'account_number'      => $this->bankingBalance->getAccountNumber(),
+                                        'bank_transaction_id' => 'M2134213',
+                                        'type'                => 'debit',
+                                        // posted date is of 10 nov 1 am
+                                        'posted_date'         => strtotime("+" . $i . " day", 1668022260),
+                                        'description'         => $payout->getUtr() . '-LOAN492835',
+                                        'category'            => 'customer_initiated',
+                                        'bank_instrument_id'  => "",
+                                        //transaction date - 9 nov 12 am
+                                        'transaction_date'    => strtotime("+" . $i . " day", 1667932200),
+                                        'transaction_id'      => $payout->getTransactionId(),
+                                    ]);
+
+            $this->fixtures->create('banking_account_statement',
+                                    [
+                                        'entity_id'           => $payout->getId(),
+                                        'entity_type'         => 'payout',
+                                        'utr'                 => $payout->getUtr(),
+                                        'amount'              => $payout->getAmount(),
+                                        'balance'             => $this->bankingBalance->getBalance() - $payout->getAmount(),
+                                        'channel'             => 'rbl',
+                                        'account_number'      => $this->bankingBalance->getAccountNumber(),
+                                        'bank_transaction_id' => 'M2134213',
+                                        'type'                => 'debit',
+                                        // posted date is of 9 nov 10 pm
+                                        'posted_date'         => strtotime("+" . $i . " day", 1668011400),
+                                        'description'         => $payout->getUtr() . '-LOAN492835',
+                                        'category'            => 'customer_initiated',
+                                        'bank_instrument_id'  => "",
+                                        // transaction date - 9 nov 12 am
+                                        'transaction_date'    => strtotime("+" . $i . " day", 1667932200),
+                                        'transaction_id'      => $payout->getTransactionId(),
+                                    ]);
+
+        }
+
+        $this->setMockRazorxTreatment([RazorxTreatment::RAZORX_FLAG_TO_ENHANCE_FETCH_LOGIC => 'on',]);
+
+        $request        = &$this->testData[__FUNCTION__]['request'];
+        $request['url'] = '/transactions_banking?from=1667932200&to=1668018599';
+        $this->ba->privateAuth();
+        $response = $this->startTest();
+        $this->assertEquals(2, $response['count']);
+
+        $request        = &$this->testData[__FUNCTION__]['request'];
+        $request['url'] = '/transactions_banking?from=1667932200&to=1668104999';
+        $response       = $this->startTest();
+        $this->assertEquals(4, $response['count']);
+
+        $request        = &$this->testData[__FUNCTION__]['request'];
+        $request['url'] = '/transactions_banking?from=1667932200&to=1668191399';
+        $response       = $this->startTest();
+        $this->assertEquals(6, $response['count']);
+
+        $request        = &$this->testData[__FUNCTION__]['request'];
+        $request['url'] = '/transactions_banking?from=1667932200&to=1668277799';
+        $response       = $this->startTest();
+        $this->assertEquals(8, $response['count']);
+
+        $request        = &$this->testData[__FUNCTION__]['request'];
+        $request['url'] = '/transactions_banking?from=1667932200';
+        $response       = $this->startTest();
+        $this->assertEquals(10, $response['count']);
+
+    }
+
     public function testFetchMultipleStatementsForBankingForDirectAccount()
     {
         $this->app['config']->set('applications.banking_account_service.mock', true);

@@ -154,6 +154,24 @@ return [
         ],
     ],
 
+    'testStatementsFetchLogicForBankingForDirectAccount' => [
+        'request' => [
+            'url'    => '/transactions_banking',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Request-Origin'    =>  'https://x.razorpay.com',
+            ],
+            'content' => [
+                'count' => 10,
+                'skip'  => 0,
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testFetchMultipleStatementsForBankingForDirectAccount' => [
         'request' => [
             'url'    => '/transactions_banking',
