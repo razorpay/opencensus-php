@@ -162,6 +162,7 @@ class Gateway
     const POLI               = 'poli';
     const SOFORT             = 'sofort';
     const GIROPAY            = 'giropay';
+    const UMOBILE            = 'umobile';
 
 
     const ACQUIRER_HDFC         = 'hdfc';
@@ -382,6 +383,7 @@ class Gateway
         self::NETBANKING_INDUSIND   => self::INDUSIND,
         self::OFFLINE_HDFC          => self::HDFC,
         self::HDFC_EZETAP           => self::HDFC,
+        self::UMOBILE               => self::UMOBILE,
     ];
 
     // Map of DS settlement entity with DS Bank/org name
@@ -414,6 +416,7 @@ class Gateway
         self::OFFLINE_HDFC          => self::HDFC,
         self::HDFC_EZETAP           =>self::HDFC,
         self::PAYSECURE             => self::AXIS,
+        self::UMOBILE               => self::UMOBILE,
     ];
 
 

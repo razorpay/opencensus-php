@@ -241,78 +241,6 @@ class PaymentCreateTest extends TestCase
         $this->doAuthPayment($payment);
     }
 
-    public function testCreatePaymentWithValidOrderIdINRMerchantMYR()
-    {
-        (new AdminService)->setConfigKeys(
-            [
-                ConfigKey::MCC_DEFAULT_MARKDOWN_PERCENTAGE => "3"
-            ]);
-
-        $payment = $this->getDefaultPaymentArray();
-
-        $payment['currency'] = 'INR';
-
-        $payment['amount'] = 100;
-
-        $this->fixtures->edit('iin', 401200, [ 'country' => 'IN', ]);
-
-        $this->fixtures->create('order', ['id' => '100000000order', 'currency' => 'INR', 'amount' => 100]);
-
-        $payment['order_id'] = 'order_100000000order';
-
-        $this->fixtures->merchant->addFeatures(['order_id_mandatory']);
-
-        $this->fixtures->merchant->edit('10000000000000', [
-            'country_code' => 'MY',
-            'convert_currency' => false
-        ]);
-
-        $this->doAuthPayment($payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals($payment['currency'], "INR");
-
-        $this->assertEquals($payment['status'], "authorized");
-
-        $this->assertEquals($payment["base_amount"], 970);
-    }
-
-    public function testCreatePaymentWithValidOrderIdUSDMerchantMYR()
-    {
-        (new AdminService)->setConfigKeys(
-            [
-                ConfigKey::MCC_DEFAULT_MARKDOWN_PERCENTAGE => "3"
-            ]);
-
-        $payment = $this->getDefaultPaymentArray();
-
-        $payment['currency'] = 'USD';
-
-        $payment['amount'] = 100;
-
-        $this->fixtures->edit('iin', 401200, [ 'country' => 'US']);
-
-        $this->fixtures->create('order', ['id' => '100000000order', 'currency' => 'USD', 'amount' => 100]);
-
-        $payment['order_id'] = 'order_100000000order';
-
-        $this->fixtures->merchant->addFeatures(['order_id_mandatory']);
-
-        $this->fixtures->merchant->edit('10000000000000', [
-            'country_code' => 'MY']);
-
-        $this->doAuthPayment($payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals($payment['currency'], "USD");
-
-        $this->assertEquals($payment['status'], "authorized");
-
-        $this->assertEquals($payment["base_amount"], 970);
-    }
-
 
     public function testCreatePaymentWithValidOrderIdMYR()
     {
@@ -330,10 +258,18 @@ class PaymentCreateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['order_id_mandatory']);
 
-        $this->fixtures->merchant->edit('10000000000000', [
-            'country_code' => 'MY']);
+        $this->fixtures->merchant->edit('10000000000000', ['country_code' => 'MY']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
 
-        $this->doAuthPaymentViaAjaxRoute($payment);
+        $this->app['config']->set('applications.pg_router.mock', true);
+        $paymentInit = $this->fixtures->create('payment:authorized', [
+            'currency' => 'MYR',
+            'amount'   => $payment['amount']
+        ]);
+
+        $payment['id'] = $paymentInit->getId();
+
+        $this->doS2SPrivateAuthJsonPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -1192,17 +1128,6 @@ class PaymentCreateTest extends TestCase
 
         $card = $this->getLastEntity('card', true);
         $this->assertEquals($card['international'], false);
-    }
-
-    public function testInternationalPaymentMyMerchantIndianCard()
-    {
-        $this->fixtures->merchant->setCountry('MY');
-        $this->payment['card']['number'] = '4111111111111111';
-
-        $this->doAuthPayment($this->payment);
-
-        $card = $this->getLastEntity('card', true);
-        $this->assertEquals($card['international'], true);
     }
 
 
@@ -2756,6 +2681,63 @@ class PaymentCreateTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
 
         // $payment['order_id'] = 'order_'.$order->getId();
+
+        $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout)
+            {
+                return [
+                    'body' => [
+                        'data' => [
+                            'pg_router' => 'true'
+                        ]
+                    ]
+
+                ];
+            });
+
+        $request = [
+            'content' => $payment,
+            'url'     => '/payments/create/ajax',
+            'method'  => 'post'
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertEquals($content['data']['pg_router'], 'true');
+    }
+
+    public function testRearchPaymentCreateAjaxMalaysia()
+    {
+        $this->fixtures->iin->edit('401200',[
+            'country' => 'MY',
+            'issuer'  => 'SBIN',
+            'network' => 'Visa',
+        ]);
+
+        $this->fixtures->merchant->edit('10000000000000',[
+            Merchant::COUNTRY_CODE => 'MY'
+        ]);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        // we are ramping up auth terminal selection hence to make sure all test cases passes
+
+        $order = $this->fixtures->order->createPaymentCaptureOrder();
+
+        $this->enablePgRouterConfig();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['currency'] = 'MYR';
 
         $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
 
@@ -5389,76 +5371,6 @@ class PaymentCreateTest extends TestCase
         $this->runRequestResponseFlow($testData, function () use ($payment) {
             $this->doAuthPayment($payment);
         });
-    }
-
-    public function testCreatePaymentWithAmountGreaterThanMaxAmountAndCurrencyMYRUnhappyFlow()
-    {
-        $merchantId = "10000000000000";
-
-        $merchantAttribute = [
-            MERCHANT::INTERNATIONAL => true,
-            MERCHANT::CONVERT_CURRENCY => true,
-            Merchant::COUNTRY_CODE => 'MY'
-        ];
-
-        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
-
-        $merchantDetailAttribute = [
-            DetailEntity::MERCHANT_ID => $merchantId,
-        ];
-
-        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
-
-        $payment = $this->getDefaultPaymentArray();
-
-        $payment['amount'] = '10010000';
-
-        $payment['currency'] = 'MYR';
-
-        $testData = $this->testData["testCreatePaymentWithAmountGreaterThanMaxAmountAndCurrencyUSD"];
-
-        $this->runRequestResponseFlow($testData, function () use ($payment) {
-            $this->doAuthPayment($payment);
-        });
-    }
-
-    public function testCreatePaymentCurrencyMYRHappyFlow()
-    {
-        $merchantId = "10000000000000";
-
-        $merchantAttribute = [
-            MERCHANT::INTERNATIONAL => true,
-            MERCHANT::CONVERT_CURRENCY => true,
-            Merchant::COUNTRY_CODE => 'MY'
-        ];
-
-        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
-
-        $merchantDetailAttribute = [
-            DetailEntity::MERCHANT_ID => $merchantId,
-        ];
-
-        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
-
-        $payment = $this->getDefaultPaymentArray();
-
-        $payment['amount'] = '1001';
-
-        $payment['currency'] = 'MYR';
-
-        $this->fixtures->edit('iin', 401200, [
-            'country' => 'MY'
-        ]);
-
-        $this->doAuthPayment($payment);
-
-        $paymentEntity = $this->getLastPayment(true);
-
-        $this->assertEquals($paymentEntity["status"], "authorized");
-
-        $this->assertEquals($paymentEntity["currency"], "MYR");
-
-        $this->assertEquals($paymentEntity["amount"], 1001);
     }
 
 

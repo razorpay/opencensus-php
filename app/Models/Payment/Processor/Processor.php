@@ -486,6 +486,16 @@ class Processor
         $this->subscription = null;
     }
 
+    /**
+     * @return bool
+     * Controls rearch flow proxy for Malaysia
+     */
+    private function canRouteThroughRearchFlowForMY()
+    {
+        // Always true for current product state
+        return true;
+    }
+
     private function canRouteThroughRearchFlow(array & $input)
     {
         try
@@ -493,6 +503,11 @@ class Processor
             $result = '';
             $currentRouteName = $this->route->getCurrentRouteName();
             $merchant = $this->app['basicauth']->getMerchant();
+
+            if ($merchant->getCountry() === 'MY')
+            {
+                return $this->canRouteThroughRearchFlowForMY();
+            }
 
             if($this->merchant->isFeatureEnabled(Feature::UPIQR_V1_HDFC) === true)
             {

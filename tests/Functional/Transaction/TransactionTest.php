@@ -170,6 +170,7 @@ class TransactionTest extends TestCase
     public function testTransactionAfterCapturingPaymentMalaysia()
     {
         $this->fixtures->merchant->edit('10000000000000', ['country_code' => 'MY', 'convert_currency' => null]);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -177,12 +178,19 @@ class TransactionTest extends TestCase
 
         $payment['currency'] = "MYR";
 
-        $payment = $this->doAuthAndCapturePayment($payment, $payment['amount'], "MYR");
+        $this->app['config']->set('applications.pg_router.mock', true);
+        $paymentInit = $this->fixtures->create('payment:authorized', [
+            'currency' => 'MYR',
+            'amount'   => $payment['amount']
+        ]);
+
+        $payment['id'] = $paymentInit->getId();
+
+        $payment = $this->doAuthAndCapturePayment($payment, $payment['amount'], "MYR", 0, true);
 
         $txn = $this->getLastTransaction(true);
 
         $testData = $this->testData['txnDataAfterCapturingPaymentMalaysia'];
-
         $testData['entity_id'] = $payment['id'];
 
         $this->assertArraySelectiveEquals($testData, $txn);

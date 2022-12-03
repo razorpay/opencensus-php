@@ -171,6 +171,7 @@ class Validator extends Base\Validator
         Payment\Gateway::MOBIKWIK,
         Payment\Gateway::NETBANKING_SARASWAT,
         Payment\Gateway::EMERCHANTPAY,
+        Payment\Gateway::UMOBILE,
         Payment\Gateway::NETBANKING_DBS,
         Payment\Gateway::INGENICO,
         Payment\Gateway::BILLDESK_OPTIMIZER,
@@ -2705,6 +2706,36 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::CURRENCY                    => 'sometimes|array',
+    ];
+
+    protected static $umobileCreateTerminalRules = [
+        Entity::GATEWAY                                         => 'required|in:umobile',
+        Entity::GATEWAY_MERCHANT_ID                             => 'required|string',
+        Entity::CARD                                            => 'required|boolean|in:1',
+        Entity::GATEWAY_SECURE_SECRET                           => 'required|string',
+        Entity::GATEWAY_TERMINAL_ID                             => 'required|string',
+        Entity::STATUS                                          => 'sometimes|in:created,pending,activated,deactivated,failed',
+        Entity::CURRENCY                                        => 'sometimes|array',
+        Entity::MODE                                            => 'required|in:1,2,3',
+        Entity::PROCURER                                        => 'sometimes',
+        Entity::TYPE                                            => 'required|array',
+        Entity::TYPE . Type::DIRECT_SETTLEMENT_WITH_REFUND      => 'required|in:1',
+        Entity::TYPE . Type::NON_RECURRING                      => 'required|in:1',
+    ];
+
+    protected static $umobileEditTerminalRules = [
+        Entity::GATEWAY                                         => 'sometimes|in:umobile',
+        Entity::GATEWAY_MERCHANT_ID                             => 'sometimes|string',
+        Entity::CARD                                            => 'sometimes|boolean|in:1',
+        Entity::GATEWAY_SECURE_SECRET                           => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_ID                             => 'sometimes|string',
+        Entity::STATUS                                          => 'sometimes|in:created,pending,activated,deactivated,failed',
+        Entity::CURRENCY                                        => 'sometimes|array',
+        Entity::MODE                                            => 'sometimes|in:2',
+        Entity::PROCURER                                        => 'sometimes',
+        Entity::TYPE                                            => 'sometimes|array',
+        Entity::TYPE . Type::DIRECT_SETTLEMENT_WITH_REFUND      => 'sometimes|in:1',
+        Entity::TYPE . Type::NON_RECURRING                      => 'sometimes|in:1',
     ];
 
     private static $gatewaysWithCommonIndentifiersExceptGatewayTerminalId = [

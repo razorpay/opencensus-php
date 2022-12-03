@@ -1202,7 +1202,6 @@ class PaymentFetchTest extends TestCase
     public function testAdminPaymentFetchMYRCurrency()
     {
         $this->fixtures->merchant->edit('10000000000000', [
-            'convert_currency' => 1,
             'country_code' => 'MY']);
 
         $paymentArray = $this->getDefaultPaymentArray();
@@ -1211,38 +1210,23 @@ class PaymentFetchTest extends TestCase
 
         $this->fixtures->edit('iin', '401200', [ 'country' => 'MY']);
 
-        $response = $this->doAuthAndCapturePayment($paymentArray);
+        $this->app['config']->set('applications.pg_router.mock', true);
+        $paymentInit = $this->fixtures->create('payment:authorized', [
+            'currency' => $paymentArray['currency'],
+            'amount'   => $paymentArray['amount']
+        ]);
 
-        $paymentId = $response['id'];
+        $paymentArray['id'] = $paymentInit->getId();
+
+        $this->doS2SPrivateAuthJsonPayment($paymentArray);
+
+        $paymentId = $paymentArray['id'];
 
         $paymentFromAdminFetch = $this->getEntityById('payment', $paymentId, true);
 
         $this->assertArrayHasKey('base_amount', $paymentFromAdminFetch);
 
         $this->assertArrayNotHasKey('base_currency', $paymentFromAdminFetch);
-    }
-
-    public function testAdminPaymentFetchMYRCurrencyINRPayment()
-    {
-        $this->fixtures->merchant->edit('10000000000000', [
-            'convert_currency' => 1,
-            'country_code' => 'MY']);
-
-        $paymentArray = $this->getDefaultPaymentArray();
-
-        $this->fixtures->edit('iin', '401200', [ 'country' => 'MY']);
-
-        $response = $this->doAuthAndCapturePayment($paymentArray);
-
-        $paymentId = $response['id'];
-
-        $paymentFromAdminFetch = $this->getEntityById('payment', $paymentId, true);
-
-        $this->assertArrayHasKey('base_amount', $paymentFromAdminFetch);
-
-        $this->assertArrayHasKey('base_currency', $paymentFromAdminFetch);
-
-        $this->assertEquals($paymentFromAdminFetch['base_currency'], 'MYR');
     }
 
     public function testPrivateAuthPaymentFetchFeeBearerAttribute()

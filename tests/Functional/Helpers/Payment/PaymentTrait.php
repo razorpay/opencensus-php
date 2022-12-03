@@ -100,14 +100,14 @@ trait PaymentTrait
 
     protected $mandateHqTerminal = null;
 
-    protected function doAuthAndCapturePayment($payment = null, $amount = 0, $currency = 'INR', $discountedPrice = 0)
+    protected function doAuthAndCapturePayment($payment = null, $amount = 0, $currency = 'INR', $discountedPrice = 0, $rearch = false)
     {
         if ($payment === null)
         {
             $payment = $this->getDefaultPaymentArray();
         }
 
-        $paymentAuth = $this->doJsonpAuthPayment($payment);
+        $paymentAuth = $rearch ? $this->doS2SPrivateAuthJsonPayment($payment) : $this->doJsonpAuthPayment($payment);
 
         if($discountedPrice != 0)
         {
