@@ -4,7 +4,7 @@ namespace RZP\Models\Gateway\File\Processor\Claim;
 
 use RZP\Models\Payment;
 
-class Equitas extends Base
+class Equitas extends NetbankingBase
 {
     const GATEWAY = Payment\Gateway::NETBANKING_EQUITAS;
 

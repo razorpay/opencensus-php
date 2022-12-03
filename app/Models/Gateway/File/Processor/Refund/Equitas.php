@@ -3,10 +3,10 @@
 namespace RZP\Models\Gateway\File\Processor\Refund;
 
 use Carbon\Carbon;
+
+use Razorpay\IFSC\Bank;
 use RZP\Models\Payment;
-use RZP\Constants\Mode;
 use RZP\Models\FileStore;
-use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
@@ -18,19 +18,19 @@ class Equitas extends Base
     const EXTENSION              = FileStore\Format::TXT;
     const FILE_TYPE              = FileStore\Type::EQUITAS_NETBANKING_REFUND;
     const GATEWAY                = Payment\Gateway::NETBANKING_EQUITAS;
-    const GATEWAY_CODE           = IFSC::ESFB;
+    const GATEWAY_CODE           = Bank::ESFB;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
     const BASE_STORAGE_DIRECTORY = 'Equitas/Refund/Netbanking/';
 
-    const MERCHANT_ID           = 'PID';
-    const REFUND_DATE           = 'Refund Date';
-    const PAYMENT_ID            = 'BRN';
-    const BANK_PAYMENT_ID       = 'TID';
-    const REFUND_AMOUNT         = 'Refamt';
-    const REFUND_TYPE           = 'Refund_Type';
-    const REFUND_REMARKS        = 'Refund_Remarks';
-    const PURCHASE_DATE         = 'Purchase Date';
-    const PURCHASE_AMOUNT       = 'Purchase Amount';
+    const MERCHANT_ID     = 'PID';
+    const REFUND_DATE     = 'Refund Date';
+    const PAYMENT_ID      = 'BRN';
+    const BANK_PAYMENT_ID = 'TID';
+    const REFUND_AMOUNT   = 'Refamt';
+    const REFUND_TYPE     = 'Refund_Type';
+    const REFUND_REMARKS  = 'Refund_Remarks';
+    const PURCHASE_DATE   = 'Purchase Date';
+    const PURCHASE_AMOUNT = 'Purchase Amount';
 
     const REFUND_COLUMN_HEADERS = [
         self::MERCHANT_ID,
@@ -44,34 +44,28 @@ class Equitas extends Base
         self::PURCHASE_AMOUNT,
     ];
 
-    protected $config;
-
-    protected function formatDataForFile(array $data)
+    protected function formatDataForFile(array $data): string
     {
         $formattedData[] = self::REFUND_COLUMN_HEADERS;
 
         foreach ($data as $row)
         {
-            $paymentDate = Carbon::createFromTimestamp(
-                           $row['payment']['created_at'],
-                           Timezone::IST)
-                           ->format('Y/m/d');
+            $paymentDate = Carbon::createFromTimestamp($row['payment']['created_at'], Timezone::IST)
+                                   ->format('Y/m/d');
 
-            $refundDate = Carbon::createFromTimestamp(
-                          $row['refund']['created_at'],
-                          Timezone::IST)
-                          ->format('Y/m/d');
+            $refundDate = Carbon::createFromTimestamp($row['refund']['created_at'], Timezone::IST)
+                                  ->format('Y/m/d');
 
             $formattedData[] = [
-                self::MERCHANT_ID          => $this->getMerchantId($row),
-                self::REFUND_DATE          => $refundDate,
-                self::PAYMENT_ID           => $row['payment']['id'],
-                self::BANK_PAYMENT_ID      => $row['gateway']['reference1'],
-                self::REFUND_AMOUNT        => $this->formatAmount($row['refund']['amount']),
-                self::REFUND_TYPE          => $this->getRefundType($row),
-                self::REFUND_REMARKS       => 'NA',
-                self::PURCHASE_DATE        => $paymentDate,
-                self::PURCHASE_AMOUNT      => $this->formatAmount($row['payment']['amount']),
+                self::MERCHANT_ID     => $row['terminal']['gateway_merchant_id'],
+                self::REFUND_DATE     => $refundDate,
+                self::PAYMENT_ID      => $row['payment']['id'],
+                self::BANK_PAYMENT_ID => $this->fetchBankPaymentId($row),
+                self::REFUND_AMOUNT   => $this->formatAmount($row['refund']['amount']),
+                self::REFUND_TYPE     => $this->getRefundType($row),
+                self::REFUND_REMARKS  => 'NA',
+                self::PURCHASE_DATE   => $paymentDate,
+                self::PURCHASE_AMOUNT => $this->formatAmount($row['payment']['amount']),
             ];
         }
 
@@ -80,26 +74,14 @@ class Equitas extends Base
         return $formattedData;
     }
 
-    protected function getFileToWriteNameWithoutExt()
+    protected function getFileToWriteNameWithoutExt(): string
     {
         $date = Carbon::now(Timezone::IST)->format('d-m-y');
 
         return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . '_' . $date;
     }
 
-    protected function getMerchantId($input)
-    {
-        $mid = $input['terminal']['gateway_merchant_id'];
-
-        if ($this->mode === Mode::TEST)
-        {
-            $mid = $this->config['test_merchant_id'];
-        }
-
-        return $mid;
-    }
-
-    protected function getRefundType($data)
+    protected function getRefundType($data): string
     {
         $status = 'F';
 
@@ -111,8 +93,18 @@ class Equitas extends Base
         return $status;
     }
 
-    protected function formatAmount($amount)
+    protected function formatAmount($amount): string
     {
         return number_format($amount / 100, 2, '.', '');
+    }
+
+    protected function fetchBankPaymentId($row)
+    {
+        if (($row['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE) or
+            ($row['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE_PAYMENTS))
+        {
+            return $row['gateway']['bank_transaction_id']; // payment through nbplus service
+        }
+        return $row['gateway']['reference1'];
     }
 }

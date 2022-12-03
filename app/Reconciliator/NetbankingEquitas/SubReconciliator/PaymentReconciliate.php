@@ -2,7 +2,6 @@
 
 namespace RZP\Reconciliator\NetbankingEquitas\SubReconciliator;
 
-use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Action;
@@ -10,7 +9,7 @@ use RZP\Models\Payment\Status;
 use RZP\Models\Base\PublicEntity;
 use RZP\Reconciliator\NetbankingEquitas\Constants;
 
-class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceRecon
 {
     const BLACKLISTED_COLUMNS = [];
 
@@ -28,7 +27,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return $row[Constants::BANK_TRANSACTION_ID] ?? null;
     }
 
-    protected function getReconPaymentStatus(array $row)
+    protected function getReconPaymentStatus(array $row): string
     {
         $status = $row[Constants::STATUS];
 
@@ -75,7 +74,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     ->findByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
     }
 
-    protected function getAccountDetails($row)
+    protected function getAccountDetails($row): array
     {
         return [
             Base\Reconciliate::ACCOUNT_NUMBER => $row[Constants::ACCOUNT_NUMBER]

@@ -3,12 +3,13 @@
 namespace RZP\Models\Gateway\File\Processor\Combined;
 
 use Carbon\Carbon;
+
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 
 class Equitas extends Base
 {
-    protected function formatDataForMail(array $data)
+    protected function formatDataForMail(array $data): array
     {
         $amount = [
             'claims'  => 0,
