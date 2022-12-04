@@ -1285,7 +1285,6 @@ return [
                     'entity'       => 'fund_account',
                     'account_type' => 'card',
                     'card' => [
-                        'name'      => '',
                         'last4'     =>  '1111',
                         'network'   =>  'Visa',
                         'type'      =>  'credit',
@@ -1791,7 +1790,6 @@ return [
                     'entity'       => 'fund_account',
                     'account_type' => 'card',
                     'card' => [
-                        'name'      => '',
                         'last4'     =>  '0137',
                         'network'   =>  'MasterCard',
                         'type'      =>  'debit',
@@ -1853,7 +1851,6 @@ return [
                     'entity'       => 'fund_account',
                     'account_type' => 'card',
                     'card' => [
-                        'name'      => '',
                         'last4'     =>  '0137',
                         'network'   =>  'MasterCard',
                         'type'      =>  'debit',

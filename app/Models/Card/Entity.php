@@ -219,7 +219,6 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $fundAccount = [
-        Card\Entity::NAME,
         Card\Entity::LAST4,
         Card\Entity::NETWORK,
         Card\Entity::TYPE,
@@ -1546,37 +1545,21 @@ class Entity extends Base\PublicEntity
             $attributes = $this->toArrayPublic();
         }
 
-        if ((isset($attributes[self::NAME]) === true) and
-            ($attributes[self::NAME] === self::DUMMY_NAME))
+        if ($this->isTokenPan() === true)
         {
-            unset($attributes[self::NAME]);
+            $attributes[self::LAST4] = $this->attributes[self::TOKEN_LAST_4];
+
+            $attributes[self::INPUT_TYPE] = Card\InputType::SERVICE_PROVIDER_TOKEN;
         }
-
-        // The isNetworkTokenisedCard condition is added since for that case the merchant in the card entity and
-        // the merchant making the payout request might be different
-        if (($this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_NON_SAVED_CARDS) === true) or
-            ($this->isNetworkTokenisedCard() === true))
+        else
         {
-            if ($this->isTokenPan() === true)
+            if ($this->isNetworkTokenisedCard() === true)
             {
-                $attributes[self::LAST4]      = $this->attributes[self::TOKEN_LAST_4];
-
-                $attributes[self::INPUT_TYPE] = Card\InputType::SERVICE_PROVIDER_TOKEN;
-
-                unset($attributes[self::NAME]);
+                $attributes[self::INPUT_TYPE] = Card\InputType::RAZORPAY_TOKEN;
             }
             else
             {
-                if ($this->isNetworkTokenisedCard() === true)
-                {
-                    $attributes[self::INPUT_TYPE] = Card\InputType::RAZORPAY_TOKEN;
-
-                    unset($attributes[self::NAME]);
-                }
-                else
-                {
-                    $attributes[self::INPUT_TYPE] = Card\InputType::CARD;
-                }
+                $attributes[self::INPUT_TYPE] = Card\InputType::CARD;
             }
         }
 
