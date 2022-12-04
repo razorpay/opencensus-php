@@ -3392,6 +3392,239 @@ class BankingAccountTest extends TestCase
             Status::NONE);
     }
 
+    public function testUpdateBankingAccountSubStatusFromDocketInitiatedToDdInProgressFailsDueToMissingTrackingId()
+    {
+        $bankingAccount = $this->fixtures->on('test')->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => self::DefaultMerchantId,
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '560038',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->fixtures->on('test')->create('banking_account_activation_detail', [
+            'banking_account_id'        => $bankingAccount->getId(),
+            'merchant_poc_email'        => 'rzp@gmail.com',
+            'merchant_poc_phone_number' => '9177278079',
+            'sales_team'                => 'sme',
+            'additional_details'        => json_encode([
+                'docket_estimated_delivery_date' => 1575912600
+            ])
+        ]);
+
+        $ba = $bankingAccount->toArray();
+        $ba['id'] = 'bacc_' . $ba['id'];
+
+        $this->expectException(\RZP\Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('Both Tracking Id and Docket Estimated Delivery Date needs to be filled');
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED,
+            Status::PICKED,
+            Status::DOCKET_INITIATED,
+            Status::DD_IN_PROGRESS,
+            "",
+            "",
+            $ba,
+            $bankingAccount->getMerchantId());
+    }
+
+    public function testUpdateBankingAccountSubStatusFromDocketInitiatedToDdInProgress()
+    {
+        $bankingAccount = $this->fixtures->on('test')->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => self::DefaultMerchantId,
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '560038',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->fixtures->on('test')->create('banking_account_activation_detail', [
+            'banking_account_id'        => $bankingAccount->getId(),
+            'merchant_poc_email'        => 'rzp@gmail.com',
+            'merchant_poc_phone_number' => '9177278079',
+            'sales_team'                => 'sme',
+            'additional_details'        => json_encode([
+                'docket_estimated_delivery_date' => 1575912600,
+                'tracking_id'                    => 'TRACKING_ID'
+            ])
+        ]);
+
+        $ba = $bankingAccount->toArray();
+        $ba['id'] = 'bacc_' . $ba['id'];
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED,
+            Status::PICKED,
+            Status::DOCKET_INITIATED,
+            Status::DD_IN_PROGRESS,
+            "",
+            "",
+            $ba,
+            $bankingAccount->getMerchantId());
+    }
+
+    public function testUpdateBankingAccountSubStatusFromNoneToDwtRequiredFailsForSkipDwt()
+    {
+        $bankingAccount = $this->fixtures->on('test')->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => self::DefaultMerchantId,
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '560038',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->fixtures->on('test')->create('banking_account_activation_detail', [
+            'banking_account_id'        => $bankingAccount->getId(),
+            'merchant_poc_email'        => 'rzp@gmail.com',
+            'merchant_poc_phone_number' => '9177278079',
+            'merchant_documents_address' => 'ADDRESS',
+            'sales_team'                => 'sme',
+            'additional_details'        => json_encode([
+                'skip_dwt' => 1,
+            ])
+        ]);
+
+        $this->expectException(\RZP\Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('Skip Dwt should be false or empty  and Merchant Document Address needs to be present');
+
+        $ba = $bankingAccount->toArray();
+        $ba['id'] = 'bacc_' . $ba['id'];
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED,
+            Status::PICKED,
+            Status::NONE,
+            Status::DWT_REQUIRED,
+            "",
+            "",
+            $ba,
+            $bankingAccount->getMerchantId());
+    }
+
+    public function testUpdateBankingAccountSubStatusFromNoneToDwtRequired()
+    {
+        $bankingAccount = $this->fixtures->on('test')->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => self::DefaultMerchantId,
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '560038',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->fixtures->on('test')->create('banking_account_activation_detail', [
+            'banking_account_id'        => $bankingAccount->getId(),
+            'merchant_poc_email'        => 'rzp@gmail.com',
+            'merchant_poc_phone_number' => '9177278079',
+            'merchant_documents_address' => 'ADDRESS',
+            'sales_team'                => 'sme',
+        ]);
+
+        $ba = $bankingAccount->toArray();
+        $ba['id'] = 'bacc_' . $ba['id'];
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED,
+            Status::PICKED,
+            Status::NONE,
+            Status::DWT_REQUIRED,
+            "",
+            "",
+            $ba,
+            $bankingAccount->getMerchantId());
+    }
+
+    public function testUpdateBankingAccountSubStatusFromDwtRequiredToDwtCompletedFailsDueToMissingDwtCompletedTimestamp()
+    {
+        $bankingAccount = $this->fixtures->on('test')->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => self::DefaultMerchantId,
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '560038',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->fixtures->on('test')->create('banking_account_activation_detail', [
+            'banking_account_id'        => $bankingAccount->getId(),
+            'merchant_poc_email'        => 'rzp@gmail.com',
+            'merchant_poc_phone_number' => '9177278079',
+            'merchant_documents_address' => 'ADDRESS',
+            'sales_team'                => 'sme',
+        ]);
+
+        $this->expectException(\RZP\Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('DWT completed timestamp needs to be present');
+
+        $ba = $bankingAccount->toArray();
+        $ba['id'] = 'bacc_' . $ba['id'];
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED,
+            Status::PICKED,
+            Status::DWT_REQUIRED,
+            Status::DWT_COMPLETED,
+            "",
+            "",
+            $ba,
+            $bankingAccount->getMerchantId());
+    }
+
+    public function testUpdateBankingAccountSubStatusFromDwtRequiredToDwtCompleted()
+    {
+        $bankingAccount = $this->fixtures->on('test')->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => self::DefaultMerchantId,
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '560038',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->fixtures->on('test')->create('banking_account_activation_detail', [
+            'banking_account_id'        => $bankingAccount->getId(),
+            'merchant_poc_email'        => 'rzp@gmail.com',
+            'merchant_poc_phone_number' => '9177278079',
+            'merchant_documents_address' => 'ADDRESS',
+            'sales_team'                => 'sme',
+            'additional_details'        => json_encode([
+                'dwt_completed_timestamp' => 1575912600,
+            ])
+        ]);
+
+        $ba = $bankingAccount->toArray();
+        $ba['id'] = 'bacc_' . $ba['id'];
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED,
+            Status::PICKED,
+            Status::DWT_REQUIRED,
+            Status::DWT_COMPLETED,
+            "",
+            "",
+            $ba,
+            $bankingAccount->getMerchantId());
+    }
+
     public function mockHubspotAndAssertForChangeEvent(bool &$expectedHubspotCall, bool $isStatusChange = true, bool $isSubstatusChange = true)
     {
         $hubspotMock = $this->mockHubSpotClient('trackHubspotEvent');
@@ -10553,7 +10786,6 @@ class BankingAccountTest extends TestCase
         ];
 
         $this->verifySkipDwtComputeAndSave($additionalDetailsInput,'enabled',0);
-
     }
 
     public function testPreventMetroCallbackForGatewayBalanceFetch()

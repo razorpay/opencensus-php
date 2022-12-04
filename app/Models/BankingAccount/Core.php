@@ -937,6 +937,8 @@ class Core extends Base\Core
                 }
                 else
                 {
+                    $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccount->getPublicId());
+
                     $stateCore->captureNewBankingAccountState($bankingAccount, $entity);
 
                     if($isAssigneeChanged === true)

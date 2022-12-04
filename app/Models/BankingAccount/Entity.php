@@ -408,6 +408,8 @@ class Entity extends Base\PublicEntity
 
         Status::validateStatusSubstatusMapping($this->getStatus(), $substatus);
 
+        Status::validateSubStatusPrerequisites($this,$substatus);
+
         $this->setAttribute(self::SUB_STATUS, $substatus);
     }
 

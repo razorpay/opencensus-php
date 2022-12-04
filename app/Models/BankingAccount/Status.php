@@ -104,6 +104,14 @@ class Status
     const FOLLOW_UP__OTHER = 'follow_up_|_other';
     const OTHER = 'other'; // Need to confirm
 
+
+    // New substatuses for Picked status
+    const INITIATE_DOCKET  = 'initiate_docket';
+    const DOCKET_INITIATED = 'docket_initiated';
+    const DD_IN_PROGRESS   = 'dd_in_progress';
+    const DWT_REQUIRED     = 'dwt_required';
+    const DWT_COMPLETED    = 'dwt_completed';
+
     // External Substatuses as inputted by Ops/Sales teams via batch
     const DOCS_WALK_THROUGH_PENDING_EXTERNAL      = 'Docs Walkthrough Pending';
     const NEEDS_CLARIFICATION_FROM_SALES_EXTERNAL = 'Needs clarification from Sales';
@@ -534,6 +542,12 @@ class Status
 
         self::OTHER,
         self::NONE,
+
+        self::INITIATE_DOCKET,
+        self::DOCKET_INITIATED,
+        self::DD_IN_PROGRESS,
+        self::DWT_REQUIRED,
+        self::DWT_COMPLETED
     ];
 
     protected static $defaultSubStatus = [
@@ -618,6 +632,11 @@ class Status
             self::PENDING_ON_SALES_MERCHANT_PREPARING_KYC_DOCS,
             self::PENDING_ON_SALES_ISSUE_WITH_COMMERCIALS,
             self::PENDING_ON_SALES_MERCHANT_WANTS_BANK_CHANGE,
+            self::INITIATE_DOCKET,
+            self::DOCKET_INITIATED,
+            self::DD_IN_PROGRESS,
+            self::DWT_REQUIRED,
+            self::DWT_COMPLETED
         ],
         self::INITIATED => [
             self::NONE,
@@ -973,9 +992,9 @@ class Status
     public static function isStatusUnderParallelAssignee(?string $status) : bool
     {
         if(in_array($status, [
-            self::ACCOUNT_OPENING,
-            self::API_ONBOARDING,
-        ]) === true)
+                self::ACCOUNT_OPENING,
+                self::API_ONBOARDING,
+            ]) === true)
         {
             return true;
         }
@@ -1196,7 +1215,7 @@ class Status
 
         $externalToInternalMap = array_diff_assoc(self::$externalToInternalSubStatusMap, ['null' => null]);
 
-        return array_flip($externalToInternalMap)[$subStatus];
+        return array_flip($externalToInternalMap)[$subStatus] ?? $subStatus;
     }
 
     /**
@@ -1325,4 +1344,77 @@ class Status
     {
         return in_array($status, self::$terminalStatuses, true);
     }
+
+    /**
+     * TODO: This assumes substatus and other inputs are not edited together, otherwise there will be dirty reads
+     * @throws BadRequestValidationFailureException
+     */
+    public static function validateSubStatusPrerequisites(Entity $bankingAccount, $substatus)
+    {
+        if (empty($substatus))
+        {
+            return;
+        }
+
+        /** @var Activation\Detail\Entity $activationDetail */
+        $activationDetail = optional($bankingAccount)->bankingAccountActivationDetails;
+
+        $additionDetails = json_decode(optional($activationDetail)->getAdditionalDetails() ?? '{}', true);
+
+        switch ($substatus)
+        {
+            case self::DD_IN_PROGRESS:
+                $trackingId = $additionDetails['tracking_id'] ?? null;
+
+                $estimatedDeliveryDate = $additionDetails['docket_estimated_delivery_date'] ?? null;
+
+                if (empty($trackingId) || empty($estimatedDeliveryDate))
+                {
+                    throw new BadRequestValidationFailureException(
+                        'Both Tracking Id and Docket Estimated Delivery Date needs to be filled',
+                        Entity::SUB_STATUS,
+                        [
+                            'tracking_id'                    => $trackingId,
+                            'docket_estimated_delivery_date' => $estimatedDeliveryDate
+                        ]);
+                }
+
+                break;
+
+            case self::DWT_REQUIRED:
+                $skipDwt = $additionDetails['skip_dwt'] ?? null;
+
+                $documentAddress = $activationDetail->getMerchantDocumentsAddress();
+
+                if ($skipDwt === 1 || empty($documentAddress))
+                {
+                    throw new BadRequestValidationFailureException(
+                        'Skip Dwt should be false or empty  and Merchant Document Address needs to be present',
+                        Entity::SUB_STATUS,
+                        [
+                            'skip_dwt'                    => $skipDwt,
+                            'merchant_document_address'   => $documentAddress
+                        ]);
+                }
+
+                break;
+
+            case self::DWT_COMPLETED:
+                $dwtCompletedTimestamp = $additionDetails['dwt_completed_timestamp'] ?? null;
+
+                if (empty($dwtCompletedTimestamp))
+                {
+                    throw new BadRequestValidationFailureException(
+                        'DWT completed timestamp needs to be present',
+                        Entity::SUB_STATUS,
+                        [
+                            'dwt_completed_timestamp'     => $dwtCompletedTimestamp,
+                        ]);
+                }
+
+                break;
+
+        }
+    }
+
 }
