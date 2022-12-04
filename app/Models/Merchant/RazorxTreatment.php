@@ -669,8 +669,4 @@ final class RazorxTreatment
     const DCS_ENABLED_NEW_USECASE = 'dcs_new_usecases_enabled';
 
     const RBL_CA_USE_NEW_STATE_MACHINE = 'rbl_ca_use_new_state_machine';
-
-    // Experiment to trigger updateActivationStatus after validation fails
-    const UPDATE_ACTIVATION_STATUS_AFTER_VERIFICATION_FAILS = 'update_activation_status_after_verification_fails';
-
 }

@@ -917,7 +917,7 @@ class Core extends Base\Core
         {
             $this->handleFlowForRiskyMerchant($merchant, $merchantDetails, $action);
 
-            $this->processFlowForNoDocRiskyMerchant($merchant);
+            $this->processFlowForNoDocRiskyMerchant($merchant, $merchantDetails);
         }
 
         // If a merchant does not have website or app, we would need to activate them
@@ -1022,16 +1022,25 @@ class Core extends Base\Core
         return $response;
     }
 
+
     /**
+     * Remove no-doc flag update activation status
      * @param Merchant\Entity $merchant
+     * @param Entity          $merchantDetails
+     *
+     * @throws \Throwable
      */
-    public function processFlowForNoDocRiskyMerchant(Merchant\Entity $merchant)
+    public function processFlowForNoDocRiskyMerchant(Merchant\Entity $merchant, Entity $merchantDetails)
     {
         if ($merchant->isNoDocOnboardingEnabled() === true)
         {
             $featureCore = (new FeatureCore());
 
+            $clarificationCore = (new ClarificationCore());
+
             $featureCore->removeFeature(FeatureConstants::NO_DOC_ONBOARDING, true);
+
+            $clarificationCore->updateActivationStatusForNoDoc($merchant, $merchantDetails, NeedsClarificationReasonsList::NO_DOC_RISK_FAILURE);
         }
     }
 

@@ -600,25 +600,6 @@ class Core extends Base\Core
     {
         try
         {
-            $accessMaps = $this->repo->merchant_access_map->fetchAffiliatedPartnersForSubmerchant($merchant->getId());
-
-            if (empty($accessMaps) === false)
-            {
-                $partnerMerchant = $accessMaps->filter(function($value, $key) {
-                    return ($value->entityOwner->isAggregatorPartner() === true);
-                })->first();
-
-                if (empty($partnerMerchant) === false)
-                {
-                    $experimentResult    = $this->app->razorx->getTreatment($partnerMerchant->entityOwner->getId(),
-                                                                            RazorxTreatment::UPDATE_ACTIVATION_STATUS_AFTER_VERIFICATION_FAILS, $this->mode);
-                    if ($experimentResult !== Constants::NO_DOC_UPDATE_ACT_EXPERIMENT_ON_VARIANT)
-                    {
-                        return;
-                    }
-                }
-            }
-
             $this->trace->info(TraceCode::NO_DOC_UPDATE_ACTIVATION_STATUS_AFTER_VERIFICATION_FAILS, ['merchant_id' => $merchant->getId(), 'reason_code' => $reasonCode]);
 
             $merchantId = $merchantDetail->getMerchantId();

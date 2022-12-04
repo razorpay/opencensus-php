@@ -2289,13 +2289,13 @@ class NeedsClarificationTest extends TestCase
 
         (new \RZP\Models\Feature\Core())->create($featureParams,true);
 
-        $merchant = $merchantDetail->merchant;
+        $merchant = $this->getDbEntity('merchant', ['id' => $merchantDetail->getMerchantId()]);
 
         $detailCore->getMerchantAndSetBasicAuth($merchantDetail->getMerchantId());
 
         $method->invokeArgs($detailCore, [$merchant, $merchantDetail, null]);
 
-        $detailCore->processFlowForNoDocRiskyMerchant($merchant);
+        $detailCore->processFlowForNoDocRiskyMerchant($merchant, $merchantDetail);
 
         $this->assertEquals(Status::UNDER_REVIEW, (new DetailCore)->getApplicableActivationStatus($merchantDetail));
 
