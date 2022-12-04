@@ -77,6 +77,7 @@ class Constants
     const INPUT_DATA_ISSUE      = 'INPUT_DATA_ISSUE';
     const DATA_UNAVAILABLE      = 'DATA_UNAVAILABLE';
     const RULE_EXECUTION_FAILED = 'RULE_EXECUTION_FAILED';
+    const SPAM_DETECTED_ERROR   = 'SPAM_DETECTED_ERROR';
 
     const ERROR_MAPPING = [
         self::FAILED            => [

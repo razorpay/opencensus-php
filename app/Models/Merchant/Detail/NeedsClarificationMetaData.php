@@ -279,6 +279,44 @@ class NeedsClarificationMetaData
     ];
 
     const LINKED_ACCOUNT_SYSTEM_BASED_NEEDS_CLARIFICATION_METADATA = [
+        Constants::PERSONAL_PAN_IDENTIFIER  => [
+            self::NEEDS_CLARIFICATION_VERSION              => self::VERSION_V2,
+            self::FIELD_ARTEFACT_DETAILS_MAP_REFERENCE_KEY => Constant::PERSONAL_PAN,
+            Constants::FIELD_NAME                          => Entity::PROMOTER_PAN,
+            Constants::FIELD_TYPE                          => Constants::TEXT,
+            Constants::DEDUPE_CHECK_KEY                    => Entity::PROMOTER_PAN,
+            Constants::REASON_MAPPING                      => [
+                DedupeConstant::FIELD_ALREADY_EXIST        => ReasonList::FIELD_ALREADY_EXIST,
+                BvsValidationConstant::INPUT_DATA_ISSUE      => ReasonList::INVALID_PERSONAL_PAN_NUMBER,
+                BvsValidationConstant::RULE_EXECUTION_FAILED => ReasonList::PERSONAL_PAN_DATA_NOT_MATCHED,
+                BvsValidationConstant::SPAM_DETECTED_ERROR   => ReasonList::PERSONAL_PAN_SPAM_DETECTED
+            ],
+        ],
+        Constants::COMPANY_PAN_IDENTIFIER   => [
+            self::NEEDS_CLARIFICATION_VERSION              => self::VERSION_V2,
+            self::FIELD_ARTEFACT_DETAILS_MAP_REFERENCE_KEY => Constant::BUSINESS_PAN,
+            Constants::FIELD_NAME                          => Entity::COMPANY_PAN,
+            Constants::FIELD_TYPE                          => Constants::TEXT,
+            Constants::DEDUPE_CHECK_KEY                    => Entity::COMPANY_PAN,
+            Constants::REASON_MAPPING                      => [
+                DedupeConstant::FIELD_ALREADY_EXIST        => ReasonList::FIELD_ALREADY_EXIST,
+                BvsValidationConstant::INPUT_DATA_ISSUE      => ReasonList::INVALID_COMPANY_PAN_NUMBER,
+                BvsValidationConstant::RULE_EXECUTION_FAILED => ReasonList::COMPANY_PAN_DATA_NOT_MATCHED,
+                BvsValidationConstant::SPAM_DETECTED_ERROR   => ReasonList::COMPANY_PAN_SPAM_DETECTED
+            ],
+        ],
+        Constants::GSTIN_IDENTIFER     => [
+            self::NEEDS_CLARIFICATION_VERSION              => self::VERSION_V2,
+            self::FIELD_ARTEFACT_DETAILS_MAP_REFERENCE_KEY => Constant::GSTIN,
+            Constants::FIELD_NAME                          => Entity::GSTIN,
+            Constants::FIELD_TYPE                          => Constants::TEXT,
+            Constants::REASON_MAPPING                      => [
+                BvsValidationConstant::INPUT_DATA_ISSUE      => ReasonList::INVALID_GSTIN_NUMBER,
+                BvsValidationConstant::DATA_UNAVAILABLE      => ReasonList::GSTIN_DATA_UNAVAILABLE,
+                BvsValidationConstant::RULE_EXECUTION_FAILED => ReasonList::GSTIN_NUMBER_NOT_MATCHED,
+                BvsValidationConstant::SPAM_DETECTED_ERROR   => ReasonList::GSTIN_SPAM_DETECTED
+            ],
+        ],
         Constants::BANK_ACCOUNT_NUMBER => [
             self::NEEDS_CLARIFICATION_VERSION              => self::VERSION_V1,
             self::FIELD_ARTEFACT_DETAILS_MAP_REFERENCE_KEY => Constant::BANK_ACCOUNT,

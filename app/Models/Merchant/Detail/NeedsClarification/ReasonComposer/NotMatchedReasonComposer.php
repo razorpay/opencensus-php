@@ -3,6 +3,7 @@
 
 namespace RZP\Models\Merchant\Detail\NeedsClarification\ReasonComposer;
 
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Constants;
 use RZP\Models\Merchant\Detail\Entity;
@@ -50,6 +51,31 @@ class NotMatchedReasonComposer extends BaseClarificationReasonComposer
             ]);
 
             return [];
+        }
+
+        if ($this->validation->getOwnerType() === Constants::MERCHANT)
+        {
+            $merchantId = $this->validation->getOwnerId();
+
+            $merchant = app('repo')->merchant->findOrFail($merchantId);
+
+            if( ($merchant->isLinkedAccount() === true) and
+                ($merchant->isRouteNoDocKycEnabledForParentMerchant() === true))
+            {
+                $fieldName  = $this->clarificationMetaData[ClarificationConstants::FIELD_NAME];
+                $fieldType  = $this->clarificationMetaData[ClarificationConstants::FIELD_TYPE];
+                $reasonCode = $this->clarificationMetaData[ClarificationConstants::REASON_MAPPING][$errorCode];
+
+                return [
+                    Entity::CLARIFICATION_REASONS => [
+                        $fieldName => [[
+                            Constants::REASON_TYPE => Constants::PREDEFINED_REASON_TYPE,
+                            Constants::FIELD_TYPE  => $fieldType,
+                            Constants::REASON_CODE => $reasonCode,
+                        ]],
+                    ]
+                ];
+            }
         }
 
         $ruleResultVerifierFactory = new RuleResultVerifier\Factory();

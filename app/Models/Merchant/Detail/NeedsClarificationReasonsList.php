@@ -58,6 +58,15 @@ class NeedsClarificationReasonsList
     const GSTIN_DATA_NOT_MATCHED                            = 'gstin_not_matched';
     const CIN_DATA_NOT_MATCHED                              = 'cin_data_not_matched';
     const LLPIN_DATA_NOT_MATCHED                            = 'llpin_data_not_matched';
+    const PERSONAL_PAN_DATA_NOT_MATCHED                     = 'personal_pan_data_not_matched';
+    const COMPANY_PAN_DATA_NOT_MATCHED                      = 'company_pan_data_not_matched';
+    const GSTIN_NUMBER_NOT_MATCHED                          = 'gstin_number_not_matched';
+
+
+    //spam detected error
+    const PERSONAL_PAN_SPAM_DETECTED                        = 'personal_pan_spam_detected';
+    const COMPANY_PAN_SPAM_DETECTED                         = 'company_pan_spam_detected';
+    const GSTIN_SPAM_DETECTED                               = 'gstin_spam_detected';
 
     //SignatoryName & CompanyName Not Matched.
     const SIGNATORY_NAME_NOT_MATCHED                = 'signatory_name_not_matched';
@@ -166,6 +175,23 @@ class NeedsClarificationReasonsList
             NeedsClarificationMetaData::DESCRIPTION => 'Entered PAN Name doesn\'t match company incorporation records, please enter correct Authorised Signatory PAN Name.',],
         self::COMPANY_NAME_NOT_MATCHED                                => [
             NeedsClarificationMetaData::DESCRIPTION => 'Entered Business Name doesn\'t match company incorporation records, please enter correct Business Name.',],
+        self::PERSONAL_PAN_DATA_NOT_MATCHED                           => [
+            NeedsClarificationMetaData::DESCRIPTION => 'Entered Personal Pan Number doesn\'t match company incorporation records, please enter correct Personal Pan Number.'
+        ],
+        self::COMPANY_PAN_DATA_NOT_MATCHED                           => [
+            NeedsClarificationMetaData::DESCRIPTION => 'Entered Business Pan Number doesn\'t match company incorporation records, please enter correct Business Pan Number.'
+        ],
+        self::GSTIN_NUMBER_NOT_MATCHED                                  => [
+            NeedsClarificationMetaData::DESCRIPTION => 'GSTIN Number doesn\'t match company incorporation records, please enter correct GSTIN Number.',],
+        self::PERSONAL_PAN_SPAM_DETECTED                             => [
+            NeedsClarificationMetaData::DESCRIPTION => 'Max retry exceeded for Personal Pan Number.'
+        ],
+        self::COMPANY_PAN_SPAM_DETECTED                             => [
+            NeedsClarificationMetaData::DESCRIPTION => 'Max retry exceeded for Business Pan Number.'
+        ],
+        self::GSTIN_SPAM_DETECTED                             => [
+            NeedsClarificationMetaData::DESCRIPTION => 'Max retry exceeded for GSTIN Number.'
+        ],
         self::NO_DOC_LIMIT_BREACH                                     => [
             NeedsClarificationMetaData::DESCRIPTION => 'Your GMV limit has been breached, kindly share additional details to get your account reactivated.',],
         self::FIELD_ALREADY_EXIST                                     => [

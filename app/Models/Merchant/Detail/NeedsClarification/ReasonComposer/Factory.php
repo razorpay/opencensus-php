@@ -123,6 +123,14 @@ class Factory
             return new DefaultClarificationReasonComposer();
         }
 
+        // trigger Auto NC for Route linked accounts for Spam detected error.
+        if( ($this->merchantDetails->merchant->isLinkedAccount() === true) and
+            ($this->merchantDetails->merchant->isRouteNoDocKycEnabledForParentMerchant() === true) and
+            ($validation->getErrorCode() === Constants::SPAM_DETECTED_ERROR))
+        {
+            return new SpamDetectedReasonComposer($validation, $needsClarificationMetaData);
+        }
+
         return new IncorrectDetailsReasonComposer($validation, $needsClarificationMetaData);
     }
 
