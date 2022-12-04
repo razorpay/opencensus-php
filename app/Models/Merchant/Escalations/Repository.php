@@ -4,6 +4,7 @@
 namespace RZP\Models\Merchant\Escalations;
 
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 
 class Repository extends Base\Repository
 {
@@ -37,6 +38,17 @@ class Repository extends Base\Repository
     public function fetchEscalationForThresholdAndMilestone(string $merchantId, string $milestone, int $threshold)
     {
         return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::MILESTONE, $milestone)
+            ->where(Entity::THRESHOLD, $threshold)
+            ->orderBy(Entity::CREATED_AT, 'desc')
+            ->get()
+            ->toArray();
+    }
+
+    public function fetchLiveEscalationForThresholdAndMilestone(string $merchantId, string $milestone, int $threshold)
+    {
+        return $this->newQueryWithConnection(Mode::LIVE)
             ->where(Entity::MERCHANT_ID, $merchantId)
             ->where(Entity::MILESTONE, $milestone)
             ->where(Entity::THRESHOLD, $threshold)

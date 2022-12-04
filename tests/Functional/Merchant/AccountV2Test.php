@@ -282,6 +282,43 @@ class AccountV2Test extends TestCase
         $this->assertEquals('activated_kyc_pending', $value);
     }
 
+    public function testGetApplicableStatusForPartiallyActivatedNoDocMerchant()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $featureParams = [
+            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'subm_no_doc_onboarding',
+        ];
+
+        (new Core())->create($featureParams, true);
+
+        $testData = $this->testData['testCreateSubmerchantWithNoDocFeature'];
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $accountId = $result['id'];
+
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+
+        $merchant = $this->getDbEntity('merchant', ['id' => $accountId]);
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $merchantDetails->setBankDetailsVerificationStatus(POIStatus::VERIFIED);
+
+        $merchantDetails->setCompanyPanVerificationStatus(POIStatus::VERIFIED);
+
+        $merchantDetails->setGstinVerificationStatus(POIStatus::VERIFIED);
+
+        $this->fixtures->merchant->activate($accountId);
+
+        $value = (new Detail\Core())->getApplicableActivationStatus($merchantDetails);
+
+        $this->assertEquals('under_review', $value);
+    }
+
     public function testGetOnboardingSource()
     {
         $this->setUpPartnerWithKycHandled();

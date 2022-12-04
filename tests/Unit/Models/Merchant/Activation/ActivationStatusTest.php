@@ -429,6 +429,53 @@ class ActivationStatusTest extends OAuthTestCase
         $this->assertEquals(false, $isNoDocOnboardingFeatureEnabled);
     }
 
+    public function testActivatedMccPendingStateForNoDocMerchant()
+    {
+        $fixtures       = $this->createAndFetchFixtures(Detail\Status::UNDER_REVIEW);
+        $merchantDetail = $fixtures['merchantDetail'];
+        $merchant       = $merchantDetail->merchant;
+        $admin          = $fixtures['admin'];
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $this->fixtures->merchant->addFeatures(['no_doc_onboarding']);
+
+        $input = [
+            'activation_status' => Detail\Status::ACTIVATED_KYC_PENDING
+        ];
+        (new Detail\Core)->updateActivationStatus($merchant, $input, $admin);
+
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+        $this->assertEquals(Detail\Status::ACTIVATED_KYC_PENDING, $merchantDetail->getActivationStatus());
+
+        $input = [
+            'activation_status' => Detail\Status::UNDER_REVIEW
+        ];
+        (new Detail\Core)->updateActivationStatus($merchant, $input, $admin);
+
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+        $this->assertEquals(Detail\Status::UNDER_REVIEW, $merchantDetail->getActivationStatus());
+
+        $input = [
+            'activation_status' => Detail\Status::ACTIVATED_MCC_PENDING
+        ];
+        (new Detail\Core)->updateActivationStatus($merchant, $input, $admin);
+
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+        $this->assertEquals(Detail\Status::ACTIVATED_MCC_PENDING, $merchantDetail->getActivationStatus());
+
+        $merchant = $merchantDetail->merchant;
+
+        $this->assertTrue($merchant->isLive());
+        $this->assertFalse($merchant->getHoldFunds());
+        $this->assertContains('No_doc_partially_activated', $merchant->tagNames());
+
+        $isNoDocOnboardingFeatureEnabled = $this->fixtures->merchant->isFeatureEnabled([Feature\Constants::NO_DOC_ONBOARDING], $merchant->getId());
+        $this->assertEquals(false, $isNoDocOnboardingFeatureEnabled);
+    }
+
     public function testAutoKycHUF()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [

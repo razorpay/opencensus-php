@@ -524,7 +524,7 @@ class Core extends Merchant\Core
     {
         $threshold = $this->getGmvLimitForNoDocMerchant($merchant);
 
-        $escalations = $this->repo->merchant_onboarding_escalations->fetchEscalationForThresholdAndMilestone($merchant->getId(),
+        $escalations = $this->repo->merchant_onboarding_escalations->fetchLiveEscalationForThresholdAndMilestone($merchant->getId(),
             EscalationConstants::HARD_LIMIT_NO_DOC, $threshold);
 
         if (empty($escalations) === false)

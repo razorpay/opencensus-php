@@ -1217,7 +1217,7 @@ class Core extends Base\Core
                 if(($milestone === Constants::NO_DOC_P90_GMV) or ($milestone === Constants::NO_DOC_P91_GMV))
                 {
                     //checking if escalation entry exist for the merchant with the respective milestone & threshold, so that we do not re-trigger same escalation again
-                    $escalations = $this->repo->merchant_onboarding_escalations->fetchEscalationForThresholdAndMilestone($merchant->getId(), $milestone, $threshold);
+                    $escalations = $this->repo->merchant_onboarding_escalations->fetchLiveEscalationForThresholdAndMilestone($merchant->getId(), $milestone, $threshold);
 
                     if (empty($escalations) === false)
                     {

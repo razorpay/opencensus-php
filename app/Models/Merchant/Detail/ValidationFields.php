@@ -245,6 +245,7 @@ class ValidationFields
     ];
 
     const REGISTERED_NO_DOC_OPTIONAL_FIELDS = [
+        Entity::CONTACT_NAME,
         Entity::BUSINESS_DBA
     ];
 
@@ -439,7 +440,7 @@ class ValidationFields
                 return $array;
 
             default:
-                return [];
+                return [Entity::CONTACT_NAME];
         }
     }
 

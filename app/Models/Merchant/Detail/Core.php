@@ -2992,6 +2992,16 @@ class Core extends Base\Core
                 {
                     $this->paymentEnabledEvent($merchant, $oldMerchantDetails, $newMerchantDetails);
                 }
+
+                // A no-doc onboarded merchant will not observe 'activated_mcc_pending' state. Though if such a merchant is marked with this status, we are removing no_doc_onboarding flag
+                if($merchant->isNoDocOnboardingFeatureEnabled() === true)
+                {
+                    (new Merchant\AccountV2\Core())->removeNoDocOnboardingFeature($merchantId);
+
+                    $this->trace->info(TraceCode::NO_DOC_MERCHANT_MARKED_MCC_PENDING, [
+                        'merchant_id'   => $merchantId
+                    ]);
+                }
             }
 
             if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_KYC_PENDING && $merchant->isNoDocOnboardingEnabled() === true)
@@ -4536,6 +4546,11 @@ class Core extends Base\Core
             ]);
 
             return $status;
+        }
+        else if($merchantDetails->merchant->isNoDocOnboardingPaymentsEnabled() === true)
+        {
+            // A no-doc onboarded merchant who is partially activated, will not observe 'activated_mcc_pending' state. Thread: https://razorpay.slack.com/archives/C022737TP5Z/p1669787674798209
+            return Status::UNDER_REVIEW;
         }
 
         $autoKyc = $this->isAutoKycDone($merchantDetails);
