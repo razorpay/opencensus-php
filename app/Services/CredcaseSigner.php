@@ -119,17 +119,16 @@ class CredcaseSigner
     {
         $merchantId = $this->ba->getMerchantId();
 
-
-        if ((app()->runningUnitTests() === true) and (CredcaseSignerTest::PUBLIC_KEY_1 != $publicKey)) {
+        if ((app()->runningUnitTests() === true) and !in_array($publicKey, [CredcaseSignerTest::PUBLIC_KEY_1, CredcaseSignerTest::PARTNER_KEY_1])) {
             return false;
         }
 
-        // Credcase signer for now only public key as argument. But it will
-        // support partner auth key, oauth public token, and {rzp_mode_mid} in the future.
+        // Currently, Credcase signer only supports merchant and partner auth keys
+        // It will also support oauth public key and {rzp_mode_mid} in the future
         if (($publicKey !== null)
-            and preg_match(BasicAuth::KEY_REGEX, $publicKey) === 1
+            and (preg_match(BasicAuth::KEY_REGEX, $publicKey) === 1
             and str_ends_with($publicKey, $merchantId) === false)
-        {
+            or preg_match(BasicAuth::PARTNER_KEY_REGEX, $publicKey) === 1) {
             return true;
         }
 
@@ -157,7 +156,13 @@ class CredcaseSigner
         $startAt = microtime(true);
         try
         {
-            $cacheKey = self::CREDCASE_CACHE_KEY_PREFIX . ':' . self::CREDCASE_CACHE_KEY_VERSION . ':' . $publicKey;
+            // Credcase Cache stores (key: secret) mapping.
+            // If key is a partner auth key, strip account id suffix from key before forming the cache key
+            $publicKeyNameInCache = $publicKey;
+            if (preg_match(BasicAuth::PARTNER_KEY_REGEX, $publicKey) === 1)
+                $publicKeyNameInCache = substr($publicKey, 0, strpos($publicKey, "-acc_"));
+
+            $cacheKey = self::CREDCASE_CACHE_KEY_PREFIX . ':' . self::CREDCASE_CACHE_KEY_VERSION . ':' . $publicKeyNameInCache;
 
             $encryptedSecret = null;
 
