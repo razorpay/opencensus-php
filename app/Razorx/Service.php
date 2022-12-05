@@ -262,7 +262,8 @@ class Service extends Base\Service
             'rx_auto_tds_accrual',
             'rx_mtp_downtime_enabled',
             'rx_accounting_onboarding_banner',
-            'hide_PI_details'
+            'hide_PI_details',
+            'rx_custom_access_control_disabled'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
