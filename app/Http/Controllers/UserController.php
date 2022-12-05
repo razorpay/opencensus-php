@@ -102,9 +102,13 @@ class UserController extends Controller
 
             $signupCampaign = $details['user']['signup_campaign'] ?? null;
 
-            if (($details['submitted'] == 0) and
-                ($details['activation_form_milestone'] !== 'L2') and
-                ($signupCampaign === 'p2pm_onboarding'))
+            $submitted = $details['submitted'] ?? null;
+
+            $milestone = $details['activation_form_milestone'] ?? null;
+
+            if (($signupCampaign === 'p2pm_onboarding') and
+                ($submitted == 0) and
+                ($milestone !== 'L2'))
             {
                 return redirect(env('EASY_DASHBOARD_URL') . '/onboarding/p2pm');
             }
