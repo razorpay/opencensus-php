@@ -106,18 +106,27 @@ class BulkUploadClient extends Job
     {
         foreach ($input as $contact)
         {
+            $start = $this->getCurrentTimeInMillis();
             $rawAddresses = (new RawAddress\Repository())->fetchRawAddressesForContact($contact['contact'],
                                                                                        self::STATUS_PROCESSING);
+            $timeTaken = $this->getCurrentTimeInMillis() - $start;
+            $this->trace->info(TraceCode::RAW_ADDRESS_TO_ADDRESS_CREATION_WORKER, ["fetchRawAddressesForContact:113" => $timeTaken]);
+
             if (sizeof($rawAddresses) == 0)
             {
                 continue;
             }
 
+            $start = $this->getCurrentTimeInMillis();
             $customer = (new Customer\Repository())->findByContactAndMerchantId($contact['contact'],Account::SHARED_ACCOUNT);
-
+            $timeTaken = $this->getCurrentTimeInMillis() - $start;
+            $this->trace->info(TraceCode::RAW_ADDRESS_TO_ADDRESS_CREATION_WORKER, ["findByContactAndMerchantId:123" => $timeTaken]);
             if ($customer !== null)
             {
+                $start = $this->getCurrentTimeInMillis();
                 $addresses = (new Address\Repository())->fetchAddressesForEntity($customer,[]);
+                $timeTaken = $this->getCurrentTimeInMillis() - $start;
+                $this->trace->info(TraceCode::RAW_ADDRESS_TO_ADDRESS_CREATION_WORKER, ["fetchAddressesForEntity:129" => $timeTaken]);
             }
             else
             {
@@ -126,8 +135,15 @@ class BulkUploadClient extends Job
                 {
                     $this->trace->info(TraceCode::CUSTOMER_CREATE_FROM_RAW_ADDRESS,[]);
 
+                    $start = $this->getCurrentTimeInMillis();
                     $customer = (new Customer\Core)->createGlobalCustomer($details, true);
+                    $timeTaken = $this->getCurrentTimeInMillis() - $start;
+                    $this->trace->info(TraceCode::RAW_ADDRESS_TO_ADDRESS_CREATION_WORKER, ["createGlobalCustomer:141" => $timeTaken]);
+
+                    $start = $this->getCurrentTimeInMillis();
                     $addresses = (new Address\Repository())->fetchAddressesForEntity($customer,[]);
+                    $timeTaken = $this->getCurrentTimeInMillis() - $start;
+                    $this->trace->info(TraceCode::RAW_ADDRESS_TO_ADDRESS_CREATION_WORKER, ["fetchAddressesForEntity:146" => $timeTaken]);
                 }
                 catch (\Exception $e)
                 {
@@ -137,7 +153,10 @@ class BulkUploadClient extends Job
                 }
             }
 
+            $start = $this->getCurrentTimeInMillis();
             $requestStructure = $this->convertToKafkaReqPayload($contact['contact'],$rawAddresses->toArray(),$addresses->toArray());
+            $timeTaken = $this->getCurrentTimeInMillis() - $start;
+            $this->trace->info(TraceCode::RAW_ADDRESS_TO_ADDRESS_CREATION_WORKER, ["convertToKafkaReqPayload:159" => $timeTaken]);
 
             $this->trace->info(TraceCode::RAW_ADDRESS_KAFKA_PUSH_REQUEST,[]);
 
@@ -145,6 +164,7 @@ class BulkUploadClient extends Job
             try
             {
                 (new KafkaProducer(self::ADDRESS_DEDUPE_REQUEST, stringify($requestStructure)))->Produce();
+                $this->trace->info(TraceCode::RAW_ADDRESS_TO_ADDRESS_CREATION_WORKER, ["kafkaPushSuccess:167" => $this->getCurrentTimeInMillis() - $kafkaStart]);
             }
             catch (\Exception $e)
             {
@@ -154,6 +174,7 @@ class BulkUploadClient extends Job
                     ['error' => $e->getMessage(),
                      'time_taken' => ($this->getCurrentTimeInMillis() - $kafkaStart)]
                 );
+                $this->trace->info(TraceCode::RAW_ADDRESS_TO_ADDRESS_CREATION_WORKER, ["kafkaPushFailed:177" => $this->getCurrentTimeInMillis() - $kafkaStart]);
                 continue;
             }
             $this->trace->histogram(
@@ -362,7 +383,7 @@ class BulkUploadClient extends Job
         }
     }
 
-    protected function getCurrentTimeInMillis()
+    public function getCurrentTimeInMillis()
     {
         return round(microtime(true) * 1000);
     }

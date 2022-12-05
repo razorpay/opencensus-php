@@ -24,9 +24,15 @@ class RawAddressContactsConsumer extends Job
             'mode' => $this->mode,
         ];
 
+        $bulkUploadClient = new BulkUploadClient();
+
         $this->trace->info(TraceCode::RAW_ADDRESS_KAFKA_CONSUME_REQUEST,[
             "message"=> "consume started"]);
 
-        (new BulkUploadClient())->uploadAddressesToKafka($this->getPayload());
+        $start = $bulkUploadClient->getCurrentTimeInMillis();
+        $bulkUploadClient->uploadAddressesToKafka($this->getPayload());
+        $timeTaken = $bulkUploadClient->getCurrentTimeInMillis() - $start;
+        $this->trace->info(TraceCode::RAW_ADDRESS_TO_ADDRESS_CREATION_WORKER, ["uploadAddressesToKafka:33" => $timeTaken]);
+
     }
 }
