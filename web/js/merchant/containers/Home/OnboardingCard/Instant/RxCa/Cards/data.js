@@ -33,6 +33,7 @@ export const currentAccountSubSubStatuses = {
   [currentAccountStatuses.archived]: {
     UNSERVICEABLE_PINCODE: 'unserviceable_pincode',
     NEGATIVE_PROFILE_SVR_ISSUE: 'negative_profile/svr_issue',
+    CANCELLED: 'cancelled',
     OTHER: 'other',
   },
 };

@@ -137,7 +137,7 @@ export const caApplicationSubStatus = {
   [caApplicationStatus.ARCHIVED]: {
     UNSERVICEABLE_PINCODE: 'unserviceable_pincode',
     NEGATIVE_PROFILE_SVR_ISSUE: 'negative_profile/svr_issue',
-    OTHER: 'other',
+    CANCELLED: 'cancelled',
   },
 };
 

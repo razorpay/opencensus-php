@@ -175,7 +175,7 @@ export const getCaState = (caAccountStatus, caAccountSubStatus, GoToCaDocs, show
     );
   } else if (
     caAccountStatus === currentAccountStatuses.archived &&
-    caAccountSubStatus === currentAccountSubSubStatuses[currentAccountStatuses.archived].OTHER
+    caAccountSubStatus === currentAccountSubSubStatuses[currentAccountStatuses.archived].CANCELLED
   ) {
     pillType = 'danger';
     pillText = 'Request Cancelled';

@@ -99,7 +99,7 @@ export const getDerivedStatus = (data) => {
         return derivedCaApplicationStatus.REJECTED;
       }
 
-      if (sub_status === caApplicationSubStatus[caApplicationStatus.ARCHIVED].OTHER) {
+      if (sub_status === caApplicationSubStatus[caApplicationStatus.ARCHIVED].CANCELLED) {
         return derivedCaApplicationStatus.CANCELLED;
       }
 
