@@ -23,6 +23,7 @@ import RepaymentsSchedule from 'merchant/views/Capital/CashAdvance/RepaymentsSch
 import HandleIndex from './HandleIndex';
 import lazy from './LazyLoader';
 import { getXCAStatus } from 'common/ui/NotificationsDropdown/Neostone/common/utils';
+import { getIsPayrollWidgetEnabled } from 'merchant/components/Sidebar/helpers';
 
 const ApiKeysAndPlugins = lazy(() =>
   import(/* webpackChunkName: "ApiKeysAndPlugins" */ 'merchant/views/ApiKeysAndPlugins'),
@@ -157,6 +158,10 @@ const Support = lazy(() =>
 );
 const HelpSection = lazy(() =>
   import(/* webpackChunkName: "new-help-section" */ 'merchant/components/Support/HelpSection'),
+);
+
+const PayrollWidget = lazy(() =>
+  import(/* webpackChunkName: "PayrollWidget" */ 'merchant/views/Payroll'),
 );
 
 // Can be removed with old navigation removal
@@ -659,6 +664,11 @@ export default class Content extends Component {
           <ShowWhenRoute path="/capital/non-fldg-loans" component={NonFldgLoans} />
           <ShowWhenRoute path="/capital/cash-advance" component={FlashCreditLandingPage} />
           <ShowWhenRoute path="/capital/corporate-cards" component={CorporateCards} />
+          <ShowWhenRoute
+            path="/payroll"
+            component={PayrollWidget}
+            additionalCondition={getIsPayrollWidgetEnabled}
+          />
           <Route exact path="/" component={HandleIndex} />
         </Switch>
       </Suspense>

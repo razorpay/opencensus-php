@@ -4,7 +4,7 @@ import MainNavLink from 'merchant_common/components/MainNavLink';
 import MagicCheckoutNavLink from 'merchant/components/Sidebar/MagicCheckoutNavLink';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, isMobileResolution } from 'common/utils/rzp-utils';
-import { getIsBankingEnabled } from './helpers';
+import { getIsBankingEnabled, getIsPayrollWidgetEnabled } from './helpers';
 import { trackViewedBankingNavBar } from './ga';
 import BBPSImage from 'assets/bbps.png';
 import * as LocalStorageService from 'common/utils/localStorage';
@@ -177,6 +177,14 @@ function MerchantNavLinks(props) {
         to="/razorpayx"
         isNew={true}
         additionalCondition={getIsBankingEnabled}
+      />
+
+      <MainNavLink
+        label="Payroll"
+        icon="i i-razorpayx text-razorpayx-orange"
+        to="/payroll"
+        isNew
+        additionalCondition={getIsPayrollWidgetEnabled}
       />
 
       <MainNavLink

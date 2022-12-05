@@ -1700,6 +1700,10 @@ export default class User {
     return variant?.name === 'exposed';
   }
 
+  get isShowPayrollWidgetEnabled() {
+    return getSplitzExperimentVariant('show_payroll_widget_exp').variables?.result === 'on';
+  }
+
   get isApiKeysRevampEnabled() {
     return getSplitzExperimentVariant('api_keys_revamp')?.variables?.result === 'on';
   }

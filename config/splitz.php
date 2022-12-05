@@ -219,6 +219,9 @@ return [
         'API_KEYS_REVAMP' => env('API_KEYS_REVAMP', ''),
 
         // enable product led onboarding
-        'PRODUCT_LED_ONBOARDING' => env('PRODUCT_LED_ONBOARDING', '')
+        'PRODUCT_LED_ONBOARDING' => env('PRODUCT_LED_ONBOARDING', ''),
+
+        // payroll wdiget on dashboard
+        'SHOW_PAYROLL_WIDGET_EXP' => env('SHOW_PAYROLL_WIDGET_EXP', ''),
     ]
 ];

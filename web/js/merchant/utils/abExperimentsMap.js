@@ -440,4 +440,12 @@ export default {
     // prod experiment ids
     'KE6QIX5uyJrKOq',
   ],
+
+  show_payroll_widget_exp: [
+    //beta experiment ids
+    'KmA4axC7yCGMZe',
+
+    //prod experiment ids,
+    'KmBlZ2iUatsoAB',
+  ],
 };

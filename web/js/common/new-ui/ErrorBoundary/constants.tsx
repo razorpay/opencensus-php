@@ -21,6 +21,7 @@ export enum Teams {
   ROUTING = 'Routing',
   CROSS_BORDER = 'Cross Border',
   DEV_EXP = 'Developer Experience',
+  XPAYROLL = 'XPayroll',
 }
 
 // Maintain this list in ascending order
@@ -154,4 +155,6 @@ export const RoutesConfig = {
   '/announcements': Teams.PLATFORM_GROWTH,
 
   '/payments/b2b-exports': Teams.CROSS_BORDER,
+
+  '/payroll': Teams.XPAYROLL,
 };
