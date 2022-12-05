@@ -85,7 +85,7 @@ class Core extends Base\Core
         foreach ($params as $documentType => $fileAttributes)
         {
             $metadata = [
-                'file_name' => $fileAttributes[Constants::FILE_NAME] ?? ''
+                'file_name' => $fileAttributes[Constants::ORIGINAL_FILE_NAME] ?? ''
             ];
 
             $input = [

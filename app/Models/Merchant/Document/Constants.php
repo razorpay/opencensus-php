@@ -25,6 +25,8 @@ class Constants
     const MERCHANT    = 'merchant';
     const URL         = 'url';
 
+    const ORIGINAL_FILE_NAME = 'original_file_name';
+
 
     const OCR_MATCH_TYPE = 'ocr_match_type';
 

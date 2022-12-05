@@ -999,12 +999,16 @@ class Service extends Base\Service
 
             $fileName = $this->getFileName($file, $merchant->getId());
 
+            $originalFileName = $this->getOriginalFileName($file, $merchant->getId());
+
             $documentUploadInput = [
-                Document\Constants::TYPE      => $type,
-                Document\Constants::FILE      => $file,
-                Document\Constants::FILE_NAME => $fileName,
-                Document\Constants::ENTITY    => $publicEntity,
-                Document\Constants::MERCHANT  => $merchant,
+                Document\Constants::TYPE               => $type,
+                Document\Constants::FILE               => $file,
+                Document\Constants::FILE_NAME          => $fileName,
+                Document\Constants::ENTITY             => $publicEntity,
+                Document\Constants::MERCHANT           => $merchant,
+                Document\Constants::ORIGINAL_FILE_NAME => $originalFileName
+
             ];
 
             $documentSource = $documentSource ?? Factory::getApplicableSource($merchant->getId());
@@ -1017,6 +1021,11 @@ class Service extends Base\Service
         }
 
         return $params;
+    }
+
+    private function getOriginalFileName($file, string $merchantId): string
+    {
+        return $file->getClientOriginalName();
     }
 
     public function uploadMerchant(array $input)
