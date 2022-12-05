@@ -126,9 +126,9 @@ class CredcaseSigner
         // Currently, Credcase signer only supports merchant and partner auth keys
         // It will also support oauth public key and {rzp_mode_mid} in the future
         if (($publicKey !== null)
-            and (preg_match(BasicAuth::KEY_REGEX, $publicKey) === 1
+            and ((preg_match(BasicAuth::KEY_REGEX, $publicKey) === 1
             and str_ends_with($publicKey, $merchantId) === false)
-            or preg_match(BasicAuth::PARTNER_KEY_REGEX, $publicKey) === 1) {
+            or preg_match(BasicAuth::PARTNER_KEY_REGEX, $publicKey) === 1)) {
             return true;
         }
 
