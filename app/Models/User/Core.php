@@ -3987,6 +3987,15 @@ class Core extends Base\Core
         // Optimization: Do just one call to raven when input.medium = sms.
         $otp = $otp ?: $this->generateOtpFromRaven($input, $merchant, $user);
 
+        $action = $input[Entity::ACTION];
+
+        // Using the existing create_payout template for Scan & Pay Feature
+        // Will use a new template if SMS copy changes in future
+        if ($action === Constants::CREATE_COMPOSITE_PAYOUT_WITH_OTP)
+        {
+            $action = Constants::CREATE_PAYOUT;
+        }
+
         try
         {
             // Note: Add the actions to SEND_SMS_VIA_STORK since we are migrating sms delivery from raven to stork
@@ -4011,8 +4020,8 @@ class Core extends Base\Core
             {
                 $payload = [
                     'receiver' => $user->getContactMobile(),
-                    'source' => "api.user.{$input['action']}",
-                    'template' => 'sms.user.' . $input[Entity::ACTION],
+                    'source' => 'api.user.' . $action,
+                    'template' => 'sms.user.' . $action,
                     'params' => [
                         'otp' => $otp['otp'],
                         'validity' => Carbon::createFromTimestamp($otp['expires_at'], Timezone::IST)->format('H:i:s'),
@@ -4490,6 +4499,14 @@ class Core extends Base\Core
                 'contact'             => $fa->contact->toArrayPublic(),
                 'account_destination' => $fa->getAccountDestinationAsText(),
                 'account_type'        => $fa->getAccountTypeAsText(),
+            ];
+        }
+        else if ($action === Constants::CREATE_COMPOSITE_PAYOUT_WITH_OTP)
+        {
+            $payload += [
+                'amount'         => amount_format_IN($input['amount']),
+                'account_number' => mask_except_last4($input['account_number']),
+                'purpose'        => $input['purpose'],
             ];
         }
         else if ($action === 'sub_virtual_account_transfer')

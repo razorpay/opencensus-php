@@ -4022,6 +4022,24 @@ return [
         ],
     ],
 
+    'testSendOtpForScanAndPay' => [
+        'request' => [
+            'url'     => '/users/otp/send',
+            'method'  => 'POST',
+            'content' => [
+                'action' => 'create_composite_payout_with_otp',
+                "amount" => 100000,
+                "purpose" => "refund",
+                "vpa" => "vivek@okhdfcbank",
+                "account_number" => "3434605717969098"
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testSendOtpVerifyUser' => [
         'request' => [
             'url'     => '/users/otp/send',

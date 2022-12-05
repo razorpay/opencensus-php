@@ -20,6 +20,7 @@ use RZP\Models\User\Service as UserService;
 use RZP\Models\User\Validator as Validator;
 use Illuminate\Support\Facades\Mail as Mail;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -1474,6 +1475,77 @@ class UserTest extends TestCase
         $this->assertEquals($response[Entity::TOKEN], $input[Entity::TOKEN]);
     }
 
+    public function testSendOtpForScanAndPay()
+    {
+        $input = [
+            Entity::MEDIUM        => 'sms',
+            Entity::ACTION        => 'create_composite_payout_with_otp',
+            Entity::TOKEN         => '7643816831',
+            PayoutEntity::AMOUNT    => 100000,
+            PayoutEntity::PURPOSE   => "refund",
+            PayoutEntity::ACCOUNT_NUMBER => "3434605717969098",
+            "vpa"                   => "vivek@okhdfcbank",
+        ];
+
+        $ravenMock = Mockery::mock('RZP\Services\Mock\Raven');
+
+        $ravenMock->shouldReceive('generateOtp')->andReturn(['otp' => '10000000000sms', 'expires_at' => 10000]);
+
+        $ravenMock->shouldReceive('sendSms')
+            ->withArgs(
+                function($input) {
+                    if ($input['template'] != 'sms.user.create_payout')
+                    {
+                        return false;
+                    }
+
+                    if ($input['source'] != 'api.user.create_payout')
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }
+            )
+            ->andReturn(
+                ['sms_id' => '10000000000sms']
+            );
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->userEntityMock->shouldReceive('getValidator')->withAnyArgs()->andReturn($this->userValidator);
+
+        $this->userValidator->shouldReceive('validateSendOtpOperation')->withAnyArgs()->andReturn([]);
+
+        $this->merchantEntityMock->shouldReceive('getId')->withAnyArgs()->andReturn('100002Razorpay');
+
+        $response = $this->userService->sendOtp($input);
+
+        $this->assertEquals($response[Entity::TOKEN], $input[Entity::TOKEN]);
+
+        $input = [
+            Entity::MEDIUM        => 'email',
+            Entity::ACTION        => 'create_composite_payout_with_otp',
+            Entity::TOKEN         => '7643816831',
+            PayoutEntity::AMOUNT    => 100000,
+            PayoutEntity::PURPOSE   => "refund",
+            PayoutEntity::ACCOUNT_NUMBER => "3434605717969098",
+            "vpa"                   => "vivek@okhdfcbank",
+        ];
+
+        Mail::fake();
+
+        $mailMock = Mockery::mock('RZP\Mail');
+
+        $mailMock->shouldReceive('queue')->withAnyArgs()->andReturn([]);
+
+        $this->userEntityMock->shouldReceive('toArrayPublic')->withAnyArgs()->andReturn([]);
+
+        $response = $this->userService->sendOtp($input);
+
+        $this->assertEquals($response[Entity::TOKEN], $input[Entity::TOKEN]);
+    }
+
     public function testSendOtpVerifyUser()
     {
         Mail::fake();
@@ -2388,11 +2460,11 @@ class UserTest extends TestCase
         $merchantAttributeEntityMock->shouldReceive('toArrayPublic')->withAnyArgs()->andReturn(['items' => []]);
 
         $bankingAccountEntityMock = Mockery::mock('RZP\Models\BankingAccount\Entity')->makePartial();
-        
+
         $creditBalanceRepoMock = Mockery::mock('RZP\Models\Merchant\Credits\Balance\Repository');
-        
+
         $creditBalanceEntityMock = Mockery::mock('RZP\Models\Merchant\Credits\Balance\Entity')->makePartial();
-        
+
         $bankingAccountEntityMock->shouldReceive('usingNewStates')->andReturn(false);
 
         $this->basicAuthMock->shouldReceive('isStrictPrivateAuth')->andReturn(true);
