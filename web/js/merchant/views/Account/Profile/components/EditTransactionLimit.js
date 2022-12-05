@@ -145,7 +145,11 @@ const EditTransactionLimit = (props) => {
             </span>
           ) : (
             <div>
-              {amountValue ? <Amount value={amountValue} currency="INR" /> : 'Not Updated'}
+              {amountValue ? (
+                <Amount value={amountValue} currency={user.merchant.currency} />
+              ) : (
+                'Not Updated'
+              )}
               {showTransactionLimitEdit && (
                 <TriggerOnQueryParamMatch
                   queryParamsMapping={[

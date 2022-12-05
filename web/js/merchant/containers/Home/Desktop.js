@@ -828,7 +828,7 @@ class AnalyticsDesktop extends Component {
                       {!current_balance.loading && (
                         <Amount
                           value={balance}
-                          currency="INR"
+                          currency={user.merchant.currency}
                           className={negativeBalanceClassName}
                         />
                       )}
