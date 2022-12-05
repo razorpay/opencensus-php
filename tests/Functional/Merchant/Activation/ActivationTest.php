@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Models\Base\EsDao;
 use RZP\Models\Card\Network;
+use RZP\Services\KafkaMessageProcessor;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Mail\Merchant\MerchantOnboardingEmail;
@@ -5068,7 +5069,11 @@ class ActivationTest extends OAuthTestCase
 
         $this->startTest();
 
-        Mail::assertQueued(NotifyActivationSubmission::class);
+        $consentDetail = $this->getDbLastEntity('merchant_consents', 'test');
+
+        $this->assertEquals($merchantId, $consentDetail['merchant_id']);
+
+        $this->assertEquals('initiated', $consentDetail['status']);
     }
 
     public function testStorageConsentNullForMerchantWithL2Milestone()
@@ -5081,6 +5086,62 @@ class ActivationTest extends OAuthTestCase
 
         $this->startTest();
 
-        Mail::assertQueued(NotifyActivationSubmission::class);
+        $consentDetail = $this->getDbLastEntity('merchant_consents', 'test');
+
+        $this->assertNull($consentDetail);
+    }
+
+    public function testKafkaSuccessForLegalDocument()
+    {
+        Config::set('services.bvs.mock', true);
+
+        $this->fixtures->create('merchant_consents');
+
+        $kafkaEventPayload = [
+            'data' => [
+                'id'=> 'KdRvpX6ffYF7yG',
+                'status' => "success",
+                'documents_details' => [
+                    [
+                        'type' => 'Terms and Conditions',
+                        'acceptance_timestamp' => "1651060634",
+                        'status' => "success"
+                    ]
+                ]
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('api-bvs-legal-document-result-events', $kafkaEventPayload, 'test');
+
+        $consentDetail = $this->getDbLastEntity('merchant_consents', 'test');
+
+        $this->assertEquals('success', $consentDetail['status']);
+    }
+
+    public function testKafkaFailureForLegalDocument()
+    {
+        Config::set('services.bvs.mock', true);
+
+        $this->fixtures->create('merchant_consents');
+
+        $kafkaEventPayload = [
+            'data' => [
+                'id'=> 'KdRvpX6ffYF7yG',
+                'status' => "failed",
+                'documents_details' => [
+                    [
+                        'type' => 'Terms and Conditions',
+                        'acceptance_timestamp' => "1651060634",
+                        'status' => "failed"
+                    ]
+                ]
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('api-bvs-legal-document-result-events', $kafkaEventPayload, 'test');
+
+        $consentDetail = $this->getDbLastEntity('merchant_consents', 'test');
+
+        $this->assertEquals('failed', $consentDetail['status']);
     }
 }
