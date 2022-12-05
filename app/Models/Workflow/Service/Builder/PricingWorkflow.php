@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Workflow\Service\Builder;
 
+use App;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Workflow\Service\Builder\Constants as Constants;
@@ -19,8 +20,11 @@ class PricingWorkflow
 
     protected $config;
 
+    protected $app;
+
     public function __construct()
     {
+        $this->app = App::getFacadeRoot();
         $this->trace    = app('trace');
         $this->ba       = app('basicauth');
         $this->config   = app('config');
@@ -62,10 +66,15 @@ class PricingWorkflow
         $input[Constants::WORKFLOW][Constants::DIFF][Constants::NEW][Constants::CREATED_BY] = $this->ba->getAdmin()->getName();
         $input[Constants::WORKFLOW][Constants::DIFF][Constants::NEW][Constants::CREATED_BY_EMAIL] = $this->ba->getAdmin()->getEmail();
 
-        $input[Constants::WORKFLOW][Constants::DIFF][Constants::OLD][Constants::PRICING_PLAN_ID] = "";
-        $input[Constants::WORKFLOW][Constants::DIFF][Constants::NEW][Constants::PRICING_PLAN_ID] = $plan->getId();
+        if (empty($merchant->pricing) === false) {
+            $input[Constants::WORKFLOW][Constants::DIFF][Constants::OLD][Constants::PRICING_PLAN_ID] = $merchant->pricing->getId();
+            $input[Constants::WORKFLOW][Constants::DIFF][Constants::OLD][Constants::PRICING_PLAN] = $merchant->pricing->getPlanName();
+        } else {
+            $input[Constants::WORKFLOW][Constants::DIFF][Constants::OLD][Constants::PRICING_PLAN_ID] = "";
+            $input[Constants::WORKFLOW][Constants::DIFF][Constants::OLD][Constants::PRICING_PLAN] = "";
+        }
 
-        $input[Constants::WORKFLOW][Constants::DIFF][Constants::OLD][Constants::PRICING_PLAN] = "";
+        $input[Constants::WORKFLOW][Constants::DIFF][Constants::NEW][Constants::PRICING_PLAN_ID] = $plan->getId();
         $input[Constants::WORKFLOW][Constants::DIFF][Constants::NEW][Constants::PRICING_PLAN] = $plan->getPlanName();
 
         if (isset($payload[Constants::APPROVAL_DOC]) === true) {
