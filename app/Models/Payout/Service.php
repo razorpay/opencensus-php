@@ -1109,7 +1109,7 @@ class Service extends Base\Service
         $payoutInput = array_except($input, ['otp', 'token']);
 
         // Only allowed for Rx payouts, mandates account number
-        $this->processAccountNumber($payoutInput);
+        $balance = $this->processAccountNumber($payoutInput);
 
         (new Validator)->setStrictFalse()
                        ->validateInput(Validator::BEFORE_CREATE_FUND_ACCOUNT_PAYOUT_WITH_OTP, $input);
@@ -1119,7 +1119,8 @@ class Service extends Base\Service
             $payoutInput[Entity::ORIGIN] = Entity::DASHBOARD;
         }
 
-        $this->blockIciciDirectAccountPayoutsIfApplicable($payoutInput[Merchant\Balance\Entity::BALANCE_ID], $this->merchant);
+        $this->checkIfIciciDirectAccountPayoutShouldBeAllowed($input, false, $balance);
+
         /*
          * If Undo payout feature is enabled for the merchant, then create payout in pending state else go with core payout create flow
         */
@@ -1143,23 +1144,6 @@ class Service extends Base\Service
             }
 
             return $payout->toArrayPublic();
-        }
-    }
-
-    public function blockIciciDirectAccountPayoutsIfApplicable(string $balanceId, Merchant\Entity $merchant)
-    {
-        /** @var Merchant\Balance\Entity $balance */
-        $balance = $this->repo->balance->findByPublicIdAndMerchant($balanceId, $merchant);
-
-        if (($this->app['basicauth']->isProxyAuth() === true) and
-            (Payout\Core::shouldBlockIciciDirectAccountPayoutsForNonBaasMerchants($balance, $merchant) === true))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR,
-                null,
-                null,
-                'Dashboard payouts are not available for this account'
-            );
         }
     }
 
@@ -3595,29 +3579,7 @@ class Service extends Base\Service
             $balance = $this->repo->balance->findByPublicIdAndMerchant($input[Payout\Entity::BALANCE_ID], $this->merchant);
         }
 
-        $isVendorPaymentApp = $this->auth->isVendorPaymentApp();
-
-        $isCapitalCollectionsApp = $internal === true and $this->auth->isCapitalCollectionsApp();
-
-        if (((Payout\Core::checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa($balance, $this->merchant) === true) and
-             ($isVendorPaymentApp === false) and
-             ($isCapitalCollectionsApp === false)) or
-            (Payout\Core::shouldBlockIciciDirectAccountPayoutsForNonBaasMerchants($balance, $this->merchant) === true))
-        {
-            $this->trace->error(TraceCode::API_PAYOUTS_ARE_NOT_ALLOWED,
-                [
-                    'is_vendor_payment_app'      => $isVendorPaymentApp,
-                    'is_capital_collections_app' => $isCapitalCollectionsApp,
-                    'is_internal'                => $internal
-                ]);
-
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR,
-                null,
-                null,
-                'API payouts are not available for this account'
-            );
-        }
+        $this->checkIfIciciDirectAccountPayoutShouldBeAllowed($input, $internal, $balance);
 
         if ($this->merchant->isFeatureEnabled(Features::ALLOW_NON_SAVED_CARDS) === true)
         {
@@ -3647,6 +3609,65 @@ class Service extends Base\Service
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Checks if a merchant is allowed to make a ICICI direct account payout
+     *
+     * @param array $input
+     * @param bool $internal
+     * @param Merchant\Balance\Entity $balance
+     * @throws Exception\BadRequestException
+     */
+    protected function checkIfIciciDirectAccountPayoutShouldBeAllowed(array $input, bool $internal, Merchant\Balance\Entity $balance)
+    {
+        $shouldBlockNonBaasPayouts = Payout\Core::shouldBlockIciciDirectAccountPayoutsForNonBaasMerchants($balance, $this->merchant);
+
+        if (($this->app['basicauth']->isProxyAuth() === true) and ($shouldBlockNonBaasPayouts === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                'Dashboard payouts are not available for this account'
+            );
+        }
+
+        if (Payout\Core::checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa($balance, $this->merchant) === false and
+            $shouldBlockNonBaasPayouts === false)
+        {
+            return;
+        }
+
+        $isStrictPrivateAuth = $this->auth->isStrictPrivateAuth();
+
+        $isVendorPaymentApp = $this->auth->isVendorPaymentApp();
+
+        $isCapitalCollectionsApp = $internal === true and $this->auth->isCapitalCollectionsApp();
+
+        // API payouts for ICICI 2FA enabled merchants are not allowed unless it is created from Vendor Payments
+        // app or Capital collections app
+        if ((($isStrictPrivateAuth === true or $this->isAllowedInternalApp() or $this->auth->isBatchApp()) and
+            ($isVendorPaymentApp === false) and
+            ($isCapitalCollectionsApp === false)) or ($shouldBlockNonBaasPayouts === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                'API payouts are not available for this account'
+            );
+        }
+
+        if (isset($input[Payout\Entity::SCHEDULED_AT]) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                'Scheduled payouts cannot be created using ICICI CA 2FA'
+            );
         }
     }
 

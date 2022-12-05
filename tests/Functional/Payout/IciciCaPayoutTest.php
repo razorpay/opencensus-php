@@ -2917,6 +2917,23 @@ class IciciCaPayoutTest extends TestCase
 
         $this->assertNotNull($payout[Payout\Entity::PRICING_RULE_ID]);
     }
+
+    public function testScheduledPayoutCreateForIcici2faEnabledMerchant()
+    {
+        $this->ba->proxyAuth();
+
+        $timestamp = Carbon::now('Asia/Kolkata')->addDay(1);
+
+        $scheduledTimestamp = $timestamp->setHour(13);
+
+        $this->testData[__FUNCTION__]['request']['content']['scheduled_at'] = (string) $scheduledTimestamp->getTimestamp();
+
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::ICICI_2FA]);
+
+        $this->startTest();
+
+    }
+
     protected function mockBASResponseForFetchingBankingCredentialsForAxisGateway($exception = null): void
     {
         $basMock = $this->getMockBuilder(BankingAccountService::class)
