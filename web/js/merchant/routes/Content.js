@@ -704,6 +704,14 @@ export default class Content extends Component {
     this.props.history.replace(this.baseLocation.pathname);
   };
 
+  getOverlayCustomClass = () => {
+    if (this.props.location?.pathname?.includes('developers')) {
+      return 'developers-container';
+    }
+
+    return '';
+  };
+
   render() {
     const { user, fullPageView, isWebView } = this.props;
 
@@ -712,9 +720,11 @@ export default class Content extends Component {
 
     let ModalFormView = this.modalView;
 
+    const overlayCustomClass = this.getOverlayCustomClass();
+
     if (DetailView) {
       DetailView = BaseView ? (
-        <Slider closeUrl={this.baseLocation}>
+        <Slider overlayCustomClass={overlayCustomClass} closeUrl={this.baseLocation}>
           {' '}
           <ErrorBoundary resetOnProps>
             <Suspense fallback={<Loader />}>

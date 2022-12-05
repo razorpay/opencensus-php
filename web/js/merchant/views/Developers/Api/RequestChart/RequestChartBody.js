@@ -3,13 +3,13 @@ import { Line } from 'react-chartjs-2';
 import Spinner from 'common/ui/Spinner';
 import { timeScale } from './axes';
 import { getChartData } from './getChartData';
-import NoDataMessage from '../../components/RequestChartNoDataMessage';
+import NoDataMessage from 'merchant/views/Developers/components/RequestChartNoDataMessage';
 
 export default function RequestChartBody(props) {
   const { data, selectedAggregation, duration, filteredStatusCodeList } = props;
 
   const chartOptions = {
-    ...timeScale({ breakdown: getBreakdown(selectedAggregation) }),
+    ...timeScale({ breakdown: selectedAggregation.value }),
     layout: {
       padding: {
         top: 0,
@@ -44,10 +44,4 @@ export default function RequestChartBody(props) {
       ) : null}
     </div>
   );
-}
-
-function getBreakdown(selectedAggregation) {
-  if (selectedAggregation.value === 'hour' || selectedAggregation.value === 'minute')
-    return 'hourly';
-  return 'daily';
 }

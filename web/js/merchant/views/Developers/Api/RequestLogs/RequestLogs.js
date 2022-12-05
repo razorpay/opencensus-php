@@ -26,7 +26,6 @@ export default class RequestLogs extends ListContainer {
     this.state = {
       ...super.state,
       status: {},
-      shouldCtasBeDisabled: false,
     };
   }
 
@@ -35,7 +34,7 @@ export default class RequestLogs extends ListContainer {
     const { from, to } = this.props.selectedFilters.duration;
 
     if (prevPropsFrom !== from || prevPropsTo !== to) {
-      // eslint-disable-next-line react/no-did-update-set-state
+      /* eslint-disable-next-line react/no-did-update-set-state */
       this.setState(
         {
           httpStatus: '',
@@ -45,9 +44,6 @@ export default class RequestLogs extends ListContainer {
           this.search({
             from,
             to,
-          }).then((data) => {
-            // CTAs should only be disabled be dates have changed and there's no data in that date range
-            this.setState({ shouldCtasBeDisabled: !data.data?.body?.result?.length });
           });
         },
       );
@@ -66,7 +62,9 @@ export default class RequestLogs extends ListContainer {
     return this.props.fetchApiLogs(requestData);
   }
 
-  handleSearchClick = () => {
+  handleSearchClick = (e) => {
+    if (e && e.code && e?.code !== 'Enter') return;
+
     this.search();
     trackApiLogsSearched();
   };
@@ -76,13 +74,13 @@ export default class RequestLogs extends ListContainer {
     const { duration, dateRange } = selectedFilters;
     const fromDate = moment(duration.from).format('DD MMM');
     const toDate = moment(duration.to).format('DD MMM');
-    const { status, shouldCtasBeDisabled } = this.state;
+    const { status } = this.state;
 
     return (
       <div className="api-logs-container content-wrapper" style={{ marginTop: 20 }}>
-        <h4 className="title mb-20">
-          API logs {dateRange?.name ? `in ${dateRange.name}` : ''} ({fromDate} - {toDate})
-        </h4>
+        <h5 className="mb-20">
+          API logs {dateRange ? `in ${dateRange}` : ''} ({fromDate} - {toDate})
+        </h5>
         <div className="list-filter-container">
           <div className="form-group list-filter-item">
             <label>Search</label>
@@ -90,24 +88,23 @@ export default class RequestLogs extends ListContainer {
               type="text"
               name="searchField"
               placeholder="Search for any keyword from request, response or headers"
-              class="form-control input-sm"
+              className="form-control input-sm"
               style={{ width: 345 }}
               value={this.state.searchField}
               onChange={(e) => this.setState({ searchField: e.target.value })}
               onBlur={() => trackApiLogsSearchKeywordChanged()}
-              disabled={!apiLogs?.length}
+              onKeyDown={this.handleSearchClick}
             />
           </div>
           <div className="form-group list-filter-item">
             <label>Response Code</label>
             <select
-              class="form-control input-sm"
+              className="form-control input-sm"
               value={this.state.httpStatus}
               onChange={(e) =>
                 this.setState({ httpStatus: e.target.value === 'all' ? '' : e.target.value })
               }
               onBlur={() => trackApiLogsSearchHttpStatusChanged()}
-              disabled={shouldCtasBeDisabled}
             >
               <option value="all">All</option>
               <option value="2xx">2xx</option>
@@ -116,12 +113,11 @@ export default class RequestLogs extends ListContainer {
               <option value="5xx">5xx</option>
             </select>
           </div>
-          <div class="form-group list-filter-item btn-toolbar">
+          <div className="form-group list-filter-item btn-toolbar">
             <button
-              class="btn btn-primary btn-sm"
+              className="btn btn-primary btn-sm"
               type="button"
               onClick={this.handleSearchClick}
-              disabled={shouldCtasBeDisabled}
             >
               Search
             </button>
@@ -131,19 +127,18 @@ export default class RequestLogs extends ListContainer {
               onClick={() => {
                 this.setState({ searchField: '', httpStatus: '' }, () => this.search());
               }}
-              disabled={shouldCtasBeDisabled}
             >
               Clear
             </button>
           </div>
         </div>
         <Alert type={status.type} message={status.message} />
-        <div class="table-responsive">
-          <table class="table table-hover">
+        <div className="table-responsive">
+          <table className="table table-hover">
             <thead>
               <tr>
                 <th>Log ID</th>
-                <th>Endpoint</th>
+                <th>Method & Endpoint</th>
                 <th>Date and Time</th>
                 <th>Response Code</th>
               </tr>
@@ -154,7 +149,7 @@ export default class RequestLogs extends ListContainer {
               rows={apiLogs}
               emptyTableRow={() => (
                 <tr>
-                  <td class="text-center empty-table" colSpan={4}>
+                  <td className="text-center empty-table" colSpan={4}>
                     <p>No request logs found for selected time range</p>
                   </td>
                 </tr>

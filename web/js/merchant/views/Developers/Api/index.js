@@ -91,6 +91,7 @@ const Api = () => {
 
   return (
     <div className="developers-container">
+      <p className="api-logs-title content-wrapper">API Logs</p>
       <div className="filters-container content-wrapper mb-20">
         <div className="form-group datepicker-group">
           <label>Duration (can only be fetched for max. past 14 days)</label>

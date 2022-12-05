@@ -6,12 +6,26 @@
   }
 
 .request-details-log
+  .panel-heading
+    p
+      width: 430px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
   .content-wrapper
     background: #1E222E
-    .panel, .panel-heading, .label--primary, .pair-label, .pair-value
+
+    .panel,
+    .panel-heading,
+    .label--primary,
+    .pair-label,
+    .pair-value
       color: #B4B6BD
 
-    .panel, .panel-heading, .label--primary
+    .panel,
+    .panel-heading,
+    .label--primary
       background-color: #1E222E
       border-color: #8F93A4
 
@@ -21,20 +35,32 @@
   hr
     border-top: 1px solid #8F93A4
 
+  .details-row-container
+    margin-top: 80px
+
   .method-url-row
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
     span
       text-align: center
       letter-spacing: 1px
-      color: white
+      color: #FFF
       padding: 5px
+
       &:first-child
         background: #33CC5E
+
       &:last-child
+        // stylelint-disable-next-line color-function-notation
         background: rgba(51, 204, 94, 0.4)
 
   .request-response-data
     padding: 8px
+
     pre
       border: none
+
     p
       margin-bottom: 15px

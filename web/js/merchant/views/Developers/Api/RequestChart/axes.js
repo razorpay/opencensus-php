@@ -44,7 +44,7 @@ export const timeScale = ({ breakdown }) => {
               second: 'MMM D',
               millisecond: 'MMM D',
             },
-            tooltipFormat: breakdown === 'hourly' ? 'DD MMM hh:mm' : 'DD MMM',
+            tooltipFormat: getToolTipFormat(breakdown),
           },
           gridLines: {
             display: false,
@@ -62,9 +62,9 @@ export const timeScale = ({ breakdown }) => {
               const prevValue = values[index - 1] && moment(values[index - 1].value);
               let format = 'MMM D';
 
-              if (breakdown === 'hourly') {
+              if (breakdown === 'hour' || breakdown === 'minute') {
                 // make sure only days are displayed if
-                // the breakdown in hourly
+                // the breakdown in hourly or minutes
                 if (prevValue && prevValue.isSame(currValue, 'day')) {
                   return null;
                 }
@@ -102,3 +102,11 @@ export const timeScale = ({ breakdown }) => {
 
   return scalesObj;
 };
+
+function getToolTipFormat(breakdown) {
+  if (breakdown === 'minute') return 'hh:mm a';
+
+  if (breakdown === 'hour') return 'DD MMM hh:mm a';
+
+  return 'DD MMM';
+}

@@ -330,7 +330,7 @@ function MerchantNavLinks(props) {
       <MainNavLink
         label="Developers"
         type="general"
-        icon="i i-code-white text-primary"
+        icon="i i-developers developers-sidebar-icon text-primary"
         to={routes.developersApis}
         additionalCondition={(currentUser) =>
           !isMobileResolution() &&
