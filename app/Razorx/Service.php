@@ -261,6 +261,7 @@ class Service extends Base\Service
             'pp_custom_domain_show_remove',
             'rx_auto_tds_accrual',
             'rx_mtp_downtime_enabled',
+            'rx_accounting_onboarding_banner',
             'hide_PI_details'
         ];
 
