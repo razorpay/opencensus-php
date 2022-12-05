@@ -3,18 +3,18 @@
 namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
 use Carbon\Carbon;
-use RZP\Constants\HyperTrace;
-use RZP\Models\Checkout\Order\Entity as CheckoutOrder;
-use RZP\Models\Merchant\Account;
-use RZP\Models\Order\Entity as Order;
+use RZP\Trace\Tracer;
 use RZP\Models\QrCode;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
-use RZP\Models\BankAccount;
-use RZP\Models\QrPayment\Service as QrPaymentService;
+use RZP\Constants\HyperTrace;
+use RZP\Models\Merchant\Account;
 use RZP\Models\QrPaymentRequest\Type;
+use RZP\Models\Order\Entity as Order;
 use RZP\Exception\BadRequestException;
-use RZP\Trace\Tracer;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\QrPayment\Service as QrPaymentService;
+use RZP\Models\Checkout\Order\Entity as CheckoutOrder;
 
 class Core extends QrCode\Core
 {
@@ -58,14 +58,25 @@ class Core extends QrCode\Core
 
         $this->setShortUrl($qrCode);
 
-        $this->repo->transaction(function() use ($qrCode)
-        {
-            $this->repo->saveOrFail($qrCode);
+        $this->repo->saveOrFail($qrCode);
 
-            $this->generateQrCodeFile($qrCode);
-        });
+        $this->generateQrCodeFileIfApplicable($qrCode);
 
         return $qrCode;
+    }
+
+    protected function generateQrCodeFileIfApplicable($qrCode)
+    {
+        $variant = $this->app['razorx']->getTreatment(
+            $qrCode->getMerchantId(),
+            RazorxTreatment::QR_CODE_GENERATE_IMAGE,
+            $this->mode
+        );
+
+        if (strtolower($variant) !== RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            $this->generateQrCodeFile($qrCode);
+        }
     }
 
     public function generateQrCodeFile($qrCode)

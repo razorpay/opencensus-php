@@ -252,6 +252,9 @@ final class RazorxTreatment
 
     const QR_CODE_BANK_TRANSFER = 'qr_code_bank_transfer';
 
+    // To skip generating QR image in the QR create flow in order to reduce latency.
+    const QR_CODE_GENERATE_IMAGE = 'qr_code_generate_image';
+
     const QR_CODE_CUTOFF_CONFIG = 'qr_code_cutoff_config';
 
     const QR_ON_EMAIL = 'qr_on_email';
