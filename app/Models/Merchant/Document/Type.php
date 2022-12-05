@@ -1,8 +1,6 @@
 <?php
 
 namespace RZP\Models\Merchant\Document;
-
-use phpDocumentor\Reflection\Types\Self_;
 use RZP\Constants\Entity as E;
 
 class Type
