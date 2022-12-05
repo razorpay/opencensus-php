@@ -920,32 +920,13 @@ class Core extends Base\Core
             {
                 $stateCore = new State\Core;
 
-                // We don't want to add a new state entry
-                // when updating old leads from old terminal state to new terminal state
-                if ($alreadyInTermnialState === true && $bankingAccount->usingNewStates() === false)
+                $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccount->getPublicId());
+
+                $stateCore->captureNewBankingAccountState($bankingAccount, $entity);
+
+                if($isAssigneeChanged === true)
                 {
-                    /** @var Entity $state */
-                    $state = $this->repo->banking_account_state->getLatestStateLogByBankingAccountId($bankingAccount->getId());
-
-                    $input = [
-                        'status' => $bankingAccount->getStatus(),
-                        'sub_status' => $bankingAccount->getSubStatus(),
-                        'bank_status' => $bankingAccount->getBankInternalStatus(),
-                    ];
-
-                    $stateCore->update($state->getId(), $input);
-                }
-                else
-                {
-                    $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccount->getPublicId());
-
-                    $stateCore->captureNewBankingAccountState($bankingAccount, $entity);
-
-                    if($isAssigneeChanged === true)
-                    {
-
-                        $this->notifier->notify($bankingAccount, Event::ASSIGNEE_CHANGE, Event::ALERT);
-                    }
+                    $this->notifier->notify($bankingAccount, Event::ASSIGNEE_CHANGE, Event::ALERT);
                 }
             }
 

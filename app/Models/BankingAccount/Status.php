@@ -130,9 +130,20 @@ class Status
     const UPI_ACTIVATED_EXTERNAL                  = 'UPI Activated';
     const OTHER_EXTERNAL                          = 'Others';
     const UNSERVICEABLE__PINCODE_EXTERNAL         = 'Unserviceable pincode';
+    const NOT_SERVICEABLE_EXTERNAL                = 'Unserviceable pincode';
     const NEGATIVE_PROFILE_SVR_ISSUE_EXTERNAL     = 'Negative Profile/SVR issue';
     const UPI_CREDS_PENDING_EXTERNAL              = 'UPI Creds Pending';
     const CANCELLED_EXTERNAL                      = 'Cancelled';
+    const CUSTOMER_NOT_RESPONDING_EXTERNAL            = 'Customer not responding - 3 attempts';
+    const FOLLOW_UP_REQUESTED_BY_MERCHANT_EXTERNAL    = 'Follow up requested by Merchant';
+    const VISIT_DUE_EXTERNAL                          = 'Visit Due';
+    const PICKED_UP_DOCS_EXTERNAL                     = 'Picked Up Docs';
+    const IR_IN_DISCREPANCY_EXTERNAL                  = 'IR in discrepancy';
+    const IN_REVIEW_EXTERNAL                          = 'In Review';
+    const CA_OPENED_SUB_STATUS_EXTERNAL               = 'CA Opened';
+    const FOLLOW_UP_API_DOCS_UNAVAILABLE_EXTERNAL     = 'Follow up - API docs unavailable';
+
+
 
     // Sub-merchant BA status to be shown on partner dashboard
     const PAN_VERIFICATION_IN_PROGRESS      = 'PAN verification in progress';
@@ -309,6 +320,7 @@ class Status
             self::PICKED,
             self::CANCELLED,
             self::PROCESSED,
+            self::API_ONBOARDING,
             // This is for cases in Neostone where users submit the details in the form
             // but don’t respond when called.
             self::ARCHIVED,
@@ -319,12 +331,14 @@ class Status
             self::VERIFICATION_CALL,
             self::CANCELLED,
             self::PROCESSED,
+            self::API_ONBOARDING,
             self::ARCHIVED,
         ],
         self::INITIATED => [
             self::PROCESSING,
             self::PROCESSED,
             self::VERIFICATION_CALL,
+            self::API_ONBOARDING,
             self::CANCELLED,
             self::REJECTED,
             self::ARCHIVED,
@@ -889,6 +903,11 @@ class Status
         self::SENT_TO_BANK,
         self::BANK_PROCESSING,
         self::CA_OPENED,
+        self::VERIFICATION_CALL_EXTERNAL,
+        self::DOC_COLLECTION_EXTERNAL,
+        self::ACCOUNT_OPENING_EXTERNAL,
+        self::API_ONBOARDING_EXTERNAL,
+        self::ACCOUNT_ACTIVATION_EXTERNAL,
         self::MERCHANT_CANCELLED,
         self::TEMP_UNSERVICEABLE,
         self::BANK_REJECTED,
@@ -896,26 +915,35 @@ class Status
     ];
 
     public static $externalToInternalSubStatusMap = [
-        self::NEEDS_CLARIFICATION_FROM_SALES_EXTERNAL => self::NEEDS_CLARIFICATION_FROM_SALES,
-        self::DOCS_WALK_THROUGH_PENDING_EXTERNAL      => self::DOCS_WALK_THROUGH_PENDING,
-        self::MERCHANT_NOT_AVAILABLE_EXTERNAL         => self::MERCHANT_NOT_AVAILABLE,
-        self::MERCHANT_PREPARING_DOCS_EXTERNAL        => self::MERCHANT_PREPARING_DOCS,
-        self::READY_TO_SEND_TO_BANK_EXTRENAL          => self::READY_TO_SEND_TO_BANK,
-        self::BANK_TO_PICKUP_DOCS_EXTERNAL            => self::BANK_TO_PICKUP_DOCS,
-        self::NEEDS_CLARIFICATION_FROM_RZP_EXTERNAL   => self::NEEDS_CLARIFICATION_FROM_RZP,
-        self::BANK_PICKED_UP_DOCS_EXTERNAL            => self::BANK_PICKED_UP_DOCS,
-        self::DISCREPANCY_IN_DOCS_EXTERNAL            => self::DISCREPANCY_IN_DOCS,
-        self::BANK_OPENED_ACCOUNT_EXTERNAL            => self::BANK_OPENED_ACCOUNT,
-        self::API_ONBOARDING_PENDING_EXTERNAL         => self::API_ONBOARDING_PENDING,
-        self::API_ONBOARDING_INITIATED_EXTERNAL       => self::API_ONBOARDING_INITIATED,
-        self::API_ONBOARDING_IN_PROGRESS_EXTERNAL     => self::API_ONBOARDING_IN_PROGRESS,
-        self::NONE_EXTERNAL                           => self::NONE,
-        self::UPI_ACTIVATED_EXTERNAL                  => self::UPI_ACTIVATED,
-        self::OTHER_EXTERNAL                          => self::OTHER,
-        self::UNSERVICEABLE__PINCODE_EXTERNAL         => self::NOT_SERVICEABLE,
-        self::NEGATIVE_PROFILE_SVR_ISSUE_EXTERNAL     => self::NEGATIVE_PROFILE_SVR_ISSUE,
-        self::UPI_CREDS_PENDING_EXTERNAL              => self::UPI_CREDS_PENDING,
-        self::CANCELLED_EXTERNAL                      => self::CANCELLED,
+        self::NEEDS_CLARIFICATION_FROM_SALES_EXTERNAL     => self::NEEDS_CLARIFICATION_FROM_SALES,
+        self::DOCS_WALK_THROUGH_PENDING_EXTERNAL          => self::DOCS_WALK_THROUGH_PENDING,
+        self::MERCHANT_NOT_AVAILABLE_EXTERNAL             => self::MERCHANT_NOT_AVAILABLE,
+        self::MERCHANT_PREPARING_DOCS_EXTERNAL            => self::MERCHANT_PREPARING_DOCS,
+        self::READY_TO_SEND_TO_BANK_EXTRENAL              => self::READY_TO_SEND_TO_BANK,
+        self::BANK_TO_PICKUP_DOCS_EXTERNAL                => self::BANK_TO_PICKUP_DOCS,
+        self::NEEDS_CLARIFICATION_FROM_RZP_EXTERNAL       => self::NEEDS_CLARIFICATION_FROM_RZP,
+        self::BANK_PICKED_UP_DOCS_EXTERNAL                => self::BANK_PICKED_UP_DOCS,
+        self::DISCREPANCY_IN_DOCS_EXTERNAL                => self::DISCREPANCY_IN_DOCS,
+        self::BANK_OPENED_ACCOUNT_EXTERNAL                => self::BANK_OPENED_ACCOUNT,
+        self::API_ONBOARDING_PENDING_EXTERNAL             => self::API_ONBOARDING_PENDING,
+        self::API_ONBOARDING_INITIATED_EXTERNAL           => self::API_ONBOARDING_INITIATED,
+        self::API_ONBOARDING_IN_PROGRESS_EXTERNAL         => self::API_ONBOARDING_IN_PROGRESS,
+        self::NONE_EXTERNAL                               => self::NONE,
+        self::UPI_ACTIVATED_EXTERNAL                      => self::UPI_ACTIVATED,
+        self::OTHER_EXTERNAL                              => self::OTHER,
+        self::UNSERVICEABLE__PINCODE_EXTERNAL             => self::UNSERVICEABLE__PINCODE,
+        self::NOT_SERVICEABLE_EXTERNAL                    => self::NOT_SERVICEABLE,
+        self::NEGATIVE_PROFILE_SVR_ISSUE_EXTERNAL         => self::NEGATIVE_PROFILE_SVR_ISSUE,
+        self::UPI_CREDS_PENDING_EXTERNAL                  => self::UPI_CREDS_PENDING,
+        self::CANCELLED_EXTERNAL                          => self::CANCELLED,
+        self::CUSTOMER_NOT_RESPONDING_EXTERNAL            => self::CUSTOMER_NOT_RESPONDING,
+        self::FOLLOW_UP_REQUESTED_BY_MERCHANT_EXTERNAL    => self::FOLLOW_UP_REQUESTED_BY_MERCHANT,
+        self::VISIT_DUE_EXTERNAL                          => self::VISIT_DUE,
+        self::PICKED_UP_DOCS_EXTERNAL                     => self::PICKED_UP_DOCS,
+        self::IR_IN_DISCREPANCY_EXTERNAL                  => self::IR_IN_DISCREPANCY,
+        self::IN_REVIEW_EXTERNAL                          => self::IN_REVIEW,
+        self::CA_OPENED_SUB_STATUS_EXTERNAL               => self::CA_OPENED_SUB_STATUS,
+        self::FOLLOW_UP_API_DOCS_UNAVAILABLE_EXTERNAL     => self::FOLLOW_UP_API_DOCS_UNAVAILABLE,
 
         'null'                                        => null
     ];

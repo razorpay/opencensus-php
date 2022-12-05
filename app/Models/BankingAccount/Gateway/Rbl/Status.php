@@ -81,6 +81,28 @@ class Status
                 self::RAZORPAY_DEPENDENT
             ]
         ],
+        BankingAccount\Status::VERIFICATION_CALL => [
+            BankingAccount\Status::CUSTOMER_NOT_RESPONDING => [
+                self::MERCHANT_NOT_AVAILABLE
+            ],
+            BankingAccount\Status::FOLLOW_UP_REQUESTED_BY_MERCHANT => [
+                self::MERCHANT_PREPARING_DOCS
+            ],
+            BankingAccount\Status::NEEDS_CLARIFICATION_FROM_RZP => [
+                self::RAZORPAY_DEPENDENT
+            ],
+        ],
+        BankingAccount\Status::DOC_COLLECTION => [
+            BankingAccount\Status::VISIT_DUE => [
+                self::YET_TO_PICKUP_DOCS
+            ],
+            // BankingAccount\Status::PICKED_UP_DOCS => [
+            //     self::PICKED_UP_DOCS
+            // ],
+            BankingAccount\Status::FOLLOW_UP_API_DOCS_UNAVAILABLE => [
+                self::MERCHANT_PREPARING_API_DOCS
+            ],
+        ],
         BankingAccount\Status::PROCESSING     => [
             null => [
                 self::PROCESSING
@@ -96,10 +118,25 @@ class Status
             self::ALL => [
                 self::CLOSED
             ],
+            BankingAccount\Status::IR_IN_DISCREPANCY => [
+                self::DISCREPANCY_IN_DOCS
+            ],
+            BankingAccount\Status::IN_REVIEW => [
+                self::PROCESSING
+            ],
+            BankingAccount\Status::CA_OPENED_SUB_STATUS => [
+                self::ACCOUNT_OPENED
+            ],
         ],
         BankingAccount\Status::API_ONBOARDING => [
             self::ALL => [
                 self::CLOSED
+            ],
+            BankingAccount\Status::IN_REVIEW => [
+                self::API_ONBOARDING_IN_PROGRESS
+            ],
+            BankingAccount\Status::IR_IN_DISCREPANCY => [
+                self::DISCREPANCY_IN_API_DOCS
             ],
         ],
         BankingAccount\Status::ACCOUNT_ACTIVATION => [
@@ -144,8 +181,11 @@ class Status
             ]
         ],
         BankingAccount\Status::ARCHIVED       => [
-            null => [
+            self::ALL => [
                 self::DROP_OFF
+            ],
+            BankingAccount\Status::NEGATIVE_PROFILE_SVR_ISSUE => [
+                self::REJECTED
             ]
         ]
     ];

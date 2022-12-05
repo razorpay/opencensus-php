@@ -1220,13 +1220,13 @@ class BankingAccountTest extends TestCase
         $logs = $this->makeRequestAndGetContent($changeLogRequest);
 
         $this->assertEquals('created', $logs['items'][0]['status']);
-        $this->assertEquals('processed', $logs['items'][1]['status']);
-        $this->assertEquals('api_onboarding_pending', $logs['items'][1]['sub_status']);
+        $this->assertEquals('api_onboarding', $logs['items'][1]['status']);
+        $this->assertEquals('in_review', $logs['items'][1]['sub_status']);
         $this->assertEquals('closed', $logs['items'][1]['bank_status']);
 
         $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
 
-        $this->assertEquals('ops', $bankingAccountActivationDetail['assignee_team']);
+        $this->assertEquals('bank_ops', $bankingAccountActivationDetail['assignee_team']);
 
         return $response;
     }
@@ -1486,13 +1486,13 @@ class BankingAccountTest extends TestCase
         $logs = $this->makeRequestAndGetContent($changeLogRequest);
 
         $this->assertEquals('created', $logs['items'][0]['status']);
-        $this->assertEquals('processed', $logs['items'][1]['status']);
-        $this->assertEquals('api_onboarding_pending', $logs['items'][1]['sub_status']);
+        $this->assertEquals('api_onboarding', $logs['items'][1]['status']);
+        $this->assertEquals('in_review', $logs['items'][1]['sub_status']);
         $this->assertEquals('closed', $logs['items'][1]['bank_status']);
 
         $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
 
-        $this->assertEquals('ops', $bankingAccountActivationDetail['assignee_team']);
+        $this->assertEquals('bank_ops', $bankingAccountActivationDetail['assignee_team']);
 
         return $response;
     }
@@ -1856,7 +1856,7 @@ class BankingAccountTest extends TestCase
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
-        $this->assertEquals('processed', $bankingAccount->getStatus());
+        $this->assertEquals('api_onboarding', $bankingAccount->getStatus());
 
         $this->assertEquals('Success', $response['RZPAlertNotiRes']['Body']['Status']);
     }
@@ -4222,126 +4222,6 @@ class BankingAccountTest extends TestCase
             'average_monthly_balance' => 0,
             'business_category' => 'partnership',
             'sales_team' => 'self_serve',
-            ]
-        ];
-
-        $attribute = ['activation_status' => 'activated'];
-
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
-
-        $bankingAccount = $this->createBankingAccountFromDashboard($activationDetails);
-
-        $dataToReplace = [
-            'request'  => [
-                'url'     => '/banking_accounts/' . $bankingAccount['id'],
-                'method'  => 'GET',
-
-            ],
-        ];
-
-        $this->startTest($dataToReplace);
-
-        $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $this->assertEquals('560030', $bankingAccount->getPincode());
-    }
-
-    public function testGetBankingAccountOnNewStateIfExpEnabled()
-    {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-            {
-                if ($featureFlag === (RazorxTreatment::RBL_CA_USE_NEW_STATE_MACHINE))
-                {
-                    return '10';
-                }
-                return 'control';
-            });
-
-        $activationDetails = [
-            'activation_detail' => [
-                'merchant_poc_name' => 'Sample Name',
-                'merchant_poc_designation' => 'Financial Consultant',
-                'merchant_poc_email' => 'sample@sample.com',
-                'merchant_poc_phone_number' => '9876556789',
-                'merchant_documents_address' => 'x, y, z',
-                'business_type' => 'ecommerce',
-                'account_type' => 'insignia',
-                'merchant_city' => 'Bangalore',
-                'is_documents_walkthrough_complete' => true,
-                'merchant_region' => 'South',
-                'expected_monthly_gmv' => 10000,
-                'average_monthly_balance' => 0,
-                'business_category' => 'partnership',
-                'sales_team' => 'self_serve',
-            ]
-        ];
-
-        $attribute = ['activation_status' => 'activated'];
-
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
-
-        $bankingAccount = $this->createBankingAccountFromDashboard($activationDetails);
-
-        $dataToReplace = [
-            'request'  => [
-                'url'     => '/banking_accounts/' . $bankingAccount['id'],
-                'method'  => 'GET',
-
-            ],
-        ];
-
-        $this->startTest($dataToReplace);
-
-        $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $this->assertEquals('560030', $bankingAccount->getPincode());
-    }
-
-    public function testGetBankingAccountOnNewStateFalseIfExpDisabled()
-    {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-            {
-                if ($featureFlag === (RazorxTreatment::RBL_CA_USE_NEW_STATE_MACHINE))
-                {
-                    return '3000000000';
-                }
-                return 'control';
-            });
-
-        $activationDetails = [
-            'activation_detail' => [
-                'merchant_poc_name' => 'Sample Name',
-                'merchant_poc_designation' => 'Financial Consultant',
-                'merchant_poc_email' => 'sample@sample.com',
-                'merchant_poc_phone_number' => '9876556789',
-                'merchant_documents_address' => 'x, y, z',
-                'business_type' => 'ecommerce',
-                'account_type' => 'insignia',
-                'merchant_city' => 'Bangalore',
-                'is_documents_walkthrough_complete' => true,
-                'merchant_region' => 'South',
-                'expected_monthly_gmv' => 10000,
-                'average_monthly_balance' => 0,
-                'business_category' => 'partnership',
-                'sales_team' => 'self_serve',
             ]
         ];
 
@@ -7928,6 +7808,144 @@ class BankingAccountTest extends TestCase
         $this->assertEquals(end($statusChangeLogs['items'])['bank_status'], Rbl\Status::ACCOUNT_OPENED);
     }
 
+    public function testUpdateBankStatusViaBatchNewStates()
+    {
+        $this->testCreateBankingAccountWithActivationDetail();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->fixtures->edit('banking_account',
+            $bankingAccount->getId(),
+            [
+                'status'               => Status::VERIFICATION_CALL,
+                'sub_status'           => Status::IN_PROCESSING,
+                'bank_internal_status' => null
+            ]);
+
+        $content = [
+            'bank_reference_number' => $bankingAccount['bank_reference_number'],
+            'comment' => 'sample comment from batch',
+            'source_team' => 'bank',
+            'source_team_type' => 'external',
+            'added_at' => 1594800229,
+            'assignee_team' => 'sales',
+            'account_open_date' => '23-Jun-2020'
+        ];
+
+        $this->assertUpdateViaBatch(array_merge($content, [
+            'status' => Status::VERIFICATION_CALL_EXTERNAL,
+            'sub_status' => Status::CUSTOMER_NOT_RESPONDING_EXTERNAL,
+            'bank_internal_status' => Rbl\Status::MERCHANT_NOT_AVAILABLE_EXTERNAL,
+        ]));
+
+        $statusChangeLogs = $this->getStatusChangeLog($bankingAccount);
+
+        $this->assertEquals(end($statusChangeLogs['items'])['status'], Status::VERIFICATION_CALL);
+        $this->assertEquals(end($statusChangeLogs['items'])['sub_status'], Status::CUSTOMER_NOT_RESPONDING);
+        $this->assertEquals(end($statusChangeLogs['items'])['bank_status'], Rbl\Status::MERCHANT_NOT_AVAILABLE);
+
+
+        $this->assertUpdateViaBatch(array_merge($content, [
+            'status' => Status::VERIFICATION_CALL_EXTERNAL,
+            'sub_status' => Status::FOLLOW_UP_REQUESTED_BY_MERCHANT_EXTERNAL,
+            'bank_internal_status' => Rbl\Status::MERCHANT_PREPARING_DOCS_EXTERNAL,
+        ]));
+
+        $statusChangeLogs = $this->getStatusChangeLog($bankingAccount);
+
+        $this->assertEquals(end($statusChangeLogs['items'])['status'], Status::VERIFICATION_CALL);
+        $this->assertEquals(end($statusChangeLogs['items'])['sub_status'], Status::FOLLOW_UP_REQUESTED_BY_MERCHANT);
+        $this->assertEquals(end($statusChangeLogs['items'])['bank_status'], Rbl\Status::MERCHANT_PREPARING_DOCS);
+
+        $this->assertUpdateViaBatch(array_merge($content, [
+            'status' => Status::VERIFICATION_CALL_EXTERNAL,
+            'sub_status' => Status::NEEDS_CLARIFICATION_FROM_RZP_EXTERNAL,
+            'bank_internal_status' => Rbl\Status::RAZORPAY_DEPENDENT_EXTERNAL,
+        ]));
+
+        $statusChangeLogs = $this->getStatusChangeLog($bankingAccount);
+
+        $this->assertEquals(end($statusChangeLogs['items'])['status'], Status::VERIFICATION_CALL);
+        $this->assertEquals(end($statusChangeLogs['items'])['sub_status'], Status::NEEDS_CLARIFICATION_FROM_RZP);
+        $this->assertEquals(end($statusChangeLogs['items'])['bank_status'], Rbl\Status::RAZORPAY_DEPENDENT);
+
+        $this->assertUpdateViaBatch(array_merge($content, [
+            'status' => Status::DOC_COLLECTION_EXTERNAL,
+            'sub_status' => Status::VISIT_DUE_EXTERNAL,
+            'bank_internal_status' => Rbl\Status::YET_TO_PICKUP_DOCS_EXTERNAL,
+        ]));
+
+        $statusChangeLogs = $this->getStatusChangeLog($bankingAccount);
+
+        $this->assertEquals(end($statusChangeLogs['items'])['status'], Status::DOC_COLLECTION);
+        $this->assertEquals(end($statusChangeLogs['items'])['sub_status'], Status::VISIT_DUE);
+        $this->assertEquals(end($statusChangeLogs['items'])['bank_status'], Rbl\Status::YET_TO_PICKUP_DOCS);
+
+        $this->assertUpdateViaBatch(array_merge($content, [
+            'status' => Status::ACCOUNT_OPENING_EXTERNAL,
+            'sub_status' => Status::IR_IN_DISCREPANCY_EXTERNAL,
+            'bank_internal_status' => Rbl\Status::DISCREPANCY_IN_DOCS_EXTERNAL,
+        ]));
+
+        $statusChangeLogs = $this->getStatusChangeLog($bankingAccount);
+
+        $this->assertEquals(end($statusChangeLogs['items'])['status'], Status::ACCOUNT_OPENING);
+        $this->assertEquals(end($statusChangeLogs['items'])['sub_status'], Status::IR_IN_DISCREPANCY);
+        $this->assertEquals(end($statusChangeLogs['items'])['bank_status'], Rbl\Status::DISCREPANCY_IN_DOCS);
+
+
+        $this->assertUpdateViaBatch(array_merge($content, [
+            'status' => Status::ACCOUNT_OPENING_EXTERNAL,
+            'sub_status' => Status::CA_OPENED_SUB_STATUS_EXTERNAL,
+            'bank_internal_status' => Rbl\Status::ACCOUNT_OPENED_EXTERNAL,
+        ]));
+
+        $statusChangeLogs = $this->getStatusChangeLog($bankingAccount);
+
+        $this->assertEquals(end($statusChangeLogs['items'])['status'], Status::ACCOUNT_OPENING);
+        $this->assertEquals(end($statusChangeLogs['items'])['sub_status'], Status::CA_OPENED_SUB_STATUS);
+        $this->assertEquals(end($statusChangeLogs['items'])['bank_status'], Rbl\Status::ACCOUNT_OPENED);
+
+        $this->assertUpdateViaBatch(array_merge($content, [
+            'status' => Status::API_ONBOARDING_EXTERNAL,
+            'sub_status' => Status::IN_REVIEW_EXTERNAL,
+            'bank_internal_status' => Rbl\Status::API_ONBOARDING_IN_PROGRESS_EXTERNAL,
+        ]));
+
+        $statusChangeLogs = $this->getStatusChangeLog($bankingAccount);
+
+        $this->assertEquals(end($statusChangeLogs['items'])['status'], Status::API_ONBOARDING);
+        $this->assertEquals(end($statusChangeLogs['items'])['sub_status'], Status::IN_REVIEW);
+        $this->assertEquals(end($statusChangeLogs['items'])['bank_status'], Rbl\Status::API_ONBOARDING_IN_PROGRESS);
+
+
+        $this->assertUpdateViaBatch(array_merge($content, [
+            'status' => Status::API_ONBOARDING_EXTERNAL,
+            'sub_status' => Status::IR_IN_DISCREPANCY_EXTERNAL,
+            'bank_internal_status' => Rbl\Status::DISCREPANCY_IN_API_DOCS_EXTERNAL,
+        ]));
+
+        $statusChangeLogs = $this->getStatusChangeLog($bankingAccount);
+
+        $this->assertEquals(end($statusChangeLogs['items'])['status'], Status::API_ONBOARDING);
+        $this->assertEquals(end($statusChangeLogs['items'])['sub_status'], Status::IR_IN_DISCREPANCY);
+        $this->assertEquals(end($statusChangeLogs['items'])['bank_status'], Rbl\Status::DISCREPANCY_IN_API_DOCS);
+
+
+        $this->assertUpdateViaBatch(array_merge($content, [
+            'status' => Status::ARCHIVED_EXTERNAL,
+            'sub_status' => Status::NEGATIVE_PROFILE_SVR_ISSUE_EXTERNAL,
+            'bank_internal_status' => Rbl\Status::REJECTED_EXTERNAL,
+        ]));
+
+        $statusChangeLogs = $this->getStatusChangeLog($bankingAccount);
+
+        $this->assertEquals(end($statusChangeLogs['items'])['status'], Status::ARCHIVED);
+        $this->assertEquals(end($statusChangeLogs['items'])['sub_status'], Status::NEGATIVE_PROFILE_SVR_ISSUE);
+        $this->assertEquals(end($statusChangeLogs['items'])['bank_status'], Rbl\Status::REJECTED);
+
+    }
+
     public function testBackFillOfDataInLmsViaBatch()
     {
         $this->testCreateBankingAccountWithActivationDetail();
@@ -10972,64 +10990,6 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
 
         Mail::assertNotQueued(XProActivation::class);
-    }
-
-    public function testMigrationForOldLeads()
-    {
-        $lastCreatedBankingAccount = $this->MerchantApplyForCurrentAccount();
-
-        $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $this->ba->adminAuth();
-
-        $this->assertUpdateBankingAccountStatusFromTo(
-            Status::CREATED,
-            Status::PICKED,
-            null, null, null, null,
-            $lastCreatedBankingAccount
-        );
-
-        $this->assertUpdateBankingAccountStatusFromTo(
-            Status::PICKED,
-            Status::INITIATED,
-            null, null, null, null,
-            $lastCreatedBankingAccount
-        );
-
-        sleep(1);
-        $this->assertUpdateBankingAccountStatusFromTo(
-            Status::INITIATED,
-            Status::REJECTED,
-            null, null, null, null,
-            $lastCreatedBankingAccount
-        );
-
-        $lastStatusChangeLogPre = $this->getDbLastEntity('banking_account_state');
-
-        $lastStatusChangeLogsPre = $this->getDbEntities('banking_account_state', [
-            'banking_account_id' => $bankingAccount->getId()
-        ]);
-
-        sleep(1);
-        $this->assertUpdateBankingAccountStatusFromTo(
-            Status::REJECTED,
-            Status::ARCHIVED,
-            null, STATUS::NEGATIVE_PROFILE_SVR_ISSUE, null, null,
-            $lastCreatedBankingAccount
-        );
-
-        $lastStatusChangeLogsPost = $this->getDbEntities('banking_account_state', [
-            'banking_account_id' => $bankingAccount->getId()
-        ]);
-
-        $lastStatusChangeLogPost = $this->getDbLastEntity('banking_account_state');
-
-        // We update the final status, rather than adding a new entry for state change log
-
-        $this->assertEquals(count($lastStatusChangeLogsPost->toArray()), count($lastStatusChangeLogsPre->toArray()));
-        $this->assertEquals($lastStatusChangeLogPost->getId(), $lastStatusChangeLogPre->getId());
-        $this->assertEquals(Status::ARCHIVED, $lastStatusChangeLogPost->getStatus());
-        $this->assertEquals(Status::NEGATIVE_PROFILE_SVR_ISSUE, $lastStatusChangeLogPost->getSubStatus());
     }
 
     public function testFilterOpsFollowUpDate()

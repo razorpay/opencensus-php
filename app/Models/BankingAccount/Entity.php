@@ -1044,34 +1044,7 @@ class Entity extends Base\PublicEntity
      */
     public function usingNewStates()
     {
-        // This is hack to use Razorx as a config service
-        // Experiment returns an epoch timestamp
-        $expVal = intval(app('razorx')->getTreatment($this->getMerchantId(), RazorxTreatment::RBL_CA_USE_NEW_STATE_MACHINE, Mode::LIVE));
-
-        // intval() returns 0 incase of non-number inputs
-        if ($this->getCreatedAtAttribute() > $expVal &&
-            $expVal !== 0)
-        {
-            return true;
-        }
-
-
-        // From merchant attributes, we need value for group:x_merchant_current_accounts, type:ca_onboarding_state_machine
-        $preferences = (new Attribute\Core)->fetchKeyValues(
-            $this->merchant,
-            Product::BANKING,
-            Attribute\Group::X_MERCHANT_CURRENT_ACCOUNTS,
-            [Attribute\Type::CA_ONBOARDING_STATE_MACHINE]
-        );
-
-        $preferences = $preferences->toArray();
-
-        if (count($preferences) > 0)
-        {
-            return $preferences[0][Attribute\Entity::VALUE] === self::NEW_STATE_MACHINE;
-        }
-
-        return false;
+        return true;
     }
 
     public function isAlreadyInOldTerminalState()
