@@ -75,8 +75,18 @@ export default class User {
 
   constructor(props) {
     // Setting default merchant currency is INR if currency is not available.
-    if (props?.merchant) {
-      props.merchant.currency = props.merchant.currency || 'INR';
+    // For few roles merchant is not available, this will add a merchant for that particular role
+    if (!props?.merchant) {
+      props = {
+        ...props,
+        merchant: {
+          currency: 'INR',
+        },
+      };
+    }
+
+    if (!props?.merchant?.currency) {
+      props.merchant.currency = 'INR';
     }
 
     Object.assign(this, props);
