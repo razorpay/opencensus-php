@@ -196,7 +196,7 @@ trait CommonGatewayTrait
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
         $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
-            $feature, $mode);
+            $feature, $mode, 3);
 
         $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_PRE_PROCESS_RAZORX_VARIANT, [
             'gateway' => $gateway,

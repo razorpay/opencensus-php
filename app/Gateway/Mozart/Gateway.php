@@ -3345,7 +3345,7 @@ class Gateway extends Base\Gateway
         $mode = ($mode === null) ? Mode::LIVE : $mode ;
 
         $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
-            $feature, $mode);
+            $feature, $mode, 3);
 
         $inputArray = json_decode($input, true);
 

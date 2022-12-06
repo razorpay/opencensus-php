@@ -805,7 +805,7 @@ class GatewayController extends Controller
         $pa = $this->repo->payment_analytics->findLatestByPayment($payment->getId());
 
         $input['_'] = $pa ? $pa->toArray() : null;
-        
+
         $payment->setMetadata($input);
 
         $data = (new Payment\Processor\Processor($merchant))->process($input, $gatewayinput);
@@ -1693,7 +1693,7 @@ class GatewayController extends Controller
         $mode = ($mode === null) ? Mode::LIVE : $mode;
 
         $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
-            $feature, $mode);
+            $feature, $mode, 3);
 
         $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_PRE_PROCESS_RAZORX_VARIANT, [
             'gateway' => $gateway,
