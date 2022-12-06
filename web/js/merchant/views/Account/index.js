@@ -1,5 +1,5 @@
 import { Route, NavLink } from 'react-router-dom';
-import ShowWhen from 'merchant/components/ShowWhen';
+import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import TrustedBadge from 'merchant/views/Account/TrustedBadge';
 import Profile from 'merchant/views/Account/Profile';
 import WebsiteAppDetails from 'merchant/views/Account/WebsiteAppDetails';
@@ -10,10 +10,10 @@ import Referrals from 'merchant/views/Account/Referrals/List';
 import Conversations from 'merchant/views/TicketSupport/components/Conversations';
 import { CLICK_ON_BALANCES_TAB, CLICK_ON_CREDITS_TAB } from './ga';
 import { analyticsTrack } from 'common/utils/analytics';
-import TicketsContainer from '../TicketSupport/components/TicketsContainer';
-import Tickets from '../TicketSupport/components/Tickets';
+import TicketsContainer from 'merchant/views/TicketSupport/components/TicketsContainer';
+import Tickets from 'merchant/views/TicketSupport/components/Tickets';
 import { connect } from 'react-redux';
-import DashboardBanner from '../../../common/ui/DashboardBanner';
+import DashboardBanner from 'common/ui/DashboardBanner';
 import { useState, useEffect } from 'react';
 import getMobileDetect from 'common/utils/mobileDetect';
 import { isOrgFeatureExist } from 'merchant/models/User';
@@ -59,16 +59,25 @@ const MyAccount = (props) => {
             <ShowWhen
               additionalCondition={(user) =>
                 user.isWebsiteComplianceFlowEnabled &&
-                websiteSectionDetailsData.data.isWebsiteSectionsApplicable
+                websiteSectionDetailsData.data.isWebsiteSectionsApplicable &&
+                !user.findTag('i18_hide_myaccount.website_app_details')
               }
             >
               <NavLink to="/website-app-details">Website/App details</NavLink>
             </ShowWhen>
-            <ShowWhen additionalCondition={() => isTrustedBadge}>
+            <ShowWhen
+              additionalCondition={(user) =>
+                isTrustedBadge && !user.findTag('i18_hide_myaccount.trusted_badge')
+              }
+            >
               <NavLink to="/trustedbadge">Trusted Badge</NavLink>
             </ShowWhen>
 
-            <ShowWhen additionalCondition={(user) => user.isAllowedView('credits')}>
+            <ShowWhen
+              additionalCondition={(user) =>
+                user.isAllowedView('credits') && !user.findTag('i18_hide_myaccount.credits')
+              }
+            >
               <NavLink
                 to="/credits"
                 onClick={() => {
@@ -79,7 +88,11 @@ const MyAccount = (props) => {
               </NavLink>
             </ShowWhen>
 
-            <ShowWhen additionalCondition={(user) => user.isAllowedView('add_funds')}>
+            <ShowWhen
+              additionalCondition={(user) =>
+                user.isAllowedView('add_funds') && !user.findTag('i18_hide_myaccount.balances')
+              }
+            >
               <NavLink
                 to="/addfunds"
                 onClick={() => {
@@ -100,7 +113,11 @@ const MyAccount = (props) => {
 
             <ShowWhen
               myRole="owner admin"
-              additionalCondition={(user) => user.isFdTicketsEnabled && !user.isComdelApiEnabled}
+              additionalCondition={(user) =>
+                user.isFdTicketsEnabled &&
+                !user.isComdelApiEnabled &&
+                !user.findTag('i18_hide_myaccount.support_history')
+              }
             >
               <NavLink
                 onClick={() => {
@@ -118,11 +135,27 @@ const MyAccount = (props) => {
           </header>
         )}
         <content>
-          <Route path="/trustedbadge" component={TrustedBadge} />
+          <ShowWhenRoute
+            path="/trustedbadge"
+            component={TrustedBadge}
+            additionalCondition={(user) => !user.findTag('i18_hide_myaccount.trusted_badge')}
+          />
           <Route path="/profile" component={Profile} />
-          <Route path="/website-app-details" component={WebsiteAppDetails} />
-          <Route path="/credits" component={Credits} />
-          <Route path="/addfunds" component={Balances} />
+          <ShowWhenRoute
+            path="/website-app-details"
+            component={WebsiteAppDetails}
+            additionalCondition={(user) => !user.findTag('i18_hide_myaccount.website_app_details')}
+          />
+          <ShowWhenRoute
+            path="/credits"
+            component={Credits}
+            additionalCondition={(user) => !user.findTag('i18_hide_myaccount.credits')}
+          />
+          <ShowWhenRoute
+            path="/addfunds"
+            component={Balances}
+            additionalCondition={(user) => !user.findTag('i18_hide_myaccount.balances')}
+          />
           <Route path="/referrals" component={Referrals} />
           <Route path="/team" component={ManageTeam} />
           {props.user.isMobileSignupCareActive ? (

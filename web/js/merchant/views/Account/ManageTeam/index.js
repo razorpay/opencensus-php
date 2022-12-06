@@ -99,8 +99,6 @@ class ManageTeamContainer extends React.Component {
     });
   }
   render() {
-    const { user } = this.props;
-
     return (
       <div className="content-wrapper content-sm" id="settings-content">
         <ErrorBoundary resetOnProps rank={Ranks.P0} team={Teams.PG_DASHBOARD}>
@@ -125,11 +123,17 @@ class ManageTeamContainer extends React.Component {
             </ShowWhen>
           </div>
         </HeaderAction>
-        {!user.org_enforced_second_factor_auth && (
-          <ShowWhen myRole="owner">
-            <Merchant2FASettings />
-          </ShowWhen>
-        )}
+
+        <ShowWhen
+          myRole="owner"
+          additionalCondition={(currentUser) =>
+            !currentUser.org_enforced_second_factor_auth &&
+            !currentUser.findTag('i18_hide_2fa_verification')
+          }
+        >
+          <Merchant2FASettings />
+        </ShowWhen>
+
         <div className="ManageTeam--list">
           <ShowWhen additionalCondition={(userCurrent) => userCurrent.isAllowedView('invitations')}>
             <PendingInvitationsList {...this.props} />

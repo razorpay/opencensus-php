@@ -30,7 +30,7 @@ import {
   RR_ADD_ADDITIONAL_WEBSITE,
   ACTION_QUERY_PARAM_KEY,
   UPDATE_WEBSITE_DETAILS,
-} from '../deeplink-constants';
+} from 'merchant/views/Account/Profile/deeplink-constants';
 import IntoView from 'common/ui/IntoView';
 import TextHighlighter from 'common/ui/TextHighlighter';
 import InitiateWebsiteChange from './WebsiteSelfServe/InitiateWebsiteChange';
@@ -373,7 +373,11 @@ const MerchantDetails = ({
 
       <DetailRow label="Registered By" value={user.marketplace_merchant_name} />
 
-      <ShowWhen additionalCondition={() => isAccountActivation}>
+      <ShowWhen
+        additionalCondition={(_user) =>
+          isAccountActivation && !_user.findTag('i18_hide_onboarding')
+        }
+      >
         <DetailRow
           label={() => <b>Account Activation</b>}
           value={() => (
@@ -605,10 +609,13 @@ const MerchantDetails = ({
         )}
 
       <EditTransactionLimit transactionType="domestic" replyHandler={openNeedsClarificationModal} />
-      <EditTransactionLimit
-        transactionType="international"
-        replyHandler={openNeedsClarificationModal}
-      />
+
+      <ShowWhen additionalCondition={(_user) => !_user.findTag('i18_hide_international')}>
+        <EditTransactionLimit
+          transactionType="international"
+          replyHandler={openNeedsClarificationModal}
+        />
+      </ShowWhen>
 
       {user.canGenerateTnCPage && !user.business_website && !user.isAccepted && (
         <DetailRow

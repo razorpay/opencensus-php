@@ -670,7 +670,7 @@ class Profile extends Component {
     const { user, profile, settlement_amount } = this.props;
     const { bankAccount } = profile;
     const invitations = user.user.invitations;
-    const { isAdminAsMerchant, isWebsiteInWorkflow } = this.state;
+    const { isAdminAsMerchant, isWebsiteInWorkflow, hasMerchant } = this.state;
 
     if (!user.isAuthenticated) {
       return (
@@ -679,15 +679,18 @@ class Profile extends Component {
         </div>
       );
     }
+
+    const show2FASettings =
+      !user?.user?.org_enforced_second_factor_auth &&
+      (user?.user?.signup_via_email || user.is2FAMobileSignupEnabled) &&
+      !user.findTag('i18_hide_2fa_verification');
     return (
       <div className="content-wrapper content-sm">
         <div className="profile-container">
           <Alert type="error" message={this.state.errors} showDismiss={false} />
-          {user &&
-          !user.user?.org_enforced_second_factor_auth &&
-          (user.user?.signup_via_email || user.is2FAMobileSignupEnabled) ? (
-            <User2FASettings />
-          ) : null}
+
+          {show2FASettings ? <User2FASettings /> : null}
+
           <div className="panel panel-default">
             {user && user.current && (
               <div className="panel-heading">
@@ -740,8 +743,10 @@ class Profile extends Component {
             <SupportDetails />
           </IntoView>
           <ShowWhen
-            additionalCondition={(usr) =>
-              usr.isAllowedView('profile_gst') && !usr.isUnregisteredBusiness
+            additionalCondition={(_user) =>
+              _user.isAllowedView('profile_gst') &&
+              !_user.isUnregisteredBusiness &&
+              !_user.findTag('i18_hide_gst')
             }
           >
             <IntoView hashedWith={[UPDATE_GSTIN, NC_UPDATE_GSTIN, RR_UPDATE_GSTIN]}>
@@ -749,7 +754,11 @@ class Profile extends Component {
             </IntoView>
           </ShowWhen>
           <ShowWhen
-            additionalCondition={() => bankAccount && !isOrgFeatureExist('hide_settlement_details')}
+            additionalCondition={(_user) =>
+              bankAccount &&
+              !isOrgFeatureExist('hide_settlement_details') &&
+              !_user.findTag('i18_hide_myaccount.bank_account')
+            }
           >
             <IntoView hashedWith={[UPDATE_BANK_ACC, NC_UPDATE_BANK_ACC, RR_UPDATE_BANK_ACC]}>
               <TriggerOnQueryParamMatch
@@ -797,12 +806,21 @@ class Profile extends Component {
               onRejectClick={this.rejectInvitation}
             />
           ) : null}
-          {!user.isMerchantRestricted && !this.state.hasMerchant ? <UpgradeMerchantForm /> : null}
-          {
+
+          <ShowWhen
+            additionalCondition={(user) =>
+              !user.findTag('i18_hide_onboarding') && !user.isMerchantRestricted && !hasMerchant
+            }
+          >
+            <UpgradeMerchantForm />
+          </ShowWhen>
+
+          <ShowWhen additionalCondition={(user) => !user.findTag('i18_hide_settlements')}>
             <IntoView hashedWith={SETTELEMENT_CYCLE}>
               <SettlementDetails />
             </IntoView>
-          }
+          </ShowWhen>
+
           <ShowWhen additionalCondition={this.shouldShowFIRCSection}>
             <SuspenseWithLoader>
               <IntoView hashedWith={VIEW_FIRC}>

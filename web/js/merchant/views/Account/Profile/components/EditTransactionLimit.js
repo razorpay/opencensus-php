@@ -119,7 +119,8 @@ const EditTransactionLimit = (props) => {
               <i className="i i-info-outline" />
               <Popover align="top" theme="dark">
                 <PopoverBody>
-                  The maximum INR limit for only a single {transactionType} transaction
+                  The maximum {user.merchant.currency} limit for only a single {transactionType}{' '}
+                  transaction
                 </PopoverBody>
               </Popover>
             </small>
