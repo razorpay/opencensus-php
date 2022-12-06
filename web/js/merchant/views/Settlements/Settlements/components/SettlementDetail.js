@@ -172,6 +172,7 @@ class SettlementDetail extends Component {
               href="https://razorpay.freshdesk.com/a/solutions/articles/11000092582&sa=D&ust=1594198150522000&usg=AFQjCNHDpL3kI_n5NQwp8zP8yPBj7RszJQ"
               target="_blank"
               rel="noopener noreferrer"
+              role="button"
             >
               KYC Process Details
             </a>
