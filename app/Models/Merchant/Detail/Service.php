@@ -3376,10 +3376,13 @@ class Service extends Base\Service
 
             try
             {
-                $this->repo->merchant_consent_details->saveOrFail($details);
+                $this->repo->transaction(function () use ($details, $merchant_consent){
 
-                $this->repo->merchant_consents->saveOrFail($merchant_consent);
+                    $this->repo->merchant_consent_details->saveOrFail($details);
 
+                    $this->repo->merchant_consents->saveOrFail($merchant_consent);
+
+                });
             }
             catch (LogicException $e)
             {

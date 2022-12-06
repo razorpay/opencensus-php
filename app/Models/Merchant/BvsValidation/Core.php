@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\BvsValidation;
 
+use Carbon\Carbon;
 use RZP\Models\Merchant\Document\Entity as DocumentEntity;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
@@ -601,15 +602,13 @@ class Core extends Base\Core
             // merchant consents table
             $consentFor = "L2_" . $documentDetail['type'];
 
-            $updatedAt = $documentDetail['acceptance_timestamp'];
-
             $status = $documentDetail['status'];
 
             $merchantDetail = $this->repo->merchant_consents->getConsentDetailsForRequestId($id, $consentFor);
 
             $input = [
                 'status'     => $status,
-                'updated_at' => $updatedAt
+                'updated_at' => Carbon::now()->getTimestamp()
             ];
 
             try

@@ -125,6 +125,10 @@ class Core extends Base\Core
 
         foreach ($merchantIdList as $merchantId)
         {
+            $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            $this->app['basicauth']->setMerchant($this->merchant);
+
             $consentDetailsForMerchant = $this->repo->merchant_consents->getFailedConsentDetailsForMerchants($merchantId);
 
             $documents_detail = $this->getDocumentsDetails($consentDetailsForMerchant);
