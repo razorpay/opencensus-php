@@ -4168,6 +4168,7 @@ class Processor
             'fee' => $payment->getFee(),
             'is_direct_settlement' => $payment->isDirectSettlement(),
             'settled_by' => $payment->getSettledBy(),
+            'convert_currency' => $payment->getConvertCurrency(),
         ];
         $terminal = $payment->terminal;
 
@@ -4195,6 +4196,7 @@ class Processor
 
         $data['merchant'] = [
             'is_vas_merchant' => $merchant->isFeatureEnabled(Feature\Constants::VAS_MERCHANT),
+            'send_dcc_compliance' => $merchant->isFeatureEnabled(Feature\Constants::SEND_DCC_COMPLIANCE)
         ];
 
         $authorisation = $this->app['card.payments']->fetchEntity('authorization', $payment->getId());
