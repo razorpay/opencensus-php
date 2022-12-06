@@ -528,11 +528,11 @@ class Service extends Base\Service
             return [];
         }
 
+        $orderArray = $order->toArrayPublic();
         $shopifyOrder = $this->placeShopifyOrder($order, $payment, $fromShopifyApi);
 
         $this->updateRzpOrder($order, $shopifyOrder);
-
-        $orderArray = $order->toArrayPublic();
+        (new Analytics)->setShopifyOrderInCache($shopifyOrder, $orderArray, $payment->getMethod());
 
         $countryCode = $orderArray['customer_details']['shipping_address']['country'];
 
@@ -950,5 +950,16 @@ class Service extends Base\Service
         ];
 
         (new OrderMeta\Service())->updateReviewStatusFor1ccOrder($param,$input[OneClickCheckout\Constants::MERCHANT_ID]);
+    }
+
+    // getOrderAnalytics checks if the Shopify order is stored in cache and returns it. This is used by the frontend
+    // for pushing events to Google Analytics.
+    public function getOrderAnalytics(array $input): array
+    {
+        if (empty($input['order_status_url']))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, "order_status_url must be sent.");
+        }
+        return (new Analytics())->getShopifyOrderFromCache($input['order_status_url']);
     }
 }

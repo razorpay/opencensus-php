@@ -171,6 +171,25 @@ class OneClickCheckoutController extends Controller
         return ApiResponse::json([], 204);
     }
 
+    public function getOrderAnalytics()
+    {
+        $rawContents = Request::getContent();
+        $headers = Request::header();
+        $contentType = $headers['content-type'][0];
+        $bodyJSON = $contentType === 'text/plain' ? $this->parseToJSONIfApplicable($rawContents, $contentType) : Request::all();
+        $result = (new Shopify\Service)->getOrderAnalytics($bodyJSON);
+
+        if ($result === [])
+        {
+            $response = ApiResponse::json(['error' => 'Order not found.'], 422);
+            $this->addCorsHeaders($response, 'POST, OPTIONS');
+            return $response;
+        }
+        $response = ApiResponse::json($result, 200);
+        $this->addCorsHeaders($response, 'POST, OPTIONS');
+        return $response;
+    }
+
     public function allowCors(string $methods = '')
     {
         $methods = $methods === '' ? 'OPTIONS' : $methods;

@@ -3954,6 +3954,7 @@ class Route
         '1cc_shopify_order'                         => ['post',       '1cc/shopify/order',                                     'OneClickCheckoutController@createOrderAndGetPreferences'                ],
         '1cc_process_webhooks'                      => ['post',       '1cc/process_webhooks/{platform}',                                   'OneClickCheckoutController@processWebhook'              ],
         'update_shopify_1cc_config'               => ['post',         'merchant/1cc/shopify/config',                           'MerchantController@updateShopify1ccConfig'                   ],
+        '1cc_fetch_analytics'                       => ['post',       '1cc/analytics/shopify',                                 'OneClickCheckoutController@getOrderAnalytics'                   ],
 
         'get_affordability_suite'                 => ['get',          'affordability',                                         'AffordabilityController@__invoke'                             ],
 
@@ -5476,7 +5477,7 @@ class Route
         'get_or_create_customer_internal',
 
         'customer_fetch_by_id_internal',
-        
+
         '1cc_get_shopify_configs',
 
         // Address Service
@@ -9720,6 +9721,7 @@ class Route
 
         // Webhooks from Shopify
         '1cc_process_webhooks',
+        '1cc_fetch_analytics',
     ];
 
     public static $dynamicLifeTimeSession = [
