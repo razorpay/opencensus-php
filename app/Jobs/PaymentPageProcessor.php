@@ -447,5 +447,7 @@ class PaymentPageProcessor extends Job
         {
             $this->trace->traceException($e, null, TraceCode::CDS_PLAN_BILLING_DATE_UPDATE_FAILED);
         }
+
+        $this->delete();
     }
 }
