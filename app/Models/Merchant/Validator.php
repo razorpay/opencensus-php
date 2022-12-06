@@ -100,6 +100,8 @@ class Validator extends Base\Validator
 
     const AUTO_AMC_LINKED_ACCOUNT_CREATION_JOB = 'worker:auto_linked_account_creation';
 
+    const ADMIN_BATCH = 'worker:batch';
+
     const EXTENSIONMIMEMAP = [
         'jpeg'  => 'image/jpeg',
         'jpg'   => 'image/jpeg',
@@ -1350,7 +1352,7 @@ class Validator extends Base\Validator
         if (($linkedAccount === true) and
             (in_array($merchant->getCategory(),Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Entity::CATEGORY]) === true) and
             (in_array($merchant->getCategory2(), Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Entity::CATEGORY2]) ===true) and
-            (app('worker.ctx')->getJobName() !== self::AUTO_AMC_LINKED_ACCOUNT_CREATION_JOB) and
+            (in_array(app('worker.ctx')->getJobName(),[ self::AUTO_AMC_LINKED_ACCOUNT_CREATION_JOB, self::ADMIN_BATCH]) === false) and
             (app('basicauth')->isAdminAuth() === false))
         {
             App::getFacadeRoot()['trace']->info(TraceCode::AMC_LINKED_ACCOUNT_CREATION_JOB, [
