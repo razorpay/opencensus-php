@@ -141,7 +141,7 @@ return [
                 ],
                 'business_entity' => 'llp',
                 'email'           => 'testcreateaccountaaa@razorpay.com',
-                'phone'           => '9999999999',
+                'phone'           => '+919999999999',
                 'review_status'   => [
                     'current_state' => [
                         'status'             => 'activated',
@@ -286,7 +286,7 @@ return [
             'content' => [
                 'entity'  => 'account',
                 'email'           => 'testcreateaccountaab@razorpay.com',
-                'phone'           => '9999999999',
+                'phone'           => '+919999999999',
                 'review_status'   => [
                     'current_state' => [
                         'status'             => 'activated',
@@ -524,7 +524,7 @@ return [
                 ],
                 'business_entity' => 'llp',
                 'email'           => 'testcreateaccountaaa@razorpay.com',
-                'phone'           => '8888888888',
+                'phone'           => '+918888888888',
                 'review_status'   => [
                     'current_state' => [
                         'status'             => 'activated',
@@ -654,7 +654,7 @@ return [
             'content' => [
                 'entity'  => 'account',
                 'managed' => 1,
-                'phone'   => '8888888888',
+                'phone'   => '+918888888888',
                 'notes'   => [],
                 'profile' => [
                     'addresses' => [
@@ -737,7 +737,7 @@ return [
         'response' => [
             'content' => [
                 'entity'  => 'account',
-                'phone'   => '8888888888',
+                'phone'   => '+918888888888',
             ],
         ],
     ],
@@ -771,7 +771,7 @@ return [
             'content' => [
                 'entity'  => 'account',
                 'email'           => 'testcreateaccountaab@razorpay.com',
-                'phone'           => '9999999999',
+                'phone'           => '+919999999999',
                 'review_status'   => [
                     'current_state' => [
                         'status'             => 'activated',
@@ -1092,7 +1092,7 @@ return [
                 'contact_info' => [
                     'name'  => 'contact name',
                     'email' => 'contactemail@gmail.com',
-                    'phone' => '9999999999',
+                    'phone' => '+919999999999',
                 ],
                 'review_status'   => [
                     'current_state' => [
@@ -1255,7 +1255,7 @@ return [
                     'contact_info' => [
                         'name'  => 'contact name',
                         'email' => 'contactemail@gmail.com',
-                        'phone' => '9999999999',
+                        'phone' => '+919999999999',
                     ],
                 ]
             ],
@@ -1275,7 +1275,7 @@ return [
                 'contact_info' => [
                     'name'  => 'contact name',
                     'email' => 'contactemail@gmail.com',
-                    'phone' => '9999999999',
+                    'phone' => '+919999999999',
                 ],
             ],
         ],
@@ -1446,7 +1446,7 @@ return [
                 'contact_info' => [
                     'name'  => 'contact name',
                     'email' => 'contactemail@gmail.com',
-                    'phone' => '9999999999',
+                    'phone' => '+919999999999',
                 ],
                 'review_status'   => [
                     'current_state' => [
@@ -1573,7 +1573,7 @@ return [
                 'contact_info' => [
                     'name'  => 'contact name',
                     'email' => 'contactemail@gmail.com',
-                    'phone' => '9999999999',
+                    'phone' => '+919999999999',
                 ],
                 'review_status'   => [
                     'current_state' => [
@@ -1767,7 +1767,7 @@ return [
                 'contact_info' => [
                     'name'  => 'contact name',
                     'email' => 'contactemail@gmail.com',
-                    'phone' => '9999999999',
+                    'phone' => '+919999999999',
                 ],
                 'review_status'   => [
                     'current_state' => [
@@ -1843,7 +1843,7 @@ return [
                 'contact_info' => [
                     'name'  => 'contact name',
                     'email' => 'contactemail@gmail.com',
-                    'phone' => '9999999999',
+                    'phone' => '+919999999999',
                 ],
                 'review_status'   => [
                     'current_state' => [

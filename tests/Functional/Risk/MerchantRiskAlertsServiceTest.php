@@ -277,7 +277,7 @@ class MerchantRiskAlertsServiceTest extends TestCase
         ]);
 
         $this->fixtures->edit('merchant_detail', '10000000000000', [
-            'contact_mobile' => '9991119991',
+            'contact_mobile' => '+919991119991',
         ]);
 
         $this->fixtures->create('merchant_email', [
@@ -290,7 +290,7 @@ class MerchantRiskAlertsServiceTest extends TestCase
             'tags'            => ['RAS_FOH', 'RAS_CUSTOMER_FLAG_FOH'],
             'type'            => 'Question',
             'priority'        => 1,
-            'phone'           => '9991119991',
+            'phone'           => '+919991119991',
             'custom_fields'   => [
                 'cf_ticket_queue'               => 'Merchant',
                 'cf_category'                   => 'Risk Report_Merchant',
@@ -419,7 +419,7 @@ class MerchantRiskAlertsServiceTest extends TestCase
                                                         'group_id'        => 82000655429,
                                                         'tags'            => ['RAS_FOH', 'RAS_NC_FLOW_FOH'],
                                                         'priority'        => 1,
-                                                        'phone'           => '9991119991',
+                                                        'phone'           => '+919991119991',
                                                         'custom_fields'   => [
                                                             'cf_ticket_queue'               => 'Merchant',
                                                             'cf_category'                   => 'Risk Report_Merchant',
@@ -469,7 +469,7 @@ class MerchantRiskAlertsServiceTest extends TestCase
         $this->assertRavenRequest(function($input)
         {
             $this->assertArraySubset([
-                'receiver' => '9991119991',
+                'receiver' => '+919991119991',
                 'source'   => 'api.merchant.risk.alert',
                 'params'   => [
                     'merchantName'  => 'test merchant',

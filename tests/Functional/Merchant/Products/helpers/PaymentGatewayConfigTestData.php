@@ -71,7 +71,7 @@ return [
                 'type'                          => 'standard',
                 'status'                        => 'created',
                 'email'                         => 'testcreateaccountaa@razorpay.com',
-                'phone'                         => '9999999999',
+                'phone'                         => '+919999999999',
                 'legal_business_name'           => 'Acme Corp Pvt Ltd',
                 'customer_facing_business_name' => 'Acme',
                 'business_type'                 => 'individual',
@@ -1482,7 +1482,7 @@ return [
                 'type'                          => 'standard',
                 'status'                        => 'created',
                 'email'                         => 'testcreateaccountaa@razorpay.com',
-                'phone'                         => '9999999999',
+                'phone'                         => '+919999999999',
                 'legal_business_name'           => 'Acme Corp Pvt Ltd',
                 'customer_facing_business_name' => 'Acme',
                 'business_type'                 => 'public_limited',
@@ -2088,7 +2088,7 @@ return [
                 'type'                          => 'standard',
                 'status'                        => 'created',
                 'email'                         => 'testcreateaccountaa@razorpay.com',
-                'phone'                         => '9999999999',
+                'phone'                         => '+919999999999',
                 'legal_business_name'           => 'Acme Corp Pvt Ltd',
                 'customer_facing_business_name' => 'Acme',
                 'business_type'                 => 'individual',
@@ -2178,7 +2178,7 @@ return [
             'method'  => 'PATCH',
             'content' => [
                 'otp' => [
-                    'contact_mobile'             => '9999999999',
+                    'contact_mobile'             => '+919999999999',
                     'external_reference_number'  => 'Shk@123',
                     'otp_submission_timestamp'   => '1653847138',
                     'otp_verification_timestamp' => '1653848138'
@@ -2191,7 +2191,7 @@ return [
             'content' => [
                 'active_configuration' => [
                     'otp' => [
-                        'contact_mobile'             => '9999999999',
+                        'contact_mobile'             => '+919999999999',
                         'external_reference_number'  => 'Shk@123',
                         'otp_submission_timestamp'   => '1653847138',
                         'otp_verification_timestamp' => '1653848138'
@@ -2477,7 +2477,7 @@ return [
                 'type'                          => 'standard',
                 'status'                        => 'created',
                 'email'                         => 'testcreateaccountaa@razorpay.com',
-                'phone'                         => '9999999999',
+                'phone'                         => '+919999999999',
                 'legal_business_name'           => 'Acme Corp Pvt Ltd',
                 'customer_facing_business_name' => 'Acme',
                 'business_type'                 => 'individual',
@@ -2613,7 +2613,7 @@ return [
                     'beneficiary_name' => 'bank account name'
                 ],
                 'otp'        => [
-                    'contact_mobile'             => '9999999999',
+                    'contact_mobile'             => '+919999999999',
                     'external_reference_number'  => 'Shk@123',
                     'otp_submission_timestamp'   => '1653847138',
                     'otp_verification_timestamp' => '1653848138'

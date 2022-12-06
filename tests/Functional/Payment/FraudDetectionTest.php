@@ -434,7 +434,7 @@ class FraudDetectionTest extends TestCase
 
         $this->setUpFreshdeskClientMock();
 
-        $merchant_phone = '9999999999';
+        $merchant_phone = '+919999999999';
         $merchant_id = '10000000000000';
 
         $this->createMerchantDetails($unregisteredBusiness);
@@ -474,7 +474,7 @@ class FraudDetectionTest extends TestCase
             'group_id'        => 82000147768,
             'tags'            => ['website_mismatch'],
             'priority'        => 1,
-            'phone'           => '9999999999',
+            'phone'           => '+919999999999',
             'custom_fields'   => [
                 'cf_ticket_queue'               => 'Merchant',
                 'cf_category'                   => 'Risk Report_Merchant',

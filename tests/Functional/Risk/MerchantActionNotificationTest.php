@@ -282,7 +282,7 @@ class MerchantActionNotificationTest extends TestCase
         $this->assertRavenRequest(function($input) use ($template)
         {
             $this->assertArraySubset([
-                'receiver' => '9991119991',
+                'receiver' => '+919991119991',
                 'source'   => 'api.bulk.risk.actions',
                 'template' => $template,
                 'params'   => [
@@ -311,7 +311,7 @@ class MerchantActionNotificationTest extends TestCase
             'group_id'      => (int) $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
             'tags'          => $tag,
             'priority'      => 1,
-            'phone'         => '9991119991',
+            'phone'         => '+919991119991',
             'custom_fields' => [
                 'cf_ticket_queue'               => 'Merchant',
                 'cf_category'                   => 'Risk Report_Merchant',

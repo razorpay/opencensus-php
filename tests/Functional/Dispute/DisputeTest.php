@@ -2706,7 +2706,7 @@ class DisputeTest extends TestCase
                 'group_id'        => 82000327895,
                 'tags'          =>  ['bulk_dispute_email'],
                 'priority'        => 1,
-                'phone'           => '9991119991',
+                'phone'           => '+919991119991',
                 'custom_fields'   => [
                     'cf_ticket_queue'               => 'Merchant',
                     'cf_category'                   => 'Chargebacks',

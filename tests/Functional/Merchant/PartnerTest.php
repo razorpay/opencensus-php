@@ -184,13 +184,13 @@ class PartnerTest extends OAuthTestCase
         $this->app->instance('stork_service', $storkMock);
 
         $merchantTestUtil = new MerchantTest();
-        $merchantTestUtil->expectStorkSmsRequest($storkMock, 'sms.onboarding.partner_submerchant_kyc_access_approved', '9123456789', [
+        $merchantTestUtil->expectStorkSmsRequest($storkMock, 'sms.onboarding.partner_submerchant_kyc_access_approved', '+919123456789', [
             'subMerchantId'   => self::DEFAULT_SUBMERCHANT_ID,
             'subMerchantName' => 'submerchant'
         ]);
 
         $whatsappTextRegex = '/submerchant with MID: 10000000000009 has approved your request to perform their KYC. Visit your Partner Dashboard, to access their KYC form./';
-        $merchantTestUtil->expectStorkWhatsappRequest($storkMock, $whatsappTextRegex, '9123456789', true);
+        $merchantTestUtil->expectStorkWhatsappRequest($storkMock, $whatsappTextRegex, '+919123456789', true);
 
         $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
 
@@ -225,13 +225,13 @@ class PartnerTest extends OAuthTestCase
         $this->app->instance('stork_service', $storkMock);
 
         $merchantTestUtil = new MerchantTest();
-        $merchantTestUtil->expectStorkSmsRequest($storkMock, 'sms.onboarding.partner_submerchant_kyc_access_rejected', '9123456789', [
+        $merchantTestUtil->expectStorkSmsRequest($storkMock, 'sms.onboarding.partner_submerchant_kyc_access_rejected', '+919123456789', [
             'subMerchantId'   => self::DEFAULT_SUBMERCHANT_ID,
             'subMerchantName' => 'submerchant'
         ]);
 
         $whatsappTextRegex = 'submerchant with MID: 10000000000009 has rejected your request to perform their Razorpay KYC. Visit Partner Dashboard to resend this request.';
-        $merchantTestUtil->expectStorkWhatsappRequest($storkMock, $whatsappTextRegex, '9123456789', false);
+        $merchantTestUtil->expectStorkWhatsappRequest($storkMock, $whatsappTextRegex, '+919123456789', false);
 
         $this->runRequestResponseFlow($this->testData['testRejectKycAccessRequest']);
 
@@ -2156,7 +2156,7 @@ class PartnerTest extends OAuthTestCase
             'subMerchantName' => 'random_name_1'
         ];
 
-        (new MerchantTest())->expectStorkSmsRequest($storkMock,'sms.onboarding.partner_submerchant_invite', '9999999999', $expectedParms);
+        (new MerchantTest())->expectStorkSmsRequest($storkMock,'sms.onboarding.partner_submerchant_invite', '+919999999999', $expectedParms);
 
         $this->startTest();
     }
@@ -2200,9 +2200,9 @@ class PartnerTest extends OAuthTestCase
         ];
 
         $merchantTestUtil = new MerchantTest();
-        $merchantTestUtil->expectStorkSmsRequest($storkMock, 'Sms.Partnerships.Add_sub_merchant_partner', '9123456789', $expectedParams);
+        $merchantTestUtil->expectStorkSmsRequest($storkMock, 'Sms.Partnerships.Add_sub_merchant_partner', '+919123456789', $expectedParams);
         $whatsappTextRegex = '/some_very_long_long_na\.\.\. \(\w{14}\) has been added as your affiliate account on Razorpay\. We have sent an invite mail to user@example\.com for setting up their Razorpay account password\. They must login and submit the activation form with KYC details to start transacting\./';
-        $merchantTestUtil->expectStorkWhatsappRequest($storkMock, $whatsappTextRegex, '9123456789', true);
+        $merchantTestUtil->expectStorkWhatsappRequest($storkMock, $whatsappTextRegex, '+919123456789', true);
 
         $this->startTest();
     }

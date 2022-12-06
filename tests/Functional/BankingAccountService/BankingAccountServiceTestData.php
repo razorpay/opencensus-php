@@ -458,7 +458,7 @@ return [
                 ],
                 'merchant_detail' => [
                     'contact_email' => 'test@razorpay.com',
-                    'contact_mobile' => '9876543210'
+                    'contact_mobile' => '+919876543210'
                 ]
             ],
             'status_code'   =>  200

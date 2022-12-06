@@ -441,6 +441,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_OPERATION_STATE                 => 'filled|alpha_space|max:2|custom',
         Entity::BUSINESS_OPERATION_CITY                  => 'filled|alpha_space_num|max:255',
         Entity::BUSINESS_OPERATION_PIN                   => 'filled|size:6',
+        Entity::CONTACT_MOBILE                           => 'sometimes|max:15|contact_syntax',
         Entity::BUSINESS_CATEGORY                        => 'sometimes|max:255|custom',
         Entity::BUSINESS_SUBCATEGORY                     => 'sometimes|max:255|custom',
         Entity::BUSINESS_NAME                            => 'sometimes|string|max:255',

@@ -87,7 +87,7 @@ class FreshdeskTicketV2Test extends TestCase
 
         $this->fixtures->create('merchant_detail', [
             'merchant_id'    => '10000000000000',
-            'contact_mobile' => '9876543210',
+            'contact_mobile' => '+919876543210',
         ]);
     }
 
@@ -139,7 +139,7 @@ class FreshdeskTicketV2Test extends TestCase
         $this->app->instance('stork_service', $this->storkMock);
     }
 
-    protected function expectStorkWhatsappRequest($template, $text, $destination = '9876543210', $ownerId = '10000000000000'): void
+    protected function expectStorkWhatsappRequest($template, $text, $destination = '+919876543210', $ownerId = '10000000000000'): void
     {
         $this->storkMock
             ->shouldReceive('request')
@@ -968,7 +968,7 @@ class FreshdeskTicketV2Test extends TestCase
                                                                            'cf_category'                    => 'New Ticket',
                                                                        ],
                                                                        'email'         => 'test@razorpay.com',
-                                                                       'phone'         => '9876543210',
+                                                                       'phone'         => '+919876543210',
                                                                        'priority'      => 1,
                                                                        'group_id'      => $testCase['group_id'],
                                                                    ],
@@ -1027,7 +1027,7 @@ class FreshdeskTicketV2Test extends TestCase
                                                                        'cf_merchant_id'           => '10000000000000',
                                                                    ],
                                                                    'email'         => 'test@razorpay.com',
-                                                                   'phone'         => '9876543210',
+                                                                   'phone'         => '+919876543210',
                                                                    'priority'      => 1,
                                                                    'group_id'      => 14000000007642,
                                                                ],
@@ -1092,7 +1092,7 @@ class FreshdeskTicketV2Test extends TestCase
                     'cf_merchant_id'           => '10000000000000',
                 ],
                 'email'         => 'test@razorpay.com',
-                'phone'         => '9876543210',
+                'phone'         => '+919876543210',
                 'priority'      => 1,
                 'group_id'      => 14000000007642,
             ],
@@ -1172,7 +1172,7 @@ class FreshdeskTicketV2Test extends TestCase
                     'merchantuser01@razorpay.com'
                 ],
                 'email'=>'test@razorpay.com',
-                'phone'=>'9876543210',
+                'phone'=>'+919876543210',
                 'priority'=>1,
                 'status'=>2
             ],
@@ -1221,7 +1221,7 @@ class FreshdeskTicketV2Test extends TestCase
                     'merchantuser01@razorpay.com'
                 ],
                 'email'=>'test@razorpay.com',
-                'phone'=>'9876543210',
+                'phone'=>'+919876543210',
                 'priority'=>1,
                 'status'=>2
             ],
@@ -1267,7 +1267,7 @@ class FreshdeskTicketV2Test extends TestCase
                                                                        'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
                                                                    ],
                                                                    'email'         => 'test@razorpay.com',
-                                                                   'phone'         => '9876543210',
+                                                                   'phone'         => '+919876543210',
                                                                    'priority'      => 1,
                                                                    'status'        => 2,
                                                                ],
@@ -1316,7 +1316,7 @@ class FreshdeskTicketV2Test extends TestCase
                                                                        'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
                                                                    ],
                                                                    'name'          => 'test_name',
-                                                                   'phone'         => '9876543210',
+                                                                   'phone'         => '+919876543210',
                                                                    'priority'      => 1,
                                                                    'status'        => 2,
                                                                ],
@@ -1470,7 +1470,7 @@ class FreshdeskTicketV2Test extends TestCase
                                                             'cf_category'                   => 'New Ticket',
                                                         ],
                                                         'email'         => 'test@razorpay.com',
-                                                        'phone'         => '9876543210',
+                                                        'phone'         => '+919876543210',
                                                         'priority'      => 1,
                                                     ], [
                                                         'description' => 'Validation failed',
@@ -1525,7 +1525,7 @@ class FreshdeskTicketV2Test extends TestCase
                              'total_transactions'  => 25
                          ]);
 
-        $this->expectRavenSendSmsRequest($this->ravenMock, 'sms.support.ticket_created', '9876543210');
+        $this->expectRavenSendSmsRequest($this->ravenMock, 'sms.support.ticket_created', '+919876543210');
 
         $url = $this->app['config']->get('applications.dashboard.url');
 
@@ -1606,7 +1606,7 @@ class FreshdeskTicketV2Test extends TestCase
 
             $this->expectStorkWhatsappRequest($expectedTemplate, $testcase['expected_text']);
 
-            $this->expectRavenSendSmsRequest($this->ravenMock, $smsTemplate, '9876543210');
+            $this->expectRavenSendSmsRequest($this->ravenMock, $smsTemplate, '+919876543210');
 
             $this->testData[__FUNCTION__]['request']['content']['event'] = $testcase['event'];
 
@@ -1967,7 +1967,7 @@ class FreshdeskTicketV2Test extends TestCase
 
                 $this->mockRaven();
 
-                $this->expectRavenSendSmsRequest($this->ravenMock, 'sms.support.agent_ticket_created', '9876543210');
+                $this->expectRavenSendSmsRequest($this->ravenMock, 'sms.support.agent_ticket_created', '+919876543210');
 
                 $url = $this->app['config']->get('applications.dashboard.url');
 
@@ -2134,7 +2134,7 @@ class FreshdeskTicketV2Test extends TestCase
                         'cf_category'                   => 'New Ticket',
                     ],
                     'email' =>  'test@razorpay.com',
-                    'phone' => '9876543210',
+                    'phone' => '+919876543210',
                     'priority' =>  1,
                 ],
                 'response'  =>
@@ -2171,7 +2171,7 @@ class FreshdeskTicketV2Test extends TestCase
                         'cf_category'                   => 'New Ticket',
                     ],
                     'email' =>  'test@razorpay.com',
-                    'phone' => '9876543210',
+                    'phone' => '+919876543210',
                     'priority' =>  1,
                 ],
                 'response'  =>
@@ -2209,7 +2209,7 @@ class FreshdeskTicketV2Test extends TestCase
                         'cf_category'                   => 'New Ticket',
                     ],
                     'tags'          => ['workflow_ticket'],
-                    'phone'         => '9876543210',
+                    'phone'         => '+919876543210',
                     'priority'      => 1,
                 ],
                 'response' =>
@@ -2248,7 +2248,7 @@ class FreshdeskTicketV2Test extends TestCase
                         'cf_category'                   => 'New Ticket',
                     ],
                     'email'         => 'test@razorpay.com',
-                    'phone'         => '9876543210',
+                    'phone'         => '+919876543210',
                     'priority'      => 1,
                 ],
                 'response'  =>
@@ -2312,7 +2312,7 @@ class FreshdeskTicketV2Test extends TestCase
                         'cf_category'                   => 'New Ticket',
                     ],
                     'email'         => 'test@razorpay.com',
-                    'phone'         => '9876543210',
+                    'phone'         => '+919876543210',
                     'priority'      => 1,
                 ],
                 'response'  =>

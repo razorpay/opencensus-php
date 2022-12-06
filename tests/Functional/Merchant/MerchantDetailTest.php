@@ -630,6 +630,69 @@ class MerchantDetailTest extends OAuthTestCase
         $this->assertEquals($merchantDetails->getInternationalActivationFlow(), 'whitelist');
     }
 
+    public function testMerchantDetailsEditMobileNumber()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchant       = $merchantDetail->merchant;
+
+        $this->fixtures->merchant->edit($merchant->getId(), ['country_code' => "MY"]);
+
+        $merchant->setAttribute("country_code", "MY");
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth($merchant->getId());
+
+        $this->startTest();
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchant->getId());
+
+        $this->assertEquals($merchantDetails->getContactMobile(), '+60179164389');
+    }
+
+    public function testMerchantDetailsEditMobileNumberWithPrefix()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchant       = $merchantDetail->merchant;
+
+        $this->fixtures->merchant->edit($merchant['id'], ['country_code' => "MY"]);
+
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth($merchant->getId());
+
+        $this->startTest();
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchant->getId());
+
+        $this->assertEquals($merchantDetails->getContactMobile(), '+60179164389');
+    }
+
+    public function testMerchantDetailsEditMobileNumberIndia()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchant       = $merchantDetail->merchant;
+
+        $merchant->setAttribute("country_code", "MY");
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth($merchant->getId());
+
+        $this->startTest();
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchant->getId());
+
+        $this->assertEquals($merchantDetails->getContactMobile(), '+919876543210');
+    }
+
     public function testSmartDashboardMerchantDetailsPatch()
     {
         $this->markTestSkipped();
@@ -1553,7 +1616,7 @@ We look forward to transacting with you!
             'fields'      => [
                 [
                     'name'     => 'merchant_details|contact_mobile',
-                    'value'    => '8722627189',
+                    'value'    => '+918722627189',
                     'editable' => false
                 ]
             ]
@@ -2578,7 +2641,7 @@ We look forward to transacting with you!
 
         $this->app->instance('stork_service', $storkMock);
 
-        $this->expectStorkOptInStatusForWhatsapp($storkMock, '1234567890');
+        $this->expectStorkOptInStatusForWhatsapp($storkMock, '+911234567890');
 
         $ticketDetails["fd_instance"] = 'rzpsol';
 
@@ -2628,7 +2691,7 @@ We look forward to transacting with you!
 
         $this->app->instance('stork_service', $storkMock);
 
-        $this->expectStorkOptInStatusForWhatsapp($storkMock, '1234567890');
+        $this->expectStorkOptInStatusForWhatsapp($storkMock, '+911234567890');
 
         $this->expectStorkWhatsappRequest($storkMock, 'Hi {1},
 Thanks for choosing Razorpay. There are a few requirements that need to be completed before we can activate your account.
@@ -2638,7 +2701,7 @@ Thanks for choosing Razorpay. There are a few requirements that need to be compl
 
 Please share the links/proofs by replying to this ticket.
 Regards,
-Team Razorpay', '1234567890');
+Team Razorpay', '+911234567890');
     }
 
     public function testGetRequestDocumentList()
@@ -5813,7 +5876,7 @@ Team Razorpay',
 
         $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
 
-        $this->assertEquals($merchantDetails->getContactMobile(), '1234567890');
+        $this->assertEquals($merchantDetails->getContactMobile(), '+911234567890');
 
         $user = $this->getDbEntityById('user', $userId);
 
@@ -5826,7 +5889,7 @@ Team Razorpay',
 
         $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
 
-        $this->assertEquals($merchantDetails->getContactMobile(), '8722627189');
+        $this->assertEquals($merchantDetails->getContactMobile(), '+918722627189');
 
         $user = $this->getDbEntityById('user', $userId);
 
@@ -5965,7 +6028,7 @@ Team Razorpay',
 
         [$merchantId, $workflowActionId] = $this->assertWorkflowDataForUpdateMerchantContact($merchantId, $userId,
                                                                                              PermissionName::UPDATE_MOBILE_NUMBER,
-                                                                                             '1234567890', '1234567890');
+                                                                                             '+911234567890', '1234567890');
 
         $this->rejectUpdateMerchantContactWorkflowAndAssertData($merchantId, $userId, $workflowActionId);
     }
@@ -6093,7 +6156,7 @@ Team Razorpay',
 
         [$merchantId, $workflowActionId] = $this->assertWorkflowDataForUpdateMerchantContact($merchantId, $userId,
                                                                                              PermissionName::UPDATE_MOBILE_NUMBER,
-                                                                                             '8722627189', '1234567890');
+                                                                                             '+918722627189', '1234567890');
 
         $this->updateMerchantContactWorkflowApproveAndAssertData($merchantId, $userId, $workflowActionId);
 
@@ -6131,7 +6194,7 @@ Team Razorpay',
 
         [$merchantId, $workflowActionId] = $this->assertWorkflowDataForUpdateMerchantContact($merchantId, $userId,
                                                                                              PermissionName::UPDATE_MOBILE_NUMBER,
-                                                                                             "1234567890", "1234567890");
+                                                                                             "+911234567890", "1234567890");
 
         $this->updateMerchantContactWorkflowApproveAndAssertData($merchantId, $userId, $workflowActionId);
 
@@ -6178,7 +6241,7 @@ Team Razorpay',
 
         [$merchantId, $workflowActionId] = $this->assertWorkflowDataForUpdateMerchantContact($merchantId, $userId,
             PermissionName::UPDATE_MOBILE_NUMBER,
-            "1234567890", "1234567890");
+            "+911234567890", "1234567890");
 
         $this->updateMerchantContactWorkflowApproveAndAssertData($merchantId, $userId, $workflowActionId);
 
@@ -7725,7 +7788,7 @@ We look forward to transacting with you!
 
         $user = $this->getDbEntityById('user', $userId);
 
-        $this->assertEquals('9876543210', $merchantDetails->getContactMobile());
+        $this->assertEquals('+919876543210', $merchantDetails->getContactMobile());
 
         $this->assertEquals('9876543210', $user->getContactMobile());
 

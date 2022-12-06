@@ -1661,7 +1661,7 @@ return [
                 'user' => [
                     'name'           => 'some_very_long_long_name_longer_than_25',
                     'email'          => 'user@example.com',
-                    'contact_mobile' => '9999999999'
+                    'contact_mobile' => '+919999999999'
                 ]
             ],
         ],
@@ -1685,7 +1685,7 @@ return [
                 'user' => [
                     'name'           => 'random_name_1',
                     'email'          => 'user@example.com',
-                    'contact_mobile' => '9999999999'
+                    'contact_mobile' => '+919999999999'
                 ]
             ],
         ],

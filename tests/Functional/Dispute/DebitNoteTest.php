@@ -47,7 +47,7 @@ class DebitNoteTest extends TestCase
     }
 
     protected function expectStorkWhatsappRequest($expectedTemplate, $expectedInput,
-                                                  $expectedReceiver = '9876543210'): void
+                                                  $expectedReceiver = '+919876543210'): void
     {
         $this->storkMock
             ->shouldReceive('sendWhatsappMessage')

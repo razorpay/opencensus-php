@@ -803,6 +803,51 @@ return [
         ],
     ],
 
+    'testMerchantDetailsEditMobileNumber' => [
+        'request'  => [
+            'content' => [
+                'contact_mobile'                            => '0179164389'
+            ],
+            'url'     => '/merchants/details',
+            'method'  => 'PATCH',
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'                            => '+60179164389'
+            ],
+        ],
+    ],
+
+    'testMerchantDetailsEditMobileNumberWithPrefix' => [
+        'request'  => [
+            'content' => [
+                'contact_mobile'                            => '+600179164389'
+            ],
+            'url'     => '/merchants/details',
+            'method'  => 'PATCH',
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'                            => '+60179164389'
+            ],
+        ],
+    ],
+
+    'testMerchantDetailsEditMobileNumberIndia' => [
+        'request'  => [
+            'content' => [
+                'contact_mobile'                            => '9876543210'
+            ],
+            'url'     => '/merchants/details',
+            'method'  => 'PATCH',
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'                            => '+919876543210'
+            ],
+        ],
+    ],
+
     'testSmartDashboardMerchantDetailsPatch' => [
         'request'  => [
             'content' => [
@@ -1476,7 +1521,7 @@ return [
                     'business_type' => '1',
                     'transaction_volume' => 5,
                     'department'         => '6',
-                    'contact_mobile'     => '8722627189',
+                    'contact_mobile'     => '+918722627189',
                     'contact_email'      => 'razorpay@razorpay.com',
                     'min_aov'            => 94,
                     'max_aov'            => 98,
@@ -1534,7 +1579,7 @@ return [
                 'business_type'      => '1',
                 'transaction_volume' => '5',
                 'department'         => '6',
-                'contact_mobile'     => '8722627189',
+                'contact_mobile'     => '+918722627189',
                 'contact_email'     => 'razorpay@razorpay.com'
             ],
         ],
@@ -1620,7 +1665,7 @@ return [
                 'business_type'      => '1',
                 'transaction_volume' => '1',
                 'contact_name'       => ' Kill Bill Pandey ',
-                'contact_mobile'     => '9087654321',
+                'contact_mobile'     => '+919087654321',
                 'role'               => null,
             ],
         ],
@@ -1642,7 +1687,7 @@ return [
                 'business_type'      => '1',
                 'transaction_volume' => '1',
                 'contact_name'       => 'Razorpay',
-                'contact_mobile'     => '9087654321',
+                'contact_mobile'     => '+919087654321',
                 'role'               => null,
             ],
         ],
@@ -1664,7 +1709,7 @@ return [
                 'business_type'      => '1',
                 'transaction_volume' => '1',
                 'contact_name'       => 'Razorpay',
-                'contact_mobile'     => '9087654321',
+                'contact_mobile'     => '+919087654321',
                 'role'               => null,
             ],
         ],
@@ -1686,7 +1731,7 @@ return [
                 'business_type'      => '1',
                 'transaction_volume' => '1',
                 'contact_name'       => 'Razorpay',
-                'contact_mobile'     => '9087654321',
+                'contact_mobile'     => '+919087654321',
                 'role'               => null,
             ],
         ],
@@ -1706,7 +1751,7 @@ return [
             'content' => [
                 'business_type'  => '11',
                 'contact_name'   => 'I am untegistered',
-                'contact_mobile' => '8722627189',
+                'contact_mobile' => '+918722627189',
             ],
         ],
     ],

@@ -1223,7 +1223,7 @@ class MerchantCreateTest extends TestCase
             'subMerchantName' => 'Submerchant'
         ];
 
-        (new MerchantTest())->expectStorkSmsRequest($storkMock,'sms.onboarding.partner_submerchant_invite', '9876543210', $expectedParams);
+        (new MerchantTest())->expectStorkSmsRequest($storkMock,'sms.onboarding.partner_submerchant_invite', '+919876543210', $expectedParams);
 
         $this->startTest();
 
@@ -1243,13 +1243,13 @@ class MerchantCreateTest extends TestCase
 
         $this->assertEquals('testsub@razorpay.com', $submerchantUser['email']);
 
-        $this->assertEquals('9876543210', $submerchantUser['contact_mobile']);
+        $this->assertEquals('+919876543210', $submerchantUser['contact_mobile']);
 
         $this->assertEquals('banking', $mapping->first()->product);
 
         $submerchantDetail = $this->getLastEntity('merchant_detail', true);
 
-        $this->assertEquals('9876543210', $submerchantDetail['contact_mobile']);
+        $this->assertEquals('+919876543210', $submerchantDetail['contact_mobile']);
     }
 
     public function testCreateSubMerchantByAggregatorBatchRatelimitExceeded()

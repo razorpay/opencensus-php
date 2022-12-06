@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Detail;
 
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Lib\PhoneBook;
 use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Models\Address;
@@ -10,6 +11,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Merchant\Store;
 use RZP\Constants\IndianStates;
+use RZP\Constants\Country;
 use RZP\Models\Merchant\AutoKyc;
 use RZP\Exception\InvalidPermissionException;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -525,6 +527,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 
     protected static $modifiers = [
         'bank_branch_input',
+        'contact_mobile'
     ];
 
     /**
@@ -1664,6 +1667,45 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         }
     }
 
+
+
+    protected function modifyContactMobile(& $input)
+    {
+        if (isset($input[Entity::CONTACT_MOBILE]) === true)
+        {
+            $contact = & $input[Entity::CONTACT_MOBILE];
+            $contact = str_replace(' ', '', $contact);
+            $contact = str_replace('-', '', $contact);
+            $contact = str_replace('(', '', $contact);
+            $contact = str_replace(')', '', $contact);
+
+            // Remove the 0 at the start
+            if ((strlen($contact) > 1) and
+                ($contact[0] === '0'))
+            {
+                $contact = substr($contact, 1);
+            }
+
+             $input[self::CONTACT_MOBILE] =  $contact;
+
+        }
+    }
+
+    public function setContactMobileAttribute($contact)
+    {
+        $number = new PhoneBook($contact, true, $this->merchant->getCountry());
+
+        if ($number->isValidNumber() === true)
+        {
+            $this->attributes[self::CONTACT_MOBILE] = $number->format();
+        }
+        else
+        {
+            $normalizedNumber = $number->getRawInput();
+
+            $this->attributes[self::CONTACT_MOBILE] = $normalizedNumber;
+        }
+    }
 
     public function edit(array $input = array(), $operation = 'edit')
     {

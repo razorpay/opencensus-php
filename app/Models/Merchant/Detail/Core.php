@@ -2480,14 +2480,16 @@ class Core extends Base\Core
 
     public function createMerchantDetails(Merchant\Entity $merchant, array $input = [])
     {
-        $merchantDetail = (new Entity)->build($input);
+        $merchantDetail = (new Entity);
+
+        $merchantDetail->merchant()->associate($merchant);
+
+        $merchantDetail = $merchantDetail->build($input);
 
         if ($merchant->getEmail() !== null)
         {
             $merchantDetail->setContactEmail($merchant->getEmail());
         }
-
-        $merchantDetail->merchant()->associate($merchant);
 
         try
         {

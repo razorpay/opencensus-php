@@ -237,7 +237,7 @@ class TypeformTest extends TestCase
             'group_id'        => 82000147768,
             'tags'            => ['intl_auto_mailer', 'intl_approved'],
             'priority'        => 1,
-            'phone'           => '9991119991',
+            'phone'           => '+919991119991',
             'custom_fields'   => [
                 'cf_ticket_queue'               => 'Merchant',
                 'cf_category'                   => 'Risk Report_Merchant',

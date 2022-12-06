@@ -81,7 +81,7 @@ class SalesforceClientTest extends TestCase
 
         $payload = $this->salesforceClient->payloadGenerationForInterestOfPrimaryMerchantInBanking($merchant);
 
-        $this->assertEquals('Dummy contact mobile', $payload[0]['contact_mobile']);
+        $this->assertEquals('Dummycontactmobile', $payload[0]['contact_mobile']);
 
         $this->assertBooleanValuesAsInt($payload);
     }

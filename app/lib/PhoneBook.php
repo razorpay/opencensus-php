@@ -48,7 +48,7 @@ class PhoneBook
      * @param string  $phoneNumber
      * @param boolean $parseSilently Whether to throw exception or not
      */
-    public function __construct($phoneNumber, $parseSilently = false)
+    public function __construct($phoneNumber, $parseSilently = false, $countryCode = self::DEFAULT_COUNTRY_CODE)
     {
         $this->app = App::getFacadeRoot();
 
@@ -60,7 +60,7 @@ class PhoneBook
         try
         {
             // Second argument is a default country code
-            $this->phoneNumber = $this->libphonenumber->parse($phoneNumber, self::DEFAULT_COUNTRY_CODE);
+            $this->phoneNumber = $this->libphonenumber->parse($phoneNumber, $countryCode);
         }
         catch (NumberParseException $e)
         {

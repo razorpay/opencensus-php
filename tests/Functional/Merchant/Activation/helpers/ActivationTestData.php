@@ -2003,7 +2003,7 @@ return [
             'url'     => '/merchant/activation',
             'content' => [
                 'contact_name'                => 'test',
-                'contact_mobile'              => '9123456789',
+                'contact_mobile'              => '+919123456789',
                 'business_type'               => '1',
                 'business_name'               => 'Acme',
                 'business_dba'                => 'Acme',
@@ -2023,7 +2023,7 @@ return [
         'response'    => [
             'content' => [
                 'contact_name'        => 'test',
-                'contact_mobile'      => '9123456789',
+                'contact_mobile'      => '+919123456789',
                 'promoter_pan'        => 'ABCPE0000Z',
                 'bank_account_number' => '123456789012345',
                 'bank_branch_ifsc'    => 'ICIC0000001',
