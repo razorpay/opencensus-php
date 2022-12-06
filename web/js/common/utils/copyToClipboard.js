@@ -15,9 +15,14 @@ const copyFallback = (url) => {
 };
 
 const copyToClipboard = (url) => {
-  if (navigator.clipboard && window.isSecureContext) {
+  // Use in future, if needed https://developer.mozilla.org/en-US/docs/Web/API/Permissions
+  if (navigator?.clipboard?.writeText && window.isSecureContext) {
     try {
-      navigator.clipboard.writeText(url);
+      navigator.clipboard.writeText(url).catch((err) => {
+        if (err) {
+          copyFallback(url);
+        }
+      });
     } catch (error) {
       copyFallback(url);
     }
