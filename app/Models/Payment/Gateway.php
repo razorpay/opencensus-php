@@ -1585,6 +1585,7 @@ class Gateway
             self::NETBANKING_KARNATAKA,
             self::NETBANKING_DBS,
             self::INGENICO,
+            self::BILLDESK_OPTIMIZER,
         ],
 
         //
@@ -3214,6 +3215,7 @@ class Gateway
         Gateway::CCAVENUE,
         Gateway::ZAAKPAY,
         Gateway::INGENICO,
+        Gateway::BILLDESK_OPTIMIZER,
     ];
 
     /**
@@ -4443,6 +4445,7 @@ class Gateway
             self::NETBANKING_DBS,
             self::INGENICO,
             self::NETBANKING_ICICI,
+            self::BILLDESK_OPTIMIZER,
         ];
 
         $isRouted = in_array($gateway, $gateways, true);
@@ -4565,6 +4568,7 @@ class Gateway
             self::WALLET_AMAZONPAY,
             self::NETBANKING_AXIS,
             self::NETBANKING_AIRTEL,
+            self::BILLDESK_OPTIMIZER,
             self::NETBANKING_EQUITAS,
         ];
 

@@ -788,6 +788,74 @@ class Netbanking
                 IFSC::YESB,
             ],
         ],
+        Gateway::BILLDESK_OPTIMIZER => [
+            'retail' => [
+                IFSC::ALLA,
+                IFSC::AUBL,
+                self::BARB_C,
+                self::BARB_R,
+                IFSC::BBKM,
+                IFSC::BDBL,
+                IFSC::BKID,
+                IFSC::CBIN,
+                IFSC::CIUB,
+                IFSC::CNRB,
+                IFSC::CORP,
+                IFSC::COSB,
+                IFSC::CSBK,
+                IFSC::DBSS,
+                IFSC::DCBL,
+                IFSC::DEUT,
+                IFSC::DLXB,
+                self::DLXB_C,
+                IFSC::ESFB,
+                IFSC::FDRL,
+                IFSC::HDFC,
+                IFSC::HSBC,
+                IFSC::IBKL,
+                IFSC::ICIC,
+                IFSC::IDFB,
+                IFSC::IDIB,
+                IFSC::INDB,
+                IFSC::IOBA,
+                IFSC::JAKA,
+                IFSC::JSBP,
+                IFSC::KARB,
+                IFSC::KKBK,
+                IFSC::KVBL,
+                self::LAVB_C,
+                self::LAVB_R,
+                IFSC::MAHB,
+                IFSC::NKGS,
+                IFSC::ORBC,
+                IFSC::PSIB,
+                self::PUNB_C,
+                self::PUNB_R,
+                IFSC::RATN,
+                self::RATN_C,
+                IFSC::SBBJ,
+                IFSC::SBHY,
+                IFSC::SBIN,
+                IFSC::SBMY,
+                IFSC::SBTR,
+                IFSC::SCBL,
+                IFSC::SIBL,
+                IFSC::SRCB,
+                IFSC::STBP,
+                IFSC::SURY,
+                IFSC::SVCB,
+                self::SVCB_C,
+                IFSC::SYNB,
+                IFSC::TMBL,
+                IFSC::TNSC,
+                IFSC::UBIN,
+                IFSC::UCBA,
+                IFSC::UTBI,
+                IFSC::UTIB,
+                IFSC::YESB,
+                self::YESB_C,
+            ],
+        ],
         Gateway::NETBANKING_ICICI => [
             'retail' => [
                 IFSC::ICIC,
@@ -1330,6 +1398,11 @@ class Netbanking
         return self::$gatewaySupportedBanks[Gateway::INGENICO]['retail'];
     }
 
+    public static function getBilldeskOptimizerSupportedBanks()
+    {
+        return self::$gatewaySupportedBanks[Gateway::BILLDESK_OPTIMIZER]['retail'];
+    }
+
     public static function getDirectlyNetbankingBanks()
     {
         return array_merge(self::$self, self::$selfCorp);
@@ -1447,6 +1520,11 @@ class Netbanking
     public static function isIngenicoSupportedBank($bank)
     {
         return in_array($bank, self::getIngenicoSupportedBanks(), true) === true;
+    }
+
+    public static function isBilldesk_OptimizerSupportedBank($bank)
+    {
+        return in_array($bank, self::getBilldeskOptimizerSupportedBanks(), true) === true;
     }
 
     public static function isNetbankingBankDirectlySupported($bank): bool

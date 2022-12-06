@@ -417,6 +417,9 @@ class Validator extends Base\Validator
         Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::CARD                                    => 'sometimes|boolean|in:0,1',
         Entity::NOTES                                   => 'sometimes|string',
+        Entity::NETBANKING                              => 'sometimes|boolean|in:0,1',
+        Entity::NETWORK_CATEGORY                        => 'sometimes|string|max:30',
+        Entity::CATEGORY                                => 'sometimes|string|numeric|digits:4',
     ];
 
     protected static $hdfcTerminalRules = [
@@ -916,6 +919,9 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET2     => 'sometimes|string',
         Entity::NOTES                      => 'sometimes|string',
+        Entity::NETBANKING                 => 'sometimes|boolean|in:0,1',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+        Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
     ];
 
     protected static $mandateHqEditTerminalRules = [
