@@ -19,6 +19,7 @@ use RZP\Metro\MetroHandler;
 use Rzp\Bvs\Validation\V1\TwirpError;
 use RZP\Jobs\UpdateMerchantContext;
 use RZP\Models\Base\EsRepository;
+use RZP\Models\PaymentLink;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\GstinAuth;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Metro\Constants as MetroConstants;
@@ -3322,10 +3323,14 @@ class Core extends Base\Core
         $this->app->hubspot->trackHubspotEvent($merchant->getEmail(), $properties);
     }
 
-    protected function getSegmentEventPropertiesforActivationStatusChange($merchant, $merchantDetails, $previousActivationStatus)
+    public function getSegmentEventPropertiesforActivationStatusChange($merchant, $merchantDetails, $previousActivationStatus)
     {
+
+        $merchantUrlsPresent = false;
+
         $activationStatus = $merchantDetails->getActivationStatus();
-        $properties       = [
+
+        $properties = [
             'activation_status'          => $merchantDetails->getActivationStatus(),
             'previous_activation_status' => $previousActivationStatus,
             'mcc'                        => $merchant->getCategory(),
@@ -3345,7 +3350,98 @@ class Core extends Base\Core
             $properties['needs_clarification'] = true;
         }
 
+        try
+        {
+
+            $response = $this->app['splitzService']->evaluateRequest([
+                                                                         'id'            => $merchant->getId(),
+                                                                         'experiment_id' => $this->app['config']->get('app.product_led_mail_communication'),
+                                                                     ]);
+
+            $variant = $response['response']['variant']['name'] ?? null;
+
+            $result = false;
+
+            if (empty($response['response']['variant']['variables']) === false)
+            {
+                foreach ($response['response']['variant']['variables'] as $variables)
+                {
+
+                    if ($variables['key'] === 'result')
+                    {
+                        $result = $variables['value'] === 'on';
+                    }
+
+                }
+            }
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                "variant"  => $variant,
+                "result"   => $result,
+                "response" => $response
+            ]);
+
+            $result = ($result or ($variant === 'enable'));
+
+            if ($result === true)
+            {
+
+                $businessDetail = optional($merchant->merchantBusinessDetail);
+
+                $websiteDetails = $businessDetail->getWebsiteDetails();
+
+                if (empty($businessDetail) === false and empty($websiteDetails) === false)
+                {
+                    if ((isset($websiteDetails[BusinessDetailConstants::WEBSITE_PRESENT]) and $websiteDetails[BusinessDetailConstants::WEBSITE_PRESENT] === true) or
+                        (isset($websiteDetails[BusinessDetailConstants::ANDROID_APP_PRESENT]) and $websiteDetails[BusinessDetailConstants::ANDROID_APP_PRESENT] === true) or
+                        (isset($websiteDetails[BusinessDetailConstants::IOS_APP_PRESENT]) and $websiteDetails[BusinessDetailConstants::WEBSITE_PRESENT] === true))
+                    {
+                        $merchantUrlsPresent = true;
+                    }
+                }
+
+                $this->trace->info(TraceCode::MERCHANT_BUSINESS_WEBSITE_DETAILS, [
+                    'merchantUrlPresent' => $merchantUrlsPresent,
+                    'businessDetail'     => $businessDetail,
+                    'websiteDetails'     => $websiteDetails
+                ]);
+
+                try
+                {
+                    $responseArray = (new PaymentLink\Core())->getPaymentHandleByMerchant($merchant);
+
+                    $phResponse = $responseArray[PaymentLink\Entity::URL];
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->info(
+                        TraceCode::PAYMENT_HANDLE_GET_REQUEST_INITIATED,
+                        [
+                            'error' => $e,
+                        ]);
+                }
+
+                $properties['product_led'] = ($merchantUrlsPresent === true) ? 'PG' : 'PH';
+
+                if (empty($phResponse) === false)
+                {
+                    $properties['phLink'] = $phResponse;
+                }
+            }
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, ['id' => $properties['id'] ?? null]);
+        }
+
+        $this->trace->info(TraceCode::MERCHANT_UPDATE_ACTIVATION_STATUS_INTERNAL, [
+            'activation_status' => $activationStatus,
+            'properties'        => $properties
+        ]);
+
         return $properties;
+
     }
 
     /**

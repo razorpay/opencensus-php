@@ -22,6 +22,7 @@ use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Escalations;
 use RZP\Services\Mock\HarvesterClient;
 use RZP\Services\RazorXClient;
+use RZP\Tests\Traits\MocksSplitz;
 use Illuminate\Support\Facades\Mail;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Mail\Merchant\MerchantOnboardingEmail;
@@ -59,6 +60,7 @@ class CoreTest extends TestCase
     protected $app;
 
     use DbEntityFetchTrait;
+    use MocksSplitz;
     use TestsStorkServiceRequests;
 
     protected function setUp(): void
@@ -1192,7 +1194,75 @@ class CoreTest extends TestCase
 
         $this->assertFalse($response['showMtuPopup']);
     }
+    public function testGetSegmentEventPropertiesForActivationStatusChangeTrue()
+    {
+        $core = new DetailCore();
+        // toDoo
+        // create a merchant who will be applicable for creating a payment handle
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_website' => 'www.google.com',
 
+        ]);
+
+        $merchant = $merchantDetails->merchant;
+
+        $previousActivationStatus = $merchantDetails->getActivationStatus();
+
+        $splitzInput = [
+            "experiment_id" => "KDU9Zk7cp7SGQy",
+            "id"            => $merchant->getId(),
+        ];
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
+
+        $response = $core->getSegmentEventPropertiesforActivationStatusChange($merchant, $merchantDetails, $previousActivationStatus);
+        // checking whether the splitz mock is working fine
+        $this->assertArrayHasKey('product_led', $response);
+    }
+
+    public function testSegmentEventPropertiesForMerchantNotProductLed()
+    {
+        $core = new DetailCore();
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_website' => 'www.google.com',
+        ]);
+
+        $merchant = $merchantDetails->merchant;
+
+        $previousActivationStatus = $merchantDetails->getActivationStatus();
+
+        $splitzInput = [
+            "experiment_id" => "KDU9Zk7cp7SGQy",
+            "id"            => $merchant->getId(),
+        ];
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
+
+        $response = $core->getSegmentEventPropertiesforActivationStatusChange($merchant, $merchantDetails, $previousActivationStatus);
+
+        $this->assertArrayHasKey('activation_status', $response);
+
+        $this->assertArrayHasKey('mcc', $response);
+
+        $this->assertArrayNotHasKey('product_led', $response);
+    }
     public function testEligibleForMtuPopupShowSignupCampaign()
     {
         $this->enableRazorXTreatmentForRazorX();
