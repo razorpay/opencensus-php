@@ -1011,6 +1011,12 @@ class Constants
     const PAYOUTS_ON_HOLD = 'payouts_on_hold';
 
     /**
+     * Used to manage ip whitelisting mandating on a merchant. This feature will control ip whitelisting
+     * to be applied for X usecases.
+     */
+    const ENABLE_IP_WHITELIST = 'enable_ip_whitelist';
+
+    /**
      * Used to manage on_hold feature(Holding payout for a certain sla) in case of bene/NPCI downtime for payout requests
      * If this flag is enabled the payout will be not be hold for the merchant even if bene or NPCI or partner_bank is down
      */
@@ -2085,6 +2091,7 @@ class Constants
         self::COVID_19_RELIEF                 => true,
         self::BENE_NAME_IN_PAYOUT             => true,
         self::PAYOUTS_ON_HOLD                 => true,
+        self::ENABLE_IP_WHITELIST             => true,
         self::SKIP_EXPOSE_FEE_RECOVERY        => true,
         self::SKIP_HOLD_PAYOUTS               => true,
         self::SKIP_TEST_TXN_FOR_DMT           => true,
@@ -3106,6 +3113,11 @@ class Constants
         self::ICICI_2FA => [
             'feature'       => self::ICICI_2FA,
             'display_name'  => 'Feature for enabling ICICI 2FA flow for payouts',
+            'documentation' => '',
+        ],
+        self::ENABLE_IP_WHITELIST => [
+            'feature'       => self::ENABLE_IP_WHITELIST,
+            'display_name'  => 'Feature for enabling ip whitelisting on X api requests',
             'documentation' => '',
         ],
         self::DISABLE_API_PAYOUT_BENE_EMAIL => [
