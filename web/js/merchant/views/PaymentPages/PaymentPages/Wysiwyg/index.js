@@ -620,7 +620,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         pp_fb_event_payment_complete_enabled: settings.pp_fb_event_payment_complete_enabled,
         goal_tracker: settings.goal_tracker ? pruneGoalTracker(settings.goal_tracker) : undefined,
         partner_webhook_settings: settings.partner_webhook_settings,
-        one_click_checkout: '0',
       },
       slug,
     };
