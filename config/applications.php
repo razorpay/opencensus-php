@@ -1406,6 +1406,11 @@ return [
         ],
     ],
 
+    'checkout_service' => [
+        // secret used by checkout service to call API monolith
+        'secret'    => env('CHECKOUT_SERVICE_API_MONOLITH_SECRET'),
+    ],
+
     'trusted_badge' => [
         'secret' => env('TRUSTED_BADGE_SECRET'),
     ],

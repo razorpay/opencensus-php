@@ -14496,6 +14496,12 @@ class Route
             'customer_fetch_by_id_internal',
         ],
 
+        'checkout_service' => [
+            'payments_downtime',
+            'feature_get_all_internal',
+            'internal_1cc_configs_get',
+        ],
+
         'trusted_badge' => [
             'trusted_badge_get_experiment_list',
             'trusted_badge_put_experiment_list',
