@@ -16,6 +16,7 @@ use RZP\Models\Card\Network;
 use RZP\Services\KafkaMessageProcessor;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Store\ConfigKey;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Mail\Merchant\MerchantOnboardingEmail;
 use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
@@ -42,7 +43,6 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Feature\Constants as FeatureConstants;
-use RZP\Models\Admin\Org\Repository as OrgRepository;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
@@ -2277,7 +2277,7 @@ class ActivationTest extends OAuthTestCase
         $this->assertSame('whitelist', $liveMerchant->merchantdetail->getActivationFlow());
     }
 
-    public function setupKycSubmissionForInstantlyActivatedMerchant($merchantId)
+    public function setupKycSubmissionForInstantlyActivatedMerchant($merchantId, $customMerchantDetailAttributes = [])
     {
         $data = $this->getInstantlyActivatedMerchantDetailData($merchantId);
 
@@ -2289,7 +2289,7 @@ class ActivationTest extends OAuthTestCase
             'promoter_address_url' => '124',
         ];
 
-        $data = array_merge($data, $otherMerchantDetailAttributes);
+        $data = array_merge($data, $otherMerchantDetailAttributes, $customMerchantDetailAttributes);
 
         $this->fixtures->create('merchant_document', [
             'document_type' => 'promoter_address_url',
@@ -5143,5 +5143,131 @@ class ActivationTest extends OAuthTestCase
         $consentDetail = $this->getDbLastEntity('merchant_consents', 'test');
 
         $this->assertEquals('failed', $consentDetail['status']);
+    }
+
+    public function testSubmitPartnerKycFromMerchantKycFormForRiskyMerchant()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->setupKycSubmissionForInstantlyActivatedMerchant($merchantId);
+
+        $this->fixtures->merchant->editEntity('merchant', $merchantId, ['partner_type' => MerchantConstants::AGGREGATOR]);
+
+        $this->setupMerchantDetailVerificationStatus($merchantId);
+
+        $this->mockMerchantImpersonated($merchantId);
+
+        $this->setupWorkflow('Activate partner', 'edit_activate_partner');
+        $this->setupImpersonatedWorkflow();
+
+        $this->startTest();
+
+        $testData = $this->testData['submitKyc'];
+
+        $testData['response']['content']['activated'] = 0;
+
+        $this->startTest($testData);
+
+        $partnerActivation = $this->getDbEntityById('partner_activation', $merchantId);
+
+        $this->assertEquals($partnerActivation->getActivationStatus(), null);
+
+        $workflowActions = $this->getDbEntities('workflow_action');
+
+        $this->assertEquals(2, count($workflowActions));
+
+        $this->assertEquals('merchant_detail', $workflowActions->get(0)['entity_name']);
+        $this->assertEquals('open', $workflowActions->get(0)['state']);
+
+        $this->assertEquals('partner_activation', $workflowActions->get(1)['entity_name']);
+        $this->assertEquals('open', $workflowActions->get(1)['state']);
+    }
+
+    private function setupMerchantDetailVerificationStatus($merchantId) {
+        $otherMerchantDetailAttributes = [
+            'gstin'                            => null,
+            'business_type'                    => 1,
+            'bank_account_number'              => '123456789012345',
+            'bank_branch_ifsc'                 => 'ICIC0000001',
+            'poi_verification_status'          => 'verified',
+            'gstin_verification_status'        => null,
+            'bank_details_verification_status' => 'verified',
+        ];
+
+        $this->fixtures->merchant_detail->onLive()->edit($merchantId, $otherMerchantDetailAttributes);
+        $this->fixtures->merchant_detail->onTest()->edit($merchantId, $otherMerchantDetailAttributes);
+
+        $defaultStakeholderAttributes = [
+            'merchant_id'                          => $merchantId,
+            'aadhaar_linked'                       => 1,
+            'aadhaar_esign_status'                 => 'verified',
+            'aadhaar_verification_with_pan_status' => 'verified'
+        ];
+
+        $this->fixtures->create('stakeholder', $defaultStakeholderAttributes);
+    }
+
+    private function setupImpersonatedWorkflow() {
+        $permission = $this->fixtures->create('permission', [
+            'name' => 'impersonating_merchant_dedupe',
+            'category' => 'impersonating_merchant_dedupe',
+            'description' => 'impersonating_merchant_dedupe',
+            'assignable' => true
+        ]);
+
+        $permissionMapData = [
+            'permission_id'   => $permission->getId(),
+            'entity_id'       => Org::RZP_ORG,
+            'entity_type'     => 'org',
+            'enable_workflow' => true
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+        $workflow = $this->fixtures->create('workflow', [
+            'name'   => 'impersonating_merchant_dedupe',
+            'org_id' => Org::RZP_ORG,
+        ]);
+
+        $workflow->permissions()->attach($permission);
+    }
+
+    private function mockMerchantImpersonated($merchantId) {
+        $mockedResponseForMatch[] = [
+            'field'   => MerchantDetails::BUSINESS_NAME,
+            'list'    => 'authorities_list',
+            'score'   => 900
+        ];
+
+        $mockedResponseForDetails[] = [
+            'field'     => MerchantDetails::BUSINESS_NAME,
+            'list'      => 'authorities_list',
+            'score'     => 900,  // some random score
+            'matched_entity' => [
+                [
+                    'key' => 'id',
+                    'value' => '10000000000'
+                ]
+            ],
+        ];
+
+        $merchantRiskClientMock = Mockery::mock('RZP\Services\MerchantRiskClient');
+
+        $merchantRiskClientMock->shouldReceive('getMerchantImpersonatedDetails')
+                               ->andReturn([
+                                   "client_type" => "onboarding",
+                                   "entity_id" => $merchantId,
+                                   "fields" => $mockedResponseForDetails
+                               ]);
+
+        $merchantRiskClientMock->shouldReceive('getMerchantRiskScores')
+                               ->andReturn([
+                                   "client_type" => "onboarding",
+                                   "entity_id" => $merchantId,
+                                   "fields" => $mockedResponseForMatch
+                               ]);
+
+        $this->app->instance('merchantRiskClient', $merchantRiskClientMock);
     }
 }

@@ -359,7 +359,9 @@ class Core extends Detail\Core
 
                     if ($this->canSubmit($input, $response[E::PARTNER_ACTIVATION]) === true)
                     {
-                        $response = $this->submitPartnerActivationForm($merchant, $merchantDetails,$partnerActivation,$input);
+                        $this->submitPartnerActivationForm($merchant, $merchantDetails,$partnerActivation,$input);
+
+                        $response = $this->createPartnerResponse($merchantDetails);
 
                         $newPartnerActivationStatus = $response[E::PARTNER_ACTIVATION][Activation\Entity::ACTIVATION_STATUS];
 
@@ -393,7 +395,7 @@ class Core extends Detail\Core
      * @throws \Throwable
      */
     public function submitPartnerActivationForm(Merchant\Entity $merchant, Entity $merchantDetails,
-                                                Activation\Entity $partnerActivation, ?array $input, string $source = Constants::PARTNER): array
+                                                Activation\Entity $partnerActivation, ?array $input, string $source = Constants::PARTNER)
     {
         $activationStatus = $this->getApplicablePartnerActivationStatus($merchantDetails, $partnerActivation);
 
@@ -408,14 +410,30 @@ class Core extends Detail\Core
 
         $input = [Activation\Entity::ACTIVATION_STATUS => $activationStatus];
 
-        $this->activationCore->updatePartnerActivationStatus($merchant, $partnerActivation, $merchant, $input);
+        try
+        {
 
-        $this->trace->info(TraceCode::PARTNER_ACTIVATION_SUBMITTED,
-                           [
-                               'merchant_id' => $merchant->getId()
-                           ]);
+            if ($source === Constants::MERCHANT) {
+                $this->app['workflow']
+                    ->setPermission(Permission\Name::EDIT_ACTIVATE_PARTNER)
+                    ->setRouteName(Activation\Constants::ACTIVATION_ROUTE_NAME)
+                    ->setController(Activation\Constants::PARTNER_CONTROLLER)
+                    ->setRouteParams(['id' => $merchant->getId()])
+                    ->setInput([\RZP\Models\Partner\Activation\Entity::ACTIVATION_STATUS => $input[Entity::ACTIVATION_STATUS]]);
+            }
 
-        return $this->createPartnerResponse($merchantDetails);
+            $this->activationCore->updatePartnerActivationStatus($merchant, $partnerActivation, $merchant, $input);
+        }
+        catch (Exception\EarlyWorkflowResponse $e)
+        {
+            $this->trace->info(TraceCode::PARTNER_ACTIVATION_SUBMITTED,
+                               [
+                                   'merchant_id' => $merchant->getId()
+                               ]);
+
+            $workflowActionData = json_decode($e->getMessage(), true);
+            $this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);
+        }
     }
 
     /**

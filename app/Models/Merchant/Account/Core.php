@@ -136,6 +136,14 @@ class Core extends Merchant\Core
             return $subMerchant;
         });
 
+        $this->repo->transactionOnLiveAndTest(function () use ($input, $partner, $subMerchant)
+        {
+            if ($partner->isKycHandledByPartner() === true)
+            {
+                (new Detail\Core())->submitPartnerActivationFormIfApplicable($subMerchant, $input);
+            }
+        });
+
         // since response from Stork during affected owners cache invalidation can come even before the above DB transaction
         // completion, send cache invalidation request again. Jira - https://razorpay.atlassian.net/browse/PRTS-1085
         $this->invalidateAffectedOwnersCache($subMerchant->getId());

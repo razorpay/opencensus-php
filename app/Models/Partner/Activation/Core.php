@@ -9,10 +9,12 @@ use RZP\Models\Base;
 use RZP\Models\State;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Services\Workflow;
 use RZP\Models\State\Reason;
 use RZP\Models\Partner\Metric;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Partner\Activation;
+use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Workflow\Action\Core as ActionCore;
@@ -669,6 +671,11 @@ class Core extends Base\Core
         $email = new ActivationMail($merchant->getId());
 
         Mail::queue($email);
+    }
+
+    private function resetWorkflowSingleton()
+    {
+        $this->app['workflow'] =  new Workflow\Service($this->app);
     }
 }
 
