@@ -117,8 +117,8 @@ class TerminalsService
             self::PATH      =>  'v2/terminals',
             self::METHOD    =>  Requests::POST,
             self::OPTIONS => [
-                self::TIMEOUT         => 20, // 20 seconds
-                self::CONNECT_TIMEOUT => 20, // 20 seconds
+                self::TIMEOUT         => 70, // 70 seconds ref: https://razorpay.slack.com/archives/CNP473LRF/p1666880191950449
+                self::CONNECT_TIMEOUT => 70, // 70 seconds
             ],
         ],
         self::FETCH_TERMINALS_FOR_MERCHANT  => [
