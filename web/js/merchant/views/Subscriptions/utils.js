@@ -30,9 +30,3 @@ function isRecurringChargeBulkEnabled() {
 export function getRecurringChargeAPILabel() {
   return isRecurringChargeBulkEnabled() ? 'recurring_charge_bulk' : 'recurring_charge';
 }
-
-export function getLabelsForBatchList() {
-  return isRecurringChargeBulkEnabled()
-    ? ['recurring_charge', 'recurring_charge_bulk']
-    : ['recurring_charge'];
-}

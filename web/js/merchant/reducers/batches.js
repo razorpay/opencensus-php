@@ -7,10 +7,7 @@ import {
   entityFetchErrorState,
 } from 'merchant_common/reducers/entity';
 import { merchantFetch } from 'merchant/utils/ajax';
-import {
-  getRecurringChargeAPILabel,
-  getLabelsForBatchList,
-} from 'merchant/views/Subscriptions/utils';
+import { getRecurringChargeAPILabel } from 'merchant/views/Subscriptions/utils';
 
 const REFUND = 'REFUND_BATCHS';
 const VIRTUAL_ACCOUNT_BATCHS = 'VIRTUAL_ACCOUNT_BATCHS';
@@ -390,7 +387,8 @@ export const fetchPaymentBatches = fetchBatches('direct_debit');
 
 /* batches for emandate */
 export const fetchHostMandateBatches = fetchBatches([
-  ...getLabelsForBatchList(),
+  'recurring_charge',
+  'recurring_charge_bulk',
   'auth_link',
   'recurring_charge_axis',
 ]);
