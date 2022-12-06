@@ -509,7 +509,7 @@ return [
 
     'testGetNCAdditionalDocuments' => [
     'request'  => [
-        'url'    => '/merchant/activation/document_type',
+        'url'    => '/merchant/activation/document_types',
         'method' => 'GET'
     ],
     'response' => [

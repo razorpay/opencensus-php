@@ -767,7 +767,7 @@ class Route
 
         'merchant_activation_migrate'              => ['post',     'merchant/activation/migrate',                    'MerchantController@postMerchantDetailMigrate'                      ],
         'merchant_activation_archive'              => ['patch',    'merchant/activation/{id}/archive',               'MerchantController@updateActivationArchive'                        ],
-        'merchant_activation_document_type'        => ['get',      'merchant/activation/document_type',              'MerchantController@getNCAdditionalDocuments'                       ],
+        'merchant_activation_document_type'        => ['get',      'merchant/activation/document_types',              'MerchantController@getNCAdditionalDocuments'                       ],
         'merchant_activation_status'               => ['patch',    'merchant/activation/{id}/activation_status',     'MerchantController@updateActivationStatus'                         ],
         'internal_merchant_activation_status'      => ['patch',    'merchant/activation/{id}/activation_status/internal', 'MerchantController@updateActivationStatusInternal'            ],
         'merchant_activation_status_change_log'    => ['get',      'merchant/activation/{id}/status_change_log',     'MerchantController@getActivationStatusChangeLog'                   ],

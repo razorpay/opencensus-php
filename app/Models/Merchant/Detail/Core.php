@@ -7578,11 +7578,12 @@ class Core extends Base\Core
 
         if (empty($merchantDetails->getWebsite()) === false)
         {
-          $businessWebsite =  trim(strtolower($merchantDetails->getWebsite()), '/');
+            $businessWebsite = trim(strtolower($merchantDetails->getWebsite()), '/');
 
-          $this->trace->info(TraceCode::MERCHANT_BUSINESS_WEBSITE_DETAILS,[
-              "Business Website" => $businessWebsite,
-          ]);
+            $this->trace->info(TraceCode::MERCHANT_BUSINESS_WEBSITE_DETAILS, [
+                "Merchant Id "     => $merchantDetails->getId(),
+                "Business Website" => $businessWebsite,
+            ]);
         }
 
         foreach (WhatCmsService::merchantPluginTypesMap as $pluginValue)
@@ -7591,10 +7592,6 @@ class Core extends Base\Core
                 {
                     $pluginValue['integration_url'] = sprintf($pluginValue['integration_url'], $businessWebsite);
                 }
-
-                $this->trace->info(TraceCode::WHATCMS_API_RESPONSE,[
-                    "Plugin Value" => $pluginValue,
-                ]);
 
             $result[] = $pluginValue;
         }
