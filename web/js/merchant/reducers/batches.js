@@ -280,7 +280,13 @@ export const fetchVABatches = (params) => {
 export const fetchRefundBatches = (params) => {
   return {
     type: getActionName(REFUND),
-    payload: params.id ? fetchBatchAjax(params.id) : fetchBatchesAjax(params, 'refund'),
+    payload: params.id
+      ? fetchBatchAjax(params.id).then(({ batch }) => ({
+          data: {
+            items: [batch],
+          },
+        }))
+      : fetchBatchesAjax(params, 'refund'),
   };
 };
 
