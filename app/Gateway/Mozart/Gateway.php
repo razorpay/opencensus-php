@@ -1743,6 +1743,11 @@ class Gateway extends Base\Gateway
         // Use access code from terminal only when it is a UPI ICICI Recurring
         if ($gateway === Payment\Gateway::UPI_ICICI)
         {
+            if($prefix === 'upiPayments')
+            {
+                return $baseUrl . $prefix . '/' . $gateway . '/v1/' . $this->action;
+            }
+
             $version = $this->getMozartVersionForUpiIcici($input);
 
             if ($version !== '')

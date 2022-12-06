@@ -410,11 +410,11 @@ trait PaymentsUpiRecurringTrait
         ]);
     }
 
-    protected function makeS2sCallbackAndGetContentSilently($content, $gateway = null)
+    protected function makeS2sCallbackAndGetContentSilentlyForRecurring($content, $gateway = null)
     {
         try
         {
-            return $this->makeS2SCallbackAndGetContent($content, $gateway);
+            return $this->makeS2SCallbackAndGetContent($content, $gateway, true);
         }
         catch (GatewayErrorException $exception)
         {

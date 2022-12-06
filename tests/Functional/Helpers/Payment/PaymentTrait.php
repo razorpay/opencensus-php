@@ -720,12 +720,19 @@ trait PaymentTrait
         return $this->submitPaymentCallbackRequest($request);
     }
 
-    protected function makeS2sCallbackAndGetContent($content, $gateway = null)
+    protected function makeS2sCallbackAndGetContent($content, $gateway = null, $isRecurring = false)
     {
         $gateway = $gateway ?: $this->gateway;
 
+        $url = '/callback/' . $gateway ;
+
+        if ($isRecurring === true)
+        {
+            $url = '/callback/recurring/' . $gateway ;
+        }
+
         $request = [
-            'url'    => '/callback/' . $gateway,
+            'url'    => $url,
             'method' => 'post'
         ];
 

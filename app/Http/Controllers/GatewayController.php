@@ -214,7 +214,10 @@ class GatewayController extends Controller
             return $this->processMandateServerCallback($input, $gatewayDriver);
         }
 
-        if (Gateway::isUpiRecurringSupportedGateway($gatewayDriver) === true)
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        if ((Gateway::isUpiRecurringSupportedGateway($gatewayDriver) === true) and
+            ($routeName === 'gateway_payment_callback_recurring'))
         {
             try
             {

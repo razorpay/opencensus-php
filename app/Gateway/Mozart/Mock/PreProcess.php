@@ -7,6 +7,7 @@ use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use \RZP\Gateway\Upi\Sbi\Mock\Server as Sbi;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
+use \RZP\Gateway\Upi\ICICI\Mock\Gateway as ICICI;
 use RZP\Gateway\Mozart\Mock\Upi\MozartUpiResponse;
 use \RZP\Gateway\Upi\Yesbank\Mock\Server as Yesbank;
 use RZP\Gateway\Upi\Juspay\Fields as UpiJuspayFields;
@@ -197,6 +198,65 @@ class PreProcess extends Base\Mock\Server
         unset($response['next']);
 
         unset($response['error']);
+
+        return $response;
+    }
+
+    public function upi_icici($entities)
+    {
+        assertTrue($entities['gateway']['cps_route'] === Payment\Entity::UPI_PAYMENT_SERVICE);
+
+        // The gateway response is encrypted, but wrapped
+        // in lines of 80-length. Decryption can't handle
+        // this, so we remove any whitespace from the response
+        // since this is base64, it only removes newlines
+        $payload = preg_replace('/\s/', '', $entities['gateway']['payload']);
+
+        $payload = base64_decode($payload, true);
+
+        $data = (new Icici())->decrypt($payload);
+
+        $response = MozartUpiResponse::getDefaultInstanceForV2();
+
+        $data = json_decode($data, true);
+
+        $response->mergeUpi([
+            UpiEntity::VPA                  => $data['PayerVA'],
+            UpiEntity::STATUS_CODE          => $data['TxnStatus'],
+            UpiEntity::NPCI_REFERENCE_ID    => $data['BankRRN'],
+            UpiEntity::MERCHANT_REFERENCE   => $data['merchantTranId'],
+        ]);
+
+        $response->setPayment([
+            Payment\Entity::CURRENCY          => 'INR',
+            Payment\Entity::AMOUNT_AUTHORIZED => $data['PayerAmount']*100,
+        ]);
+
+        $response->setTerminal([
+            Terminal\Entity::GATEWAY_MERCHANT_ID   => $data['merchantId'],
+            Terminal\Entity::GATEWAY               => 'upi_icici',
+        ]);
+
+        if ($data['TxnStatus'] === 'FAILURE')
+        {
+            $response->setSuccess(false);
+
+            $response->setError([
+                'description'               => 'Debit has been failed',
+                'gateway_error_code'        => 'U30',
+                'gateway_error_description' => 'Debit has been failed',
+                'gateway_status_code'       =>  200,
+                'internal_error_code'       => 'GATEWAY_ERROR_DEBIT_FAILED',
+            ]);
+
+            $response->mergeUpi([
+                UpiEntity::STATUS_CODE => 'U30',
+            ]);
+        }
+
+        $response = $response->toArray();
+
+        unset($response['next']);
 
         return $response;
     }

@@ -28,6 +28,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Models\BharatQr;
 use RZP\Reconciliator\Base\Reconciliate;
+use RZP\Gateway\Upi\Base\CommonGatewayTrait;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 class Gateway extends Base\Gateway
@@ -42,6 +43,7 @@ class Gateway extends Base\Gateway
     use AuthorizeFailed;
     use Base\RecurringTrait;
     use Base\MandateTrait;
+    use CommonGatewayTrait;
 
     /**
      * Default request timeout duration in seconds.
@@ -308,6 +310,59 @@ class Gateway extends Base\Gateway
     }
 
     /**
+     * returns true if it can be pre-processed through Mozart
+     *
+     * @param boolean $isUpiTransfer
+     * @param boolean $isBharatQr
+     * @param [type] $routeName
+     * @return boolean
+     */
+    protected function shouldPreProcessThroughMozart(
+        $isUpiTransfer = false,
+        $isBharatQr = false,
+        $routeName): bool
+    {
+        // do not pre-process if it is upiTransfer, bharatQR or recurring callback
+        if (($isUpiTransfer === true) or
+            ($isBharatQr === true) or
+            ($routeName === 'gateway_payment_callback_recurring'))
+        {
+            return false;
+        }
+
+        $feature = 'api'. '_' . Payment\Gateway::UPI_ICICI . '_pre_process_v1';
+
+        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
+            $feature, Mode::LIVE);
+
+        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_PRE_PROCESS_RAZORX_VARIANT, [
+            'gateway' => Payment\Gateway::UPI_ICICI,
+            'variant' => $variant,
+            'mode'    => Mode::LIVE,
+            'feature' => $feature,
+        ]);
+
+        return ($variant === Payment\Gateway::UPI_ICICI);
+    }
+
+    /**
+     * pre-processes callback through mozart
+     *
+     * @param string $input
+     * @return void
+     */
+    protected function preProcessThroughMozart(string $input)
+    {
+        $data = [
+            'payload'       => $input,
+            'gateway'       => Payment\Gateway::UPI_ICICI,
+            'cps_route'     => Payment\Entity::UPI_PAYMENT_SERVICE,
+        ];
+
+        return $this->upiPreProcess($data);
+    }
+
+    /**
      * @param string $response
      * @param bool   $forceDecryption
      * @param bool   $isUpiTransfer
@@ -471,7 +526,7 @@ class Gateway extends Base\Gateway
      *
      * @return string
      */
-    protected function decrypt(string $data, bool $isUpiTransfer = false): string
+    public function decrypt(string $data, bool $isUpiTransfer = false): string
     {
         $rsa = $this->getCipherInstance();
 
@@ -1178,6 +1233,13 @@ class Gateway extends Base\Gateway
 
     protected function getActualPaymentIdFromServerCallback(array $response)
     {
+        $version = $response['data']['version'] ?? '';
+
+        if ($version === 'v2')
+        {
+            return $this->upiPaymentIdFromServerCallback($response);
+        }
+
         return $response[Fields::MERCHANT_TRAN_ID];
     }
 
@@ -1213,13 +1275,15 @@ class Gateway extends Base\Gateway
         {
             $response = $this->parseGatewayResponse($body, false, $isUpiTransfer);
         }
-        else
+        else if ($this->shouldPreProcessThroughMozart($isUpiTransfer, $isBharatQr, $routeName) === true)
         {
+            return $this->preProcessThroughMozart($body);
+        }
+        else {
             $response = $this->parseGatewayResponse($body, true, $isUpiTransfer);
         }
 
         // if we are getting a UMN field (which we get only for recurring), we will process for mandatecallbacks.
-
         if (isset($response[Fields::UMN]) === true)
         {
             $mandateResponse = $this->getMandateCallbackResponseIfApplicable($response);
@@ -1474,6 +1538,12 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
+
+        if ((isset($input['gateway']['data']['version']) === true) and
+            ($input['gateway']['data']['version']) === 'v2')
+        {
+            return $this->upiCallback($input);
+        }
 
         if ($input['payment']['recurring'] === true)
         {

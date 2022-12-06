@@ -6,19 +6,14 @@ use Mockery;
 use Illuminate\Http\UploadedFile;
 
 use RZP\Exception;
-use Carbon\Carbon;
 use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
-use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
-use RZP\Models\Payment\Status;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Method;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Reconciliator\Base\SubReconciliator\Upi\Constants;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 
 class UpiPaymentServiceTest extends TestCase
@@ -358,6 +353,17 @@ class UpiPaymentServiceTest extends TestCase
         {
             return $this->getRazoxVariant($feature, 'api_'.$this->gateway.'_v1', 'upips');
         });
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+    }
+
+    protected function doAjaxPayment(string $terminalResource, string $gateway)
+    {
+        $this->fixtures->terminal->disableTerminal($this->terminal->getID());
+
+        $this->terminal = $this->fixtures->create($terminalResource);
+
+        $this->gateway = $gateway;
 
         $this->doAuthPaymentViaAjaxRoute($this->payment);
     }

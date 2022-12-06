@@ -30,6 +30,12 @@ class UpiIciciRecurringTest extends UpiInitialRecurringTestCase
         $this->payment = $this->getDefaultUpiRecurringPaymentArray();
 
         $this->setMockGatewayTrue();
+
+        // set the pre-processing through mozart as true
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'api_upi_icici_pre_process_v1', 'upi_icici');
+        });
     }
 
     public function testEncryptedRecurringCallback(){

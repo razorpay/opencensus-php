@@ -9,6 +9,7 @@ use RZP\Error\ErrorCode;
 use RZP\Gateway\Upi\Base;
 use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
+use RZP\Services\RazorXClient;
 use RZP\Models\UpiMandate\Entity;
 use RZP\Exception\LogicException;
 use RZP\Models\UpiMandate\Status;
@@ -1722,7 +1723,7 @@ class UpiInitialRecurringTestCase extends TestCase
 
         $content = $this->mockMozartServer()->getAsyncCallbackResponseMandateCreate($payment, $gateway, $encrypted);
 
-        return $this->makeS2sCallbackAndGetContentSilently($content, $gateway);
+        return $this->makeS2sCallbackAndGetContentSilentlyForRecurring($content, $gateway);
     }
 
     protected function firstDebitCallback($payment)
@@ -1731,7 +1732,7 @@ class UpiInitialRecurringTestCase extends TestCase
 
         $content = $this->mockMozartServer()->getAsyncCallbackResponseFirstDebit($payment, $gateway);
 
-        $this->makeS2sCallbackAndGetContentSilently($content, $gateway);
+        $this->makeS2sCallbackAndGetContentSilentlyForRecurring($content, $gateway);
     }
 
     protected function mandatePauseCallback($mandate)
@@ -1740,7 +1741,7 @@ class UpiInitialRecurringTestCase extends TestCase
 
         $content = $this->mockMozartServer()->getAsyncCallbackResponsePause($mandate, $gateway);
 
-        $this->makeS2sCallbackAndGetContentSilently($content, $gateway);
+        $this->makeS2sCallbackAndGetContentSilentlyForRecurring($content, $gateway);
     }
 
     protected function mandateResumeCallback($mandate)
@@ -1749,7 +1750,7 @@ class UpiInitialRecurringTestCase extends TestCase
 
         $content = $this->mockMozartServer()->getAsyncCallbackResponseResume($mandate, $gateway);
 
-        $this->makeS2sCallbackAndGetContentSilently($content, $gateway);
+        $this->makeS2sCallbackAndGetContentSilentlyForRecurring($content, $gateway);
     }
 
     protected function mandateRevokeCallback($mandate)
@@ -1758,7 +1759,7 @@ class UpiInitialRecurringTestCase extends TestCase
 
         $content = $this->mockMozartServer()->getAsyncCallbackResponseRevoke($mandate, $gateway);
 
-        $this->makeS2sCallbackAndGetContentSilently($content, $gateway);
+        $this->makeS2sCallbackAndGetContentSilentlyForRecurring($content, $gateway);
     }
 
     /**
@@ -1810,5 +1811,44 @@ class UpiInitialRecurringTestCase extends TestCase
 
             $this->assertSame($throwableExpected, $throwableThrown, $errorMessage);
         }
+    }
+
+
+    /**
+     * returns a mock response of the razorx request
+     *
+     * @param string $inputFeature
+     * @param string $expectedFeature
+     * @param string $variant
+     * @return string
+     */
+    protected function getRazoxVariant(string $inputFeature, string $expectedFeature, string $variant): string
+    {
+        if ($expectedFeature === $inputFeature)
+        {
+            return $variant;
+        }
+
+        return 'control';
+    }
+
+    /**
+     * sets the razox mock
+     *
+     * @param [type] $closure
+     * @return void
+     */
+    protected function setRazorxMock($closure)
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+            ->method('getTreatment')
+            ->will($this->returnCallback($closure));
     }
 }

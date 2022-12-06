@@ -46,6 +46,14 @@ class UpiIciciAutoRecurringTest extends TestCase
         $this->payment = $this->getDefaultUpiRecurringPaymentArray();
 
         $this->setMockGatewayTrue();
+
+        // set the pre-processing through mozart as true
+        // we are testing if the recurring flows works even if icici normal
+        // payments pre-processing is set do through mozart
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'api_upi_icici_pre_process_v1', 'upi_icici');
+        });
     }
 
     public function testAutoRecurringPaymentSuccess()
@@ -2087,5 +2095,43 @@ class UpiIciciAutoRecurringTest extends TestCase
                 'sno'   => 2,
             ],
         ]);
+    }
+
+    /**
+     * returns a mock response of the razorx request
+     *
+     * @param string $inputFeature
+     * @param string $expectedFeature
+     * @param string $variant
+     * @return string
+     */
+    protected function getRazoxVariant(string $inputFeature, string $expectedFeature, string $variant): string
+    {
+        if ($expectedFeature === $inputFeature)
+        {
+            return $variant;
+        }
+
+        return 'control';
+    }
+
+    /**
+     * sets the razox mock
+     *
+     * @param [type] $closure
+     * @return void
+     */
+    protected function setRazorxMock($closure)
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+            ->method('getTreatment')
+            ->will($this->returnCallback($closure));
     }
 }
