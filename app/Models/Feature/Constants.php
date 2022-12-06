@@ -1660,6 +1660,11 @@ class Constants
     const SEND_NAME_IN_EMAIL_FOR_QR = 'send_name_in_email_for_qr';
 
     /**
+     * Feature flag to do avs check irrespective of if the card is 3ds or not
+     */
+    const MANDATORY_AVS_CHECK = 'mandatory_avs_check';
+
+    /**
      * Feature flag to enable account <> sub-account setup. This is used when payouts are to be initiated from
      * a virtual account (read as sub VA) where as balance deduction happens from parent DA (read as master DA).
      * Main use case is to enable NBFCs integrate with FinTech's on X post RBI's lending guidelines.
@@ -2265,6 +2270,7 @@ class Constants
         self::IMPORT_FLOW_OPEX_REPORT         => true,
         self::ENABLE_3DS2                     => true,
         self::CYBERSOURCE_SI_TXN_TEST         => true,
+        self::MANDATORY_AVS_CHECK             => true,
         self::SUB_VA_FOR_DIRECT_BANKING       => true,
         self::SPR_DISABLE_METHOD_RESET        => true,
         self::SEND_NAME_IN_EMAIL_FOR_QR       => true,

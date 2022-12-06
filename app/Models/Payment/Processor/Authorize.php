@@ -254,6 +254,11 @@ trait Authorize
                 unset($ret['avs_result']);
             }
 
+            if(isset($ret['is_3DS_valid'])=== true) {
+                $data['is_3DS_valid'] = $ret['is_3DS_valid'];
+                unset($ret['is_3DS_valid']);
+            }
+
             // To set ret to null instead of keeping it as an empty array
             if (empty($ret) === true) {
                 $ret = null;
@@ -788,7 +793,26 @@ trait Authorize
      */
     protected function validateAvsResponseAndRemoveBillingAddressIfRequired(Payment\Entity $payment, $gatewayResponse): void
     {
-        if ($payment->isAVSSupportedForPayment()) {
+        // skipping avs check on 3ds enabled card
+        // only when feature flag `mandatory_avs_check` is not enabled
+        // and experiment is active
+        // todo: remove the experiment condition once feature is stable
+        $isAVSSupported = $payment->isAVSSupportedForPayment();
+
+        if( ($isAVSSupported === true) and
+            ($this->skipAVSon3DSExperiment($payment) === true) and
+            ($this->merchant->IsAvsCheckMandatoryEnabled() === false) and
+            (isset($gatewayResponse) === true) and
+            (isset($gatewayResponse['is_3DS_valid']) === true) and
+            (boolval($gatewayResponse['is_3DS_valid']) === true)) {
+            $this->trace->info(TraceCode::SKIP_AVS_FOR_3DS, [
+                'paymentId'     => $payment->getId(),
+                'avs_result'    => isset($gatewayResponse['avs_result']) === true ? $gatewayResponse['avs_result'] : '' ,
+                'is_3DS_valid'  => $gatewayResponse['is_3DS_valid']
+            ]);
+            return;
+        }
+        if ($isAVSSupported === true) {
             $failureAvsResponses = ["A", "N"];
 
             if (isset($gatewayResponse) === false ||
@@ -12428,6 +12452,40 @@ trait Authorize
 
         return false;
       }
+
+    protected function skipAVSon3DSExperiment(Payment\Entity $payment): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.skip_avs_on_3ds_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $payment->merchant->getId(),
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::SKIP_AVS_ON_3DS_CARD_PAYMENTS_SPLITZ_ERROR
+            );
+        }
+
+        return false;
+    }
 
       protected function saveDocumentForOpgspPayment($payment){
 

@@ -3596,6 +3596,11 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::ENABLE_3DS2) === true);
     }
 
+    public function IsAvsCheckMandatoryEnabled(): bool
+    {
+       return ($this->isFeatureEnabled(Feature\Constants::MANDATORY_AVS_CHECK) === true);
+    }
+
     public function isSignupCampaign($signupCampaign): bool
     {
         $app = App::getFacadeRoot();
