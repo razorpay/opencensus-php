@@ -12,62 +12,6 @@ jobs:
     secrets:
       SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
-  security-imagescan-web:
-    uses: razorpay/security-action/.github/workflows/image_scan.yml@master
-    with:
-      TRIVY_IMAGE_REF : c.rzp.io/razorpay/api:trivyimage-web
-      BU: payments
-      IMAGE_TYPE: api-web
-    secrets:
-      HARBOR_DOCKER_USERNAME : ${{ secrets.HARBOR_DOCKER_USERNAME }}
-      HARBOR_DOCKER_PASSWORD : ${{ secrets.HARBOR_DOCKER_PASSWORD }}
-      BHADRA_TOKEN : ${{ secrets.BHADRA_TOKEN }}
-      DOCKER_IMAGE_INIT_COMMAND : c.rzp.io/razorpay/api:trivyimage-web --build-arg GIT_COMMIT_HASH=${{ github.sha }} --build-arg GIT_TOKEN=${{ secrets.GIT_TOKEN }} --build-arg GIT_USERNAME=rzp --build-arg ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-8.1-api-web --build-arg ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182 --build-arg OPENCENSUS_IMAGE=c.rzp.io/razorpay/onggi:opencensus-php-v2020.10.28 -f Dockerfile.web
-      GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
-      SLACK_HOOK: ${{ secrets.SLACK_HOOK }}
-
-  security-imagescan-worker:
-    uses: razorpay/security-action/.github/workflows/image_scan.yml@master
-    with:
-      TRIVY_IMAGE_REF : c.rzp.io/razorpay/api:trivyimage-worker
-      BU: payments
-      IMAGE_TYPE: api-worker
-    secrets:
-      HARBOR_DOCKER_USERNAME : ${{ secrets.HARBOR_DOCKER_USERNAME }}
-      HARBOR_DOCKER_PASSWORD : ${{ secrets.HARBOR_DOCKER_PASSWORD }}
-      BHADRA_TOKEN : ${{ secrets.BHADRA_TOKEN }}
-      DOCKER_IMAGE_INIT_COMMAND : c.rzp.io/razorpay/api:trivyimage-worker --build-arg GIT_COMMIT_HASH=${{ github.sha }} --build-arg GIT_TOKEN=${{ secrets.GIT_TOKEN }} --build-arg GIT_USERNAME=rzp --build-arg ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-8.1-api-web --build-arg ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182 --build-arg OPENCENSUS_IMAGE=c.rzp.io/razorpay/onggi:opencensus-php-v2020.10.28 -f Dockerfile.worker
-      GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
-      SLACK_HOOK: ${{ secrets.SLACK_HOOK }}
-
-  security-imagescan-checkout:
-    uses: razorpay/security-action/.github/workflows/image_scan.yml@master
-    with:
-      TRIVY_IMAGE_REF : c.rzp.io/razorpay/api:trivyimage-checkout
-      BU: payments
-      IMAGE_TYPE: api-checkout
-    secrets:
-      HARBOR_DOCKER_USERNAME : ${{ secrets.HARBOR_DOCKER_USERNAME }}
-      HARBOR_DOCKER_PASSWORD : ${{ secrets.HARBOR_DOCKER_PASSWORD }}
-      BHADRA_TOKEN : ${{ secrets.BHADRA_TOKEN }}
-      DOCKER_IMAGE_INIT_COMMAND : c.rzp.io/razorpay/api:trivyimage-checkout --build-arg GIT_COMMIT_HASH=${{ github.sha }} --build-arg GIT_TOKEN=${{ secrets.GIT_TOKEN }} --build-arg GIT_USERNAME=rzp --build-arg ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-8.1-api-web --build-arg ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182 --build-arg OPENCENSUS_IMAGE=c.rzp.io/razorpay/onggi:opencensus-php-v2020.10.28 -f Dockerfile.checkout
-      GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
-      SLACK_HOOK: ${{ secrets.SLACK_HOOK }}
-
-  security-imagescan-openresty:
-    uses: razorpay/security-action/.github/workflows/image_scan.yml@master
-    with:
-      TRIVY_IMAGE_REF : c.rzp.io/razorpay/api:trivyimage-openresty
-      BU: payments
-      IMAGE_TYPE: api-openresty
-    secrets:
-      HARBOR_DOCKER_USERNAME : ${{ secrets.HARBOR_DOCKER_USERNAME }}
-      HARBOR_DOCKER_PASSWORD : ${{ secrets.HARBOR_DOCKER_PASSWORD }}
-      BHADRA_TOKEN : ${{ secrets.BHADRA_TOKEN }}
-      DOCKER_IMAGE_INIT_COMMAND : c.rzp.io/razorpay/api:trivyimage-openresty --build-arg GIT_COMMIT_HASH=${{ github.sha }} --build-arg GIT_TOKEN=${{ secrets.GIT_TOKEN }} --build-arg GIT_USERNAME=rzp --build-arg ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-8.1-api-web --build-arg ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182 --build-arg OPENCENSUS_IMAGE=c.rzp.io/razorpay/onggi:opencensus-php-v2020.10.28 -f Dockerfile.openresty
-      GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
-      SLACK_HOOK: ${{ secrets.SLACK_HOOK }}
-
   scan-dependencies:
     uses: razorpay/security-action/.github/workflows/dependency-scanner.yml@master
 
