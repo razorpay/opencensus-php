@@ -8,6 +8,7 @@ use Config;
 use Lib\PhoneBook;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Jobs;
 use RZP\Constants\HyperTrace;
 use RZP\Encryption;
@@ -5729,6 +5730,12 @@ class Core extends Base\Core
             $merchantDetails->setGstinVerificationStatus(null);
 
             return;
+        }
+
+        if (in_array($input[Entity::GSTIN], DetailConstants::BLOCKED_GSTIN_LIST))
+        {
+            throw new BadRequestValidationFailureException(
+                'The GSTIN entered does not match your business information. Check details and try again.');
         }
 
         $dependentFields = [

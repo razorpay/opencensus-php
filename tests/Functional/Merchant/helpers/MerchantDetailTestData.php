@@ -3025,6 +3025,30 @@ return [
         ]
     ],
 
+    'testSaveMerchantDetailsForActivationValidGSTINcheck' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'gstin' => '29AAGCR4375J1ZU',
+                'business_type' => '1'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The GSTIN entered does not match your business information. Check details and try again.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testGetBusinessDetails' => [
         'request'  => [
             'method'  => 'GET',

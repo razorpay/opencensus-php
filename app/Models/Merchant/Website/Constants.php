@@ -4,7 +4,6 @@ namespace RZP\Models\Merchant\Website;
 
 use RZP\Models\Merchant\BusinessDetail\Constants as BConstants;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
-use RZP\Models\Merchant\OneClickCheckout\Shopify\Shipping;
 
 class Constants
 {

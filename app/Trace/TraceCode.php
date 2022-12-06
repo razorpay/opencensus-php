@@ -6369,7 +6369,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GSTIN_SELF_SERVE_GET_CACHE_DATA                     = 'GSTIN_SELF_SERVE_GET_CACHE_DATA';
     const GSTIN_SELF_SERVE_DELETE_CACHE_DATA                  = 'GSTIN_SELF_SERVE_DELETE_CACHE_DATA';
 
-
     // merchant failure Analysis trace
     const MERCHANT_FAILURE_ANALYSIS_QUERY_TIME                = 'MERCHANT_FAILURE_ANALYSIS_QUERY_TIME';
 

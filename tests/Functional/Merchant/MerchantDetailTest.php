@@ -5524,6 +5524,17 @@ Team Razorpay',
         $this->startTest();
     }
 
+    public function testSaveMerchantDetailsForActivationValidGSTINcheck()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
     public function testGetMerchantDetailsShopEstbVerifiableZone()
     {
         $this->fixtures->create('merchant_detail',['merchant_id' => '10000000000000', 'business_type' => '1']);
