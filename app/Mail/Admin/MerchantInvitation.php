@@ -42,11 +42,14 @@ class MerchantInvitation extends Base\Mailable
 
     protected function addSender()
     {
-        $this->from(Base\Constants::MAIL_ADDRESSES[Base\Constants::ADMIN]);
-
+        // $this->from appends the sender emails into an array and uses the first entry while sending email
+        // Currently all emails are being sent as ADMIN, moving the default value in else block
         if ($this->org['custom_code'] !== 'rzp')
         {
             $this->from($this->org['from_email'], $this->org['display_name']);
+        }
+        else {
+            $this->from(Base\Constants::MAIL_ADDRESSES[Base\Constants::ADMIN]);
         }
 
         return $this;
