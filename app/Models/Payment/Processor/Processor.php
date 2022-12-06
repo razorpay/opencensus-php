@@ -3975,6 +3975,11 @@ class Processor
                 $this->createLedgerEntriesForGatewayCapture($this->payment);
             }, 20);
 
+        $this->trace->info(TraceCode::BARRICADE_SQS_PUSH_START,
+            [
+                'data'      => $payment,
+            ]);
+
         $this->publishMessageToSqsBarricade($payment);
     }
 
@@ -3989,7 +3994,11 @@ class Processor
             return;
         }
         // To Avoid duplicate Verification
-        if ( $payment->isUpi() === true && $payment->getStatus() !== "authorized" && $upiRamp !== 'on' ){
+        if ( $payment->isUpi() === true && $payment->getStatus() !== "authorized" ){
+            return;
+        }
+
+        if ( $payment->isUpi() === true and $upiRamp !== 'on' ) {
             return;
         }
         // Skip verify cll for BharatQr and UpiTransfer
@@ -4014,6 +4023,7 @@ class Processor
             return;
         }
 
+        //Unexpected Payment
         if ( $gatewayResult !== 'on' || $demoMerchant !== 'control')
         {
             return;
