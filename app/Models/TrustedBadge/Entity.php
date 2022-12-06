@@ -110,4 +110,12 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo(Merchant::class);
     }
+
+    public function isLive(): bool
+    {
+        return (
+            $this->status === self::ELIGIBLE &&
+            $this->merchant_status !== self::OPTOUT
+        );
+    }
 }

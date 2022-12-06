@@ -29,9 +29,11 @@ class Service extends Base\Service
         $data = [
             'status'                    => Entity::INELIGIBLE,
             'merchant_status'           => '',
-            'is_delisted_atleast_once'  => 0
+            'is_delisted_atleast_once'  => 0,
+            'is_live'                   => false,
         ];
 
+        /** @var Entity $trustedBadge */
         $trustedBadge = $this->repo->trusted_badge->fetchByMerchantId($merchantId);
 
         // check for is delisted atleast once
@@ -41,10 +43,10 @@ class Service extends Base\Service
             $data['is_delisted_atleast_once'] = 1;
         }
 
-        if(isset($trustedBadge))
+        if ($trustedBadge !== null)
         {
-            $trustedBadge= $trustedBadge->toArrayPublic();
-            $data = array_merge($data, $trustedBadge);
+            $data['is_live'] = $trustedBadge->isLive();
+            $data = array_merge($data, $trustedBadge->toArrayPublic());
         }
 
         return $data;

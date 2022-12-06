@@ -14500,6 +14500,7 @@ class Route
             'payments_downtime',
             'feature_get_all_internal',
             'internal_1cc_configs_get',
+            'fetch_trusted_badge_status',
         ],
 
         'trusted_badge' => [

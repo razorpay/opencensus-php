@@ -14,8 +14,9 @@ return [
         'response' => [
             'content' => [
                 "status"            => 'eligible',
-                "merchant_status"   => 'optout',
-                "is_delisted_atleast_once" => 0
+                "merchant_status"   => '',
+                "is_delisted_atleast_once" => 0,
+                'is_live'           => true,
             ]
         ]
     ],
@@ -29,7 +30,8 @@ return [
             'content' => [
                 "status"            => 'ineligible',
                 "merchant_status"   => '',
-                "is_delisted_atleast_once" => 0
+                "is_delisted_atleast_once" => 0,
+                'is_live'           => false,
             ]
         ]
     ],
@@ -76,7 +78,8 @@ return [
             'content' => [
                 "status"            => 'ineligible',
                 "merchant_status"   => 'waitlist',
-                "is_delisted_atleast_once" => 1
+                "is_delisted_atleast_once" => 1,
+                'is_live'           => false,
             ]
         ]
     ],
@@ -91,7 +94,8 @@ return [
             'content' => [
                 "status"            => 'ineligible',
                 "merchant_status"   => 'optout',
-                "is_delisted_atleast_once" => 1
+                "is_delisted_atleast_once" => 1,
+                'is_live'           => false,
             ]
         ]
     ],

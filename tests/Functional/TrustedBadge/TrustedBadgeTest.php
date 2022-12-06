@@ -179,6 +179,7 @@ class TrustedBadgeTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertEquals('eligible', $response['status']);
+        $this->assertEquals(true, $response['is_live']);
     }
 
     /** This method tests for merchants who have less transactions but would still be eligible for RTB
@@ -287,16 +288,19 @@ class TrustedBadgeTest extends TestCase
         $this->ba->proxyAuth();
         $response = $this->makeRequestAndGetContent($request);
         $this->assertEquals('eligible', $response['status']);
+        $this->assertEquals(true, $response['is_live']);
 
         $demoMerchantUser = $this->fixtures->user->createUserForMerchant(Account::DEMO_ACCOUNT);
         $this->ba->proxyAuth('rzp_test_' . Account::DEMO_ACCOUNT, $demoMerchantUser['id']);
         $response = $this->makeRequestAndGetContent($request);
         $this->assertEquals('ineligible', $response['status']);
+        $this->assertEquals(false, $response['is_live']);
 
         $testMerchantUser = $this->fixtures->user->createUserForMerchant(Account::TEST_ACCOUNT_2);
         $this->ba->proxyAuth('rzp_test_' . Account::TEST_ACCOUNT_2, $testMerchantUser['id']);
         $response = $this->makeRequestAndGetContent($request);
         $this->assertEquals('ineligible', $response['status']);
+        $this->assertEquals(false, $response['is_live']);
     }
 
     /** This method tests if merchants having gmv > 20 lakhs are eligible for RTB or not.
@@ -376,7 +380,9 @@ class TrustedBadgeTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $this->fixtures->create('trusted_badge');
+        $this->fixtures->create('trusted_badge', [
+            'merchant_status' => ''
+        ]);
 
         $this->startTest();
     }
@@ -465,6 +471,7 @@ class TrustedBadgeTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertEquals('blacklist', $response['status']);
+        $this->assertEquals(false, $response['is_live']);
 
         // remove merchant from blacklist
         $this->ba->adminAuth();
