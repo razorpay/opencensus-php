@@ -868,8 +868,6 @@ class Gateway extends Base\Gateway
         {
            $this->isDuplicateUnexpectedPaymentV2($input);
 
-           $this->isValidUnexpectedPaymentV2($input);
-
            return ;
         }
 

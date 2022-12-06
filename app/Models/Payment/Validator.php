@@ -422,7 +422,7 @@ class Validator extends Base\Validator
         'payment.email'                 => 'required|string',
         'upi'                           => 'required|array',
         'upi.npci_reference_id'         => 'required',
-        'upi.merchant_reference'        => 'required',
+        'upi.merchant_reference'        => 'sometimes',
         'upi.gateway_payment_id'        => 'sometimes',
         'upi.gateway_merchant_id'       => 'required',
         'upi.vpa'                       => 'required',

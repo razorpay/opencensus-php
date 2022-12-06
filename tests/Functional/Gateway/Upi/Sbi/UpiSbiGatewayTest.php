@@ -1638,39 +1638,6 @@ class UpiSbiGatewayTest extends TestCase
     }
 
     /**
-     * Verifies the unexpected payment request at gateway
-     * before creating unexpected payment
-     */
-    public function testInvalidUnexpectedPaymentCreation()
-    {
-        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
-
-        $payment = $this->getDbLastPayment();
-
-        $upi = $this->getDbLastUpi();
-
-        $this->assertSame(Payment\Status::CREATED, $payment->getStatus());
-
-        $content = $this->mockServer()->getAsyncCallbackContent($upi->toArray());
-
-        $this->makeS2SCallbackAndGetContent($content);
-
-        $upi = $this->getDbLastUpi();
-
-        $content = $this->getDefaultUpiUnexpectedPaymentArray();
-
-        $content['upi']['merchant_reference'] = $upi->getPaymentId();
-        //Passing different amount in art request to verify unexpected payment request at gateway
-        $content['payment']['amount'] = 10000;
-
-        $response = $this->makeUnexpectedPaymentAndGetContent($content);
-
-        $this->assertEmpty($response['payment_id']);
-
-        $this->assertFalse($response['success']);
-    }
-
-    /**
      * Authorize the failed payment by force authorizing it
      */
     public function testAuthorizeFailedPayment()
