@@ -1,4 +1,6 @@
 import React from 'react';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import PayrollLogoImage from 'assets/payroll/payroll-logo.png';
 import PayrollFeaturesImage from 'assets/payroll/payroll-features.png';
 
@@ -36,6 +38,18 @@ const Feature = ({ icon, title, description }) => (
 );
 
 const Payroll = () => {
+  const trackExploreClick = () => {
+    analyticsTrack({
+      objectName: 'Explore',
+      actionName: 'clicked',
+      screen: 'payroll page',
+      properties: {
+        location: 'payroll promotion',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+  };
+
   return (
     <Wrapper>
       <LeftPanel>
@@ -91,6 +105,7 @@ const Payroll = () => {
           />
         </Features>
         <a
+          onClick={trackExploreClick}
           target="_blank"
           rel="noopener noreferrer"
           href="https://payroll.razorpay.com/sso?utm_source=payroll_widget&utm_medium=pgdashboard"
