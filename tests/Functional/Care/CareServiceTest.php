@@ -1031,6 +1031,21 @@ class CareServiceTest extends TestCase
                 self::PERMISSIONS                         => ['faq_config_edit'],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
             ],
+            [
+                self::AUTH                                => 'proxy',
+                self::API_ROUTE                           => '/care_service/merchant/twirp/rzp.care.freshdesk.v1.FreshdeskService/GetTicket',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.freshdesk.v1.FreshdeskService/GetTicket',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'merchant' => [
+                        'id' => '10000000000000',
+                        'user_id' => User::MERCHANT_USER_ID,
+                    ],
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
         ];
 
         foreach ($testCases as $testCase)
