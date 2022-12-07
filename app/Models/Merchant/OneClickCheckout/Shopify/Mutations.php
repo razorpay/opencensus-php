@@ -133,6 +133,7 @@ class Mutations
                         id
                         handle
                         title
+                        tags
                       }
                     }
                     customAttributes {

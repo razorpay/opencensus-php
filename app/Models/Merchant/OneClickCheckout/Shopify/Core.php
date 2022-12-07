@@ -40,6 +40,8 @@ class Core extends Base\Core
         '7E6oragoxHFlvV',  //Go Noise
     ];
 
+    const MAX_LENGTH = 8;
+
     protected $monitoring;
 
     public function __construct()
@@ -335,7 +337,7 @@ class Core extends Base\Core
 
             if ($isShippingReady === true and empty($shippingRates) === false)
             {
-                $rates = (new Core)->parseShippingRates($shippingRates);
+                $rates = (new Core)->parseShippingRates($shippingRates, $checkoutId);
 
                 $this->trace->info(
                     TraceCode::SHOPIFY_1CC_API_SHIPPING_RESPONSE,
@@ -380,7 +382,7 @@ class Core extends Base\Core
      * other option is we use cod slabs and ask merchant to not set diff fees in shopify
      * if multiple cod options are available the lowest is chosen
      */
-    public function parseShippingRates($rates): array
+    public function parseShippingRates($rates, $checkoutId): array
     {
         if (empty($rates) === true)
         {
@@ -420,6 +422,93 @@ class Core extends Base\Core
             $codFee = (new Utils)->formatNumber($codRate - $bestRate);
             if ($codFee < 0) {
                 $codFee = 0;
+            }
+        }
+        else
+        {
+            //COD implementation for product tags - choosing the highest rate
+            $checkout = (new Checkout)->getCheckoutbyStorefrontId($checkoutId);
+
+            $products = $checkout['data']['node']['lineItems']['edges'];
+
+            $codTags = [];
+
+            $maxCod = 0;
+
+            $validTag = false;
+
+            if(!empty($products))
+            {
+                foreach ($products as $product)
+                {
+                    $tags = $product['node']['variant']['product']['tags'];
+
+                    if(!empty($tags))
+                    {
+                        foreach ($tags as $tag)
+                        {
+                            if(strpos($tag, ' ') === false)
+                            {
+                                if(substr($tag, 0, 3) === "COD")
+                                {
+                                    $taglength = strlen($tag);
+
+                                    if($taglength < self::MAX_LENGTH)
+                                    {
+                                        $cod = substr($tag, 3, $taglength);
+        
+                                        if(is_numeric($cod))
+                                        {
+                                            if ($cod >= 0)
+                                            {
+                                                if($maxCod < $cod)
+                                                {
+                                                    $maxCod = $cod;
+                                                }
+                                                $validTag = true;
+                                            }
+                                        }
+                                        elseif(empty($cod))
+                                        {
+                                            $cod = 0;
+        
+                                            if($maxCod < $cod)
+                                            {
+                                                $maxCod = $cod;
+                                            }
+                                            $validTag = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if($validTag === true)
+                    {
+                        array_push($codTags, $maxCod);
+
+                        $validTag = false;
+                    }    
+                    else 
+                    {
+                        //If COD tags are not available in any of the products, COD should not be enabled. 
+                        $codTags = [];
+                        
+                        break;
+                    }       
+                }
+
+                if(!empty($codTags))
+                {
+                    $bestCod = max($codTags);
+                }
+
+                if(isset($bestCod))
+                {
+                    $hasCod = true;
+                    $codFee = $bestCod;
+                }
             }
         }
 
