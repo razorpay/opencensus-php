@@ -29,6 +29,7 @@ class Core extends Base\Core
      * @return Entity
      * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\InvalidArgumentException
+     * @throws Exception\BadRequestException
      */
     public function create(Base\Entity $entity, $entityType, array $input, bool $ignoreMaxLimit = false)
     {
@@ -52,6 +53,7 @@ class Core extends Base\Core
 
         if($entityType === Type::CUSTOMER)
         {
+            $this->ensureUtf8mb3($input);
             return $this->createForCustomer($entity, $input);
         }
 
@@ -90,6 +92,7 @@ class Core extends Base\Core
 
             if($address->getEntityType() === Type::CUSTOMER)
             {
+                $this->ensureUtf8mb3($input);
                 $address->editForCustomer($input);
             }
             else{
@@ -305,4 +308,24 @@ class Core extends Base\Core
         return (new AddressConsent1cc\Repository())->getCountByCustomerId($customer->getId());
     }
 
+    /**
+     * addresses table has a binary collation for utf8mb3
+     * which will not allow to store the characters which has more than 3 bytes
+     * So this func validates and restricts if the input has the characters are more than 3 bytes.
+     * In this regex pattern, 'u' is one of the PCRE modifier used in the preg_*,
+     * pattern and subject strings are treated as UTF-8
+     * for more info - https://www.php.net/manual/en/reference.pcre.pattern.modifiers.php
+     * @throws Exception\BadRequestException
+     */
+    protected function ensureUtf8mb3(array $input)
+    {
+        foreach ($input as $key => $value)
+        {
+            preg_match_all('|[\x{10000}-\x{10FFFF}]|u', $value, $matches);
+            if (empty($matches[0]) !== true)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR,null,null,$value. " is not a valid string");
+            }
+        }
+    }
 }
