@@ -2948,6 +2948,30 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetInternalAccountConfigForCheckout(): void
+    {
+        $merchantId = '1X4hRFHFx4UiXt';
+
+        $this->createMerchant(['id' => $merchantId]);
+
+        $this->fixtures->merchant->edit($merchantId, [
+            MerchantEntity::BRAND_COLOR => '123456',
+            MerchantEntity::LOGO_URL => '/logos/random_image_original.png',
+            MerchantEntity::DISPLAY_NAME => 'Tester Account 2',
+            MerchantEntity::PARTNERSHIP_URL => 'https://dummycdn.razorpay.com/logos/partnership.png',
+        ]);
+
+        $keyEntity = $this->fixtures->create('key', ['merchant_id' => $merchantId]);
+
+        $keyId = $keyEntity->getPublicKey();
+
+        $this->ba->checkoutServiceProxyAuth(Mode::TEST, $merchantId);
+
+        $response = $this->startTest();
+
+        $this->assertEquals($keyId, $response['key']);
+    }
+
     public function testEditMerchantConfigWithEmail()
     {
         $this->createMerchant();

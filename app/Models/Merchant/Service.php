@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant;
 
+use App;
 use DB;
 use Mail;
 use Cache;
@@ -13,6 +14,7 @@ use RZP\Models\Card\Network;
 use RZP\Models\Card\Type;
 use RZP\Models\Emi\DebitProvider;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Models\Locale\Core as LocaleCore;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Payment\Processor\PayLater;
@@ -1639,6 +1641,55 @@ class Service extends Base\Service
         $response += (new CheckoutView())->addOrgInformationInResponse($this->merchant);
 
         return $response;
+    }
+
+    /**
+     * The list of Merchant & Org configs required by checkout-service to
+     * build the `/preferences` response.
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function fetchConfigForCheckoutInternal(array $input): array
+    {
+        (new Validator())->validateInput('fetch_config_for_checkout', $input);
+
+        $merchantId = $this->merchant->getId();
+
+        LocaleCore::setLocale($input, $merchantId);
+
+        /** @var Entity $merchant */
+        $merchant = $this->repo->merchant->findOrFailPublic(
+            $merchantId,
+            Entity::CHECKOUT_CONFIG_LIST
+        );
+
+        $keyEntity = $this->repo->key->getLatestActiveKeyForMerchant($merchantId);
+
+        $languageCode = App::getLocale();
+
+        $checkoutExtraFields = [
+            'brand_name' => $merchant->getFilteredDba(),
+            'checkout_logo_size_image_url' => $merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
+            'currency' => $merchant->getCurrency(),
+            'is_fee_bearer' => $merchant->isFeeBearerCustomerOrDynamic(),
+            'key' => optional($keyEntity)->getPublicKey(),
+            'language_code' => $languageCode,
+        ];
+
+        $optionalInputConfig = $merchant->getOptionalInputConfig();
+
+        if (!empty($optionalInputConfig))
+        {
+            $checkoutExtraFields['optional'] = $optionalInputConfig;
+        }
+
+        return array_merge(
+            $merchant->toArray(),
+            $checkoutExtraFields,
+            (new CheckoutView())->addOrgInformationInResponse($merchant)
+        );
     }
 
     public function getPaymentFailureAnalysis($input)

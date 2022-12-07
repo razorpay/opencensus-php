@@ -429,6 +429,29 @@ class Entity extends Base\PublicEntity
         self::CATEGORY,
     ];
 
+    /**
+     * The list of Merchant configs required by checkout-service to build the
+     * `/preferences` response.
+     *
+     * @var string[]
+     */
+    public const CHECKOUT_CONFIG_LIST = [
+        self::ACTIVATED,
+        self::BILLING_LABEL,
+        self::BRAND_COLOR,
+        self::CATEGORY,
+        self::COUNTRY_CODE,
+        self::DISPLAY_NAME,
+        self::FEE_BEARER,
+        self::ID,
+        self::INTERNATIONAL,
+        self::LIVE,
+        self::LOGO_URL,
+        self::NAME,
+        self::ORG_ID,
+        self::PARTNERSHIP_URL,
+    ];
+
     protected $public = [
         self::ID,
         self::ENTITY,

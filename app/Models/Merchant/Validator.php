@@ -594,6 +594,10 @@ class Validator extends Base\Validator
         'tnc'                           => 'sometimes|array',
     ];
 
+    protected static $fetchConfigForCheckoutRules = [
+        'language_code' => 'sometimes|string|size:2',
+    ];
+
     protected static $applyCouponRequestRules = [
         'order_id'                      => 'required|string',
         'contact'                       => 'sometimes|string',

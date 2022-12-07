@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional;
 
+use RZP\Constants\Mode;
+use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 
@@ -1124,5 +1126,27 @@ class Authorization
         $pwd = $capitalESConfig['secret'];
 
         $this->appAuth('rzp_'.$mode, $pwd);
+    }
+
+    public function checkoutServiceInternalAuth(string $mode = Mode::TEST): void
+    {
+        $this->appAuth(
+            'rzp_' . $mode,
+            \Config::get('applications.checkout_service')['secret']
+        );
+
+        $this->proxy = false;
+    }
+
+    public function checkoutServiceProxyAuth(
+        string $mode = Mode::TEST,
+        string $merchantId = Account::TEST_ACCOUNT
+    ): void {
+        $this->appAuth(
+            "rzp_{$mode}_{$merchantId}",
+            \Config::get('applications.checkout_service')['secret']
+        );
+
+        $this->proxy = true;
     }
 }
