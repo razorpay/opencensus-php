@@ -334,7 +334,7 @@ class Client
 
     protected function shouldRetry(array $response, string $apiType): bool
     {
-        $isStatusCodeRetriable = $response['status_code'] === 429 || $response['status_code'] >= 500;
+        $isStatusCodeRetriable = $response['status_code'] === 429;
         if ($apiType === OneClickCheckout\Constants::ADMIN_REST)
         {
             return $isStatusCodeRetriable;
