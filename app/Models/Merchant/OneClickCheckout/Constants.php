@@ -19,6 +19,7 @@ class Constants
     const MAGENTO           = 'magento';
 
     const SHOPIFY_TEMP_RECEIPT = 'Order Pending';
+    const SHOPIFY_GC_FAILED_RECEIPT = 'GC Payment Failed';
 
     const COD_INTELLIGENCE               = 'cod_intelligence';
     const ONE_CLICK_CHECKOUT             = 'one_click_checkout';

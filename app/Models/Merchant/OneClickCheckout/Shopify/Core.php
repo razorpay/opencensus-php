@@ -575,6 +575,11 @@ class Core extends Base\Core
             //New check for retry is made in case we want to add additional retry logic in the future
             $retry = true;
         }
+            if(isset($promotion['type']) && $promotion['type'] === 'gift_card')
+            {
+                $this->updateShopifyGCTransaction($order['order']['id'], $promotion);
+            }
+
 
         if ($retry === true)
         {
@@ -610,6 +615,16 @@ class Core extends Base\Core
             ]
         );
 
+        $promotions = $rzpOrder['promotions'];
+
+        foreach($promotions as $promotion)
+        {
+            if(isset($promotion['type']) && $promotion['type'] === 'gift_card')
+            {
+                (new GiftCards)->refundGiftCard($promotion, $rzpOrder, $rzpPayment, $this->merchant->getId());  
+            }
+        }
+        
         // Refund if applicable, please double check
         if (strtolower($rzpPayment['method']) !== 'cod')
         {
@@ -816,6 +831,11 @@ class Core extends Base\Core
 
         $this->updateShopifyTransaction($order['order']['id'], $rzpPayment);
 
+        if(isset($promotion['type']) && $promotion['type'] === 'gift_card')
+        {
+            $this->updateShopifyGCTransaction($order['order']['id'], $promotion);
+        }
+        
         $this->updateShopifyCustomer($client, $order);
 
         $this->trace->info(
@@ -1032,12 +1052,22 @@ class Core extends Base\Core
             // We chose amount as amount_paid for cod orders is Re 0.
             $discountAmountPaise = $rzpOrder['line_items_total'] + $rzpOrder['shipping_fee'] - $rzpOrder['amount'];
 
-            $body['discount_codes'][] = [
-                'code'   => $promotions[0]['code'],
-                'amount' => $discountAmountPaise/100,
-            ];
+            foreach ($promotions as $key=>$value)
+            {
+                if (isset($value['type']) && $value['type'] === 'gift_card')
+                {
+                    //
+                }
+                else
+                {
+                    $body['discount_codes'][$key] = [
+                        'code'   => $value['code'],
+                        'amount' => $discountAmountPaise/100,
+                    ];
 
-            $body['current_total_discounts'] = $discountAmountPaise/100;
+                    $body['current_total_discounts'] = $discountAmountPaise/100;
+                }
+            }
         }
 
         // Add script discount as coupon
@@ -1119,6 +1149,65 @@ class Core extends Base\Core
         return [$firstName, $lastName];
     }
 
+    protected function updateShopifyGCTransaction(string $merchantOrderId, $promotion): array
+    {
+        $start = millitime();
+
+        $txn = [
+            'kind'              => 'sale',
+            'amount'            => $promotion['value']/100,
+            'source'            => 'external',
+            'processing_method' => 'manual',
+            'currency'          => 'INR',
+            'authorization'     => 'GIFT CARD - '.strtoupper($promotion['code']),
+            'gateway' => 'Gift Card',
+            'status'  => 'success',
+        ];
+
+        $body = ['transaction' => $txn];
+
+        $client = $this->getShopifyClientByMerchant();
+
+        try
+        {
+          $this->monitoring->addTraceCount(Metric::UPDATE_SHOPIFY_TRANSACTION_REQUEST_COUNT, []);
+
+          $updateRequestStart = millitime();
+
+          $this->trace->info(
+            TraceCode::SHOPIFY_1CC_UPDATE_TRANSACTION_BODY,
+            [
+              'type' => 'update_gc_transaction_initiated',
+              'body' => $body,
+            ]
+          );
+
+          $order = $client->sendRestApiRequest(
+              json_encode($body),
+              Client::POST,
+              '/orders/' . strval($merchantOrderId) . '/transactions.json'
+          );
+
+          $this->monitoring->traceResponseTime(Metric::UPDATE_SHOPIFY_TRANSACTION_CALL_TIME, $updateRequestStart, []);
+
+
+          return json_decode($order, true);
+        }
+        catch (\Exception $e)
+        {
+            $this->monitoring->addTraceCount(Metric::UPDATE_SHOPIFY_TRANSACTION_ERROR_COUNT, [ 'error_type' => TraceCode::SHOPIFY_1CC_API_TRANSACTION_ERROR] );
+
+            $this->trace->info(
+                TraceCode::SHOPIFY_1CC_API_TRANSACTION_ERROR,
+                [
+                    'type' => 'update_gc_transaction_failed',
+                    'error' => $e->getMessage(),
+                    'time' => millitime() - $start
+                ]
+            );
+        }
+    }
+    
     protected function updateShopifyTransaction(string $merchantOrderId, array $payment): array
     {
         $start = millitime();
@@ -1217,6 +1306,7 @@ class Core extends Base\Core
     {
         $txn = [
             'kind'              => 'sale',
+            'amount' => $payment['amount']/100,
             'order_id'          => $merchantOrderId,
             'source'            => 'external',
             'processing_method' => 'manual',

@@ -528,7 +528,10 @@ class Service extends Base\Service
             return [];
         }
 
+        $this->checkForGiftCardPayment($order, $payment, $this->merchant, $fromShopifyApi);
+
         $orderArray = $order->toArrayPublic();
+        
         $shopifyOrder = $this->placeShopifyOrder($order, $payment, $fromShopifyApi);
 
         $this->updateRzpOrder($order, $shopifyOrder);
@@ -952,6 +955,81 @@ class Service extends Base\Service
         (new OrderMeta\Service())->updateReviewStatusFor1ccOrder($param,$input[OneClickCheckout\Constants::MERCHANT_ID]);
     }
 
+    public function validateGiftCard(array $input, string $merchantId = ''):array
+    { 
+        if(empty($input['email']))
+        {            
+            return (new Errors)->emailRequired();
+        }
+        else
+        {
+            return (new GiftCards)->validateGiftCard($input, $merchantId);
+        }
+    }
+
+    public function checkForGiftCardPayment($order, $payment, $merchant, $fromShopifyApi)
+    {
+        if($fromShopifyApi === true)
+        {
+            $orderMeta = array_first($order->orderMetas ?? [], function ($orderMeta)
+            {
+                return $orderMeta->getType() === Order\OrderMeta\Type::ONE_CLICK_CHECKOUT;
+            });
+
+            $value = $orderMeta->getValue();
+
+            $promotions = $orderMeta->getValue()['promotions'] ?? [];
+
+            $promotionsGC = [];
+            $promotionsAll = [];
+
+            if(!empty($promotions))
+            {
+                foreach ($promotions as $promotion)
+                {
+                    if(isset($promotion['type']) && $promotion['type'] === 'gift_card')
+                    {
+                        $response = (new GiftCards)->applyGiftCard($promotion, $order, $payment, $this->merchant->getId());           
+
+                         array_push($promotionsGC, $response);
+
+                         array_push($promotionsAll, $response);
+                    }
+                    else
+                    {
+                        array_push($promotionsAll, $promotion);
+                    }
+                }
+
+                if(!empty($promotionsGC))
+                {
+                    $value['promotions'] = $promotionsAll;
+
+                    $orderMeta->setValue($value);
+
+                    $this->repo->order_meta->saveOrFail($orderMeta);
+
+                    foreach ($promotionsGC as $promotionGC)
+                    {
+                        if($promotionGC['description'] === 'invalid'){   
+                            
+                            foreach ($promotionsGC as $promotionGC)
+                            {
+                                (new GiftCards)->refundGiftCard($promotionGC, $order, $payment, $this->merchant->getId());
+                            }
+                            
+                            throw new Exception\BadRequestException(
+                                ErrorCode::BAD_REQUEST_ERROR,
+                                null,
+                                null,
+                                'APPLY_GIFTCARD_FAILED'
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }    
     // getOrderAnalytics checks if the Shopify order is stored in cache and returns it. This is used by the frontend
     // for pushing events to Google Analytics.
     public function getOrderAnalytics(array $input): array
