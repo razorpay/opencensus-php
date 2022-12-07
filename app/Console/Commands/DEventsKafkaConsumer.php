@@ -143,6 +143,11 @@ class DEventsKafkaConsumer extends Command
             $conf->set('fetch.message.max.bytes', env('DEDUPE_KAFKA_FETCH_MESSAGE_MAX_BYTES'));
 
         }
+        else if (count($topics) == 1 && $topics[0] == env('RAW_CONTACTS_KAFKA_TOPIC_NAME'))
+        {
+            $conf->set('session.timeout.ms', env('RAW_CONTACTS_KAFKA_SESSION_TIMEOUT_MS'));
+        }
+
 
         return $conf;
 
