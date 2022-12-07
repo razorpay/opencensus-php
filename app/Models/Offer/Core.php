@@ -125,6 +125,32 @@ class Core extends Base\Core
         return $response;
     }
 
+    public function defaultOffersForMerchant(string $merchantId)
+    {
+        $defaultOffers = $this->fetchDefaultOffersForMerchant($merchantId);
+
+        $defaultOffersBool = false;
+
+        $applicableOffers = array();
+
+        foreach($defaultOffers as $offer)
+        {
+            $offer = $this->validateDefaultOfferForMerchant($offer);
+
+            if($offer !== null)
+            {
+                array_push($applicableOffers, $offer);
+            }
+        }
+
+        if(count($applicableOffers)>0)
+        {
+            $defaultOffersBool = true;
+        }
+
+        return $defaultOffersBool;
+
+    }
     public function validateOfferApplicableOnPayment(Entity $offer, Payment\Entity $payment, array $input)
     {
         $verbose = true;
@@ -245,6 +271,19 @@ class Core extends Base\Core
         }
 
         return $offer;
+    }
+
+    public function validateDefaultOfferForMerchant(Entity $offer)
+    {
+        $verbose = true;
+
+        $checker = new Checker($offer, $verbose);
+
+        if ($checker->checkOfferValidityOnMerchant() === true)
+        {
+            return $offer;
+        }
+        return null;
     }
 
     public function validateDefaultOfferForOrder(Order\Entity $order, Entity $offer)

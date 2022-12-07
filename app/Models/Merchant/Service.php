@@ -5597,15 +5597,9 @@ class Service extends Base\Service
         {
             $data[EntityConstants::MERCHANT][EntityConstants::CREATED_AT] = $merchant->getCreatedAt();
         }
+        
+        $defaultOffersBool = (new Offer\Core())->defaultOffersForMerchant($merchantId);
 
-        $defaultOffers = (new Offer\Core())->fetchDefaultOffersForMerchant($merchantId);
-
-        $defaultOffersBool = false;
-
-        if(count($defaultOffers)>0)
-        {
-            $defaultOffersBool = true;
-        }
         $data[EntityConstants::MERCHANT]['default_offers'] = $defaultOffersBool;
 
         return $data;

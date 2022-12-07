@@ -110,6 +110,37 @@ class Checker extends Base\Core
         return true;
     }
 
+    public function checkApplicabilityOfOfferMerchant(): bool
+    {
+        $offerActive = $this->offer->isActive();
+
+        $validOfferPeriod = $this->checkOfferPeriod();
+
+        return (($offerActive === true) and
+            ($validOfferPeriod === true));
+    }
+
+    public function checkOfferValidityOnMerchant(): bool
+    {
+        $isMaxOfferUsageExceeded = true;
+
+        if($this->offer->getMaxOfferUsage() !== null)
+        {
+            $isMaxOfferUsageExceeded = $this->offer->getCurrentOfferUsage() < $this->offer->getMaxOfferUsage();
+        }
+
+        if($isMaxOfferUsageExceeded === false)
+        {
+            return false;
+        }
+
+        if($this->checkApplicabilityOfOfferMerchant() === false)
+        {
+            return false;
+        }
+
+        return true;
+    }
     public function checkApplicabilityForPayment(Payment\Entity $payment, Order\Entity $order): bool
     {
         $this->payment = $payment;
