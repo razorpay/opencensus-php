@@ -997,6 +997,23 @@ class PaymentFetchTest extends TestCase
         }
     }
 
+    public function testPaymentFetchErrorFields()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthAndCapturePayment($paymentArray);
+
+        $paymentId = $response['id'];
+
+        $paymentFetchResponse = $this->fetchPayment($paymentId);
+
+        $this->assertArrayHasKey('error_source', $paymentFetchResponse);
+
+        $this->assertArrayHasKey('error_step', $paymentFetchResponse);
+
+        $this->assertArrayHasKey('error_reason', $paymentFetchResponse);
+    }
+
     public function testFetchPaymentAuthRefNumber()
     {
         $payment = $this->getDefaultPaymentArray();

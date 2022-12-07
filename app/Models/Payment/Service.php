@@ -3029,6 +3029,7 @@ class Service extends Base\Service
         }
 
         $includeMerchantList = $input['include_merchants'] ?? [];
+
         $excludeMerchantList = $input['exclude_merchants'] ?? [];
 
         $filterPaymentPushedToKafka = $input['filter_payment_pushed_to_kafka'] ?? false;
