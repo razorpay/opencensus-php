@@ -544,7 +544,7 @@ class Core extends Base\Core
 
     public function invitationAcceptCallback(string $userId, string $userEmail, string $merchantId) {
         $url = 'v1/addonapplications-accept';
-        $method = 'put';
+        $method = 'PUT';
         $request = Request::instance();
         $body    = $request->all();
         $body['user_id'] = $userId;
