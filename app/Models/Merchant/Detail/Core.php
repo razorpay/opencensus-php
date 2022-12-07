@@ -5844,10 +5844,13 @@ class Core extends Base\Core
             return;
         }
 
-        if (in_array($input[Entity::GSTIN], DetailConstants::BLOCKED_GSTIN_LIST))
+        if (array_key_exists(Entity::GSTIN, $input))
         {
-            throw new BadRequestValidationFailureException(
-                'The GSTIN entered does not match your business information. Check details and try again.');
+            if (in_array($input[Entity::GSTIN], DetailConstants::BLOCKED_GSTIN_LIST))
+            {
+                throw new BadRequestValidationFailureException(
+                    'The GSTIN entered does not match your business information. Check details and try again.');
+            }
         }
 
         $dependentFields = [

@@ -3094,6 +3094,20 @@ return [
         ],
     ],
 
+    'testSaveMerchantDetailsForActivationNullGstinCheck' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'business_type' => '1'
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testGetBusinessDetails' => [
         'request'  => [
             'method'  => 'GET',
