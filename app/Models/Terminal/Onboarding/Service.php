@@ -213,6 +213,7 @@ class Service extends Base\Service
                 Constants::BATCH_ERROR_CODE        => '',
                 Constants::BATCH_ERROR_DESCRIPTION => '',
             ],
+            Constants::VPA_WHITELISTED => '',
         ];
 
         $result = array_merge($result, $row);
@@ -224,6 +225,7 @@ class Service extends Base\Service
             $result[Constants::BATCH_SUCCESS] = true;
             $result[Constants::TERMINAL_ID]  =  $row[Constants::TERMINAL_ID];
             $result[Constants::BATCH_HTTP_STATUS_CODE] = 201;
+            $result[Constants::VPA_WHITELISTED] = $row[Constants::VPA_WHITELISTED];
         }
         catch(BaseException $exception)
         {

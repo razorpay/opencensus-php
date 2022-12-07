@@ -64,6 +64,7 @@ class TerminalsService extends BaseTerminalsService
                    'gateway_merchant_id' =>   "",
                    'gateway_merchant_id2' =>   "",
                    'gateway_terminal_id' =>   "",
+                   'gateway_vpa_whitelisted' => "Y",
                    'gateway_terminal_password' =>   "",
                    'gateway_terminal_password2' =>   "",
                    'gateway_secure_secret' =>   "",

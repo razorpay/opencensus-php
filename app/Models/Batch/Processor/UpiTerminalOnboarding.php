@@ -60,5 +60,10 @@ class UpiTerminalOnboarding extends Base
 
             $entry[Batch\Header::TERMINAL_ID]       = $response['terminal'][Terminal\Entity::ID];
         }
+        
+        if (isset($response['terminal'][Terminal\Entity::GATEWAY_VPA_WHITELISTED]) === true)
+        {
+            $entry[Batch\Header::VPA_WHITELISTED]       = $response['terminal'][Terminal\Entity::GATEWAY_VPA_WHITELISTED];
+        }
     }
 }

@@ -144,6 +144,7 @@ return [
                         'Gateway Access Code'   =>  'parentChannelId',
                         'Expected'              =>  1,
                         'Vpa Handle'            =>  '',
+                        'vpa_whitelisted'       => 'Y',
                     ]
 
                 ]

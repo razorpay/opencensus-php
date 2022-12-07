@@ -901,6 +901,7 @@ class Header
     // Submerchant bulk assign headers
     //
     const TERMINAL_ID      = 'terminal_id';
+    const VPA_WHITELISTED = 'vpa_whitelisted';
 
     // Contact Headers
     const CONTACT_ID                  = 'Contact Id';

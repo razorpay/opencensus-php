@@ -50,6 +50,7 @@ class Entity extends Base\PublicEntity
     const GATEWAY_MERCHANT_ID           = 'gateway_merchant_id';
     const GATEWAY_MERCHANT_ID2          = 'gateway_merchant_id2';
     const GATEWAY_TERMINAL_ID           = 'gateway_terminal_id';
+    const GATEWAY_VPA_WHITELISTED       = 'gateway_vpa_whitelisted';
     const GATEWAY_TERMINAL_PASSWORD     = 'gateway_terminal_password';
     const GATEWAY_TERMINAL_PASSWORD2    = 'gateway_terminal_password2';
     const GATEWAY_ACCESS_CODE           = 'gateway_access_code';
@@ -184,6 +185,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
+        self::GATEWAY_VPA_WHITELISTED,
         self::GATEWAY_ACCESS_CODE,
         self::GATEWAY_SECURE_SECRET,
         self::GATEWAY_SECURE_SECRET2,
@@ -254,6 +256,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
+        self::GATEWAY_VPA_WHITELISTED,
         self::GATEWAY_ACQUIRER,
         self::GATEWAY_ACCESS_CODE,
         self::MC_MPAN,
@@ -462,6 +465,11 @@ class Entity extends Base\PublicEntity
     public function getGatewayMerchantId2()
     {
         return $this->getAttribute(self::GATEWAY_MERCHANT_ID2);
+    }
+    
+    public function getVpaWhitelisted()
+    {
+        return $this->getAttribute(self::GATEWAY_VPA_WHITELISTED);
     }
 
     public function getGatewayReconPassword()
