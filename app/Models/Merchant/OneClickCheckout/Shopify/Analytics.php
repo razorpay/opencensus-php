@@ -75,9 +75,9 @@ class Analytics extends Base\Core
 
     // getShopifyOrderFromCache returns the Shopify order from cache.
     // It is deleted once the key has been read.
-    public function getShopifyOrderFromCache(string $orderStatusUrl): array
+    public function getShopifyOrderFromCache(string $path): array
     {
-        $key = $this->getCacheKey($orderStatusUrl);
+        $key = $this->getCacheKey($path);
         $value = $this->cache->get($key);
         if (empty($value) === false)
         {
@@ -142,10 +142,18 @@ class Analytics extends Base\Core
         ];
     }
 
-    // converts https://test.myshopify.com/abc/orders/123/authenticate?key=456 to /abc/orders/123
+    // Scenarios to cover based on merchant research.
+    // https://test.myshopify.com/abc/orders/123/authenticate?key=456 to /abc/orders/123
+    // https://test.com/abc/orders/123/authenticate?key=456 to /abc/orders/123
+    // https://in.test.com/abc/orders/123/authenticate?key=456 to /abc/orders/123
+    // https://test.in/abc/orders/123/authenticate?key=456 to /abc/orders/123
     protected function getOrderKey(string $orderStatusUrl): string
     {
-        $urlParam = explode('.myshopify.com', $orderStatusUrl)[1];
-        return explode('/authenticate', $urlParam)[0];
+        $parts = parse_url($orderStatusUrl);
+        if (array_key_exists('path', $parts) === true)
+        {
+            return explode('/authenticate', $parts['path'])[0];
+        }
+        return '';
     }
 }
