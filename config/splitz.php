@@ -223,5 +223,8 @@ return [
 
         // payroll wdiget on dashboard
         'SHOW_PAYROLL_WIDGET_EXP' => env('SHOW_PAYROLL_WIDGET_EXP', ''),
+
+        // get ticket api migrated to care service
+        'GET_TICKET_MIGRATION' => env('GET_TICKET_MIGRATION', ''),
     ]
 ];

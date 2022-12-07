@@ -36,6 +36,9 @@ const ADD_REPLY_URL_CARE_SERVICE =
 export const FETCH_WORKFLOWS =
   'care_service/merchant/twirp/rzp.care.workflow.v1.WorkflowService/FetchWorkflows';
 
+export const FETCH_TICKET =
+  'care_service/merchant/twirp/rzp.care.freshdesk.v1.FreshdeskService/GetTicket';
+
 export const fetchConfigAjax = () => {
   return merchantFetch('account/config');
 };

@@ -448,4 +448,10 @@ export default {
     //prod experiment ids,
     'KmBlZ2iUatsoAB',
   ],
+  get_ticket_migration: [
+    // beta
+    'KoBY1gZStTu3ic',
+    // prod
+    'KoBZA5MpwqlYfD',
+  ],
 };

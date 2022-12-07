@@ -18,7 +18,7 @@ import {
   getResponseArrivalType,
   getTicketStatus,
   createWorkFlowTicket,
-} from '../utils';
+} from 'merchant/views/TicketSupport/utils';
 import { merchantFetch } from 'merchant/utils/ajax';
 import Spinner from 'common/ui/Spinner';
 import Popover, { PopoverBody } from 'common/ui/Popover';
@@ -27,6 +27,7 @@ import {
   replyToConversation,
   TICKET_BASE_URL,
   FETCH_WORKFLOWS,
+  FETCH_TICKET,
 } from 'merchant/reducers/config';
 import Reply from './Reply';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -192,8 +193,26 @@ export default class Conversations extends React.Component {
   };
 
   loadTicketDetails() {
-    const { showNotification: _showNotification, match = {} } = this.props;
-    return merchantFetch({ url: `${TICKET_BASE_URL}/${match?.params?.id}`, mode: 'live' })
+    const { showNotification: _showNotification, match = {}, user } = this.props;
+
+    const requestPayload = {
+      url: `${TICKET_BASE_URL}/${match?.params?.id}`,
+      mode: 'live',
+    };
+
+    if (user.isGetTicketApiMigration) {
+      requestPayload.url = FETCH_TICKET;
+      requestPayload.method = 'post';
+      requestPayload.data = {
+        id: match?.params?.id,
+        type: 'support_dashboard',
+      };
+      requestPayload.headers = {
+        'Content-Type': 'application/json',
+      };
+    }
+
+    return merchantFetch(requestPayload)
       .then((e) => {
         let ticket = e.data;
         let error = false;
