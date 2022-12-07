@@ -4197,8 +4197,8 @@ class Processor
         $merchant = $payment->merchant;
 
         $data['merchant'] = [
-            'is_vas_merchant' => $merchant->isFeatureEnabled(Feature\Constants::VAS_MERCHANT),
-            'send_dcc_compliance' => $merchant->isFeatureEnabled(Feature\Constants::SEND_DCC_COMPLIANCE)
+            'is_vas_merchant' => $merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::VAS_MERCHANT),
+            'send_dcc_compliance' => $merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::SEND_DCC_COMPLIANCE)
         ];
 
         $authorisation = $this->app['card.payments']->fetchEntity('authorization', $payment->getId());
