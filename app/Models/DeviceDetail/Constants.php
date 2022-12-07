@@ -10,6 +10,9 @@ class Constants
     const G_CLICK_ID = 'gclid';
     const G_CLIENT_ID = '_ga';
 
+    const DEVICE = 'device';
+    const TYPE = 'type';
+
     const ANDROID   = 'android';
     const IOS       = 'ios';
 

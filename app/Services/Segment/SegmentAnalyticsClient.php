@@ -135,6 +135,13 @@ class SegmentAnalyticsClient extends AbstractEventClient
                 Constants::INTEGRATIONS => $this->getIntegrations($merchant)
             ];
 
+            if (empty($deviceDetails) == false and empty($deviceDetails->getSignupSource()) == false)
+            {
+                $eventData['context'] = [DeviceDetailConstants::DEVICE =>
+                                             [DeviceDetailConstants::TYPE =>
+                                                  $deviceDetails->getSignupSource()]];
+            }
+
             if ($this->isFacebookPlatformEvent($eventName))
             {
                 $clientIpAddress = $_SERVER['HTTP_X_IP_ADDRESS'] ?? $this->app['request']->ip();
@@ -142,7 +149,7 @@ class SegmentAnalyticsClient extends AbstractEventClient
                 {
                     $clientIpAddress = $deviceDetails->getValueFromMetaData(DeviceDetailConstants::CLIENT_IP);
                 }
-                $eventData['context'] = [DeviceDetailConstants::CLIENT_IP => $clientIpAddress];
+                $eventData['context'][] = [DeviceDetailConstants::CLIENT_IP => $clientIpAddress];
             }
 
             if($eventTimestamp != null)
