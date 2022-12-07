@@ -168,4 +168,27 @@ class Repository extends Base\Repository
                     ->pluck(Entity::BALANCE_ID)
                     ->toArray();
     }
+
+    /**
+     * Get balance ids for active BASD entries for given merchant id
+     *
+     * @param string $merchantId
+     *
+     * @return mixed
+     */
+    public function getBalanceIdsForActiveDirectAccounts(string $merchantId)
+    {
+        $statusColumn     = $this->dbColumn(Entity::STATUS);
+        $balanceIdColumn  = $this->dbColumn(Entity::BALANCE_ID);
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->select($balanceIdColumn)
+                    ->where($merchantIdColumn, '=', $merchantId)
+                    ->where($statusColumn, '=', Status::ACTIVE)
+                    ->distinct()
+                    ->get()
+                    ->pluck(Entity::BALANCE_ID)
+                    ->toArray();
+    }
 }

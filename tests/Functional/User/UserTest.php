@@ -7431,6 +7431,109 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetForUsersWithBusinessBankingEnabledForRblCAWithArchivedStatus()
+    {
+        $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->setUpMerchantForBusinessBanking(false, 1000000, AccountType::DIRECT,
+            Channel::RBL);
+
+        $basd = $this->fixtures->create('banking_account_statement_details', [
+            'id'                      => 'xbasd000000003',
+            'account_number'          => '2224440041626998',
+            'status'                  => 'archived',
+            'merchant_id'             => '10000000000000',
+            'balance_id'              => $this->bankingBalance->getId(),
+            'gateway_balance'         => 2500,
+            'balance_last_fetched_at' => 1565944927,
+            'account_type'            => 'direct',
+            'channel'                 => 'rbl',
+        ]);
+
+        $this->fixtures->user->createBankingUserForMerchant('10000000000000',
+            $attributes = ['id' => '30000000000000'],
+            $role = 'owner',
+            $mode = 'test');
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        Carbon::setTestNow();
+
+        $this->assertArrayNotHasKey('ca_activation_status',$response['merchants'][0]);
+    }
+
+    public function testGetForUsersWithBusinessBankingEnabledWithTwoRblCAWhereOneIsArchived()
+    {
+        $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->setUpMerchantForBusinessBanking(false, 1000000, AccountType::DIRECT,
+            Channel::RBL);
+
+        $this->fixtures->edit('banking_account','ABCde1234ABCde',['status'=>'archived']);
+
+        $this->fixtures->create('banking_account_statement_details', [
+            'id'                      => 'xbasd000000003',
+            'account_number'          => '2224440041626998',
+            'status'                  => 'archived',
+            'merchant_id'             => '10000000000000',
+            'balance_id'              => $this->bankingBalance->getId(),
+            'gateway_balance'         => 2500,
+            'balance_last_fetched_at' => 1565944927,
+            'account_type'            => 'direct',
+            'channel'                 => 'rbl',
+        ]);
+
+        $this->fixtures->create('banking_account_statement_details', [
+            'id'                      => 'xbasd000000002',
+            'account_number'          => '2224440041626907',
+            'status'                  => 'active',
+            'merchant_id'             => '10000000000000',
+            'balance_id'              => 'KmzovypWyOY1kS',
+            'gateway_balance'         => 1600,
+            'balance_last_fetched_at' => 1592556993,
+            'account_type'            => 'direct',
+            'channel'                 => 'rbl',
+        ]);
+
+        $this->fixtures->user->createBankingUserForMerchant('10000000000000',
+            $attributes = ['id' => '30000000000000'],
+            $role = 'owner',
+            $mode = 'test');
+
+        $this->fixtures->create('balance',
+            [
+                'id'             => 'KmzovypWyOY1kS',
+                'type'           => 'banking',
+                'account_type'   => 'direct',
+                'account_number' => '2224440041626907',
+                'merchant_id'    => '10000000000000',
+                'balance'        => 30000
+            ]);
+
+        $this->fixtures->create('banking_account', [
+            'id'                      => 'xba00000000002',
+            'account_number'          => '2224440041626907',
+            'status'                  => 'activated',
+            'merchant_id'             => '10000000000000',
+            'gateway_balance'         => 2500,
+            'balance_last_fetched_at' => 1565944927,
+            'account_type'            => 'direct',
+            'balance_id'              => 'KmzovypWyOY1kS'
+        ]);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        Carbon::setTestNow();
+    }
+
     public function testGetBankingUserWithPermissions()
     {
         $user = $this->fixtures->create('user');

@@ -3575,31 +3575,36 @@ class Core extends Base\Core
                 $merchant['attributes'] = $settableAttributes;
 
 
-                /** @var Merchant\Balance\Entity $balance */
-                $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
+                /** @var Merchant\Balance\Entity $vaBalance */
+                $vaBalance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
                     $merchant['id'],
                     Merchant\Balance\Type::BANKING,
                     Merchant\Balance\AccountType::SHARED);
 
-                $balance_CA = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
+                // Balance entity doesn't have a status, so checking for active current accounts via BASD entity
+                $caActiveBalanceIds = $this->repo->banking_account_statement_details->getBalanceIdsForActiveDirectAccounts($merchant['id']);
+
+                /** @var Merchant\Balance\Entity $caBalance */
+                $caBalance = $this->repo->balance->getMerchantBalancesByTypeAndAccountTypeAndBalanceIds(
                     $merchant['id'],
                     Merchant\Balance\Type::BANKING,
-                    Merchant\Balance\AccountType::DIRECT);
+                    Merchant\Balance\AccountType::DIRECT,
+                    $caActiveBalanceIds)->first();
 
                 // We hit this flow during /login too where merchant even though of X,
                 // doesn't have balance etc created yet.
 
                 // If both VA and CA are not there
-                if ($balance === null and $balance_CA === null)
+                if ($vaBalance === null and $caBalance === null)
                 {
                     return $merchant;
                 }
 
                 $caActivationStatus = null;
 
-                if (empty($balance_CA) === false)
+                if (empty($caBalance) === false)
                 {
-                    $bankingAccountCA = $this->repo->banking_account->getActivatedBankingAccountFromBalanceId($balance_CA->getId());
+                    $bankingAccountCA = $this->repo->banking_account->getActivatedBankingAccountFromBalanceId($caBalance->getId());
 
                     $caActivationStatus = optional($bankingAccountCA)->getStatus();
 
@@ -3612,7 +3617,7 @@ class Core extends Base\Core
                 }
 
                 // If Only CA is there
-                if (empty($balance) === true)
+                if (empty($vaBalance) === true)
                 {
                     return $merchant + [
                         Merchant\Entity::CA_ACTIVATION_STATUS   => $caActivationStatus,
@@ -3622,9 +3627,9 @@ class Core extends Base\Core
                 }
 
                 // If either VA is there or both VA and CA are there
-                $bankingAccount = $this->repo->banking_account->getActivatedBankingAccountFromBalanceId($balance->getId());
+                $bankingAccount = $this->repo->banking_account->getActivatedBankingAccountFromBalanceId($vaBalance->getId());
 
-                $bulkUserType = $this->getBulkPayoutsUserType($balance);
+                $bulkUserType = $this->getBulkPayoutsUserType($vaBalance);
 
                 return $merchant +
                     [
@@ -3633,9 +3638,9 @@ class Core extends Base\Core
 
                         // Below fields except accounts and ca_activation_status are related to only virtual account
 
-                        Merchant\Entity::BANKING_ACTIVATED_AT   => $balance->getCreatedAt(),
+                        Merchant\Entity::BANKING_ACTIVATED_AT   => $vaBalance->getCreatedAt(),
                         Merchant\Entity::CA_ACTIVATION_STATUS   => $caActivationStatus,
-                        Merchant\Entity::BANKING_BALANCE        => $balance->only([Merchant\Balance\Entity::BALANCE,
+                        Merchant\Entity::BANKING_BALANCE        => $vaBalance->only([Merchant\Balance\Entity::BALANCE,
                                                                                    Merchant\Balance\Entity::CURRENCY]),
                         Merchant\Entity::BANKING_ACCOUNT        => $bankingAccount->toArrayPublic(),
                         Merchant\Entity::ACCOUNTS               => $this->fetchBankingAccountWithBalance(
@@ -3643,7 +3648,7 @@ class Core extends Base\Core
                         Merchant\Entity::CREDIT_BALANCE         => $this->fetchBankingCreditBalances(
                                                                                     $merchant['id'],
                                                                                     Product::BANKING,
-                                                                                    $balance->getAccountType(),
+                                                                                    $vaBalance->getAccountType(),
                                                                                     $bankingAccount->getPublicId()),
                         Merchant\Entity::BULK_PAYOUTS_USER_TYPE => $bulkUserType,
                     ];

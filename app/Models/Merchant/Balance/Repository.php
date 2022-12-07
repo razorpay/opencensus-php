@@ -340,6 +340,21 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function getMerchantBalancesByTypeAndAccountTypeAndBalanceIds(
+        string $merchantId,
+        string $balanceType,
+        string $accType,
+        array  $balanceIds,
+        string $connection = null)
+    {
+        $query = $connection !== null ? $this->newQueryWithConnection($connection) : $this->newQuery();
+
+        return $query->merchantIdAndType($merchantId, $balanceType)
+                     ->where(Entity::ACCOUNT_TYPE, $accType)
+                     ->whereIn(Entity::ID, $balanceIds)
+                     ->get();
+    }
+
     public function getBalanceIdByAccountNumberOrFail(string $accountNumber): string
     {
         return $this->getBalanceByAccountNumberOrFail($accountNumber)->getId();

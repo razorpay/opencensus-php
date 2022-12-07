@@ -16,6 +16,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Services\Raven as RavenService;
 use RZP\Exception\ServerErrorException;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\User\Service as UserService;
 use RZP\Models\User\Validator as Validator;
 use Illuminate\Support\Facades\Mail as Mail;
@@ -2451,6 +2452,9 @@ class UserTest extends TestCase
 
         $balanceEntityMock = Mockery::mock('RZP\Models\Merchant\Balance\Entity');
 
+        $balanceEntityMock->shouldReceive('toArray')->withAnyArgs()->andReturn(['items' => []]);
+
+
         $bankingAccountRepoMock = Mockery::mock('RZP\Models\BankingAccount\Repository');
 
         $merchantAttributeRepoMock = Mockery::mock('RZP\Models\Merchant\Attribute\Repository');
@@ -2492,6 +2496,8 @@ class UserTest extends TestCase
         $this->coreMock->shouldReceive('getBulkPayoutsUserType')->andReturn('existing_bulk_user_rupees');
 
         $balanceRepoMock->shouldReceive('getMerchantBalanceByTypeAndAccountType')->andReturn($balanceEntityMock);
+
+        $balanceRepoMock->shouldReceive('getMerchantBalancesByTypeAndAccountTypeAndBalanceIds')->andReturn(new PublicCollection($balanceEntityMock));
 
         $bankingAccountRepoMock->shouldReceive('getBankingAccountsWithBalance')->andReturn([$bankingAccountEntityMock]);
 
