@@ -4606,6 +4606,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SEND_EMAIL_ATTEMPT                                    = 'SEND_EMAIL_ATTEMPT';
     const SEND_EMAIL_ATTEMPT_STORK                              = 'SEND_EMAIL_ATTEMPT_STORK';
     const SEND_EMAIL_ATTEMPT_STORK_FAILED                       = 'SEND_EMAIL_ATTEMPT_STORK_FAILED';
+    const SEND_EMAIL_ATTEMPT_STORK_EXCEPTION                    = 'SEND_EMAIL_ATTEMPT_STORK_EXCEPTION';
+    const SEND_EMAIL_ATTEMPT_STORK_SUCCESSFUL                   = 'SEND_EMAIL_ATTEMPT_STORK_SUCCESSFUL';
     const SEND_EMAIL_SUCCESSFUL                                 = 'SEND_EMAIL_SUCCESSFUL';
     const SEND_EMAIL_FAILED_INVALID_RECIPIENT                   = 'SEND_EMAIL_FAILED_INVALID_RECIPIENT';
 

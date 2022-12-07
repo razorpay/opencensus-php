@@ -2,6 +2,7 @@
 
 namespace RZP\Models\PartnerBankHealth;
 
+use App;
 use Mail;
 use Carbon\Carbon;
 use Razorpay\IFSC\IFSC;
@@ -10,6 +11,8 @@ use Razorpay\Trace\Logger;
 use RZP\Models\Admin;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Constants\Environment;
+use RZP\Exception\LogicException;
 use RZP\Jobs\PartnerBankHealthNotification;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Payout\Notifications\SmsConstants;
@@ -35,7 +38,7 @@ class Notifier extends \RZP\Models\Base\Core
         'YESB' => 'yesbank',
         'ICIC' => 'icici',
         'RATN' => 'rbl',
-        'AXIS' => 'axis'
+        'UTIB' => 'axis'
     ];
 
     public function __construct()
@@ -180,10 +183,10 @@ class Notifier extends \RZP\Models\Base\Core
 
         if (array_first($this->includeMerchants) !== 'ALL')
         {
-            return array_intersect($configMerchantIds, $this->includeMerchants);
+            return array_values(array_intersect($configMerchantIds, $this->includeMerchants));
         }
 
-        return array_diff($configMerchantIds, $this->excludeMerchants);
+        return array_values(array_diff($configMerchantIds, $this->excludeMerchants));
     }
 
     public function dispatchEmailAndSmsNotifications(array $configMerchantIds)
@@ -276,6 +279,12 @@ class Notifier extends \RZP\Models\Base\Core
 
     public function sendEmail(ConfigEntity $config, $emailParams)
     {
+        //This is to avoid unnecessary failures in mail flow via stork as the template is not present in templating service
+        if ($this->env === Environment::PRODUCTION)
+        {
+            return;
+        }
+
         $storkResponse       = null;
         $merchantId          = $config->getMerchantId();
         $merchantDisplayName = $config->merchant->getDisplayName();
@@ -335,13 +344,27 @@ class Notifier extends \RZP\Models\Base\Core
         $this->data = $input;
     }
 
-    public static function buildEventTypeFromSourceIntegrationTypeAndMode($source, $integrationType, $mode)
+    /*
+     * event_type is a concatenation of source (fail_fast_health/downtime) , integration_type (direct/shared) and
+     * mode (IMPS/UPI/NEFT/RTGS). For direct integration, event_type also contains the bank name.
+     */
+    public static function buildEventTypeForIntegration($payload)
     {
-        $key = $source . '.' . $integrationType . '.' . strtolower($mode);
+        $source          = $payload[Constants::SOURCE];
+        $mode            = strtolower($payload[Constants::MODE]);
+        $bankCode        = strtolower($payload[Constants::INSTRUMENT][Constants::BANK]);
+        $integrationType = $payload[Constants::INSTRUMENT][Constants::INTEGRATION_TYPE];
 
-        (new Validator())->validateEventType(Entity::EVENT_TYPE, $key);
+        $eventType = $source . '.' . $integrationType. '.' . $mode;
 
-        return $key;
+        if ($integrationType === AccountType::DIRECT)
+        {
+            $eventType = $eventType . '.' . $bankCode;
+        }
+
+        (new Validator())->validateEventType(Entity::EVENT_TYPE, $eventType);
+
+        return $eventType;
     }
 
     public function extractEligibleMerchantNotificationConfigs($merchantIds, $data)
@@ -395,24 +418,45 @@ class Notifier extends \RZP\Models\Base\Core
      */
     private function checkIfMerchantIsEligibleForNotification(ConfigEntity $config, array $data)
     {
-        $accountType           = $data[Constants::INTEGRATION_TYPE];
-        $activeBankingAccounts = $this->repo->banking_account
-            ->fetchActiveBankingAccountsByMerchantIdAndAccountType($config->getMerchantId(),
-                                                                   $accountType);
+        $accountType = $data[Constants::INTEGRATION_TYPE];
 
-        if($data[Constants::INTEGRATION_TYPE] === AccountType::DIRECT)
+        switch($accountType)
         {
-            foreach ($activeBankingAccounts as $bankingAccount)
-            {
-                if ($bankingAccount->getChannel() === self::CHANNEL_MAPPING_FOR_DB[$data[Constants::CHANNEL]])
-                {
-                    return true;
-                }
-            }
+            case AccountType::DIRECT:
+                return $this->checkMerchantNotificationEligibilityForDirectIntegration($config, $data['channel']);
 
+            case AccountType::SHARED:
+                return $this->checkMerchantNotificationEligibilityForSharedAccountIntegration($config);
+
+            default:
+                throw new LogicException("Invalid account type",
+                                         null,
+                                         [
+                                             'account_type' => $accountType
+                                         ]);
+        }
+    }
+
+    public function checkMerchantNotificationEligibilityForDirectIntegration(ConfigEntity $config, string $channel) : bool
+    {
+        $channel = self::CHANNEL_MAPPING_FOR_DB[$channel];
+
+        $activeBasDetail = $this->repo->banking_account_statement_details
+            ->getDirectBasDetailEntityByMerchantIdAndChannel($config->getMerchantId(), $channel);
+
+        if (empty($activeBasDetail) === true)
+        {
             return false;
         }
 
+        return true;
+    }
+
+    public function checkMerchantNotificationEligibilityForSharedAccountIntegration($config) : bool
+    {
+        $activeBankingAccounts = $this->repo->banking_account
+            ->fetchActiveBankingAccountsByMerchantIdAndAccountType($config->getMerchantId(),
+                                                                   AccountType::SHARED);
         if (count($activeBankingAccounts) > 0)
         {
             return true;

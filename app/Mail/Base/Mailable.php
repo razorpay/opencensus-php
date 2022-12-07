@@ -157,14 +157,29 @@ class Mailable extends BaseMailable
                 // we can override any base param by adding the param in `getParamsForStork()`
                 $paramsPayload = array_merge($this->getBaseParamsForStork(), $this->getParamsForStork());
                 $trace->info(TraceCode::SEND_EMAIL_ATTEMPT_STORK,
-                [
-                    'template_name'         => $paramsPayload['template_name'] ?? '',
-                    'view'    => $this->view,
-                ]);
+                             [
+                                 'template_name' => $paramsPayload['template_name'] ?? '',
+                                 'view'          => $this->view,
+                             ]);
 
-                try {
+                try
+                {
                     $res = (new Stork($this->mode, $this->originProduct))->sendEmail($paramsPayload);
-                } catch (\Throwable $e) {}
+
+                    $trace->info(TraceCode::SEND_EMAIL_ATTEMPT_STORK_SUCCESSFUL,
+                                 [
+                                     'stork_response' => $res
+                                 ]);
+                }
+                catch (\Throwable $e)
+                {
+                    $trace->traceException($e,
+                                           Trace::ERROR,
+                                           TraceCode::SEND_EMAIL_ATTEMPT_STORK_EXCEPTION,
+                                           [
+                                               'email_params' => $paramsPayload
+                                           ]);
+                }
 
                 $msgID = $res['message_id'] ?? '';
                 if ($msgID === '')

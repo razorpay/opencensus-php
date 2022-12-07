@@ -5,6 +5,7 @@ namespace RZP\Models\PartnerBankHealth;
 use RZP\Services\Mutex;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Core extends \RZP\Models\Base\Core
@@ -57,9 +58,7 @@ class Core extends \RZP\Models\Base\Core
 
     public function updateOrCreatePartnerBankHealthEntity(array $payload)
     {
-        $eventType = Notifier::buildEventTypeFromSourceIntegrationTypeAndMode($payload[Constants::SOURCE],
-                                                                              $payload[Constants::INSTRUMENT][Constants::INTEGRATION_TYPE],
-                                                                              strtolower($payload[Constants::MODE]));
+        $eventType = Notifier::buildEventTypeForIntegration($payload);
 
         $this->trace->info(TraceCode::PARTNER_BANK_HEALTH_UPDATE_CREATE_REQUEST, [Entity::EVENT_TYPE => $eventType]);
 
@@ -98,8 +97,6 @@ class Core extends \RZP\Models\Base\Core
                                'input'  => $newValue
                            ]);
 
-        $this->validator->validateInput('update', [Entity::VALUE => $newValue]);
-
         $entity->setValue($newValue);
 
         $this->repo->partner_bank_health->saveOrFail($entity);
@@ -133,9 +130,19 @@ class Core extends \RZP\Models\Base\Core
             return;
         }
 
-        $value             = $partnerBankHealthsEntity->getValue();
-        $bankIfsc          = $payload[Constants::INSTRUMENT][Constants::BANK];
-        $partnerBankHealth = $value[$bankIfsc] ?? null;
+        $value           = $partnerBankHealthsEntity->getValue();
+        $bankIfsc        = $payload[Constants::INSTRUMENT][Constants::BANK];
+        $integrationType = $payload[Constants::INSTRUMENT][Constants::INTEGRATION_TYPE];
+
+        if ($integrationType === AccountType::DIRECT)
+        {
+            $partnerBankHealth = $value;
+        }
+        else
+        {
+            $partnerBankHealth = $value[$bankIfsc] ?? null;
+        }
+
 
         if (empty($partnerBankHealth) === true)
         {
@@ -185,8 +192,6 @@ class Core extends \RZP\Models\Base\Core
 
         $partnerBankHealthsEntity = new Entity();
 
-        $this->validator->validateInput('create', $input);
-
         $partnerBankHealthsEntity->setEventType($input[Entity::EVENT_TYPE]);
 
         $partnerBankHealthsEntity->setValue($input[Entity::VALUE]);
@@ -201,7 +206,7 @@ class Core extends \RZP\Models\Base\Core
     /**
      *
      *  Build/Update the value attribute of the entity from the payload for a particular key.
-     *  key is concatenation of source, integration_type and mode
+     *  key is concatenation of source, integration_type and mode and channel (IF integration_type is direct)
      *
      * @param array  $payload
      * @param Entity $entity
@@ -212,6 +217,7 @@ class Core extends \RZP\Models\Base\Core
     {
         $time            = $payload[Constants::BEGIN];
         $partnerBankIfsc = $payload[Constants::INSTRUMENT][Constants::BANK];
+        $integrationType = $payload[Constants::INSTRUMENT][Constants::INTEGRATION_TYPE];
 
         $oldValue = ($entity === null) ? [] : $entity->getValue();
         $newValue = $oldValue;
@@ -220,11 +226,30 @@ class Core extends \RZP\Models\Base\Core
         {
             //this can only happen if entity is not null, as otherwise, the method throwErrorIfUpdateIsInvalid will
             //throw an exception saying that an uptime webhook was received without a corresponding downtime webhook
-            $newValue[$partnerBankIfsc][Entity::LAST_UP_AT] = $time;
+            switch ($integrationType)
+            {
+                case AccountType::SHARED:
+                    $newValue[$partnerBankIfsc][Entity::LAST_UP_AT] = $time;
+                    break;
+
+                case AccountType::DIRECT:
+                    $newValue[Entity::LAST_UP_AT] = $time;
+                    break;
+            }
+
         }
         else
         {
-            $newValue[$partnerBankIfsc][Entity::LAST_DOWN_AT] = $time;
+            switch ($integrationType)
+            {
+                case AccountType::SHARED:
+                    $newValue[$partnerBankIfsc][Entity::LAST_DOWN_AT] = $time;
+                    break;
+
+                case AccountType::DIRECT:
+                    $newValue[Entity::LAST_DOWN_AT] = $time;
+                    break;
+            }
         }
 
         if (empty($entity) === true)
@@ -310,6 +335,8 @@ class Core extends \RZP\Models\Base\Core
                 $newAffectedMerchants = array_diff($currentAffectedMerchants, $payload[Constants::INCLUDE_MERCHANTS]);
                 break;
         }
+
+        $this->validator->validateAffectedMerchantsList($newAffectedMerchants);
 
         if ((empty(array_diff($currentAffectedMerchants, $newAffectedMerchants)) === true) and
             (empty(array_diff($newAffectedMerchants, $currentAffectedMerchants)) === true))

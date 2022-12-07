@@ -9,6 +9,7 @@ use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Services\FTS\Transfer\Client;
+use RZP\Models\Merchant\Balance\Entity;
 use RZP\Models\Merchant\Balance\Channel;
 use RZP\Models\PartnerBankHealth\Notifier;
 use RZP\Models\FundTransfer\Attempt\Status;
@@ -322,8 +323,8 @@ class FtsTest extends TestCase
         $partnerBankHealthStatus = $this->getDbLastEntity('partner_bank_health', 'live')->toArrayPublic();
 
         $expectedPartnerBankHealthStatus = [
-            'event_type' => 'fail_fast_health.direct.imps',
-            'value'      => ['RATN' => ['last_down_at' => 1640430729]]
+            'event_type' => 'fail_fast_health.direct.imps.ratn',
+            'value'      => ['last_down_at' => 1640430729],
         ];
 
         $this->assertArraySelectiveEquals($expectedPartnerBankHealthStatus, $partnerBankHealthStatus);
@@ -379,11 +380,9 @@ class FtsTest extends TestCase
 
         $this->fixtures->on('live')->create('partner_bank_health',
                                             [
-                                                'event_type' => 'fail_fast_health.direct.imps',
+                                                'event_type' => 'fail_fast_health.direct.imps.ratn',
                                                 'value'      => json_encode([
-                                                                                'RATN'               => [
-                                                                                    'last_down_at' => 1640430729,
-                                                                                ],
+                                                                                'last_down_at'       => 1640430729,
                                                                                 'affected_merchants' => [
                                                                                     "ALL"
                                                                                 ],
@@ -395,12 +394,10 @@ class FtsTest extends TestCase
         // no merchants are now affected as we received an uptime webhook and hence affected_merchants array
         // should be empty
         $expectedPartnerBankHealthStatus = [
-            'event_type' => 'fail_fast_health.direct.imps',
+            'event_type' => 'fail_fast_health.direct.imps.ratn',
             'value'      => [
-                'RATN'               => [
-                    'last_down_at' => 1640430729,
-                    'last_up_at'   => 1640431729
-                ],
+                'last_down_at'       => 1640430729,
+                'last_up_at'         => 1640431729,
                 'affected_merchants' => []
             ]
         ];
@@ -461,11 +458,9 @@ class FtsTest extends TestCase
 
         $this->fixtures->on('live')->create('partner_bank_health',
                                             [
-                                                'event_type' => 'fail_fast_health.direct.upi',
+                                                'event_type' => 'fail_fast_health.direct.upi.icic',
                                                 'value'      => json_encode([
-                                                                                'ICIC'               => [
-                                                                                    'last_down_at' => 1640430729,
-                                                                                ],
+                                                                                'last_down_at'       => 1640430729,
                                                                                 'affected_merchants' => [
                                                                                     "ALL"
                                                                                 ],
@@ -489,32 +484,27 @@ class FtsTest extends TestCase
         // first test duplicate downtime notification was not sent
         $this->fixtures->on('live')->create('partner_bank_health',
                                             [
-                                                'event_type' => 'fail_fast_health.direct.imps',
-                                                'value'      => json_encode(
-                                                    [
-                                                        'RATN'               => [
-                                                            'last_down_at' => 1640430729,
-                                                        ],
-                                                        'affected_merchants' => [
-                                                            "ALL"
-                                                        ],
-                                                    ])
+                                                'event_type' => 'fail_fast_health.direct.imps.ratn',
+                                                'value'      => json_encode([
+                                                                                'last_down_at'       => 1640430729,
+                                                                                'affected_merchants' => [
+                                                                                    "ALL"
+                                                                                ],
+                                                                            ])
                                             ]);
 
         $this->startTest();
 
         Mail::assertNotSent(PartnerBankHealthMail::class);
 
-        $entity = $this->getDbEntity('partner_bank_health', ['event_type' => 'fail_fast_health.direct.imps'], 'live');
+        $entity = $this->getDbEntity('partner_bank_health', ['event_type' => 'fail_fast_health.direct.imps.ratn'], 'live');
 
         $this->fixtures->on('live')->edit('partner_bank_health', $entity->getId(),
                                           [
                                               'value' => json_encode(
                                                   [
-                                                      'RATN'               => [
-                                                          'last_down_at' => 1640430729,
-                                                          'last_up_at'   => 1640431729
-                                                      ],
+                                                      'last_down_at'       => 1640430729,
+                                                      'last_up_at'         => 1640431729,
                                                       'affected_merchants' => [],
                                                   ])
                                           ]);
@@ -956,27 +946,243 @@ class FtsTest extends TestCase
         $this->startTest();
     }
 
+    public function testPartnerBankHealthDowntimeNotificationForAxisDirectIntegration()
+    {
+        Mail::fake();
+
+        $this->ba->ftsAuth('live');
+
+        $testData = &$this->testData['testPartnerBankHealthDowntimeNotificationForDirectIntegration'];
+        $testData['request']['content']['payload']['instrument']['bank'] = 'AXIS';
+
+        $this->createPartnerBankHealthNotificationConfigsForChannelAndAccountType(Channel::AXIS, AccountType::DIRECT);
+
+        $this->startTest($testData);
+
+        $partnerBankHealthStatus = $this->getDbLastEntity('partner_bank_health', 'live')->toArrayPublic();
+
+        $expectedPartnerBankHealthStatus = [
+            'event_type' => 'fail_fast_health.direct.imps.utib',
+            'value'      => [
+                'last_down_at'       => 1640430729,
+                'affected_merchants' => ['ALL'],
+            ],
+        ];
+
+        $this->assertArraySelectiveEquals($expectedPartnerBankHealthStatus, $partnerBankHealthStatus);
+
+        Mail::assertSent(PartnerBankHealthMail::class, 2);
+
+        $sentMails = Mail::sent(PartnerBankHealthMail::class)->toArray();
+
+        $this->assertSame($sentMails[0]->to, [['address' => '200@gmail.com', 'name' => 'Merchant 10000000000012'],
+                                              ['address' => '201@gmail.com', 'name' => 'Merchant 10000000000012']]);
+
+        $this->assertSame($sentMails[1]->to, [['address' => '300@gmail.com', 'name' => 'Merchant 10000000000013'],
+                                              ['address' => '301@gmail.com', 'name' => 'Merchant 10000000000013']]);
+
+        $expectedEmailParams = [
+            'source'     => 'Axis Bank',
+            'mode'       => 'IMPS',
+            'status'     => 'down',
+            'start_time' => '25 Dec 4:42 pm'
+        ];
+        //all the three mails sent in must have the same params as that of expectedEmailParams
+        $actualEmailParams = array_intersect($expectedEmailParams, $sentMails[0]->params, $sentMails[1]->params);
+
+        $this->assertArraySelectiveEquals($expectedEmailParams, $actualEmailParams);
+
+        //assert other contents of the Mailable class like subject, sender and view
+        Mail::assertSent(PartnerBankHealthMail::class, function($mail) {
+
+            $subject = "[Downtime notification] We are experiencing an issue with processing IMPS payouts through Axis Bank";
+
+            $this->assertSame($subject, $mail->subject);
+
+            $from = [
+                0 => [
+                    'name'    => 'Team Razorpay',
+                    'address' => 'no-reply@razorpay.com',
+                ]
+            ];
+
+            $this->assertArraySelectiveEquals($from, $mail->from);
+
+            $this->assertSame('emails.partner_bank_health.down', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testPartnerBankHealthUptimeNotificationForAxisDirectIntegration()
+    {
+        Mail::fake();
+
+        $this->ba->ftsAuth('live');
+
+        $testData = &$this->testData['testPartnerBankHealthUptimeNotificationForDirectIntegration'];
+        $testData['request']['content']['payload']['instrument']['bank'] = 'AXIS';
+
+        $this->createPartnerBankHealthNotificationConfigsForChannelAndAccountType(Channel::AXIS, AccountType::DIRECT);
+
+        $this->fixtures->on('live')->create('partner_bank_health',
+                                            [
+                                                'event_type' => 'fail_fast_health.direct.imps.utib',
+                                                'value'      => json_encode([
+                                                                                'last_down_at'       => 1640430729,
+                                                                                'affected_merchants' => [
+                                                                                    "ALL"
+                                                                                ],
+                                                                            ])
+                                            ]);
+
+        $this->startTest($testData);
+
+        // no merchants are now affected as we received an uptime webhook and hence affected_merchants array
+        // should be empty
+        $expectedPartnerBankHealthStatus = [
+            'event_type' => 'fail_fast_health.direct.imps.utib',
+            'value'      => [
+                'last_down_at'       => 1640430729,
+                'last_up_at'         => 1640431729,
+                'affected_merchants' => []
+            ]
+        ];
+
+        $partnerBankHealthStatus = $this->getDbLastEntity('partner_bank_health', 'live')->toArrayPublic();
+
+        $this->assertArraySelectiveEquals($expectedPartnerBankHealthStatus, $partnerBankHealthStatus);
+
+        Mail::assertSent(PartnerBankHealthMail::class, 2);
+
+        $sentMails = Mail::sent(PartnerBankHealthMail::class)->toArray();
+
+        $this->assertSame($sentMails[0]->to, [['address' => '200@gmail.com', 'name' => 'Merchant 10000000000012'],
+                                              ['address' => '201@gmail.com', 'name' => 'Merchant 10000000000012']]);
+
+        $this->assertSame($sentMails[1]->to, [['address' => '300@gmail.com', 'name' => 'Merchant 10000000000013'],
+                                              ['address' => '301@gmail.com', 'name' => 'Merchant 10000000000013']]);
+
+
+        Mail::assertSent(PartnerBankHealthMail::class, function($mail) {
+
+            $subject = "[Uptime notification] Now you can process IMPS payouts through Axis Bank";
+
+            $this->assertSame($subject, $mail->subject);
+
+            $from = [
+                0 => [
+                    'name'    => 'Team Razorpay',
+                    'address' => 'no-reply@razorpay.com',
+                ]
+            ];
+
+            $this->assertArraySelectiveEquals($from, $mail->from);
+
+            $expectedEmailParams = [
+                'source'     => 'Axis Bank',
+                'mode'       => 'IMPS',
+                'end_time'   => '25 Dec 4:58 pm',
+                'status'     => 'up'
+            ];
+
+            $this->assertArraySelectiveEquals($expectedEmailParams, $mail->params);
+
+            $this->assertSame('emails.partner_bank_health.up', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testPartnerBankHealthDowntimeNotificationForYesbankDirectIntegration()
+    {
+        Mail::fake();
+
+        $this->ba->ftsAuth('live');
+
+        $testData = &$this->testData['testPartnerBankHealthDowntimeNotificationForDirectIntegration'];
+        $testData['request']['content']['payload']['instrument']['bank'] = 'YESBANK';
+
+        $this->createPartnerBankHealthNotificationConfigsForChannelAndAccountType(Channel::YESBANK, AccountType::DIRECT);
+
+        $this->startTest($testData);
+
+        $partnerBankHealthStatus = $this->getDbLastEntity('partner_bank_health', 'live')->toArrayPublic();
+
+        $expectedPartnerBankHealthStatus = [
+            'event_type' => 'fail_fast_health.direct.imps.yesb',
+            'value'      => [
+                'last_down_at'       => 1640430729,
+                'affected_merchants' => ['ALL'],
+            ],
+        ];
+
+        $this->assertArraySelectiveEquals($expectedPartnerBankHealthStatus, $partnerBankHealthStatus);
+
+        Mail::assertSent(PartnerBankHealthMail::class, 2);
+
+        $sentMails = Mail::sent(PartnerBankHealthMail::class)->toArray();
+
+        $this->assertSame($sentMails[0]->to, [['address' => '200@gmail.com', 'name' => 'Merchant 10000000000012'],
+                                              ['address' => '201@gmail.com', 'name' => 'Merchant 10000000000012']]);
+
+        $this->assertSame($sentMails[1]->to, [['address' => '300@gmail.com', 'name' => 'Merchant 10000000000013'],
+                                              ['address' => '301@gmail.com', 'name' => 'Merchant 10000000000013']]);
+
+        $expectedEmailParams = [
+            'source'   => 'Yes Bank',
+            'mode'     => 'IMPS',
+            'status'   => 'down',
+            'start_time' => '25 Dec 4:42 pm'
+        ];
+        //all the three mails sent in must have the same params as that of expectedEmailParams
+        $actualEmailParams = array_intersect($expectedEmailParams, $sentMails[0]->params, $sentMails[1]->params);
+
+        $this->assertArraySelectiveEquals($expectedEmailParams, $actualEmailParams);
+
+        //assert other contents of the Mailable class like subject, sender and view
+        Mail::assertSent(PartnerBankHealthMail::class, function($mail) {
+
+            $subject = "[Downtime notification] We are experiencing an issue with processing IMPS payouts through Yes Bank";
+
+            $this->assertSame($subject, $mail->subject);
+
+            $from = [
+                0 => [
+                    'name'    => 'Team Razorpay',
+                    'address' => 'no-reply@razorpay.com',
+                ]
+            ];
+
+            $this->assertArraySelectiveEquals($from, $mail->from);
+
+            $this->assertSame('emails.partner_bank_health.down', $mail->view);
+
+            return true;
+        });
+    }
+
     public function createPartnerBankHealthNotificationConfigs()
     {
         //rbl direct account merchant
         $this->createMerchantNotificationConfig('10000000000012', ['200@gmail.com', '201@gmail.com'], ['9898989898', '8989898989']);
-        $this->createBalanceAndBankingAccount('xbalance200000', '10000000000012', 'direct', '00002000000000', 'rbl');
+        $this->createRelevantEntities('xbalance200000', '10000000000012', 'direct', '00002000000000', 'rbl');
 
         //icici routing disabled merchant
         $this->createMerchantNotificationConfig('10000000000013', ['300@gmail.com', '301@gmail.com'], ['9898989898', '8989898989']);
-        $this->createBalanceAndBankingAccount('xbalance300000', '10000000000013', 'shared', '34343000000000', 'icici');
+        $this->createRelevantEntities('xbalance300000', '10000000000013', 'shared', '34343000000000', 'icici');
 
         //icici routing enabled merchant
         $this->createMerchantNotificationConfig('10000000000014', ['400@gmail.com', '401@gmail.com'], ['9898989898', '8989898989']);
-        $this->createBalanceAndBankingAccount('xbalance400000', '10000000000014', 'shared', '5656000000000', 'icici');
+        $this->createRelevantEntities('xbalance400000', '10000000000014', 'shared', '5656000000000', 'icici');
 
         //yesbank routing disabled merchant
         $this->createMerchantNotificationConfig('10000000000015', ['500@gmail.com', '501@gmail.com'], ['9898989898', '8989898989']);
-        $this->createBalanceAndBankingAccount('xbalance500000', '10000000000015', 'shared', '456456000000000', 'yesbank');
+        $this->createRelevantEntities('xbalance500000', '10000000000015', 'shared', '456456000000000', 'yesbank');
 
         //yesbank routing enabled merchant
         $this->createMerchantNotificationConfig('10000000000016', ['600@gmail.com', '601@gmail.com'], ['9898989898', '8989898989']);
-        $this->createBalanceAndBankingAccount('xbalance600000', '10000000000016', 'shared', '787878000000000', 'yesbank');
+        $this->createRelevantEntities('xbalance600000', '10000000000016', 'shared', '787878000000000', 'yesbank');
     }
 
     public function createMerchantNotificationConfig($merchantId, $emails, $mobileNumbers)
@@ -996,9 +1202,26 @@ class FtsTest extends TestCase
         $merchantConfigs->save();
     }
 
-    public function createBalanceAndBankingAccount($id, $merchantId, $accountType, $accountNumber, $channel = 'rbl')
+    public function createRelevantEntities($balanceId, $merchantId, $accountType, $accountNumber, $channel = 'rbl')
     {
+        $basDetailEntity      = null;
+        $bankingAccountEntity = null;
+        $balanceEntity        = $this->createBalanceEntity($balanceId, $accountNumber, $merchantId, $accountType);
 
+        if ($accountType === AccountType::SHARED)
+        {
+            $bankingAccountEntity = $this->createBankingAccountEntity($balanceEntity, $channel);
+        }
+        elseif ($accountType === AccountType::DIRECT)
+        {
+            $basDetailEntity = $this->createBankingAccountStatementDetailsEntity($balanceEntity, $channel);
+        }
+
+        return [$balanceEntity, $bankingAccountEntity, $basDetailEntity];
+    }
+
+    public function createBalanceEntity($id, $accountNumber, $merchantId, $accountType)
+    {
         $balanceEntity = $this->fixtures->on('live')->create('balance',
                                                              [
                                                                  'id'             => $id,
@@ -1009,19 +1232,49 @@ class FtsTest extends TestCase
                                                                  'balance'        => 2000000,
                                                              ]);
 
+        $balanceEntity->save();
+
+        return $balanceEntity;
+    }
+
+    public function createBankingAccountEntity(Entity $balanceEntity, $channel)
+    {
         $bankingAccountEntity = $this->fixtures->on('live')->create('banking_account',
                                                                     [
                                                                         'id'             => preg_replace('/xbalance/', 'xbankacc', $balanceEntity['id']),
                                                                         'account_number' => $balanceEntity['account_number'],
                                                                         'balance_id'     => $balanceEntity['id'],
-                                                                        'merchant_id'    => $merchantId,
+                                                                        'merchant_id'    => $balanceEntity->getMerchantId(),
                                                                         'account_type'   => 'current',
                                                                         'channel'        => $channel,
                                                                         'status'         => 'activated',
                                                                     ]);
-
-        $balanceEntity->save();
         $bankingAccountEntity->balance()->associate($balanceEntity);
         $bankingAccountEntity->save();
+    }
+
+    public function createBankingAccountStatementDetailsEntity(Entity $balance, $channel)
+    {
+        $basDetails = $this->fixtures->on(Mode::LIVE)->create('banking_account_statement_details', [
+            'id'             => random_alphanum_string(14),
+            'channel'        => $channel,
+            'account_number' => $balance->getAccountNumber(),
+            'status'         => 'active',
+            'account_type'   => 'direct',
+            'merchant_id'    => $balance->getMerchantId(),
+            'balance_id'     => $balance->getId(),
+        ]);
+
+        $basDetails->balance()->associate($balance);
+        $basDetails->save();
+    }
+
+    public function createPartnerBankHealthNotificationConfigsForChannelAndAccountType($channel, $accountType)
+    {
+        $this->createMerchantNotificationConfig('10000000000012', ['200@gmail.com', '201@gmail.com'], ['9898989898', '8989898989']);
+        $this->createRelevantEntities('xbalance200000', '10000000000012', $accountType, '00002000000000', $channel);
+
+        $this->createMerchantNotificationConfig('10000000000013', ['300@gmail.com', '301@gmail.com'], ['9898989898', '8989898989']);
+        $this->createRelevantEntities('xbalance300000', '10000000000013', $accountType, '00003000000000', $channel);
     }
 }

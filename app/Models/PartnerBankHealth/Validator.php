@@ -5,7 +5,6 @@ namespace RZP\Models\PartnerBankHealth;
 use Razorpay\IFSC;
 
 use RZP\Base;
-use RZP\Trace\TraceCode;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -15,19 +14,10 @@ class Validator extends Base\Validator
     const PARTNER_BANK_HEALTH = 'partner_bank_health';
     const NOTIFICATION        = 'notification';
 
-    protected static $createRules = [
-        Entity::EVENT_TYPE => 'required|string|custom',
-        Entity::VALUE      => 'required|array|custom',
-    ];
-
-    protected static $updateRules = [
-        Entity::VALUE => 'required|array|custom'
-    ];
-
     protected static $partnerBankHealthRules = [
         Constants::BEGIN                         => 'required|epoch',
         Constants::INSTRUMENT                    => 'required|array|size:2|custom',
-        Constants::INCLUDE_MERCHANTS             => 'required|array',
+        Constants::INCLUDE_MERCHANTS             => 'required|array|custom',
         Constants::EXCLUDE_MERCHANTS             => 'present|array',
         Constants::SOURCE                        => 'required|string|custom',
         Constants::MODE                          => 'required|string|custom',
@@ -52,13 +42,28 @@ class Validator extends Base\Validator
 
     public function validateEventType($attribute, $value)
     {
-        list($source, $integration_type, $mode) = explode('.', $value);
+        list($source, $integrationType, $mode, $bankCode) = explode('.', $value);
 
         self::validateSource(Constants::SOURCE, $source);
 
-        self::validateIntegrationType(Constants::INTEGRATION_TYPE, $integration_type);
+        self::validateIntegrationType(Constants::INTEGRATION_TYPE, $integrationType);
 
         self::validateMode(Constants::MODE, $mode);
+
+        /* Validate bank code only for direct integration */
+        if (strpos($value, AccountType::DIRECT) !== false)
+        {
+            if (empty($bankCode) === true)
+            {
+                throw new BadRequestValidationFailureException("Invalid event type $value",
+                                                               null,
+                                                               [
+                                                                   'integration_type' => $integrationType
+                                                               ]);
+            }
+
+            $this->validateBankCode(Constants::BANK, strtoupper($bankCode));
+        }
     }
 
     public static function validateMode($attribute, $value)
@@ -82,14 +87,14 @@ class Validator extends Base\Validator
     {
         $partnerBankIfsc = $value[Constants::BANK];
 
-        $this->validateBank(Constants::BANK, $partnerBankIfsc);
+        $this->validateBankCode(Constants::BANK, $partnerBankIfsc);
 
         $integrationType = $value[Constants::INTEGRATION_TYPE];
 
         $this->validateIntegrationType(Constants::INTEGRATION_TYPE, $integrationType);
     }
 
-    public static function validateBank($attribute, $value)
+    public static function validateBankCode($attribute, $value)
     {
         if (IFSC\IFSC::validateBankCode($value) === false)
         {
@@ -135,7 +140,7 @@ class Validator extends Base\Validator
                 continue;
             }
 
-            $this->validateBank(Constants::BANK, $idx);
+            $this->validateBankCode(Constants::BANK, $idx);
 
             $lastDownAT = $content[Entity::LAST_DOWN_AT] ?? null;
             $lastUpAt = $content[Entity::LAST_UP_AT] ?? null;
@@ -154,7 +159,7 @@ class Validator extends Base\Validator
     }
 
     // Affected merchants list can either be ["ALL"] or [] or an array of merchant_ids.
-    protected function validateAffectedMerchantsList($affectedMerchantsList)
+    public function validateAffectedMerchantsList($affectedMerchantsList)
     {
         if (in_array('ALL', $affectedMerchantsList) === true)
         {
@@ -175,18 +180,26 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateIncludeExcludeMerchants($input)
+    protected function validateIncludeMerchants($attribute, $value)
     {
-        $includeMerchants = $input[Constants::INCLUDE_MERCHANTS];
-        $excludeMerchants = $input[Constants::EXCLUDE_MERCHANTS];
-
-        if ((empty($includeMerchants) === true) and
-            (empty($excludeMerchants) === true))
+        if (empty($value))
         {
-            throw new BadRequestValidationFailureException("Both include_merchants and exclude_merchants can't be empty");
+            throw new BadRequestValidationFailureException("Empty $attribute list");
         }
 
-        $this->validateAffectedMerchantsList($includeMerchants);
-        $this->validateAffectedMerchantsList($excludeMerchants);
+        if (array_first($value) === 'ALL')
+        {
+            if (count($value) !== 1)
+            {
+                throw new BadRequestValidationFailureException("Invalid $attribute list");
+            }
+
+            return;
+        }
+
+        foreach ($value as $mid)
+        {
+            \RZP\Models\Merchant\Entity::verifyUniqueId($mid);
+        }
     }
 }
