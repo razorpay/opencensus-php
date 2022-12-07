@@ -1051,11 +1051,12 @@ class Core extends Base\Core
         {
             $featureCore = (new FeatureCore());
 
-            $clarificationCore = (new ClarificationCore());
-
             $featureCore->removeFeature(FeatureConstants::NO_DOC_ONBOARDING, true);
 
+            $clarificationCore = (new ClarificationCore());
+
             $clarificationCore->updateActivationStatusForNoDoc($merchant, $merchantDetails, NeedsClarificationReasonsList::NO_DOC_RISK_FAILURE);
+
         }
     }
 

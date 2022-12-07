@@ -2301,5 +2301,45 @@ class NeedsClarificationTest extends TestCase
 
     }
 
+    public function testNoDocActivationStatusAfterRiskFailure()
+    {
+        $ncCore = (new Core());
+
+        $detailCore = (new DetailCore());
+
+        $merchantDetail = $this->fixtures->merchant_detail->create($this->testData['merchantDetailWithPrimaryFields']);
+
+        $merchant = $this->getDbEntity('merchant', ['id' => $merchantDetail->getMerchantId()]);
+
+        $detailCore->getMerchantAndSetBasicAuth($merchantDetail->getMerchantId());
+
+        $ncCore->updateActivationStatusForNoDoc($merchant, $merchantDetail, 'no_doc_risk_failure');
+
+        $kycClarificationReason = $merchantDetail->getKycClarificationReasons();
+
+        $this->assertEquals( 'no_doc_risk_failure', $kycClarificationReason['clarification_reasons_v2']['aadhar_front'][0]['reason_code']);
+    }
+
+
+    public function testNoDocActivationStatusAfterVerificationFailureMultipleTimes()
+    {
+
+        $ncCore = (new Core());
+
+        $detailCore = (new DetailCore());
+
+        $merchantDetail = $this->fixtures->merchant_detail->create($this->testData['merchantDetailWithPrimaryFields']);
+
+        $merchant = $this->getDbEntity('merchant', ['id' => $merchantDetail->getMerchantId()]);
+
+        $detailCore->getMerchantAndSetBasicAuth($merchantDetail->getMerchantId());
+
+        $ncCore->updateActivationStatusForNoDoc($merchant, $merchantDetail, 'no_doc_retry_exhausted');
+
+        $kycClarificationReason = $merchantDetail->getKycClarificationReasons();
+
+        $this->assertEquals( 'no_doc_retry_exhausted', $kycClarificationReason['clarification_reasons_v2']['aadhar_front'][0]['reason_code']);
+
+    }
 
 }

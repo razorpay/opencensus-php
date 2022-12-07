@@ -626,6 +626,7 @@ class Core extends Base\Core
                 ];
             }
 
+
             (new MerchantDetailCore())->updateActivationStatus($merchant, $activationStatusData, $merchant);
 
             if ($merchantDetail->getActivationStatus() !== $activationStatusData[DetailEntity::ACTIVATION_STATUS])

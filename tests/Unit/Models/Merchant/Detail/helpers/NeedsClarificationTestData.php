@@ -287,6 +287,26 @@ return [
             ]
         ],
         'validation_status' => 'failed'
+    ],
+    'merchantDetailWithPrimaryFields' => [
+        'contact_mobile' => '9308490219',
+        'contact_email' => 'gauriagain.kumar+699Aug@gmail.com',
+        'business_type' => '11',
+        'business_name' => 'Peoplink Services Private Limited',
+        'business_registered_address' => '507, Koramangala 1st block',
+        'business_operation_address' => '507, Koramangala 6th block',
+        'business_category'     => 'healthcare',
+        'business_subcategory'  => 'clinic',
+        'promoter_pan'   => 'BEGPJ7237B',
+        'promoter_pan_name' => 'Anurag Joshi',
+        'bank_account_number' => '019863300002403',
+        'bank_account_name' => 'Shivam kumar',
+        'bank_branch_ifsc' => 'PUNB0057100',
+        'business_registered_city' => 'Bangalore',
+        'business_registered_pin' => '560068',
+        'business_registered_state' => 'Karnataka',
+        'contact_name'  => 'Peoplink Services',
+        'gstin_verification_status' => 'verified'
     ]
 
 
