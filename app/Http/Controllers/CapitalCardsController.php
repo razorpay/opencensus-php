@@ -260,7 +260,7 @@ RequestInterface
         $permissionCategories = Config::get('heimdall.permissions');
         $capitalPermissions = $permissionCategories[PermissionCategory::RAZORPAY_CAPITAL];
         foreach ($permissions as $permission) {
-            if (isset($capitalPermissions[$permission])) {
+            if (isset($capitalPermissions[$permission]) || str_starts_with($permissions, "capital_cards_")) {
                 $permissionsString .= $permission . ":";
             }
         }
