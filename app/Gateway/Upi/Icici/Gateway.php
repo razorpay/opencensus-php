@@ -1283,9 +1283,23 @@ class Gateway extends Base\Gateway
             $response = $this->parseGatewayResponse($body, true, $isUpiTransfer);
         }
 
+
+        $traceResponse = $this->maskUpiDataForTracing($response, [
+            Entity::VPA             => Fields::PAYER_VA,
+        ]);
+
+
         // if we are getting a UMN field (which we get only for recurring), we will process for mandatecallbacks.
         if (isset($response[Fields::UMN]) === true)
         {
+            $this->trace->info(
+                TraceCode::UPI_RECURRING_GATEWAY_CALLBACK_RESPONSE,
+                [
+                    'gateway'   => $this->gateway,
+                    'recurring' => true,
+                    'data'      => $traceResponse
+                ]);
+
             $mandateResponse = $this->getMandateCallbackResponseIfApplicable($response);
 
             if (empty($mandateResponse) === false)
@@ -1293,10 +1307,6 @@ class Gateway extends Base\Gateway
                 return $mandateResponse;
             }
         }
-
-        $traceResponse = $this->maskUpiDataForTracing($response, [
-            Entity::VPA             => Fields::PAYER_VA,
-        ]);
 
         if ($decoded != null)
         {
@@ -1467,7 +1477,8 @@ class Gateway extends Base\Gateway
 
     protected function isMandateRevokeCallback($input)
     {
-        if ((isset($input[Fields::TXN_STATUS]) === true) and ($input[Fields::TXN_STATUS] === Status::REVOKE_SUCCESS))
+        if ((isset($input[Fields::TXN_STATUS]) === true)
+            and (($input[Fields::TXN_STATUS] === Status::REVOKE_SUCCESS) or ($input[Fields::TXN_STATUS] === Status::REVOKED_SUCCESS)))
         {
             return true;
         }
