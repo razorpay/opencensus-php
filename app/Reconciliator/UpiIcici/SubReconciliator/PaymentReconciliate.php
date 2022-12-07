@@ -137,8 +137,9 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 [
                     'info_code' => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATE_INITIATED,
                     'rrn'       => $referenceNumber,
+                    'amount'    => $amount,
                     'gateway'   => $this->gateway,
-                    'batch_id'  => $this->batchId
+                    'batch_id'  => $this->batchId,
                 ]
             );
 
@@ -162,6 +163,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     [
                         'infoCode'      => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATION_FAILED,
                         'rrn'           => $referenceNumber,
+                        'amount'        => $amount,
                         'response'      => $response,
                         'gateway'       => $this->gateway,
                         'batch_id'      => $this->batchId,
