@@ -4121,6 +4121,8 @@ class Processor
             'gateway_amount'           => $payment->getAmount(),
             'npci_reference_id'        => $payment->getReference16(),
             'vpa'                      => $payment->getVpa(),
+            'recurring'                => $payment->isRecurring(),
+
         ];
 
         $action =$payment->action;
