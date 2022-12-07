@@ -7586,6 +7586,8 @@ class Processor
                     null);
             }
 
+            $this->adjustCodFromGiftCardsIfApplicable($input, $orderMeta);
+
             $promotions = $orderMeta->getValue()[Order\OrderMeta\Order1cc\Fields::PROMOTIONS] ?? null;
 
             $couponData = null;
@@ -7659,4 +7661,31 @@ class Processor
         return empty($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === false &&
             boolval($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === true;
     }
+
+
+    /**
+     * @param $input
+     * @param $orderMeta
+     *  @throws \Throwable
+     */
+    // this function checks the applied gift card still have enough balance that was applied , and adjust cod if gift card has extra balance
+    protected function adjustCodFromGiftCardsIfApplicable($input, $orderMeta) {
+
+        $promotionsDetails = $orderMeta->getValue()[Order\OrderMeta\Order1cc\Fields::PROMOTIONS] ?? [];
+
+        $orderId = $input['order_id'];
+
+        $method = $input[Payment\Entity::METHOD];
+
+        if (empty($promotionsDetails) === false && count($promotionsDetails) > 0) {
+
+            $appliedGiftCards = (new Merchant\OneClickCheckout\Utils\CommonUtils())->removeCouponsFromPromotions($promotionsDetails);
+
+            if (count($appliedGiftCards) > 0) {
+                (new Merchant\MerchantGiftCardPromotions\Service())->adjustCodFeeIfGiftCardBalanceAvailable($orderId, $orderMeta, $method);
+            }
+
+        }
+    }
+
 }

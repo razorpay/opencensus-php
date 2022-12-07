@@ -12,6 +12,8 @@ use RZP\Models\Order;
 use RZP\Trace\TraceCode;
 use RZP\Models\Order\OrderMeta\TaxInvoice\TaxInvoiceTransformer;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Merchant\OneClickCheckout\Core as OneClickCheckoutCore;
+use RZP\Models\Merchant\OneClickCheckout\Utils\CommonUtils as OneClickCheckoutUtils;
 
 /**
  * Class Core
@@ -354,7 +356,7 @@ class Core extends Base\Core
     {
         $this->merchant = $this->repo->merchant->find($merchantId);
 
-        return $this->update1CCOrder($orderId,$orderMetaInput);
+        return (new OneClickCheckoutCore)->update1CcOrder($orderId,$orderMetaInput);
     }
 
     /**
@@ -363,7 +365,7 @@ class Core extends Base\Core
     public function updateCODIntelligence(string $orderId, array $codIntelligenceInput): array
     {
         $input = [Order1cc\Fields::COD_INTELLIGENCE => $codIntelligenceInput];
-        return $this->update1CCOrder($orderId, $input);
+        return (new OneClickCheckoutCore)->update1CcOrder($orderId, $input);
     }
 
     public function validateOfflineAdditionalInfo(array $offlineInfo)
@@ -381,6 +383,9 @@ class Core extends Base\Core
 
     }
 
+    /**
+     * @throws ServerErrorException
+     */
     protected function calculateAndUpdateNetPrice(array $value): array
     {
         $shippingFee = $value[Order1cc\Fields::SHIPPING_FEE] ?? 0;
@@ -389,15 +394,32 @@ class Core extends Base\Core
         $discount = 0;
         // Only supports 1 promotion
         if (isset($value[Order1cc\Fields::PROMOTIONS]) === true
-            and count($value[Order1cc\Fields::PROMOTIONS]) > 0)
-        {
-            $discount = $value[Order1cc\Fields::PROMOTIONS][0][Order1cc\Fields::PROMOTIONS_VALUE];
+            and count($value[Order1cc\Fields::PROMOTIONS]) > 0) {
 
+            $promotions = $value[Order1cc\Fields::PROMOTIONS];
+
+            $couponsApplied = (new OneClickCheckoutUtils())->removeGiftCardsFromPromotions($promotions);
+
+            if (count($couponsApplied) > 0) {
+                $discount = $couponsApplied[0][Order1cc\Fields::PROMOTIONS_VALUE] ?? 0;
+            }
         }
 
+        $minimumCartAmountAllowed = 100;
         $subTotal = $lineItemsTotal + $shippingFee;
         $afterDiscountCartAmount = max(0,$lineItemsTotal-$discount);
-        $netPrice = max(100, $afterDiscountCartAmount + $shippingFee);
+        $netPrice = max($minimumCartAmountAllowed, $afterDiscountCartAmount + $shippingFee);
+
+        if (isset($value[Order1cc\Fields::PROMOTIONS]) === true
+            and count($value[Order1cc\Fields::PROMOTIONS]) > 0) {
+
+            $appliedGiftCards = (new OneClickCheckoutUtils())->removeCouponsFromPromotions($value[Order1cc\Fields::PROMOTIONS]);
+
+            foreach ($appliedGiftCards as $card) {
+              $amountUsedFromGiftCard = $card[Order1cc\Fields::PROMOTIONS_VALUE];
+              $netPrice = max($minimumCartAmountAllowed, $netPrice - $amountUsedFromGiftCard);
+            }
+        }
 
         $value[Order1cc\Fields::NET_PRICE] = $netPrice;
         $value[Order1cc\Fields::SUB_TOTAL] = $subTotal;
@@ -409,4 +431,5 @@ class Core extends Base\Core
     {
         return self::MUTEX_PREFIX_1CC . $orderId;
     }
+
 }

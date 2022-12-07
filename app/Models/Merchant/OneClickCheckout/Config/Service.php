@@ -220,56 +220,30 @@ class Service extends Base\Service
                     }
                 }
 
-                /* This will be removed post
-                 * Gift-card changes is merged
+                /*
+                 * shopify specific configs are also feature flags
+                 * and cod_intelligence addition is handled above
                  */
-                if (isset($input['one_cc_capture_gstin']) === true) {
-                    $this->add1ccConfigFlags($input, Type::ONE_CC_CAPTURE_GSTIN);
-                }
-
-                if (isset($input['one_cc_capture_order_instructions']) === true) {
-                    $this->add1ccConfigFlags($input, Type::ONE_CC_CAPTURE_ORDER_INSTRUCTIONS);
-                }
-
                 foreach ($input as $key => $value)
                 {
-                    switch ($key)
-                    {
-                        case "one_click_checkout":
-                            if($updatePlatform === Constants::SHOPIFY) {
-                                $this->add1ccConfigFlags($input, Type::ONE_CLICK_CHECKOUT);
-                            }
-                            break;
-                        case "one_cc_buy_now_button":
-                            if($updatePlatform === Constants::SHOPIFY) {
-                                $this->add1ccConfigFlags($input, Type::ONE_CC_BUY_NOW_BUTTON);
-                            }
-                        case "one_cc_ga_analytics":
-                            if($updatePlatform === Constants::SHOPIFY) {
-                                $this->add1ccConfigFlags($input, Type::ONE_CC_GA_ANALYTICS);
-                            }
-                            break;
-                        case "one_cc_fb_analytics":
-                            if($updatePlatform === Constants::SHOPIFY) {
-                                $this->add1ccConfigFlags($input, Type::ONE_CC_FB_ANALYTICS);
-                            }
-                            break;
-                        case "one_cc_auto_fetch_coupons":
-                            $this->add1ccConfigFlags($input, Type::ONE_CC_AUTO_FETCH_COUPONS);
-                            break;
-                        case "one_cc_international_shipping":
-                            $this->add1ccConfigFlags($input, Type::ONE_CC_INTERNATIONAL_SHIPPING);
-                            break;
-                        case "one_cc_capture_billing_address":
-                            $this->add1ccConfigFlags($input, Type::ONE_CC_CAPTURE_BILLING_ADDRESS);
-                            break;
-                        case Type::DOMAIN_URL:
-                            (new Core)->associateMerchant1ccConfig(
-                                Type::DOMAIN_URL,
-                                $value
-                            );
-                            break;
+                    if (in_array($key, Constants::COMMON_CONFIGS) === true && $key !== Constants::COD_INTELLIGENCE && $key !== Constants::MANUAL_CONTROL_COD_ORDER) {
+                        $this->add1ccConfigFlags($input, $key);
                     }
+
+                    if (in_array($key, Constants::SHOPIFY_SPECIFIC_CONFIGS) === true && $updatePlatform === Constants::SHOPIFY) {
+                        $this->add1ccConfigFlags($input, $key);
+                    }
+
+                    if (in_array($key, Constants::GIFT_CARD_CONFIGS) === true && $updatePlatform !== Constants::NATIVE) {
+                        $this->add1ccConfigFlags($input, $key);
+                    }
+                }
+
+                if (isset($input[Type::DOMAIN_URL])) {
+                    (new Core)->associateMerchant1ccConfig(
+                        Type::DOMAIN_URL,
+                        $input[Type::DOMAIN_URL]
+                    );
                 }
             }
         );
@@ -438,7 +412,7 @@ class Service extends Base\Service
             $merchantPlatform = $merchantPlatformConfig->getValue();
         }
 
-        $configs = [
+        $result = [
             "domain_url"      => $domainUrl,
             "shipping_info"   => $shippingInfoUrl,
             "list_promotions" => $couponsUrl,
@@ -447,12 +421,12 @@ class Service extends Base\Service
             "platform"        => $merchantPlatform,
         ];
 
-        if ($merchantPlatformConfig !== null and $merchantPlatformConfig->getValue() === Constants::NATIVE)
+        if ($merchantPlatform === Constants::NATIVE)
         {
             $orderStatusUpdateUrlConfig = $this->merchant->getFetchOrderStatusUpdateUrlConfig();
             if ($orderStatusUpdateUrlConfig !== null)
             {
-                $configs[Constants::ORDER_STATUS_UPDATE_URL] = $orderStatusUpdateUrlConfig->getValue();
+                $result[Constants::ORDER_STATUS_UPDATE_URL] = $orderStatusUpdateUrlConfig->getValue();
             }
         }
 
@@ -463,7 +437,7 @@ class Service extends Base\Service
             }
         }
 
-        return $configs;
+        return $result;
     }
 
     public function getInternal1ccConfig($merchantId)
@@ -639,31 +613,22 @@ class Service extends Base\Service
             }
         }
 
-        /**
-         * config flags which are not feature flags
-         *  will have default value as false, except for fetch coupons
-         */
-        foreach (Constants::COMMON_CONFIGS as $flag)
-        {
-            $response[$flag] = false;
-            if ($flag == Constants::ONE_CC_AUTO_FETCH_COUPONS) {
-                $response[$flag] = true;
-            }
-        }
-
-        if ($internal)
-        {
-           foreach (Constants::INTERNAL_CONFIGS as $flag)
-           {
-               $featureStatus = $merchant->isFeatureEnabled($flag);
-               $response[$flag] = $featureStatus;
+      /**
+       * config flags which are not feature flags
+       *  will have default value as false, except for fetch coupons
+       */
+       foreach (Constants::COMMON_CONFIGS as $flag)
+       {
+           $response[$flag] = false;
+           if ($flag == Constants::ONE_CC_AUTO_FETCH_COUPONS) {
+               $response[$flag] = true;
            }
-        }
-        
+       }
+
         /** config flags which are also feature flags
-         *  will have default value of features if config
-         *  not present
-         */
+        *  will have default value of features if config
+        *  not present
+        */
         foreach (Constants::SHOPIFY_SPECIFIC_CONFIGS as $flag)
         {
             $response[$flag] = false;
@@ -672,6 +637,24 @@ class Service extends Base\Service
             }
         }
 
+        /**
+         * Gift card configs are not for native
+         */
+        if ($platform !== Constants::NATIVE) {
+            foreach (Constants::GIFT_CARD_CONFIGS as $flag)
+            {
+               $response[$flag] = false;
+            }
+        }
+        
+        if ($internal)
+        {
+           foreach (Constants::INTERNAL_CONFIGS as $flag)
+           {
+               $featureStatus = $merchant->isFeatureEnabled($flag);
+               $response[$flag] = $featureStatus;
+           }
+        }
 
         /**
          * Give config values if present

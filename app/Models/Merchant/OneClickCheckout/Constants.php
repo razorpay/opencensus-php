@@ -33,6 +33,13 @@ class Constants
     const ONE_CC_CAPTURE_ORDER_INSTRUCTIONS = 'one_cc_capture_order_instructions';
     const ONE_CC_ADDRESS_SYNC_OFF        = 'one_cc_address_sync_off';
 
+    // gift card configs
+    const ONE_CC_GIFT_CARD                 = 'one_cc_gift_card';
+    const ONE_CC_GIFT_CARD_RESTRICT_COUPON = 'one_cc_gift_card_restrict_coupon';
+    const ONE_CC_BUY_GIFT_CARD             = 'one_cc_buy_gift_card';
+    const ONE_CC_MULTIPLE_GIFT_CARD        = 'one_cc_multiple_gift_card';
+    const ONE_CC_GIFT_CARD_COD_RESTRICT    = 'one_cc_gift_card_cod_restrict';
+
     // common auth keys
     const API_KEY        = 'api_key';
     const API_SECRET     = 'api_secret';
@@ -120,6 +127,11 @@ class Constants
         self::MANUAL_CONTROL_COD_ORDER,
         self::ONE_CC_CAPTURE_GSTIN,
         self::ONE_CC_CAPTURE_ORDER_INSTRUCTIONS,
+        self::ONE_CC_GIFT_CARD,
+        self::ONE_CC_GIFT_CARD_RESTRICT_COUPON,
+        self::ONE_CC_BUY_GIFT_CARD,
+        self::ONE_CC_MULTIPLE_GIFT_CARD,
+        self::ONE_CC_GIFT_CARD_COD_RESTRICT,
         self::ONE_CC_ADDRESS_SYNC_OFF,
     ];
 
@@ -127,6 +139,14 @@ class Constants
         self::ONE_CLICK_CHECKOUT,
         self::ONE_CC_GA_ANALYTICS,
         self::ONE_CC_FB_ANALYTICS,
+    ];
+
+    const GIFT_CARD_CONFIGS = [
+        self::ONE_CC_GIFT_CARD,
+        self::ONE_CC_GIFT_CARD_RESTRICT_COUPON,
+        self::ONE_CC_BUY_GIFT_CARD,
+        self::ONE_CC_MULTIPLE_GIFT_CARD,
+        self::ONE_CC_GIFT_CARD_COD_RESTRICT,
     ];
 
     const SHOPIFY_SPECIFIC_CONFIGS = [
@@ -137,13 +157,13 @@ class Constants
     ];
 
     const COMMON_CONFIGS = [
-        self::COD_INTELLIGENCE,
-        self::ONE_CC_AUTO_FETCH_COUPONS,
-        self::ONE_CC_CAPTURE_BILLING_ADDRESS,
-        self::ONE_CC_INTERNATIONAL_SHIPPING,
-        self::MANUAL_CONTROL_COD_ORDER,
-        self::ONE_CC_CAPTURE_GSTIN,
-        self::ONE_CC_CAPTURE_ORDER_INSTRUCTIONS,
+       self::COD_INTELLIGENCE,
+       self::ONE_CC_AUTO_FETCH_COUPONS,
+       self::ONE_CC_CAPTURE_BILLING_ADDRESS,
+       self::ONE_CC_INTERNATIONAL_SHIPPING,
+       self::MANUAL_CONTROL_COD_ORDER,
+       self::ONE_CC_CAPTURE_GSTIN,
+       self::ONE_CC_CAPTURE_ORDER_INSTRUCTIONS,
     ];
 
     const INTERNAL_CONFIGS = [
@@ -199,8 +219,25 @@ class Constants
     const ID                = 'id';
     const MERCHANT_ID        = 'merchant_id';
     const MODE              = 'mode';
+    
+    const GIFT_CARD_NUMBER = 'gift_card_number';
+    const GIFT_CARD_REFERENCE_ID = 'gift_card_reference_id';
+    const GIFT_CARD_BALANCE = 'balance';
+    const GIFT_CARD_PARTIAL_REDEMPTION = 'allowedPartialRedemption';
+
+    // multiple gift card number in remove gift card api
+    const GIFT_CARD_NUMBERS  = 'gift_card_numbers';
 
     // used for getting merchant keys
     const KEYS = 'keys';
 
+    //can be used for all 1cc apis,operation
+    const MUTEX_PREFIX_1CC_OPERATION = "1cc_order:";
+
+    // pricing object constants
+    const TOTAL_COUPON_VALUE = 'total_coupon_value';
+    const TOTAL_GIFT_CARD_VALUE = 'total_gift_card_value';
+    const FINAL_ADJUSTED_COD_VALUE = 'final_adjusted_cod_value';
+
+    const ORDER_STATUS_REFUNDED = 'refunded';
 }

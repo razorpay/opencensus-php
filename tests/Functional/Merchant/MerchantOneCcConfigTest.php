@@ -71,6 +71,13 @@ class MerchantOneCcConfigTest extends TestCase
         $this->startTest();
     }
 
+
+    public function testOneCcGiftCardConfigs() {
+        $this->ba->proxyAuth();
+        $this->setUpAuthConfigForMerchant();
+        $this->startTest();
+    }
+    
     public function testDomainUrlMerchant1ccConfig()
     {
         $this->ba->proxyAuth();

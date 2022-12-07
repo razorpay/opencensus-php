@@ -15,7 +15,9 @@ use RZP\Models\Merchant\Validator;
 use RZP\Models\Merchant\OneClickCheckout\Shopify;
 use RZP\Models\Merchant\Merchant1ccConfig;
 use RZP\Models\Merchant\OneClickCheckout\DomainUtils;
+use RZP\Models\Merchant\OneClickCheckout\Utils\CommonUtils;
 use RZP\Models\Merchant\Merchant1ccConfig\Type;
+use RZP\Models\Merchant\OneClickCheckout\Core as OneClickCheckoutCore;
 
 class Service extends Base\Service
 {
@@ -101,7 +103,7 @@ class Service extends Base\Service
 
                 $this->trace->count(Metric::FETCH_COUPONS_MERCHANT_REQUEST_COUNT, $dimensions);
 
-                $response = $this->sendRequestToMerchant($fetchCouponsUrl, $input, $mockResponse);
+                $response = (new CommonUtils())->sendRequestToMerchant($fetchCouponsUrl, $input, $mockResponse);
 
                 $decodedResponse = json_decode($response->body, true);
 
@@ -236,6 +238,14 @@ class Service extends Base\Service
                 throw $ex;
             }
 
+            $orderMeta = array_first($rzpOrder->orderMetas ?? [], function ($orderMeta) {
+                return $orderMeta->getType() === Order\OrderMeta\Type::ONE_CLICK_CHECKOUT;
+            });
+
+            if ($orderMeta === null) {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_1CC_ORDER);
+            }
+
             $input['order_id'] = $merchantOrderId;
 
             $platformConfig = $this->merchant->getMerchantPlatformConfig();
@@ -271,7 +281,7 @@ class Service extends Base\Service
 
                 $this->trace->count(Metric::MERCHANT_EXTERNAL_COUPON_VALIDITY_REQUEST_COUNT, $dimensions);
 
-                $response = $this->sendRequestToMerchant($couponValidityUrl, $input, $mockResponse);
+                $response = (new CommonUtils())->sendRequestToMerchant($couponValidityUrl, $input, $mockResponse);
 
                 $decodedResponse = json_decode($response->body, true);
 
@@ -313,10 +323,23 @@ class Service extends Base\Service
                 throw $e;
             }
 
-            // The Order changes may not exist when this code is merged.
-            if (method_exists(Order\OrderMeta\Core::class, 'update1CCOrder') === true) {
-                (new Order\OrderMeta\Core)->update1CCOrder($orderId, ['promotions' => [$decodedResponse['promotion']]]);
+            $promotions = $orderMeta->getValue()['promotions'] ?? [];
+
+            $couponRestriction = $this->merchant->get1ccConfigFlagStatus('one_cc_gift_card_restrict_coupon');
+
+            /*  if true remove gift card
+             *  and coupon as well
+             */
+            if ($couponRestriction === true) {
+                $promotions = [];
             }
+            else {
+                $promotions = (new CommonUtils())->removeCouponsFromPromotions($promotions);
+            }
+
+            array_push($promotions, $decodedResponse['promotion']);
+
+            (new OneClickCheckoutCore)->update1CcOrder($orderId, ['promotions' => $promotions]);
 
             // get coupon_config for MID
             $couponConfig = $this->merchant->get1ccConfig(Type::COUPON_CONFIG);
@@ -376,57 +399,47 @@ class Service extends Base\Service
         }
     }
 
+    /**
+     * Remove Coupons
+     * @param array $input
+     * @throws \Throwable
+     */
     public function removeCoupon(array $input)
     {
-        if (isset($input['order_id']) === false)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
-        }
+        try {
+            (new Validator)->validateInput('removeCouponRequest', $input);
 
-        $orderId = $input['order_id'];
+            $orderId = $input['order_id'];
 
-        if (method_exists(Order\OrderMeta\Core::class, 'update1CCOrder') === true)
-        {
-            (new Order\OrderMeta\Core)->update1CCOrder($orderId, ['promotions' => []]);
+            $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
+
+            $orderMeta = array_first($order->orderMetas ?? [], function ($orderMeta) {
+                return $orderMeta->getType() === Order\OrderMeta\Type::ONE_CLICK_CHECKOUT;
+            });
+
+            if ($orderMeta === null) {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_1CC_ORDER);
+            }
+
+            $existingPromotions = $orderMeta->getValue()['promotions'] ?? [];
+            $promotions = (new CommonUtils())->removeCouponsFromPromotions($existingPromotions);
+
+            (new OneClickCheckoutCore)->update1CcOrder($orderId, ['promotions' => $promotions]);
+
+        } catch (\Throwable $e) {
+            $input['reference_id'] = mask_by_percentage($input['reference_id']);
+
+            $this->trace->error(TraceCode::REMOVE_COUPON_ERROR,
+                [
+                    'request' =>  $input,
+                    'exception'=> $e->getTrace()
+                ]
+            );
+
+            throw $e;
         }
     }
 
-    /**
-     * @throws Exception\ServerErrorException
-     */
-    protected function sendRequest($request, $mockResponse = null)
-    {
-        if ((getenv('APP_ENV') === 'testing') and
-            ($mockResponse !== null))
-        {
-            $mockResponseObj = new \stdClass();
-
-            $mockResponseObj->body = json_encode($mockResponse['body']);
-            $mockResponseObj->status_code = $mockResponse['status_code'] ?? 200;
-
-            return $mockResponseObj;
-        }
-
-        try
-        {
-            $response = DomainUtils::sendExternalRequest(
-                $request['url'],
-                $request['headers'],
-                $request['content'],
-                $request['method']
-            );
-        }
-        catch (\Throwable $e)
-        {
-            throw new Exception\ServerErrorException(
-                'Error while calling Merchant URL',
-                ErrorCode::SERVER_ERROR_MERCHANT_FETCH_COUPONS_EXTERNAL_CALL_EXCEPTION,
-                null,
-                $e
-            );
-        }
-        return $response;
-    }
 
     // NOTE: At scale we will remove merchant_id to reduce cardinality
     protected function traceResponseTime(string $metric, int $startTime, $dimensions = [])
@@ -480,23 +493,6 @@ class Service extends Base\Service
             }
         }
         return $res;
-    }
-
-    protected function sendRequestToMerchant($merchantUrl, $input, $mockResponse)
-    {
-        $headers = [
-            'Content-Type' => 'application/json',
-            'Accept'       => 'application/json',
-        ];
-
-        $request = [
-            'url'     => $merchantUrl,
-            'method'  => Requests::POST,
-            'headers' => $headers,
-            'content' => json_encode($input),
-        ];
-
-        return $this->sendRequest($request, $mockResponse);
     }
 
     protected function addPlatformDimension($platformConfig, $dimensions = []): array

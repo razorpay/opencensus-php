@@ -13441,6 +13441,81 @@ return [
         ],
     ],
 
+    'testApplyGiftCard' => [
+        'request'  => [
+            'url'     => '/1cc/orders/{id}/giftcard/apply',
+            'method'  => 'post',
+            'content' => [
+                'contact'                => '1234567890',
+                'email'                  => 'email@gmail.com',
+                'gift_card_number'       => '1234567890',
+                'mock_response' => [
+                    'body'        => [
+                        'gift_card_promotion' => [
+                            'gift_card_number'                => '1234567890',
+                            'balance'                         => 5000,
+                            'allowedPartialRedemption'        => 1,
+                        ],
+                    ],
+                    'status_code' => 200
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'gift_card_promotion' => [
+                    'gift_card_number'                => '1234567890',
+                    'balance'                         => 5000,
+                    'allowedPartialRedemption'        => 1,
+                ],
+            ],
+        ],
+    ],
+
+    'testApplyGiftCardInvalidGiftCardNumber' => [
+        'request'  => [
+            'url'     => '/1cc/orders/{id}/giftcard/apply',
+            'method'  => 'post',
+            'content' => [
+                'contact'                => '1234567890',
+                'email'                  => 'email@gmail.com',
+                'gift_card_number'       => '1234567890',
+                'mock_response' => [
+                    'body'        => [
+                        'failure_code'   => 'INVALID_GIFT_CARD',
+                        'failure_reason' => 'Gift card has expired',
+                    ],
+                    'status_code' => 400,
+                ]
+            ],
+        ],
+        'response' => [
+            'content'    => [
+                'failure_code'   => 'INVALID_GIFT_CARD',
+                'failure_reason' => 'Gift card has expired',
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testRemoveGiftCard' => [
+        'request' => [
+            'url' => '/1cc/orders/{id}/giftcard/remove',
+            'method' => 'post',
+            'content' => [
+                'gift_card_numbers' => [
+                    '123456',
+                    'abcd345'
+                ],
+            ],
+
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200
+        ],
+    ],
+
     'testDomainUrlMerchant1ccConfig' => [
         'request' => [
             'url' => '/1cc/merchant/configs',
@@ -13647,4 +13722,26 @@ return [
             'status_code' => 200
         ],
     ],
+    
+    'testOneCcGiftCardConfigs' => [
+        'request' => [
+            'url' => '/1cc/merchant/configs',
+            'method' => 'post',
+            'content' => [
+                'shop_id' => 'hias',
+                'platform' => 'shopify',
+                'one_cc_gift_card' => true,
+                'one_cc_buy_gift_card' => true,
+                'one_cc_multiple_gift_card' => true,
+                'one_cc_gift_card_cod_restrict' => true,
+                'one_cc_gift_card_restrict_coupon' => true,
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200
+        ],
+    ],
+
 ];

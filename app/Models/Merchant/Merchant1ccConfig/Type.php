@@ -16,6 +16,13 @@ class Type {
     const ONE_CC_CAPTURE_BILLING_ADDRESS   = 'one_cc_capture_billing_address';
     const ONE_CC_GA_ANALYTICS              = 'one_cc_ga_analytics';
     const ONE_CC_FB_ANALYTICS              = 'one_cc_fb_analytics';
+    
+    const ONE_CC_GIFT_CARD                 = 'one_cc_gift_card';
+    const ONE_CC_GIFT_CARD_RESTRICT_COUPON = 'one_cc_gift_card_restrict_coupon';
+    const ONE_CC_BUY_GIFT_CARD             = 'one_cc_buy_gift_card';
+    const ONE_CC_GIFT_CARD_PIN             = 'one_cc_gift_card_pin';
+    const ONE_CC_MULTIPLE_GIFT_CARD        = 'one_cc_multiple_gift_card';
+    const ONE_CC_GIFT_CARD_COD_RESTRICT    = 'one_cc_gift_card_cod_restrict';
     const DOMAIN_URL                       = 'domain_url';
 
     const COUPON_CONFIG                    = 'coupon_config';

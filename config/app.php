@@ -493,6 +493,10 @@ return array(
 
     'checkout_emi_ui_revamp_splitz_experiment_id' => env('CHECKOUT_EMI_UI_REVAMP_SPLITZ_EXPERIMENT_ID'),
 
+    'dcc_recurring_on_auto_direct_experiment_id' => env('DCC_RECURRING_ON_AUTO_DIRECT_EXPERIMENT_ID'),
+
+    'shaadi_com_new_currency_support_experiment_id' => env('SHAADI_COM_NEW_CURRENCY_SUPPORT_EXPERIMENT_ID'),
+
     'shaadi_com_new_currency_support_experiment_id' => env('SHAADI_COM_NEW_CURRENCY_SUPPORT_EXPERIMENT_ID'),
 
     'partner_independent_kyc_exp_id' => env('PARTNER_INDEPENDENT_KYC_EXP_ID'),
@@ -502,4 +506,6 @@ return array(
     '1cc_coupon_drop_off_splitz_experiment_id' => env('MAGIC_CHECKOUT_COUPONS_DROP_OFF_EXP_ID'),
 
     'partnership_service_commission_sync_exp_id' => env('PARTNERSHIP_SERVICE_COMMISSION_SYNC_EXP_ID'),
+
+    'magic_checkout_woocommerce_giftcard_url'       => env('MAGIC_CHECKOUT_WOOCOMMERCE_GIFTCARD_URL'),
 );

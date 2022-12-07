@@ -3631,6 +3631,26 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function applyGiftCard(string $orderId) {
+
+        $input = Request::all();
+
+        $response = (new Merchant\MerchantGiftCardPromotions\Service())->applyGiftCard($orderId, $input);
+
+        return ApiResponse::json($response['data'], $response['status_code']);
+
+    }
+
+    public function removeGiftCard(string $orderId) {
+
+        $input = Request::all();
+
+        $response = (new Merchant\MerchantGiftCardPromotions\Service())->removeGiftCard($orderId, $input);
+
+        return ApiResponse::json([], 200);
+    }
+        
+
     public function getMerchantConsents(string $merchantId)
     {
         $response = $this->service()->getMerchantConsents($merchantId);

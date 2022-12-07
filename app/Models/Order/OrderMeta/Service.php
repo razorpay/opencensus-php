@@ -16,6 +16,7 @@ use RZP\Services\Mutex;
 use RZP\Trace\TraceCode;
 use RZP\Models\Order;
 use Throwable;
+use RZP\Models\Merchant\OneClickCheckout\Core as OneClickCheckoutCore;
 
 
 class Service extends \RZP\Models\Base\Service
@@ -107,7 +108,7 @@ class Service extends \RZP\Models\Base\Service
                 Order1cc\Fields::CUSTOMER_DETAILS => $customerInfo,
             ]);
 
-            $result = (new Core)->update1CCOrder($orderId, $orderMetaInput);
+            $result = (new OneClickCheckoutCore)->update1CcOrder($orderId, $orderMetaInput);
 
             $duration = millitime() - $startTime;
             $this->trace->histogram(Metric::UPDATE_CUSTOMERS_DETAILS_TIME_MILLIS, $duration, $dimensions);
@@ -144,7 +145,7 @@ class Service extends \RZP\Models\Base\Service
         try {
             $core->validateActive1CCOrderId($orderId);
 
-            $core->update1CCOrder(
+            (new OneClickCheckoutCore)->update1CcOrder(
                 $orderId,
                 [
                     Order1cc\Fields::COD_FEE => 0,

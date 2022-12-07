@@ -1690,4 +1690,14 @@ class PublicErrorDescription
     const SERVER_ERROR_INVALID_ACS_EVENT_PROCESSOR                                  = "invalid acs event processor attached to acs event processor factory";
 
     const BAD_REQUEST_ROUTE_NOT_ACCESSIBLE_VIA_BANKING                              = 'Route not enabled for banking';
+
+    // 1cc Gift Card Error Description
+    const SAME_GIFT_CARD_APPLIED                                                    = 'Same gift card cannot be applied again';
+    const GIFT_CARD_INVALID                                                         = 'Gift Card is either expired or invalid';
+    const GIFT_CARD_EXTERNAL_REQUEST_FAILED                                         = 'Gift Card external request failed';
+    const VALIDATE_GIFT_CARD_RESPONSE_JSON_ERROR                                    = 'Validate gift card response json error';
+    const MERCHANT_DOMAIN_URL_NOT_PRESENT                                           = 'domain url not present';
+    const GIFT_CARD_BALANCE_LESS_THAN_PREVIOUS_APPLIED                              = 'gift card amount less than applied';
+    const GIFT_CARD_APPLICATION_NOT_ALLOWED                                         = 'Gift card application not allowed';
+    const GIFT_CARD_ORDER_ALREADY_REFUNDED                                          = 'Gift card request cannot be processed as order is already refunded';
 }

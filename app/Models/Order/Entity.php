@@ -1043,6 +1043,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
+
     protected function getCodFeeIfApplicable($payment)
     {
         $fee = 0;
@@ -1075,7 +1076,9 @@ class Entity extends Base\PublicEntity
                 continue;
             }
 
-            $fee += $value[OrderMeta\Order1cc\Fields::COD_FEE];
+            $pricingResponse = (new Merchant\OneClickCheckout\Core())->get1CcPricingObject($orderMeta);
+
+            $fee += $pricingResponse[Merchant\OneClickCheckout\Constants::FINAL_ADJUSTED_COD_VALUE];
         }
 
         return $fee;

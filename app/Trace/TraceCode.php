@@ -7782,6 +7782,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const FETCH_COUPONS_REQUEST                              = 'FETCH_COUPONS_REQUEST';
     const FETCH_COUPONS_ERROR                                = 'FETCH_COUPONS_ERROR';
+    const REMOVE_COUPON_ERROR                                = 'REMOVE_COUPON_ERROR';
+
+    const APPLY_GIFT_CARD_REQUEST                            = 'APPLY_GIFT_CARD_REQUEST';
+    const APPLY_GIFT_CARD_REQUEST_ERROR                      = 'APPLY_GIFT_CARD_REQUEST_ERROR';
+    const VALIDATE_GIFT_CARD_EXTERNAL_RESPONSE_ERROR         = 'VALIDATE_GIFT_CARD_EXTERNAL_RESPONSE_ERROR';
+
+    const REMOVE_GIFT_CARD_REQUEST_ERROR                     = 'REMOVE_GIFT_CARD_REQUEST_ERROR';
 
     const MERCHANT_ADDRESS_SHIPPING_INFO_REQUEST             = 'MERCHANT_ADDRESS_SHIPPING_INFO_REQUEST';
     const MERCHANT_ADDRESS_SHIPPING_INFO_ERROR               = 'MERCHANT_ADDRESS_SHIPPING_INFO_ERROR';

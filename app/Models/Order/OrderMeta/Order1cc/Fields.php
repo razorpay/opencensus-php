@@ -43,6 +43,7 @@ class Fields
     const PROMOTIONS_VALUE                  = 'value';
     const PROMOTIONS_VALUE_TYPE             = 'value_type';
     const PROMOTIONS_DESCRIPTION            = 'description';
+
     //Customer Details Fields
     const CUSTOMER_DETAILS_ID               = 'id';
     const CUSTOMER_DETAILS_NAME             = 'name';
@@ -68,6 +69,10 @@ class Fields
     const ONE_CLICK_CHECKOUT = 'one_click_checkout';
     const GSTIN              = 'gstin';
     const ORDER_INSTRUCTIONS  = 'order_instructions';
+
+    //gift card Type
+    const GIFT_CARD    = 'gift_card';
+    const GIFT_CARD_PROMOTION = 'gift_card_promotion';
 
     public static $dataFields = [
         self::LINE_ITEMS,

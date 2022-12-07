@@ -80,6 +80,16 @@ final class Metric
     const FETCH_COUPONS_ERROR_COUNT                         = 'fetch_coupons_error_count';
     const FETCH_COUPONS_FAULT_COUNT                         = 'fetch_coupons_fault_count';
 
+    const APPLY_GIFT_CARD_REQUEST_COUNT                        = 'apply_gift_card_request_count';
+    const APPLY_GIFT_CARD_ERROR_COUNT                          = 'apply_gift_card_error_count';
+    const APPLY_GIFT_CARD_REQUEST_DURATION_MILLIS              = 'apply_gift_card_request_duration_millis';
+
+    const VALIDATE_GIFT_CARD_ERROR_COUNT                        = 'validate_gift_card_error_count';
+
+    const MERCHANT_EXTERNAL_VALIDATE_GIFT_CARD_DURATION_MILLIS = self::MERCHANT_EXTERNAL_PREFIX . 'validate_gift_card_duration_millis';
+    const MERCHANT_VALIDATE_GIFT_CARD_ERROR_COUNT              = 'merchant_validate_gift_card_error_count';
+
+
     const FETCH_COUPONS_SHOPIFY_REQUEST_COUNT              = 'fetch_coupons_shopify_request_count';
 
     const MERCHANT_COUPON_VALIDITY_REQUEST_DURATION_MILLIS                 = 'merchant_coupon_validity_request_duration_millis';

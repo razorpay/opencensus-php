@@ -625,6 +625,34 @@ class Validator extends Base\Validator
         'line_items_total'              => 'sometimes|integer'
     ];
 
+    protected static $removeCouponRequestRules = [
+        'order_id'                      => 'required|string',
+        'reference_id'                  => 'sometimes|string'
+    ];
+
+    protected static $applyGiftCardRequestRules = [
+        'gift_card_number'              => 'required|string',
+        'contact'                       => 'sometimes|contact_syntax',
+        'email'                         => 'sometimes|email',
+    ];
+
+    protected static $applyGiftCardResponseRules = [
+        'gift_card_promotion'                               => 'required',
+        'gift_card_promotion.gift_card_number'              => 'required|string',
+        'gift_card_promotion.balance'                       => 'required|integer',
+        'gift_card_promotion.gift_card_reference_id'        => 'sometimes|string',
+        'gift_card_promotion.allowedPartialRedemption'      => 'required|in:0,1',
+    ];
+
+    protected static $applyGiftCardInvalidRequestResponseRules = [
+        'failure_reason'                => 'sometimes|string',
+        'failure_code'                  => 'required|string',
+    ];
+
+    protected static $removeGiftCardRequestRules = [
+        'gift_card_numbers'                     => 'required|array',
+    ];
+
     protected static $applyCouponInvalidRequestResponseRules = [
         'failure_reason'                => 'sometimes|string',
         'failure_code'                  => 'required|string',
