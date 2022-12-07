@@ -73,4 +73,7 @@ class Constants
     const EMERCHANTPAY_ONBOARDING_STAGE_JOB_NAME = 'emerchantpay_onboarding_stage';
 
     const EMERCHANTPAY_ONBOARDING_PROD_JOB_NAME = 'emerchantpay_onboarding_prod';
+
+    const INDUS_IND_DEBIT_EMI_FILE_JOB_NAME = 'indusind_debit_emi_push';
+
 }

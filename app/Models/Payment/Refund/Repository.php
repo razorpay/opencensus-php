@@ -1003,4 +1003,46 @@ class Repository extends Base\Repository
 
         return $payment;
     }
+
+    public function fetchDebitEmiRefundsWithRelationsBetween($from, $to, $bank, $gateway)
+    {
+        $tRepo = $this->repo->terminal;
+
+        $paymentRepo = $this->repo->payment;
+
+        $tTableName = $tRepo->getTableName();
+
+        $pTableName = $paymentRepo->getTableName();
+
+        $terminalEmi = $tRepo->dbColumn(Terminal\Entity::EMI);
+
+        $paymentId = $paymentRepo->dbColumn(Payment\Entity::ID);
+
+        $paymentTerminalId = $paymentRepo->dbColumn(Payment\Entity::TERMINAL_ID);
+
+        $terminalGateway = $tRepo->dbColumn(Terminal\Entity::GATEWAY);
+
+        $refundData = $this->dbColumn('*');
+
+        $terminalId = $tRepo->dbColumn(Terminal\Entity::ID);
+
+        $paymentStatus = $paymentRepo->dbColumn(Payment\Entity::STATUS);
+
+        $paymentBank = $paymentRepo->dbColumn(Payment\Entity::BANK);
+        $paymentMethod = $paymentRepo->dbColumn(Payment\Entity::METHOD);
+        $refundCreatedAt = $this->dbColumn(Entity::CREATED_AT);
+
+        return $this->newQuery()
+            ->join($pTableName, $paymentId, '=', Refund\Entity::PAYMENT_ID)
+            ->join($tTableName, $paymentTerminalId, '=', $terminalId)
+            ->whereBetween($refundCreatedAt, [$from, $to])
+            ->where($paymentStatus, '=', Payment\Status::REFUNDED)
+            ->where($paymentBank, '=', $bank)
+            ->where($paymentMethod, '=', Payment\Method::EMI)
+            ->where($terminalGateway, '=', $gateway)
+            ->where($terminalEmi, '=', true)
+            ->with('payment', 'payment.card.globalCard', 'payment.emiPlan', 'payment.merchant')
+            ->select($refundData)
+            ->get();
+    }
 }

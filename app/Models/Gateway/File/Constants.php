@@ -73,6 +73,7 @@ class Constants
     const KARB             = 'karb';
     const HDFC_CORP        = 'hdfc_corp';
     const UJVN             = 'ujjivan';
+    const INDUS_IND_DEBIT  = 'indusind_debit';
 
     const AXIS_V2             = 'axis_v2';
 
@@ -119,6 +120,7 @@ class Constants
         Type::CLAIM => [
         ],
         Type::EMI => [
+            self::INDUS_IND_DEBIT,
             self::INDUSIND,
             self::KOTAK,
             self::AXIS,
@@ -179,6 +181,7 @@ class Constants
             self::DBS,
             self::HDFC_CORP,
             self::UJVN,
+            self::INDUS_IND_DEBIT,
         ],
         Type::CARDSETTLEMENT => [
             self::AXIS

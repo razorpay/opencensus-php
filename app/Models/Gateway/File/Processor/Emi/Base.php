@@ -283,4 +283,28 @@ class Base extends BaseProcessor
 
         return (floor($num / $den));
     }
+
+    protected function fetchCPSAuthorizationData($data, $fieldsToBeFetched)
+    {
+        $paymentIds = array();
+
+        foreach ($data['items'] as $entity)
+        {
+            if($entity->getEntity() === 'payment')
+            {
+                $paymentIds[] = $entity->getId();
+            }
+            else
+            {
+                $paymentIds[] = $entity->getPaymentId();
+            }
+        }
+
+        $request = [
+            'fields'      => $fieldsToBeFetched,
+            'payment_ids' => $paymentIds,
+        ];
+
+        return $this->app['card.payments']->fetchAuthorizationData($request);
+    }
 }

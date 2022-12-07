@@ -3362,4 +3362,34 @@ EOT;
             ->limit(5);
     }
 
+    public function fetchDebitEmiPaymentsWithRelationsBetween($from, $to, $bank,$gateway)
+    {
+        $tRepo = $this->repo->terminal;
+
+        $tTableName = $tRepo->getTableName();
+
+        $terminalEmi = $tRepo->dbColumn(Terminal\Entity::EMI);
+
+        $paymentTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
+
+        $terminalGateway = $tRepo->dbColumn(Terminal\Entity::GATEWAY);
+
+        $paymentData = $this->dbColumn('*');
+
+        $terminalId = $tRepo->dbColumn(Terminal\Entity::ID);
+
+        $paymentStatus = $this->dbColumn(Entity::STATUS);
+
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+            ->join($tTableName, $paymentTerminalId, '=', $terminalId)
+            ->whereBetween(Entity::AUTHORIZED_AT, [$from, $to])
+            ->whereIn($paymentStatus, [Status::CAPTURED, Status::REFUNDED, Status::AUTHORIZED])
+            ->where(Entity::BANK, '=', $bank)
+            ->where(Entity::METHOD, '=', Method::EMI)
+            ->where($terminalGateway, '=', $gateway)
+            ->where($terminalEmi, '=', true)
+            ->with('card.globalCard', 'emiPlan', 'merchant', 'terminal')
+            ->select($paymentData)
+            ->get();
+    }
 }
