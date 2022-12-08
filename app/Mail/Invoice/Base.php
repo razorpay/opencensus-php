@@ -184,20 +184,16 @@ class Base extends Mailable
         {
             $template = $this->getPpMailSubject();
 
+            $template = str_replace('%', '%%', $template);
+
             $args = [];
 
-            app('trace')->info(TraceCode::PAYMENT_PAGE_EMAIL_SUBJECT_SET_UP, []);
+            app('trace')->info(TraceCode::PAYMENT_PAGE_SUBJECT_CREATION_FOR_INVOICE, [
+                "template"      => $template,
+                "args"          => $args,
+            ]);
+
         }
-
-        app('trace')->info(TraceCode::PAYMENT_PAGE_SUBJECT_CREATION_FOR_INVOICE, [
-            "template"      => $template,
-            "args"          => $args,
-            "type"          => $type,
-            "entity_type"   => array_get($this->data, "invoice.entity_type"),
-            "receipt"       => array_get($this->data, "invoice.receipt"),
-        ]);
-
-
 
         return sprintf($template, ...$args);
     }
