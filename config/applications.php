@@ -1506,4 +1506,10 @@ return [
         'api_key'   => env('SIMILARWEB_API_KEY')
     ],
 
+    'wda' => [
+        'username' => env('TIDB_WDA_USERNAME'),
+        'password' => env('TIDB_WDA_PASSWORD'),
+        'base_uri' => env('TIDB_WDA_BASE_URL')
+    ],
+
 ];

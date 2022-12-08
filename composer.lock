@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f7ed32d3e2c20f219a366d1ad1055b0d",
+    "content-hash": "1450f4500701e85223c9b4bc194f5937",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -11518,6 +11518,58 @@
                 }
             ],
             "time": "2017-08-10T18:30:30+00:00"
+        },
+        {
+            "name": "razorpay/wda-php-sdk",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:razorpay/wda-php-sdk.git",
+                "reference": "3f64112298027c88c265b0a9988c39a4dbabdca5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/razorpay/wda-php-sdk/zipball/3f64112298027c88c265b0a9988c39a4dbabdca5",
+                "reference": "3f64112298027c88c265b0a9988c39a4dbabdca5",
+                "shasum": ""
+            },
+            "require": {
+                "google/protobuf": "^3.12",
+                "guzzlehttp/guzzle": "^7.0",
+                "illuminate/support": "^9.0",
+                "php": "^8.1",
+                "php-http/httplug": "^2.0",
+                "phpunit/phpunit": "^9.0",
+                "psr/http-client": "^1.0",
+                "twirp/twirp": "^0.7.0"
+            },
+            "require-dev": {
+                "kint-php/kint": "^3.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Rzp\\Wda_php\\": "src/",
+                    "Rzp\\Wda_php\\Tests\\": "tests/",
+                    "": "generated/proto/"
+                }
+            },
+            "scripts": {
+                "proto-refresh": [
+                    "rm -rf generated/proto",
+                    "scripts/proto-gen.sh"
+                ],
+                "proto-clean": [
+                    "rm -rf generated/proto"
+                ]
+            },
+            "description": "Php sdk of WDA Service",
+            "homepage": "https://github.com/razorpay/wda-php-sdk",
+            "keywords": [
+                "razorpay",
+                "wda-php-sdk"
+            ],
+            "time": "2022-12-06T05:48:28+00:00"
         },
         {
             "name": "react/cache",

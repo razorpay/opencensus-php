@@ -210,6 +210,11 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             return new Mailgun($app);
         });
 
+        $this->app->singleton('wda-client', function($app)
+        {
+            return new WDAService($app);
+        });
+
         $this->app->singleton('instance', function($app)
         {
             return new AwsInstance($app);

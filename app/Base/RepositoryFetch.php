@@ -9,6 +9,7 @@ use RZP\Constants\Es;
 use RZP\Constants\Mode;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant;
+use RZP\Services\WDAService;
 use RZP\Trace\TraceCode;
 use Database\Connection;
 use RZP\Constants\Environment;
@@ -18,9 +19,15 @@ use RZP\Models\Feature\Constants;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Admin\Role\TenantRoles;
+use RZP\Models\Order\Entity as OrderEntity;
 use RZP\Exception\InvalidArgumentException;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Base\Traits\Es\Hydrator as EsHydrator;
 use RZP\Exception\BadRequestValidationFailureException;
+
+use Rzp\Wda_php\Symbol;
+use Rzp\Wda_php\Operator;
+use Rzp\Wda_php\WDAQueryBuilder;
 
 /**
  * Trait RepositoryFetch
@@ -956,7 +963,166 @@ trait RepositoryFetch
 
         $entity = $query->findOrFailPublic($id);
 
+        if($this->checkIfWDARoute($connectionType) === true)
+        {
+            try
+            {
+                $this->trace->info(TraceCode::WDA_SERVICE_REQUEST, [
+                    'id'      => $id,
+                    'method_name'   => __FUNCTION__
+                ]);
+
+                $wdaEntity = $this->findOrFailByPublicIdWithParamsWDAQuery($id, $query);
+
+                $difference = $this->compareWDAEntityAndLogDifference($id, $wdaEntity->toArray(), $entity->toArray(), ['method_name' => __FUNCTION__]);
+
+                if($difference === false)
+                {
+                    $this->trace->info(TraceCode::WDA_SERVICE_RESPONSE, [
+                        'id'      => $id,
+                        'method_name'   => __FUNCTION__
+                    ]);
+
+                    return $wdaEntity;
+                }
+            }
+            catch(\Exception $ex)
+            {
+                $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+                    'wda_exception' => $ex->getMessage(),
+                ]);
+            }
+        }
+
         return $entity;
+    }
+
+    public function checkIfWDARoute(string $connectionType = null) : bool
+    {
+        if(($this->app['api.route']->isWDAServiceRoute() === true) and
+            $connectionType === ConnectionType::DATA_WAREHOUSE_ADMIN and
+            $this->app->runningUnitTests() === false)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function findOrFailByPublicIdWithParamsWDAQuery(string $id, BuilderEx $query) : PublicEntity
+    {
+        $entity = $query->getModel();
+
+        $tableName = $this->getTableName();
+
+        $dbName = $entity->getConnection()->getDatabaseName();
+
+        $wdaClient = $this->app['wda-client']->wdaClient;
+
+        $wdaQueryBuilder = new WDAQueryBuilder();
+
+        $this->app[WDAService::WDA_QUERY_BUILDER] = $wdaQueryBuilder;
+
+        $wdaQueryBuilder->fetch($tableName)
+            ->addQuery($tableName, "*")
+            ->resources($tableName);
+
+        $wdaQueryBuilder->filters($this->getTableName(), "id", [$id], Symbol::EQ)
+            ->cluster(WDAService::ADMIN_CLUSTER);
+
+        $wdaQueryBuilder->namespace($dbName);
+
+        $response = $wdaClient->fetchSingleEntity($wdaQueryBuilder->build());
+
+        $entity->forceFill($response);
+
+        unset($this->app[WDAService::WDA_QUERY_BUILDER]);
+
+        return $entity;
+    }
+
+    public function compareWDAEntityAndLogDifference(string $id, array $wdaResponseArray, array $warmStorageDbResponse, array $extraTrace = [])
+    {
+        //compare WDA and warm Db response
+        $inconsistentParams = [];
+
+        try
+        {
+            if(count($wdaResponseArray) !== count($warmStorageDbResponse))
+            {
+                $inconsistentParams['wda_response_length'] = count($wdaResponseArray);
+                $inconsistentParams['warm_db_response_length'] = count($warmStorageDbResponse);
+            }
+
+            $responseDiff = [];
+
+            foreach ($warmStorageDbResponse as $key => $value)
+            {
+                if($key === PaymentEntity::NOTES or $key === OrderEntity::NOTES)
+                {
+                    if($wdaResponseArray[$key] != $value)
+                    {
+                        $responseDiff[$key] = $value;
+
+                    }
+                    continue;
+                }
+
+                if($key === PaymentEntity::ACQUIRER_DATA)
+                {
+                    // casting this to array as acquirer_data is a spine dictionary object, compare would fail
+
+                    $value = $value->toArray();
+
+                    if( isset($wdaResponseArray[PaymentEntity::ACQUIRER_DATA]))
+                    {
+                        $wdaResponseArray[PaymentEntity::ACQUIRER_DATA] = ($wdaResponseArray[PaymentEntity::ACQUIRER_DATA])->toArray();
+                    }
+                }
+
+                if (is_array($value) === true)
+                {
+                    if ($wdaResponseArray[$key] != $value)
+                    {
+                        $responseDiff[$key] = $value;
+                    }
+
+                    continue;
+                }
+
+                if ((isset($wdaResponseArray[$key]) === true) and ($wdaResponseArray[$key] !== $value))
+                {
+                    $responseDiff[$key] = $value;
+                }
+            }
+
+            if (empty($responseDiff) === false)
+            {
+                $inconsistentParams["different_keys"] = array_keys($responseDiff);
+
+                $this->trace->info(TraceCode::WDA_AND_WARM_DB_INCONSISTENCY, [
+                    'id'          => $id,
+                    'diff'        => $inconsistentParams,
+                    'route_name'  => $this->app['api.route']->getCurrentRouteName(),
+                    'extra_trace' => $extraTrace,
+                ]);
+
+                return true;
+            }
+
+            return false;
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->info(
+                TraceCode::COMPARE_WDA_ERROR,
+                [
+                    'api' => $warmStorageDbResponse,
+                    'wda' => $wdaResponseArray,
+                ]);
+
+            return true;
+        }
     }
 
     public function validateCustom($func, $attribute, $value, $parameters)

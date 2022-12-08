@@ -1914,6 +1914,19 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     protected function setFeeBearerAttribute($feeBearer)
     {
+        //As a part of wda migration some routes are being moving to WDA, We are
+        // using forceFill method on the data array that is fetched from database
+        // to typecast it into Payments Entity. setFeeBearerAttribute expects a string
+        // type value for $feeBearer, but on applying forceFill method on the array,
+        // the value is getting set to a numeric type instead of string. So we are
+        // converting it back to string using getBearerStringForValue method and then
+        // getting the required value.
+
+        if( is_numeric($feeBearer))
+       {
+           $feeBearer = Merchant\FeeBearer::getBearerStringForValue($feeBearer);
+       }
+
         $this->attributes[self::FEE_BEARER] = Merchant\FeeBearer::getValueForBearerString($feeBearer);
     }
 
@@ -5982,4 +5995,5 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         return false;
     }
+
 }

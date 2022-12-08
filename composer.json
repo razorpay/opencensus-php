@@ -91,7 +91,8 @@
         "ext-curl": "*",
         "razorpay/dcs-php-sdk": "dev-php_version_upgrade",
         "razorpay/config-proto": "dev-php_upgrade",
-        "mvanduijker/laravel-transactional-model-events": "^2.3"
+        "mvanduijker/laravel-transactional-model-events": "^2.3",
+        "razorpay/wda-php-sdk": "v1.0.0"
     },
     "repositories": [
         {
@@ -167,6 +168,11 @@
             "type": "vcs",
             "no-api": true,
             "url": "git@github.com:razorpay/TestDummy.git"
+        },
+        {
+            "type": "vcs",
+            "no-api": true,
+            "url": "git@github.com:razorpay/wda-php-sdk.git"
         }
     ],
     "require-dev": {

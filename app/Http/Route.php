@@ -16096,6 +16096,10 @@ class Route
         "pages_robots_txt"
     ];
 
+    public static $fetchFromWDAService = [
+        'admin_fetch_entity_by_id',
+    ];
+
     /**
      * @var Router
      */
@@ -16397,6 +16401,13 @@ class Route
                 }
             }
         }
+    }
+
+    public function isWDAServiceRoute()
+    {
+        $routeName = $this->getCurrentRouteName();
+
+        return (in_array($routeName, self::$fetchFromWDAService) === true);
     }
 
     /**

@@ -8603,6 +8603,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const FAILED_TO_UPDATE_ACTIVATION_STATUS_AFTER_VERFICATION_FAILS = 'FAILED_TO_UPDATE_ACTIVATION_STATUS_AFTER_VERFICATION_FAILS';
 
+    //WDA errors
+    const WDA_SERVICE_REQUEST                            = 'WDA_SERVICE_REQUEST';
+    const WDA_SERVICE_RESPONSE                           = 'WDA_SERVICE_RESPONSE';
+    const WDA_MIGRATION_ERROR                            = 'WDA_MIGRATION_ERROR';
+    const WDA_AND_WARM_DB_INCONSISTENCY                  = 'WDA_AND_WARM_DB_INCONSISTENCY';
+    const COMPARE_WDA_ERROR                              = 'COMPARE_WDA_ERROR';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
