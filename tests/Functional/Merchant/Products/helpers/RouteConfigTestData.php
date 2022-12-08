@@ -187,6 +187,60 @@ return [
             ],
         ],
     ],
+    'testRouteProductConfigWithRouteNoDocEnabledUnregisteredBusiness'    =>  [
+        'request'   =>  [
+            'method'    =>   'POST',
+            'content'   =>  [
+                'product_name'  =>  'route',
+                'tnc_accepted'  =>  true
+            ],
+        ],
+        'response'  =>  [
+            'content'   =>  [
+                "active_configuration" => [
+                    "settlements" => [
+                        "account_number" => null,
+                        "ifsc_code" => null,
+                        "beneficiary_name" => null
+                    ]
+                ],
+                "requirements" => [
+                    [
+                        'field_reference' => 'kyc.pan',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        "field_reference" => "name",
+                        "resolution_url" => "/accounts/{accountId}/stakeholders",
+                        "status" => "required",
+                        "reason_code" => "field_missing",
+                    ],
+                    [
+                        "field_reference" => "settlements.account_number",
+                        "resolution_url" => "/accounts/{accountId}/products/{merchantProductConfigId}",
+                        "reason_code" => "field_missing",
+                        "status" => "required",
+                    ],
+                    [
+                        "field_reference" => "settlements.beneficiary_name",
+                        "resolution_url" => "/accounts/{accountId}/products/{merchantProductConfigId}",
+                        "reason_code" => "field_missing",
+                        "status" => "required",
+                    ],
+                    [
+                        "field_reference" => "settlements.ifsc_code",
+                        "resolution_url" => "/accounts/{accountId}/products/{merchantProductConfigId}",
+                        "reason_code" => "field_missing",
+                        "status" => "required",
+                    ],
+                ],
+                "product_name"          => "route",
+                "activation_status"     =>  'needs_clarification'
+            ],
+        ],
+    ],
     'testUpdateAccountV2'   => [
       'request'     =>  [
           'url'     =>  '/v2/accounts/{accountId}',

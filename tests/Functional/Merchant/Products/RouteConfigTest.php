@@ -247,6 +247,217 @@ class RouteConfigTest extends TestCase
 
     }
 
+    /*
+     *  - this test case validates the following
+     *  1. create a registered linked account via v2 apis
+     *  2. Request route product config with the created LA and assert NC requirements.
+     *  3. Create stakeholder
+     *  4. update the settlement details
+     *  5. all the requirements are fulfilled for registered merchant
+     *  6. trigger mock business pan success BVS response
+     *  7. trigger mock penny testing success BVS response
+     *  8. trigger mock gstin success BVS response
+     *  9. validate that the linked account is activated.
+     */
+
+    public function testRouteProductConfigWithRouteNoDocEnabled()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['marketplace', 'route_no_doc_kyc']);
+
+        $testData = $this->testData['testCreateLinkedAccountWithMarketplaceFeature'];
+
+        $testData['request']['content']['legal_info'] = ['pan'  => 'AAACL1234C'];
+
+        $linkedAccountResponse = $this->runRequestResponseFlow($testData);
+
+        $linkedAccountIdPublic    =   $linkedAccountResponse['id'];
+
+        $linkedAccountId    =   Account\Entity::verifyIdAndSilentlyStripSign($linkedAccountResponse['id']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/' . $linkedAccountIdPublic . '/products';
+
+        $merchantProductResponse = $this->makeRequestAndGetContent($testData['request']);
+
+        $productRequirements = $merchantProductResponse['requirements'];
+
+        $fieldReference = array_column($productRequirements, 'field_reference');
+
+        array_multisort($fieldReference, SORT_ASC, $productRequirements);
+
+        $this->assertArraySelectiveEquals($testData['response']['content']['requirements'], $productRequirements);
+
+        //Update requirements
+
+        $testData = $this->testData['testCreateStakeholder'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $linkedAccountIdPublic . '/stakeholders';
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testUpdateRouteConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $linkedAccountIdPublic . '/products/' . $merchantProductResponse['id'];
+
+        $updateResponse = $this->runRequestResponseFlow($testData);
+
+        $this->mockBVSResponse($linkedAccountId, BvsConstants::BUSINESS_PAN);
+
+        $this->mockBVSResponse($linkedAccountId);
+
+        $this->mockBVSResponse($linkedAccountId, BvsConstants::GSTIN);
+
+        $testData = $this->testData['testFetchRouteConfig'];
+
+        $testData['response']['content'] = [
+            'activation_status' => 'activated',
+            'requirements'      =>  [],
+        ];
+
+        $testData['request']['url'] = '/v2/accounts/' .$linkedAccountIdPublic . '/products/' . $merchantProductResponse['id'];
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testActivateRouteProductForUnregistered()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['marketplace', 'route_no_doc_kyc']);
+
+        $testData = $this->testData['testCreateLinkedAccountWithMarketplaceFeature'];
+
+        $testData['request']['content']['business_type'] = 'individual';
+
+        $linkedAccountResponse = $this->makeRequestAndGetContent($testData['request']);
+
+        $linkedAccountIdPublic    =   $linkedAccountResponse['id'];
+
+        $linkedAccountId    =   Account\Entity::verifyIdAndSilentlyStripSign($linkedAccountResponse['id']);
+
+        $testData = $this->testData['testRouteProductConfigWithRouteNoDocEnabledUnregisteredBusiness'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $linkedAccountIdPublic . '/products';
+
+        $merchantProductResponse = $this->makeRequestAndGetContent($testData['request']);
+
+        $productRequirements = $merchantProductResponse['requirements'];
+
+        $fieldReference = array_column($productRequirements, 'field_reference');
+
+        array_multisort($fieldReference, SORT_ASC, $productRequirements);
+
+        $this->assertArraySelectiveEquals($testData['response']['content']['requirements'], $productRequirements);
+
+        //Update requirements
+
+        $testData = $this->testData['testCreateStakeholder'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $linkedAccountIdPublic . '/stakeholders';
+
+        $testData['request']['content']['kyc'] = ['pan' => 'ALWPG5809L'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testUpdateRouteConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $linkedAccountIdPublic . '/products/' . $merchantProductResponse['id'];
+
+        $updateResponse = $this->runRequestResponseFlow($testData);
+
+        s($updateResponse);
+
+        $this->mockBVSResponse($linkedAccountId, BvsConstants::PERSONAL_PAN);
+
+        sleep(10);
+
+        $this->mockBVSResponse($linkedAccountId);
+
+        sleep(60);
+
+        $testData = $this->testData['testFetchRouteConfig'];
+
+        $testData['response']['content'] = [
+            'activation_status' => 'activated',
+            'requirements'      =>  [],
+        ];
+
+        $testData['request']['url'] = '/v2/accounts/' .$linkedAccountIdPublic . '/products/' . $merchantProductResponse['id'];
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testActivateRouteProductForProprietorship()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['marketplace', 'route_no_doc_kyc']);
+
+        $testData = $this->testData['testCreateLinkedAccountWithMarketplaceFeature'];
+
+        $testData['request']['content']['business_type'] = 'proprietorship';
+
+        $testData['request']['content']['legal_info']   =  ['gst' => '33MRAPS3360N1Z9'];
+
+        $linkedAccountResponse = $this->makeRequestAndGetContent($testData['request']);
+
+        $linkedAccountIdPublic    =   $linkedAccountResponse['id'];
+
+        $linkedAccountId    =   Account\Entity::verifyIdAndSilentlyStripSign($linkedAccountResponse['id']);
+
+        $testData = $this->testData['testRouteProductConfigWithRouteNoDocEnabledUnregisteredBusiness'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $linkedAccountIdPublic . '/products';
+
+        $merchantProductResponse = $this->makeRequestAndGetContent($testData['request']);
+
+        $productRequirements = $merchantProductResponse['requirements'];
+
+        $fieldReference = array_column($productRequirements, 'field_reference');
+
+        array_multisort($fieldReference, SORT_ASC, $productRequirements);
+
+        $this->assertArraySelectiveEquals($testData['response']['content']['requirements'], $productRequirements);
+
+        //Update requirements
+
+        $testData = $this->testData['testCreateStakeholder'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $linkedAccountIdPublic . '/stakeholders';
+
+        $testData['request']['content']['kyc'] = ['pan' => 'ALWPG5809L'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testUpdateRouteConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $linkedAccountIdPublic . '/products/' . $merchantProductResponse['id'];
+
+        $updateResponse = $this->runRequestResponseFlow($testData);
+
+        s($updateResponse);
+
+        $this->mockBVSResponse($linkedAccountId, BvsConstants::PERSONAL_PAN);
+
+        $this->mockBVSResponse($linkedAccountId, BvsConstants::GSTIN, 'failed');
+
+        $this->mockBVSResponse($linkedAccountId);
+
+        $testData = $this->testData['testFetchRouteConfig'];
+
+        $testData['response']['content'] = [
+            'activation_status' => 'activated',
+            'requirements'      =>  [],
+        ];
+
+        $testData['request']['url'] = '/v2/accounts/' .$linkedAccountIdPublic . '/products/' . $merchantProductResponse['id'];
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     protected function validateStorkWebhookFireEvent($testData, $storkPayload, $merchantId, &$eventFired)
     {
         if ($storkPayload['event']['name'] === 'product.route.under_review')
