@@ -203,8 +203,8 @@ class Service extends Base\Service
                     $userFilterValue = $user[$key];
                     foreach ($userFilterValue as $key => $subValue) {
                         $userFilterValue[$key] = (isset($userFilterValue[$key]) &&
-                            isset($userFilterValue[$key]['variables'])) ?
-                            $userFilterValue[$key]['variables']['result'] : [];
+                            isset($userFilterValue[$key]['variables']) && 
+                            isset($userFilterValue[$key]['variables']['result'])) ? $userFilterValue[$key]['variables']['result'] : [];
                     }
                     foreach ($value as $key => $subValue) {
                         if (isset($userFilterValue[$subValue]) === true) {
