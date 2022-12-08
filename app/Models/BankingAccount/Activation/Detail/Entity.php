@@ -132,9 +132,7 @@ class Entity extends Base\PublicEntity
 
     const CALENDLY_SLOT_BOOKING_COMPLETED = 'calendly_slot_booking_completed';
 
-    const COMMENT = 'comment'; //Latest comment. This is to support backward compatibility
-
-    const COMMENTS = 'comments'; //All comments
+    const COMMENT = 'comment'; // Comment added during form filling- added as first comment
 
     // team that is currently assigned to work on this
     const ASSIGNEE_TEAM = 'assignee_team';
@@ -327,7 +325,6 @@ class Entity extends Base\PublicEntity
         self::ASSIGNEE_TEAM,
         self::BOOKING_DATE_AND_TIME,
         self::COMMENT,
-        self::COMMENTS,
         self::RM_NAME,
         self::RM_PHONE_NUMBER,
         self::BANK_POC_USER_ID,
@@ -397,7 +394,6 @@ class Entity extends Base\PublicEntity
         self::APPLICATION_TYPE,
         self::BUSINESS_PAN_VALIDATION,
         self::COMMENT,
-        self::COMMENTS,
         self::RM_NAME,
         self::RM_PHONE_NUMBER,
         self::BANK_POC_USER_ID,
@@ -449,7 +445,6 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_ACTIVATION_TAT,
         self::UPI_ACTIVATION_COMPLETION_DATE,
         self::UPI_ACTIVATION_TAT,
-        self::COMMENTS,
     ];
 
     protected $dates = [
@@ -597,27 +592,6 @@ class Entity extends Base\PublicEntity
         }
 
         return '';
-    }
-
-    public function setPublicCommentsAttribute(array &$array)
-    {
-        $bankingAccountID = $this->getBankingAccountId();
-
-        if (app('basicauth')->isAdminAuth() === true)
-        {
-            $bankingAccountComment = (new \RZP\Models\BankingAccount\Activation\Comment\Repository())->fetchComments($bankingAccountID);
-        } else
-        {
-            $bankingAccountComment = (new \RZP\Models\BankingAccount\Activation\Comment\Repository())->fetchComments($bankingAccountID, 'external');
-        }
-
-        // First comment on lead is saved as internal comment. TBD: Understand why it needs to be internal comment.
-        // If there are no other external comment, we have to return the first comment
-        if (is_null($bankingAccountComment) === false)
-        {
-            $array[self::COMMENTS] = $bankingAccountComment->toArrayCaPartnerBankPoc();
-        }
-        return $bankingAccountComment;
     }
 
     public function getBankPOCUser()
