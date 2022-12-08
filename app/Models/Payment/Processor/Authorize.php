@@ -5380,25 +5380,24 @@ trait Authorize
             // second 2FA (change card). In the subsequent charges flow,
             // app_token won't be present anyway, since it's internal.
             //
+            
+            if ($this->subscription->isGlobal() === true)
+            {
+                $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
 
-//            Todo: These changes need to be reverted along with the fix for international card change flow
-//            if ($this->subscription->isGlobal() === true)
-//            {
-//                $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
-//
-//                if (($cardChange === true) and
-//                    (empty($input[Payment\Entity::APP_TOKEN]) === true) and
-//                    ($input[Payment\Entity::METHOD] !== 'upi'))
-//                {
-//                    throw new Exception\BadRequestException(
-//                        ErrorCode::BAD_REQUEST_APP_TOKEN_ABSENT,
-//                        null,
-//                        [
-//                            'subscription_id' => $this->subscription->getId(),
-//                            'global' => true,
-//                        ]);
-//                }
-//            }
+                if (($cardChange === true) and
+                    (empty($input[Payment\Entity::APP_TOKEN]) === true) and
+                    ($input[Payment\Entity::METHOD] !== 'upi'))
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_APP_TOKEN_ABSENT,
+                        null,
+                        [
+                            'subscription_id' => $this->subscription->getId(),
+                            'global' => true,
+                        ]);
+                }
+            }
 
             $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($this->subscription->getCustomerId());
         }
