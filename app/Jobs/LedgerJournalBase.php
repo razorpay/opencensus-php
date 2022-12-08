@@ -121,7 +121,8 @@ class LedgerJournalBase extends Job
                     break;
 
                 case Entity::PAYOUT :
-                    if ($transactorEvent === Ledger\Payout::PAYOUT_INITIATED)
+                    // process only for payout initiated cases, and skip payout failed
+                    if (strpos($transactorEvent, Ledger\Payout::PAYOUT_INITIATED) !== false)
                     {
                         $response = (new PayoutCore)
                             ->createTransactionInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
@@ -141,7 +142,7 @@ class LedgerJournalBase extends Job
                     break;
 
                 case Entity::FUND_ACCOUNT_VALIDATION :
-                    if ($transactorEvent === Ledger\FundAccountValidation::FAV_INITIATED) {
+                    if (strpos($transactorEvent, Ledger\FundAccountValidation::FAV_INITIATED) !== false) {
                         $response = (new FavCore)
                             ->createTransactionInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
                     }
