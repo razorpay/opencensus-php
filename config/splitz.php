@@ -226,5 +226,8 @@ return [
 
         // get ticket api migrated to care service
         'GET_TICKET_MIGRATION' => env('GET_TICKET_MIGRATION', ''),
+        
+        // disable ticket creation for international activation
+        'DISABLE_INTERNATIONAL_ACTIVATION' => env('DISABLE_INTERNATIONAL_ACTIVATION', '')
     ]
 ];

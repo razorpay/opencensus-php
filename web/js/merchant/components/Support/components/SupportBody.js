@@ -576,6 +576,8 @@ class SupportBody extends Component {
               name: user.name,
               id: user.id,
               contact_mobile: user?.user?.contact_mobile,
+              business_type: user?.business_type,
+              business_website: user?.business_website,
             }}
             isOpened={isOpened || shouldOpenRaiseAQueryOnMount}
             isWebView={isWebView}
@@ -593,6 +595,8 @@ class SupportBody extends Component {
                 id: user.id,
                 contact_mobile: user?.user?.contact_mobile,
                 splitzExperiments: user?.splitz_experiments,
+                business_type: user?.business_type,
+                business_website: user?.business_website,
               }}
               track={this.handleCareAnalytics}
               // removing hash to support frontend care package

@@ -454,4 +454,10 @@ export default {
     // prod
     'KoBZA5MpwqlYfD',
   ],
+  disable_international_activation: [
+    // beta
+    'KoAfm6A0cGXEE2',
+    // prod
+    'KoBK1DaiY2K5B3',
+  ],
 };
