@@ -115,6 +115,11 @@ class Service extends Base\Service
 
     public function checkForPlugin($merchantId, $businessWebsite)
     {
+        if(empty($businessWebsite) === true)
+        {
+            return;
+        }
+
         $pluginType = (new WhatCmsService())->checkForPluginType($merchantId, $businessWebsite);
 
         $businessDetailsInput[BusinessDetailEntity::PLUGIN_DETAILS] = [

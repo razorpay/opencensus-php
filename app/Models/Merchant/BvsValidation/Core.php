@@ -606,6 +606,13 @@ class Core extends Base\Core
 
             $merchantDetail = $this->repo->merchant_consents->getConsentDetailsForRequestId($id, $consentFor);
 
+            //This case will only exists when consent details are present for pre-sign up flow. This code will have no
+            // impact on PG consents. This is a temporary fix and the permanent fix will be added by X team.
+            if (empty($merchantDetail) === true)
+            {
+                return;
+            }
+
             $input = [
                 'status'     => $status,
                 'updated_at' => Carbon::now()->getTimestamp()
@@ -617,7 +624,7 @@ class Core extends Base\Core
 
                 $this->repo->merchant_consents->saveOrFail($merchantDetail);
             }
-            catch (LogicException $e)
+            catch (\Throwable $e)
             {
                 throw new LogicException($e->getMessage(), $e->getCode());
             }
@@ -634,6 +641,5 @@ class Core extends Base\Core
             }
         }
 
-        return ['success' => true];
     }
 }

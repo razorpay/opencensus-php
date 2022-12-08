@@ -5145,6 +5145,33 @@ class ActivationTest extends OAuthTestCase
         $this->assertEquals('failed', $consentDetail['status']);
     }
 
+    public function testKafkaResponseForMerchantConsentDetailNotpresent()
+    {
+        Config::set('services.bvs.mock', true);
+
+        $this->fixtures->create('merchant_consents');
+
+        $kafkaEventPayload = [
+            'data' => [
+                'id'=> 'KdRvpX1ffYF98G',
+                'status' => "success",
+                'documents_details' => [
+                    [
+                        'type' => 'Terms and Conditions',
+                        'acceptance_timestamp' => "1651060634",
+                        'status' => "success"
+                    ]
+                ]
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('api-bvs-legal-document-result-events', $kafkaEventPayload, 'test');
+
+        $consentDetail = $this->getDbLastEntity('merchant_consents', 'test');
+
+        $this->assertEquals('failed', $consentDetail['status']);
+    }
+
     public function testSubmitPartnerKycFromMerchantKycFormForRiskyMerchant()
     {
         $merchantId = '1cXSLlUU8V9sXl';

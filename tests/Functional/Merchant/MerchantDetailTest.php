@@ -8186,4 +8186,18 @@ We look forward to transacting with you!
 
         $this->fixtures->on('live')->edit('merchant', $merchantId, ['website' => $website]);
     }
+
+    public function testMerchantWebsitePluginResultForEmptyWebsite()
+    {
+        $kafkaEventPayload = [
+            'merchant_id'=>'10000000000000',
+            'website_url'=>''
+        ];
+
+        (new KafkaMessageProcessor)->process('merchant-website-info-result', $kafkaEventPayload, 'live');
+
+        $businessDetail = $this->getDbLastEntity('merchant_business_detail', 'live');
+
+        $this->assertNull($businessDetail);
+    }
 }
