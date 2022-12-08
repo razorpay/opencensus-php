@@ -670,6 +670,7 @@ export default class Content extends Component {
             additionalCondition={getIsPayrollWidgetEnabled}
           />
           <Route exact path="/" component={HandleIndex} />
+          <Route path="*" component={HandleIndex} />
         </Switch>
       </Suspense>
     );
