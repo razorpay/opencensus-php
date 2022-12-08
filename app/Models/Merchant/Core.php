@@ -6479,6 +6479,7 @@ class Core extends Base\Core
             {
                 return true;
             }
+            return false;
         }
 
         // if kyc is handled my partner then don't do auto kyc
