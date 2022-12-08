@@ -275,6 +275,8 @@ class Service extends Base\Service
     {
         $input = FundAccountHelper::getFundAccountInput($item, $contact);
 
+        (new OrderService())->updateIfscIfRequired($input);
+
         (new Validator)->setStrictFalse()->validateInput(Validator::BEFORE_CREATE, $input);
 
         $fundAccount = $this->core->create($input, $this->merchant, $contact, $createDuplicate, $batchId);

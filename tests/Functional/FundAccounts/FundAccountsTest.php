@@ -1102,6 +1102,19 @@ class FundAccountsTest extends TestCase
         $this->startTest();
     }
 
+    public function testBulkFundAccountWithOldIfsc()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
     public function testBulkFundAccountForMerchantBehindRazorx()
     {
         $this->ba->batchAuth();
