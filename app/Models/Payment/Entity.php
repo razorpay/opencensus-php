@@ -3806,6 +3806,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $app = \App::getFacadeRoot();
 
         $internalErrorCode = $this->getInternalErrorCode();
+        if ($internalErrorCode === null)
+        {
+            return;
+        }
 
         $method = $this->getMethod();
 

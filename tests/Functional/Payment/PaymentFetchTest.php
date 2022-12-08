@@ -1007,11 +1007,11 @@ class PaymentFetchTest extends TestCase
 
         $paymentFetchResponse = $this->fetchPayment($paymentId);
 
-        $this->assertArrayHasKey('error_source', $paymentFetchResponse);
+        $this->assertArrayNotHasKey('error_source', $paymentFetchResponse);
 
-        $this->assertArrayHasKey('error_step', $paymentFetchResponse);
+        $this->assertArrayNotHasKey('error_step', $paymentFetchResponse);
 
-        $this->assertArrayHasKey('error_reason', $paymentFetchResponse);
+        $this->assertArrayNotHasKey('error_reason', $paymentFetchResponse);
     }
 
     public function testFetchPaymentAuthRefNumber()
