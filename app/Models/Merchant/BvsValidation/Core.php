@@ -600,16 +600,25 @@ class Core extends Base\Core
         {
             //To make this code extensible, prefix can be replaced with a check on new legal doc column in
             // merchant consents table
-            $consentFor = "L2_" . $documentDetail['type'];
-
             $status = $documentDetail['status'];
 
+            $consentFor = "L2_" . $documentDetail['type'];
+
+            $consentForX = "X_" . $documentDetail['type'];
+
+            // Both PG & X consents won't be stored with the same request_id
+            // So, if one is not present, check for the other.
             $merchantDetail = $this->repo->merchant_consents->getConsentDetailsForRequestId($id, $consentFor);
 
-            //This case will only exists when consent details are present for pre-sign up flow. This code will have no
-            // impact on PG consents. This is a temporary fix and the permanent fix will be added by X team.
             if (empty($merchantDetail) === true)
             {
+                // PG consents are not present. This means, consents are stored for X
+                $merchantDetail = $this->repo->merchant_consents->getConsentDetailsForRequestId($id, $consentForX);
+            }
+
+            if (empty($merchantDetail) === true)
+            {
+                // Safety check: If merchant details are still null, return at this point
                 return;
             }
 

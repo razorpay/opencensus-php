@@ -99,7 +99,7 @@ class Core extends Base\Core
     }
 
     /**
-     * @throws \Throwable
+     * @throws LogicException
      */
     public function retryStoreLegalDocuments()
     {
@@ -112,7 +112,12 @@ class Core extends Base\Core
             Constants::VALID_LEGAL_DOC,
             Carbon::now()->subDays(Constants::DEFAULT_LAST_CRON_SUB_DAYS)->getTimestamp());
 
-        if (empty($merchantIdList) === true)
+
+        $merchantIdListForX = $this->repo->merchant_consents->getUniqueMerchantIdsWithConsentsNotSuccess(
+            Constants::VALID_LEGAL_DOC_FOR_X,
+            Carbon::now()->subDays(Constants::DEFAULT_LAST_CRON_SUB_DAYS)->getTimestamp());
+
+        if (empty($merchantIdList) === true && empty($merchantIdListForX) === true)
         {
             $this->trace->info(TraceCode::CRON_ATTEMPT_SKIPPED, [
                 'type'   => 'retry Store Legal Documents cron',
@@ -123,6 +128,16 @@ class Core extends Base\Core
             return;
         }
 
+        $this->processRetryStoreLegalDocuments($merchantIdList);
+
+        $this->processRetryStoreLegalDocuments($merchantIdListForX, Constants::RX);
+    }
+
+    /**
+     * @throws LogicException
+     */
+    public function processRetryStoreLegalDocuments(array $merchantIdList, string $platform = Constants::PG)
+    {
         foreach ($merchantIdList as $merchantId)
         {
             $this->merchant = $this->repo->merchant->findOrFail($merchantId);
@@ -135,7 +150,7 @@ class Core extends Base\Core
 
             $processor = (new Factory())->getLegalDocumentProcessor();
 
-            $response = $processor->processLegalDocuments($documents_detail);
+            $response = $processor->processLegalDocuments($documents_detail, $platform);
 
             $responseData = $response->getResponseData();
 

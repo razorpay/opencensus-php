@@ -4186,11 +4186,52 @@ class ActivationTest extends OAuthTestCase
 
     }
 
+    public function testStoreLegalDocumentsRetryCronSuccessForX()
+    {
+
+        $this->fixtures->create('merchant_consents', [
+            'id'            => 'KdSCny9TA9OrmL',
+            'status'        => 'success',
+            'consent_for'   => 'X_Terms and Conditions'
+        ]);
+
+        $this->ba->cronAuth();
+
+        $testData = $this->testData['testStoreLegalDocumentsRetryCron'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $merchantConsent = $this->getLastEntity('merchant_consents', true);
+
+        $this->assertEquals('success', $merchantConsent['status']);
+
+    }
+
     public function testStoreLegalDocumentsRetryCountExceeded()
     {
 
         $this->fixtures->create('merchant_consents', [
             'retry_count' => '3'
+        ]);
+
+        $this->ba->cronAuth();
+
+        $testData = $this->testData['testStoreLegalDocumentsRetryCron'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $merchantConsent = $this->getLastEntity('merchant_consents', true);
+
+        $this->assertEquals('failed', $merchantConsent['status']);
+
+    }
+
+    public function testStoreLegalDocumentsRetryCountExceededForX()
+    {
+        $this->fixtures->create('merchant_consents', [
+            'id'            => 'KdSCny9TA9OrmL',
+            'retry_count'   => '3',
+            'consent_for'   => 'X_Terms and Conditions'
         ]);
 
         $this->ba->cronAuth();
@@ -5095,7 +5136,7 @@ class ActivationTest extends OAuthTestCase
     {
         Config::set('services.bvs.mock', true);
 
-        $this->fixtures->create('merchant_consents');
+        $merchantConsent = $this->fixtures->create('merchant_consents');
 
         $kafkaEventPayload = [
             'data' => [
@@ -5116,13 +5157,25 @@ class ActivationTest extends OAuthTestCase
         $consentDetail = $this->getDbLastEntity('merchant_consents', 'test');
 
         $this->assertEquals('success', $consentDetail['status']);
+
+        // test for X consents
+        $this->fixtures->edit('merchant_consents', $merchantConsent->getId(), [
+            'consent_for' => 'X_Terms and Conditions',
+            'status' => 'failed'
+        ]);
+
+        (new KafkaMessageProcessor)->process('api-bvs-legal-document-result-events', $kafkaEventPayload, 'test');
+
+        $consentDetail = $this->getDbLastEntity('merchant_consents', 'test');
+
+        $this->assertEquals('success', $consentDetail['status']);
     }
 
     public function testKafkaFailureForLegalDocument()
     {
         Config::set('services.bvs.mock', true);
 
-        $this->fixtures->create('merchant_consents');
+        $merchantConsent = $this->fixtures->create('merchant_consents');
 
         $kafkaEventPayload = [
             'data' => [
@@ -5137,6 +5190,18 @@ class ActivationTest extends OAuthTestCase
                 ]
             ]
         ];
+
+        (new KafkaMessageProcessor)->process('api-bvs-legal-document-result-events', $kafkaEventPayload, 'test');
+
+        $consentDetail = $this->getDbLastEntity('merchant_consents', 'test');
+
+        $this->assertEquals('failed', $consentDetail['status']);
+
+        // test for X consents
+        $this->fixtures->edit('merchant_consents', $merchantConsent->getId(), [
+            'consent_for' => 'X_Terms and Conditions',
+            'status' => 'failed'
+        ]);
 
         (new KafkaMessageProcessor)->process('api-bvs-legal-document-result-events', $kafkaEventPayload, 'test');
 
