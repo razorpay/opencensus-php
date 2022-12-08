@@ -242,6 +242,13 @@ class LedgerController extends Controller
         return ApiResponse::json($response['body'], $response['code']);
     }
 
+    public function fetchAccountsByEntitiesAndMerchantID()
+    {
+        $response = $this->app['ledger']->fetchAccountsByEntitiesAndMerchantID($this->input, $this->headers, true);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
     public function deleteMerchants()
     {
         $this->addHeaders();

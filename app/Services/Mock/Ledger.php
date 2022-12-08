@@ -229,6 +229,40 @@ class Ledger extends BaseLedger
      *
      * @return array
      */
+    public function fetchAccountsByEntitiesAndMerchantID($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
+    {
+        $response =  [
+            "accounts"  => [
+                [
+                    "id"                => "sampleAccountID",
+                    "name"              => "test name",
+                    "status"            => "ACTIVATED",
+                    "balance"           => "10000.000000",
+                    "min_balance"       => "0.000000",
+                    "merchant_id"       => "sampleMerchant",
+                    "created_at"        => "1634027277",
+                    "updated_at"        => "1634027277",
+                    "entities"          => [
+                        "account_type"      => ["payable"],
+                        "fund_account_type" => ["merchant_balance"]
+                    ]
+                ]
+            ]
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $response
+        ];
+    }
+
+    /**
+     * @param      $requestBody
+     * @param      $requestHeaders
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     */
     public function updateAccount($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $response =  [

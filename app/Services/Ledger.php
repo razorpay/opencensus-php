@@ -76,29 +76,30 @@ class Ledger
     const BANKING_ACCOUNT_STMT_DETAIL_ID = 'banking_account_stmt_detail_id';
 
     const URLS = [
-        'create'                            => 'Create',
-        'createOnEvent'                     => 'CreateOnEvent',
-        'createInBulk'                      => 'CreateInBulk',
-        'activate'                          => 'Activate',
-        'deactivate'                        => 'Deactivate',
-        'archive'                           => 'Archive',
-        'update'                            => 'Update',
-        'delete'                            => 'Delete',
-        'request'                           => 'Request',
-        'fetch'                             => 'Fetch',
-        'fetchMultiple'                     => 'FetchMultiple',
-        'fetchFilter'                       => 'FetchFilter',
-        'fetchAccountFormFieldOptions'      => 'FetchAccountFormFieldOptions',
-        'fetchJournalFormFieldOptions'      => 'FetchJournalFormFieldOptions',
-        'replayJournalRejectedEvents'       => 'ReplayJournalRejectedEvents',
-        'fetchLedgerConfigFormFieldOptions' => 'FetchLedgerConfigFormFieldOptions',
-        'fetchAccountTypes'                 => 'FetchAccountTypes',
-        'fetchMerchantLedgerEntryByID'      => 'FetchMerchantLedgerEntryByID',
-        'deleteMerchants'                   => 'DeleteMerchants',
-        'fetchMerchantAccounts'             => 'FetchMerchantAccounts',
-        'fetchByTransactor'                 => 'FetchByTransactor',
-        'fetchById'                         => 'FetchById',
-        'updateAccountByEntitiesAndMerchantID' => 'UpdateByEntitiesAndMerchantID'
+        'create'                                => 'Create',
+        'createOnEvent'                         => 'CreateOnEvent',
+        'createInBulk'                          => 'CreateInBulk',
+        'activate'                              => 'Activate',
+        'deactivate'                            => 'Deactivate',
+        'archive'                               => 'Archive',
+        'update'                                => 'Update',
+        'delete'                                => 'Delete',
+        'request'                               => 'Request',
+        'fetch'                                 => 'Fetch',
+        'fetchMultiple'                         => 'FetchMultiple',
+        'fetchFilter'                           => 'FetchFilter',
+        'fetchAccountFormFieldOptions'          => 'FetchAccountFormFieldOptions',
+        'fetchJournalFormFieldOptions'          => 'FetchJournalFormFieldOptions',
+        'replayJournalRejectedEvents'           => 'ReplayJournalRejectedEvents',
+        'fetchLedgerConfigFormFieldOptions'     => 'FetchLedgerConfigFormFieldOptions',
+        'fetchAccountTypes'                     => 'FetchAccountTypes',
+        'fetchMerchantLedgerEntryByID'          => 'FetchMerchantLedgerEntryByID',
+        'deleteMerchants'                       => 'DeleteMerchants',
+        'fetchMerchantAccounts'                 => 'FetchMerchantAccounts',
+        'fetchByTransactor'                     => 'FetchByTransactor',
+        'fetchById'                             => 'FetchById',
+        'fetchByEntitiesAndMerchantID'          => 'FetchByEntitiesAndMerchantID',
+        'updateAccountByEntitiesAndMerchantID'  => 'UpdateByEntitiesAndMerchantID'
     ];
 
     // Headers
@@ -560,6 +561,20 @@ class Ledger
     public function fetchMerchantAccounts($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::DashboardURL . '/' . self::URLS['fetchMerchantAccounts'],
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param      $requestBody
+     * @param      $requestHeaders
+     * @param bool $throwExceptionOnFailure
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function fetchAccountsByEntitiesAndMerchantID($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::AccountBaseURL . '/' . self::URLS['fetchByEntitiesAndMerchantID'],
             Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
