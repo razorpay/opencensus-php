@@ -4405,7 +4405,7 @@ class Gateway
         return (in_array($gateway, $gateways, true));
     }
 
-    public static function gatewaysAlwaysRoutedThroughNbplusService($gateway, $bankCode, $payment = null): bool
+    public static function gatewaysAlwaysRoutedThroughNbplusService($gateway, $bankCode, $method, $payment = null): bool
     {
         $gateways = [
             self::NETBANKING_SVC,
@@ -4484,10 +4484,27 @@ class Gateway
 
             $gateway = $payment->getWallet();
 
-            $isRouted = (in_array($gateway, $gateways, true));
+            return (in_array($gateway, $gateways, true));
         }
 
-        return $isRouted;
+        $gateways = [
+            Method::NETBANKING => [
+                self::ATOM,
+                self::NETBANKING_BOB,
+                self::NETBANKING_IDFC,
+            ],
+            Method::WALLET => [
+                self::WALLET_AMAZONPAY,
+            ]
+        ];
+
+        if ((isset($gateways[$method]) === true) and
+            (in_array($gateway, $gateways[$method], true) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public static function gatewaysPartiallyMigratedToNbPlusWithBankCode($gateway)

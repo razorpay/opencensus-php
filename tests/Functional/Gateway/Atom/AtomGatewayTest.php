@@ -20,6 +20,8 @@ class AtomGatewayTest extends TestCase
         $this->gateway = 'atom';
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_atom_terminal');
+
+        $this->markTestSkipped('this flow is deprecated and is moved to nbplus service');
     }
 
     public function testNetbankingPaymentAuthorize()

@@ -5146,14 +5146,6 @@ class BankTransferTest extends TestCase
 
         $this->fixtures->merchant->disableTPV();
 
-        $gatewayEntity = $this->getLastEntity('atom', true);
-
-        $this->assertArraySelectiveEquals(
-            $this->testData['tpvPaymentNetbankingEntity'], $gatewayEntity);
-
-        $this->assertEquals('00004030403040304',
-                            $gatewayEntity['account_number']);
-
         $order = $this->getLastEntity('order', true);
 
         $this->assertArraySelectiveEquals($data['request']['content'], $order);

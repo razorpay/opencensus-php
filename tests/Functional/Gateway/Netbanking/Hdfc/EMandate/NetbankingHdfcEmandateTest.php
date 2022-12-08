@@ -314,10 +314,6 @@ class NetbankingHdfcEmandateTest extends TestCase
         {
             $fileName = $mail->viewData['signed_url'];
 
-            s($mail->viewData['signed_url']);
-            s($fileName);
-            $fileName = $mail->viewData['signed_url'];
-
             $fileContents = (new Import)->toArray($fileName)[0];
 
             // Assert that the late auth payment actually exists in the file we send

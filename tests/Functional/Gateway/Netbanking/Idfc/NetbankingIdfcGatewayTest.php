@@ -33,6 +33,8 @@ class NetbankingIdfcGatewayTest extends TestCase
         $this->setMockGatewayTrue();
 
         $this->fixtures->create('terminal:shared_netbanking_idfc_terminal');
+
+        $this->markTestSkipped('this flow is deprecated and is moved to nbplus service');
     }
 
     public function testPayment()

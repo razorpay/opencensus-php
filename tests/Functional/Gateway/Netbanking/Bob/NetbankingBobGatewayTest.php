@@ -48,6 +48,8 @@ class NetbankingBobGatewayTest extends TestCase
                 'entity_type'   => 'merchant'
             ]
         );
+
+        $this->markTestSkipped('this flow is deprecated and is moved to nbplus service');
     }
 
     public function testPayment()
@@ -211,7 +213,7 @@ class NetbankingBobGatewayTest extends TestCase
 
         $this->assertTestResponse($gatewayPayment, 'testAuthFailedVerifyFailedEntity');
     }
-    
+
     public function testPaymentFailedVerifyFailedSingleCharResp()
     {
         $this->testAuthorizationFailure();

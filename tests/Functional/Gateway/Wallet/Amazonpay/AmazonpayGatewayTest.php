@@ -47,6 +47,8 @@ class AmazonpayGatewayTest extends TestCase
         $this->payment = $this->getDefaultWalletPaymentArray(Wallet::AMAZONPAY);
 
         $this->ba->publicAuth();
+
+        $this->markTestSkipped('this flow is deprecated and is moved to nbplus service');
     }
 
     // ------------------------------------------------- Merchant test cases -------------------------------------------

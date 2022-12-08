@@ -3113,14 +3113,14 @@ class Processor
 
     protected function handleNbPlusServiceGateways(Payment\Entity $payment, $gatewayInput)
     {
-        if (Payment\Gateway::gatewaysAlwaysRoutedThroughNbplusService($payment->getGateway(), $payment->getBank(), $payment))
+        if (Payment\Gateway::gatewaysAlwaysRoutedThroughNbplusService($payment->getGateway(), $payment->getBank(), $payment->getMethod(), $payment))
         {
             $this->setPaymentService($payment, 'nbplusps');
 
             return;
         }
 
-        if(Payment\Gateway::gatewayMigratedToNbPlusOnMerchantLevel($payment->getGateway()) === true)
+        if (Payment\Gateway::gatewayMigratedToNbPlusOnMerchantLevel($payment->getGateway()) === true)
         {
             $featureFlag = "nb_" . $payment->getGateway() . "_nbplus_merchant_whitelisting";
 
@@ -3140,14 +3140,6 @@ class Processor
             ];
 
             $this->trace->info(TraceCode::CPS_RAZORX_VARIANT, $traceData);
-
-            return;
-        }
-
-        if (($payment->getGateway() === Payment\Gateway::ATOM) and
-            ($payment->terminal->getGatewayMerchantId2() === "v2"))
-        {
-            $this->setPaymentService($payment, 'nbplusps');
 
             return;
         }
@@ -4766,7 +4758,7 @@ class Processor
         else if ($this->isRoutedThroughNbPlusService($action, $gatewayData) === true)
         {
             if (($this->isNbPlusServiceConfigEnabled() === true) or
-                (Payment\Gateway::gatewaysAlwaysRoutedThroughNbplusService($this->payment->getGateway(), $this->payment->getBank(), $this->payment) === true) or
+                (Payment\Gateway::gatewaysAlwaysRoutedThroughNbplusService($this->payment->getGateway(), $this->payment->getBank(), $this->payment->getMethod(), $this->payment) === true) or
                 ($this->payment->getGateway()=== Payment\Gateway::WALLET_PAYPAL))
             {
                 $gatewayData[Payment\Entity::CPS_ROUTE] = Payment\Entity::NB_PLUS_SERVICE;

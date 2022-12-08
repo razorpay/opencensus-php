@@ -1540,7 +1540,7 @@ class GatewayController extends Controller
 
         $bank = $input['bank'] ?? null;
 
-        if (Gateway::gatewaysAlwaysRoutedThroughNbplusService($gatewayName, $bank) === true)
+        if (Gateway::gatewaysAlwaysRoutedThroughNbplusService($gatewayName, $bank, $method) === true)
         {
             $variant = 'nbplusps';
         }

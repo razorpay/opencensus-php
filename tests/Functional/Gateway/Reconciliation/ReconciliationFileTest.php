@@ -1614,6 +1614,8 @@ class ReconciliationFileTest extends TestCase
 
     public function testAtomReconPaymentFile()
     {
+        $this->markTestSkipped('this flow is deprecated and is moved to nbplus service');
+
         $this->fixtures->create('terminal:shared_atom_terminal');
 
         $payment = $this->getDefaultNetbankingPaymentArray();
@@ -1649,6 +1651,8 @@ class ReconciliationFileTest extends TestCase
 
     public function testAtomReconExtraCommaPaymentFile()
     {
+        $this->markTestSkipped('this flow is deprecated and is moved to nbplus service');
+
         $this->fixtures->create('terminal:shared_atom_terminal');
 
         $payment1 = $this->getDefaultNetbankingPaymentArray();
@@ -1716,6 +1720,8 @@ class ReconciliationFileTest extends TestCase
 
     public function testAtomCombinedUniqueEntityRecon()
     {
+        $this->markTestSkipped('this flow is deprecated and is moved to nbplus service');
+
         $this->fixtures->create('terminal:shared_atom_terminal');
 
         $payment = $this->getDefaultNetbankingPaymentArray();
@@ -1785,6 +1791,8 @@ class ReconciliationFileTest extends TestCase
 
     public function testAtomCombinedFileReconViaBatchServiceRoute()
     {
+        $this->markTestSkipped('this flow is deprecated and is moved to nbplus service');
+
         $this->fixtures->create('terminal:shared_atom_terminal');
 
         $payment = $this->getDefaultNetbankingPaymentArray();

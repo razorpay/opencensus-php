@@ -2,11 +2,6 @@
 
 namespace RZP\Tests\Functional\Helpers\Payment;
 
-use Config;
-use Requests;
-use Symfony\Component\DomCrawler\Crawler;
-use RZP\Tests\Functional\TestCase;
-
 trait PaymentAtomTrait
 {
     /**
@@ -15,19 +10,24 @@ trait PaymentAtomTrait
      */
     protected function runPaymentCallbackFlowAtom($response, &$callback = null)
     {
-        $mock = $this->isGatewayMocked();
-
         list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
 
-        if ($mock)
-        {
-            $request = $this->makeFirstGatewayPaymentMockRequest($url, $method, $content);
-        }
-        else
-        {
-            assertTrue (false, 'Mock is not enabled');
-        }
+        $response = $this->mockCallbackFromGateway($url, $method, $content);
 
-        return $this->submitPaymentCallbackRedirect($request);
+        $data = $this->getPaymentJsonFromCallback($response->getContent());
+
+        $response->setContent($data);
+
+        return $response;
+    }
+
+    protected function mockCallbackFromGateway($url, $method = 'get', $content = array())
+    {
+        $request = array(
+            'url' => $url,
+            'method' => strtoupper($method),
+            'content' => $content);
+
+        return $this->makeRequestParent($request);
     }
 }

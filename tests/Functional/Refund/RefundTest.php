@@ -2350,7 +2350,7 @@ class RefundTest extends TestCase
         $this->assertEquals('refund', $bankAccount['type']);
     }
 
-    public function tpvPayment()
+    public function tpvPayment(): array
     {
         $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
 
@@ -2364,7 +2364,7 @@ class RefundTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $order =  $this->runRequestResponseFlow($data);
+        $order = $this->runRequestResponseFlow($data);
 
         $payment['order_id'] = $order['id'];
 
@@ -2383,14 +2383,6 @@ class RefundTest extends TestCase
         $this->assertEquals($payment['terminal_id'], $terminal->getId());
 
         $this->fixtures->merchant->disableTPV();
-
-        $gatewayEntity = $this->getLastEntity('atom', true);
-
-        $this->assertArraySelectiveEquals(
-            $this->testData['tpvPaymentNetbankingEntity'], $gatewayEntity);
-
-        $this->assertEquals('00004030403040304',
-                            $gatewayEntity['account_number']);
 
         $order = $this->getLastEntity('order', true);
 
@@ -2426,11 +2418,6 @@ class RefundTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals($payment['terminal_id'], $terminal->getId());
-
-        $gatewayEntity = $this->getLastEntity('atom', true);
-
-        $this->assertArraySelectiveEquals(
-            $this->testData['nonTpvPaymentNetbankingEntity'], $gatewayEntity);
 
         $order = $this->getLastEntity('order', true);
 
