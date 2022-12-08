@@ -541,7 +541,7 @@ class KeyMetricsContainer extends Component {
     const isInitialLoad = this.state.loading;
 
     const { tabsState, selectedTab } = this.state;
-    const tabState = tabsState[selectedTab];
+    const tabState = { ...tabsState[selectedTab] };
     const { mode, analyticsFetch } = this.props;
 
     const query = this.makeQueryForTab(selectedTab, fetchAllCounts);
@@ -1060,7 +1060,7 @@ class KeyMetricsContainer extends Component {
                   selectedFilters={tabState.selectedFilters}
                   onGroupingChange={this.onGroupingChange}
                   onFilterChange={this.onFilterChange}
-                  data={tabsState[tabName].data}
+                  data={{ ...tabsState[tabName].data }}
                   startDate={startDate}
                   endDate={endDate}
                   lastUpdatedAt={tabsState[tabName].lastUpdatedAt}
