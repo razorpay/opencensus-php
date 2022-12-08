@@ -554,16 +554,6 @@ class Service extends Base\Service
             'shipping_country' => Constants\Country::getCountryNameByCode($countryCode) ?? $countryCode
         ];
 
-        // NOTE: Logging the response to debug an issue where the FE is not receiving data
-        // for analytics
-        $this->trace->info(
-            TraceCode::SHOPIFY_1CC_COMPLETE_ORDER_RESPONSE,
-            [
-                'type'     => 'order_complete_response',
-                'order_id' => $orderId,
-                'response' => $response,
-            ]);
-
         // Do not log PII.
         $response['customer_details'] = $orderArray['customer_details'];
         $response['order_status_url'] = $shopifyOrder['order']['order_status_url'];

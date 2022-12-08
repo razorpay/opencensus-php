@@ -1193,15 +1193,6 @@ class Core extends Base\Core
                 'title' => 'Standard Shipping'
             ]
         ];
-        $this->trace->info(
-            TraceCode::SHOPIFY_1CC_PLACE_ORDER_RES,
-            [
-                'body'                  => $body,
-                'discount_amount_paise' => $discountAmountPaise,
-                'rzp_order'             => $rzpOrder,
-                'payment_method'        => $paymentMethod,
-            ]
-        );
         return $body;
     }
 
