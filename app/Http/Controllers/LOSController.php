@@ -141,6 +141,7 @@ class LOSController extends Controller
         array $headers = [],
         array $options = [])
     {
+        $clientIpAddress = $_SERVER['HTTP_X_IP_ADDRESS'] ?? $this->app['request']->ip();
         $config = config('applications.loan_origination_system');
         $baseUrl = $config['url'];
         $username = $config['username'];
@@ -149,6 +150,7 @@ class LOSController extends Controller
         $headers['Accept']       = 'application/json';
         $headers['Content-Type'] = 'application/json';
         $headers['X-Task-Id'] = $this->app['request']->getTaskId();
+        $headers['X-Client-IP'] = $clientIpAddress;
 
         if (empty(Request::header(RequestHeader::DEV_SERVE_USER)) === false)
         {
