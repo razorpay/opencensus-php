@@ -291,6 +291,18 @@ return [
         ],
     ],
 
+    'testFetchFIRSDocumentsUploadedOnFirstDayOfMonth' => [
+        'request'  => [
+            'url'       => '/merchant/firs?month=%s&year=%s',
+            'method'    => 'GET',
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ],
+    ],
+
     'testDownloadFIRSDocuments' => [
         'request'  => [
             'url'       => '/merchant/firs/content?month=%s&year=%s&document_id=%s',

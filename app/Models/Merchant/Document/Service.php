@@ -318,7 +318,7 @@ class Service extends Base\Service
         $merchantId = $this->merchant->getId();
 
         $from = strtotime($input['month'].'/01/'.$input['year']);
-        $to = strtotime("+1 Month",$from);
+        $to = strtotime("+1 Month",$from)-1;
 
         $documents = $this->repo->merchant_document->findDocumentsForMerchantIdAndDocumentTypeAndDate($merchantId,'firs_file',$from,$to);
 
@@ -389,7 +389,7 @@ class Service extends Base\Service
     protected function downloadZipFIRSFiles(array $input, string $merchantId)
     {
         $from = strtotime($input['month'].'/01/'.$input['year']);
-        $to = strtotime("+1 Month",$from);
+        $to = strtotime("+1 Month",$from) - 1;
 
         $ufhService = $this->app['ufh.service'];
 

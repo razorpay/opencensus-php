@@ -373,7 +373,7 @@ class Service extends Base\Service
     protected function deleteExistingZipFile(string $merchantId, array $part)
     {
         $from = strtotime($part[0].'/01/'.$part[1]);
-        $to = strtotime("+1 Month",$from);
+        $to = strtotime("+1 Month",$from)-1;
 
         $ufhService = $this->app['ufh.service'];
 

@@ -493,6 +493,53 @@ class MerchantDocumentTest Extends TestCase
 
     }
 
+    public function testFetchFIRSDocumentsUploadedOnFirstDayOfMonth()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_file',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' =>  strtotime('02/01/2022'),
+            'file_store_id' => 'DM6dXJfU4WzeAF',
+        ]);
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_file',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' =>  strtotime('02/03/2022'),
+            'file_store_id' => 'DM6dXJfU4WzeAF',
+        ]);
+
+        $requestForFeb = $this->testData[__FUNCTION__]['request'];
+
+        $requestForFeb['url'] = sprintf($requestForFeb['url'], '02','2022');
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $response = $this->sendRequest($requestForFeb);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertCount(2,$content);
+        $this->assertEquals('firs_file',$content[0]['document_type']);
+
+        $requestForJan = $this->testData[__FUNCTION__]['request'];
+
+        $requestForJan['url'] = sprintf($requestForJan['url'], '01','2022');
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $response = $this->sendRequest($requestForJan);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertCount(0,$content);
+        $this->assertEquals(0,count($content));
+
+    }
+
     public function testDownloadFIRSDocuments()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
