@@ -371,10 +371,6 @@ class PaymentPageProcessor extends Job
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException($e, null, null, [
-                'params'    => $this->params->toArray(),
-            ]);
-
             $this->trace->count(PaymentLink\Metric::NOCODE_CUSTOM_URL_CALLS_FAILED_COUNT);
 
             $this->trace->error(TraceCode::NOCODE_CUSTOM_URL_UPSERT_FAILED, $this->params->toArray());
