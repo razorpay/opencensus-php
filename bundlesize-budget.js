@@ -55,4 +55,10 @@ module.exports = [
     limit: '120 KB',
     gzip: true,
   },
+  {
+    name: 'Optimizer Dashboard',
+    path: 'js/merchant/Navigator.*.js',
+    limit: '22 KB',
+    gzip: true,
+  },
 ];
