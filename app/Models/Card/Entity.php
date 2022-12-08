@@ -1500,6 +1500,13 @@ class Entity extends Base\PublicEntity
             $data['expiry_year']  = empty($data['token_expiry_year']) ? $data['expiry_year'] : intval($data ['token_expiry_year']);
             $data['last4']        = empty($data['token_last4']) ? $data['last4'] : $data ['token_last4'];
         }
+
+        // Changes to send the card's last4 instead of tokenlast4 for optimizer 
+        if(($this->merchant->isFeatureEnabled(Feature\Constants::RAAS)) === true)
+        {
+            $data['last4']   = empty($data['last4']) ? $data['token_last4'] : $data ['last4'];
+        }
+
         return $data;
     }
 
