@@ -433,6 +433,8 @@ class PaymentPageProcessor extends Job
                 CDSPlan\Constants::OLD_PLAN_ID  => $oldPlanId
             ]);
         }
+
+        $this->delete();
     }
 
     protected function handleCdsPlansBillingDateUpdate()
@@ -441,9 +443,9 @@ class PaymentPageProcessor extends Job
 
         try
         {
-            (new CDSPlan\Core())->cdsPlansBillingDateUpdate();
+            (new PaymentLink\CustomDomain\Plans\Core())->cdsPlansBillingDateUpdate();
         }
-        catch(\Exception $e)
+        catch(\Throwable $e)
         {
             $this->trace->traceException($e, null, TraceCode::CDS_PLAN_BILLING_DATE_UPDATE_FAILED);
         }
