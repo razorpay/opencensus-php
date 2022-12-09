@@ -51,6 +51,25 @@ class MerchantInvoice extends Job
 
     public function handle()
     {
+        // we are suppressing the "Trying to access array offset on value of type null" because of the
+        // changes in PHP 8.1 which is explicitly throwing error if array is null and we are accessing fields without null check
+        set_error_handler(function($errno, $errstr) {
+            // error was suppressed with the @-operator
+            if (0 === error_reporting()) {
+                return false;
+            }
+
+            // $errstr may need to be escaped:
+            $errstr = htmlspecialchars($errstr);
+
+            if ($errstr === "Trying to access array offset on value of type null") {
+                // log to sumo here, so we can fix over time.
+                return true;
+            }
+
+            return false;
+        }, E_WARNING);
+
         parent::handle();
 
         try {
