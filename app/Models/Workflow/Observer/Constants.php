@@ -27,6 +27,10 @@ class Constants
 
     const MERCHANT_BANK_ACCOUNT_CREATE          = 'merchant_bank_account_create';
 
+    const MERCHANT_ACTIVATION_SAVE              = 'merchant_activation_save';
+
+    const PARTNER_ACTIVATION_STATUS             = 'partner_activation_status';
+
     const MERCHANT_BANK_ACCOUNT_UPDATE          = 'merchant_bank_account_update';
 
     const ADD_ADDITIONAL_WEBSITE_SELF_SERVE     = 'add_additional_website_self_serve';
