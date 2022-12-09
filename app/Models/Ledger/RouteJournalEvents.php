@@ -182,9 +182,13 @@ class RouteJournalEvents extends BaseJournalEvents
         $transferData = [
             Constants::TRANSACTOR_EVENT             => Constants::CUSTOMER_WALLET_LOADING,
             Constants::TRANSACTOR_ID                => $transfer->getPublicId(),
-            Constants::ADDITIONAL_PARAMS            => $additionalParams,
             Constants::MONEY_PARAMS                 => $moneyParams
         ];
+
+        if (isset($additionalParams) === true)
+        {
+            $transferData[Constants::ADDITIONAL_PARAMS] = $additionalParams;
+        }
 
         return array_merge($transactionMessage, $transferData);
     }
