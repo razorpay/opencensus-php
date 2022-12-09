@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unsafe */
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
@@ -28,6 +29,7 @@ import { isOrgFeatureExist } from 'merchant/models/User';
 import lazyLoader from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import PoweredByRzp from 'assets/branding/powered_by_rzp.png';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 const WhatsNew = lazyLoader(() =>
   import(/* webpackChunkName: 'merchantWhatsNew' */ 'common/ui/WhatsNew/Old'),
@@ -196,11 +198,20 @@ class HeaderNav extends Component {
                 {!showMobileNav && (
                   <NavFragment analytics={analytics} {...fragmentSpecificProps} {...commonProps} />
                 )}
-                <GrowthAssetEB>
-                  <ShowWhen additionalCondition={() => user.isProjectNitroEnabled && showMobileNav}>
-                    <OffersForYou showMobileNav={showMobileNav} mtuOfferCount={mtuOfferCount} />
-                  </ShowWhen>
-                </GrowthAssetEB>
+
+                <ShowWhen
+                  additionalCondition={(_user) =>
+                    !_user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Announcements)
+                  }
+                >
+                  <GrowthAssetEB>
+                    <ShowWhen
+                      additionalCondition={() => user.isProjectNitroEnabled && showMobileNav}
+                    >
+                      <OffersForYou showMobileNav={showMobileNav} mtuOfferCount={mtuOfferCount} />
+                    </ShowWhen>
+                  </GrowthAssetEB>
+                </ShowWhen>
 
                 {/* Will uncomment later. Please dont block this from going to prod  */}
                 {!showMobileNav && user.isMobileSignupCareActive && (
@@ -208,8 +219,12 @@ class HeaderNav extends Component {
                     <SupportRequestDropdown showMobileNav={showMobileNav} />
                   </li>
                 )}
+
                 <ShowWhen
-                  additionalCondition={(usr) => usr.isOrgAllowedFunctionality('external_links')}
+                  additionalCondition={(_user) =>
+                    _user.isOrgAllowedFunctionality('external_links') &&
+                    !_user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Announcements)
+                  }
                 >
                   <li id="whats-new-section">
                     <GrowthAssetEB FallbackComponent={ErrorFallbackComponent}>
@@ -242,13 +257,15 @@ class HeaderNav extends Component {
                     <StatusDetails AppMode={mode} showMobileNav={showMobileNav} />
                   </li>
                 )}
+
                 <ShowWhen
-                  additionalCondition={(usr) =>
-                    usr?.isAppSwitcherEnabled &&
-                    usr?.isAccepted &&
-                    !usr?.isOrgAxis &&
-                    !usr?.isOrgKotak &&
-                    !isOrgFeatureExist('hide_razorpay_text_link')
+                  additionalCondition={(_user) =>
+                    _user?.isAppSwitcherEnabled &&
+                    _user?.isAccepted &&
+                    !_user?.isOrgAxis &&
+                    !_user?.isOrgKotak &&
+                    !isOrgFeatureExist('hide_razorpay_text_link') &&
+                    !_user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.AppSwitcher)
                   }
                 >
                   <li id="app-switcher">

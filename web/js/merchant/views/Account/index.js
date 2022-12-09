@@ -18,6 +18,7 @@ import { useState, useEffect } from 'react';
 import getMobileDetect from 'common/utils/mobileDetect';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { fetchMerchantWebsiteDetails } from 'merchant/reducers/websitecompliance';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 const MyAccount = (props) => {
   const [isWebView, setWebView] = useState(false);
@@ -60,14 +61,14 @@ const MyAccount = (props) => {
               additionalCondition={(user) =>
                 user.isWebsiteComplianceFlowEnabled &&
                 websiteSectionDetailsData.data.isWebsiteSectionsApplicable &&
-                !user.findTag('i18_hide_myaccount.website_app_details')
+                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.WebsiteAppDetails)
               }
             >
               <NavLink to="/website-app-details">Website/App details</NavLink>
             </ShowWhen>
             <ShowWhen
               additionalCondition={(user) =>
-                isTrustedBadge && !user.findTag('i18_hide_myaccount.trusted_badge')
+                isTrustedBadge && !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.TrustedBadge)
               }
             >
               <NavLink to="/trustedbadge">Trusted Badge</NavLink>
@@ -75,7 +76,8 @@ const MyAccount = (props) => {
 
             <ShowWhen
               additionalCondition={(user) =>
-                user.isAllowedView('credits') && !user.findTag('i18_hide_myaccount.credits')
+                user.isAllowedView('credits') &&
+                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Credits)
               }
             >
               <NavLink
@@ -90,7 +92,8 @@ const MyAccount = (props) => {
 
             <ShowWhen
               additionalCondition={(user) =>
-                user.isAllowedView('add_funds') && !user.findTag('i18_hide_myaccount.balances')
+                user.isAllowedView('add_funds') &&
+                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Balances)
               }
             >
               <NavLink
@@ -116,7 +119,7 @@ const MyAccount = (props) => {
               additionalCondition={(user) =>
                 user.isFdTicketsEnabled &&
                 !user.isComdelApiEnabled &&
-                !user.findTag('i18_hide_myaccount.support_history')
+                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SupportHistory)
               }
             >
               <NavLink
@@ -138,23 +141,31 @@ const MyAccount = (props) => {
           <ShowWhenRoute
             path="/trustedbadge"
             component={TrustedBadge}
-            additionalCondition={(user) => !user.findTag('i18_hide_myaccount.trusted_badge')}
+            additionalCondition={(user) =>
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.TrustedBadge)
+            }
           />
           <Route path="/profile" component={Profile} />
           <ShowWhenRoute
             path="/website-app-details"
             component={WebsiteAppDetails}
-            additionalCondition={(user) => !user.findTag('i18_hide_myaccount.website_app_details')}
+            additionalCondition={(user) =>
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.WebsiteAppDetails)
+            }
           />
           <ShowWhenRoute
             path="/credits"
             component={Credits}
-            additionalCondition={(user) => !user.findTag('i18_hide_myaccount.credits')}
+            additionalCondition={(user) =>
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Credits)
+            }
           />
           <ShowWhenRoute
             path="/addfunds"
             component={Balances}
-            additionalCondition={(user) => !user.findTag('i18_hide_myaccount.balances')}
+            additionalCondition={(user) =>
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Balances)
+            }
           />
           <Route path="/referrals" component={Referrals} />
           <Route path="/team" component={ManageTeam} />

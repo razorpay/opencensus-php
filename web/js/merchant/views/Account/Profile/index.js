@@ -66,6 +66,7 @@ import {
   trackBankAccountDetailsChange,
 } from 'merchant/views/Account/Profile/components/BankAccountDetailsChangeSteps';
 import moment from 'moment';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 const FIRCSection = lazy(() =>
   import(
@@ -683,7 +684,7 @@ class Profile extends Component {
     const show2FASettings =
       !user?.user?.org_enforced_second_factor_auth &&
       (user?.user?.signup_via_email || user.is2FAMobileSignupEnabled) &&
-      !user.findTag('i18_hide_2fa_verification');
+      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.TwoFactorVerification);
     return (
       <div className="content-wrapper content-sm">
         <div className="profile-container">
@@ -746,7 +747,7 @@ class Profile extends Component {
             additionalCondition={(_user) =>
               _user.isAllowedView('profile_gst') &&
               !_user.isUnregisteredBusiness &&
-              !_user.findTag('i18_hide_gst')
+              !_user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Gst)
             }
           >
             <IntoView hashedWith={[UPDATE_GSTIN, NC_UPDATE_GSTIN, RR_UPDATE_GSTIN]}>
@@ -757,7 +758,7 @@ class Profile extends Component {
             additionalCondition={(_user) =>
               bankAccount &&
               !isOrgFeatureExist('hide_settlement_details') &&
-              !_user.findTag('i18_hide_myaccount.bank_account')
+              !_user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.BankAccount)
             }
           >
             <IntoView hashedWith={[UPDATE_BANK_ACC, NC_UPDATE_BANK_ACC, RR_UPDATE_BANK_ACC]}>
@@ -809,13 +810,19 @@ class Profile extends Component {
 
           <ShowWhen
             additionalCondition={(user) =>
-              !user.findTag('i18_hide_onboarding') && !user.isMerchantRestricted && !hasMerchant
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Onboarding) &&
+              !user.isMerchantRestricted &&
+              !hasMerchant
             }
           >
             <UpgradeMerchantForm />
           </ShowWhen>
 
-          <ShowWhen additionalCondition={(user) => !user.findTag('i18_hide_settlements')}>
+          <ShowWhen
+            additionalCondition={(user) =>
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements)
+            }
+          >
             <IntoView hashedWith={SETTELEMENT_CYCLE}>
               <SettlementDetails />
             </IntoView>

@@ -30,6 +30,7 @@ import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import { isOrgFeatureExist } from 'merchant/models/User';
 // styles
 import './Payments.styl';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 function PaymentDetails(props) {
   const {
@@ -264,7 +265,9 @@ function PaymentDetails(props) {
 
                 <ShowWhen
                   apiFeatureEnabled="Marketplace"
-                  additionalCondition={(usr) => !usr.findTag('i18_hide_payment.transfers')}
+                  additionalCondition={(usr) =>
+                    !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentTransfers)
+                  }
                 >
                   <EntityDetailRow label="Transfer">
                     <PaymentTransfers
@@ -275,7 +278,11 @@ function PaymentDetails(props) {
                   </EntityDetailRow>
                 </ShowWhen>
 
-                <ShowWhen additionalCondition={(usr) => !usr.findTag('i18_hide_refunds')}>
+                <ShowWhen
+                  additionalCondition={(usr) =>
+                    !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
+                  }
+                >
                   {payment.method !== 'cod' && (
                     <EntityDetailRow label="Refunds">
                       <PaymentRefund
@@ -348,7 +355,7 @@ function PaymentDetails(props) {
 
                 <ShowWhen
                   additionalCondition={(currUser) =>
-                    !currUser.findTag('i18_hide_settlements') &&
+                    !currUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements) &&
                     user.isUxRevampPhase2Enabled &&
                     payment.transaction &&
                     (!user.isSingleReconEnabled ||
@@ -378,7 +385,11 @@ function PaymentDetails(props) {
                 </ShowWhen>
                 <EntityDetailRow label="Description">{payment.description}</EntityDetailRow>
 
-                <ShowWhen additionalCondition={(usr) => !usr.findTag('i18_hide_disputes')}>
+                <ShowWhen
+                  additionalCondition={(usr) =>
+                    !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Disputes)
+                  }
+                >
                   <EntityDetailRow label="Disputes">
                     {payment.disputes && payment.disputes.count ? (
                       <PaymentDisputes
@@ -399,7 +410,9 @@ function PaymentDetails(props) {
                 </EntityDetailRow>
 
                 <ShowWhen
-                  additionalCondition={(user) => !user.findTag('i18_hide_payment.total_fee')}
+                  additionalCondition={(user) =>
+                    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.TotalFee)
+                  }
                 >
                   <EntityDetailRow label="Total Fee">
                     <Definition>

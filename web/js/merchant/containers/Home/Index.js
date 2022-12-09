@@ -67,6 +67,7 @@ import {
   fetchMerchantWebsiteDetails,
 } from 'merchant/reducers/websitecompliance';
 import { setRecommendedProduct } from 'merchant/components/Activation/ActivationUtils';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 const Desktop = lazyLoader(() => import(/* webpackChunkName: 'merchantDesktop' */ './Desktop'));
 const Mobile = lazyLoader(() => import(/* webpackChunkName: 'merchantMobile' */ './Mobile'));
@@ -1087,245 +1088,253 @@ export default class HomeContainer extends Component {
     const showRBIChangesBanners =
       user.isCardRecurringPaymentsBlocked &&
       user.isAccepted &&
-      (user.isSubscriptionsEnabled || user.isChargeAtWillEnabled);
+      (user.isSubscriptionsEnabled || user.isChargeAtWillEnabled) &&
+      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.ProductRecommendationsKyc);
     return (
       <div class="react-root dashboard-home">
-        {showRBIChangesBanners ? (
-          <CardPaymentsBlockedBanner isCAW={user.isChargeAtWillEnabled} />
-        ) : (
-          <>
-            {/* Lakshmi Vilas Bank Moratorium */}
-            {user.isAccepted && hasLakhmiVilasBankAcc && <LakshmiVilasBankBanner />}
+        <ShowWhen
+          additionalCondition={(user) =>
+            !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Onboarding)
+          }
+        >
+          {showRBIChangesBanners ? (
+            <CardPaymentsBlockedBanner isCAW={user.isChargeAtWillEnabled} />
+          ) : (
+            <>
+              {/* Lakshmi Vilas Bank Moratorium */}
+              {user.isAccepted && hasLakhmiVilasBankAcc && <LakshmiVilasBankBanner />}
 
-            {this.props.user.isDiwaliPromoEnabled && !hideDiwaliPromotion && (
-              <div
-                className={`diwali-promotion-banner v2-tour-banner${
-                  dismissDiwaliPromotion ? ' dismiss' : ''
-                }`}
-              >
-                <div className="banner-content">
-                  <Banner cta="View T&Cs">
-                    <span class="badge m-r">SPECIAL OFFER</span>
-                    <span>
-                      {this.props.user.transaction_value
-                        ? 'You are currently active at a slashed pricing of 1.75%! Make the most of it, benefits last till 31st January, 2019'
-                        : 'Start transacting with us and enjoy our slashed pricing - 1.75%. Valid on payments till 31st January, 2019'}
-                    </span>
-                    <span class="m-l btn-link">
-                      <ShowWhen
-                        additionalCondition={(_user) =>
-                          _user.isOrgAllowedFunctionality('external_links')
-                        }
-                      >
-                        <a
-                          href="https://razorpay.com/pricing"
-                          target="_blank"
-                          rel="noreferrer noopener"
+              {this.props.user.isDiwaliPromoEnabled && !hideDiwaliPromotion && (
+                <div
+                  className={`diwali-promotion-banner v2-tour-banner${
+                    dismissDiwaliPromotion ? ' dismiss' : ''
+                  }`}
+                >
+                  <div className="banner-content">
+                    <Banner cta="View T&Cs">
+                      <span class="badge m-r">SPECIAL OFFER</span>
+                      <span>
+                        {this.props.user.transaction_value
+                          ? 'You are currently active at a slashed pricing of 1.75%! Make the most of it, benefits last till 31st January, 2019'
+                          : 'Start transacting with us and enjoy our slashed pricing - 1.75%. Valid on payments till 31st January, 2019'}
+                      </span>
+                      <span class="m-l btn-link">
+                        <ShowWhen
+                          additionalCondition={(_user) =>
+                            _user.isOrgAllowedFunctionality('external_links')
+                          }
                         >
-                          <b>View T&#38;Cs</b>
-                        </a>
-                      </ShowWhen>
-                    </span>
-                  </Banner>
+                          <a
+                            href="https://razorpay.com/pricing"
+                            target="_blank"
+                            rel="noreferrer noopener"
+                          >
+                            <b>View T&#38;Cs</b>
+                          </a>
+                        </ShowWhen>
+                      </span>
+                    </Banner>
+                  </div>
+                  <div className="banner-close">
+                    <a className="banner-close-icon" onClick={this.onHideDiwaliPromotion}>
+                      <i className="i i-close" />
+                    </a>
+                  </div>
                 </div>
-                <div className="banner-close">
-                  <a className="banner-close-icon" onClick={this.onHideDiwaliPromotion}>
-                    <i className="i i-close" />
-                  </a>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-
-        {/* Show Diwali Promotional Banner */}
-
-        {user.showInstantActivation &&
-          !user.submitted &&
-          showOnboardingBannerFirstStep &&
-          !user.isPartnerIntent() && (
-            <ModalMask>
-              <Modal
-                className={`welcome-modal${this.isFestive ? ' festive' : ''}`}
-                onClose={() => {
-                  trackIAClose();
-                  this.closeOnboardingStep();
-                  onFirstStepClose();
-                  tracking.trackEvent(
-                    window.rzpQ.onbr().success('login.first_login_modal', {
-                      action: 'Close_Popup',
-                    }),
-                  );
-                  tracking.trackEvent(
-                    window.rzpQ.onbr().initiated('act.popup', {
-                      clickSource: 'Close',
-                    }),
-                  );
-                }}
-              >
-                <ModalContent>
-                  <WelcomeModal
-                    onClose={() => {
-                      trackTryDashboard();
-                      this.closeOnboardingStep();
-                      onFirstStepClose();
-                      trackEvents({
-                        objectName: 'Pop Up',
-                        actionName: 'Closed',
-                        screen: 'home page',
-                        properties: {
-                          'Pop-up Label': 'Welcome to Razorpay',
-                        },
-                      });
-                    }}
-                    onActivate={() => {
-                      trackActivateAccount();
-                      onFirstStepClose();
-                    }}
-                    isFestive={this.isFestive}
-                    isOnboardingV2Enabled={user.isOnboardingV2Enabled}
-                    isOrgAxis={user.isOrgAxis}
-                    isProductRecommendationEnabled={user.isProductRecommendationEnabled}
-                    hideCTAs={this.hideWelcomeModalCTAs}
-                    referee={this.props.referee}
-                    isActivationFormFullView={user.isActivationFormFullView}
-                  />
-                </ModalContent>
-              </Modal>
-            </ModalMask>
+              )}
+            </>
           )}
 
-        {showInstantActivationSuccess && (
-          <InstantActivationSuccess
-            onClose={() => {
-              iaActivations.trackClose(activation_flow);
-              tracking.trackEvent(window.rzpQ.onbr().dropped('act.whitelist_popup_action'));
-              this.closeOnboardingStep();
-              this.onInstantActivationSuccess();
-            }}
-            onGoToDashboard={() => {
-              tracking.trackEvent(
-                window.rzpQ.onbr().initiated('act.whitelist_popup_action', {
-                  actions: 'Go to Dashboard',
-                }),
-              );
-              iaActivations.trackGoToDashboard();
-              this.closeOnboardingStep();
-              this.onInstantActivationSuccess();
-            }}
-            onCompleteKYC={() => {
-              tracking.trackEvent(
-                window.rzpQ.onbr().initiated('kyc.form_fill', {
-                  clickSource: 'Complete_kyc',
-                }),
-              );
-              this.onInstantActivationSuccess(
-                `/app/activation?basePath=${encodeURIComponent('/dashboard')}`,
-              );
-            }}
-            user={user}
-          />
-        )}
-        {showKYCStatus && this.props.user.isInstantActivationEnabled && (
-          <KYCStatusModal
-            onClose={() => {
-              iaActivations.trackClose(activation_flow);
-              this.props.hideKYCStatusModal();
-              if (isMobile && user.isOnboardingV2Enabled) {
-                window.location.reload();
-              }
-            }}
-            onGoToDashboard={() => {
-              iaActivations.trackClose(activation_flow);
-              this.onInstantActivationSuccess();
-            }}
-            user={user}
-            modalType={kycStatusModalType}
-            activationDuration={kycStatusActivationDuration}
-          />
-        )}
-        {showKYCStatus && !this.props.user.isInstantActivationEnabled && (
-          <KYCStatusModalOld
-            onClose={() => {
-              iaActivations.trackClose(activation_flow);
-              this.props.hideKYCStatusModal();
-              if (isMobile && user.isOnboardingV2Enabled) {
-                window.location.reload();
-              }
-            }}
-            onGoToDashboard={() => {
-              iaActivations.trackClose(activation_flow);
-              this.onInstantActivationSuccess();
-            }}
-            user={user}
-            modalType={kycStatusModalType}
-            activationDuration={kycStatusActivationDuration}
-          />
-        )}
-        {showPANStatus && (
-          <PANVerificationStatusModal
-            onClose={() => {
-              this.props.hidePANStatusModal();
-            }}
-            onGoToDashboard={() => {
-              this.onInstantActivationSuccess();
-            }}
-            onCompleteKYC={() => {
-              tracking.trackEvent(
-                window.rzpQ.onbr().initiated('kyc.form_fill', {
-                  clickSource: 'Complete_kyc',
-                }),
-              );
-              this.onInstantActivationSuccess(
-                `/app/activation?basePath=${encodeURIComponent('/dashboard')}`,
-              );
-            }}
-            user={user}
-          />
-        )}
-        {showKYCDetails && (
-          <KycDetailsModal
-            onClose={() => {
-              iaActivations.trackCloseKYCDetails();
-              tracking.trackEvent(window.rzpQ.onbr().dropped('act.greylist_popup_action'));
-              hideKYCDetailsModal();
-            }}
-            onGiveDetails={() => {
-              iaActivations.trackGiveKYCDetails();
-              tracking.trackEvent(
-                window.rzpQ.onbr().initiated('act.greylist_popup_action', {
-                  actions: 'Give Details',
-                }),
-              );
-              tracking.trackEvent(
-                window.rzpQ.onbr().initiated('kyc.form_fill', {
-                  actions: 'GreyList Popup',
-                }),
-              );
-              hideKYCDetailsModal();
-            }}
-          />
-        )}
+          {/* Show Diwali Promotional Banner */}
 
-        {showInstantActivationFraudModal && (
-          <FraudDetectionModal onClose={() => this.props.hideFraudDetectionModal()} />
-        )}
-        {showTnCModal && (
-          <TnCModal
-            onClose={this.props.hideTnC}
-            tracking={tracking}
-            closeModal={this.props.closeModal}
-            openModal={this.props.openModal}
-          />
-        )}
+          {user.showInstantActivation &&
+            !user.submitted &&
+            showOnboardingBannerFirstStep &&
+            !user.isPartnerIntent() && (
+              <ModalMask>
+                <Modal
+                  className={`welcome-modal${this.isFestive ? ' festive' : ''}`}
+                  onClose={() => {
+                    trackIAClose();
+                    this.closeOnboardingStep();
+                    onFirstStepClose();
+                    tracking.trackEvent(
+                      window.rzpQ.onbr().success('login.first_login_modal', {
+                        action: 'Close_Popup',
+                      }),
+                    );
+                    tracking.trackEvent(
+                      window.rzpQ.onbr().initiated('act.popup', {
+                        clickSource: 'Close',
+                      }),
+                    );
+                  }}
+                >
+                  <ModalContent>
+                    <WelcomeModal
+                      onClose={() => {
+                        trackTryDashboard();
+                        this.closeOnboardingStep();
+                        onFirstStepClose();
+                        trackEvents({
+                          objectName: 'Pop Up',
+                          actionName: 'Closed',
+                          screen: 'home page',
+                          properties: {
+                            'Pop-up Label': 'Welcome to Razorpay',
+                          },
+                        });
+                      }}
+                      onActivate={() => {
+                        trackActivateAccount();
+                        onFirstStepClose();
+                      }}
+                      isFestive={this.isFestive}
+                      isOnboardingV2Enabled={user.isOnboardingV2Enabled}
+                      isOrgAxis={user.isOrgAxis}
+                      isProductRecommendationEnabled={user.isProductRecommendationEnabled}
+                      hideCTAs={this.hideWelcomeModalCTAs}
+                      referee={this.props.referee}
+                      isActivationFormFullView={user.isActivationFormFullView}
+                    />
+                  </ModalContent>
+                </Modal>
+              </ModalMask>
+            )}
 
-        {this.state.referredAmount > 0 && (
-          <M2MSuccessModal
-            referredMerchants={this.state.referredMerchants}
-            referredAmount={this.state.referredAmount}
-            isReferee={this.state.isReferee}
-          />
-        )}
+          {showInstantActivationSuccess && (
+            <InstantActivationSuccess
+              onClose={() => {
+                iaActivations.trackClose(activation_flow);
+                tracking.trackEvent(window.rzpQ.onbr().dropped('act.whitelist_popup_action'));
+                this.closeOnboardingStep();
+                this.onInstantActivationSuccess();
+              }}
+              onGoToDashboard={() => {
+                tracking.trackEvent(
+                  window.rzpQ.onbr().initiated('act.whitelist_popup_action', {
+                    actions: 'Go to Dashboard',
+                  }),
+                );
+                iaActivations.trackGoToDashboard();
+                this.closeOnboardingStep();
+                this.onInstantActivationSuccess();
+              }}
+              onCompleteKYC={() => {
+                tracking.trackEvent(
+                  window.rzpQ.onbr().initiated('kyc.form_fill', {
+                    clickSource: 'Complete_kyc',
+                  }),
+                );
+                this.onInstantActivationSuccess(
+                  `/app/activation?basePath=${encodeURIComponent('/dashboard')}`,
+                );
+              }}
+              user={user}
+            />
+          )}
+          {showKYCStatus && this.props.user.isInstantActivationEnabled && (
+            <KYCStatusModal
+              onClose={() => {
+                iaActivations.trackClose(activation_flow);
+                this.props.hideKYCStatusModal();
+                if (isMobile && user.isOnboardingV2Enabled) {
+                  window.location.reload();
+                }
+              }}
+              onGoToDashboard={() => {
+                iaActivations.trackClose(activation_flow);
+                this.onInstantActivationSuccess();
+              }}
+              user={user}
+              modalType={kycStatusModalType}
+              activationDuration={kycStatusActivationDuration}
+            />
+          )}
+          {showKYCStatus && !this.props.user.isInstantActivationEnabled && (
+            <KYCStatusModalOld
+              onClose={() => {
+                iaActivations.trackClose(activation_flow);
+                this.props.hideKYCStatusModal();
+                if (isMobile && user.isOnboardingV2Enabled) {
+                  window.location.reload();
+                }
+              }}
+              onGoToDashboard={() => {
+                iaActivations.trackClose(activation_flow);
+                this.onInstantActivationSuccess();
+              }}
+              user={user}
+              modalType={kycStatusModalType}
+              activationDuration={kycStatusActivationDuration}
+            />
+          )}
+          {showPANStatus && (
+            <PANVerificationStatusModal
+              onClose={() => {
+                this.props.hidePANStatusModal();
+              }}
+              onGoToDashboard={() => {
+                this.onInstantActivationSuccess();
+              }}
+              onCompleteKYC={() => {
+                tracking.trackEvent(
+                  window.rzpQ.onbr().initiated('kyc.form_fill', {
+                    clickSource: 'Complete_kyc',
+                  }),
+                );
+                this.onInstantActivationSuccess(
+                  `/app/activation?basePath=${encodeURIComponent('/dashboard')}`,
+                );
+              }}
+              user={user}
+            />
+          )}
+          {showKYCDetails && (
+            <KycDetailsModal
+              onClose={() => {
+                iaActivations.trackCloseKYCDetails();
+                tracking.trackEvent(window.rzpQ.onbr().dropped('act.greylist_popup_action'));
+                hideKYCDetailsModal();
+              }}
+              onGiveDetails={() => {
+                iaActivations.trackGiveKYCDetails();
+                tracking.trackEvent(
+                  window.rzpQ.onbr().initiated('act.greylist_popup_action', {
+                    actions: 'Give Details',
+                  }),
+                );
+                tracking.trackEvent(
+                  window.rzpQ.onbr().initiated('kyc.form_fill', {
+                    actions: 'GreyList Popup',
+                  }),
+                );
+                hideKYCDetailsModal();
+              }}
+            />
+          )}
+
+          {showInstantActivationFraudModal && (
+            <FraudDetectionModal onClose={() => this.props.hideFraudDetectionModal()} />
+          )}
+          {showTnCModal && (
+            <TnCModal
+              onClose={this.props.hideTnC}
+              tracking={tracking}
+              closeModal={this.props.closeModal}
+              openModal={this.props.openModal}
+            />
+          )}
+
+          {this.state.referredAmount > 0 && (
+            <M2MSuccessModal
+              referredMerchants={this.state.referredMerchants}
+              referredAmount={this.state.referredAmount}
+              isReferee={this.state.isReferee}
+            />
+          )}
+        </ShowWhen>
+
         {isMobile ? (
           <SuspenseWithLoader type="full">
             <Mobile {...commonProps} />

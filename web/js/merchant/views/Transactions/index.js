@@ -33,6 +33,7 @@ import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
 import { trackSuccessRateEvents, visitSuccessRate } from './SuccessRate/trackEvents';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 let url = 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app';
 if (getMobileOperatingSystem() == 'iOS') {
@@ -179,7 +180,8 @@ class TransactionsContainer extends Component {
             </ShowWhen>
             <ShowWhen
               additionalCondition={(usr) =>
-                usr.isAllowedView('refunds') && !usr.findTag('i18_hide_refunds')
+                usr.isAllowedView('refunds') &&
+                !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
               }
             >
               <NavLink
@@ -202,7 +204,8 @@ class TransactionsContainer extends Component {
             </ShowWhen>
             <ShowWhen
               additionalCondition={(usr) =>
-                usr.isAllowedView('refunds_batch_uploads') && !usr.findTag('i18_hide_refunds')
+                usr.isAllowedView('refunds_batch_uploads') &&
+                !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
               }
             >
               <NavLink
@@ -243,7 +246,11 @@ class TransactionsContainer extends Component {
                 Orders
               </NavLink>
             </ShowWhen>
-            <ShowWhen additionalCondition={(usr) => !usr.findTag('i18_hide_disputes')}>
+            <ShowWhen
+              additionalCondition={(usr) =>
+                !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Disputes)
+              }
+            >
               <NavLink
                 to="/disputes"
                 onClick={() => {
@@ -390,17 +397,23 @@ class TransactionsContainer extends Component {
                 <ShowWhenRoute
                   path="/refunds/batchupload"
                   component={BatchRefundsUpload}
-                  additionalCondition={(usr) => !usr.findTag('i18_hide_refunds')}
+                  additionalCondition={(usr) =>
+                    !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
+                  }
                 />
                 <ShowWhenRoute
                   path="/refunds/batchuploads"
                   component={BatchRefundsList}
-                  additionalCondition={(usr) => !usr.findTag('i18_hide_refunds')}
+                  additionalCondition={(usr) =>
+                    !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
+                  }
                 />
                 <ShowWhenRoute
                   path="/refunds"
                   component={RefundsList}
-                  additionalCondition={(usr) => !usr.findTag('i18_hide_refunds')}
+                  additionalCondition={(usr) =>
+                    !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
+                  }
                 />
                 <ShowWhenRoute
                   path="/orders"
@@ -419,7 +432,8 @@ class TransactionsContainer extends Component {
                   path="/disputes"
                   component={DisputesList}
                   additionalCondition={(usr) =>
-                    usr.isAllowedView('refunds') && !usr.findTag('i18_hide_disputes')
+                    usr.isAllowedView('refunds') &&
+                    !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Disputes)
                   }
                 />
                 <ShowWhenRoute

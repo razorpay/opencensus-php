@@ -46,6 +46,7 @@ import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/redu
 import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { isOrgFeatureExist } from 'merchant/models/User';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 function isWorkflowChangeAllowed(workflow) {
   return (
@@ -375,7 +376,7 @@ const MerchantDetails = ({
 
       <ShowWhen
         additionalCondition={(_user) =>
-          isAccountActivation && !_user.findTag('i18_hide_onboarding')
+          isAccountActivation && !_user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Onboarding)
         }
       >
         <DetailRow

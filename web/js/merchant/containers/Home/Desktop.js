@@ -88,6 +88,7 @@ import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import { XCorporateCardStatusTracker } from 'merchant/components/StatusTracker';
 import * as LocalStorageService from 'common/utils/localStorage';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 class AnalyticsDesktop extends Component {
   state = {
@@ -503,307 +504,315 @@ class AnalyticsDesktop extends Component {
 
     return (
       <div className="home-analytics-desktop">
-        {/* Announcement Banner Start */}
-        <div
-          ref={(node) => onExtraContentMount(node)}
-          className={`extra-content${showOnboardingBanner ? ' has-ob-banner' : ''}${
-            !showOnboardingBanner && hasSecondaryBanner ? ' has-secondary-banner' : ''
-          }`}
+        <ShowWhen
+          additionalCondition={(user) =>
+            !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Announcements)
+          }
         >
-          {ticketsRaisedByAgents.length && user.isMobileSignupCareActive ? (
-            <SupportRequest tickets={ticketsRaisedByAgents} />
-          ) : null}
-          <CongratulatoryBanner user={user} />
-          {/* nps banner */}
-          {user.isAccepted && <NPSAnnouncement user={user} />}
-          {/* onboarding banner */}
-          {(showInstantActivation || shouldShowTnCBannerForAxis) && (
-            <Announcement
-              mode={mode}
-              user={user}
-              payments={payments}
-              limitBreach={limitBreach}
-              shouldShowTnCBannerForAxis={shouldShowTnCBannerForAxis}
-            />
-          )}
-          <WebsiteComplianceBanner screen="Home page" />
-          {checkHTML5APIvalidity() && (
-            <AnnouncementBanner title="Outdated Browser" theme="warning">
-              Please update your web browser. We recommend you to download the latest version of
-              Google Chrome, Edge, Safari, Firefox.
-            </AnnouncementBanner>
-          )}
-          {user.isPaymentsEnabled && this.props.referee?.status === 'signup' ? (
-            <AnnouncementBanner
-              title="Unlock Pending Credits"
-              theme="warning"
-              card_id="merchant_referral"
-            >
-              Accept payments of minimum ₹2,000 to receive{' '}
-              {getFormattedAmountNew(this.props.referee.referral_amount, true)} in collections -
-              100% FREE*
-              <div class="big-circle-seprator" />
-              <a className="btn-link" onClick={() => this.props.showProductsModal()}>
-                Accept payments.
-              </a>{' '}
-            </AnnouncementBanner>
-          ) : null}
-          {/* international onboarding banner */}
-          {mode === 'live' &&
-            user.instantActivation.isGraylistFlow &&
-            user.internationalActivationFlow.isGraylistFlow && (
-              <InternationalRequestStatusAnnouncement
-                internationalProductsStatus={this.props.internationalProductsStatus}
+          {/* Announcement Banner Start */}
+          <div
+            ref={(node) => onExtraContentMount(node)}
+            className={`extra-content${showOnboardingBanner ? ' has-ob-banner' : ''}${
+              !showOnboardingBanner && hasSecondaryBanner ? ' has-secondary-banner' : ''
+            }`}
+          >
+            {ticketsRaisedByAgents.length && user.isMobileSignupCareActive ? (
+              <SupportRequest tickets={ticketsRaisedByAgents} />
+            ) : null}
+            <CongratulatoryBanner user={user} />
+            {/* nps banner */}
+            {user.isAccepted && <NPSAnnouncement user={user} />}
+            {/* onboarding banner */}
+            {(showInstantActivation || shouldShowTnCBannerForAxis) && (
+              <Announcement
+                mode={mode}
+                user={user}
+                payments={payments}
+                limitBreach={limitBreach}
+                shouldShowTnCBannerForAxis={shouldShowTnCBannerForAxis}
               />
             )}
-          {mode === 'live' && (
-            <InternationalFormStatusAnnouncement
-              status={this.props.internationalSettingStatus}
-              businessName={user.business_name}
-            />
-          )}
-          {/* needs clarification modal */}
-          {this.state.showNcPopup &&
-            user.needsClarification &&
-            !this.props.user.isInstantActivationEnabled && (
-              <NCModal
-                isActivationFormFullView={this.props.user.isActivationFormFullView}
-                onClose={this.onNcModalClose}
-              />
-            )}
-          {!this.props.user.isInstantActivationEnabled &&
-            !!this.props.user.locked &&
-            this.props.user.activation_status === 'under_review' &&
-            this.props.user.isDedupe && <DedupeModal />}
-          {!user.isFeatureEnabled('covid_19_relief') &&
-            user.isCovidReliefFlowEnabled &&
-            user.business_type !== 7 &&
-            user.business_type !== 9 && (
-              <AnnouncementBanner
-                title="Donations for Covid Relief"
-                theme="primary"
-                card_id="donations-covid-relif-banner"
-              >
-                Enable donations on Checkout Page and help India Fight COVID-19.{' '}
-                <Link to="/config" className="pointer">
-                  <strong>Know More</strong>
-                </Link>{' '}
-                <AsyncButton
-                  type="button"
-                  className="Button--secondary Button scheduled-btn-act btn-border"
-                  onClick={this.onClickCovidEnableNow}
-                  text="Enable Now"
-                  pendingText="Enabling..."
-                />
+            <WebsiteComplianceBanner screen="Home page" />
+            {checkHTML5APIvalidity() && (
+              <AnnouncementBanner title="Outdated Browser" theme="warning">
+                Please update your web browser. We recommend you to download the latest version of
+                Google Chrome, Edge, Safari, Firefox.
               </AnnouncementBanner>
             )}
-          {this.isCaptureSettingsDefault(items) && user.instantActivation.isWhitelistFlow === true && (
-            <AnnouncementBanner
-              title="Capture Settings"
-              theme="success"
-              canBeClosed={true}
-              card_id="capture-settings-banner"
-            >
-              Currently all payments with order id are being captured by default, click{' '}
-              <Link
-                onClick={() => {
-                  analyticsTrack({
-                    objectName: 'banner',
-                    actionName: 'clicked',
-                    screen: 'home page',
-                    properties: {
-                      hyperlinkClicked: 'here',
-                      title: 'Capture Settings',
-                      ...getCommonAnalyticsProperties(window.rzp_user),
-                    },
-                  });
-                }}
-                to="/config"
-                target="_blank"
-                rel="noreferrer noopener"
+            {user.isPaymentsEnabled && this.props.referee?.status === 'signup' ? (
+              <AnnouncementBanner
+                title="Unlock Pending Credits"
+                theme="warning"
+                card_id="merchant_referral"
               >
-                here
-              </Link>{' '}
-              to configure your capture setting.
-            </AnnouncementBanner>
-          )}
-          {this.showGSTOptOutFlow() === true && (
-            <AnnouncementBanner
-              title="GST Address Mismatch"
-              theme="warning"
-              canBeClosed={false}
-              card_id="gst-address-mismatch-banner"
-            >
-              The business address you provided to Razorpay does not match with your address details
-              on your GST certificate. On Jan 25, 2021, we will update your address to the same as
-              your GST details.
-              <Link
-                className="Button--secondary Button scheduled-btn-act btn-border mt-4 gst-mismatch-banner-link"
-                to="/profile#gst"
-              >
-                Review address
-              </Link>
-            </AnnouncementBanner>
-          )}
-          {current_balance.data.balance < 0 && (
-            <AnnouncementBanner
-              title="Add Funds"
-              theme="warning"
-              canBeClosed={true}
-              card_id="negative-balance-add-funds-banner"
-            >
-              Your balance went into negative value. Add funds to avoid the transaction failures.{' '}
-              <Link
-                onClick={() => {
-                  analyticsTrack({
-                    objectName: 'banner',
-                    actionName: 'clicked',
-                    screen: 'home page',
-                    properties: {
-                      hyperlinkClicked: 'Add Funds',
-                      title: 'Add Funds',
-                      ...getCommonAnalyticsProperties(window.rzp_user),
-                    },
-                  });
-                }}
-                to="/addfunds"
-                target="_blank"
-                rel="noreferrer noopener"
-              >
-                {' '}
-                Add Funds
-              </Link>
-            </AnnouncementBanner>
-          )}
-          {handleNegativeBalanceLimit(merchantBalanceConfigs, current_balance.data.balance) && (
-            <AnnouncementBanner
-              title="On Hold!"
-              theme="danger"
-              canBeClosed={true}
-              card_id="on-hold-add-funds-banner"
-            >
-              Your current balance had reached the maximum negative limit. Transactions will start
-              to fail now. Please add funds to avoid transaction failures.{' '}
-              <Link
-                onClick={() => {
-                  analyticsTrack({
-                    objectName: 'banner',
-                    actionName: 'clicked',
-                    screen: 'home page',
-                    properties: {
-                      hyperlinkClicked: 'Add Funds',
-                      title: 'On Hold!',
-                      ...getCommonAnalyticsProperties(window.rzp_user),
-                    },
-                  });
-                }}
-                to="/addfunds"
-                target="_blank"
-                rel="noreferrer noopener"
-              >
-                {' '}
-                Add Funds
-              </Link>
-            </AnnouncementBanner>
-          )}
-          <DashboardBanner />
-          <ShowWhen additionalCondition={(usr) => usr.isCatalystBannerFL}>
-            <CatalystCampaignBannerPhase2
-              productName="Transactions"
-              title="Boost your revenue 🚀"
-              bannerText="Use Payment Links to retarget users and boost conversions by up to 40%"
-              cardId="NOV21-CATALYSTP1V2FL"
-              cta1Text="Know More"
-              cta2Text="Try Now"
-              cta2Link="paymentlinks/new"
-              type="FL"
-            />
-          </ShowWhen>
-          <ShowWhen additionalCondition={(usr) => usr.isCatalystBannerEF}>
-            <CatalystCampaignBannerPhase2
-              productName="Transactions"
-              title="Boost your revenue 🚀"
-              bannerText="Use Payment Links for instant payment collection by offering 100+ payment methods"
-              cardId="NOV21-CATALYSTP1V2EF"
-              cta1Text="Know More"
-              cta2Text="Try Now"
-              cta2Link="paymentlinks/new"
-              type="EF"
-            />
-          </ShowWhen>
-          <ShowWhen additionalCondition={(usr) => usr.isCatalystBannerG}>
-            <CatalystCampaignBannerPhase2
-              productName="Transactions"
-              title="Grow your business 🚀"
-              bannerText="Use payment links for payment collections. 100+ payment modes available. Set reminders and never miss any payment."
-              cardId="NOV21-CATALYSTP1V2GE"
-              cta1Text="Know More"
-              cta2Text="Try Now"
-              cta2Link="paymentlinks/new"
-              type="G"
-            />
-          </ShowWhen>
-          {/* capital banner*/}
-          {user.isCapitalBannerEnabled && <CapitalAnnouncement userId={user.current} />}
-          {user.isCovidFeatureEnabled && <CovidCampaignAnnouncement userId={user.current} />}
-          {/* Free Credits Repayments Banner */}
-          {user.isRepaymentBannerEnabled && <RepaymentAnnouncment userId={user.current} />}
-          {/* Announcement - Enable International Cards */}
-          <ShowWhen
-            additionalCondition={(usr) =>
-              usr.isOrgRZP &&
-              Boolean(usr.activated) &&
-              internationalSettingStatus?.data?.enableIntlCards
-            }
-          >
-            <IntlPaymentsAnnouncement
-              bannerKey="international_cards"
-              userId={user?.current}
-              internationalSettingStatus={this.props.internationalSettingStatus}
-            />
-          </ShowWhen>
-          {/* Announcement - Link Paypal */}
-          <ShowWhen
-            additionalCondition={(usr) =>
-              usr.isOrgRZP &&
-              Boolean(usr.activated) &&
-              internationalSettingStatus?.data?.enableLinkPaypal
-            }
-          >
-            <IntlPaymentsAnnouncement
-              bannerKey="link_paypal"
-              userId={user?.current}
-              internationalSettingStatus={this.props.internationalSettingStatus}
-            />
-          </ShowWhen>
-          <XCorporateCardStatusTracker />
-          {showNitroStatusTracker && (
-            <div className="nss-tracker-wrapper">
-              <NeoStoneTracker proceededBank={proceededBank} user={user} />
-            </div>
-          )}
-          {this.props.can_refer ? <M2MBanner /> : null}
-          {/* Announcement Banners End */}
-          {/* TODO: Move announcement section to different file */}
-          <GrowthAssetEB>
-            {carouselItem.length ? (
-              <Carousel enableLazy minHeight={200} carouselItem={carouselItem} />
+                Accept payments of minimum ₹2,000 to receive{' '}
+                {getFormattedAmountNew(this.props.referee.referral_amount, true)} in collections -
+                100% FREE*
+                <div class="big-circle-seprator" />
+                <a className="btn-link" onClick={() => this.props.showProductsModal()}>
+                  Accept payments.
+                </a>{' '}
+              </AnnouncementBanner>
             ) : null}
-          </GrowthAssetEB>
+            {/* international onboarding banner */}
+            {mode === 'live' &&
+              user.instantActivation.isGraylistFlow &&
+              user.internationalActivationFlow.isGraylistFlow && (
+                <InternationalRequestStatusAnnouncement
+                  internationalProductsStatus={this.props.internationalProductsStatus}
+                />
+              )}
+            {mode === 'live' && (
+              <InternationalFormStatusAnnouncement
+                status={this.props.internationalSettingStatus}
+                businessName={user.business_name}
+              />
+            )}
+            {/* needs clarification modal */}
+            {this.state.showNcPopup &&
+              user.needsClarification &&
+              !this.props.user.isInstantActivationEnabled && (
+                <NCModal
+                  isActivationFormFullView={this.props.user.isActivationFormFullView}
+                  onClose={this.onNcModalClose}
+                />
+              )}
+            {!this.props.user.isInstantActivationEnabled &&
+              !!this.props.user.locked &&
+              this.props.user.activation_status === 'under_review' &&
+              this.props.user.isDedupe && <DedupeModal />}
+            {!user.isFeatureEnabled('covid_19_relief') &&
+              user.isCovidReliefFlowEnabled &&
+              user.business_type !== 7 &&
+              user.business_type !== 9 && (
+                <AnnouncementBanner
+                  title="Donations for Covid Relief"
+                  theme="primary"
+                  card_id="donations-covid-relif-banner"
+                >
+                  Enable donations on Checkout Page and help India Fight COVID-19.{' '}
+                  <Link to="/config" className="pointer">
+                    <strong>Know More</strong>
+                  </Link>{' '}
+                  <AsyncButton
+                    type="button"
+                    className="Button--secondary Button scheduled-btn-act btn-border"
+                    onClick={this.onClickCovidEnableNow}
+                    text="Enable Now"
+                    pendingText="Enabling..."
+                  />
+                </AnnouncementBanner>
+              )}
+            {this.isCaptureSettingsDefault(items) &&
+              user.instantActivation.isWhitelistFlow === true && (
+                <AnnouncementBanner
+                  title="Capture Settings"
+                  theme="success"
+                  canBeClosed={true}
+                  card_id="capture-settings-banner"
+                >
+                  Currently all payments with order id are being captured by default, click{' '}
+                  <Link
+                    onClick={() => {
+                      analyticsTrack({
+                        objectName: 'banner',
+                        actionName: 'clicked',
+                        screen: 'home page',
+                        properties: {
+                          hyperlinkClicked: 'here',
+                          title: 'Capture Settings',
+                          ...getCommonAnalyticsProperties(window.rzp_user),
+                        },
+                      });
+                    }}
+                    to="/config"
+                    target="_blank"
+                    rel="noreferrer noopener"
+                  >
+                    here
+                  </Link>{' '}
+                  to configure your capture setting.
+                </AnnouncementBanner>
+              )}
+            {this.showGSTOptOutFlow() === true && (
+              <AnnouncementBanner
+                title="GST Address Mismatch"
+                theme="warning"
+                canBeClosed={false}
+                card_id="gst-address-mismatch-banner"
+              >
+                The business address you provided to Razorpay does not match with your address
+                details on your GST certificate. On Jan 25, 2021, we will update your address to the
+                same as your GST details.
+                <Link
+                  className="Button--secondary Button scheduled-btn-act btn-border mt-4 gst-mismatch-banner-link"
+                  to="/profile#gst"
+                >
+                  Review address
+                </Link>
+              </AnnouncementBanner>
+            )}
+            {current_balance.data.balance < 0 && (
+              <AnnouncementBanner
+                title="Add Funds"
+                theme="warning"
+                canBeClosed={true}
+                card_id="negative-balance-add-funds-banner"
+              >
+                Your balance went into negative value. Add funds to avoid the transaction failures.{' '}
+                <Link
+                  onClick={() => {
+                    analyticsTrack({
+                      objectName: 'banner',
+                      actionName: 'clicked',
+                      screen: 'home page',
+                      properties: {
+                        hyperlinkClicked: 'Add Funds',
+                        title: 'Add Funds',
+                        ...getCommonAnalyticsProperties(window.rzp_user),
+                      },
+                    });
+                  }}
+                  to="/addfunds"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  {' '}
+                  Add Funds
+                </Link>
+              </AnnouncementBanner>
+            )}
+            {handleNegativeBalanceLimit(merchantBalanceConfigs, current_balance.data.balance) && (
+              <AnnouncementBanner
+                title="On Hold!"
+                theme="danger"
+                canBeClosed={true}
+                card_id="on-hold-add-funds-banner"
+              >
+                Your current balance had reached the maximum negative limit. Transactions will start
+                to fail now. Please add funds to avoid transaction failures.{' '}
+                <Link
+                  onClick={() => {
+                    analyticsTrack({
+                      objectName: 'banner',
+                      actionName: 'clicked',
+                      screen: 'home page',
+                      properties: {
+                        hyperlinkClicked: 'Add Funds',
+                        title: 'On Hold!',
+                        ...getCommonAnalyticsProperties(window.rzp_user),
+                      },
+                    });
+                  }}
+                  to="/addfunds"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  {' '}
+                  Add Funds
+                </Link>
+              </AnnouncementBanner>
+            )}
+            <DashboardBanner />
+            <ShowWhen additionalCondition={(usr) => usr.isCatalystBannerFL}>
+              <CatalystCampaignBannerPhase2
+                productName="Transactions"
+                title="Boost your revenue 🚀"
+                bannerText="Use Payment Links to retarget users and boost conversions by up to 40%"
+                cardId="NOV21-CATALYSTP1V2FL"
+                cta1Text="Know More"
+                cta2Text="Try Now"
+                cta2Link="paymentlinks/new"
+                type="FL"
+              />
+            </ShowWhen>
+            <ShowWhen additionalCondition={(usr) => usr.isCatalystBannerEF}>
+              <CatalystCampaignBannerPhase2
+                productName="Transactions"
+                title="Boost your revenue 🚀"
+                bannerText="Use Payment Links for instant payment collection by offering 100+ payment methods"
+                cardId="NOV21-CATALYSTP1V2EF"
+                cta1Text="Know More"
+                cta2Text="Try Now"
+                cta2Link="paymentlinks/new"
+                type="EF"
+              />
+            </ShowWhen>
+            <ShowWhen additionalCondition={(usr) => usr.isCatalystBannerG}>
+              <CatalystCampaignBannerPhase2
+                productName="Transactions"
+                title="Grow your business 🚀"
+                bannerText="Use payment links for payment collections. 100+ payment modes available. Set reminders and never miss any payment."
+                cardId="NOV21-CATALYSTP1V2GE"
+                cta1Text="Know More"
+                cta2Text="Try Now"
+                cta2Link="paymentlinks/new"
+                type="G"
+              />
+            </ShowWhen>
+            {/* capital banner*/}
+            {user.isCapitalBannerEnabled && <CapitalAnnouncement userId={user.current} />}
+            {user.isCovidFeatureEnabled && <CovidCampaignAnnouncement userId={user.current} />}
+            {/* Free Credits Repayments Banner */}
+            {user.isRepaymentBannerEnabled && <RepaymentAnnouncment userId={user.current} />}
+            {/* Announcement - Enable International Cards */}
+            <ShowWhen
+              additionalCondition={(usr) =>
+                usr.isOrgRZP &&
+                Boolean(usr.activated) &&
+                internationalSettingStatus?.data?.enableIntlCards
+              }
+            >
+              <IntlPaymentsAnnouncement
+                bannerKey="international_cards"
+                userId={user?.current}
+                internationalSettingStatus={this.props.internationalSettingStatus}
+              />
+            </ShowWhen>
+            {/* Announcement - Link Paypal */}
+            <ShowWhen
+              additionalCondition={(usr) =>
+                usr.isOrgRZP &&
+                Boolean(usr.activated) &&
+                internationalSettingStatus?.data?.enableLinkPaypal
+              }
+            >
+              <IntlPaymentsAnnouncement
+                bannerKey="link_paypal"
+                userId={user?.current}
+                internationalSettingStatus={this.props.internationalSettingStatus}
+              />
+            </ShowWhen>
+            <XCorporateCardStatusTracker />
+            {showNitroStatusTracker && (
+              <div className="nss-tracker-wrapper">
+                <NeoStoneTracker proceededBank={proceededBank} user={user} />
+              </div>
+            )}
+            {this.props.can_refer ? <M2MBanner /> : null}
+            {/* Announcement Banners End */}
+            {/* TODO: Move announcement section to different file */}
+            <GrowthAssetEB>
+              {carouselItem.length ? (
+                <Carousel enableLazy minHeight={200} carouselItem={carouselItem} />
+              ) : null}
+            </GrowthAssetEB>
 
-          {this.renderOnboardingWidgets()}
-          <ShowWhen additionalCondition={(usr) => usr.isOrgRZP && Boolean(usr.activated)}>
-            <IntlPaymentsRecommendation
-              user={user}
-              internationalSettingStatus={this.props.internationalSettingStatus}
-            />
-          </ShowWhen>
-          {hasSecondaryBanner && (
-            <div className="secondary-announcement-banner">
-              <PersonaliseBanner track={trackPersonaliseBanner} />
-            </div>
-          )}
-        </div>
+            {this.renderOnboardingWidgets()}
+            <ShowWhen additionalCondition={(usr) => usr.isOrgRZP && Boolean(usr.activated)}>
+              <IntlPaymentsRecommendation
+                user={user}
+                internationalSettingStatus={this.props.internationalSettingStatus}
+              />
+            </ShowWhen>
+            {hasSecondaryBanner && (
+              <div className="secondary-announcement-banner">
+                <PersonaliseBanner track={trackPersonaliseBanner} />
+              </div>
+            )}
+          </div>
+        </ShowWhen>
+
         {/* <Sticky stickWhen={scrollAmountToStickHeader} stickAt={50}> */}
         <Header className="clearfix" title="" showMode={false}>
           <div id="analytics-daterange-picker" className="pull-left date-range-container">
@@ -814,147 +823,154 @@ class AnalyticsDesktop extends Component {
               onSelectPreset={trackPresetChange}
             />
           </div>
-          <div
-            className={`pull-right ${
-              this.props.user.isOndemandSettlementEnabled ? 'ondemand-enabled' : ''
-            }`}
-          >
-            <Group>
-              {this.props.user.isOrgAllowedFunctionality('current_balance') && (
-                <GroupItem>
-                  <div className="text-right">
-                    <span className="settlement-balance-amount">
-                      <strong>Current Balance: </strong>
-                      {!current_balance.loading && (
-                        <Amount
-                          value={balance}
-                          currency={user.merchant.currency}
-                          className={negativeBalanceClassName}
-                        />
-                      )}
-                    </span>
-                    <CashAdvanceNudge />
-                    <br />
-                    {isSettlementOnHold && (
-                      <div className="text-right full-width no-margin">
-                        {isOnHold
-                          ? 'Settlements under review.'
-                          : 'Your settlements have been put on Temporary hold.'}
-                        <span className="pr-5">
-                          <i className="i i-info-circle" />
-                          <Popover theme="dark" align="bottom">
-                            <PopoverBody>
-                              {isOnHold
-                                ? 'Your settlements are currently under review and not getting processed.'
-                                : 'Your settlements are currently not being processed.'}
-                            </PopoverBody>
-                          </Popover>
-                        </span>
-                        <span className="btn-link pointer" onClick={this.onKnowMoreClick}>
-                          Know More
-                        </span>
-                      </div>
-                    )}
-                    {no_settlement &&
-                    !isSettlementOnHold &&
-                    payments &&
-                    payments.items.length > 0 &&
-                    mode === 'live' ? (
-                      <div className="text-right full-width no-margin">
-                        {no_settlement.caption}
-                        {no_settlement.reason && (
-                          <span>
-                            <i className="i i-info-circle" />
-                            <Popover theme="dark" align="left">
-                              <PopoverBody>
-                                <div>{no_settlement.reason}</div>
-                              </PopoverBody>
-                            </Popover>
-                          </span>
-                        )}
-                      </div>
-                    ) : null}
-                    {!isSettlementOnHold && !no_settlement && !nextSettlement ? (
-                      <div className="text-right full-width no-margin">
-                        <strong>
-                          <Amount
-                            className="pr-5"
-                            value={settlement_amount.data.settlement_amount}
-                            currency="INR"
-                          />
-                        </strong>
-                        <span className="pr-5">will be settled on</span>
-                        <Time
-                          className="pr-5"
-                          value={settlement_amount.data.next_settlement_time}
-                          format="DD MMM YYYY, hh:mm a"
-                        />
-                        {settlement_amount.data.reason_for_delay && (
-                          <span>
-                            <i className="i i-info-circle" />
-                            <Popover theme="dark" align="left">
-                              <PopoverBody>
-                                <div>{settlement_amount.data.reason_for_delay}</div>
-                              </PopoverBody>
-                            </Popover>
-                          </span>
-                        )}
-                        <span className="btn-link ml-5 pointer" onClick={this.onKnowMoreClick}>
-                          <strong>Know more</strong>
-                        </span>
-                      </div>
-                    ) : null}
-                  </div>
-                </GroupItem>
-              )}
-              <GroupItem>
-                {this.props.user.isOndemandSettlementEnabled &&
-                this.props.user.isAllowedView('early_settlement') ? (
-                  <div className="settlenow-container">
-                    <SettleNowButton
-                      disabled={checkIfSettlementDisabled}
-                      merchantId={user.current}
-                      fromWhere="Home"
-                      settlementExists={settlementExists}
-                      esOndemandSettlementEnabled={esOndemandSettlementEnabled}
-                      showOndemandSettlementForm={this.showOndemandSettlementForm}
-                      checkIfFirstEverSettlement={this.checkIfFirstEverSettlement}
-                    />
 
-                    {settleNowRestrictionMsg && (
-                      <Popover
-                        align="top"
-                        parentQuerySelector=".settle-btn .settle-now--desktop"
-                        theme="dark"
-                      >
-                        <PopoverBody>{settleNowRestrictionMsg}</PopoverBody>
-                      </Popover>
-                    )}
-                  </div>
-                ) : (
-                  <Link className="pull-right btn-text" to="/settlements">
-                    <span
-                      className="text-no-wrap"
-                      onClick={() => {
-                        trackSettlementsClick();
-                        analyticsTrack({
-                          objectName: 'settlements',
-                          actionName: 'clicked',
-                          screen: 'home page',
-                          properties: {
-                            location: 'analytics',
-                            ...getCommonAnalyticsProperties(window.rzp_user),
-                          },
-                        });
-                      }}
-                    >
-                      View Settlements
-                    </span>
-                  </Link>
+          <ShowWhen
+            additionalCondition={(user) =>
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Announcements)
+            }
+          >
+            <div
+              className={`pull-right ${
+                this.props.user.isOndemandSettlementEnabled ? 'ondemand-enabled' : ''
+              }`}
+            >
+              <Group>
+                {this.props.user.isOrgAllowedFunctionality('current_balance') && (
+                  <GroupItem>
+                    <div className="text-right">
+                      <span className="settlement-balance-amount">
+                        <strong>Current Balance: </strong>
+                        {!current_balance.loading && (
+                          <Amount
+                            value={balance}
+                            currency={user.merchant.currency}
+                            className={negativeBalanceClassName}
+                          />
+                        )}
+                      </span>
+                      <CashAdvanceNudge />
+                      <br />
+                      {isSettlementOnHold && (
+                        <div className="text-right full-width no-margin">
+                          {isOnHold
+                            ? 'Settlements under review.'
+                            : 'Your settlements have been put on Temporary hold.'}
+                          <span className="pr-5">
+                            <i className="i i-info-circle" />
+                            <Popover theme="dark" align="bottom">
+                              <PopoverBody>
+                                {isOnHold
+                                  ? 'Your settlements are currently under review and not getting processed.'
+                                  : 'Your settlements are currently not being processed.'}
+                              </PopoverBody>
+                            </Popover>
+                          </span>
+                          <span className="btn-link pointer" onClick={this.onKnowMoreClick}>
+                            Know More
+                          </span>
+                        </div>
+                      )}
+                      {no_settlement &&
+                      !isSettlementOnHold &&
+                      payments &&
+                      payments.items.length > 0 &&
+                      mode === 'live' ? (
+                        <div className="text-right full-width no-margin">
+                          {no_settlement.caption}
+                          {no_settlement.reason && (
+                            <span>
+                              <i className="i i-info-circle" />
+                              <Popover theme="dark" align="left">
+                                <PopoverBody>
+                                  <div>{no_settlement.reason}</div>
+                                </PopoverBody>
+                              </Popover>
+                            </span>
+                          )}
+                        </div>
+                      ) : null}
+                      {!isSettlementOnHold && !no_settlement && !nextSettlement ? (
+                        <div className="text-right full-width no-margin">
+                          <strong>
+                            <Amount
+                              className="pr-5"
+                              value={settlement_amount.data.settlement_amount}
+                              currency="INR"
+                            />
+                          </strong>
+                          <span className="pr-5">will be settled on</span>
+                          <Time
+                            className="pr-5"
+                            value={settlement_amount.data.next_settlement_time}
+                            format="DD MMM YYYY, hh:mm a"
+                          />
+                          {settlement_amount.data.reason_for_delay && (
+                            <span>
+                              <i className="i i-info-circle" />
+                              <Popover theme="dark" align="left">
+                                <PopoverBody>
+                                  <div>{settlement_amount.data.reason_for_delay}</div>
+                                </PopoverBody>
+                              </Popover>
+                            </span>
+                          )}
+                          <span className="btn-link ml-5 pointer" onClick={this.onKnowMoreClick}>
+                            <strong>Know more</strong>
+                          </span>
+                        </div>
+                      ) : null}
+                    </div>
+                  </GroupItem>
                 )}
-              </GroupItem>
-            </Group>
-          </div>
+                <GroupItem>
+                  {this.props.user.isOndemandSettlementEnabled &&
+                  this.props.user.isAllowedView('early_settlement') ? (
+                    <div className="settlenow-container">
+                      <SettleNowButton
+                        disabled={checkIfSettlementDisabled}
+                        merchantId={user.current}
+                        fromWhere="Home"
+                        settlementExists={settlementExists}
+                        esOndemandSettlementEnabled={esOndemandSettlementEnabled}
+                        showOndemandSettlementForm={this.showOndemandSettlementForm}
+                        checkIfFirstEverSettlement={this.checkIfFirstEverSettlement}
+                      />
+
+                      {settleNowRestrictionMsg && (
+                        <Popover
+                          align="top"
+                          parentQuerySelector=".settle-btn .settle-now--desktop"
+                          theme="dark"
+                        >
+                          <PopoverBody>{settleNowRestrictionMsg}</PopoverBody>
+                        </Popover>
+                      )}
+                    </div>
+                  ) : (
+                    <Link className="pull-right btn-text" to="/settlements">
+                      <span
+                        className="text-no-wrap"
+                        onClick={() => {
+                          trackSettlementsClick();
+                          analyticsTrack({
+                            objectName: 'settlements',
+                            actionName: 'clicked',
+                            screen: 'home page',
+                            properties: {
+                              location: 'analytics',
+                              ...getCommonAnalyticsProperties(window.rzp_user),
+                            },
+                          });
+                        }}
+                      >
+                        View Settlements
+                      </span>
+                    </Link>
+                  )}
+                </GroupItem>
+              </Group>
+            </div>
+          </ShowWhen>
         </Header>
         {/* </Sticky> */}
         <div className="dashboard">
@@ -977,7 +993,14 @@ class AnalyticsDesktop extends Component {
           <div className="row">
             <LazyLoad height={100} offset={50} once>
               <div className="col-md-12">
-                <EasterEgg extraClass="ftx-home-page" page="Home" />
+                <ShowWhen
+                  additionalCondition={(user) =>
+                    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Announcements)
+                  }
+                >
+                  <EasterEgg extraClass="ftx-home-page" page="Home" />
+                </ShowWhen>
+
                 <div className="section-title payment-insights-title">
                   {paymentInsightsTitle}&nbsp;
                   <small>

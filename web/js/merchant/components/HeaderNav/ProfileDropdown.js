@@ -23,6 +23,7 @@ import { track as trackPartnerOnbr } from 'merchant/views/PartnerDashboard/Onboa
 import { isOrgFeatureExist } from 'merchant/models/User';
 import RTBUserIconBg from 'assets/trustedbadge/rtb_user_icon_bg.svg';
 import BusinessImage from 'assets/business.svg';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 @withRouter
 @connect(
@@ -431,7 +432,8 @@ export default class ProfileDropdown extends Component {
               additionalCondition={(user) =>
                 user.role === rolesList.OWNER &&
                 user.partner_type === null &&
-                !isOrgFeatureExist('hide_razorpay_text_link')
+                !isOrgFeatureExist('hide_razorpay_text_link') &&
+                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Partnership)
               }
             >
               <div className="media loggedin-as">

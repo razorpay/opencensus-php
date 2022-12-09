@@ -5,6 +5,7 @@ import { useState } from 'react';
 import ProviderSelector from 'merchant/components/ProviderSelector';
 import { handleChangeTrack } from 'merchant/views/Transactions/AnalyticsTrack';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 const dateRangePresets = [
   ['Past 7 Days', -7, 'days'],
@@ -118,7 +119,11 @@ export default ({ showBatchIdFilter, ...props }) => {
         />
       </div>
 
-      <ShowWhen additionalCondition={(usr) => !usr.findTag('i18_hide_payment.bank_reference_id')}>
+      <ShowWhen
+        additionalCondition={(usr) =>
+          !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.BankReferenceId)
+        }
+      >
         <div class="form-group list-filter-item">
           <label>Bank Reference Number</label>
           <Field

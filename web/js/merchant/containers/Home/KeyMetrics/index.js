@@ -14,6 +14,7 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetch } from 'merchant/reducers/pokedex';
+import { showWhenUtil } from 'merchant/components/ShowWhen';
 import {
   API_ERROR,
   API_INVALID_RESP,
@@ -26,6 +27,7 @@ import { trackNoData, trackError } from 'merchant/containers/Home/ga';
 import Tooltip from 'merchant/components/Home/Tooltip';
 import errorService from '@razorpay/universe-utils/errorService';
 import { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 import {
   NUM_TRANSACTIONS,
@@ -279,7 +281,19 @@ class KeyMetricsContainer extends Component {
   getVisibleTabs() {
     const { tabsState } = this.state;
 
-    return tabsOrder.filter((tabName) => tabsState[tabName].data.showTab);
+    return tabsOrder.filter((tabName) => {
+      if (tabName === 'refunds') {
+        return (
+          tabsState[tabName].data.showTab &&
+          showWhenUtil({
+            additionalCondition: (user) =>
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds),
+          })
+        );
+      }
+
+      return tabsState[tabName].data.showTab;
+    });
   }
 
   tabStateMixin({ tabState, histogram, refreshTinyGraphs }) {

@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unsafe */
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
@@ -19,6 +20,7 @@ import { tabs, tabsMeta } from './data';
 
 import { trackTabClick, trackEntityClick, trackGoToLinks, selfServeTracking } from './ga';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 const shouldDisplayCompact = (windowWidth) => {
   return windowWidth < 480;
@@ -192,6 +194,18 @@ class RecentActivity extends Component {
       });
     }
 
+    const newTabs = tabs.filter((tabName) => {
+      if (tabName === 'refunds') {
+        return !this.props.user?.findTag?.(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds);
+      }
+
+      if (tabName === 'settlements') {
+        return !this.props.user?.findTag?.(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements);
+      }
+
+      return true;
+    });
+
     return (
       <GenericPanel
         className={`recent-activity-cont${displayCompact ? ' compact' : ''}`}
@@ -200,7 +214,7 @@ class RecentActivity extends Component {
         <PanelTopbar>
           <tabbed-container>
             <div className="row">
-              {tabs.map((tabName, index) => {
+              {newTabs.map((tabName, index) => {
                 const className = `${tabName === selectedTab ? 'active ' : ''}col-xs-4`;
 
                 return (

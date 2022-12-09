@@ -19,6 +19,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 const TestComponentBrotli = lazy(() =>
   import(/* webpackChunkName: "TestComponentBrotli" */ './components/TestComponentBrotli'),
@@ -128,7 +129,7 @@ class ManageTeamContainer extends React.Component {
           myRole="owner"
           additionalCondition={(currentUser) =>
             !currentUser.org_enforced_second_factor_auth &&
-            !currentUser.findTag('i18_hide_2fa_verification')
+            !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.TwoFactorVerification)
           }
         >
           <Merchant2FASettings />

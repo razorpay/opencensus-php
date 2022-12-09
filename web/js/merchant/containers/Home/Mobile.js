@@ -8,6 +8,7 @@ import Space from '@razorpay/blade-old/src/atoms/Space';
 import Header from 'common/ui/Header';
 import Amount from 'common/ui/Amount';
 import Sticky from 'common/ui/Sticky';
+import ShowWhen from 'merchant/components/ShowWhen';
 import DateRangePicker from 'common/ui/DateRangePicker';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
@@ -44,6 +45,7 @@ import { shouldShowWebsiteComplianceModal } from 'merchant/views/Account/Website
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 @connect(
   (state) => ({
@@ -156,6 +158,7 @@ class AnalyticsMobile extends Component {
   };
 
   renderWebsiteCompliancePrompt = () => {
+    // prettier-ignore
     const {
       activationData,
       websiteSectionDetailsData,
@@ -262,104 +265,110 @@ class AnalyticsMobile extends Component {
             !showOnboardingBanner && hasSecondaryBanner ? ' has-secondary-banner' : ''
           }`}
         >
-          {ticketsRaisedByAgents.length && user.isMobileSignupCareActive ? (
-            <SupportRequest tickets={ticketsRaisedByAgents} />
-          ) : null}
+          <ShowWhen
+            additionalCondition={(user) =>
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.ProductRecommendationsKyc)
+            }
+          >
+            {ticketsRaisedByAgents.length && user.isMobileSignupCareActive ? (
+              <SupportRequest tickets={ticketsRaisedByAgents} />
+            ) : null}
 
-          {showInstantActivation && !user.isOnboardingV2Enabled ? (
-            <Announcement mode={mode} user={user} payments={payments} />
-          ) : null}
-          {user.isPaymentsEnabled && this.props.referee?.status === 'signup' ? (
-            <AnnouncementBanner
-              title="Unlock Pending Credits"
-              theme="warning"
-              card_id="merchant_referral"
-            >
-              Accept payments of minimum ₹2,000 to receive{' '}
-              {getFormattedAmountNew(this.props.referee.referral_amount, true)} in collections -
-              100% FREE*
-            </AnnouncementBanner>
-          ) : null}
-          <WebsiteComplianceNudge screen="Home page" />
-          {user.isWebsiteComplianceFlowEnabled &&
-            this.props.canShowL1ActivationModals &&
-            this.renderWebsiteCompliancePrompt()}
-          {carouselItem.length ? (
-            <Carousel enableLazy minHeight={200} carouselItem={carouselItem} />
-          ) : null}
-          {!user.isOnboardingV2Enabled ? (
-            <div className={`v2-onboarding-card${expandOnboardingBanner ? ' expand' : ''}`}>
-              {showOnboardingBanner && (
-                <NewUserOnboardingCard
-                  payments={payments}
-                  onClose={onHideOnboardingBanner}
-                  onFirstStepClose={onFirstStepClose}
-                  isFirstStep={showOnboardingBannerFirstStep}
-                  showInstantActivation={showInstantActivation}
-                />
-              )}
-            </div>
-          ) : null}
-
-          {this.props.can_refer ? (
-            <Space margin={[1, 2, 2, 2]}>
-              <View>
-                <M2MBanner />
-              </View>
-            </Space>
-          ) : null}
-
-          {user.isRepaymentBannerEnabled && <RepaymentAnnouncment userId={user.current} />}
-          {user.isOnboardingV2Enabled ? <OnboardingCard referee={this.props.referee} /> : null}
-          {hasSecondaryBanner && (
-            <div className="secondary-announcement-banner">
-              <PersonaliseBanner track={trackPersonaliseBanner} />
-            </div>
-          )}
-
-          {this.renderOnboardingWidgets()}
-          <Header className="clearfix" title="" showMode={false}>
-            <div className={`pull-left ${this.props.user.isOndemandSettlementEnabled && 'm-t'}`}>
-              Balance:{' '}
-              <b>
-                {!current_balance.loading && typeof current_balance.data.balance === 'number' && (
-                  <Amount value={current_balance.data.balance} currency="INR" />
-                )}
-              </b>
-            </div>
-            <div className="pull-right">
-              {this.props.user.isOndemandSettlementEnabled &&
-              this.props.user.isAllowedView('early_settlement') ? (
-                <div className="settlenow-container">
-                  <SettleNowButton
-                    disabled={checkIfSettlementDisabled}
-                    merchantId={user.current}
-                    fromWhere="Home"
-                    settlementExists={settlementExists}
-                    esOndemandSettlementEnabled={esOndemandSettlementEnabled}
-                    showOndemandSettlementForm={this.showOndemandSettlementForm}
-                    checkIfFirstEverSettlement={this.checkIfFirstEverSettlement}
+            {showInstantActivation && !user.isOnboardingV2Enabled ? (
+              <Announcement mode={mode} user={user} payments={payments} />
+            ) : null}
+            {user.isPaymentsEnabled && this.props.referee?.status === 'signup' ? (
+              <AnnouncementBanner
+                title="Unlock Pending Credits"
+                theme="warning"
+                card_id="merchant_referral"
+              >
+                Accept payments of minimum ₹2,000 to receive{' '}
+                {getFormattedAmountNew(this.props.referee.referral_amount, true)} in collections -
+                100% FREE*
+              </AnnouncementBanner>
+            ) : null}
+            <WebsiteComplianceNudge screen="Home page" />
+            {user.isWebsiteComplianceFlowEnabled &&
+              this.props.canShowL1ActivationModals &&
+              this.renderWebsiteCompliancePrompt()}
+            {carouselItem.length ? (
+              <Carousel enableLazy minHeight={200} carouselItem={carouselItem} />
+            ) : null}
+            {!user.isOnboardingV2Enabled ? (
+              <div className={`v2-onboarding-card${expandOnboardingBanner ? ' expand' : ''}`}>
+                {showOnboardingBanner && (
+                  <NewUserOnboardingCard
+                    payments={payments}
+                    onClose={onHideOnboardingBanner}
+                    onFirstStepClose={onFirstStepClose}
+                    isFirstStep={showOnboardingBannerFirstStep}
+                    showInstantActivation={showInstantActivation}
                   />
+                )}
+              </div>
+            ) : null}
 
-                  {settleNowRestrictionMsg && (
-                    <Popover
-                      align="top"
-                      parentQuerySelector=".settle-btn .settle-now--mobile"
-                      theme="dark"
-                    >
-                      <PopoverBody>{settleNowRestrictionMsg}</PopoverBody>
-                    </Popover>
+            {this.props.can_refer ? (
+              <Space margin={[1, 2, 2, 2]}>
+                <View>
+                  <M2MBanner />
+                </View>
+              </Space>
+            ) : null}
+
+            {user.isRepaymentBannerEnabled && <RepaymentAnnouncment userId={user.current} />}
+            {user.isOnboardingV2Enabled ? <OnboardingCard referee={this.props.referee} /> : null}
+            {hasSecondaryBanner && (
+              <div className="secondary-announcement-banner">
+                <PersonaliseBanner track={trackPersonaliseBanner} />
+              </div>
+            )}
+
+            {this.renderOnboardingWidgets()}
+            <Header className="clearfix" title="" showMode={false}>
+              <div className={`pull-left ${this.props.user.isOndemandSettlementEnabled && 'm-t'}`}>
+                Balance:{' '}
+                <b>
+                  {!current_balance.loading && typeof current_balance.data.balance === 'number' && (
+                    <Amount value={current_balance.data.balance} currency="INR" />
                   )}
-                </div>
-              ) : (
-                <Link className="pull-right btn-text" to="/settlements">
-                  <span className="text-no-wrap" onClick={trackSettlementsClick}>
-                    View Settlements <i className="i i-chevron-right" />
-                  </span>
-                </Link>
-              )}
-            </div>
-          </Header>
+                </b>
+              </div>
+              <div className="pull-right">
+                {this.props.user.isOndemandSettlementEnabled &&
+                this.props.user.isAllowedView('early_settlement') ? (
+                  <div className="settlenow-container">
+                    <SettleNowButton
+                      disabled={checkIfSettlementDisabled}
+                      merchantId={user.current}
+                      fromWhere="Home"
+                      settlementExists={settlementExists}
+                      esOndemandSettlementEnabled={esOndemandSettlementEnabled}
+                      showOndemandSettlementForm={this.showOndemandSettlementForm}
+                      checkIfFirstEverSettlement={this.checkIfFirstEverSettlement}
+                    />
+
+                    {settleNowRestrictionMsg && (
+                      <Popover
+                        align="top"
+                        parentQuerySelector=".settle-btn .settle-now--mobile"
+                        theme="dark"
+                      >
+                        <PopoverBody>{settleNowRestrictionMsg}</PopoverBody>
+                      </Popover>
+                    )}
+                  </div>
+                ) : (
+                  <Link className="pull-right btn-text" to="/settlements">
+                    <span className="text-no-wrap" onClick={trackSettlementsClick}>
+                      View Settlements <i className="i i-chevron-right" />
+                    </span>
+                  </Link>
+                )}
+              </div>
+            </Header>
+          </ShowWhen>
           {!isAdmin && (
             <div className="content">
               <p className="section-title">{recentActivityTitle}</p>
@@ -376,6 +385,7 @@ class AnalyticsMobile extends Component {
             </div>
           )}
         </div>
+
         <Sticky
           stickAt={50}
           {...(this.state.enableSticky ? { stickWhen: 0 } : { disableSticky: true })}
@@ -404,6 +414,7 @@ class AnalyticsMobile extends Component {
             </div>
           </Header>
         </Sticky>
+
         <div className="dashboard">
           <div ref={this.containerRef} />
           <LazyLoad height={100} offset={50} once>
@@ -424,7 +435,14 @@ class AnalyticsMobile extends Component {
           <p className="section-title">{paymentInsightsTitle}</p>
           <LazyLoad height={100} offset={50} once>
             <>
-              <EasterEgg extraClass="ftx-home-page" page="Home" />
+              <ShowWhen
+                additionalCondition={(user) =>
+                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.ProductRecommendationsKyc)
+                }
+              >
+                <EasterEgg extraClass="ftx-home-page" page="Home" />
+              </ShowWhen>
+
               <PaymentMethods
                 startDate={startDate}
                 endDate={endDate}
