@@ -170,7 +170,7 @@ class IndusindDebit extends Base
             $loanEAgreementNumber = $cpsAuthorizationDetails[$entityId][self::GATEWAY_REFERENCE_ID_1] ?? '';
 
             $formattedData[] = [
-                'EMI ID'                       => $entityId,
+                'EMI ID'                       => $emiPayment->getId(),
                 'IBL_Txn_Ref_Number'           => $txnRefNumber,
                 'IBL_Loan_E_Agreement_Number'  => $loanEAgreementNumber,
                 'Card Hash'                    => '',
