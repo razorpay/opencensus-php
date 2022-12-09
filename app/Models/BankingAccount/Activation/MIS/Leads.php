@@ -288,11 +288,17 @@ class Leads extends Base
 
             $comment = $bankingAccount->bankingAccountActivationDetails[ActivationDetail\Entity::COMMENT];
 
-            $lastExternalComment = (new \RZP\Models\BankingAccount\Activation\Comment\Repository())->fetchLatestComment($bankingAccount->getId(), 'external');
+            $lastExternalComment = (new \RZP\Models\BankingAccount\Activation\Comment\Repository())->fetchLatestComment($bankingAccount->getId(), 'external', 'bank');
 
             if (is_null($lastExternalComment) === false)
             {
                 $comment = $lastExternalComment->getComment();
+
+                // TODO: Find a more reliable method as this is a basic solution
+                $pattern = '/<(.|\n\t)*?>/';
+                $comment = preg_replace($pattern, '', $comment);
+                $comment = preg_replace('/\s+/', ' ', $comment);
+                $comment = str_replace(array("\r", "\n", "\t"), '', $comment);
             }
 
             $bankAccountType = $bankingAccount->bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_TYPE];

@@ -25,18 +25,24 @@ class Repository extends BaseModels\Repository
         return $this->buildQueryToFetchExternalComment($bankingAccountId, $commentType,'desc')->get();
     }
 
-    public function fetchLatestComment(string $bankingAccountId, string $commentType = null)
+    public function fetchLatestComment(string $bankingAccountId, string $commentType = null, string $sourceTeam = null)
     {
-        return $this->buildQueryToFetchExternalComment($bankingAccountId, $commentType,'desc')->first();
+        return $this->buildQueryToFetchExternalComment($bankingAccountId, $commentType, 'desc', $sourceTeam)->first();
     }
 
-    protected function buildQueryToFetchExternalComment(string $bankingAccountId = null, string $commentType = null, string $sortOrder = 'desc')
+    protected function buildQueryToFetchExternalComment(string $bankingAccountId = null, string $commentType = null, string $sortOrder = 'desc', string $sourceTeam = null)
     {
         $baCommentsType = $this->repo->banking_account_comment->dbColumn(Entity::TYPE);
         $baCommentsAddedAt = $this->repo->banking_account_comment->dbColumn(Entity::ADDED_AT);
 
         $query = $this->newQuery()
             ->select($this->getTableName() . '.*');
+
+        if ($sourceTeam !== null)
+        {
+            $baSourceTeam = $this->repo->banking_account_comment->dbColumn(Entity::SOURCE_TEAM);
+            $query->where($baSourceTeam, $sourceTeam);
+        }
 
         if ($commentType === 'external')
         {

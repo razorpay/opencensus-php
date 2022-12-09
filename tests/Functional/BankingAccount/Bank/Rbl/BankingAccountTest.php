@@ -6235,7 +6235,7 @@ class BankingAccountTest extends TestCase
         }
 
 
-        $comment = "Sample comment";
+        $comment = $input['comment'] ?? "Sample comment";
 
         $adminId = "admin_" . Org::SUPER_ADMIN;
 
@@ -9931,6 +9931,7 @@ class BankingAccountTest extends TestCase
 
         $this->prepareActivationDetail([
             ActivationDetail\Entity::ASSIGNEE_TEAM => 'bank',
+            ActivationDetail\Entity::COMMENT => 'Sample comment',
             ActivationDetail\Entity::MERCHANT_POC_NAME => 'Sample Name',
             ActivationDetail\Entity::MERCHANT_POC_DESIGNATION => 'Financial Consultant',
             ActivationDetail\Entity::MERCHANT_POC_EMAIL => 'sample@sample.com',
@@ -9960,6 +9961,13 @@ class BankingAccountTest extends TestCase
             'method'  => 'PATCH',
             'content' => [
                 BankingAccount\Entity::ACTIVATION_DETAIL => [
+                    'comment' => [
+                        'comment' => '<p>Sample comment</p>',
+                        'source_team' => 'bank',
+                        'source_team_type' => 'internal',
+                        'type' => 'external',
+                        'added_at' => 1597217557
+                    ],
                     ActivationDetail\Entity::RBL_ACTIVATION_DETAILS => [
                         ActivationDetail\Entity::LEAD_REFERRED_BY_RBL_STAFF => true,
                         ActivationDetail\Entity::OFFICE_DIFFERENT_LOCATIONS => false,
