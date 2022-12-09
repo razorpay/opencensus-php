@@ -1185,6 +1185,13 @@ class MerchantController extends Controller
         return $response;
     }
 
+    public function fetchMerchantDetailsForAccountingIntegrations()
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->fetchMerchantDetailsForAccountingIntegrations();
+
+        return ApiResponse::json($response);
+    }
+
     public function getBusinessTypes()
     {
         $response = $this->service(E::MERCHANT_DETAIL)->getBusinessTypes();

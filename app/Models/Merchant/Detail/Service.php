@@ -169,6 +169,18 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function fetchMerchantDetailsForAccountingIntegrations()
+    {
+        $merchantDetails = $this->merchant->merchantDetail;
+
+        $response = [
+            Merchant\Entity::ID                 => $this->merchant->getId(),
+            Entity::ACTIVATION_STATUS           => $merchantDetails->getActivationStatus(),
+        ];
+
+        return $response;
+    }
+
     public function fetchMerchantDetails()
     {
         $merchantDetails = $this->core->getMerchantDetails($this->merchant);

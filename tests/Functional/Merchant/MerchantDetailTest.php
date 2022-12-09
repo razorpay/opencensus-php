@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use DB;
+use Illuminate\Support\Facades\App;
 use Mail;
 use Config;
 use Mockery;
@@ -92,6 +93,8 @@ class MerchantDetailTest extends OAuthTestCase
     const DEFAULT_MERCHANT_ID    = '10000000000000';
     const DEFAULT_SUBMERCHANT_ID = '10000000000009';
 
+    protected $config;
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/MerchantDetailTestData.php';
@@ -101,6 +104,8 @@ class MerchantDetailTest extends OAuthTestCase
         $this->esDao = new EsDao();
 
         $this->esClient =  $this->esDao->getEsClient()->getClient();
+
+        $this->config = App::getFacadeRoot()['config'];
     }
 
     protected function mockBvsService()
@@ -125,6 +130,28 @@ class MerchantDetailTest extends OAuthTestCase
         ]);
 
         $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user->getId());
+
+        $this->startTest();
+    }
+
+    public function testGetAccountingIntegrationMerchantDetails()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->on('live')->create('merchant_detail', [
+            'activation_status' => 'activated',
+            'merchant_id' => $merchantId,
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = $merchantId;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->appAuth('rzp_live', $this->config['applications.vendor_payments.secret']);
 
         $this->startTest();
     }

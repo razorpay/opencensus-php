@@ -2656,6 +2656,18 @@ return [
         ],
     ],
 
+    'testGetAccountingIntegrationMerchantDetails' => [
+        'request'  => [
+            'url'    => '/accounting-integration/merchant/details',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'activation_status' => 'activated'
+            ],
+        ],
+    ],
+
     'testStoreCaseInsensitiveDomain' => [
         'request'  => [
             'method'  => 'POST',

@@ -729,6 +729,7 @@ class Route
         'business_website_status'                  => ['get',      'merchant/business_website_status',               'MerchantController@getWebsiteSelfServeWorkflowDetails'             ],
         'decrypt_merchant_website_comment'         => ['get',      'merchant/{actionId}/decrypt_website_comment',    'MerchantController@getDecryptedWebsiteCommentForWebsiteSelfServe'  ],
         'merchant_activation_details'              => ['get',      'merchant/activation',                            'MerchantController@getActivationDetails'                           ],
+        'accounting_integration_merchant_details'  => ['get',      'accounting-integration/merchant/details',        'MerchantController@fetchMerchantDetailsForAccountingIntegrations'  ],
         'merchant_enhanced_activation_details'     => ['get',      'merchant/enhancedactivation/{merchantId}',       'MerchantController@getEnhancedMerchantActivationDetails'           ],
         'merchant_activation_save'                 => ['post',     'merchant/activation',                            'MerchantController@postSaveActivationDetails'                      ],
         'merchant_activation_otp_send'             => ['post',     'merchant/activation/otp/send',                   'MerchantController@otpSendViaEmail' ],
@@ -5279,6 +5280,7 @@ class Route
         'create_workflow_for_payout',
         'payout_purpose_get_internal',
         'bulk_payout_purpose_post',
+        'accounting_integration_merchant_details',
         'create_payment_payout_service_axis_cc',
         'update_payout_payout_service',
         'internal_balances_queued',
@@ -9886,6 +9888,7 @@ class Route
             'user_details_unified',
             'payout_update_tax_payment_id',
             'bulk_payout_purpose_post',
+            'accounting_integration_merchant_details',
         ],
 
         'dashboard' => [
