@@ -25,7 +25,9 @@ const INVOICES_ROUTES_REGEX = /^\/(invoices|items)/;
 const MARKETPLACE_ROUTES_REGEX = /^\/route\/(payments|transfers|reversals|accounts)/;
 const PAYMENTLINKS_ROUTES_REGEX = /^\/paymentlinks(\/batchuploads)?/;
 const PAYMENTBUTTON_ROUTES_REGEX = /^\/paymentbuttons(\/subscription_buttons)?/;
-const SUBSCRIPTIONS_ROUTES_REGEX = /^\/(subscriptions(\/batchuploads)?|plans|addons|recurring_payments|tokens|authlinks|registration_links)/;
+// prettier-ignore
+const SUBSCRIPTIONS_ROUTES_REGEX =
+  /^\/(subscriptions(\/batchuploads)?|plans|addons|recurring_payments|tokens|authlinks|registration_links)/;
 const PARTNER_DASHBOARD_REGEX = /^\/(submerchants(\/(applications|settings))?|commissions)/;
 const MAGIC_CHECKOUT_REGEX = /^\/(magic)/;
 
@@ -200,19 +202,31 @@ export default class Sidebar extends Component {
           <nav>
             {isMerchant && (
               <div className="nav">
-                <ShowWhen additionalCondition={() => !isOrgFeatureExist('hide_activation_form')}>
+                <ShowWhen
+                  additionalCondition={(currentUser) =>
+                    !isOrgFeatureExist('hide_activation_form') &&
+                    !currentUser.findTag('i18_hide_onboarding')
+                  }
+                >
                   <ActivationProgress
                     onSidebarBannerClick={this.onSidebarBannerClick}
                     user={user}
                     config={config}
                   />
                 </ShowWhen>
-                {user.isPartner() ? (
+
+                {user.isPartner() && !user.findTag('i18_hide_partnership') ? (
                   <PartnerSidebar merchantNavLinkProps={merchantNavLinkProps} user={user} />
                 ) : (
                   <MerchantNavLinks {...merchantNavLinkProps} user={user} />
                 )}
-                <ShowWhen additionalCondition={() => !isOrgFeatureExist('hide_razorpay_text_link')}>
+
+                <ShowWhen
+                  additionalCondition={(currentUser) =>
+                    !isOrgFeatureExist('hide_razorpay_text_link') &&
+                    !currentUser.findTag('i18_hide_app_store')
+                  }
+                >
                   <div className="open">
                     <MainNavLink
                       label="App Store"

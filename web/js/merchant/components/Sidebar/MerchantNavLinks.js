@@ -14,14 +14,9 @@ import {
 } from 'merchant/components/Activation/ActivationUtils';
 
 function MerchantNavLinks(props) {
-  const {
-    routes,
-    isReportsPending,
-    isChargeAtWillEnabled,
-    isSettlementEnabled,
-    user,
-    payment,
-  } = props;
+  // prettier-ignore
+  const { routes, isReportsPending, isChargeAtWillEnabled, isSettlementEnabled, user, payment } =
+    props;
   const showMyAccountCutomBadge = !LocalStorageService.getItem('rtb_page_visited');
   const { recommendedProduct, hasRecommendedProduct } = getRecommendedProductDetails();
   const isRecommendProduct =
@@ -84,7 +79,9 @@ function MerchantNavLinks(props) {
         type="general"
         to="/settlements"
         isSettlementEnabled={isSettlementEnabled && !isRecommendProduct}
-        additionalCondition={(currentUser) => currentUser.isAllowedView('settlements')}
+        additionalCondition={(currentUser) =>
+          currentUser.isAllowedView('settlements') && !currentUser.findTag('i18_hide_settlements')
+        }
       />
 
       <div class="divider" />
@@ -108,14 +105,19 @@ function MerchantNavLinks(props) {
         icon="i i-notes text-warning"
         type="product"
         to={routes.invoices}
-        additionalCondition={(currentUser) => currentUser.isAllowedView('invoices')}
+        additionalCondition={(currentUser) =>
+          currentUser.isAllowedView('invoices') && !currentUser.findTag('i18_hide_invoices')
+        }
       />
       <MainNavLink
         label="Payment Links"
         type="product"
         icon="i i-link text-primary"
         to={routes.paymentlinks}
-        additionalCondition={(currentUser) => currentUser.isAllowedView('payment_links')}
+        additionalCondition={(currentUser) =>
+          currentUser.isAllowedView('payment_links') &&
+          !currentUser.findTag('i18_hide_payment_links')
+        }
         customBadge={getProductBadge(['payment_link'])}
       />
       <MainNavLink
@@ -123,7 +125,10 @@ function MerchantNavLinks(props) {
         type="product"
         icon="i i-payment-pages text-warm temp-icon-style"
         to={routes.paymentpages}
-        additionalCondition={(currentUser) => currentUser.isAllowedView('payment_pages')}
+        additionalCondition={(currentUser) =>
+          currentUser.isAllowedView('payment_pages') &&
+          !currentUser.findTag('i18_hide_payment_pages')
+        }
         customBadge={getProductBadge(['payment_page'])}
       />
       <MainNavLink
@@ -132,7 +137,9 @@ function MerchantNavLinks(props) {
         type="product"
         to={routes.stores}
         additionalCondition={(currentUser) =>
-          currentUser.isAllowedView('stores') && currentUser.isStoresEnabled
+          currentUser.isAllowedView('stores') &&
+          currentUser.isStoresEnabled &&
+          !currentUser.findTag('i18_hide_stores')
         }
         isNew={true}
       />
@@ -158,7 +165,8 @@ function MerchantNavLinks(props) {
         }
         additionalCondition={(currentUser) =>
           currentUser.isAllowedMultiple('payment_buttons subscription_buttons') &&
-          (currentUser.isPaymentButtonEnabledByRazorX || currentUser.isSubscriptionButtonEnabled)
+          (currentUser.isPaymentButtonEnabledByRazorX || currentUser.isSubscriptionButtonEnabled) &&
+          !currentUser.findTag('i18_hide_payment_buttons')
         }
         customBadge={getProductBadge(['payment_button', 'payment_gateway'])}
       />
@@ -167,7 +175,9 @@ function MerchantNavLinks(props) {
         type="product"
         to={routes.marketplace}
         icon="i i-route text-success"
-        additionalCondition={(currentUser) => currentUser.isAllowedView('marketplace')}
+        additionalCondition={(currentUser) =>
+          currentUser.isAllowedView('marketplace') && !currentUser.findTag('i18_hide_marketplace')
+        }
         customBadge={getProductBadge(['route'])}
       />
       <MainNavLink
@@ -191,7 +201,10 @@ function MerchantNavLinks(props) {
         label="Subscriptions"
         type="product"
         icon="i i-refresh text-info"
-        additionalCondition={(currentUser) => currentUser.isAllowedView('subscriptions')}
+        additionalCondition={(currentUser) =>
+          currentUser.isAllowedView('subscriptions') &&
+          !currentUser.findTag('i18_hide_subscription')
+        }
         to={routes[isChargeAtWillEnabled ? 'chargeAtWill' : 'subscriptions']}
         customBadge={getProductBadge(['subscriptions'])}
       />
@@ -200,7 +213,9 @@ function MerchantNavLinks(props) {
         label="QR Codes"
         type="product"
         icon="i i-qr-code text-warm"
-        additionalCondition={(currentUser) => currentUser.isAllowedView('qr_codes')}
+        additionalCondition={(currentUser) =>
+          currentUser.isAllowedView('qr_codes') && !currentUser.findTag('i18_hide_qr_codes')
+        }
         to={routes.qrCodes}
         isNew={!isRecommendProduct}
       />
@@ -210,7 +225,10 @@ function MerchantNavLinks(props) {
         type="product"
         icon="i i-account-balance text-danger"
         to={routes.smartCollect}
-        additionalCondition={(currentUser) => currentUser.isAllowedView('virtual_accounts')}
+        additionalCondition={(currentUser) =>
+          currentUser.isAllowedView('virtual_accounts') &&
+          !currentUser.findTag('i18_hide_virtual_accounts')
+        }
         customBadge={getProductBadge(['smart_collect'])}
       />
 
@@ -253,7 +271,9 @@ function MerchantNavLinks(props) {
         type="general"
         icon="i i-people text-warning"
         to="/customers"
-        additionalCondition={(currentUser) => currentUser.isAllowedView('customers')}
+        additionalCondition={(currentUser) =>
+          currentUser.isAllowedView('customers') && !currentUser.findTag('i18_hide_customers')
+        }
       />
 
       <MainNavLink
@@ -261,14 +281,19 @@ function MerchantNavLinks(props) {
         icon="i i-offer text-success"
         type="general"
         to="/offers"
-        additionalCondition={(currentUser) => currentUser.isAllowedView('offers')}
+        additionalCondition={(currentUser) =>
+          currentUser.isAllowedView('offers') && !currentUser.findTag('i18_hide_offers')
+        }
       />
 
       <MainNavLink
         label="Checkout Rewards"
         icon="i i-rewards text-danger"
         to="/checkout-rewards"
-        additionalCondition={(currentUser) => currentUser.isAllowedView('checkoutrewards')}
+        additionalCondition={(currentUser) =>
+          currentUser.isAllowedView('checkoutrewards') &&
+          !currentUser.findTag('i18_hide_checkoutrewards')
+        }
       />
 
       <MainNavLink
