@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import View from '@razorpay/blade-old/src/atoms/View';
-import Link from '@razorpay/commander-shield/src/shared/Link';
+import Link from 'common/components/Link';
 
 export const Header = styled(Text)`
   padding: 100px;

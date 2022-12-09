@@ -6,10 +6,10 @@ import Size from '@razorpay/blade-old/src/atoms/Size';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import View from '@razorpay/blade-old/src/atoms/View';
-import { fetchOrg, transformFetchOrgData } from '../apis';
+import { fetchOrg, transformFetchOrgData } from 'newAuth/apis';
 import { getBankingCaptchaColor, getTheme } from './theme';
-import { BANK_NAMES, getHostName, isTestEnvironment, IGNORE_BG_IMAGES_BANKS } from '../utils';
-import { DesktopOnlyView } from '../commonStyles';
+import { BANK_NAMES, getHostName, isTestEnvironment, IGNORE_BG_IMAGES_BANKS } from 'newAuth/utils';
+import { DesktopOnlyView } from 'newAuth/commonStyles';
 import {
   Container,
   AbsoluteView,
@@ -23,7 +23,8 @@ import {
 import DefaultView from './components/DefaultView';
 import OrgView from './components/OrgView';
 import Header from './components/Header';
-import { FullPageLoader } from '../../common/components/Loader';
+import { FullPageLoader } from 'common/components/Loader';
+import CommanderShieldThemeWrapper from 'newAuth/commanderShieldThemeWrapper';
 
 const DEFAULT_ORG_DATA = {
   display_name: 'Razorpay Software Private Ltd',
@@ -139,14 +140,16 @@ const Signin = () => {
                     </DesktopOnlyView>
 
                     <AbsoluteView>
-                      <Auth
-                        appName="dashboard"
-                        authClientId={window.OAUTH_CLIENT_ID}
-                        oneTapInfo={oneTapInfo}
-                        theme={getTheme(orgData)}
-                        isGoogleOauthEnabled={orgData.orgName !== BANK_NAMES.AXIS}
-                        skipCaptcha={isTestEnvironment()}
-                      />
+                      <CommanderShieldThemeWrapper>
+                        <Auth
+                          appName="dashboard"
+                          authClientId={window.OAUTH_CLIENT_ID}
+                          oneTapInfo={oneTapInfo}
+                          theme={getTheme(orgData)}
+                          isGoogleOauthEnabled={orgData.orgName !== BANK_NAMES.AXIS}
+                          skipCaptcha={isTestEnvironment()}
+                        />
+                      </CommanderShieldThemeWrapper>
                       <CaptchaTextView>
                         <Flex>
                           <Space padding={[2, 0]} margin="auto">

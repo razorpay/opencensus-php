@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import ResetPasswordComp from '@razorpay/commander-shield/src/bootstrap/ResetPasswordWrapper';
-import { fetchOrg, transformFetchOrgData } from '../apis';
+import CommanderShieldThemeWrapper from 'newAuth/commanderShieldThemeWrapper';
+import { fetchOrg, transformFetchOrgData } from 'newAuth/apis';
 
 const defaultLogoPath = 'img/logo_black.png';
 
@@ -18,7 +19,11 @@ const ResetPassword = () => {
       });
   }, []);
 
-  return <ResetPasswordComp logo={orgLogoUrl} />;
+  return (
+    <CommanderShieldThemeWrapper>
+      <ResetPasswordComp logo={orgLogoUrl} />
+    </CommanderShieldThemeWrapper>
+  );
 };
 
 export default ResetPassword;

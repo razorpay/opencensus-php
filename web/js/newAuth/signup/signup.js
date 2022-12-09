@@ -16,6 +16,7 @@ import {
   isTestEnvironment,
 } from 'newAuth/utils';
 import { setCookie } from 'common/utils/cookies';
+import CommanderShieldThemeWrapper from 'newAuth/commanderShieldThemeWrapper';
 
 const SignUp = () => {
   const [oneTapInfo, setOneTapInfo] = useState({
@@ -110,15 +111,17 @@ const SignUp = () => {
                 <RelativeView>
                   <RefereeBanner />
                   <AbsoluteView>
-                    <Auth
-                      appName="dashboard"
-                      authClientId={window.OAUTH_CLIENT_ID}
-                      oneTapInfo={oneTapInfo}
-                      showPasswordRules={isPasswordUXImprovementEnabled()}
-                      skipCaptcha={isTestEnvironment()}
-                      autoReadOtpSignup
-                      showMobileSignup
-                    />
+                    <CommanderShieldThemeWrapper>
+                      <Auth
+                        appName="dashboard"
+                        authClientId={window.OAUTH_CLIENT_ID}
+                        oneTapInfo={oneTapInfo}
+                        showPasswordRules={isPasswordUXImprovementEnabled()}
+                        skipCaptcha={isTestEnvironment()}
+                        autoReadOtpSignup
+                        showMobileSignup
+                      />
+                    </CommanderShieldThemeWrapper>
                   </AbsoluteView>
                   <InfoContainer handleContactUsClick={handleContactUsClick} />
                 </RelativeView>

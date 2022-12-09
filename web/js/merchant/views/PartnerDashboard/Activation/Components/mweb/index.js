@@ -1,11 +1,15 @@
 import styled from 'styled-components';
+import { compose } from 'redux';
+import rTracking from 'react-tracking';
+import { withRouter } from 'react-router-dom';
+import { connect } from 'react-redux';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Heading from '@razorpay/blade-old/src/atoms/Heading';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import Icon from '@razorpay/blade-old/src/atoms/Icon';
 import Button from '@razorpay/blade-old/src/atoms/Button';
-import Link from '@razorpay/commander-shield/src/shared/Link';
+import Link from 'common/components/Link';
 import { Tabs, Tab } from 'common/components/Tabs';
 import { FullPageLoader } from 'common/components/Loader';
 import ActivationModal from './ActivationModal';
@@ -13,15 +17,11 @@ import SaveAndExitModal from './SaveAndExitModal';
 import React, { useState, useEffect } from 'react';
 import ContactDetails from './ContactDetails';
 import BusinessDetails from './BusinessDetails';
-import useActivation from '../../Hooks/useActivation';
-import { useActivationFormState } from '../../Hooks/store';
+import useActivation from 'merchant/views/PartnerDashboard/Activation/Hooks/useActivation';
+import { useActivationFormState } from 'merchant/views/PartnerDashboard/Activation/Hooks/store';
 import { SnackbarProvider } from 'common/components/SnackBar/SnackbarContext';
-import { withRouter } from 'react-router-dom';
-import { connect } from 'react-redux';
 import { showPartnerKYCStatusModal, hidePartnerKYCStatusModal } from 'merchant/reducers/home';
-import KYCStatusModal from '../KYCStatus/KYCStatusModal';
-import { compose } from 'redux';
-import rTracking from 'react-tracking';
+import KYCStatusModal from 'merchant/views/PartnerDashboard/Activation/Components/KYCStatus/KYCStatusModal';
 
 const RenderMwebActivationForm = (props) => {
   const [isSaveAndExitModalOpen, setIsSaveAndExitModalOpen] = useState(false);
@@ -61,17 +61,17 @@ const RenderMwebActivationForm = (props) => {
     position: fixed;
     bottom: 0;
     padding: 16px;
-    background-color: ${({ theme }) => theme.colors.background['200']};
+    background-color: ${({ theme }) => theme.bladeOld.colors.background['200']};
     border-top: 1px solid rgba(22, 47, 86, 0.1);
   `;
 
   const StyledActivationForm = styled(View)`
     min-height: 100vh;
-    background-color: ${({ theme }) => theme.colors.background[400]};
+    background-color: ${({ theme }) => theme.bladeOld.colors.background[400]};
   `;
 
   const StyledHeader = styled(View)`
-    background-color: ${({ theme }) => theme.colors.background[200]};
+    background-color: ${({ theme }) => theme.bladeOld.colors.background[200]};
   `;
 
   const onBack = () => {

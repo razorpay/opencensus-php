@@ -1,6 +1,10 @@
 /* eslint valid-jsdoc: 0 */
-import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
-import { BANK_NAMES } from '../utils';
+/**
+ * We use the theme from a different blade-old release because commander-shield uses a different version of blade
+ * This scopes out commander shield from any theming change that may bleed in from dashboard
+ */
+import { lightTheme as theme } from '@razorpay/blade-old-for-new-auth/src/tokens/theme';
+import { BANK_NAMES } from 'newAuth/utils';
 
 const colorScale = [
   '100',

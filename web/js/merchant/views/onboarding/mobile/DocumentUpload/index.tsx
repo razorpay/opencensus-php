@@ -9,7 +9,6 @@ import Checkbox from '@razorpay/blade-old/src/atoms/Checkbox';
 import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
 import * as Yup from 'yup';
 import { Formik, Form } from 'formik';
-import Link from '@razorpay/commander-shield/src/shared/Link';
 import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
 import { Select, Option } from 'common/components/Select';
 import { FileUpload } from 'common/components/FileUpload';
@@ -17,6 +16,7 @@ import ESignVerification from 'merchant/views/onboarding/mobile/ESignVerificatio
 import Card from 'common/components/Card';
 import { FormSection, Field } from 'merchant/views/onboarding/mobile/Form';
 import { useActivationFormState, isVisible } from 'merchant/views/onboarding/mobile/context/store';
+import Link from 'common/components/Link';
 import {
   ADDRESS_PROOF_TYPES,
   BANK_PROOF_TYPE_DOC,

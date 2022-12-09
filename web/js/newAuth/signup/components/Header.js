@@ -2,16 +2,16 @@ import React from 'react';
 import Size from '@razorpay/blade-old/src/atoms/Size';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import Space from '@razorpay/blade-old/src/atoms/Space';
-import Button from '@razorpay/commander-shield/src/shared/Button';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import View from '@razorpay/blade-old/src/atoms/View';
+import Button from 'common/components/Button';
 import {
   HeaderView,
   DesktopOnlyView,
   MobileOnlyView,
   FullHeightFlex,
   CustomSecondaryButton,
-} from '../../commonStyles';
+} from 'newAuth/commonStyles';
 
 const Header = ({ handleOnClick, isSignUpFromWebsite = false }) => {
   return (

@@ -1,16 +1,16 @@
 import styled from 'styled-components';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Text from '@razorpay/blade-old/src/atoms/Text';
-import Link from '@razorpay/commander-shield/src/shared/Link';
+import Link from 'common/components/Link';
 
 export const StyledContent = styled(View)`
   min-height: 100vh;
-  background-color: ${({ theme }) => theme.colors.background[400]};
+  background-color: ${({ theme }) => theme.bladeOld.colors.background[400]};
   border-top: 1px solid rgba(224, 228, 249, 0.54);
 `;
 
 export const StyledHeader = styled(View)`
-  background-color: ${({ theme }) => theme.colors.background[200]};
+  background-color: ${({ theme }) => theme.bladeOld.colors.background[200]};
 `;
 
 export const StyledFooter = styled(View)`
@@ -20,7 +20,7 @@ export const StyledFooter = styled(View)`
   bottom: 0;
   left: 0;
   padding: 16px;
-  background-color: ${({ theme }) => theme.colors.background['200']};
+  background-color: ${({ theme }) => theme.bladeOld.colors.background['200']};
   border-top: 1px solid rgba(22, 47, 86, 0.1);
 `;
 

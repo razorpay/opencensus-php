@@ -10,16 +10,16 @@ const TabBar = styled(View)`
   overflow-x: scroll;
   box-sizing: border-box;
   box-shadow: 0px 4px 15px rgba(11, 112, 231, 0.05);
-  background-color: ${({ theme }) => theme.colors.background[200]};
+  background-color: ${({ theme }) => theme.bladeOld.colors.background[200]};
 `;
 
 const TabContentContainer = styled(View)`
-  background-color: ${({ theme }) => theme.colors.background[400]};
+  background-color: ${({ theme }) => theme.bladeOld.colors.background[400]};
 `;
 const StyledSeparator = styled(View)`
   height: 1px;
   width: 100%;
-  background-color: ${({ theme }) => theme.colors.shade[930]};
+  background-color: ${({ theme }) => theme.bladeOld.colors.shade[930]};
 `;
 interface TabsChildProps {
   isActive: boolean;

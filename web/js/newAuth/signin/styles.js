@@ -50,7 +50,7 @@ export const AbsoluteView = Styled(View)`
   flex-grow: 1;
   height: 100%;
   max-width: 100%;
-  background-color: ${({ theme }) => theme.colors.background[100]};
+  background-color: ${({ theme }) => theme.bladeOld.colors.background[100]};
   @media ${media.mobile} {
     height: 577px;
     max-width: 375px;
@@ -81,7 +81,7 @@ export const RelativeView = Styled(View)`
     flex-grow: initial;
     display: block;
     position: relative;
-    background: ${({ theme }) => theme.colors.background[400]};
+    background: ${({ theme }) => theme.bladeOld.colors.background[400]};
     padding-right: 384px;
     margin: 32px 0;
   }

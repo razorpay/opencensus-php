@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useMutation } from 'react-query';
 import * as Yup from 'yup';
 import { Formik, Form, useFormikContext } from 'formik';
 import Text from '@razorpay/blade-old/src/atoms/Text';
@@ -7,8 +8,7 @@ import Space from '@razorpay/blade-old/src/atoms/Space';
 import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
 import Button from '@razorpay/blade-old/src/atoms/Button';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
-import Link from '@razorpay/commander-shield/src/shared/Link';
-import { useMutation } from 'react-query';
+import Link from 'common/components/Link';
 import { fetch } from 'common/services/rest/rest-fetch';
 import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
 import { analyticsTrack } from 'common/services/tracking/segment';

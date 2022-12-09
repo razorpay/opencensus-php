@@ -2,12 +2,12 @@
 import Styled from 'styled-components';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
-import Button from '@razorpay/commander-shield/src/shared/Button';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
+import Button from 'common/components/Button';
 import { media } from './breakpoints';
-const themeDarkBlue = theme.colors.highlight[700];
-const themePrimary = theme.colors.primary[900];
+const themeDarkBlue = theme.bladeOld.colors.highlight[700];
+const themePrimary = theme.bladeOld.colors.primary[900];
 
 export const HeaderView = Styled(View)`
   background: linear-gradient(149.39deg, ${themeDarkBlue} 0%, ${themePrimary} 100%);
@@ -54,18 +54,18 @@ export const ContentContainer = Styled(View)`
 `;
 
 export const CustomSecondaryButton = Styled(Button)`
-  background-color: ${({ theme }) => theme.colors.background[100]};
-  border: 1px solid ${({ theme }) => theme.colors.background[100]};
+  background-color: ${({ theme }) => theme.bladeOld.colors.background[100]};
+  border: 1px solid ${({ theme }) => theme.bladeOld.colors.background[100]};
   > div{
-   color: ${({ theme }) => theme.colors.primary[800]};
+   color: ${({ theme }) => theme.bladeOld.colors.primary[800]};
   }
   :hover, :focus{
-   background-color: ${({ theme }) => theme.colors.background[800]};
-   border: 1px solid ${({ theme }) => theme.colors.background[800]};
+   background-color: ${({ theme }) => theme.bladeOld.colors.background[800]};
+   border: 1px solid ${({ theme }) => theme.bladeOld.colors.background[800]};
   }
   :active{
-   background-color: ${({ theme }) => theme.colors.background[600]};
-   border: 1px solid ${({ theme }) => theme.colors.background[600]};
+   background-color: ${({ theme }) => theme.bladeOld.colors.background[600]};
+   border: 1px solid ${({ theme }) => theme.bladeOld.colors.background[600]};
    }
 `;
 

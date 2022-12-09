@@ -10,7 +10,7 @@ import {
   getFormatedCurrency,
 } from 'merchant/views/onboarding/mobile/services/utils';
 import { showProductsModal } from 'merchant/reducers/home';
-import Link from '@razorpay/commander-shield/src/shared/Link';
+import Link from 'common/components/Link';
 import { getMode, switchMode } from 'common/services/mode';
 import Info from './Info';
 import Buttons from './Buttons';

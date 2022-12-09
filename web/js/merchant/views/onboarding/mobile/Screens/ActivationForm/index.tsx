@@ -8,7 +8,7 @@ import Space from '@razorpay/blade-old/src/atoms/Space';
 import Icon from '@razorpay/blade-old/src/atoms/Icon';
 import Checkbox from '@razorpay/blade-old/src/atoms/Checkbox';
 import Button from '@razorpay/blade-old/src/atoms/Button';
-import Link from '@razorpay/commander-shield/src/shared/Link';
+import Link from 'common/components/Link';
 import { FullPageLoader } from 'common/components/Loader';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 import {
@@ -43,17 +43,17 @@ const StyledFooter = styled(View)`
   position: fixed;
   bottom: 0;
   padding: 16px;
-  background-color: ${({ theme }) => theme.colors.background['200']};
+  background-color: ${({ theme }) => theme.bladeOld.colors.background['200']};
   border-top: 1px solid rgba(22, 47, 86, 0.1);
 `;
 
 const StyledActivationForm = styled(View)`
   min-height: 100vh;
-  background-color: ${({ theme }) => theme.colors.background[400]};
+  background-color: ${({ theme }) => theme.bladeOld.colors.background[400]};
 `;
 
 const StyledHeader = styled(View)`
-  background-color: ${({ theme }) => theme.colors.background[200]};
+  background-color: ${({ theme }) => theme.bladeOld.colors.background[200]};
 `;
 
 const AcknowledgementFooter = styled(View)`
@@ -756,6 +756,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
 
     return tabs;
   };
+
   return (
     <View>
       {/* Header */}

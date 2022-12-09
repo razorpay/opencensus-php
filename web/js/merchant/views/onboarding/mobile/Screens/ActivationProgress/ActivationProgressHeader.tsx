@@ -5,7 +5,7 @@ import Space from '@razorpay/blade-old/src/atoms/Space';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import Text from '@razorpay/blade-old/src/atoms/Text';
-import Link from '@razorpay/commander-shield/src/shared/Link';
+import Link from 'common/components/Link';
 import SaveAndExitModal from 'merchant/views/onboarding/mobile/SaveAndExitModal';
 import HeaderBackground from './images/header_background.svg';
 import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
@@ -15,7 +15,7 @@ import { useApp } from 'common/context/App';
 const StyledActivationProgressHeader = styled(View)`
   box-shadow: 0px 4px 5px rgba(11, 112, 231, 0.05);
   background: url('${HeaderBackground}') right bottom -10px no-repeat;
-  background-color: ${({ theme }) => theme.colors.background['200']};
+  background-color: ${({ theme }) => theme.bladeOld.colors.background['200']};
 `;
 const ActivationProgressHeader: React.FC<RouteComponentProps & { progress: number }> = ({
   progress,

@@ -13,7 +13,7 @@ const StyledTabTitle = styled(View)`
 `;
 
 const Highlight = styled(View)`
-  background-color: ${({ theme }) => theme.colors.primary[800]};
+  background-color: ${({ theme }) => theme.bladeOld.colors.primary[800]};
 `;
 
 interface TabProps {

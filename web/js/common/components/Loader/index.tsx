@@ -7,8 +7,8 @@ import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import { makePxValue } from '@razorpay/blade-old/src/_helpers/theme';
 
 const StyledLoader = styled(View)`
-  border: 3px solid ${(props) => props.theme.colors.primary[700]};
-  border-top: 3px solid ${(props) => props.theme.colors.background[600]};
+  border: 3px solid ${(props) => props.theme.bladeOld.colors.primary[700]};
+  border-top: 3px solid ${(props) => props.theme.bladeOld.colors.background[600]};
   border-radius: 50%;
   width: ${(props) => makePxValue(props.width)};
   height: ${(props) => makePxValue(props.height)};

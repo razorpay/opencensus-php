@@ -4,7 +4,7 @@ import View from '@razorpay/blade-old/src/atoms/View';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import Button from '@razorpay/blade-old/src/atoms/Button';
 import Icon from '@razorpay/blade-old/src/atoms/Icon';
-import Link from '@razorpay/commander-shield/src/shared/Link';
+import Link from 'common/components/Link';
 
 interface ButtonPropsT {
   onClick?: () => void;

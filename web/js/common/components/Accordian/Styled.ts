@@ -25,20 +25,20 @@ export const Header = styled.div`
   cursor: ${(props) => (props.$disabled ? 'not-allowed' : 'pointer')};
   display: flex;
   align-items: center;
-  font-size: ${({ theme }) => theme.fonts.size.medium};
-  line-height: ${({ theme }) => theme.fonts.lineHeight.medium};
+  font-size: ${({ theme }) => theme.bladeOld.fonts.size.medium};
+  line-height: ${({ theme }) => theme.bladeOld.fonts.lineHeight.medium};
   color: ${({ theme }) => getColor(theme, 'shade.960')};
-  padding-top: ${(props) => props.theme.spacings.medium};
-  padding-bottom: ${(props) => props.theme.spacings.medium};
+  padding-top: ${(props) => props.theme.bladeOld.spacings.medium};
+  padding-bottom: ${(props) => props.theme.bladeOld.spacings.medium};
 `;
 
 export const Content = styled.div`
   max-height: ${(props) => (props.$expanded ? '100%' : 0)};
   height: ${(props) => (props.$expanded ? 'auto' : 0)};
   color: ${({ theme }) => getColor(theme, 'shade.970')};
-  font-size: ${({ theme }) => theme.fonts.size.medium};
-  line-height: ${({ theme }) => theme.fonts.lineHeight.medium};
-  padding-bottom: ${(props) => (props.$expanded ? props.theme.spacings.medium : 0)};
+  font-size: ${({ theme }) => theme.bladeOld.fonts.size.medium};
+  line-height: ${({ theme }) => theme.bladeOld.fonts.lineHeight.medium};
+  padding-bottom: ${(props) => (props.$expanded ? props.theme.bladeOld.spacings.medium : 0)};
   overflow: 'hidden';
   transition-duration: all;
   transition-duration: 400ms;

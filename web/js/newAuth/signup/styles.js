@@ -1,7 +1,7 @@
 /* eslint-disable */
 import Styled from 'styled-components';
 import View from '@razorpay/blade-old/src/atoms/View';
-import Link from '@razorpay/commander-shield/src/shared/Link';
+import Link from 'common/components/Link';
 import { media } from '../breakpoints';
 
 export const AbsoluteView = Styled(View)`
@@ -11,7 +11,7 @@ export const AbsoluteView = Styled(View)`
   flex-grow: 1;
   height: calc(100% - 62px);
   width: 100%;
-  background-color: ${({ theme }) => theme.colors.background[100]};
+  background-color: ${({ theme }) => theme.bladeOld.colors.background[100]};
   @media (min-width: 415px) {
     height: 577px;
     max-width: 375px;
@@ -41,7 +41,7 @@ export const RelativeView = Styled(View)`
     height: 480px;
     flex-grow: initial;
     position: relative;
-    background: ${({ theme }) => theme.colors.background[400]};
+    background: ${({ theme }) => theme.bladeOld.colors.background[400]};
     padding-left: 384px;
     margin: 48px 0;
     justify-content: space-around;
@@ -55,16 +55,16 @@ export const Container = Styled(View)`
 `;
 
 export const CustomLink = Styled(Link)`
-  color: ${({ theme }) => theme.colors.shade[950]};
+  color: ${({ theme }) => theme.bladeOld.colors.shade[950]};
   text-decoration: underline;
   &&:visited {
-    color: ${({ theme }) => theme.colors.shade[950]};
+    color: ${({ theme }) => theme.bladeOld.colors.shade[950]};
   }
   &&:hover {
-    color: ${({ theme }) => theme.colors.shade[950]};
+    color: ${({ theme }) => theme.bladeOld.colors.shade[950]};
   }
   &&:active {
-    color: ${({ theme }) => theme.colors.shade[950]};
+    color: ${({ theme }) => theme.bladeOld.colors.shade[950]};
   }
 `;
 
@@ -74,7 +74,7 @@ export const BorderView = Styled(View)`
   position relative;
   left: 50%;
   margin-left: -25px;
-  background: ${({ theme }) => theme.colors.shade[920]};
+  background: ${({ theme }) => theme.bladeOld.colors.shade[920]};
 `;
 
 export const DesktopBannerBg = Styled(View)`

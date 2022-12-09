@@ -23,11 +23,11 @@ export const DialogContainer = styled.div`
 export const Dialog = styled.div`
   position: relative;
   background-color: ${({ theme }) => getColor(theme, 'background.100')};
-  margin-left: ${({ theme }) => theme.spacings.medium};
-  margin-top: ${({ theme }) => theme.spacings.medium};
-  margin-right: ${({ theme }) => theme.spacings.medium};
-  margin-bottom: ${({ theme }) => theme.spacings.medium};
-  border-radius: ${({ theme }) => theme.spacings.xsmall};
+  margin-left: ${({ theme }) => theme.bladeOld.spacings.medium};
+  margin-top: ${({ theme }) => theme.bladeOld.spacings.medium};
+  margin-right: ${({ theme }) => theme.bladeOld.spacings.medium};
+  margin-bottom: ${({ theme }) => theme.bladeOld.spacings.medium};
+  border-radius: ${({ theme }) => theme.bladeOld.spacings.xsmall};
   max-height: 100%;
   overflow: auto;
   max-width: 100%;
@@ -41,8 +41,8 @@ export const Dialog = styled.div`
 // Button from blade not attaching className to DOM, hence using container
 export const CloseIconContainer = styled.div`
   position: absolute;
-  top: ${({ theme }) => theme.spacings.small};
-  right: ${({ theme }) => theme.spacings.small};
+  top: ${({ theme }) => theme.bladeOld.spacings.small};
+  right: ${({ theme }) => theme.bladeOld.spacings.small};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -61,8 +61,8 @@ export const BottomSheet = styled.div.attrs((props) => ({
   height: ${({ $bottomSheetHeight }) => $bottomSheetHeight};
   overflow: auto;
   width: 100%;
-  border-top-left-radius: ${({ theme }) => theme.spacings.small};
-  border-top-right-radius: ${({ theme }) => theme.spacings.small};
+  border-top-left-radius: ${({ theme }) => theme.bladeOld.spacings.small};
+  border-top-right-radius: ${({ theme }) => theme.bladeOld.spacings.small};
   box-shadow: 0px -4px 15px ${({ theme }) => getColor(theme, 'sapphire.930')};
 
   &:focus {
@@ -71,37 +71,37 @@ export const BottomSheet = styled.div.attrs((props) => ({
 `;
 
 export const BottomSheetHandle = styled.div`
-  height: ${({ theme }) => theme.spacings.xsmall};
+  height: ${({ theme }) => theme.bladeOld.spacings.xsmall};
   background-color: ${({ theme }) => getColor(theme, 'shade.920')};
-  border-radius: ${({ theme }) => theme.spacings.xsmall};
-  margin-top: ${({ theme }) => theme.spacings.small};
+  border-radius: ${({ theme }) => theme.bladeOld.spacings.xsmall};
+  margin-top: ${({ theme }) => theme.bladeOld.spacings.small};
   width: 64px;
   margin-left: auto;
   margin-right: auto;
 `;
 
 const HeaderText = styled(Text)`
-  margin-top: ${({ theme }) => theme.spacings.xxxlarge};
-  margin-bottom: ${({ theme }) => theme.spacings.large};
-  margin-left: ${({ theme }) => theme.spacings.xxlarge};
-  margin-right: ${({ theme }) => theme.spacings.xxxlarge};
+  margin-top: ${({ theme }) => theme.bladeOld.spacings.xxxlarge};
+  margin-bottom: ${({ theme }) => theme.bladeOld.spacings.large};
+  margin-left: ${({ theme }) => theme.bladeOld.spacings.xxlarge};
+  margin-right: ${({ theme }) => theme.bladeOld.spacings.xxxlarge};
 `;
 export const ModalHeader: React.FC = (props) => <HeaderText weight="bold" {...props} />;
 
 const BodyText = styled(Text)`
-  margin-top: ${({ theme }) => theme.spacings.large};
-  margin-bottom: ${({ theme }) => theme.spacings.large};
-  margin-left: ${({ theme }) => theme.spacings.xxlarge};
-  margin-right: ${({ theme }) => theme.spacings.xxlarge};
+  margin-top: ${({ theme }) => theme.bladeOld.spacings.large};
+  margin-bottom: ${({ theme }) => theme.bladeOld.spacings.large};
+  margin-left: ${({ theme }) => theme.bladeOld.spacings.xxlarge};
+  margin-right: ${({ theme }) => theme.bladeOld.spacings.xxlarge};
 `;
 export const ModalBody: React.FC = (props) => <BodyText size="medium" {...props} />;
 
 export const FooterText = styled(Text)`
-  margin-top: ${({ theme }) => theme.spacings.large};
-  margin-left: ${({ theme }) => theme.spacings.xxlarge};
-  margin-right: ${({ theme }) => theme.spacings.xxlarge};
-  padding-top: ${({ theme }) => theme.spacings.large};
-  padding-bottom: ${({ theme }) => theme.spacings.large};
+  margin-top: ${({ theme }) => theme.bladeOld.spacings.large};
+  margin-left: ${({ theme }) => theme.bladeOld.spacings.xxlarge};
+  margin-right: ${({ theme }) => theme.bladeOld.spacings.xxlarge};
+  padding-top: ${({ theme }) => theme.bladeOld.spacings.large};
+  padding-bottom: ${({ theme }) => theme.bladeOld.spacings.large};
   display: flex;
   justify-content: flex-end;
 `;
