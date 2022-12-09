@@ -445,7 +445,7 @@ export const handlers = [
     );
   }),
 
-  // Setllements
+  // Settlements
   rest.get('*/merchant/api/test/settlements/:id', (req, res, ctx) => {
     return res(
       ctx.status(200),
@@ -465,48 +465,7 @@ export const handlers = [
         data: {
           entity: 'collection',
           count: 3,
-          items: [
-            {
-              component: 'adjustment',
-              amount: 50300,
-              count: 16,
-              type: 'debit',
-              fee: 0,
-              tax: 0,
-            },
-            {
-              component: 'payment_domestic',
-              amount: 34647940,
-              count: 204,
-              type: 'credit',
-              fee: 678291,
-              tax: 122088,
-            },
-            {
-              component: 'refund_domestic',
-              amount: 21511,
-              count: 8,
-              type: 'debit',
-              fee: 0,
-              tax: 0,
-            },
-            {
-              component: 'reversal',
-              amount: 101200,
-              count: 5,
-              type: 'credit',
-              fee: 0,
-              tax: 0,
-            },
-            {
-              component: 'transfer',
-              amount: 185539,
-              count: 45,
-              type: 'debit',
-              fee: 0,
-              tax: 0,
-            },
-          ],
+          items: SettlementsDB.settlementTabBreakupDetails.items,
         },
       }),
       ctx.delay(50),

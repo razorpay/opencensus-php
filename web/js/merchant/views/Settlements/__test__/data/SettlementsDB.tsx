@@ -6,8 +6,9 @@ const settlementsInfo = {
   status: 'created',
   fees: 106828,
   tax: 16294,
-  utr: null,
+  utr: 'test-utr',
   created_at: 1619516570,
+  optimizer_provider: 'PayU',
 };
 
 const settleBreakupDetails = {
