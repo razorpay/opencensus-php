@@ -330,6 +330,7 @@ class Gateway
     // If you're adding any new DS Gateway then also add gateway bank/org name in DIRECT_SETTLEMENT_ORG_NAME map
     const DIRECT_SETTLEMENT_GATEWAYS = [
         self::AMEX                  => self::AMEX,
+        self::MPGS                  => self::AMEX,
         self::AXIS_MIGS             => [
             'default'           => self::HDFC,
             self::ACQUIRER_HDFC => self::HDFC,
