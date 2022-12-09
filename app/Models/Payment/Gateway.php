@@ -613,6 +613,10 @@ class Gateway
         self::ISG,
     ];
 
+    const FORCE_AUTHORIZE_FAILED_SYNC_GATEWAYS = [
+        Payment\Gateway::KOTAK_DEBIT_EMI,
+    ];
+
     /**
      * List of gateways that we wish to attempt this with.
      * This should eventually cover all API based refund

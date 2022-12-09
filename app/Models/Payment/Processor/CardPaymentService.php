@@ -98,7 +98,7 @@ trait CardPaymentService
     public function callCpsAction($payment, $gateway, $action, $gatewayData)
     {
         $statusCode = null;
-        if ($action === Action::FORCE_AUTHORIZE_FAILED)
+        if ($action === Action::FORCE_AUTHORIZE_FAILED and (in_array($gateway, Payment\Gateway::FORCE_AUTHORIZE_FAILED_SYNC_GATEWAYS, true) !== true))
         {
             return $this->app['card.payments']->forceAuthorizeFailed($gateway, $action, $gatewayData);
         }
@@ -109,7 +109,7 @@ trait CardPaymentService
 
             $statusCode = (empty($response['status_code']) === true) ? 0 : $response['status_code'];
 
-            if($gateway === "kotak_debit_emi" and $action === Action::FORCE_AUTHORIZE_FAILED)
+            if((in_array($gateway, Payment\Gateway::FORCE_AUTHORIZE_FAILED_SYNC_GATEWAYS, true) === true) and $action === Action::FORCE_AUTHORIZE_FAILED)
             {
                 $this->handleCpsResponse($payment, $response);
                 return isset($response['data']) ? 1 : 0;
