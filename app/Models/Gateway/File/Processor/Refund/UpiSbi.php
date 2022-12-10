@@ -279,7 +279,7 @@ class UpiSbi extends Base
      */
     protected function increaseAllowedSystemLimits()
     {
-        RuntimeManager::setMemoryLimit('8192');
+        RuntimeManager::setMemoryLimit('8192M');
 
         RuntimeManager::setTimeLimit(7200);
 
