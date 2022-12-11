@@ -711,9 +711,23 @@ class PennyTesting extends Base\Core
         if (($merchantDetails->merchant->isLinkedAccount() === true) and
             ($merchantDetails->merchant->parent->isRouteNoDocKycEnabled() === false))
         {
-            return [
-                Constants::COMPANY_PAN_NAME  => $merchantDetails->getBusinessName()
-            ];
+            switch ($merchantDetails->getBusinessType())
+            {
+
+                case BusinessType::NOT_YET_REGISTERED:
+                case BusinessType::INDIVIDUAL:
+                {
+                    return [
+                        Constants::COMPANY_PAN_NAME  => $merchantDetails->getBankAccountName()
+                    ];
+                }
+                default:
+                {
+                    return [
+                        Constants::COMPANY_PAN_NAME  => $merchantDetails->getBusinessName()
+                    ];
+                }
+            }
         }
         else if (($merchantDetails->merchant->isLinkedAccount() === true) and
                  ($merchantDetails->merchant->parent->isRouteNoDocKycEnabled() === true))
