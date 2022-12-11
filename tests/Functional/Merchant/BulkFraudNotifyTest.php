@@ -571,6 +571,29 @@ class BulkFraudNotifyTest extends TestCase
         $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 0, true);
     }
 
+    public function testNotifyFutureDateCase()
+    {
+        $arn = 'random_arn';
+
+        $fileData = [
+            [
+                'reported_to_razorpay_at' => '18/12/3000',
+                'payment_method' => 'netbanking',
+                'reported_by' => 'Visa',
+                'payment_id' => '',
+                'type' => '',
+                'arn' => $arn,
+            ],
+        ];
+
+        $expectedOutputFileRows = [
+            ["arn", "payment_id", "merchant_id", "fd_ticket_id", "error"],
+            [$arn, null, null, null, 'Future Date should not be given: 3000-12-18']
+        ];
+
+        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 0, true);
+    }
+
     public function testVisaFraudReportBatchCreated()
     {
         $this->prepareAndTestBatchCreatedVisaMastercard();

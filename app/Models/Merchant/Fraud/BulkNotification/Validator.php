@@ -2,7 +2,9 @@
 
 namespace RZP\Models\Merchant\Fraud\BulkNotification;
 
+use Carbon\Carbon;
 use RZP\Base;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Models\FileStore;
 use RZP\Models\Payment\Method;
@@ -20,7 +22,7 @@ class Validator extends Base\Validator
         Constants::INPUT_KEY_PAYMENT_ID              => 'required_without:' . Constants::INPUT_KEY_ARN,
         Constants::INPUT_KEY_REPORTED_BY             => 'required|in:CyberSafe,CyberCell,Visa,MasterCard,Issuer,Network',
         Constants::INPUT_KEY_PAYMENT_METHOD          => 'required_with:' . Constants::INPUT_KEY_ARN . '|custom',
-        Constants::INPUT_KEY_REPORTED_TO_RAZORPAY_AT => 'required',
+        Constants::INPUT_KEY_REPORTED_TO_RAZORPAY_AT => 'required|custom',
     ];
 
     protected function validateFile(string $attribute, UploadedFile $file)
@@ -48,4 +50,21 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateReportedToRazorpayAt($attribute, $reportedDate)
+    {
+        $date = str_replace('/', '-', $reportedDate);
+
+        $date = date('Y-m-d', strtotime($date));
+
+        $currentDate = Carbon::today(Timezone::IST)->format('Y-m-d');
+
+        if ($date > $currentDate) {
+
+            $message = 'Future Date should not be given: ' . $date;
+
+            throw new Exception\BadRequestValidationFailureException($message);
+        }
+
+
+    }
 }
