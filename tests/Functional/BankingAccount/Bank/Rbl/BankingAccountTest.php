@@ -206,6 +206,20 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($bankingAccount['id'], $bankingAccountTwo['id']);
     }
 
+    public function testCreateBankingAccountWhenArchivedAccountExists()
+    {
+        $testData = $this->testData['testCreateBankingAccount'];
+
+        $bankingAccount = $this->startTest($testData);
+
+        $this->fixtures->edit('banking_account', $bankingAccount['id'], ['status' => 'archived']);
+
+        $bankingAccountTwo = $this->startTest($testData);
+
+        $this->assertNotEquals($bankingAccount['id'], $bankingAccountTwo['id']);
+        $this->assertEquals('created', $bankingAccountTwo['status']);
+    }
+
     public function testCreateBankingAccountForNonRzpOrgMerchant()
     {
         $testData = $this->testData['testCreateBankingAccount'];

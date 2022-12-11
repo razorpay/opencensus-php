@@ -91,6 +91,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchant->getId())
                     ->where(Entity::CHANNEL, '=', $channel)
+                    ->where(Entity::STATUS, '!=', Status::ARCHIVED)
                     ->first();
     }
 
