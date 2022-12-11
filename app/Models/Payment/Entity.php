@@ -3808,6 +3808,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $internalErrorCode = $this->getInternalErrorCode();
         if ($internalErrorCode === null)
         {
+            $array[self::ERROR_SOURCE] =  null;
+
+            $array[self::ERROR_STEP] =  null;
+
+            $array[self::ERROR_REASON] =  null;
+
             return;
         }
 
