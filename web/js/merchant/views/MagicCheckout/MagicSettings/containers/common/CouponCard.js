@@ -4,6 +4,8 @@ import SettingsCard from 'merchant/views/MagicCheckout/MagicSettings/components/
 const CouponCard = ({
   settings: { list_promotions, apply_promotion, one_cc_auto_fetch_coupons },
   switchToEdit,
+  isWooCommerce,
+  edit = null,
 }) => {
   const autoFetchCouponStatus = (status) => (status ? 'Enabled' : 'Disabled');
 
@@ -12,14 +14,14 @@ const CouponCard = ({
       <div className="wooc-settings-card-widget bg-white">
         <div className="display-flex wooc-settings-card-widget-wrapper">
           <div className="display-flex wooc-settings-card-widget-content">
-            {
+            {isWooCommerce && (
               <div className="display-flex card-title">
                 <p className="title-text">Coupons Settings</p>
                 <div className="card-edit pointer" onClick={switchToEdit}>
                   <i className="i i-edit_board native-settings-edit-icon" /> Edit
                 </div>
               </div>
-            }
+            )}
             <div className="flex setting-card-item gap--12">
               <SettingsCard.Item label="URL for get promotions" value={list_promotions} />
             </div>
@@ -33,6 +35,7 @@ const CouponCard = ({
               />
             </div>
           </div>
+          {edit}
         </div>
       </div>
     </div>

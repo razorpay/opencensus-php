@@ -17,7 +17,6 @@ const CheckoutWrapper = ({
   checkoutSettings,
   setCheckoutSettings,
   extraClass,
-  setTabHeadingVisible = () => {},
 }) => {
   const { nestedTabsStatus, one_cc_capture_gstin, one_cc_capture_order_instructions } = settings;
 
@@ -39,13 +38,6 @@ const CheckoutWrapper = ({
       return tempCheckoutSettings;
     });
   }, [one_cc_capture_gstin, one_cc_capture_order_instructions]);
-
-  useEffect(() => {
-    setTabHeadingVisible(false);
-    return () => {
-      setTabHeadingVisible(true);
-    };
-  }, []);
 
   const onToggleCheckout = useCallback((checked, label) => {
     setCheckoutSettings((prevSettings) => {

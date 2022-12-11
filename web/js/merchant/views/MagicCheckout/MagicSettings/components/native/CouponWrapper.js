@@ -16,7 +16,6 @@ const CouponWrapper = ({
   settings,
   setCurrentView,
   showFormView,
-  setTabHeadingVisible,
   setAutoFetchCoupon,
   setListPromotionsURL,
   setApplyPromotionURL,
@@ -50,7 +49,6 @@ const CouponWrapper = ({
   }, [list_promotions, apply_promotion, one_cc_auto_fetch_coupons]);
 
   const switchToEdit = useCallback(() => {
-    setTabHeadingVisible(false);
     setCurrentView(COUPON_FORM);
   }, []);
 
@@ -72,11 +70,7 @@ const CouponWrapper = ({
           platform={platform}
         />
       ) : (
-        <CouponCard
-          isWooCommerce
-          switchToEdit={switchToEdit}
-          setTabHeadingVisible={setTabHeadingVisible}
-        />
+        <CouponCard isWooCommerce switchToEdit={switchToEdit} />
       )}
     </>
   );

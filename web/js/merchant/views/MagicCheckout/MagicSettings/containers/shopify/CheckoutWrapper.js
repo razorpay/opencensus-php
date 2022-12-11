@@ -50,7 +50,6 @@ const CheckoutWrapper = ({
     one_cc_capture_gstin,
     one_cc_capture_order_instructions,
     setCheckoutSettings,
-    settings,
   ]);
 
   const onToggleCheckout = useCallback((checked, label) => {

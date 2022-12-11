@@ -4,10 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { AsyncBtn } from 'common/new-ui/Button';
 import CouponWrapper from 'merchant/views/MagicCheckout/MagicSettings/components/native/CouponWrapper';
 import CheckoutWrapper from 'merchant/views/MagicCheckout/MagicSettings/containers/common/CheckoutWrapper';
-import {
-  updateMagicSettings,
-  setTabHeadingVisible,
-} from 'merchant/reducers/magicCheckout/magicSettings/actions';
+import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
 import { isUrlLenient } from 'common/utils/validators';
 import { analyticsTrack } from 'common/utils/analytics';
 import {
@@ -21,7 +18,7 @@ import {
 } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import { updateDefaultViewInStorage } from 'merchant/views/MagicCheckout/utils/storeSettings';
 
-export const CheckoutSetting = ({ settings, updateSettings, setTabHeadingVisible, merchantId }) => {
+export const CheckoutSetting = ({ settings, updateSettings, merchantId }) => {
   const [listPromURL, setListPromURL] = useState('');
   const [applyPromURL, setApplyPromURL] = useState('');
   const [autoFetchCoupon, setAutoFetchCoupon] = useState({});
@@ -95,7 +92,6 @@ export const CheckoutSetting = ({ settings, updateSettings, setTabHeadingVisible
           showFormView={showFormView(CHECKOUT_FORM)}
           settings={settings}
           extraClass={showAllFormView ? 'form-view' : ''}
-          setTabHeadingVisible={setTabHeadingVisible}
         />
       )}
       <hr />
@@ -106,7 +102,6 @@ export const CheckoutSetting = ({ settings, updateSettings, setTabHeadingVisible
           autoFetchCoupon={autoFetchCoupon}
           settings={settings}
           setCurrentView={setCurrentView}
-          setTabHeadingVisible={setTabHeadingVisible}
           showFormView={showFormView(COUPON_FORM)}
           setListPromotionsURL={setListPromURL}
           setApplyPromotionURL={setApplyPromURL}
@@ -138,7 +133,6 @@ const mapDispatchToProps = (dispatch) =>
   bindActionCreators(
     {
       updateSettings: updateMagicSettings,
-      setTabHeadingVisible,
     },
     dispatch,
   );

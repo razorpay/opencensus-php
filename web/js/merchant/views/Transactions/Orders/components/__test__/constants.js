@@ -28,10 +28,6 @@ export const order = {
       code: 'ADBDB',
       value: 5,
     },
-    {
-      code: 'SKDBDB',
-      value: 2,
-    },
   ],
 };
 

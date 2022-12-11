@@ -1,6 +1,7 @@
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { useState, useCallback, useEffect } from 'react';
+import GCWrapper from 'merchant/views/MagicCheckout/MagicSettings/components/common/GCWrapper';
 import CheckoutWrapper from 'merchant/views/MagicCheckout/MagicSettings/containers/shopify/CheckoutWrapper';
 import AnalyticsWrapper from 'merchant/views/MagicCheckout/MagicSettings/containers/shopify/AnalyticsWrapper';
 import {
@@ -9,15 +10,18 @@ import {
 } from 'merchant/reducers/magicCheckout/magicSettings/actions';
 import { AsyncBtn } from 'common/new-ui/Button';
 import { analyticsTrack } from 'common/utils/analytics';
+import { getGCAnalytics } from 'merchant/views/MagicCheckout/MagicSettings/containers/helpers';
 import {
   FETCH_STATUS,
   PLATFORMS,
   SHOPIFY_BUY_NOW_BUTTON,
   SHOPIFY_CHECKOUT_SETTINGS,
+  GC_FORM,
   CHECKOUT_FORM,
   ANALYTICS_FORM,
   CHECKOUT,
   ANALYTICS,
+  GIFT_CARD,
   CARD,
 } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import 'merchant/views/MagicCheckout/css/settings/checkout.styl';
@@ -26,6 +30,8 @@ import { updateDefaultViewInStorage } from 'merchant/views/MagicCheckout/utils/s
 const CheckoutSettingsTab = ({ settings, merchantId, updateSettings, user }) => {
   const [checkoutSettings, setCheckoutSettings] = useState([]);
   const [analyticSettings, setAnalyticSettings] = useState([]);
+  const [giftCard, setGiftCard] = useState({});
+  const [giftCardSettings, setGiftCardSettings] = useState([]);
   const [currentView, setCurrentView] = useState(CARD);
 
   const { nestedTabsStatus } = settings;
@@ -45,11 +51,15 @@ const CheckoutSettingsTab = ({ settings, merchantId, updateSettings, user }) => 
     const payload = {
       platform: PLATFORMS.VALUES.SHOPIFY,
       shop_id: settings?.shop_id,
+      [giftCard.key]: giftCard.value,
     };
     checkoutSettings.forEach((setting) => {
       payload[setting.key] = setting.value;
     });
     analyticSettings.forEach((setting) => {
+      payload[setting.key] = setting.value;
+    });
+    giftCardSettings.forEach((setting) => {
       payload[setting.key] = setting.value;
     });
 
@@ -62,6 +72,11 @@ const CheckoutSettingsTab = ({ settings, merchantId, updateSettings, user }) => 
       one_cc_capture_billing_address,
       one_cc_ga_analytics,
       one_cc_fb_analytics,
+      one_cc_gift_card,
+      one_cc_multiple_gift_card,
+      one_cc_gift_card_restrict_coupon,
+      one_cc_buy_gift_card,
+      one_cc_gift_card_cod_restrict,
     } = payload;
     analyticsTrack({
       objectName: '1ccclickedsaveplatformsettings',
@@ -78,6 +93,14 @@ const CheckoutSettingsTab = ({ settings, merchantId, updateSettings, user }) => 
         platform: PLATFORMS.VALUES.SHOPIFY,
         store_id: settings?.shop_id,
         merchant_id: merchantId,
+        gc_enabled: one_cc_gift_card,
+        usage_of_multiple_gc: getGCAnalytics(one_cc_gift_card, one_cc_multiple_gift_card),
+        restrict_coupon_gc_together: getGCAnalytics(
+          one_cc_gift_card,
+          one_cc_gift_card_restrict_coupon,
+        ),
+        buying_gc_using_gc: getGCAnalytics(one_cc_gift_card, one_cc_buy_gift_card),
+        cod_restriction_with_gc: getGCAnalytics(one_cc_gift_card, one_cc_gift_card_cod_restrict),
       },
     });
 
@@ -89,6 +112,8 @@ const CheckoutSettingsTab = ({ settings, merchantId, updateSettings, user }) => 
     analyticSettings,
     merchantId,
     updateSettings,
+    giftCard,
+    giftCardSettings,
   ]);
 
   const showSettings = (setting) =>
@@ -108,7 +133,7 @@ const CheckoutSettingsTab = ({ settings, merchantId, updateSettings, user }) => 
             settings={settings}
           />
         )}
-        <hr />
+        {showAllFormView && <hr />}
         {showSettings(ANALYTICS) && (
           <AnalyticsWrapper
             analyticSettings={analyticSettings}
@@ -116,6 +141,18 @@ const CheckoutSettingsTab = ({ settings, merchantId, updateSettings, user }) => 
             showFormView={showFormView(ANALYTICS_FORM)}
             settings={settings}
             setAnalyticSettings={setAnalyticSettings}
+          />
+        )}
+        {showAllFormView && <hr />}
+        {showSettings(GIFT_CARD) && (
+          <GCWrapper
+            giftCard={giftCard}
+            giftCardSettings={giftCardSettings}
+            settings={settings}
+            setCurrentView={setCurrentView}
+            showFormView={showFormView(GC_FORM)}
+            setGiftCard={setGiftCard}
+            setGiftCardSettings={setGiftCardSettings}
           />
         )}
       </div>

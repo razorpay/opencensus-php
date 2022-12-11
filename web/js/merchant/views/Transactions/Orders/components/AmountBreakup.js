@@ -6,8 +6,22 @@ import { truncateString } from 'common/utils/rzp-utils';
 export default ({ order }) => {
   const [isBreakupVisible, setBreakupVisible] = useState(false);
 
-  const { offer, currency, line_items_total, status, shipping_fee, promotions, amount } = order;
+  const { offer, currency, line_items_total, status, shipping_fee, promotions, amount } =
+    order || {};
+  const giftCardType = 'gift_card';
   const { id: offerId, name: offerName, discount } = offer || {};
+  const giftCardList = [];
+  let coupon;
+
+  if (Array.isArray(promotions)) {
+    promotions.forEach((promotion) => {
+      if (promotion.type === giftCardType) {
+        giftCardList.push(promotion);
+      } else {
+        coupon = promotion;
+      }
+    });
+  }
   return (
     <div className="magic-checkout-amount-value">
       <Amount value={amount} currency={currency} />
@@ -43,12 +57,30 @@ export default ({ order }) => {
               + <Amount value={order.cod_fee || 0} currency={currency} />
             </div>
           </div> */}
+          {coupon?.code ? (
+            <div className="magic-checkout-row">
+              <div className="magic-checkout-green">{coupon.code} Coupon</div>
+              <div>
+                - <Amount value={coupon.value} currency={currency} />
+              </div>
+            </div>
+          ) : null}
           <div className="magic-checkout-row">
             <div>Shipping Charges</div>
             <div>
               + <Amount value={shipping_fee || 0} currency={currency} />
             </div>
           </div>
+          {giftCardList.map(({ code, value }) => (
+            <div className="magic-checkout-row" key={code}>
+              <div className="magic-checkout-green">{`Gift card (**** ${code.slice(
+                code.length - 4,
+              )})`}</div>
+              <div>
+                - <Amount value={value || 0} currency={currency} />
+              </div>
+            </div>
+          ))}
           {offerId && (
             <div className="magic-checkout-row">
               <div>
@@ -63,14 +95,6 @@ export default ({ order }) => {
               </div>
               <div>
                 - <Amount value={discount} currency={currency} />
-              </div>
-            </div>
-          )}
-          {promotions?.length > 0 && (
-            <div className="magic-checkout-row">
-              <div className="magic-checkout-green">{promotions[0].code} Coupon</div>
-              <div>
-                - <Amount value={promotions[0].value} currency={currency} />
               </div>
             </div>
           )}

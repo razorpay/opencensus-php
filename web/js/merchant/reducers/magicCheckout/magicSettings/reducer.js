@@ -86,8 +86,6 @@ export default function magicSettingsReducer(state = initialState, action) {
       return merge(state, { nested_view_type: action.payload.view });
     case ACTIONS.UPDATE_DOMAIN_DETAIL:
       return merge(state, { domain: action.payload.domain });
-    case ACTIONS.SET_TAB_HEADING_VISIBLE:
-      return merge(state, { showTabHeading: action.showTabHeading });
     default:
       return state;
   }

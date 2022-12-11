@@ -24,8 +24,6 @@ export const ACTIONS = {
   UPDATE_DOMAIN_DETAIL: `${REDUCER_NAMESPACE}_UPDATE::DOMAIN`,
 
   UPDATE_COD_SLABS_SET: `${REDUCER_NAMESPACE}_UPDATE_COD_SLABS_SET`,
-
-  SET_TAB_HEADING_VISIBLE: `${REDUCER_NAMESPACE}_SET_TAB_HEADING_VISIBLE`,
 };
 
 export const updatePageView = (newView) => {
@@ -88,8 +86,3 @@ export const codSlabsSet = (codSlabsSetFlag) => {
     payload: { codSlabsSetFlag },
   };
 };
-
-export const setTabHeadingVisible = (showTabHeading) => ({
-  type: ACTIONS.SET_TAB_HEADING_VISIBLE,
-  showTabHeading,
-});

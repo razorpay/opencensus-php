@@ -247,6 +247,35 @@ export const ORDER_PENDING = 'Order Pending';
 
 export const SHOPIFY_BUY_NOW_BUTTON = 'one_cc_buy_now_button';
 
+export const GIFT_CARD_FEATURE = {
+  label: 'Pay with gift card',
+  value: false,
+  key: 'one_cc_gift_card',
+};
+
+export const GIFT_CARD_SETTINGS = [
+  {
+    label: 'Pay with multiple gift cards',
+    value: false,
+    key: 'one_cc_multiple_gift_card',
+  },
+  {
+    label: 'Restrict paying with coupon and gift card together',
+    value: false,
+    key: 'one_cc_gift_card_restrict_coupon',
+  },
+  {
+    label: 'Restrict buying gift cards with existing gift cards',
+    value: false,
+    key: 'one_cc_buy_gift_card',
+  },
+  {
+    label: 'Restrict customers from clubbing gift cards with COD',
+    value: false,
+    key: 'one_cc_gift_card_cod_restrict',
+  },
+];
+
 export const CHECKOUT_SETTINGS_CONFIG = [
   {
     label: 'Capture GSTIN?',
@@ -254,7 +283,7 @@ export const CHECKOUT_SETTINGS_CONFIG = [
     key: 'one_cc_capture_gstin',
   },
   {
-    label: 'Capture order intructions?',
+    label: 'Capture order instructions?',
     value: false,
     key: 'one_cc_capture_order_instructions',
   },
@@ -270,6 +299,9 @@ export const CHECKOUT_FORM = `${CHECKOUT}Form`;
 export const CHECKOUT_CARD = `${CHECKOUT}Card`;
 export const ANALYTICS_FORM = `${ANALYTICS}Form`;
 export const ANALYTICS_CARD = `${ANALYTICS}Card`;
+export const GIFT_CARD = 'gc';
+export const GC_FORM = `${GIFT_CARD}Form`;
+export const GC_CARD = `${GIFT_CARD}Card`;
 export const CHECKOUT_SETTINGS = 'Checkout Settings';
 export const ANALYTICS_SETTINGS = 'Analytics Settings';
 export const WOOCOMMERCE_REST_API_URL =

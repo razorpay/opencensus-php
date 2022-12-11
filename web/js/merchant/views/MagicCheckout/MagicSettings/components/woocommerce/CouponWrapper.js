@@ -16,7 +16,6 @@ const CouponWrapper = ({
   settings,
   setCurrentView,
   showFormView,
-  setTabHeadingVisible,
   setAutoFetchCoupon,
 }) => {
   const { one_cc_auto_fetch_coupons, nestedTabsStatus } = settings;
@@ -27,7 +26,7 @@ const CouponWrapper = ({
     } else {
       setCurrentView(COUPON_FORM);
     }
-  }, [listPromotions, applyPromotion, one_cc_auto_fetch_coupons]);
+  }, [listPromotions, applyPromotion, one_cc_auto_fetch_coupons, nestedTabsStatus]);
 
   useEffect(() => {
     setAutoFetchCoupon((prevSettings) => {
@@ -37,13 +36,6 @@ const CouponWrapper = ({
       return tempCouponSettings;
     });
   }, [one_cc_auto_fetch_coupons]);
-
-  useEffect(() => {
-    setTabHeadingVisible(false);
-    return () => {
-      setTabHeadingVisible(true);
-    };
-  }, []);
 
   const switchToEdit = () => {
     setCurrentView(COUPON_FORM);
@@ -65,7 +57,7 @@ const CouponWrapper = ({
           isFieldDisabled
         />
       ) : (
-        <CouponCard switchToEdit={switchToEdit} />
+        <CouponCard isWooCommerce switchToEdit={switchToEdit} />
       )}
     </>
   );

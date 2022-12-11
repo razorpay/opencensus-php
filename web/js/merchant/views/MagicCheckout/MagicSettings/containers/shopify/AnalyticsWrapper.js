@@ -20,6 +20,14 @@ const AnalyticsWrapper = ({
   const { nestedTabsStatus, one_cc_ga_analytics, one_cc_fb_analytics } = settings;
 
   useEffect(() => {
+    if (nestedTabsStatus !== FETCH_STATUS.LOADING) {
+      setCurrentView(ANALYTICS_CARD);
+    } else {
+      setCurrentView(ANALYTICS_FORM);
+    }
+  }, [settings]);
+
+  useEffect(() => {
     setAnalyticSettings((prevSettings) => {
       const tempAnalyticSettings = getInitialSettings(SHOPIFY_ANALYTICS_SETTINGS, prevSettings);
       tempAnalyticSettings.forEach((settingItem) => {
