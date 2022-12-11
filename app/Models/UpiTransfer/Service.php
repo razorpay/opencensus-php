@@ -97,6 +97,10 @@ class Service extends Base\Service
 
             $upiTransferData = $gatewayResponse['upi_transfer_data'];
 
+            $payeeVpa = $upiTransferData['payee_vpa'];
+
+            $upiTransferData['payee_vpa'] = strtolower($payeeVpa);
+
             $upiTransfer = $this->repo
                                 ->upi_transfer
                                 ->findByProviderReferenceIdAndPayeeVpaAndAmount($upiTransferData['provider_reference_id'],

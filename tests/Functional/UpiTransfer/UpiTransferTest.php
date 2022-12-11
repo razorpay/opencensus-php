@@ -304,6 +304,39 @@ class UpiTransferTest extends TestCase
         );
     }
 
+    public function testProcessIciciUpiTransferPaymentIgnoreCaseInternal()
+    {
+        $this->processUpiTransfer();
+
+        $actualPayment     = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('upi', $actualPayment['method']);
+        $this->assertEquals('captured', $actualPayment['status']);
+        $this->assertEquals(10000, $actualPayment['amount']);
+        $this->assertEquals(Gateway::UPI_ICICI, $actualPayment['gateway']);
+        $this->assertEquals('vpa', $actualPayment['receiver_type']);
+
+        $response = $this->processUpiTransfer('processUpiTransferIgnoreCaseInternal', true, Gateway::UPI_ICICI);
+
+        $this->assertEquals($response['payment']['id'], 'pay_' . $actualPayment['id']);
+        $this->assertEquals('captured', $response['payment']['status']);
+
+        $this->assertArrayHasKey('refunds', $response);
+        $this->assertIsArray($response['refunds']);
+        $this->assertEmpty($response['refunds']);
+
+        $this->runUpiTransferRequestAssertions(
+            'upi_icici',
+            true,
+            null,
+            [
+                'intended_virtual_account_id'   => $this->virtualAccountId,
+                'actual_virtual_account_id'     => $this->virtualAccountId,
+                'merchant_id'                   => '10000000000000',
+            ]
+        );
+    }
+
     public function testProcessIciciUpiTransferPaymentInternalDuplicate()
     {
         $this->createVirtualAccount('test', '10000000000000', 'vpVpaIcici');
