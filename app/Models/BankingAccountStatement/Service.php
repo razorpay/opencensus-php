@@ -254,7 +254,7 @@ class Service extends Base\Service
 
             return $response;
         }
-        catch (\Exception $exception)
+        catch (\Throwable $exception)
         {
             $this->trace->traceException(
                 $exception,
