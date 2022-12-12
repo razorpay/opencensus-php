@@ -565,8 +565,25 @@ class Core extends Base\Core
 
     protected function blockFAVIfApplicable($balance)
     {
-        if (($balance->isTypeBanking() === true) and
-            ($balance->getChannel() === Channel::YESBANK))
+        if ($balance->isTypeBanking() !== true)
+        {
+            return;
+        }
+
+        /*
+         * Block FAV for merchants on account <> sub account setup. Ref slack thread :
+         * https://razorpay.slack.com/archives/CR3K6S6C8/p1669613755735969?thread_ts=1668581579.373769&cid=CR3K6S6C8
+         */
+        if (($balance->isAccountTypeShared() === true) and
+            (($balance->merchant->isSubMerchantOnDirectMasterMerchant() === true) or
+             ($balance->merchant->isFeatureEnabled(Feature\Constants::BLOCK_FAV) === true)))
+        {
+            throw new BadRequestValidationFailureException(
+                "Fund account validation not supported for the debit account"
+            );
+        }
+
+        if ($balance->getChannel() === Channel::YESBANK)
         {
             $config = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::BLOCK_YESBANK_RX_FAV]) ?? false;
 

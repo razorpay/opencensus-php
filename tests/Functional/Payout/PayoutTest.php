@@ -32196,5 +32196,12 @@ class PayoutTest extends OAuthTestCase
             'active'                => true
         ]);
     }
+
+    public function testPayoutsBlockedFromMasterMerchantSharedAccount()
+    {
+        $this->fixtures->merchant->addFeatures(Feature\Constants::BLOCK_VA_PAYOUTS);
+
+        $this->startTest();
+    }
  }
 

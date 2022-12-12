@@ -2432,6 +2432,19 @@ class Base extends BaseCore
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD);
         }
+
+        $this->blockVaPayoutsOnShadowBalance();
+    }
+
+    /* This function only blocks payout from the master shadow VA balance.This is a temporary block.
+     * Todo: Remove this code after proper solution is live
+     */
+    protected function blockVaPayoutsOnShadowBalance()
+    {
+        if ($this->merchant->isFeatureEnabled(Feature::BLOCK_VA_PAYOUTS) === true)
+        {
+            throw new BadRequestValidationFailureException("Payouts not supported for the debit account");
+        }
     }
 
     protected function runInputValidations(Payout\Entity $payout, array $input)

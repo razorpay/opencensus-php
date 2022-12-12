@@ -2190,4 +2190,22 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('100000000', $ledgerSnsPayloadArray[1]['identifiers']['fts_fund_account_id']);
         $this->assertEquals('nodal', $ledgerSnsPayloadArray[1]['identifiers']['fts_account_type']);
     }
+
+    public function testFundAccountValidationBlockedOnShadowSharedBalance()
+    {
+        $this->setUpMerchantForBusinessBankingLive(false, 10000000);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::BLOCK_FAV]);
+
+        $fundAccountResponse = $this->createFundAccountBankAccount('rzp_live_TheLiveAuthKey', 'live');
+
+        $testData = &$this->testData[__FUNCTION__];
+        $testData['request']['content']['fund_account']['id'] = $fundAccountResponse['id'];
+
+        $this->startTest();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::SUB_VA_FOR_DIRECT_BANKING]);
+
+        $this->startTest();
+    }
 }

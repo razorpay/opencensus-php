@@ -1679,6 +1679,13 @@ class Constants
     const SUB_VA_FOR_DIRECT_BANKING = 'sub_va_for_direct_banking';
 
     /**
+     * Feature flag to block VA payouts from master merchant on account <> sub account flow.
+     */
+    const BLOCK_VA_PAYOUTS = 'block_va_payouts';
+
+    const BLOCK_FAV = 'block_fav';
+
+    /**
      * Reduces OD balance from available balance for CA payouts
      */
     const REDUCE_OD_BALANCE_FOR_CA = 'reduce_od_balance_for_ca';
@@ -2286,6 +2293,8 @@ class Constants
         self::CYBERSOURCE_SI_TXN_TEST         => true,
         self::MANDATORY_AVS_CHECK             => true,
         self::SUB_VA_FOR_DIRECT_BANKING       => true,
+        self::BLOCK_VA_PAYOUTS                => true,
+        self::BLOCK_FAV                       => true,
         self::SPR_DISABLE_METHOD_RESET        => true,
         self::SEND_NAME_IN_EMAIL_FOR_QR       => true,
         self::ONE_CC_DISABLE_EMAIL_COOKIE       => true,
