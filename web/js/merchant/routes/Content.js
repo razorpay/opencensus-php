@@ -784,9 +784,11 @@ export default class Content extends Component {
             {DetailView}
             {ModalFormView}
             <MultiSlider />
-            <Suspense fallback={null}>
-              {user.isHelpWidgetRevamped ? <HelpSection user={user} /> : <Support user={user} />}
-            </Suspense>
+            {window?.RZP?.appName !== 'businessbanking' && (
+              <Suspense fallback={null}>
+                {user.isHelpWidgetRevamped ? <HelpSection user={user} /> : <Support user={user} />}
+              </Suspense>
+            )}
           </Suspense>
         </ErrorBoundary>
       </main>
