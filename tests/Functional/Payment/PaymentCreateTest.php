@@ -9469,6 +9469,75 @@ class PaymentCreateTest extends TestCase
         $this->startTest();
     }
 
+    public function testCheckPaymentRetryIfAuthorisePaymentFailsFirstTime()
+    {
+        try{
+            $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1zD0BpqeO1qqpB']);
+
+            $this->ba->expressAuth('test', 'rzp_test_10000000000000');
+
+            $testData = $this->testData['testCreatePosPayments'];
+
+            $this->startTest($testData);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->assertNotNull($ex);
+        }
+
+        $attributes = [
+            'merchant_id'              => '10000000000000',
+            'gateway'                  => 'hdfc_ezetap',
+            'gateway_merchant_id'      => '12344',
+            'gateway_acquirer'         => 'hdfc',
+            'card'                       => 1,
+            'type'                      => [
+                'pos' => '1',
+                'direct_settlement_with_refund' => '1',
+                'non_recurring'             => '1'
+            ],
+            'enabled'                   => 1,
+        ];
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::RULE_FILTER]);
+
+        $this->fixtures->create('terminal', $attributes);
+
+        $this->fixtures->pricing->createTestPlanForPosPayments();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1zD0BpqeO1qqpB']);
+
+        $this->ba->expressAuth('test','rzp_test_10000000000000');
+
+        $testData = $this->testData['testCreatePosPayments'];
+
+        $response = $this->startTest($testData);
+
+        $input = $testData['request']['content'];
+
+        $first6 = implode(explode("-",substr($input['card']['number'],0,7)));
+
+        $last4  = substr($input['card']['number'],-4);
+
+        $cardEntity = $response['card_id'];
+
+        $cardNumber = (new Repository())->findByPublicId($cardEntity)->toArray();
+
+        $paymentEntity = (new Payment\Repository())->findByPublicId($response['id']);
+
+        $terminalEntity = (new \RZP\Models\Terminal\Repository())->fetchForPayment($paymentEntity)->toArray();
+
+        $this->assertEquals($first6,$cardNumber['iin']);
+
+        $this->assertEquals($last4,$cardNumber['last4']);
+
+        $this->assertEquals($terminalEntity['gateway'],'hdfc_ezetap');
+
+        $this->assertEquals('authorized', $response['status']);
+
+    }
+
+
     public function testCreateReminderPaymentforNonPos()
     {
         $this->ba->expressAuth('test','rzp_test_10000000000000');

@@ -1845,6 +1845,11 @@ class Processor
             return;
         }
 
+        if($payment->isPos() === true and $payment->isAuthorized() === false)
+        {
+            return;
+        }
+
         (new Payment\PaymentMeta\Core)->addMetaInformation($payment, $input[Payment\Entity::META]);
     }
 

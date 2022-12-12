@@ -213,6 +213,11 @@ trait Authorize
                 return $this->coreAuthorize($payment, $input, $gatewayInput);
             });
 
+        if($payment->isPos() === true)
+        {
+            $this->preProcessPaymentMeta($input, $payment);
+        }
+
         return $response;
     }
 
@@ -5380,7 +5385,7 @@ trait Authorize
             // second 2FA (change card). In the subsequent charges flow,
             // app_token won't be present anyway, since it's internal.
             //
-            
+
             if ($this->subscription->isGlobal() === true)
             {
                 $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
