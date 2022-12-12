@@ -22,9 +22,7 @@ class Validator extends Base\Validator
     const SUB_ACCOUNTS       = 'sub_accounts';
 
     protected static $createRules = [
-        // The unique validation on email will run only on rows that have deleted_at = NULL
-        // Referred to https://github.com/laravel/framework/issues/1820#issuecomment-32828216 for this validation
-        Entity::EMAIL                 => 'required|max:255|email|unique:admins,email,NULL,deleted_at,deleted_at,NULL|custom',
+        Entity::EMAIL                 => 'required|max:255|email|custom',
         Entity::NAME                  => 'required|alpha_space|between:3,100',
         Entity::USERNAME              => 'sometimes|alpha_dash|between:3,50',
         Entity::PASSWORD              => 'sometimes|string|confirmed|numbers|letters',

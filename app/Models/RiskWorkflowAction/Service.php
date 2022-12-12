@@ -8,6 +8,7 @@ use RZP\Models\Comment;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
 use RZP\Models\Workflow\Action;
+use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
@@ -191,10 +192,12 @@ class Service extends Base\Service
 
     public function getIndividualRiskWorkflowMaker()
     {
+        $makerOrgId = Org\Entity::RAZORPAY_ORG_ID;
+
         // NOTE: maker_email (both maker and checker) should be superadmin
         $makerEmail = env(Constants::BULK_RISK_ACTION_INDIVIDUAL_WORKFLOW_MAKER_EMAIL);
 
-        $maker = $this->repo->admin->findByEmail($makerEmail);
+        $maker = $this->repo->admin->findByOrgIdAndEmail($makerOrgId, $makerEmail);
 
         return $maker;
     }

@@ -23,6 +23,7 @@ use RZP\Models\Schedule\Task;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Schedule\Period;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Admin\Org;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Balance;
 use RZP\Exception\LogicException;
@@ -2685,7 +2686,7 @@ class Core extends Base\Core
         {
             $adminRepo = new \RZP\Models\Admin\Admin\Repository();
 
-            return $adminRepo->findByEmail($adminEmailHeader);
+            return $adminRepo->findByOrgIdAndEmail(Org\Entity::RAZORPAY_ORG_ID, $adminEmailHeader);
         }
 
         return null;

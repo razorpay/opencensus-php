@@ -12,6 +12,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Order;
+use RZP\Models\Admin\Org;
 use RZP\Models\Payment\Refund;
 use RZP\Exception;
 use RZP\Models\User;
@@ -718,7 +719,13 @@ class Service extends Base\Service
 
         $this->validateFetchAgentDetailResponse($agentDetail);
 
-        $admin =  (new \RZP\Models\Admin\Admin\Repository)->findByEmail($agentDetail[Constants::CONTACT][Constants::EMAIL]);
+        // replacing the below implementation by findByOrgIdAndEmail since one email can be part of multiple orgs
+        // using Razorpay Org id as default org for now, 
+        // TODO: this needs to be fixed by the code owner to get the right org for the email based on the flow
+        // $admin =  (new \RZP\Models\Admin\Admin\Repository)->findByEmail($agentDetail[Constants::CONTACT][Constants::EMAIL]);
+        $admin = $this->repo->admin->findByOrgIdAndEmail(
+            Org\Entity::RAZORPAY_ORG_ID, 
+            $agentDetail[Constants::CONTACT][Constants::EMAIL]);
 
         return [
             Constants::AGENT_ID             => $admin->getPublicId(),

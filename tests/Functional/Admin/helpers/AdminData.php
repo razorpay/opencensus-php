@@ -196,7 +196,7 @@ return [
         ],
     ],
 
-    'testCreateAdminWithExistingEmail' => [
+    'testCreateAdminWithExistingEmailSameOrg' => [
         'request' => [
             'url' => '/admins',
             'method' => 'post',
@@ -261,6 +261,32 @@ return [
             ],
             'status_code' => 200,
         ]
+    ],
+
+    'testCreateAdminWithExistingEmailDifferentOrg' => [
+        'request' => [
+            'url' => '/admins',
+            'method' => 'post',
+            'content' => [
+                'name'               => 'test admin',
+                'email'              => 'xyz@rzp.com',
+                'username'           => 'harshil',                
+                'password'              => 'Random!12#',
+                'password_confirmation' => 'Random!12#',
+                'remember_token'     => 'yes',
+                'employee_code'      => 'rzp_1',
+                'branch_code'        => 'krmgla',
+                'supervisor_code'    => 'shk',
+                'location_code'      => '560030',
+                'department_code'    => 'tech',
+                'roles'                 => ['role_RzpMngerRoleId'],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ],
     ],
 
     'testGetAdmin' => [

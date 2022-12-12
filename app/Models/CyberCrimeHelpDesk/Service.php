@@ -98,6 +98,8 @@ class Service extends Base\Service
 
     protected function getCyberCrimeWorkflowMaker()
     {
+        // This is to be handled correctly, for now hardcoding the org_id for the maker_email used in config
+        $makerOrg = Org\Entity::RAZORPAY_ORG_ID;
         $makerEmail = $this->app['config']->get('applications.cyber_crime_helpdesk.maker_email');
 
         if (empty($makerEmail) === true)
@@ -105,7 +107,7 @@ class Service extends Base\Service
             throw new Exception\LogicException('Cyber Crime Workflow Maker is not initialized');
         }
 
-        $maker = $this->repo->admin->findByEmail($makerEmail);
+        $maker = $this->repo->admin->findByOrgIdAndEmail($makerOrg, $makerEmail);
 
         return $maker;
     }

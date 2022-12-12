@@ -479,7 +479,10 @@ class Service extends Base\Service
 
         foreach ($adminEmails as $email)
         {
-            $adminId = $this->repo->admin->findByEmail($email)->getId();
+            // $adminId = $this->repo->admin->findByEmail($email)->getId();
+            // hardcoding razorpay IN org id for now since all entities created in db are for RZP admins
+            // this flow needs to be fixed with correct org coming in input for future use cases
+            $adminId = $this->repo->admin->findByOrgIdAndEmail(Org\Entity::RAZORPAY_ORG_ID, $email)->getId();
 
             array_push($currentAdmins, $adminId);
         }

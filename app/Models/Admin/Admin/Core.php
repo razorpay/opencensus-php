@@ -32,6 +32,13 @@ class Core extends Base\Core
 
         $admin->build($input);
 
+        // Validate the admin email should be unique for the org
+        $existingAdmin = $this->repo->admin->findByOrgIdAndEmail($org->getId(), $admin->getEmail());
+        if ($existingAdmin !== null) {
+            throw new Exception\BadRequestValidationFailureException(
+                "admin email should be unique value");
+        }
+
         // order of arg is important for diff to be stored in ES
         // This is done to apply eloquent casts to input
         $dirtyData = array_merge($input, $admin->toArray());

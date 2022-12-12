@@ -440,6 +440,9 @@ class Service extends Base\Service
 
     private function getMaker()
     {
+        //using default razorpay org for now, to be fixed by code owner
+        $makerOrgId = Org\Entity::RAZORPAY_ORG_ID;
+
         // NOTE: maker_email (both maker and checker) should be superadmin
         $makerEmail = $this->app['config']->get('applications.merchant_risk_alerts.maker_email');
 
@@ -448,7 +451,7 @@ class Service extends Base\Service
             throw new Exception\LogicException('Merchant Risk Alert Workflow Maker is not initialized');
         }
 
-        $maker = $this->repo->admin->findByEmail($makerEmail);
+        $maker = $this->repo->admin->findByOrgIdAndEmail($makerOrgId, $makerEmail);
 
         return $maker;
     }

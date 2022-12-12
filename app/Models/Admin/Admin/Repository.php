@@ -16,6 +16,11 @@ class Repository extends Base\Repository
         Entity::EMAIL => 'sometimes|email',
     ];
 
+    // TODO: Deprecate this function
+    // This function shouldn't be used anywhere in the code since 1 email can be used under different orgs
+    // use findByOrgIdAndEmail or getAdminFromId based on usecase
+    // store admin_id instead of emails for admin identification, in email id based flow, all operations must be done
+    // in the context of the org
     public function findByEmail($email)
     {
         $email = strtolower($email);

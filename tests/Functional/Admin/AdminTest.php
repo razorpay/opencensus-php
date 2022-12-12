@@ -160,11 +160,11 @@ class AdminTest extends TestCase
         ],$adminCreated1);
 
         // to check the password
-        $adminCreated = $this->repo->findByEmail('xyz@razorpay.com');
+        $adminCreated = $this->repo->findByOrgIdAndEmail($adminCreated1['org_id'], 'xyz@razorpay.com');
 
         $isSame = Hash::check("Random!12#", $adminCreated->getPassword());
 
-        $this->assertEquals(true,$isSame);
+        $this->assertEquals(true, $isSame);
     }
 
     public function testCreateAdminESAfterDenialOfApproval()
@@ -246,7 +246,7 @@ class AdminTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateAdminWithExistingEmail()
+    public function testCreateAdminWithExistingEmailSameOrg()
     {
         $this->fixtures->create('admin', [
             Admin\Entity::ORG_ID  => $this->orgId,
@@ -261,6 +261,32 @@ class AdminTest extends TestCase
         $admin = $this->testDeleteAdmin();
 
         $this->testData[__FUNCTION__]['request']['content']['email'] = $admin->getEmail();
+
+        $this->startTest();
+    }
+
+    public function testCreateAdminWithExistingEmailDifferentOrg()
+    {
+        $this->fixtures->create('admin', [
+            Admin\Entity::ORG_ID  => $this->orgId,
+            Admin\Entity::EMAIL   => 'xyz@rzp.com',
+        ]);
+
+        // create new org
+        $newOrg = $this->fixtures->create('org', [
+            'email'         => 'random1@rzp.com',
+            'email_domains' => 'rzp.com',
+            'auth_type'     => 'password',
+        ]);
+    
+        $this->fixtures->create('org_hostname', [
+            'org_id'        => $newOrg->getId(),
+            'hostname'      => 'testing2.testing.com',
+        ]);
+
+        $newAuthToken = $this->getAuthTokenForOrg($newOrg);
+
+        $this->ba->adminAuth('test', $newAuthToken, $newOrg->getPublicId());
 
         $this->startTest();
     }

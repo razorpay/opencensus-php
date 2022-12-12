@@ -24,6 +24,7 @@ class Constants
     const ACTIVE                                            = 'active';
     const BANK_ACCOUNT_UPDATE_CALLBACK_HANDLER_BVS          = 'bank_account_update_callback_handler';
     const ADMIN_EMAIL                                       = 'admin_email';
+    const ADMIN_ORG                                         = 'admin_org';
     const WORKFLOW_COMMENT_ERROR_ADDING_VALIDATION_RESULT   = 'Error adding penny testing and fuzzy match details';
     const WORKFLOW_COMMENT_ERROR_ADDING_DEDUPE_RESULT       = 'Error adding dedupe result';
     const COMMENT                                           = 'comment';

@@ -8,6 +8,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Admin\Org;
 use RZP\Models\BankingAccount;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccount\State;
@@ -161,7 +162,7 @@ class Service extends Base\Service
 
         try
         {
-            $admin = $this->repo->admin->findByEmail($email);
+            $admin = $this->repo->admin->findByOrgIdAndEmail(Org\Entity::RAZORPAY_ORG_ID, $email);
         }
         catch (\Throwable $e)
         {

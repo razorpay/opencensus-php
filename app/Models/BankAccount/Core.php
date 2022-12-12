@@ -13,6 +13,7 @@ use RZP\Traits\TrimSpace;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Service;
+use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Document;
 use RZP\Models\Settlement\Bucket;
@@ -1145,7 +1146,12 @@ class Core extends Base\Core
 
             if (is_null($data[Constants::ADMIN_EMAIL]) === false)
             {
-                $maker = $this->repo->admin->findByEmail($data[Constants::ADMIN_EMAIL]);
+                $orgId = $data[Constants::ADMIN_ORG] ?? Org\Entity::RAZORPAY_ORG_ID;
+
+                // replacing the below implementation by findByOrgIdAndEmail, one email can be part of multiple org
+                // for backward compatibility keeping RZP_ORG as default 
+                // $maker = $this->repo->admin->findByEmail($data[Constants::ADMIN_EMAIL]);
+                $maker = $this->repo->admin->findByOrgIdAndEmail($orgId, $data[Constants::ADMIN_EMAIL]);
 
                 $this->app['workflow']
                     ->setWorkflowMaker($maker)
@@ -1576,10 +1582,13 @@ class Core extends Base\Core
         $this->fillAddressProofUrl($input, $this->merchant, $newBankAccountArray, $oldBankAccountArray);
 
         $adminEmail = null;
+        $adminOrg = null;
 
         if ($this->app['basicauth']->isAdminAuth() === true)
         {
             $adminEmail = $this->app['basicauth']->getAdmin()->getEmail();
+
+            $adminOrg = $this->app['basicauth']->getAdminOrgId();
         }
 
         return [
@@ -1589,6 +1598,7 @@ class Core extends Base\Core
             Constants::NEW_BANK_ACCOUNT_ARRAY    => $newBankAccountArray,
             BvsConstant::VALIDATION_ID           => $validationId,
             Constants::ADMIN_EMAIL               => $adminEmail,
+            Constants::ADMIN_ORG                 => $adminOrg
         ];
     }
 
