@@ -10909,45 +10909,13 @@ class BankingAccountTest extends TestCase
         return $bankingAccount;
     }
 
-    public function testFreshDeskTicketCreationForSalesLedFlowFromMOB()
-    {
-        $this->ba->mobAppAuthForProxyRoutes();
-
-        $admin = $this->fixtures->create('admin', ['org_id' => Org::RZP_ORG, 'email' => 'abc@razorpay.com']);
-
-        Mail::fake();
-
-        $dataToReplace = [
-            'request'  => [
-                'server'  => [
-                    'HTTP_X-Admin-Email' => $admin->getEmail(),
-                ]
-            ],
-        ];
-
-        $this->startTest($dataToReplace);
-
-        Mail::assertQueued(XProActivation::class);
-    }
-
     public function testPreventFreshDeskTicketCreationForNonSalesLedFromMOB()
     {
         $this->ba->mobAppAuthForProxyRoutes();
 
-        $this->testData[__FUNCTION__] = $this->testData['testFreshDeskTicketCreationForSalesLedFlowFromMOB'];
-
-        $dataToReplace = [
-            'response' => [
-                'content' => [
-                    'channel'     => 'rbl',
-                    'status'      => 'created'
-                ],
-            ],
-        ];
-
         Mail::fake();
 
-        $this->startTest($dataToReplace);
+        $this->startTest();
 
         Mail::assertNotQueued(XProActivation::class);
     }
@@ -11269,8 +11237,6 @@ class BankingAccountTest extends TestCase
             ActivationDetail\Entity::INITIAL_CHEQUE_VALUE => '123456',
             ActivationDetail\Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE => true,
             ActivationDetail\Entity::ADDITIONAL_DETAILS => [
-                ActivationDetail\Entity::SALES_PITCH_COMPLETED => 0,
-                ActivationDetail\Entity::CALENDLY_SLOT_BOOKING_COMPLETED => 0,
                 ActivationDetail\Entity::GREEN_CHANNEL => false
             ],
         ];
@@ -11292,29 +11258,6 @@ class BankingAccountTest extends TestCase
             $this->verifyFreshDeskTicketCreationBehaviourForSalesLed($ba->getId(), $baActivationDetail->getId(), $activationDetail, $reqContent, $admin);
 
             $activationDetail[$unsetAttr] = $unsetAttrVal;
-        }
-
-        // test each additional_detail separately
-        $keys = array_keys($activationDetail[ActivationDetail\Entity::ADDITIONAL_DETAILS]);
-
-        for ($index = 0; $index < count($keys); $index++)
-        {
-            $unsetAttr = $keys[$index];
-
-            $unsetAttrVal = $activationDetail[ActivationDetail\Entity::ADDITIONAL_DETAILS][$unsetAttr];
-
-            unset($activationDetail[ActivationDetail\Entity::ADDITIONAL_DETAILS][$unsetAttr]);
-
-            $reqContent = [
-                ActivationDetail\Entity::SALES_POC_ID => 'admin_' . ORG::SUPER_ADMIN,
-                ActivationDetail\Entity::ADDITIONAL_DETAILS => [
-                    $unsetAttr => $unsetAttrVal
-                ]
-            ];
-
-            $this->verifyFreshDeskTicketCreationBehaviourForSalesLed($ba->getId(), $baActivationDetail->getId(), $activationDetail, $reqContent, $admin);
-
-            $activationDetail[ActivationDetail\Entity::ADDITIONAL_DETAILS] = array_merge($activationDetail[ActivationDetail\Entity::ADDITIONAL_DETAILS], $reqContent[ActivationDetail\Entity::ADDITIONAL_DETAILS]);
         }
 
         // test sales_poc already assigned

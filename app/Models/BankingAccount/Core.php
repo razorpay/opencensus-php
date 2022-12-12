@@ -1238,7 +1238,7 @@ class Core extends Base\Core
             return;
         }
 
-        // If application is initiated from x dashboard in saled_led flow, there's no concept of declaration_step. Hence, on
+        // If application is initiated in saled_led flow, there's no concept of declaration_step. Hence, on
         // each application update check if sufficient information is available. If yes, create FD ticket and move application to
         // picked status. Perform this check only if application is in created state
         if ($bankingAccount->getStatus() === Status::CREATED &&
@@ -2514,25 +2514,11 @@ class Core extends Base\Core
      */
     protected function shouldNotifyOpsAboutProActivation(string $validatorOP, Entity $bankingAccount, bool $clarityContextEnabled = false): void
     {
-        /*
-         * Freshdesk ticket must be created when banking_account is created from LMS through MOB (SALES_LED flow). And FD ticket should not be
-         * created in non SALES_LED flows
-         * If the MOB request contains AdminEmail header, the flow is SALES_LED
-         */
-        $isAdminRequestFromMob = $this->isAdminRequestFromMOB();
-        if (($validatorOP !== 'create_dashboard' && $validatorOP != 'create_co_created') or
-            $isAdminRequestFromMob)
+        if (($validatorOP !== 'create_dashboard' && $validatorOP != 'create_co_created'))
         {
             if ($clarityContextEnabled === false)
             {
-                if ($isAdminRequestFromMob)
-                {
-                    $this->sendFreshDeskTicketAndMoveApplicationToPicked($bankingAccount);
-                }
-                else
-                {
-                    $this->notifyOpsAboutProActivation($bankingAccount);
-                }
+                $this->notifyOpsAboutProActivation($bankingAccount);
             }
 
             $this->notifyMerchantAboutUpdatedStatus($bankingAccount);
@@ -2898,7 +2884,7 @@ class Core extends Base\Core
         {
             $this->trace->info(TraceCode::FRESHDESK_MISSING_ATTRIBUTES, [
                 'checker'               => $checker,
-                'error'                 => $e
+                'error'                 => $e->getMessage()
             ]);
 
             return false;

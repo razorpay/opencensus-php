@@ -286,8 +286,6 @@ class Validator extends Base\Validator
     ];
 
     protected static $freshDeskAdditionalDetailsRules = [
-        Entity::SALES_PITCH_COMPLETED               => 'required|integer',
-        Entity::CALENDLY_SLOT_BOOKING_COMPLETED     => 'required|integer',
         Entity::GREEN_CHANNEL                       => 'required|boolean'
     ];
 
@@ -402,8 +400,6 @@ class Validator extends Base\Validator
     ];
 
     protected static $requiredAdditionalDetailsKeysFreshDesk = [
-        Entity::SALES_PITCH_COMPLETED,
-        Entity::CALENDLY_SLOT_BOOKING_COMPLETED,
         Entity::GREEN_CHANNEL
     ];
 

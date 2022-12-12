@@ -4778,7 +4778,7 @@ return [
         'response' => [
             'content' => [
                 'channel'     => 'rbl',
-                'status'      => 'picked'
+                'status'      => 'created'
             ],
         ],
     ],
@@ -4949,7 +4949,7 @@ return [
         ],
     ],
 
-    'testFreshDeskTicketCreationForSalesLedFlowFromMOB' => [
+    'testPreventFreshDeskTicketCreationForNonSalesLedFromMOB' => [
         'request'  => [
             'url'     => '/banking_accounts_dashboard',
             'method'  => 'POST',
@@ -4965,7 +4965,7 @@ return [
         'response' => [
             'content' => [
                 'channel'     => 'rbl',
-                'status'      => 'picked'
+                'status'      => 'created'
             ],
         ],
     ],
