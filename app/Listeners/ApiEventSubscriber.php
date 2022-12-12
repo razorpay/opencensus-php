@@ -652,9 +652,9 @@ class ApiEventSubscriber extends Base\Core
             ];
 
             try {
-
+                $waitTime = 600;
                 $queueName = $this->app['config']->get('queue.barricade_verify.' . $this->mode);
-                $this->app['queue']->connection('sqs')->later(0, "Barricade Queue Push", json_encode($data), $queueName);
+                $this->app['queue']->connection('sqs')->later($waitTime, "Barricade Queue Push", json_encode($data), $queueName);
 
 
                 $this->trace->info(TraceCode::BARRICADE_SQS_PUSH_SUCCESS,

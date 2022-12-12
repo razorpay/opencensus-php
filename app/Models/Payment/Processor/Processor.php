@@ -4162,6 +4162,8 @@ class Processor
             'created_at'    => $payment->getCreatedAt(),
             'merchant_id'   => $payment->getMerchantId(),
             'base_amount'   => $payment->getBaseAmount(),
+            'gateway_amount' => $payment->getGatewayAmount(),
+            'international' => $payment->isInternational(),
             'gateway_captured' => $gateway_captured,
             'gateway_currency' => $payment->getGatewayCurrency(),
             'dcc_markup_amount'=> $payment->getDccMarkUpAmount(),
