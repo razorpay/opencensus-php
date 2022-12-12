@@ -11,12 +11,15 @@ use RZP\Constants\Product;
 use RZP\Models\Payout\Mode;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base\PublicEntity;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Transaction\CreditType;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 
 class Base extends FundAccountPayout\Base
@@ -90,6 +93,8 @@ class Base extends FundAccountPayout\Base
     protected function getMerchantBalanceToCheckForQueued(Entity $payout)
     {
         $merchantBalance = (new Payout\Core)->getLatestBalanceForDirectAccount($payout->balance);
+
+        $merchantBalance = $this->negateODIfApplicable($payout->merchant, $merchantBalance);
 
         return $merchantBalance;
     }
@@ -206,5 +211,29 @@ class Base extends FundAccountPayout\Base
 
             $payout->setFeeType(CreditType::REWARD_FEE);
         }
+    }
+
+    private function negateODIfApplicable(Merchant $merchant, $merchantBalance)
+    {
+        $isOdFeatureEnabled = $merchant->isFeatureEnabled(Constants::REDUCE_OD_BALANCE_FOR_CA);
+
+        if ($isOdFeatureEnabled === true)
+        {
+            $configuredOD = (int) (new AdminService)->getConfigKey(
+                [
+                    'key' => ConfigKey::RX_OD_BALANCE_CONFIGURED_FOR_MAGICBRICKS
+                ]);
+
+            $this->trace->info(TraceCode::DEDUCT_OD_FROM_GATEWAY_BALANCE, [
+                'merchant'          => $merchant->getId(),
+                'configured_od'     => $configuredOD,
+                'gateway_balance'   => $merchantBalance,
+                'available_balance' => $merchantBalance - $configuredOD
+            ]);
+
+            return $merchantBalance - $configuredOD;
+        }
+
+        return $merchantBalance;
     }
 }

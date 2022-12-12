@@ -1678,6 +1678,11 @@ class Constants
      */
     const SUB_VA_FOR_DIRECT_BANKING = 'sub_va_for_direct_banking';
 
+    /**
+     * Reduces OD balance from available balance for CA payouts
+     */
+    const REDUCE_OD_BALANCE_FOR_CA = 'reduce_od_balance_for_ca';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -2289,6 +2294,7 @@ class Constants
         \RZP\Services\Dcs\Constants::DisableAutoRefund => true,  // Example Feature for DCS
         \RZP\Services\Dcs\Constants::EligibilityEnabled => true,  // Example Feature for DCS
         self::ONE_CC_ADDRESS_SYNC_OFF         => true,
+        self::REDUCE_OD_BALANCE_FOR_CA        => true,
     ];
 
     // Entity type constants

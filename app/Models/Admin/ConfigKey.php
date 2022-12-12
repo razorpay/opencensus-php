@@ -346,6 +346,9 @@ class ConfigKey
 
     const RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA = self::PREFIX . 'rx_block_non_2fa_non_baas_for_ca';
 
+    // OD balance related keys for direct account
+    const RX_OD_BALANCE_CONFIGURED_FOR_MAGICBRICKS = self::PREFIX . 'rx_od_balance_configured_for_magicbricks';
+
     const PUBLIC_KEYS = [
         self::TENANT_ROLES_ENTITY,
         self::TENANT_ROLES_ROUTES,

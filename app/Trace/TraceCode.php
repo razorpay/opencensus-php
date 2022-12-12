@@ -8607,6 +8607,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const WDA_AND_WARM_DB_INCONSISTENCY                  = 'WDA_AND_WARM_DB_INCONSISTENCY';
     const COMPARE_WDA_ERROR                              = 'COMPARE_WDA_ERROR';
 
+    const DEDUCT_OD_FROM_GATEWAY_BALANCE      = 'DEDUCT_OD_FROM_GATEWAY_BALANCE';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

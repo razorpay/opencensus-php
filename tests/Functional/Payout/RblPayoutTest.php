@@ -1175,4 +1175,21 @@ class RblPayoutTest extends TestCase
             return true;
         });
     }
+
+    public function testODBalanceCheckForPayouts()
+    {
+        $this->fixtures->merchant->addFeatures([Features::REDUCE_OD_BALANCE_FOR_CA]);
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_OD_BALANCE_CONFIGURED_FOR_MAGICBRICKS => 20000]);
+
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
+
+        $this->startTest();
+
+        $this->testData[__FUNCTION__]['request']['content']['amount'] = 4000;
+
+        $this->testData[__FUNCTION__]['response']['content']['amount'] = 4000;
+
+        $this->startTest();
+    }
 }

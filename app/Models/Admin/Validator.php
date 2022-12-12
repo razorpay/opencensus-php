@@ -229,6 +229,7 @@ class Validator extends Base\Validator
         ConfigKey::SET_CARD_METADATA_NULL                                              => 'filled|boolean',
         ConfigKey::DEFAULT_OPGSP_TRANSACTION_LIMIT_USD                                 => 'filled|integer',
         ConfigKey::RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA                              => 'filled|boolean',
+        ConfigKey::RX_OD_BALANCE_CONFIGURED_FOR_MAGICBRICKS                            => 'filled|integer',
     ];
 
     protected static $setRedisKeysRules = [
