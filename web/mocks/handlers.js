@@ -759,6 +759,38 @@ export const handlers = [
     );
   }),
 
+  rest.get('*/merchant/is_admin_as_merchant', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        success: true,
+        data: {
+          data: {
+            is_admin_as_merchant: false,
+          },
+        },
+      }),
+      ctx.delay(50),
+    );
+  }),
+
+  rest.get('*/org_settlements/:settlementId', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        success: true,
+        data: {
+          data: {
+            org_settlement: {},
+          },
+        },
+      }),
+      ctx.delay(50),
+    );
+  }),
+
   ...ONDEMAND_SETTLEMENTS_HANDLERS,
   ...WEBHOOK_HANDLERS,
 

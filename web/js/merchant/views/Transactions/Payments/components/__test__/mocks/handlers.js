@@ -152,4 +152,36 @@ export const paymentHandlers = [
       ctx.delay(50),
     );
   }),
+  rest.get('*/payments/:paymentId', (req, res, ctx) => {
+    return res(
+      ctx.json({
+        status_code: 200,
+        data: {
+          id: 'pay_1234',
+          status: 'authorized',
+          method: 'bank_transfer',
+          notes: {},
+          transaction: {
+            settlement: {
+              id: 'setl_1234',
+            },
+          },
+        },
+      }),
+      ctx.delay(50),
+    );
+  }),
+  rest.post('*/payments/:paymentId/capture', (req, res, ctx) => {
+    return res(
+      ctx.json({
+        status_code: 200,
+        data: {
+          id: 'pay_1234',
+          status: 'authorized',
+          method: 'bank_transfer',
+        },
+      }),
+      ctx.delay(50),
+    );
+  }),
 ];

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { compose } from 'redux';
+import { compose, bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
@@ -28,6 +28,7 @@ import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
 import { fetchBankSettleStatus, customSettlementEnabled } from 'merchant/views/Settlements/v2/util';
 
+// eslint-disable-next-line react/no-unsafe
 class PaymentDetailsContainer extends Component {
   constructor(props) {
     super(props);
@@ -96,10 +97,12 @@ class PaymentDetailsContainer extends Component {
     resetPayment();
 
     fetchItem(id).then((payment) => {
+      /* istanbul ignore else */
       if (payment.amount_refunded !== 0) {
         fetchRefunds(payment);
       }
 
+      /* istanbul ignore else */
       if (payment.method === 'bank_transfer') {
         fetchBankTransfer(payment);
       } else if (payment.method === 'upi') {
@@ -122,28 +125,11 @@ class PaymentDetailsContainer extends Component {
     });
   };
 
-  checkSecView(props) {
-    const { compactSlider, expandSlider } = this.props;
-    if (!props.entity_name) {
-      compactSlider();
-
-      // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
-      if (this.transfersView) {
-        this.transfersView.current.classList.add('toggle-slider');
-      }
-    } else {
-      expandSlider();
-      // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
-      if (this.transfersView) {
-        this.transfersView.current.classList.remove('toggle-slider');
-      }
-    }
-  }
-
   componentDidMount() {
     const { closeUrl, id, fetchMerchantManualAction } = this.props;
     const eventCategory = getEventCategoryFromPath(closeUrl);
 
+    /* istanbul ignore else */
     if (eventCategory)
       window.rzpAnalytics?.({
         eventCategory,
@@ -157,6 +143,7 @@ class PaymentDetailsContainer extends Component {
     const { closeUrl, id } = this.props;
     const eventCategory = getEventCategoryFromPath(closeUrl);
 
+    /* istanbul ignore else */
     if (eventCategory)
       window.rzpAnalytics?.({
         eventCategory,
@@ -169,6 +156,7 @@ class PaymentDetailsContainer extends Component {
     const { id, fetchSettlementAmount, user, fetchProviders } = this.props;
     this.fetchData(id);
     fetchSettlementAmount();
+    /* istanbul ignore else */
     if (user?.isSingleReconEnabled && user?.isOptimizerEnabled) {
       fetchProviders();
     }
@@ -181,13 +169,9 @@ class PaymentDetailsContainer extends Component {
     }
   }
 
-  fetchCardDetails = (payment) => {
-    const { fetchCardDetails } = this.props;
-    return fetchCardDetails(payment);
-  };
-
   goToLink = (link) => {
     const { isOpenedInDualMode, history, entity_name, payment } = this.props;
+    /* istanbul ignore else */
     if (isOpenedInDualMode && link !== 'transfers/new') {
       history.push(`/${link}`);
     }
@@ -299,7 +283,6 @@ class PaymentDetailsContainer extends Component {
 
   secClose = (closeTransferDetails) => {
     const { history, location } = this.props;
-
     history.push(
       location.pathname.replace(!closeTransferDetails ? /\/[^/]+\/[^/]+\/?$/ : /\/[^/]+\/?$/, ''),
     );
@@ -311,13 +294,6 @@ class PaymentDetailsContainer extends Component {
     fetchItem(id).then((payment) => {
       updateItemInPayments(payment);
       fetchTransfers(payment);
-    });
-  };
-
-  onTransferReverse = () => {
-    const { fetchItem, id, updateItemInPayments } = this.props;
-    fetchItem(id).then((payment) => {
-      updateItemInPayments(payment);
     });
   };
 
@@ -355,6 +331,7 @@ class PaymentDetailsContainer extends Component {
     });
   };
 
+  /* istanbul ignore next */
   onRefundModalMount = (payment) => {
     window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payments',
@@ -363,6 +340,7 @@ class PaymentDetailsContainer extends Component {
     });
   };
 
+  /* istanbul ignore next */
   onRefundModalUnmount = (payment) => {
     window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payments',
@@ -371,6 +349,7 @@ class PaymentDetailsContainer extends Component {
     });
   };
 
+  /* istanbul ignore next */
   afterRefund = ({ amount, partial, payment }) => {
     const label = {
       payment_id: payment.id,
@@ -387,6 +366,7 @@ class PaymentDetailsContainer extends Component {
     });
   };
 
+  /* istanbul ignore next */
   onRefundDetailsToggleClick = (payment, speed_requested) => {
     window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payments',
@@ -396,6 +376,7 @@ class PaymentDetailsContainer extends Component {
     });
   };
 
+  /* istanbul ignore next */
   viewSettlementOverview = () => {
     window.rzpAnalytics?.({
       eventCategory: 'Settlement Revamp',
@@ -452,7 +433,6 @@ class PaymentDetailsContainer extends Component {
             transfers={transfers}
             isLoading={loading}
             statusMsg={statusMsg}
-            onToggleCardDetails={this.fetchCardDetails}
             confirmCapture={this.confirmCapture}
             goToLink={this.goToLink}
             openRefundModal={this.openRefundModal}
@@ -508,16 +488,21 @@ export default compose(
         terminalProviders: state.navigator.terminalProviders,
       };
     },
-    {
-      fetchSettlementAmount,
-      expandSlider,
-      compactSlider: fnCompactSlider,
-      updateItemInPayments,
-      fetchProviders: fetchTerminalProviders,
-      fetchIsAdminAsMerchant,
-      ...ModalActions,
-      ...PaymentActions,
-      ...NotificationsActions,
+    (dispatch) => {
+      return bindActionCreators(
+        {
+          fetchSettlementAmount,
+          expandSlider,
+          compactSlider: fnCompactSlider,
+          updateItemInPayments,
+          fetchProviders: fetchTerminalProviders,
+          fetchIsAdminAsMerchant,
+          ...ModalActions,
+          ...PaymentActions,
+          ...NotificationsActions,
+        },
+        dispatch,
+      );
     },
   ),
 )(PaymentDetailsContainer);
