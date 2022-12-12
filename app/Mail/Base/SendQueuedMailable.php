@@ -4,8 +4,9 @@ namespace RZP\Mail\Base;
 
 use App;
 use Illuminate\Contracts\Mail\Factory as MailFactory;
-use Illuminate\Contracts\Mail\Mailer as MailerContract;
 use Illuminate\Mail\SendQueuedMailable as BaseSendQueuedMailable;
+use RZP\Constants\HyperTrace;
+use RZP\Trace\Tracer;
 
 class SendQueuedMailable extends BaseSendQueuedMailable
 {
@@ -15,34 +16,35 @@ class SendQueuedMailable extends BaseSendQueuedMailable
      */
     public function handle(MailFactory $factory)
     {
-        $app = App::getFacadeRoot();
+        Tracer::inSpan(['name' => HyperTrace::MAILABLE_HANDLE], function () use($factory) {
 
-        $app['request']->generateId();
+            $app = App::getFacadeRoot();
 
-        // For queued mails pick the task id from the mailable payload
-        $app['request']->setTaskId($this->mailable->taskId);
+            $app['request']->generateId();
 
-        $trace = $app['trace'];
+            // For queued mails pick the task id from the mailable payload
+            $app['request']->setTaskId($this->mailable->taskId);
 
-        $repo = $app['repo'];
+            $trace = $app['trace'];
 
-        // Task Id needs to be set in trace
-        $trace->processor('web')->setTaskId($this->mailable->taskId);
+            $repo = $app['repo'];
 
-        // Sets application and db mode if $mode is set
-        if ($this->mailable->mode !== null)
-        {
-            $app['basicauth']->setModeAndDbConnection($this->mailable->mode);
-        }
+            // Task Id needs to be set in trace
+            $trace->processor('web')->setTaskId($this->mailable->taskId);
 
-        // Sets originProduct, to tag logs and exceptions for X
-        if ($this->mailable->originProduct !== null)
-        {
-            $app['basicauth']->setProduct($this->mailable->originProduct);
-        }
+            // Sets application and db mode if $mode is set
+            if ($this->mailable->mode !== null) {
+                $app['basicauth']->setModeAndDbConnection($this->mailable->mode);
+            }
 
-        $repo->resetConnectionAttributes();
+            // Sets originProduct, to tag logs and exceptions for X
+            if ($this->mailable->originProduct !== null) {
+                $app['basicauth']->setProduct($this->mailable->originProduct);
+            }
 
-        parent::handle($factory);
+            $repo->resetConnectionAttributes();
+
+            parent::handle($factory);
+        });
     }
 }

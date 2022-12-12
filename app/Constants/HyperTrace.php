@@ -241,4 +241,12 @@ class HyperTrace
     const EMANDATE_DEBIT_UPDATE_PAYMENT_ENTITIES                                   = 'emandate_debit_payment.update_payment_entities';
     const EMANDATE_DEBIT_UPDATE_PAYMENT                                            = 'emandate_debit_payment.update_payment';
     const EMANDATE_DEBIT_PROCESS_AUTHORIZED_PAYMENT                                = 'emandate_debit_payment.process_authorized_payment';
+
+    const MAILABLE_SEND                  = 'mailable.send';
+    const MAILABLE_QUEUE                 = 'mailable.queue';
+    const MAILABLE_HANDLE                = 'mailable.handle';
+    const MAILABLE_EVALUATE_MAIL_DRIVER  = 'mailable.evaluate_mail_driver';
+    const MAILABLE_SEND_VIA_STORK        = 'mailable.send_via_stork';
+    const MAILABLE_MAILER_SEND           = 'mailable.mailer_send';
+    const MAILABLE_SHOULD_SEND_VIA_STORK = 'mailable.should_send_via_stork';
 }

@@ -3,6 +3,8 @@
 namespace RZP\Mail\Base;
 
 use App;
+use RZP\Constants\HyperTrace;
+use RZP\Trace\Tracer;
 use \Swift_Mailer;
 
 use Illuminate\Bus\Queueable;
@@ -105,7 +107,6 @@ class Mailable extends BaseMailable
             ? $mailer->mailer($this->mailer)
             : $mailer;
         $app = App::getFacadeRoot();
-        $trace = $app['trace'];
 
         // If mailer is not enabled in config for org but org entry exists then block
         if ($this->isEmailEnabledForOrg() === false)
@@ -113,160 +114,172 @@ class Mailable extends BaseMailable
             return;
         }
 
-        $msgID = '';
-        $eventProperties = [];
-        $eventProperties['merchant_id']   = $this->mid ?? '';
-
-        try
-        {
-            Container::getInstance()->call([$this, 'build']);
-
-            $toEmail = empty($this->to[0]['address']) ? '' : (is_string($this->to[0]['address']) ? $this->to[0]['address'] : '' );
-            $toEmailHash = hash(HashAlgo::SHA256, $toEmail);
-
-            $this->evaluateAndSetMailDriver($mailer);
-
-            if ($this->isValidRecipient() === false)
+        Tracer::inSpan(['name' => HyperTrace::MAILABLE_SEND], function () use($mailer, $app) {
+            try
             {
-                $trace->info(TraceCode::SEND_EMAIL_FAILED_INVALID_RECIPIENT, [
-                    'email'      => $toEmail,
-                    'email_hash' => $toEmailHash,
-                    'mailable'   => get_class($this)
-                    ]);
-                return;
-            }
+                $trace = $app['trace'];
+                $msgID = '';
+                $eventProperties = [];
+                $eventProperties['merchant_id']   = $this->mid ?? '';
 
-            // same html template can have different texts. Hence sending both in data lake.
-            $eventProperties['text_template'] = $this->textView ?? '';
-            $eventProperties['html_template'] = $this->view ?? '';
-            $eventProperties['recipient_email'] = $toEmailHash;
-            $eventProperties['email_driver'] = $this->emailDriverName;
+                Container::getInstance()->call([$this, 'build']);
 
-            $app['diag']->trackEmailEvent(EventCode::EMAIL_ATTEMPTED, $eventProperties);
+                $toEmail = empty($this->to[0]['address']) ? '' : (is_string($this->to[0]['address']) ? $this->to[0]['address'] : '' );
+                $toEmailHash = hash(HashAlgo::SHA256, $toEmail);
 
-            $trace->info(TraceCode::SEND_EMAIL_ATTEMPT, [
-                'email'    => $toEmailHash,
-                'mailable' => get_class($this),
-                'view'     => $this->view,
-                ]);
-
-            // if email is to be sent via stork
-            if ($this->shouldSendEmailViaStork() === true)
-            {
-                $eventProperties['email_driver'] = 'stork';
-                // we can override any base param by adding the param in `getParamsForStork()`
-                $paramsPayload = array_merge($this->getBaseParamsForStork(), $this->getParamsForStork());
-                $trace->info(TraceCode::SEND_EMAIL_ATTEMPT_STORK,
-                             [
-                                 'template_name' => $paramsPayload['template_name'] ?? '',
-                                 'view'          => $this->view,
-                             ]);
-
-                try
-                {
-                    $res = (new Stork($this->mode, $this->originProduct))->sendEmail($paramsPayload);
-
-                    $trace->info(TraceCode::SEND_EMAIL_ATTEMPT_STORK_SUCCESSFUL,
-                                 [
-                                     'stork_response' => $res
-                                 ]);
-                }
-                catch (\Throwable $e)
-                {
-                    $trace->traceException($e,
-                                           Trace::ERROR,
-                                           TraceCode::SEND_EMAIL_ATTEMPT_STORK_EXCEPTION,
-                                           [
-                                               'email_params' => $paramsPayload
-                                           ]);
-                }
-
-                $msgID = $res['message_id'] ?? '';
-                if ($msgID === '')
-                {
-                    $trace->info(TraceCode::SEND_EMAIL_ATTEMPT_STORK_FAILED,
-                    [
-                        'template_name'         => $paramsPayload['template_name'] ?? '',
-                        'view'    => $this->view,
-                    ]);
-                }
-            }
-
-            if (empty($msgID) === true)
-            {
-                $msg = null;
-                $mailer->send($this->buildView(), $this->buildViewData(), function ($message) use (&$msg) {
-                    $msg = $message;
-                    $this->buildFrom($message)
-                        ->buildRecipients($message)
-                        ->buildSubject($message)
-                        ->buildAttachments($message)
-                        ->runCallbacks($message);
+                Tracer::inSpan(['name' => HyperTrace::MAILABLE_EVALUATE_MAIL_DRIVER], function () use($mailer) {
+                    $this->evaluateAndSetMailDriver($mailer);
                 });
 
-                if ((empty($msg) === false) && (empty($msg->getHeaders()) === false) && (empty($msg->getHeaders()->get(self::MESSAGE_ID_TAG)) === false))
+                if ($this->isValidRecipient() === false)
                 {
-                    $msgID = $msg->getHeaders()->get(self::MESSAGE_ID_TAG)->getValue() ?? '';
+                    $trace->info(TraceCode::SEND_EMAIL_FAILED_INVALID_RECIPIENT, [
+                        'email'      => $toEmail,
+                        'email_hash' => $toEmailHash,
+                        'mailable'   => get_class($this)
+                        ]);
+                    return;
                 }
+
+                // same html template can have different texts. Hence sending both in data lake.
+                $eventProperties['text_template'] = $this->textView ?? '';
+                $eventProperties['html_template'] = $this->view ?? '';
+                $eventProperties['recipient_email'] = $toEmailHash;
+                $eventProperties['email_driver'] = $this->emailDriverName;
+
+                $app['diag']->trackEmailEvent(EventCode::EMAIL_ATTEMPTED, $eventProperties);
+
+                $trace->info(TraceCode::SEND_EMAIL_ATTEMPT, [
+                    'email'    => $toEmailHash,
+                    'mailable' => get_class($this),
+                    'view'     => $this->view,
+                    ]);
+
+                $shouldSendEmailViaStork = Tracer::inSpan(['name' => HyperTrace::MAILABLE_SHOULD_SEND_VIA_STORK], function () {
+                    return $this->shouldSendEmailViaStork();
+                });
+
+                // if email is to be sent via stork
+                if ($shouldSendEmailViaStork === true)
+                {
+                    $eventProperties['email_driver'] = 'stork';
+                    // we can override any base param by adding the param in `getParamsForStork()`
+                    $paramsPayload = array_merge($this->getBaseParamsForStork(), $this->getParamsForStork());
+                    $trace->info(TraceCode::SEND_EMAIL_ATTEMPT_STORK,
+                                 [
+                                     'template_name' => $paramsPayload['template_name'] ?? '',
+                                     'view'          => $this->view,
+                                 ]);
+
+                    try
+                    {
+                        $res = Tracer::inSpan(['name' => HyperTrace::MAILABLE_SEND_VIA_STORK], function () use($paramsPayload) {
+                            return (new Stork($this->mode, $this->originProduct))->sendEmail($paramsPayload);
+                        });
+                        $trace->info(TraceCode::SEND_EMAIL_ATTEMPT_STORK_SUCCESSFUL,
+                                     [
+                                         'stork_response' => $res
+                                     ]);
+                    }
+                    catch (\Throwable $e)
+                    {
+                        $trace->traceException($e,
+                                               Trace::ERROR,
+                                               TraceCode::SEND_EMAIL_ATTEMPT_STORK_EXCEPTION,
+                                               [
+                                                   'email_params' => $paramsPayload
+                                               ]);
+                    }
+
+                    $msgID = $res['message_id'] ?? '';
+                    if ($msgID === '')
+                    {
+                        $trace->info(TraceCode::SEND_EMAIL_ATTEMPT_STORK_FAILED,
+                        [
+                            'template_name'         => $paramsPayload['template_name'] ?? '',
+                            'view'    => $this->view,
+                        ]);
+                    }
+                }
+
+                if (empty($msgID) === true)
+                {
+                    $msg = null;
+                    Tracer::inSpan(['name' => HyperTrace::MAILABLE_MAILER_SEND], function () use($mailer, &$msg) {
+                        $mailer->send($this->buildView(), $this->buildViewData(), function ($message) use (&$msg) {
+                            $msg = $message;
+                            $this->buildFrom($message)
+                                ->buildRecipients($message)
+                                ->buildSubject($message)
+                                ->buildAttachments($message)
+                                ->runCallbacks($message);
+                        });
+                    });
+
+                    if ((empty($msg) === false) && (empty($msg->getHeaders()) === false) && (empty($msg->getHeaders()->get(self::MESSAGE_ID_TAG)) === false))
+                    {
+                        $msgID = $msg->getHeaders()->get(self::MESSAGE_ID_TAG)->getValue() ?? '';
+                    }
+                }
+
+                $eventProperties['message_id'] = $msgID;
+                $app['diag']->trackEmailEvent(EventCode::EMAIL_SUCCESS, $eventProperties);
+
+                if (isset($this->data['rewards']) === true)
+                {
+                    $rewards = $this->data['rewards'];
+
+                    $rewardEventProperties = [];
+
+                    $rewardEventProperties['merchant_id'] = $this->data['merchant']['id'];
+
+                    $rewardEventProperties['payment_id'] = $this->data['payment']['id'];
+
+                    foreach ($rewards as $reward)
+                    {
+                        $rewardEventProperties['reward_ids'][] = $reward['id'];
+                    }
+
+                    if(isset($this->data['email_variant']))
+                    {
+                        $rewardEventProperties['email_variant'] = $this->data['email_variant'];
+                    }
+
+                    $app['diag']->trackEmailEvent(EventCode::EMAIL_REWARD_SENT, $rewardEventProperties);
+                }
+
+                $trace->info(TraceCode::SEND_EMAIL_SUCCESSFUL,
+                    [
+                        'email' => $toEmailHash,
+                        'message_id' => $msgID,
+                        'mailable' => get_class($this)
+                    ]
+                );
             }
-
-            $eventProperties['message_id'] = $msgID;
-            $app['diag']->trackEmailEvent(EventCode::EMAIL_SUCCESS, $eventProperties);
-
-            if (isset($this->data['rewards']) === true)
+            catch (\Throwable $e)
             {
-                $rewards = $this->data['rewards'];
+                $app['diag']->trackEmailEvent(EventCode::EMAIL_ATTEMPT_FAILED, $eventProperties, $e);
 
-                $rewardEventProperties = [];
+                $trace->traceException($e,
+                                       Trace::ERROR,
+                                       TraceCode::MAILER_JOB_ERROR,
+                                       [
+                                            'from'    => $this->from,
+                                            'to'      => $this->to,
+                                            'subject' => $this->subject,
+                                            'mailable' => get_class($this)
+                                       ]);
 
-                $rewardEventProperties['merchant_id'] = $this->data['merchant']['id'];
-
-                $rewardEventProperties['payment_id'] = $this->data['payment']['id'];
-
-                foreach ($rewards as $reward)
+                // After logging the exception caught, we rethrow it so that the
+                // retry mechanism for mails is triggerred unless the exception
+                // was a guzzle client exception (i.e 4XX errors), in which case,
+                // retrying the request would just cause the request to fail.
+                if (($e instanceof GuzzleClientException) !== true && $app->environment(Environment::BETA) === false)
                 {
-                    $rewardEventProperties['reward_ids'][] = $reward['id'];
+                    throw $e;
                 }
-
-                if(isset($this->data['email_variant']))
-                {
-                    $rewardEventProperties['email_variant'] = $this->data['email_variant'];
-                }
-
-                $app['diag']->trackEmailEvent(EventCode::EMAIL_REWARD_SENT, $rewardEventProperties);
             }
-
-            $trace->info(TraceCode::SEND_EMAIL_SUCCESSFUL,
-                [
-                    'email' => $toEmailHash,
-                    'message_id' => $msgID,
-                    'mailable' => get_class($this)
-                ]
-            );
-        }
-        catch (\Throwable $e)
-        {
-            $app['diag']->trackEmailEvent(EventCode::EMAIL_ATTEMPT_FAILED, $eventProperties, $e);
-
-            $trace->traceException($e,
-                                   Trace::ERROR,
-                                   TraceCode::MAILER_JOB_ERROR,
-                                   [
-                                        'from'    => $this->from,
-                                        'to'      => $this->to,
-                                        'subject' => $this->subject,
-                                        'mailable' => get_class($this)
-                                   ]);
-
-            // After logging the exception caught, we rethrow it so that the
-            // retry mechanism for mails is triggerred unless the exception
-            // was a guzzle client exception (i.e 4XX errors), in which case,
-            // retrying the request would just cause the request to fail.
-            if (($e instanceof GuzzleClientException) !== true && $app->environment(Environment::BETA) === false)
-            {
-                throw $e;
-            }
-        }
+        });
     }
 
     /**
@@ -280,18 +293,20 @@ class Mailable extends BaseMailable
      */
     public function queue(Queue $queue)
     {
-        // If mailer is not enabled in config for org but org entry exists then block
-        if ($this->isEmailEnabledForOrg() === false)
-        {
-            return;
-        }
+        return Tracer::inSpan(['name' => HyperTrace::MAILABLE_QUEUE], function () use($queue) {
+            // If mailer is not enabled in config for org but org entry exists then block
+            if ($this->isEmailEnabledForOrg() === false)
+            {
+                return;
+            }
 
-        $connection = property_exists($this, 'connection') ? $this->connection : null;
-        $queueName  = property_exists($this, 'queue') ? $this->queue : null;
+            $connection = property_exists($this, 'connection') ? $this->connection : null;
+            $queueName  = property_exists($this, 'queue') ? $this->queue : null;
 
-        return $queue
+            return $queue
                 ->connection($connection)
                 ->pushOn($queueName ?: null, new SendQueuedMailable($this));
+        });
     }
 
     protected function evaluateAndSetMailDriver(MailerContract &$mailer)
