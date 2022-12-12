@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Product\Config;
 use App;
 use RZP\Base;
 use RZP\Exception;
+use Lib\PhoneBook;
 use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -201,14 +202,17 @@ class Validator extends Base\Validator
         {
             $merchant_detail = $this->merchant->merchantDetail()->first();
 
-            if ($merchant_detail->getContactMobile() != $input[Util\Constants::OTP][Util\Constants::CONTACT_MOBILE])
+            $otpCore =  (new Util\OtpRequestHandler());
+
+            $formattedContactNumber = $otpCore->formatContactNumber($input[Util\Constants::OTP][Util\Constants::CONTACT_MOBILE], $this->merchant);
+
+            if ($merchant_detail->getContactMobile() != $formattedContactNumber)
             {
                 throw new  Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_OTP_VERIFICATION_LOG);
             }
         }
     }
-
 
     public function validateTncInputCheck($input)
     {

@@ -35,7 +35,14 @@ class Core extends Base\Core
             'merchantId' => $merchantId,
             'input'      => $input
         ]);
-        $otpLog = $this->repo->merchant_otp_verification_logs->findMerchantOtpLogByMidAndContactNumber($merchantId, $input[Util\Constants::OTP][Util\Constants::CONTACT_MOBILE]);
+
+        $otpHandler = (new Util\OtpRequestHandler());
+
+        $formattedContactNumber = $otpHandler->formatContactNumber($input[Util\Constants::OTP][Util\Constants::CONTACT_MOBILE], $merchant);
+
+        $otpLog = $this->repo->merchant_otp_verification_logs->findMerchantOtpLogByMidAndContactNumber($merchantId, $formattedContactNumber);
+
+        $input[Util\Constants::OTP][Util\Constants::CONTACT_MOBILE] = $formattedContactNumber;
 
         return $this->repo->transactionOnLiveAndTest(function() use ($merchantId, $merchant, $input, $otpLog) {
 
