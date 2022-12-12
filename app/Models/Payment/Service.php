@@ -4652,6 +4652,52 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function internalPricingFetch( $entityType, $entityId, $input): array
+    {
+        if (isset($entityId) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException("Entity Id is a required field");
+        }
+
+        if (isset($entityType) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException("Entity type is a required field");
+        }
+
+        switch($entityType)
+        {
+            case "payment":
+                $payment = $this->repo->payment->findByPublicId($entityId);
+                $this->merchant = $this->repo->merchant->findOrFail($payment->getMerchantId());
+                
+                $processor = $this->getNewProcessor($this->merchant);
+                $data = $processor->processAndReturnPaymentFees($payment);
+                break;
+
+            case "refund":
+                $refund = $this->repo->refund->findByPublicId($entityId);
+
+                [$fee, $tax, $feeSplit] = (new Fee())->calculateMerchantFees($refund);
+
+                $data = [
+                    'original_amount'  => $refund->getAmount(),
+                    'fees'            => $fee,
+                    'razorpay_fee'    => $fee - $tax,
+                    'tax'             => $tax,
+                    'amount'          => $refund->getAmount() + $fee,
+                    'currency'        => $refund->getCurrency(),
+                    'fee_bearer'      => $refund->getFeeBearer(),
+                    'fee_split'       => $feeSplit,
+                ];
+                break;
+
+            default:
+                throw new Exception\BadRequestValidationFailureException("Entity type is invalid");
+        }
+
+        return $data;
+    }
+
     public function internalRiskNotificationForRearch($id, $input)
     {
         if (isset($id) === false)

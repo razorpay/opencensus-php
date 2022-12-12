@@ -794,6 +794,14 @@ class PaymentController extends Controller
         return ApiResponse::json($pricingResponse);
     }
 
+    public function internalPricingFetch($entityType, $entityId)
+    {
+        $input = Request::all();
+        $pricingResponse = $this->service()->internalPricingFetch($entityType, $entityId, $input);
+
+        return ApiResponse::json($pricingResponse);
+    }
+
     public function internalRiskNotificationForRearch($id)
     {
         $input = Request::all();

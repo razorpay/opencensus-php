@@ -3843,6 +3843,7 @@ class Route
         'internal_create_order_relations'            => ['post',       'internal/create/order/relations',                     'OrderController@internalCreateOrderRelations'],
         'payment_update_reference6'                  => ['patch',      'payments/{id}/updateReference6',                       'PaymentController@updateReference6'                           ],
         'internal_payment_pricing'                   => ['get',        'internal/payments/{id}/pricing',                       'PaymentController@internalPricingFetchForPayment'                         ],
+        'internal_pricing'                           => ['get',        'internal/entity/{entityType}/{entityId}/pricing',     'PaymentController@internalPricingFetch'                         ],
         'internal_merchant_risk_notification'        => ['post',       'internal/payments/{id}/risk_notification',            'PaymentController@internalRiskNotificationForRearch'                      ],
         'internal_sign_payload'                      => ['post',       'internal/payments/signer',                             'PaymentController@signPayloadInternal'                      ],
         'internal_generate_coproto'                  => ['post',       'internal/payments/coproto',                           'PaymentCreateController@generateCoprotoForRearch'            ],
@@ -5334,6 +5335,7 @@ class Route
         'internal_create_order_relations',
         'payment_update_reference6',
         'internal_payment_pricing',
+        'internal_pricing',
         'internal_merchant_risk_notification',
         'internal_sign_payload',
         'internal_generate_coproto',
@@ -14284,6 +14286,7 @@ class Route
             'cps_card_entity_create',
             'cps_iin_flow_disable',
             'internal_payment_pricing',
+            'internal_pricing',
             'internal_merchant_risk_notification',
             'fetch_iin_by_token_iin',
             'payment_fetch_card_metadata',
@@ -14292,6 +14295,7 @@ class Route
 
         'nbplus_payment_service' => [
             'internal_payment_pricing',
+            'internal_pricing',
             'internal_merchant_risk_notification',
         ],
 
@@ -14329,6 +14333,7 @@ class Route
             'internal_create_order_relations',
             'recon_update_data',
             'internal_payment_pricing',
+            'internal_pricing',
             'internal_merchant_risk_notification',
             'internal_sign_payload',
             'internal_generate_coproto',
