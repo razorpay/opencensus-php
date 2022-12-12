@@ -20,6 +20,7 @@ class Constants
     const WEBHOOKS                        = 'webhooks';
     const AGGREGATOR                      = 'aggregator';
     const TERMINAL_ONBOARDING             = 'terminal_onboarding';
+    const ALLOW_ICICI_SHARED              = 'allow_icici_shared';
     const RULE_BASED_ENABLEMENT           = 'rule_based_enablement';
     const SPR_DISABLE_METHOD_RESET        = 'spr_disable_method_reset';
     const S2SWALLET                       = 's2swallet';
@@ -1906,6 +1907,7 @@ class Constants
         self::GOOGLE_PAY_OMNICHANNEL          => true,
         self::TERMINAL_ONBOARDING             => true,
         self::RULE_BASED_ENABLEMENT           => true,
+        self::ALLOW_ICICI_SHARED              => true,
         self::SHOW_SUPPORT_URL                => true,
         self::TEST_MODE_SETTLEMENT            => true,
         self::VIJAYA_MERCHANT                 => true,
@@ -2747,6 +2749,11 @@ class Constants
         self::RULE_BASED_ENABLEMENT  => [
             'feature'       => self::RULE_BASED_ENABLEMENT,
             'display_name'  => 'Enable rule based/ system based instrument enablement/disablement',
+            'documentation' => '',
+        ],
+        self::ALLOW_ICICI_SHARED  => [
+            'feature'       => self::ALLOW_ICICI_SHARED,
+            'display_name'  => 'Accept UPI_ICICI shared terminal',
             'documentation' => '',
         ],
         self::ORG_CUSTOM_BRANDING => [
