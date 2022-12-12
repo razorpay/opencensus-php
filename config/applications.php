@@ -1275,6 +1275,15 @@ return [
         'base_url'      => env('CYBER_HELPDESK_BASE_URL', 'https://cyber-helpdesk.stage.razorpay.in/api')
     ],
 
+    'disputes' => [
+        'auth' => [
+            'username' => 'api',
+            'secret' => env('DISPUTES_API_SECRET', 'disputes_api_secret'),
+        ],
+        'mock'     => env('DISPUTES_MOCK', false),
+        'base_url'      => env('DISPUTES_BASE_URL', 'https://disputes.concierge.stage.razorpay.in/api/')
+    ],
+
     'sms_sync'  =>  [
         'secret'   => env('SMS_SYNC_SECRET')
     ],

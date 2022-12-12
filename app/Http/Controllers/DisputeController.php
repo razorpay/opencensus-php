@@ -5,7 +5,12 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 use RZP\Base\RuntimeManager;
+use RZP\Constants\Entity;
+use RZP\Constants\Mode;
 use RZP\Exception;
+use RZP\Services\DisputesClient;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Services\Metric;
 use RZP\Trace\TraceCode;
 use RZP\Models\Dispute\Chargeback\Service as DisputeChargebackService;
 
@@ -20,9 +25,61 @@ class DisputeController extends Controller
 
     public $disputeBulkCronTimeout = 600;
 
+    const DISPUTES_SERVICE_RELEASE_TIMESTAMP = 1673326800;  // 10 January 2023
+
+    protected function isWrittenToDisputeService(array $createdAtRes): bool
+    {
+        return (sizeof($createdAtRes) === 1
+        && isset($createdAtRes[0][Entity::CREATED_AT])
+        && $createdAtRes[0][Entity::CREATED_AT] >= self::DISPUTES_SERVICE_RELEASE_TIMESTAMP);
+    }
+
     public function get(string $id)
     {
-        $response = $this->service()->fetch($id, $this->input);
+        $variant = $this->app['razorx']->getTreatment($this->ba->getMerchantId(), RazorxTreatment::DISPUTES_DECOMP, $this->app['basicauth']->getMode() ?? Mode::LIVE);
+
+        if ($variant === RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            $createdAtRes = $this->service()->getCreatedAtFromDisputeId($id);
+
+            // A GET request can be served by the disputes service only if the data has flown to it via a Dual-write from API DB.
+            if ($this->isWrittenToDisputeService($createdAtRes) === true)
+            {
+                $response = null;
+
+                try
+                {
+                    $response = $this->app['disputes']->forwardToDisputesService();
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->error(TraceCode::DISPUTES_INTEGRATION_ERROR, [
+                        'error_message' => $e->getMessage(),
+                        'response'      => $response,
+                        'auth_type'     => $this->ba->getAuthType(),
+                        'merchant_id'   => $this->ba->getMerchantId() ?? 'none',
+                    ]);
+
+                    $this->trace->count(Metric::DISPUTES_SERVICE_ERROR_COUNT);
+
+                    // handling fallbacks for the new dispute service temporarily by calling
+                    // the service in case of failures and emitting prom metrics, logs.
+                    $response = $this->service()->fetch($id, $this->input);
+
+                    $this->trace->error(TraceCode::DISPUTES_INTEGRATION_ERROR, [
+                        'expected_response' => $response,
+                    ]);
+                }
+            }
+            else
+            {
+                $response = $this->service()->fetch($id, $this->input);
+            }
+        }
+        else
+        {
+            $response = $this->service()->fetch($id, $this->input);
+        }
 
         try
         {

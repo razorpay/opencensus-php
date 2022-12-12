@@ -11,6 +11,7 @@ use RZP\Models\User\Role;
 use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Mail;
 use RZP\Tests\Traits\TestsWebhookEvents;
@@ -130,6 +131,22 @@ class DisputePresentmentTest extends TestCase
         }
     }
 
+    private function mockRazorx($variant = 'on')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+            ->method('getTreatment')
+            ->will($this->returnCallback(function($mid, $feature, $mode) use($variant) {
+                return $variant;
+            }));
+    }
+
     /**
      * Ensure that only those actions performed in private auth are displayed to merchant in proxy auth
      * Only those fields should be displayed in diff which are public fields in the dispute entity
@@ -144,6 +161,8 @@ class DisputePresentmentTest extends TestCase
 
         //retrieval in proxyAuth
         $this->ba->proxyAuth();
+
+        $this->mockRazorx('off');
 
         $lifecycle = $this->startTest()['lifecycle'];
 
@@ -189,6 +208,8 @@ class DisputePresentmentTest extends TestCase
      */
     public function testDisputeLifecycleAttributesInProxyAuthActionPerformedInProxyAuth()
     {
+        $this->mockRazorx('off');
+
         $this->setUpForInitiateDraftEvidenceTest();
 
         $this->ba->proxyAuth();

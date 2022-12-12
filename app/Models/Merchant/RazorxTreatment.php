@@ -675,4 +675,7 @@ final class RazorxTreatment
     const DCS_ENABLED_NEW_USECASE = 'dcs_new_usecases_enabled';
 
     const RBL_CA_USE_NEW_STATE_MACHINE = 'rbl_ca_use_new_state_machine';
+
+    // Experiment to migrate disputes routes from API to disputes service
+    const DISPUTES_DECOMP = 'disputes_decomp';
 }

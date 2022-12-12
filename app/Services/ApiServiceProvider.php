@@ -764,6 +764,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerMerchantRiskAlertClient();
 
+        $this->registerDisputesClient();
+
         $this->registerPhonepeDowntimeService();
 
         $this->registerDowntimeSlackNotificationService();
@@ -2166,6 +2168,19 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             }
 
             return new MerchantRiskAlertClient();
+        });
+    }
+
+    protected function registerDisputesClient()
+    {
+        $this->app->singleton('disputes', function($app)
+        {
+            if ($app['config']->get('services.disputes.mock') === true)
+            {
+                return new Mock\DisputesClient();
+            }
+
+            return new DisputesClient();
         });
     }
 

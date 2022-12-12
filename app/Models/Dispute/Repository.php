@@ -8,6 +8,7 @@ use RZP\Constants\Table;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Payment\Method as Method;
+use RZP\Trace\TraceCode;
 use function Aws\boolean_value;
 
 class Repository extends Base\Repository
@@ -181,6 +182,18 @@ class Repository extends Base\Repository
             ->where($disputeCreatedAtColumn, '<', $toTimestamp)
             ->distinct()
             ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
+    }
+
+    public function getCreatedAtFromDisputeId($disputeId): array
+    {
+        $createdAtCol = $this->dbColumn(Entity::CREATED_AT);
+        $idCol        = $this->dbColumn(Entity::ID);
+
+        return $this->newQuery()
+            ->select($createdAtCol)
+            ->where($idCol, $disputeId)
+            ->get()
             ->toArray();
     }
 

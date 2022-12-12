@@ -291,6 +291,11 @@ class Service extends Base\Service
         ];
     }
 
+    public function getCreatedAtFromDisputeId($id): array {
+        Entity::verifyIdAndStripSign($id);
+        return $this->repo->dispute->getCreatedAtFromDisputeId($id);
+    }
+
     public function fetchMultiple(array $input): array
     {
         $merchantId = $this->merchant->getId();
