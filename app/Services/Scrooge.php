@@ -2,9 +2,11 @@
 
 namespace RZP\Services;
 
+use App;
 use RZP\Exception;
 use \WpOrg\Requests\Exception as Requests_Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
 use RZP\Models\Payout\Entity;
@@ -1054,7 +1056,23 @@ class Scrooge
      */
     protected function generateRequest(string $endpoint, string $method, array $data): array
     {
+        $app = App::getFacadeRoot();
+
+        $variant = $app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(),
+            "scrooge_edge_migration",
+            $app['rzp.mode'] ?? 'live');
+
         $url = $this->baseUrl . $endpoint;
+
+        if ($this->baseUrl == "https://scrooge.razorpay.com/v1/" && $variant==='on')
+        {
+            $url = "https://scrooge-temp.razorpay.com/v1/" . $endpoint;
+        }
+
+        $this->trace->info(TraceCode::SCROOGE_EDGE_MIGRATION, [
+            'variant'    => $variant,
+            'url'        => $url,
+        ]);
 
         // json encode if data is must, else ignore.
         if (in_array($method, [Requests::POST, Requests::PATCH, Requests::PUT], true) === true)

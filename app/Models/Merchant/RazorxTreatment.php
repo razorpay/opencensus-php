@@ -662,6 +662,9 @@ final class RazorxTreatment
     //Experiment used to control whether routes specified in $bankingDisabledRoutes should block banking requests or not
     const BLOCK_BANKING_REQUESTS = 'block_banking_requests';
 
+    //Experiment used to ramp up requests for edge url created for scrooge
+    const SCROOGE_EDGE_MIGRATION = 'scrooge_edge_migration';
+
     const PP_MAGIC_SETTING = 'pp_magic_setting';
 
 

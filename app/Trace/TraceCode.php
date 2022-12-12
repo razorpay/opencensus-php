@@ -333,6 +333,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFUND_UPDATE_REFERENCE1_SUMMARY                      = 'REFUND_UPDATE_REFERENCE1_SUMMARY';
     const REFUND_PROCESSED_TO_CREATED                           = 'REFUND_PROCESSED_TO_CREATED';
     const RESET_SCHEDULES_SUMMARY                               = 'RESET_SCHEDULES_SUMMARY';
+    const SCROOGE_EDGE_MIGRATION                                = 'SCROOGE_EDGE_MIGRATION';
     const PAYMENT_TIMED_OUT                                     = 'PAYMENT_TIMED_OUT';
     const PAYMENT_CARD_MANDATE_NOTIFICATION_NOT_SENT            = 'PAYMENT_CARD_MANDATE_NOTIFICATION_NOT_SENT';
     const PAYMENT_CARD_MANDATE_CANCELLED_BY_USER                = 'PAYMENT_CARD_MANDATE_CANCELLED_BY_USER';
