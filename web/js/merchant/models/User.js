@@ -1714,6 +1714,10 @@ export default class User {
     return getSplitzExperimentVariant('show_payroll_widget_exp').variables?.result === 'on';
   }
 
+  get isShowAffordabilityWidget() {
+    return getSplitzExperimentVariant('show_affordability_widget_exp').variables?.result === 'on';
+  }
+
   get isApiKeysRevampEnabled() {
     return getSplitzExperimentVariant('api_keys_revamp')?.variables?.result === 'on';
   }

@@ -5,3 +5,7 @@ export const getIsBankingEnabled = (currentUser = {}) => {
 export const getIsPayrollWidgetEnabled = (currentUser = {}) => {
   return currentUser.isShowPayrollWidgetEnabled && currentUser.isOrgRZP;
 };
+
+export const getIsShowAffordabilityWidget = (currentUser = {}) => {
+  return currentUser.isShowAffordabilityWidget && currentUser.isOrgRZP;
+};

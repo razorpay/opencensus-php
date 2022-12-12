@@ -7,4 +7,5 @@ export interface UserT extends Record<string, unknown> {
   isPartnershipFUX: boolean;
   isOnboardAsResellers: boolean;
   isShowInvoiceCurrentFY: boolean;
+  isShowAffordabilityWidget: boolean;
 }

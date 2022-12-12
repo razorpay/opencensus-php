@@ -22,6 +22,7 @@ export enum Teams {
   CROSS_BORDER = 'Cross Border',
   DEV_EXP = 'Developer Experience',
   XPAYROLL = 'XPayroll',
+  AFFORDABILITY = 'Affordability',
 }
 
 // Maintain this list in ascending order

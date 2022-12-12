@@ -4,7 +4,11 @@ import MainNavLink from 'merchant_common/components/MainNavLink';
 import MagicCheckoutNavLink from 'merchant/components/Sidebar/MagicCheckoutNavLink';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, isMobileResolution } from 'common/utils/rzp-utils';
-import { getIsBankingEnabled, getIsPayrollWidgetEnabled } from './helpers';
+import {
+  getIsBankingEnabled,
+  getIsPayrollWidgetEnabled,
+  getIsShowAffordabilityWidget,
+} from './helpers';
 import { trackViewedBankingNavBar } from './ga';
 import BBPSImage from 'assets/bbps.png';
 import * as LocalStorageService from 'common/utils/localStorage';
@@ -207,6 +211,15 @@ function MerchantNavLinks(props) {
         }
         to={routes[isChargeAtWillEnabled ? 'chargeAtWill' : 'subscriptions']}
         customBadge={getProductBadge(['subscriptions'])}
+      />
+
+      <MainNavLink
+        label="Affordability"
+        type="product"
+        icon="i i-affordability text-primary"
+        additionalCondition={getIsShowAffordabilityWidget}
+        to="/affordability/widget"
+        isNew={true}
       />
 
       <MainNavLink

@@ -226,6 +226,9 @@ return [
 
         // get ticket api migrated to care service
         'GET_TICKET_MIGRATION' => env('GET_TICKET_MIGRATION', ''),
+
+        // affordability widget on dashboard
+        'SHOW_AFFORDABILITY_WIDGET_EXP' => env('SHOW_AFFORDABILITY_WIDGET_EXP', ''),
         
         // disable ticket creation for international activation
         'DISABLE_INTERNATIONAL_ACTIVATION' => env('DISABLE_INTERNATIONAL_ACTIVATION', '')

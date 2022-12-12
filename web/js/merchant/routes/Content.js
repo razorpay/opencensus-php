@@ -64,6 +64,11 @@ const InvoicesNew = lazy(() =>
 const Subscriptions = lazy(() =>
   import(/* webpackChunkName: "Subscriptions" */ 'merchant/views/Subscriptions'),
 );
+
+const Affordability = lazy(() =>
+  import(/* webpackChunkName: "Affordability" */ 'merchant/views/Affordability'),
+);
+
 const QRCodes = lazy(() => import(/* webpackChunkName: "QRCodes" */ 'merchant/views/QRCodes'));
 
 const Stores = lazy(() => import(/* webpackChunkName: "Stores" */ 'merchant/views/Stores'));
@@ -452,6 +457,12 @@ export default class Content extends Component {
             component={Subscriptions}
             additionalCondition={(user) => user.isAllowedView('subscriptions')}
           />
+          <ShowWhenRoute
+            path="/affordability"
+            component={Affordability}
+            additionalCondition={(user) => user.isShowAffordabilityWidget && user.isOrgRZP}
+          />
+
           <ShowWhenRoute
             path="/plans"
             component={Subscriptions}

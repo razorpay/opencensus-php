@@ -448,6 +448,13 @@ export default {
     //prod experiment ids,
     'KmBlZ2iUatsoAB',
   ],
+  show_affordability_widget_exp: [
+    //beta experiment ids
+    'Kp0QoSovVgTwkh',
+
+    //prod experiment ids,
+    'KpKKcFI3d29nAv',
+  ],
   get_ticket_migration: [
     // beta
     'KoBY1gZStTu3ic',

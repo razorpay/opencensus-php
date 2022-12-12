@@ -1,0 +1,139 @@
+// stylelint-disable max-nesting-depth
+
+.OnBoarding--AffordabilityWidget
+  padding: 24px
+
+  .Slider
+    @media (max-width 900px)
+      min-height 80vh
+
+  .Landing--Image
+    overflow: hidden
+    z-index: 2
+    position: relative
+    background-color: #F4FDFF
+    background-size: cover
+
+    img
+      width: 100%
+      max-width: 700px
+      min-width: 520px
+
+  .Product--Details
+    margin-top: 25px
+
+    .Details-heading
+      .dash
+        border: 1.5px solid #2B83EA
+
+    .Button-Container
+      bottom 24px
+
+      @media (max-width 375px)
+        position: static
+        display: flex
+        justify-content: flex-end
+
+      .joined-button.Button
+        background-color: #15B11B
+        color: #FFF
+        font-weight: bold
+        font-size: 16px
+        line-height: 20px
+        margin-top: 14px
+        padding: 9px 20px
+        cursor: default
+        border-radius: 4px
+
+        .i.i-tick
+          font-size: 11px
+          vertical-align: middle
+          margin-left: 8px
+
+      .joined-button.Button
+        &:hover
+          background-color: #15B11B
+
+        &:active
+          background-color: #15B11B
+          color: #FFF
+
+    .callout
+      .caption
+        font-size: 16px
+        font-weight: 800
+        line-height: 17.6px
+        color: #444
+
+      .benefit-tiles-grid
+        margin-top: 30px
+        margin-bottom: 30px
+        display: grid
+        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr))
+        align-content: stretch;
+        max-width: 475px
+        gap: 28px 12px
+
+        @media (max-width 450px)
+          grid-template-columns: repeat(auto-fit, minmax(94px, 1fr))
+          max-width: 475px
+          gap: 28px 11px
+
+        @media (max-width 375px)
+          grid-template-columns: repeat(auto-fit, minmax(84px, 1fr))
+          max-width: 360px
+          gap: 20px 5px
+
+        .benefit-tile
+          width: 100%
+          height: auto
+          padding: 10px
+          display: flex
+          flex-direction: column
+          align-items: center
+          justify-content: center
+          background: #FFF
+          box-shadow: 0 0 4px rgb(0 0 0 / 0.25)
+          position: relative
+          padding-top: 20px
+
+          @media (max-width 450px)
+            height: auto
+            padding-top: 10px
+
+          .icon-wrapper
+            height: 62px
+            width: 62px
+            display: grid
+            place-content: center
+
+            @media (max-width 450px)
+              height: 32px
+
+          .icon-img
+            height: 52px
+            width: 52px
+
+            @media (max-width 450px)
+              height: 26px
+              width: 26px
+
+          .benefit-metric
+            font-weight: 800;
+            font-size: 30px;
+            line-height: 110%;
+
+            @media (max-width 450px)
+              font-size: 16px;
+
+          .benefit-desc
+            font-weight: 400
+            font-size: 14px
+            text-align: center
+            margin-top: 5px
+            line-height: 18px
+            color: #7C8297
+            max-width: 15ch
+
+            @media (max-width 450px)
+              font-size: 10px;
