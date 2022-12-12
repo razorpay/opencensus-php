@@ -4104,6 +4104,7 @@ class Processor
             'vpa'           => $payment->getVpa(),
             'method'        => $payment->getMethod(),
             'base_amount'   => $payment->getBaseAmount(),
+            'currency'      => $payment->getCurrency(),
         ];
 
         $terminal = $payment->terminal;
