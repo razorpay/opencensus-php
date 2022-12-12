@@ -24,6 +24,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Payment\Processor\PayLater;
+use RZP\Models\Payment\Processor\Fpx;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Partner\Config as PartnerConfig;
@@ -322,6 +323,7 @@ class Core extends Base\Core
             Entity::EMI_TYPES                   => [],
             Entity::DEBIT_EMI_PROVIDERS         => [],
             Payment\Method::INTL_BANK_TRANSFER  => [],
+            Payment\Method::FPX                 => [],
         ];
 
         $methods = $this->getMethods($merchant);
@@ -340,6 +342,7 @@ class Core extends Base\Core
         $data[Entity::EMI_TYPES] = $methods->getEmiTypes();
         $data[Entity::COD] = $methods->isCodEnabled();
         $data[Entity::OFFLINE] = $methods->isOfflineEnabled();
+        $fpxEnabled = $methods->isFpxEnabled();
 
 
         if ($netbankingEnabled === true)
@@ -349,6 +352,13 @@ class Core extends Base\Core
             $allSupportedBanks = Netbanking::removeDefaultDisableBanks($banks);
 
             $data[Payment\Method::NETBANKING] = $this->getBankNames($allSupportedBanks);
+        }
+
+        if($fpxEnabled === true)
+        {
+            $banks = $methods->getFPXSupportedBanks();
+
+            $data[Payment\Method::FPX] = Fpx::getDisplayNames($banks);
         }
 
         $data[Payment\Method::WALLET]        = $methods->getEnabledWallets();

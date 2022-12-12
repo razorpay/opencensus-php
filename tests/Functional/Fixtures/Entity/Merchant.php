@@ -601,6 +601,15 @@ class Merchant extends Base
     {
         return $this->fixtures->edit('methods', $id, ['netbanking' => false]);
     }
+    public function enableFpx($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['fpx' => true]);
+    }
+
+    public function disableFpx($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['fpx' => false]);
+    }
 
     public function enablePrepaidCard($id = '10000000000000')
     {

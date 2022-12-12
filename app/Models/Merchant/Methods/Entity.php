@@ -10,6 +10,7 @@ use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Card\SubType;
 use RZP\Models\Card\Type;
 use RZP\Models\Emi\DebitProvider;
+use RZP\Models\Payment\Processor\Fpx as FpxProcessor;
 use RZP\Models\Payment\Processor\Netbanking as NetbankingProcessor;
 use RZP\Models\Payment\Processor\App as AppMethod;
 
@@ -60,6 +61,7 @@ class Entity extends Base\PublicEntity
     const APPS              = 'apps';
     const HDFC_DEBIT_EMI    = 'hdfc_debit_emi';
     const COD               = 'cod';
+    const FPX               = 'fpx';
 
     const DEBIT_EMI_PROVIDERS = 'debit_emi_providers';
     const EMI_TYPES           = 'emi_types';
@@ -123,6 +125,7 @@ class Entity extends Base\PublicEntity
         self::ADDITIONAL_WALLETS,
         self::COD,
         self::OFFLINE,
+        self::FPX
     ];
 
     protected $visible = [
@@ -170,6 +173,7 @@ class Entity extends Base\PublicEntity
         self::CITIBANKREWARDS,
         self::COD,
         self::OFFLINE,
+        self::FPX,
     ];
 
     protected $public = [
@@ -218,6 +222,7 @@ class Entity extends Base\PublicEntity
         self::CITIBANKREWARDS,
         self::COD,
         self::OFFLINE,
+        self::FPX,
     ];
 
     protected $appends = [
@@ -273,6 +278,7 @@ class Entity extends Base\PublicEntity
         self::ADDITIONAL_WALLETS => [],
         self::COD            => false,
         self::OFFLINE        => false,
+        self::FPX            => false,
     );
 
     public static $defaultPaymentMethodsForSubmerchantByPartner = array(
@@ -310,6 +316,7 @@ class Entity extends Base\PublicEntity
         self::ADDITIONAL_WALLETS => [],
         self::COD            => false,
         self::OFFLINE        => false,
+        self::FPX            => false,
     );
 
     protected $wallets = array(
@@ -370,6 +377,7 @@ class Entity extends Base\PublicEntity
         self::APPS,
         self::COD,
         self::OFFLINE,
+        self::FPX,
     ];
 
     // Casts the attributes to native types
@@ -405,6 +413,7 @@ class Entity extends Base\PublicEntity
         self::PAYPAL        => 'bool',
         self::COD           => 'bool',
         self::OFFLINE       => 'bool',
+        self::FPX           => 'bool',
     ];
 
     public function merchant()
@@ -442,6 +451,11 @@ class Entity extends Base\PublicEntity
     public function isNetbankingEnabled()
     {
         return $this->getAttribute(self::NETBANKING);
+    }
+
+    public function isFpxEnabled()
+    {
+        return $this->getAttribute(self::FPX);
     }
 
     public function isUpiEnabled()
@@ -911,6 +925,11 @@ class Entity extends Base\PublicEntity
         $supportedBanks = array_diff($banks, $this->getDisabledBanks());
 
         return $supportedBanks;
+    }
+
+    public function getFPXSupportedBanks()
+    {
+        return FpxProcessor::getSupportedBanks();
     }
 
     public static function getAllMethodNames()

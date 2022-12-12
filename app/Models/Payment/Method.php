@@ -23,6 +23,7 @@ class Method
     const OFFLINE               = 'offline';
     const UNSELECTED            = 'unselected';
     const INTL_BANK_TRANSFER    = 'intl_bank_transfer';
+    const FPX                   = 'fpx';
 
     protected static $methods = [
         self::CARD                  => 'Card',
@@ -40,7 +41,8 @@ class Method
         self::APP                   => 'App',
         self::COD                   => 'Cash on Delivery',
         self::OFFLINE               => 'Offline',
-        self::INTL_BANK_TRANSFER    => 'Intl Bank Transfer'
+        self::INTL_BANK_TRANSFER    => 'Intl Bank Transfer',
+        self::FPX                   => 'Financial Process Exchange',
     ];
 
     protected static $nonEsAutomaticMethods = [
@@ -58,6 +60,7 @@ class Method
         self::AEPS,
         self::EMANDATE,
         self::UPI,
+        self::FPX,
     ];
 
     public static $cpsEnabledMethods = [

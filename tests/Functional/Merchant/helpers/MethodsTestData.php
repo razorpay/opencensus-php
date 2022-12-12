@@ -44,6 +44,19 @@ return [
         ],
     ],
 
+    'testGetPaymentMethodsRouteWithFpxFalse' => [
+        'request' => [
+            'url' => '/methods',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'methods',
+                'fpx' => [],
+            ],
+        ],
+    ],
+
     'testBulkMethodUpdate' => [
         'request' => [
             'url' => '/methods/bulkupdate',
