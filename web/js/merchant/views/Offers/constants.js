@@ -252,6 +252,7 @@ export const EMI_CARDS_OPTIONS = [
 export const EMI_DEBIT_CARD_BANK_OPTIONS = [
   { label: '--Select Issuers--', name: '' },
   { label: 'HDFC Bank', name: 'HDFC' },
+  { label: 'INDUSIND Bank', name: 'INDB' },
 ];
 
 // card network on which offer disable CTA shall be deactivated

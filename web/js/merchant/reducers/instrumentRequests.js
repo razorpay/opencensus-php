@@ -650,6 +650,13 @@ const initialState = {
               slug: 'debit.hdfc',
               icon: 'https://cdn.razorpay.com/paylater-sq/hdfc.svg',
             },
+            {
+              name: 'IndusInd Bank',
+              description: '',
+              status: 'Request',
+              slug: 'debit.indusind',
+              icon: 'https://cdn.razorpay.com/bank/INDB.gif',
+            },
           ],
         },
         {
