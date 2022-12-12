@@ -46,33 +46,49 @@ class Service extends Base\Service
 
             (new Validator)->validateInput('fetchCouponsRequest', $input);
 
-            $orderId = $input['order_id'];
-
-            $merchantOrderId = null;
-
-            try
+            if(empty($input['order_id']) === true && empty($input['checkout_id']) === true)
             {
-                $rzpOrder = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
+                $ex = new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, "Order ID or Checkout ID id required.");
 
-                $merchantOrderId = $rzpOrder->getReceipt();
-            }
-            catch (\Throwable $e)
-            {
-                $this->trace->count(Metric::FETCH_COUPONS_ERROR_COUNT, $dimensions);
-                $ex = new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
                 throw $ex;
             }
+            $rzpOrder = null;
 
-            if ($merchantOrderId === null)
+            if (empty($input['order_id']) === false)
             {
-                $this->trace->count(Metric::FETCH_COUPONS_ERROR_COUNT, $dimensions);
-                $ex = new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_ERROR
-                );
-                throw $ex;
+                $orderId = $input['order_id'];
+
+                $merchantOrderId = null;
+
+                try
+                {
+                    $rzpOrder = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
+
+                    $merchantOrderId = $rzpOrder->getReceipt();
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->count(Metric::FETCH_COUPONS_ERROR_COUNT, $dimensions);
+                    $ex = new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+                    throw $ex;
+                }
+
+                if ($merchantOrderId === null)
+                {
+                    $this->trace->count(Metric::FETCH_COUPONS_ERROR_COUNT, $dimensions);
+                    $ex = new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_ERROR
+                    );
+                    throw $ex;
+                }
+
+                $input['order_id'] = $merchantOrderId;
             }
 
-            $input['order_id'] = $merchantOrderId;
+            if (empty($input['checkout_id']) === false)
+            {
+                $input['order_id'] = $input['checkout_id'];
+            }
 
             $platformConfig = $this->merchant->getMerchantPlatformConfig();
 
@@ -83,7 +99,10 @@ class Service extends Base\Service
             if ($platformConfig !== null and $platformConfig->getValue() === Merchant1ccConfig\Type::SHOPIFY)
             {
                 // TODO: critical error if not found !
-                $input['order_id'] = $rzpOrder->toArrayPublic()['notes']['storefront_id'];
+                if (empty($rzpOrder) === false)
+                {
+                    $input['order_id'] = $rzpOrder->toArrayPublic()['notes']['storefront_id'];
+                }
 
                 $this->trace->count(Metric::FETCH_COUPONS_SHOPIFY_REQUEST_COUNT, $dimensions);
 

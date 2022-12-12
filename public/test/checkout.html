@@ -81,7 +81,11 @@
     }
 
     addLink(base + 'v1/css/checkout.css');
-    addScript(base + 'v1/checkout-frame.js');
+    if (params.magic_shopify_key) {
+      addScript(base + 'v1/checkout-frame-lite.js');
+    } else {
+      addScript(base + 'v1/checkout-frame.js');
+    }
   }
 
   addAssets();

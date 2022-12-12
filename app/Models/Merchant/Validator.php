@@ -582,9 +582,10 @@ class Validator extends Base\Validator
     ];
 
     protected static $fetchCouponsRequestRules = [
-        'order_id'                      => 'required|string',
+        'order_id'                      => 'sometimes|string',
         'contact'                       => 'sometimes|string',
         'email'                         => 'sometimes|email',
+        'checkout_id'                   => 'sometimes|string',
     ];
 
     protected static $fetchCouponsResponseRules = [
