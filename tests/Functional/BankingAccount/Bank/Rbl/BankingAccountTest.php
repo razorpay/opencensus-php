@@ -7463,6 +7463,50 @@ class BankingAccountTest extends TestCase
         $this->assertBankingAccountFetchCommon($baAttributes, $searchBody);
     }
 
+    public function testBankingAccountFetchForAssigneeBankOps()
+    {
+        $baAttributes = [
+            'assignee_team' => 'ops'
+        ];
+
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $this->testCreateActivationDetail($baAttributes);
+
+        $this->ba->adminAuth();
+
+        $lastCreatedBankingAccount = $this->getDbLastEntity('banking_account');
+
+        $lastBankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
+
+        $this->fixtures->edit('banking_account_activation_detail',
+            $lastBankingAccountActivationDetail->getId(),
+            [
+                'assignee_team' => 'bank_ops'
+            ]);
+
+        $searchBody = [
+            'assignee_team' => 'ops'
+        ];
+
+        $dataToReplace = [
+            'request' => [
+                'content' => $searchBody
+            ],
+            'response' => [
+                'content' => [
+                    'items' => [
+                        [
+                            'id' => $lastCreatedBankingAccount->getPublicId()
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
     public function testBankingAccountFetchForSpoc()
     {
         $baAttributes = [

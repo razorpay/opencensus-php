@@ -3952,6 +3952,19 @@ return [
         ],
     ],
 
+    'testBankingAccountFetchForAssigneeBankOps' => [
+        'request' => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+            ],
+        ],
+    ],
+
     'testResolveBankingAccountActivationComment' => [
         'request' => [
             'url'     => '/admin/banking_account',

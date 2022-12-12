@@ -371,6 +371,10 @@ class Repository extends Base\Repository
         {
             $assigneeTeam = [ActivationDetail\Entity::OPS, ActivationDetail\Entity::SALES];
         }
+        else if ($assigneeTeam === ActivationDetail\Entity::BANK or $assigneeTeam === ActivationDetail\Entity::OPS)
+        {
+            $assigneeTeam = [$assigneeTeam, ActivationDetail\Entity::BANK_OPS];
+        }
         else
         {
             $assigneeTeam = [$assigneeTeam];
