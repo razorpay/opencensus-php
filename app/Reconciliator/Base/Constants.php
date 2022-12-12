@@ -64,11 +64,13 @@ class Constants
     const GATEWAY_TRANSACTION_ID = 'gateway_transaction_id';
     const NETWORK_TRANSACTION_ID = 'network_transaction_id';
     const GATEWAY_REFERENCE_ID2  = 'gateway_reference_id2';
+    const GATEWAY_REFERENCE_ID1  = 'gateway_reference_id1';
 
     const CPS_PARAMS = [
         Constants::RRN,
         Constants::AUTH_CODE,
         Constants::GATEWAY_TRANSACTION_ID,
+        Constants::GATEWAY_REFERENCE_ID1,
     ];
 
     // Fields being used in batch recon request flow

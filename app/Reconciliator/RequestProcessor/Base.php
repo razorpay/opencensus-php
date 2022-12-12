@@ -242,6 +242,7 @@ class Base extends Core
         self::BAJAJFINSERV             => ['remiecftransactions@bizsupportc.com', 'ashwani.verma1@bajajfinserv.in'],
         self::YES_BANK                 => ['yesacquirer@insolutionsglobal.com'],
         self::HDFC_DEBIT_EMI           => ['emailintimation@hdfcbank.com'],
+        self::INDUSIND_DEBIT_EMI       => [],
         self::UPI_JUSPAY               => ['crs.upimerchantsettlement@axisbank.com'],
         self::UPI_AIRTEL               => [],
         self::UPI_YESBANK              => [],

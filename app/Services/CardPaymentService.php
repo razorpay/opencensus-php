@@ -436,7 +436,7 @@ class CardPaymentService
             unset($input['payment']['billing_address']);
         }
 
-        if($action === ACTION::FORCE_AUTHORIZE_FAILED and $gateway === "kotak_debit_emi")
+        if($action === ACTION::FORCE_AUTHORIZE_FAILED and (in_array($gateway, Payment\Gateway::FORCE_AUTHORIZE_FAILED_SYNC_GATEWAYS, true) === true))
         {
             unset($input['gateway']);
         }
@@ -452,7 +452,7 @@ class CardPaymentService
         ];
         // change action for force_authorize_failed to verify after content creation
         // to be take decisions further on action for fulcrum gateway
-        if ($action === Action::FORCE_AUTHORIZE_FAILED and $gateway !== 'kotak_debit_emi')
+        if ($action === Action::FORCE_AUTHORIZE_FAILED and (in_array($gateway, Payment\Gateway::FORCE_AUTHORIZE_FAILED_SYNC_GATEWAYS, true) !== true))
         {
             $action = Action::VERIFY;
         }

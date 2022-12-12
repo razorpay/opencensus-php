@@ -38,6 +38,10 @@ class Service extends Base\Service
         RequestProcessor\Base::PAYUMONEY,
     ];
 
+    const GATEWAYS_WITH_REF_ID1 = [
+        RequestProcessor\Base::INDUSIND_DEBIT_EMI,
+    ];
+
     /**
      * List of gateways where we skips the batch summary slack post
      */
@@ -209,6 +213,11 @@ class Service extends Base\Service
                     continue;
                 }
 
+                if($field === Constants::GATEWAY_REFERENCE_ID1 and
+                    (in_array($input['gateway'], self::GATEWAYS_WITH_REF_ID1, true) !== true))
+                {
+                    continue;
+                }
                 //
                 // Overwrite the data in two cases :
                 // 1. Existing CPS data is empty.

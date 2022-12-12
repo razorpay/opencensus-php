@@ -86,6 +86,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::GETSIMPL,
         RequestProcessor\Base::EMANDATE_AXIS,
         RequestProcessor\Base::HDFC_DEBIT_EMI,
+        RequestProcessor\Base::INDUSIND_DEBIT_EMI,
         RequestProcessor\Base::UPI_JUSPAY,
         RequestProcessor\Base::UPI_YESBANK,
         RequestProcessor\Base::NETBANKING_JKB,
@@ -435,6 +436,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 Base\Constants::RRN                    => $rowDetails[BaseReconciliate::REFERENCE_NUMBER],
                 Base\Constants::AUTH_CODE              => $rowDetails[BaseReconciliate::AUTH_CODE],
                 Base\Constants::GATEWAY_TRANSACTION_ID => $rowDetails[BaseReconciliate::GATEWAY_TRANSACTION_ID],
+                Base\Constants::GATEWAY_REFERENCE_ID1  => $rowDetails[BaseReconciliate::GATEWAY_REFERENCE_ID1],
             ],
             'mode'       => $this->mode,
             'gateway'    => $this->gateway,
@@ -1083,6 +1085,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $gatewayUniqueId = $this->getGatewayUniqueId($row);
 
+        $gatewayReferenceId1 = $this->getGatewayReferenceId1($row);
+
         $rowDetails = [
             BaseReconciliate::PAYMENT_ID             => $paymentId,
             BaseReconciliate::GATEWAY_SERVICE_TAX    => $serviceTax,
@@ -1097,6 +1101,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             BaseReconciliate::ARN                    => trim($arn),
             BaseReconciliate::GATEWAY_UTR            => trim($gatewayUtr),
             BaseReconciliate::GATEWAY_UNIQUE_ID      => $gatewayUniqueId,
+            BaseReconciliate::GATEWAY_REFERENCE_ID1  => trim($gatewayReferenceId1),
         ];
 
         // For wallets and netbanking, $cardDetails would be empty.

@@ -343,6 +343,11 @@ class Processor
 
     const CAPTURE_VERIFY_METRO_TOPIC        = 'rearch-capture-verify';
 
+    const FORCE_AUTHORIZE_FAILED_ALLOW_GATEWAYS = [
+        Payment\Gateway::KOTAK_DEBIT_EMI,
+        Payment\Gateway::FULCRUM,
+    ];
+
     /**
      * @var Merchant\Entity
      */
@@ -4909,9 +4914,10 @@ class Processor
         if ((is_array($input) === true) and
             (isset($input[E::PAYMENT]) === true) and
             ($input[E::PAYMENT][Payment\Entity::CPS_ROUTE] === Payment\Entity::CARD_PAYMENT_SERVICE) and
-            ((in_array($action, Action::$cardPaymentsSupportedActions) === true) or
-                ( $action === Action::FORCE_AUTHORIZE_FAILED and (($input[E::PAYMENT][Payment\Entity::GATEWAY] === Payment\Gateway::FULCRUM) or
-                $input[E::PAYMENT][Payment\Entity::GATEWAY] === Payment\Gateway::KOTAK_DEBIT_EMI))))
+            (
+                (in_array($action, Action::$cardPaymentsSupportedActions) === true) or
+                ($action === Action::FORCE_AUTHORIZE_FAILED and (in_array($input[E::PAYMENT][Payment\Entity::GATEWAY], self::FORCE_AUTHORIZE_FAILED_ALLOW_GATEWAYS, true) === true))
+            ))
         {
             return true;
         }
