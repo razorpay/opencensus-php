@@ -262,7 +262,7 @@ class Mailable extends BaseMailable
             // retry mechanism for mails is triggerred unless the exception
             // was a guzzle client exception (i.e 4XX errors), in which case,
             // retrying the request would just cause the request to fail.
-            if (($e instanceof GuzzleClientException) !== true)
+            if (($e instanceof GuzzleClientException) !== true && $app->environment(Environment::BETA) === false)
             {
                 throw $e;
             }
