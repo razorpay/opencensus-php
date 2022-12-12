@@ -190,7 +190,7 @@ class PdfGenerator extends Base\Core
     {
         $data = (new Core())->getTemplateDataForPgInvoice($merchant, $month, $year, $invoiceBreakup, $eInvoiceData) ;
 
-        if($this->isMerchantPGInvoiceV2($merchant->getId()) === true && empty($eInvoiceData)===false)
+        if($this->isMerchantPGInvoiceV2($merchant->getId()) === true)
         {
             $view = ($data['isGstApplicable'] === true) ?'merchant.pg_invoice.invoiceV2' : 'merchant.pg_invoice.invoice_old';
         }

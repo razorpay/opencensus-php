@@ -51,7 +51,7 @@
                         {{{$merchant_details['business_registered_state']}}}<br/>
                     @endif
                     @if (!empty($gstin))
-                        State/UT Code: {{{substr($gstin, 0, 2)}}}<br/>
+                        State/UT Code: {{{substr($gstin, 0, 2)}}} (POS)<br/>
                         <span class="code">GSTIN - {{{$gstin}}}</span><br/>
                     @endif
                 </td>
