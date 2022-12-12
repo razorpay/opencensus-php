@@ -10,6 +10,7 @@ use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Escalations\Constants as EscalationConstants;
 use RZP\Models\Payment;
 use RZP\Models\Order;
 use RZP\Models\Admin\Org;
@@ -786,6 +787,34 @@ class Service extends Base\Service
                     $input[Constants::CUSTOM_FIELDS][Constants::CF_CATEGORY] = Constants::DEFAULT_CF_CATEGORY;
                 }
             }
+        }
+
+        $cf_new_category = $input[Constants::CUSTOM_FIELDS][Constants::CF_NEW_CATEGORY] ?? null;
+        $cf_category = $input[Constants::CUSTOM_FIELDS][Constants::CF_CATEGORY] ?? null;
+
+        $category = $cf_new_category ?? $cf_category;
+
+        if ($category === Constants::ACTIVATIONS_DOCUMENT_REVIEW)
+        {
+            $leadScore = optional($this->auth->getMerchant()->merchantBusinessDetail)->getTotalLeadScore() ?? 0;
+            $input[Constants::CUSTOM_FIELDS][Constants::LEAD_SCORE] = $leadScore;
+
+            $input[Constants::TICKET_PRIORITY]  = Priority::getValueForPriorityString(Priority::MEDIUM);
+
+            if ($leadScore > 55)
+            {
+                if (in_array($input[Constants::CUSTOM_FIELDS][Constants::CF_CASE_TRIGGER],
+                             [EscalationConstants::CMMA_SOFT_LIMIT_BREACH, EscalationConstants::CMMA_HARD_LIMIT_BREACH]))
+                {
+                    $input[Constants::TICKET_PRIORITY]  = Priority::getValueForPriorityString(Priority::URGENT);
+                }
+                elseif (in_array($input[Constants::CUSTOM_FIELDS][Constants::CF_CASE_TRIGGER],
+                                 [EscalationConstants::AMP, EscalationConstants::AUTO_KYC_FAILURE_TRIGGER]))
+                {
+                    $input[Constants::TICKET_PRIORITY]  = Priority::getValueForPriorityString(Priority::HIGH);
+                }
+            }
+
         }
 
         return $input;

@@ -51,14 +51,15 @@ class Constants
     const MILESTONE     = 'milestone';
     const ENABLE        = 'enable';
     const CURRENT_GMV   = 'current_gmv';
-    const SOFT_LIMIT_LEVEL_1 = 'soft_limit_level_1';
-    const HARD_LIMIT_LEVEL_1 = 'hard_limit_level_1';
-    const CMMA_SOFT_LIMIT_BREACH = 'SOFT-LIMIT-BREACH-LV1';
-    const CMMA_HARD_LIMIT_BREACH = 'HARD-LIMIT-BREACH-LV1';
-    const AUTO_KYC_FAILURE_TRIGGER = 'AUTO-KYC-FAILURE';
-    const ACTIVATION = 'activation';
-    const CMMA_ROUTE = 'twirp/rzp.cmma.process.v1.ProcessManagementService/CreateProcessInstance';
-    const UNDEFINED = 'undefined';
+    const SOFT_LIMIT_LEVEL_1        = 'soft_limit_level_1';
+    const HARD_LIMIT_LEVEL_1        = 'hard_limit_level_1';
+    const CMMA_SOFT_LIMIT_BREACH    = 'SOFT-LIMIT-BREACH-LV1';
+    const CMMA_HARD_LIMIT_BREACH    = 'HARD-LIMIT-BREACH-LV1';
+    const AUTO_KYC_FAILURE_TRIGGER  = 'AUTO-KYC-FAILURE';
+    const AMP           = "AMP";
+    const ACTIVATION    = 'activation';
+    const CMMA_ROUTE    = 'twirp/rzp.cmma.process.v1.ProcessManagementService/CreateProcessInstance';
+    const UNDEFINED     = 'undefined';
 
     //Escalation Types
     const PAYMENT_BREACH    = 'payment_breach';

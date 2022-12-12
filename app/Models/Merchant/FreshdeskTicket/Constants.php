@@ -29,6 +29,7 @@ class Constants
     const CF_SUBCATEGORY                       = 'cf_subcategory';
     const CF_REQUESTOR_ITEM                    = 'cf_requester_item';
     const CF_CATEGORY                          = 'cf_category';
+    const CF_NEW_CATEGORY                      = 'cf_new_category';
     const CF_NEW_REQUESTOR_CATEGORY            = 'cf_new_requester_category';
     const CF_NEW_REQUESTOR_SUBCATEGORY         = 'cf_new_requester_sub_category';
     const CF_NEW_REQUESTOR_ITEM                = 'cf_new_requester_item';
@@ -257,4 +258,8 @@ class Constants
         self::FD_TICKET_CREATION_SOURCE_WEBVIEW_IOS,
         self::FD_TICKET_CREATION_SOURCE_DASHBOARD_X,
     ];
+
+    const ACTIVATIONS_DOCUMENT_REVIEW = "Activations: Document Review";
+    const LEAD_SCORE                  = "cf_lead_score";
+    const CF_CASE_TRIGGER             = "cf_case_trigger";
 }
