@@ -1171,7 +1171,7 @@ class Processor
         if ($input[Payment\Entity::METHOD] === Payment\METHOD::FPX)
         {
             return true;
-        } 
+        }
         else
         {
             return false;
@@ -4078,7 +4078,7 @@ class Processor
         }
         try
         {
-            if ( $payment->isUpi() === true && $payment->isNetbanking() === true &&  $payment-> isWallet() === true )
+            if ( $payment->isUpi() === true || $payment->isNetbanking() === true ||  $payment-> isWallet() === true )
             {
                 $data = $this->getAutorizeVerifyData($payment);
             }
