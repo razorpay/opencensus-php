@@ -25,9 +25,10 @@ class MerchantAutoKycFailureDataCollector extends DbDataCollector
             [DetailStatus::UNDER_REVIEW], OrgEntity::ORG_ID_LIST, $this->lastCronTime
         );
 
-        $this->app['trace']->info(TraceCode::SELF_SERVE_CRON, [
-            'type' => Constants::AUTO_KYC_FAILURE,
-            'total_mid_count' => count($merchantIdList)
+        $this->app['trace']->info(TraceCode::SELF_SERVE_CRON_AUTO_KYC_FAILURE, [
+            'type'              => Constants::AUTO_KYC_FAILURE,
+            'total_mid_count'   => count($merchantIdList),
+            'merchant_ids'      => $merchantIdList
         ]);
 
         $merchantIdChunks = array_chunk($merchantIdList, 20);
@@ -41,12 +42,17 @@ class MerchantAutoKycFailureDataCollector extends DbDataCollector
 
             $finalMerchantIdList = array_merge($finalMerchantIdList, $merchantIdList);
 
+            $this->app['trace']->info(TraceCode::SELF_SERVE_CRON_AUTO_KYC_FAILURE, [
+                'type'                      => Constants::AUTO_KYC_FAILURE,
+                'final_auto_kyc_count'      => count($merchantIdList),
+                'final_merchant_id_list'    => $merchantIdList
+            ]);
         }
 
         if (empty($merchantIdList) === true) {
             $this->app['trace']->info(TraceCode::SELF_SERVE_CRON_FAILURE, [
-                'type' => Constants::AUTO_KYC_FAILURE,
-                'reason' => 'no merchants to run the cron'
+                'type'      => Constants::AUTO_KYC_FAILURE,
+                'reason'    => 'no merchants to run the cron'
             ]);
             return CollectorDto::create([]);
         }
@@ -72,6 +78,12 @@ class MerchantAutoKycFailureDataCollector extends DbDataCollector
             $merchantDetails = $merchant->merchantDetail;
 
             $autoKycDone = (new Core)->isAutoKycDone($merchantDetails);
+
+            $activationStatus = (new Core)->getApplicableActivationStatus($merchantDetails);
+
+            $this->app['trace']->info(TraceCode::SELF_SERVE_CRON_AUTO_KYC_FAILURE, [
+                'merchant_activation_status'    => $activationStatus
+            ]);
 
             if ($autoKycDone === false)
             {
