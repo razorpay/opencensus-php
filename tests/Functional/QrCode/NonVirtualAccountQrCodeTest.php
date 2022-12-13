@@ -412,6 +412,26 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->runEntityAssertions($response);
     }
 
+    public function testCreateUpiQrCodeWithoutTransactionName()
+    {
+        $this->fixtures->merchant->addFeatures(['qr_custom_txn_name']);
+
+        $input = [
+            'type'  => 'upi_qr',
+            'usage' => 'multiple_use'
+        ];
+
+        $response = $this->createQrCode($input);
+
+        $expectedResponse = $this->testData['testCreateUpiQrCode'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+
+        $this->assertStringNotContainsString('&tn=', $qrCodeEntity['qr_string']);
+    }
+
     public function testCreateUpiQrCodeVerionModeTags()
     {
         $input = [

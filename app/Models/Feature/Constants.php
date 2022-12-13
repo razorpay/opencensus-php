@@ -1561,6 +1561,8 @@ class Constants
     //Role base FE feature
     const VIEW_ONBOARDING_CARDS             = 'view_onboarding_cards';
 
+    const QR_CUSTOM_TXN_NAME              = 'qr_custom_txn_name';
+
     const CAN_ROLE_VIEW_TRXN_CARDS          = 'can_role_view_trxn_cards';
 
     const RX_BLOCK_REPORT_DOWNLOAD_ROLE_CHECK    = 'RX_BLOCK_REPORT_DOWNLOAD_ROLE_CHECK';
@@ -1874,6 +1876,7 @@ class Constants
         self::FIRST_DATA_S2S_FLOW             => true,
         self::BIN_ISSUER_VALIDATOR            => true,
         self::OFFER_PRIVATE_AUTH              => true,
+        self::QR_CUSTOM_TXN_NAME              => true,
         self::GOOGLE_PAY                      => true,
         self::EMANDATE_MRN                    => true,
         self::DIWALI_PROMOTIONAL_PLAN         => true,
@@ -3197,6 +3200,11 @@ class Constants
             'feature'       => \RZP\Services\Dcs\Constants::EligibilityEnabled,
             'display_name'  => 'Feature to enable Eligibility api flow',
             'documentation' => '',
+        ],
+        self::QR_CUSTOM_TXN_NAME => [
+            'feature'       => self::QR_CUSTOM_TXN_NAME,
+            'display_name'  => 'QR Payment custom notes',
+            'documentation' => 'qr-codes',
         ],
     ];
 

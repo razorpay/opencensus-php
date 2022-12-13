@@ -104,11 +104,15 @@ class Generator extends QrCode\Generator
             Base\IntentParams::PAYEE_ADDRESS => $vpa,
             Base\IntentParams::PAYEE_NAME    => preg_replace('/\s+/', '', $this->merchant->getFilteredDba()),
             Base\IntentParams::TXN_REF_ID    => self::TR_PREFIX . $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX,
-            Base\IntentParams::TXN_NOTE      => 'Payment to ' . $this->merchant->getFilteredDba(),
             Base\IntentParams::TXN_CURRENCY  => 'INR',
             Base\IntentParams::MCC           => $this->merchant->getCategory(),
             Base\IntentParams::QR_MEDIUM     => QrCode\Constants::QR_V2_QR_MEDIUM,
         ];
+
+        if($qrCode->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::QR_CUSTOM_TXN_NAME) === false)
+        {
+            $content[Base\IntentParams::TXN_NOTE] = 'Payment to ' . $this->merchant->getFilteredDba();
+        }
 
         if ($qrCode->hasFixedAmount())
         {
