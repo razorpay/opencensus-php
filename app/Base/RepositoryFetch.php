@@ -5,6 +5,7 @@ namespace RZP\Base;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use ReflectionClass;
 use RZP\Constants\Es;
 use RZP\Constants\Mode;
 use RZP\Models\Base\UniqueIdEntity;
@@ -986,7 +987,7 @@ trait RepositoryFetch
                     return $wdaEntity;
                 }
             }
-            catch(\Exception $ex)
+            catch(\Throwable $ex)
             {
                 $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
                     'wda_exception' => $ex->getMessage(),
@@ -1034,11 +1035,32 @@ trait RepositoryFetch
 
         $response = $wdaClient->fetchSingleEntity($wdaQueryBuilder->build());
 
+        $response = $this->sortArrayByAttributes($entity, $response);
+
         $entity->forceFill($response);
 
         unset($this->app[WDAService::WDA_QUERY_BUILDER]);
 
         return $entity;
+    }
+
+    private function sortArrayByAttributes($entity, $array)
+    {
+        $attributes = (new ReflectionClass($entity))->getConstants();
+
+        $ordered = array();
+
+        foreach ($attributes as $_ => $key)
+        {
+            if (array_key_exists($key, $array))
+            {
+                $ordered[$key] = $array[$key];
+
+                unset($array[$key]);
+            }
+        }
+
+        return $ordered + $array;
     }
 
     public function compareWDAEntityAndLogDifference(string $id, array $wdaResponseArray, array $warmStorageDbResponse, array $extraTrace = [])
