@@ -301,6 +301,16 @@ class Processor
     const FEE_BEARER_CARD_PAYMENTS_VIA_PGROUTER = 'fee_bearer_card_payments_via_pg_router';
 
     /**
+     * Razorx flag to indicate if open wallet Payment should go via PG Router and CPS or just via API service
+     */
+    const OPEN_WALLET_CARD_PAYMENTS_VIA_PGROUTER = 'open_wallet_card_payments_via_pg_router';
+
+    /**
+     * Razorx flag to indicate if  Payment links should go via PG Router and CPS or just via API service
+     */
+    const PAYMENT_LINKS_CARD_PAYMENTS_VIA_PGROUTER = 'payment_links_card_payments_via_pg_router';
+
+    /**
      * Razorx flag to indicate if a saved card token payment should go via PG Router and CPS or just via API service
      */
     const SAVED_CARD_TOKEN_PAYMENTS_VIA_PGROUTER = 'saved_card_token_payments_via_pg_router';
@@ -551,14 +561,12 @@ class Processor
                 (empty($input[Payment\Entity::RECURRING]) === false) or
                 (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false) or
                 (empty($input[Payment\Entity::INVOICE_ID]) === false) or
-                (empty($input[Payment\Entity::PAYMENT_LINK_ID]) === false) or
                 (empty($input[Payment\Entity::TOKEN_ID]) === false) or
                 (empty($input[Payment\Entity::SAVE]) === false) or
                 (empty($input[Payment\Entity::OFFER_ID]) === false) or
                 (empty($input[Payment\Entity::CHARGE_ACCOUNT]) === false) or
                 ((empty($input['reward_ids']) === false) and ($merchant->getId() !== '2aTeFCKTYWwfrF')) or
                 ($merchant->isRazorpayOrgId() === false) or
-                ($merchant->isFeatureEnabled('openwallet') === true) or
                 ((empty($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === false) and
                     empty($input[Payment\Entity::CARD][Card\Entity::CRYPTOGRAM_VALUE]) === true) or
                 (empty($input['application']) === false && $input['application'] === 'visasafeclick') or
@@ -608,6 +616,20 @@ class Processor
             if ($merchant->isFeeBearerCustomerOrDynamic() === true )
             {
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::FEE_BEARER_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+                return ($result === 'on');
+            }
+
+            if ($merchant->isFeatureEnabled('openwallet') === true)
+            {
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::OPEN_WALLET_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+                return ($result === 'on');
+            }
+
+            if (empty($input[Payment\Entity::PAYMENT_LINK_ID]) === false)
+            {
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::PAYMENT_LINKS_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
 
                 return ($result === 'on');
             }
