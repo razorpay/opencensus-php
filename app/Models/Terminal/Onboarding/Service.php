@@ -226,6 +226,12 @@ class Service extends Base\Service
             $result[Constants::TERMINAL_ID]  =  $row[Constants::TERMINAL_ID];
             $result[Constants::BATCH_HTTP_STATUS_CODE] = 201;
             $result[Constants::VPA_WHITELISTED] = $row[Constants::VPA_WHITELISTED];
+
+            $this->trace->info(
+                TraceCode::UPI_TERMINAL_ONBOARDING_RESPONSE,
+                [
+                    'row'   =>  $row
+                ]);
         }
         catch(BaseException $exception)
         {
@@ -235,6 +241,13 @@ class Service extends Base\Service
             ];
 
             $result[Constants::BATCH_HTTP_STATUS_CODE] = $exception->getCode();
+
+            $this->trace->traceException($exception, Trace::ERROR,TraceCode::UPI_TERMINAL_ONBOARDING_ERROR,
+                [
+                    'row'   =>  $row,
+                    'result' => $result
+                ]);
+
         }
         catch (\Throwable $throwable)
         {
@@ -244,6 +257,12 @@ class Service extends Base\Service
             ];
 
             $result[Constants::BATCH_HTTP_STATUS_CODE] = $throwable->getCode();
+
+            $this->trace->traceException($throwable, Trace::ERROR,TraceCode::UPI_TERMINAL_ONBOARDING_ERROR,
+                [
+                    'row'   =>  $row,
+                    'result' => $result
+                ]);
         }
 
         return $result;
