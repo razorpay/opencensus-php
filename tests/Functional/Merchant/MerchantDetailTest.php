@@ -837,7 +837,7 @@ class MerchantDetailTest extends OAuthTestCase
         $merchantDetail = $this->fixtures->create('merchant_detail', ['business_category' => 'financial_services']);
         $merchant       = $merchantDetail->merchant;
 
-        $this->fixtures->create('stakeholder', ['name' => 'stakeholder name', 'merchant_id' => $merchant->getId()]);
+        $this->fixtures->create('stakeholder', ['name' => 'stakeholder name', 'percentage_ownership'=> 90, 'merchant_id' => $merchant->getId()]);
         $this->fixtures->create('merchant_email', ['merchant_id' => $merchant->getId()]);
         $this->fixtures->create('merchant_document', ['merchant_id' => $merchant->getId()]);
         $this->fixtures->create('merchant_document', ['merchant_id' => $merchant->getId(), 'entity_type' => 'stakeholder', 'document_type' => 'aadhar_front']);

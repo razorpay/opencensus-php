@@ -647,6 +647,7 @@ return [
                 'stakeholders' => [
                     [
                         'name' => 'stakeholder name',
+                        'percentage_ownership' => 90
                     ]
                 ],
                 'merchant_emails' => [

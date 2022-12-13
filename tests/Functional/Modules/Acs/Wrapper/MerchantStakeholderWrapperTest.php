@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Modules\Acs\Wrapper;
 
 use RZP\Models\Base\PublicCollection;
+use RZP\Modules\Acs\ASVEntityMapper;
 use RZP\Modules\Acs\Wrapper\MerchantStakeholder;
 use RZP\Tests\Functional\TestCase;
 use Razorpay\Trace\Logger as Trace;
@@ -58,7 +59,8 @@ class MerchantStakeholderWrapperTest extends TestCase
                 "ok" => "123",
             ],
             MerchantStakeholderEntity::UPDATED_AT => 124,
-            MerchantStakeholderEntity::NAME => "Manthan"
+            MerchantStakeholderEntity::NAME => "Manthan",
+            MerchantStakeholderEntity::PERCENTAGE_OWNERSHIP => 50,
         ];
         $merchantStakeholderEntity = new MerchantStakeholderEntity($data);
         MerchantStakeholderEntity::reguard();
@@ -77,7 +79,8 @@ class MerchantStakeholderWrapperTest extends TestCase
                 "ok" => "123",
             ],
             MerchantStakeholderEntity::UPDATED_AT => 124,
-            MerchantStakeholderEntity::NAME => "Manthan"
+            MerchantStakeholderEntity::NAME => "Manthan",
+            MerchantStakeholderEntity::PERCENTAGE_OWNERSHIP => 40,
         ];
         $merchantStakeholderEntity1 = new MerchantStakeholderEntity($data);
 
@@ -285,7 +288,8 @@ class MerchantStakeholderWrapperTest extends TestCase
                         "ok" => "123",
                     ],
                     MerchantStakeholderEntity::UPDATED_AT => 124,
-                    MerchantStakeholderEntity::NAME => "Manthan"
+                    MerchantStakeholderEntity::NAME => "Manthan",
+                    MerchantStakeholderEntity::PERCENTAGE_OWNERSHIP => 50,
                 ]
             ]
         ];
@@ -319,7 +323,8 @@ class MerchantStakeholderWrapperTest extends TestCase
                     MerchantStakeholderEntity::NOTES => [
                         "ok" => "1235",
                     ],
-                    MerchantStakeholderEntity::NAME => "Manthans"
+                    MerchantStakeholderEntity::NAME => "Manthans",
+                    MerchantStakeholderEntity::PERCENTAGE_OWNERSHIP => 50
                 ]
             ]
         ];
@@ -383,7 +388,7 @@ class MerchantStakeholderWrapperTest extends TestCase
         $merchantStakeholderWrapperMock = $this->getMockedMerchantStakeholderWrapper(['isShadowOrReverseShadowOnForOperation', 'logDifferenceIfNotNilAndPushMetrics']);
 
         $asvData = [
-            "stakeholders" => $merchantStakeholderCollection->toArray()
+            "stakeholders" => ASVEntityMapper::EntitiesToArrayWithRawValues($merchantStakeholderCollection)
         ];
 
         $asvResponse = new accountV1\FetchMerchantStakeholdersResponse();
@@ -406,7 +411,7 @@ class MerchantStakeholderWrapperTest extends TestCase
         $merchantStakeholderWrapperMock = $this->getMockedMerchantStakeholderWrapper(['isShadowOrReverseShadowOnForOperation', 'logDifferenceIfNotNilAndPushMetrics']);
 
         $asvData = [
-            "stakeholders" =>  $merchantStakeholderCollection->toArray()
+            "stakeholders" =>  ASVEntityMapper::EntitiesToArrayWithRawValues($merchantStakeholderCollection)
         ];
 
         $asvData["stakeholders"][0]['name'] = "change";
@@ -484,7 +489,7 @@ class MerchantStakeholderWrapperTest extends TestCase
         $traceMock->expects($this->exactly(0))->method('traceException');
         $merchantStakeholderWrapperMock = $this->getMockedMerchantStakeholderWrapper(['isShadowOrReverseShadowOnForOperation', 'logDifferenceIfNotNilAndPushMetrics']);
         $asvData = [
-            "stakeholders" =>  $merchantStakeholderEntity->toArray()
+            "stakeholders" =>  ASVEntityMapper::EntitiesToArrayWithRawValues($merchantStakeholderEntity),
         ];
 
         $asvData["stakeholders"][0]['name'] = "change";
@@ -560,7 +565,8 @@ class MerchantStakeholderWrapperTest extends TestCase
                     MerchantStakeholderEntity::NOTES => [
                         "ok" => "1235",
                     ],
-                    MerchantStakeholderEntity::NAME => "Manthans"
+                    MerchantStakeholderEntity::NAME => "Manthans",
+                    MerchantStakeholderEntity::PERCENTAGE_OWNERSHIP => 50,
                 ]
             ]
         ];

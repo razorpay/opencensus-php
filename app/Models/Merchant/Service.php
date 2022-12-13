@@ -5597,7 +5597,7 @@ class Service extends Base\Service
         {
             $data[EntityConstants::MERCHANT][EntityConstants::CREATED_AT] = $merchant->getCreatedAt();
         }
-        
+
         $defaultOffersBool = (new Offer\Core())->defaultOffersForMerchant($merchantId);
 
         $data[EntityConstants::MERCHANT]['default_offers'] = $defaultOffersBool;
@@ -8949,7 +8949,11 @@ class Service extends Base\Service
         $merchantWebsite = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($accountId);
         $merchantBusinessDetails = $this->repo->merchant_business_detail->getBusinessDetailsForMerchantId($accountId);
 
-        $stakeholderArray = $stakeholders->toArray();
+        $stakeholderArray = [];
+        foreach($stakeholders as $stakeholder){
+            $stakeholderArray[] = $stakeholder->toArrayWithRawValuesForAccountService();
+        }
+
         $isStakeHolderPresent = count($stakeholderArray) > 0;
 
         $merchantDocs = new Base\PublicCollection;

@@ -111,8 +111,9 @@ class MerchantStakeholder extends Base
             return ASVEntityMapper::OverwriteWithAsvEntities(
                 StakeholderEntity::class,
                 'id',
-                $apiStakeholderEntities->toArray(),
-                $asvStakeholderEntities->toArray());
+                ASVEntityMapper::EntitiesToArrayWithRawValues($apiStakeholderEntities),
+                ASVEntityMapper::EntitiesToArrayWithRawValues($asvStakeholderEntities)
+            );
         } catch (\Throwable $ex){
             $this->trace->traceException(
                 $ex,
@@ -189,7 +190,10 @@ class MerchantStakeholder extends Base
     {
         try{
             $asvStakeholderEntity = $this->fetchStakeholderByIdAndCompare($id, $apiStakeholderEntity);
-            return ASVEntityMapper::OverwriteWithAsvEntity($apiStakeholderEntity->toArray(), $asvStakeholderEntity->toArray(), StakeholderEntity::class);
+            return ASVEntityMapper::OverwriteWithAsvEntity(
+                ASVEntityMapper::EntityToArrayWithRawValues($apiStakeholderEntity),
+                ASVEntityMapper::EntityToArrayWithRawValues($asvStakeholderEntity),
+                StakeholderEntity::class);
         } catch (\Throwable $ex){
             $this->trace->traceException(
                 $ex,

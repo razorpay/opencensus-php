@@ -55,6 +55,24 @@ class ASVEntityMapper {
         return $mappedEntity;
     }
 
+    public static function EntitiesToArrayWithRawValues($entities) : array{
+
+        $array = [];
+        foreach($entities as $entity){
+            $array[] = ASVEntityMapper::EntityToArrayWithRawValues($entity);
+        }
+
+        return $array;
+    }
+
+    public static function EntityToArrayWithRawValues($entity) : array{
+        if(method_exists($entity, 'toArrayWithRawValuesForAccountService')){
+            return $entity->toArrayWithRawValuesForAccountService();
+        }
+
+        return $entity->toArray();
+    }
+
     private static function doSnakeCase(array $array): array
     {
         $result = [];

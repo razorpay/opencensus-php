@@ -112,6 +112,14 @@ class Entity extends Base\PublicEntity
         return $value ? round($value / 100, 2) : null;
     }
 
+    public function toArrayWithRawValuesForAccountService() : array {
+        $array = $this->toArray();
+        if(array_key_exists(self::PERCENTAGE_OWNERSHIP, $array)) {
+            $array[self::PERCENTAGE_OWNERSHIP] = $this->getAttributes()[self::PERCENTAGE_OWNERSHIP];
+        }
+        return $array;
+    }
+
     public function merchantDetail()
     {
         return $this->belongsTo('RZP\Models\Merchant\Detail\Entity', self::MERCHANT_ID, self::MERCHANT_ID);
