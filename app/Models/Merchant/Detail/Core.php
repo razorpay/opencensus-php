@@ -3517,16 +3517,12 @@ class Core extends Base\Core
         // $partnerMerchant can be null in case of linked accounts
         if (!is_null($partnerMerchant))
         {
-            $notificationBlocked = $partnerMerchant->isFeatureEnabled(FeatureConstants::SKIP_SUBM_ONBOARDING_COMM);
-
-            if ($notificationBlocked === true)
-            {
-                return;
-            }
-
             $properties = [
                 'id'            => $partnerMerchant->getId(),
-                'experiment_id' => $this->app['config']->get('app.merchant_kyc_update_to_partner_exp_id')
+                'experiment_id' => $this->app['config']->get('app.merchant_kyc_update_to_partner_exp_id'),
+                'request_data'  => json_encode([
+                    'partner_id' => $partnerMerchant->getId(),
+                ]),
             ];
 
             $isExpEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
