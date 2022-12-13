@@ -332,10 +332,10 @@ trait Capture
                             [
                                 'payment_id'        => $this->payment->getId(),
                             ]);
-                        $this->trace->info(TraceCode::BARRICADE_SQS_PUSH_START,
-                            [
-                                'data'      => $this->payment,
-                            ]);
+//                        $this->trace->info(TraceCode::BARRICADE_SQS_PUSH_START,
+//                            [
+//                                'data'      => $this->payment,
+//                            ]);
 
                         $this->publishMessageToSqsBarricade($this->payment);
                         $this->createLedgerEntriesForGatewayCapture($this->payment);
@@ -452,10 +452,10 @@ trait Capture
 
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CAPTURE_PROCESSED, $payment);
 
-            $this->trace->info(TraceCode::BARRICADE_SQS_PUSH_START,
-                [
-                    'data'      => $payment,
-                ]);
+//            $this->trace->info(TraceCode::BARRICADE_SQS_PUSH_START,
+//                [
+//                    'data'      => $payment,
+//                ]);
 
             $this->publishMessageToSqsBarricade($payment);
 
@@ -670,10 +670,10 @@ trait Capture
                             'payment_id'        => $this->payment->getId(),
                         ]);
 
-                    $this->trace->info(TraceCode::BARRICADE_SQS_PUSH_START,
-                        [
-                            'data'      => $this->payment,
-                        ]);
+//                    $this->trace->info(TraceCode::BARRICADE_SQS_PUSH_START,
+//                        [
+//                            'data'      => $this->payment,
+//                        ]);
 
                     $this->publishMessageToSqsBarricade($this->payment);
 

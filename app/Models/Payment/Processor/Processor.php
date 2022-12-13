@@ -4013,10 +4013,10 @@ class Processor
                 $this->createLedgerEntriesForGatewayCapture($this->payment);
             }, 20);
 
-        $this->trace->info(TraceCode::BARRICADE_SQS_PUSH_START,
-            [
-                'data'      => $payment,
-            ]);
+//        $this->trace->info(TraceCode::BARRICADE_SQS_PUSH_START,
+//            [
+//                'data'      => $payment,
+//            ]);
 
         $this->publishMessageToSqsBarricade($payment);
     }
@@ -4078,7 +4078,7 @@ class Processor
         }
         try
         {
-            if ($payment->isUpi() === true)
+            if ( $payment->isUpi() === true && $payment->isNetbanking() === true &&  $payment-> isWallet() === true )
             {
                 $data = $this->getAutorizeVerifyData($payment);
             }
@@ -4141,6 +4141,7 @@ class Processor
             'method'        => $payment->getMethod(),
             'base_amount'   => $payment->getBaseAmount(),
             'currency'      => $payment->getCurrency(),
+            'created_at'   => $payment->getCreatedAt(),
         ];
 
         $terminal = $payment->terminal;
@@ -4154,6 +4155,11 @@ class Processor
             'gateway_terminal_id'   => $terminal->getGatewayTerminalId(),
         ];
 
+        $merchant = $payment->merchant;
+
+        $data['merchant'] = [
+            'id' => $merchant->getMerchantId(),
+        ];
 
         $data['upi'] = [
             'gateway'                  => $payment->getGateway(),
