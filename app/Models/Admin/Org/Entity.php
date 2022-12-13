@@ -73,6 +73,7 @@ class Entity extends Base\Entity
     const BAJAJ_ORG_ID          = 'CerI5wCZlnyN1Q';
     const BAJAJ_ORG_SIGNED_ID   = 'org_CerI5wCZlnyN1Q';
     const CURLEC_ORG_ID         = 'KjWRtYXwpK6VfK';
+    const HDFC_COLLECT_ORG_ID   = 'ISCBolfdHQnhj4';
 
     /**
      * Org Id list on which Merchant on boarding escalation has to be triggered.

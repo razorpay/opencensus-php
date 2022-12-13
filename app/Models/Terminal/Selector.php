@@ -36,6 +36,7 @@ use RZP\Models\Merchant\Preferences;
 use RZP\Constants\Entity as Constants;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\CardMandate\MandateHubs\MandateHubs;
@@ -982,6 +983,11 @@ class Selector extends Base\Core
 
         if ((in_array($payment[Entity::METHOD],$excludedMethods)) or
             ($merchant->isFeatureEnabled(Features::RAAS) === true))
+        {
+            return false;
+        }
+
+        if (in_array($merchant->getOrgId(), [OrgEntity::HDFC_COLLECT_ORG_ID, OrgEntity::HDFC_ORG_ID]))
         {
             return false;
         }
