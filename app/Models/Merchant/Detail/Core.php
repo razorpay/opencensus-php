@@ -2103,10 +2103,13 @@ class Core extends Base\Core
 
         $ncCount = $this->getStatusChangeCount($statusChangeLogs, Status::NEEDS_CLARIFICATION);
 
-        if ($this->app['basicauth']->isAdminAuth() === true)
+        if ($this->app['basicauth']->isAdminAuth() === true or
+            $source === 'admin' or
+            $source === 'system')
         {
             $ncCount++;
         }
+
         $clarificationReasons   = $this->getClarificationReasons($existingReasons, $newReasons, $ncCount, $source);
         $additionalDetails      = $this->getClarificationReasons($existingAdditionalDetails, $newAdditionalDetails, $ncCount, $source);
         $clarificationReasonsV2 = $this->getClarificationReasons($existingClarificationReasonsV2, $newClarificationReasonsV2, $ncCount, $source);
