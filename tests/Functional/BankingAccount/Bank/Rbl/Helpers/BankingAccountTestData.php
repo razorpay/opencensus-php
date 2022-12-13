@@ -4871,6 +4871,26 @@ return [
         ],
     ],
 
+    'testUpdateBankingAccountActivationDetailsShouldMoveSubstatusToInitiateDocketIfSkipDwtExpAndDwtComplete' => [
+        'request'  => [
+            'url'     => '/banking_accounts_internal/activation/10000000000000/details',
+            'method'  => 'PATCH',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [
+                'additional_details' => [
+                    'dwt_completed_timestamp' => '99999999'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
+
     'testCreateBankingAccountWithActivationDetailWithBusinessTypeAsTrust' => [
         'request'  => [
             'url'     => '/banking_accounts_admin',

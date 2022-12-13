@@ -1412,16 +1412,13 @@ class Status
             case self::DWT_REQUIRED:
                 $skipDwt = $additionDetails['skip_dwt'] ?? null;
 
-                $documentAddress = $activationDetail->getMerchantDocumentsAddress();
-
-                if ($skipDwt === 1 || empty($documentAddress))
+                if ($skipDwt === 1)
                 {
                     throw new BadRequestValidationFailureException(
-                        'Skip Dwt should be false or empty  and Merchant Document Address needs to be present',
+                        'Skip Dwt should be false or empty',
                         Entity::SUB_STATUS,
                         [
-                            'skip_dwt'                    => $skipDwt,
-                            'merchant_document_address'   => $documentAddress
+                            'skip_dwt'                    => $skipDwt
                         ]);
                 }
 

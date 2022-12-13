@@ -1824,6 +1824,67 @@ class Core extends Base\Core
         }
     }
 
+    /*
+     * Why are we moving substatus to None (During FD Creation) and then to Docket Initiated
+     *  This is to ensure we are following the state machine
+     * Since we are checking if skip_dwt is 1, we are implicitly assuming declaration_step is 1
+     */
+    public function moveSubstatusIfSkipDwtExpEligible(Entity $bankingAccount, array $input)
+    {
+        /** @var Detail\Entity $activationDetail */
+        $activationDetail = $bankingAccount->bankingAccountActivationDetails;
+
+        $additionalDetails = optional($activationDetail)->getAdditionalDetails() ?? '{}';
+
+        $additionalDetails = json_decode($additionalDetails, true);
+
+        $skipDwt = $additionalDetails['skip_dwt'] ?? null;
+
+        if ($bankingAccount->getStatus() === Status::PICKED &&
+            $bankingAccount->getSubStatus() === Status::NONE &&
+            is_null($skipDwt) === false)
+        {
+            $subStatus = $skipDwt === 1 ? Status::INITIATE_DOCKET : Status::DWT_REQUIRED;
+
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_AUTOMATIC_SUB_STATUS_UPDATE, [
+                'old_sub_status'  => $bankingAccount->getSubStatus(),
+                'new_sub_status'  => $subStatus
+            ]);
+
+            $this->updateBankingAccount($bankingAccount,
+                [
+                    Entity::SUB_STATUS => $subStatus
+                ],
+                $bankingAccount->merchant);
+        }
+
+    }
+
+    public function moveSubstatusToInitiateDocketIfDwtCompletedTimestampFilled(Entity $bankingAccount, ActivationDetail\Entity $activationDetail)
+    {
+        $additionalDetails = optional($activationDetail)->getAdditionalDetails() ?? '{}';
+
+        $additionalDetails = json_decode($additionalDetails, true);
+
+        $dwtCompletedTimestamp = $additionalDetails['dwt_completed_timestamp'] ?? null;
+
+        if ($bankingAccount->getStatus() === Status::PICKED &&
+            $bankingAccount->getSubStatus() === Status::DWT_REQUIRED &&
+            empty($dwtCompletedTimestamp) === false)
+        {
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_AUTOMATIC_SUB_STATUS_UPDATE, [
+                'old_sub_status'  => $bankingAccount->getSubStatus(),
+                'new_sub_status'  => Status::INITIATE_DOCKET
+            ]);
+
+            $this->updateBankingAccount($bankingAccount,
+                [
+                    Entity::SUB_STATUS => Status::INITIATE_DOCKET
+                ],
+                $bankingAccount->merchant);
+        }
+    }
+
     /**
      * This method is responsible for checking that unless the merchant is L2 activated, no one can update
      * the status of current account to activated. This to avoid cases of manual error by Bizops.

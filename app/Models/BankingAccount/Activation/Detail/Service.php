@@ -233,7 +233,9 @@ class Service extends Base\Service
             array_set($input,'additional_details.skip_dwt',$skipDwt);
         }
 
-        (new BankingAccount\Core())->checkAndSendFreshDeskEmailIfFormIsSubmitted($bankingAccount, $input);
+        $bankingAccountCore->checkAndSendFreshDeskEmailIfFormIsSubmitted($bankingAccount, $input);
+
+        $bankingAccountCore->moveSubstatusIfSkipDwtExpEligible($bankingAccount, $input);
 
         if ($this->app['basicauth']->isMobApp() === false)
         {
@@ -342,6 +344,8 @@ class Service extends Base\Service
 
             return $activationDetail;
         });
+
+        $bankingAccountCore->moveSubstatusToInitiateDocketIfDwtCompletedTimestampFilled($bankingAccount, $updatedActivationDetail);
 
         return $updatedActivationDetail->toArrayPublic();
     }

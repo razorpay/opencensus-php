@@ -3485,48 +3485,6 @@ class BankingAccountTest extends TestCase
             $bankingAccount->getMerchantId());
     }
 
-    public function testUpdateBankingAccountSubStatusFromNoneToDwtRequiredFailsForSkipDwt()
-    {
-        $bankingAccount = $this->fixtures->on('test')->create('banking_account', [
-            'account_number'        => '2224440041626905',
-            'account_type'          => 'current',
-            'merchant_id'           => self::DefaultMerchantId,
-            'channel'               => 'rbl',
-            'status'                => 'created',
-            'pincode'               => '560038',
-            'bank_reference_number' => '',
-            'account_ifsc'          => 'RATN0000156',
-        ]);
-
-        $this->fixtures->on('test')->create('banking_account_activation_detail', [
-            'banking_account_id'        => $bankingAccount->getId(),
-            'merchant_poc_email'        => 'rzp@gmail.com',
-            'merchant_poc_phone_number' => '9177278079',
-            'merchant_documents_address' => 'ADDRESS',
-            'sales_team'                => 'sme',
-            'additional_details'        => json_encode([
-                'skip_dwt' => 1,
-            ])
-        ]);
-
-        $this->expectException(\RZP\Exception\BadRequestValidationFailureException::class);
-
-        $this->expectExceptionMessage('Skip Dwt should be false or empty  and Merchant Document Address needs to be present');
-
-        $ba = $bankingAccount->toArray();
-        $ba['id'] = 'bacc_' . $ba['id'];
-
-        $this->assertUpdateBankingAccountStatusFromTo(
-            Status::PICKED,
-            Status::PICKED,
-            Status::NONE,
-            Status::DWT_REQUIRED,
-            "",
-            "",
-            $ba,
-            $bankingAccount->getMerchantId());
-    }
-
     public function testUpdateBankingAccountSubStatusFromNoneToDwtRequired()
     {
         $bankingAccount = $this->fixtures->on('test')->create('banking_account', [
@@ -10697,7 +10655,7 @@ class BankingAccountTest extends TestCase
 
         $this->fixtures->create('banking_account_activation_detail', [
             'banking_account_id'        => $bankingAccount->getId(),
-            'additional_details' => json_encode($additonalDetailsInput)
+            'additional_details'        => json_encode($additonalDetailsInput)
         ]);
 
         $this->createMerchantAttribute(self::DefaultMerchantId, 'banking', 'x_merchant_current_accounts', 'skip_dwt_eligible', $skipDwtEligble);
@@ -10708,16 +10666,19 @@ class BankingAccountTest extends TestCase
             ],
             'response' => [
                 'content' => [
-                    'additional_details' => [
-                        'skip_dwt' => $skipDwtValue
-                    ]
                 ],
             ],
         ];
 
-        $this->ba->adminAuth();
+        $this->ba->mobAppAuthForInternalRoutes();
 
-        $this->startTest($dataToReplace);
+        $response = $this->startTest($dataToReplace);
+
+        $additionalDetailsResp = json_decode($response['additional_details'], true);
+
+        $this->assertEquals($skipDwtValue,$additionalDetailsResp['skip_dwt']);
+
+        return $this->startTest($dataToReplace);
 
     }
 
@@ -10733,7 +10694,13 @@ class BankingAccountTest extends TestCase
             ]
         ];
 
-        $this->verifySkipDwtComputeAndSave($additionalDetailsInput,'enabled',1);
+        $response = $this->verifySkipDwtComputeAndSave($additionalDetailsInput,'enabled',1);
+
+        $bankingAccount = $this->getDbEntity('banking_account', [
+            'id' => $response['banking_account_id']
+        ])->toArray();
+
+        $this->assertEquals(Status::INITIATE_DOCKET,$bankingAccount['sub_status']);
     }
 
     public function testSkipDwtComputeAndSaveExpDisabled()
@@ -10763,7 +10730,50 @@ class BankingAccountTest extends TestCase
             ]
         ];
 
-        $this->verifySkipDwtComputeAndSave($additionalDetailsInput,'enabled',0);
+        $response = $this->verifySkipDwtComputeAndSave($additionalDetailsInput,'enabled',0);
+
+        $bankingAccount = $this->getDbEntity('banking_account', [
+            'id' => $response['banking_account_id']
+        ])->toArray();
+
+        $this->assertEquals(Status::DWT_REQUIRED,$bankingAccount['sub_status']);
+    }
+
+    public function testUpdateBankingAccountActivationDetailsShouldMoveSubstatusToInitiateDocketIfSkipDwtExpAndDwtComplete()
+    {
+        $bankingAccount = $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'rbl',
+            'status'                => 'picked',
+            'sub_status'            => 'dwt_required',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $admin = $this->fixtures->create('admin', ['org_id' => Org::RZP_ORG, 'email' => 'abc@razorpay.com']);
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts_internal/activation/' . $bankingAccount->getPublicId() . '/details',
+                'method'  => 'PATCH',
+                'server'  => [
+                    'HTTP_X-Admin-Email' => $admin->getEmail(),
+                ]
+            ],
+        ];
+
+        $this->ba->mobAppAuthForInternalRoutes();
+
+        $response = $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbEntity('banking_account', [
+            'id' => $response['banking_account_id']
+        ])->toArray();
+
+        $this->assertEquals(Status::INITIATE_DOCKET,$bankingAccount['sub_status']);
     }
 
     public function testPreventMetroCallbackForGatewayBalanceFetch()
