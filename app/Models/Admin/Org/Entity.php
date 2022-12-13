@@ -72,6 +72,7 @@ class Entity extends Base\Entity
     const KOTAK_ORG_ID          = 'IUXvshap3HbzOs';
     const BAJAJ_ORG_ID          = 'CerI5wCZlnyN1Q';
     const BAJAJ_ORG_SIGNED_ID   = 'org_CerI5wCZlnyN1Q';
+    const CURLEC_ORG_ID         = 'KjWRtYXwpK6VfK';
 
     /**
      * Org Id list on which Merchant on boarding escalation has to be triggered.
@@ -641,6 +642,16 @@ class Entity extends Base\Entity
     public static function isDynamicWalletFlowOrg($orgId)
     {
         return in_array($orgId, self::$dynamicWalletFlowOrgs);
+    }
+
+    public static function isOrgRazorpay(string $orgId): bool
+    {
+        return $orgId === self::RAZORPAY_ORG_ID;
+    }
+
+    public static function isOrgCurlec(string $orgId): bool
+    {
+        return $orgId === self::CURLEC_ORG_ID;
     }
 }
 

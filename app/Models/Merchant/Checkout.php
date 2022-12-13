@@ -443,8 +443,7 @@ class Checkout
 
             if (isset($org) === true)
             {
-
-                if($orgId === "100000razorpay")
+                if ((ORG_ENTITY::isOrgRazorpay($orgId) === true) or (ORG_ENTITY::isOrgCurlec($orgId) === true))
                 {
 
                     $data['org'] = ["isOrgRazorpay" => true, "checkout_logo_url" => $org->getCheckoutLogo()];
