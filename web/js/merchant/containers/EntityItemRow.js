@@ -8,7 +8,8 @@ class EnityItemRow extends Component {
       <tr
         className={`${luminateRowId === id ? 'luminate' : ''}${
           activeEntityId === id || activeSecEntityId === id ? ' active' : ''
-        }${rowClasses}`}
+        }${rowClasses ?? ''}`}
+        data-testid={`entity-item-row-${id}`}
       >
         {this.props.children}
       </tr>

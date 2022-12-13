@@ -328,8 +328,11 @@ const EntityList = (props) => {
           limit: 1,
         },
       })
-        .then(({ data }) => {
-          setlistData(data);
+        .then((res) => {
+          /* istanbul ignore else */
+          if (res?.data) {
+            setlistData(res?.data);
+          }
         })
         .catch(({ errors }) => {
           seterror(errors.join(''));
@@ -362,10 +365,13 @@ const EntityList = (props) => {
     // fetch new on tab change. Reset entire form.
     formRef.current.reset();
     // fetch with defaults
-    fetchData(DEFAULT_SKIP, DEFAULT_COUNT, activeTab).then(({ data }) => {
-      setlistData(data);
-      setskip(DEFAULT_SKIP);
-      setcount(DEFAULT_COUNT);
+    fetchData(DEFAULT_SKIP, DEFAULT_COUNT, activeTab).then((res) => {
+      /* istanbul ignore else */
+      if (res?.data) {
+        setlistData(res.data);
+        setskip(DEFAULT_SKIP);
+        setcount(DEFAULT_COUNT);
+      }
     });
   }, [activeTab]);
 
@@ -399,8 +405,7 @@ const EntityList = (props) => {
          * No need to expose this on table, it will reflect with 'optimizer_provider' value
          */
         return null;
-      }
-      if (key === 'optimizer_provider') {
+      } else if (key === 'optimizer_provider') {
         // For single recon
         key = 'Payment Provider';
       }

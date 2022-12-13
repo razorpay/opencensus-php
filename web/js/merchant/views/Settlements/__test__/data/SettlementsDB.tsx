@@ -59,6 +59,13 @@ const settleBreakupDetails = {
   isBreakupNew: true,
 };
 
+const settleBreakupDetailsWithNewBreakup = {
+  loading: false,
+  items: settleBreakupDetails.items.map((item) => ({ ...item, settled_amount: item.amount })),
+  error: null,
+  isBreakupNew: true,
+};
+
 const settlementTabBreakupDetails = settleBreakupDetails;
 
 const settlementsListData = [
@@ -237,4 +244,5 @@ export {
   holidaysList,
   scheduledPricing,
   schedule,
+  settleBreakupDetailsWithNewBreakup,
 };

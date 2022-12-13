@@ -11,15 +11,18 @@ describe('ComponentListFilter', () => {
     activeTab: 'adjustment',
   };
 
+  const appRef = {};
+
   const renderApp = () => {
-    return render(<ComponentListFilter {...defaultProps} />);
+    return render(<ComponentListFilter {...defaultProps} ref={appRef} />);
   };
+
+  const getAdjustmentIdField = () =>
+    screen.getByRole('textbox', { name: new RegExp(defaultProps.activeTab, 'i') });
 
   test('should render input fields, search button and clear text', () => {
     renderApp();
-    expect(
-      screen.getByRole('textbox', { name: new RegExp(defaultProps.activeTab, 'i') }),
-    ).toBeInTheDocument();
+    expect(getAdjustmentIdField()).toBeInTheDocument();
     const countInput = screen.getByRole('spinbutton', { name: 'Count' });
     expect(countInput).toBeInTheDocument();
     expect(countInput).toHaveValue(defaultProps.count);
@@ -38,5 +41,13 @@ describe('ComponentListFilter', () => {
     const clearText = screen.getByText('Clear');
     await userEvent.click(clearText);
     expect(defaultProps.clear).toHaveBeenCalled();
+  });
+
+  test('should call reset form values on calling reset through ref', async () => {
+    renderApp();
+    await userEvent.type(getAdjustmentIdField(), 'test');
+    expect(getAdjustmentIdField()).toHaveValue('test');
+    appRef.current.reset();
+    expect(getAdjustmentIdField()).toHaveValue('');
   });
 });

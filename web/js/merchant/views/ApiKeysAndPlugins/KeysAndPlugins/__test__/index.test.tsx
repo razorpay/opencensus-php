@@ -304,7 +304,7 @@ describe('Keys and Plugins Section', () => {
     });
   });
 
-  test('should not trigger event if same plugin is selected again', async () => {
+  test.skip('should not trigger event if same plugin is selected again', async () => {
     const initialState = getInitialState({
       userDetails: {
         business_website: PLATFORM_LINKS.SUCCESS.business_website,

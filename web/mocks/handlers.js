@@ -516,23 +516,25 @@ export const handlers = [
   }),
 
   rest.post('*/merchant/api/test/settlements/:id/transaction_source_details', (req, res, ctx) => {
-    if (req.body.limit === '5') {
-      return res(
-        ctx.status(200),
-        ctx.json({
-          status_code: 200,
-          data: SettlementsDB.settlementsListData.slice(0, 5),
-        }),
-        ctx.delay(50),
-      );
-    }
+    let data = SettlementsDB.settlementsListData;
 
-    if (req.body.source_type === 'refund') {
+    if (req.body.limit === '5' || req.body.skip === 10) {
+      data = SettlementsDB.settlementsListData.slice(0, 5);
+    } else if (req.body.source_type === 'refund') {
+      data = SettlementsDB.settlementsListRefundData;
+    } else if (
+      req.body.source_id === SettlementsDB.settlementsListData[0].id ||
+      (req.body.source_type === 'settlement.ondemand' && !!req.body.source_id)
+    ) {
+      data = [SettlementsDB.settlementsListData[0]];
+    } else if (req.body.source_id === 'no-results') {
+      data = [];
+    } else if (req.body.source_id === 'error-input') {
       return res(
         ctx.status(200),
         ctx.json({
-          status_code: 200,
-          data: SettlementsDB.settlementsListRefundData,
+          success: false,
+          errors: ['failed to load transaction source details'],
         }),
         ctx.delay(50),
       );
@@ -542,7 +544,21 @@ export const handlers = [
       ctx.status(200),
       ctx.json({
         status_code: 200,
-        data: SettlementsDB.settlementsListData,
+        data,
+      }),
+      ctx.delay(50),
+    );
+  }),
+
+  rest.post('*/merchant/api/:mode/settlements/amount_check', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        success: true,
+        data: {
+          settlementAmount: 309,
+          totalTransactionAmount: -1036.67,
+        },
       }),
       ctx.delay(50),
     );
