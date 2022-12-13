@@ -84,7 +84,7 @@ use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Gateway\File as GatewayFile;
 use RZP\Models\PaymentLink\PaymentPageItem;
 use RZP\Services\Beam\Service as BeamService;
-use RZP\Services\Dcs\Service as DcsService;
+use RZP\Services\Dcs\Features\Service as DcsService;
 use RZP\Models\Base\DbMigrationMetricsObserver;
 use RZP\Base\Database\Connectors\MySqlConnector;
 use RZP\Models\Base\EntityInstrumentationObserver;

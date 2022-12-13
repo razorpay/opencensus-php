@@ -172,7 +172,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DCS_EXTERNAL_REQUEST_FAILED                           = 'DCS_EXTERNAL_REQUEST_FAILED';
     const DCS_SERVICE_REQUEST                                   = 'DCS_SERVICE_REQUEST';
     const DCS_SERVICE_SUCCESSFUL_RESPONSE                       = 'DCS_SERVICE_SUCCESSFUL_RESPONSE';
+    const DCS_SERVICE_REQUEST_FAILED                            = 'DCS_SERVICE_REQUEST_FAILED';
     const DCS_FETCH_REQUEST_RECEIVED                            = 'DCS_FETCH_REQUEST_RECEIVED';
+    const DCS_FETCH_REQUEST_FAILED                              = 'DCS_FETCH_REQUEST_FAILED';
     const DCS_FETCH_RESPONSE_RECEIVED                           = 'DCS_FETCH_REQUEST_RECEIVED';
     const SERVER_ERROR_DCS_SERVICE_FAILURE                      = 'SERVER_ERROR_DCS_SERVICE_FAILURE';
     const DCS_SERVICE_RETRY                                     = 'DCS_SERVICE_RETRY';

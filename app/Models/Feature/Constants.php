@@ -2302,9 +2302,9 @@ class Constants
         self::SEND_NAME_IN_EMAIL_FOR_QR       => true,
         self::ONE_CC_DISABLE_EMAIL_COOKIE       => true,
         self::ROUTE_NO_DOC_KYC                => true,
-        \RZP\Services\Dcs\Constants::RefundEnabled => true,  // Example Feature for DCS
-        \RZP\Services\Dcs\Constants::DisableAutoRefund => true,  // Example Feature for DCS
-        \RZP\Services\Dcs\Constants::EligibilityEnabled => true,  // Example Feature for DCS
+        \RZP\Services\Dcs\Features\Constants::RefundEnabled => true,  // Example Feature for DCS
+        \RZP\Services\Dcs\Features\Constants::DisableAutoRefund => true,  // Example Feature for DCS
+        \RZP\Services\Dcs\Features\Constants::EligibilityEnabled => true,  // Example Feature for DCS
         self::ONE_CC_ADDRESS_SYNC_OFF         => true,
         self::REDUCE_OD_BALANCE_FOR_CA        => true,
     ];
@@ -3186,18 +3186,18 @@ class Constants
             'documentation' => '',
         ],
 
-        \RZP\Services\Dcs\Constants::RefundEnabled => [
-            'feature'       => \RZP\Services\Dcs\Constants::RefundEnabled,
+        \RZP\Services\Dcs\Features\Constants::RefundEnabled => [
+            'feature'       => \RZP\Services\Dcs\Features\Constants::RefundEnabled,
             'display_name'  => 'Feature to enable Refunds api flow',
             'documentation' => '',
         ],
-        \RZP\Services\Dcs\Constants::DisableAutoRefund => [
-            'feature'       => \RZP\Services\Dcs\Constants::DisableAutoRefund,
+        \RZP\Services\Dcs\Features\Constants::DisableAutoRefund => [
+            'feature'       => \RZP\Services\Dcs\Features\Constants::DisableAutoRefund,
             'display_name'  => 'Feature to disable Auto Refunds',
             'documentation' => '',
         ],
-        \RZP\Services\Dcs\Constants::EligibilityEnabled => [
-            'feature'       => \RZP\Services\Dcs\Constants::EligibilityEnabled,
+        \RZP\Services\Dcs\Features\Constants::EligibilityEnabled => [
+            'feature'       => \RZP\Services\Dcs\Features\Constants::EligibilityEnabled,
             'display_name'  => 'Feature to enable Eligibility api flow',
             'documentation' => '',
         ],

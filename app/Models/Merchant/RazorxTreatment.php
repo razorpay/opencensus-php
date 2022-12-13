@@ -669,7 +669,10 @@ final class RazorxTreatment
 
 
     //Experiment used to control whether requests route to DCS or NOT
-    const DCS_ENABLED = 'dcs_enabled';
+    const DCS_EDIT_ENABLED = 'dcs_edit_enabled';
+
+    //Experiment used to control whether aggregate read requests route to DCS or NOT
+    const DCS_AGGREGATE_READ_ENABLED = 'dcs_aggregate_read_enabled';
 
     //Experiment used to control whether requests route to DCS or NOT
     const DCS_ENABLED_NEW_USECASE = 'dcs_new_usecases_enabled';

@@ -2,9 +2,9 @@
 
 namespace RZP\Services\Dcs\ExternalService;
 
-use Requests_Hooks;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use \WpOrg\Requests\Hooks as Requests_Hooks;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Http\Request\Requests;
@@ -51,12 +51,7 @@ class Service
             'url'     => $this->getBaseUrl() . '/dcs/config/set',
             'method'  => 'POST',
             'content' => $input,
-            'headers' => [
-                'Accept'            => 'application/json',
-                'X-Razorpay-TaskId'       => $this->app['request']->getTaskId(),
-                'request_id'    => $this->app['request']->getId(),
-                'Content-Type' => 'application/json'
-            ],
+            'headers' => $this->getDefaultHeaders()
         ];
 
         $response = $this->sendRawRequest($request);
@@ -113,7 +108,7 @@ class Service
         return $headers;
     }
 
-    public function action(string $service, array $input, string $mode)
+    public function action(string $service, array $input, string $mode = Mode::TEST)
     {
         $this->service = $service;
         $this->mode = $mode;
@@ -232,12 +227,12 @@ class Service
 
     protected function throwServiceErrorException(\Throwable $e)
     {
-        $errorCode = 'SERVER_ERROR_DCS_SERVICE_FAILURE';
+        $errorCode = 'SERVER_ERROR_DCS_EXTERNAL_SERVICE_FAILURE';
 
         throw new Exception\ServerErrorException($e->getMessage(), $errorCode);
     }
 
-    public function buildExternalRequest($key, $entity_id, $featureName, $value, $mode) {
+    public function buildExternalRequest(string $key, string $entity_id, array $fieldValues, string $mode) {
         $request = [];
         $request['key'] = $key;
         if($mode === Mode::LIVE)
@@ -246,10 +241,7 @@ class Service
         }
 
         $request['entity_id'] = $entity_id;
-        $featureValues = [
-            $featureName => $value,
-        ];
-        $request['value'] = json_encode($featureValues);
+        $request['value'] = json_encode($fieldValues);
         $request['mode'] = $mode;
         // audit_log is right now default
         //@TODO Audit logs should be from dashboard right now this is default values
@@ -258,5 +250,27 @@ class Service
         $request['audit_log']['change_approved_by'] = 'api@razorpay.com';
 
         return $request;
+    }
+
+    public function handleResponse($response)
+    {
+        if (key_exists('success', $response) === false || $response['success'] !== true)
+        {
+            $this->trace->info(TraceCode::DCS_EXTERNAL_REQUEST_FAILED,
+                [
+                    'response' => $response,
+                    'successKeyExists' => key_exists('success', $response),
+                ]);
+
+            $description = ($response['error'] !== null && $response['error']['description'] !== null) ?
+                $response['error']['description']: "Error in DCS Client Service Request";
+            $ex = new Exception\ServerErrorException($description,
+                'SERVER_ERROR_DCS_CLIENT_REQUEST_FAILURE', // TODO add it in error module repo
+                "failure response from external service");
+
+            $this->trace->traceException($ex);
+            throw $ex;
+        }
+        return $response;
     }
 }

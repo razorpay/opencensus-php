@@ -8,11 +8,13 @@ use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Exception;
 use Illuminate\Support\Collection;
-use RZP\Services\Dcs\Service;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Services\Dcs\Features\Service;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\QueryCache\CacheQueries;
 use RZP\Models\Settlement\OndemandFundAccount;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
@@ -28,26 +30,16 @@ class Repository extends Base\Repository
 
     public function fetchByEntityTypeAndEntityId(string $entityType, string $entityId, string $mode = null)
     {
-        $res = collect();
         $cacheTtl = $this->getCacheTtl();
         $cacheTags = Entity::getCacheTagsForEntities($entityType, $entityId);
 
         $query = ($mode === null) ? $this->newQuery() : $this->newQueryWithConnection($mode);
 
-        $dcs = $this->app['dcs'];
-
-        if ($dcs->isDcsEnabled(__FUNCTION__, $mode)) {
-            $response = $dcs->fetchByEntityIdAndEntityType($entityType, $entityId, ($mode === null) ? $this->getAppMode() : $mode);
-            $res = collect($response);
-        }
-
-        $apiResponse = $query->where(Entity::ENTITY_TYPE, $entityType)
+        return $query->where(Entity::ENTITY_TYPE, $entityType)
             ->where(Entity::ENTITY_ID, $entityId)
             ->remember($cacheTtl)
             ->cacheTags($cacheTags)
             ->get();
-
-        return $res->merge($apiResponse)->unique('name', true);
     }
 
     public function findByEntityTypeEntityIdAndNameOrFail(string $entityType, string $entityId, string $featureName)
@@ -204,11 +196,13 @@ class Repository extends Base\Repository
         else
         {
             $feature->getValidator()->validateFeatureIsNotAlreadyAssigned($assignedFeatureNames);
-            try {
-
+            try
+            {
                 $this->assignOnDCS($feature, $this->getAppMode());
                 $this->repo->saveOrFail($feature);
-            } catch (\Exception $e) {
+            }
+            catch (\Exception $e)
+            {
                 $this->removeOnDCS($feature, $this->getAppMode());
                 throw $e;
             }
@@ -223,10 +217,13 @@ class Repository extends Base\Repository
         }
         else
         {
-            try {
+            try
+            {
                 $this->removeOnDCS($feature, $this->getAppMode());
                 $this->deleteOrFail($feature);
-            } catch (\Exception $e) {
+            }
+            catch (\Exception $e)
+            {
                 $this->assignOnDCS($feature, $this->getAppMode());
                 throw $e;
             }
@@ -268,9 +265,10 @@ class Repository extends Base\Repository
             $featureName = $entity->getName();
             $entityId    = $entity->getEntityId();
 
-            try {
-                $this->assignOnDCS($entity, Mode::TEST);
-                $this->assignOnDCS($entity, Mode::LIVE);
+            try
+            {
+                $this->assignOnDCS($entity, Mode::TEST, true);
+                $this->assignOnDCS($entity, Mode::LIVE, true);
 
                 $testEntity = $this->findByEntityIdAndNameOnConnection($entityId, $featureName, Mode::TEST);
                 $liveEntity = $this->findByEntityIdAndNameOnConnection($entityId, $featureName, Mode::LIVE);
@@ -282,9 +280,11 @@ class Repository extends Base\Repository
                 if ($liveEntity === null) {
                     $this->cloneAndSaveToModeOrFail($entity, Mode::LIVE);
                 }
-            } catch (\Exception $e) {
-                $this->removeOnDCS($entity, Mode::TEST);
-                $this->removeOnDCS($entity, Mode::LIVE);
+            }
+            catch (\Exception $e)
+            {
+                $this->removeOnDCS($entity, Mode::TEST, true);
+                $this->removeOnDCS($entity, Mode::LIVE, true);
                 throw $e;
             }
         });
@@ -301,9 +301,10 @@ class Repository extends Base\Repository
         $this->repo->transactionOnLiveAndTest(function () use ($entity) {
             $featureName = $entity->getName();
             $entityId = $entity->getEntityId();
-            try {
-                $this->removeOnDCS($entity, Mode::TEST);
-                $this->removeOnDCS($entity, Mode::LIVE);
+            try
+            {
+                $this->removeOnDCS($entity, Mode::TEST, true);
+                $this->removeOnDCS($entity, Mode::LIVE, true);
 
                 $testEntity = $this->findByEntityIdAndNameOnConnection($entityId, $featureName, Mode::TEST);
                 $liveEntity = $this->findByEntityIdAndNameOnConnection($entityId, $featureName, Mode::LIVE);
@@ -319,9 +320,11 @@ class Repository extends Base\Repository
 
                     $this->syncToEs($entity, EsRepository::DELETE, null, Mode::LIVE);
                 }
-            } catch (\Exception $e) {
-                $this->assignOnDCS($entity, Mode::TEST);
-                $this->assignOnDCS($entity, Mode::LIVE);
+            }
+            catch (\Exception $e)
+            {
+                $this->assignOnDCS($entity, Mode::TEST, true);
+                $this->assignOnDCS($entity, Mode::LIVE, true);
                 throw $e;
             }
         });
@@ -374,55 +377,82 @@ class Repository extends Base\Repository
         return [true, $featureList->toArray()];
     }
 
-    private function assignOnDCS($entity, $mode)
+    private function assignOnDCS(Entity $entity, $mode, $sync = false)
     {
-        // new DCS features update
-        $dcs = $this->app['dcs'];
-
         if (Service::isDcsFeature($entity->getName()) === true)
         {
-            if ($dcs->isDcsEnabled($entity->getName(), $mode) === true)
+            $dcs = $this->app['dcs'];
+            if ($sync === true)
             {
-                $dcs->assignFeature($entity, $mode);
+                $variant = $this->getDcsEditVariant($entity->getName(), Mode::LIVE);
             }
-            else if ($dcs->isDCSNewFeature($entity->getName()) === true)
+            else
             {
-                $ex = new Exception\ServerErrorException('dcs service is disabled, please check with dcs team',
-                    'SERVER_ERROR_DCS_DISABLED',
-                    "dcs service is disabled, please check with dcs team");
-                $this->trace->traceException($ex);
+                $variant = $this->getDcsEditVariant($entity->getName(), $mode);
+            }
 
-                throw $ex;
-            }
+            $dcs->editFeature($entity, $variant, true, $mode);
         }
     }
+
+    private function removeOnDCS(Entity $entity, $mode, $sync = false)
+    {
+        if (Service::isDcsFeature($entity->getName()) === true)
+        {
+            $dcs = $this->app['dcs'];
+            if ($sync === true)
+            {
+                $variant = $this->getDcsEditVariant($entity->getName(), Mode::LIVE);
+            }
+            else
+            {
+                $variant = $this->getDcsEditVariant($entity->getName(), $mode);
+            }
+            $dcs->editFeature($entity, $variant, false, $mode);
+        }
+    }
+
     private function getAppMode() {
-        if(isset($this->app) === true) {
+        if(isset($this->app['rzp.mode']) === true)
+        {
             return $this->app['rzp.mode'];
         }
 
         return Mode::TEST;
     }
 
-    private function removeOnDCS($entity, $mode) {
-        // new DCS features update
-        $dcs = $this->app['dcs'];
+    public function getDcsEditVariant($featureName, $mode)
+    {
+        $mode = $mode ?? 'live';
+        $flag = $this->app['razorx']->getTreatment($featureName,
+            RazorxTreatment::DCS_EDIT_ENABLED,
+            $mode);
+        $this->trace->info(TraceCode::DCS_RAZORX_EXPERIMENT, [
+            'feature_name' => $featureName,
+            'razorx_treatment' => RazorxTreatment::DCS_EDIT_ENABLED,
+            'razorx_output' => $flag,
+            'mode' => $mode,
+        ]);
+        return $flag;
+    }
 
-        if (Service::isDcsFeature($entity->getName()) === true)
+    public function getDcsAggregateReadVariant($functionName, $mode)
+    {
+        if($mode === null && isset($this->app['rzp.mode']) === true)
         {
-            if ($dcs->isDcsEnabled($entity->getName(), $mode) === true)
-            {
-                $dcs->removeFeature($entity, $mode);
-            }
-            else if ($dcs->isDCSNewFeature($entity->getName()) === true)
-            {
-                $ex = new Exception\ServerErrorException('dcs service is disabled, please check with dcs team',
-                    'SERVER_ERROR_DCS_DISABLED',
-                    "dcs service is disabled, please check with dcs team");
-                $this->trace->traceException($ex);
-
-                throw $ex;
-            }
+            $mode = $this->app['rzp.mode'];
         }
+
+        $mode = $mode ?? 'live';
+        $flag = $this->app['razorx']->getTreatment($functionName,
+            RazorxTreatment::DCS_AGGREGATE_READ_ENABLED,
+            $mode);
+        $this->trace->info(TraceCode::DCS_RAZORX_EXPERIMENT, [
+            'feature_name' => $functionName,
+            'razorx_treatment' => RazorxTreatment::DCS_AGGREGATE_READ_ENABLED,
+            'razorx_output' => $flag,
+            'mode' => $mode,
+        ]);
+        return $flag;
     }
 }
