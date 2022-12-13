@@ -185,7 +185,7 @@ class RouteJournalEvents extends BaseJournalEvents
             Constants::MONEY_PARAMS                 => $moneyParams
         ];
 
-        if (isset($additionalParams) === true)
+        if (empty($additionalParams) === false)
         {
             $transferData[Constants::ADDITIONAL_PARAMS] = $additionalParams;
         }
