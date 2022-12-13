@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom/extend-expect';
 import { screen, userEvent, waitFor, server } from 'test-utils';
 import { analyticsTrack } from 'common/utils/analytics';
-import { renderApp } from 'merchant/views/Transactions/Payments/components/__test__/mocks/fixtures/PaymentDetailsContainer';
+import { renderApp } from 'merchant/views/Transactions/Payments/components/__tests__/mocks/fixtures/PaymentDetailsContainer';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { rest } from 'msw';
 import { updateItemInPayments } from 'merchant/reducers/collection';

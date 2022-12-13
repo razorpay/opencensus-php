@@ -5,7 +5,7 @@ import {
   payment,
   session,
   showWhenUtilSpy,
-} from 'merchant/views/Transactions/Payments/components/__test__/mocks/fixtures/RefundModal';
+} from 'merchant/views/Transactions/Payments/components/__tests__/mocks/fixtures/RefundModal';
 
 describe('RefundModal', () => {
   describe('Instant refund', () => {

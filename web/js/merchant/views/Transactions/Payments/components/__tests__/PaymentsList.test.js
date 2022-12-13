@@ -4,7 +4,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import {
   renderApp,
   defaultStore,
-} from 'merchant/views/Transactions/Payments/components/__test__/mocks/fixtures/PaymentsList';
+} from 'merchant/views/Transactions/Payments/components/__tests__/mocks/fixtures/PaymentsList';
 
 describe('PaymentsList', () => {
   const fetchPaymentsList = async (params) => {

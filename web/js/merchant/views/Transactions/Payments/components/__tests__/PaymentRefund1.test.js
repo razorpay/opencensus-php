@@ -7,7 +7,7 @@ import {
   App,
   defaultProps,
   disputes,
-} from 'merchant/views/Transactions/Payments/components/__test__/mocks/fixtures/PaymentRefund';
+} from 'merchant/views/Transactions/Payments/components/__tests__/mocks/fixtures/PaymentRefund';
 
 describe('PaymentRefund', () => {
   test('should not render payment refund details when there is no payment status', () => {

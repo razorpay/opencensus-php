@@ -54,6 +54,12 @@ module.exports = {
       functions: 68,
       lines: 72,
     },
+    './js/merchant/views/Transactions/Payments/': {
+      statements: 90,
+      branches: 90,
+      functions: 90,
+      lines: 90,
+    },
   },
 
   // An array of glob patterns indicating a set of files for which coverage information should be collected
@@ -69,9 +75,7 @@ module.exports = {
   // cacheDirectory: "/private/var/folders/j9/_gm_d82j2q71v20yv2mx_xrm0000gn/T/jest_dx",
 
   // An array of regexp pattern strings used to skip coverage collection
-  // coveragePathIgnorePatterns: [
-  //   "/node_modules/"
-  // ],
+  coveragePathIgnorePatterns: ['/node_modules/', '__test__', '__tests__'],
 
   // Indicates which provider should be used to instrument code for coverage
   // coverageProvider: "babel",
@@ -148,10 +152,7 @@ module.exports = {
   // testLocationInResults: false,
 
   // The glob patterns Jest uses to detect test files
-  // testMatch: [
-  //   "**/__tests__/**/*.[jt]s?(x)",
-  //   "**/?(*.)+(spec|test).[tj]s?(x)"
-  // ],
+  testMatch: ['**/__tests__/**/*.[jt]s?(x)', '**/?(*.)+(spec|test).[tj]s?(x)', '!**/mocks/**'],
 
   // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
   // testPathIgnorePatterns: [

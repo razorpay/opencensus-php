@@ -1,11 +1,10 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import { render, screen, fireEvent } from 'test-utils';
-import 'merchant/views/Transactions/Payments/components/__test__/paymentDetailsMock';
 import {
   defaultProps,
   App,
-} from 'merchant/views/Transactions/Payments/components/__test__/paymentDetailsConstants';
+} from 'merchant/views/Transactions/Payments/components/__tests__/mocks/fixtures/PaymentDetails';
 import { analyticsTrack } from 'common/utils/analytics';
 import ShowWhen from 'merchant/components/ShowWhen';
 

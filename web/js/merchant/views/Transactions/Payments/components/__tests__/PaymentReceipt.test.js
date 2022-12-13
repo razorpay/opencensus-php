@@ -12,7 +12,7 @@ import {
   AppWithRouter,
   defaultProps,
   showNotificationSpy,
-} from 'merchant/views/Transactions/Payments/components/__test__/mocks/fixtures/PaymentReceipt';
+} from 'merchant/views/Transactions/Payments/components/__tests__/mocks/fixtures/PaymentReceipt';
 
 describe('PaymentReceipt', () => {
   test('should not render payment receipt details when showReceiptActions is false', () => {
