@@ -19,21 +19,26 @@
         color: #58666e;
         background-color: #f0f3f4;
     }
-    .error-oops{
+    .error-oops {
         font-size: 120px;
     }
-    .error-message{
+    .error-message {
         font-size: 30px;
         letter-spacing: .2px;
         margin: 0;
+        text-align: center;
     }
-    .footer{
-        margin-top: 250px;
+    .error-request-id {
+        margin-top: 10px;
+        text-align: center;
     }
-    .error-content{
+    .footer {
+        margin-top: 230px;
+    }
+    .error-content {
         margin-top: 260px;
     }
-    .logo{
+    .logo {
         width: 200px;
     }
 </style>
@@ -46,11 +51,13 @@
         <div class="error-message">
             {{ $http_status_code }}, {{$error_message}}.
         </div>
+        <div class="error-request-id">
+            Error Code: {{$request_id}}
+        </div>
     </div>
     <div class="footer">
         <img class="logo" src="https://cdn.razorpay.com/logo-small.png">
     </div>
 </div>
-
 </body>
 </html>
