@@ -13,7 +13,6 @@ export const trackOptimizerEvents = ({
       ...getCommonSegmentProperties(window.rzp_user, { addUserProperties: true }),
       ...properties,
       screen,
-      eventTimestamp: new Date().toISOString(),
     },
   });
 };

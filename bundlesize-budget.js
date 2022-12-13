@@ -58,7 +58,31 @@ module.exports = [
   {
     name: 'Optimizer Dashboard',
     path: 'js/merchant/Navigator.*.js',
-    limit: '22 KB',
+    limit: '2 KB',
+    gzip: true,
+  },
+  {
+    name: 'Optimizer OnBoarding',
+    path: 'js/merchant/OnBoarding.*.js',
+    limit: '3 KB',
+    gzip: true,
+  },
+  {
+    name: 'Optimizer AddProvider',
+    path: 'js/merchant/AddProvider.*.js',
+    limit: '14 KB',
+    gzip: true,
+  },
+  {
+    name: 'Optimizer CreateRule',
+    path: 'js/merchant/CreateRule.*.js',
+    limit: '20 KB',
+    gzip: true,
+  },
+  {
+    name: 'Optimizer RuleList',
+    path: 'js/merchant/RuleList.*.js',
+    limit: '7 KB',
     gzip: true,
   },
 ];

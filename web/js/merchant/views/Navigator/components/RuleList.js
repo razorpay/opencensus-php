@@ -86,12 +86,12 @@ export default class RuleList extends React.Component {
       return <Redirect to={redirect} />;
     }
     return (
-      <div>
-        <div class="panel gateway-list" style={{ borderLeft: 0, borderRight: 0 }}>
-          <div class="panel-header">
-            <h2 class="payment-gateway-title" style={{ marginTop: '20px' }}>
+      <div className="routing-container">
+        <div className="panel gateway-list" style={{ borderLeft: 0, borderRight: 0 }}>
+          <div className="panel-header">
+            <h2 className="payment-gateway-title" style={{ marginTop: '20px' }}>
               <span className="provider-title">
-                Payment Provider
+                Payment Provider&nbps;
                 <span className="total-providers">
                   {isProvidersLoading ? (
                     <div className="dotted-animation" />

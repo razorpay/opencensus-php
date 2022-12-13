@@ -1,22 +1,29 @@
 import React from 'react';
 import RTracking from 'react-tracking';
+
 import { getCustomURL } from 'merchant/components/DocsLink';
+import FeatureCard from 'merchant/components/Feature';
+import track from 'merchant/components/OnBoarding/track';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 import Button from 'common/new-ui/Button';
-import FeatureCard from 'merchant/components/Feature';
-import track from '../track';
-import ShowWhen from 'merchant/components/ShowWhen';
 import { isOrgFeatureExist } from 'merchant/models/User';
 
 @RTracking((props) => window.rzpQ.component(`${props.feature}_onboarding_feature_page`))
 export default class OnBoardingFeatures extends React.PureComponent {
   handleBackButton = () => {
-    this.props.prev(() => {
+    const { handleBackButton: handleBackButtonFromProps, prev, feature, active } = this.props;
+
+    if (handleBackButtonFromProps) {
+      return handleBackButtonFromProps();
+    }
+
+    return prev(() => {
       window.rzpAnalytics?.({
-        eventCategory: `Onboarding Card (${this.props.feature})`,
-        eventAction: `Page ${this.props.active} - Back CTA`,
+        eventCategory: `Onboarding Card (${feature})`,
+        eventAction: `Page ${active} - Back CTA`,
       });
-      track.onFeatureBack(this.props.feature);
+      track.onFeatureBack(feature);
     });
   };
 

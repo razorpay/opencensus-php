@@ -1,30 +1,36 @@
+import { CLICK_KNOW_MORE } from 'merchant/views/Navigator/components/OnBoarding/track';
+import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
+
+// Left image URL
+export const IMG_URL = 'https://razorpay.com/assets/optimizer/banner-illustration.png';
+
 // Features
 export const FEATURES_DATA = [
   {
     icon: 'https://razorpay.com/assets/optimizer/fold-5/card-2.png',
-    title: 'Increased payment success rate',
+    title: 'Add multiple gateways in a single click',
     desc:
-      '5% higher success rates via our intelligent routing and retries across your selected payment gateways',
+      'Save on transaction costs by routing across gateways by payment method, value and any other factor',
   },
   {
     icon: 'https://razorpay.com/assets/optimizer/fold-5/card-3.png',
-    title: 'Lower transaction costs',
-    desc:
-      'Save 20% of your payment fees by routing payments to the provider offering the lowest rates',
+    title: 'AI-Powered Routing',
+    desc: 'Automatically route transactions to the payment gateway with the highest success rate',
   },
   {
     icon: 'https://razorpay.com/assets/optimizer/fold-5/card-4.png',
-    title: 'Receive higher returns',
+    title: 'Single Data Source',
     desc:
-      'Get a 10% increase in your revenue by reducing customer drop-offs with fewer payment failures',
+      'Get all your settlement reports and success rate data from all your payment gateways in a single click',
   },
 ];
 
 // Features Links
 export const FEATURES_LINKS = [
   {
-    label: 'View Docs',
+    label: 'Know more',
     url: 'https://razorpay.com/docs/payments/optimizer/',
+    onClick: () => trackOptimizerEvents(CLICK_KNOW_MORE),
   },
 ];
 
@@ -32,3 +38,24 @@ export const MORE_FEATURES_LINK = {
   label: 'Know more',
   url: 'https://razorpay.com/optimizer-intelligent-payments-routing/',
 };
+
+export const GATEWAYS_OPTIONS = [
+  { label: 'Razorpay', name: 'razrorpay' },
+  { label: 'Paytm', name: 'paytm' },
+  { label: 'PayU', name: 'payu' },
+  { label: 'Cashfree', name: 'cashfree' },
+  { label: 'CCAvenue', name: 'ccavenue' },
+  { label: 'BillDesk', name: 'billdesk' },
+  { label: 'Others', name: 'others' },
+];
+
+export const HAVE_MULTIPLE_GATEWAYS_OPTIONS = [
+  { label: 'Yes', value: 'yes' },
+  { label: 'No, but planning on having multiple payment gateways', value: 'no' },
+];
+
+export const POINTS = [
+  { title: 'Improve payment success rate by 5%' },
+  { title: 'Reduce transaction costs by 30%' },
+  { title: 'Get 10% increase in your revenues' },
+];
