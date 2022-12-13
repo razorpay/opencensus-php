@@ -181,7 +181,7 @@ class UpdateMerchantContext extends Job
                         $this->trace->count(Metrics::NEEDS_CLARIFICATION_TRIGGERED_TOTAL);
                     }
 
-                    $clarificationCore->removeNoDocFeatureIfApplicable($merchant, $merchantDetail, NeedsClarificationReasonsList::NO_DOC_RETRY_EXHAUSTED);
+                    $clarificationCore->removeNoDocFeatureIfApplicable($merchant, $merchantDetail);
                 }
             }
 

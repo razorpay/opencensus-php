@@ -74,7 +74,7 @@ class Core extends Base\Core
      *
      * @throws Throwable
      */
-    public function removeNoDocFeatureIfApplicable(Merchant\Entity $merchant, DetailEntity $merchantDetail, string $reasonCode = null)
+    public function removeNoDocFeatureIfApplicable(Merchant\Entity $merchant, DetailEntity $merchantDetail)
     {
 
         if ($merchant->isNoDocOnboardingEnabled() === false)
@@ -85,8 +85,7 @@ class Core extends Base\Core
         $merchantDetailCore = (new MerchantDetailCore());
         $noDocData          = $merchantDetailCore->fetchNoDocData($merchantDetail);
 
-        $isRemoveNoDocFeature = $this->shouldRemoveNoDocFeature ($noDocData, $merchant, $merchantDetail);
-
+        [$isRemoveNoDocFeature, $reasonCode] = $this->shouldRemoveNoDocFeature ($noDocData, $merchant, $merchantDetail);
         if ($isRemoveNoDocFeature === true)
         {
             $featureCore = (new FeatureCore());
@@ -100,7 +99,7 @@ class Core extends Base\Core
         }
     }
 
-    private function shouldRemoveNoDocFeature (array $noDocData, Merchant\Entity $merchant, DetailEntity $merchantDetail )
+    private function shouldRemoveNoDocFeature(array $noDocData, Merchant\Entity $merchant, DetailEntity $merchantDetail )
     {
         $isRemoveNoDocFeature = false;
 
@@ -121,12 +120,11 @@ class Core extends Base\Core
             if (($artefact === DetailEntity::GSTIN and in_array($merchantDetail->getGstinVerificationStatus(), $failedStatus, true) === true)
                 or ($verificationConfig[$artefact][DEConstants::RETRY_COUNT] > 1))
             {
-                $isRemoveNoDocFeature = true;
-                break;
+                return [true, $verificationConfig[$artefact][DEConstants::FAILURE_REASON_CODE]];
             }
         }
 
-        return $isRemoveNoDocFeature;
+        return [$isRemoveNoDocFeature, null];
     }
 
     private function isDedupeInProgressForXpressOnboarding(array $dedupeConfig) :bool
@@ -625,7 +623,6 @@ class Core extends Base\Core
                     DetailEntity::ACTIVATION_STATUS => Status::UNDER_REVIEW
                 ];
             }
-
 
             (new MerchantDetailCore())->updateActivationStatus($merchant, $activationStatusData, $merchant);
 

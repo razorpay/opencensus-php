@@ -52,9 +52,8 @@ class NeedsClarificationReasonsList
     const NO_DOC_RETRY_EXHAUSTED                            = 'no_doc_retry_exhausted';
     const NO_DOC_RETRY_EXHAUSTED_MESSAGE                    = 'You have exhausted all your retry attempts, kindly share additional details to get your account reactivated.';
 
-    const NO_DOC_RISK_FAILURE                               = 'no_doc_risk_failure';
-    const NO_DOC_RISK_FAILURE_MESSAGE                       = 'Your KYC details have failed internal checks. Please submit all the additional required details to get your account activated.';
-
+    const NO_DOC_KYC_FAILURE                               = 'no_doc_kyc_failure';
+    const NO_DOC_KYC_FAILURE_MESSAGE                       = 'Your KYC details have failed internal checks. Please submit all the additional required details to get your account activated.';
 
     //Not Used please use these fields if required in future.
     const SHOP_ESTABLISHMENT_DATA_NOT_MATCHED               = 'shop_establishment_data_not_matched';
@@ -201,7 +200,7 @@ class NeedsClarificationReasonsList
             NeedsClarificationMetaData::DESCRIPTION => 'Field value already exist',],
         self::NO_DOC_RETRY_EXHAUSTED => [
             NeedsClarificationMetaData::DESCRIPTION => 'You have exhausted all your retry attempts, kindly share additional details to get your account reactivated.',],
-        self::NO_DOC_RISK_FAILURE => [
+        self::NO_DOC_KYC_FAILURE => [
             NeedsClarificationMetaData::DESCRIPTION => 'Your KYC details have failed internal checks. Please submit all the additional required details to get your account activated.',],
     ];
 

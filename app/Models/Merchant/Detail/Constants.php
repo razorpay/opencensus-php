@@ -594,6 +594,7 @@ class Constants
     const DEDUPE = 'dedupe';
     const VALUE = 'value';
     const CURRENT_INDEX = 'current_index';
+    const FAILURE_REASON_CODE = 'failure_reason_code';
 
     const DEDUPE_CHECK_KEY = 'dedupe_check_key';
     const DEDUPE_ES_INDEX = "merchant_v3_index";

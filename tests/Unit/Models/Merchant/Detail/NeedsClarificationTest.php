@@ -2101,7 +2101,7 @@ class NeedsClarificationTest extends TestCase
 
         $merchant = $this->getDbEntityById('merchant', '10000000000000');
 
-        $shouldRemoveNoDocFeature = $method->invokeArgs($ncCore, [$noDocData, $merchant, $merchantDetail]);
+        [$shouldRemoveNoDocFeature, $reasonCode] = $method->invokeArgs($ncCore, [$noDocData, $merchant, $merchantDetail]);
 
         $this->assertEquals($shouldRemoveNoDocFeature, false);
     }
@@ -2149,7 +2149,7 @@ class NeedsClarificationTest extends TestCase
 
         $merchant = $this->getDbEntityById('merchant', '10000000000000');
 
-        $shouldRemoveNoDocFeature = $method->invokeArgs($ncCore, [$noDocData, $merchant, $merchantDetail]);
+        [$shouldRemoveNoDocFeature, $reasonCode] = $method->invokeArgs($ncCore, [$noDocData, $merchant, $merchantDetail]);
 
         $this->assertEquals($shouldRemoveNoDocFeature, true);
     }
@@ -2199,7 +2199,7 @@ class NeedsClarificationTest extends TestCase
 
         $merchant = $this->getDbEntityById('merchant', '10000000000000');
 
-        $shouldRemoveNoDocFeature = $method->invokeArgs($ncCore, [$noDocData, $merchant, $merchantDetail]);
+        [$shouldRemoveNoDocFeature, $reasonCode] = $method->invokeArgs($ncCore, [$noDocData, $merchant, $merchantDetail]);
 
         $this->assertEquals($shouldRemoveNoDocFeature, true);
     }
@@ -2249,7 +2249,7 @@ class NeedsClarificationTest extends TestCase
 
         $merchant = $this->getDbEntityById('merchant', '10000000000000');
 
-        $shouldRemoveNoDocFeature = $method->invokeArgs($ncCore, [$noDocData, $merchant,$merchantDetail]);
+        [$shouldRemoveNoDocFeature, $reasonCode] = $method->invokeArgs($ncCore, [$noDocData, $merchant,$merchantDetail]);
 
         $this->assertEquals($shouldRemoveNoDocFeature, false);
     }
@@ -2313,11 +2313,11 @@ class NeedsClarificationTest extends TestCase
 
         $detailCore->getMerchantAndSetBasicAuth($merchantDetail->getMerchantId());
 
-        $ncCore->updateActivationStatusForNoDoc($merchant, $merchantDetail, 'no_doc_risk_failure');
+        $ncCore->updateActivationStatusForNoDoc($merchant, $merchantDetail, 'no_doc_kyc_failure');
 
         $kycClarificationReason = $merchantDetail->getKycClarificationReasons();
 
-        $this->assertEquals( 'no_doc_risk_failure', $kycClarificationReason['clarification_reasons_v2']['aadhar_front'][0]['reason_code']);
+        $this->assertEquals( 'no_doc_kyc_failure', $kycClarificationReason['clarification_reasons_v2']['aadhar_front'][0]['reason_code']);
     }
 
 
@@ -2340,6 +2340,105 @@ class NeedsClarificationTest extends TestCase
 
         $this->assertEquals( 'no_doc_retry_exhausted', $kycClarificationReason['clarification_reasons_v2']['aadhar_front'][0]['reason_code']);
 
+    }
+
+    public function testReasonCodeAfterGstinFailure()
+    {
+        $input = [
+            'gstin_verification_status'                => 'incorrect_details',
+        ];
+
+        $ncCore = (new Core());
+
+        $reflection = new ReflectionClass($ncCore);
+
+        $method = $reflection->getMethod('shouldRemoveNoDocFeature');
+        $method->setAccessible(true);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $input);
+
+        $mid = $merchantDetail->getId();
+
+        $noDocData = [
+            'verification' => [
+                'gstin' => [
+                    'retryCount' => 0,
+                    'status' => 'failed',
+                    'failure_reason_code' => 'no_doc_kyc_failure'
+                ],
+            ]
+            ,'dedupe'       => [
+                'contact_mobile' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+            ]
+        ];
+
+        $data = [
+            Store\Constants::NAMESPACE  => ConfigKey::ONBOARDING_NAMESPACE,
+            ConfigKey::NO_DOC_ONBOARDING_INFO => $noDocData
+        ];
+
+        $data = (new Store\Core())->updateMerchantStore($mid, $data, Store\Constants::INTERNAL);
+
+        $this->mockRazorxTreatment('on');
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        [$shouldRemoveNoDocFeature, $reasonCode] = $method->invokeArgs($ncCore, [$noDocData, $merchant, $merchantDetail]);
+
+        $this->assertEquals($reasonCode, 'no_doc_kyc_failure');
+    }
+
+    public function testReasonCodeAfterCompanyPanFailureAfterMultipleRetry()
+    {
+        $ncCore = (new Core());
+
+        $reflection = new ReflectionClass($ncCore);
+
+        $method = $reflection->getMethod('shouldRemoveNoDocFeature');
+        $method->setAccessible(true);
+
+
+        $input = [
+            'gstin_verification_status'                => 'incorrect_details',
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $input);
+
+        $mid = $merchantDetail->getId();
+
+        $noDocData = [
+            'verification' => [
+                'company_pan' => [
+                    'retryCount' => 2,
+                    'status' => 'failed',
+                    'failure_reason_code' => 'no_doc_retry_exhausted'
+                ],
+            ],
+            'dedupe'       => [
+                'contact_mobile' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+            ]
+        ];
+
+        $data = [
+            Store\Constants::NAMESPACE  => ConfigKey::ONBOARDING_NAMESPACE,
+            ConfigKey::NO_DOC_ONBOARDING_INFO => $noDocData
+        ];
+
+        $data = (new Store\Core())->updateMerchantStore($mid, $data, Store\Constants::INTERNAL);
+
+        $this->mockRazorxTreatment('on');
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        [$shouldRemoveNoDocFeature, $reasonCode] = $method->invokeArgs($ncCore, [$noDocData, $merchant, $merchantDetail]);
+
+        $this->assertEquals($reasonCode, 'no_doc_retry_exhausted');
     }
 
 }

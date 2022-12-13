@@ -934,7 +934,11 @@ class Core extends Base\Core
         {
             $this->handleFlowForRiskyMerchant($merchant, $merchantDetails, $action);
 
-            $this->processFlowForNoDocRiskyMerchant($merchant, $merchantDetails);
+            // If Risk fails then we have to remove no-doc change status to Nc, make optional doc to mandatory. Ignore activation flow
+            if ($merchant->isNoDocOnboardingEnabled() === true)
+            {
+               return $this->processFlowForNoDocRiskyMerchant($merchant, $merchantDetails);
+            }
         }
 
         // If a merchant does not have website or app, we would need to activate them
@@ -1039,7 +1043,8 @@ class Core extends Base\Core
 
 
     /**
-     * Remove no-doc flag update activation status
+     * Remove no-doc flag update activation status, and returns empty array because we don't have to proceed with submit activation flow
+     *
      * @param Merchant\Entity $merchant
      * @param Entity          $merchantDetails
      *
@@ -1047,17 +1052,15 @@ class Core extends Base\Core
      */
     public function processFlowForNoDocRiskyMerchant(Merchant\Entity $merchant, Entity $merchantDetails)
     {
-        if ($merchant->isNoDocOnboardingEnabled() === true)
-        {
-            $featureCore = (new FeatureCore());
+        $featureCore = (new FeatureCore());
 
-            $featureCore->removeFeature(FeatureConstants::NO_DOC_ONBOARDING, true);
+        $featureCore->removeFeature(FeatureConstants::NO_DOC_ONBOARDING, true);
 
-            $clarificationCore = (new ClarificationCore());
+        $clarificationCore = (new ClarificationCore());
 
-            $clarificationCore->updateActivationStatusForNoDoc($merchant, $merchantDetails, NeedsClarificationReasonsList::NO_DOC_RISK_FAILURE);
+        $clarificationCore->updateActivationStatusForNoDoc($merchant, $merchantDetails, NeedsClarificationReasonsList::NO_DOC_KYC_FAILURE);
 
-        }
+        return [];
     }
 
 
@@ -1104,6 +1107,7 @@ class Core extends Base\Core
             DetailConstants::STATUS        => RetryStatus::PENDING,
             DetailConstants::VALUE         => empty($gst) ? [] : [$gst],
             DetailConstants::CURRENT_INDEX => 0,
+            DetailConstants::FAILURE_REASON_CODE   => NeedsClarificationReasonsList::NO_DOC_KYC_FAILURE
         ];
 
 
@@ -1118,7 +1122,8 @@ class Core extends Base\Core
         {
             $fieldConfig                 = [
                 DetailConstants::RETRY_COUNT => 0,
-                DetailConstants::STATUS      => RetryStatus::PENDING
+                DetailConstants::STATUS      => RetryStatus::PENDING,
+                DetailConstants::FAILURE_REASON_CODE => NeedsClarificationReasonsList::NO_DOC_RETRY_EXHAUSTED
             ];
             $dedupeConfig[$key]          = $fieldConfig;
             $bvsVerificationConfig[$key] = $fieldConfig;
