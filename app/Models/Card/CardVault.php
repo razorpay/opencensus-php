@@ -512,6 +512,11 @@ class CardVault extends Base\Core
             $input['merchant_token'] = $cardInput['merchant_token'];
         }
 
+        if (empty($cardInput['email']) === false)
+        {
+            $input['email'] = $cardInput['email'];
+        }
+
         $input = $this->setMerchantDetails($input, $merchant);
 
         $input['features'] = $merchant->getEnabledFeatures();

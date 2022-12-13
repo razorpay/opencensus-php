@@ -1985,7 +1985,8 @@ class Core extends Base\Core
         $cardInput += [
             'merchant_token' => $token->getId(),
             'async'          => $isAsync,
-            'customer_id'    => $token->getCustomerId()
+            'customer_id'    => $token->getCustomerId(),
+            'email'          => ($payment !== null) ? $payment->getEmaiL() : ""
         ];
 
         list($card, $serviceProviderTokens) = (new Card\Core)->migrateToTokenizedCard($token->card, $token->merchant, $cardInput, $payment);
@@ -2353,7 +2354,7 @@ class Core extends Base\Core
     }
 
     public function updateTokenOnAuthorized($tokenData) {
-        
+
         if (empty($tokenData['token_id']) === false)
         {
             $token = $this->repo->token->findOrFailPublic($tokenData['token_id']);
