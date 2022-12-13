@@ -5,8 +5,9 @@ import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme';
 import Auth from '@razorpay/commander-shield/src/bootstrap/SignUpWrapper';
 import Size from '@razorpay/blade-old/src/atoms/Size';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
+import Text from '@razorpay/blade-old/src/atoms/Text';
 import { ContentContainer } from 'newAuth/commonStyles';
-import { AbsoluteView, RelativeView, Container } from './styles';
+import { AbsoluteView, RelativeView, Container, DisableSignupContainer } from './styles';
 import Header from './components/Header';
 import InfoContainer from './components/InfoContainer';
 import RefereeBanner from './components/RefereeBanner';
@@ -97,6 +98,8 @@ const SignUp = () => {
     window.location.href = '/#/access/signin';
   };
 
+  const disableSignup = true;
+
   return (
     <ThemeProvider theme={theme}>
       <Size minHeight="100vh">
@@ -108,23 +111,34 @@ const SignUp = () => {
                   handleOnClick={handleLoginClick}
                   isSignUpFromWebsite={isSignUpFromWebsite}
                 />
-                <RelativeView>
-                  <RefereeBanner />
-                  <AbsoluteView>
-                    <CommanderShieldThemeWrapper>
-                      <Auth
-                        appName="dashboard"
-                        authClientId={window.OAUTH_CLIENT_ID}
-                        oneTapInfo={oneTapInfo}
-                        showPasswordRules={isPasswordUXImprovementEnabled()}
-                        skipCaptcha={isTestEnvironment()}
-                        autoReadOtpSignup
-                        showMobileSignup
-                      />
-                    </CommanderShieldThemeWrapper>
-                  </AbsoluteView>
-                  <InfoContainer handleContactUsClick={handleContactUsClick} />
-                </RelativeView>
+                {/* Temprorary disable signup */}
+                {disableSignup ? (
+                  <DisableSignupContainer>
+                    <Text size="large" weight="bold" align="center">
+                      We are under scheduled maintenance.
+                      <br /> Apologies for the inconvenience.
+                    </Text>
+                  </DisableSignupContainer>
+                ) : (
+                  <RelativeView>
+                    <RefereeBanner />
+                    <AbsoluteView>
+                      <CommanderShieldThemeWrapper>
+                        <Auth
+                          appName="dashboard"
+                          authClientId={window.OAUTH_CLIENT_ID}
+                          oneTapInfo={oneTapInfo}
+                          showPasswordRules={isPasswordUXImprovementEnabled()}
+                          skipCaptcha={isTestEnvironment()}
+                          autoReadOtpSignup
+                          showMobileSignup
+                        />
+                      </CommanderShieldThemeWrapper>
+                    </AbsoluteView>
+
+                    <InfoContainer handleContactUsClick={handleContactUsClick} />
+                  </RelativeView>
+                )}
               </ContentContainer>
             </Flex>
           </Size>
