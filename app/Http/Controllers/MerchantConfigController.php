@@ -27,4 +27,11 @@ class MerchantConfigController extends Controller
         $response = $this->app['shipping_service_merchant_config']->removeShippingProviders($merchantId);
         return ApiResponse::json($response);
     }
+
+    protected function assignShopifyAsShippingProvider()
+    {
+        $input = Request::all();
+        $response = $this->app['shipping_service_merchant_config']->assignShopifyAsShippingProvider($input);
+        return ApiResponse::json($response);
+    }
 }

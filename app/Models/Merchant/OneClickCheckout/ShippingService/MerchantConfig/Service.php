@@ -2,11 +2,18 @@
 
 namespace RZP\Models\Merchant\OneClickCheckout\ShippingService\MerchantConfig;
 
+use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\BadRequestException;
 use RZP\Http\Request\Requests;
+use RZP\Models\Merchant\OneClickCheckout\AuthConfig;
+use RZP\Trace\TraceCode;
+use GuzzleHttp\Client;
 
 class Service
 {
     protected $app;
+
+    protected $validator;
 
     const CREATE_MERCHANT_CONFIG                = 'create_merchant_config';
     const REMOVE_SHIPPING_PROVIDERS             = 'remove_shipping_providers';
@@ -36,6 +43,8 @@ class Service
         }
 
         $this->app = $app;
+
+        $this->validator = new Validator();
     }
 
     public function create($input)
@@ -71,5 +80,107 @@ class Service
         $input['merchant_id'] = $merchantId;
 
         return $input;
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    public function assignShopifyAsShippingProvider($input)
+    {
+        $this->validator->validateInput('shopify_assignment',$input);
+
+        $authConfig = new AuthConfig\Core();
+
+        $response = [];
+        foreach ($input['merchant_ids'] as $merchant_id)
+        {
+            if ($input['type'] == 'switch')
+            {
+                try
+                {
+                    $this->removeShippingProviders($merchant_id);
+                }
+                catch (\Exception $e)
+                {
+                    $this->app['trace']->traceException($e, Trace::ERROR,
+                        TraceCode::MERCHANT_1CC_CONFIG_SHOPIFY_ASSIGNMENT_FAILED);
+
+                    $response[$merchant_id] = $e->getMessage();
+                    continue;
+                }
+            }
+
+            try
+            {
+                $configs = $authConfig->getShopify1ccConfig($merchant_id);
+                if ($configs == null || !isset($configs['shop_id']) || !isset($configs['oauth_token']))
+                {
+                    $response[$merchant_id] = 'SHOPIFY_CONFIGS_NOT_FOUND';
+
+                    continue;
+                }
+
+                $this->sendWebhookCreateRequest($configs['shop_id'], $configs['oauth_token']);
+
+                $merchantConfigCreateRequest = array(
+                    'merchant_id' => $merchant_id,
+                    'type' => 'fulfillment_event_config',
+                    'fulfillment_event_config' => array(
+                        'enabled_platform' => 'shopify'
+                    )
+                );
+
+                $this->create($merchantConfigCreateRequest);
+
+                $response[$merchant_id] = 'SUCCESS';
+            }
+            catch (\Exception $e)
+            {
+                $this->app['trace']->traceException($e, Trace::ERROR,
+                    TraceCode::MERCHANT_1CC_CONFIG_SHOPIFY_ASSIGNMENT_FAILED);
+
+                $response[$merchant_id] = $e->getMessage();
+            }
+        }
+
+        return $response;
+    }
+
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    protected function sendWebhookCreateRequest(string $storeId, string $token)
+    {
+        $client = new Client();
+
+        $headers = [
+            'X-Shopify-Access-Token' => $token,
+            'Content-Type' => 'application/json'
+        ];
+
+        $body = '{
+            "webhook": {
+                "topic": "fulfillments/update",
+                "address": "https://api.razorpay.com/v1/1cc/process_webhooks/shopify",
+                "format": "json",
+                "fields": [
+                    "order_id",
+                    "shipment_status",
+                    "tracking_number",
+                    "tracking_numbers",
+                    "tracking_company",
+                    "tracking_url",
+                    "name"
+                ]
+            }
+        }';
+
+        $response = $client->request('POST',
+            'https://'.$storeId.'.myshopify.com/admin/api/2022-01/webhooks.json',
+            [
+                'headers' => $headers,
+                'body' => $body
+            ]);
+        return json_decode($response->getBody(), true);
     }
 }

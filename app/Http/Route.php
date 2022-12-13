@@ -3930,6 +3930,8 @@ class Route
         '1cc_shipping_service_merchant_config_update_by_type'       => ['post',      '1cc/shipping_service/merchant_config/update_by_type',             'MerchantConfigController@updateByType'],
         '1cc_shipping_service_remove_shipping_providers'            => ['delete',    '1cc/shipping_service/merchant_config/merchant/{merchantId}',      'MerchantConfigController@removeShippingProvider'],
         '1cc_shipping_service_connect_shipping_providers'           => ['post',      '1cc/shipping_service/shipping_providers/connect',                 'ShippingProviderController@connect'],
+        '1cc_shipping_service_merchant_config_assign_shopify_dark'           => ['post',      '1cc/shipping_service/merchant_config/connect/shopify',      'MerchantConfigController@assignShopifyAsShippingProvider'],
+
 
         '1cc_cod_eligibility_attribute_list'                => ['get',    '1cc/rto_prediction_service/cod_eligibility_attribute/{cod_eligibility_type}',             'CODEligibilityAttributeController@list'       ],
         '1cc_cod_eligibility_attribute_upsert_bulk'         => ['post',   '1cc/rto_prediction_service/cod_eligibility_attribute/{cod_eligibility_type}/upsert/bulk', 'CODEligibilityAttributeController@bulkUpsert' ],
@@ -5380,6 +5382,7 @@ class Route
         'third_watch_address_cod_score',
 
         // 1cc config from dark env
+        '1cc_shipping_service_merchant_config_assign_shopify_dark',
         'update_fetch_coupons_url_dark',
         'update_coupon_validity_url_dark',
         'update_serviceability_url_dark',
@@ -14015,6 +14018,7 @@ class Route
             '1cc_shipping_service_connect_shipping_providers',
             'third_watch_address_cod_score',
             'update_shopify_1cc_config',
+            '1cc_shipping_service_merchant_config_assign_shopify_dark',
             'update_fetch_coupons_url_dark',
             'update_coupon_validity_url_dark',
             'update_cod_slabs_dark',
