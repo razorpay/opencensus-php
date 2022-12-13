@@ -13,6 +13,10 @@
         <testsuite name="All Tests">
             <directory>./Tests/Integration/</directory>
         </testsuite>
+        <testsuite name="Circuit Breaker Tests">
+            <directory>./Tests/CircuitBreaker/</directory>
+            <file>./Tests/CircuitBreaker/TestCase.php</file>
+        </testsuite>
     </testsuites>
     <php>
         <env name="APP_ENV" value="testing"/>

@@ -2,6 +2,7 @@
 
 namespace App\Admin;
 
+use Config;
 use App\Trace\TraceCode;
 use Symfony\Component\Routing\Route;
 use Ackintosh\Ganesha as CircuitBreaker;
@@ -69,7 +70,16 @@ class ApiRouteCircuitBreaker
         self::INTERVAL_TO_HALF_OPEN  => 5,
     ];
 
-    function __construct($path, $method, $options = [])
+    protected $excludedRoutesFailureThresholdAndMinimumRequests = [
+
+//        Example for route and their threshold mapping
+//        'merchant' => [
+//            self::FAILURE_RATE_THRESHOLD => 80,
+//            self::MINIMUM_REQUESTS       => 20,
+//        ]
+    ];
+
+    function __construct($path, $method, $currentRouteName, $options = [])
     {
         $this->app            = \App::getFacadeRoot();
 
@@ -79,7 +89,7 @@ class ApiRouteCircuitBreaker
 
         $this->cache          = $this->app['cache'];
 
-        $this->circuitBreaker = $this->getCircuitBreaker();
+        $this->circuitBreaker = $this->getCircuitBreaker($currentRouteName);
 
         $this->options        = array_merge($options, $this->options);
 
@@ -89,6 +99,9 @@ class ApiRouteCircuitBreaker
         $this->matchPath();
     }
 
+  /**
+   * @throws \Exception
+   */
     public function validateRouteCircuitIsOpen($path, $method)
     {
         $breakCircuit = false;
@@ -115,6 +128,14 @@ class ApiRouteCircuitBreaker
             self::PATH_PATTERN  => $this->matchedPathPattern,
             self::PATH          => $this->routePath,
         ]);
+
+        $is_api_circuit_breaker_enabled = $this->app['config']->get('app.is_api_circuit_breaker_enabled') ?: false;
+
+        if (($breakCircuit === true) and
+            ($is_api_circuit_breaker_enabled === true))
+        {
+            throw new \Exception('Service Unavailable : 503');
+        }
     }
 
     public function success()
@@ -364,19 +385,44 @@ class ApiRouteCircuitBreaker
         return isset($matches[1]) ? array_fill_keys($matches[1], null) : [];
     }
 
-    protected function getCircuitBreaker()
+    protected function getFailureRateThresholdForCurrentRoute($currentRouteName)
+    {
+        if (($currentRouteName !== null) and
+            (isset($this->excludedRoutesFailureThresholdAndMinimumRequests[$currentRouteName])))
+        {
+            return $this->excludedRoutesFailureThresholdAndMinimumRequests[$currentRouteName][self::FAILURE_RATE_THRESHOLD];
+        }
+
+        return $this->options[self::FAILURE_RATE_THRESHOLD];
+    }
+
+    protected function getMinimumRequestForCurrentRoute($currentRouteName)
+    {
+        if (($currentRouteName !== null) and
+            (isset($this->excludedRoutesFailureThresholdAndMinimumRequests[$currentRouteName])))
+        {
+            return $this->excludedRoutesFailureThresholdAndMinimumRequests[$currentRouteName][self::MINIMUM_REQUESTS];
+        }
+
+        return $this->options[self::MINIMUM_REQUESTS];
+    }
+
+    protected function getCircuitBreaker($currentRouteName)
     {
         $adapter = new CircuitBreaker\Storage\Adapter\RedisStore($this->app['redis']->client());
+
+        $failureRateThreshold = $this->getFailureRateThresholdForCurrentRoute($currentRouteName);
+        $minimumRequest       = $this->getMinimumRequestForCurrentRoute($currentRouteName);
 
         return CircuitBreaker\Builder::withRateStrategy()
             // The interval in time (seconds) that evaluate the thresholds.
             ->timeWindow($this->options[self::TIME_WINDOW])
             // The failure rate threshold in percentage that changes CircuitBreaker's state to `OPEN`.
-            ->failureRateThreshold($this->options[self::FAILURE_RATE_THRESHOLD])
+            ->failureRateThreshold($failureRateThreshold)
             // The minimum number of requests to detect failures.
             // Even if `failureRateThreshold` exceeds the threshold,
             // CircuitBreaker remains in `CLOSED` if `minimumRequests` is below this threshold.
-            ->minimumRequests($this->options[self::MINIMUM_REQUESTS])
+            ->minimumRequests($minimumRequest)
             // The interval (seconds) to change CircuitBreaker's state from `OPEN` to `HALF_OPEN`.
             ->intervalToHalfOpen($this->options[self::INTERVAL_TO_HALF_OPEN])
             // The storage adapter instance to store various statistics to detect failures.

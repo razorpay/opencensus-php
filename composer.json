@@ -43,7 +43,8 @@
   },
   "require-dev": {
     "kint-php/kint": "^4",
-    "mockery/mockery": "*"
+    "mockery/mockery": "*",
+    "phpunit/phpunit": "^9.5"
   },
   "repositories": [
     {

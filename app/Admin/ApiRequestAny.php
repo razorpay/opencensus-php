@@ -188,13 +188,19 @@ class ApiRequestAny
         ];
 
         // === Guzzle client
-
-        $this->client = new Guzzle([
-            'base_uri' => ApiUrl::getApiBaseUrl(),
-            'defaults' => [
-                'timeout' => Config::get('api.request_timeout'),
-            ]
-        ]);
+        if (empty($options['guzzle_client']) === true)
+        {
+            $this->client = new Guzzle([
+                                           'base_uri' => ApiUrl::getApiBaseUrl(),
+                                           'defaults' => [
+                                               'timeout' => Config::get('api.request_timeout'),
+                                           ]
+                                       ]);
+        }
+        else
+        {
+            $this->client = $options['guzzle_client'];
+        }
 
         // === Get API Route map config
 
@@ -536,20 +542,11 @@ class ApiRequestAny
         $response = null;
         $httpCode = null;
         $method = $method ?? Request::method();
+        $currentRouteName = \Route::currentRouteName();
 
-        try
-        {
-            $apiRouteCircuitBreaker = new ApiRouteCircuitBreaker($path, $method);
+        $apiRouteCircuitBreaker = new ApiRouteCircuitBreaker($path, $method, $currentRouteName);
 
-            $apiRouteCircuitBreaker->validateRouteCircuitIsOpen($path, $method);
-        }
-        catch(\Exception $e)
-        {
-            Trace::info(TraceCode::API_CIRCUIT_BREAKER_EXCEPTION, [
-                'message'     => $e->getMessage(),
-                'line_number' => $e->getLine()
-            ]);
-        }
+        $apiRouteCircuitBreaker->validateRouteCircuitIsOpen($path, $method);
 
         $spanOptions = (new ApiRequestSpan($this->client))::getRequestSpanOptions(ApiUrl::getApiBaseUrl().$path);
 
@@ -600,11 +597,11 @@ class ApiRequestAny
 
             try
             {
-                $apiRouteName     = $client->getHeaderLine(self::API_ROUTE_NAME_HEADER);
+                $apiRouteName     = $client->getHeader(self::API_ROUTE_NAME_HEADER);
 
-                $apiPathPattern   = $client->getHeaderLine(self::API_ROUTE_PATH_PATTERN_HEADER);
+                $apiPathPattern   = $client->getHeader(self::API_ROUTE_PATH_PATTERN_HEADER);
 
-                $apiRouteCircuitBreaker->saveApiRouteDetails($apiRouteName, $apiPathPattern);
+                $apiRouteCircuitBreaker->saveApiRouteDetails($apiRouteName[0], $apiPathPattern[0]);
 
                 $apiRouteCircuitBreaker->success();
             }
