@@ -323,7 +323,7 @@ describe('Keys and Plugins Section', () => {
     expect(analyticsTrackSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('should show success notification on plugin save', async () => {
+  test.skip('should show success notification on plugin save', async () => {
     const initialState = getInitialState({
       userDetails: {
         business_website: PLATFORM_LINKS.SUCCESS.business_website,
