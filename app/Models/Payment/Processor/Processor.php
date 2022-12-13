@@ -1165,6 +1165,19 @@ class Processor
         return false;
     }
 
+    private function canRouteFpxThroughRearchFlow($input): bool
+    {
+        // fpx always through nbplus rearch
+        if ($input[Payment\Entity::METHOD] === Payment\METHOD::FPX)
+        {
+            return true;
+        } 
+        else
+        {
+            return false;
+        }
+    }
+
     private function processPaymentViaPGRouter(array $input, $startTime)
     {
         (new Payment\Metric)->pushCreateMetricsViaPGRouter($input);
@@ -1343,7 +1356,8 @@ class Processor
 
             if (($this->canRouteThroughRearchFlow($input) === true) or
                 ($this->canRouteThroughNbPlusRearchFlow($input) === true) or
-                ($this->canRouteThroughUpsRearchFlow($input) === true))
+                ($this->canRouteThroughUpsRearchFlow($input) === true) or
+                ($this->canRouteFpxThroughRearchFlow($input) === true))
             {
                 $this->app['diag']->trackPaymentEventV2(EventCode::REARCH_PAYMENT_CREATION_INITIATED,  null, null, $meta);
 
