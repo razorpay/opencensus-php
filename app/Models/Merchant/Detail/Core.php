@@ -2102,7 +2102,11 @@ class Core extends Base\Core
         $statusChangeLogs = (new Merchant\Core)->getActivationStatusChangeLog($merchantDetails->merchant);
 
         $ncCount = $this->getStatusChangeCount($statusChangeLogs, Status::NEEDS_CLARIFICATION);
-        $ncCount++;
+
+        if ($this->app['basicauth']->isAdminAuth() === true)
+        {
+            $ncCount++;
+        }
         $clarificationReasons   = $this->getClarificationReasons($existingReasons, $newReasons, $ncCount, $source);
         $additionalDetails      = $this->getClarificationReasons($existingAdditionalDetails, $newAdditionalDetails, $ncCount, $source);
         $clarificationReasonsV2 = $this->getClarificationReasons($existingClarificationReasonsV2, $newClarificationReasonsV2, $ncCount, $source);
