@@ -18,13 +18,14 @@ import {
   antiOrgsFeatures,
 } from 'merchant/helpers/permissions';
 
-const ORG_CUSTOM_CODE_MAP = {
+export const ORG_CUSTOM_CODE_MAP = {
   RAZORPAY: 'rzp',
   AXIS_BANK: 'axis',
   ICICI_BANK: 'icic',
   HDFC_SMART_HUB: 'hdfc',
   HDFC_COLLECT_NOW: 'HDFC',
   KOTAK_MAHINDRA_BANK: 'KKBK',
+  CURLEC: 'curlec',
 };
 
 const PRODUCT_KEY_MAPS = [

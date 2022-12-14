@@ -2,10 +2,10 @@ import React from 'react';
 import { trackLinkClick } from './ga';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { getCustomURL } from 'merchant/components/DocsLink';
-import { isOrgFeatureExist } from 'merchant/models/User';
+import { isOrgFeatureExist, ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 import PoweredByRzp from 'assets/branding/powered_by_rzp.png';
 
-const footer_links = [
+const FOOTER_LINKS = [
   {
     label: 'Merchant Agreement',
     link: 'https://razorpay.com/agreement/',
@@ -20,8 +20,26 @@ const footer_links = [
   },
 ];
 
+const MALAYSIAN_FOOTER_LINKS = [
+  {
+    label: 'Terms of Use',
+    link: 'https://curlec.com/terms-of-service/',
+  },
+  {
+    label: 'Privacy Policy',
+    link: 'https://curlec.com/privacy-policy/',
+  },
+];
+
+const ORG_BASED_FOOTER_LINKS = {
+  [ORG_CUSTOM_CODE_MAP.CURLEC]: MALAYSIAN_FOOTER_LINKS,
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: FOOTER_LINKS,
+};
+
 const FooterLine = ({ user }) => {
   const currentYear = new Date().getFullYear();
+
+  const FooterLinks = ORG_BASED_FOOTER_LINKS[user.orgCustomCode?.toLowerCase()] || FOOTER_LINKS;
 
   return (
     <ShowWhen additionalCondition={() => !isOrgFeatureExist('hide_razorpay_text_link')}>
@@ -39,7 +57,7 @@ const FooterLine = ({ user }) => {
         >
           {' '}
           ·{' '}
-          {footer_links.map((link_obj) => (
+          {FooterLinks.map((link_obj) => (
             <React.Fragment key={link_obj.label}>
               <u>
                 <a
