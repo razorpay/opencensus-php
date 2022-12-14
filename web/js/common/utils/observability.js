@@ -50,6 +50,7 @@ export function initSentry(appName) {
       tags: {
         app: appName,
         role: window.rzp_user?.role,
+        protocol: performance?.getEntriesByType?.('navigation')?.[0]?.nextHopProtocol,
       },
     });
   }
