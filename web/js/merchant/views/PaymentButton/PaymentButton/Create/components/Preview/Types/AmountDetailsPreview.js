@@ -1,11 +1,11 @@
-import { connect } from 'react-redux';
+import React from 'react';
 
-import PreviewFormShell from '../PreviewFormShell';
+import PreviewFormShell from 'merchant/views/PaymentButton/PaymentButton/Create/components/Preview/PreviewFormShell';
 import {
   DynamicAmount,
   FixedAmount,
   FixedAmountWithQuantity,
-} from '../../Form/AmountDetails/FieldTypesRepresentations';
+} from 'merchant/views/PaymentButton/PaymentButton/Create/components/Form/AmountDetails/FieldTypesRepresentations';
 
 import { getCurrency } from 'common/ui/Amount';
 import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
@@ -15,8 +15,8 @@ import { templateTypes } from 'merchant/views/PaymentButton/PaymentButton/Create
 export default class AmountDetailsPreview extends React.Component {
   getDummyAmountInputField(field) {
     const { paymentButtonEntity } = this.props;
-    const currency = paymentButtonEntity.currency,
-      currencySymbol = getCurrency(currency).symbol;
+    const currency = paymentButtonEntity.currency;
+    const currencySymbol = getCurrency(currency).symbol;
 
     const amount = field.item.amount;
     let amountToDisplay;
@@ -47,8 +47,8 @@ export default class AmountDetailsPreview extends React.Component {
 
   getAmountField(field) {
     const { paymentButtonEntity } = this.props;
-    const currency = paymentButtonEntity.currency,
-      fieldType = mapFieldToAmountFieldType(field);
+    const currency = paymentButtonEntity.currency;
+    const fieldType = mapFieldToAmountFieldType(field);
 
     switch (fieldType) {
       case FIELD_TYPES.fixed_price.key:
@@ -76,13 +76,15 @@ export default class AmountDetailsPreview extends React.Component {
             {this.getDummyAmountInputField(field)}
           </FixedAmountWithQuantity>
         );
+
+      default:
+        return '';
     }
   }
 
   get isDonationsTemplate() {
     const { paymentButtonEntity } = this.props;
-    const templateType =
-      paymentButtonEntity.settings.payment_button_template_type;
+    const templateType = paymentButtonEntity.settings.payment_button_template_type;
 
     return templateType === templateTypes.donation.key;
   }
@@ -100,18 +102,12 @@ export default class AmountDetailsPreview extends React.Component {
       ));
     } else {
       previewContent = (
-        <span class="empty-msg page-center">
-          Add amount fields to see their preview
-        </span>
+        <span class="empty-msg page-center">Add amount fields to see their preview</span>
       );
     }
 
     return (
-      <PreviewFormShell
-        type="amount-details"
-        buttonTitle="NEXT"
-        {...this.props}
-      >
+      <PreviewFormShell type="amount-details" buttonTitle="Next" {...this.props}>
         <div>
           {/* TODO: Check for asterisk/optional RazorX experiment */}
           {previewContent}

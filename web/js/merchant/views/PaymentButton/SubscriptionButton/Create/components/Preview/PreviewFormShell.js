@@ -1,5 +1,10 @@
+import React from 'react';
 import { connect } from 'react-redux';
+
 import { getCurrency } from 'common/ui/Amount';
+
+const blackColor = '#263a4a';
+const whiteColor = '#fff';
 
 @connect((state) => ({
   config: state.config,
@@ -7,13 +12,16 @@ import { getCurrency } from 'common/ui/Amount';
 }))
 export default class PreviewFormShell extends React.Component {
   state = {
-    textColor: null,
+    textColor: whiteColor,
   };
 
-  get textColor() {
-    const _textColor = this.props.config.isBrandColorDark ? '#fff' : 'rgba(0, 0, 0, 0.85)';
-
-    return _textColor;
+  static getDerivedStateFromProps(props, state) {
+    if (props.config?.isBrandColorDark !== state.config?.isBrandColorDark) {
+      return {
+        textColor: props.config?.isBrandColorDark ? whiteColor : blackColor,
+      };
+    }
+    return null;
   }
 
   get currencySymbol() {
@@ -24,14 +32,14 @@ export default class PreviewFormShell extends React.Component {
   }
 
   get displayAmountToPayByCustomer() {
-    let _amountToPayByCustomer = 0;
+    const _amountToPayByCustomer = 0;
     const displayAmount = Number(_amountToPayByCustomer).toFixed(2);
 
     return displayAmount;
   }
 
   get activeDotIndex() {
-    let _activeDotIndex = 0;
+    const _activeDotIndex = 0;
 
     return _activeDotIndex;
   }
@@ -39,26 +47,26 @@ export default class PreviewFormShell extends React.Component {
   render() {
     const { children, buttonTitle, shellTitle, totalDots, config, user } = this.props;
 
-    const merchantBillingLabel = user.billing_label,
-      brandColor = config.config.brand_color,
-      brandLogoUrl = config.config.logo_url;
+    const merchantBillingLabel = user.billing_label;
+    const brandColor = config.config.brand_color;
+    const brandLogoUrl = config.config.logo_url;
 
     return (
       <div class="PaymentButton-PreviewFormShell">
-        <div class="PreviewFormShell-header" style={{ backgroundColor: brandColor }}>
-          <div class="Preview-topbar" style={{ color: this.textColor }}>
+        <div class="PreviewFormShell-header">
+          <div class="Preview-topbar">
             <div class="Preview-topbar-title">
               <span>{shellTitle}</span>
             </div>
 
             <div class="Preview-controls">
               <div class="Preview-progressDots">
-                {Array.apply(null, { length: totalDots }).map((_, index) => (
+                {Array.from({ length: totalDots }).map((_, index) => (
                   <span
                     key={index}
                     style={{
-                      borderColor: this.textColor,
-                      backgroundColor: index <= this.activeDotIndex ? this.textColor : null,
+                      borderColor: brandColor,
+                      backgroundColor: index <= this.activeDotIndex ? brandColor : whiteColor,
                     }}
                   />
                 ))}
@@ -71,36 +79,31 @@ export default class PreviewFormShell extends React.Component {
           </div>
 
           <div>
-            {brandLogoUrl && (
-              <div class="PreviewFormShell-header-logo">
-                <img src={brandLogoUrl} width="100%" />
-              </div>
-            )}
-
             <div class="PreviewFormShell-header-details">
-              {this.textColor && (
-                <div class="header-details-merchant" style={{ color: this.textColor }}>
-                  <div class="header-details-merchant-name">{merchantBillingLabel}</div>
-                  <div class="header-details-amount">
-                    {this.currencySymbol} {this.displayAmountToPayByCustomer}
-                  </div>
-                </div>
-              )}
+              {brandLogoUrl && <img src={brandLogoUrl} width="30px" height="30px" />}
+              <div>
+                <div class="header-details-merchant">{merchantBillingLabel}</div>
+              </div>
             </div>
           </div>
         </div>
         <div class="PreviewFormShell-checkout-form">
-          {children}
+          <div class="Body">{children}</div>
 
           {buttonTitle && (
-            <div
-              class="Field-dummy-btn"
-              style={{
-                color: this.textColor,
-                backgroundColor: brandColor,
-              }}
-            >
-              {buttonTitle}
+            <div class="Footer">
+              <div class="Footer--Amount">
+                {this.currencySymbol} {this.displayAmountToPayByCustomer}
+              </div>
+              <div
+                class="Field-dummy-btn"
+                style={{
+                  color: this.state.textColor,
+                  backgroundColor: brandColor,
+                }}
+              >
+                {buttonTitle}
+              </div>
             </div>
           )}
         </div>

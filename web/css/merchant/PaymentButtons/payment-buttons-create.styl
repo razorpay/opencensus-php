@@ -1,3 +1,59 @@
+// stylelint-disable color-function-notation
+
+// These fields are shared Form and Preview
+.PaymentButton-Create-Content-container
+  .Input--checkboxTooltip,
+  .Input--counterTooltip
+    position: absolute
+    top: 26px
+    right: 6px
+    cursor: not-allowed
+    z-index: 1
+
+  .Input--checkboxTooltip
+    .Input-checkbox
+      margin: 4px 0
+
+  .Input--counterTooltip
+    .Input-content
+      pointer-events: none
+
+      input
+        width: 96px
+        height: 24px
+        text-align: center
+
+      button
+        position: absolute
+        width: 28px
+        height: 22px
+        font-size: 20px
+        background: transparent
+        padding: 0 0 3px 1px
+        user-select: none
+        outline: 0
+        -webkit-tap-highlight-color: transparent
+        cursor: pointer
+        top: 0
+        line-height: 100%
+        font-weight: bold
+
+      button:nth-of-type(1)
+        left: 0
+        border-top-left-radius: 1px
+        border-bottom-left-radius: 1px
+        border: none
+        border-right: 1px solid #E2E2E2
+        margin: 1px 0 0 1px
+
+      button:nth-of-type(2)
+        right: 0
+        border-top-right-radius: 1px
+        border-bottom-right-radius: 1px
+        border: none
+        border-left: 1px solid #E2E2E2
+        margin: 1px 1px 0 0
+
 #payment-buttons-create-container
   display: flex
   min-height: 100vh
@@ -12,9 +68,9 @@
     line-height: 32px
     top: 0
     min-width: 854px
-    color: #fff
+    color: #FFF
     background-color: #2F3445
-    box-shadow: 0 2px 24px 0 rgba(0,0,0,0.24)
+    box-shadow: 0 2px 24px 0 rgba(0, 0, 0, 0.24)
     z-index: 2
 
     .TopBar-container
@@ -45,8 +101,9 @@
         background: rgba(224, 228, 249, 0.24)
         border-radius: 2px
         font-weight: bold
-        color: #FFFFFF
-        padding: 0px 10px
+        color: #FFF
+        padding: 0 10px
+
         .i-document
           margin-right: 4px
 
@@ -56,14 +113,13 @@
       position: absolute
       top: 4px
       right: 4px
-      color: #fff
+      color: #FFF
       cursor: pointer
       padding: 4px
 
       &:hover
-        color: #fff
+        color: #FFF
         opacity: 0.7
-
 
   .PaymentButton-Create-Content
     position: relative
@@ -83,75 +139,21 @@
       box-shadow: 0 0 10px rgba(11, 112, 231, 0.08)
       background: #F9FBFE
 
-
-  .PaymentButton-Create-SideBar, .PaymentButton-Create-Form, .PaymentButton-Create-Preview
+  .PaymentButton-Create-SideBar,
+  .PaymentButton-Create-Form,
+  .PaymentButton-Create-Preview
     display: table-cell
     height: 100%
     vertical-align: top
 
-
-// These fields are shared Form and Preview
-.PaymentButton-Create-Content-container
-  .Input--checkboxTooltip, .Input--counterTooltip
-    position: absolute
-    top: 30px
-    right: 6px
-    cursor: not-allowed
-    z-index: 1
-
-  .Input--checkboxTooltip
-    .Input-checkbox
-      margin: 4px 0
-
-  .Input--counterTooltip
-    .Input-content
-      pointer-events: none
-
-      input
-        width: 96px
-        height: 24px
-        text-align: center
-
-      button:nth-of-type(1)
-        left: 0
-        border-top-left-radius: 1px
-        border-bottom-left-radius: 1px
-        border: none
-        border-right: 1px solid #e2e2e2
-        margin: 1px 0 0 1px
-
-      button:nth-of-type(2)
-        right: 0
-        border-top-right-radius: 1px
-        border-bottom-right-radius: 1px
-        border: none
-        border-left: 1px solid #e2e2e2
-        margin: 1px 1px 0 0
-
-      button
-        position: absolute
-        width: 28px
-        height: 22px
-        font-size: 20px
-        background: transparent
-        padding: 0 0 3px 1px
-        user-select: none
-        outline: 0
-        -webkit-tap-highlight-color: transparent
-        cursor: pointer
-        top: 0
-        line-height: 100%
-        font-weight: bold
-
-
-@media (max-width: 1242px)
+@media (max-width 1242px)
   #payment-buttons-create-container
     .PaymentButton-Create-Content
       max-width: 1142px
       width: 98%
 
     .PaymentButton-Create-SideBar
-      //display: none
+      // display: none
       display: table-caption
       height: 64px
       padding: 24px 40px
@@ -161,12 +163,15 @@
       z-index: 1
       border: 0
 
-      .ProgressBar-meter, .SideBar-title, .SideBar-stepsList, img
+      .ProgressBar-meter,
+      .SideBar-title,
+      .SideBar-stepsList,
+      img
         display: none
 
       .ProgressBar-title
         font-size: 14px
-        color: rgba(22,47,86,0.54)
+        color: rgba(22, 47, 86, 0.54)
 
     .PaymentButton-Create-Form
       padding-top: 36px
@@ -195,5 +200,5 @@
       height: 100%
       background: #4B95ED
       transform-origin: left center
-      transition: .4s
+      transition: 0.4s
       transform: scale(0)

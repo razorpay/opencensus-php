@@ -1,4 +1,6 @@
-import PreviewFormShell from '../PreviewFormShell';
+import React from 'react';
+
+import PreviewFormShell from 'merchant/views/PaymentButton/SubscriptionButton/Create/components/Preview/PreviewFormShell';
 
 export default class CustomerDetailsPreview extends React.Component {
   render() {
@@ -7,7 +9,7 @@ export default class CustomerDetailsPreview extends React.Component {
     return (
       <PreviewFormShell
         shellTitle="CUSTOMER DETAILS"
-        buttonTitle="PROCEED TO PAY"
+        buttonTitle="Proceed to Pay"
         totalDots={2}
         activeDotsIndex={0}
         {...this.props}
@@ -17,9 +19,8 @@ export default class CustomerDetailsPreview extends React.Component {
           {udfFields.map((field, index) => {
             return (
               <div class="Field--dummy Field--dummy--udf" key={index}>
-                <div class="Field-label">{field.title}</div>
                 {/* TODO: add dropdown icon for dropdown field */}
-                <div class="Field-el" />
+                <input class="Field-el" placeholder={field.title} readOnly />
                 <div class="Field-description">{field.description}</div>
               </div>
             );
