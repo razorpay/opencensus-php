@@ -9,7 +9,7 @@ export default function () {
       canBeClosed
       card_id="new-payment-method-on-subscriptions-banner"
     >
-      <div style={{ paddingLeft: '1rem', paddingTop: '0.5rem' }}>
+      <div style={{ paddingLeft: '10px', paddingTop: '5px' }}>
         You can now on-board new customers via E-mandate/ Bank accounts. This new payment method is
         enabled on your checkout.Try it today! To know more
         <DocsLink url="https://razorpay.com/docs/subscriptions/faqs/#emandate" title="Click here" />
