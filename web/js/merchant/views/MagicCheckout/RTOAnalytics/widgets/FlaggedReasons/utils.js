@@ -12,10 +12,13 @@ export function chartsDataFormatter(reasonsList) {
       ? [...reasonsList.slice(0, 4), getOtherReasonsObj(reasonsList.slice(4))]
       : [...reasonsList];
   const formattedDataList = newReasonsList.map((reason, index) => {
-    const labels = [FLAGGED_RULES_MAP[reason.reason], 'others'];
+    const labels = [FLAGGED_RULES_MAP[reason.reason] || reason.reason, 'Other Reasons'];
     const datasets = [
       {
-        data: [reason.percentage, 100 - reason.percentage],
+        data:
+          typeof reason.percentage === 'number'
+            ? [reason.percentage?.toFixed(2), (100 - reason.percentage)?.toFixed(2)]
+            : [0, 100],
         borderAlign: 'inner',
         backgroundColor: [FLAGGEDREASONS_DOUGHNUT_COLORS[index], '#e8e8e8'],
       },

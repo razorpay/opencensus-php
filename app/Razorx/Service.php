@@ -198,6 +198,7 @@ class Service extends Base\Service
             'show_activation_form_full_view',
             'magic_bulk_address_live',
             'magic_rto_analytics_live',
+            'magic_rto_analytics_v2_live',
             'loans_allow_custom_amount_repayment',
             'rx_payout_link_workflow',
             'rx_ca_programmatic_engagement',

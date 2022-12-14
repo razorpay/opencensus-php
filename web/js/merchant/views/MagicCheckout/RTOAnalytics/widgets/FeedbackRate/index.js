@@ -1,36 +1,90 @@
+import { useEffect, useState, useCallback } from 'react';
+import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+
 import GenericPanel, {
   PanelTopbar,
   PanelBody,
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
 import FeedbackDoughnut from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/FeedbackRate/FeedbackDoughnut';
-import {
-  FEEDBACKRATE_FOOTER_TEXTS,
-  FEEDBACKRATE_INFO_TEXTS,
-} from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
+import FeedbackFooterText from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/FeedbackRate/components/FeedbackFooterText';
+import LastUpdated from 'merchant/components/Home/LastUpdated';
 
-const FeedbackRate = ({ feedbackRateData, isloading }) => {
+import { fetchWidgetData } from 'merchant/reducers/magicCheckout/rtoAnalytics/actions';
+
+import {
+  getWidgetData,
+  onRequestCountChange,
+} from 'merchant/views/MagicCheckout/RTOAnalytics/utils';
+import { BREAKDOWN } from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
+
+const FeedbackRate = ({
+  user,
+  feedbackRateData,
+  isloading,
+  updatedAt,
+  fetchWidgets,
+  shippingProviders,
+  startTime,
+  endTime,
+}) => {
+  const [requestCount, setRequestCount] = useState(0);
+
   const { feedback_percentage: feedbackPercentage } =
     feedbackRateData?.length && !Array.isArray(feedbackRateData[0])
       ? feedbackRateData[0]
       : { feedback_percentage: 0 };
-  const footerStatus =
+  const infoStatus =
     feedbackPercentage === 100 ? 'complete' : feedbackPercentage === 0 ? 'empty' : 'partial';
 
-  const infoStatus = footerStatus === 'complete' ? 'complete' : 'incomplete';
+  const fetchData = useCallback(() => {
+    getWidgetData(
+      'feedback_rate',
+      BREAKDOWN.cumulative,
+      startTime,
+      endTime,
+      fetchWidgets,
+      setRequestCount,
+    );
+  }, [fetchWidgets, startTime, endTime]);
+
+  useEffect(() => {
+    if (fetchWidgets) {
+      fetchData();
+    }
+  }, [fetchWidgets]);
+
+  useEffect(() => {
+    onRequestCountChange(user, requestCount, fetchData, setRequestCount);
+  }, [requestCount]);
 
   return (
     <div className="feedbackRate-container col-md-3">
       <GenericPanel className="feedbackRate-panel" isLoading={isloading}>
-        <PanelTopbar>Order data availability</PanelTopbar>
+        <PanelTopbar>
+          <p className="panel-topbar-heading">Delivery data</p>
+          <p className="panel-heading-subtext">Data recieved for orders shipped by you</p>
+        </PanelTopbar>
         <PanelBody>
-          <div className="feedbackRate-panel-info">{FEEDBACKRATE_INFO_TEXTS[infoStatus]}</div>
           <FeedbackDoughnut feedbackPercentage={feedbackPercentage} />
         </PanelBody>
-        <PanelFooter className={`feedbackRate-${footerStatus}-info`}>
-          {FEEDBACKRATE_FOOTER_TEXTS[footerStatus]}
-        </PanelFooter>
+        {!isloading ? (
+          <PanelFooter
+            className={`feedbackRate-${infoStatus}-info${
+              feedbackPercentage >= 80 && feedbackPercentage !== 100 ? ' feedbackRate-footer' : ''
+            }`}
+          >
+            {feedbackPercentage < 80 || feedbackPercentage === 100 ? (
+              <FeedbackFooterText
+                isShippingProviderAvailable={Object.keys(shippingProviders).length}
+                footerStatus={infoStatus}
+              />
+            ) : (
+              <LastUpdated at={updatedAt} customIcon="i-clock" />
+            )}
+          </PanelFooter>
+        ) : null}
       </GenericPanel>
     </div>
   );
@@ -39,6 +93,19 @@ const FeedbackRate = ({ feedbackRateData, isloading }) => {
 const mapStateToProps = (state) => ({
   feedbackRateData: state.magicRTOAnalytics.feedback_rate.data,
   isloading: state.magicRTOAnalytics.feedback_rate.loading,
+  updatedAt: state.magicRTOAnalytics.feedback_rate.updatedAt,
+  startTime: state.magicRTOAnalytics.startTime,
+  endTime: state.magicRTOAnalytics.endTime,
+  shippingProviders: state.shippingService.shippingProviders,
+  user: state.session.user,
 });
 
-export default connect(mapStateToProps, null)(FeedbackRate);
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators(
+    {
+      fetchWidgets: fetchWidgetData,
+    },
+    dispatch,
+  );
+
+export default connect(mapStateToProps, mapDispatchToProps)(FeedbackRate);

@@ -21,6 +21,7 @@ const costSavedDefaultOptions = {
           },
           tooltipFormat: 'ddd DD MMM YYYY',
         },
+        offset: true,
         gridLines: {
           offsetGridLines: true,
           display: true,
@@ -33,6 +34,7 @@ const costSavedDefaultOptions = {
           fontColor: '#858C9A',
           maxRotation: 0,
           autoSkipPadding: 15,
+          labelOffset: 15,
         },
       },
     ],
@@ -81,8 +83,8 @@ const costSavedDefaultOptions = {
   layout: {
     padding: {
       top: 24,
-      left: 0,
-      right: 0,
+      left: 24,
+      right: 24,
       bottom: 0,
     },
   },
@@ -101,6 +103,7 @@ export const costSavedFormatter = (rawData, breakdown, startTime, endTime) => {
     borderColor: '#7EB471',
     fill: 'start',
     borderWidth: 1,
+    pointBackgroundColor: '#7EB471',
     backgroundColor: (context) => {
       const chart = context.chart;
       const { ctx, chartArea } = chart;

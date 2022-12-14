@@ -184,7 +184,7 @@ export const getChartAreaConfig = ({ breakdown, xLabel, yLabel }) => {
           )}`;
         },
         labelColor: (item, chart) => {
-          const color = chart.config.data.datasets[item.datasetIndex].borderColor;
+          const color = chart?.config?.data?.datasets[item.datasetIndex]?.borderColor;
 
           return { backgroundColor: color, borderColor: 'transparent' };
         },

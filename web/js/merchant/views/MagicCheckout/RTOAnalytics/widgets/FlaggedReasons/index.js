@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import GenericPanel, {
   PanelTopbar,
   PanelBody,
@@ -8,28 +9,67 @@ import GenericPanel, {
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import ReasonTable from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/FlaggedReasons/components/ReasonTable';
 import DoughnutGroup from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/FlaggedReasons/DoughnutGroup';
-import { NO_GRAPH_DATA } from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
 
-const FlaggedReasons = ({ widgetData, isLoading, updatedAt }) => {
+import { fetchWidgetData } from 'merchant/reducers/magicCheckout/rtoAnalytics/actions';
+import {
+  getWidgetData,
+  onRequestCountChange,
+} from 'merchant/views/MagicCheckout/RTOAnalytics/utils';
+
+import { NO_GRAPH_DATA, BREAKDOWN } from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
+
+const FlaggedReasons = ({
+  user,
+  widgetData,
+  isLoading,
+  updatedAt,
+  startTime,
+  endTime,
+  fetchWidgets,
+}) => {
   const [expanded, setExpanded] = useState(false);
+  const [requestCount, setRequestCount] = useState(0);
+  const widgetName = 'flagged_reason';
 
   const onExpandToggle = () => {
     setExpanded((prev) => !prev);
   };
 
+  const fetchData = useCallback(() => {
+    getWidgetData(
+      widgetName,
+      BREAKDOWN.cumulative,
+      startTime,
+      endTime,
+      fetchWidgets,
+      setRequestCount,
+    );
+  }, [endTime, startTime, fetchWidgets]);
+
+  useEffect(() => {
+    if (startTime && endTime) {
+      fetchData();
+    }
+  }, [startTime, endTime]);
+
+  useEffect(() => {
+    onRequestCountChange(user, requestCount, fetchData, setRequestCount);
+  }, [requestCount]);
+
+  const tableColumns = ['Reaons', 'Percentage of Risky users'];
   return (
     <GenericPanel
       className="analytics-panel flagged-reasons"
       hasNoData={!widgetData || widgetData.length === 0}
       isLoading={isLoading}
     >
-      <PanelTopbar>Reasons for flagged orders</PanelTopbar>
+      <PanelTopbar>Breakdown of risky users</PanelTopbar>
       <PanelBody
         customTitle={NO_GRAPH_DATA.customTitle}
         customSubtitle={NO_GRAPH_DATA.customSubtitle}
       >
         {widgetData && widgetData.length > 0 && !isLoading ? (
-          <DoughnutGroup reasonsList={widgetData} />
+          <DoughnutGroup reasonsList={widgetData} orderType="risky users" />
         ) : null}
         <div className="expand-toggle">
           <div className="clickable" onClick={onExpandToggle}>
@@ -37,7 +77,7 @@ const FlaggedReasons = ({ widgetData, isLoading, updatedAt }) => {
             <i className={`i-arrow-${expanded ? 'up' : 'down'}`} />
           </div>
         </div>
-        {expanded ? <ReasonTable data={widgetData} /> : null}
+        {expanded ? <ReasonTable data={widgetData} columns={tableColumns} /> : null}
       </PanelBody>
       <PanelFooter>
         <LastUpdated at={updatedAt} customIcon="i-clock" />
@@ -46,10 +86,16 @@ const FlaggedReasons = ({ widgetData, isLoading, updatedAt }) => {
   );
 };
 
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators({ fetchWidgets: fetchWidgetData }, dispatch);
+
 const mapStateToProps = (state) => ({
   widgetData: state.magicRTOAnalytics.flagged_reason.data,
   isLoading: state.magicRTOAnalytics.flagged_reason.loading,
+  startTime: state.magicRTOAnalytics.startTime,
+  endTime: state.magicRTOAnalytics.endTime,
   updatedAt: state.magicRTOAnalytics.flagged_reason.updatedAt,
+  user: state.session.user,
 });
 
-export default connect(mapStateToProps, null)(FlaggedReasons);
+export default connect(mapStateToProps, mapDispatchToProps)(FlaggedReasons);

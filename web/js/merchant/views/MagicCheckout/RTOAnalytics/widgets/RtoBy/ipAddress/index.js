@@ -12,25 +12,39 @@ import {
   ip,
   shippedOrders,
   rtoOrders,
-  rtoPercent,
+  rtoRank,
 } from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/RtoBy/ipAddress/cellItem';
 import ConfirmModal from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/RtoBy/components/ConfirmModal';
 import PaginatedTable from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/RtoBy/components/PaginatedTable';
+
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
-import { blockValue, unblockValue } from 'merchant/reducers/magicCheckout/rtoAnalytics/actions';
+import {
+  blockValue,
+  unblockValue,
+  fetchWidgetData,
+} from 'merchant/reducers/magicCheckout/rtoAnalytics/actions';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { NO_GRAPH_DATA } from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
+
+import {
+  getWidgetData,
+  onRequestCountChange,
+} from 'merchant/views/MagicCheckout/RTOAnalytics/utils';
+
+import { NO_GRAPH_DATA, BREAKDOWN } from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
 
 const IpAddress = ({
+  user,
   widgetData,
   openModal,
   closeModal,
   blockValue,
   unblockValue,
   showNotification,
+  fetchWidgets,
 }) => {
-  const [tableData, setTableData] = useState(null);
-  const { data, updatedAt } = widgetData;
+  const [requestCount, setRequestCount] = useState(0);
+
+  const { loading, data, updatedAt } = widgetData;
 
   const onConfirmBlock = useCallback(
     (value, modalSource) => {
@@ -84,10 +98,19 @@ const IpAddress = ({
     [closeModal, unblockValue, showNotification],
   );
 
+  const fetchData = useCallback(() => {
+    getWidgetData('rto_by_ip', BREAKDOWN.lifetime, 0, 0, fetchWidgets, setRequestCount);
+  }, [fetchWidgets]);
+
   useEffect(() => {
-    // sort in decreasing order
-    setTableData(data?.sort((a, b) => b.rto_order - a.rto_order));
-  }, [widgetData, data, setTableData]);
+    if (fetchWidgets) {
+      fetchData();
+    }
+  }, [fetchWidgets]);
+
+  useEffect(() => {
+    onRequestCountChange(user, requestCount, fetchData, setRequestCount);
+  }, [requestCount]);
 
   const onCTAClick = useCallback(
     (ip, isBlocked) => {
@@ -112,17 +135,25 @@ const IpAddress = ({
     <GenericPanel
       className="analytics-panel rto-cause"
       hasNoData={!data || data.length === 0}
-      isLoading={false}
+      isLoading={loading}
     >
-      <PanelTopbar>RTO Orders by IP address</PanelTopbar>
+      <PanelTopbar>
+        <>
+          <p className="panel-topbar-heading">RTO orders by IP address</p>
+          <p className="panel-heading-subtext">
+            Blocking or unblocking will only affect COD orders for the IP address chosen.
+          </p>
+        </>
+      </PanelTopbar>
       <PanelBody
         customTitle={NO_GRAPH_DATA.customTitle}
         customSubtitle={NO_GRAPH_DATA.customSubtitle}
+        id="rto-cause-body"
       >
-        {tableData && tableData.length ? (
+        {data && data.length ? (
           <PaginatedTable
-            rows={tableData}
-            columns={[ip, shippedOrders, rtoOrders, rtoPercent, action({ onClick: onCTAClick })]}
+            rows={data}
+            columns={[ip, shippedOrders, rtoOrders, rtoRank, action({ onClick: onCTAClick })]}
           />
         ) : null}
       </PanelBody>
@@ -135,6 +166,7 @@ const IpAddress = ({
 
 const mapStateToProps = (state) => ({
   widgetData: state.magicRTOAnalytics.rto_by_ip,
+  user: state.session.user,
 });
 
 const mapDispatchToProps = (dispatch) =>
@@ -145,6 +177,7 @@ const mapDispatchToProps = (dispatch) =>
       blockValue,
       unblockValue,
       showNotification,
+      fetchWidgets: fetchWidgetData,
     },
     dispatch,
   );

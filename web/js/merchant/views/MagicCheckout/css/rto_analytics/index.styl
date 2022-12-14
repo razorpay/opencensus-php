@@ -4,16 +4,20 @@ $panel-border = 1px solid #E0E8F4
   .modal-title
     span
       text-transform: capitalize
+
   .modal-body
     min-width: 260px
+
     .Modal__actions
       padding-top: 16px
       display: flex
       justify-content: flex-end
+
       .Button--transparent
         color: #262D3A
         opacity: 0.8
         margin-right: 12px
+
       .btn-primary
         width: 141px
         margin: 0
@@ -22,7 +26,7 @@ $panel-border = 1px solid #E0E8F4
   width: 100%
   min-height: 400px
   position: relative
-  background-color: #ffffff
+  background-color: #FFF
 
   .rto-magic-sidebar
     position: absolute
@@ -52,6 +56,7 @@ $panel-border = 1px solid #E0E8F4
     margin-left: 160px
     padding: 15px
     width: 100%
+
     .fixed-header
       display: flex
       align-items: center
@@ -59,14 +64,14 @@ $panel-border = 1px solid #E0E8F4
       margin-bottom: 20px
       padding: 8px 12px
       padding-right: 22px
-      background: white
+      background: #FFF
       border: $panel-border
       border-radius: 2px
       position: sticky
-      position: -webkit-sticky
       top: 68px
       z-index: 3
-      box-shadow: 0 0 0 #3f3f44, 0 1px 3px #3f3f4426
+      box-shadow: 0 0 0 #3F3F44, 0 1px 3px #3F3F4426
+
       .cumulative
         display: flex
         flex-wrap: wrap
@@ -77,60 +82,59 @@ $panel-border = 1px solid #E0E8F4
           margin: 0 30px
           opacity: 0.5
 
-          .arrow 
-            border:solid #99B3D9
-            border-width: 0 1px 1px 0
-            display: block
-            padding: 3px
+        .arrow
+          border: solid #99B3D9
+          border-width: 0 1px 1px 0
+          display: block
+          padding: 3px
 
-          .right 
-            position:relative
-            left:-3px
-            transform: rotate(-45deg)
-            -webkit-transform: rotate(-45deg)
+        .right
+          position: relative
+          left: -3px
+          transform: rotate(-45deg)
 
-          .vup
-          .vdown
-            border:solid #99B3D9
-            border-width: 0 0 0 1px
-            display: block
-            height: 25px
+        .vup,
+        .vdown
+          border: solid #99B3D9
+          border-width: 0 0 0 1px
+          display: block
+          height: 25px
 
         .order-count
           line-height: 28px
-          .title
-            padding-left: 8px
 
-          .total-color
-            border: 2px solid #6886B7
-            border-radius: 1.5px
-            background-color: #6886B7
+        .title
+          padding-left: 8px
 
-          .risky-color
-            border: 2px solid #B73635
-            border-radius: 1.5px
-            background-color: #B73635
+        .total-color
+          border: 2px solid #6886B7
+          border-radius: 1.5px
+          background-color: #6886B7
 
-          .safe-color
-            border: 2px solid #7EB471
-            border-radius: 1.5px
-            background-color: #7EB471
+        .risky-color
+          border: 2px solid #B73635
+          border-radius: 1.5px
+          background-color: #B73635
 
-          .number
-            display: block
-            font-size: 18px
-            font-weight: 700
-            display: flex
-            justify-content: flex-end
+        .safe-color
+          border: 2px solid #7EB471
+          border-radius: 1.5px
+          background-color: #7EB471
 
-  @media (max-width: 960px)
+        .number
+          font-size: 18px
+          font-weight: 700
+          display: flex
+          justify-content: flex-end
+
+  @media (max-width 960px)
     .rto-magic-sidebar
       width: 130px
 
     .tab-content
       margin-left: 130px
 
-  @media (max-width: 820px)
+  @media (max-width 820px)
     .rto-magic-sidebar
       width: 90px
 
@@ -141,12 +145,12 @@ $panel-border = 1px solid #E0E8F4
     .tab-content
       margin-left: 90px
 
-  @media (max-width: 820px)
+  @media (max-width 820px)
     .rto-magic-sidebar
       width: 80px
 
       .rto-nav
-        padding: 4px 4px
+        padding: 4px
         line-height: 20px
 
     .tab-content
@@ -160,62 +164,193 @@ $panel-border = 1px solid #E0E8F4
     .panel
       flex: 1
 
-  .overview-container
-  .orderInsight-container
+  .overview-container,
+  .orderInsight-container,
+  .risk-report-container
     .row
       display: flex
 
+    .risky-orders > .panel-topbar,
+    .order-split > .panel-topbar,
+    .cost-saved > .panel-topbar
+      display: flex
+      justify-content: space-between
+
+    #rto-rate-footer
+      display: flex
+      justify-content: space-between
+
+      .reimbursement-callout
+        display: flex
+        justify-content: flex-end
+
+        .i-info-circle
+          position: relative
+          top: 17px
+          margin-right: 4px
+
     .panel.dasboard-home-panel
-      padding: 22px 22px 69px
+      padding: 22px 22px 58px
+
+      .panel-topbar > .panel-heading-subtext,
+      .panel-topbar > .panel-info > .panel-heading-subtext
+        font-size: 12px
+        font-weight: 400
+        color: #58666E
+        padding-top: 2px
+
+    .costSaved-container > .panel.dasboard-home-panel.analytics-panel.cost-saved
+      padding: 0 0 58px
+
+    .costSaved-container.col-md-9 > .panel.dasboard-home-panel.analytics-panel.cost-saved
+      padding: 0 0 28px
+
+    .panel.dasboard-home-panel.analytics-panel.cod-rate
+      margin-left: 20px
+      margin-bottom: 0
+
+      .rzp-overlay
+        min-height: 292px
+
+    .panel.dasboard-home-panel.analytics-panel.rto-rate
+      .pull-right
+        display: flex
+
+      .rto-rate-input
+        margin: 0
+        z-index: 2
+
+        .Input-elWrapper::before
+          margin-top: 18px
+          right: 16px
+
+        .Input-el
+          width: 136px
+          height: 40px
 
   .feedbackRate-container
     padding: 0
     max-width: 276px
     min-width: 276px
 
-  .costSaved-container
-    padding-left: 20px
-    padding-right: 0
-    padding-bottom: 20px
+  .rto-cause
+    .panel-body#rto-cause-body
+      padding-top: 8px
+      min-height: 280px
 
+      .rzp-overlay
+        padding: 0 52px
+
+    .paginate
+      margin-top: 16px
+      display: flex
+      gap: 16px
+
+      button
+        span
+          font-size: 14px
+          color: #262D3A
+
+        i
+          position: relative
+          top: 1px
+
+      .btn .i + span
+        margin-left: 0
+
+  .costSaved-container.col-md-9
+    padding: 0
+    margin-left: 20px
+
+    #cost-saved-body > .rzp-overlay
+      min-height: 344px
+
+  .costSaved-graph-container
+    position: relative
+    height: 270px
+
+  .cost-saved
+    .panel-footer#cost-saved-footer
+      display: flex
+      justify-content: space-between
+
+  .costSaved-container
     .cost-saved
       height: 100%
+
+      .panel-topbar
+        padding: 22px 24px 8px
+
       .panel-body#cost-saved-body
         height: 100%
         padding-top: 10px
 
-        .costSaved-graph-container
-          max-height: 240px
+        .shipping-charge-container
+          padding: 5px 24px
+          background-color: #F3F5F9CC
+          margin-top: 8px
+
+        .shipping-charge-container > .Input--small
+          padding: 5px 0
+          display: flex
+          margin: 0
+
+        .shipping-charge-container > .Input--small > .Input-label
+          top: 4px
+          font-size: 13px
+          font-weight: 500
+          color: #262D3A
+
+        .shipping-charge-container > .Input--small > .Input-content
+          margin-left: 15px
+
+        .shipping-charge-container > .Input--small > .Input-content > .Input-elWrapper
+          width: 88px
+
+        .shipping-charge-container > .Input--small > .Input-content > .Input-elWrapper > .Input-el
+          height: 30px
+
+        .shipping-charge-container > .Input--small > .Input-content > .Input-elWrapper > .Input-addons
+          line-height: 28px
 
         .rzp-overlay
-          min-height: 294px
+          max-height: 272px
 
   .panel.dasboard-home-panel.feedbackRate-panel
     &.panel
       border: $panel-border
       border-radius: 2px
-      padding-bottom: 88px
+      padding: 0
+      height: 100%
 
     .panel-topbar
       font-size: 16px
       font-weight: 700
+      padding: 22px 22px 0
 
     .panel-body
-      padding-top: 10px
-      height: fit-content
+      padding: 0
+
+      .chart-container
+        height: 300px
+        padding-bottom: 64px
+        display: flex
+        align-items: center
+        justify-content: center
 
       .feedbackRate-panel-info
         font-size: 13px
         font-weight: 400
         line-height: 20px
         color: #676C75
-        padding-bottom: 32px
-
-        .feedbackRate-links
-          text-decoration: underline
+        padding-bottom: 48px
 
     .panel-footer
       color: #262D3A
+      line-height: 0
+      padding: 12px 22px
+      display: flex
+      align-items: center
 
       .i-warning
         margin-right: 6px
@@ -231,15 +366,15 @@ $panel-border = 1px solid #E0E8F4
         width: 16px
         height: 16px
         position: relative
-        top: 14px
+        top: -7px
         margin-right: 4px
         display: inline-block
         border-radius: 50%
 
         .i-tick
-          color: #FFFFFF
+          color: #FFF
           position: relative
-          top: -17px
+          top: 4px
           font-size: 8px
           left: 3px
 
@@ -248,144 +383,29 @@ $panel-border = 1px solid #E0E8F4
         font-weight: 400
         line-height: 20px
 
+        .feedbackRate-links
+          text-decoration: underline
+          font-weight: 600
+
     .feedbackRate-complete-info
       background-color: #FAFFF9
+      height: 40px
 
     .feedbackRate-empty-info
       background-color: #FFF5F5
+      height: auto
 
     .feedbackRate-partial-info
       background-color: #FFF9F1
-
-  .panel.dasboard-home-panel.analytics-panel
-    &.panel
-      border: $panel-border
-      border-radius: 2px
-
-    .btn-group
-      z-index: 2
-
-    .legend
-      display: flex
-      font-size: 12px
-      gap: 12px
-      margin-left: 12px
-      margin-top: 16px
-    .item-box
-      display: flex
-      justify-content: space-between
-      align-items: center
-      padding: 4px
-      border: $panel-border
-      border-radius: 1px
-      height: 24px
-      white-space: nowrap
-      .colored
-        height: 100%
-        width: 12px
-        margin-right: 6px
-        border-radius: 2px
-        &.total
-          background: #6886B7
-        &.risky
-          background: #E86250
-        &.safe
-          background: #7EB471
-        &.rto
-          background: #E86250
-
-    .panel-body
       height: auto
-      min-height: 150px
 
-      .costSaved-graph-container
-        position: relative
-        height: 270px
+    .feedbackRate-footer
+      background-color: #FBFCFD
+      color: #8991AE
+      line-height: 1.5
+      height: 40px
 
-      .rto-graph-container
-        position: relative
-        height: 220px
-
-      .charts-container
-        display: flex
-        flex-direction: row
-        flex-wrap: wrap
-        justify-content: space-around
-
-        .chart-container
-          display: flex
-          flex-direction: column
-          align-items: center
-          max-width: min-content
-          span
-            text-align: center
-
-        .doughnut-chart
-          position: relative
-          max-width: 160px
-          margin-bottom: 12px
-
-    .panel-topbar
-      font-size: 16px
-      font-weight: 700
-
-    .panel-footer
       .i-clock
-        margin-right: 4px
-
-  .rto-cause 
-    .paginate
-      margin-top: 16px
-      display: flex
-      gap: 16px
-      .btn .i + span
-        margin-left: 0
-      button
-        span
-          font-size: 14px
-          color: #262D3A
-        i
-          position: relative
-          top: 1px
-
-    table
-      width: 100%
-    tr
-      border-bottom: 1px solid #ebebeb
-    tbody
-      tr
-        line-height: 36px
-        td:last-of-type
-          width: 12%
-          text-align: end
-        td:nth-last-child(2)
-          width: 20%
-
-    .rto-percent
-      min-width: 40px
-      padding-left: 10px
-      padding-right: 10px
-      width: 60%
-    .block-btn
-      padding: 4px 8px
-      margin-right: 0
-      width: 100%
-    thead
-      color: #262D3A
-      opacity: 0.6
-      font-size: 13px
-      th
-        font-weight: 500
-      tr
-        line-height: 40px
-
-  .cost-saved
-    .panel-footer#cost-saved-footer
-      display: flex
-      justify-content: space-between
-
-    .reimbursement-callout
-      i
         margin-right: 4px
 
   .flagged-reasons
@@ -401,7 +421,145 @@ $panel-border = 1px solid #E0E8F4
 
         i
           vertical-align: middle
+          font-size: 16px
+          position: relative
+          top: 1px
 
+  .panel.dasboard-home-panel.analytics-panel
+    &.panel
+      border: $panel-border
+      border-radius: 2px
+
+    .btn-group
+      z-index: 2
+
+    .legend
+      display: flex
+      font-size: 12px
+      gap: 12px
+      margin-top: 8px
+
+    .item-box
+      display: flex
+      justify-content: space-between
+      align-items: center
+      padding: 8px
+      border: $panel-border
+      border-radius: 1px
+      height: 28px
+      white-space: nowrap
+
+      .colored
+        height: 100%
+        width: 12px
+        margin-right: 6px
+        border-radius: 2px
+
+        &.total
+          background: #6886B7
+
+        &.risky
+          background: #E86250
+
+        &.safe
+          background: #7EB471
+
+        &.rto
+          background: #E86250
+
+        &.neutral
+          background: #E5C214
+
+    .panel-body
+      height: auto
+      min-height: 150px
+
+      .rto-graph-container
+        position: relative
+        height: 220px
+        left: -4px
+
+      .charts-container
+        display: flex
+        flex-flow: row wrap
+        justify-content: space-around
+
+        .chart-container
+          display: flex
+          flex-direction: column
+          align-items: center
+          max-width: min-content
+
+        .chart-container > span
+          text-align: center
+
+        .doughnut-chart
+          position: relative
+          max-width: 160px
+          margin-bottom: 12px
+
+    .panel-topbar
+      font-size: 16px
+      font-weight: 700
+
+    .panel-footer
+      height: 40px
+      display: flex
+      align-items: center
+      padding: 15px 22px
+
+      .i-clock
+        margin-right: 4px
+
+    table
+      width: 100%
+
+      tr
+        border-bottom: 1px solid #EBEBEB
+
+    tbody
+      tr
+        line-height: 36px
+
+        td:last-of-type
+          width: 12%
+          text-align: end
+
+        td:nth-last-child(2)
+          width: 20%
+
+    .rto-percent
+      min-width: 40px
+      padding-left: 10px
+      padding-right: 10px
+      width: 60%
+
+    .block-btn
+      padding: 4px 8px
+      margin-right: 0
+      width: 100%
+
+    thead
+      color: #262D3A
+      opacity: 0.6
+      font-size: 13px
+
+      th
+        font-weight: 500
+
+      tr
+        line-height: 40px
+
+  .experimentation-row-container
+    margin-bottom: 20px
+    min-height: 460px
+
+    .panel.dasboard-home-panel.feedbackRate-panel > .panel-body
+      .chart-container
+        padding-bottom: 0
+        height: 328px
+
+  .panel.dasboard-home-panel.analytics-panel.flagged-reasons
     .reason-table-container
       padding: 16px 36px 8px
 
@@ -413,27 +571,48 @@ $panel-border = 1px solid #E0E8F4
         .percent-bar
           width: 100%
           height: 8px
-          background-color: #e8e8e8
+          background-color: #E8E8E8
           margin-right: 12px
 
-          .colored-percent
-            height: 100%
+        .colored-percent
+          height: 100%
 
-      table
-        border: $panel-border
-        border-radius: 2px
-        width: 100%
+    .reason-table-container > table
+      border: $panel-border
+      border-radius: 2px
+      width: 100%
 
-        th
-          margin-right: 20px
+      th
+        margin-right: 20px
+        font-weight: bold
+        font-size: 14px
+
+      tr
+        padding: 0 20px
+        display: flex
+        justify-content: space-between
+        align-items: center
+        line-height: 36px
+        padding-top: 15px
+        border: none
+
+      thead
+        background: #FCFCFC
+        border-bottom: $panel-border
 
         tr
-          padding: 0 20px
-          display: flex
-          justify-content: space-between
-          align-items: center
-          line-height: 36px
-          padding-top: 15px
+          padding: 8px 20px
+
+      thead > tr
+        th:first-child
+          width: 100%
+
+        th:last-child
+          width: 32%
+
+      tbody
+        tr
+          line-height: 32px
 
         tr:first-child
           padding-top: 20px
@@ -441,28 +620,23 @@ $panel-border = 1px solid #E0E8F4
         tr:last-child
           padding-bottom: 20px
 
-        thead
-          background: #FCFCFC
-          border-bottom: $panel-border
+        tr:nth-child(5)
+          border-top: 1px solid #E0E8F4
+          margin-top: 20px
 
-        tbody
-          tr
-            line-height: 32px
+      td.percent
+        flex: 1
 
-          td.percent
-            flex: 1
-          td.reason
-            flex: 3
+      td.reason
+        flex: 3
 
-  @media (max-width: 1020px)
+  @media (max-width 1020px)
     .flagged-reasons
       .reason-table-container
-        table
-          tbody
-            tr
-              line-height: 20px
-              margin: 8px 0
+        table > tbody > tr
+          line-height: 20px
+          margin: 8px 0
 
-  @media (max-width: 1050px)
+  @media (max-width 1050px)
     .widget-row
       flex-direction: column

@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import moment from 'moment';
+
 import GenericPanel, {
   PanelTopbar,
   PanelBody,
@@ -8,29 +10,68 @@ import GenericPanel, {
 } from 'merchant/components/Home/GenericPanel';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import { Btn, BtnGroup } from 'common/ui/BtnGroup/index';
+import Input from 'common/new-ui/Input';
 import Graph from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/CostSaved/Graph';
-import { fetchWidgetData } from 'merchant/reducers/magicCheckout/rtoAnalytics/actions';
-import { costSavedFormatter } from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/CostSaved/utils';
-import { BREAKDOWN_MAP, NO_GRAPH_DATA } from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
-import { onBreakdownChange } from 'merchant/views/MagicCheckout/RTOAnalytics/utils';
 
-const CostSaved = ({ widgetData, startTime, endTime, fetch, fetchingTimedWidgetsData }) => {
+import { fetchWidgetData } from 'merchant/reducers/magicCheckout/rtoAnalytics/actions';
+
+import { costSavedFormatter } from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/CostSaved/utils';
+import {
+  onBreakdownChange,
+  getWidgetData,
+  onRequestCountChange,
+} from 'merchant/views/MagicCheckout/RTOAnalytics/utils';
+import { getItem, setItem } from 'common/utils/localStorage';
+
+import {
+  BREAKDOWN_MAP,
+  NO_GRAPH_DATA,
+  DEFAULT_SHIPPING_CHARGE,
+  BREAKDOWN,
+} from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
+
+const CostSaved = ({
+  user,
+  widgetData,
+  startTime,
+  endTime,
+  fetchWidgets,
+  fetchingTimedWidgetsData,
+}) => {
   const [chartData, setChartData] = useState(null);
-  const [breakdown, setBreakdown] = useState('weekly');
+  const [breakdown, setBreakdown] = useState(BREAKDOWN.weeks);
+  const [requestCount, setRequestCount] = useState(0);
+  const [shippingCharge, setShippingCharge] = useState(
+    getItem('magic-analytics-shipping-charge') || DEFAULT_SHIPPING_CHARGE,
+  );
 
   const { data, loading, updatedAt } = widgetData;
+
   const widgetName = 'cost_saving';
 
   const onBtnChange = useCallback(
     (value) => {
-      onBreakdownChange(value, breakdown, startTime, endTime, fetch, setBreakdown, widgetName);
+      const additionalInfo = {
+        [widgetName]: {
+          shipping_charges: shippingCharge,
+        },
+      };
+      onBreakdownChange(
+        value,
+        breakdown,
+        startTime,
+        endTime,
+        fetchWidgets,
+        setBreakdown,
+        widgetName,
+        additionalInfo,
+      );
     },
-    [breakdown, startTime, endTime, fetch],
+    [breakdown, startTime, endTime, fetchWidgets, shippingCharge],
   );
 
   useEffect(() => {
     if (fetchingTimedWidgetsData) {
-      setBreakdown('weekly');
       setChartData(null);
 
       return;
@@ -39,15 +80,71 @@ const CostSaved = ({ widgetData, startTime, endTime, fetch, fetchingTimedWidgets
     setChartData(costSavedFormatter(data, breakdown, startTime, endTime));
   }, [fetchingTimedWidgetsData, data, breakdown, startTime, endTime, widgetData]);
 
+  const fetchData = useCallback(() => {
+    setBreakdown(BREAKDOWN.weeks);
+    const additionalInfo = {
+      [widgetName]: {
+        shipping_charges: shippingCharge,
+      },
+    };
+    getWidgetData(
+      widgetName,
+      BREAKDOWN.weeks,
+      startTime,
+      endTime,
+      fetchWidgets,
+      setRequestCount,
+      additionalInfo,
+    );
+  }, [endTime, startTime, fetchWidgets, shippingCharge]);
+
+  useEffect(() => {
+    if (startTime && endTime) {
+      fetchData();
+    }
+  }, [startTime, endTime]);
+
+  useEffect(() => {
+    onRequestCountChange(user, requestCount, fetchData, setRequestCount);
+  }, [requestCount]);
+
+  const updateShippingCharge = useCallback(
+    (e) => {
+      let val = e?.target?.value;
+      if (!isNaN(parseInt(val, 10))) {
+        val = parseInt(val, 10);
+        setShippingCharge(val);
+      }
+    },
+    [shippingCharge],
+  );
+
+  const fetchCostSaved = useCallback(() => {
+    const endDate = moment(endTime).unix();
+    const startDate = moment(startTime).add(5, 'hours').add(30, 'minutes').unix();
+    setItem('magic-analytics-shipping-charge', shippingCharge);
+    const additionalInfo = {
+      [widgetName]: {
+        shipping_charges: shippingCharge,
+      },
+    };
+    fetchWidgets(widgetName, breakdown, startDate, endDate, additionalInfo);
+  }, [shippingCharge, startTime, endTime]);
+
   return (
-    <div className="costSaved-container col-md-9">
+    <div className={`costSaved-container${!user.isMagicRTOAnalyticsV2Enabled ? ' col-md-9' : ''}`}>
       <GenericPanel
         className="analytics-panel cost-saved"
         isLoading={loading}
         hasNoData={!data || data.length === 0}
       >
         <PanelTopbar>
-          Cost saved due to COD Intelligence
+          <div className="panel-info">
+            <p className="panel-topbar-heading">Cost saved by COD Intelligence</p>
+            <p className="panel-heading-subtext">
+              Total reverse shipping cost saved by blocking risky users from placing COD orders.
+            </p>
+          </div>
           <div className="panel-actions pull-right">
             <BtnGroup
               className="panel-action-item time-breakdown"
@@ -68,30 +165,39 @@ const CostSaved = ({ widgetData, startTime, endTime, fetch, fetchingTimedWidgets
           customSubtitle={NO_GRAPH_DATA.customSubtitle}
         >
           {data && data.length > 0 && !loading ? (
-            <Graph key="cost-saving" breakdown={breakdown} data={chartData} />
+            <>
+              <div className="shipping-charge-container">
+                <Input
+                  label="Cost saved is calculated based on your shipping charge"
+                  className="Input--small"
+                  defaultValue={shippingCharge}
+                  addonBefore="₹"
+                  onChange={updateShippingCharge}
+                  type="number"
+                  onBlur={fetchCostSaved}
+                />
+              </div>
+              <Graph key="cost-saving" breakdown={breakdown} data={chartData} />
+            </>
           ) : null}
         </PanelBody>
         <PanelFooter id="cost-saved-footer">
           <LastUpdated at={updatedAt} customIcon="i-clock" />
-          <div className="reimbursement-callout">
-            <small>
-              <i className="i i-info-circle" />
-              <span>Assuming Rs. 75 as average reverse shipping cost per order</span>
-            </small>
-          </div>
         </PanelFooter>
       </GenericPanel>
     </div>
   );
 };
 
-const mapDispatchToProps = (dispatch) => bindActionCreators({ fetch: fetchWidgetData }, dispatch);
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators({ fetchWidgets: fetchWidgetData }, dispatch);
 
 const mapStateToProps = (state) => ({
   widgetData: state.magicRTOAnalytics.cost_saving,
   startTime: state.magicRTOAnalytics.startTime,
   endTime: state.magicRTOAnalytics.endTime,
   fetchingTimedWidgetsData: state.magicRTOAnalytics.timedWidgetsFetching,
+  user: state.session.user,
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(CostSaved);

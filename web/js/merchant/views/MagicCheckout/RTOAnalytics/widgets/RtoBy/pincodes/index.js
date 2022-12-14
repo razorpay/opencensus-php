@@ -9,28 +9,42 @@ import GenericPanel, {
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import PaginatedTable from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/RtoBy/components/PaginatedTable';
 import ConfirmModal from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/RtoBy/components/ConfirmModal';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import {
   action,
   pincode,
   shippedOrders,
   rtoOrders,
-  rtoPercent,
+  rtoRank,
 } from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/RtoBy/pincodes/cellItem';
-import { blockValue, unblockValue } from 'merchant/reducers/magicCheckout/rtoAnalytics/actions';
+
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import {
+  blockValue,
+  unblockValue,
+  fetchWidgetData,
+} from 'merchant/reducers/magicCheckout/rtoAnalytics/actions';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { NO_GRAPH_DATA } from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
+
+import {
+  getWidgetData,
+  onRequestCountChange,
+} from 'merchant/views/MagicCheckout/RTOAnalytics/utils';
+
+import { NO_GRAPH_DATA, BREAKDOWN } from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
 
 const Pincodes = ({
+  user,
   widgetData,
   openModal,
   closeModal,
   blockValue,
   unblockValue,
   showNotification,
+  fetchWidgets,
 }) => {
-  const [tableData, setTableData] = useState(null);
-  const { data, updatedAt } = widgetData;
+  const [requestCount, setRequestCount] = useState(0);
+
+  const { loading, data, updatedAt } = widgetData;
 
   const onConfirmBlock = useCallback(
     (value, modalSource) => {
@@ -84,10 +98,19 @@ const Pincodes = ({
     [closeModal, unblockValue, showNotification],
   );
 
+  const fetchData = useCallback(() => {
+    getWidgetData('rto_by_zipcode', BREAKDOWN.lifetime, 0, 0, fetchWidgets, setRequestCount);
+  }, [fetchWidgets]);
+
   useEffect(() => {
-    // sort in decreasing order
-    setTableData(data?.sort((a, b) => b.rto_order - a.rto_order));
-  }, [widgetData, data, setTableData]);
+    if (fetchWidgets) {
+      fetchData();
+    }
+  }, [fetchWidgets]);
+
+  useEffect(() => {
+    onRequestCountChange(user, requestCount, fetchData, setRequestCount);
+  }, [requestCount]);
 
   const onCTAClick = useCallback(
     (zipcode, isBlocked) => {
@@ -112,23 +135,25 @@ const Pincodes = ({
     <GenericPanel
       className="analytics-panel rto-cause"
       hasNoData={!data || data.length === 0}
-      isLoading={false}
+      isLoading={loading}
     >
-      <PanelTopbar>RTO Orders by pincodes</PanelTopbar>
+      <PanelTopbar>
+        <>
+          <p className="panel-topbar-heading">RTO orders by zipcodes</p>
+          <p className="panel-heading-subtext">
+            Blocking or unblocking will only affect COD orders for the zipcode chosen.
+          </p>
+        </>
+      </PanelTopbar>
       <PanelBody
         customTitle={NO_GRAPH_DATA.customTitle}
         customSubtitle={NO_GRAPH_DATA.customSubtitle}
+        id="rto-cause-body"
       >
-        {tableData && tableData.length ? (
+        {data && data.length ? (
           <PaginatedTable
-            rows={tableData}
-            columns={[
-              pincode,
-              shippedOrders,
-              rtoOrders,
-              rtoPercent,
-              action({ onClick: onCTAClick }),
-            ]}
+            rows={data}
+            columns={[pincode, shippedOrders, rtoOrders, rtoRank, action({ onClick: onCTAClick })]}
           />
         ) : null}
       </PanelBody>
@@ -141,6 +166,7 @@ const Pincodes = ({
 
 const mapStateToProps = (state) => ({
   widgetData: state.magicRTOAnalytics.rto_by_zipcode,
+  user: state.session.user,
 });
 
 const mapDispatchToProps = (dispatch) =>
@@ -151,6 +177,7 @@ const mapDispatchToProps = (dispatch) =>
       blockValue,
       unblockValue,
       showNotification,
+      fetchWidgets: fetchWidgetData,
     },
     dispatch,
   );

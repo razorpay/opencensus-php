@@ -1,17 +1,24 @@
-import FeedbackRate from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/FeedbackRate';
 import RtoByGroup from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/RtoBy';
 import CostSaved from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/CostSaved';
-import SafeOrders from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/SafeOrders';
+import FeedbackRate from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/FeedbackRate';
 
-const OrderInsightsTab = () => {
+const OrderInsightsTab = ({ user }) => {
   return (
     <div className="orderInsight-container">
-      <div className="row">
-        <FeedbackRate />
-        <CostSaved />
-      </div>
-      <SafeOrders />
-      <RtoByGroup />
+      {user.isMagicRTOAnalyticsV2Enabled ? (
+        <>
+          <CostSaved />
+          <RtoByGroup />
+        </>
+      ) : (
+        <>
+          <div className="row experimentation-row-container">
+            <FeedbackRate />
+            <CostSaved />
+          </div>
+          <RtoByGroup />
+        </>
+      )}
     </div>
   );
 };

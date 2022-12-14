@@ -1,18 +1,13 @@
+import moment from 'moment';
 import { merchantFetch, merchantFetchWithContentType } from 'merchant/utils/ajax';
 import {
-  getDefaultQuery,
-  getTimedQuery,
   calculateInitialDateRange,
+  getQuery,
 } from 'merchant/reducers/magicCheckout/rtoAnalytics/utils';
 
 const REDUCER_NAMESPACE = 'rto_analytics';
 
 export const ACTIONS = {
-  FETCH_ALL_WIDGETS: `${REDUCER_NAMESPACE}:FETCH:WIDGETS`,
-  FETCH_ALL_WIDGETS_ERROR: `${REDUCER_NAMESPACE}:FETCH:WIDGETS::ERROR`,
-  FETCH_ALL_WIDGETS_SUCCESS: `${REDUCER_NAMESPACE}:FETCH:WIDGETS::SUCCESS`,
-  FETCH_ALL_WIDGETS_PENDING: `${REDUCER_NAMESPACE}:FETCH:WIDGETS::PENDING`,
-
   UNBLOCK_VALUE: `${REDUCER_NAMESPACE}:UNBLOCK:VALUE`,
   UNBLOCK_VALUE_ERROR: `${REDUCER_NAMESPACE}:UNBLOCK:VALUE::ERROR`,
   UNBLOCK_VALUE_SUCCESS: `${REDUCER_NAMESPACE}:UNBLOCK:VALUE::SUCCESS`,
@@ -28,11 +23,6 @@ export const ACTIONS = {
   FETCH_WIDGET_PENDING: `${REDUCER_NAMESPACE}:FETCH:WIDGET::PENDING`,
   FETCH_WIDGET_ERROR: `${REDUCER_NAMESPACE}:FETCH:WIDGET::ERROR`,
 
-  FETCH_TIMED_WIDGETS_DATA: `${REDUCER_NAMESPACE}:FETCH:TIMED:WIDGETS`,
-  FETCH_TIMED_WIDGETS_DATA_SUCCESS: `${REDUCER_NAMESPACE}:FETCH:TIMED:WIDGETS::SUCCESS`,
-  FETCH_TIMED_WIDGETS_DATA_ERROR: `${REDUCER_NAMESPACE}:FETCH:TIMED:WIDGETS::ERROR`,
-  FETCH_TIMED_WIDGETS_DATA_PENDING: `${REDUCER_NAMESPACE}:FETCH:TIMED:WIDGETS::PENDING`,
-
   SET_TIME_RANGE: `${REDUCER_NAMESPACE}:TIME_RANGE:UPDATE`,
 };
 
@@ -43,15 +33,32 @@ export const setTimeRange = (from, to) => {
   };
 };
 
-export const fetchWidgetData = (widget, queryObj) => {
-  const query = { widgets: [queryObj] };
+export const fetchWidgetData = (
+  widget,
+  aggregation_type,
+  startTime,
+  endTime,
+  additionalInfo = {},
+) => {
+  if (!startTime && !endTime) {
+    const [start, end] = calculateInitialDateRange();
+    startTime = moment(start).add(5, 'hours').add(30, 'minutes').unix();
+    endTime = moment(end).unix();
+  }
+
+  const currentUnix = moment().unix();
+
+  endTime = endTime > currentUnix ? currentUnix : endTime;
+
+  const query = getQuery(widget, aggregation_type, startTime, endTime, additionalInfo);
+
   return {
     type: ACTIONS.FETCH_WIDGET_DATA,
     widget,
     payload: merchantFetch({
       url: '1cc/rto_prediction_service/dashboard',
       method: 'post',
-      data: query,
+      data: { widgets: query },
     }),
   };
 };
@@ -86,34 +93,5 @@ export const blockValue = (payload) => {
     }),
     data: payload?.cod_eligibility_attributes?.[0],
     widget: `rto_by_${attribute_type}`,
-  };
-};
-export const fetchTimedWidgetsData = (startTime, endTime) => {
-  const query = getTimedQuery(startTime, endTime);
-
-  return {
-    type: ACTIONS.FETCH_TIMED_WIDGETS_DATA,
-    payload: merchantFetch({
-      url: '1cc/rto_prediction_service/dashboard',
-      method: 'post',
-      data: query,
-    }),
-  };
-};
-
-export const fetchAllWidgetData = (startTime, endTime) => {
-  if (!startTime || !endTime) {
-    const [start, end] = calculateInitialDateRange();
-    startTime = start;
-    endTime = end;
-  }
-  const query = getDefaultQuery(startTime, endTime);
-  return {
-    type: ACTIONS.FETCH_ALL_WIDGETS,
-    payload: merchantFetch({
-      url: '1cc/rto_prediction_service/dashboard',
-      method: 'post',
-      data: query,
-    }),
   };
 };

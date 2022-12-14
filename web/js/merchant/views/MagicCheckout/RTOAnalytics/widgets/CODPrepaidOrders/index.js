@@ -6,27 +6,26 @@ import GenericPanel, {
   PanelBody,
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
+import { fetchWidgetData } from 'merchant/reducers/magicCheckout/rtoAnalytics/actions';
 import { Btn, BtnGroup } from 'common/ui/BtnGroup/index';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import Graph from 'merchant/views/MagicCheckout/RTOAnalytics/common/Graph';
-
-import { fetchWidgetData } from 'merchant/reducers/magicCheckout/rtoAnalytics/actions';
 
 import {
   chartsDataFormatter,
   onBreakdownChange,
   getWidgetData,
+  onRequestCountChange,
 } from 'merchant/views/MagicCheckout/RTOAnalytics/utils';
 
 import {
   BREAKDOWN_MAP,
-  SAFE_ORDERS_CHARTS,
+  COD_RATE_CHARTS,
   NO_GRAPH_DATA,
-  REQUEST_LIMIT,
   BREAKDOWN,
 } from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
 
-const SafeOrdersChartOptions = {
+const CODPrepaidOrdersChartOptions = {
   tooltips: {
     enabled: true,
     backgroundColor: '#ffffff',
@@ -44,29 +43,103 @@ const SafeOrdersChartOptions = {
     titleMarginBottom: 12,
     titleFontColor: '#262D3A',
     callbacks: {
-      title(tooltipItem) {
-        const totalOrders = tooltipItem.reduce((count, cval) => {
-          return count + cval.yLabel;
-        }, 0);
-        return `Total Safe Orders: ${totalOrders}`;
+      title() {},
+      label: (tooltipItem, { datasets }) => {
+        const { datasetIndex, yLabel } = tooltipItem;
+        const label = datasets[datasetIndex]?.label;
+
+        return `${label}           ${yLabel}%`;
+      },
+      labelColor: (item, chart) => {
+        const color =
+          chart?.config?.data?.datasets[item.datasetIndex]?.borderColor ||
+          chart?.config?.data?.datasets[item.datasetIndex]?.backgroundColor;
+        return { backgroundColor: color, borderColor: 'transparent' };
       },
     },
   },
+  scales: {
+    xAxes: [
+      {
+        type: 'time',
+        distribution: 'series',
+        time: {
+          displayFormats: {
+            hour: 'MMM D',
+            month: 'MMM YYYY',
+            day: 'MMM D',
+            week: 'MMM YYYY',
+            second: 'MMM D',
+            millisecond: 'MMM D',
+          },
+          tooltipFormat: 'ddd DD MMM YYYY',
+        },
+        gridLines: {
+          offsetGridLines: true,
+          display: true,
+          drawOnChartArea: false,
+          drawTicks: true,
+        },
+        ticks: {
+          autoSkip: true,
+          fontSize: 12,
+          fontColor: '#858C9A',
+          maxRotation: 0,
+          autoSkipPadding: 15,
+        },
+      },
+    ],
+    yAxes: [
+      {
+        ticks: {
+          beginAtZero: true,
+          padding: 10,
+          fontSize: 12,
+          maxTicksLimit: 5,
+          fontColor: '#858C9A',
+          callback: (value) => {
+            return `${value}%`;
+          },
+        },
+        gridLines: {
+          color: '#F1F3F6',
+          zeroLineColor: '#E0E8F4',
+          display: true,
+          drawTicks: false,
+          drawBorder: false,
+        },
+      },
+    ],
+  },
 };
 
-const SafeOrders = ({ widgetData, startTime, endTime, fetch, fetchingTimedWidgetsData }) => {
+const CODPrepaidOrders = ({
+  user,
+  widgetData,
+  startTime,
+  endTime,
+  fetchWidgets,
+  fetchingTimedWidgetsData,
+}) => {
   const [breakdown, setBreakdown] = useState(BREAKDOWN.weeks);
   const [chartData, setChartData] = useState(null);
   const [requestCount, setRequestCount] = useState(0);
   const { data, loading, updatedAt } = widgetData;
-  const widgetName = 'intelligence_stat_performance';
-  const isChartStacked = true;
+  const widgetName = 'cod_rate';
 
   const onBtnChange = useCallback(
     (value) => {
-      onBreakdownChange(value, breakdown, startTime, endTime, fetch, setBreakdown, widgetName);
+      onBreakdownChange(
+        value,
+        breakdown,
+        startTime,
+        endTime,
+        fetchWidgets,
+        setBreakdown,
+        widgetName,
+      );
     },
-    [breakdown, startTime, endTime, fetch],
+    [breakdown, startTime, endTime, fetchWidgets],
   );
 
   useEffect(() => {
@@ -77,22 +150,14 @@ const SafeOrders = ({ widgetData, startTime, endTime, fetch, fetchingTimedWidget
     }
 
     setChartData(
-      chartsDataFormatter(
-        data,
-        breakdown,
-        startTime,
-        endTime,
-        SAFE_ORDERS_CHARTS,
-        isChartStacked,
-        widgetName,
-      ),
+      chartsDataFormatter(data, breakdown, startTime, endTime, COD_RATE_CHARTS, false, widgetName),
     );
   }, [fetchingTimedWidgetsData, data, breakdown, startTime, endTime, widgetData]);
 
   const fetchData = useCallback(() => {
     setBreakdown(BREAKDOWN.weeks);
-    getWidgetData(widgetName, BREAKDOWN.weeks, startTime, endTime, fetch, setRequestCount);
-  }, [endTime, startTime, fetch]);
+    getWidgetData(widgetName, BREAKDOWN.weeks, startTime, endTime, fetchWidgets, setRequestCount);
+  }, [endTime, startTime, fetchWidgets]);
 
   useEffect(() => {
     if (startTime && endTime) {
@@ -101,21 +166,17 @@ const SafeOrders = ({ widgetData, startTime, endTime, fetch, fetchingTimedWidget
   }, [startTime, endTime]);
 
   useEffect(() => {
-    if (requestCount > 0 && requestCount <= REQUEST_LIMIT) {
-      fetchData();
-    } else if (requestCount > REQUEST_LIMIT) {
-      setRequestCount(0);
-    }
+    onRequestCountChange(user, requestCount, fetchData, setRequestCount);
   }, [requestCount]);
 
   return (
     <GenericPanel
-      className="analytics-panel safe-orders"
+      className="analytics-panel cod-rate col-md-9"
       isLoading={loading}
       hasNoData={!data || data.length === 0}
     >
       <PanelTopbar>
-        Safe orders which were RTO
+        Share of COD
         <div className="panel-actions pull-right">
           <BtnGroup
             className="panel-action-item time-breakdown"
@@ -136,21 +197,16 @@ const SafeOrders = ({ widgetData, startTime, endTime, fetch, fetchingTimedWidget
       >
         {data && data.length > 0 && !loading ? (
           <Graph
-            key="safe-orders"
+            key="cod-prepaid-orders"
             breakdown={breakdown}
             data={chartData}
-            customOptions={SafeOrdersChartOptions}
-            isChartStacked
+            customOptions={CODPrepaidOrdersChartOptions}
           />
         ) : null}
         <div className="legend">
           <div className="item-box">
             <div className="colored safe" />
-            <span>Non RTO Orders</span>
-          </div>
-          <div className="item-box">
-            <div className="colored rto" />
-            <span>RTO Orders</span>
+            <span>COD Orders</span>
           </div>
         </div>
       </PanelBody>
@@ -161,13 +217,16 @@ const SafeOrders = ({ widgetData, startTime, endTime, fetch, fetchingTimedWidget
   );
 };
 
-const mapDispatchToProps = (dispatch) => bindActionCreators({ fetch: fetchWidgetData }, dispatch);
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators({ fetchWidgets: fetchWidgetData }, dispatch);
 
 const mapStateToProps = (state) => ({
-  widgetData: state.magicRTOAnalytics.intelligence_stat_performance,
+  user: state.session.user,
+  widgetData: state.magicRTOAnalytics.cod_rate,
+  isLoading: state.magicRTOAnalytics.cod_rate.loading,
   startTime: state.magicRTOAnalytics.startTime,
   endTime: state.magicRTOAnalytics.endTime,
   fetchingTimedWidgetsData: state.magicRTOAnalytics.timedWidgetsFetching,
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(SafeOrders);
+export default connect(mapStateToProps, mapDispatchToProps)(CODPrepaidOrders);

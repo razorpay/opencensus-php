@@ -1,14 +1,6 @@
 import moment from 'moment';
 import { getStartDateFromDiff } from 'common/utils/rzp-utils';
 
-export const TIMED_WIDGETS = [
-  'order_split',
-  'flagged_reason',
-  'cost_saving',
-  'intelligence_stat_performance',
-  'feedback_rate',
-];
-
 export const WIDGETS = [
   'order_split',
   'order_split_cumulative',
@@ -18,6 +10,9 @@ export const WIDGETS = [
   'intelligence_stat_performance',
   'rto_by_zipcode',
   'rto_by_ip',
+  'rto_rate',
+  'cod_rate',
+  'risky_orders',
 ];
 
 export const WIDGETS_MAP = {
@@ -28,105 +23,31 @@ export const WIDGETS_MAP = {
   'RTO by IP': 'rto_by_ip',
   'Cost Saving': 'cost_saving',
   'Intelligence Stat Performance': 'intelligence_stat_performance',
+  'Risky Orders': 'risky_orders',
+  'COD vs Prepaid Orders': 'cod_rate',
+  'RTO Rate': 'rto_rate',
 };
 
 const LIFETIME_WIDGETS = ['rto_by_ip', 'rto_by_zipcode'];
 
 const DEFAULT_DURATION = [-30, 'days'];
 
-const widgetDefaults = {
-  order_split: {
-    aggregation_type: 'weekly',
-    date_range: {},
-  },
-  feedback_rate: {
-    aggregation_type: 'cumulative',
-    date_range: {},
-  },
-  flagged_reason: {
-    aggregation_type: 'cumulative',
-    date_range: {},
-  },
-  cost_saving: {
-    aggregation_type: 'weekly',
-    date_range: {},
-  },
-  intelligence_stat_performance: {
-    aggregation_type: 'weekly',
-    date_range: {},
-  },
-  rto_by_zipcode: {
-    aggregation_type: 'lifetime',
-    date_range: {
-      from: 0,
-      to: 0,
-    },
-  },
-  rto_by_ip: {
-    aggregation_type: 'lifetime',
-    date_range: {
-      from: 0,
-      to: 0,
-    },
-  },
-};
-
-const addCumulativeHeader = (widgets, startUnix, endUnix) => {
+export const getQuery = (widget, aggregation_type, startTime, endTime, additionalInfo = {}) => {
+  const widgets = [];
   widgets.push({
-    name: 'order_split',
-    aggregation_type: 'cumulative',
+    name: widget,
+    aggregation_type,
     date_range: {
-      from: startUnix,
-      to: endUnix,
+      from: LIFETIME_WIDGETS.includes(widget) ? 0 : startTime,
+      to: LIFETIME_WIDGETS.includes(widget) ? 0 : endTime,
     },
   });
-};
 
-export const getDefaultQuery = (startTime, endTime) => {
-  const startUnix = moment(startTime).unix();
-  const endUnix = moment(endTime).unix();
-  const queryBody = {};
-
-  const widgets = Object.keys(widgetDefaults).map((widgetName) => {
-    return {
-      name: widgetName,
-      ...widgetDefaults[widgetName],
-      date_range: {
-        from: LIFETIME_WIDGETS.includes(widgetName) ? 0 : startUnix,
-        to: LIFETIME_WIDGETS.includes(widgetName) ? 0 : endUnix,
-      },
-    };
-  });
-
-  // for cumulative header
-  addCumulativeHeader(widgets, startUnix, endUnix);
-
-  return { ...queryBody, widgets };
-};
-
-export const getTimedQuery = (startTime, endTime) => {
-  const startUnix = moment(startTime).add(5, 'hours').add(30, 'minutes').unix();
-  let endUnix = moment(endTime).add(5, 'hours').add(30, 'minutes').unix();
-  if (endUnix > moment().unix()) {
-    endUnix = moment().unix();
+  if (Object.keys(additionalInfo).length !== 0) {
+    widgets[0].additional_info = additionalInfo;
   }
-  const queryBody = {};
 
-  const widgets = TIMED_WIDGETS.map((widgetName) => {
-    return {
-      name: widgetName,
-      ...widgetDefaults[widgetName],
-      date_range: {
-        from: startUnix,
-        to: endUnix,
-      },
-    };
-  });
-
-  // for cumulative header
-  addCumulativeHeader(widgets, startUnix, endUnix);
-
-  return { ...queryBody, widgets };
+  return widgets;
 };
 
 export const calculateInitialDateRange = (duration = DEFAULT_DURATION) => {
@@ -156,12 +77,11 @@ export const widgetsDataFormatter = (widgetsData) => {
     }
 
     updateObj[widgetName] = {};
-    if (TIMED_WIDGETS.includes(widgetName)) {
-      updateObj[widgetName].loading = false;
-    }
+
     if (widgetName && WIDGETS.includes(widgetName)) {
       updateObj[widgetName].data = widgetData[widgetName];
       updateObj[widgetName].updatedAt = Number(widgetData.updated_at);
+      updateObj[widgetName].loading = false;
     }
   });
 

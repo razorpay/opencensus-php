@@ -416,6 +416,10 @@ export default class User {
     return this.getExpStatus('magic_rto_analytics_live');
   }
 
+  get isMagicRTOAnalyticsV2Enabled() {
+    return this.getExpStatus('magic_rto_analytics_v2_live');
+  }
+
   get isShopifyMagicEnabled() {
     return this.getExpStatus('1cc_shopify_magic_enable');
   }

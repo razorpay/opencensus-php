@@ -1,15 +1,30 @@
-import { NavLink } from 'react-router-dom';
 import Overview from 'merchant/views/MagicCheckout/RTOAnalytics/containers/Overview';
 import OrderInsights from 'merchant/views/MagicCheckout/RTOAnalytics/containers/OrderInsights';
+import RiskReport from 'merchant/views/MagicCheckout/RTOAnalytics/containers/RiskReport';
+
+const COLOR_SAFE = '#7EB471';
+const COLOR_RISKY = '#E86250';
+const COLOR_NEUTRAL = '#E5C214';
+const COLOR_TOTAL = '#6886B7';
+
+const LINE_GRAPH_COLOR_RISKY = '#FEF6F6';
+const LINE_GRAPH_COLOR_SAFE = '#E2F7E2';
+const LINE_GRAPH_COLOR_TOTAL = '#E1EBFB';
+const LINE_GRAPH_COLOR_NEUTRAL = '#FEFBED';
 
 export const TABS = {
   OVERVIEW: {
     label: 'Overview',
-    component: <Overview />,
+    Component: Overview,
+  },
+  RISK_REPORT: {
+    label: 'Risk Report',
+    condition: (_user) => _user.isMagicRTOAnalyticsV2Enabled,
+    Component: RiskReport,
   },
   ORDER_INSIGHTS: {
-    label: 'Order Insights',
-    component: <OrderInsights />,
+    label: 'RTO Insights',
+    Component: OrderInsights,
   },
 };
 
@@ -21,75 +36,86 @@ export const FLAGGEDREASONS_DOUGHNUT_COLORS = [
   '#5B4EAE',
 ];
 
-export const FEEDBACKRATE_FOOTER_TEXTS = {
-  complete: (
-    <small>
-      <div className="custom-success-tick">
-        <i className="i i-tick" />
-      </div>
-      <span className="feedback-footer-info">RTO order up to date</span>
-    </small>
-  ),
-  empty: (
-    <small>
-      <i className="i i-warning empty-status" />
-      <span className="feedback-footer-info">RTO order data unavailable</span>
-    </small>
-  ),
-  partial: (
-    <small>
-      <i className="i i-warning partial-status" />
-      <span className="feedback-footer-info">Incomplete RTO order data available</span>
-    </small>
-  ),
-};
+export const UPLOAD_ORDER_STATUS_TAB = '/magic/order-status/';
 
-export const FEEDBACKRATE_INFO_TEXTS = {
-  incomplete: (
-    <p>
-      RTO insights depends on data shared by you.{' '}
-      <NavLink className="feedbackRate-links" to="/magic/order-status">
-        Upload your data
-      </NavLink>{' '}
-      now or directly integrate a{' '}
-      <NavLink className="feedbackRate-links" to="/magic/settings">
-        logistic partner.
-      </NavLink>
-    </p>
-  ),
-  complete: (
-    <p>
-      RTO insights accuracy depends on data passed from your integrated{' '}
-      <NavLink className="feedbackRate-links" to="/magic/settings">
-        logistic partner.
-      </NavLink>
-    </p>
-  ),
-};
+export const MAGIC_SETTINGS_TAB = '/magic/settings/';
+
+export const DEFAULT_SHIPPING_CHARGE = 75;
 
 export const CHART_COLORS = {
-  TOTAL_ORDERS: '#6886B7',
-  RISKY_ORDERS: '#E86250',
-  SAFE_ORDERS: '#7EB471',
-  RTO_ORDERS: '#E86250',
+  TOTAL_ORDERS: COLOR_TOTAL,
+  RISKY_ORDERS: COLOR_RISKY,
+  SAFE_ORDERS: COLOR_SAFE,
+  RISKY_USERS: COLOR_RISKY,
+  SAFE_USERS: COLOR_SAFE,
+  RTO_ORDERS: COLOR_RISKY,
+  TOTAL_SAFE_ORDERS: COLOR_TOTAL,
+  NON_RTO_ORDERS: COLOR_SAFE,
+  REGULAR_PREPAID_ORDERS: COLOR_SAFE,
+  ADDITIONAL_PREPAID_ORDERS: COLOR_TOTAL,
+  ORDERS_PLACED: COLOR_SAFE,
+  TOTAL_RTO_RATE: COLOR_TOTAL,
+  COD_RTO_RATE: COLOR_SAFE,
+  PREPAID_RTO_RATE: COLOR_NEUTRAL,
+  COD_ORDERS_PERCENTAGE: COLOR_SAFE,
 };
 
 export const DATASET_LABEL_MAP = {
   TOTAL_ORDERS: {
-    label: 'Total Orders',
+    label: 'Total orders',
     response_key: 'total_order',
   },
-  RISKY_ORDERS: {
-    label: 'Risky Orders',
+  TOTAL_USERS: {
+    label: 'Total users',
+    response_key: 'total_order',
+  },
+  RISKY_USERS: {
+    label: 'Risky users',
     response_key: 'risky_order',
   },
-  SAFE_ORDERS: {
-    label: 'Safe Orders',
+  SAFE_USERS: {
+    label: 'Safe users',
     response_key: 'safe_order',
   },
   RTO_ORDERS: {
-    label: 'RTO Orders',
+    label: 'RTO orders',
     response_key: 'rto_order',
+  },
+  TOTAL_SAFE_ORDERS: {
+    label: 'Total safe orders',
+    response_key: 'total_order',
+  },
+  NON_RTO_ORDERS: {
+    label: 'Non RTO orders',
+    response_key: 'safe_order',
+  },
+  COD_ORDERS_PERCENTAGE: {
+    label: 'COD orders',
+    response_key: 'percentage',
+  },
+  REGULAR_PREPAID_ORDERS: {
+    label: 'Regular prepaid orders',
+    response_key: 'safe_successful_orders_count',
+  },
+  ADDITIONAL_PREPAID_ORDERS: {
+    label: 'Additional prepaid orders',
+    response_key: 'risky_successful_orders_count',
+  },
+  ORDERS_PLACED: {
+    label: 'Orders placed successfully',
+    response_key: 'placed_orders',
+  },
+  TOTAL_RTO_RATE: {
+    label: 'Overall RTO%',
+    response_key: 'total_rto_rate',
+  },
+  COD_RTO_RATE: {
+    label: 'COD RTO%',
+    response_key: 'cod_rto_rate',
+  },
+  PREPAID_RTO_RATE: {
+    label: 'Prepaid RTO%',
+    response_key: 'prepaid_rto_rate',
   },
 };
 
@@ -108,12 +134,23 @@ export const BREAKDOWN_MAP = {
   },
 };
 
-export const ORDERS_SPLIT_CHARTS = ['TOTAL_ORDERS', 'RISKY_ORDERS', 'SAFE_ORDERS'];
+export const ORDERS_SPLIT_CHARTS = ['TOTAL_USERS', 'RISKY_USERS', 'SAFE_USERS'];
 
-export const SAFE_ORDERS_CHARTS = ['SAFE_ORDERS', 'RTO_ORDERS'];
+export const SAFE_ORDERS_CHARTS = ['TOTAL_SAFE_ORDERS', 'NON_RTO_ORDERS', 'RTO_ORDERS'];
+
+export const COD_RATE_CHARTS = ['COD_ORDERS_PERCENTAGE'];
+
+export const RISKY_ORDERS_CHARTS = [
+  'TOTAL_ORDERS',
+  'REGULAR_PREPAID_ORDERS',
+  'ADDITIONAL_PREPAID_ORDERS',
+];
+
+export const RTO_RATE_CHARTS = ['TOTAL_RTO_RATE', 'COD_RTO_RATE', 'PREPAID_RTO_RATE'];
 
 // this is for bar and line charts
 export const defaultOptions = {
+  responsive: true,
   legend: {
     display: false,
   },
@@ -151,7 +188,7 @@ export const defaultOptions = {
           },
           tooltipFormat: 'ddd DD MMM YYYY',
         },
-        offset: true,
+        stacked: false,
         gridLines: {
           offsetGridLines: true,
           display: true,
@@ -175,7 +212,9 @@ export const defaultOptions = {
           fontSize: 12,
           maxTicksLimit: 5,
           fontColor: '#858C9A',
+          precision: 0,
         },
+        stacked: false,
         gridLines: {
           color: '#F1F3F6',
           zeroLineColor: '#E0E8F4',
@@ -188,7 +227,7 @@ export const defaultOptions = {
   },
   layout: {
     padding: {
-      top: 0,
+      top: 24,
       left: 0,
       right: 0,
       bottom: 0,
@@ -201,3 +240,37 @@ export const NO_GRAPH_DATA = {
   customSubtitle: `There is no data available for the selected date-range.
                   Please modify the date-range and try again.`,
 };
+
+export const LINE_CHART_GRAPH_COLOR = {
+  RTO_ORDERS: LINE_GRAPH_COLOR_RISKY,
+  NON_RTO_ORDERS: LINE_GRAPH_COLOR_SAFE,
+  TOTAL_RTO_RATE: LINE_GRAPH_COLOR_TOTAL,
+  COD_RTO_RATE: LINE_GRAPH_COLOR_SAFE,
+  PREPAID_RTO_RATE: LINE_GRAPH_COLOR_NEUTRAL,
+  REGULAR_PREPAID_ORDERS: LINE_GRAPH_COLOR_SAFE,
+  ADDITIONAL_PREPAID_ORDERS: LINE_GRAPH_COLOR_TOTAL,
+  RISKY_USERS: LINE_GRAPH_COLOR_RISKY,
+  SAFE_USERS: LINE_GRAPH_COLOR_SAFE,
+  COD_ORDERS_PERCENTAGE: LINE_GRAPH_COLOR_SAFE,
+  TOTAL_ORDERS: LINE_GRAPH_COLOR_TOTAL,
+  TOTAL_USERS: LINE_GRAPH_COLOR_TOTAL,
+};
+
+export const BREAKDOWN = {
+  days: 'daily',
+  weeks: 'weekly',
+  months: 'monthly',
+  cumulative: 'cumulative',
+  lifetime: 'lifetime',
+};
+
+export const RTO_RATE_FILTER = [
+  { label: 'COD RTO %', name: 'COD_RTO_RATE' },
+  { label: 'Prepaid RTO %', name: 'PREPAID_RTO_RATE' },
+  { label: 'Overall RTO %', name: 'TOTAL_RTO_RATE' },
+  { label: 'View all RTO %', name: 'ALL_RTO_RATES' },
+];
+
+export const REQUEST_LIMIT = 2;
+
+export const OVERALL_LINE_CHARTS = ['rto_rate'];

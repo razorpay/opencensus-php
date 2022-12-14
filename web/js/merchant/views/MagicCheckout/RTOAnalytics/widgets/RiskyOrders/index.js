@@ -16,17 +16,17 @@ import {
   chartsDataFormatter,
   onBreakdownChange,
   getWidgetData,
+  onRequestCountChange,
 } from 'merchant/views/MagicCheckout/RTOAnalytics/utils';
 
 import {
   BREAKDOWN_MAP,
-  SAFE_ORDERS_CHARTS,
+  RISKY_ORDERS_CHARTS,
   NO_GRAPH_DATA,
-  REQUEST_LIMIT,
   BREAKDOWN,
 } from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
 
-const SafeOrdersChartOptions = {
+const RiskyOrdersChartOptions = {
   tooltips: {
     enabled: true,
     backgroundColor: '#ffffff',
@@ -48,31 +48,51 @@ const SafeOrdersChartOptions = {
         const totalOrders = tooltipItem.reduce((count, cval) => {
           return count + cval.yLabel;
         }, 0);
-        return `Total Safe Orders: ${totalOrders}`;
+        return `Total prepaid orders: ${totalOrders}`;
+      },
+      labelColor: (item, chart) => {
+        const color =
+          chart?.config?.data?.datasets[item.datasetIndex]?.borderColor ||
+          chart?.config?.data?.datasets[item.datasetIndex]?.backgroundColor;
+        return { backgroundColor: color, borderColor: 'transparent' };
       },
     },
   },
 };
 
-const SafeOrders = ({ widgetData, startTime, endTime, fetch, fetchingTimedWidgetsData }) => {
+const RiskyOrders = ({
+  user,
+  widgetData,
+  startTime,
+  endTime,
+  fetchWidgets,
+  fetchingTimedWidgetsData,
+}) => {
   const [breakdown, setBreakdown] = useState(BREAKDOWN.weeks);
   const [chartData, setChartData] = useState(null);
   const [requestCount, setRequestCount] = useState(0);
+
   const { data, loading, updatedAt } = widgetData;
-  const widgetName = 'intelligence_stat_performance';
-  const isChartStacked = true;
+  const widgetName = 'risky_orders';
 
   const onBtnChange = useCallback(
     (value) => {
-      onBreakdownChange(value, breakdown, startTime, endTime, fetch, setBreakdown, widgetName);
+      onBreakdownChange(
+        value,
+        breakdown,
+        startTime,
+        endTime,
+        fetchWidgets,
+        setBreakdown,
+        widgetName,
+      );
     },
-    [breakdown, startTime, endTime, fetch],
+    [breakdown, startTime, endTime, fetchWidgets],
   );
 
   useEffect(() => {
     if (fetchingTimedWidgetsData) {
       setChartData(null);
-
       return;
     }
 
@@ -82,8 +102,8 @@ const SafeOrders = ({ widgetData, startTime, endTime, fetch, fetchingTimedWidget
         breakdown,
         startTime,
         endTime,
-        SAFE_ORDERS_CHARTS,
-        isChartStacked,
+        RISKY_ORDERS_CHARTS,
+        true,
         widgetName,
       ),
     );
@@ -91,8 +111,8 @@ const SafeOrders = ({ widgetData, startTime, endTime, fetch, fetchingTimedWidget
 
   const fetchData = useCallback(() => {
     setBreakdown(BREAKDOWN.weeks);
-    getWidgetData(widgetName, BREAKDOWN.weeks, startTime, endTime, fetch, setRequestCount);
-  }, [endTime, startTime, fetch]);
+    getWidgetData(widgetName, BREAKDOWN.weeks, startTime, endTime, fetchWidgets, setRequestCount);
+  }, [endTime, startTime, fetchWidgets]);
 
   useEffect(() => {
     if (startTime && endTime) {
@@ -101,34 +121,37 @@ const SafeOrders = ({ widgetData, startTime, endTime, fetch, fetchingTimedWidget
   }, [startTime, endTime]);
 
   useEffect(() => {
-    if (requestCount > 0 && requestCount <= REQUEST_LIMIT) {
-      fetchData();
-    } else if (requestCount > REQUEST_LIMIT) {
-      setRequestCount(0);
-    }
+    onRequestCountChange(user, requestCount, fetchData, setRequestCount);
   }, [requestCount]);
 
   return (
     <GenericPanel
-      className="analytics-panel safe-orders"
+      className="analytics-panel risky-orders"
       isLoading={loading}
       hasNoData={!data || data.length === 0}
     >
       <PanelTopbar>
-        Safe orders which were RTO
-        <div className="panel-actions pull-right">
-          <BtnGroup
-            className="panel-action-item time-breakdown"
-            value={breakdown}
-            onChange={onBtnChange}
-          >
-            {Object.keys(BREAKDOWN_MAP).map((breakdown) => (
-              <Btn key={breakdown} value={breakdown} className="btn-default">
-                <span>{BREAKDOWN_MAP[breakdown].text}</span>
-              </Btn>
-            ))}
-          </BtnGroup>
-        </div>
+        <>
+          <div className="panel-info">
+            <p className="panel-topbar-heading">Incremental prepaid orders gained</p>
+            <p className="panel-heading-subtext">
+              COD orders that would have resulted in RTO, converted into successful prepaid orders.
+            </p>
+          </div>
+          <div className="panel-actions pull-right">
+            <BtnGroup
+              className="panel-action-item time-breakdown"
+              value={breakdown}
+              onChange={onBtnChange}
+            >
+              {Object.keys(BREAKDOWN_MAP).map((breakdown) => (
+                <Btn key={breakdown} value={breakdown} className="btn-default">
+                  <span>{BREAKDOWN_MAP[breakdown].text}</span>
+                </Btn>
+              ))}
+            </BtnGroup>
+          </div>
+        </>
       </PanelTopbar>
       <PanelBody
         customTitle={NO_GRAPH_DATA.customTitle}
@@ -136,21 +159,21 @@ const SafeOrders = ({ widgetData, startTime, endTime, fetch, fetchingTimedWidget
       >
         {data && data.length > 0 && !loading ? (
           <Graph
-            key="safe-orders"
+            key="risky-orders"
             breakdown={breakdown}
             data={chartData}
-            customOptions={SafeOrdersChartOptions}
+            customOptions={RiskyOrdersChartOptions}
             isChartStacked
           />
         ) : null}
         <div className="legend">
           <div className="item-box">
             <div className="colored safe" />
-            <span>Non RTO Orders</span>
+            <span>Regular prepaid orders</span>
           </div>
           <div className="item-box">
-            <div className="colored rto" />
-            <span>RTO Orders</span>
+            <div className="colored total" />
+            <span>Additional prepaid orders</span>
           </div>
         </div>
       </PanelBody>
@@ -161,13 +184,16 @@ const SafeOrders = ({ widgetData, startTime, endTime, fetch, fetchingTimedWidget
   );
 };
 
-const mapDispatchToProps = (dispatch) => bindActionCreators({ fetch: fetchWidgetData }, dispatch);
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators({ fetchWidgets: fetchWidgetData }, dispatch);
 
 const mapStateToProps = (state) => ({
-  widgetData: state.magicRTOAnalytics.intelligence_stat_performance,
+  user: state.session.user,
+  widgetData: state.magicRTOAnalytics.risky_orders,
+  isLoading: state.magicRTOAnalytics.risky_orders.loading,
   startTime: state.magicRTOAnalytics.startTime,
   endTime: state.magicRTOAnalytics.endTime,
   fetchingTimedWidgetsData: state.magicRTOAnalytics.timedWidgetsFetching,
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(SafeOrders);
+export default connect(mapStateToProps, mapDispatchToProps)(RiskyOrders);

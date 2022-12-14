@@ -3,20 +3,38 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import moment from 'moment';
 import Spinner from 'common/ui/Spinner';
+import Header from 'merchant/views/MagicCheckout/RTOAnalytics/containers/Header';
+
+import { fetchAggregators } from 'merchant/reducers/magicCheckout/shipping_services/actions';
 import {
-  fetchAllWidgetData,
+  fetchWidgetData,
   setTimeRange,
 } from 'merchant/reducers/magicCheckout/rtoAnalytics/actions';
-import { TABS } from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
-import Header from 'merchant/views/MagicCheckout/RTOAnalytics/containers/Header';
+
 import { getStartDateFromDiff } from 'common/utils/rzp-utils';
+import { getWidgetData } from 'merchant/views/MagicCheckout/RTOAnalytics/utils';
+
+import {
+  TABS,
+  REQUEST_LIMIT,
+  BREAKDOWN,
+} from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
 
 const DEFAULT_DURATION = [-30, 'days'];
 
-const RTOAnalytics = ({ fetchAll, isLoading, setTimeRange }) => {
+const RTOAnalytics = ({
+  isLoading,
+  setTimeRange,
+  fetchWidgets,
+  startTime,
+  endTime,
+  fetchProviders,
+  user,
+}) => {
   const [activeTab, setActiveTab] = useState(TABS.OVERVIEW);
+  const [requestCount, setRequestCount] = useState(0);
 
-  const { label, component } = activeTab;
+  const { label, Component } = activeTab;
 
   useEffect(() => {
     const endDate = moment();
@@ -28,13 +46,45 @@ const RTOAnalytics = ({ fetchAll, isLoading, setTimeRange }) => {
         .unix();
     const startDate = getStartDateFromDiff(defaultDiff, endDate);
     setTimeRange(startDate.toDate().getTime(), endDate.toDate().getTime());
+
+    return () => setTimeRange(null, null);
   }, [setTimeRange]);
 
   useEffect(() => {
-    if (!fetchAll) return;
+    if (fetchProviders) {
+      fetchProviders();
+    }
+  }, [fetchProviders]);
 
-    fetchAll();
-  }, [fetchAll]);
+  const fetchData = useCallback(() => {
+    getWidgetData(
+      'order_split',
+      BREAKDOWN.cumulative,
+      startTime,
+      endTime,
+      fetchWidgets,
+      setRequestCount,
+    );
+  }, [endTime, startTime, fetchWidgets]);
+
+  useEffect(() => {
+    if (startTime && endTime) {
+      fetchData();
+    }
+  }, [startTime, endTime]);
+
+  useEffect(() => {
+    if (
+      user &&
+      user.isMagicRTOAnalyticsV2Enabled &&
+      requestCount > 0 &&
+      requestCount <= REQUEST_LIMIT
+    ) {
+      fetchData();
+    } else if (requestCount > REQUEST_LIMIT) {
+      setRequestCount(0);
+    }
+  }, [requestCount]);
 
   const onTabClick = (tab) => {
     if (label === tab.label) return;
@@ -56,19 +106,21 @@ const RTOAnalytics = ({ fetchAll, isLoading, setTimeRange }) => {
       ) : (
         <>
           <div className="rto-magic-sidebar">
-            {Object.keys(TABS).map((tabName) => (
-              <div
-                key={TABS[tabName].label}
-                className={`rto-nav${getTab(TABS[tabName])}`}
-                onClick={() => onTabClick(TABS[tabName])}
-              >
-                {TABS[tabName].label}
-              </div>
-            ))}
+            {Object.keys(TABS).map((tabName) => {
+              return TABS[tabName].condition && !TABS[tabName].condition(user) ? null : (
+                <div
+                  key={TABS[tabName].label}
+                  className={`rto-nav${getTab(TABS[tabName])}`}
+                  onClick={() => onTabClick(TABS[tabName])}
+                >
+                  {TABS[tabName].label}
+                </div>
+              );
+            })}
           </div>
           <div className="tab-content">
             <Header />
-            <div className="charts-data">{component}</div>
+            <div className="charts-data">{<Component user={user} />}</div>
           </div>
         </>
       )}
@@ -77,9 +129,17 @@ const RTOAnalytics = ({ fetchAll, isLoading, setTimeRange }) => {
 };
 
 const mapDispatchToProps = (dispatch) =>
-  bindActionCreators({ fetchAll: fetchAllWidgetData, setTimeRange, fetchAllWidgetData }, dispatch);
+  bindActionCreators(
+    {
+      setTimeRange,
+      fetchWidgets: fetchWidgetData,
+      fetchProviders: fetchAggregators,
+    },
+    dispatch,
+  );
 
 const mapStateToProps = (state) => ({
+  user: state.session.user,
   isLoading: state.magicRTOAnalytics.loading,
   startTime: state.magicRTOAnalytics.startTime,
   endTime: state.magicRTOAnalytics.endTime,

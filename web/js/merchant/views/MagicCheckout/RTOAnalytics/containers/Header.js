@@ -1,11 +1,9 @@
 import { connect } from 'react-redux';
+import moment from 'moment';
 import { bindActionCreators } from 'redux';
 import DateRangePicker from 'common/ui/DateRangePicker';
 import CumulativeOrders from 'merchant/views/MagicCheckout/RTOAnalytics/common/CumulativeOrders';
-import {
-  setTimeRange,
-  fetchTimedWidgetsData,
-} from 'merchant/reducers/magicCheckout/rtoAnalytics/actions';
+import { setTimeRange } from 'merchant/reducers/magicCheckout/rtoAnalytics/actions';
 
 const DATE_RANGE_PRESETS = [
   ['Past 7 Days', -7, 'days'],
@@ -15,11 +13,13 @@ const DATE_RANGE_PRESETS = [
 
 const defaultPreset = 1;
 
-const Header = ({ setTimeRange, fetchTimedWidgetsData }) => {
+const Header = ({ setTimeRange }) => {
   const onDatesChange = (from, to) => {
     setTimeRange(from, to);
-    fetchTimedWidgetsData(from, to);
   };
+
+  const isOutsideRange = (day) =>
+    day.isAfter(moment()) || day.isBefore(moment().subtract(91, 'days'));
 
   return (
     <div className="fixed-header">
@@ -30,13 +30,13 @@ const Header = ({ setTimeRange, fetchTimedWidgetsData }) => {
           onDatesChange={onDatesChange}
           defaultPreset={defaultPreset}
           hideCustomPreset
+          isOutsideRange={isOutsideRange}
         />
       </div>
     </div>
   );
 };
 
-const mapDispatchToProps = (dispatch) =>
-  bindActionCreators({ setTimeRange, fetchTimedWidgetsData }, dispatch);
+const mapDispatchToProps = (dispatch) => bindActionCreators({ setTimeRange }, dispatch);
 
 export default connect(null, mapDispatchToProps)(Header);

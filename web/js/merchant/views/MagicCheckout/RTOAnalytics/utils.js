@@ -1,45 +1,60 @@
 import moment from 'moment';
+import cloneDeep from 'lodash/cloneDeep';
 import {
   BREAKDOWN_MAP,
   defaultOptions,
   CHART_COLORS,
   DATASET_LABEL_MAP,
+  LINE_CHART_GRAPH_COLOR,
+  BREAKDOWN,
+  OVERALL_LINE_CHARTS,
+  REQUEST_LIMIT,
 } from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
 
 export function getLabels(startTime, endTime, breakdown) {
   const timestamps = [];
   const breakdownValue = BREAKDOWN_MAP[breakdown]?.value;
   const startMoment = moment(startTime).startOf(
-    breakdown === 'weekly' ? 'isoWeek' : breakdownValue,
+    breakdown === BREAKDOWN.weeks ? 'isoWeek' : breakdownValue,
   );
-  const endMoment = moment(endTime).startOf(breakdown === 'weekly' ? 'isoWeek' : breakdownValue);
+
+  const endMoment = moment(endTime).startOf(
+    breakdown === BREAKDOWN.weeks ? 'isoWeek' : breakdownValue,
+  );
 
   timestamps.push(startMoment.toDate().getTime());
   for (let i = 0; i < endMoment.diff(startMoment, breakdownValue); i++) {
     const prevTimestamp = timestamps[timestamps.length - 1];
     timestamps.push(moment(prevTimestamp).add(1, breakdownValue).toDate().getTime());
   }
+
   return timestamps;
 }
 
-export function getChartOptions(breakdown) {
-  const options = { ...defaultOptions };
+export function getChartOptions(breakdown, customOptions = {}, isChartStacked = false) {
+  const options = cloneDeep({ ...defaultOptions, ...customOptions });
+
   const {
     tooltips,
-    scales: { xAxes },
+    scales: { xAxes, yAxes },
   } = options;
 
-  if (breakdown === 'daily') {
-    xAxes[0].offset = false;
-  } else {
-    xAxes[0].offset = true;
+  if (breakdown === BREAKDOWN.days) {
+    yAxes[0].stacked = true;
+  }
+
+  xAxes[0].offset = true;
+
+  if (breakdown !== BREAKDOWN.days && isChartStacked) {
+    xAxes[0].stacked = isChartStacked;
+    yAxes[0].stacked = isChartStacked;
   }
 
   xAxes[0].ticks.callback = (_value, index, values) => {
     const currVal = moment(values[index].value);
     let format = 'MMM D';
 
-    if (breakdown === 'monthly') {
+    if (breakdown === BREAKDOWN.months) {
       format = 'MMM';
     }
 
@@ -55,10 +70,10 @@ export function getChartOptions(breakdown) {
       const labelStartMoment = moment(label);
       const labelEnd = labelStartMoment
         .clone()
-        .endOf(breakdown === 'weekly' ? 'isoWeek' : breakdownValue);
+        .endOf(breakdown === BREAKDOWN.weeks ? 'isoWeek' : breakdownValue);
       let format = 'ddd DD MMM YYYY';
 
-      if (breakdown === 'weekly' || breakdown === 'monthly') {
+      if (breakdown === BREAKDOWN.weeks || breakdown === BREAKDOWN.months) {
         format = 'MMM DD YYYY';
         displayLabel = `${labelStartMoment.format(format)} - ${labelEnd.format(format)}`;
       } else {
@@ -72,22 +87,38 @@ export function getChartOptions(breakdown) {
   return options;
 }
 
-export const chartsDataFormatter = (
-  rawData,
-  breakdown,
-  startTime,
-  endTime,
-  datasetsNameList = [],
-) => {
+export const chartsDataFormatter = (...args) => {
+  const [
+    rawData,
+    breakdown,
+    startTime,
+    endTime,
+    datasetsNameList = [],
+    isChartStacked = false,
+    widgetName,
+    datasetKey,
+  ] = args;
+
   const breakdownValue = BREAKDOWN_MAP[breakdown]?.value;
   const startMoment = moment(startTime).startOf(
-    breakdown === 'weekly' ? 'isoWeek' : breakdownValue,
+    breakdown === BREAKDOWN.weeks ? 'isoWeek' : breakdownValue,
   );
   let labels = getLabels(startTime, endTime, breakdown);
   const datasetsObj = {};
 
-  // initialise objects for all datasets in datasetsNameList
-  datasetsNameList.forEach((datasetKey) => {
+  let datasetsList = datasetsNameList;
+  // case in which a particular dataset needs to be displayed
+  if (datasetKey) {
+    const updatedDatasetsNameList = datasetsList.filter((dataKey) => dataKey === datasetKey);
+
+    if (updatedDatasetsNameList.length !== 0) datasetsList = updatedDatasetsNameList;
+  }
+
+  if (isChartStacked) {
+    datasetsList = datasetsList.slice(1);
+  }
+  // initialise objects for all datasets in datasetsList
+  datasetsList.forEach((datasetKey) => {
     datasetsObj[datasetKey] = {
       backgroundColor: CHART_COLORS[datasetKey],
       data: [],
@@ -95,10 +126,25 @@ export const chartsDataFormatter = (
     };
 
     // for line chart in case of daily breakdown
-    if (breakdown === 'daily') {
-      datasetsObj[datasetKey].backgroundColor = 'transparent';
+    if (breakdown === BREAKDOWN.days || OVERALL_LINE_CHARTS.includes(widgetName)) {
       datasetsObj[datasetKey].borderColor = CHART_COLORS[datasetKey];
-      datasetsObj[datasetKey].fill = false;
+      datasetsObj[datasetKey].fill = 'origin';
+      datasetsObj[datasetKey].tension = 0;
+      datasetsObj[datasetKey].borderWidth = 2;
+      datasetsObj[datasetKey].backgroundColor = (context) => {
+        const chart = context.chart;
+        const { ctx, chartArea } = chart;
+
+        if (!chartArea) {
+          // This case happens on initial chart load
+          return null;
+        }
+        const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+        gradient.addColorStop(0, LINE_CHART_GRAPH_COLOR[datasetKey]);
+        gradient.addColorStop(1, '#FEFFFE');
+
+        return gradient;
+      };
     }
   });
 
@@ -106,7 +152,7 @@ export const chartsDataFormatter = (
 
   rawData?.forEach((dataObj) => {
     const timestamp = moment(Number(dataObj.period) * 1000)
-      .startOf(breakdown === 'weekly' ? 'isoWeek' : breakdownValue)
+      .startOf(breakdown === BREAKDOWN.weeks ? 'isoWeek' : breakdownValue)
       .toDate()
       .getTime();
 
@@ -126,7 +172,7 @@ export const chartsDataFormatter = (
       numPointsGap--;
     }
 
-    datasetsNameList.forEach((datasetKey) => {
+    datasetsList.forEach((datasetKey) => {
       pushDataToDatasets(
         dataObj[DATASET_LABEL_MAP[datasetKey].response_key] ?? 0,
         datasetsObj,
@@ -164,25 +210,55 @@ function pushDataToDatasets(datapoint, datasetObj, sameForAll = false, keyForDat
   }
 }
 
-export const onBreakdownChange = (
-  value,
-  breakdown,
-  startTime,
-  endTime,
-  fetch,
-  setBreakdown,
-  widgetName,
-) => {
+export const onBreakdownChange = (...args) => {
+  const [
+    value,
+    breakdown,
+    startTime,
+    endTime,
+    fetchWidgets,
+    setBreakdown,
+    widgetName,
+    additionalInfo = {},
+  ] = args;
+
   if (value === breakdown) return;
   setBreakdown(value);
   const endDate = moment(endTime).unix();
-  const current = moment().unix();
-  fetch(widgetName, {
-    name: widgetName,
-    aggregation_type: value,
-    date_range: {
-      from: moment(startTime).add(5, 'hours').add(30, 'minutes').unix(),
-      to: endDate > current ? current : endDate,
-    },
-  });
+  const startDate = moment(startTime).add(5, 'hours').add(30, 'minutes').unix();
+  fetchWidgets(widgetName, value, startDate, endDate, additionalInfo);
+};
+
+export const getWidgetData = (
+  widget,
+  aggregationType,
+  startTime,
+  endTime,
+  fetchWidgets,
+  setRequestCount,
+  additionalInfo = {},
+) => {
+  const endDate = moment(endTime).unix();
+  const startDate = moment(startTime).add(5, 'hours').add(30, 'minutes').unix();
+
+  fetchWidgets(widget, aggregationType, startDate, endDate, additionalInfo)
+    .then(() => {
+      setRequestCount(0);
+    })
+    .catch(() => {
+      setRequestCount((preVal) => preVal + 1);
+    });
+};
+
+export const onRequestCountChange = (user, requestCount, fetchData, setRequestCount) => {
+  if (
+    user &&
+    user.isMagicRTOAnalyticsV2Enabled &&
+    requestCount > 0 &&
+    requestCount <= REQUEST_LIMIT
+  ) {
+    fetchData();
+  } else if (requestCount > REQUEST_LIMIT) {
+    setRequestCount(0);
+  }
 };
