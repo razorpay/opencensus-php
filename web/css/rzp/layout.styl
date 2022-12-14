@@ -1,3 +1,4 @@
+// stylelint-disable no-descending-specificity
 @import "bootstrap/mixins/clearfix.styl";
 
 // Only page layout styles should reside in this file.
@@ -5,12 +6,18 @@
 
 $sidebar-width = 230px;
 
-a, .btn-link {
+a,
+.btn-link {
   color: $primary-color;
 }
 
-html, body {
-  background-color: #f0f3f4;
+html {
+  font-size: 16px;
+}
+
+html,
+body {
+  background-color: #F0F3F4;
 }
 
 body {
@@ -36,6 +43,7 @@ body {
 }
 
 *:focus {
+  // stylelint-disable-next-line declaration-no-important
   outline: 0 !important;
 }
 
@@ -67,16 +75,16 @@ body {
 .main-content {
   margin-left: $sidebar-width;
   margin-top: 51px;
+
   @media screen and (max-width $screen-sm-min) {
     margin-left: 0;
     // if we are in the mobile and test mode to support the test banner this css is added
-    &.test-mode{
+    &.test-mode {
       margin-top 106px
     }
   }
 
   .rzp-error-boundary {
-
     padding: 20px;
   }
 }
@@ -106,7 +114,6 @@ body {
 }
 
 .sidebar-bg-overlay {
-
   position: fixed;
   top: 0;
   left: 0;
@@ -114,10 +121,8 @@ body {
   right: 0;
   z-index: 1110;
   cursor: pointer;
-  background-color: rgba(46, 51, 68, 0.5);
+  background-color: rgb(46 51 68 / 0.5);
 }
-
-
 
 .sidebar {
   position: fixed;
@@ -131,21 +136,19 @@ body {
     max-height: 100%;
   }
 
-  @media (max-width: $screen-sm-min) {
-
+  @media (max-width $screen-sm-min) {
     transform: translate(-100%, 0);
     transition: transform 150ms ease-in;
     will-change: transform;
 
     &.show-mobile-menu {
-
       transform: translate(0);
     }
   }
 
   .brand-logo {
     &::after {
-      content: '';
+      content: "";
       position: absolute;
       border: 1px solid #45495A;
       left: 20px;
@@ -177,6 +180,7 @@ body {
     margin-bottom: 10px;
     padding-left: 20px;
     padding-top: 10px;
+
     @media (max-width $screen-sm-min) {
       display: none;
     }
@@ -184,7 +188,7 @@ body {
     &::after {
       content: attr(data-label);
       font-size: 11px;
-      color: #8b8e99;
+      color: #8B8E99;
     }
   }
 
@@ -198,12 +202,13 @@ body {
     overflow-x: hidden;
     padding-bottom: 15px;
     padding-top: 15px;
+
     @media (max-width $screen-sm-min) {
       padding-bottom: 60px;
     }
 
     .text-warning {
-      color: #fbe165;
+      color: #FBE165;
     }
 
     div.activation-status-link {
@@ -214,67 +219,60 @@ body {
     }
 
     div.activation-status {
-
-      color: white;
+      color: #FFF;
       padding: 12px 20px;
       background-color: #315BC2;
       margin-bottom: 15px;
 
       i.i-chevron-right {
-
         position: relative;
         display: inline-block;
         margin-right: 0;
       }
 
       &.not-personalised {
-
         i.i-chevron-right {
-
           top: 10px;
           left: 5px;
         }
       }
 
       div.activation-status-secondary {
-
         font-size: 80%;
         line-height: 20px;
-        color: rgba(255, 255, 255, 0.7);
+        color: rgb(255 255 255 / 0.7);
       }
 
       div.activation-bar-content {
-
         display: table;
         font-size: 80%;
         line-height: 20px;
         margin-top: 4px;
 
         > div {
-
           display: table-cell;
           vertical-align: middle;
 
+          // stylelint-disable-next-line max-nesting-depth
           &.activation-bar-text {
-
             white-space: nowrap;
             width: 1%;
             padding-right: 8px;
           }
 
+          // stylelint-disable-next-line max-nesting-depth
           &.activation-bar {
-
+            // stylelint-disable-next-line max-nesting-depth
             div.progress {
-
               width: 100%;
               height: 6px;
               margin-bottom: 0;
               border-radius: 4px;
               background-color: #2B3972;
 
+              // stylelint-disable-next-line max-nesting-depth
               div.progress-bar {
-
-                background-color: #FFFFFF;
+                background-color: #FFF;
                 border-radius: 4px;
               }
             }
@@ -289,26 +287,31 @@ body {
       .NavLinkGroup--active {
         .Collapsible--title {
           background-color: #375CBB;
-          color: #fff;
+          color: #FFF;
         }
+
         .NavLink.active {
-          background: #161922; 
+          background: #161922;
         }
       }
+
       .NavLinkGroup--title {
-        color: #fff;
+        color: #FFF;
         font-weight: 600;
       }
     }
+
     .NavLinkGroup {
       margin-bottom: 20px
 
       .Collapsible {
         &--title {
+          // stylelint-disable-next-line max-nesting-depth
           &:hover {
             background-color: #32374A;
           }
 
+          // stylelint-disable-next-line max-nesting-depth
           & > i {
             line-height: 40px
           }
@@ -322,6 +325,7 @@ body {
 
       &--active {
         .Collapsible {
+          // stylelint-disable-next-line max-nesting-depth
           &--title {
             background-color: #32374A;
           }
@@ -347,9 +351,10 @@ body {
     .NavLink {
       background-color: transparent;
       border-left: 4px solid transparent;
-      color: #b4b6bd;
+      color: #B4B6BD;
       line-height: 40px;
       padding: 0 15px;
+
       @media (max-width $screen-sm-min) {
         white-space: nowrap;
       }
@@ -367,26 +372,30 @@ body {
         border-radius: 10px
       }
 
-      .i, .fa, img {
+      .i,
+      .fa,
+      img {
         margin-right: 10px;
         width: 16px;
         text-align: center;
       }
 
       .i-rtb_new {
-        margin-right: 0px;
+        margin-right: 0;
         vertical-align: bottom;
       }
 
-      &:hover, &:focus{
+      &:hover,
+      &:focus {
         color #555
       }
 
       &.active {
         border-color: $primary-color;
-        color: #fff;
+        color: #FFF;
         background-color: #252939;
-        &:hover{
+
+        &:hover {
           color #FFF
         }
       }
@@ -395,16 +404,17 @@ body {
         margin-top: 10px
       }
     }
-    .NavLinkGroup--title{
-      &:hover{
-        color #b4b6bd
+
+    .NavLinkGroup--title {
+      &:hover {
+        color #B4B6BD
       }
     }
   }
 
   .bg-primary-fuse {
-    background-color: #444a60;
-    color: rgba(255,255,255,0.8);
+    background-color: #444A60;
+    color: rgb(255 255 255 / 0.8);
   }
 }
 
@@ -412,12 +422,14 @@ body {
   margin-left: 200px;
   margin-bottom: 0;
   border-bottom: 0;
-  background-color: #fff;
-  box-shadow:0px 2px rgba(0, 0, 0, 0.05), 0 1px 0 rgba(0, 0, 0, 0.05);
+  background-color: #FFF;
+  box-shadow: 0 2px rgb(0 0 0 / 0.05), 0 1px 0 rgb(0 0 0 / 0.05);
+
   @media screen and (max-width $screen-sm-min) {
     margin-left: 0;
   }
-  .navbar-container{
+
+  .navbar-container {
     @media screen and (max-width $screen-sm-min) {
       margin 0 5px
       height 60px
@@ -439,7 +451,8 @@ body {
     &.dropdown-toggle--large-icon {
       padding: 15px 15px 12px;
     }
-    @media screen and (max-width: $screen-sm-min) {
+
+    @media screen and (max-width $screen-sm-min) {
       padding: 15px 10px;
     }
   }
@@ -452,6 +465,7 @@ body {
   font-size: 12px;
   color: #8F96B3;
   margin-left: 235px;
+
   @media (max-width $screen-sm-min) {
     margin-left: 0;
   }
@@ -466,20 +480,26 @@ body {
 }
 
 .react-root {
-  ::-webkit-input-placeholder { /* WebKit, Blink, Edge */
-    color: #aaa;
-  }
-  :-moz-placeholder { /* Mozilla Firefox 4 to 18 */
-   color: #aaa;
-  }
-  ::-moz-placeholder { /* Mozilla Firefox 19+ */
-   color: #aaa;
-  }
-  :-ms-input-placeholder { /* Internet Explorer 10-11 */
-    color: #aaa;
+  // stylelint-disable-next-line selector-pseudo-element-no-unknown
+  ::input-placeholder { // WebKit, Blink, Edge
+    color: #AAA;
   }
 
-  h3, h2 {
+  :placeholder { // Mozilla Firefox 4 to 18
+    color: #AAA;
+  }
+
+  ::placeholder { // Mozilla Firefox 19+
+    color: #AAA;
+  }
+
+  // stylelint-disable-next-line selector-pseudo-class-no-unknown
+  :input-placeholder { // Internet Explorer 10-11
+    color: #AAA;
+  }
+
+  h3,
+  h2 {
     margin: 0;
   }
 
@@ -494,7 +514,7 @@ body {
     }
   }
 
-  input[type='color'] {
+  input[type="color"] {
     padding: 0 3px;
   }
 }
@@ -503,11 +523,9 @@ body {
   padding: 24px;
   position: relative;
 
+  // General Input styles (new UI Component)
 
-  /* General Input styles (new UI Component) */
-
-
-  /* Input pairs inside details view (new UI Component) */
+  // Input pairs inside details view (new UI Component)
   .Input--pair {
     .Input-elWrapper {
       font-size: inherit
@@ -518,7 +536,7 @@ body {
     }
   }
 
-    @media (max-width $screen-sm-min) {
+  @media (max-width $screen-sm-min) {
     padding: 20px;
   }
 }
@@ -527,14 +545,14 @@ body {
   max-width: 800px;
   margin: auto;
   min-height: 300px;
-  background-color: #fff;
+  background-color: #FFF;
 }
 
 .content-lg {
   max-width: 800px;
   margin: auto;
   min-height: 1050px;
-  background-color: #fff;
+  background-color: #FFF;
 }
 
 // For showing any message if data and loader not present on dual view
@@ -549,19 +567,20 @@ body {
   font-size: 0;
   max-width: 1200px;
   margin: 90px 16px;
-  background: #fff;
-  border: 1px solid #eee
+  background: #FFF;
+  border: 1px solid #EEE
   position: relative;
 
-  &:before {
+  &::before {
     z-index: 1;
-    content: '';
-    border-left: 1px solid #eaeff0;
+    content: "";
+    border-left: 1px solid #EAEFF0;
     height: 100%;
     top: 0;
     position: absolute;
     left: 50%;
-    @media (max-width: 1000px) {
+
+    @media (max-width 1000px) {
       content: none;
     }
   }
@@ -570,12 +589,14 @@ body {
   .empty-content {
     position: relative;
   }
-  .empty-content:before, .content-sm:only-of-type:before {
+
+  .empty-content::before,
+  .content-sm:only-of-type::before {
     position: absolute;
     width: 100%;
     text-align: center;
     top: 200px;
-    content: 'Click on an invoice to view its details here.'
+    content: "Click on an invoice to view its details here."
   }
 
   .content-sm {
@@ -584,10 +605,12 @@ body {
     vertical-align: top;
     font-size: 14px;
     width: 50%;
-    @media (max-width: 1000px) {
+
+    @media (max-width 1000px) {
       width: 100%
     }
-    &:only-of-type:before {
+
+    &:only-of-type::before {
       left: 100%;
     }
   }
@@ -610,6 +633,7 @@ body.ReactModal__Body--open {
   &--after-open {
     transform: translateY(0);
   }
+
   &--before-close {
     transform: translateY(-15%);
   }
@@ -628,6 +652,7 @@ body.ReactModal__Body--open {
   &--after-open {
     opacity: 1;
   }
+
   &--before-close {
     opacity: 0;
   }
@@ -644,7 +669,6 @@ body.ReactModal__Body--open {
   }
 }
 
-
 // react-dates style overrides
 
 .SingleDatePicker {
@@ -655,7 +679,7 @@ body.ReactModal__Body--open {
   margin-top: -25px;
 
   .CalendarDay__blocked_calendar {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: rgb(0 0 0 / 0.05);
     border-color: #E4E7E7;
   }
 
@@ -670,7 +694,7 @@ body.ReactModal__Body--open {
 }
 
 .SingleDatePickerInput {
-  border-color: #cfdadd;
+  border-color: #CFDADD;
   width: 100%;
 
   .DateInput {
@@ -701,6 +725,7 @@ body.ReactModal__Body--open {
 }
 
 .SingleDatePicker__tether--show {
+  // stylelint-disable-next-line declaration-no-important
   top: -11px !important;
 }
 
@@ -710,23 +735,22 @@ body.ReactModal__Body--open {
 }
 
 .transfers-onhold-datepicker {
-
   .SingleDatePicker {
-
-    .DateInput--with-caret:before, .DateInput--with-caret:after {
+    .DateInput--with-caret::before,
+    .DateInput--with-caret::after {
       border: 10px solid transparent;
       z-index: 3;
     }
 
-    .DateInput--with-caret:before {
+    .DateInput--with-caret::before {
       top: -12px;
-      border-top-color: rgba(0, 0, 0, 0.1);
+      border-top-color: rgb(0 0 0 / 0.1);
       border-bottom: 0;
     }
 
-    .DateInput--with-caret:after {
+    .DateInput--with-caret::after {
       top: -13px;
-      border-top-color: #fff;
+      border-top-color: #FFF;
       border-bottom: 0;
     }
   }
@@ -737,6 +761,7 @@ body.ReactModal__Body--open {
     z-index: 2;
   }
 }
+
 .SingleDatePicker__picker.SingleDatePicker__picker--open-up {
   top: auto;
   bottom: 58px;
@@ -758,19 +783,20 @@ body.ReactModal__Body--open {
 }
 
 .DateInput--disabled {
-  background-color: #eee;
+  background-color: #EEE;
 }
 
 .DateInput__display-text {
-  color: #aaa;
+  color: #AAA;
   font-size: 14px;
 }
 
 .SingleDatePickerInput__clear-date {
   margin: 0;
   padding: 0 8px;
+
   svg {
-    fill: #ccc;
+    fill: #CCC;
   }
 }
 
@@ -778,6 +804,7 @@ body.ReactModal__Body--open {
 .SingleDatePickerInput__clear-date:focus {
   background-color: transparent;
   border-radius: 0;
+
   svg {
     fill: #666;
   }
@@ -788,7 +815,7 @@ body.ReactModal__Body--open {
 }
 
 .DateInput__display-text--focused {
-  background-color: #fff;
+  background-color: #FFF;
   border-color: inherit;
   color: inherit;
 }
@@ -808,14 +835,14 @@ body.ReactModal__Body--open {
 .CalendarDay--after-hovered-start,
 .CalendarDay--hovered-span,
 .CalendarDay--selected-span {
-  background-color: rgba(82, 143, 240, 0.2);
-  border-color: #e4e4e4;
+  background-color: rgb(82 143 240 / 0.2);
+  border-color: #E4E4E4;
   color: #706E77;
 }
 
 .CalendarDay--selected-span.CalendarDay--hovered,
 .CalendarDay--selected-span:active {
-  background-color: #d2cdf0;
+  background-color: #D2CDF0;
   border-color: #CBCCE0;
 }
 
@@ -827,7 +854,7 @@ body.ReactModal__Body--open {
 .CalendarDay--selected:active {
   background-color: $primary-color;
   border-color: $primary-color;
-  color: #fff;
+  color: #FFF;
 }
 
 .DateRangePicker__picker--valid-date-hovered .CalendarMonth__day--selected-start,
@@ -835,14 +862,15 @@ body.ReactModal__Body--open {
 .CalendarMonth__day--selected-start,
 .CalendarMonth__day--selected-end,
 .CalendarMonth__day--selected {
-  background-color: #23b7e5;
-  border-color: #23b7e5;
+  background-color: #23B7E5;
+  border-color: #23B7E5;
 }
 
 .tether-element {
   z-index: 1;
 
   &.PowerSelect__Tether {
+    // stylelint-disable-next-line declaration-no-important
     z-index: 9999 !important;
   }
 }
@@ -853,7 +881,6 @@ body.ReactModal__Body--open {
 .ps-in-modal__Menu {
   z-index: 100000;
 }
-
 
 // End of third party style overrides
 
@@ -872,8 +899,8 @@ body.ReactModal__Body--open {
 
 .quick-create {
   padding: 6px 8px;
-  border: 1px solid #f0f0f0;
-  background-color: #fff;
+  border: 1px solid #F0F0F0;
+  background-color: #FFF;
   color: $primary-color;
   cursor: pointer;
   font-size: 14px;
@@ -889,10 +916,8 @@ tr:hover .row-action.btn-group {
   visibility: visible;
 }
 
-.panel-detail-container {
-  .text-warning {
-    color: #d8b617;
-  }
+.panel-detail-container .text-warning {
+  color: #D8B617;
 }
 
 .pair-group-item {
@@ -911,7 +936,9 @@ tr:hover .row-action.btn-group {
     overflow: auto;
   }
 
-  .pair-label, .pair-value, .pair-separator {
+  .pair-label,
+  .pair-value,
+  .pair-separator {
     vertical-align: top;
     float: left;
   }
@@ -929,7 +956,8 @@ tr:hover .row-action.btn-group {
       line-height: 20px;
       font-size: 12px;
 
-      button, div {
+      button,
+      div {
         margin-top: 8px;
       }
     }
@@ -974,7 +1002,6 @@ tr:hover .row-action.btn-group {
       margin-top: 8px;
 
       .pair-list-item {
-
         margin-bottom: 8px;
 
         .item-label {
@@ -983,11 +1010,13 @@ tr:hover .row-action.btn-group {
           text-transform: capitalize;
         }
 
-        .item-label, .item-value {
+        .item-label,
+        .item-value {
           line-height: 24px;
         }
       }
     }
+
     .Input {
       margin-top: 0
     }
@@ -1007,10 +1036,10 @@ tr:hover .row-action.btn-group {
   padding: 8px;
   margin-top: 8px;
   padding-top: 24px;
-  border-top: 1px solid #e2e8ea;
+  border-top: 1px solid #E2E8EA;
 
   .list-label {
-    color: #58666e;
+    color: #58666E;
   }
 }
 
@@ -1030,7 +1059,8 @@ tr:hover .row-action.btn-group {
       justify-content: space-between;
     }
 
-    .list-group, .table {
+    .list-group,
+    .table {
       margin-bottom: 0;
       border-bottom: 0;
     }
@@ -1050,12 +1080,14 @@ tr:hover .row-action.btn-group {
   display: inline-block;
 }
 
-.ModalSlider__Content, .MultiSlider__Content {
+.ModalSlider__Content,
+.MultiSlider__Content {
   .txn-details {
     .panel-heading {
       position: fixed;
       z-index: 10;
       width: 500px // as the slide pannel is of fixed 500px for D-web
+
       .btn-toolbar {
         padding-top: 20px;
       }
@@ -1068,12 +1100,13 @@ tr:hover .row-action.btn-group {
     border: none;
 
     > .panel-heading {
-      background-color: #fff;
+      background-color: #FFF;
       line-height: 64px;
       vertical-align: middle;
       padding-top: 0;
       padding-bottom: 0;
       font-size: 18px;
+
       @media screen and (max-width $screen-sm-min) {
         width: 100%;
       }
@@ -1084,6 +1117,7 @@ tr:hover .row-action.btn-group {
 
       .i + strong {
         margin-left: 8px;
+
         @media screen and (max-width $screen-sm-min) {
           font-size: 14px;
           position: relative;
@@ -1098,6 +1132,7 @@ tr:hover .row-action.btn-group {
 
       .Button {
         font-size: 14px
+
         &:last-child {
           margin-right: 30px
         }
@@ -1117,10 +1152,10 @@ tr:hover .row-action.btn-group {
 }
 
 .PowerSelect {
-  border-color: #e2e2e2
+  border-color: #E2E2E2
 
   &:hover {
-    border-color: #c1c1c1
+    border-color: #C1C1C1
   }
 }
 
@@ -1137,6 +1172,7 @@ tr:hover .row-action.btn-group {
 
   .PowerSelect__TriggerStatus {
     padding-left: 0;
+
     &::before {
       border-top-color: #777;
     }
@@ -1165,11 +1201,13 @@ tr:hover .row-action.btn-group {
 
 .switch-merchant__Tether {
   z-index: 4;
+  // stylelint-disable-next-line declaration-no-important
   left: -117px !important; // made important as tether element is taking default left from PowerSelect__Tether
 }
 
 .switch-merchant__Menu {
   width: 250px;
+
   .help-content {
     width: 100%;
     display: block;
@@ -1186,10 +1224,11 @@ tr:hover .row-action.btn-group {
   }
 
   .rzp-popover-body {
+    // stylelint-disable-next-line declaration-no-important
     font-size: 14px !important;
 
     > div {
-        line-height: 20px;
+      line-height: 20px;
     }
   }
 
@@ -1216,13 +1255,14 @@ tr:hover .row-action.btn-group {
   }
 
   .special-chars {
-    color: black;
+    color: #000;
   }
 
   .rzpCheckbox {
     &:first-child {
       margin-top: 36px;
     }
+
     label {
       font-weight: 400;
 
@@ -1244,10 +1284,10 @@ tr:hover .row-action.btn-group {
     color: #999;
 
     &::after {
-      content: ':';
+      content: ":";
       position: absolute;
       right: 0;
-      color: #ccc;
+      color: #CCC;
     }
   }
 }
@@ -1258,19 +1298,15 @@ tr:hover .row-action.btn-group {
   line-height: 1.8;
 
   .merchant-details-container {
-
     .rzp-group {
-
       width: 100%;
 
       .rzp-group-item {
-
         width: auto;
         padding: 0;
         border: none;
 
         &:last-child {
-
           text-align: right;
         }
       }
@@ -1282,7 +1318,7 @@ tr:hover .row-action.btn-group {
     padding: 12px;
 
     + .media {
-      border-top: 1px solid #eee;
+      border-top: 1px solid #EEE;
     }
   }
 
@@ -1296,11 +1332,13 @@ tr:hover .row-action.btn-group {
     &:hover {
       background-color: #F7F8FA;
     }
+
     @media screen and (max-width $screen-sm-min) {
-      &.live-go{
+      &.live-go {
         border-left: 4px solid #1F890E;
       }
-      &.test-go{
+
+      &.test-go {
         border-left: 4px solid #F9D328;
       }
     }
@@ -1324,9 +1362,9 @@ tr:hover .row-action.btn-group {
     display: flex;
     align-items: center;
 
-    &:after {
-      content: ' ';
-      background: url('https://cdn.razorpay.com/static/assets/trustedbadge/rtb-live.svg') no-repeat center;
+    &::after {
+      content: " ";
+      background: url("https://cdn.razorpay.com/static/assets/trustedbadge/rtb-live.svg") no-repeat center;
       height: 17px;
       width: 15px;
       display: inline-block;
@@ -1338,7 +1376,7 @@ tr:hover .row-action.btn-group {
   .i-business,
   .i-account {
     font-size: 40px;
-    color: #dadada;
+    color: #DADADA;
   }
 
   .i-help,
@@ -1348,27 +1386,30 @@ tr:hover .row-action.btn-group {
   }
 
   .razorpayx-popover {
+    // stylelint-disable-next-line declaration-no-important
     top: 120px !important
   }
 }
-  .support-request-dropdown-trigger{
-    position: relative;
-    top: 5px;
-    padding: 6px 10px;
-    background: rgba(209, 45, 45, 0.1);
-    border-radius: 30px;
-    color: #D12D2D;
-    .caret {
-      color: #D12D2D;
-      position: relative;
-      top: -1px;
-    }
 
-    img {
-      position: relative;
-      top: -1px;
-    }
+.support-request-dropdown-trigger {
+  position: relative;
+  top: 5px;
+  padding: 6px 10px;
+  background: rgb(209 45 45 / 0.1);
+  border-radius: 30px;
+  color: #D12D2D;
+
+  .caret {
+    color: #D12D2D;
+    position: relative;
+    top: -1px;
   }
+
+  img {
+    position: relative;
+    top: -1px;
+  }
+}
 
 .support-dropdown {
   width: 448px;
@@ -1378,7 +1419,7 @@ tr:hover .row-action.btn-group {
     font-weight: 700;
     font-size: 16px;
     line-height: 24px;
-    color: #162f56de;
+    color: #162F56DE;
     padding-left: 24px;
     padding-top: 10px;
   }
@@ -1390,10 +1431,11 @@ tr:hover .row-action.btn-group {
     .support-ticket {
       margin-top: 16px;
       padding: 16px;
-      background: #FFFFFF;
+      background: #FFF;
       text-align: left;
       border: 1px solid #E4E4E4;
       border-radius: 3px;
+      // stylelint-disable-next-line declaration-block-no-shorthand-property-overrides
       margin: 24px;
 
       .support-ticket-header {
@@ -1403,7 +1445,7 @@ tr:hover .row-action.btn-group {
         font-weight: bold;
 
         .support-ticket-title {
-          color: #162f56de;
+          color: #162F56DE;
           font-size: 14px;
           line-height: 20px;
         }
@@ -1411,14 +1453,14 @@ tr:hover .row-action.btn-group {
 
       .support-ticket-description {
         margin-bottom: 12px;
-        color: #162f56de;
+        color: #162F56DE;
         line-height: 20px;
         font-weight: 400;
         font-size: 14px;
         overflow: hidden;
         white-space: normal;
         text-overflow: ellipsis;
-        display: -webkit-box;
+        display: box;
         -webkit-line-clamp: 2;
         line-clamp: 2;
         -webkit-box-orient: vertical;
@@ -1444,29 +1486,22 @@ tr:hover .row-action.btn-group {
   }
 }
 
-
-
 ul.switch-modes-menu.nav.nav-stacked {
-
   padding: 0;
 
   > li {
-
     margin: 0;
 
     > a {
-
-      border-top: 1px solid #eee;
+      border-top: 1px solid #EEE;
 
       &.selected {
-        background-color: #eee;
+        background-color: #EEE;
       }
     }
 
     &:first-child {
-
       > a {
-
         border-top: none;
       }
     }
@@ -1488,10 +1523,10 @@ ul.switch-modes-menu.nav.nav-stacked {
       top: 1px;
       padding: 8px;
       cursor: pointer;
-      color: #ccc;
+      color: #CCC;
 
       &:hover {
-        color: #aaa;
+        color: #AAA;
       }
     }
 
@@ -1510,10 +1545,10 @@ ul.switch-modes-menu.nav.nav-stacked {
     .i-close {
       right: -3px;
     }
-    .key{
+
+    .key {
       padding-right: 32px;
     }
-
   }
 
   .notes {
@@ -1528,7 +1563,8 @@ ul.switch-modes-menu.nav.nav-stacked {
     .i-close {
       right: -3px;
     }
-    .key{
+
+    .key {
       padding-right: 32px;
     }
   }
@@ -1548,10 +1584,10 @@ ul.switch-modes-menu.nav.nav-stacked {
     }
   }
 
-  /* banner has bottom margin by default */
+  // banner has bottom margin by default
   .rzp-banner {
     margin-bottom: 0;
-    border-color: #eaeff0;
+    border-color: #EAEFF0;
     border-top-width: 0;
   }
 
@@ -1596,12 +1632,12 @@ ul.switch-modes-menu.nav.nav-stacked {
 
 .secondary-details {
   margin-top: 10px;
-  border-left: 2px solid rgb(234, 239, 240);
+  border-left: 2px solid rgb(234 239 240);
 
   .table-responsive {
     max-width: 475px;
-    border-left: 4px solid #e9eff0;
-    border-right: 1px solid #e9eff0;
+    border-left: 4px solid #E9EFF0;
+    border-right: 1px solid #E9EFF0;
   }
 
   .table {
@@ -1616,25 +1652,26 @@ ul.switch-modes-menu.nav.nav-stacked {
 
 .info-tooltip {
   font-size: 13px;
-  color: #ccc;
+  color: #CCC;
   margin-left: 4px;
 }
 
-.empty-table-message, .table > tbody > tr > td.empty-table {
+.empty-table-message,
+.table > tbody > tr > td.empty-table {
   padding: 75px 50px;
   text-align: center;
 
   &:hover {
-    background: #fff;
+    background: #FFF;
   }
 }
 
 .text-fade {
-  color: #919aa7;
+  color: #919AA7;
   font-size: 12px;
 }
 
-.InfoCard__value .text-fade{
+.InfoCard__value .text-fade {
   font-size: 20px;
 }
 
@@ -1682,8 +1719,8 @@ ul.switch-modes-menu.nav.nav-stacked {
 }
 
 .lottie-wrapper
-   > div:first-child
-      display: flex
+  > div:first-child
+    display: flex
 
 li.offers-for-you
   margin-left: 15px
@@ -1691,7 +1728,9 @@ li.offers-for-you
 
   a
     display: flex
+    // stylelint-disable-next-line declaration-no-important
     color: #2B83EA !important
+    // stylelint-disable-next-line declaration-no-important
     font-weight: 700 !important
 
     .lottie-wrapper
@@ -1701,34 +1740,37 @@ li.offers-for-you
       left: -17px
 
     &:hover
-      &:after
+      &::after
         border-radius: 5px
         height: 33px
         width: 141px
         position: absolute
-        content: ''
+        content: ""
         left: -22px
         top: 8px
         z-index: -1
-        background: rgba(57, 135, 240, 0.09)
+        background: rgb(57 135 240 / 0.09)
 
 li.offers-for-you-mobile
   max-width: 70px
 
-.lottie-disabled  {
-   cursor: not-allowed !important;
-   opacity: 0.5;
-    & > div:first-child {
-     cursor: not-allowed !important;
-    }
-  }
+.lottie-disabled {
+  // stylelint-disable-next-line declaration-no-important
+  cursor: not-allowed !important;
+  opacity: 0.5;
 
+  & > div:first-child {
+    // stylelint-disable-next-line declaration-no-important
+    cursor: not-allowed !important;
+  }
+}
 
 .transfers-onhold-datepicker div.DateInput {
   width: 100%;
 }
 
-form[name="createPaymentTransfer"], form[name="updatePaymentTransfer"] {
+form[name="createPaymentTransfer"],
+form[name="updatePaymentTransfer"] {
   div.RadioButton:first-child {
     margin-top: 0;
   }
@@ -1742,7 +1784,7 @@ form[name="createPaymentTransfer"], form[name="updatePaymentTransfer"] {
   }
 
   .CalendarDay--blocked-calendar {
-    background-color: rgba(0,0,0,0.05);
+    background-color: rgb(0 0 0 / 0.05);
     cursor: not-allowed;
   }
 }
@@ -1765,13 +1807,12 @@ span.transfer-scheduled-text.text-warning span.label--primary {
 .input-number-no-arrows
   &::-webkit-inner-spin-button,
   &::-webkit-outer-spin-button
-    -webkit-appearance: none;
-    -moz-appearance: none;
     appearance: none;
     margin: 0;
 
 .PowerSelect--focused,
 .PowerSelect__SearchInput:focus
+  // stylelint-disable-next-line declaration-no-important
   border-color: $primary-color !important;
 
 // Temporary fix for invisible triggers until react-power-select library is updated
@@ -1779,13 +1820,11 @@ span.transfer-scheduled-text.text-warning span.label--primary {
   overflow: hidden;
   max-width: 100px;
 
-
 .section-divide {
   height: 1px;
-  background: #ececec;
+  background: #ECECEC;
   margin: 24px 0;
 }
-
 
 .help-text
   line-height: 20px
@@ -1800,7 +1839,6 @@ span.transfer-scheduled-text.text-warning span.label--primary {
     vertical-align: top
     width: 90%
 
-
 .page-center
   position: absolute;
   left: 50%;
@@ -1809,19 +1847,21 @@ span.transfer-scheduled-text.text-warning span.label--primary {
   text-align: center;
 
 .no-min-height
-  min-height:0px;
+  min-height: 0;
 
 .transaparent
   background-color: transparent;
 
 .no-padding
-  padding:0px !important;
+  // stylelint-disable-next-line declaration-no-important
+  padding: 0 !important;
 
 .no-margin
-  margin:0px !important;
+  // stylelint-disable-next-line declaration-no-important
+  margin: 0 !important;
 
 .pad-top-50
-  padding-top:40px;
+  padding-top: 40px;
 
 .display-inline
   display: inline-block
@@ -1831,9 +1871,10 @@ span.transfer-scheduled-text.text-warning span.label--primary {
   max-width: 650px;
 
 // support widget space issue for phone
-@media(max-width: 424px)
+@media (max-width 424px)
   .layout
     padding-bottom: 150px
+
   .pagefooter
     bottom: 90px
 
