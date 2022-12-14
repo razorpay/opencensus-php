@@ -34,4 +34,11 @@ export const HIDDEN_INTERNATIONAL_FEATURES_TAGS = {
   TwoFactorVerification: 'i18_hide_2fa_verification',
   Gst: 'i18_hide_gst',
   AppSwitcher: 'i18_hide_app_switcher',
+  CheckoutInfo: 'i18_hide_settings.checkout_info',
+  FlashCheckout: 'i18_hide_settings.flash_checkout',
+  PaymentCapture: 'i18_hide_settings.payment_capture',
+  PaymentAndOrders: 'i18_show_only_payment_orders_webhooks',
+  International: 'i18_hide_international',
+  WhatsappNotification: 'i18_hide_whatsapp_notification',
+  MandateSummary: 'i18_hide_subscription.mandate_summary',
 };

@@ -5,7 +5,7 @@ import { Route, NavLink, withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import ShowWhen from 'merchant/components/ShowWhen';
+import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import ApiKeys from 'merchant/views/Settings/Keys/List';
 import Reminders from 'merchant/views/Settings/Reminders';
@@ -18,6 +18,7 @@ import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 const analyticsGoTo = (name) => {
   window.rzpAnalytics?.({
@@ -134,9 +135,15 @@ class Settings extends Component {
               </NavLink>
             </ShowWhen>
 
-            <NavLink to="/reminders" onClick={() => analyticsGoTo('Reminders')}>
-              Reminders
-            </NavLink>
+            <ShowWhen
+              additionalCondition={(user) =>
+                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Reminders)
+              }
+            >
+              <NavLink to="/reminders" onClick={() => analyticsGoTo('Reminders')}>
+                Reminders
+              </NavLink>
+            </ShowWhen>
 
             {this.state.isConnectedAppsFound ? (
               <ShowWhen additionalCondition={(user) => user.isAllowedView('applications')}>
@@ -165,7 +172,14 @@ class Settings extends Component {
                   />
                 )}
               />
-              <Route path="/reminders" component={Reminders} />
+
+              <ShowWhenRoute
+                additionalCondition={(user) =>
+                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Reminders)
+                }
+                path="/reminders"
+                component={Reminders}
+              />
 
               {this.state.isConnectedAppsFound ? (
                 <Route exact path="/applications" component={Applications} />

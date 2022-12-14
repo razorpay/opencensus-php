@@ -151,7 +151,7 @@ function SmsNotification({ currentUser, showNotification }) {
           <div className="description">
             Receive notifications {hideRazorpayTextLink ? '' : 'from Razorpay'} via SMS on
             your&nbsp;
-            <strong>+91 - {currentUser.contact_mobile}</strong>
+            <strong>{currentUser.contact_mobile}</strong>
           </div>
         </form>
       </div>

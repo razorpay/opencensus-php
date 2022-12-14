@@ -28,6 +28,7 @@ import Button from 'common/new-ui/Button';
 import { getCustomURL } from 'merchant/components/DocsLink';
 import EasterEgg from 'merchant/components/EasterEgg';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 const languageOptions = [
   { name: 'English', code: 'en' },
@@ -432,45 +433,51 @@ class CheckoutTheme extends Component {
                 )}
               </IntoView>
             </form>
-            <div className="footer-note">
-              Changes will reflect on{' '}
-              <ShowWhen
-                additionalCondition={() => user.isOrgAllowedFunctionality('external_links')}
-              >
-                <a
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  href={getCustomURL('https://razorpay.com/payment-gateway/')}
+            <ShowWhen
+              additionalCondition={(user) =>
+                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.CheckoutInfo)
+              }
+            >
+              <div className="footer-note">
+                Changes will reflect on{' '}
+                <ShowWhen
+                  additionalCondition={() => user.isOrgAllowedFunctionality('external_links')}
                 >
-                  Checkout page
-                </a>
-                ,{' '}
-                <a
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  href={getCustomURL('https://razorpay.com/payment-links/')}
-                >
-                  Payment Links
-                </a>
-                ,{' '}
-                <a
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  href={getCustomURL('https://razorpay.com/invoices/')}
-                >
-                  Invoices
-                </a>{' '}
-                &{' '}
-                <a
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  href={getCustomURL('https://razorpay.com/payment-pages')}
-                >
-                  Payment pages
-                </a>
-                {''}.
-              </ShowWhen>
-            </div>
+                  <a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href={getCustomURL('https://razorpay.com/payment-gateway/')}
+                  >
+                    Checkout page
+                  </a>
+                  ,{' '}
+                  <a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href={getCustomURL('https://razorpay.com/payment-links/')}
+                  >
+                    Payment Links
+                  </a>
+                  ,{' '}
+                  <a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href={getCustomURL('https://razorpay.com/invoices/')}
+                  >
+                    Invoices
+                  </a>{' '}
+                  &{' '}
+                  <a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href={getCustomURL('https://razorpay.com/payment-pages')}
+                  >
+                    Payment pages
+                  </a>
+                  {''}.
+                </ShowWhen>
+              </div>
+            </ShowWhen>
           </div>
         </div>
         <div className="panel-section--checkout">

@@ -16,6 +16,7 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { updateEmailSettings, updateConfig } from 'merchant/reducers/config';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 class EmailNotifications extends Component {
   constructor(props) {
@@ -162,9 +163,13 @@ class EmailNotifications extends Component {
   };
 
   render() {
+    const { user } = this.props;
+    const description = `Enter email addresses that will receive email notifications regarding payments,${
+      user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements) ? '' : 'settlements, '
+    }daily payment reports, webhooks, etc. (You can enter multiple email addresses separated by a comma.)`;
     return (
       <div>
-        {this.props.user.role === rolesList.OWNER && (
+        {user.role === rolesList.OWNER && (
           <div className="panel panel-default ftx-parent">
             <div className="panel-heading">
               <span className="title">
@@ -174,11 +179,7 @@ class EmailNotifications extends Component {
 
             <div className="panel-body">
               <form className="form-horizontal" onSubmit={this.onSave}>
-                <div className="description">
-                  Enter email addresses that will receive email notifications regarding payments,
-                  settlements, daily payment reports, webhooks, etc. (You can enter multiple email
-                  addresses separated by a comma.)
-                </div>
+                <div className="description">{description}</div>
 
                 <div className="form-group">
                   <div className="col-sm-10">

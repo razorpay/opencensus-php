@@ -40,6 +40,7 @@ import EasterEgg from 'merchant/components/EasterEgg';
 import Firc from './components/FircAnnouncements/Firc';
 import ToggleSetting from './ToggleSetting';
 import { flashCheckoutProps, skipCardMandateSummaryProps } from './settings-config-constants';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 // eslint-disable-next-line react/no-unsafe
 class CongfigurationContainer extends Component {
@@ -368,22 +369,59 @@ class CongfigurationContainer extends Component {
                 <MissedOrderPaymentLink />
               </IntoView>
             )}
-            {user.isOrgAllowedFunctionality('flashcheckout') && (
+
+            <ShowWhen
+              additionalCondition={(user) =>
+                user.isOrgAllowedFunctionality('flashcheckout') &&
+                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.FlashCheckout)
+              }
+            >
               <IntoView hashedWith={FLASH_CHECKOUT}>
                 <ToggleSetting {...flashCheckoutProps} org={org} />
               </IntoView>
-            )}
-            <IntoView hashedWith={CAPTURE_SETTINGS}>
-              <PaymentSettings org={org} />
-            </IntoView>
-            <IntoView hashedWith={REFUND_SETTINGS}>
-              <DefaultRefundSpeed org={org} />
-            </IntoView>
-            {user?.international && <Firc />}
+            </ShowWhen>
+
+            <ShowWhen
+              additionalCondition={(user) =>
+                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentCapture)
+              }
+            >
+              <IntoView hashedWith={CAPTURE_SETTINGS}>
+                <PaymentSettings org={org} />
+              </IntoView>
+            </ShowWhen>
+
+            <ShowWhen
+              additionalCondition={(user) =>
+                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
+              }
+            >
+              <IntoView hashedWith={REFUND_SETTINGS}>
+                <DefaultRefundSpeed org={org} />
+              </IntoView>
+            </ShowWhen>
+
+            <ShowWhen
+              additionalCondition={(user) =>
+                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.International) &&
+                user?.international
+              }
+            >
+              <Firc />
+            </ShowWhen>
+
             <ShowWhen additionalCondition={this.shouldShowFeeBearerSelfServe}>
               <FeeBearerSelfserver />
             </ShowWhen>
-            {mode === 'live' && showInternationalPaymentsCard && (
+
+            <ShowWhen
+              additionalCondition={(user) =>
+                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.International) &&
+                user.international &&
+                mode === 'live' &&
+                showInternationalPaymentsCard
+              }
+            >
               <InternationalPayments
                 user={user}
                 mode={mode}
@@ -391,26 +429,48 @@ class CongfigurationContainer extends Component {
                 org={org}
                 paypal_terminals={paypal_terminals}
               />
-            )}
+            </ShowWhen>
+
             <IntoView hashedWith={EMAIL_NOTIF}>
               <EmailNotifications form="configForm" onSave={this.saveConfig} />
             </IntoView>
+
             {user.contact_mobile && (
               <IntoView hashedWith={SMS_NOTIF}>
                 <SmsNotification />
               </IntoView>
             )}
-            {this.isWhatsappNotificationEnabled(user) && (
+
+            <ShowWhen
+              additionalCondition={(user) =>
+                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.WhatsappNotification) &&
+                this.isWhatsappNotificationEnabled(user)
+              }
+            >
               <IntoView hashedWith={WHATSAPP_NOTIF}>
                 <WhatsappNotification />
               </IntoView>
-            )}
-            <IntoView hashedWith={SKIP_CARD_MANDATE_SUMMARY}>
-              <ToggleSetting {...skipCardMandateSummaryProps} />
-            </IntoView>
+            </ShowWhen>
+
+            <ShowWhen
+              additionalCondition={(user) =>
+                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.MandateSummary)
+              }
+            >
+              <IntoView hashedWith={SKIP_CARD_MANDATE_SUMMARY}>
+                <ToggleSetting {...skipCardMandateSummaryProps} />
+              </IntoView>
+            </ShowWhen>
           </div>
         )}
-        <EasterEgg extraClass="ftx-settings-page-mweb" page="Settings" />
+
+        <ShowWhen
+          additionalCondition={(user) =>
+            !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Announcements)
+          }
+        >
+          <EasterEgg extraClass="ftx-settings-page-mweb" page="Settings" />
+        </ShowWhen>
       </div>
     );
   }

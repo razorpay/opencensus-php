@@ -18,6 +18,7 @@ import DocsLink from 'merchant/components/DocsLink';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import sanitizer from 'common/utils/xss-sanitizer';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 class webhookForm extends Component {
   state = {
@@ -91,6 +92,20 @@ class webhookForm extends Component {
               [eventGroup]: [...(_events[eventGroup] || []), rawEvent],
             };
           }, {});
+
+          // Remove i18 Malaysian merchant un-supported webhooks
+          if (
+            this.props?.userData?.findTag &&
+            this.props.userData.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentAndOrders)
+          ) {
+            Object.keys(events).forEach((eventGroupKey) => {
+              // Currently we are only allowing the order | payments for webhooks.
+              if (!(eventGroupKey === 'order' || eventGroupKey === 'payment')) {
+                delete events[eventGroupKey];
+              }
+            });
+          }
+
           this.setState(
             {
               groupedWebhooks: events,
