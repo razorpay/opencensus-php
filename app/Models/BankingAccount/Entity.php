@@ -135,11 +135,12 @@ class Entity extends Base\PublicEntity
     const BALANCE                            = 'balance';
     const REVIEWERS                          = 'reviewers';
     const SPOCS                              = 'spocs';
+    const OPS_MX_POCS                        = 'ops_mx_pocs';
     const FEE_RECOVERY_DETAILS               = 'fee_recovery_details';
     const BANKING_ACCOUNT_CA_SPOC_DETAILS    = 'banking_account_ca_spoc_details';
 
 
-    // Constants for reviewers() and spocs relation
+    // Constants for reviewers() and spocs and ops_mx_poc relation
     const REVIEWER_ID             = 'reviewer_id';
     const SALES_POC_ID            = 'sales_poc_id';
     const ADMIN_ID                = 'admin_id';
@@ -148,6 +149,8 @@ class Entity extends Base\PublicEntity
     const ENTITY                  = 'entity';
     const ENTITY_ID               = 'entity_id';
     const PENDING_ON              = 'pending_on';
+    const OPS_MX_POC              = 'ops_mx_poc';
+    const OPS_MX_POC_ID           = 'ops_mx_poc_id';
 
     const IDS           = 'ids';
 
@@ -308,8 +311,10 @@ class Entity extends Base\PublicEntity
         self::USING_NEW_STATES,
         'activationCallLog',
         'activationComments',
+        'opsMxPocs',
         self::REVIEWERS,
         self::SPOCS,
+        self::OPS_MX_POCS,
         self::PASSWORD,
     ];
 
@@ -671,6 +676,14 @@ class Entity extends Base\PublicEntity
                     ->where(Entity::AUDITOR_TYPE, '=', 'spoc');
     }
 
+    // Merchant-facing external/ops POCs
+    public function opsMxPocs()
+    {
+        return $this->morphToMany(Admin\Entity::class, self::ENTITY, Table::ADMIN_AUDIT_MAP, self::ENTITY_ID, Entity::ADMIN_ID)
+                    ->withPivot(Entity::AUDITOR_TYPE)
+                    ->where(Entity::AUDITOR_TYPE, '=', Entity::OPS_MX_POC);
+    }
+
     public function activationStates()
     {
         return $this->hasMany('\RZP\Models\BankingAccount\State\Entity');
@@ -728,6 +741,12 @@ class Entity extends Base\PublicEntity
                     ->get();
     }
 
+    public function getOpsMxPocs()
+    {
+        return $this->opsMxPocs()
+                    ->orderBy(Model::CREATED_AT)
+                    ->get();
+    }
     // ----------------------- Public setters ---------------------------------
 
     public function setPublicFeeRecoveryDetailsAttribute(array & $array)

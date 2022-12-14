@@ -245,7 +245,7 @@ class Validator extends Base\Validator
         Entity::ADDITIONAL_DETAILS                  => 'sometimes|json',
         Entity::SALES_TEAM                          => 'sometimes|string|max:255|custom',
         Entity::SALES_POC_PHONE_NUMBER              => 'sometimes|string|max:255',
-        Entity::ASSIGNEE_TEAM                       => 'sometimes|string|nullable|in:ops,bank,sales,bank_ops',
+        Entity::ASSIGNEE_TEAM                       => 'sometimes|string|nullable|in:ops,bank,sales,bank_ops,ops_mx_poc',
         Entity::RM_NAME                             => 'sometimes|string|nullable|max:255',
         Entity::RM_PHONE_NUMBER                     => 'sometimes|string|nullable|max:255',
         Entity::BOOKING_DATE_AND_TIME               => 'sometimes|epoch',

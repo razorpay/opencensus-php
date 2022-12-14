@@ -210,6 +210,20 @@ class Repository extends Base\Repository
         });
     }
 
+    public function addQueryParamOpsMxPOCId($query, $params)
+    {
+        AdminEntity::verifyIdAndStripSign($params[Entity::OPS_MX_POC_ID]);
+
+        return $query->whereExists(function ($q) use ($params) {
+            $q->select('admin_id')
+                ->from(Table::ADMIN_AUDIT_MAP)
+                ->where('admin_id', '=', $params[Entity::OPS_MX_POC_ID])
+                ->where(Entity::AUDITOR_TYPE, '=', Entity::OPS_MX_POC)
+                ->where('entity_type', '=', 'banking_account')
+                ->whereRaw(Table::BANKING_ACCOUNT.'.'.Entity::ID.' = '.Table::ADMIN_AUDIT_MAP.'.'.Entity::ENTITY_ID);
+        });
+    }
+
     /**
      * Get all banking accounts where either (`admin_id` is reviewer and `assignee_team` is ops)
      * or (`admin_id` is spoc and `assignee_team` is sales)
@@ -369,7 +383,7 @@ class Repository extends Base\Repository
         // this value will be coming from Partner LMS
         if ($assigneeTeam == 'rzp')
         {
-            $assigneeTeam = [ActivationDetail\Entity::OPS, ActivationDetail\Entity::SALES];
+            $assigneeTeam = [ActivationDetail\Entity::OPS, ActivationDetail\Entity::SALES, Entity::OPS_MX_POC];
         }
         else if ($assigneeTeam === ActivationDetail\Entity::BANK or $assigneeTeam === ActivationDetail\Entity::OPS)
         {

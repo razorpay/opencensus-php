@@ -135,6 +135,7 @@ class Validator extends Base\Validator
         Entity::REFERENCE1                      => 'filled|string',
         Entity::INTERNAL_COMMENT                => 'sometimes|max:255',
         Entity::DETAILS                         => 'sometimes|array',
+        Entity::OPS_MX_POC_ID                   => 'sometimes|string',
     ];
 
     // For Current Account form on dashboard

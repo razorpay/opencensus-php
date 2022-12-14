@@ -2115,6 +2115,32 @@ class Core extends Base\Core
 
     /**
      * @param Entity $bankingAccount
+     * @param string $opsMxPOCId
+     */
+    public function addOpsMxPOCToBankingAccount(Entity $bankingAccount, string $opsMxPOCId)
+    {
+        $opsMxPOC = $this->repo->admin->findByPublicId($opsMxPOCId);
+
+        $existingOpsMxPOC = $bankingAccount->opsMxPocs()
+            ->where(Entity::AUDITOR_TYPE, '=', Entity::OPS_MX_POC)
+            ->first();
+
+        // If banking account already has an MX POC, detach the MX POC from the banking account.
+        // The new MX POC will be attached to the banking account below,
+        // effectively assigning the banking account the new MX POC.
+        if (empty($existingOpsMxPOC) === false)
+        {
+            $existingOpsMxPOCId = $existingOpsMxPOC->pivot->admin_id;
+            $bankingAccount->opsMxPocs()->detach($existingOpsMxPOCId);
+        }
+
+        $bankingAccount->opsMxPocs()->attach($opsMxPOC, [Entity::AUDITOR_TYPE => Entity::OPS_MX_POC]);
+
+        $this->repo->saveOrFail($bankingAccount);
+    }
+
+    /**
+     * @param Entity $bankingAccount
      * @param string $beneficiaryPin
      * @param string $beneficiaryName
      * @return bool

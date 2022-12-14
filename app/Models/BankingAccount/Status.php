@@ -779,10 +779,11 @@ class Status
             self::NEEDS_CLARIFICATION_FROM_RZP => Activation\Detail\Entity::SALES,
             self::FOLLOW_UP_REQUESTED_BY_MERCHANT => Activation\Detail\Entity::BANK,
             self::API_DOCKET_NOT_RECEIVED => Activation\Detail\Entity::OPS,
-            self::KYC_ISSUE_WITH_CLIENT => Activation\Detail\Entity::SALES,
+            self::KYC_ISSUE_WITH_CLIENT => Entity::OPS_MX_POC,
             self::ASSIGNED_TO_INSIGNIA => Activation\Detail\Entity::BANK,
             self::ASSIGNED_TO_PCARM => Activation\Detail\Entity::BANK,
             self::ASSIGNED_TO_BRANCH => Activation\Detail\Entity::BANK,
+            self::CUSTOMER_NOT_RESPONDING_EXTERNAL => Entity::OPS_MX_POC,
         ],
         self::DOC_COLLECTION => [
             self::VISIT_DUE => Activation\Detail\Entity::BANK,
@@ -792,6 +793,7 @@ class Status
             self::FOLLOW_UP_PARTIAL_AC_DOCS_AVAILABLE => Activation\Detail\Entity::BANK,
             self::FOLLOW_UP_API_DOCS_UNAVAILABLE => Activation\Detail\Entity::BANK,
             self::PICKED_UP_DOCS => Activation\Detail\Entity::BANK,
+            self::CUSTOMER_NOT_RESPONDING_EXTERNAL => Entity::OPS_MX_POC,
         ],
         self::ACCOUNT_OPENING => [
             self::IN_REVIEW => Activation\Detail\Entity::BANK,
@@ -820,7 +822,7 @@ class Status
             self::UPI_ACTIVATED => null,
         ],
         self::ARCHIVED => [
-            self::IN_PROCESS => Activation\Detail\Entity::OPS,
+            self::IN_PROCESS => Entity::OPS_MX_POC,
             self::CLIENT_NOT_RESPONDING => null,
             self::DIRECTOR_PARTNER_IS_UNAVAILABLE => null,
             self::CLIENT_NOT_INTERESTED_ALREADY_HAS_ACCOUNT_WITH_DIFFERENT_BANK => null,

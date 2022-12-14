@@ -11277,4 +11277,54 @@ class BankingAccountTest extends TestCase
 
         $this->verifyFreshDeskTicketCreationBehaviourForSalesLed($ba->getId(), $baActivationDetail->getId(), [], $activationDetail, $admin);
     }
+
+    public function testGetOpsMxPocsList()
+    {
+        $this->ba->adminAuth();
+
+        $admin = $this->fixtures->create('admin', [
+            Admin\Admin\Entity::ID => 'randomMxPocsId',
+            Admin\Admin\Entity::ORG_ID => Org::RZP_ORG,
+            Admin\Admin\Entity::EMAIL => 'nuhaid.pasha@cnx.razorpay.com',
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testAssignOpsMxPocToBankingAccount()
+    {
+        $this->ba->adminAuth();
+
+        $admin = $this->fixtures->create('admin', [
+            Admin\Admin\Entity::ID => 'randomMxPocsId',
+            Admin\Admin\Entity::ORG_ID => Org::RZP_ORG,
+            Admin\Admin\Entity::EMAIL => 'randomcnxemail@cnx.razorpay.com',
+        ]);
+
+        $adminId = 'admin_' . $admin[Admin\Admin\Entity::ID];
+
+        $bankingAccount = $this->testCreateBankingAccountWithActivationDetail();
+
+        $bankingAccountData = [
+            'activation_detail' => [
+                BankingAccount\Entity::OPS_MX_POC_ID => $adminId,
+            ],
+        ];
+
+        $this->updateBankingAccount($bankingAccount, $bankingAccountData);
+
+        $request = [
+            'request' => [
+                'url' => '/admin/banking_account/' . 'bacc_' . $bankingAccount->getId(),
+            ],
+            'response' => [
+                'content' => [
+                    'id' => 'bacc_' . $bankingAccount->getId(),
+                ],
+            ]
+        ];
+
+        $this->startTest($request);
+    }
+
 }

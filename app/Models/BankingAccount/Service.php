@@ -979,6 +979,19 @@ class Service extends Base\Service
         return multidim_array_unique($admins, Admin\Entity::ID);
     }
 
+    public function getBankingAccountOpsMxPocs()
+    {
+        $orgId = $this->auth->getOrgId();
+
+        Org\Entity::verifyIdAndStripSign($orgId);
+
+        $mxPocEmails = OpsMxPocEmails::$mxPocEmails;
+
+        $admins = (new Admin\Repository())->fetchByOrgIDAndEmailIDs($orgId, $mxPocEmails)->toArray();
+
+        return $admins;
+    }
+
     public function CheckServiceableByRBL($pinCode, bool $includeIcici = false): array
     {
         $errorMessage = "PINCODE is not valid";

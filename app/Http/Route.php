@@ -3203,6 +3203,7 @@ class Route
         'banking_account_statement_source_update_validate'   => ['post',   'banking_account_statement/source/update/validate',         'BankingAccountStatementController@validateSourceLinkingUpdate'            ],
 
         'banking_account_activation_spocs'        => ['get',      'banking_accounts/activation/spocs',                          'BankingAccountController@getBankingAccountSalesPOCs'       ],
+        'banking_account_ops_mx_pocs'             => ['get',      'banking_accounts/activation/ops_mx_pocs',                    'BankingAccountController@getBankingAccountOpsMxPocs'       ],
         'banking_accounts_auditor_daily_updates'  => ['post',     'banking_accounts/activation/{auditorType}/daily-updates',   'BankingAccountController@sendDailyUpdatesToAuditors'        ],
 
         // Create for payout service
@@ -6992,6 +6993,7 @@ class Route
         'merchant_activation_bulk_assign_reviewer',
         'merchant_activation_reviewers',
         'banking_account_activation_spocs',
+        'banking_account_ops_mx_pocs',
 
         // batch Service
         'batch_service_route',
@@ -8588,6 +8590,7 @@ class Route
         'banking_account_activation_status_'
         . 'change_log'                             => Permission::VIEW_ACTIVATION_FORM,
         'banking_account_activation_spocs'         => Permission::VIEW_ACTIVATION_FORM,
+        'banking_account_ops_mx_pocs'              => Permission::VIEW_ACTIVATION_FORM,
         'banking_account_activation_detail_create' => Permission::VIEW_ACTIVATION_FORM,
         'banking_account_activation_detail_update' => Permission::VIEW_ACTIVATION_FORM,
         'banking_account_activation_detail_update'.
@@ -11418,6 +11421,7 @@ class Route
             'banking_account_activation_detail_update_internal',
             'banking_account_activation_mis_download',
             'banking_account_activation_spocs',
+            'banking_account_ops_mx_pocs',
             'banking_account_activation_status_change_log',
             'banking_account_bulk_assign_reviewer',
             'banking_account_comment_edit',

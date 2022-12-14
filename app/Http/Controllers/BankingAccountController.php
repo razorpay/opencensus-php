@@ -223,7 +223,6 @@ class BankingAccountController extends Controller
         return ApiResponse::json($response);
     }
 
-
     public function postCreateActivationDetail(string $bankingAccountId)
     {
         $response = $this->activationDetailService->createForBankingAccount($bankingAccountId, $this->input);
@@ -313,6 +312,13 @@ class BankingAccountController extends Controller
     public function getBankingAccountSalesPOCs()
     {
         $response = $this->service()->getBankingAccountSalesPOCs();
+
+        return ApiResponse::json($response);
+    }
+
+    public function getBankingAccountOpsMxPocs()
+    {
+        $response = $this->service()->getBankingAccountOpsMxPocs();
 
         return ApiResponse::json($response);
     }

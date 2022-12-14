@@ -78,4 +78,5 @@ class Repository extends Base\Repository
             ->whereIn(Entity::EMAIL, $emails)
             ->get();
     }
+
 }

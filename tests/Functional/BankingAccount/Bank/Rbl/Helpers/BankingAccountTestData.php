@@ -5002,6 +5002,51 @@ return [
         'response' => [
             'content' => []
         ]
-    ]
+    ],
+
+    'testGetOpsMxPocsList' => [
+        'request'  => [
+            'url'         => '/banking_accounts/activation/ops_mx_pocs',
+            'method'      => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'success'     => 'true',
+            'content'     => [
+                [
+                    'id'     => 'randomMxPocsId',
+                    'email'  => 'nuhaid.pasha@cnx.razorpay.com',
+                ],
+            ],
+        ],
+    ],
+
+    'testAssignOpsMxPocToBankingAccount' => [
+        'request'  => [
+            'url'         => '/admin/banking_account/bacc_{id}',
+            'method'      => 'GET',
+            'content'     => [
+                'expand'      => ['opsMxPocs'],
+            ],
+        ],
+        'response' => [
+            'status_code' => 200,
+            'success'     => 'true',
+            'content'     => [
+                'id'          => 'bacc_{id}',
+                'ops_mx_pocs' => [
+                    'entity'    => 'collection',
+                    'count'     => 1,
+                    'admin'     => true,
+                    'items'     => [
+                        [
+                            'id'    => 'admin_randomMxPocsId',
+                            'email' => 'randomcnxemail@cnx.razorpay.com',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
 
 ];

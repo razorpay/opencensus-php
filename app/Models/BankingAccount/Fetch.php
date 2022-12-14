@@ -22,7 +22,7 @@ class Fetch extends BaseFetch
             Entity::REVIEWER_ID           => 'sometimes|string',
         ],
         AuthType::PRIVILEGE_AUTH => [
-            self::EXPAND_EACH             => 'filled|string|in:merchant,merchant.merchantDetail,merchant.promotions.promotion,banking_account_details,reviewers,spocs,banking_account_activation_details,activationCallLog,activationComments',
+            self::EXPAND_EACH             => 'filled|string|in:merchant,merchant.merchantDetail,merchant.promotions.promotion,banking_account_details,reviewers,spocs,banking_account_activation_details,activationCallLog,activationComments,opsMxPocs',
             Entity::MERCHANT_EMAIL                      => 'sometimes|string',
             Entity::MERCHANT_BUSINESS_NAME              => 'sometimes|string',
             Entity::MERCHANT_POC_CITY                   => 'sometimes|string',
@@ -48,7 +48,8 @@ class Fetch extends BaseFetch
             Entity::PENDING_ON                          => 'sometimes|string',
             Entity::FROM_OPS_FOLLOW_UP_DATE             => 'sometimes|epoch',
             Entity::TO_OPS_FOLLOW_UP_DATE               => 'sometimes|epoch',
-            Entity::SKIP_DWT                            => 'sometimes|int'
+            Entity::SKIP_DWT                            => 'sometimes|int',
+            Entity::OPS_MX_POC_ID                       => 'sometimes|string',
         ],
     ];
 
@@ -92,6 +93,7 @@ class Fetch extends BaseFetch
             Entity::FROM_OPS_FOLLOW_UP_DATE,
             Entity::TO_OPS_FOLLOW_UP_DATE,
             Entity::SKIP_DWT,
+            Entity::OPS_MX_POC_ID,
             self::EXPAND_EACH,
         ]
     ];

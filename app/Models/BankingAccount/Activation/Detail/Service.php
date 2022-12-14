@@ -290,6 +290,9 @@ class Service extends Base\Service
             // Adding Sales POC to admin_audit_map table
             $this->addSalesPOCToBankingAccountIfApplicable($bankingAccount, $input);
 
+            // Adding Ops MX POC to admin_audit_map table
+            $this->addOpxMxPOCToBankingAccountIfApplicable($bankingAccount, $input);
+
             $isPanEdit = $this->checkIfPanEdit($activationDetail, $input);
 
             $isMerchantPocNameEdit = $this->checkIfMerchantPocNameEdit($activationDetail, $input);
@@ -409,6 +412,20 @@ class Service extends Base\Service
             $bankingAccountCore->addSalesPOCToBankingAccount($bankingAccount, $salesPocId);
 
             unset($input[Entity::SALES_POC_EMAIL]);
+        }
+    }
+
+    protected function addOpxMxPOCToBankingAccountIfApplicable(BankingAccount\Entity $bankingAccount, array &$input)
+    {
+        if (isset($input[BankingAccount\Entity::OPS_MX_POC_ID]) === true)
+        {
+            $opsMxPOCId = $input[BankingAccount\Entity::OPS_MX_POC_ID];
+
+            $bankingAccountCore = new BankingAccount\Core;
+
+            $bankingAccountCore->addOpsMxPOCToBankingAccount($bankingAccount, $opsMxPOCId);
+
+            unset($input[BankingAccount\Entity::OPS_MX_POC_ID]);
         }
     }
 
