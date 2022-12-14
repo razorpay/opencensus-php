@@ -1492,6 +1492,45 @@ class Constants
     const ENABLE_ORG_ACCOUNT = "enable_org_account";
     const OLD_CUSTOM_SETTL_FLOW = "old_custom_settl_flow";
 
+    /* Banking pod Feature flags */ 
+    
+    // hdfc pl/pp
+    const ENABLE_PAYER_NAME_FOR_PL = 'enable_payer_name_for_pl';
+
+    const HIDE_NO_EXPIRY_FOR_PL = 'hide_no_expiry_for_pl';
+
+    const ENABLE_PAYER_NAME_FOR_PP = 'enable_payer_name_for_pp';
+
+    const HIDE_NO_EXPIRY_FOR_PP = 'hide_no_expiry_for_pp';
+
+    const HIDE_CREATE_NEW_TEMPLATE_PP = 'hide_create_new_tmpl_pp';
+
+    const HIDE_DYNAMIC_PRICE_PP = 'hide_dynamic_price_pp';
+
+    const SHOW_PNAME_IN_CHECKOUT = 'show_pname_in_chkout';
+
+    // form builder
+
+    const FILE_UPLOAD_PP = 'file_upload_pp';
+
+    // udf additional fields 
+
+    const ENABLE_ADDITIONAL_INFO_UPI = 'enable_addtl_info_upi'; 
+
+    // merchant T&C 
+
+    const ENABLE_TC_DASHBOARD = 'enable_tc_dashboard';
+
+    const DISABLE_TC_DASHBOARD = 'disable_tc_dashboard'; 
+
+    // si billdesk 
+
+    const CYBERSOURCE_SI_TXN_LIVE = 'cybersource_si_txn_live';
+
+    //  QR
+
+    const DISABLE_QR_V2 = 'disable_qr_v2';
+
     // This feature will be used to control the rollout of authorization via authz enforcer
     const AUTHORIZE_VIA_AUTHZ = 'authorize_via_authz';
 
@@ -2232,6 +2271,19 @@ class Constants
         self::CANCEL_SETTLE_TO_BANK           => true,
         self::ENABLE_ORG_ACCOUNT              => true,
         self::OLD_CUSTOM_SETTL_FLOW           => true,
+        self::ENABLE_PAYER_NAME_FOR_PL        => true,
+        self::HIDE_NO_EXPIRY_FOR_PL           => true,
+        self::ENABLE_PAYER_NAME_FOR_PP        => true,
+        self::HIDE_NO_EXPIRY_FOR_PP           => true,
+        self::HIDE_CREATE_NEW_TEMPLATE_PP     => true,
+        self::HIDE_DYNAMIC_PRICE_PP           => true,
+        self::SHOW_PNAME_IN_CHECKOUT          => true,
+        self::FILE_UPLOAD_PP                  => true,
+        self::ENABLE_ADDITIONAL_INFO_UPI      => true,
+        self::ENABLE_TC_DASHBOARD             => true,
+        self::DISABLE_TC_DASHBOARD            => true,
+        self::CYBERSOURCE_SI_TXN_LIVE         => true,
+        self::DISABLE_QR_V2                   => true,
         self::AUTHORIZE_VIA_AUTHZ             => true,
         self::SR_SENSITIVE_BUCKET_1           => true,
         self::SR_SENSITIVE_BUCKET_2           => true,
