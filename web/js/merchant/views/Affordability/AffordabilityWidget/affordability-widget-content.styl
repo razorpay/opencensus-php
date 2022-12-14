@@ -11,8 +11,11 @@
     overflow: hidden
     z-index: 2
     position: relative
-    background-color: #F4FDFF
+    background-color: #FFF
     background-size: cover
+
+    @media (max-width 1260px)
+      display: none
 
     img
       width: 100%
@@ -21,6 +24,11 @@
 
   .Product--Details
     margin-top: 25px
+    padding 0 48px
+
+    @media (max-width 1260px)
+      padding 0 24px
+      width auto
 
     .Details-heading
       .dash
@@ -69,37 +77,37 @@
         margin-top: 30px
         margin-bottom: 30px
         display: grid
-        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr))
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr))
         align-content: stretch;
         max-width: 475px
         gap: 28px 12px
 
         @media (max-width 450px)
-          grid-template-columns: repeat(auto-fit, minmax(94px, 1fr))
+          grid-template-columns: repeat(auto-fit, minmax(80px, 1fr))
           max-width: 475px
           gap: 28px 11px
 
         @media (max-width 375px)
-          grid-template-columns: repeat(auto-fit, minmax(84px, 1fr))
+          grid-template-columns: repeat(auto-fit, minmax(60px, 1fr))
           max-width: 360px
           gap: 20px 5px
 
         .benefit-tile
           width: 100%
-          height: auto
+          height: 100%
           padding: 10px
           display: flex
           flex-direction: column
           align-items: center
           justify-content: center
           background: #FFF
-          box-shadow: 0 0 4px rgb(0 0 0 / 0.25)
+          box-shadow: 0 0 4px #00000040
           position: relative
           padding-top: 20px
 
           @media (max-width 450px)
-            height: auto
-            padding-top: 10px
+            height: 100%
+            padding-top: 8px
 
           .icon-wrapper
             height: 62px
