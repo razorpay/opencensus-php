@@ -57,6 +57,8 @@ class Constants
     const COMMISSION_COMPUTED_NEGATIVE_EVENT_NAME  =  'commission_computed_negative';
 
     const COMMISSIONS_EVENTS_TOPIC        =  'events.commission-events.v1.';
+    const COMMISSION_EVENTS               =  'commission-events';
+    const COMMISSION_EVENTS_VERSION       =  'v1';
 
     const COMMISSION_SYNC_OUTBOX_JOB      = 'partnerships.commission_sync.v1';
 

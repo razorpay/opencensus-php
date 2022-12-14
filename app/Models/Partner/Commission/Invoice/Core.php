@@ -19,6 +19,7 @@ use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant\Metric;
+use RZP\Services\KafkaProducer;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Pricing\Calculator;
@@ -31,6 +32,7 @@ use RZP\Mail\Merchant\CommissionInvoice;
 use RZP\Mail\Merchant\CommissionProcessed;
 use RZP\Mail\Merchant\CommissionOpsInvoice;
 use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Diag\Event\OnBoardingEvent;
 use RZP\Mail\Merchant\CommissionInvoiceIssued;
 use RZP\Mail\Merchant\CommissionInvoiceReminder;
 use RZP\Models\Admin\Permission\Name as Permission;
@@ -304,6 +306,7 @@ class Core extends Base\Core
 
         $eventData = [
             'partner_id'                =>  $data['merchant']['id'],
+            'invoice_id'                =>  $invoice->getId(),
             'month_of_commission'       =>  $invoice->getMonth().'-'.$invoice->getYear(),
             'commission_amount'         =>  $data['invoice']['gross_amount_spread'][0].' '.$data['invoice']['gross_amount_spread'][1].'.'.$data['invoice']['gross_amount_spread'][2],
         ] ;
@@ -320,7 +323,17 @@ class Core extends Base\Core
                 'data'   => $eventData,
             ]);
 
-        $this->app['diag']->trackOnboardingEvent($eventCode, $invoice->merchant, null, $eventData);
+        if ($this->isLumberJackToKafkaExpEnabled($eventData['partner_id']) === true)
+        {
+            $this->sendEventToKafkaTopic(Commission\Constants::COMMISSION_EVENTS,
+                $eventCode['name'],
+                Commission\Constants::COMMISSION_EVENTS_VERSION,
+                $eventData);
+        }
+        else
+        {
+            $this->app['diag']->trackOnboardingEvent($eventCode, $invoice->merchant, null, $eventData);
+        }
     }
 
     public function sendCommissionProcessedMail(Entity $invoice, string $pdfPath)
@@ -954,5 +967,51 @@ class Core extends Base\Core
         ];
 
         return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+    }
+
+    /**
+     * Checks whether event is allowed directly to kafka topic instead of lumberjack.
+     *
+     * @param string $merchantId
+     *
+     * @return bool
+     */
+    private function isLumberJackToKafkaExpEnabled(string $merchantId): bool
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.commission_invoice_events_to_kafka_exp_id'),
+        ];
+
+        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+    }
+
+    /**
+     * sends event to kafka topic
+     *
+     * @param string $eventType
+     * @param string $eventName
+     * @param string $eventVersion
+     * @param array  $properties
+     *
+     */
+    private function sendEventToKafkaTopic(string $eventType, string $eventName, string $eventVersion, array $properties)
+    {
+        $now             = Carbon::now()->timestamp;
+        $event           = [
+            'event_type'         => $eventType,
+            'event_name'         => $eventName,
+            'version'            => $eventVersion,
+            'event_timestamp'    => $now,
+            'producer_timestamp' => $now,
+            'source'             => "commission_invoice",
+            'mode'               => $this->mode,
+            'properties'         => $properties,
+            'context'            => [
+                'request_id' => $this->app['request']->getId(),
+                'task_id'    => $this->app['request']->getTaskId()
+            ],
+        ];
+        (new KafkaProducer(Commission\Constants::COMMISSIONS_EVENTS_TOPIC . $this->mode, stringify($event)))->Produce();
     }
 }
