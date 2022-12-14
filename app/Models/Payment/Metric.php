@@ -36,6 +36,7 @@ class Metric extends Base\Core
     const LABEL_UPI_FLOW                        = 'upi_flow';
     const LABEL_UPI_PSP                         = 'upi_psp';
     const LABEL_PAYMENT_IS_TPV                  = 'is_tpv';
+    const LABEL_PAYMENT_MANDATE_HUB             = 'mandate_hub';
 
     const LABEL_LIBRARY                         = 'library';
 
@@ -298,12 +299,34 @@ class Metric extends Base\Core
             $vault = $card->getVault();
         }
 
-        $dimensions += [
-            self::LABEL_CARD_NETWORK    => $network  ?? null,
-            self::LABEL_CARD_TYPE       => $cardType ?? null,
-            self::LABEL_CARD_TOKENISED  => $tokenised ?? null,
-            self::LABEL_CARD_VAULT      => $vault ?? null
+        if ($payment->isCardRecurring() === true)
+        {
+            try
+            {
+                $token = $payment->localToken;
+                if((empty($token) === false) and ($token->hasCardMandate() === true))
+                {
+                    $cardMandate = $token->cardMandate;
+                    $mandateHub  = $cardMandate->getMandateHub();
+                }
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->info(
+                    TraceCode::FAILED_TO_FETCH_MANDATEHUB_FROM_PAYMENT,
+                    [
+                        'position' => 'PaymentDefaultDimensions',
+                        'message'  => 'Error in fetching Token details',
+                    ]);
+            }
+        }
 
+        $dimensions += [
+            self::LABEL_CARD_NETWORK        => $network  ?? null,
+            self::LABEL_CARD_TYPE           => $cardType ?? null,
+            self::LABEL_CARD_TOKENISED      => $tokenised ?? null,
+            self::LABEL_CARD_VAULT          => $vault ?? null,
+            self::LABEL_PAYMENT_MANDATE_HUB => $mandateHub ?? null,
         ];
 
         $upiDimensions = $this->getDefaultUpiDimensions($payment);
