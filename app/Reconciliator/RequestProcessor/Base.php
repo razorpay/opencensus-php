@@ -141,6 +141,7 @@ class Base extends Core
     const YES_BANK                 = 'YesBank';
     const HDFC_DEBIT_EMI           = 'HdfcDebitEmi';
     const INDUSIND_DEBIT_EMI       = 'IndusindDebitEmi';
+    const KOTAK_DEBIT_EMI          = 'KotakDebitEmi';
     const UPI_JUSPAY               = 'UpiJuspay';
     const UPI_AIRTEL               = 'UpiAirtel';
     const CRED                     = 'Cred';
@@ -243,6 +244,7 @@ class Base extends Core
         self::YES_BANK                 => ['yesacquirer@insolutionsglobal.com'],
         self::HDFC_DEBIT_EMI           => ['emailintimation@hdfcbank.com'],
         self::INDUSIND_DEBIT_EMI       => [],
+        self::KOTAK_DEBIT_EMI          => [],
         self::UPI_JUSPAY               => ['crs.upimerchantsettlement@axisbank.com'],
         self::UPI_AIRTEL               => [],
         self::UPI_YESBANK              => [],
@@ -395,7 +397,8 @@ class Base extends Core
         ],
         Gateway::BAJAJFINSERV           => self::BAJAJFINSERV,
         Gateway::HDFC_DEBIT_EMI         => self::HDFC_DEBIT_EMI,
-        Gateway::INDUSIND_DEBIT_EMI      => self::INDUSIND_DEBIT_EMI,
+        Gateway::INDUSIND_DEBIT_EMI     => self::INDUSIND_DEBIT_EMI,
+        Gateway::KOTAK_DEBIT_EMI        => self::KOTAK_DEBIT_EMI,
         Gateway::WORLDLINE              => self::VAS_AXIS,
         Gateway::TWID                   => self::TWID,
         Gateway::CHECKOUT_DOT_COM       => self::CHECKOUT_DOT_COM,

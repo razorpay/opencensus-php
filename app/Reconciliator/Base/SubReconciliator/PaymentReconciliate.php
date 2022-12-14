@@ -87,6 +87,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::EMANDATE_AXIS,
         RequestProcessor\Base::HDFC_DEBIT_EMI,
         RequestProcessor\Base::INDUSIND_DEBIT_EMI,
+        RequestProcessor\Base::KOTAK_DEBIT_EMI,
         RequestProcessor\Base::UPI_JUSPAY,
         RequestProcessor\Base::UPI_YESBANK,
         RequestProcessor\Base::NETBANKING_JKB,

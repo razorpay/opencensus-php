@@ -35,18 +35,19 @@ use Illuminate\Support\Str;
 
 class CardPaymentService
 {
-    const CONTENT_TYPE_HEADER      = 'Content-Type';
-    const ACCEPT_HEADER            = 'Accept';
-    const APPLICATION_JSON         = 'application/json';
-    const X_RAZORPAY_APP_HEADER    = 'X-Razorpay-App';
-    const X_RAZORPAY_TASKID_HEADER = 'X-Razorpay-TaskId';
-    const X_RAZORPAY_MODE_HEADER   = 'X-Razorpay-Mode';
-    const X_REQUEST_ID             = 'X-Request-ID';
-    const X_RAZORPAY_TRACKID       = 'X-Razorpay-TrackId';
-    const X_RZP_TESTCASE_ID        = 'X-RZP-TESTCASE-ID';
-    const RZPCTX_OPTIMIZER         = 'RZPCTX-OPTIMIZER';
-    const RZPCTX_MERCHANT_ID       = 'RZPCTX-MERCHANT-ID';
-    const RZPCTX_GATEWAY           = 'RZPCTX-GATEWAY';
+    const FETCH_PID_FROM_REF2_QUERY     = "SELECT payment_id FROM hive.realtime_pgpayments_card_live.authorization WHERE gateway='%s' and gateway_reference_id2= '%s'";
+    const CONTENT_TYPE_HEADER           = 'Content-Type';
+    const ACCEPT_HEADER                 = 'Accept';
+    const APPLICATION_JSON              = 'application/json';
+    const X_RAZORPAY_APP_HEADER         = 'X-Razorpay-App';
+    const X_RAZORPAY_TASKID_HEADER      = 'X-Razorpay-TaskId';
+    const X_RAZORPAY_MODE_HEADER        = 'X-Razorpay-Mode';
+    const X_REQUEST_ID                  = 'X-Request-ID';
+    const X_RAZORPAY_TRACKID            = 'X-Razorpay-TrackId';
+    const X_RZP_TESTCASE_ID             = 'X-RZP-TESTCASE-ID';
+    const RZPCTX_OPTIMIZER              = 'RZPCTX-OPTIMIZER';
+    const RZPCTX_MERCHANT_ID            = 'RZPCTX-MERCHANT-ID';
+    const RZPCTX_GATEWAY                = 'RZPCTX-GATEWAY';
 
     const REQUEST_TIMEOUT = 75; // Seconds
     const MAX_RETRY_COUNT = 1;
@@ -135,6 +136,20 @@ class CardPaymentService
         $response = $this->sendRawRequest($request);
 
         return $this->jsonToArray($response->body);
+    }
+
+    public function fetchPaymentIdFromVerificationFields($verificationFields)
+    {
+        $dataLakeQuery = sprintf(self::FETCH_PID_FROM_REF2_QUERY, $verificationFields['gateway'], $verificationFields['gateway_reference_id2']);
+
+        $response = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
+
+        if(empty($response) === false && isset($response[0]['payment_id']) === true)
+        {
+            return $response[0]['payment_id'];
+        }
+
+        return [];
     }
 
     public function fetchPaymentIdFromCapsPIDs(array $input)
