@@ -9,7 +9,9 @@ export const FEATURES_DATA = [
   {
     icon: 'https://razorpay.com/assets/optimizer/fold-5/card-2.png',
     title: 'Add multiple gateways in a single click',
+    // prettier-ignore
     desc:
+      // eslint-disable-next-line prettier/prettier
       'Save on transaction costs by routing across gateways by payment method, value and any other factor',
   },
   {
@@ -20,7 +22,9 @@ export const FEATURES_DATA = [
   {
     icon: 'https://razorpay.com/assets/optimizer/fold-5/card-4.png',
     title: 'Single Data Source',
+    // prettier-ignore
     desc:
+      // eslint-disable-next-line prettier/prettier
       'Get all your settlement reports and success rate data from all your payment gateways in a single click',
   },
 ];

@@ -260,6 +260,7 @@ const EntityList = (props) => {
   const [count, setcount] = useState(DEFAULT_COUNT);
   const formRef = React.createRef();
 
+  // prettier-ignore
   const {
     breakupDetails,
     settlementId,
@@ -269,6 +270,7 @@ const EntityList = (props) => {
     terminalProviders,
   } = props;
 
+  // prettier-ignore
   const totalNoOfPayments = breakupDetails?.items?.find((item) => item.component === 'payment')
     ?.count;
 

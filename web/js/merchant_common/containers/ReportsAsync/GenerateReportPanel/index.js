@@ -16,10 +16,12 @@ import EmailReport from './EmailReport';
 import errorService from '@razorpay/universe-utils/errorService';
 import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { REPORT_CONFIG_TYPE } from 'merchant_common/containers/ReportsAsync/utils';
+import { connect } from 'react-redux';
 
 const marketplaceConfigTypes = ['transactions', 'payments', 'refunds', 'settlements'];
 @RTracking(() => window.rzpQ.component('GenerateReportPanel'))
-export default class GenerateReportPanel extends React.PureComponent {
+class GenerateReportPanel extends React.PureComponent {
   static defaultProps = {
     customConfigs: [],
   };
@@ -210,6 +212,16 @@ export default class GenerateReportPanel extends React.PureComponent {
       { label: 'Custom', name: 'dateRange' },
     ];
 
+    if (this.props?.user?.findTag) {
+      allConfigs = allConfigs.filter((config) => {
+        const configType = REPORT_CONFIG_TYPE[config.type];
+        if (configType && this.props.user.findTag(configType)) {
+          return false;
+        }
+        return true;
+      });
+    }
+
     return configs.loading ? (
       <div className="page-spinner-container">
         <Spinner />
@@ -294,3 +306,5 @@ function getDateRangeError(startAt, endAt, aggregatedPartnerReport) {
   }
   return false;
 }
+
+export default connect((state) => ({ user: state.session.user }), null)(GenerateReportPanel);
