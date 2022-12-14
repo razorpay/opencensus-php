@@ -5355,6 +5355,20 @@ return [
         ],
     ],
 
+    'testFetchPrimaryUserContact' => [
+        'request' => [
+            'url'     => '/internal/merchant/fetch_primary_user_contact/12345678901234',
+            'method'  => 'GET',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'owner_contacts' => ['+919091929394'],
+            ],
+        ],
+    ],
+
     'testSendBulkPayoutOtpViaEMail' => [
         'request' => [
             'url'     => '/users/otp/send',

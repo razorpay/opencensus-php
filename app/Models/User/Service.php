@@ -2501,6 +2501,26 @@ class Service extends Base\Service
         return ['owner_ids' => $nonPartnerIds];
     }
 
+    public function fetchPrimaryUserContact(string $merchantId) {
+
+        $merchantUsers = $this->repo->merchant_user->fetchPrimaryUserIdForMerchantIdAndRole($merchantId);
+
+        $contacts = [];
+
+        foreach ($merchantUsers as $key => $value)
+        {
+            $userContact = $this->repo->user->findOrFail($value)->getContactMobile();
+
+            $phoneNumber = new PhoneBook($userContact);
+
+            $phoneNumber = $phoneNumber->format(PhoneBook::E164);
+
+            array_push($contacts, $phoneNumber);
+        }
+
+        return ['owner_contacts' => $contacts];
+    }
+
     /**
      * An user authorization token also has to be given in input.
      * This token is provided by using api on the route "user_verify_through_mode".

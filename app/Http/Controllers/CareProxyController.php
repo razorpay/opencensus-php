@@ -41,6 +41,7 @@ class CareProxyController extends Controller
     const CHAT_GET_MERCHANT   = 'twirp/rzp.care.chat.v1.ChatService/GetMerchant';
     const CHAT_FETCH_TICKETS  = 'twirp/rzp.care.chat.v1.ChatService/FetchTickets';
     const CHAT_FETCH_MERCHANT = 'twirp/rzp.care.chat.v1.ChatService/FetchMerchant';
+    const CHAT_SEND_WHATSAPP_POST_ONBOARDING_NOTIFICATION = 'twirp/rzp.care.chat.v1.ChatService/SendPostOnboardingNotification';
 
     //chat timing config
     const CHAT_GET_TIMINGS_CONFIG         = 'twirp/rzp.care.chat.v1.ChatService/GetChatTimingsConfig';
@@ -161,6 +162,7 @@ class CareProxyController extends Controller
         self::FRESHDESK_MERCHANT_CONVERSATIONS,
         self::FRESHDESK_MERCHANT_ADD_REPLY,
         self::RETRIEVE_CSM,
+        self::CHAT_SEND_WHATSAPP_POST_ONBOARDING_NOTIFICATION,
         self::FRESHDESK_MERCHANT_GET_TICKET,
     ];
 

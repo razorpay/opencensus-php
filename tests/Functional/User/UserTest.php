@@ -9722,6 +9722,18 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchPrimaryUserContact()
+    {
+        $merchant = $this->fixtures->create('merchant', ['id' => '12345678901234']);
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id'],
+                                                             ['contact_mobile' => '9091929394']);
+
+        $this->ba->careAppAuth();
+
+        $this->startTest();
+    }
+
     public function testUserRegisterVerifySignupOtpIncorrectOtpLimitOnAnOtpReached()
     {
         $ravenMock = $this->getMockBuilder(Raven::class)
