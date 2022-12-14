@@ -47,7 +47,7 @@ class PaymentMethods
             \Requests::GET,
 
             'v2/merchant_instrument_status?merchant_id=' . $merchant->getId(),
-            ['timeout' => 3], //Increasing timeout to 3sec for now
+            ['timeout' => 4], //Increasing timeout to 4sec for now
             $this->getMerchantHeadersForInstrumentRequest());
 
 //        $response[Util\Constants::FEATURES] = $this->getFeatures();
