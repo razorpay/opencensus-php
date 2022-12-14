@@ -1692,6 +1692,11 @@ class Constants
      */
     const REDUCE_OD_BALANCE_FOR_CA = 'reduce_od_balance_for_ca';
 
+    /**
+     * Feature flag to check push provisioning is enabled for the merchant
+     */
+    const PUSH_PROVISIONING_LIVE = 'push_provisioning_live';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -2307,6 +2312,7 @@ class Constants
         \RZP\Services\Dcs\Features\Constants::EligibilityEnabled => true,  // Example Feature for DCS
         self::ONE_CC_ADDRESS_SYNC_OFF         => true,
         self::REDUCE_OD_BALANCE_FOR_CA        => true,
+        self::PUSH_PROVISIONING_LIVE          => true
     ];
 
     // Entity type constants
