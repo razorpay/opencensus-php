@@ -42,6 +42,7 @@ class PartnerConfigAuditLogger extends Job
             {
                 $this->trace->count(PartnerMetric::PARTNER_CONFIG_AUDIT_SUCCESS);
             }
+            $this->delete();
         }
         catch(\Throwable $e)
         {

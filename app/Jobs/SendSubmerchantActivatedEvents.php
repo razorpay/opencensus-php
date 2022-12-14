@@ -69,6 +69,8 @@ class SendSubmerchantActivatedEvents extends Job
                 // Fire all pushed events in a single request.
                 $app['segment-analytics']->buildRequestAndSend();
             }
+
+            $this->delete();
         }
         catch (\Throwable $e)
         {

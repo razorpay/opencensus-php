@@ -45,7 +45,7 @@ class MerchantProductsConfig Extends Job
 
             (new PaymentMethods())->create($this->input);
 
-            // TODO : set status to completed
+            $this->delete();
         }
         catch (\Throwable $e)
         {
