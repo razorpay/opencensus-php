@@ -114,7 +114,12 @@
         <div>&#8377; {{ $data['request']['content']['amount']/100 }}</div>
     </header>
     <main>
+
+        @if (((empty($data['provider'])=== false) and ($data['provider'] === 'icic')) and ((empty($data['method'])=== false) and ($data['method'] === 'paylater')))
+        Please enter your ICICI bank payLater mobile number.
+        @else
         Please enter your contact details to proceed.
+        @endif
         @if ((empty($data['missing']) === true) or (in_array('email' , $data['missing']) === true))
         <label for='email'><b>Email</b></label>
         <input
