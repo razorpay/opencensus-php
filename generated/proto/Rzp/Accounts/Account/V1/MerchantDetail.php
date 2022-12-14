@@ -166,51 +166,43 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
      */
     protected $department = '';
     /**
-     * Generated from protobuf field <code>string kyc_clarification_reasons = 39;</code>
-     */
-    protected $kyc_clarification_reasons = '';
-    /**
-     * Generated from protobuf field <code>string kyc_additional_details = 40;</code>
-     */
-    protected $kyc_additional_details = '';
-    /**
-     * Generated from protobuf field <code>string internal_notes = 41;</code>
+     * Generated from protobuf field <code>string internal_notes = 39;</code>
      */
     protected $internal_notes = '';
     /**
-     * Generated from protobuf field <code>string authorized_signatory_residential_address = 42;</code>
+     * Generated from protobuf field <code>string authorized_signatory_residential_address = 40;</code>
      */
     protected $authorized_signatory_residential_address = '';
     /**
-     * Generated from protobuf field <code>string authorized_signatory_dob = 43;</code>
+     * Generated from protobuf field <code>string authorized_signatory_dob = 41;</code>
      */
     protected $authorized_signatory_dob = '';
     /**
-     * Generated from protobuf field <code>string platform = 44;</code>
+     * Generated from protobuf field <code>string platform = 42;</code>
      */
     protected $platform = '';
     /**
-     * Generated from protobuf field <code>string date_of_establishment = 45;</code>
+     * Generated from protobuf field <code>string date_of_establishment = 43;</code>
      */
     protected $date_of_establishment = '';
     /**
-     * Generated from protobuf field <code>string shop_establishment_number = 46;</code>
+     * Generated from protobuf field <code>string shop_establishment_number = 44;</code>
      */
     protected $shop_establishment_number = '';
     /**
-     * Generated from protobuf field <code>.google.protobuf.Struct client_applications = 47;</code>
+     * Generated from protobuf field <code>.google.protobuf.Struct client_applications = 45;</code>
      */
     protected $client_applications = null;
     /**
-     * Generated from protobuf field <code>string iec_code = 48;</code>
+     * Generated from protobuf field <code>string iec_code = 46;</code>
      */
     protected $iec_code = '';
     /**
-     * Generated from protobuf field <code>string audit_id = 49;</code>
+     * Generated from protobuf field <code>string audit_id = 47;</code>
      */
     protected $audit_id = '';
     /**
-     * Generated from protobuf field <code>.google.protobuf.Struct custom_fields = 50;</code>
+     * Generated from protobuf field <code>.google.protobuf.Struct custom_fields = 48;</code>
      */
     protected $custom_fields = null;
 
@@ -258,8 +250,6 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
      *     @type string $bank_account_type
      *     @type string $bank_branch_ifsc
      *     @type string $department
-     *     @type string $kyc_clarification_reasons
-     *     @type string $kyc_additional_details
      *     @type string $internal_notes
      *     @type string $authorized_signatory_residential_address
      *     @type string $authorized_signatory_dob
@@ -1114,51 +1104,7 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string kyc_clarification_reasons = 39;</code>
-     * @return string
-     */
-    public function getKycClarificationReasons()
-    {
-        return $this->kyc_clarification_reasons;
-    }
-
-    /**
-     * Generated from protobuf field <code>string kyc_clarification_reasons = 39;</code>
-     * @param string $var
-     * @return $this
-     */
-    public function setKycClarificationReasons($var)
-    {
-        GPBUtil::checkString($var, True);
-        $this->kyc_clarification_reasons = $var;
-
-        return $this;
-    }
-
-    /**
-     * Generated from protobuf field <code>string kyc_additional_details = 40;</code>
-     * @return string
-     */
-    public function getKycAdditionalDetails()
-    {
-        return $this->kyc_additional_details;
-    }
-
-    /**
-     * Generated from protobuf field <code>string kyc_additional_details = 40;</code>
-     * @param string $var
-     * @return $this
-     */
-    public function setKycAdditionalDetails($var)
-    {
-        GPBUtil::checkString($var, True);
-        $this->kyc_additional_details = $var;
-
-        return $this;
-    }
-
-    /**
-     * Generated from protobuf field <code>string internal_notes = 41;</code>
+     * Generated from protobuf field <code>string internal_notes = 39;</code>
      * @return string
      */
     public function getInternalNotes()
@@ -1167,7 +1113,7 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string internal_notes = 41;</code>
+     * Generated from protobuf field <code>string internal_notes = 39;</code>
      * @param string $var
      * @return $this
      */
@@ -1180,7 +1126,7 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string authorized_signatory_residential_address = 42;</code>
+     * Generated from protobuf field <code>string authorized_signatory_residential_address = 40;</code>
      * @return string
      */
     public function getAuthorizedSignatoryResidentialAddress()
@@ -1189,7 +1135,7 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string authorized_signatory_residential_address = 42;</code>
+     * Generated from protobuf field <code>string authorized_signatory_residential_address = 40;</code>
      * @param string $var
      * @return $this
      */
@@ -1202,7 +1148,7 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string authorized_signatory_dob = 43;</code>
+     * Generated from protobuf field <code>string authorized_signatory_dob = 41;</code>
      * @return string
      */
     public function getAuthorizedSignatoryDob()
@@ -1211,7 +1157,7 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string authorized_signatory_dob = 43;</code>
+     * Generated from protobuf field <code>string authorized_signatory_dob = 41;</code>
      * @param string $var
      * @return $this
      */
@@ -1224,7 +1170,7 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string platform = 44;</code>
+     * Generated from protobuf field <code>string platform = 42;</code>
      * @return string
      */
     public function getPlatform()
@@ -1233,7 +1179,7 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string platform = 44;</code>
+     * Generated from protobuf field <code>string platform = 42;</code>
      * @param string $var
      * @return $this
      */
@@ -1246,7 +1192,7 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string date_of_establishment = 45;</code>
+     * Generated from protobuf field <code>string date_of_establishment = 43;</code>
      * @return string
      */
     public function getDateOfEstablishment()
@@ -1255,7 +1201,7 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string date_of_establishment = 45;</code>
+     * Generated from protobuf field <code>string date_of_establishment = 43;</code>
      * @param string $var
      * @return $this
      */
@@ -1268,7 +1214,7 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string shop_establishment_number = 46;</code>
+     * Generated from protobuf field <code>string shop_establishment_number = 44;</code>
      * @return string
      */
     public function getShopEstablishmentNumber()
@@ -1277,7 +1223,7 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string shop_establishment_number = 46;</code>
+     * Generated from protobuf field <code>string shop_establishment_number = 44;</code>
      * @param string $var
      * @return $this
      */
@@ -1290,7 +1236,7 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.google.protobuf.Struct client_applications = 47;</code>
+     * Generated from protobuf field <code>.google.protobuf.Struct client_applications = 45;</code>
      * @return \Google\Protobuf\Struct|null
      */
     public function getClientApplications()
@@ -1309,7 +1255,7 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.google.protobuf.Struct client_applications = 47;</code>
+     * Generated from protobuf field <code>.google.protobuf.Struct client_applications = 45;</code>
      * @param \Google\Protobuf\Struct $var
      * @return $this
      */
@@ -1322,7 +1268,7 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string iec_code = 48;</code>
+     * Generated from protobuf field <code>string iec_code = 46;</code>
      * @return string
      */
     public function getIecCode()
@@ -1331,7 +1277,7 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string iec_code = 48;</code>
+     * Generated from protobuf field <code>string iec_code = 46;</code>
      * @param string $var
      * @return $this
      */
@@ -1344,7 +1290,7 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string audit_id = 49;</code>
+     * Generated from protobuf field <code>string audit_id = 47;</code>
      * @return string
      */
     public function getAuditId()
@@ -1353,7 +1299,7 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string audit_id = 49;</code>
+     * Generated from protobuf field <code>string audit_id = 47;</code>
      * @param string $var
      * @return $this
      */
@@ -1366,7 +1312,7 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.google.protobuf.Struct custom_fields = 50;</code>
+     * Generated from protobuf field <code>.google.protobuf.Struct custom_fields = 48;</code>
      * @return \Google\Protobuf\Struct|null
      */
     public function getCustomFields()
@@ -1385,7 +1331,7 @@ class MerchantDetail extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.google.protobuf.Struct custom_fields = 50;</code>
+     * Generated from protobuf field <code>.google.protobuf.Struct custom_fields = 48;</code>
      * @param \Google\Protobuf\Struct $var
      * @return $this
      */

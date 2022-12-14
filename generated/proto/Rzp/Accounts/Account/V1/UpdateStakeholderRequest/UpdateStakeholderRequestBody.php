@@ -18,9 +18,9 @@ class UpdateStakeholderRequestBody extends \Google\Protobuf\Internal\Message
      */
     protected $relationship = null;
     /**
-     * Generated from protobuf field <code>map<string, string> notes = 2;</code>
+     * Generated from protobuf field <code>.google.protobuf.Struct notes = 2;</code>
      */
-    private $notes;
+    protected $notes = null;
     /**
      * Generated from protobuf field <code>map<string, string> legal_info = 3;</code>
      */
@@ -57,7 +57,7 @@ class UpdateStakeholderRequestBody extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type \Rzp\Accounts\Account\V1\Stakeholder\Relationship $relationship
-     *     @type array|\Google\Protobuf\Internal\MapField $notes
+     *     @type \Google\Protobuf\Struct $notes
      *     @type array|\Google\Protobuf\Internal\MapField $legal_info
      *     @type string $name
      *     @type int $percentage_ownership
@@ -105,23 +105,33 @@ class UpdateStakeholderRequestBody extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>map<string, string> notes = 2;</code>
-     * @return \Google\Protobuf\Internal\MapField
+     * Generated from protobuf field <code>.google.protobuf.Struct notes = 2;</code>
+     * @return \Google\Protobuf\Struct|null
      */
     public function getNotes()
     {
         return $this->notes;
     }
 
+    public function hasNotes()
+    {
+        return isset($this->notes);
+    }
+
+    public function clearNotes()
+    {
+        unset($this->notes);
+    }
+
     /**
-     * Generated from protobuf field <code>map<string, string> notes = 2;</code>
-     * @param array|\Google\Protobuf\Internal\MapField $var
+     * Generated from protobuf field <code>.google.protobuf.Struct notes = 2;</code>
+     * @param \Google\Protobuf\Struct $var
      * @return $this
      */
     public function setNotes($var)
     {
-        $arr = GPBUtil::checkMapField($var, \Google\Protobuf\Internal\GPBType::STRING, \Google\Protobuf\Internal\GPBType::STRING);
-        $this->notes = $arr;
+        GPBUtil::checkMessage($var, \Google\Protobuf\Struct::class);
+        $this->notes = $var;
 
         return $this;
     }

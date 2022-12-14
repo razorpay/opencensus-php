@@ -20,8 +20,8 @@ class AccountApi
         \GPBMetadata\Google\Protobuf\Struct::initOnce();
         $pool->internalAddGeneratedFile(
             '
-Ô<
-+proto/accounts/account/v1/account_api.protorzp.accounts.account.v1google/protobuf/timestamp.proto google/protobuf/field_mask.protogoogle/protobuf/struct.proto"ê
+Õ9
++proto/accounts/account/v1/account_api.protorzp.accounts.account.v1google/protobuf/timestamp.proto google/protobuf/field_mask.protogoogle/protobuf/struct.proto"¨
 Account
 
 id (	
@@ -35,8 +35,8 @@ class AccountApi
 profile	 (2(.rzp.accounts.account.v1.Account.Profile0
 suspended_at
  (2.google.protobuf.Timestamp/
-archived_at (2.google.protobuf.Timestamp:
-notes (2+.rzp.accounts.account.v1.Account.NotesEntry
+archived_at (2.google.protobuf.Timestamp&
+notes (2.google.protobuf.Struct
 display_name (	!
 transaction_report_emails (	@
 charge_info (2+.rzp.accounts.account.v1.Account.ChargeInfoC
@@ -48,11 +48,7 @@ legal_info (2/.rzp.accounts.account.v1.Account.LegalInfoEntry3
 legal_business_name (	%
 customer_facing_business_name (	
 business_type (	;
-bank_accounts (2$.rzp.accounts.account.v1.BankAccount,
-
-NotesEntry
-key (	
-value (	:80
+bank_accounts (2$.rzp.accounts.account.v1.BankAccount0
 LegalInfoEntry
 key (	
 value (	:8™
@@ -96,15 +92,15 @@ fee_bearer (	
 name (	I
 AuthorizedSignatory
 date_of_birth (	
-residential_address (	"ñ
+residential_address (	"¢
 CreateAccountRequest
 org_id (	
 email (	
 reference_id (	
 	parent_id (	
 legal_entity_id (	9
-profile (2(.rzp.accounts.account.v1.Account.ProfileG
-notes (28.rzp.accounts.account.v1.CreateAccountRequest.NotesEntry
+profile (2(.rzp.accounts.account.v1.Account.Profile&
+notes (2.google.protobuf.Struct
 display_name (	!
 transaction_report_emails	 (	P
 
@@ -115,18 +111,14 @@ legal_info
 contact_info (2,.rzp.accounts.account.v1.Account.ContactInfo
 legal_business_name (	%
 customer_facing_business_name (	
-business_type (	,
-
-NotesEntry
-key (	
-value (	:80
+business_type (	0
 LegalInfoEntry
 key (	
-value (	:8"
+value (	:8"¨
 UpdateAccountRequestV
 entity (2F.rzp.accounts.account.v1.UpdateAccountRequest.UpdateAccountRequestBody.
 
-field_mask (2.google.protobuf.FieldMaskï
+field_mask (2.google.protobuf.FieldMask‡
 UpdateAccountRequestBody
 
 id (	
@@ -134,8 +126,8 @@ field_mask (2.google.protobuf.FieldMaskï
 	parent_id (	
 legal_entity_id (	
 pricing_plan_id (	9
-profile (2(.rzp.accounts.account.v1.Account.Profile`
-notes (2Q.rzp.accounts.account.v1.UpdateAccountRequest.UpdateAccountRequestBody.NotesEntry
+profile (2(.rzp.accounts.account.v1.Account.Profile&
+notes (2.google.protobuf.Struct
 display_name (	!
 transaction_report_emails	 (	@
 charge_info
@@ -147,11 +139,7 @@ legal_info (2U.rzp.accounts.account.v1.UpdateAccountRequest.UpdateAccountReq
 contact_info (2,.rzp.accounts.account.v1.Account.ContactInfo
 legal_business_name (	%
 customer_facing_business_name (	
-business_type (	,
-
-NotesEntry
-key (	
-value (	:80
+business_type (	0
 LegalInfoEntry
 key (	
 value (	:8"Â
@@ -171,7 +159,7 @@ field_mask (2.google.protobuf.FieldMask"¢
 merchant (2!.rzp.accounts.account.v1.Merchant@
 merchant_detail (2\'.rzp.accounts.account.v1.MerchantDetailQ
 merchant_business_detail (2/.rzp.accounts.account.v1.MerchantBusinessDetail?
-merchant_emails (2&.rzp.accounts.account.v1.MerchantEmail"É
+merchant_emails (2&.rzp.accounts.account.v1.MerchantEmail"†
 Merchant
 
 id (	
@@ -190,8 +178,8 @@ field_mask (2.google.protobuf.FieldMask"¢
 brand_color (	
 business_banking (
 logo_url (	
-icon_url (	;
-notes (2,.rzp.accounts.account.v1.Merchant.NotesEntry
+icon_url (	&
+notes (2.google.protobuf.Struct
 whitelisted_ips_live (	
 whitelisted_ips_test (	
 whitelisted_domains (	&
@@ -200,11 +188,7 @@ field_mask (2.google.protobuf.FieldMask"¢
 purpose_code (	
 signup_via_email ( 
 amount_credits_threshold (
-archived_at (,
-
-NotesEntry
-key (	
-value (	:8"à
+archived_at ("
 MerchantDetail
 merchant_id (	
 contact_name (	
@@ -245,19 +229,17 @@ NotesEntry
 bank_account_type$ (	
 bank_branch_ifsc% (	
 
-department& (	!
-kyc_clarification_reasons\' (	
-kyc_additional_details( (	
-internal_notes) (	0
-(authorized_signatory_residential_address* (	 
-authorized_signatory_dob+ (	
-platform, (	
-date_of_establishment- (	!
-shop_establishment_number. (	4
-client_applications/ (2.google.protobuf.Struct
-iec_code0 (	
-audit_id1 (	.
-custom_fields2 (2.google.protobuf.Struct"y
+department& (	
+internal_notes\' (	0
+(authorized_signatory_residential_address( (	 
+authorized_signatory_dob) (	
+platform* (	
+date_of_establishment+ (	!
+shop_establishment_number, (	4
+client_applications- (2.google.protobuf.Struct
+iec_code. (	
+audit_id/ (	.
+custom_fields0 (2.google.protobuf.Struct"y
 MerchantEmail
 
 id (	

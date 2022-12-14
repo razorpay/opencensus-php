@@ -78,9 +78,9 @@ class Merchant extends \Google\Protobuf\Internal\Message
      */
     protected $icon_url = '';
     /**
-     * Generated from protobuf field <code>map<string, string> notes = 17;</code>
+     * Generated from protobuf field <code>.google.protobuf.Struct notes = 17;</code>
      */
-    private $notes;
+    protected $notes = null;
     /**
      * Generated from protobuf field <code>repeated string whitelisted_ips_live = 18;</code>
      */
@@ -140,7 +140,7 @@ class Merchant extends \Google\Protobuf\Internal\Message
      *     @type int $business_banking
      *     @type string $logo_url
      *     @type string $icon_url
-     *     @type array|\Google\Protobuf\Internal\MapField $notes
+     *     @type \Google\Protobuf\Struct $notes
      *     @type array<string>|\Google\Protobuf\Internal\RepeatedField $whitelisted_ips_live
      *     @type array<string>|\Google\Protobuf\Internal\RepeatedField $whitelisted_ips_test
      *     @type array<string>|\Google\Protobuf\Internal\RepeatedField $whitelisted_domains
@@ -510,23 +510,33 @@ class Merchant extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>map<string, string> notes = 17;</code>
-     * @return \Google\Protobuf\Internal\MapField
+     * Generated from protobuf field <code>.google.protobuf.Struct notes = 17;</code>
+     * @return \Google\Protobuf\Struct|null
      */
     public function getNotes()
     {
         return $this->notes;
     }
 
+    public function hasNotes()
+    {
+        return isset($this->notes);
+    }
+
+    public function clearNotes()
+    {
+        unset($this->notes);
+    }
+
     /**
-     * Generated from protobuf field <code>map<string, string> notes = 17;</code>
-     * @param array|\Google\Protobuf\Internal\MapField $var
+     * Generated from protobuf field <code>.google.protobuf.Struct notes = 17;</code>
+     * @param \Google\Protobuf\Struct $var
      * @return $this
      */
     public function setNotes($var)
     {
-        $arr = GPBUtil::checkMapField($var, \Google\Protobuf\Internal\GPBType::STRING, \Google\Protobuf\Internal\GPBType::STRING);
-        $this->notes = $arr;
+        GPBUtil::checkMessage($var, \Google\Protobuf\Struct::class);
+        $this->notes = $var;
 
         return $this;
     }

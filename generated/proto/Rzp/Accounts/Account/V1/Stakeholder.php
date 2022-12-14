@@ -30,9 +30,9 @@ class Stakeholder extends \Google\Protobuf\Internal\Message
      */
     protected $relationship = null;
     /**
-     * Generated from protobuf field <code>map<string, string> notes = 5;</code>
+     * Generated from protobuf field <code>.google.protobuf.Struct notes = 5;</code>
      */
-    private $notes;
+    protected $notes = null;
     /**
      * Generated from protobuf field <code>map<string, string> legal_info = 6;</code>
      */
@@ -61,6 +61,10 @@ class Stakeholder extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>string phone_secondary = 12;</code>
      */
     protected $phone_secondary = '';
+    /**
+     * Generated from protobuf field <code>string audit_id = 13;</code>
+     */
+    protected $audit_id = '';
 
     /**
      * Constructor.
@@ -72,7 +76,7 @@ class Stakeholder extends \Google\Protobuf\Internal\Message
      *     @type string $entity
      *     @type string $account_id
      *     @type \Rzp\Accounts\Account\V1\Stakeholder\Relationship $relationship
-     *     @type array|\Google\Protobuf\Internal\MapField $notes
+     *     @type \Google\Protobuf\Struct $notes
      *     @type array|\Google\Protobuf\Internal\MapField $legal_info
      *     @type string $name
      *     @type int $percentage_ownership
@@ -80,6 +84,7 @@ class Stakeholder extends \Google\Protobuf\Internal\Message
      *     @type string $email
      *     @type string $phone_primary
      *     @type string $phone_secondary
+     *     @type string $audit_id
      * }
      */
     public function __construct($data = NULL) {
@@ -186,23 +191,33 @@ class Stakeholder extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>map<string, string> notes = 5;</code>
-     * @return \Google\Protobuf\Internal\MapField
+     * Generated from protobuf field <code>.google.protobuf.Struct notes = 5;</code>
+     * @return \Google\Protobuf\Struct|null
      */
     public function getNotes()
     {
         return $this->notes;
     }
 
+    public function hasNotes()
+    {
+        return isset($this->notes);
+    }
+
+    public function clearNotes()
+    {
+        unset($this->notes);
+    }
+
     /**
-     * Generated from protobuf field <code>map<string, string> notes = 5;</code>
-     * @param array|\Google\Protobuf\Internal\MapField $var
+     * Generated from protobuf field <code>.google.protobuf.Struct notes = 5;</code>
+     * @param \Google\Protobuf\Struct $var
      * @return $this
      */
     public function setNotes($var)
     {
-        $arr = GPBUtil::checkMapField($var, \Google\Protobuf\Internal\GPBType::STRING, \Google\Protobuf\Internal\GPBType::STRING);
-        $this->notes = $arr;
+        GPBUtil::checkMessage($var, \Google\Protobuf\Struct::class);
+        $this->notes = $var;
 
         return $this;
     }
@@ -357,6 +372,28 @@ class Stakeholder extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->phone_secondary = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string audit_id = 13;</code>
+     * @return string
+     */
+    public function getAuditId()
+    {
+        return $this->audit_id;
+    }
+
+    /**
+     * Generated from protobuf field <code>string audit_id = 13;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setAuditId($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->audit_id = $var;
 
         return $this;
     }

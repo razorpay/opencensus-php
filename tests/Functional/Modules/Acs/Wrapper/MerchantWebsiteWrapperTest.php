@@ -2,14 +2,14 @@
 
 namespace RZP\Tests\Functional\Modules\Acs\Wrapper;
 
-use RZP\Tests\Functional\TestCase;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Models\Merchant\Acs\AsvClient;
-use RZP\Exception\IntegrationException;
-use RZP\Modules\Acs\Wrapper\MerchantWebsite;
-use RZP\Models\Merchant\Website\Entity as MerchantWebsiteEntity;
 use Rzp\Accounts\Account\V1 as accountV1;
+use RZP\Exception\IntegrationException;
+use RZP\Models\Merchant\Acs\AsvClient;
+use RZP\Models\Merchant\Website\Entity as MerchantWebsiteEntity;
 use RZP\Modules\Acs\Wrapper\Constant;
+use RZP\Modules\Acs\Wrapper\MerchantWebsite;
+use RZP\Tests\Functional\TestCase;
 
 class MerchantWebsiteWrapperTest extends TestCase
 {
@@ -24,7 +24,8 @@ class MerchantWebsiteWrapperTest extends TestCase
         parent::tearDown();
     }
 
-    function testProcessGetWebsiteDetailsForMerchantId() {
+    function testProcessGetWebsiteDetailsForMerchantId()
+    {
         MerchantWebsiteEntity::unguard();
         $data = [
             'id' => '10000000000111',
@@ -49,12 +50,12 @@ class MerchantWebsiteWrapperTest extends TestCase
 
         #----------
         #T0 Starts - Shadow on, reverse shadow off - Get same API Website as sent.
-            $traceMock = $this->createTraceMock();
-            $traceMock->expects($this->never())->method('traceException');
-            $merchantWebsiteWrapperMock = $this->getMockedMerchantWebsiteWrapper(['isShadowOrReverseShadowOnForOperation']);
-            $merchantWebsiteWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->willReturn(false);
-            $gotMerchantWebsiteEntity = $merchantWebsiteWrapperMock->processGetWebsiteDetailsForMerchantId("10000000000111", $merchantWebsiteEntity);
-            self::assertEquals($merchantWebsiteEntity, $gotMerchantWebsiteEntity );
+        $traceMock = $this->createTraceMock();
+        $traceMock->expects($this->never())->method('traceException');
+        $merchantWebsiteWrapperMock = $this->getMockedMerchantWebsiteWrapper(['isShadowOrReverseShadowOnForOperation']);
+        $merchantWebsiteWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->willReturn(false);
+        $gotMerchantWebsiteEntity = $merchantWebsiteWrapperMock->processGetWebsiteDetailsForMerchantId("10000000000111", $merchantWebsiteEntity);
+        self::assertEquals($merchantWebsiteEntity, $gotMerchantWebsiteEntity);
         #T0 end
         #----------
 
@@ -86,8 +87,8 @@ class MerchantWebsiteWrapperTest extends TestCase
         $merchantWebsiteWrapperMock->setMerchantWebsiteClient($merchantWebsiteClient);
 
         $merchantWebsiteWrapperMock->expects($this->exactly(1))->method('isShadowOrReverseShadowOnForOperation')->willReturn(true);
-        $gotMerchantWebsiteEntity = $merchantWebsiteWrapperMock->processGetWebsiteDetailsForMerchantId("10000000000111", $merchantWebsiteEntity);
-        self::assertEquals($merchantWebsiteEntity, $gotMerchantWebsiteEntity );
+        $gotMerchantWebsiteEntity = $merchantWebsiteWrapperMock->processGetWebsiteDetailsForMerchantId("10000000000000", $merchantWebsiteEntity);
+        self::assertEquals($merchantWebsiteEntity, $gotMerchantWebsiteEntity);
         #T1 end
         #----------
 
@@ -97,7 +98,7 @@ class MerchantWebsiteWrapperTest extends TestCase
         # No exception from client, Check Diff.
         $traceMock = $this->createTraceMock();
         $traceMock->expects($this->never())->method('traceException');
-        $merchantWebsiteWrapperMock = $this->getMockedMerchantWebsiteWrapper(['isShadowOrReverseShadowOnForOperation','logDifferenceIfRequiredAndPushMetrics']);
+        $merchantWebsiteWrapperMock = $this->getMockedMerchantWebsiteWrapper(['isShadowOrReverseShadowOnForOperation', 'logDifferenceIfRequiredAndPushMetrics']);
 
         $asvData = [
             'merchant_id' => '10000000000000',
@@ -119,12 +120,12 @@ class MerchantWebsiteWrapperTest extends TestCase
         $merchantWebsiteClient = $this->createWebsiteAsvClientWithProtoClientMockWithFetchResponse($asvResponse);
         $merchantWebsiteWrapperMock->setMerchantWebsiteClient($merchantWebsiteClient);
 
-        $difference = [ 'additional_data->manthan', 'deliverable_type'];
-        $merchantWebsiteWrapperMock->expects($this->exactly(1))->method('logDifferenceIfRequiredAndPushMetrics')->with($difference,'10000000000000');
+        $difference = ['additional_data->manthan', 'deliverable_type'];
+        $merchantWebsiteWrapperMock->expects($this->exactly(1))->method('logDifferenceIfRequiredAndPushMetrics')->with($difference, '10000000000000');
         $merchantWebsiteWrapperMock->expects($this->exactly(1))->method('isShadowOrReverseShadowOnForOperation')->willReturn(true);
 
         $gotMerchantWebsiteEntity = $merchantWebsiteWrapperMock->processGetWebsiteDetailsForMerchantId("10000000000000", $merchantWebsiteEntity);
-        self::assertEquals($merchantWebsiteEntity, $gotMerchantWebsiteEntity );
+        self::assertEquals($merchantWebsiteEntity, $gotMerchantWebsiteEntity);
         #T2 end
         #----------
 
@@ -133,12 +134,12 @@ class MerchantWebsiteWrapperTest extends TestCase
         # throw exception, exception should not be propogated.
         $traceMock = $this->createTraceMock();
         $traceMock->expects($this->exactly(2))->method('traceException');
-        $merchantWebsiteWrapperMock = $this->getMockedMerchantWebsiteWrapper(['isShadowOrReverseShadowOnForOperation','logDifferenceIfRequiredAndPushMetrics']);
-        $exception = new IntegrationException("hello");
-        $merchantWebsiteClient = $this->createWebsiteAsvClientWithProtoClientMockWithFetchResponse(null, $exception);
+        $merchantWebsiteWrapperMock = $this->getMockedMerchantWebsiteWrapper(['isShadowOrReverseShadowOnForOperation', 'logDifferenceIfRequiredAndPushMetrics']);
+        $exception                  = new IntegrationException("hello");
+        $merchantWebsiteClient      = $this->createWebsiteAsvClientWithProtoClientMockWithFetchResponse(null, $exception);
         $merchantWebsiteWrapperMock->setMerchantWebsiteClient($merchantWebsiteClient);
 
-        $merchantWebsiteWrapperMock->expects($this->exactly(0))->method('logDifferenceIfRequiredAndPushMetrics')->with($difference,'10000000000000');
+        $merchantWebsiteWrapperMock->expects($this->exactly(0))->method('logDifferenceIfRequiredAndPushMetrics')->with($difference, '10000000000000');
         $merchantWebsiteWrapperMock->expects($this->exactly(1))->method('isShadowOrReverseShadowOnForOperation')->willReturn(true);
 
         $gotMerchantWebsiteEntity = $merchantWebsiteWrapperMock->processGetWebsiteDetailsForMerchantId("10000000000000", $merchantWebsiteEntity);
@@ -152,17 +153,17 @@ class MerchantWebsiteWrapperTest extends TestCase
         # throw exception, exception should be propogated.
         $traceMock = $this->createTraceMock();
         $traceMock->expects($this->exactly(2))->method('traceException');
-        $merchantWebsiteWrapperMock = $this->getMockedMerchantWebsiteWrapper(['isShadowOrReverseShadowOnForOperation','logDifferenceIfRequiredAndPushMetrics']);
-        $exception = new IntegrationException("hello");
-        $merchantWebsiteClient = $this->createWebsiteAsvClientWithProtoClientMockWithFetchResponse(null, $exception);
+        $merchantWebsiteWrapperMock = $this->getMockedMerchantWebsiteWrapper(['isShadowOrReverseShadowOnForOperation', 'logDifferenceIfRequiredAndPushMetrics']);
+        $exception                  = new IntegrationException("hello");
+        $merchantWebsiteClient      = $this->createWebsiteAsvClientWithProtoClientMockWithFetchResponse(null, $exception);
         $merchantWebsiteWrapperMock->setMerchantWebsiteClient($merchantWebsiteClient);
 
-        $merchantWebsiteWrapperMock->expects($this->exactly(0))->method('logDifferenceIfRequiredAndPushMetrics')->with($difference,'10000000000000');
+        $merchantWebsiteWrapperMock->expects($this->exactly(0))->method('logDifferenceIfRequiredAndPushMetrics')->with($difference, '10000000000000');
         $merchantWebsiteWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->
         withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
 
         try {
-            $gotMerchantWebsiteEntity = $merchantWebsiteWrapperMock->processGetWebsiteDetailsForMerchantId("10000000000000", $merchantWebsiteEntity);
+            $merchantWebsiteWrapperMock->processGetWebsiteDetailsForMerchantId("10000000000000", $merchantWebsiteEntity);
             $this->fail('Exception was expected');
         } catch (\Throwable $ex) {
             $this->assertEquals($exception, $ex);
@@ -175,7 +176,193 @@ class MerchantWebsiteWrapperTest extends TestCase
         # do not throw exception, compare diff.
         $traceMock = $this->createTraceMock();
         $traceMock->expects($this->never())->method('traceException');
-        $merchantWebsiteWrapperMock = $this->getMockedMerchantWebsiteWrapper(['isShadowOrReverseShadowOnForOperation','logDifferenceIfRequiredAndPushMetrics']);
+        $merchantWebsiteWrapperMock = $this->getMockedMerchantWebsiteWrapper(['isShadowOrReverseShadowOnForOperation', 'logDifferenceIfRequiredAndPushMetrics']);
+        $asvData                    = [
+            'merchant_id' => '10000000000000',
+            'merchant_website_details' => [
+                'dilip' => 'chauhan',
+            ],
+            'admin_website_details' => [
+                'pankaj' => 'kumar',
+            ],
+            'additional_data' => [
+                'manthan' => 'surkars',
+            ],
+            'deliverable_type' => '3-7 Day',
+        ];
+        $asvResponse                = new accountV1\FetchMerchantWebsiteResponse();
+        $asvResponse->mergeFromJsonString(json_encode($asvData), true);
+
+        $merchantWebsiteClient = $this->createWebsiteAsvClientWithProtoClientMockWithFetchResponse($asvResponse);
+        $merchantWebsiteWrapperMock->setMerchantWebsiteClient($merchantWebsiteClient);
+
+        $difference = ['additional_data->manthan', 'deliverable_type'];
+        $merchantWebsiteWrapperMock->expects($this->exactly(1))->method('logDifferenceIfRequiredAndPushMetrics')->with($difference, '10000000000000');
+        $merchantWebsiteWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->
+        withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+        $gotMerchantWebsiteEntity = $merchantWebsiteWrapperMock->processGetWebsiteDetailsForMerchantId("10000000000000", $merchantWebsiteEntity);
+
+        // reverse shadow should update this values.
+        $merchantWebsiteEntity['deliverable_type'] = "3-7 Day";
+        $merchantWebsiteEntity['additional_data']  = [
+            'manthan' => 'surkars',
+        ];
+        self::assertEquals($merchantWebsiteEntity, $gotMerchantWebsiteEntity);
+
+        #T5 end
+        #----------
+    }
+
+    function testProcessGetWebsiteDetailsForId()
+    {
+        MerchantWebsiteEntity::unguard();
+        $data = [
+            'id' => '10000000000111',
+            'merchant_id' => '10000000000000',
+            'merchant_website_details' => [
+                'dilip' => 'chauhan',
+            ],
+            'admin_website_details' => [
+                'pankaj' => 'kumar',
+            ],
+            'additional_data' => [
+                'manthan' => 'surkar',
+            ],
+            'deliverable_type' => '3-5 Day',
+            'updated_at' => 124
+        ];
+
+        $merchantWebsiteEntity = new MerchantWebsiteEntity($data);
+        MerchantWebsiteEntity::reguard();
+
+        #----------
+        #T0 Starts - Shadow on, reverse shadow off - Get same API Website as sent.
+        $traceMock = $this->createTraceMock();
+        $traceMock->expects($this->never())->method('traceException');
+        $merchantWebsiteWrapperMock = $this->getMockedMerchantWebsiteWrapper(['isShadowOrReverseShadowOnForOperation']);
+        $merchantWebsiteWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->willReturn(false);
+        $gotMerchantWebsiteEntity = $merchantWebsiteWrapperMock->processGetWebsiteDetailsForId("10000000000111", $merchantWebsiteEntity);
+        self::assertEquals($merchantWebsiteEntity, $gotMerchantWebsiteEntity);
+        #T0 end
+        #----------
+
+        #----------
+        #T1 Starts - Shadow on, reverse shadow off - Get same API Website as sent, no matter what ASV Client sends.
+        # No exception from client, No diff.
+        $traceMock = $this->createTraceMock();
+        $traceMock->expects($this->never())->method('traceException');
+        $merchantWebsiteWrapperMock = $this->getMockedMerchantWebsiteWrapper(['isShadowOrReverseShadowOnForOperation']);
+
+        $asvData = [
+            'id' => '10000000000111',
+            'merchant_id' => '10000000000000',
+            'merchant_website_details' => [
+                'dilip' => 'chauhan',
+            ],
+            'admin_website_details' => [
+                'pankaj' => 'kumar',
+            ],
+            'additional_data' => [
+                'manthan' => 'surkar',
+            ],
+            'deliverable_type' => '3-5 Day',
+        ];
+
+        $asvResponse = new accountV1\FetchMerchantWebsiteResponse();
+        $asvResponse->mergeFromJsonString(json_encode($asvData), true);
+
+        $merchantWebsiteClient = $this->createWebsiteAsvClientWithProtoClientMockWithFetchResponse($asvResponse);
+        $merchantWebsiteWrapperMock->setMerchantWebsiteClient($merchantWebsiteClient);
+
+        $merchantWebsiteWrapperMock->expects($this->exactly(1))->method('isShadowOrReverseShadowOnForOperation')->willReturn(true);
+        $gotMerchantWebsiteEntity = $merchantWebsiteWrapperMock->processGetWebsiteDetailsForId("10000000000111", $merchantWebsiteEntity);
+        self::assertEquals($merchantWebsiteEntity, $gotMerchantWebsiteEntity);
+        #T1 end
+        #----------
+
+
+        #----------
+        #T2 Starts - Shadow on, reverse shadow off - Get same API Website as sent, no matter what ASV Client sends.
+        # No exception from client, Check Diff.
+
+        $asvData   = [
+            'merchant_id' => '10000000000000',
+            'merchant_website_details' => [
+                'dilip' => 'chauhan',
+            ],
+            'admin_website_details' => [
+                'pankaj' => 'kumar',
+            ],
+            'additional_data' => [
+                'manthan' => 'surkars',
+            ],
+            'deliverable_type' => '3-6 Day',
+        ];
+        $traceMock = $this->createTraceMock();
+        $traceMock->expects($this->never())->method('traceException');
+        $merchantWebsiteWrapperMock = $this->getMockedMerchantWebsiteWrapper(['isShadowOrReverseShadowOnForOperation', 'logDifferenceIfRequiredAndPushMetrics']);
+
+
+        $asvResponse = new accountV1\FetchMerchantWebsiteResponse();
+        $asvResponse->mergeFromJsonString(json_encode($asvData), true);
+
+        $merchantWebsiteClient = $this->createWebsiteAsvClientWithProtoClientMockWithFetchResponse($asvResponse);
+        $merchantWebsiteWrapperMock->setMerchantWebsiteClient($merchantWebsiteClient);
+
+        $difference = ['additional_data->manthan', 'deliverable_type'];
+        $merchantWebsiteWrapperMock->expects($this->exactly(1))->method('logDifferenceIfRequiredAndPushMetrics')->with($difference, '10000000000111');
+        $merchantWebsiteWrapperMock->expects($this->exactly(1))->method('isShadowOrReverseShadowOnForOperation')->willReturn(true);
+
+        $gotMerchantWebsiteEntity = $merchantWebsiteWrapperMock->processGetWebsiteDetailsForId("10000000000111", $merchantWebsiteEntity);
+        self::assertEquals($merchantWebsiteEntity, $gotMerchantWebsiteEntity);
+        #T2 end
+        #----------
+
+        #----------
+        #T3 Starts - Shadow on, reverse shadow off - Get same API Website as sent, no matter what ASV Client sends.
+        # throw exception, exception should not be propogated.
+        $traceMock = $this->createTraceMock();
+        $traceMock->expects($this->exactly(2))->method('traceException');
+        $merchantWebsiteWrapperMock = $this->getMockedMerchantWebsiteWrapper(['isShadowOrReverseShadowOnForOperation', 'logDifferenceIfRequiredAndPushMetrics']);
+        $exception                  = new IntegrationException("hello");
+        $merchantWebsiteClient      = $this->createWebsiteAsvClientWithProtoClientMockWithFetchResponse(null, $exception);
+        $merchantWebsiteWrapperMock->setMerchantWebsiteClient($merchantWebsiteClient);
+
+        $merchantWebsiteWrapperMock->expects($this->exactly(0))->method('logDifferenceIfRequiredAndPushMetrics')->with($difference, '10000000000111');
+        $merchantWebsiteWrapperMock->expects($this->exactly(1))->method('isShadowOrReverseShadowOnForOperation')->willReturn(true);
+
+        $gotMerchantWebsiteEntity = $merchantWebsiteWrapperMock->processGetWebsiteDetailsForId("10000000000111", $merchantWebsiteEntity);
+        self::assertEquals($merchantWebsiteEntity, $gotMerchantWebsiteEntity);
+        #T3 end
+        #----------
+
+
+        #----------
+        #T4 Starts - Shadow off, reverse shadow on
+        # throw exception, exception should be propagated.
+        $traceMock = $this->createTraceMock();
+        $traceMock->expects($this->exactly(2))->method('traceException');
+        $merchantWebsiteWrapperMock = $this->getMockedMerchantWebsiteWrapper(['isShadowOrReverseShadowOnForOperation', 'logDifferenceIfRequiredAndPushMetrics']);
+        $exception                  = new IntegrationException("hello");
+        $merchantWebsiteClient      = $this->createWebsiteAsvClientWithProtoClientMockWithFetchResponse(null, $exception);
+        $merchantWebsiteWrapperMock->setMerchantWebsiteClient($merchantWebsiteClient);
+
+        $merchantWebsiteWrapperMock->expects($this->exactly(0))->method('logDifferenceIfRequiredAndPushMetrics')->with($difference, '10000000000111');
+        $merchantWebsiteWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->
+        withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+
+        try {
+            $merchantWebsiteWrapperMock->processGetWebsiteDetailsForId("10000000000111", $merchantWebsiteEntity);
+            $this->fail('Exception was expected');
+        } catch (\Throwable $ex) {
+            $this->assertEquals($exception, $ex);
+        }
+        #T4 end
+        #----------
+
+        #----------
+        #T5 Starts - Shadow off, reverse shadow on - Get updated website with response from ASV
+        # do not throw exception, compare diff.
         $asvData = [
             'merchant_id' => '10000000000000',
             'merchant_website_details' => [
@@ -189,21 +376,26 @@ class MerchantWebsiteWrapperTest extends TestCase
             ],
             'deliverable_type' => '3-7 Day',
         ];
-        $asvResponse = new accountV1\FetchMerchantWebsiteResponse();
+
+        $traceMock = $this->createTraceMock();
+        $traceMock->expects($this->never())->method('traceException');
+        $merchantWebsiteWrapperMock = $this->getMockedMerchantWebsiteWrapper(['isShadowOrReverseShadowOnForOperation', 'logDifferenceIfRequiredAndPushMetrics']);
+        $asvResponse                = new accountV1\FetchMerchantWebsiteResponse();
         $asvResponse->mergeFromJsonString(json_encode($asvData), true);
 
         $merchantWebsiteClient = $this->createWebsiteAsvClientWithProtoClientMockWithFetchResponse($asvResponse);
         $merchantWebsiteWrapperMock->setMerchantWebsiteClient($merchantWebsiteClient);
 
-        $difference = [ 'additional_data->manthan', 'deliverable_type'];
-        $merchantWebsiteWrapperMock->expects($this->exactly(1))->method('logDifferenceIfRequiredAndPushMetrics')->with($difference,'10000000000000');
-        $merchantWebsiteWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->
-        withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
-        $gotMerchantWebsiteEntity = $merchantWebsiteWrapperMock->processGetWebsiteDetailsForMerchantId("10000000000000", $merchantWebsiteEntity);
+        $difference = ['additional_data->manthan', 'deliverable_type'];
+        $merchantWebsiteWrapperMock->expects($this->exactly(1))->method('logDifferenceIfRequiredAndPushMetrics')->with($difference, '10000000000111');
+        $merchantWebsiteWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')
+            ->withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])
+            ->willReturnOnConsecutiveCalls(false, true);
+        $gotMerchantWebsiteEntity = $merchantWebsiteWrapperMock->processGetWebsiteDetailsForId("10000000000111", $merchantWebsiteEntity);
 
         // reverse shadow should update this values.
         $merchantWebsiteEntity['deliverable_type'] = "3-7 Day";
-        $merchantWebsiteEntity['additional_data'] = [
+        $merchantWebsiteEntity['additional_data']  = [
             'manthan' => 'surkars',
         ];
         self::assertEquals($merchantWebsiteEntity, $gotMerchantWebsiteEntity);
@@ -232,8 +424,8 @@ class MerchantWebsiteWrapperTest extends TestCase
     protected function createWebsiteAsvClientWithProtoClientMockWithFetchResponse(?accountV1\FetchMerchantWebsiteResponse $response, $exception = null): AsvClient\WebsiteAsvClient
     {
 
-        $websiteAsvClient = new AsvClient\WebsiteAsvClient();
-        $mockWebsiteApiClient =  $this->getMockBuilder(accountv1\WebsiteAPIClient::class)
+        $websiteAsvClient     = new AsvClient\WebsiteAsvClient();
+        $mockWebsiteApiClient = $this->getMockBuilder(accountv1\WebsiteAPIClient::class)
             ->setConstructorArgs([$websiteAsvClient->getHost(), $websiteAsvClient->getHttpClient()])
             ->getMock();
 

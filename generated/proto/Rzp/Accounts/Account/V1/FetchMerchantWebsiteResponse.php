@@ -53,6 +53,10 @@ class FetchMerchantWebsiteResponse extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>.google.protobuf.Struct additional_data = 10;</code>
      */
     protected $additional_data = null;
+    /**
+     * Generated from protobuf field <code>string id = 11;</code>
+     */
+    protected $id = '';
 
     /**
      * Constructor.
@@ -70,6 +74,7 @@ class FetchMerchantWebsiteResponse extends \Google\Protobuf\Internal\Message
      *     @type \Google\Protobuf\Struct $merchant_website_details
      *     @type \Google\Protobuf\Struct $admin_website_details
      *     @type \Google\Protobuf\Struct $additional_data
+     *     @type string $id
      * }
      */
     public function __construct($data = NULL) {
@@ -323,6 +328,28 @@ class FetchMerchantWebsiteResponse extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkMessage($var, \Google\Protobuf\Struct::class);
         $this->additional_data = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string id = 11;</code>
+     * @return string
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Generated from protobuf field <code>string id = 11;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setId($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->id = $var;
 
         return $this;
     }

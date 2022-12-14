@@ -16,18 +16,19 @@ class StakeholderApi
         }
         \GPBMetadata\Proto\Accounts\Account\V1\Entities::initOnce();
         \GPBMetadata\Google\Protobuf\FieldMask::initOnce();
+        \GPBMetadata\Google\Protobuf\Struct::initOnce();
         $pool->internalAddGeneratedFile(
             '
-Â"
-/proto/accounts/account/v1/stakeholder_api.protorzp.accounts.account.v1 google/protobuf/field_mask.proto"«
+ 
+/proto/accounts/account/v1/stakeholder_api.protorzp.accounts.account.v1 google/protobuf/field_mask.protogoogle/protobuf/struct.proto"÷
 Stakeholder
 
 id (	
 entity (	
 
 account_id (	G
-relationship (21.rzp.accounts.account.v1.Stakeholder.Relationship>
-notes (2/.rzp.accounts.account.v1.Stakeholder.NotesEntryG
+relationship (21.rzp.accounts.account.v1.Stakeholder.Relationship&
+notes (2.google.protobuf.StructG
 
 legal_info (23.rzp.accounts.account.v1.Stakeholder.LegalInfoEntry
 name (	
@@ -36,11 +37,8 @@ legal_info (23.rzp.accounts.account.v1.Stakeholder.LegalInfoEntry
 email
  (	
 phone_primary (	
-phone_secondary (	,
-
-NotesEntry
-key (	
-value (	:80
+phone_secondary (	
+audit_id (	0
 LegalInfoEntry
 key (	
 value (	:8R
@@ -49,12 +47,12 @@ NotesEntry
 value (2 .rzp.accounts.account.v1.Address:83
 Relationship
 director (
-	executive ("Ž
+	executive ("»
 CreateStakeholderRequest
 
 account_id (	G
-relationship (21.rzp.accounts.account.v1.Stakeholder.RelationshipK
-notes (2<.rzp.accounts.account.v1.CreateStakeholderRequest.NotesEntryT
+relationship (21.rzp.accounts.account.v1.Stakeholder.Relationship&
+notes (2.google.protobuf.StructT
 
 legal_info (2@.rzp.accounts.account.v1.CreateStakeholderRequest.LegalInfoEntry
 name (	
@@ -63,24 +61,20 @@ legal_info (2@.rzp.accounts.account.v1.CreateStakeholderRequest.LegalInfoEnt
 email (	
 phone_primary	 (	
 phone_secondary
- (	,
-
-NotesEntry
-key (	
-value (	:80
+ (	0
 LegalInfoEntry
 key (	
 value (	:8R
 AddressesEntry
 key (	/
-value (2 .rzp.accounts.account.v1.Address:8"‚
+value (2 .rzp.accounts.account.v1.Address:8"’
 UpdateStakeholderRequest^
 entity (2N.rzp.accounts.account.v1.UpdateStakeholderRequest.UpdateStakeholderRequestBody.
 
-field_mask (2.google.protobuf.FieldMaskÕ
+field_mask (2.google.protobuf.FieldMaskå
 UpdateStakeholderRequestBodyG
-relationship (21.rzp.accounts.account.v1.Stakeholder.Relationshiph
-notes (2Y.rzp.accounts.account.v1.UpdateStakeholderRequest.UpdateStakeholderRequestBody.NotesEntryq
+relationship (21.rzp.accounts.account.v1.Stakeholder.Relationship&
+notes (2.google.protobuf.Structq
 
 legal_info (2].rzp.accounts.account.v1.UpdateStakeholderRequest.UpdateStakeholderRequestBody.LegalInfoEntry
 name (	
@@ -88,11 +82,7 @@ legal_info (2].rzp.accounts.account.v1.UpdateStakeholderRequest.UpdateStakeh
 	addresses (2].rzp.accounts.account.v1.UpdateStakeholderRequest.UpdateStakeholderRequestBody.AddressesEntry
 email (	
 phone_primary (	
-phone_secondary	 (	,
-
-NotesEntry
-key (	
-value (	:80
+phone_secondary	 (	0
 LegalInfoEntry
 key (	
 value (	:8R
@@ -116,28 +106,24 @@ account_id (	
 
 id (	"W
 FetchStakeholdersResponse:
-stakeholders (2$.rzp.accounts.account.v1.Stakeholder"œ
+stakeholders (2$.rzp.accounts.account.v1.Stakeholder"Ð
 MerchantStakeholder
 
 id (	
-merchant_id (	
-entity (	
-director (
-	executive (F
-notes (27.rzp.accounts.account.v1.MerchantStakeholder.NotesEntry
-name (	
-percentage_ownership (
-email	 (	
-phone_primary
- (	
-phone_secondary (	!
-poi_identification_number (	
-aadhaar_linked (
-aadhaar_pin (	,
-
-NotesEntry
-key (	
-value (	:8"´
+merchant_id (	
+director (
+	executive (&
+notes (2.google.protobuf.Struct
+name (	
+percentage_ownership (
+email (	
+phone_primary	 (	
+phone_secondary
+ (	!
+poi_identification_number (	
+aadhaar_linked (
+aadhaar_pin (	
+audit_id (	"´
 MerchantAddress
 
 id (	

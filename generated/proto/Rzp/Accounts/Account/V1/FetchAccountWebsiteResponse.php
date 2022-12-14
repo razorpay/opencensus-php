@@ -33,6 +33,10 @@ class FetchAccountWebsiteResponse extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>.google.protobuf.Struct additional_data = 5;</code>
      */
     protected $additional_data = null;
+    /**
+     * Generated from protobuf field <code>string account_id = 6;</code>
+     */
+    protected $account_id = '';
 
     /**
      * Constructor.
@@ -45,6 +49,7 @@ class FetchAccountWebsiteResponse extends \Google\Protobuf\Internal\Message
      *     @type \Google\Protobuf\Struct $account_data
      *     @type \Google\Protobuf\Struct $admin_data
      *     @type \Google\Protobuf\Struct $additional_data
+     *     @type string $account_id
      * }
      */
     public function __construct($data = NULL) {
@@ -188,6 +193,28 @@ class FetchAccountWebsiteResponse extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkMessage($var, \Google\Protobuf\Struct::class);
         $this->additional_data = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string account_id = 6;</code>
+     * @return string
+     */
+    public function getAccountId()
+    {
+        return $this->account_id;
+    }
+
+    /**
+     * Generated from protobuf field <code>string account_id = 6;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setAccountId($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->account_id = $var;
 
         return $this;
     }

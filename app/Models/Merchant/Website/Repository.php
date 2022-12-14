@@ -56,4 +56,16 @@ class Repository extends Base\Repository
             $merchantWebsiteWrapper->SaveOrFail($entity);
         });
     }
+
+    /*
+ * Important: This function is to be used to migrate reads to Account Service
+ * Only use this if you are trying to do read on account service database.
+ */
+    public function __findOrFail(string $id){
+
+        return $this->repo->transactionOnLiveAndTest(function () use ($id) {
+            $apiMerchantWebsiteEntity = $this->findOrFail($id);
+            return (new MerchantWebsiteWrapper())->processGetWebsiteDetailsForId($id, $apiMerchantWebsiteEntity);
+        });
+    }
 }

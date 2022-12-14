@@ -22,53 +22,53 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
      */
     protected $merchant_id = '';
     /**
-     * Generated from protobuf field <code>string entity = 3;</code>
-     */
-    protected $entity = '';
-    /**
-     * Generated from protobuf field <code>bool director = 4;</code>
+     * Generated from protobuf field <code>bool director = 3;</code>
      */
     protected $director = false;
     /**
-     * Generated from protobuf field <code>bool executive = 5;</code>
+     * Generated from protobuf field <code>bool executive = 4;</code>
      */
     protected $executive = false;
     /**
-     * Generated from protobuf field <code>map<string, string> notes = 6;</code>
+     * Generated from protobuf field <code>.google.protobuf.Struct notes = 5;</code>
      */
-    private $notes;
+    protected $notes = null;
     /**
-     * Generated from protobuf field <code>string name = 7;</code>
+     * Generated from protobuf field <code>string name = 6;</code>
      */
     protected $name = '';
     /**
-     * Generated from protobuf field <code>uint32 percentage_ownership = 8;</code>
+     * Generated from protobuf field <code>uint32 percentage_ownership = 7;</code>
      */
     protected $percentage_ownership = 0;
     /**
-     * Generated from protobuf field <code>string email = 9;</code>
+     * Generated from protobuf field <code>string email = 8;</code>
      */
     protected $email = '';
     /**
-     * Generated from protobuf field <code>string phone_primary = 10;</code>
+     * Generated from protobuf field <code>string phone_primary = 9;</code>
      */
     protected $phone_primary = '';
     /**
-     * Generated from protobuf field <code>string phone_secondary = 11;</code>
+     * Generated from protobuf field <code>string phone_secondary = 10;</code>
      */
     protected $phone_secondary = '';
     /**
-     * Generated from protobuf field <code>string poi_identification_number = 12;</code>
+     * Generated from protobuf field <code>string poi_identification_number = 11;</code>
      */
     protected $poi_identification_number = '';
     /**
-     * Generated from protobuf field <code>bool aadhaar_linked = 13;</code>
+     * Generated from protobuf field <code>bool aadhaar_linked = 12;</code>
      */
     protected $aadhaar_linked = false;
     /**
-     * Generated from protobuf field <code>string aadhaar_pin = 14;</code>
+     * Generated from protobuf field <code>string aadhaar_pin = 13;</code>
      */
     protected $aadhaar_pin = '';
+    /**
+     * Generated from protobuf field <code>string audit_id = 14;</code>
+     */
+    protected $audit_id = '';
 
     /**
      * Constructor.
@@ -78,10 +78,9 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
      *
      *     @type string $id
      *     @type string $merchant_id
-     *     @type string $entity
      *     @type bool $director
      *     @type bool $executive
-     *     @type array|\Google\Protobuf\Internal\MapField $notes
+     *     @type \Google\Protobuf\Struct $notes
      *     @type string $name
      *     @type int $percentage_ownership
      *     @type string $email
@@ -90,6 +89,7 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
      *     @type string $poi_identification_number
      *     @type bool $aadhaar_linked
      *     @type string $aadhaar_pin
+     *     @type string $audit_id
      * }
      */
     public function __construct($data = NULL) {
@@ -142,29 +142,7 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string entity = 3;</code>
-     * @return string
-     */
-    public function getEntity()
-    {
-        return $this->entity;
-    }
-
-    /**
-     * Generated from protobuf field <code>string entity = 3;</code>
-     * @param string $var
-     * @return $this
-     */
-    public function setEntity($var)
-    {
-        GPBUtil::checkString($var, True);
-        $this->entity = $var;
-
-        return $this;
-    }
-
-    /**
-     * Generated from protobuf field <code>bool director = 4;</code>
+     * Generated from protobuf field <code>bool director = 3;</code>
      * @return bool
      */
     public function getDirector()
@@ -173,7 +151,7 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>bool director = 4;</code>
+     * Generated from protobuf field <code>bool director = 3;</code>
      * @param bool $var
      * @return $this
      */
@@ -186,7 +164,7 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>bool executive = 5;</code>
+     * Generated from protobuf field <code>bool executive = 4;</code>
      * @return bool
      */
     public function getExecutive()
@@ -195,7 +173,7 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>bool executive = 5;</code>
+     * Generated from protobuf field <code>bool executive = 4;</code>
      * @param bool $var
      * @return $this
      */
@@ -208,29 +186,39 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>map<string, string> notes = 6;</code>
-     * @return \Google\Protobuf\Internal\MapField
+     * Generated from protobuf field <code>.google.protobuf.Struct notes = 5;</code>
+     * @return \Google\Protobuf\Struct|null
      */
     public function getNotes()
     {
         return $this->notes;
     }
 
+    public function hasNotes()
+    {
+        return isset($this->notes);
+    }
+
+    public function clearNotes()
+    {
+        unset($this->notes);
+    }
+
     /**
-     * Generated from protobuf field <code>map<string, string> notes = 6;</code>
-     * @param array|\Google\Protobuf\Internal\MapField $var
+     * Generated from protobuf field <code>.google.protobuf.Struct notes = 5;</code>
+     * @param \Google\Protobuf\Struct $var
      * @return $this
      */
     public function setNotes($var)
     {
-        $arr = GPBUtil::checkMapField($var, \Google\Protobuf\Internal\GPBType::STRING, \Google\Protobuf\Internal\GPBType::STRING);
-        $this->notes = $arr;
+        GPBUtil::checkMessage($var, \Google\Protobuf\Struct::class);
+        $this->notes = $var;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>string name = 7;</code>
+     * Generated from protobuf field <code>string name = 6;</code>
      * @return string
      */
     public function getName()
@@ -239,7 +227,7 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string name = 7;</code>
+     * Generated from protobuf field <code>string name = 6;</code>
      * @param string $var
      * @return $this
      */
@@ -252,7 +240,7 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>uint32 percentage_ownership = 8;</code>
+     * Generated from protobuf field <code>uint32 percentage_ownership = 7;</code>
      * @return int
      */
     public function getPercentageOwnership()
@@ -261,7 +249,7 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>uint32 percentage_ownership = 8;</code>
+     * Generated from protobuf field <code>uint32 percentage_ownership = 7;</code>
      * @param int $var
      * @return $this
      */
@@ -274,7 +262,7 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string email = 9;</code>
+     * Generated from protobuf field <code>string email = 8;</code>
      * @return string
      */
     public function getEmail()
@@ -283,7 +271,7 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string email = 9;</code>
+     * Generated from protobuf field <code>string email = 8;</code>
      * @param string $var
      * @return $this
      */
@@ -296,7 +284,7 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string phone_primary = 10;</code>
+     * Generated from protobuf field <code>string phone_primary = 9;</code>
      * @return string
      */
     public function getPhonePrimary()
@@ -305,7 +293,7 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string phone_primary = 10;</code>
+     * Generated from protobuf field <code>string phone_primary = 9;</code>
      * @param string $var
      * @return $this
      */
@@ -318,7 +306,7 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string phone_secondary = 11;</code>
+     * Generated from protobuf field <code>string phone_secondary = 10;</code>
      * @return string
      */
     public function getPhoneSecondary()
@@ -327,7 +315,7 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string phone_secondary = 11;</code>
+     * Generated from protobuf field <code>string phone_secondary = 10;</code>
      * @param string $var
      * @return $this
      */
@@ -340,7 +328,7 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string poi_identification_number = 12;</code>
+     * Generated from protobuf field <code>string poi_identification_number = 11;</code>
      * @return string
      */
     public function getPoiIdentificationNumber()
@@ -349,7 +337,7 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string poi_identification_number = 12;</code>
+     * Generated from protobuf field <code>string poi_identification_number = 11;</code>
      * @param string $var
      * @return $this
      */
@@ -362,7 +350,7 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>bool aadhaar_linked = 13;</code>
+     * Generated from protobuf field <code>bool aadhaar_linked = 12;</code>
      * @return bool
      */
     public function getAadhaarLinked()
@@ -371,7 +359,7 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>bool aadhaar_linked = 13;</code>
+     * Generated from protobuf field <code>bool aadhaar_linked = 12;</code>
      * @param bool $var
      * @return $this
      */
@@ -384,7 +372,7 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string aadhaar_pin = 14;</code>
+     * Generated from protobuf field <code>string aadhaar_pin = 13;</code>
      * @return string
      */
     public function getAadhaarPin()
@@ -393,7 +381,7 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string aadhaar_pin = 14;</code>
+     * Generated from protobuf field <code>string aadhaar_pin = 13;</code>
      * @param string $var
      * @return $this
      */
@@ -401,6 +389,28 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->aadhaar_pin = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string audit_id = 14;</code>
+     * @return string
+     */
+    public function getAuditId()
+    {
+        return $this->audit_id;
+    }
+
+    /**
+     * Generated from protobuf field <code>string audit_id = 14;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setAuditId($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->audit_id = $var;
 
         return $this;
     }

@@ -41,6 +41,9 @@ class MerchantWebsite extends Base
     }
 
     /**
+     * @param $merchantId
+     * @param $apiMerchantWebsiteEntity
+     * @return MerchantWebsiteEntity
      * @throws Throwable
      */
     public function processGetWebsiteDetailsForMerchantId($merchantId, $apiMerchantWebsiteEntity): MerchantWebsiteEntity
@@ -65,14 +68,18 @@ class MerchantWebsite extends Base
                 Trace::ERROR,
                 TraceCode::ASV_READ_SHADOW_EXCEPTION,
                 [
-                    "id" => $merchantId,
+                    "merchant_id" => $merchantId,
                     "entity" => $this->entityName,
                 ]);
         }
     }
 
     /**
+     * @param string $merchantId
+     * @param $apiMerchantWebsiteEntity
+     * @return MerchantWebsiteEntity
      * @throws Throwable
+     * @throws \RZP\Exception\IntegrationException
      */
     public function processReverseShadowGetWebsiteDetailsForMerchantId(string $merchantId, $apiMerchantWebsiteEntity): MerchantWebsiteEntity
     {
@@ -99,17 +106,102 @@ class MerchantWebsite extends Base
     }
 
     /**
+     * @param string $merchantId
+     * @param MerchantWebsiteEntity $apiMerchantWebsite
+     * @return MerchantWebsiteEntity
      * @throws \RZP\Exception\IntegrationException
      */
     public function FetchByMerchantIdAndCompare(string $merchantId, MerchantWebsiteEntity $apiMerchantWebsite): MerchantWebsiteEntity
     {
-        $asvMerchantWebsite = $this->merchantWebsiteClient->FetchMerchantWebsite($merchantId);
+        $asvMerchantWebsite = $this->merchantWebsiteClient->FetchMerchantWebsiteByMerchantId($merchantId);
 
         $asvMerchantWebsiteEntity = ASVEntityMapper::MapProtoObjectToEntity($asvMerchantWebsite, MerchantWebsiteEntity::class);
 
         $difference = $this->merchantWebsiteComparator->getDifference($apiMerchantWebsite->toArray(), $asvMerchantWebsiteEntity->toArray());
 
         $this->logDifferenceIfRequiredAndPushMetrics($difference, $merchantId);
+
+        return $asvMerchantWebsiteEntity;
+    }
+
+    /**
+     * @param string $id
+     * @param $apiMerchantWebsiteEntity
+     * @return MerchantWebsiteEntity
+     * @throws Throwable
+     */
+    public function processGetWebsiteDetailsForId(string $id, $apiMerchantWebsiteEntity): MerchantWebsiteEntity
+    {
+        $merchantId = $apiMerchantWebsiteEntity->getMerchantId();
+        if ($this->isShadowOrReverseShadowOnForOperation($merchantId, CONSTANT::SHADOW, CONSTANT::READ)) {
+            $this->processReadShadowGetWebsiteDetailsForId($id, $apiMerchantWebsiteEntity);
+            return $apiMerchantWebsiteEntity;
+        } else if ($this->isShadowOrReverseShadowOnForOperation($merchantId, CONSTANT::REVERSE_SHADOW, CONSTANT::READ)) {
+            return $this->processReverseShadowGetWebsiteDetailsForId($id, $apiMerchantWebsiteEntity);
+        }
+
+        return $apiMerchantWebsiteEntity;
+    }
+
+    public function processReadShadowGetWebsiteDetailsForId(string $id, $apiMerchantWebsiteEntity)
+    {
+        try {
+            $this->FetchByIdAndCompare($id, $apiMerchantWebsiteEntity);
+        } catch (Throwable $ex) {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::ASV_READ_SHADOW_EXCEPTION,
+                [
+                    "id" => $id,
+                    "entity" => $this->entityName,
+                ]);
+        }
+    }
+
+    /**
+     * @param string $id
+     * @param $apiMerchantWebsiteEntity
+     * @return MerchantWebsiteEntity
+     * @throws Throwable
+     * @throws \RZP\Exception\IntegrationException
+     */
+    public function processReverseShadowGetWebsiteDetailsForId(string $id, $apiMerchantWebsiteEntity): MerchantWebsiteEntity
+    {
+        try {
+            $asvWebsite = $this->FetchByIdAndCompare($id, $apiMerchantWebsiteEntity);
+            return ASVEntityMapper::OverwriteWithAsvEntity(
+                $apiMerchantWebsiteEntity->toArray(),
+                $asvWebsite->toArray(),
+                MerchantWebsiteEntity::class
+            );
+        } catch (Throwable $ex) {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::ASV_REVERSE_SHADOW_EXCEPTION,
+                [
+                    "id" => $id,
+                    "entity" => $this->entityName,
+                ]);
+
+            // rethrow the exception, fail the read on API
+            throw $ex;
+        }
+    }
+
+    /**
+     * @throws \RZP\Exception\IntegrationException
+     */
+    public function FetchByIdAndCompare(string $id, MerchantWebsiteEntity $apiMerchantWebsite): MerchantWebsiteEntity
+    {
+        $asvMerchantWebsite = $this->merchantWebsiteClient->FetchMerchantWebsiteById($id);
+
+        $asvMerchantWebsiteEntity = ASVEntityMapper::MapProtoObjectToEntity($asvMerchantWebsite, MerchantWebsiteEntity::class);
+
+        $difference = $this->merchantWebsiteComparator->getDifference($apiMerchantWebsite->toArray(), $asvMerchantWebsiteEntity->toArray());
+
+        $this->logDifferenceIfRequiredAndPushMetrics($difference, $id);
 
         return $asvMerchantWebsiteEntity;
     }

@@ -28,13 +28,40 @@ class WebsiteAsvClient extends BaseClient
     }
 
     /**
+     * @param string $merchantId
+     * @return accountV1\FetchMerchantWebsiteResponse
      * @throws IntegrationException
      */
-    public function FetchMerchantWebsite(string $merchantId): accountV1\FetchMerchantWebsiteResponse
+    public function FetchMerchantWebsiteByMerchantId(string $merchantId): accountV1\FetchMerchantWebsiteResponse {
+        $fetchMerchantWebsiteRequest = new accountV1\FetchAccountWebsiteRequest();
+        $fetchMerchantWebsiteRequest->setAccountId($merchantId);
+
+        return $this->FetchMerchantWebsite($fetchMerchantWebsiteRequest);
+    }
+
+    /**
+     * @param string $id
+     * @return accountV1\FetchMerchantWebsiteResponse
+     * @throws IntegrationException
+     */
+    public function FetchMerchantWebsiteById(string $id): accountV1\FetchMerchantWebsiteResponse {
+
+        $fetchMerchantWebsiteRequest = new accountV1\FetchAccountWebsiteRequest();
+        $fetchMerchantWebsiteRequest->setId($id);
+        return $this->FetchMerchantWebsite($fetchMerchantWebsiteRequest);
+    }
+
+    /**
+     * @param accountV1\FetchAccountWebsiteRequest $fetchMerchantWebsiteRequest
+     * @return accountV1\FetchMerchantWebsiteResponse
+     * @throws IntegrationException
+     */
+    public function FetchMerchantWebsite(
+        accountV1\FetchAccountWebsiteRequest $fetchMerchantWebsiteRequest): accountV1\FetchMerchantWebsiteResponse
     {
         $this->trace->info(TraceCode::ASV_HTTP_CLIENT_REQUEST, [
             Constant::ROUTE_NAME => Constant::ACCOUNT_WEBSITE_FETCH_ROUTE,
-            'merchant_id' => $merchantId
+            'request' => $fetchMerchantWebsiteRequest
         ]);
 
         // Set Timeout for Fetch Merchant Website Route
@@ -45,8 +72,6 @@ class WebsiteAsvClient extends BaseClient
         $this->asvClientCtx = Context::withHttpRequestHeaders([], $this->headers);
 
         try {
-            $fetchMerchantWebsiteRequest = new accountV1\FetchAccountWebsiteRequest();
-            $fetchMerchantWebsiteRequest->setId($merchantId);
 
             $httpClientTxnMetric->start();
             $response = $this->merchantWebsiteClient->FetchMerchantWebsite($this->asvClientCtx,
@@ -58,7 +83,7 @@ class WebsiteAsvClient extends BaseClient
                 TraceCode::ASV_HTTP_CLIENT_RESPONSE,
                 [
                     Constant::ROUTE_NAME => Constant::ACCOUNT_WEBSITE_FETCH_ROUTE,
-                    'merchant_id' => $merchantId
+                    'request' => $fetchMerchantWebsiteRequest
                 ]
             );
 

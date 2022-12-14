@@ -17,6 +17,10 @@ class FetchAccountWebsiteRequest extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>string id = 1;</code>
      */
     protected $id = '';
+    /**
+     * Generated from protobuf field <code>string account_id = 2;</code>
+     */
+    protected $account_id = '';
 
     /**
      * Constructor.
@@ -25,6 +29,7 @@ class FetchAccountWebsiteRequest extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type string $id
+     *     @type string $account_id
      * }
      */
     public function __construct($data = NULL) {
@@ -50,6 +55,28 @@ class FetchAccountWebsiteRequest extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->id = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string account_id = 2;</code>
+     * @return string
+     */
+    public function getAccountId()
+    {
+        return $this->account_id;
+    }
+
+    /**
+     * Generated from protobuf field <code>string account_id = 2;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setAccountId($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->account_id = $var;
 
         return $this;
     }
