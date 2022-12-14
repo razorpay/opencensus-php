@@ -338,10 +338,22 @@ class BankTransferController extends Controller
                     case 'IMPS':
                         $mode = \RZP\Models\BankTransfer\Mode::IMPS;
 
-                        // we receive UTR narration in this format: IMPS 006713653919 FROM MR  AAGOSH
-                        // 006713653919 is the UTR
-                        $value = trim(preg_replace('/\s+/', ' ', $data['UTRNumber']));
-                        $pieces = explode(' ', $value);
+                        $utrType = substr($data['UTRNumber'], 0, 5);
+
+                        if ($utrType === 'IMPS ')
+                        {
+                            // we receive UTR narration in this format: IMPS 006713653919 FROM MR  AAGOSH
+                            // 006713653919 is the UTR
+                            $value  = trim(preg_replace('/\s+/', ' ', $data['UTRNumber']));
+                            $pieces = explode(' ', $value);
+
+                        }
+                        else if ($utrType === 'IMPS/')
+                        {
+                            // we receive UTR narration in this format: IMPS/234712686455/RAJANIKANT/UBI/TYPE YOUR
+                            // 006713653919 is the UTR
+                            $pieces = explode('/', $data['UTRNumber']);
+                        }
 
                         $impsUtr = $pieces[1];
                         if (strlen($impsUtr) === 12)
@@ -559,7 +571,7 @@ class BankTransferController extends Controller
     {
         $input = Request::all();
 
-        try 
+        try
         {
             $request = Request::instance();
             $header = $request->header('notification_type');

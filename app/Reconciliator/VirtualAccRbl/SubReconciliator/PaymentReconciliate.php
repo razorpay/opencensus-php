@@ -123,10 +123,22 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                         break;
 
                     case 'IMPS':
-                        // we receive UTR narration in this format: IMPS 006713653919 FROM MR ROSS GELLER
-                        // 006713653919 is the UTR
-                        $value = trim(preg_replace('/\s+/', ' ', $row[self::COLUMN_RRN_NUMBER]));
-                        $pieces = explode(' ', $value);
+
+                        $utrType = substr($row[self::COLUMN_RRN_NUMBER], 0, 5);
+
+                        if ($utrType === 'IMPS ')
+                        {
+                            // we receive UTR narration in this format: IMPS 006713653919 FROM MR ROSS GELLER
+                            // 006713653919 is the UTR
+                            $value  = trim(preg_replace('/\s+/', ' ', $row[self::COLUMN_RRN_NUMBER]));
+                            $pieces = explode(' ', $value);
+                        }
+                        else if ($utrType === 'IMPS/')
+                        {
+                            // we receive UTR narration in this format: IMPS/234712686455/RAJANIKANT/UBI/TYPE YOUR
+                            // 006713653919 is the UTR
+                            $pieces = explode('/', $row[self::COLUMN_RRN_NUMBER]);
+                        }
 
                         $impsUtr = $pieces[1];
 
