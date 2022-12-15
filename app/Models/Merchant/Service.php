@@ -6301,6 +6301,8 @@ class Service extends Base\Service
 
         $userData = $this->formatUserCreationData($email, $subMerchant, $skipCaptcha);
 
+        $userData[Merchant\Entity::SIGNUP_SOURCE]=$product;
+
         if ($skipCaptcha === true)
         {
             $subMerchantUser = (new User\Core)->create($userData, 'create_without_captcha');

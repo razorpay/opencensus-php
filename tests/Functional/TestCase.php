@@ -18,6 +18,7 @@ use RZP\Services\Mock\BeamService;
 use RZP\Tests\TestCase as ParentTestCase;
 use DMS\PHPUnitExtensions\ArraySubset\ArraySubsetAsserts;
 use RZP\Services\AutoGenerateApiDocs\Constants as ApiDocsConstants;
+use Config;
 
 class TestCase extends ParentTestCase
 {
@@ -70,6 +71,8 @@ class TestCase extends ParentTestCase
         $host = $this->config->get('database.es_host');
 
         $this->es->setEsClient(['hosts' => [$host]]);
+
+        Config::set('applications.block.activations', false);
     }
 
     public function initialSetup()

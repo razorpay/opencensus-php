@@ -370,6 +370,18 @@ class Core extends Base\Core
 
     public function create(array $input, string $operation = 'create'): Entity
     {
+        //block pg merchants signup
+        $mock = $this->app['config']['applications.block.activations'] ?? true;
+
+        if(((isset($input[MerchantEntity::SIGNUP_SOURCE]) and
+            $input[MerchantEntity::SIGNUP_SOURCE] === Product::BANKING) or
+           $this->app['basicauth']->getRequestOriginProduct() === Product::BANKING) === false and $mock === true){
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ACTION);
+        }
+
+        unset($input[MerchantEntity::SIGNUP_SOURCE]);
+
         $user = $this->getUserEntity()->build($input, $operation);
 
         $this->repo->transactionOnLiveAndTest(function() use ($user, $input)

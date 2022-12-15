@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use Mockery;
 use ReflectionObject;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
+use Config;
 
 class TestCase extends PHPUnitTestCase
 {
@@ -26,6 +27,8 @@ class TestCase extends PHPUnitTestCase
         $this->app = $this->createApplication();
 
         $this->createApplicationMocks();
+
+        Config::set('applications.block.activations', false);
     }
 
     /**

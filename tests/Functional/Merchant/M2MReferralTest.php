@@ -318,6 +318,7 @@ class M2MReferralTest extends TestCase
         $pinotService->method('getDataFromPinot')
                      ->willReturn([$dataFromPinot]);
     }
+
     public function testSignupFromFriendBuy()
     {
         $this->mockHubSpotClient('trackSignupEvent');

@@ -101,6 +101,7 @@ class Validator extends Base\Validator
         BDConstants::SOCIAL_MEDIA               => 'sometimes|boolean',
         BDConstants::WEBSITE_OR_APP             => 'sometimes|boolean',
         BDConstants::OTHERS                     => 'sometimes|string',
+        Merchant\Entity::SIGNUP_SOURCE          => 'sometimes|string',
     ];
 
     protected static $createOauthRules = [
