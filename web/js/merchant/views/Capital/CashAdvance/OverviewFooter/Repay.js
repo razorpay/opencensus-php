@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import RepayAmount from './RepayAmount';
-import RepayMethod from './RepayMethod';
-import { REPAYMENT_VIEWS, REPAY_AMOUNT_TYPES } from '../constants';
+import RepayAmount from 'merchant/views/Capital/CashAdvance/OverviewFooter/RepayAmount';
+import RepayMethod from 'merchant/views/Capital/CashAdvance/OverviewFooter/RepayMethod';
+import { REPAYMENT_VIEWS, REPAY_AMOUNT_TYPES } from 'merchant/views/Capital/CashAdvance/constants';
 
 const Repay = ({
   view,
@@ -21,6 +21,7 @@ const Repay = ({
   const [customAmount, setCustomAmount] = useState(null);
   const [repayAmount, setRepayAmount] = useState(currentOutstandingTotalAmount);
   const isFundsOnHold = user?.merchant?.hold_funds;
+  const currency = user?.merchant?.currency;
 
   const isBalanceZero = balance === 0;
 
@@ -125,6 +126,7 @@ const Repay = ({
         totalInterestAmount={totalInterestAmount}
         totalPrincipalAmount={totalPrincipalAmount}
         loading={loading}
+        currency={currency}
       />
     );
   } else return null;

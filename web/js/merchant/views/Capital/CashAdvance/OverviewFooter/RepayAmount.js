@@ -3,8 +3,12 @@ import Amount from 'common/ui/Amount';
 import Spinner from 'common/ui/Spinner';
 import Button from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
-import { REPAYMENT_VIEWS, REPAY_AMOUNT_TYPES } from '../constants';
-import { getPrincipalAmount, getInterestAmount } from './utils';
+import { REPAYMENT_VIEWS, REPAY_AMOUNT_TYPES } from 'merchant/views/Capital/CashAdvance/constants';
+import {
+  getPrincipalAmount,
+  getInterestAmount,
+  handleDecimalFigure,
+} from 'merchant/views/Capital/CashAdvance/OverviewFooter/utils';
 
 const Loader = () => {
   return (
@@ -29,11 +33,11 @@ const RepayAmount = ({
   totalPrincipalAmount,
   totalInterestAmount,
   loading,
+  currency,
 }) => {
   const isCurrentOutstandingRepayType = repayType === REPAY_AMOUNT_TYPES.CURRENT_OUTSTANDING;
   const isTotalOwedRepayType = repayType === REPAY_AMOUNT_TYPES.TOTAL_OWED;
   const isCustomRepayType = repayType === REPAY_AMOUNT_TYPES.CUSTOM;
-
   const [customAmountError, setCustomAmountError] = useState('');
   const [tempCustomAmount, setTempCustomAmount] = useState(
     customAmount ? Math.round(customAmount / 100) : null,
@@ -60,6 +64,7 @@ const RepayAmount = ({
   };
 
   const handleEditClick = () => {
+    setTempCustomAmount(customAmount / 100);
     if (!isCustomRepayType) setRepayType(REPAY_AMOUNT_TYPES.CUSTOM);
     setIsCustomAmountActive(true);
   };
@@ -69,13 +74,13 @@ const RepayAmount = ({
     if (value > totalOwedAmount / 100)
       setCustomAmountError(
         <p>
-          Max. amount can be repaid <Amount currency="INR" value={totalOwedAmount} />
+          Max. amount can be repaid <Amount currency={currency} value={totalOwedAmount} />
         </p>,
       );
     else if (value < 10)
       setCustomAmountError(
         <p>
-          Min. amount can be repaid <Amount currency="INR" value={1000} />
+          Min. amount can be repaid <Amount currency={currency} value={1000} />
         </p>,
       );
     else {
@@ -86,14 +91,22 @@ const RepayAmount = ({
 
   const handleCustomAmountCloseClick = () => {
     setIsCustomAmountActive(false);
-    setTempCustomAmount(customAmount);
+    setTempCustomAmount(customAmount / 100);
     setCustomAmountError('');
   };
 
   const handleCustomAmountDoneClick = () => {
     setIsCustomAmountActive(false);
-    setCustomAmount(Math.round(100 * tempCustomAmount));
-    setRepayAmount(Math.round(100 * tempCustomAmount));
+    const value = handleDecimalFigure({
+      tempCustomAmount,
+      currentOutstandingTotalAmount,
+      totalOwedAmount,
+    });
+    // All new installments will be in Rs and we don't want paisa to be attributed to them.
+    // We also have to collect paisa for older plans so by restricting paisa figure,
+    // we will attribute paisa to older plans and new plans will only get amount in Rs.
+    setCustomAmount(value);
+    setRepayAmount(value);
     if (!isCustomRepayType) setRepayType(REPAY_AMOUNT_TYPES.CUSTOM);
   };
 
@@ -147,7 +160,7 @@ const RepayAmount = ({
             <div className="mt-4">
               <Amount
                 className="repay--amount"
-                currency="INR"
+                currency={currency}
                 value={currentOutstandingTotalAmount}
               />
             </div>
@@ -170,7 +183,7 @@ const RepayAmount = ({
           <div>
             <div className="repay--type-title">Total Outstanding Amount</div>
             <div className="mt-4">
-              <Amount className="repay--amount" currency="INR" value={totalOwedAmount} />
+              <Amount className="repay--amount" currency={currency} value={totalOwedAmount} />
             </div>
           </div>
         </div>
@@ -233,7 +246,7 @@ const RepayAmount = ({
                   </Button.Transparent>
                 ) : (
                   <div>
-                    <Amount className="repay--amount" currency="INR" value={customAmount} />
+                    <Amount className="repay--amount" currency={currency} value={customAmount} />
                     <Button.Transparent className="edit-btn" onClick={handleEditClick}>
                       Edit
                     </Button.Transparent>
@@ -260,11 +273,11 @@ const RepayAmount = ({
           <div className="flex">
             <div className="principal">
               <div className="amount--title">Principal</div>
-              <Amount className="amount" currency="INR" value={principalAmount} />
+              <Amount className="amount" currency={currency} value={principalAmount} />
             </div>
             <div>
               <div className="amount--title">Interest</div>
-              <Amount className="amount" currency="INR" value={interestAmount} />
+              <Amount className="amount" currency={currency} value={interestAmount} />
             </div>
           </div>
         )}
@@ -272,6 +285,12 @@ const RepayAmount = ({
           <div className="hint flex">
             <i className="i i-info-outline mr-4 mt-2" />
             <p>Amount can be repaid using Netbanking/UPI</p>
+          </div>
+        )}
+        {isCustomRepayType && (
+          <div className="hint flex">
+            <i className="i i-info-outline mr-4 mt-2" />
+            <p>Decimal figure will be auto-adjusted</p>
           </div>
         )}
       </div>

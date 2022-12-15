@@ -1,4 +1,4 @@
-import { COLLECTIONS_BALANCE_TYPE } from '../../constants';
+import { COLLECTIONS_BALANCE_TYPE } from 'merchant/views/Capital/CashAdvance/constants';
 
 export const getPrincipalAmount = ({
   isCurrentOutstandingRepayType,
@@ -96,4 +96,18 @@ export const getCurrentOutstandingBreakup = (currentOutstanding) => {
   currentOutstandingBreakup.principal = Number(principal) - Number(principal_collected);
   currentOutstandingBreakup.interest = Number(interest) - Number(interest_collected);
   return currentOutstandingBreakup;
+};
+
+export const handleDecimalFigure = ({
+  tempCustomAmount,
+  currentOutstandingTotalAmount,
+  totalOwedAmount,
+}) => {
+  let value = parseInt(tempCustomAmount, 10) * 100;
+  if (value <= currentOutstandingTotalAmount) {
+    value = value + (currentOutstandingTotalAmount % 100);
+  } else if (value < totalOwedAmount) {
+    value = value + (totalOwedAmount % 100);
+  }
+  return value;
 };
