@@ -370,17 +370,7 @@ class Core extends Base\Core
 
     public function create(array $input, string $operation = 'create'): Entity
     {
-        //block pg merchants signup
-        $mock = $this->app['config']['applications.block.activations'] ?? true;
-
-        if(((isset($input[MerchantEntity::SIGNUP_SOURCE]) and
-            $input[MerchantEntity::SIGNUP_SOURCE] === Product::BANKING) or
-           $this->app['basicauth']->getRequestOriginProduct() === Product::BANKING) === false and $mock === true){
-
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ACTION);
-        }
-
-        unset($input[MerchantEntity::SIGNUP_SOURCE]);
+        $this->validateActivation($input);
 
         $user = $this->getUserEntity()->build($input, $operation);
 
@@ -391,6 +381,49 @@ class Core extends Base\Core
         });
 
         return $user;
+    }
+
+    //block pg merchants signup
+    private function validateActivation(array &$input)
+    {
+        //$signupSource is being used for capital cards and x submerchants account creation
+        // as the RequestOriginProduct is primary for these two flows
+        $signupSource = $input[MerchantEntity::SIGNUP_SOURCE] ?? null;
+
+        unset($input[MerchantEntity::SIGNUP_SOURCE]);
+
+        $shouldBlockActivation = $this->app['config']['applications.block.activations'] ?? true;
+
+        // To-Do : Introduced applications.block.activations which is only set false for test cases.
+        // This is done to avoid test cases from failing. Config should be removed once onboarding is enabled again.
+
+        if ($shouldBlockActivation === false)
+        {
+            return;
+        }
+
+        if ($signupSource === Product::BANKING)
+        {
+            return;
+        }
+
+        if ($this->app['basicauth']->getRequestOriginProduct() === Product::BANKING)
+        {
+            return;
+        }
+
+        $origin = $this->app['request']->header(RequestHeader::X_REQUEST_ORIGIN) ?? "";
+
+        $rizeOriginHost = parse_url("https://rize-dashboard.razorpay.com", PHP_URL_HOST);
+
+        $requestOriginHost = parse_url($origin, PHP_URL_HOST);
+
+        if ($requestOriginHost === $rizeOriginHost)
+        {
+            return;
+        }
+
+        throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ACTION);
     }
 
     public function edit(Entity $user, array $input, $operation = 'edit')

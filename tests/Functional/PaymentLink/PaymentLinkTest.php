@@ -4,9 +4,11 @@ namespace RZP\Tests\Functional\PaymentLink;
 
 use Event;
 use Carbon\Carbon;
+use Mail;
 
 use Illuminate\Http\UploadedFile;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Item;
@@ -3976,10 +3978,32 @@ class PaymentLinkTest extends TestCase
                     return 'off';
                 }));
     }
+    protected function createAndFetchMocks()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function($mid, $feature, $mode) {
+                                  if ($feature === RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY)
+                                  {
+                                      return 'on';
+                                  }
+
+                                  return 'off';
+                              }));
+    }
 
     protected function activateMerchantToTriggerPaymentHandleCreation(string $billingLabel = 'Test Label 123')
     {
         $this->mockGimliPaymentHandle($billingLabel);
+
+        $this->createAndFetchMocks();
 
         $this->ba->proxyAuthLive();
 

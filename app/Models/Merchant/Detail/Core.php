@@ -1557,6 +1557,7 @@ class Core extends Base\Core
 
                     // IN Batch Flow we skip the merchant category sub category check for grey list or blacklist
                     // As desired by the use case
+
                     if ($batchFlow === true)
                     {
                         $this->processInstantActivationBatch($merchant, $batchFlow);
@@ -1653,6 +1654,13 @@ class Core extends Base\Core
         $this->autoUpdateMerchantActivationFlows($merchant, $merchantDetails);
 
         if ($isRiskyMerchant === true or $merchantDetails->getActivationFlow() === ActivationFlow::BLACKLIST)
+        {
+            return;
+        }
+
+        $isExperimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable($merchant->getId(),
+                                                                              RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY);
+        if ($isExperimentEnabled === false)
         {
             return;
         }
@@ -2865,7 +2873,25 @@ class Core extends Base\Core
 
         if($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED)
         {
-            (new Merchant\Website\Service()) -> canActivateMerchant($merchantDetails, $websiteDetail);
+            (new Merchant\Website\Service())->canActivateMerchant($merchantDetails, $websiteDetail);
+
+            if ($merchant->isLinkedAccount() === false and
+                $merchant->isBusinessBankingEnabled() === false)
+            {
+                //Do not move merchants to Activated if the merchant has not transacted yet
+                $mtuTransacted = (new \RZP\Models\Payment\Repository)
+                    ->hasMerchantTransacted($merchantDetails->getMerchantId());
+
+                $shouldBlockActivation = $this->app['config']['applications.block.activations'] ?? true;
+                // To-Do : Introduced applications.block.activations which is only set false for test cases.
+                // This is done to avoid test cases from failing. Config should be removed once onboarding is enabled again.
+
+                if ($mtuTransacted === false and $shouldBlockActivation === true)
+                {
+                    throw new BadRequestValidationFailureException(
+                        'Merchant has not yet transacted');
+                }
+            }
         }
 
         $merchantDetails->getValidator()
@@ -4851,40 +4877,46 @@ class Core extends Base\Core
                 'business_type' => $businessType,
             ]);
         }
-        else if (($merchantDetails->merchant->isLinkedAccount() === true) and
-            ($merchantDetails->merchant->isRouteNoDocKycEnabledForParentMerchant() === true))
-        {
-            $gstValidationCompleted = (new UpdateContextRequirements())->isNoDocGstValidationCompleted($merchantDetails);
-
-            if ($gstValidationCompleted === false  and
-                (BusinessType::isGstinVerificationExcludedBusinessTypes($merchantDetails->getBusinessTypeValue()) === false))
-            {
-                return false;
-            }
-            $conditions = $this->fetchAutoKycConditionsForRouteNoDocKyc($merchantDetails);
-
-            $this->trace->info(TraceCode::AUTO_KYC_CONDITIONS_FOR_ROUTE_NO_DOC, [
-                'merchant_id'   => $merchantDetails->getId(),
-                'business_type' => $businessType,
-            ]);
-        }
         else
         {
-            //
-            // - For linked accounts currently,  the kyc verification is irrespective of business type
-            // - For linked accounts, verification is only done for bank details. Hence if bank details are verified auto kyc is said to be done.
-            //
-            if($merchantDetails->merchant->isLinkedAccount() === true)
+            if (($merchantDetails->merchant->isLinkedAccount() === true) and
+                ($merchantDetails->merchant->isRouteNoDocKycEnabledForParentMerchant() === true))
             {
-                $conditions = AutoKyc\Constants::LINKED_ACCOUNT_VERIFICATION_CONDITIONS;
-            }
-            else if (isset(AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS[$businessType]) === false)
-            {
-                return false;
+                $gstValidationCompleted = (new UpdateContextRequirements())->isNoDocGstValidationCompleted($merchantDetails);
+
+                if ($gstValidationCompleted === false and
+                    (BusinessType::isGstinVerificationExcludedBusinessTypes($merchantDetails->getBusinessTypeValue()) === false))
+                {
+                    return false;
+                }
+                $conditions = $this->fetchAutoKycConditionsForRouteNoDocKyc($merchantDetails);
+
+                $this->trace->info(TraceCode::AUTO_KYC_CONDITIONS_FOR_ROUTE_NO_DOC, [
+                    'merchant_id'   => $merchantDetails->getId(),
+                    'business_type' => $businessType,
+                ]);
             }
             else
             {
-                $conditions = AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS[$businessType];
+                //
+                // - For linked accounts currently,  the kyc verification is irrespective of business type
+                // - For linked accounts, verification is only done for bank details. Hence if bank details are verified auto kyc is said to be done.
+                //
+                if ($merchantDetails->merchant->isLinkedAccount() === true)
+                {
+                    $conditions = AutoKyc\Constants::LINKED_ACCOUNT_VERIFICATION_CONDITIONS;
+                }
+                else
+                {
+                    if (isset(AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS[$businessType]) === false)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        $conditions = AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS[$businessType];
+                    }
+                }
             }
         }
 
@@ -4907,6 +4939,23 @@ class Core extends Base\Core
         if ($this->isAutoKycEnabled($merchantDetails) === false)
         {
             return false;
+        }
+
+        if ($merchantDetails->merchant->isLinkedAccount() === false and
+            $merchantDetails->merchant->isBusinessBankingEnabled() === false)
+        {
+            //Do not move merchants to Activated mcc pending if the merchant has not transacted yet
+            $mtuTransacted = (new \RZP\Models\Payment\Repository)
+                ->hasMerchantTransacted($merchantDetails->getMerchantId());
+
+            $shouldBlockActivation = $this->app['config']['applications.block.activations'] ?? true;
+            // To-Do : Introduced applications.block.activations which is only set false for test cases.
+            // This is done to avoid test cases from failing. Config should be removed once onboarding is enabled again.
+
+            if ($mtuTransacted === false and $shouldBlockActivation === true)
+            {
+                return false;
+            }
         }
 
         return $autoKycDone;

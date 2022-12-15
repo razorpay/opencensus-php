@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Batch;
 
 use Mail;
 use Illuminate\Support\Facades\Queue;
+use RZP\Models\Merchant\RazorxTreatment;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Models\Batch\Header;
@@ -18,6 +19,7 @@ use RZP\Mail\Merchant\Activation as ActivationMail;
 use RZP\Models\Merchant\Detail\Status as MerchantStatus;
 use RZP\Mail\Admin\NotifyActivationSubmission as AdminSubmitMail;
 use RZP\Mail\Merchant\NotifyActivationSubmission as MerchantSubmitMail;
+use RZP\Services\RazorXClient;
 
 class SubMerchantBatchTest extends TestCase
 {
@@ -339,10 +341,33 @@ class SubMerchantBatchTest extends TestCase
         Mail::assertNotQueued(CreateSubMerchantPartner::class);
         Mail::assertNotQueued(CreateSubMerchantAffiliate::class);
     }
+    protected function createAndFetchMocks()
+    {
+        Mail::fake();
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function($mid, $feature, $mode) {
+                                  if ($feature === RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY)
+                                  {
+                                      return 'on';
+                                  }
+
+                                  return 'off';
+                              }));
+    }
 
     public function testProcessSubMerchantBatchInstantActivation()
     {
         $this->setUpForProcessing(__FUNCTION__);
+
+        $this->createAndFetchMocks();
 
         $this->fixtures->merchant->editPricingPlanId(Pricing::DEFAULT_PRICING_PLAN_ID);
 
@@ -431,6 +456,8 @@ class SubMerchantBatchTest extends TestCase
     {
         // create merchant and instant activate merchant and submit
         $this->setUpForProcessing(__FUNCTION__);
+
+        $this->createAndFetchMocks();
 
         $this->fixtures->merchant->editPricingPlanId(Pricing::DEFAULT_PRICING_PLAN_ID);
 

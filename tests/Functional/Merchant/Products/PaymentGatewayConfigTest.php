@@ -9,6 +9,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Account;
 use RZP\Services\RazorXClient;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Product\Config\DefaultConfigurationHelper;
 use RZP\Models\User\Role;
 use RZP\Models\Feature\Core;
@@ -591,6 +592,28 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $this->assertTrue(($stakeholder[Stakeholder\Entity::AADHAAR_LINKED] === 0));
     }
 
+    protected function createAndFetchMocks()
+    {
+        Mail::fake();
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function($mid, $feature, $mode) {
+                                  if ($feature === RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY)
+                                  {
+                                      return 'on';
+                                  }
+
+                                  return 'off';
+                              }));
+    }
+
     /**
      * This testcase validates the following
      * 1. Create an registered account through V2 API
@@ -605,6 +628,8 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         Mail::fake();
 
         $this->setupPrivateAuthForPartner();
+
+        $this->createAndFetchMocks();
 
         $featureParams = [
             Entity::ENTITY_ID   => 'DefaultPartner',
@@ -693,6 +718,8 @@ class PaymentGatewayConfigTest extends OAuthTestCase
     public function testUpdateRegisteredMerchantProductsStatusByPatchStakeHolder()
     {
         Mail::fake();
+
+        $this->createAndFetchMocks();
 
         $this->setupPrivateAuthForPartner();
 
@@ -786,6 +813,8 @@ class PaymentGatewayConfigTest extends OAuthTestCase
     public function testUpdateUnregisteredMerchantProductsStatusIfApplicable()
     {
         Mail::fake();
+
+        $this->createAndFetchMocks();
 
         $this->setupPrivateAuthForPartner();
 
