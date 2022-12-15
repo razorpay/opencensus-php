@@ -2,6 +2,7 @@
 
 namespace RZP\Jobs\Settlement;
 
+use RZP\Constants\Entity;
 use RZP\Jobs\Job;
 use Carbon\Carbon;
 use RZP\Trace\TraceCode;
@@ -172,13 +173,17 @@ class LedgerRecon extends Job
     {
         $balanceRepo = $this->repoManager->balance;
 
-        $reportingReplicaConnection = $balanceRepo->getPaymentFetchReplicaConnection();
+        $balance = $balanceRepo->getMerchantBalanceByTypeFromDataLake($merchantId, Type::PRIMARY);
 
-        $balance = $balanceRepo->getMerchantBalanceByType($merchantId, Type::PRIMARY, $reportingReplicaConnection);
+        $this->trace->info(
+            TraceCode::LEDGER_RECON_FOR_MERCHANT_RESULT,
+            [
+                'balance'        => $balance
+            ]);
 
-        $balanceAmount = $balance->getBalance();
+        $balanceAmount = $balance[Entity::BALANCE];
 
-        $balanceUpdatedAt = $balance->getUpdatedAt();
+        $balanceUpdatedAt = $balance[Entity::UPDATED_AT];
 
         $result = $this->repoManager->transaction->getUnsettledTransactionSumAndCount($merchantId, $balance);
 
@@ -194,7 +199,7 @@ class LedgerRecon extends Job
                 'merchant_id'        => $merchantId,
                 'cron_id'            => $this->cronId,
                 'txn_count'          => $unsettledTxnCount,
-                'balance_id'         => $balance->getId(),
+                'balance_id'         => $balance['id'],
                 'balance'            => $balanceAmount,
                 'unsettled_amount'   => $unsettledTxnAmount,
                 'difference'         => $diff,

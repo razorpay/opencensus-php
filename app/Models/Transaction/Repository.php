@@ -2260,49 +2260,26 @@ class Repository extends Base\Repository
 
     public function getUnsettledTransactionSumAndCount(
         string $merchantId,
-        Balance\Entity $balance): array {
-
-        $transactionId              = $this->dbColumn(Entity::ID);
-        $transactionCredit          = $this->dbColumn(Entity::CREDIT);
-        $transactionDebit           = $this->dbColumn(Entity::DEBIT);
-        $transactionMerchantId      = $this->dbColumn(Entity::MERCHANT_ID);
-        $transactionType            = $this->dbColumn(Entity::TYPE);
-        $transactionOnHold          = $this->dbColumn(Entity::ON_HOLD);
-        $transactionSettled         = $this->dbColumn(Entity::SETTLED);
-        $transactionBalanceId       = $this->dbColumn(Entity::BALANCE_ID);
-        $transactionCreatedAt       = $this->dbColumn(Entity::CREATED_AT);
-        $transactionSettledAt       = $this->dbColumn(Entity::SETTLED_AT);
+        array $balance): array {
 
         $startTime = microtime(true);
 
-        $query = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
-            ->select(DB::raw("(SUM($transactionCredit)-SUM($transactionDebit)) as settlement_amount, COUNT($transactionId) as count"))
-            ->where($transactionMerchantId, $merchantId)
-            ->where($transactionOnHold, 0)
-            ->where($transactionSettled, 0)
-            ->where($transactionType, '!=', Type::SETTLEMENT)
-            ->whereNotNull($transactionSettledAt)
-            ->where($transactionCreatedAt, '<=', $balance->getUpdatedAt());
+        $rawQuery = "select (SUM(t.credit)-SUM(t.debit)) as settlement_amount, COUNT(t.id) as count from hive.realtime_hudi_api.transactions t where t.merchant_id = '%s' and on_hold = 0 and t.settled = 0 and t.type != 'settlement' and t.settled_at is not null and t.created_at <= %s and (t.balance_id = '%s' or t.balance_id is null) limit 1";
 
-        $query->where(function ($query) use ($transactionBalanceId, $balance) {
-            $query->where($transactionBalanceId, $balance->getId())
-                ->orWhereNull($transactionBalanceId);
-        });
+        $dataLakeQuery = sprintf($rawQuery, $merchantId, $balance[E::UPDATED_AT], $balance[ENTITY::ID]);
 
-        $results = $query->first();
-
-        $resultArray = $results->toArray();
+        $resultArray = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery)[0];
 
         $this->trace->info(
             TraceCode::LEDGER_RECON_FOR_MERCHANT_QUERY_TIME_TAKEN,
             [
                 'merchant_id'        => $merchantId,
                 'txn_count'          => $resultArray['count'],
-                'balance_id'         => $balance->getId(),
-                'balance'            => $balance->getBalance(),
+                'balance_id'         => $balance[ENTITY::ID],
+                'balance'            => $balance[E::BALANCE],
                 'unsettled_amount'   => $resultArray['settlement_amount'],
-                'difference'         => $resultArray['settlement_amount'] - $balance->getBalance(),
-                'balance_updated_at' => $balance->getUpdatedAt(),
+                'difference'         => $resultArray['settlement_amount'] - $balance[E::BALANCE],
+                'balance_updated_at' => $balance[E::UPDATED_AT],
                 'time_taken'         => microtime(true) - $startTime,
             ]);
 

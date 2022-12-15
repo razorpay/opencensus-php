@@ -285,6 +285,15 @@ class Repository extends Base\Repository
                      ->first();
     }
 
+    public function getMerchantBalanceByTypeFromDataLake(string $merchantId, string $balanceType)
+    {
+        $rawQuery = "select * from hive.realtime_hudi_api.balance b where b.merchant_id = '%s' and b.type = '%s' limit 1";
+
+        $dataLakeQuery = sprintf($rawQuery, $merchantId, $balanceType);
+
+        return $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery)[0];
+    }
+
     /**
      * @param string      $merchantId
      * @param string      $balanceType
