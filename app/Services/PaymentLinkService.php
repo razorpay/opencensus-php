@@ -4,6 +4,7 @@ namespace RZP\Services;
 
 use Cache;
 use ApiResponse;
+use RZP\Constants\Tracing;
 use RZP\Exception;
 use RZP\Models\Order;
 use RZP\Models\Payment;
@@ -284,7 +285,7 @@ class PaymentLinkService
             'auth'    => [$this->key, $this->secret],
         ];
 
-        $this->trace->info(TraceCode::PAYMENT_LINK_SERVICE_REQUEST, ['url' => $url]);
+        $this->trace->info(TraceCode::PAYMENT_LINK_SERVICE_REQUEST, ['url' => Tracing::maskUrl($url)]);
 
         $response = [
             'url'     => $url,
@@ -326,7 +327,7 @@ class PaymentLinkService
             'auth'    => [$this->key, $this->secret],
         ];
 
-        $this->trace->info(TraceCode::PAYMENT_LINK_SERVICE_REQUEST, ['url' => $url]);
+        $this->trace->info(TraceCode::PAYMENT_LINK_SERVICE_REQUEST, ['url' => Tracing::maskUrl($url)]);
 
         $params = [
             'url'     => $url,

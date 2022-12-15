@@ -427,6 +427,7 @@ class ApiTraceProcessor
     protected function overrideRequestAttributes(array &$record)
     {
         $record['request']['url'] = Tracing::maskUrl($this->app->request->getUri());
+        $this->scrubData($record['request']['user_email']);
     }
 
     private function addTraceId(array &$record)
