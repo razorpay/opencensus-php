@@ -52,7 +52,7 @@ class AppCheckerTest extends TestCase
         $this->fixtures->create('merchant_business_detail', [
             'merchant_id' => $merchant->getId(),
             'app_urls' => [
-                'playstoreurl' => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app',
+                'playstoreurl' => 'https://play.google.com/store/apps/details?id=com.whatsapp',
             ]
         ]);
 
@@ -86,7 +86,7 @@ class AppCheckerTest extends TestCase
         $this->fixtures->create('merchant_business_detail', [
             'merchant_id' => $merchant->getId(),
             'app_urls' => [
-                'playstoreurl' => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app.dummy',
+                'playstoreurl' => 'https://play.google.com/store/apps/details?id=com.whatsapp.dummy',
             ]
         ]);
 
@@ -126,7 +126,7 @@ class AppCheckerTest extends TestCase
         $this->fixtures->create('merchant_business_detail', [
             'merchant_id' => $merchant->getId(),
             'app_urls' => [
-                'playstoreurl' => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app',
+                'playstoreurl' => 'https://play.google.com/store/apps/details?id=com.whatsapp',
             ]
         ]);
 
@@ -156,9 +156,9 @@ class AppCheckerTest extends TestCase
         $this->fixtures->create('merchant_business_detail', [
             'merchant_id' => $merchant->getId(),
             'app_urls' => [
-                'playstoreurl' => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app',
+                'playstoreurl' => 'https://play.google.com/store/apps/details?id=com.whatsapp',
                 'txn_playstore_urls' => [
-                    'https://play.google.com/store/apps/details?id=com.razorpay.payments.app',
+                    'https://play.google.com/store/apps/details?id=com.whatsapp',
                 ],
             ]
         ]);
@@ -189,7 +189,7 @@ class AppCheckerTest extends TestCase
         $this->fixtures->create('merchant_business_detail', [
             'merchant_id' => $merchant->getId(),
             'app_urls' => [
-                'playstoreurl' => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app.dummy',
+                'playstoreurl' => 'https://play.google.com/store/apps/details?id=com.whatsapp.dummy',
                 'applestoreurl' => 'https://play.google.com/store/apps/details?id=com.dummy123123',
             ]
         ]);
@@ -220,7 +220,7 @@ class AppCheckerTest extends TestCase
         $this->fixtures->create('merchant_business_detail', [
             'merchant_id' => $merchant->getId(),
             'app_urls' => [
-                'playstoreurl' => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app',
+                'playstoreurl' => 'https://play.google.com/store/apps/details?id=com.whatsapp',
             ]
         ]);
 
@@ -244,7 +244,7 @@ class AppCheckerTest extends TestCase
         $this->fixtures->create('merchant_business_detail', [
             'merchant_id' => $merchant->getId(),
             'app_urls' => [
-                'playstoreurl' => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app.dummy',
+                'playstoreurl' => 'https://play.google.com/store/apps/details?id=com.whatsapp.dummy',
             ]
         ]);
 

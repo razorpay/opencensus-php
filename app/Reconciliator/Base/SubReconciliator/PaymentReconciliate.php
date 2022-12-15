@@ -2100,7 +2100,9 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             {
                 $this->paymentTransaction->saveOrFail();
 
-                $this->createLedgerEntriesForCaptureGatewayCommission($this->payment, $this->paymentTransaction);
+                // commenting this as currently there is issue with kafka flush resulting in increase in batch processing time.
+                // Also, this data is not being used for dual comparison right now.
+                //$this->createLedgerEntriesForCaptureGatewayCommission($this->payment, $this->paymentTransaction);
 
                 return true;
             }

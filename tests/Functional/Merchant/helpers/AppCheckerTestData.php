@@ -6,12 +6,12 @@ return [
             'url'     => '/merchant/app/checker',
             'method'  => 'post',
             'content' => [
-                'url' => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app',
+                'url' => 'https://play.google.com/store/apps/details?id=com.whatsapp',
             ]
         ],
         'response' => [
             'content' => [
-                'url'     => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app',
+                'url'     => 'https://play.google.com/store/apps/details?id=com.whatsapp',
                 'result'  => 'Live',
                 'comment' => 'Status Code = 200',
             ],
@@ -22,12 +22,12 @@ return [
             'url'     => '/merchant/app/checker',
             'method'  => 'post',
             'content' => [
-                'url' => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app.dummy',
+                'url' => 'https://play.google.com/store/apps/details?id=com.whatsapp.dummy',
             ]
         ],
         'response' => [
             'content' => [
-                'url'     => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app.dummy',
+                'url'     => 'https://play.google.com/store/apps/details?id=com.whatsapp.dummy',
                 'result'  => 'Not Live',
                 'comment' => 'Status Code = 404',
             ],
