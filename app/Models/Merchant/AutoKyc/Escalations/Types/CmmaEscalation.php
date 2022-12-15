@@ -62,6 +62,8 @@ class CmmaEscalation
 
                 $merchantName = $merchant->getName() ?? "undefined";
 
+                $hasMerchantTransacted = (new \RZP\Models\Payment\Repository)->hasMerchantTransacted($merchantId);
+
                 $cmmaExperimentEnabled = self::isCMMAEscalationExperimentEnabled($merchantId, Constants::CMMA_EXPERIMENT_ID_KEY);
 
                 $processId =  $this->app['config']->get(Constants::CMMA_PROCESS_ID_KEY);
@@ -94,6 +96,7 @@ class CmmaEscalation
                             "merchantId" => $merchantId,
                             "triggeredOn" => Constants::CMMA_SOFT_LIMIT_BREACH,
                             "merchantName" => $merchantName,
+                            "hasMerchantTransacted" => $hasMerchantTransacted ? "true" : "false",
                         ]
                     ];
 
