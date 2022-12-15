@@ -433,7 +433,7 @@ class Service extends Base\Service
         foreach ($configFlagsResponse as $config => $value) {
             if (in_array($config, Constants::CONFIG_FLAGS) === true &&
                 in_array($config, Constants::SHOPIFY_SPECIFIC_CONFIGS) === false) {
-                $configs[$config] = $value;
+                $result[$config] = $value;
             }
         }
 
@@ -646,7 +646,7 @@ class Service extends Base\Service
                $response[$flag] = false;
             }
         }
-        
+
         if ($internal)
         {
            foreach (Constants::INTERNAL_CONFIGS as $flag)
