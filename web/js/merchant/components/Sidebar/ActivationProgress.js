@@ -71,6 +71,41 @@ function ActivationProgress(props) {
     }
   }, []);
 
+  const progressComponent = () => {
+    if (user.isInstantActivationEnabled) {
+      if (!isActivationmccPending && activationState === 'poi_initiated') {
+        return <div className="activation-status-secondary">KYC under review</div>;
+      } else if (activationState === 'account_activated') {
+        return <div className="activation-status-secondary">Personalise your Account</div>;
+      } else if (!isActivationmccPending) {
+        return (
+          <div className="activation-bar-content activation-status-secondary">
+            <div className="activation-bar-text">{user.activation_progress}% Complete</div>
+            <div className="activation-bar">
+              <ProgressBar type="success" max={100} value={user.activation_progress} />
+            </div>
+          </div>
+        );
+      }
+    } else if (!isActivationmccPending) {
+      if (showInstantActivation && !isL1Submitted && user.activation_form_milestone !== 'L2') {
+        return <div className="activation-status-secondary">KYC not completed</div>;
+      } else if (!user.isSubmitted || user.activation_progress < 100) {
+        return (
+          <div className="activation-bar-content activation-status-secondary">
+            <div className="activation-bar-text">{user.activation_progress}% Complete</div>
+            <div className="activation-bar">
+              <ProgressBar type="success" max={100} value={user.activation_progress} />
+            </div>
+          </div>
+        );
+      } else {
+        return <div className="activation-status-secondary">Personalise your Account</div>;
+      }
+    }
+    return null;
+  };
+
   return !isBlacklistFlow &&
     activationState !== 'L1_dedupe_blocked' &&
     activationState !== 'L2_dedupe_blocked' &&
@@ -109,39 +144,7 @@ function ActivationProgress(props) {
               <i className="i i-chevron-right" />
             </div>
           </div>
-
-          {/*  if isInstantActivationEnabled */}
-          {user.isInstantActivationEnabled &&
-          !isActivationmccPending &&
-          activationState === 'poi_initiated' ? (
-            <div className="activation-status-secondary">KYC under review</div>
-          ) : activationState === 'account_activated' ? (
-            <div className="activation-status-secondary">Personalise your Account</div>
-          ) : (
-            !isActivationmccPending && (
-              <div className="activation-bar-content activation-status-secondary">
-                <div className="activation-bar-text">{user.activation_progress}% Complete</div>
-                <div className="activation-bar">
-                  <ProgressBar type="success" max={100} value={user.activation_progress} />
-                </div>
-              </div>
-            )
-          )}
-          {/*  if not isInstantActivationEnabled */}
-          {!user.isInstantActivationEnabled && !isActivationmccPending ? (
-            showInstantActivation && !isL1Submitted && user.activation_form_milestone !== 'L2' ? (
-              <div className="activation-status-secondary">KYC not completed</div>
-            ) : !user.isSubmitted || user.activation_progress < 100 ? (
-              <div className="activation-bar-content activation-status-secondary">
-                <div className="activation-bar-text">{user.activation_progress}% Complete</div>
-                <div className="activation-bar">
-                  <ProgressBar type="success" max={100} value={user.activation_progress} />
-                </div>
-              </div>
-            ) : (
-              <div className="activation-status-secondary">Personalise your Account</div>
-            )
-          ) : null}
+          {progressComponent()}
         </div>
       </div>
     </ShowWhen>
