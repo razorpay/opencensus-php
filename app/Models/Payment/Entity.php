@@ -38,25 +38,26 @@ use RZP\Models\Customer;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
-use RZP\Constants\Entity as E;
 use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Models\UpiTransfer;
 use RZP\Models\BankTransfer;
+use RZP\Constants\Entity as E;
 use RZP\Models\OfflinePayment;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Settlement\Holidays;
-use RZP\Models\Payment\Processor\Wallet;
+use RZP\Models\Base\Traits\DualWrite;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\VirtualAccount\Receiver;
+use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Base\Traits\ExternalOwner;
 use RZP\Models\Base\Traits\ExternalEntity;
 use RZP\Models\Payment\Analytics\Metadata;
-use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\Constants;
+use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Models\CardMandate\CardMandateNotification;
@@ -88,7 +89,7 @@ use RZP\Models\Partner\Commission\CommissionSourceInterface;
  */
 class Entity extends Base\PublicEntity implements CommissionSourceInterface
 {
-    use NotesTrait, ExternalOwner, ExternalEntity;
+    use NotesTrait, ExternalOwner, ExternalEntity, DualWrite;
 
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';

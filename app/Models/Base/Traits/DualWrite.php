@@ -207,15 +207,26 @@ trait DualWrite
 
         $dualWriteEnvValue = getenv($dualWriteEnvKey);
 
+        // Logging critical info for debugging
+        if ($tableName === 'payments')
+        {
+            $app['trace']->info(TraceCode::DUAL_WRITE_CONFIG, [
+                'id'                   => $this->getId(),
+                $dualWriteEnvKey       => $dualWriteEnvValue,
+                'runningInQueue'       => $app->runningInQueue(),
+                'instance_type'        => getenv('INSTANCE_TYPE'),
+                'is_worker_pod_env'    => getenv('IS_WORKER_POD'),
+                'is_worker_pod_config' => $app['config']->get('worker.is_worker_pod'),
+            ]);
+        }
+
         // Note : Explicitly setting `==` to handle env datatype conversions. Do not change to `===`
         if ($dualWriteEnvValue == true)
         {
             return true;
         }
 
-        $isWorkerPod = (($app->runningInQueue() === true) or
-            ((isset($app['worker.ctx']) === true) and
-                (empty($app['worker.ctx']) === false)));
+        $isWorkerPod = ($app->runningInQueue() === true);
 
         // Loading from config key in workers
         if ($isWorkerPod === true)
@@ -246,11 +257,11 @@ trait DualWrite
         return 'insert';
     }
 
-    private function isDualWriteConfigKeyEnabled($entityName): bool
+    private function isDualWriteConfigKeyEnabled($tableName): bool
     {
-        if (isset(E::$dualWriteConfigKey[$entityName]) === true)
+        if (isset(E::$dualWriteConfigKey[$tableName]) === true)
         {
-            $keyName = E::$dualWriteConfigKey[$entityName];
+            $keyName = E::$dualWriteConfigKey[$tableName];
 
             return (bool) ConfigKey::get($keyName, false);
         }

@@ -1561,6 +1561,7 @@ class Entity
     ];
 
     public static $dualWriteConfigKey = [
+        'payments' => Models\Admin\ConfigKey::PAYMENTS_DUAL_WRITE,
     ];
 
     protected static $externalServiceClass = [

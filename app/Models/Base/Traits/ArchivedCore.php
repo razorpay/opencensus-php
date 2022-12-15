@@ -300,9 +300,7 @@ trait ArchivedCore
 
         $app = App::getFacadeRoot();
 
-        $isWorkerPod = (($app->runningInQueue() === true) or
-                        ((isset($app['worker.ctx']) === true) and
-                            (empty($app['worker.ctx']) === false)));
+        $isWorkerPod = ($app->runningInQueue() === true);
 
         // Loading from config key in workers
         if ($isWorkerPod === true)

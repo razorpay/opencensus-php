@@ -53,6 +53,7 @@ class ConfigKey
     const FTS_PAYOUT_BANK_ACCOUNT               = self::PREFIX . 'fts_payout_bank_account';
     const CPS_SERVICE_ENABLED                   = self::PREFIX . 'cps_service_enabled';
     const PG_ROUTER_SERVICE_ENABLED             = self::PREFIX . 'pg_router_service_enabled';
+    const PAYMENTS_DUAL_WRITE                   = self::PREFIX . 'payments_dual_write';
     const CARD_ARCHIVAL_FALLBACK_ENABLED        = self::PREFIX . 'card_archival_fallback_enabled';
     const SETTLEMENT_TRANSACTION_LIMIT          = self::PREFIX . 'settlement_transaction_limit';
     const ENABLE_PAYMENT_DOWNTIMES              = self::PREFIX . 'enable_payment_downtimes';
@@ -489,6 +490,7 @@ class ConfigKey
         self::PAYER_ACCOUNT_NAME_INVALID_REGEXES,
         self::SCROOGE_0LOC_ENABLED,
         self::CARD_ARCHIVAL_FALLBACK_ENABLED,
+        self::PAYMENTS_DUAL_WRITE,
         self::PAYOUT_SERVICE_DATA_MIGRATION_LIMIT_PER_BATCH,
         self::PAYOUT_SERVICE_DATA_MIGRATION_BATCH_ATTEMPTS,
         self::ONDEMAND_SETTLEMENT_INTERNAL_MERCHANTS,

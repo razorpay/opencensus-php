@@ -3182,13 +3182,18 @@ EOT;
     {
         if ($payment->isExternal() === false)
         {
-          $emiPlan = $this->stripEmiRelation($payment);
+            $emiPlan = $this->stripEmiRelation($payment);
 
-          parent::save($payment, $options);
+            try
+            {
+                // Changed from save -> saveOrFail and ignoring exception as only saveOrFail is overridden as of now for dual write
+                parent::saveOrFail($payment, $options);
+            }
+            catch (\Throwable $exception) {}
 
-          $this->addEmiRelationIfApplicable($payment, $emiPlan);
+            $this->addEmiRelationIfApplicable($payment, $emiPlan);
 
-          return $payment;
+            return $payment;
         }
 
         $this->saveExternalEntity($payment);
