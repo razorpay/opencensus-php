@@ -748,7 +748,7 @@ class CardSettlementFileTest extends TestCase
                                         'reference_2'   => 'abcdefgh',
                                         'notes'         => [
                                             'GST' => 'GST_' . $time,
-                                            'CorporateName' => 'Corp_' . $time,
+                                            'CorporateName' => 'ABCD \nCorp_' . $time,
                                             'MTR' => 'paymentRefId_'.$time
                                         ],
                                     ])->getId();
@@ -760,7 +760,8 @@ class CardSettlementFileTest extends TestCase
                                         'reference_2'   => 'abcdefgh',
                                         'notes'         => [
                                             'GST' => 'GST_' . $time,
-                                            'CorporateName' => 'Corp_' . $time,
+                                            'CorporateName' => 'ABCD
+                                            Corp_Comp' . $time,
                                             'MTR' => 'paymentRefId_'.$time
                                         ],
                                     ])->getId();

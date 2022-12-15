@@ -568,6 +568,8 @@ class Axis extends Base
 
         $notesCorpName  = $notes['CorporateName'] ?? '';
 
+        $notesCorpName = trim(preg_replace('/\s+/', ' ', $notesCorpName));
+
         return array($notesGST, $notesCorpName, $notesMTR);
     }
 
