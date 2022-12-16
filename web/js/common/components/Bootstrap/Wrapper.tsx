@@ -1,6 +1,8 @@
 import React, { ReactNode } from 'react';
 import { Provider } from 'react-redux';
 import { ThemeProvider } from 'styled-components';
+import { BladeProvider } from '@razorpay/blade/components';
+import { paymentTheme } from '@razorpay/blade/tokens';
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
 import { QueryCache, ReactQueryCacheProvider } from 'react-query';
 import { SnackbarProvider } from 'common/components/SnackBar/SnackbarContext';
@@ -24,15 +26,17 @@ interface Props {
 const Wrapper: React.FC<Props> = ({ context, children }) => {
   return (
     <Provider store={store}>
-      <ThemeProvider theme={theme}>
-        <ReactQueryCacheProvider queryCache={queryCache}>
-          <AppProvider context={context}>
-            <LayerProvider>
-              <SnackbarProvider>{children}</SnackbarProvider>
-            </LayerProvider>
-          </AppProvider>
-        </ReactQueryCacheProvider>
-      </ThemeProvider>
+      <BladeProvider themeTokens={paymentTheme}>
+        <ThemeProvider theme={theme}>
+          <ReactQueryCacheProvider queryCache={queryCache}>
+            <AppProvider context={context}>
+              <LayerProvider>
+                <SnackbarProvider>{children}</SnackbarProvider>
+              </LayerProvider>
+            </AppProvider>
+          </ReactQueryCacheProvider>
+        </ThemeProvider>
+      </BladeProvider>
     </Provider>
   );
 };
