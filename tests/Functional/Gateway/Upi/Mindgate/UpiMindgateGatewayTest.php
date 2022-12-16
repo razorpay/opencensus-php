@@ -2170,4 +2170,67 @@ class UpiMindgateGatewayTest extends TestCase
 
         $this->assertEquals('single_use',$usage);
     }
+
+    /**
+     * @dataProvider udfTestDataProvider
+     */
+    public function testUdfFields($inputData, $outputData)
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->fixtures->merchant->addFeatures(['enable_addtl_info_upi']);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['notes'] = $inputData;
+
+        $requestAsserted['authorize'] = false;
+
+        $this->mockServerContentFunction(
+            function (& $content, $action = null) use($outputData, & $requestAsserted)
+            {
+                if($action === 'authorize')
+                {
+                    $notesValues = $outputData;
+
+                    $udfValues = array_slice($content, 7, 5);
+
+                    $requestAsserted['authorize'] = true;
+
+                    $this->assertEquals($notesValues, $udfValues);
+                }});
+
+        $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $this->assertTrue($requestAsserted['authorize']);
+    }
+
+    public function udfTestDataProvider()
+    {
+        $testData = [
+            'application_id' => '1000230202020',
+        ];
+
+        $testCases = [
+            ['No Notes Provided' => [], ['NA', 'NA', 'NA', 'NA', 'NA']],
+            ['application id provided' => $testData,
+                array_merge(array_values($testData), ['NA', 'NA', 'NA','NA'])],
+        ];
+
+
+        $testData['extra_field'] = 'randomValue';
+
+        $testCases[2] = ['Extra notes provided'=> $testData,array_merge(array_values(array_slice($testData,0,1)),['NA', 'NA', 'NA','NA'])];
+
+        unset($testData['extra_field']);
+
+        $testData['application_id'] = 'https:\/\/itcestore.myshopify.com\/services\/ping\/########)!))@)@\/razorpay_cards_upi_netbanking_wallets_\/17376444470';
+
+        $sanitizeValue[] = substr(preg_replace('/[^A-Za-z0-9@_\-=.\/]/', '', $testData['application_id']),0,60);
+
+        $testCases[3] = ['Length of value more than 60 char and has special characters that are not allowed' => $testData, array_merge($sanitizeValue,['NA', 'NA', 'NA','NA'])];
+
+        return $testCases;
+    }
+
 }

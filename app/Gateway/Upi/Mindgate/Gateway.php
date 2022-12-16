@@ -58,6 +58,8 @@ class Gateway extends Base\Gateway
 
     const PAY = 'PAY';
 
+    const NA = 'NA';
+
     const FIELD_LENGTH = [
         Action::AUTHENTICATE  => 17,
         Action::AUTHORIZE     => 17,
@@ -150,7 +152,13 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes, Action::AUTHORIZE);
 
-        $request =  $this->getAuthorizeRequestArray($input);
+        $hasUDFFields = $this->hasUDFFields($input);
+
+        $this->trace->info(TraceCode::ADDITIONAL_UDF_FIELDS_UPI_MINDGATE, [
+            'UdfFields' => $hasUDFFields
+        ]);
+
+        $request =  $this->getAuthorizeRequestArray($input, $hasUDFFields);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -167,6 +175,14 @@ class Gateway extends Base\Gateway
                 'vpa'   => $vpa
             ]
         ];
+    }
+
+    public function hasUDFFields(array $input)
+    {
+        $merchant = (new MerchantRepository())->find($input['merchant']['id']);
+
+        return $merchant->isFeatureEnabled(Feature::ENABLE_ADDITIONAL_INFO_UPI);
+
     }
 
     public function capture(array $input)
@@ -834,7 +850,7 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
-    protected function getAuthorizeRequestArray($input)
+    protected function getAuthorizeRequestArray($input, $hasUDFFields = false)
     {
         $payment = $input['payment'];
 
@@ -854,8 +870,18 @@ class Gateway extends Base\Gateway
             'NA',
             'NA',
             'NA',
-            'NA',
+            'NA'
         ];
+
+        if($hasUDFFields)
+        {
+            $values = $payment['notes'];
+
+            if (empty($values) === false and empty($values['application_id']) === false)
+            {
+                $data[7] = $this->sanitizeInput($values['application_id']);
+            }
+        }
 
         $traceData = $this->maskUpiDataForTracing($data, [
             Entity::VPA => 2
@@ -888,6 +914,15 @@ class Gateway extends Base\Gateway
             ]);
 
         return $request;
+    }
+
+    public function sanitizeInput($input)
+    {
+        $pattern = '/[^A-Za-z0-9@_\-=.\/]/';
+
+        $sanitized_input = preg_replace($pattern, '', $input);
+
+        return substr($sanitized_input, 0, 60);
     }
 
     /**

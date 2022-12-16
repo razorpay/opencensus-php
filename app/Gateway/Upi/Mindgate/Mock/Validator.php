@@ -45,7 +45,7 @@ class Validator extends Base\Validator
         // MCC
         'required|integer|max:9999|min:0',
         // UDF
-        'sometimes|in:NA',
+        'sometimes',
         'sometimes|in:NA',
         'sometimes|in:NA',
         'sometimes|in:NA',

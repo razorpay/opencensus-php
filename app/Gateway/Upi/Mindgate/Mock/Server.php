@@ -100,6 +100,11 @@ class Server extends Base\Mock\Server
             $vpa,
             // Payee VA
             'razorpay@hdfcbank',
+            $input[7],
+            $input[8],
+            $input[9],
+            $input[10],
+            $input[11],
         ];
 
         if ($vpa === 'failedcollect@hdfcbank')
@@ -108,7 +113,7 @@ class Server extends Base\Mock\Server
             $content[4] = 'Transaction collect request failed';
         }
 
-        $this->content($content);
+        $this->content($content, __FUNCTION__);
 
         return $this->makeResponse($content);
     }
