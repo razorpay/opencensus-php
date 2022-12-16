@@ -681,7 +681,12 @@ export default class Content extends Component {
             additionalCondition={getIsPayrollWidgetEnabled}
           />
           <Route exact path="/" component={HandleIndex} />
-          <Route path="*" component={HandleIndex} />
+          {this.baseLocation?.pathname?.includes('_') ? (
+            ''
+          ) : (
+            /* ignoring for routes with '_' because somehow routes with underscore getting captured by '*' */
+            <Route path="*" component={HandleIndex} />
+          )}
         </Switch>
       </Suspense>
     );
