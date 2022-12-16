@@ -74,7 +74,7 @@ class BvsLegalDocumentManagerClient extends BaseClient
 
             return $response;
         }
-        catch (Error $e)
+        catch (\Throwable $e)
         {
             $this->trace->info(TraceCode::BVS_RESPONSE_CREATE_CONSENTS, [
                 'error' => $e->getErrorCode(),
