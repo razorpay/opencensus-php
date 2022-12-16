@@ -43,7 +43,7 @@ ERROR_MODULE_BRANCH := master
 # Do not Change below code till endif
 API_BRANCH := $(shell git for-each-ref --format='%(objectname) %(refname:short)' refs/heads | awk "/^$$(git rev-parse HEAD)/ {print \$$2}")
 ifeq ($(API_BRANCH),master)
-ERROR_MODULE_BRANCH = migration-error-codes
+ERROR_MODULE_BRANCH = master
 endif
 ERROR_MODULE_ROOT := error_codes/
 
