@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\OneClickCheckout\Shopify\AddressIngestion;
 use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\Exception\RequestException as GuzzleRequestException;
 use RZP\Models\Merchant\OneClickCheckout\Constants as Constants;
+use RZP\Trace\TraceCode;
 
 class Client extends \RZP\Models\Merchant\OneClickCheckout\Shopify\Client
 {
@@ -39,7 +40,8 @@ class Client extends \RZP\Models\Merchant\OneClickCheckout\Shopify\Client
     protected function parseShopifyResponse($response): array
     {
         $rateLimit = "0/40";
-        if (isset($response[self::HEADERS]) && count($response[self::HEADERS][self::SHOPIFY_RATE_LIMIT_HEADER]) == 1 )
+        if (isset($response[self::HEADERS]) && isset($response[self::HEADERS][self::SHOPIFY_RATE_LIMIT_HEADER])
+            && count($response[self::HEADERS][self::SHOPIFY_RATE_LIMIT_HEADER]) == 1 )
         {
             $rateLimit = $response[self::HEADERS][self::SHOPIFY_RATE_LIMIT_HEADER][0];
         }
@@ -79,6 +81,16 @@ class Client extends \RZP\Models\Merchant\OneClickCheckout\Shopify\Client
         catch (GuzzleRequestException $e)
         {
             $errResponse = $e->getResponse();
+            $rawContents = $errResponse->getBody()->getContents();
+            $this->trace->error(TraceCode::SHOPIFY_FETCH_CUSTOMER_FAILED,
+                [
+                    'status_code'  => $errResponse->getStatusCode(),
+                    'headers'      => $errResponse->getHeaders(),
+                    'raw_contents' => $rawContents,
+                    'body'         => json_decode($rawContents, true),
+                    'protocol'     => $errResponse->getProtocolVersion(),
+                    'reason'       => $errResponse->getReasonPhrase(),
+                ]);
 
             return $this->parseShopifyResponse($this->parseResponse($errResponse));
         }
