@@ -302,6 +302,6 @@ class MandateGateway extends Gateway implements Contracts\MandateGateway
 
     protected function getMerchantRequestId($mandate)
     {
-        return 'RZP' . str_pad($mandate->get(Entity::ID), 32, '0', STR_PAD_LEFT);
+        return 'RAZORPAY' . str_pad($mandate->get(Entity::ID), 27, '0', STR_PAD_LEFT);
     }
 }

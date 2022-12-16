@@ -214,7 +214,7 @@ class TransactionRequestTransformer extends TransactionTransformer
 
     public function getMerchantRequestId()
     {
-        return 'RZP' .  str_pad($this->input[Entity::TRANSACTION][Entity::ID], 32, '0', STR_PAD_LEFT);
+        return 'RAZORPAY' .  str_pad($this->input[Entity::TRANSACTION][Entity::ID], 27, '0', STR_PAD_LEFT);
     }
 
     public function getPayType()
