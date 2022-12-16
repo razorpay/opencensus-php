@@ -84,7 +84,7 @@ class ApiEventSubscriber extends Base\Core
     const WORKFLOW_SERVICE = 'workflow_service';
     const API_WORKFLOW     = 'api_workflow';
     const BARRICADE_ACTION = 'merchant_integration_verify';
-    const BARRICADE_MERCHANT_INTEGRATION = 'merchant_integration';
+    const BARRICADE_MERCHANT_INTEGRATION = 'barricade_merchant_integration';
 
     public function getMode()
     {
@@ -642,7 +642,7 @@ class ApiEventSubscriber extends Base\Core
                     'payment_id' => $payment->getId(),
                 ]);
         }
-        $sqsPush = $this->app->razorx->getTreatment(self::BARRICADE_ACTION, self::BARRICADE_MERCHANT_INTEGRATION, $this->mode);
+        $sqsPush = $this->app->razorx->getTreatment($payment->getId(), self::BARRICADE_MERCHANT_INTEGRATION, $this->mode);
 
         if ($sqsPush === 'on'){
 
