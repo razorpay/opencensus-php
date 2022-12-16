@@ -1700,4 +1700,6 @@ class PublicErrorDescription
     const GIFT_CARD_BALANCE_LESS_THAN_PREVIOUS_APPLIED                              = 'gift card amount less than applied';
     const GIFT_CARD_APPLICATION_NOT_ALLOWED                                         = 'Gift card application not allowed';
     const GIFT_CARD_ORDER_ALREADY_REFUNDED                                          = 'Gift card request cannot be processed as order is already refunded';
+
+    const BAD_REQUEST_MERCHANT_NOT_ONBOARDED_FOR_TOKENISATION                       = 'The tokenisation request failed due to a configuration issue. Please reach out to the seller.';
 }

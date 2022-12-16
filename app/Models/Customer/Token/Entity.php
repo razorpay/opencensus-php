@@ -92,7 +92,8 @@ class Entity extends Base\PublicEntity
     const NOTES                     = 'notes';
 
     const CUSTOMER                  = 'customer';
-
+    const INTERNAL_ERROR_CODE       = 'internal_error_code';
+    const ERROR_DESCRIPTION         = 'error_description';
     //
     // merchant id index for live and test db
     //
@@ -269,6 +270,8 @@ class Entity extends Base\PublicEntity
         self::COMPLIANT_WITH_TOKENISATION_GUIDELINES,
         self::STATUS,
         self::NOTES,
+        self::ERROR_DESCRIPTION,
+        self::INTERNAL_ERROR_CODE
     ];
 
     protected $public = [
@@ -295,6 +298,8 @@ class Entity extends Base\PublicEntity
         self::COMPLIANT_WITH_TOKENISATION_GUIDELINES,
         self::STATUS,
         self::NOTES,
+        self::ERROR_DESCRIPTION,
+        self::INTERNAL_ERROR_CODE
         // TODO: uncomment when we start accepting token as input
         // self::MAX_AMOUNT,
     ];
@@ -324,6 +329,8 @@ class Entity extends Base\PublicEntity
         self::ENTITY_TYPE               => null,
         self::STATUS                    => null,
         self::NOTES                     => null,
+        self::INTERNAL_ERROR_CODE       => null,
+        self::ERROR_DESCRIPTION         => null
     ];
 
     protected $publicSetters = [
@@ -372,6 +379,8 @@ class Entity extends Base\PublicEntity
         self::USED_AT,
         self::RECURRING_DETAILS,
         self::CREATED_AT,
+        self::ERROR_DESCRIPTION,
+        self::INTERNAL_ERROR_CODE
     ];
 
     public static $cryptogramDataServiceProviderTokensUnsetAttributes = [
@@ -666,6 +675,16 @@ class Entity extends Base\PublicEntity
     public function getFrequency()
     {
         return $this->getAttribute(self::FREQUENCY);
+    }
+
+    public function getInternalErrorCode()
+    {
+        return $this->getAttribute(self::INTERNAL_ERROR_CODE);
+    }
+
+    public function getErrorDescription()
+    {
+        return $this->getAttribute(self::ERROR_DESCRIPTION);
     }
 
     public function getCardAttribute()

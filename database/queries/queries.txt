@@ -7114,3 +7114,7 @@ ALTER TABLE merchant_website
 
 ALTER TABLE merchant_banks
     ADD COLUMN fpx TINYINT(1) DEFAULT 0;
+
+ALTER TABLE tokens
+    ADD COLUMN internal_error_code varchar(255);
+    ADD COLUMN error_description TEXT;

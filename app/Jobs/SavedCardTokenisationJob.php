@@ -213,7 +213,11 @@ class SavedCardTokenisationJob extends Job
                 'asyncTokenisationJobId' => $this->asyncTokenisationJobId,
             ]);
 
-            $updateData[Token\Entity::STATUS] = "failed";
+            $updateData[Token\Entity::STATUS] = Token\Constants::FAILED;
+
+            $updateData[Token\Entity::INTERNAL_ERROR_CODE] = $e->getCode();
+
+            $updateData[Token\Entity::ERROR_DESCRIPTION] = $e->getMessage();
 
             $rowsAffected = (new Token\Repository)->updateById($this->tokenId, $updateData);
 

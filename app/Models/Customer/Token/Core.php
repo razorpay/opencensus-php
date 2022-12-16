@@ -2726,8 +2726,9 @@ class Core extends Base\Core
             ($token->hasBeenAcknowledged() === false))
         {
             $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
-                'method'                => $token->getMethod(),
-                'hasBeenAcknowledged'   => $token->hasBeenAcknowledged()
+                'method'                => $this->payment->isMethodCardOrEmi(),
+                'hasBeenAcknowledged'   => $token->hasBeenAcknowledged(),
+                'token'      => $token->getId()
             ]);
             return false;
         }
@@ -2735,7 +2736,8 @@ class Core extends Base\Core
         if ($token->isExpired() === true)
         {
             $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
-                'expired'   => $token->isExpired()
+                'expired'   => $token->isExpired(),
+                'token'      => $token->getId()
             ]);
 
             return false;
@@ -2749,7 +2751,8 @@ class Core extends Base\Core
         {
             $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
                 'rzptokenizedcard'   => $card->isRzpTokenisedCard(),
-                'isInternational'    => $card->isInternational()
+                'isInternational'    => $card->isInternational(),
+                'token'      => $token->getId()
             ]);
 
             return false;
@@ -2762,6 +2765,17 @@ class Core extends Base\Core
         }
 
         $onboardedNetworks = (new Terminal\Core())->getMerchantTokenisationOnboardedNetworks($token->getMerchantId());
+
+        if (in_array($networkCode, $onboardedNetworks,true) === false) {
+
+            $errorCode = ErrorCode::BAD_REQUEST_MERCHANT_NOT_ONBOARDED_FOR_TOKENISATION;
+
+            $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
+                'token'      => $token->getId()
+            ]);
+
+            $this->updateTokenStatus($token, Token\Constants::FAILED, $errorCode);
+        }
 
         return in_array($networkCode, $onboardedNetworks, true);
     }
@@ -3373,6 +3387,16 @@ class Core extends Base\Core
     public function updateTokenStatus($tokenId , $status ,$error_code = null, $description = null)
     {
         $updateData[Token\Entity::STATUS] = $status;
+
+        $updateData[Token\Entity::INTERNAL_ERROR_CODE] =$error_code;
+
+        $updateData[Token\Entity::ERROR_DESCRIPTION] = $description;
+
+        $this->trace->info(
+            TraceCode::CUSTOMER_TOKEN_ACTION_ASYNC,
+            [
+                'payload'   => $updateData
+            ]);
 
         $rowsAffected = (new Token\Repository)->updateById($tokenId, $updateData);
     }

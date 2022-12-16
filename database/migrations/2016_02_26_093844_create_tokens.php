@@ -113,6 +113,12 @@ class CreateTokens extends Migration
             $table->text(Token::RECURRING_FAILURE_REASON)
                   ->nullable();
 
+            $table->string(Token::INTERNAL_ERROR_CODE,255)
+                ->nullable();
+
+            $table->text(Token::ERROR_DESCRIPTION)
+                ->nullable();
+
             $table->integer(Token::START_TIME)
                   ->nullable();
 

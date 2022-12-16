@@ -7255,6 +7255,8 @@ trait Authorize
     {
         $startTime = microtime(true);
 
+        $core = (new Token\Core());
+
         try
         {
             $token = $payment->getGlobalOrLocalTokenEntity();
@@ -7263,7 +7265,8 @@ trait Authorize
                 ($payment->isMethodCardOrEmi() === false))
             {
                 $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
-                    'method'     => $payment->isMethodCardOrEmi()
+                    'method'     => $payment->isMethodCardOrEmi(),
+                    'token'      => $token->getId()
                 ]);
                 return;
             }
@@ -7271,12 +7274,16 @@ trait Authorize
             if (($token->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === false) && ($token->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION) === false))
             {
                 $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
-                    'featureEnabled'        => $token->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE)
+                    'featureEnabled'        => $token->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE),
+                    'token'      => $token->getId()
                 ]);
+
+                $errorCode = ErrorCode::BAD_REQUEST_MERCHANT_NOT_ONBOARDED_FOR_TOKENISATION;
+
+                $core->updateTokenStatus($token->getId(), Token\Constants::FAILED, $errorCode);
+
                 return;
             }
-
-            $core = (new Token\Core());
 
             if (($payment->isRecurring() === true) and
                 ($token->getMethod() === Method::CARD) and
@@ -7304,7 +7311,8 @@ trait Authorize
             if ($core->checkIfTokenisationApplicable($token) === false)
             {
                 $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
-                    'tokenApplicable'     => $core->checkIfTokenisationApplicable($token)
+                    'tokenApplicable'     => $core->checkIfTokenisationApplicable($token),
+                    'token'      => $token->getId()
                 ]);
                 return;
             }
@@ -7313,8 +7321,12 @@ trait Authorize
                 ((new Payment\TokenisationExperiment())->shouldProvisionGlobalToken($token->card) === false)
             ) {
                 $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
-                    'isGlobal'     => $token->isGlobal()
+                    'isGlobal'     => $token->isGlobal(),
+                    'token'      => $token->getId()
                 ]);
+
+                $core->updateTokenStatus($token->getId(), Token\Constants::FAILED);
+
                 // Sync. provisioning of globals network tokens is controlled using a razorx contextramp experiment
                 // to control the amount of traffic we send to the networks & gradually ramp it up.
                 return;
@@ -7328,8 +7340,13 @@ trait Authorize
                 {
                     $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
                         'authReferenceNumber'  => $authReferenceNumber,
-                        'tokenizedAllowed'     => $isTokenizationAllowed
+                        'tokenizedAllowed'     => $isTokenizationAllowed,
+                        'token'      => $token->getId()
                     ]);
+
+                    $errorCode = ErrorCode::BAD_REQUEST_CARD_NOT_ELIGIBLE_FOR_TOKENISATION;
+
+                    $core->updateTokenStatus($token->getId(), Token\Constants::FAILED, $errorCode);
 
                     return;
                 }
