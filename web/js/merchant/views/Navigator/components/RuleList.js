@@ -91,7 +91,7 @@ export default class RuleList extends React.Component {
           <div className="panel-header">
             <h2 className="payment-gateway-title" style={{ marginTop: '20px' }}>
               <span className="provider-title">
-                Payment Provider&nbps;
+                Payment Provider
                 <span className="total-providers">
                   {isProvidersLoading ? (
                     <div className="dotted-animation" />
