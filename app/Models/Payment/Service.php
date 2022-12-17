@@ -6031,6 +6031,30 @@ class Service extends Base\Service
         unset($entity['token']['card']['name'], $entity['token']['card']['expiry_year'], $entity['token']['card']['expiry_month'], $entity['token']['card']['flows'], $entity['token']['card']['cobranding_partner'] );
     }
 
+    public function GetPaymentDetailsForCallbackView($payment_id) {
+        $mode = $this->repo->determineLiveOrTestModeForEntity($payment_id, 'payment');
+
+        if ($mode === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED
+            );
+        }
+
+        $this->app['basicauth']->setModeAndDbConnection($mode);
+
+        $payment = $this->core->retrievePaymentById($payment_id);
+
+        $merchant = $payment->merchant;
+        $response = [];
+        $response["is_international"] = $payment->isInternational();
+        $response["method"] = $payment->getMethod();
+        $response["library"] = $payment->analytics->library;
+        $response["merchant_id"] = $merchant->id;
+
+        return $response;
+    }
+
     public function updateTokenDetails( &$entity, $payment)
     {
         $this->trace->info(

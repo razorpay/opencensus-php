@@ -9,6 +9,7 @@ use Response;
 use Request;
 use App;
 use RZP\Http\CheckoutView;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Payment\Method;
@@ -843,6 +844,15 @@ class PaymentCreateController extends Controller
         {
             if((isset($input['browser']) === true) and (isset($input['auth_step']) === true))
             {
+                $this->trace->info(TraceCode::CALLBACK_VIEW_FOR_FRICTIONLESS_FLOW,
+                    [
+                        'input' => $input,
+                        'data'  => $data
+                    ]);
+                return $this->returnCheckoutCallbackView($data);
+            }
+
+            if($this->shouldReturnCallbackViewForNon3ds($id,$data)) {
                 return $this->returnCheckoutCallbackView($data);
             }
         }
@@ -1961,6 +1971,82 @@ class PaymentCreateController extends Controller
         {
             return true;
         }
+        return false;
+    }
+
+    protected function shouldReturnCallbackViewForNon3ds($id,$data): bool {
+        try {
+
+            $merchant = $this->app['basicauth']->getMerchant();
+
+            $experimentResult = $this->shouldReturnCallbackViewExperiment($merchant->id);
+            if ($experimentResult === false) {
+                return false;
+            }
+
+            $response = $this->service(E::PAYMENT)->GetPaymentDetailsForCallbackView($id);
+            /** removing check on libraries for now
+            $libraries = [Payment\Analytics\Metadata::CHECKOUTJS,Payment\Analytics\Metadata::HOSTED];
+            **/
+            if ((isset($data['razorpay_payment_id']) === true) and
+                (isset($response['is_international']) === true) and
+                (isset($response['method']) === true) and
+                ($response['is_international'] === true) and
+                ($response['method'] === Payment\Method::CARD)) {
+                $this->trace->info(
+                    TraceCode::CALLBACK_VIEW_ON_3DS_PAYMENT, [
+                        "payment_id" => $id,
+                        "merchant_id" => $merchant->id
+                    ]
+                );
+                return true;
+            }
+        } catch (\Exception $e) {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CALLBACK_VIEW_ON_3DS_PAYMENT_ERROR,
+                [
+                    "payment_id" => $id,
+                    "merchant_id" => $merchant->id
+                ]
+            );
+        }
+
+        return false;
+    }
+
+    protected function shouldReturnCallbackViewExperiment($merchantId): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.return_callback_view_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CALLBACK_VIEW_ON_3DS_PAYMENT_ERROR
+            );
+        }
+
         return false;
     }
 }

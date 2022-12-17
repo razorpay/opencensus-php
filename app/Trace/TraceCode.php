@@ -8621,6 +8621,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const WDA_AND_WARM_DB_INCONSISTENCY                  = 'WDA_AND_WARM_DB_INCONSISTENCY';
     const COMPARE_WDA_ERROR                              = 'COMPARE_WDA_ERROR';
 
+    //3DS2.0 callback view experiment
+    const CALLBACK_VIEW_ON_3DS_PAYMENT_ERROR            = "CALLBACK_VIEW_ON_3DS_PAYMENT_ERROR";
+    const CALLBACK_VIEW_ON_3DS_PAYMENT                  = "CALLBACK_VIEW_ON_3DS_PAYMENT";
+    const CALLBACK_VIEW_FOR_FRICTIONLESS_FLOW           = "CALLBACK_VIEW_FOR_FRICTIONLESS_FLOW";
+
     const DEDUCT_OD_FROM_GATEWAY_BALANCE      = 'DEDUCT_OD_FROM_GATEWAY_BALANCE';
 
     protected static $messages = [
