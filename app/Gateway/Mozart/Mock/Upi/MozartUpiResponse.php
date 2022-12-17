@@ -18,6 +18,7 @@ class MozartUpiResponse extends Collection
     const MANDATE   = 'mandate';
     const TERMINAL  = 'terminal';
     const PAYMENT   = 'payment';
+    const META      = 'meta';
 
     public function setNext(array $next)
     {
@@ -63,6 +64,17 @@ class MozartUpiResponse extends Collection
         $data = $this->getData();
 
         $data[self::TERMINAL] = $terminal;
+
+        $this->put(self::DATA, $data);
+
+        return $this;
+    }
+
+    public function setMeta(array $meta)
+    {
+        $data = $this->getData();
+
+        $data[self::META] = $meta;
 
         $this->put(self::DATA, $data);
 

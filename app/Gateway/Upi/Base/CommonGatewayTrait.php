@@ -189,8 +189,27 @@ trait CommonGatewayTrait
         return $gatewayInput;
     }
 
+    private function isPreProcessRampedUpFully(string $gateway): bool
+    {
+        if($this->env === 'testing')
+        {
+            return false;
+        }
+
+        $gateways = [
+            Payment\Gateway::UPI_SBI,
+        ];
+
+        return (in_array($gateway, $gateways, true));
+    }
+
     public function shouldUseUpiPreProcess(string $gateway)
     {
+        if($this->isPreProcessRampedUpFully($gateway) === true)
+        {
+            return true;
+        }
+
         $feature = 'api' . '_' . $gateway . '_' . \RZP\Gateway\Mozart\Action::PRE_PROCESS . '_' . 'v1';
 
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;

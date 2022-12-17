@@ -20,6 +20,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base as GatewayBase;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Upi\Base\CommonGatewayTrait;
 use \WpOrg\Requests\Hooks as Requests_Hooks;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Gateway\Upi\Axis\ErrorCodes\ErrorCodes;
@@ -28,6 +29,7 @@ use RZP\Gateway\Upi\Axis\ErrorCodes\ErrorCodes;
 class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
+    use CommonGatewayTrait;
 
     const ACQUIRER      = 'axis';
 
@@ -190,6 +192,17 @@ class Gateway extends Base\Gateway
     {
         parent::action($input, Action::VALIDATE_PUSH);
 
+        // It checks if pre process happened through common gateway trait contracts
+        if ((isset($input['data']['version']) === true) and
+            ($input['data']['version'] === 'v2'))
+        {
+            $this->upiIsDuplicateUnexpectedPayment($input);
+
+            $this->isValidUnexpectedPayment($input['data']['meta']['response']['plain']);
+
+            return ;
+        }
+
         if ((empty($input['meta']['version']) === false) and
             ($input['meta']['version'] === 'api_v2'))
         {
@@ -295,6 +308,12 @@ class Gateway extends Base\Gateway
 
     public function getParsedDataFromUnexpectedCallback($callbackData)
     {
+        if ((isset($callbackData['data']['version']) === true)
+            and ($callbackData['data']['version']) === 'v2')
+        {
+            return $this->upiGetParsedDataFromUnexpectedCallback($callbackData);
+        }
+
         $payment = [
             'method'   => 'upi',
             'amount'   => $this->getIntegerFormattedAmount($callbackData[Fields::TRANSACTION_AMOUNT]),
@@ -363,6 +382,13 @@ class Gateway extends Base\Gateway
             ($callbackData['meta']['version'] === 'api_v2'))
         {
             return $this->authorizePushV2($input);
+        }
+
+        // To handle if callback data was preprocessed through mozart config with v2 contracts
+        if ((isset($callbackData['data']['version']) === true) and
+            ($callbackData['data']['version'] === 'v2'))
+        {
+            return $this->upiAuthorizePush($input);
         }
 
         $gatewayInput = [
@@ -748,6 +774,17 @@ class Gateway extends Base\Gateway
 
     public function preProcessServerCallback($input): array
     {
+        if ($this->shouldUseUpiPreProcess(Payment\Gateway::UPI_AXIS))
+        {
+            $data = [
+                'payload'       => $input['data'],
+                'gateway'       => Payment\Gateway::UPI_AXIS,
+                'cps_route'     => Payment\Entity::UPI_PAYMENT_SERVICE,
+            ];
+
+            return $this->upiPreProcess($data);
+        }
+
         $encryptedmessage = str_replace('\n','',$input[Fields::DATA]);
         $aesdecrypted = $this->decryptAes($encryptedmessage);
         /**
@@ -768,6 +805,13 @@ class Gateway extends Base\Gateway
 
     public function getPaymentIdFromServerCallback($input)
     {
+        $version = $input['data']['version'] ?? '';
+
+        if ($version === 'v2')
+        {
+            return $this->upiPaymentIdFromServerCallback($input);
+        }
+
         if (isset($input[Fields::MERCHANT_TRANSACTION_ID]) === true)
         {
             return $input[Fields::MERCHANT_TRANSACTION_ID];
@@ -788,6 +832,17 @@ class Gateway extends Base\Gateway
     public function callback(array $input): array
     {
         parent::callback($input);
+
+        if ((isset($input['gateway']['data']['version']) === true) and
+            ($input['gateway']['data']['version']) === 'v2')
+        {
+            $acquirerData = $this->upiCallback($input);
+
+            // Some merchants onboarded on axis wants this field
+            $acquirerData[Payment\Entity::REFERENCE1] = $input['gateway']['data']['upi'][Entity::NPCI_TXN_ID];
+
+            return $acquirerData;
+        }
 
         $content = $input['gateway'];
 
@@ -834,6 +889,19 @@ class Gateway extends Base\Gateway
 
     protected function getCallbackResponseArray($content)
     {
+        $version = $content['data']['version'] ?? '';
+
+        if ($version === 'v2')
+        {
+            $content = $content['data'];
+
+            return [
+                Fields::CALLBACK_STATUS_CODE          => $content['upi']['status_code'],
+                Fields::CALLBACK_STATUS_DESCRIPTION   => $content['meta']['response']['plain']['gatewayResponseMessage'],
+                Fields::CALLBACK_TXN_ID               => $content['upi']['npci_txn_id'],
+            ];
+        }
+
         $data = [
             Fields::CALLBACK_STATUS_CODE          => $content[Fields::GATEWAY_RESPONSE_CODE],
             Fields::CALLBACK_STATUS_DESCRIPTION   => $content[Fields::GATEWAY_RESPONSE_MESSAGE],

@@ -7,8 +7,10 @@ use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
+use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Status;
+use RZP\Models\Merchant\Account;
 
 class UpiSbiPaymentServiceTest extends UpiPaymentServiceTest
 {
@@ -322,4 +324,73 @@ class UpiSbiPaymentServiceTest extends UpiPaymentServiceTest
         return $payment->getId();
     }
 
+    public function testSbiUnexpectedPaymentWithApiPreProcess()
+    {
+        $this->ba->publicAuth();
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->gateway = 'upi_sbi';
+
+        $this->fixtures->terminal->disableTerminal($this->terminal->getID());
+
+        $this->terminal = $this->fixtures->create('terminal:shared_upi_mindgate_sbi_terminal');
+
+        $this->fixtures->merchant->createAccount(Account::DEMO_ACCOUNT);
+
+        $this->fixtures->merchant->enableMethod(Account::DEMO_ACCOUNT, Method::UPI);
+
+        $this->fixtures->merchant->activate();
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'api_upi_sbi_pre_process_v1', 'upi_sbi');
+        });
+
+        $content = $this->mockServer('upi_sbi')
+            ->getUnexpectedAsyncCallbackContent('success',
+                [
+                    'payerVPA' => 'unexpected@v2contract'
+                ]
+            );
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_sbi');
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $authorizeUpiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertNotNull($authorizeUpiEntity['merchant_reference']);
+
+        $paymentTransactionEntity = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(
+            [
+                'status' => 'SUCCESS',
+                'pspRefNo' => $content['payment_id'],
+                'message' => 'Request Processed Successfully',
+            ], $response
+        );
+
+        $assertEqualsMap = [
+            'authorized'                           => $paymentEntity['status'],
+            'authorize'                            => $authorizeUpiEntity['action'],
+            'pay'                                  => $authorizeUpiEntity['type'],
+            $paymentEntity['id']                   => 'pay_' . $authorizeUpiEntity['payment_id'],
+            $paymentTransactionEntity['id']        => 'txn_' . $paymentEntity['transaction_id'],
+            $paymentTransactionEntity['entity_id'] => $paymentEntity['id'],
+            $paymentTransactionEntity['type']      => 'payment',
+            $paymentTransactionEntity['amount']    => $paymentEntity['amount'],
+            Account::DEMO_ACCOUNT                  => $paymentEntity['merchant_id'],
+            $authorizeUpiEntity['gateway']         => $paymentEntity['gateway'],
+            $authorizeUpiEntity['gateway_data']    => "{\"addInfo2\":\"7971807546\"}"
+        ];
+
+        foreach ($assertEqualsMap as $matchLeft => $matchRight)
+        {
+            $this->assertEquals($matchLeft, $matchRight);
+        }
+    }
 }

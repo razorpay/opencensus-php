@@ -7,6 +7,7 @@ use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use \RZP\Gateway\Upi\Sbi\Mock\Server as Sbi;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
+use \RZP\Gateway\Upi\Axis\Mock\Gateway as Axis;
 use \RZP\Gateway\Upi\ICICI\Mock\Gateway as ICICI;
 use RZP\Gateway\Mozart\Mock\Upi\MozartUpiResponse;
 use \RZP\Gateway\Upi\Yesbank\Mock\Server as Yesbank;
@@ -238,6 +239,73 @@ class PreProcess extends Base\Mock\Server
         ]);
 
         if ($data['TxnStatus'] === 'FAILURE')
+        {
+            $response->setSuccess(false);
+
+            $response->setError([
+                'description'               => 'Debit has been failed',
+                'gateway_error_code'        => 'U30',
+                'gateway_error_description' => 'Debit has been failed',
+                'gateway_status_code'       =>  200,
+                'internal_error_code'       => 'GATEWAY_ERROR_DEBIT_FAILED',
+            ]);
+
+            $response->mergeUpi([
+                UpiEntity::STATUS_CODE => 'U30',
+            ]);
+        }
+
+        $response = $response->toArray();
+
+        unset($response['next']);
+
+        return $response;
+    }
+
+    public function upi_axis($entities)
+    {
+        assertTrue($entities['gateway']['cps_route'] === Payment\Entity::UPI_PAYMENT_SERVICE);
+
+        $payload =  $entities['gateway']['payload'];
+
+        $encryptedmessage = str_replace('\n','',$payload);
+
+        $aesdecrypted = (new Axis())->decryptAes($encryptedmessage);
+
+        $aesdecrypted = preg_replace('/[[:cntrl:]]/', '', $aesdecrypted);
+
+        $data = json_decode($aesdecrypted, true);
+
+        $response = MozartUpiResponse::getDefaultInstanceForV2();
+
+        $response->mergeUpi([
+            UpiEntity::VPA                  => $data['customerVpa'] ?? '',
+            UpiEntity::STATUS_CODE          => $data['gatewayResponseCode'],
+            UpiEntity::NPCI_REFERENCE_ID    => $data['rrn'],
+            UpiEntity::NPCI_TXN_ID          => $data['gatewayTransactionId'] ?? "",
+            UpiEntity::MERCHANT_REFERENCE   => $data['merchantTransactionId'],
+            UpiEntity::GATEWAY              => 'upi_axis',
+            'gateway_amount'                => $data['transactionAmount'] * 100
+        ]);
+
+        $response->setPayment([
+            Payment\Entity::CURRENCY          => 'INR',
+            Payment\Entity::AMOUNT_AUTHORIZED => $data['transactionAmount'] * 100,
+        ]);
+
+        $response->setTerminal([
+            Terminal\Entity::GATEWAY_MERCHANT_ID    => $data['merchantId'],
+            Terminal\Entity::GATEWAY                => 'upi_axis',
+        ]);
+
+        $response->setMeta([
+            'response' =>    [
+                'content'     => $payload,
+                'plain'       => $data,
+            ]
+        ]);
+
+        if ($data['gatewayResponseCode'] === 'U30')
         {
             $response->setSuccess(false);
 
