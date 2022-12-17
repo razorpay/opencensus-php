@@ -2334,6 +2334,7 @@ class Gateway
         Network::VISA,
         Network::MC,
         Network::MAES,
+        Network::AMEX,
     ];
 
     public static $bharatQrGateways = [

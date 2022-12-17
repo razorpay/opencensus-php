@@ -550,7 +550,7 @@ final class RazorxTreatment
 
     // Experiment to toggle tokenisation for recurring tokens
     const RECURRING_TOKENISATION = 'recurring_tokenisation';
-
+    
     // Experiment to control card IIN usage for recurring tokenisation cases
     const RECURRING_TOKENISATION_NOT_USING_ACTUAL_CARD_IIN = 'recurring_tokenisation_not_using_actual_card_iin';
 
@@ -681,4 +681,7 @@ final class RazorxTreatment
 
     // Experiment to migrate disputes routes from API to disputes service
     const DISPUTES_DECOMP = 'disputes_decomp';
+
+    // Experiment to use card number from input to use dummy cvv in payment
+    const USE_DETECT_NETWORK_FOR_DUMMY_CVV = 'use_detect_network_for_dummy_cvv';
 }

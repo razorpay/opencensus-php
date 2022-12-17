@@ -4661,17 +4661,28 @@ trait Authorize
             $input[Payment\Entity::CUSTOMER_ID] = $cardMandate->token->customer->getPublicId();
         }
 
+        $merchant = $this->merchant;
         //
         // Appends dummy cvv if auth type of payment is skip. Validate merchant later
         // for moto feature else decline the payment.
         // TODO: Need to change if AMEX card is enabled for skip
         //
-        if ($payment->getAuthType() === Payment\AuthType::SKIP)
+        if ($payment->getAuthType() === Payment\AuthType::SKIP) 
         {
             $input['card']['cvv'] = Card\Entity::DUMMY_CVV;
+
+            $variant = $this->app->razorx->getTreatment($merchant->getId(),
+                    Merchant\RazorxTreatment::USE_DETECT_NETWORK_FOR_DUMMY_CVV,
+                    $this->mode);
+
+            if(strtolower($variant) === 'on' && isset($input['card']['number']) === true){
+                $cardNumber = $input['card']['number'];
+                $iin        = substr($cardNumber ?? null, 0, 6);
+                $network    = Card\Network::detectNetwork($iin);
+                $input['card']['cvv'] = Card\Entity::getDummyCvv($network);
+            }
         }
 
-        $merchant = $this->merchant;
         // fetching customer id from partner merchant since customer belong to partner merchant
         if ($this->usePartnerMerchantForTokenInteroperabilityIfApplicable($payment, $input) === true )
         {
