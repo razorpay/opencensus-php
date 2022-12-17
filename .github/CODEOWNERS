@@ -176,3 +176,9 @@ phpunit.xml                                             vivek.kumar@razorpay.com
 
 .github/actions/                                        @razorpay/ZeroTouchWarriors
 devspace.yaml                                           @razorpay/devstack-devs
+
+# /app/Models/Feature/Constants.php is owned by dcs team, any new use cases
+# of feature flags should go to dcs or razorx/splitz
+# permanent flags - dcs
+# experimental flags / rollout flags - razorx / splitz
+/app/Models/Feature/Constants.php                       @razorpay/techcommonplatforms
