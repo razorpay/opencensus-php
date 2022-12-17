@@ -1282,14 +1282,12 @@ class Core extends Base\Core
                          ]);
 
                     // array_diff did not work as expected for nested arrays, so statements are converted to json and then compared
-                    $diff = array_diff(
+                    $diff = array_values(array_diff(
                         array_map('json_encode', $missingStatementsFromRedis),
                         array_map('json_encode', $insertedStatements)
-                    );
+                    ));
 
-                    $missingStatementsAfterInsertion = (count($diff) === 0) ?
-                        array_map('json_decode', array_values($diff)) :
-                        array_map('json_decode', array_values($diff), [true]);
+                    $missingStatementsAfterInsertion = array_map('json_decode', $diff, array_map('boolval', $diff));
 
                     $merchantMissingStatementList[$accountNumber] = $missingStatementsAfterInsertion;
 

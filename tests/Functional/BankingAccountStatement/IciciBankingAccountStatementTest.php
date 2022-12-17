@@ -2672,24 +2672,43 @@ class IciciBankingAccountStatementTest extends TestCase
 
         $this->mockLedgerSns(1, $ledgerSnsPayloadArray);
 
-        (new AdminService)->setConfigKeys([ConfigKey::PREFIX . 'rx_ca_missing_statements_' . 'icici' => [
-            '2224440041626905' => [
-                [
-                    'type'                      => 'credit',
-                    'amount'                    => '100',
-                    'currency'                  => 'INR',
-                    'channel'                   => 'icici',
-                    'account_number'            => '2224440041626905',
-                    'bank_transaction_id'       => 'S71034964',
-                    'balance'                   => 1000100,
-                    'transaction_date'          => 1613586600,
-                    'posted_date'               => 1613627140,
-                    'bank_serial_number'        => 'S71034964',
-                    'description'               => 'INF/NEFT/023629961691/SBIN0050103/TestIcici/Boruto',
-                    'balance_currency'          => 'INR',
-                ]
+        $missingStatementsBeforeInsertion = [
+            [
+                'type'                => 'credit',
+                'amount'              => '100',
+                'currency'            => 'INR',
+                'channel'             => 'icici',
+                'account_number'      => '2224440041626905',
+                'bank_transaction_id' => 'S71034964',
+                'balance'             => 1000100,
+                'transaction_date'    => 1613586600,
+                'posted_date'         => 1613627140,
+                'bank_serial_number'  => 'S71034964',
+                'description'         => 'INF/NEFT/023629961691/SBIN0050103/TestIcici/Boruto',
+                'balance_currency'    => 'INR',
             ],
-        ]]);
+            [
+                'type'                => 'debit',
+                'amount'              => '100',
+                'currency'            => 'INR',
+                'channel'             => 'icici',
+                'account_number'      => '2224440041626905',
+                'bank_transaction_id' => 'S71034965',
+                'balance'             => 1000000,
+                'transaction_date'    => 1613586600,
+                'posted_date'         => 1613627145,
+                'bank_serial_number'  => 'S71034965',
+                'description'         => 'INF/NEFT/023629961692/SBIN0050103/TestIcici/Boruto',
+                'balance_currency'    => 'INR',
+            ]];
+
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::PREFIX . 'rx_ca_missing_statements_' . 'icici'   => [
+                    '2224440041626905' => $missingStatementsBeforeInsertion,
+                ],
+                ConfigKey::PREFIX . 'rx_missing_statements_insertion_limit' => 1
+            ]);
 
         $initialBasEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
 
@@ -2723,7 +2742,7 @@ class IciciBankingAccountStatementTest extends TestCase
                 'key' => ConfigKey::PREFIX . 'rx_ca_missing_statements_' . 'icici'
             ]);
 
-        $this->assertEmpty($merchantMissingStatementList['2224440041626905']);
+        $this->assertArraySubset($missingStatementsBeforeInsertion[1], $merchantMissingStatementList['2224440041626905'][0]);
 
         $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
 
