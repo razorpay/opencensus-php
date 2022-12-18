@@ -14,10 +14,12 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
+use RZP\Constants\Environment;
 use RZP\Models\Merchant\Credits;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Feature\Metric as FeatureMetric;
 use RZP\Models\Merchant\Balance\Type as BalanceType;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
@@ -40,6 +42,8 @@ class Service extends Base\Service
 
         $validator->validateForRouteLaPennyTestingFeature($input[Constants::NAMES]);
 
+        $this->validateIfDisabledFeaturesArePresent($input);
+
         $featureParams = $this->buildFeatureParams($input, $entityType, $entityId);
 
         $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
@@ -59,6 +63,39 @@ class Service extends Base\Service
         });
 
         return $features->toArray();
+    }
+
+    protected function validateIfDisabledFeaturesArePresent($input)
+    {
+        $env = $this->app['env'];
+
+        if($env !== Environment::PRODUCTION)
+        {
+            return;
+        }
+
+        if($this->merchant->isFeatureEnabled(Constants::ONLY_DS) === false)
+        {
+            return;
+        }
+
+        $disabledFeatures =  [
+            Features::WHITE_LABELLED_ROUTE,
+            Features::WHITE_LABELLED_MARKETPLACE,
+            Features::WHITE_LABELLED_VA,
+            Features::WHITE_LABELLED_QRCODES,
+        ];
+
+        $check = array_intersect($disabledFeatures, $input['features']);
+
+        if(count($check) === 0)
+        {
+            return;
+        }
+        else
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_MERCHANT);
+        }
     }
 
     public function addFeatureAndOnboardOldAccountsToLedger(array $input)

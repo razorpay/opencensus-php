@@ -344,6 +344,8 @@ final class RazorxTreatment
 
     const RBL_V2_BAS_API_INTEGRATION = 'rbl_v2_bas_api_integration';
 
+    const SKIP_NON_DS_CHECK              = 'skip_non_ds_check';
+
     const BANK_TRANSFER_DISABLE_GATEWAY = 'bank_transfer_disable_gateway';
     // This is to be used to block VA to VA payouts
     const RX_ALLOW_VA_TO_VA_PAYOUTS = 'rx_allow_va_to_va_payouts';

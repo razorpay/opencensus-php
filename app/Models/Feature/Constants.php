@@ -1492,7 +1492,7 @@ class Constants
     const ENABLE_ORG_ACCOUNT = "enable_org_account";
     const OLD_CUSTOM_SETTL_FLOW = "old_custom_settl_flow";
 
-    /* Banking pod Feature flags */ 
+    /* Banking pod Feature flags */
 
     // hdfc pl/pp
     const ENABLE_PAYER_NAME_FOR_PL = 'enable_payer_name_for_pl';
@@ -1513,17 +1513,17 @@ class Constants
 
     const FILE_UPLOAD_PP = 'file_upload_pp';
 
-    // udf additional fields 
+    // udf additional fields
 
-    const ENABLE_ADDITIONAL_INFO_UPI = 'enable_addtl_info_upi'; 
+    const ENABLE_ADDITIONAL_INFO_UPI = 'enable_addtl_info_upi';
 
-    // merchant T&C 
+    // merchant T&C
 
     const ENABLE_TC_DASHBOARD = 'enable_tc_dashboard';
 
-    const DISABLE_TC_DASHBOARD = 'disable_tc_dashboard'; 
+    const DISABLE_TC_DASHBOARD = 'disable_tc_dashboard';
 
-    // si billdesk 
+    // si billdesk
 
     const CYBERSOURCE_SI_TXN_LIVE = 'cybersource_si_txn_live';
 
@@ -1725,6 +1725,13 @@ class Constants
     const BLOCK_VA_PAYOUTS = 'block_va_payouts';
 
     const BLOCK_FAV = 'block_fav';
+
+    /*
+     * Feature flags for exceptions raised to merchant onboarding flow
+     * */
+    const ONLY_DS  = 'only_ds';
+
+    const ORG_PROGRAM_DS_CHECK = 'program_ds_check';
 
     /**
      * Reduces OD balance from available balance for CA payouts
@@ -2039,6 +2046,8 @@ class Constants
         self::REDIRECT_TO_EARLYSALARY         => true,
         self::LOAN                            => true,
         self::LOC                             => true,
+        self::ONLY_DS                         => true,
+        self::ORG_PROGRAM_DS_CHECK            => true,
         self::LOS                             => true,
         self::CAPITAL_CARDS_ELIGIBLE          => true,
         self::CARDS_TRANSACTION_LIMIT_1       => true,

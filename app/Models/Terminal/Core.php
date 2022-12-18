@@ -14,9 +14,12 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Pricing;
 use RZP\Constants\Procurer;
+use RZP\Constants\Environment;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Feature\Constants;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Mpan\Entity as MpanEntity;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\CardlessEmi;
@@ -53,6 +56,8 @@ class Core extends Base\Core
         $this->validateExistingTerminal($terminal);
 
         $this->validateDirectSettlementMapping($terminal);
+
+        $this->validateNonDSRestriction($merchant, $terminal);
 
         $this->repo->saveOrFail($terminal, ['shouldSync' => $shouldSync]);
 
@@ -120,6 +125,42 @@ class Core extends Base\Core
         }
     }
 
+    protected function validateNonDSRestriction($merchant, $terminal)
+    {
+        $env = $this->app['env'];
+
+        if($env !== Environment::PRODUCTION)
+        {
+            return;
+        }
+
+        $variant  = $this->app->razorx->getTreatment($merchant->getId(),
+            RazorxTreatment::SKIP_NON_DS_CHECK,
+            $this->mode);
+
+        if($variant === 'on')
+        {
+            return;
+        }
+
+        if($merchant->isFeatureEnabled(Constants::ONLY_DS) === true)
+        {
+            $type = $terminal->getType();
+
+            $check = array_intersect($type, [Type::DIRECT_SETTLEMENT_WITHOUT_REFUND,
+                Type::DIRECT_SETTLEMENT_WITH_REFUND]);
+
+            if(count($check) === 0)
+            {
+                throw new Exception\BadRequestValidationFailureException('Invalid Terminal Configuration');
+            }
+        }
+        else
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_MERCHANT);
+        }
+    }
+
     protected function validateBuyPricing(& $input)
     {
         if (isset($input[Entity::PLAN_ID]))
@@ -179,6 +220,8 @@ class Core extends Base\Core
         }
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $this->validateNonDSRestriction($merchant, $terminal);
 
         $this->repo->terminal->addMerchantToTerminal($terminal, $merchant);
 
@@ -329,6 +372,8 @@ class Core extends Base\Core
             $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
             $mId = $terminal->getMerchantId();
+
+            $this->validateNonDSRestriction($terminal->merchant, $terminal);
 
             $variantFlag = $this->app->razorx->getTreatment($mId, "TERMINAL_EDIT_PROXY", $mode);
 

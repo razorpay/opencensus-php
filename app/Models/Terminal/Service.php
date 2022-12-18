@@ -21,14 +21,17 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
 use RZP\Base\RuntimeManager;
 use RZP\Error\PublicErrorCode;
+use RZP\Constants\Environment;
 use RZP\Exception\BaseException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Jobs\TerminalsServiceMigrateJob;
 use RZP\Models\Gateway\Terminal\Constants;
 use RZP\Models\Mpan\Constants as MpanConstants;
 use RZP\Models\Batch\Processor\TerminalCreation;
 use RZP\Models\Batch\Processor\TerminalEdit;
+use RZP\Models\Feature\Constants as FeatureConstants;
 
 
 
@@ -163,6 +166,86 @@ class Service extends Base\Service
         return $terminals->toArrayPublic();
     }
 
+    protected function validateTerminalBeforeDeletion($merchant, $terminal)
+    {
+        $env = $this->app['env'];
+
+        if($env !== Environment::PRODUCTION)
+        {
+            return;
+        }
+
+        $variant  = $this->app->razorx->getTreatment($merchant->getId(),
+            RazorxTreatment::SKIP_NON_DS_CHECK,
+            $this->mode);
+
+        if($variant === 'on')
+        {
+            return;
+        }
+
+        if($merchant->isFeatureEnabled(FeatureConstants::ONLY_DS) === false)
+        {
+            return;
+        }
+
+        $type = $terminal->getType();
+
+        $check = array_intersect($type, [Type::DIRECT_SETTLEMENT_WITHOUT_REFUND,
+            Type::DIRECT_SETTLEMENT_WITH_REFUND]);
+
+        if(count($check) === 0)
+        {
+            return;
+        }
+
+        $result = $this->countAllTerminalsOfMerchantAndCheckForTypeArray($terminal->getMerchantId());
+
+        $dsCount = $result['ds_terminals'];
+
+        $nonDsCount = $result['non_ds_terminals'];
+
+        if($dsCount === 1)
+        {
+            throw new Exception\BadRequestValidationFailureException('Terminal Cannot Be Deleted');
+        }
+    }
+
+    public function countAllTerminalsOfMerchantAndCheckForTypeArray($merchantId)
+    {
+        $params = [Entity::MERCHANT_ID => $merchantId];
+
+        $type = [
+            Type::DIRECT_SETTLEMENT_WITHOUT_REFUND,
+            Type::DIRECT_SETTLEMENT_WITH_REFUND
+        ];
+
+        $existingTerminals = $this->repo->terminal->getNonFailedNonDeactivatedByParams($params, false);
+
+        $dsCount = 0;
+
+        $nonDsCount = 0;
+
+        foreach ($existingTerminals as $terminal)
+        {
+            $types = $terminal->getType();
+
+            if(in_array($type[0],$types) === true || in_array($type[1], $types) === true)
+            {
+                $dsCount++;
+            }
+            else
+            {
+                $nonDsCount++;
+            }
+        }
+
+        return [
+            'ds_terminals' => $dsCount,
+            'non_ds_terminals' => $nonDsCount
+        ];
+    }
+
     public function deleteTerminal($mid, $tid)
     {
         $this->trace->info(
@@ -177,6 +260,8 @@ class Service extends Base\Service
         Entity::verifyIdAndSilentlyStripSign($tid);
 
         $terminal = $this->repo->terminal->getByIdAndMerchantId($mid, $tid);
+
+        $this->validateTerminalBeforeDeletion($merchant, $terminal);
 
         $this->app['workflow']
              ->setEntityAndId($terminal->getEntity(), $terminal->getId())
@@ -201,6 +286,8 @@ class Service extends Base\Service
         Entity::verifyIdAndSilentlyStripSign($id);
 
         $terminal = $this->repo->terminal->findOrFailPublic($id);
+
+        $this->validateTerminalBeforeDeletion($terminal->merchant, $terminal);
 
         $terminalArray = $terminal->toArrayAdmin();
 
