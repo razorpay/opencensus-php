@@ -42,6 +42,20 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function sendOtpSalesforceUser()
+    {
+        $input = Request::all();
+        $data = $this->service()->sendOtpSalesforce($input);
+        return ApiResponse::json($data);
+    }
+
+    public function verifyOtpSalesforceUser()
+    {
+        $input = Request::all();
+        $data = $this->service()->verifyOtpSalesforce($input);
+        return ApiResponse::json($data);
+    }
+
     public function verifySignupOtpAndRegisterUser()
     {
         $input = Request::all();

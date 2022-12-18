@@ -326,6 +326,7 @@ class Constants
     const SIGNUP_OTP_ACTION                         = 'signup_otp';
     const LOGIN_OTP_ACTION                          = 'login_otp';
     const VERIFY_USER_ACTION                        = 'verify_user';
+    const VERIFY_SALESFORCE_USER_ACTION             = 'verify_salesforce_user';
 
     const CHANGE_PASSWORD_RATE_LIMIT_SUFFIX         = '_change_password_count';
     const SEND_EMAIL_LOGIN_OTP_RATE_LIMIT_SUFFIX    = '_login_otp_send_count';
@@ -429,6 +430,8 @@ class Constants
         self::X_VERIFY_USER_ACTION      => Metric::VERIFY_LOGIN_INCORRECT_OTP,
         self::SIGNUP_OTP_ACTION_V2      => Metric::VERIFY_SIGNUP_INCORRECT_OTP,
         self::LOGIN_OTP_ACTION_V2       => Metric::VERIFY_LOGIN_INCORRECT_OTP,
+        self::LOGIN_OTP_ACTION_V2       => Metric::VERIFY_LOGIN_INCORRECT_OTP,
+        self::VERIFY_SALESFORCE_USER_ACTION => Metric::VERIFY_SIGNUP_INCORRECT_OTP,
     ];
 
     // Ras Signup

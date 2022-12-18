@@ -88,6 +88,11 @@ class Validator extends Base\Validator
         Entity::APP                             => 'sometimes|string'
     ];
 
+    protected static $salesforceOtpRules = [
+        Entity::CONTACT_MOBILE                  => 'required|max:15|contact_syntax',
+        Entity::TOKEN                           => 'sometimes|string',
+    ];
+
     protected static $verifySignupOtpRules = [
         Entity::CONTACT_MOBILE                  => 'required_without:email|max:15|contact_syntax',
         Entity::EMAIL                           => 'required_without:contact_mobile|email',

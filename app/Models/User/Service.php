@@ -574,6 +574,26 @@ class Service extends Base\Service
         return $this->core->registerWithOtp($input);
     }
 
+    public function sendOtpSalesforce(array $input): array
+    {
+        return $this->core->sendOtpSalesforce($input);
+    }
+
+    public function verifyOtpSalesforce(array $input): array
+    {
+        $verifySuccess = $this->core->verifySalesforceOtp($input);
+
+        if($verifySuccess)
+        {
+            unset($input["contact_mobile"]);
+            unset($input["token"]);
+            unset($input["otp"]);
+
+            $input['Verified__c'] = true;
+            return $this->sendUserDetailsToSalesForceEvent($input);
+        }
+    }
+
     public function verifySignupOtp(array $input, string $operation = 'createOTPSignup'): array
     {
         $referrer = $input['ref'] ?? '';

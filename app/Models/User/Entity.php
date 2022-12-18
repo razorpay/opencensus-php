@@ -39,6 +39,7 @@ class Entity extends Base\PublicEntity
 
     const PASSWORD_CONFIRMATION         = 'password_confirmation';
     const CONTACT_MOBILE                = 'contact_mobile';
+    const PHONE                         = 'Phone';
     const REMEMBER_TOKEN                = 'remember_token';
     const CONFIRM_TOKEN                 = 'confirm_token';
     const PASSWORD_RESET_TOKEN          = 'password_reset_token';

@@ -275,6 +275,120 @@ class Core extends Base\Core
         }
     }
 
+    public function sendOtpSalesforce(array $input): ?array
+    {
+        $this->getUserEntity()->getValidator()->validateInput('salesforceOtp', $input);
+
+        $input = array_merge($input, $this->getLoginSignupOtpPayload($input, Constants::VERIFY_SALESFORCE_USER_ACTION));
+
+        $receiver = $input[Entity::CONTACT_MOBILE];
+
+        $otp = $this->generateOtpForLoginSignup($receiver, $input);
+
+        try
+        {
+            $payload = $this->getStorkSalesforceSignupPayload($input, $otp);
+            $stork = $this->app['stork_service'];
+            $stork->sendSms($this->mode,$payload);
+        }
+        catch (\Throwable $e)
+        {
+            if (isset($input['contact_mobile']) === true)
+            {
+                $input['contact_mobile'] = mask_phone($input['contact_mobile']);
+            }
+
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::USERS_SEND_SMS_OTP_FAILED,
+                compact('input'));
+
+            switch ($e->getCode())
+            {
+                case ErrorCode::BAD_REQUEST_RESOURCE_EXHAUSTED:
+                case Constants::STORK_RESOURCE_EXHAUSTED_MESSAGE:
+                case ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED:
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED,
+                        null,
+                        [
+                            "internal_error_code" => ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED
+                        ],
+                        $e->getMessage()
+                    );
+                default:
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_SMS_OTP_FAILED,
+                        null,
+                        null,
+                        $e->getMessage()
+                    );
+            }
+        }
+
+        return array_only($otp, 'token');
+    }
+
+    public function verifySalesforceOtp(array $input) : bool
+    {
+        if(!isset($input["otp"]) || !isset($input["token"]) || (!isset($input["contact_mobile"]) && !isset($input["Phone"])) ) {
+            throw new BadRequestValidationFailureException('Phone, otp, token is/are required');
+        }
+
+        if(!isset($input[Entity::CONTACT_MOBILE]))
+        {
+            $input[Entity::CONTACT_MOBILE] = $input[Entity::PHONE];
+        }
+
+        $receiver = $input[Entity::CONTACT_MOBILE];
+
+        $input = array_merge($input, $this->getLoginSignupOtpPayload($input, Constants::VERIFY_SALESFORCE_USER_ACTION));
+
+        LoginSignupRateLimit::validateKeyLimitExceeded(
+            $receiver,
+            Constants::VERIFY_SIGNUP_OTP_RATE_LIMIT_SUFFIX,
+            Constants::VERIFY_SIGNUP_OTP_TTL,
+            Constants::SIGNUP_OTP_VERIFICATION_THRESHOLD
+        );
+
+        $this->verifyLoginSignupOtp($receiver, $input, $receiver);
+
+        LoginSignupRateLimit::resetKey(
+            $receiver, Constants::VERIFY_SIGNUP_OTP_RATE_LIMIT_SUFFIX
+        );
+
+        return true;
+    }
+
+    public function getStorkSalesforceSignupPayload(array $input, array $otp)
+    {
+        $receiver = $input[Entity::CONTACT_MOBILE];
+
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        $ownerId = "1000000000";
+
+        $payload = [
+            'ownerId'               => $ownerId,
+            'ownerType'             => 'merchant',
+            'orgId'                 => $orgId,
+            'destination'           => $receiver,
+            'source'                => 'api.user.' . $input[Entity::ACTION],
+            'templateName'          => 'sms.user.' . $input[Entity::ACTION],
+            'templateNamespace'     => 'platform_acquisition',
+            'sender'                => 'RZRPAY',
+            'language'              => 'english',
+            'contentParams'   => [
+                'otp'      => $otp['otp'],
+                'validity' => Carbon::createFromTimestamp($otp['expires_at'], Timezone::IST)->format('H:i:s'),
+            ],
+            'THROW_SMS_EXCEPTION_IN_STORK' => true,
+        ];
+
+        return $payload;
+    }
+
     protected function traceEmailOtpSignupRoute(array $input, string $traceCode)
     {
         $keysToTrace = [Entity::EMAIL];
