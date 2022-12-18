@@ -4,23 +4,23 @@ namespace RZP\Models\Ledger;
 
 use App;
 use RZP\Models\Payment;
-use RZP\Trace\TraceCode;
+use RZP\Models\Feature;
 use RZP\Models\Transaction;
 use RZP\Models\Ledger\Constants as LedgerConstants;
 
 class CaptureJournalEvents
 {
-    public static function createTransactionMessageForMerchantCapture(Payment\Entity $payment, Transaction\Entity $transaction): array
+    public static function createTransactionMessageForMerchantCapture(Payment\Entity $payment, Transaction\Entity $transaction, $discount): array
     {
         if ($payment->isDirectSettlement() === true)
         {
-            $moneyParams = self::generateMoneyParamsForCaptureDirectSettlement($transaction);
+            $moneyParams = self::generateMoneyParamsForCaptureDirectSettlement($payment,$transaction);
 
             $additionalParams = self::fetchRulesForPaymentCreditsDS($transaction);
         }
         else
         {
-            $moneyParams = self::generateMoneyParamsForCapture($transaction);
+            $moneyParams = self::generateMoneyParamsForCapture($payment, $transaction, $discount);
 
             $additionalParams = self::fetchRulesForPaymentCredits($transaction);
         }
@@ -148,13 +148,26 @@ class CaptureJournalEvents
         return $rule;
     }
 
-    public static function generateMoneyParamsForCapture(Transaction\Entity  $transaction): array
+    public static function generateMoneyParamsForCapture(Payment\Entity $payment,Transaction\Entity  $transaction, $discount): array
     {
         $moneyParams = [];
 
         $amount = abs($transaction->getAmount());
+
         $tax = $transaction->getTax() != null ? abs($transaction->getTax()) : 0;
         $fee = $transaction->getFee() != null ? abs($transaction->getFee()) - $tax : 0;
+
+        if ($discount !== null)
+        {
+            $amount = $amount - $discount;
+
+            if (($payment->isCardlessEmiWalnut369() === true) and
+                ($payment->merchant->isFeatureEnabled(Feature\Constants::SOURCED_BY_WALNUT369) === true))
+            {
+                $fee = 0;
+                $tax = 0;
+            }
+        }
 
         $moneyParams[Constants::BASE_AMOUNT] = strval($amount);
 
@@ -208,7 +221,7 @@ class CaptureJournalEvents
         return $moneyParams;
     }
 
-    public static function generateMoneyParamsForCaptureDirectSettlement(Transaction\Entity  $transaction): array
+    public static function generateMoneyParamsForCaptureDirectSettlement(Payment\Entity $payment,Transaction\Entity  $transaction): array
     {
         $moneyParams = [];
 
@@ -229,6 +242,26 @@ class CaptureJournalEvents
             $moneyParams[Constants::TAX]                        = strval(abs($tax));
             $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
             $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $fee);
+        }
+        //TODO: Check if we have to record this entries in CLS, since there are no money movement
+        else if (($transaction->isGratis() === true) or
+            ($payment->merchant->isFeatureEnabled(Feature\Constants::VAS_MERCHANT) === true) or
+            ($payment->isHdfcVasDSCustomerFeeBearerSurcharge() === true))
+        {
+            if ($transaction->isFeeCredits() === true)
+            {
+                $moneyParams[Constants::FEE_CREDITS]                = strval(0);
+            }
+            else if ($transaction->isPostpaid() === true)
+            {
+                $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval(0);
+            }
+            else
+            {
+                $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval(0);
+            }
+            $moneyParams[Constants::TAX]                        = strval(0);
+            $moneyParams[Constants::COMMISSION]                 = strval(0);
         }
         // Normal merchant captured scenario (commissions considered)
         else

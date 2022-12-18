@@ -902,17 +902,13 @@ trait Capture
 
     public function createLedgerEntriesForMerchantCapture(Payment\Entity $payment, Transaction\Entity $txn)
     {
-        if (($payment->isDirectSettlement() === true) and
-            ($txn->isGratis() === true))
-        {
-            return;
-        }
-
         try
         {
             if($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === true)
             {
-                $transactionMessage = CaptureJournalEvents::createTransactionMessageForMerchantCapture($payment, $txn);
+                $discount = $this->getDiscountIfApplicableForLedger($payment);
+
+                $transactionMessage = CaptureJournalEvents::createTransactionMessageForMerchantCapture($payment, $txn, $discount);
 
                 \Event::dispatch(new TransactionalClosureEvent(function () use ($txn, $transactionMessage) {
                     // Job will be dispatched only if the transaction commits.
@@ -1794,4 +1790,32 @@ trait Capture
             'Lock wait timeout exceeded'
         ]);
     }
+
+    protected function getDiscountIfApplicableForLedger($payment)
+    {
+        if ($payment->isAppCred() === true)
+        {
+            $discount = $this->repo->discount->fetchForPayment($payment);
+
+            if ($discount !== null) {
+                return $discount->getAmount();
+            }
+        }
+
+        /* For the walnut369 sourced merchant, we don't apply our pricing on the payment and instead settle the amount
+         * based on the subvention/mdr received in the payment which is used to create discount entity
+         * */
+        if (($payment->isCardlessEmiWalnut369() === true) and ($payment->merchant->isFeatureEnabled(Feature\Constants::SOURCED_BY_WALNUT369) === true))
+        {
+            $discount = $this->repo->discount->fetchForPayment($payment);
+
+            if ($discount !== null) {
+                $this->fees = 0;
+                $this->tax = 0;
+                return $discount->getAmount();
+            }
+        }
+        return null;
+    }
+
 }
