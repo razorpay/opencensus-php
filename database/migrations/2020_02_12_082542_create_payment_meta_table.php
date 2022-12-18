@@ -38,7 +38,7 @@ class CreatePaymentMetaTable extends Migration
 
             $table->tinyInteger(PaymentMeta::DCC_OFFERED)
                 ->default(0);
-            
+
             $table->decimal(PaymentMeta::DCC_MARK_UP_PERCENT, 5, 2)
                 ->nullable();
 
@@ -54,6 +54,15 @@ class CreatePaymentMetaTable extends Migration
 
             $table->string(PaymentMeta::MISMATCH_AMOUNT_REASON)
                   ->nullable();
+
+            $table->tinyInteger(PaymentMeta::MCC_APPLIED)
+                ->default(0);
+
+            $table->decimal(PaymentMeta::MCC_FOREX_RATE,20,6)
+                ->nullable();
+
+            $table->decimal(PaymentMeta::MCC_MARK_DOWN_PERCENT,5,2)
+                ->nullable();
 
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);

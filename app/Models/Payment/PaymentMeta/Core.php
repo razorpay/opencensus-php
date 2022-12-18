@@ -104,4 +104,24 @@ class Core extends Base\Core
 
         return $paymentMeta->getId();
     }
+
+    public function updateMccInfo(PaymentMeta\Entity $paymentMeta, $input)
+    {
+        $paymentMeta->setMccApplied($input['mcc_applied']);
+        $paymentMeta->setMccForexRate($input['mcc_forex_rate']);
+        $paymentMeta->setMccMarkDownPercent($input['mcc_mark_down_percent']);
+
+        $this->repo->saveOrFail($paymentMeta);
+
+        return $paymentMeta->getId();
+    }
+
+    public function edit(PaymentMeta\Entity $paymentMeta,$input)
+    {
+        $paymentMeta->edit($input);
+
+        $this->repo->saveOrFail($paymentMeta);
+
+        return $paymentMeta->getId();
+    }
 }

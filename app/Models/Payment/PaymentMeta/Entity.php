@@ -17,6 +17,10 @@ class Entity extends Base\PublicEntity
     const REFERENCE_ID           = 'reference_id';
     const MISMATCH_AMOUNT        = 'mismatch_amount';
     const MISMATCH_AMOUNT_REASON = 'mismatch_amount_reason';
+    const MCC_APPLIED            = 'mcc_applied';
+    const MCC_FOREX_RATE         = 'mcc_forex_rate';
+    const MCC_MARK_DOWN_PERCENT  = 'mcc_mark_down_percent';
+
 
     protected $generateIdOnCreate = true;
 
@@ -31,6 +35,9 @@ class Entity extends Base\PublicEntity
         self::REFERENCE_ID,
         self::MISMATCH_AMOUNT,
         self::MISMATCH_AMOUNT_REASON,
+        self::MCC_APPLIED,
+        self::MCC_FOREX_RATE,
+        self::MCC_MARK_DOWN_PERCENT,
     ];
 
     protected $public = [
@@ -45,6 +52,9 @@ class Entity extends Base\PublicEntity
         self::REFERENCE_ID,
         self::MISMATCH_AMOUNT,
         self::MISMATCH_AMOUNT_REASON,
+        self::MCC_APPLIED,
+        self::MCC_FOREX_RATE,
+        self::MCC_MARK_DOWN_PERCENT,
     ];
 
     protected $visible = [
@@ -59,12 +69,17 @@ class Entity extends Base\PublicEntity
         self::REFERENCE_ID,
         self::MISMATCH_AMOUNT,
         self::MISMATCH_AMOUNT_REASON,
+        self::MCC_APPLIED,
+        self::MCC_FOREX_RATE,
+        self::MCC_MARK_DOWN_PERCENT,
     ];
 
     protected $casts = [
         self::GATEWAY_AMOUNT   => 'int',
         self::DCC_OFFERED      => 'bool',
         self::FOREX_RATE       => 'float',
+        self::MCC_FOREX_RATE   => 'float',
+        self::MCC_APPLIED      => 'bool',
     ];
 
     protected $defaults = [
@@ -72,6 +87,8 @@ class Entity extends Base\PublicEntity
         self::FOREX_RATE   => null,
         self::ACTION       => null,
         self::REFERENCE_ID => null,
+        self::MCC_APPLIED  => false,
+        self::MCC_FOREX_RATE => null,
     ];
 
     protected $entity = 'payment_meta';
@@ -135,6 +152,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MISMATCH_AMOUNT_REASON);
     }
 
+    public function getMccApplied()
+    {
+        return $this->getAttribute(self::MCC_APPLIED);
+    }
+
+    public function getMccMarkDownPercent()
+    {
+        return $this->getAttribute(self::MCC_MARK_DOWN_PERCENT);
+    }
+
+    public function getMccForexRate()
+    {
+        return $this->getAttribute(self::MCC_FOREX_RATE);
+    }
+
     // ----------------------- Setters ---------------------------------------
 
     public function setPaymentId($paymentId)
@@ -185,5 +217,20 @@ class Entity extends Base\PublicEntity
     public function setMismatchAmountReason($reason)
     {
         $this->setAttribute(self::MISMATCH_AMOUNT_REASON, $reason);
+    }
+
+    public function setMccApplied($mccApplied)
+    {
+        return $this->setAttribute(self::MCC_APPLIED,$mccApplied);
+    }
+
+    public function setMccMarkDownPercent($mccMarkDownPercent)
+    {
+        return $this->setAttribute(self::MCC_MARK_DOWN_PERCENT,$mccMarkDownPercent);
+    }
+
+    public function setMccForexRate($mccForexRate)
+    {
+        return $this->setAttribute(self::MCC_FOREX_RATE,$mccForexRate);
     }
 }

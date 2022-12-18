@@ -512,9 +512,7 @@ class NbPlusPaymentServiceAppsTest extends TestCase
 
         $this->assertEquals("authorized", $payment['status']);
 
-        $this->assertNull($payment['dcc_offered']);
-
-        $this->assertNull($paymentMeta);
+        $this->assertEquals(false,$payment['dcc_offered']);
 
         $this->assertEquals(Payment\Entity::NB_PLUS_SERVICE, $payment[Payment\Entity::CPS_ROUTE]);
 
@@ -734,9 +732,7 @@ class NbPlusPaymentServiceAppsTest extends TestCase
 
         $this->assertEquals("authorized", $payment['status']);
 
-        $this->assertNull($payment['dcc_offered']);
-
-        $this->assertNull($paymentMeta);
+        $this->assertEquals(false,$payment['dcc_offered']);
 
         $this->assertEquals(Payment\Entity::NB_PLUS_SERVICE, $payment[Payment\Entity::CPS_ROUTE]);
 
@@ -1302,9 +1298,7 @@ class NbPlusPaymentServiceAppsTest extends TestCase
 
         $this->assertEquals("authorized", $payment['status']);
 
-        $this->assertNull($payment['dcc_offered']);
-
-        $this->assertNull($paymentMeta);
+        $this->assertEquals(false,$payment['dcc_offered']);
 
         $this->assertEquals(Payment\Entity::NB_PLUS_SERVICE, $payment[Payment\Entity::CPS_ROUTE]);
 
@@ -1523,9 +1517,7 @@ class NbPlusPaymentServiceAppsTest extends TestCase
 
         $this->assertEquals("authorized", $payment['status']);
 
-        $this->assertNull($payment['dcc_offered']);
-
-        $this->assertNull($paymentMeta);
+        $this->assertEquals(false,$payment['dcc_offered']);
 
         $this->assertEquals(Payment\Entity::NB_PLUS_SERVICE, $payment[Payment\Entity::CPS_ROUTE]);
 

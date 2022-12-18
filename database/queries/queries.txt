@@ -7112,6 +7112,11 @@ Alter table merchant_details
 ALTER TABLE merchant_website
     MODIFY COLUMN grace_period tinyint(1) DEFAULT NULL ;
 
+ALTER TABLE `payment_meta`
+    ADD COLUMN `mcc_applied` TINYINT(1) DEFAULT 0,
+    ADD COLUMN `mcc_forex_rate` decimal(20,6) DEFAULT NULL,
+    ADD COLUMN `mcc_mark_down_percent` decimal(5,2) DEFAULT NULL,
+
 ALTER TABLE merchant_banks
     ADD COLUMN fpx TINYINT(1) DEFAULT 0;
 

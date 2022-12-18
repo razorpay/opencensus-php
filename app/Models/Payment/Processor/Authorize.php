@@ -4167,12 +4167,9 @@ trait Authorize
                 'dcc_mark_up_percent'       => $requestedCurrencyData['dcc_mark_up_percent']
             ];
 
-            $library = (new Payment\Service)->getLibraryFromPayment($payment);
 
-            if($library === Analytics\Metadata::DIRECT)
-            {
-                $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($payment->getId());
-            }
+            $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($payment->getId());
+
 
             if(empty($paymentMeta))
             {
@@ -4274,8 +4271,8 @@ trait Authorize
         {
             $library = (new Payment\Service)->getLibraryFromPayment($payment);
 
-            if($library === Analytics\Metadata::DIRECT and
-                $paymentMeta['dcc_offered'] === false)
+            if(($library === Analytics\Metadata::DIRECT and $paymentMeta['dcc_offered'] === false) ||
+                ($paymentMeta['mcc_applied'] === true and $paymentMeta['dcc_offered'] === false) )
             {
                 $response = true;
             }
@@ -4302,9 +4299,18 @@ trait Authorize
             'gateway_amount'            => $gatewayAmount,
         ];
 
-        $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
+        $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($payment->getId());
 
-        $paymentMetaEntity->payment()->associate($payment);
+        if(empty($paymentMeta))
+        {
+            $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
+
+            $paymentMetaEntity->payment()->associate($payment);
+        }
+        else
+        {
+            $paymentMetaEntity = (new Payment\PaymentMeta\Core)->edit($paymentMeta, $paymentMetaInput);
+        }
 
         // payment meta relation ship will be called during the terminal selection and the
         // in memory object is set to null, hence reloading the inmemory object by calling load
@@ -4390,9 +4396,18 @@ trait Authorize
                 'dcc_mark_up_percent'       => $requestedCurrencyData['dcc_mark_up_percent']
             ];
 
-            $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
+            $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($payment->getId());
 
-            $paymentMetaEntity->payment()->associate($payment);
+            if(empty($paymentMeta))
+            {
+                $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
+
+                $paymentMetaEntity->payment()->associate($payment);
+            }
+            else
+            {
+                $paymentMetaEntity = (new Payment\PaymentMeta\Core)->updateDccInfo($paymentMeta, $paymentMetaInput);
+            }
 
             $this->trace->info(TraceCode::PAYMENT_DCC_PROCESSED, $paymentMetaInput);
         }
@@ -4454,9 +4469,18 @@ trait Authorize
                 'dcc_mark_up_percent'       => $requestedCurrencyData['dcc_mark_up_percent']
             ];
 
-            $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
+            $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($payment->getId());
 
-            $paymentMetaEntity->payment()->associate($payment);
+            if(empty($paymentMeta))
+            {
+                $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
+
+                $paymentMetaEntity->payment()->associate($payment);
+            }
+            else
+            {
+                $paymentMetaEntity = (new Payment\PaymentMeta\Core)->updateDccInfo($paymentMeta, $paymentMetaInput);
+            }
 
             $this->trace->info(TraceCode::PAYMENT_DCC_PROCESSED, $paymentMetaInput);
         }
@@ -4553,7 +4577,8 @@ trait Authorize
         if ($payment->getConvertCurrency() === false ||
             ($currency !== $merchant->getCurrency() && $payment->getConvertCurrency() === null))
         {
-            $mccMarkdownPercentage = 1 - $merchant->getMccMarkdownMarkdownPercentage() / 100;
+            $input['mcc_mark_down_percent'] = $merchant->getMccMarkdownMarkdownPercentage();
+            $mccMarkdownPercentage = 1 - $input['mcc_mark_down_percent'] / 100;
             $baseAmount = (int) ceil($baseAmount * $mccMarkdownPercentage);
         }
 
@@ -4583,6 +4608,32 @@ trait Authorize
                     ]);
             }
         }
+
+        $dummyProcessing = $input['dummy_payment'] ?? false ;
+
+        if(isset($input['mcc_mark_down_percent']) && isset($input['mcc_forex_rate']) && isset($input['mcc_applied']) && !($dummyProcessing))
+        {
+            $paymentMetaInput = [
+                'mcc_applied'           => $input['mcc_applied'],
+                'mcc_mark_down_percent' => $input['mcc_mark_down_percent'],
+                'mcc_forex_rate'        => $input['mcc_forex_rate'],
+                'payment_id'            => $payment->getId(),
+            ];
+
+            $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($payment->getId());
+
+            if(empty($paymentMeta))
+            {
+                $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
+
+                $paymentMetaEntity->payment()->associate($payment);
+            }
+            else
+            {
+                $paymentMetaEntity = (new Payment\PaymentMeta\Core)->updateMccInfo($paymentMeta, $paymentMetaInput);
+            }
+        }
+        unset($input['mcc_mark_down_percent'], $input['mcc_forex_rate'], $input['mcc_applied']);
 
         $payment->setBaseAmount($baseAmount);
     }

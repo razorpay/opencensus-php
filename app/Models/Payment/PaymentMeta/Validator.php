@@ -21,6 +21,9 @@ class Validator extends Base\Validator
         Entity::REFERENCE_ID               => 'sometimes|string',
         Entity::MISMATCH_AMOUNT            => 'sometimes|integer',
         Entity::MISMATCH_AMOUNT_REASON     => 'required_with:' . Entity::MISMATCH_AMOUNT . '|string|in:credit_surplus,credit_deficit',
+        Entity::MCC_APPLIED                => 'sometimes|boolean',
+        Entity::MCC_MARK_DOWN_PERCENT      => 'sometimes|numeric',
+        Entity::MCC_FOREX_RATE             => 'sometimes|numeric',
     ];
 
     protected static $referenceIdRules = [

@@ -1271,6 +1271,12 @@ trait Capture
             ]
         );
 
+        if ($payment->isFeeBearerCustomer() === true and $payment->merchant->isCustomerFeeBearerAllowedOnInternational())
+        {
+            //set and fee values from txn
+            $payment->setFee($txn->getFee());
+        }
+
         $this->repo->saveOrFail($txn);
 
         $this->repo->saveOrFail($payment);

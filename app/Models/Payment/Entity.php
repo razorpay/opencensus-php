@@ -326,6 +326,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     const B2BExportInvoice                   = "b2b_export_invoice";
 
+    const feeCurrencyAmount                      = "fee_currency_amount";
+
     protected static $sign      = 'pay';
 
     protected $entity           = 'payment';
@@ -5453,6 +5455,35 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         if($this->isB2BExportCurrencyCloudPayment() === true){
             $data[self::B2BExportInvoice] = $this->getReference2();
         }
+        
+        
+        // MCC CFB Payments which are in authorized state will have the fees in payment currency,
+        // so we are converting it into base currency(INR) and sending it as an additional param to Merchant Dashboard.
+        // If its a captured payment, then it would have already been handled in the post capture to make sure fees are stored in Base currency(INR)
+
+        if($this->getCurrency()!== Currency\Currency::INR
+            and $this->isFeeBearerCustomer()
+            and $this->isCaptured() === false
+            and !$this->isStatus(Status::FAILED)
+            and $this->merchant->isCustomerFeeBearerAllowedOnInternational())
+        {
+            $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($this->getId());
+
+            if(isset($paymentMeta)) {
+
+                if (!empty($paymentMeta->getMccForexRate())) {
+
+                    $fee = (float)$this->getFee()*($paymentMeta->getMccForexRate());
+                    $data[self::feeCurrencyAmount] = (int)ceil($fee);
+                }
+            }
+        }
+        else if ($this->isCaptured()
+            and $this->getCurrency()!== Currency\Currency::INR
+            and $this->isFeeBearerCustomer())
+        {
+            $data[self::FEE] = $this->transaction->getFee();
+        }
 
         return $data;
     }
@@ -5489,6 +5520,33 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         if($this->isB2BExportCurrencyCloudPayment() === true){
             $data[self::B2BExportInvoice] = $this->getReference2();
+        }
+        
+        // MCC CFB Payments which are in authorized state will have the fees in payment currency,
+        // so we are converting it into base currency(INR) and sending it as an additional param to Merchant Dashboard.
+        // If its a captured payment, then it would have already been handled in the post capture to make sure fees are stored in Base currency(INR)
+        if($this->getCurrency()!== Currency\Currency::INR
+            and $this->isFeeBearerCustomer()
+            and $this->isCaptured() === false
+            and !$this->isStatus(Status::FAILED)
+            and $this->merchant->isCustomerFeeBearerAllowedOnInternational())
+        {
+            $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($this->getId());
+
+            if(isset($paymentMeta)) {
+
+                if (!empty($paymentMeta->getMccForexRate())) {
+
+                    $fee = (float)$this->getFee()*$paymentMeta->getMccForexRate();
+                    $data[self::feeCurrencyAmount] = (int)ceil($fee);
+                }
+            }
+        }
+        else if ($this->isCaptured()
+            and $this->getCurrency()!== Currency\Currency::INR
+            and $this->isFeeBearerCustomer())
+        {
+            $data[self::FEE] = $this->transaction->getFee();
         }
 
         $this->setConvenienceFeeAttributesForDashboard($data);
