@@ -250,4 +250,14 @@ export const partnerProducts = {
     logo: 'uengage.png',
     brandColor: '#93C45A',
   },
+  kylas: {
+    slug: 'kylas',
+    title: 'Kylas',
+    url: 'https://kylas.io/',
+    category: 'Enterprise-grade Sales CRM',
+    description:
+      'Take your deals to the finish line with an enterprise-grade Sales CRM uniquely designed for growing businesses',
+    logo: 'kylas.svg',
+    brandColor: '#0176FF',
+  },
 };
