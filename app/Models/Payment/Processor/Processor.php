@@ -3621,17 +3621,8 @@ class Processor
 
         $validator->validateInput('transfer', $input);
 
-        $merchantId = $payment->getMerchantId();
-
-        $result = app('razorx')->getTreatment($merchantId, 'transfer_deadlock_retry', $this->mode);
-
         $deadLockRetryAttempts = 1;
-
-        if (strtolower($result) === 'on')
-        {
-            $deadLockRetryAttempts = 2;
-        }
-
+        
         $asyncTransfer = true;
 
         return $this->mutex->acquireAndRelease(
