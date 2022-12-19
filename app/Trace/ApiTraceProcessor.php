@@ -216,6 +216,7 @@ class ApiTraceProcessor
         if ($isException === true)
         {
             $record['request']['route_name'] = optional($this->app['router'])->currentRouteName();
+            $record['request']['method'] = $this->app->request->method();
         }
     }
 
