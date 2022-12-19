@@ -1,13 +1,19 @@
+import React from 'react';
+import { matchFullPageView } from 'merchant/routes';
 export default class HandleIndex extends React.Component {
   UNSAFE_componentWillMount() {
-    if (this.props.location.hash) {
-      const location = this.props.location;
+    const { location, history } = this.props;
+    const matchView = matchFullPageView(location.pathname);
+    if (matchView && matchView.match) {
+      return;
+    }
+    if (location.hash) {
       const path = location.hash.replace(/#\/?app\/?/, '') || 'dashboard';
 
       const newRoute = location.pathname + path;
-      this.props.history.push(newRoute);
+      history.push(newRoute);
     } else {
-      this.props.history.push('/dashboard');
+      history.push('/dashboard');
     }
   }
 
