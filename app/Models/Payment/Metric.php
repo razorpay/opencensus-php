@@ -7,6 +7,7 @@ use App;
 use RZP\Exception;
 use RZP\Error\Error;
 use RZP\Models\Base;
+use RZP\Models\Currency\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Upi\Base\ProviderCode;
 
@@ -39,6 +40,8 @@ class Metric extends Base\Core
     const LABEL_PAYMENT_MANDATE_HUB             = 'mandate_hub';
 
     const LABEL_LIBRARY                         = 'library';
+
+    const LABEL_CRED_ELIGIBILITY                = 'is_eligible_for_cred';
 
     const IS_VERIFY_NEW_FLOW                    = 'is_verify_new_flow';
     const IS_TIMEOUT_NEW_FLOW                   = 'is_timeout_new_flow';
@@ -81,6 +84,8 @@ class Metric extends Base\Core
     const PAYMENT_SCHEDULER_DEREGISTER_KAFKA_FAILED_COUNT  = 'payment_scheduler_deregister_kafka_failed_count';
 
     const UNINTENDED_PAYMENT_ERROR_CODE_SUFFIX             = '_UNINTENDED_PAYMENT';
+
+    const CRED_ELIGIBILITY_REQUEST_COUNT                   = 'cred_eligibility_request_count';
 
     public function pushCreateMetrics(Entity $payment)
     {
@@ -213,6 +218,13 @@ class Metric extends Base\Core
 
             $this->trace->histogram(self::API_CHECKOUT_PREFERENCES_REQUEST_COUNT, $requestTime, $dimensions);
         }
+    }
+
+    public function pushCredEligibilityMetrics($input, $response)
+    {
+        $dimensions = $this->getCredEligibilityDimensions($input, $response);
+
+        $this->trace->count(self::CRED_ELIGIBILITY_REQUEST_COUNT, $dimensions);
     }
 
     public function pushCheckoutSubmitRequestMetrics($input, $requestTime)
@@ -471,6 +483,19 @@ class Metric extends Base\Core
         {
             $dimensions[self::LABEL_LIBRARY] = $input['_']['library'];
         }
+
+        return $dimensions;
+    }
+
+    protected function getCredEligibilityDimensions($input, $response)
+    {
+        $dimensions = [];
+
+        $dimensions[self::LABEL_PAYMENT_GATEWAY] = Gateway::CRED;
+
+        $dimensions[self::LABEL_CRED_ELIGIBILITY] = $response['success'];
+
+        $dimensions[self::LABEL_PAYMENT_CURRENCY] = $input['currency'] ?? Currency::INR;
 
         return $dimensions;
     }

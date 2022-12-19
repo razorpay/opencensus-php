@@ -25,6 +25,7 @@ class Cred extends Base
      * @throws Exception\GatewayErrorException
      * @throws Exception\LogicException
      * @throws Exception\RuntimeException
+     * @throws \Throwable
      */
     public function processValidation($input, array $options = [])
     {
@@ -59,7 +60,21 @@ class Cred extends Base
 
         $gatewayInput = $this->constructGatewayInput($input, $options);
 
-        return $this->validateApp($gatewayInput, $this->gateway, Payment\Action::VALIDATE_APP);
+        try {
+            $response = $this->validateApp($gatewayInput, $this->gateway, Payment\Action::VALIDATE_APP);
+
+            (new Payment\Metric)->pushCredEligibilityMetrics($input, $response);
+
+            return $response;
+        }
+        catch (\Throwable $exception)
+        {
+            $response['success'] = false;
+
+            (new Payment\Metric)->pushCredEligibilityMetrics($input, $response);
+
+            throw $exception;
+        }
     }
 
     protected function constructGatewayInput(array $input, array $options) : array
