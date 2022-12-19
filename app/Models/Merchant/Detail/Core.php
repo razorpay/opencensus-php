@@ -8,6 +8,7 @@ use Config;
 use Lib\PhoneBook;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Constants\Environment;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Jobs;
 use RZP\Constants\HyperTrace;
@@ -2882,9 +2883,7 @@ class Core extends Base\Core
                 $mtuTransacted = (new \RZP\Models\Payment\Repository)
                     ->hasMerchantTransacted($merchantDetails->getMerchantId());
 
-                $shouldBlockActivation = $this->app['config']['applications.block.activations'] ?? true;
-                // To-Do : Introduced applications.block.activations which is only set false for test cases.
-                // This is done to avoid test cases from failing. Config should be removed once onboarding is enabled again.
+                $shouldBlockActivation = $this->shouldBlockActivation();
 
                 if ($mtuTransacted === false and $shouldBlockActivation === true)
                 {
@@ -4948,9 +4947,7 @@ class Core extends Base\Core
             $mtuTransacted = (new \RZP\Models\Payment\Repository)
                 ->hasMerchantTransacted($merchantDetails->getMerchantId());
 
-            $shouldBlockActivation = $this->app['config']['applications.block.activations'] ?? true;
-            // To-Do : Introduced applications.block.activations which is only set false for test cases.
-            // This is done to avoid test cases from failing. Config should be removed once onboarding is enabled again.
+            $shouldBlockActivation = $this->shouldBlockActivation();
 
             if ($mtuTransacted === false and $shouldBlockActivation === true)
             {
@@ -4959,6 +4956,29 @@ class Core extends Base\Core
         }
 
         return $autoKycDone;
+    }
+
+    public function shouldBlockActivation()
+    {
+        $shouldBlockActivation = $this->app['config']['applications.block.activations'] ?? true;
+        // To-Do : Introduced applications.block.activations which is only set false for test cases.
+        // This is done to avoid test cases from failing. Config should be removed once onboarding is enabled again.
+
+        if ($shouldBlockActivation === false)
+        {
+            return false;
+        }
+
+        $env = $this->app['env'];
+
+        // unblocking lower and test environments
+        // This is done to avoid test cases from failing on automation and bvt
+        if (Environment::isEnvironmentQA($env) || Environment::isLowerEnvironment($env))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     private function isAutoKycEnabled($merchantDetails)

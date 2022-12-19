@@ -486,6 +486,8 @@ class Core extends Base\Core
     {
         $this->validateActivation($input);
 
+        unset($input[MerchantEntity::SIGNUP_SOURCE]);
+
         $user = $this->getUserEntity()->build($input, $operation);
 
         $this->repo->transactionOnLiveAndTest(function() use ($user, $input)
@@ -498,23 +500,11 @@ class Core extends Base\Core
     }
 
     //block pg merchants signup
-    private function validateActivation(array &$input)
+    public function validateActivation(array $input)
     {
         //$signupSource is being used for capital cards and x submerchants account creation
         // as the RequestOriginProduct is primary for these two flows
         $signupSource = $input[MerchantEntity::SIGNUP_SOURCE] ?? null;
-
-        unset($input[MerchantEntity::SIGNUP_SOURCE]);
-
-        $shouldBlockActivation = $this->app['config']['applications.block.activations'] ?? true;
-
-        // To-Do : Introduced applications.block.activations which is only set false for test cases.
-        // This is done to avoid test cases from failing. Config should be removed once onboarding is enabled again.
-
-        if ($shouldBlockActivation === false)
-        {
-            return;
-        }
 
         if ($signupSource === Product::BANKING)
         {
@@ -537,6 +527,13 @@ class Core extends Base\Core
             return;
         }
 
+        $shouldBlockActivation = (new Merchant\Detail\Core())->shouldBlockActivation();
+
+        if ($shouldBlockActivation === false)
+        {
+            return;
+        }
+        
         throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ACTION);
     }
 

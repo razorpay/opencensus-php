@@ -26,6 +26,7 @@ use RZP\Exception;
 use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\User;
+use RZP\Models\User\Core as UserCore;
 use RZP\Jobs\EsSync;
 use RZP\Models\Batch;
 use RZP\Models\Partner;
@@ -145,6 +146,8 @@ class Core extends Base\Core
 
     public function create($input, $merchantDetailInputData = [])
     {
+        (new UserCore())->validateActivation($input);
+
         $merchant = (new Merchant\Entity)->build($input);
 
         $this->trace->info(
