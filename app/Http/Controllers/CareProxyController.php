@@ -28,6 +28,7 @@ class CareProxyController extends Controller
     const INIT_SLOTS             = 'twirp/rzp.care.callback.v1.CallbackService/InitSlots';
     const PUSH_CALLBACK_TO_QUEUE = 'twirp/rzp.care.callback.v1.CallbackService/PushCallbacksToQueue';
     const HANDLE_CHANGE_VISIBLE_SLOT_SIZE  = 'twirp/rzp.care.callback.v1.CallbackService/HandleChangeInVisibleSlotSize';
+    const MERCHANT_POPULAR_PRODUCTS = 'twirp/rzp.care.merchantNavigation.v1.MerchantNavigationService/PostMerchantPopularProducts';
 
     //MyOperator
     const IN_CALL    = 'twirp/rzp.care.callback.v1.CallbackService/InCallWebhook';
@@ -177,6 +178,7 @@ class CareProxyController extends Controller
         self::INIT_SLOTS,
         self::PUSH_CALLBACK_TO_QUEUE,
         self::HANDLE_CHANGE_VISIBLE_SLOT_SIZE,
+        self::MERCHANT_POPULAR_PRODUCTS,
     ];
 
     const MYOPERATOR_ROUTES = [
