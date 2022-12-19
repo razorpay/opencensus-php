@@ -50,7 +50,11 @@ class ReconServiceController extends Controller
             '^extraction_config\/[[:alnum:]]{14}$',
             '^reports$',
             '^reports\/[[:alnum:]]{14}$',
-            '^reports\/[[:alnum:]]{14}\/result'
+            '^reports\/[[:alnum:]]{14}\/result',
+            '^money_loss_job_config$',
+            '^money_loss_job_config\/[[:alnum:]]{14}$',
+            '^money_loss_job_runs$',
+            '^money_loss_job_runs\/[[:alnum:]]{14}$',
         ],
         self::POST => [
             '^output_email$',
@@ -69,6 +73,7 @@ class ReconServiceController extends Controller
             '^entities$',
             '^reports\/[[:alnum:]]{14}\/retry',
             '^json_logic_validation$',
+            '^money_loss_job_config$',
         ],
         self::PATCH => [
             '^file_types\/[[:alnum:]]{14}$',
@@ -79,6 +84,8 @@ class ReconServiceController extends Controller
             '^extraction_item\/[[:alnum:]]{14}$',
             '^extraction_config\/[[:alnum:]]{14}$',
             '^workspaces\/[[:alnum:]]{14}$',
+            '^money_loss_job_config\/[[:alnum:]]{14}$',
+            '^money_loss_job_runs\/[[:alnum:]]{14}$'
         ],
         self::DELETE => [
             '^file_types\/[[:alnum:]]{14}$',
@@ -89,6 +96,8 @@ class ReconServiceController extends Controller
             '^extraction_item\/[[:alnum:]]{14}$',
             '^extraction_config\/[[:alnum:]]{14}$',
             '^workspaces\/[[:alnum:]]{14}$',
+            '^money_loss_job_config\/[[:alnum:]]{14}$',
+            '^money_loss_job_runs\/[[:alnum:]]{14}$',
         ]
     ];
 
