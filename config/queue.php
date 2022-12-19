@@ -330,6 +330,10 @@ return [
         'test'       => env('AWS_COMMISSION_QUEUE'),
         'live'       => env('AWS_COMMISSION_QUEUE'),
     ],
+    'partnerships_commission' => [
+        'test'      => env('AWS_PARTNERSHIPS_COMMISSION_QUEUE_TEST'),
+        'live'      => env('AWS_PARTNERSHIPS_COMMISSION_QUEUE_LIVE')
+    ],
     'fund_account_validation' => [
         'test'       => env('AWS_FUND_ACCOUNT_VALIDATION_QUEUE'),
         'live'       => env('AWS_FUND_ACCOUNT_VALIDATION_QUEUE'),

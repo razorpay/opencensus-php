@@ -21,7 +21,9 @@ use RZP\Models\Currency\Currency;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Jobs\CommissionTdsSettlement;
+use Neves\Events\TransactionalClosureEvent;
 use RZP\Models\Partner\Config as PartnerConfig;
+use RZP\Jobs\SyncCommissionToPartnershipService;
 use RZP\Models\Pricing\Calculator as FeeCalculator;
 use RZP\Jobs\CommissionFinanceTriggeredOnHoldClear;
 use RZP\Models\Partner\Commission\Invoice as CommissionInvoice;
@@ -430,25 +432,27 @@ class Core extends Base\Core
             'experiment_id' => $this->app['config']->get('app.partnership_service_commission_sync_exp_id'),
         ];
 
-        $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable($properties, 'enable', TraceCode::PARTNERSHIP_SERVICE_COMMISSION_SYNC_SPLITZ_ERROR);
+        $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable(
+            $properties, 'enable', TraceCode::PARTNERSHIP_SERVICE_COMMISSION_SYNC_SPLITZ_ERROR
+        );
 
-        $input=[
-            'partner_id' => $commission->getAttribute(Entity::PARTNER_ID)
-        ];
-
-        if($isExpEnabled == false)
+        if(! $isExpEnabled)
         {
             return;
         }
         try
         {
             $commissionComponent = $this->repo->commission_component->findByCommissionId($commission->getId());
-            $outboxPayload       = [
+            $data       = [
                 'commission'          => $commission->attributesToArray(),
                 'commissionComponent' => $commissionComponent->toArray()
             ];
-            app('outbox')->send(Constants::COMMISSION_SYNC_OUTBOX_JOB, $outboxPayload, $this->mode, false);
-            $this->trace->count(Metric::PARTNERSHIP_COMMISSION_SYNC_SUCCESS, $input);
+
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($data) {
+                // Job will be dispatched only if the transaction commits.
+                SyncCommissionToPartnershipService::dispatch($this->mode, $data);
+                $this->trace->count(Metric::PARTNERSHIP_COMMISSION_SYNC_JOB_PUSH_SUCCESS);
+            }));
         }
         catch (\Exception $e)
         {
@@ -456,10 +460,12 @@ class Core extends Base\Core
                 $e,
                 Trace::ERROR,
                 TraceCode::PARTNERSHIP_SERVICE_COMMISSION_SYNC_FAILED,
-                [$commission->toArrayPublic()]);
-            $this->trace->count(Metric::PARTNERSHIP_COMMISSION_SYNC_FAILURE, $input);
+                [ $commission->toArrayPublic() ]
+            );
+            $this->trace->count(Metric::PARTNERSHIP_COMMISSION_SYNC_JOB_PUSH_FAILURE);
         }
     }
+
     /**
      * @param Merchant\Entity $partner
      *

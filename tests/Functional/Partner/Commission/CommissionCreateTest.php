@@ -1039,11 +1039,6 @@ class CommissionCreateTest extends TestCase
     {
         list($partner, $subMerchant, $payment, $config, $commission) = $this->createSampleCommission();
 
-        $outbox = \Mockery::mock(Outbox::class);
-        $this->app->instance('outbox', $outbox);
-
-        $outbox->shouldReceive('send')->andReturn();
-
         $this->mockAllSplitzTreatment();
 
         $this->ba->adminAuth();
@@ -1053,8 +1048,6 @@ class CommissionCreateTest extends TestCase
         $testData['request']['url'] = '/commissions/'.$commission->getPublicId().'/capture';
 
         $this->runRequestResponseFlow($testData);
-
-        $outbox->shouldHaveReceived('send');
     }
 
     public function testCaptureCommissionWithCommissionSyncDisabled()
