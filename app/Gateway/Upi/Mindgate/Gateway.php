@@ -1400,6 +1400,14 @@ class Gateway extends Base\Gateway
                                    ->toArray();
         }
 
+        if ((isset($content[ResponseFields::RESPCODE]) === true) and
+            ($content[ResponseFields::RESPCODE] === 'U48'))
+        {
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING)
+                                   ->toArray();
+        }
+
         $this->checkRefundResponseStatus($content[ResponseFields::STATUS], Status::REFUND_SUCCESS, $content);
     }
 

@@ -29,6 +29,15 @@ class ErrorCodes extends Base\ErrorCodes\Upi\ErrorCodes
                 ]
             );
         }
+        else if ($action === Base\Action::REFUND)
+        {
+            self::$errorCodeMap = array_replace(
+                self::$errorCodeMap,
+                [
+                    'U48'  => ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING,
+                ]
+            );
+        }
 
         return self::getInternalErrorCode($content);
     }
