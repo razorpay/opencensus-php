@@ -213,18 +213,24 @@ class Status
     const CLIENT_NOT_INTERESTED_WANTS_TO_LINK_EXISTING_CA = 'client_not_interested_-_wants_to_link_existing_ca';
     const CLIENT_NOT_INTERESTED_WANTS_TO_USE_ONLY_VA = 'client_not_interested_-_wants_to_use_only_va';
     const CLIENT_NOT_INTERESTED_RZP_ISSUE = 'client_not_interested_-_rzp_issue';
+    const CLIENT_NOT_INTERESTED_RBL_BANK = 'client_not_interested_-_rbl_bank';
     const CLIENT_NOT_INTERESTED_DUE_TO_LONGER_TAT = 'client_not_interested_-_due_to_longer_tat';
     const ON_HOLD_BY_CLIENT = 'on_hold_by_client';
     const BUSINESS_IS_NOT_OPERATIONAL = 'business_is_not_operational';
     const NEGATIVE_PROFILE_SVR_ISSUE = 'negative_profile/svr_issue';
+    const KYC_ADDRESS_PROOF_PENDING = 'kyc_-_address_proof_pending';
+    const KYC_STAMP_PENDING = 'kyc_-_stamp_pending';
+    const KYC_BUSINESS_DETAILS_PENDING = 'kyc_-_business_details_pending';
     const INCOMPLETE_KYC = 'incomplete_kyc';
     const NOT_SERVICEABLE = 'unserviceable_pincode';
+    const UNSERVICEABLE_PIN_CODE_FOR_SIGNATORY = 'unserviceable_pin_code_for_signatory';
     const UNSUPPORTED_RZP_BUSINESS_TYPE_MODEL = 'unsupported_rzp_business_type/model';
     const ENTITY_CHANGE_IN_PROGRESS = 'entity_change_in_progress';
     const CC_OD_WITH_OTHER_BANK = 'cc/od_with_other_bank';
     const CLIENT_PROCEEDING_WITH_DIFFERENT_RZP_MID = 'client_proceeding_with_different_rzp_mid';
     const CA_OPENED_ORGANICALLY = 'ca_opened_organically';
     const RM_DELAYS_IN_ACCOUNT_OPENING = 'rm_delays_in_account_opening';
+    const TEST_ACCOUNT = 'test_account';
 
     // All Substatuses - Used for mapping status, substatus with other data points
     const ALL_SUBSTATUSES = '*';
@@ -561,7 +567,14 @@ class Status
         self::DOCKET_INITIATED,
         self::DD_IN_PROGRESS,
         self::DWT_REQUIRED,
-        self::DWT_COMPLETED
+        self::DWT_COMPLETED,
+
+        self::CLIENT_NOT_INTERESTED_RBL_BANK,
+        self::KYC_ADDRESS_PROOF_PENDING,
+        self::KYC_STAMP_PENDING,
+        self::KYC_BUSINESS_DETAILS_PENDING,
+        self::UNSERVICEABLE_PIN_CODE_FOR_SIGNATORY,
+        self::TEST_ACCOUNT
     ];
 
     protected static $defaultSubStatus = [
@@ -745,18 +758,24 @@ class Status
             self::CLIENT_NOT_INTERESTED_WANTS_TO_USE_ONLY_VA,
             self::CLIENT_NOT_INTERESTED_RZP_ISSUE,
             self::CLIENT_NOT_INTERESTED_DUE_TO_LONGER_TAT,
+            self::CLIENT_NOT_INTERESTED_RBL_BANK,
             self::CANCELLED,
             self::ON_HOLD_BY_CLIENT,
             self::BUSINESS_IS_NOT_OPERATIONAL,
             self::NEGATIVE_PROFILE_SVR_ISSUE,
+            self::KYC_ADDRESS_PROOF_PENDING,
+            self::KYC_STAMP_PENDING,
+            self::KYC_BUSINESS_DETAILS_PENDING,
             self::INCOMPLETE_KYC,
             self::NOT_SERVICEABLE,
+            self::UNSERVICEABLE_PIN_CODE_FOR_SIGNATORY,
             self::UNSUPPORTED_RZP_BUSINESS_TYPE_MODEL,
             self::ENTITY_CHANGE_IN_PROGRESS,
             self::CC_OD_WITH_OTHER_BANK,
             self::CLIENT_PROCEEDING_WITH_DIFFERENT_RZP_MID,
             self::CA_OPENED_ORGANICALLY,
             self::RM_DELAYS_IN_ACCOUNT_OPENING,
+            self::TEST_ACCOUNT,
             self::OTHER,
         ]
     ];
