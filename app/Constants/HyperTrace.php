@@ -56,6 +56,11 @@ class HyperTrace
     const QR_CODES_FETCH_MULTIPLE_PAYMENT_ID                    = 'qrv2_qr_codes.fetch_multiple.paymentId';
     const QR_CODES_FETCH_MULTIPLE_FETCH_ALL                     = 'qrv2_qr_codes.fetch_multiple.fetch_all';
     const QR_CODES_FETCH                                        = 'qrv2_qr_codes.fetch';
+    const QR_CODE_GENERATE_IMAGE                                = 'qrv2_qr_code.generateQrCodeFile.generateImage';
+    const QR_CODE_BUILD_GENERATE_QR_STRING                      = 'qrv2_qr_code.build.generateQrString';
+    const QR_CODE_BUILD_SET_SHORT_URL                           = 'qrv2_qr_code.build.setShortUrl';
+    const QR_CODE_BUILD_SAVE_OR_FAIL                            = 'qrv2_qr_code.build.saveOrFail';
+    const QR_CODE_UFH_UPLOAD                                    = 'qrv2_qr_code.generateQrCodeFile.saveQrCodeImageUsingUfh';
 
     const QR_PAYMENT_FETCH_MULTIPLE_PAYMENTS                    = 'qrv2_qr_payment.fetchMultiplePayments';
     const QR_PAYMENT_FETCH_PAYMENT_BY_QR_CODE_ID                = 'qrv2_qr_payment.fetchCapturedPaymentByQrCodeId';

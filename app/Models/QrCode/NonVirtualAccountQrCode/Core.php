@@ -54,11 +54,20 @@ class Core extends QrCode\Core
 
     private function build(Entity $qrCode)
     {
-        $qrCode->generateQrString();
+        Tracer::inspan(['name' => HyperTrace::QR_CODE_BUILD_GENERATE_QR_STRING], function () use ($qrCode)
+        {
+            $qrCode->generateQrString();
+        });
 
-        $this->setShortUrl($qrCode);
+        Tracer::inspan(['name' => HyperTrace::QR_CODE_BUILD_SET_SHORT_URL], function () use ($qrCode)
+        {
+            $this->setShortUrl($qrCode);
+        });
 
-        $this->repo->saveOrFail($qrCode);
+        Tracer::inspan(['name' => HyperTrace::QR_CODE_BUILD_SAVE_OR_FAIL], function () use ($qrCode)
+        {
+            $this->repo->saveOrFail($qrCode);
+        });
 
         $this->generateQrCodeFileIfApplicable($qrCode);
 
