@@ -32,7 +32,7 @@ class UpiYesbankPaymentServiceTest extends UpiPaymentServiceTest
 
         $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
 
-        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+        $uploadedFile = $this->createUpsUploadedFile($fileContents['local_file_path']);
 
         $this->reconcile($uploadedFile, 'UpiYesBank');
 
@@ -83,7 +83,7 @@ class UpiYesbankPaymentServiceTest extends UpiPaymentServiceTest
 
         $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
 
-        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+        $uploadedFile = $this->createUpsUploadedFile($fileContents['local_file_path']);
 
         $this->reconcile($uploadedFile, 'UpiYesBank');
 
@@ -122,7 +122,7 @@ class UpiYesbankPaymentServiceTest extends UpiPaymentServiceTest
         $paymentEntity = $this->getDbLastEntityToArray('payment');
 
         // Changes a rrn of entity fetch response
-        $this->mockServerContentFunction(function (&$content) use ($paymentEntity)
+        $this->mockServerRequestFunction(function (&$content) use ($paymentEntity)
         {
             $content['payment_id'] = $paymentEntity['id'];
         });
@@ -140,7 +140,7 @@ class UpiYesbankPaymentServiceTest extends UpiPaymentServiceTest
 
         $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
 
-        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+        $uploadedFile = $this->createUpsUploadedFile($fileContents['local_file_path']);
 
         $this->reconcile($uploadedFile, 'UpiYesBank');
 
@@ -171,7 +171,7 @@ class UpiYesbankPaymentServiceTest extends UpiPaymentServiceTest
         $paymentEntity = $this->getDbLastEntityToArray('payment');
 
         // Mark reconciled_at of entity fetch response for multiple rrn scenario
-        $this->mockServerContentFunction(function (&$content)
+        $this->mockServerRequestFunction(function (&$content)
         {
             $content['reconciled_at'] = Carbon::now(Timezone::IST)->getTimestamp();
         });
@@ -189,7 +189,7 @@ class UpiYesbankPaymentServiceTest extends UpiPaymentServiceTest
 
         $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
 
-        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+        $uploadedFile = $this->createUpsUploadedFile($fileContents['local_file_path']);
 
         $this->reconcile($uploadedFile, 'UpiYesBank');
 

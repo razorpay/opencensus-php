@@ -279,7 +279,7 @@ class Service extends UpiPaymentService
     {
         $response['entity'] = [];
 
-        $this->content($content);
+        $this->request($content);
 
         //mock ups entity to return only one field
         if  ((isset($content['entity_fetch_failure']) === true) and
@@ -327,6 +327,8 @@ class Service extends UpiPaymentService
         {
             $response['entity']['reconciled_at'] = $content['reconciled_at'];
         }
+
+        $this->content($response);
 
         return [$response, 200];
     }

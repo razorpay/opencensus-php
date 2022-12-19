@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\PaymentsUpi\Service;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Entity;
+use Illuminate\Http\UploadedFile;
 
 class UpiJuspayPaymentServiceTest extends UpiPaymentServiceTest
 {
@@ -30,7 +31,10 @@ class UpiJuspayPaymentServiceTest extends UpiPaymentServiceTest
 
         $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
 
-        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path'],'upi_sett_bajaj.csv', 'text/plain');
+        $uploadedFile = $this->createJusPayUploadedFile(
+            $fileContents['local_file_path'],
+            'upi_sett_bajaj.csv',
+            'text/plain');
 
         $this->reconcile($uploadedFile, 'UpiJuspay');
 
@@ -113,5 +117,23 @@ class UpiJuspayPaymentServiceTest extends UpiPaymentServiceTest
         );
 
         return $payment->getId();
+    }
+
+    protected function createJusPayUploadedFile($file, $fileName = 'file.xlsx', $mimeType = null)
+    {
+        $this->assertFileExists($file);
+
+        $mimeType = $mimeType ?? 'text/csv';
+        $fileName = ($fileName == 'file.xlsx') ? $file : $fileName;
+
+        $uploadedFile = new UploadedFile(
+            $file,
+            $fileName,
+            $mimeType,
+            null,
+            true
+        );
+
+        return $uploadedFile;
     }
 }

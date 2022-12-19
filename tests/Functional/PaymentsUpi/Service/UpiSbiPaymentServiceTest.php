@@ -152,7 +152,7 @@ class UpiSbiPaymentServiceTest extends UpiPaymentServiceTest
 
         $content['reconciled_at'] = Carbon::now(Timezone::IST)->getTimestamp();
 
-        $this->mockServerContentFunction(
+        $this->mockServerRequestFunction(
             function (&$content)
             {
                 $content['entity_fetch_failure'] = true;
@@ -198,7 +198,10 @@ class UpiSbiPaymentServiceTest extends UpiPaymentServiceTest
 
         $fileContents = $this->generateReconFile();
 
-        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path'], $fileContents['local_file_path'], 'application/octet-stream');
+        $uploadedFile = $this->createUpsUploadedFile(
+            $fileContents['local_file_path'],
+            $fileContents['local_file_path'],
+            'application/octet-stream');
 
         $this->reconcile($uploadedFile, 'UpiSbi');
 
@@ -267,7 +270,10 @@ class UpiSbiPaymentServiceTest extends UpiPaymentServiceTest
 
         $fileContents = $this->generateReconFile();
 
-        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path'], $fileContents['local_file_path'], 'application/octet-stream');
+        $uploadedFile = $this->createUpsUploadedFile(
+            $fileContents['local_file_path'],
+            $fileContents['local_file_path'],
+            'application/octet-stream');
 
         $this->reconcile($uploadedFile, 'UpiSbi', ['pay_'. $payment['id']]);
 

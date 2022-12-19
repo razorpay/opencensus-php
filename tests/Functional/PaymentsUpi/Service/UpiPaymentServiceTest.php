@@ -275,24 +275,6 @@ class UpiPaymentServiceTest extends TestCase
         $this->assertNotNull($transactionEntity['reconciled_at']);
     }
 
-    protected function createUploadedFile($file, $fileName = 'file.xlsx', $mimeType = null)
-    {
-        $this->assertFileExists($file);
-
-        $mimeType = $mimeType ?? 'text/csv';
-        $fileName = ($fileName == 'file.xlsx') ? $file : $fileName;
-
-        $uploadedFile = new UploadedFile(
-            $file,
-            $fileName,
-            $mimeType,
-            null,
-            true
-        );
-
-        return $uploadedFile;
-    }
-
     protected function mockServerRequestFunction($closure)
     {
         $this->upiPaymentService->shouldReceive('request')->andReturnUsing($closure);
@@ -413,5 +395,23 @@ class UpiPaymentServiceTest extends TestCase
         ];
 
         return $this->startTest();
+    }
+
+    protected function createUpsUploadedFile($file, $fileName = 'file.xlsx', $mimeType = null)
+    {
+        $this->assertFileExists($file);
+
+        $mimeType = $mimeType ?? 'text/csv';
+        $fileName = ($fileName == 'file.xlsx') ? $file : $fileName;
+
+        $uploadedFile = new UploadedFile(
+            $file,
+            $fileName,
+            $mimeType,
+            null,
+            true
+        );
+
+        return $uploadedFile;
     }
 }

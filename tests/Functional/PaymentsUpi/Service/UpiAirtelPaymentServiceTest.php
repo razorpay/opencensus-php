@@ -401,7 +401,7 @@ class UpiAirtelPaymentServiceTest extends UpiPaymentServiceTest
 
         $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
 
-        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+        $uploadedFile = $this->createUpsUploadedFile($fileContents['local_file_path']);
 
         $this->reconcile($uploadedFile, 'UpiAirtel');
 
@@ -437,7 +437,7 @@ class UpiAirtelPaymentServiceTest extends UpiPaymentServiceTest
 
         $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
 
-        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+        $uploadedFile = $this->createUpsUploadedFile($fileContents['local_file_path']);
 
         $this->reconcile($uploadedFile, 'UpiAirtel');
 
@@ -487,7 +487,7 @@ class UpiAirtelPaymentServiceTest extends UpiPaymentServiceTest
 
         $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
 
-        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+        $uploadedFile = $this->createUpsUploadedFile($fileContents['local_file_path']);
 
         $this->reconcile($uploadedFile, 'UpiAirtel');
 
@@ -590,7 +590,7 @@ class UpiAirtelPaymentServiceTest extends UpiPaymentServiceTest
                 'type'    => 'refund',
             ]);
 
-        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+        $uploadedFile = $this->createUpsUploadedFile($fileContents['local_file_path']);
 
         $this->reconcile($uploadedFile, 'UpiAirtel');
 

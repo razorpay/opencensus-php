@@ -17,8 +17,9 @@ use RZP\Gateway\Upi\Icici\Action;
 use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Gateway\Upi\Icici\Status as UpiStatus;
 use RZP\Gateway\Upi\Icici\Fields as UpiIciciFields;
+use RZP\Reconciliator\Base\SubReconciliator\Upi\UpiPaymentServiceReconciliate;
 
-class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends UpiPaymentServiceReconciliate
 {
     use Base\BharatQrTrait;
     use Base\UpiReconTrait;
@@ -270,20 +271,34 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         $upiEntity = $this->getUpiExpectedEntity($paymentId, $row);
 
-        if ($upiEntity === null)
+        if (empty($upiEntity) === false)
         {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'           => TraceCode::RECON_MISMATCH,
-                    'info_code'            => Base\InfoCode::PAYMENT_ABSENT,
-                    'payment_reference_id' => $row[self::BANK_TRANS_ID],
-                    'payment_id'           => $paymentId,
-                    'gateway'              => $this->gateway,
-                    'batch_id'             => $this->batchId
-                ]);
+            // Also now since we have found/created a new UPI Entity we will consider
+            // this to be the gateway payment id
+            $this->gatewayPayment = $upiEntity;
 
-            return $paymentId;
+            return $upiEntity->getPaymentId();
         }
+
+        $upsEntity = $this->fetchUpsGatewayEntityByPaymentId($paymentId, $this->gatewayName);
+
+        // Fetch ups entity and get expected paymentId
+        if (empty($upsEntity) === false)
+        {
+            return $this->getUpsExpectedPayment($paymentId, $upsEntity, $row);
+        }
+
+        $this->messenger->raiseReconAlert(
+            [
+                'trace_code'           => TraceCode::RECON_MISMATCH,
+                'info_code'            => Base\InfoCode::PAYMENT_ABSENT,
+                'payment_reference_id' => $row[self::BANK_TRANS_ID],
+                'payment_id'           => $paymentId,
+                'gateway'              => $this->gateway,
+                'batch_id'             => $this->batchId
+            ]);
+
+        return $paymentId;
 
         // Also now since we have found/created a new UPI Entity we will consider
         // this to be the gateway payment id
