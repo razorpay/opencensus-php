@@ -98,7 +98,10 @@ const SignUp = () => {
     window.location.href = '/#/access/signin';
   };
 
-  const disableSignup = true;
+  const query = QueryString.parse(window.location.search);
+
+  // enable signup for invitation merchant
+  const disableSignup = !query.invitation;
 
   return (
     <ThemeProvider theme={theme}>
