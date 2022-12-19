@@ -92,7 +92,7 @@ class Raven extends Base\Core
         );
 
         if (isset($input['otp_reason']) === true and
-            $this->validateCheckoutOtpReason($input['otp_reason']) === true)
+            $this->validateOtpReason($input['otp_reason']) === true)
         {
           $request['template'] = $this->getTemplateByOtpReason($input['otp_reason']);
         }
@@ -162,12 +162,15 @@ class Raven extends Base\Core
             CASE 'save_card':
                 return 'sms.checkout.save_card_otp';
 
+            CASE 'support_page_login':
+                return 'sms.support.login_otp';
+
             default:
                 return 'sms.otp';
         }
     }
 
-    private function validateCheckoutOtpReason($otpReason)
+    private function validateOtpReason($otpReason)
     {
         return in_array($otpReason, [
             'verify_coupon',
@@ -176,6 +179,7 @@ class Raven extends Base\Core
             'save_address',
             'access_card',
             'save_card',
+            'support_page_login',
         ]);
     }
 }
