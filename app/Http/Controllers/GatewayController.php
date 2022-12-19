@@ -318,13 +318,30 @@ class GatewayController extends Controller
         // First if mode is not found from payment repo, we will check with QR repo
         $qrRepo = $this->app['repo']->qr_code;
 
+        $suffixLength = strlen(QrCode\Constants::QR_CODE_V2_TR_SUFFIX);
+
+        $isQrV2Payment = false;
+        if ((strlen($paymentId) >= ($suffixLength + QrCode\Entity::ID_LENGTH)) and
+            (str_ends_with($paymentId, QrCode\Constants::QR_CODE_V2_TR_SUFFIX)))
+        {
+            $paymentId = substr($paymentId, 0, QrCode\Entity::ID_LENGTH);
+            $isQrV2Payment = true;
+        }
+
         $mode = $qrRepo->determineLiveOrTestModeByMerchantReference($paymentId);
 
         if ($mode !== null)
         {
-            $this->app['basicauth']->setModeAndDbConnection($mode);
+            if ($isQrV2Payment === true)
+            {
+                $this->trace->info(TraceCode::QR_PAYMENT_GATEWAY_CALLBACK, $input);
+            }
+            else
+            {
+                $this->app['basicauth']->setModeAndDbConnection($mode);
 
-            $data = (new QrCode\Upi\Service)->processPayment($input, $paymentId, $gatewayDriver);
+                $data = (new QrCode\Upi\Service)->processPayment($input, $paymentId, $gatewayDriver);
+            }
         }
         else
         {
