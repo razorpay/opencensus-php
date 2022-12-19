@@ -106,9 +106,9 @@ class Merchant extends \Google\Protobuf\Internal\Message
      */
     protected $purpose_code = '';
     /**
-     * Generated from protobuf field <code>bool signup_via_email = 24;</code>
+     * Generated from protobuf field <code>int32 signup_via_email = 24;</code>
      */
-    protected $signup_via_email = false;
+    protected $signup_via_email = 0;
     /**
      * Generated from protobuf field <code>uint64 amount_credits_threshold = 25;</code>
      */
@@ -117,6 +117,10 @@ class Merchant extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>uint32 archived_at = 26;</code>
      */
     protected $archived_at = 0;
+    /**
+     * Generated from protobuf field <code>string signup_source = 27;</code>
+     */
+    protected $signup_source = '';
 
     /**
      * Constructor.
@@ -147,9 +151,10 @@ class Merchant extends \Google\Protobuf\Internal\Message
      *     @type array<string>|\Google\Protobuf\Internal\RepeatedField $dashboard_whitelisted_ips_live
      *     @type array<string>|\Google\Protobuf\Internal\RepeatedField $dashboard_whitelisted_ips_test
      *     @type string $purpose_code
-     *     @type bool $signup_via_email
+     *     @type int $signup_via_email
      *     @type int|string $amount_credits_threshold
      *     @type int $archived_at
+     *     @type string $signup_source
      * }
      */
     public function __construct($data = NULL) {
@@ -674,8 +679,8 @@ class Merchant extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>bool signup_via_email = 24;</code>
-     * @return bool
+     * Generated from protobuf field <code>int32 signup_via_email = 24;</code>
+     * @return int
      */
     public function getSignupViaEmail()
     {
@@ -683,13 +688,13 @@ class Merchant extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>bool signup_via_email = 24;</code>
-     * @param bool $var
+     * Generated from protobuf field <code>int32 signup_via_email = 24;</code>
+     * @param int $var
      * @return $this
      */
     public function setSignupViaEmail($var)
     {
-        GPBUtil::checkBool($var);
+        GPBUtil::checkInt32($var);
         $this->signup_via_email = $var;
 
         return $this;
@@ -735,6 +740,28 @@ class Merchant extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkUint32($var);
         $this->archived_at = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string signup_source = 27;</code>
+     * @return string
+     */
+    public function getSignupSource()
+    {
+        return $this->signup_source;
+    }
+
+    /**
+     * Generated from protobuf field <code>string signup_source = 27;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setSignupSource($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->signup_source = $var;
 
         return $this;
     }

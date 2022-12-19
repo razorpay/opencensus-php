@@ -135,7 +135,6 @@ class MerchantStakeholder extends Base
      */
     private function fetchStakeholderByMerchantId(string $merchantId, $apiStakeholderEntities)
     {
-        // TODO: handle 404
         $asvStakeholders = $this->stakeholderAsvClient->fetchStakeholderByMerchantId($merchantId);
         $asvStakeholderEntities = ASVEntityMapper::MapProtoObjectIteratorToEntityCollection(
             $asvStakeholders->getStakeholders(),
@@ -216,7 +215,6 @@ class MerchantStakeholder extends Base
      */
     public function fetchStakeholderByIdAndCompare(string $id, $apiStakeholderEntity): StakeholderEntity
     {
-        // TODO: handle 404
         $stakeholder = $this->stakeholderAsvClient->fetchStakeholderById($id)->getStakeholders()[0];
         $asvStakeholderEntity = ASVEntityMapper::MapProtoObjectToEntity($stakeholder, StakeholderEntity::class);
         $difference = $this->stakeholderComparator->getDifference($asvStakeholderEntity->toArray(), $apiStakeholderEntity->toArray());
@@ -288,7 +286,9 @@ class MerchantStakeholder extends Base
      */
     private function fetchAddressForStakeholderAndCompare(string $stakeholderId, $apiAddressEntity) {
         $asvAddress =  $this->stakeholderAsvClient->fetchAddressForStakeholder($stakeholderId);
-        // TODO: handle 404
+        if (count($asvAddress->getAddresses()) == 0) {
+            throw new IntegrationException(sprintf("no addresses found in asv for stakeholder id: %s", $stakeholderId));
+        }
         $asvAddressEntity = ASVEntityMapper::MapProtoObjectToEntity($asvAddress->getAddresses()[0], AddressEntity::class);
         $difference = $this->addressComparator->getDifference($apiAddressEntity->toArray(), $asvAddressEntity->toArray());
         $this->logDifferenceIfNotNilAndPushMetrics($this->addressEntity, $difference, $stakeholderId, "");

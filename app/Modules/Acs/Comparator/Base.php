@@ -34,8 +34,8 @@ class Base
         $difference = [];
         foreach($array1 as $key => $value)
         {
-            // skip if value in array1 is null
-            if($value === null) {
+            // skip if value in array1 is empty
+            if(empty($value)) {
                 continue;
             }
             // checks if we need to find diff in this element.

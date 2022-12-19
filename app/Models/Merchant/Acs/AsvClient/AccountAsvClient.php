@@ -67,7 +67,7 @@ class AccountAsvClient extends BaseClient
                 Constant::ROUTE_NAME => Constant::ACCOUNT_CONTACT_DELETE_ROUTE,
             ]);
 
-            throw new IntegrationException('Could not receive proper response from Account service');
+            throw new IntegrationException($e->getMessage());
         }
     }
 
@@ -108,7 +108,7 @@ class AccountAsvClient extends BaseClient
                 Constant::ROUTE_NAME => Constant::MERCHANT_FETCH_ROUTE,
             ]);
 
-            throw new IntegrationException('Could not receive proper response from Account service');
+            throw new IntegrationException($e->getMessage());
         }
     }
 

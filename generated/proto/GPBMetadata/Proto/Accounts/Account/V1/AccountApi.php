@@ -20,7 +20,7 @@ class AccountApi
         \GPBMetadata\Google\Protobuf\Struct::initOnce();
         $pool->internalAddGeneratedFile(
             '
-’9
+Ï9
 +proto/accounts/account/v1/account_api.protorzp.accounts.account.v1google/protobuf/timestamp.proto google/protobuf/field_mask.protogoogle/protobuf/struct.proto"®
 Account
 
@@ -159,7 +159,7 @@ field_mask (2.google.protobuf.FieldMask"¢
 merchant (2!.rzp.accounts.account.v1.Merchant@
 merchant_detail (2\'.rzp.accounts.account.v1.MerchantDetailQ
 merchant_business_detail (2/.rzp.accounts.account.v1.MerchantBusinessDetail?
-merchant_emails (2&.rzp.accounts.account.v1.MerchantEmail"Ü
+merchant_emails (2&.rzp.accounts.account.v1.MerchantEmail"ù
 Merchant
 
 id (	
@@ -186,9 +186,10 @@ field_mask (2.google.protobuf.FieldMask"¢
 dashboard_whitelisted_ips_live (	&
 dashboard_whitelisted_ips_test (	
 purpose_code (	
-signup_via_email ( 
+signup_via_email ( 
 amount_credits_threshold (
-archived_at ("ù
+archived_at (
+signup_source (	"ù
 MerchantDetail
 merchant_id (	
 contact_name (	

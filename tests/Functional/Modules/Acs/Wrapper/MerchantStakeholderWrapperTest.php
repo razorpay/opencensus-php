@@ -453,6 +453,27 @@ class MerchantStakeholderWrapperTest extends TestCase
         self::assertEquals($merchantStakeholderCollection, $gotMerchantStakeholderEntity);
         #T3 end
         #----------
+
+        #T4 Starts - Shadow on, reverse shadow off - Get same API Stakeholder as sent and log diff, in case of empty response from ASV.
+        $traceMock = $this->createTraceMock();
+        $traceMock->expects($this->exactly(0))->method('traceException');
+        $merchantStakeholderWrapperMock = $this->getMockedMerchantStakeholderWrapper(['isShadowOrReverseShadowOnForOperation', 'logDifferenceIfNotNilAndPushMetrics']);
+
+        $asvResponse = new accountV1\FetchMerchantStakeholdersResponse();
+
+        $merchantStakeholderClient = $this->createStakeholderAsvClientWithProtoClientMockWithFetchResponse($asvResponse);
+        $merchantStakeholderWrapperMock->setStakeholderAsvClient($merchantStakeholderClient);
+        $difference = [
+            "12345" => "Entity Present in only one of ASV/API",
+            "123456" => "Entity Present in only one of ASV/API",
+        ];
+        $merchantStakeholderWrapperMock->expects($this->exactly(1))->method('logDifferenceIfNotNilAndPushMetrics')->with('stakeholder', $difference, "",$merchant_id);
+        $merchantStakeholderWrapperMock->expects($this->exactly(1))->method('isShadowOrReverseShadowOnForOperation')->willReturn(true);
+        $gotMerchantStakeholderEntity = $merchantStakeholderWrapperMock->processFetchStakeholdersByMerchantId($merchant_id, $merchantStakeholderCollection);
+        self::assertEquals($merchantStakeholderCollection, $gotMerchantStakeholderEntity);
+        #T4 end
+        #----------
+
     }
 
     function testProcessGetStakeholderBYMerchantIdReverseShadow(){
@@ -461,7 +482,7 @@ class MerchantStakeholderWrapperTest extends TestCase
         $merchant_id = "10000000000000";
         $merchantStakeholderEntity = $this->getMerchantStakholderEntityCollection();
         #----------
-        #T4 Starts - Shadow off, reverse shadow on - Overwrite with API response
+        #T5 Starts - Shadow off, reverse shadow on - Overwrite with API response
         # throw exception, exception should be propogated.
         $traceMock = $this->createTraceMock();
         $traceMock->expects($this->exactly(2))->method('traceException');
@@ -483,7 +504,7 @@ class MerchantStakeholderWrapperTest extends TestCase
 
 
         #----------
-        #T5 Starts - Shadow off, reverse shadow on - Overwrite with API response
+        #T6 Starts - Shadow off, reverse shadow on - Overwrite with API response
         # no exception, returned Entity should be updated
         $traceMock = $this->createTraceMock();
         $traceMock->expects($this->exactly(0))->method('traceException');
@@ -521,6 +542,44 @@ class MerchantStakeholderWrapperTest extends TestCase
             $this->fail("Exception not expected");
         }
 
+        #----------
+        #T7 Starts - Shadow off, reverse shadow on - Empty response from ASV, Returns empty collection and logs diff.
+        $traceMock = $this->createTraceMock();
+        $traceMock->expects($this->exactly(0))->method('traceException');
+        $merchantStakeholderWrapperMock = $this->getMockedMerchantStakeholderWrapper(['isShadowOrReverseShadowOnForOperation', 'logDifferenceIfNotNilAndPushMetrics']);
+
+        $asvResponse = new accountV1\FetchMerchantStakeholdersResponse();
+        $merchantStakeholderClient = $this->createStakeholderAsvClientWithProtoClientMockWithFetchResponse($asvResponse);
+        $merchantStakeholderWrapperMock->setStakeholderAsvClient($merchantStakeholderClient);
+        $difference = [
+            "12345" => "Entity Present in only one of ASV/API",
+            "123456" => "Entity Present in only one of ASV/API",
+        ];
+        $merchantStakeholderWrapperMock->expects($this->exactly(1))->method('logDifferenceIfNotNilAndPushMetrics')->with('stakeholder', $difference, "",$merchant_id);
+        $merchantStakeholderWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')
+            ->withConsecutive([$merchant_id, CONSTANT::SHADOW, CONSTANT::READ], [$merchant_id, CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+        $gotMerchantStakeholderEntity = $merchantStakeholderWrapperMock->processFetchStakeholdersByMerchantId($merchant_id, $merchantStakeholderEntity);
+        self::assertEquals(new PublicCollection([]), $gotMerchantStakeholderEntity);
+        #T7 end
+        #----------
+
+        #----------
+        #T8 Starts - Shadow off, reverse shadow on - Empty response from ASV, and empty collection from API: Returns empty collection and logs no diff
+        $traceMock = $this->createTraceMock();
+        $traceMock->expects($this->exactly(0))->method('traceException');
+        $merchantStakeholderWrapperMock = $this->getMockedMerchantStakeholderWrapper(['isShadowOrReverseShadowOnForOperation', 'logDifferenceIfNotNilAndPushMetrics']);
+
+        $asvResponse = new accountV1\FetchMerchantStakeholdersResponse();
+        $merchantStakeholderClient = $this->createStakeholderAsvClientWithProtoClientMockWithFetchResponse($asvResponse);
+        $merchantStakeholderWrapperMock->setStakeholderAsvClient($merchantStakeholderClient);
+        $difference = [];
+        $merchantStakeholderWrapperMock->expects($this->exactly(1))->method('logDifferenceIfNotNilAndPushMetrics')->with('stakeholder', $difference, "",$merchant_id);
+        $merchantStakeholderWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')
+            ->withConsecutive([$merchant_id, CONSTANT::SHADOW, CONSTANT::READ], [$merchant_id, CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+        $gotMerchantStakeholderEntity = $merchantStakeholderWrapperMock->processFetchStakeholdersByMerchantId($merchant_id, new PublicCollection([]));
+        self::assertEquals(new PublicCollection([]), $gotMerchantStakeholderEntity);
+        #T8 end
+        #----------
     }
 
     function testProcessGetStakeholderBYIdReverseShadow(){

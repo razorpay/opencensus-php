@@ -17,7 +17,7 @@ class DocumentApi
         \GPBMetadata\Google\Protobuf\FieldMask::initOnce();
         $pool->internalAddGeneratedFile(
             '
-Å
+ﬁ
 ,proto/accounts/account/v1/document_api.protorzp.accounts.account.v1"€
 CreateDocumentsRequestX
 	documents (2E.rzp.accounts.account.v1.CreateDocumentsRequest.DocumentCreateRequestg
@@ -25,14 +25,16 @@ class DocumentApi
 entity_type (	
 	entity_id (	
 document_type (	
-file_id (	"f
+file_id (	"î
 Document
 entity_type (	
 	entity_id (	
 document_type (	
 file_id (	
 
-id (	"M
+id (	
+audit_id (	
+upload_by_admin_id (	"M
 DocumentFetchResponse4
 	documents (2!.rzp.accounts.account.v1.Document"Ü
 FetchDocumentsRequestX
@@ -50,7 +52,7 @@ account_id (	"#
 
 id (	")
 DeleteDocumentResponse
-deleted ("â
+deleted ("∑
 MerchantDocument
 
 id (	
@@ -58,7 +60,9 @@ account_id (	"#
 file_store_id (	
 document_type (	
 entity_type (	
-	entity_id (	"^
+	entity_id (	
+audit_id (	
+upload_by_admin_id (	"^
 FetchMerchantDocumentsResponse<
 	documents (2).rzp.accounts.account.v1.MerchantDocument"@
 FetchMerchantDocumentsRequest

@@ -184,6 +184,47 @@ class MerchantDocumentWrapperTest extends TestCase
             assertTrue(true);
             self::assertEquals($exception->getMessage(), $e->getMessage());
         }
+
+        //Empty Response from ASV in Shadow logged and returns api entities
+        $traceMock = $this->createTraceMock();
+        $traceMock->expects($this->exactly(1))->method('info')->withConsecutive([TraceCode::ASV_COMPARE_MISMATCH, ["entity_name" => "merchant_document", "document_id" => "", "difference" =>[$documentId =>"Entity Present in only one of ASV/API"], 'merchant_id' => $merchantId]]);
+        $traceMock->expects($this->exactly(1))->method('count')->withConsecutive([Metric::ASV_COMPARE_MISMATCH, ["merchant_document"]]);
+        $fetchMerchantDocumentsEmptyResponse = new FetchMerchantDocumentsResponse();
+        $accountDocumentAsvClientMock = $this->createAccountDocumentAsvClientMock();
+        $accountDocumentAsvClientMock->expects($this->exactly(1))->method('FetchMerchantDocuments')->willReturn($fetchMerchantDocumentsEmptyResponse);
+        $merchantDocumentWrapperMock = $this->getMockedMerchantDocumentWrapper(['isShadowOrReverseShadowOnForOperation']);
+        $merchantDocumentWrapperMock->accountDocumentAsvClient = $accountDocumentAsvClientMock;
+        $merchantDocumentWrapperMock->expects($this->exactly(1))->method('isShadowOrReverseShadowOnForOperation')->willReturn(true);
+        $returnedCollection = $merchantDocumentWrapperMock->FindDocumentsForMerchantId($merchantId, $merchantDocumentCollectionForApi);
+        self::assertEquals($merchantDocumentCollectionForApi, $returnedCollection);
+
+        //Empty Response from ASV in ReverseShadow logged and returns empty collection
+        $traceMock = $this->createTraceMock();
+        $traceMock->expects($this->exactly(1))->method('info')->withConsecutive([TraceCode::ASV_COMPARE_MISMATCH, ["entity_name" => "merchant_document", "document_id" => "", "difference" =>[$documentId =>"Entity Present in only one of ASV/API"], 'merchant_id' => $merchantId]]);
+        $traceMock->expects($this->exactly(1))->method('count')->withConsecutive([Metric::ASV_COMPARE_MISMATCH, ["merchant_document"]]);
+        $fetchMerchantDocumentsEmptyResponse = new FetchMerchantDocumentsResponse();
+        $accountDocumentAsvClientMock = $this->createAccountDocumentAsvClientMock();
+        $accountDocumentAsvClientMock->expects($this->exactly(1))->method('FetchMerchantDocuments')->willReturn($fetchMerchantDocumentsEmptyResponse);
+        $merchantDocumentWrapperMock = $this->getMockedMerchantDocumentWrapper(['isShadowOrReverseShadowOnForOperation']);
+        $merchantDocumentWrapperMock->accountDocumentAsvClient = $accountDocumentAsvClientMock;
+        $merchantDocumentWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->
+        withConsecutive([$merchantId, CONSTANT::SHADOW, CONSTANT::READ], [$merchantId, CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+        $returnedCollection = $merchantDocumentWrapperMock->FindDocumentsForMerchantId($merchantId, $merchantDocumentCollectionForApi);
+        self::assertEquals(new PublicCollection([]), $returnedCollection);
+
+        //Empty Response from ASV in ReverseShadow with empty API collection: no diff logged and returns empty collection
+        $traceMock = $this->createTraceMock();
+        $traceMock->expects($this->exactly(0))->method('info');
+        $traceMock->expects($this->exactly(0))->method('count');
+        $fetchMerchantDocumentsEmptyResponse = new FetchMerchantDocumentsResponse();
+        $accountDocumentAsvClientMock = $this->createAccountDocumentAsvClientMock();
+        $accountDocumentAsvClientMock->expects($this->exactly(1))->method('FetchMerchantDocuments')->willReturn($fetchMerchantDocumentsEmptyResponse);
+        $merchantDocumentWrapperMock = $this->getMockedMerchantDocumentWrapper(['isShadowOrReverseShadowOnForOperation']);
+        $merchantDocumentWrapperMock->accountDocumentAsvClient = $accountDocumentAsvClientMock;
+        $merchantDocumentWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->
+        withConsecutive([$merchantId, CONSTANT::SHADOW, CONSTANT::READ], [$merchantId, CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+        $returnedCollection = $merchantDocumentWrapperMock->FindDocumentsForMerchantId($merchantId, new PublicCollection([]));
+        self::assertEquals(new PublicCollection([]), $returnedCollection);
     }
 
     protected function getMockedMerchantDocumentWrapper($methods = [])

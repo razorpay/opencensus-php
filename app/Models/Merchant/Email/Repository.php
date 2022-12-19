@@ -96,19 +96,8 @@ class Repository extends Base\Repository
      */
     public function __getEmailByMerchantId(string $merchantId)
     {
-        return $this->repo->transactionOnLiveAndTest(function () use ($merchantId) {
-            $merchantEmails = $this->getEmailByMerchantId($merchantId);
-            $merchantEmailWrapper = new MerchantEmail();
-            if ($merchantEmailWrapper->isShadowOrReverseShadowOnForOperation($merchantId, "shadow", "read")) {
-                $asvEmails = $merchantEmailWrapper->FetchAndCompareMerchantEmailsFromMerchantId($merchantId, $merchantEmails);
-                return $merchantEmails;
-            }
-            if ($merchantEmailWrapper->isShadowOrReverseShadowOnForOperation($merchantId, "reverse_shadow", "read")) {
-                $asvEmails = $merchantEmailWrapper->FetchAndCompareMerchantEmailsFromMerchantId($merchantId, $merchantEmails);
-                return ASVEntityMapper::OverwriteWithAsvEntities(MerchantEmailEntity::class, 'id', $merchantEmails->toArray(), $asvEmails->toArray());
-            }
-            return $merchantEmails;
-        });
+        $merchantEmails = $this->getEmailByMerchantId($merchantId);
+        return (new MerchantEmail())->FetchMerchantEmailsFromMerchantId($merchantId, $merchantEmails);
     }
     /**
      * @param array $merchantIds

@@ -2,6 +2,8 @@
 
 namespace RZP\Modules\Acs\Wrapper;
 
+use RZP\Constants\Metric;
+use RZP\Exception\IntegrationException;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Modules\Acs\ASVEntityMapper;
@@ -19,6 +21,7 @@ class MerchantEmail extends Base
     private $merchantEmailComparator;
 
     public $saveApiHelper;
+    private string $entityName;
 
     function __construct()
     {
@@ -26,11 +29,12 @@ class MerchantEmail extends Base
         $this->accountAsvClient = new AsvClient\AccountAsvClient();
         $this->merchantEmailComparator = new MerchantEmailComparator();
         $this->saveApiHelper = new SaveApiHelper();
+        $this->entityName = 'merchant_email';
     }
 
     /**
      * @param MerchantEmailEntity $entity
-     * @throws \RZP\Exception\IntegrationException
+     * @throws IntegrationException
      */
     public function Delete(MerchantEmailEntity $entity)
     {
@@ -69,32 +73,78 @@ class MerchantEmail extends Base
      * @return PublicCollection
      * @throws \RZP\Exception\IntegrationException
      */
-    function FetchMerchantEmailsFromMerchantId(string $merchantID)
+    function FetchMerchantEmailsFromMerchantId(string $merchantID, $emailsFromAPI)
+    {
+        if ($this->isShadowOrReverseShadowOnForOperation($merchantID, CONSTANT::SHADOW, CONSTANT::READ)) {
+            $this->processReadShadowFetchMerchantEmailsByMerchantId($merchantID, $emailsFromAPI);
+            return $emailsFromAPI;
+        } else if ($this->isShadowOrReverseShadowOnForOperation($merchantID, CONSTANT::REVERSE_SHADOW, CONSTANT::READ)) {
+            return $this->processReadReverseShadowFetchMerchantEmailsByMerchantId($merchantID, $emailsFromAPI);
+        }
+        return $emailsFromAPI;
+    }
+
+    function FetchAndCompareMerchantEmailsFromMerchantId(string $merchantID, $emailsFromAPI): PublicCollection
     {
         $fieldMask = new \Google\Protobuf\FieldMask([
                 'paths' => ["merchant_email"]
             ]
         );
         $res = $this->accountAsvClient->FetchMerchant($merchantID, $fieldMask);
-        $emails = $this->getMerchantEmailEntitiesFromResponse($res);
-        return new PublicCollection($emails);
+        $emailsFromASV = ASVEntityMapper::MapProtoObjectIteratorToEntityCollection($res->getMerchantEmails(), MerchantEmailEntity::class);
+        $difference = $this->merchantEmailComparator->getDifferenceCompareByUniqueId($emailsFromAPI->toArray(), $emailsFromASV->toArray(), 'id');
+        $this->logDifferenceIfNotNilAndPushMetrics($this->entityName, $difference, "", $merchantID);
+        return new PublicCollection($emailsFromASV);
     }
 
-    function FetchAndCompareMerchantEmailsFromMerchantId(string $merchantID, $emailsFromAPI)
-    {
-        $emails = $this->FetchMerchantEmailsFromMerchantId($merchantID);
-        $this->merchantEmailComparator->compareEmails($emailsFromAPI->toArray(), $emails->toArray());
-        return $emails;
-    }
-
-    private function getMerchantEmailEntitiesFromResponse(\Rzp\Accounts\Account\V1\FetchMerchantResponse $res)
-    {
-        $merchant_emails = [];
-        $emailsFromAsv = $res->getMerchantEmails();
-        foreach ($emailsFromAsv as $email) {
-            $merchant_email = ASVEntityMapper::MapProtoObjectToEntity($email, MerchantEmailEntity::class);
-            array_push($merchant_emails, $merchant_email);
+    public function logDifferenceIfNotNilAndPushMetrics(string $entityName, array $difference, string $id, string $merchant_id) {
+        if(count($difference) > 0) {
+            $this->trace->info(TraceCode::ASV_COMPARE_MISMATCH, [
+                'entity_name' => $entityName,
+                'difference' => $difference,
+                'email_id' => $id ,
+                'merchant_id' =>$merchant_id
+            ]);
+            $this->trace->count(Metric::ASV_COMPARE_MISMATCH, [$entityName]);
         }
-        return $merchant_emails;
+    }
+
+    private function processReadShadowFetchMerchantEmailsByMerchantId(string $merchantID, $emailsFromAPI)
+    {
+        try {
+            $this->FetchAndCompareMerchantEmailsFromMerchantId($merchantID, $emailsFromAPI);
+        } catch (\Throwable $ex){
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::ASV_READ_SHADOW_EXCEPTION,
+                [
+                    "merchant_id" => $merchantID,
+                    "entity" => $this->entityName
+                ]);
+        }
+    }
+
+    /**
+     * @param string $merchantID
+     * @param $emailsFromAPI
+     * @throws IntegrationException
+     */
+    private function processReadReverseShadowFetchMerchantEmailsByMerchantId(string $merchantID, $emailsFromAPI)
+    {
+        try {
+            $emailsFromASV = $this->FetchAndCompareMerchantEmailsFromMerchantId($merchantID, $emailsFromAPI);
+            return  $emailsFromASV;
+        } catch (\Throwable $ex){
+            $this->trace->traceException(
+                $ex,
+                Trace::CRITICAL,
+                TraceCode::ASV_REVERSE_SHADOW_EXCEPTION,
+                [
+                    "merchant_id" => $merchantID,
+                    "entity" => $this->entityName
+                ]);
+            throw $ex;
+        }
     }
 }

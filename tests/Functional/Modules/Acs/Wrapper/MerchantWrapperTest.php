@@ -31,8 +31,8 @@ class MerchantWrapperTest extends TestCase
     {
         $merchantId = "10000000000000";
         MerchantEntity::unguard();
-        $merchantEntityForApi = new MerchantEntity(['id' => $merchantId, "live"=> true, 'org_id' => "100000razorpay"]);
-        $merchantEntityForAsvWithMismatch = new MerchantEntity(['id' => $merchantId, 'org_id' => "100001razorpay", "live" => true]);
+        $merchantEntityForApi = new MerchantEntity(['id' => $merchantId, "live"=> true, 'org_id' => "100000razorpay", "signup_via_email" => false]);
+        $merchantEntityForAsvWithMismatch = new MerchantEntity(['id' => $merchantId, 'org_id' => "100001razorpay", "live" => true, "signup_via_email" => null]);
         MerchantEntity::reguard();
         $merchantProto = new Merchant(['id' => $merchantId, 'org_id' => '100000razorpay']);
         $fetchMerchantResponse = new FetchMerchantResponse(['merchant'=> $merchantProto]);

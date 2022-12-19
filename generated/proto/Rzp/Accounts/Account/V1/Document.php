@@ -33,6 +33,14 @@ class Document extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>string id = 5;</code>
      */
     protected $id = '';
+    /**
+     * Generated from protobuf field <code>string audit_id = 6;</code>
+     */
+    protected $audit_id = '';
+    /**
+     * Generated from protobuf field <code>string upload_by_admin_id = 7;</code>
+     */
+    protected $upload_by_admin_id = '';
 
     /**
      * Constructor.
@@ -45,6 +53,8 @@ class Document extends \Google\Protobuf\Internal\Message
      *     @type string $document_type
      *     @type string $file_id
      *     @type string $id
+     *     @type string $audit_id
+     *     @type string $upload_by_admin_id
      * }
      */
     public function __construct($data = NULL) {
@@ -158,6 +168,50 @@ class Document extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->id = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string audit_id = 6;</code>
+     * @return string
+     */
+    public function getAuditId()
+    {
+        return $this->audit_id;
+    }
+
+    /**
+     * Generated from protobuf field <code>string audit_id = 6;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setAuditId($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->audit_id = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string upload_by_admin_id = 7;</code>
+     * @return string
+     */
+    public function getUploadByAdminId()
+    {
+        return $this->upload_by_admin_id;
+    }
+
+    /**
+     * Generated from protobuf field <code>string upload_by_admin_id = 7;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setUploadByAdminId($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->upload_by_admin_id = $var;
 
         return $this;
     }
