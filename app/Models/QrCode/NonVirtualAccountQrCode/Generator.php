@@ -16,8 +16,8 @@ use RZP\Gateway\Upi\Base;
 use RZP\Models\BankAccount;
 use RZP\Models\BharatQr\Tags;
 use RZP\Models\QrCode\Entity;
+use RZP\Models\VirtualAccount;
 use RZP\Models\Payment\Gateway;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\QrCode\Constants as Constants;
 use RZP\Models\BharatQr\Constants as BQRConstants;
 use RZP\Models\Payment\Processor\TerminalProcessor;
@@ -55,7 +55,7 @@ class Generator extends QrCode\Generator
             return ['vpa' => QrCode\Constants::DUMMY_QR_CODE_VPA];
         }
 
-        $identifier[self::VPA] = $this->generateVpaForQr($qrCode);
+        $identifier[self::VPA] = $this->getVpaForQr($qrCode);
 
         $this->trace->info(TraceCode::BHARAT_QR_UPI_IDENTIFIERS,
                            [
@@ -64,6 +64,27 @@ class Generator extends QrCode\Generator
                            ]);
 
         return $identifier;
+    }
+
+    private function getVpaForQr($qrCode)
+    {
+        $variant = $this->app->razorx->getTreatment($qrCode->merchant->getId(),
+                                                    Merchant\RazorxTreatment::DEDICATED_TERMINAL_QR_CODE,
+                                                    $this->mode);
+
+        if (strtolower($variant) === Merchant\RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            //@todo:: Check for static and dynamic QR. For static QR, terminal type offline should be passed
+            $terminal = (new VirtualAccount\Provider())->getTerminalForMethod(Payment\Method::UPI, $qrCode);
+
+            if (($terminal !== null) and
+                (empty($terminal->getGatewayMerchantId2()) === false))
+            {
+                return $terminal->getGatewayMerchantId2();
+            }
+        }
+
+        return $this->generateVpaForQr($qrCode);
     }
 
     private function generateVpaForQr($qrCode)
@@ -91,7 +112,7 @@ class Generator extends QrCode\Generator
             'id' => $qrCode->getId()
         ]);
 
-        $vpa = $this->generateVpaForQr($qrCode);
+        $vpa = $this->getVpaForQr($qrCode);
 
         return $this->generateUpiQrIntentUrl($vpa, $qrCode);
     }

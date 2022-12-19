@@ -22,6 +22,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\Category;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\VirtualAccount\Provider;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Gateway\Hitachi\Gateway as HitachiGateway;
 use RZP\Models\VirtualAccount\Receiver;
@@ -437,8 +438,18 @@ class TransactionFilter extends Terminal\Filter
 
             $flow = $payment->getMetadata('flow', 'collect');
 
-            if (($payment->isBharatQr() === true) and ($payment->isFlowIntent() === false))
+            if (($payment->isBharatQr() === true) and
+                ($payment->isFlowIntent() === false))
             {
+                $variant = $this->app->razorx->getTreatment($this->input['merchant']->getId(),
+                                                            RazorxTreatment::DEDICATED_TERMINAL_QR_CODE,
+                                                            $this->mode);
+
+                if (strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON)
+                {
+                    return true;
+                }
+
                 if (empty($terminal->getVpa()) === true)
                 {
                     return false;
@@ -959,6 +970,15 @@ class TransactionFilter extends Terminal\Filter
 
     public function bharatQrFilter($terminal)
     {
+        $variant = $this->app->razorx->getTreatment($this->input['merchant']->getId(),
+                                                    RazorxTreatment::DEDICATED_TERMINAL_QR_CODE,
+                                                    $this->mode);
+
+        if (strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            return true;
+        }
+
         if (($this->input['payment']->isFlowIntent()) === true)
         {
             // We have already verified that terminal is intent enabled in UPI Filter
