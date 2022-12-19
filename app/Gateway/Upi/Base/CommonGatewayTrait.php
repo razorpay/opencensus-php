@@ -12,8 +12,6 @@ use RZP\Gateway\Base\Verify;
 use RZP\Constants\Environment;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Payment\UpiMetadata\Flow;
-use RZP\Models\Payment\Processor\UpiTrait;
-
 /**
  * CommonGatewayTrait
  * Trait Common
@@ -26,7 +24,6 @@ use RZP\Models\Payment\Processor\UpiTrait;
  */
 trait CommonGatewayTrait
 {
-    use UpiTrait;
     /************** Payment Actions ************
 
      * @param array $input
@@ -212,7 +209,7 @@ trait CommonGatewayTrait
             return true;
         }
 
-        if ($this->isRearchBVTRequestForUPI($this->app['request']->header('X-RZP-TESTCASE-ID')) === true)
+        if ($this->isRearchBVTRequestForUPIPreProcess($this->app['request']->header('X-RZP-TESTCASE-ID')) === true)
         {
             return true;
         }
@@ -718,5 +715,23 @@ trait CommonGatewayTrait
         $description = $input['merchant']->getFilteredDba() . ' ' . $filteredPaymentDescription;
 
         $input[Entity::UPI][Entity::REMARK] = $description ? substr($description, 0, 50) : 'Pay via Razorpay';
+    }
+
+    /**
+     * Returns true if the request is in testing environment
+     * and is to be routed through upi payment service
+     *
+     * @param string $rzpTestCaseID
+     *
+     * @return bool
+     */
+    private function isRearchBVTRequestForUPIPreProcess(?string $rzpTestCaseID): bool
+    {
+        if (empty($rzpTestCaseID) === true)
+        {
+            return false;
+        }
+
+        return ((app()->isEnvironmentQA() === true) and (str_ends_with($rzpTestCaseID,'_rearchUPS') === true));
     }
 }
