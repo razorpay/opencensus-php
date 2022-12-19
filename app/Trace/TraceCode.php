@@ -5275,6 +5275,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_BALANCE_UPDATE_TIME_TAKEN                    = 'MERCHANT_BALANCE_UPDATE_TIME_TAKEN';
     const TRANSACTION_BALANCE_ALREADY_UPDATED                   = 'TRANSACTION_BALANCE_ALREADY_UPDATED';
 
+    // SQS Kafka push
+    const REMINDER_KAFKA_PUSH_STARTED                           = 'REMINDER_KAFKA_PUSH_STARTED';
+    const REMINDER_KAFKA_PUSH_SUCCESSFUL                        = 'REMINDER_KAFKA_PUSH_SUCCESSFUL';
+    const REMINDER_KAFKA_PUSH_FAILURE                           = 'REMINDER_KAFKA_PUSH_FAILURE';
+
+
     // Stork service
     const STORK_DISPATCH_EVENT_FAILED                           = 'STORK_DISPATCH_EVENT_FAILED';
     const STORK_PRODUCT_SET_FAILED                              = 'STORK_PRODUCT_SET_FAILED';
@@ -7132,6 +7138,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TEMPLATING_REQUEST                                    = 'TEMPLATING_REQUEST';
     const PAYMENT_KAFKA_PUSH_INITIATED                          = 'PAYMENT_KAFKA_PUSH_INITIATED';
     const PAYMENT_KAFKA_PUSH_SUCCESS                            = 'PAYMENT_KAFKA_PUSH_SUCCESS';
+    const PAYMENT_KAFKA_PUSH_VIA_SQS                            = 'PAYMENT_KAFKA_PUSH_VIA_SQS';
     const PAYMENT_KAFKA_PUSH_FAILED                             = 'PAYMENT_KAFKA_PUSH_FAILED';
     const PAYMENT_TIMEOUT_MESSAGE                               = 'PAYMENT_TIMEOUT_MESSAGE';
     const PAYMENT_VERIFY_MESSAGE                                = 'PAYMENT_VERIFY_MESSAGE';

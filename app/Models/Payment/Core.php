@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Diag\EventCode;
+use RZP\Jobs\PaymentReminder;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Order\Entity;
 use RZP\Models\Payment;
@@ -298,7 +299,7 @@ class Core extends Base\Core
 
         try
         {
-            (new KafkaProducer($topic, stringify($message), $producerKey))->Produce();
+            $this->pushToKafka($payment, $topic, $message, $producerKey, $startTime);
 
             $this->trace->info(
                 TraceCode::PAYMENT_KAFKA_PUSH_SUCCESS,
@@ -371,7 +372,7 @@ class Core extends Base\Core
 
         try
         {
-            (new KafkaProducer($topic, stringify($message), $producerKey))->Produce();
+            $this->pushToKafka($payment, $topic, $message, $producerKey, $startTime);
 
             $this->trace->info(
                 TraceCode::PAYMENT_SCHEDULER_DEREGISTER_PUSH_SUCCESS,
@@ -631,5 +632,44 @@ class Core extends Base\Core
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_FAILED_KAFKA_PUSH_FAILED, $payment, $e);
         }
         return true;
+    }
+
+    /**
+     * @param $payment
+     * @param mixed $topic
+     * @param array $message
+     * @param string $producerKey
+     * @param $startTime
+     * @return void
+     */
+    public function pushToKafka($payment, mixed $topic, array $message, string $producerKey, $startTime): void
+    {
+        $variant = $this->app->razorx->getTreatment(
+            $this->app['request']->getTaskId(),
+            Merchant\RazorxTreatment::PUSH_PAYMENT_TO_KAFKA_VIA_QUEUE,
+            $this->mode
+        );
+
+        if (strtolower($variant) === 'on')
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_KAFKA_PUSH_VIA_SQS,
+                [
+                    'payment_id' => $payment->getId(),
+                    'topic' => $topic,
+                ]
+            );
+
+            PaymentReminder::dispatch([
+                'topic' => $topic,
+                'message' => stringify($message),
+                'producer_key' => $producerKey,
+                'start_time' => $startTime
+            ], $this->mode);
+        }
+        else
+        {
+            (new KafkaProducer($topic, stringify($message), $producerKey))->Produce();
+        }
     }
 }

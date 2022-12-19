@@ -302,6 +302,10 @@ return [
         'test'       => env('AWS_MERCHANT_BALANCE_UPDATE_TEST_QUEUE'),
         'live'       => env('AWS_MERCHANT_BALANCE_UPDATE_LIVE_QUEUE'),
      ],
+    'payment_reminder' => [
+        'test'       => env('AWS_PAYMENT_REMINDER_TEST_QUEUE'),
+        'live'       => env('AWS_PAYMENT_REMINDER_LIVE_QUEUE'),
+    ],
     'core_payment_service_sync' => [
         'test'       => env('AWS_CPS_SYNC_TEST_QUEUE'),
         'live'       => env('AWS_CPS_SYNC_LIVE_QUEUE'),
