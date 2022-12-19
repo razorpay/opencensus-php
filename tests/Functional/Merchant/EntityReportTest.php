@@ -4,6 +4,8 @@ namespace RZP\Tests\Functional\Merchant;
 
 use Mockery;
 use Carbon\Carbon;
+
+use Razorpay\IFSC\Bank;
 use mikehaertl\wkhtmlto\Pdf;
 use PhpParser\Node\Scalar\MagicConst\Dir;
 use RZP\Constants\Timezone;
@@ -345,7 +347,7 @@ class EntityReportTest extends TestCase
     public function testInvoiceNew()
     {
         $this->markTestSkipped("marking skipped because PRs are not getting merged");
-        
+
         $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
 
         Carbon::setTestNow($oldDateTime);
@@ -572,10 +574,10 @@ class EntityReportTest extends TestCase
 
     public function testBrokingReport()
     {
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_terminal');
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_ebs_terminal');
         $this->fixtures->merchant->addFeatures(['broking_report']);
 
-        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->getDefaultNetbankingPaymentArray(Bank::KARB);
         $this->doAuthAndCapturePayment($payment);
         $this->doAuthCaptureAndRefundPayment($payment);
 
@@ -600,7 +602,7 @@ class EntityReportTest extends TestCase
             'Merchant Txn Id'    => null,
             'Product'            => 'NSE',
             'Discriminator'      => 'NB',
-            'Bank Name'          => 'UCO Bank',
+            'Bank Name'          => 'Karnataka Bank',
             'Card Type'          => null,
             'Card No'            => null,
             'Card Issuing Bank'  => null,

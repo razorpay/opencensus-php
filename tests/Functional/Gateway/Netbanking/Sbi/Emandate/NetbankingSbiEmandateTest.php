@@ -708,4 +708,16 @@ class NetbankingSbiEmandateTest extends TestCase
         $this->assertEquals($errorMsg, $failureNetbanking['error_message']);
         $this->assertTrue($failureNetbanking['received']);
     }
+
+    protected function runPaymentCallbackFlowNetbanking($response, &$callback = null, $gateway)
+    {
+        if (strpos($response->getContent(), 'RZPAY_EMDT') != null)
+        {
+            list ($url, $method, $values) = $this->getDataForGatewayRequest($response, $callback);
+            $data = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
+            return $this->submitPaymentCallbackRequest($data);
+        }
+
+        return $this->runPaymentCallbackFlowForNbplusGateway($response, $gateway, $callback);
+    }
 }

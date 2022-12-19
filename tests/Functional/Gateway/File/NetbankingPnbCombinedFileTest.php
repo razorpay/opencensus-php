@@ -5,10 +5,11 @@ namespace RZP\Tests\Functional\Gateway\File;
 use Mail;
 use Excel;
 use Queue;
-
+use Mockery;
 use Carbon\Carbon;
 
 use RZP\Jobs\BeamJob;
+use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Encryption\PGPEncryption;
@@ -47,6 +48,10 @@ class NetbankingPnbCombinedFileTest extends TestCase
 
         Queue::fake();
 
+        $this->app['rzp.mode'] = Mode::TEST;
+        $nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlus\Netbanking', [$this->app])->makePartial();
+        $this->app->instance('nbplus.payments', $nbPlusService);
+
         $paymentArray = $this->getDefaultNetbankingPaymentArray($this->bank);
 
         // Payment to fully refunded
@@ -58,12 +63,6 @@ class NetbankingPnbCombinedFileTest extends TestCase
             'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
         ]);
 
-        $netbanking = $this->getLastEntity('netbanking', true);
-
-        $this->fixtures->edit('netbanking', $netbanking['id'], [
-            'account_number' => '1'
-        ]);
-
         //Payment to be refunded completely with 2 partial refunds on same day of payment
         $payment2 = $this->doAuthAndCapturePayment($paymentArray);
 
@@ -71,12 +70,6 @@ class NetbankingPnbCombinedFileTest extends TestCase
 
         $this->fixtures->edit('transaction', $transaction['id'], [
             'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
-        ]);
-
-        $netbanking = $this->getLastEntity('netbanking', true);
-
-        $this->fixtures->edit('netbanking', $netbanking['id'], [
-            'account_number' => '2'
         ]);
 
         //Payment refunded partially on same day of payment and partially the next day before file generation
@@ -88,12 +81,6 @@ class NetbankingPnbCombinedFileTest extends TestCase
             'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
         ]);
 
-        $netbanking = $this->getLastEntity('netbanking', true);
-
-        $this->fixtures->edit('netbanking', $netbanking['id'], [
-            'account_number' => '3'
-        ]);
-
         //Partial refund payment on same day of payment
         $payment4 = $this->doAuthAndCapturePayment($paymentArray);
 
@@ -103,12 +90,6 @@ class NetbankingPnbCombinedFileTest extends TestCase
             'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
         ]);
 
-        $netbanking = $this->getLastEntity('netbanking', true);
-
-        $this->fixtures->edit('netbanking', $netbanking['id'], [
-            'account_number' => '4'
-        ]);
-
         //Payment created 6 days ago but refunded today
         $payment5 = $this->doAuthAndCapturePayment($paymentArray);
 
@@ -116,12 +97,6 @@ class NetbankingPnbCombinedFileTest extends TestCase
 
         $this->fixtures->edit('transaction', $transaction['id'], [
             'reconciled_at' => Carbon::tomorrow(Timezone::IST)->subDays(4)->timestamp
-        ]);
-
-        $netbanking = $this->getLastEntity('netbanking', true);
-
-        $this->fixtures->edit('netbanking', $netbanking['id'], [
-            'account_number' => '5'
         ]);
 
         $payment = $this->getLastEntity('payment', true);

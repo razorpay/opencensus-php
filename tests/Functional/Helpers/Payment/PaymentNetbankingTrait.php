@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Helpers\Payment;
 
 use Config;
 use Requests;
+use RZP\Models\Payment\Gateway;
 use Symfony\Component\DomCrawler\Crawler;
 use RZP\Tests\Functional\TestCase;
 
@@ -11,6 +12,11 @@ trait PaymentNetbankingTrait
 {
     protected function runPaymentCallbackFlowNetbanking($response, &$callback = null, $gateway)
     {
+        if (Gateway::gatewaysAlwaysRoutedThroughNbplusService($gateway, null, 'netbanking') === true)
+        {
+            return $this->runPaymentCallbackFlowForNbplusGateway($response, $gateway, $callback);
+        }
+
         $mock = $this->isGatewayMocked();
 
         list ($url, $method, $values) = $this->getDataForGatewayRequest($response, $callback);
@@ -48,5 +54,18 @@ trait PaymentNetbankingTrait
         {
             return $this->submitPaymentCallbackRequest($data);
         }
+    }
+
+    protected function runPaymentCallbackFlowForNbplusGateway($response, $gateway, &$callback = null)
+    {
+        list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
+
+        $response = $this->mockCallbackFromGateway($url, $method, $content);
+
+        $data = $this->getPaymentJsonFromCallback($response->getContent());
+
+        $response->setContent($data);
+
+        return $response;
     }
 }

@@ -3,13 +3,18 @@
 namespace RZP\Tests\Functional\Gateway\Netbanking\Sbi;
 
 use Mail;
+use Mockery;
 
 use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Models\Payment\Entity;
+use RZP\Exception\LogicException;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Netbanking\Sbi\Status;
+use RZP\Exception\GatewayErrorException;
 use RZP\Gateway\Netbanking\Sbi\RequestFields;
 use RZP\Gateway\Netbanking\Sbi\ResponseFields;
+use RZP\Services\NbPlus as NbPlusPaymentService;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -33,6 +38,10 @@ class NetbankingSbiGatewayTest extends TestCase
         $this->setMockGatewayTrue();
 
         $this->fixtures->create('terminal:shared_netbanking_sbi_terminal');
+
+        $this->app['rzp.mode'] = Mode::TEST;
+        $this->nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlus\Netbanking', [$this->app])->makePartial();
+        $this->app->instance('nbplus.payments', $this->nbPlusService);
     }
 
     public function makePayment($bank)
@@ -43,16 +52,9 @@ class NetbankingSbiGatewayTest extends TestCase
 
         $this->assertEquals($bank, $paymentEntity['bank']);
 
-        $this->assertEquals('IGAAAAGNN6', $paymentEntity[Entity::ACQUIRER_DATA]['bank_transaction_id']);
+        $this->assertEquals('1234', $paymentEntity[Entity::ACQUIRER_DATA]['bank_transaction_id']);
 
         $this->assertArraySelectiveEquals($this->testData['testPayment'], $paymentEntity);
-
-        $netbankingEntity = $this->getDbLastEntityToArray('netbanking', 'test');
-
-        $this->assertEquals($bank, $netbankingEntity['bank']);
-
-        $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentNetbankingEntity'], $netbankingEntity);
     }
 
     public function testPaymentForSbiAndSubsidiaryBanks()
@@ -90,12 +92,6 @@ class NetbankingSbiGatewayTest extends TestCase
 
         $this->fixtures->merchant->disableTPV();
 
-        $gatewayEntity = $this->getLastEntity('netbanking', true);
-
-        $this->assertArraySelectiveEquals($this->testData['testTpvPaymentEntity'], $gatewayEntity);
-
-        $this->assertEquals('00004030403040304', $gatewayEntity['account_number']);
-
         $order = $this->getLastEntity('order', true);
 
         $this->assertArraySelectiveEquals($data['request']['content'], $order);
@@ -103,6 +99,8 @@ class NetbankingSbiGatewayTest extends TestCase
 
     public function testTamperedAmount()
     {
+        $this->markTestSkipped();
+
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             if ($action === 'authorize')
@@ -125,6 +123,8 @@ class NetbankingSbiGatewayTest extends TestCase
 
     public function testPaymentIdMismatch()
     {
+        $this->markTestSkipped();
+
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             if ($action === 'authorize')
@@ -147,6 +147,8 @@ class NetbankingSbiGatewayTest extends TestCase
 
     public function testChecksumValidationFailed()
     {
+        $this->markTestSkipped();
+
         $data = $this->testData[__FUNCTION__];
 
         $this->mockServerContentFunction(function(& $content, $action = null)
@@ -169,6 +171,8 @@ class NetbankingSbiGatewayTest extends TestCase
 
     public function testAuthFailed()
     {
+        $this->markTestSkipped();
+
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             if ($action === 'authorize')
@@ -194,6 +198,8 @@ class NetbankingSbiGatewayTest extends TestCase
 
     public function testAuthInvalidStatus()
     {
+        $this->markTestSkipped();
+
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             if ($action === 'authorize')
@@ -212,6 +218,8 @@ class NetbankingSbiGatewayTest extends TestCase
 
     public function testAuthFailedVerifySuccess()
     {
+        $this->markTestSkipped();
+
         $data = $this->testData[__FUNCTION__];
 
         $this->testAuthFailed();
@@ -234,6 +242,8 @@ class NetbankingSbiGatewayTest extends TestCase
 
     public function testAuthSuccessVerifyFailed()
     {
+        $this->markTestSkipped();
+
         $data = $this->testData[__FUNCTION__];
 
         $this->makePayment($this->bank);
@@ -267,32 +277,33 @@ class NetbankingSbiGatewayTest extends TestCase
         $verify = $this->verifyPayment($payment['id']);
 
         assert($verify['payment']['verified'] === 1);
-
-        $gatewayPayment = $this->getDbLastEntityToArray('netbanking', 'test');
-
-        $this->assertTestResponse($gatewayPayment, 'testPaymentVerifySuccessEntity');
     }
 
     public function testVerifyInvalidResponse()
     {
-        $testData = $this->testData[__FUNCTION__];
-
         $this->makePayment($this->bank);
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->mockServerContentFunction(function(& $content, $action = null)
+        $this->nbPlusService->shouldReceive('content')->andReturnUsing(function(& $content, $action = null)
         {
-            if ($action === 'verify_enc')
-            {
-                $content = 'Invalid Status';
-            }
+            $content = [
+                NbPlusPaymentService\Response::RESPONSE => null,
+                NbPlusPaymentService\Response::ERROR => [
+                    NbPlusPaymentService\Error::CODE  => 'RUNTIME',
+                    NbPlusPaymentService\Error::CAUSE => [
+                        NbPlusPaymentService\Error::MOZART_ERROR_CODE   =>  'SERVER_ERROR_RUNTIME_ERROR',
+                        'gateway_error_code'                            =>  '',
+                        'gateway_error_description'                     =>  '',
+                    ]
+                ],
+            ];
         });
 
-        $this->runRequestResponseFlow($testData, function() use ($payment)
+        $this->makeRequestAndCatchException(function() use ($payment)
         {
             $this->verifyPayment($payment['id']);
-        });
+        }, LogicException::class);
 
         $paymentEntity = $this->getDbLastEntityToArray('payment', 'test');
 
@@ -301,6 +312,8 @@ class NetbankingSbiGatewayTest extends TestCase
 
     public function testForceAuthorizePayment()
     {
+        $this->markTestSkipped();
+
         $testData = $this->testData['testAuthFailed'];
 
         $this->mockServerContentFunction(function (&$content, $action = null)
@@ -331,20 +344,25 @@ class NetbankingSbiGatewayTest extends TestCase
 
     public function testAuthorizeFailedPayment()
     {
-        $testData = $this->testData['testAuthFailed'];
-
-        $this->mockServerContentFunction(function (&$content, $action = null)
+        $this->nbPlusService->shouldReceive('content')->andReturnUsing(function(& $content, $action = null)
         {
-            if ($action === 'authorize')
-            {
-                $content[ResponseFields::STATUS] = 'Failed';
-            }
+            $content = [
+                NbPlusPaymentService\Response::RESPONSE => null,
+                NbPlusPaymentService\Response::ERROR => [
+                    NbPlusPaymentService\Error::CODE  => 'GATEWAY',
+                    NbPlusPaymentService\Error::CAUSE => [
+                        NbPlusPaymentService\Error::MOZART_ERROR_CODE   =>  'BAD_REQUEST_PAYMENT_FAILED',
+                        'gateway_error_code'                            =>  '',
+                        'gateway_error_description'                     =>  '',
+                    ]
+                ],
+            ];
         });
 
-        $this->runRequestResponseFlow($testData, function ()
+        $this->makeRequestAndCatchException(function ()
         {
             $this->doNetbankingSbiAuthAndCapturePayment();
-        });
+        }, GatewayErrorException::class);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -425,20 +443,28 @@ class NetbankingSbiGatewayTest extends TestCase
      */
     public function testVerifyAuthorizeFailedPayment()
     {
-        $testData = $this->testData['testAuthFailed'];
-
-        $this->mockServerContentFunction(function (&$content, $action = null)
+        $this->nbPlusService->shouldReceive('content')->andReturnUsing(function(& $content, $action = null)
         {
-            if ($action === 'authorize')
+            if ($action === 'callback')
             {
-                $content[ResponseFields::STATUS] = 'Failed';
+                $content = [
+                    NbPlusPaymentService\Response::RESPONSE => null,
+                    NbPlusPaymentService\Response::ERROR => [
+                        NbPlusPaymentService\Error::CODE  => 'GATEWAY',
+                        NbPlusPaymentService\Error::CAUSE => [
+                            NbPlusPaymentService\Error::MOZART_ERROR_CODE   =>  'BAD_REQUEST_PAYMENT_FAILED',
+                            'gateway_error_code'                            =>  '',
+                            'gateway_error_description'                     =>  '',
+                        ]
+                    ],
+                ];
             }
         });
 
-        $this->runRequestResponseFlow($testData, function ()
+        $this->makeRequestAndCatchException(function ()
         {
             $this->doNetbankingSbiAuthAndCapturePayment();
-        });
+        }, GatewayErrorException::class);
 
         $payment = $this->getLastEntity('payment', true);
 

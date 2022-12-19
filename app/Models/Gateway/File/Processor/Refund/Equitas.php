@@ -103,7 +103,7 @@ class Equitas extends Base
         if (($row['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE) or
             ($row['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE_PAYMENTS))
         {
-            return $row['gateway']['bank_transaction_id']; // payment through nbplus service
+            return $row['gateway']['gateway_transaction_id']; // payment through nbplus service
         }
         return $row['gateway']['reference1'];
     }

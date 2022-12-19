@@ -7991,9 +7991,9 @@ class RefundTest extends TestCase
     {
         $this->mockRazorxForFallback();
 
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_terminal');
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_ebs_terminal');
 
-        $this->gateway = 'billdesk';
+        $this->gateway = 'ebs';
 
         $this->setMockGatewayTrue();
 
@@ -8004,7 +8004,7 @@ class RefundTest extends TestCase
 
         $this->refundAuthorizedPayment($payment['razorpay_payment_id'], $input);
 
-        $refund = $this->getLastEntity('billdesk', true);
+        $refund = $this->getLastEntity('ebs', true);
 
         $txn = $this->getLastEntity('transaction', true);
 

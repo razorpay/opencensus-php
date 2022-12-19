@@ -3,8 +3,10 @@
 namespace RZP\Tests\Functional\Gateway\File;
 
 use Mail;
+use Mockery;
 use Carbon\Carbon;
 
+use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
@@ -43,6 +45,10 @@ class NetbankingSbiCombinedFileTest extends TestCase
         $connector = $this->mockSqlConnectorWithReplicaLag(0);
 
         $this->app->instance('db.connector.mysql', $connector);
+
+        $this->app['rzp.mode'] = Mode::TEST;
+        $nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlus\Netbanking', [$this->app])->makePartial();
+        $this->app->instance('nbplus.payments', $nbPlusService);
     }
 
     public function testGenerateCombinedFile()

@@ -12,7 +12,7 @@ use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 trait NetbankingReconTrait
 {
-    protected function nbPlusPaymentServiceNetbankingDispatch(array $rowDetails)
+    protected function nbPlusPaymentServiceNetbankingDispatch(array $rowDetails): void
     {
         $customerId          = null;
         $debitAccountNumber  = null;
@@ -50,7 +50,7 @@ trait NetbankingReconTrait
         $this->dispatchToNbplusServiceQueue($data);
     }
 
-    public function dispatchToNbplusServiceQueue($data)
+    public function dispatchToNbplusServiceQueue($data): void
     {
         $pushData['entity_name'] = Method::NETBANKING;
         $pushData['recon_data']  = $data;

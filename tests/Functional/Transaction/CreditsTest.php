@@ -512,9 +512,10 @@ class CreditsTest extends TestCase
         // Check if mail is getting triggered when 1st Threshold is crossed
         $this->fixtures->merchant->edit('10000000000000', ['refund_source' => 'credits']);
 
-        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+        $this->fixtures->terminal->disableterminal('1000BdeskTrmnl');
+        $this->fixtures->create('terminal:shared_ebs_terminal');
 
-        $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
+        $payment = $this->getDefaultNetbankingPaymentArray("KARB");
 
         $payment = $this->doAuthAndCapturePayment($payment);
 
@@ -583,8 +584,10 @@ class CreditsTest extends TestCase
 
         $this->fixtures->merchant->editRefundCredits('20000', '10000000000000');
         $this->fixtures->merchant->editRefundCreditsThreshold('9999', '10000000000000');
+        $this->fixtures->terminal->disableterminal('1000BdeskTrmnl');
+        $this->fixtures->create('terminal:shared_ebs_terminal');
 
-        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->getDefaultNetbankingPaymentArray('KARB');
         $payment['amount'] = 10000;
         $payment = $this->doAuthAndCapturePayment($payment);
 

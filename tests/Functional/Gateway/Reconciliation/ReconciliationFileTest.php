@@ -1865,6 +1865,8 @@ class ReconciliationFileTest extends TestCase
     //For success case of Bill desk reconciliation
     public function testBillDeskReconRefundFileFailure()
     {
+        $this->markTestSkipped();
+
         $this->fixtures->create('terminal:shared_billdesk_terminal');
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
@@ -1901,6 +1903,8 @@ class ReconciliationFileTest extends TestCase
 
     public function testBillDeskRefundReconFile()
     {
+        $this->markTestSkipped();
+
         $this->fixtures->create('terminal:shared_billdesk_terminal');
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
@@ -1993,25 +1997,23 @@ class ReconciliationFileTest extends TestCase
 
         $payment = $this->getDefaultNetbankingPaymentArray();
 
-        $payment = $this->doAuthAndCapturePayment($payment);
+        $this->doAuthAndCapturePayment($payment);
 
-        $gatewayPayment = $this->getLastEntity('billdesk', true);
+        $paymentEntity = $this->getDbLastPayment();
 
-        $paymentEntity = $this->getEntityById('payment', $gatewayPayment['payment_id'], true);
-
-        $transaction = $this->getEntityById('transaction', $paymentEntity['transaction_id'], true);
+        $transaction = $paymentEntity->transaction;
 
         //Reconciled at should be null
         $this->assertNull($transaction['reconciled_at']);
         $this->assertNull($transaction['reconciled_type']);
 
-        $entries[] = $this->overrideBillDeskPayment($gatewayPayment);
+        $entries[] = $this->overrideBillDeskPayment(['payment_id' => $paymentEntity->getId(), 'TxnAmount' => $paymentEntity->getAmount()/100]);
 
         $file = $this->writeToCsvFile($entries, 'billdesk_success');
 
         $this->runForFiles([$file], 'BillDesk');
 
-        $updatedTransaction = $this->getEntityById('transaction', $paymentEntity['transaction_id'], true);
+        $updatedTransaction = $paymentEntity->transaction->reload();
 
         //Reconciled at should not be null
         $this->assertNotNull($updatedTransaction['reconciled_at']);
@@ -2019,7 +2021,7 @@ class ReconciliationFileTest extends TestCase
         $this->assertNotNull($updatedTransaction['gateway_fee']);
         $this->assertNotNull($updatedTransaction['gateway_service_tax']);
 
-        $this->assertBatchStatus(Status::PROCESSED);
+        $this->assertBatchStatus();
     }
 
     /**

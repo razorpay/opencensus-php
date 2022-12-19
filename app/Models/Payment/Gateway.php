@@ -4496,8 +4496,11 @@ class Gateway
         $gateways = [
             Method::NETBANKING => [
                 self::ATOM,
+                self::BILLDESK,
                 self::NETBANKING_BOB,
                 self::NETBANKING_IDFC,
+                self::NETBANKING_PNB,
+                self::NETBANKING_SBI,
             ],
             Method::WALLET => [
                 self::WALLET_AMAZONPAY,

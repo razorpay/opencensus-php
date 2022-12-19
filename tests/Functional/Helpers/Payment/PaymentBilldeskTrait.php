@@ -12,20 +12,14 @@ trait PaymentBilldeskTrait
 {
     protected function runPaymentCallbackFlowBilldesk($response, &$callback = null)
     {
-        $mock = $this->isGatewayMocked();
-
         list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
 
-        if ($mock)
-        {
-            $request = $this->makeFirstGatewayPaymentMockRequest(
-                                                    $url, $method, $content);
-        }
-        else
-        {
-            ;
-        }
+        $response = $this->mockCallbackFromGateway($url, $method, $content);
 
-        return $this->submitPaymentCallbackRequest($request);
+        $data = $this->getPaymentJsonFromCallback($response->getContent());
+
+        $response->setContent($data);
+
+        return $response;
     }
 }
