@@ -32,13 +32,22 @@ trait Verify
 
         $this->setPayment($payment);
 
-        $refunds = $this->repo->refund->findForPayment($payment);
+        if ($isBarricade === true)
+        {
+            $data = [
+                'payment' => $payment->toArrayGateway(),
+                'merchant' => $this->merchant,
+            ];
+        }
+        else {
+            $refunds = $this->repo->refund->findForPayment($payment);
 
-        $data = [
-            'payment' => $payment->toArrayGateway(),
-            'refunds' => $refunds->toArrayGateway(),
-            'merchant' => $this->merchant,
-        ];
+            $data = [
+                'payment' => $payment->toArrayGateway(),
+                'refunds' => $refunds->toArrayGateway(),
+                'merchant' => $this->merchant,
+            ];
+        }
 
         if (isset($gatewayData) === true)
         {
