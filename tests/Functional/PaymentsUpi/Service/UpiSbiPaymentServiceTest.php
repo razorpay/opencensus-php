@@ -175,7 +175,6 @@ class UpiSbiPaymentServiceTest extends UpiPaymentServiceTest
 
     }
 
-
     public function testPaymentSbiReconciliation(){
 
         $this->fixtures->terminal->disableTerminal($this->terminal->getID());

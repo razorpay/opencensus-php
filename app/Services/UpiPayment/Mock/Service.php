@@ -115,24 +115,26 @@ class Service extends UpiPaymentService
                 $code = 200;
 
                 break;
-                case 'mozart_validation_failure':
-                    $response['error'] = [
-                        'internal' => [
-                            'code'          => 'BAD_REQUEST_VALIDATION_FAILURE',
-                            'description'   => 'BAD_REQUEST_VALIDATION_ERROR: received false
-                                                response with status 400 from mozart',
-                            'metadata'      => [
-                                'description'               => 'INPUT_VALIDATION_FAILED',
-                                'gateway_error_code'        => '',
-                                'gateway_error_description' => '',
-                                'internal_error_code'       => 'BAD_REQUEST_VALIDATION_FAILURE',
-                                'http_code'                 => 400
-                            ]
+            case 'mozart_validation_failure':
+                $response['error'] = [
+                    'internal' => [
+                        'code'          => 'BAD_REQUEST_VALIDATION_FAILURE',
+                        'description'   => 'BAD_REQUEST_VALIDATION_ERROR: received false
+                                            response with status 400 from mozart',
+                        'metadata'      => [
+                            'description'               => 'INPUT_VALIDATION_FAILED',
+                            'gateway_error_code'        => '',
+                            'gateway_error_description' => '',
+                            'internal_error_code'       => 'BAD_REQUEST_VALIDATION_FAILURE',
+                            'http_code'                 => 400
                         ]
-                    ];
-                    $code = 200;
+                    ]
+                ];
+                $code = 200;
 
                     break;
+            case 'tpv_order_success':
+                assertTrue($content['metadata']['tpv'] === true);
             default:
                 $response['data'] = [
                     'data' => [
@@ -280,8 +282,9 @@ class Service extends UpiPaymentService
         $this->content($content);
 
         //mock ups entity to return only one field
-        if((isset($content['entity_fetch_failure']) === true)
-            and ($content['entity_fetch_failure'] === true)){
+        if  ((isset($content['entity_fetch_failure']) === true) and
+            ($content['entity_fetch_failure'] === true))
+        {
             $response['entity']['customer_reference'] = '227121351902';
             return [$response, 200];
         }

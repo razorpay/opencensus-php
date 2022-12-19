@@ -12,6 +12,7 @@ use RZP\Gateway\Base\Verify;
 use RZP\Constants\Environment;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Payment\UpiMetadata\Flow;
+use RZP\Models\Payment\Processor\UpiTrait;
 
 /**
  * CommonGatewayTrait
@@ -25,6 +26,7 @@ use RZP\Models\Payment\UpiMetadata\Flow;
  */
 trait CommonGatewayTrait
 {
+    use UpiTrait;
     /************** Payment Actions ************
 
      * @param array $input
@@ -206,6 +208,11 @@ trait CommonGatewayTrait
     public function shouldUseUpiPreProcess(string $gateway)
     {
         if($this->isPreProcessRampedUpFully($gateway) === true)
+        {
+            return true;
+        }
+
+        if ($this->isRearchBVTRequestForUPI($this->app['request']->header('X-RZP-TESTCASE-ID')) === true)
         {
             return true;
         }

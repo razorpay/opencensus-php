@@ -4,6 +4,7 @@ namespace RZP\Services\UpiPayment;
 
 use App;
 use RZP\Exception;
+use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -80,6 +81,8 @@ class Service
     const MAX_RETRY = 2;
 
     const METADATA = 'metadata';
+
+    const TPV = 'tpv';
 
     const PRE_PROCESS = 'pre_process';
 
@@ -408,6 +411,19 @@ class Service
      */
     protected function getRequestBodyForAuthorize(array $input): array
     {
+        if ($input[Entity::MERCHANT]->isTPVRequired() === true)
+        {
+            if (isset($input[self::METADATA]) === true)
+            {
+                $input[self::METADATA][self::TPV] = true;
+            }
+            else {
+                $input[self::METADATA] = [
+                    self::TPV => true
+                ];
+            }
+        }
+
         $this->convertInputToArray($input);
 
         $content = [
@@ -417,6 +433,13 @@ class Service
             Entity::MERCHANT    => $input[Entity::MERCHANT] ?? null,
             Base\Entity::ACTION => Payment\Action::AUTHORIZE,
         ];
+
+        if (isset($input[Entity::ORDER]) === true)
+        {
+            $content[Entity::ORDER] = [
+                Order\Entity::ACCOUNT_NUMBER => $input[Entity::ORDER][Order\Entity::ACCOUNT_NUMBER] ?? null,
+            ];
+        }
 
         return $content;
     }

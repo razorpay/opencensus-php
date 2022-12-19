@@ -14,10 +14,12 @@ use RZP\Gateway\Utility;
 use RZP\Trace\TraceCode;
 use phpseclib\Crypt\RSA;
 use RZP\Error\ErrorCode;
+use RZP\Models\BharatQr;
 use RZP\Gateway\Upi\Base;
 use RZP\Models\UpiTransfer;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
+use RZP\Http\RequestHeader;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Upi\Base\Entity;
@@ -26,8 +28,8 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Base as GatewayBase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Models\BharatQr;
 use RZP\Reconciliator\Base\Reconciliate;
+use RZP\Models\Payment\Processor\UpiTrait;
 use RZP\Gateway\Upi\Base\CommonGatewayTrait;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
 
@@ -44,6 +46,7 @@ class Gateway extends Base\Gateway
     use Base\RecurringTrait;
     use Base\MandateTrait;
     use CommonGatewayTrait;
+    use UpiTrait;
 
     /**
      * Default request timeout duration in seconds.
@@ -322,6 +325,11 @@ class Gateway extends Base\Gateway
         $isBharatQr = false,
         $routeName): bool
     {
+        if ($this->isRearchBVTRequestForUPI($this->app['request']->header('X-RZP-TESTCASE-ID')) === true)
+        {
+            return true;
+        }
+
         // do not pre-process if it is upiTransfer, bharatQR or recurring callback
         if (($isUpiTransfer === true) or
             ($isBharatQr === true) or

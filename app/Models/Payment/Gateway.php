@@ -4697,6 +4697,17 @@ class Gateway
             self::UPI_YESBANK,
             self::UPI_JUSPAY,
             self::UPI_SBI,
+            self::UPI_ICICI
+        ];
+
+        return (in_array($gateway, $gateways, true));
+    }
+
+    public static function isUpiPaymentServicePreProcessGateway($gateway): bool
+    {
+        $gateways = [
+            self::UPI_AIRTEL,
+            self::UPI_YESBANK,
         ];
 
         return (in_array($gateway, $gateways, true));

@@ -1681,7 +1681,7 @@ class GatewayController extends Controller
     // Determines if callback should be preprocessed by UPS
     protected function shouldPreProcessThroughUpiPaymentService($gateway, $mode = null)
     {
-        if (Payment\Gateway::isUpiPaymentServiceGateway($gateway) === false)
+        if (Payment\Gateway::isUpiPaymentServicePreProcessGateway($gateway) === false)
         {
             return false;
         }
