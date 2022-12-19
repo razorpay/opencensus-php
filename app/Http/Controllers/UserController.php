@@ -458,6 +458,18 @@ class UserController extends Controller
         return AppResponse::jsonResponse($error, $data, $httpCode);
     }
 
+    public function postSendOtpForSalesForceUser() {
+        $input = Input::all();
+        list($error, $data, $httpCode) = (new User\Service)->sendOtpForSalesForceUser($input);
+        return AppResponse::jsonResponse($error, $data, $httpCode);
+    }
+
+    public function postVerifyOtpForSalesForceUser() {
+        $input = Input::all();
+        list($error, $data, $httpCode) = (new User\Service)->verifyOtpForSalesForceUser($input);
+        return AppResponse::jsonResponse($error, $data, $httpCode);
+    }
+
     public function postRegisterVerifyOtp()
     {
         $timeStarted = microtime(true);

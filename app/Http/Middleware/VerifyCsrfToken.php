@@ -40,6 +40,8 @@ class VerifyCsrfToken extends BaseVerifier
         '/user/register',
         '/user/register_unbounce',
         '/user/salesforce_event',
+        '/user/salesforce/otp',
+        '/user/salesforce/otp/verify',
 
         // Aggregation requests
         '/test/analytics/aggregations/day',

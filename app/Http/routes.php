@@ -94,6 +94,8 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/register_unbounce', 'UserController@postRegisterUnbounce')->name('user_register_unbounce');
         Route::post('/register/otp', 'UserController@postRegisterSendOtp')->name('user_register_otp'); // ePOS
         Route::post('/register/otp/verify', 'UserController@postRegisterVerifyOtp')->name('user_register_otp_verify'); // ePOS
+        Route::post('/salesforce/otp', 'UserController@postSendOtpForSalesForceUser')->name('send_otp_salesforce_user'); // ePOS
+        Route::post('/salesforce/otp/verify', 'UserController@postVerifyOtpForSalesForceUser')->name('verify_otp_salesforce_user');
         Route::post('/oauth-signin', 'UserController@postOauthSignIn')->name('user_oauth_signin');
         Route::post('/oauth-register', 'UserController@postOauthRegister')->name('user_oauth_register');
         Route::post('/2fa/otp-verify', 'UserController@postSetup2faVerifyOtp')->name('user_2fa_otp_verify');

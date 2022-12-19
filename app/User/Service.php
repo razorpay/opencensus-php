@@ -159,6 +159,14 @@ class Service extends Base\Service
         return $this->requestAPI($input,'users/register/otp', 'POST');
     }
 
+    public function sendOtpForSalesForceUser(array $input): array {
+        return $this->requestAPI($input,'users/salesforce/otp', 'POST');
+    }
+
+    public function verifyOtpForSalesForceUser(array $input): array {
+        return $this->requestAPI($input,'users/salesforce/otp/verify', 'POST');
+    }
+
     public function traceApiTrigger(array $input, string $traceCode, string $metricConstant, string $method, bool $isLogin)
     {
         try
