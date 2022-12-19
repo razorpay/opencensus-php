@@ -54,6 +54,7 @@ class Action
         self::DEBIT,
         self::OTP_RESEND,
         self::AUTHORIZE_FAILED,
+        self::FORCE_AUTHORIZE_FAILED
     ];
 
     public static $upiPaymentServiceSupportedActions = [
