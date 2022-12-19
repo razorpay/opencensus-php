@@ -846,4 +846,22 @@ class Service extends Base\Service
 
         return [$error, $data];
     }
+
+    public function getMerchantNavigationList()
+    {
+        $request = new ApiRequestAny(['client_type' => 'merchant']);
+
+        list($error, $data) = $request->processInput()->send('care_service/merchant/twirp/rzp.care.merchantNavigation.v1.MerchantNavigationService/GetMerchantNavigationList', 'GET');
+
+        if (empty($error) === false)
+        {
+            throw new BadRequestError(
+                $error[0],
+                ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
+        return $data;
+    }
 }

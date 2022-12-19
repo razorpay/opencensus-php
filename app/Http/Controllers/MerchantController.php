@@ -333,4 +333,11 @@ class MerchantController extends Controller
 
         return AppResponse::jsonResponse([], $data);
     }
+
+    public function getMerchantNavigationList()
+    {
+        $data = (new Merchant\Service)->getMerchantNavigationList();
+
+        return AppResponse::jsonResponse([], $data);
+    }
 }
