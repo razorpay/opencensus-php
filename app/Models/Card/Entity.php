@@ -1456,6 +1456,11 @@ class Entity extends Base\PublicEntity
     {
         $data = parent::toArrayPublic();
 
+        if ($this->isInternational() === true || $this->isBajaj() === true)
+        {
+            return $data;
+        }
+
         $this->setDummyCardData($data);
 
         return $data;
@@ -1501,7 +1506,7 @@ class Entity extends Base\PublicEntity
             $data['last4']        = empty($data['token_last4']) ? $data['last4'] : $data ['token_last4'];
         }
 
-        // Changes to send the card's last4 instead of tokenlast4 for optimizer 
+        // Changes to send the card's last4 instead of tokenlast4 for optimizer
         if(($this->merchant->isFeatureEnabled(Feature\Constants::RAAS)) === true)
         {
             $data['last4']   = empty($data['last4']) ? $data['token_last4'] : $data ['last4'];
