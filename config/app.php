@@ -511,4 +511,6 @@ return array(
     'commission_invoice_events_to_kafka_exp_id'  => env('COMMISSION_INVOICE_EVENTS_TO_KAFKA_EXP_ID'),
 
     'magic_checkout_woocommerce_giftcard_url'       => env('MAGIC_CHECKOUT_WOOCOMMERCE_GIFTCARD_URL'),
+
+    'send_firs_available_email_experiment_id' => env('SEND_FIRS_AVAILABLE_EMAIL_EXPERIMENT_ID'),
 );

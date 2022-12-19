@@ -7,6 +7,7 @@ use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Document;
 use RZP\Base\RepositoryManager;
+use RZP\Models\Lambda;
 
 class MerchantFirsDocumentsZip extends Job
 {
@@ -124,7 +125,7 @@ class MerchantFirsDocumentsZip extends Job
     }
 
     protected function processFirsZipCreation(array $input){
-    
+
         $this->app = App::getFacadeRoot();
 
         $this->repo = $this->app['repo'];
@@ -168,11 +169,23 @@ class MerchantFirsDocumentsZip extends Job
             $document = (new Document\Core)->saveInMerchantDocument($response,$merchantId,self::FIRS_ICICI_ZIP,$documentDate);
         }
 
+        if(isset($document))
+        {
+            $data = [
+                'document_id' => $document->getId(),
+                'action' => MerchantCrossborderEmail::FIRS_AVAILABLE_NOTIFICATION,
+            ];
+            if ((new Lambda\Service)->shouldSendFIRSAvailableEmail()) {
+                // adding delay of 10 to 15 minutes for the ZIP creation
+                MerchantCrossborderEmail::dispatch($data)->delay(600 + rand(0, 1000) % 301);
+            }
+        }
+
         return ['merchant_id' => $merchantId, 'success' => isset($document)];
     }
 
-    /* 
-     * Deleting only ICICI FIRS ZIP Files 
+    /*
+     * Deleting only ICICI FIRS ZIP Files
     */
     protected function deleteExistingZipFilesIfExists(string $merchantId,$month,$year)
     {
@@ -198,7 +211,7 @@ class MerchantFirsDocumentsZip extends Job
     }
 
     protected function getZipFirsDocumentData(array $payload)
-    {        
+    {
         return [
             'merchant_id'   => $payload['merchant_id'],
             'month'         => $payload['month'],

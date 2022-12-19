@@ -7,8 +7,10 @@ use Request;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Timezone;
 use RZP\Exception;
+use RZP\Jobs\MerchantCrossborderEmail;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Base;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Batch;
 use RZP\Models\Gateway\File\Constants as GatewayConstants;
 use RZP\Services\Beam\Constants as BeamConstants;
@@ -301,6 +303,33 @@ class Service extends Base\Service
         return $documentMetaData;
     }
 
+    public function shouldSendFIRSAvailableEmail()
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.send_firs_available_email_experiment_id'),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+            $variant = $response['response']['variant']['name'] ?? '';
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::FIRS_SEND_EMAIL_SPLITZ_ERROR
+            );
+        }
+        return false;
+    }
+
     protected function uploadFileAndSaveInMerchantDocument(HttpFoundation\File\UploadedFile $file, array $input)
     {
         $filename = $file->getClientOriginalName();
@@ -335,6 +364,15 @@ class Service extends Base\Service
             */
 
             $document = (new Document\Core)->saveInMerchantDocument($response,$merchantId,$type,$documentDate);
+
+            $data = [
+               'document_id' => $document->getId(),
+                'action' => MerchantCrossborderEmail::FIRS_AVAILABLE_NOTIFICATION,
+            ];
+            if ($this->shouldSendFIRSAvailableEmail()){
+               // adding delay of 1 to 10 minutes to distribute load
+                MerchantCrossborderEmail::dispatch($data)->delay(rand(60,1000) % 601);
+            }
        }
 
        if($input['gateway'] === self::ICICI)
