@@ -10517,6 +10517,92 @@ class Service extends Base\Service
         return $parsedResults;
     }
 
+    public function handleMerchantPopularProductsCron()
+    {
+        $cronLastRunAt = $this->getMerchantPopularProductsCronLastRunAt();
+
+        $this->app['trace']->info(TraceCode::MERCHANT_POPULAR_PRODUCTS_CRON_STARTED, [
+            'last_run_at' => $cronLastRunAt,
+        ]);
+
+        $this->checkIfCronLastRanInCurrentQuarter($cronLastRunAt);
+
+        $products = $this->getProductsListFromDataLake();
+
+        $productListInString = implode(',', $products);
+
+        $this->app->cache->put(Constants::MERCHANT_POPULAR_PRODUCTS_CACHE_KEY, $productListInString);
+
+        $newLastRunAt = Carbon::now()->getTimestamp();
+
+        $this->updateMerchantPopularProductsCronLastRunAt($newLastRunAt);
+
+        $this->app['trace']->info(TraceCode::MERCHANT_POPULAR_PRODUCTS_CRON_RESULT, [
+            'results'         => $productListInString,
+            'new_last_run_at' => $newLastRunAt,
+        ]);
+
+        return ['success' => true];
+    }
+
+    protected function checkIfCronLastRanInCurrentQuarter($cronLastRunAt)
+    {
+        $currentDate = Carbon::now();
+
+        $currentQuarter = $currentDate->quarter;
+
+        if (is_null($cronLastRunAt) === false)
+        {
+            $cronLastRunAtDate = Carbon::parse($cronLastRunAt);
+
+            $cronLastRunAtQuarter = $cronLastRunAtDate->quarter;
+
+            if ($currentQuarter === $cronLastRunAtQuarter)
+            {
+                return;
+            }
+        }
+    }
+
+    protected function getProductsListFromDataLake()
+    {
+        $threeMonthsAgoDate = Carbon::now()->subMonths(3);
+
+        $previousQuarterStartTimestamp = $threeMonthsAgoDate->firstOfQuarter()->getTimestamp();
+
+        $previousQuarterEndTimestamp = $threeMonthsAgoDate->lastOfQuarter()->getTimestamp();
+
+        $dataLakeQuery = sprintf(Constants::DATA_LAKE_FETCH_POPULAR_PRODUCTS_ACRROSS_MERCHANT_QUERY, $previousQuarterStartTimestamp, $previousQuarterEndTimestamp);
+
+        $lakeData = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
+
+        $products = array_column($lakeData, "product");
+
+        return $products;
+    }
+
+    protected function getMerchantPopularProductsCronLastRunAt()
+    {
+        $lastRunAt = $this->app['cache']->get(Constants::MERCHANT_POPULAR_PRODUCTS_CRON_LAST_RUN_AT_KEY);
+
+        if (is_null($lastRunAt) === false)
+        {
+            return $lastRunAt;
+        }
+    }
+
+    protected function updateMerchantPopularProductsCronLastRunAt($lastRunAt)
+    {
+        $previousLastRunAt = $this->getMerchantPopularProductsCronLastRunAt();
+
+        if ($lastRunAt <= $previousLastRunAt)
+        {
+            return;
+        }
+
+        $this->app['cache']->put(Constants::MERCHANT_POPULAR_PRODUCTS_CRON_LAST_RUN_AT_KEY, $lastRunAt);
+    }
+
     public function settlementsEventsCron($input)
     {
 

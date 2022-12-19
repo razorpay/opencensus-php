@@ -2600,6 +2600,13 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postMerchantPopularProductsCron()
+    {
+        $response = $this->service()->handleMerchantPopularProductsCron();
+
+        return ApiResponse::json($response);
+    }
+
     public function handleNoDocOnboardingEscalationsCron()
     {
         $input = Request::all();

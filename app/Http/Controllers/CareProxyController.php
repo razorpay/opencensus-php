@@ -21,6 +21,9 @@ class CareProxyController extends Controller
     const GET_CALLBACK                       = 'twirp/rzp.care.callback.v1.CallbackService/GetCallback';
     const CHAT_INIT                          = 'twirp/rzp.care.chat.v1.ChatService/Init';
 
+    //merchantNavigation
+    const MERCHANT_NAVIGATION_LIST  = 'twirp/rzp.care.merchantNavigation.v1.MerchantNavigationService/GetMerchantNavigationList';
+
     //cron
     const INIT_SLOTS             = 'twirp/rzp.care.callback.v1.CallbackService/InitSlots';
     const PUSH_CALLBACK_TO_QUEUE = 'twirp/rzp.care.callback.v1.CallbackService/PushCallbacksToQueue';
@@ -166,6 +169,10 @@ class CareProxyController extends Controller
         self::FRESHDESK_MERCHANT_GET_TICKET,
     ];
 
+    const MERCHANT_GET_ROUTES = [
+        self::MERCHANT_NAVIGATION_LIST,
+    ];
+
     const CRON_ROUTES = [
         self::INIT_SLOTS,
         self::PUSH_CALLBACK_TO_QUEUE,
@@ -222,6 +229,15 @@ class CareProxyController extends Controller
     const CHAT_ROUTES = [
         self::CHAT_FETCH_MERCHANT,
     ];
+
+    public function getDashboardProxyRequest($path)
+    {
+        $this->validatePathForRequest(self::MERCHANT_GET_ROUTES, $path);
+
+        $response = $this->app['care_service']->dashboardProxyRequest($path, $input);
+
+        return ApiResponse::json($response);
+    }
 
     public function postDashboardProxyRequest($path)
     {

@@ -1061,6 +1061,22 @@ class CareServiceTest extends TestCase
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
             ],
+            [
+                self::AUTH                                => 'proxy',
+                self::METHOD                              => 'GET',
+                self::API_ROUTE                           => '/care_service/merchant/twirp/rzp.care.merchantNavigation.v1.MerchantNavigationService/GetMerchantNavigationList',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.merchantNavigation.v1.MerchantNavigationService/GetMerchantNavigationList',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'merchant' => [
+                        'id' => '10000000000000',
+                        'user_id' => User::MERCHANT_USER_ID,
+                    ],
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
         ];
 
         foreach ($testCases as $testCase)

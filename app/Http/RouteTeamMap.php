@@ -49,6 +49,7 @@ class RouteTeamMap
         'role_edit'                                => [self::TEAM_PAYMENTS_CARE],
         'workflow_create'                          => [self::TEAM_PAYMENTS_CARE],
         'care_service_dashboard_proxy'             => [self::TEAM_PAYMENTS_CARE],
+        'care_service_get_dashboard_proxy'         => [self::TEAM_PAYMENTS_CARE],
         'workflow_observer_data_update'            => [self::TEAM_PAYMENTS_CARE],
         'freshdesk_create_ticket'                  => [self::TEAM_PAYMENTS_CARE],
         'freshdesk_account_recovery_create_ticket' => [self::TEAM_PAYMENTS_CARE],

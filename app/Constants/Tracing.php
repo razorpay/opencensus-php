@@ -45,6 +45,7 @@ class Tracing
             'capital_cards_admin',
 
             // care Routes
+            'care_service_get_dashboard_proxy',
             'care_service_dashboard_proxy',
             'care_service_cron_proxy',
             'care_service_admin_proxy',

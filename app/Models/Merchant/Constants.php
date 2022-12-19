@@ -186,6 +186,10 @@ final class Constants
     const TRANSACTION_LIMIT_INCREASE_REASON_COMMENT                 = 'Transaction Limit Increase Reason: %s';
     const TRANSACTION_LIMIT_INCREASE_SUPPORT_DOCUMENT_URL_COMMENT   = 'Support Document (Invoice) URL: %sadmin/entity/ufh.files/live/file_%s';
 
+    const DATA_LAKE_FETCH_POPULAR_PRODUCTS_ACRROSS_MERCHANT_QUERY = "SELECT product FROM hive.aggregate_pa.payments_product WHERE method!='transfer' AND created_at >= %s AND created_at <= %s GROUP BY product ORDER BY COUNT(*) DESC";
+    const MERCHANT_POPULAR_PRODUCTS_CACHE_KEY                     = "care_service_merchant_popular_products";
+    const MERCHANT_POPULAR_PRODUCTS_CRON_LAST_RUN_AT_KEY          = 'merchant_popular_products_cron_last_run_at';
+
     const PAYMENTS_ENABLED_AND_FREQUENTLY_TRANSACTED = 'payments_enabled_and_frequently_transacted';
     const PAYMENTS_ENABLED_AND_TRANSACTED            = 'payments_enabled_and_transacted';
     const PAYMENTS_ENABLED_AND_NOT_TRANSACTED        = 'payments_enabled_and_not_transacted';

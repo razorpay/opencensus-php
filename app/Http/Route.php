@@ -101,6 +101,7 @@ class Route
         'merchant_onboarding_escalations'          => ['post',     'merchants/onboarding/escalations',               'MerchantController@handleOnboardingEscalationsCron'  ],
         'merchant_onboarding_cron_jobs'            => ['post',     'merchants/onboarding/cron_jobs',                  'MerchantController@handleOnboardingCronjobs'  ],
         'merchant_onboarding_crons'                => ['post',     'merchants/onboarding/{cronType}/crons',          'MerchantController@handleOnboardingCrons'            ],
+        'merchant_popular_products_cron'           => ['post',     'merchant_popular_products/cron',                 'MerchantController@postMerchantPopularProductsCron'  ],
         'xpress_onboarding_escalations'            => ['post',     'merchants/xp_onboarding/escalations',            'MerchantController@handleNoDocOnboardingEscalationsCron'  ],
         'fetch_merchant_escalation'                => ['get',      'merchants/onboarding/escalations',               'MerchantController@fetchOnboardingEscalations'       ],
         'merchant_card_networks_onboarding'        => ['post',     'merchants/onboarding/networks',                  'MerchantController@onboardMerchantOnNetworks'],
@@ -3698,6 +3699,7 @@ class Route
         'admin_fetch_tpvs'                        => ['get',     'admin/merchant/{id}/tpvs',                                'BankingAccountTpvController@fetchMerchantTpvsWithFav'         ],
         'admin_merchants_tpvs_create'             => ['post',    'admin/merchants/tpv_bulk_create',                         'BankingAccountTpvController@manualAutoApproveTpv'             ],
         'merchant_tpv_create'                     => ['post',    'merchant/tpv',                                            'BankingAccountTpvController@createTpvFromXDashboard'          ],
+        'care_service_get_dashboard_proxy'        => ['get',     'care_service/merchant/{path?}',                           'CareProxyController@getDashboardProxyRequest'                 ],
         'care_service_dashboard_proxy'            => ['post',    'care_service/merchant/{path?}',                           'CareProxyController@postDashboardProxyRequest'                ],
         'care_service_cron_proxy'                 => ['post',    'care_service/cron/{path?}',                               'CareProxyController@postCronProxyRequest'                     ],
         'care_service_admin_proxy'                => ['post',    'care_service/admin/{path?}',                              'CareProxyController@postAdminProxyRequest',                   ],
@@ -4647,6 +4649,7 @@ class Route
     // Put it in the Admin Array instead
     public static $internal = [
         'retry_store_legal_documents_cron',
+        'merchant_popular_products_cron',
         '1cc_shipping_service_merchant_config_create',
         '1cc_shipping_service_merchant_config_update_by_type',
         '1cc_shipping_service_remove_shipping_providers',
@@ -6390,6 +6393,7 @@ class Route
         'merchant_tpv_create',
 
         'care_service_dashboard_proxy',
+        'care_service_get_dashboard_proxy',
 
 
         // NPS survey routes
@@ -10101,6 +10105,7 @@ class Route
             'card_fetch_multiple',
             'card_issuer_validate',
             'care_service_dashboard_proxy',
+            'care_service_get_dashboard_proxy',
             'channel_health_check',
             'checkout',
             'checkout_embedded',
@@ -13527,6 +13532,7 @@ class Route
 
         'cron' => [
             'payment_page_cds_billing_update_cron',
+            'merchant_popular_products_cron',
             'capture_cron_for_b2b_payments',
             'settlement_cron_for_b2b_payments',
             'merchant_onboarding_crons',
