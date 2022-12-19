@@ -221,6 +221,9 @@ return [
         // enable product led onboarding
         'PRODUCT_LED_ONBOARDING' => env('PRODUCT_LED_ONBOARDING', ''),
 
+        // Left Nav revamp 
+        'LEFT_NAV_REVAMP' => env('LEFT_NAV_REVAMP', ''),
+        
         // payroll wdiget on dashboard
         'SHOW_PAYROLL_WIDGET_EXP' => env('SHOW_PAYROLL_WIDGET_EXP', ''),
 

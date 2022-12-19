@@ -1,0 +1,169 @@
+import React, { useEffect, useState } from 'react';
+import { withRouter, Link } from 'react-router-dom';
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
+import NavLinkItem from './components/NavLinkItem';
+import Divider from './components/Divider';
+import NavLinkProduct from './components/NavLinkProduct';
+import { COMMON_PRODUCTS, PRODUCTS_DATA, CUSTOMERS_PRODUCTS } from './utils/Products';
+import { fetchLeftNavItems as fetchNavigationItems } from 'merchant/reducers/leftNav';
+import { isOrgFeatureExist } from 'merchant/models/User';
+import ShowWhen from 'merchant/components/ShowWhen';
+import ActivationProgress from 'merchant/components/SidebarV2/components/ActivationProgress';
+import { RZP_LOGO_URL, ONBOARDING_STEPS_URL, KYC_URL, ACTIVATION_URL } from './constants/constants';
+import { getActiveTab, initializeRoutes } from './utils/href';
+import {
+  SidebarContainer,
+  SidebarSection,
+  Logo,
+  Items,
+  NavContent,
+  Navigation,
+  ExternalLink,
+} from './styled';
+import AcceptPaymentsModal from 'merchant/containers/Home/OnboardingCard/Instant/AcceptPaymentsModal';
+import { hideAcceptPaymentsModal } from 'merchant/reducers/home';
+import { Typo, Icon } from './components/NavLinkItem/styled';
+import { Routes, SidebarPropsInterface } from './typings';
+
+const SideBar = (props: SidebarPropsInterface): JSX.Element => {
+  const {
+    logoURL,
+    config,
+    user,
+    fetchLeftNavItems,
+    leftNavItems: { loading: isLoading, data },
+    org,
+    isMobile,
+  } = props;
+  const { location, history } = props;
+
+  const [routesInfo, setRoutesInfo] = useState<Routes>({});
+  const [activeTab, setActiveTab] = useState<string>('');
+  const isExternalRedirect = org?.external_redirect_url_text && org?.external_redirect_url;
+
+  useEffect(() => {
+    fetchLeftNavItems();
+  }, []);
+
+  const handleActivationClick = () => {
+    if (user.isOnboardingV2Enabled && isMobile) {
+      history.push(ONBOARDING_STEPS_URL);
+    } else if (user.isActivationFormFullView) {
+      history.push(KYC_URL);
+    } else {
+      history.push(ACTIVATION_URL);
+    }
+  };
+
+  useEffect(() => {
+    const routes = initializeRoutes(location, user);
+    setRoutesInfo(routes);
+    setActiveTab(getActiveTab(location));
+  }, [location.pathname]);
+
+  const commonNavLinkProps = {
+    routes: routesInfo,
+    activeTab,
+    user,
+  };
+
+  return (
+    <>
+      <SidebarContainer>
+        <SidebarSection>
+          <Link to="/dashboard">
+            <Logo src={logoURL || RZP_LOGO_URL} />
+          </Link>
+        </SidebarSection>
+        <ShowWhen additionalCondition={() => !isOrgFeatureExist('hide_activation_form')}>
+          <ActivationProgress
+            onSidebarActivationClick={handleActivationClick}
+            user={user}
+            config={config}
+          />
+        </ShowWhen>
+        <Navigation>
+          <NavContent>
+            <>
+              {' '}
+              <Items>
+                {COMMON_PRODUCTS.map((product, index) => (
+                  <NavLinkItem
+                    key={`${product.title}_${index}`}
+                    {...commonNavLinkProps}
+                    {...product}
+                    {...PRODUCTS_DATA[product.product_id]}
+                  />
+                ))}
+              </Items>
+              <Divider />
+              {data.map((each) => (
+                <React.Fragment key={each.section_name}>
+                  <NavLinkProduct
+                    heading={each.section_name}
+                    products={each.product_options}
+                    routes={routesInfo}
+                    activeTab={activeTab}
+                    loading={isLoading}
+                    user={user}
+                    {...each}
+                  />
+                  <Divider />
+                </React.Fragment>
+              ))}
+              <Items>
+                {CUSTOMERS_PRODUCTS.map((product, index) => (
+                  <NavLinkItem
+                    key={`${product.title}_${index}`}
+                    {...commonNavLinkProps}
+                    {...product}
+                    {...PRODUCTS_DATA[product.product_id]}
+                  />
+                ))}
+                <ShowWhen
+                  additionalCondition={() =>
+                    isOrgFeatureExist('enable_external_redirect') && isExternalRedirect
+                  }
+                >
+                  <ExternalLink
+                    href={org?.external_redirect_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Icon class="i i-external-link" />
+                    <Typo>{org?.external_redirect_url_text}</Typo>
+                  </ExternalLink>
+                </ShowWhen>
+              </Items>
+            </>
+          </NavContent>
+        </Navigation>
+      </SidebarContainer>
+      <AcceptPaymentsModal
+        isKLA={user.has_key_access}
+        shouldShow={props.showAcceptPayments}
+        onClose={props.hideAcceptPaymentsModal}
+      />
+    </>
+  );
+};
+
+const mapStateToProps = (state) => {
+  return {
+    user: state.session.user,
+    leftNavItems: state.leftNav,
+    showAcceptPayments: state.home.instantActivations.showAcceptPayments,
+    org: state.session.org,
+    isMobile: state.app.isMobileResolution,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators(
+    { fetchLeftNavItems: fetchNavigationItems, hideAcceptPaymentsModal },
+    dispatch,
+  );
+};
+
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(SideBar));

@@ -1738,6 +1738,10 @@ export default class User {
   get isProductLedOnboardingRZP() {
     return this.isProductLedOnboarding && this.isOrgRZP;
   }
+
+  get isLeftNavRevampEnabled() {
+    return getSplitzExperimentVariant('left_nav_revamp')?.variables?.result === 'on';
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

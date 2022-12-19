@@ -57,7 +57,7 @@ import rewardsReducer from 'merchant/reducers/checkoutRewards';
 import merchantReferralReducer from 'merchant/reducers/merchantReferral';
 import storefrontReducer from 'merchant/reducers/storefront';
 import apmFormReducer from 'merchant/reducers/apmForm/reducer';
-
+import leftNavReducer from 'merchant/reducers/leftNav';
 import {
   refundBatchesReducer,
   PaymentBatchIdsReducer,
@@ -256,4 +256,5 @@ export default combineReducers({
   apiStats: apiStatsReducer,
   websiteCompliance: websiteComplianceReducer,
   plugins: pluginReducer,
+  leftNav: leftNavReducer,
 });

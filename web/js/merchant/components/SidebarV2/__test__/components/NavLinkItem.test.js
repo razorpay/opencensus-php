@@ -1,0 +1,124 @@
+import React from 'react';
+import '@testing-library/jest-dom/extend-expect';
+import { render, screen, waitFor, userEvent } from 'test-utils';
+import NavLinkItem from 'merchant/components/SidebarV2/components/NavLinkItem';
+import * as analytics from 'common/utils/analytics';
+
+const paymentLinksInfo = {
+  title: 'Payment Links',
+  product_id: 'payment_links',
+  routes: {
+    payment_links: '/paymentlinks',
+  },
+  section: 'Payment Products',
+};
+
+const transactionsLinksInfo = {
+  title: 'Transactions',
+  product_id: 'transactions',
+  routes: {
+    transactions: '/payments',
+  },
+};
+
+const defaultProps = {
+  additionalCondition: () => true,
+  ...transactionsLinksInfo,
+};
+
+describe('NavLinkItem', () => {
+  const renderApp = ({ props, renderOptions = {} } = {}) =>
+    render(<NavLinkItem {...defaultProps} {...props} />, renderOptions);
+  const analyticsTrackMock = jest.spyOn(analytics, 'analyticsTrack');
+
+  test('should render title in navlink item', async () => {
+    renderApp();
+    await waitFor(() => {
+      expect(screen.getByText(transactionsLinksInfo.title)).toBeInTheDocument();
+    });
+  });
+
+  test('should render link and redirect when clicked', async () => {
+    const { history } = renderApp();
+
+    const link = await screen.findByRole('link');
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute('href', '/payments');
+    await userEvent.click(link);
+    expect(history.location.pathname).toEqual('/payments');
+  });
+
+  describe('Analytics on clicking link', () => {
+    test('should be called along with link title as section name', async () => {
+      renderApp({
+        renderOptions: {
+          historyOptions: { initialEntries: ['/profile'] },
+          path: '/profile',
+        },
+      });
+
+      const link = await screen.findByRole('link');
+      await userEvent.click(link);
+
+      expect(analyticsTrackMock).toHaveBeenCalledWith({
+        objectName: 'sidebar',
+        actionName: 'clicked',
+        screen: 'My Account',
+        toCleverTap: true,
+        properties: {
+          clickedElement: transactionsLinksInfo.title,
+          section: transactionsLinksInfo.title,
+          location: 'sidebar',
+          sidebar: 'v1/v2',
+        },
+      });
+    });
+
+    test('should be called along with section name when section name exists', async () => {
+      renderApp({
+        props: paymentLinksInfo,
+        renderOptions: {
+          historyOptions: { initialEntries: ['/profile'] },
+          path: '/profile',
+        },
+      });
+
+      const link = await screen.findByRole('link');
+      await userEvent.click(link);
+
+      expect(analyticsTrackMock).toHaveBeenCalledWith({
+        objectName: 'sidebar',
+        actionName: 'clicked',
+        screen: 'My Account',
+        toCleverTap: true,
+        properties: {
+          clickedElement: paymentLinksInfo.title,
+          section: paymentLinksInfo.section,
+          location: 'sidebar',
+          sidebar: 'v1/v2',
+        },
+      });
+    });
+  });
+
+  test('should render tags when available', async () => {
+    renderApp({
+      props: {
+        tags: ['New'],
+        routes: {},
+      },
+    });
+    await waitFor(() => {
+      expect(screen.getByText('New')).toBeInTheDocument();
+    });
+  });
+
+  test('should not render new tag even if other tags are added', () => {
+    renderApp({
+      props: {
+        tags: ['test'],
+      },
+    });
+    expect(screen.queryByText('New')).not.toBeInTheDocument();
+  });
+});

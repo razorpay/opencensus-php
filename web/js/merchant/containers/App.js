@@ -15,6 +15,7 @@ import Notifications from 'common/ui/Notifications';
 import LocalStorageService from 'common/utils/localStorage';
 import debounce from 'common/utils/debounce';
 import Sidebar from 'merchant/components/Sidebar';
+import SidebarV2 from 'merchant/components/SidebarV2';
 import HeaderNav from 'merchant/components/HeaderNav';
 import HighlightTestMode from 'merchant/components/HighlightTestMode';
 import Content from 'merchant/routes/Content';
@@ -1047,6 +1048,11 @@ class App extends Component {
     return found && found[1] ? found[1] : '';
   };
 
+  showSidebarV2 = () => {
+    const { user } = this.props;
+    return user.isOrgRZP && !isMobileDevice() && user.isLeftNavRevampEnabled && !user.isPartner();
+  };
+
   render() {
     const {
       user,
@@ -1068,6 +1074,12 @@ class App extends Component {
     if (this.state.isLoading || !user.isAuthenticated) {
       return null;
     }
+    const sidebarProps = {
+      user: user,
+      logoURL: org.main_logo_url,
+      config: config.config,
+      org_custom_code: org.custom_code,
+    };
 
     return (
       <Wrapper
@@ -1093,12 +1105,11 @@ class App extends Component {
                   showMobileNav={this.props.windowWidth < 950}
                   org={this.props.org}
                 />
-                <Sidebar
-                  user={user}
-                  logoURL={org.main_logo_url}
-                  config={config.config}
-                  org_custom_code={org.custom_code}
-                />
+                {this.showSidebarV2() ? (
+                  <SidebarV2 {...sidebarProps} />
+                ) : (
+                  <Sidebar {...sidebarProps} />
+                )}
               </React.Fragment>
             )}
 

@@ -440,7 +440,12 @@ export default {
     // prod experiment ids
     'KE6QIX5uyJrKOq',
   ],
-
+  left_nav_revamp: [
+    // beta experiment ids
+    'KpK9k86u44CxNg',
+    // prod experiment ids
+    'Kmd4oqDWnxSFe8',
+  ],
   show_payroll_widget_exp: [
     //beta experiment ids
     'KmA4axC7yCGMZe',

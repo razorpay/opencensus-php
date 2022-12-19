@@ -1,0 +1,216 @@
+import { isMobileResolution } from 'common/utils/rzp-utils';
+import { isOrgFeatureExist } from 'merchant/models/User';
+
+export const PRODUCTS_DATA = {
+  home: {
+    icon: 'i-chart',
+    additionalCondition: (user: any): boolean => user.isAllowedView('home'),
+  },
+  transactions: {
+    icon: 'i-repeat',
+    additionalCondition: (user: any): boolean => user.isAllowedMultiple('payments orders refunds'),
+  },
+  settlements: {
+    icon: 'i-done-all',
+    additionalCondition: (user: any): boolean =>
+      user.isAllowedView('settlements') && !user.findTag('i18_hide_settlements'),
+  },
+  settings: {
+    icon: 'i-settings',
+    additionalCondition: (user: any): boolean =>
+      user.isAllowedMultiple('webhooks applications configuration api_keys'),
+  },
+  developers: {
+    icon: 'i-developers developers-sidebar-icon',
+    additionalCondition: (user: any): boolean =>
+      !isMobileResolution() &&
+      user.isAllowedView('developers_console') &&
+      user.isDeveloperConsoleEnabled,
+  },
+  my_account: {
+    icon: 'i-account',
+    additionalCondition: (user: any): boolean =>
+      user.isAllowedMultiple('profile credits add_funds team referrals'),
+  },
+  reports: {
+    icon: 'i-books',
+    additionalCondition: (user: any): boolean =>
+      user.isAllowedView('reports') || user.isCareHealthOwner,
+  },
+  x_corporate_cards: {
+    icon: 'i-credit-card',
+    additionalCondition: (user: any): boolean => user.isCardsLOSEnabled,
+  },
+  loans: {
+    icon: 'i-rupee',
+    additionalCondition: (user: any): boolean => user.isAllowedView('loans') && user.isLoansEnabled,
+  },
+  working_capital_loans: {
+    icon: 'i-rupee',
+    additionalCondition: (user: any): boolean => user.isNonFldgLoansEnabled,
+  },
+  checkout_rewards: {
+    icon: 'i-rewards',
+    additionalCondition: (user: any): boolean =>
+      user.isAllowedView('checkoutrewards') && !user.findTag('i18_hide_checkoutrewards'),
+  },
+  offers: {
+    icon: 'i-offer',
+    additionalCondition: (user: any): boolean =>
+      user.isAllowedView('offers') && !user.findTag('i18_hide_offers'),
+  },
+  customers: {
+    icon: 'i-people',
+    additionalCondition: (user: any): boolean =>
+      user.isAllowedView('customers') && !user.findTag('i18_hide_customers'),
+  },
+  optimizer: {
+    icon: 'i-routing',
+    additionalCondition: (user: any): boolean =>
+      user.isOptimizerEnabled || user.isOptimizerOnboardingEnabled,
+  },
+  bbps: {
+    icon: 'i-chart',
+    additionalCondition: (user: any): boolean => user.isAllowedView('bbps') && user.isBbpsEnabled,
+  },
+  magic_checkout: {
+    icon: 'i-magic-checkout',
+    additionalCondition: (user: any): boolean => user.isMagicCheckoutEnabled,
+  },
+  smart_collect: {
+    icon: 'i-account-balance',
+    additionalCondition: (user: any): boolean =>
+      user.isAllowedView('virtual_accounts') && !user.findTag('i18_hide_virtual_accounts'),
+  },
+  qr_codes: {
+    icon: 'i-qr-code',
+    additionalCondition: (user: any): boolean =>
+      user.isAllowedView('qr_codes') && !user.findTag('i18_hide_qr_codes'),
+  },
+  subscriptions: {
+    icon: 'i-refresh',
+    additionalCondition: (user: any): boolean =>
+      user.isAllowedView('subscriptions') && !user.findTag('i18_hide_subscription'),
+    getHref: ({ routes, user }) =>
+      routes[user.isChargeAtWillEnabled ? 'chargeAtWill' : 'subscriptions'],
+  },
+  x_payroll: {
+    icon: 'i-razorpayx',
+    additionalCondition: (user: any): boolean => user.isShowPayrollWidgetEnabled && user.isOrgRZP,
+  },
+  x_banking: {
+    icon: 'i-razorpayx',
+    additionalCondition: (user: any): boolean => user.isShowRazorpayXWidgetEnabled && user.isOrgRZP,
+  },
+  route: {
+    icon: 'i-route',
+    additionalCondition: (user: any): boolean =>
+      user.isAllowedView('marketplace') && !user.findTag('i18_hide_marketplace'),
+  },
+  payment_button: {
+    icon: 'i-payment-button',
+    additionalCondition: (user: any): boolean =>
+      user.isAllowedMultiple('payment_buttons subscription_buttons') &&
+      (user.isPaymentButtonEnabledByRazorX || user.isSubscriptionButtonEnabled) &&
+      !user.findTag('i18_hide_payment_buttons'),
+  },
+  api_keys: {
+    icon: 'i-api-keys-plugins',
+    additionalCondition: (user: any): boolean =>
+      (user.isProductLedOnboardingRZP || user.isApiKeysRevampEnabled) && user.activated,
+  },
+  stores: {
+    icon: 'i-store-product',
+    additionalCondition: (user: any): boolean =>
+      user.isAllowedView('stores') && user.isStoresEnabled && !user.findTag('i18_hide_stores'),
+  },
+  payment_pages: {
+    icon: 'i-payment-pages',
+    additionalCondition: (user: any): boolean =>
+      user.isAllowedView('payment_pages') && !user.findTag('i18_hide_payment_pages'),
+  },
+  payment_links: {
+    icon: 'i-link',
+    additionalCondition: (user: any): boolean =>
+      user.isAllowedView('payment_links') && !user.findTag('i18_hide_payment_links'),
+  },
+  cash_advance: {
+    icon: 'i-star',
+    additionalCondition: (user: any): boolean =>
+      user.isAllowedView('cash_advance') &&
+      (user.isLOCEnabled ||
+        user.isCashAdvanceStage2Enabled ||
+        user.isWithdrawFeatureEnabled ||
+        user.isCashOnCardEnabled),
+  },
+  invoices: {
+    icon: 'i-notes',
+    additionalCondition: (user: any): boolean =>
+      user.isAllowedView('invoices') && !user.findTag('i18_hide_invoices'),
+  },
+  app_store: {
+    icon: 'i-app-store',
+    additionalCondition: (): boolean => !isOrgFeatureExist('hide_razorpay_text_link'),
+  },
+};
+
+export const COMMON_PRODUCTS = [
+  {
+    title: 'Home',
+    product_id: 'home',
+    tags: [],
+  },
+  {
+    title: 'Transactions',
+    product_id: 'transactions',
+    tags: [],
+  },
+  {
+    title: 'Settlements',
+    product_id: 'settlements',
+    tags: [],
+  },
+  {
+    title: 'Reports',
+    product_id: 'reports',
+    tags: [],
+  },
+  {
+    title: 'Account',
+    product_id: 'my_account',
+    tags: [],
+  },
+  {
+    title: 'Settings',
+    product_id: 'settings',
+    tags: [],
+  },
+];
+
+export const CUSTOMERS_PRODUCTS = [
+  {
+    title: 'Customers',
+    product_id: 'customers',
+    tags: [],
+  },
+  {
+    title: 'Offers',
+    product_id: 'offers',
+    tags: [],
+  },
+  {
+    title: 'API Keys and Plugins',
+    product_id: 'api_keys',
+    tags: [],
+  },
+  {
+    title: 'Developers',
+    product_id: 'developers',
+    tags: [],
+  },
+  {
+    title: 'App Store',
+    product_id: 'app_store',
+    tags: ['New'],
+  },
+];

@@ -150,7 +150,7 @@ function MerchantNavLinks(props) {
 
       <MainNavLink
         label="API Keys & Plugins"
-        icon="i i-api-keys-plugins"
+        icon="i i-api-keys-plugins text-tertiary"
         type="product"
         to={routes.apiKeys}
         additionalCondition={(currentUser) =>
@@ -163,7 +163,7 @@ function MerchantNavLinks(props) {
       <MainNavLink
         type="product"
         label="Payment Button"
-        icon="i i-payment-button"
+        icon="i i-payment-button text-glow"
         to={
           user.isPaymentButtonEnabledByRazorX ? routes.paymentbuttons : routes.subscription_buttons
         }

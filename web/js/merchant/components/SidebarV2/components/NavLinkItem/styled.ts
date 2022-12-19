@@ -1,0 +1,64 @@
+import { Link } from 'react-router-dom';
+import styled, { css } from 'styled-components';
+
+export const LinkItem = styled(Link)`
+  height: 29px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  line-height: 21px;
+  color: #b4b6bc;
+  position: relative;
+  ${({ isActive }) =>
+    isActive &&
+    css`
+      color: #ffffff;
+      background: #000000;
+      &:before {
+        content: '';
+        width: 3px;
+        height: 100%;
+        border-radius: 0px 2px 2px 0px;
+        background: #ffffff;
+        position: absolute;
+      }
+    `}
+  &:focus {
+    color: #ffffff;
+  }
+  &:hover {
+    color: #ffffff;
+    ${({ isActive }) =>
+      !isActive &&
+      css`
+        background: rgba(255, 255, 255, 0.08);
+      `}
+  }
+`;
+
+export const Typo = styled.span`
+  font-weight: 400;
+  font-size: 14px;
+`;
+
+export const Icon = styled.i`
+  display: flex;
+  margin: 0 12px 0 16px;
+  max-width: 13px;
+`;
+
+export const NewTag = styled.span`
+  width: 30px;
+  height: 14px;
+  background: #60e380;
+  border-radius: 2px;
+  font-weight: 700;
+  font-size: 10px;
+  line-height: 12px;
+  text-transform: uppercase;
+  color: #ffffff;
+  text-align: center;
+  position: absolute;
+  right: 16px;
+`;
