@@ -8526,6 +8526,14 @@ trait Authorize
             return false;
         }
 
+        // Show the OTP page for Lazypay in Test Mode
+        if ((isset($this->mode) === true) and ($this->mode === Mode::TEST) and ($payment->isPayLater() === true) and
+            (($wallet === PayLater::LAZYPAY)))
+        {
+            return true;
+        }
+
+
         // Only wallets have otp flow currently.
         // Plus, only power wallets support otp flow.
         if (($payment->isWallet() === false) or
