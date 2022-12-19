@@ -197,10 +197,10 @@ export const kycModalContent = (args = {}) => {
           <div>
             Our compliance team and banking partners are reviewing your KYC and your payments have
             been temporarily paused. We will review your KYC and reach out to you for any
-            clarifications within 3-4 days.
+            clarifications. You may experience a delay.
             <br />
             Meanwhile you can generate your Terms and Conditons page. Your KYC review might get
-            delayed in case of delays in generating TnC
+            delayed in case of delays in generating TnC.
           </div>
         ),
         background: 'pending',
@@ -250,7 +250,8 @@ export const kycModalContent = (args = {}) => {
             Our compliance team and banking partners are reviewing your KYC and your payments have
             been temporarily paused.
             <br />
-            We will review your KYC and reach out to you for any clarifications within 3-4 days.
+            We will review your KYC and reach out to you for any clarifications. You may experience
+            a delay.
           </div>
         ),
         background: 'pending',
@@ -282,8 +283,8 @@ export const kycModalContent = (args = {}) => {
         subtitle: 'Payment limits have been removed',
         body: (
           <div>
-            Your payment limits have been removed and KYC is under review. It usually takes 3-4
-            business days. We will reach out to you in case we need any clarifications
+            Your payment limits have been removed and KYC is under review. We will reach out to you
+            in case we need any clarifications. You may experience a delay.
             <br />
             Meanwhile you can generate your Terms and Conditons page. Your KYC review might get
             delayed in case of delays in generating TnC
@@ -333,8 +334,8 @@ export const kycModalContent = (args = {}) => {
         subtitle: 'Payment limits have been removed',
         body: (
           <div>
-            Your payment limits have been removed and KYC is under review. KYC review process
-            usually takes 3-4 working days.
+            Your payment limits have been removed and KYC is under review. You may experience a
+            delay.
             <br />
             We will notify you if we require any clarifications on your KYC.
           </div>
@@ -368,8 +369,8 @@ export const kycModalContent = (args = {}) => {
         subtitle: 'Our team is reviewing your KYC details',
         body: (
           <div>
-            Your KYC details are under review. It usually takes 3-4 business days. We will reach out
-            to you in case we need any clarifications
+            Your KYC details are under review. We will reach out to you in case we need any
+            clarifications. You may experience a delay.
             <br />
             Meanwhile you can generate your Terms and Conditons page. Your KYC review might get
             delayed in case of delays in generating TnC
@@ -410,7 +411,7 @@ export const kycModalContent = (args = {}) => {
         subtitle: 'Our team is reviewing your KYC details',
         body: (
           <div>
-            KYC review process usually takes 3-4 working days.
+            You may experience a delay in KYC review.
             <br />
             We will notify you if we require any clarifications on your KYC.
           </div>

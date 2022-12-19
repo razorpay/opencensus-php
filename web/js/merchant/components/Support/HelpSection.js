@@ -142,6 +142,7 @@ const HelpSection = ({ user, history, org, fetchTicketsRaisedByAgents: _fetchTic
             activation_status: user.activation_status,
             business_type: user?.business_type,
             business_website: user?.business_website,
+            isTransacted: user?.isTransacted || false,
           }}
           onError={handleError}
           track={analyticsTrack}

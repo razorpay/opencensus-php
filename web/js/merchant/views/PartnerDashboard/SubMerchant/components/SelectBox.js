@@ -1,9 +1,10 @@
-import Input, { Description, Label } from 'common/new-ui/Input';
+import React from 'react';
+import { Description, Label } from 'common/new-ui/Input';
 import { classList } from 'common/utils/rzp-utils';
 
 export default class SelectBox extends React.Component {
   static defaultProps = {
-    onClick: function () {},
+    onClick() {},
   };
 
   constructor(props) {
@@ -26,10 +27,8 @@ export default class SelectBox extends React.Component {
     }
 
     this.setState(
-      {
-        checked: !this.state.checked,
-      },
-      function () {
+      (prevState) => ({ checked: !prevState.checked }),
+      () => {
         this.props.onClick(this.state.checked);
       },
     );
@@ -51,6 +50,7 @@ export default class SelectBox extends React.Component {
         className={classList(
           'SelectBox',
           'SelectBox-partner-dashboard',
+          props.disabled ? 'SelectBox-partner-dashboard-disabled' : '',
           props.className,
           checked && 'checked',
         )}
@@ -61,6 +61,11 @@ export default class SelectBox extends React.Component {
           <div className="SelectBox-content">
             <Label text={props.label} />
             <Description text={props.description} />
+            {props.isMaintenance && (
+              <div className="maintenance-text">
+                Razorpay Payments is under scheduled maintenance. Apologies for the inconvenience.
+              </div>
+            )}
           </div>
 
           <div className="SelectBox-action">

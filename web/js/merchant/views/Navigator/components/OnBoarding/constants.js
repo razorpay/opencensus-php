@@ -12,7 +12,7 @@ export const FEATURES_DATA = [
     // prettier-ignore
     desc:
       // eslint-disable-next-line prettier/prettier
-      'Save on transaction costs by routing across gateways by payment method, value and any other factor',
+      'Save on transaction costs by routing across gateways by payment method, value and any other factor'
   },
   {
     icon: 'https://razorpay.com/assets/optimizer/fold-5/card-3.png',
@@ -25,7 +25,7 @@ export const FEATURES_DATA = [
     // prettier-ignore
     desc:
       // eslint-disable-next-line prettier/prettier
-      'Get all your settlement reports and success rate data from all your payment gateways in a single click',
+      'Get all your settlement reports and success rate data from all your payment gateways in a single click'
   },
 ];
 

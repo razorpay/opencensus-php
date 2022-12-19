@@ -49,7 +49,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
       addMode: ADD_MODE.single,
       bulkContactsCount: 0,
       step: 1,
-      merchantType: PRODUCT_TYPE.PG,
+      merchantType: PRODUCT_TYPE.X,
       merchantEmail: '',
       merchantName: '',
       merchantContact: '',
@@ -525,6 +525,8 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
                       });
                     }}
                     checked={merchantType === PRODUCT_TYPE.PG}
+                    disabled
+                    isMaintenance
                   />
                   <SelectBox
                     label="RazorpayX"

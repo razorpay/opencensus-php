@@ -6,7 +6,7 @@ import * as LocalStorageService from 'common/utils/localStorage';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import SupportButton from 'merchant/components/Home/SupportButton';
 
-import { trackGoToActivationFromError } from '../../../containers/Home/ga';
+import { trackGoToActivationFromError } from 'merchant/containers/Home/ga';
 import Button from 'common/new-ui/Button';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import GenerateTnCPage from 'merchant/components/Home/GenerateTnCPage';
@@ -250,7 +250,7 @@ export default class InstantActivationAnnouncements extends Component {
             <div>
               Our compliance team and banking partners are reviewing your KYC and your payments have
               been temporarily paused. We will review your KYC and reach out to you for any
-              clarifications within 3-4 days.
+              clarifications. You may experience a delay.
             </div>
           );
           break;
@@ -266,8 +266,8 @@ export default class InstantActivationAnnouncements extends Component {
             <div class="announcement-container">
               <div class="announcement-info">
                 Our compliance team and banking partners are reviewing your KYC and your payments
-                have been temporarily paused. We will reach out to you for any clarifications within
-                3-4 days. Meanwhile you can generate your Tnc page{' '}
+                have been temporarily paused. We will reach out to you for any clarifications. You
+                may experience a delay. Meanwhile you can generate your Tnc page
               </div>
               <div className="big-circle-seprator" />
               <Button.Secondary
@@ -305,8 +305,8 @@ export default class InstantActivationAnnouncements extends Component {
           content = (
             <div>
               You can accept unlimited payments now. Settlements will be enabled after we
-              successfully review your KYC details. It usually takes 3-4 business days. We will
-              notify you if we require any clarifications on your KYC
+              successfully review your KYC details. We will notify you if we require any
+              clarifications on your KYC. You may experience a delay.
             </div>
           );
           break;
@@ -323,8 +323,8 @@ export default class InstantActivationAnnouncements extends Component {
             <div class="announcement-container">
               <div class="announcement-info">
                 You can accept unlimited payments now. Settlements will be enabled after we
-                successfully review your KYC details. It usually takes 3-4 business days. Generate
-                TnC page at the earliest, failing which KYC review might get delayed{' '}
+                successfully review your KYC details. You may experience a delay. Generate TnC page
+                at the earliest, failing which KYC review might get delayed
               </div>
               <div className="big-circle-seprator" />
               <Button.Secondary
@@ -361,8 +361,8 @@ export default class InstantActivationAnnouncements extends Component {
           title = <div>KYC Under Review</div>;
           content = (
             <div>
-              We are reviewing your KYC details. It usually takes 3-4 business days. We will notify
-              you if we require any clarifications on your KYC
+              We are reviewing your KYC details. We will notify you if we require any clarifications
+              on your KYC. You may experience a delay.
             </div>
           );
           break;
@@ -499,7 +499,7 @@ export default class InstantActivationAnnouncements extends Component {
             <div>
               Our compliance team and banking partners are reviewing your KYC and your funds have
               been temporarily put on hold. We will review your KYC and reach out to you for any
-              clarifications within 3-4 days
+              clarifications. You may experience a delay.
             </div>
           );
           break;

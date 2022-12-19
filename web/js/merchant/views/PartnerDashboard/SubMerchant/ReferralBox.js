@@ -4,7 +4,7 @@ import ModalHeader from 'common/ui/ModalHeader';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import SelectBox from 'merchant/views/PartnerDashboard/SubMerchant/components/SelectBox';
 import ShareReferralLink from 'assets/onboarding/share-referral-link.png';
-import Image from '../../../../common/ui/Image';
+import Image from 'common/ui/Image';
 
 export default function ReferralBox({
   user,
@@ -14,7 +14,7 @@ export default function ReferralBox({
   partnerID,
   partnershipForXEnabled,
 }) {
-  const [productType, setProductType] = useState('');
+  const [productType, setProductType] = useState(PRODUCT_TYPE.X);
   const pgReferralLink = referralData?.[PRODUCT_TYPE.PG]?.url ?? '';
   const bankingReferralLink = referralData?.[PRODUCT_TYPE.X]?.url ?? '';
 
@@ -93,6 +93,8 @@ export default function ReferralBox({
           description="Invite affiliates to use Razorpay Payment products to collect payments"
           onClick={() => setProductType(PRODUCT_TYPE.PG)}
           checked={productType === PRODUCT_TYPE.PG}
+          disabled
+          isMaintenance
         >
           {productType === PRODUCT_TYPE.PG ? (
             <SocialShareGroup

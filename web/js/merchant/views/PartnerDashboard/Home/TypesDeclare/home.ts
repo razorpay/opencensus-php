@@ -44,6 +44,7 @@ export interface ProductListItemT {
   ctaText: string;
   title: string;
   subTitle: string | JSX.Element;
+  disabled: boolean;
 }
 
 interface openModalArgs {

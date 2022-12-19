@@ -44,6 +44,7 @@ export const ReferralGuide: React.FC<ReferralGuideT> = ({
       subTitle: "Refer your clients to leading Razorpay's payment products",
       ctaText: '+ Add New Client',
       onClickCTA: () => handleReferClient('referral-guide-pg', PRODUCT_TYPE.PG),
+      disabled: true,
     },
     {
       icon: bankingIcon,
@@ -56,6 +57,7 @@ export const ReferralGuide: React.FC<ReferralGuideT> = ({
       ),
       ctaText: '+ Add New Client',
       onClickCTA: () => handleReferClient('referral-guide-x', PRODUCT_TYPE.X),
+      disabled: false,
     },
   ];
 

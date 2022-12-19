@@ -69,10 +69,10 @@ export const UNDER_REVIEW = {
   payment_enable_title: 'KYC is under review and payment limit has been removed',
   partial_match_title: 'KYC is under review, payments have been temporarily paused',
   description:
-    "Your documents and KYC detail are under review. It's now our responsibility to make sure your documents are processed. It usually takes 3-4 working days for our team to review your documents. We will reach out to you if we need any clarification.",
+    "Your documents and KYC detail are under review. It's now our responsibility to make sure your documents are processed. We will reach out to you if we need any clarification. You may experience a delay.",
   partial_match_description:
-    'Our compliance team and banking partners are reviewing your KYC and your payments have been temporarily paused. We will review your KYC and reach out to you for any clarifications within 3-4 days.',
+    'Our compliance team and banking partners are reviewing your KYC and your payments have been temporarily paused. We will reach out to you for any clarifications. You may experience a delay.',
   payment_enable_description:
-    'Your payment limits have been removed and KYC is under review. KYC review process usually takes 3-4 working days. We will notify you if we require any clarifications on your KYC.',
+    'Your payment limits have been removed and KYC is under review. We will notify you if we require any clarifications on your KYC. You may experience a delay.',
   buttonText: 'Generate Terms And Conditions',
 };

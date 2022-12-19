@@ -1,5 +1,6 @@
 import React from 'react';
-import { ProductListItemT } from '../../TypesDeclare/home';
+import { ProductListItemT } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
+import { classList } from 'common/utils/rzp-utils';
 
 const ProductListItem = ({
   icon,
@@ -7,6 +8,7 @@ const ProductListItem = ({
   ctaText,
   title,
   subTitle,
+  disabled,
 }: ProductListItemT): JSX.Element => {
   return (
     <div className="product-list-item">
@@ -19,7 +21,7 @@ const ProductListItem = ({
           <span className="content-sub-title">{subTitle}</span>
         </div>
         <div className="product-cta">
-          <button type="button" className="product-cta__content">
+          <button type="button" className={classList('product-cta__content')} disabled={disabled}>
             {ctaText}
           </button>
         </div>

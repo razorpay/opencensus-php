@@ -37,12 +37,12 @@ export const ACTIVATION_STATUS_UNDER_REVIEW = {
   new_flow: {
     title: 'Payment limits have been removed',
     description_with_payment_enable:
-      'You can accept unlimited payments now. Settlements will be enabled after we successfully review your KYC details. It usually takes 3-4 working days. We will notify you if we require any clarifications on your KYC.',
+      'You can accept unlimited payments now. Settlements will be enabled after we successfully review your KYC details. We will notify you if we require any clarifications on your KYC. You may experience a delay.',
     partial_match_title: 'Payments temporarily paused',
     partial_match_desc:
-      'Our compliance team and banking partners are reviewing your KYC and your payments have been temporarily paused. We will review your KYC and reach out to you for any clarifications within 3-4 days.',
+      'Our compliance team and banking partners are reviewing your KYC and your payments have been temporarily paused. We will review your KYC and reach out to you for any clarifications. You may experience a delay.',
     post_nc_description:
-      "Your documents and KYC detail are under review. It's now our responsibility to make sure your documents are processed. It usually takes 3-4 working days for our team to review your documents. We will reach out to you if we need any clarification.",
+      "Your documents and KYC detail are under review. It's now our responsibility to make sure your documents are processed. We will reach out to you if we need any clarification. You may experience a delay.",
   },
 };
 
