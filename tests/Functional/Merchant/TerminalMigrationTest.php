@@ -2420,6 +2420,24 @@ class TerminalMigrationTest extends TestCase
         $this->assertEquals($terminal->getId(), $terminal2->getId());
     }
 
+    public function testFindByFpxGatewayAndTerminalData()
+    {
+        DB::table('terminals')->delete();
+
+        $terminal = $this->fixtures->create(
+            'terminal', [
+            'merchant_id' => '10000000000000',
+            'gateway' => 'fpx'
+        ]);
+
+        $terminal2 = $this->terminalRepository->findByGatewayAndTerminalData('fpx');
+
+        // if gateway is fpx, then fpx is true
+        $this->assertEquals(true, $terminal2->fpx);
+
+        $this->assertEquals($terminal->getId(), $terminal2->getId());
+    }
+
     public function testSetTerminalBanksOnTerminalService()
     {
         DB::table('terminals')->delete();

@@ -179,6 +179,7 @@ class Validator extends Base\Validator
         Payment\Gateway::INDUSIND_DEBIT_EMI,
         Payment\Gateway::HDFC_EZETAP,
         Payment\Gateway::AXIS_TOKENHQ,
+        Payment\Gateway::FPX,
     ];
 
     protected static $createValidators = [
@@ -2742,6 +2743,24 @@ class Validator extends Base\Validator
         Entity::TYPE                                            => 'sometimes|array',
         Entity::TYPE . Type::DIRECT_SETTLEMENT_WITH_REFUND      => 'sometimes|in:1',
         Entity::TYPE . Type::NON_RECURRING                      => 'sometimes|in:1',
+    ];
+
+    protected static $fpxCreateTerminalRules = [
+        Entity::GATEWAY                                         => 'required|in:fpx',
+        Entity::GATEWAY_MERCHANT_ID                             => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2                            => 'required|string',
+        Entity::STATUS                                          => 'sometimes|in:created,pending,activated,deactivated,failed',
+        Entity::CURRENCY                                        => 'sometimes|array',
+        Entity::PROCURER                                        => 'sometimes',
+    ];
+
+    protected static $fpxEditTerminalRules = [
+        Entity::GATEWAY                                         => 'sometimes|in:fpx',
+        Entity::GATEWAY_MERCHANT_ID                             => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2                            => 'sometimes|string',
+        Entity::STATUS                                          => 'sometimes|in:created,pending,activated,deactivated,failed',
+        Entity::CURRENCY                                        => 'sometimes|array',
+        Entity::PROCURER                                        => 'sometimes',
     ];
 
     private static $gatewaysWithCommonIndentifiersExceptGatewayTerminalId = [

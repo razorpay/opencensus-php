@@ -98,6 +98,7 @@ class Entity extends Base\PublicEntity
     const CRED                          = 'cred';
     const APP                           = 'app';
     const OFFLINE                       = 'offline';
+    const FPX                           = 'fpx';
 
     // Used for allowing gateway level changes for corporate netbanking payments.
     const CORPORATE                     = 'corporate';
@@ -215,7 +216,6 @@ class Entity extends Base\PublicEntity
         self::PLAN_ID,
         self::APP,
         self::OFFLINE,
-
     ];
 
     protected $public = [
@@ -293,6 +293,7 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_TYPE,
         self::CREATED_AT,
         self::OFFLINE,
+        self::FPX,
     ];
 
     protected $hidden = [
@@ -412,6 +413,7 @@ class Entity extends Base\PublicEntity
     protected $appends = [
         self::SHARED,
         self::BANKING_TYPES,
+        self::FPX,
     ];
 
     protected $publicSetters = [
@@ -419,6 +421,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::MPAN,
     ];
+
 
     /**
      * {@inheritDoc}
@@ -584,6 +587,18 @@ class Entity extends Base\PublicEntity
         }
 
         return ((array) $currency);
+    }
+
+    protected function getFpxAttribute()
+    {
+        if ($this->getGateway() == "fpx")
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     /**

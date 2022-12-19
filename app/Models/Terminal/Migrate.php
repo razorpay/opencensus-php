@@ -105,6 +105,7 @@ trait Migrate
             Entity::SHARED,
             Entity::USED_COUNT,
             Entity::NOTES,
+            Entity::FPX,
             ];
 
         foreach (array_keys($originalTerminalArray) as $attribute)

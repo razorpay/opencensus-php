@@ -125,7 +125,7 @@ class Entity extends Base\PublicEntity
         self::ADDITIONAL_WALLETS,
         self::COD,
         self::OFFLINE,
-        self::FPX
+        self::FPX,
     ];
 
     protected $visible = [
