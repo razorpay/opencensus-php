@@ -41,6 +41,7 @@ class Constants
 
     const P2P_UPI_SHARP                                     = 'p2p_upi_sharp';
     const P2P_UPI_AXIS                                      = 'p2p_upi_axis';
+    const P2P_UPI_AXIS_OLIVE                                = 'p2p_upi_axis_olive';
 
     // ------------------ DEVICE TOKEN ------------------
 
@@ -86,8 +87,15 @@ class Constants
     const RZP_AXIS                                          = 'rzpaxis';
     const NORZP_AXIS                                        = 'norzpaxis';
 
+    const RAZOR_AXIS_OLIVE                                  = 'razoraxisolive';
+    const RZP_AXIS_OLIVE                                    = 'rzpaxisolive';
+    const NORZP_AXIS_OLIVE                                  = 'norzpaxisolive';
+
     // Clients
     const CLIENT_1_RAZORAXIS_MER1                           = 'CL01TestRzAxis';
     const CLIENT_2_RAZORAXIS_MER2                           = 'CL02DemoRzAxis';
     const CLIENT_1_RAZORSHARP_MER1                          = 'CL01ShrdRzShrp';
+
+    const CLIENT_3_RAZORSHARP_MER1                          = 'CL03TestRzAxis';
+    const CLIENT_4_RAZORSHARP_MER1                          = 'CL04TestRzAxis';
 }

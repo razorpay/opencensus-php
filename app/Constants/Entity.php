@@ -437,6 +437,7 @@ class Entity
     // P2P Gateways
     const P2P_UPI_AXIS           = 'p2p_upi_axis';
     const P2P_UPI_SHARP          = 'p2p_upi_sharp';
+    const P2P_UPI_AXIS_OLIVE     = 'p2p_upi_axis_olive';
 
     // Tax and Tax Groups
     const TAX                   = 'tax';
@@ -1329,6 +1330,7 @@ class Entity
 
         self::P2P_UPI_SHARP         => \RZP\Gateway\P2p\Upi::class,
         self::P2P_UPI_AXIS          => \RZP\Gateway\P2p\Upi::class,
+        self::P2P_UPI_AXIS_OLIVE    => \RZP\Gateway\P2p\Upi::class,
 
         self::COMMISSION            => \RZP\Models\Partner\Commission::class,
         self::COMMISSION_COMPONENT => \RZP\Models\Partner\Commission\Component::class,

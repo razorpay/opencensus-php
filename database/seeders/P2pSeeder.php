@@ -280,6 +280,9 @@ class P2pSeeder extends Seeder
                 Constants::RAZOR_AXIS,
                 Constants::RZP_AXIS,
                 Constants::NORZP_AXIS,
+                Constants::RAZOR_AXIS_OLIVE,
+                Constants::RZP_AXIS_OLIVE,
+                Constants::NORZP_AXIS_OLIVE,
             ])->delete();
 
         P2p\Vpa\Handle\Entity::factory()->create(
@@ -417,6 +420,30 @@ class P2pSeeder extends Seeder
                 'username'              => Constants::CUSTOMER_2_VPA_2_AXIS,
                 'bank_account_id'       => null,
             ]);
+        P2p\Vpa\Handle\Entity::factory()->create(
+            [
+                'code'                  => Constants::RAZOR_AXIS_OLIVE,
+                'acquirer'              => Constants::P2P_UPI_AXIS_OLIVE,
+                'bank'                  => 'ARZP',
+                'active'                => true,
+            ]);
+
+        P2p\Vpa\Handle\Entity::factory()->create(
+            [
+                'code'                  => Constants::RZP_AXIS_OLIVE,
+                'acquirer'              => Constants::P2P_UPI_AXIS_OLIVE,
+                'bank'                  => 'BRZP',
+                'active'                => true,
+            ]);
+
+        P2p\Vpa\Handle\Entity::factory()->create(
+            [
+                'code'                  => Constants::NORZP_AXIS_OLIVE,
+                'acquirer'              => Constants::P2P_UPI_AXIS_OLIVE,
+                'bank'                  => 'CRZP',
+                'active'                => false,
+            ]);
+
     }
 
     private function seedClients()
@@ -427,6 +454,8 @@ class P2pSeeder extends Seeder
                 Constants::CLIENT_1_RAZORAXIS_MER1,
                 Constants::CLIENT_2_RAZORAXIS_MER2,
                 Constants::CLIENT_1_RAZORSHARP_MER1,
+                Constants::CLIENT_3_RAZORSHARP_MER1,
+                Constants::CLIENT_4_RAZORSHARP_MER1,
             ])->forceDelete();
 
         P2p\Client\Entity::factory()->create([
@@ -472,6 +501,32 @@ class P2pSeeder extends Seeder
             'handle'         => Constants::RAZOR_SHARP,
             'client_type'    => 'merchant',
             'client_id'      => Constants::TEST_MERCHANT,
+        ]);
+
+        P2p\Client\Entity::factory()->create([
+                 'id'             => Constants::CLIENT_3_RAZORSHARP_MER1,
+                 'handle'         => Constants::RAZOR_AXIS_OLIVE,
+                 'client_type'    => 'merchant',
+                 'client_id'      => Constants::TEST_MERCHANT,
+                 'gateway_data'        => [
+                     'merchantId'        => 'RAZORPAYAGG' ,
+                     'merchantChannelId' => 'OLIVEAPP',
+                     'mcc'               => '7299',
+                     "subMerchantId"     => "OLIVE",
+                 ],
+             ]);
+
+        P2p\Client\Entity::factory()->create([
+             'id'             => Constants::CLIENT_4_RAZORSHARP_MER1,
+             'handle'         => Constants::RAZOR_AXIS_OLIVE,
+             'client_type'    => 'merchant',
+             'client_id'      => Constants::TEST_MERCHANT,
+             'gateway_data'        => [
+                 'merchantId'        => 'RAZORPAYAGG' ,
+                 'merchantChannelId' => 'OLIVEAPP',
+                 'mcc'               => '7299',
+                 "subMerchantId"     => "OLIVE",
+             ],
         ]);
     }
 }

@@ -21,7 +21,7 @@ class AdminTest extends TestCase
     {
         $vpa = $this->getEntities('p2p_handle', [], true);
 
-        $this->assertCount(6, $vpa['items']);
+        $this->assertCount(9, $vpa['items']);
     }
 
     public function testAdminAuthUpiTransactions()
