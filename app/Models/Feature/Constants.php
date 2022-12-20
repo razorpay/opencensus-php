@@ -2370,7 +2370,9 @@ class Constants
         self::ROUTE_NO_DOC_KYC                => true,
         \RZP\Services\Dcs\Features\Constants::RefundEnabled => true,  // Example Feature for DCS
         \RZP\Services\Dcs\Features\Constants::DisableAutoRefund => true,  // Example Feature for DCS
-        \RZP\Services\Dcs\Features\Constants::EligibilityEnabled => true,  // Example Feature for DCS
+        \RZP\Services\Dcs\Features\Constants::EligibilityEnabled => true,
+        \RZP\Services\Dcs\Features\Constants::EmailOptionalOnCheckout => true,
+        \RZP\Services\Dcs\Features\Constants::ShowEmailOnCheckout => true,
         self::ONE_CC_ADDRESS_SYNC_OFF         => true,
         self::REDUCE_OD_BALANCE_FOR_CA        => true,
         self::PUSH_PROVISIONING_LIVE          => true
@@ -3268,6 +3270,16 @@ class Constants
             'display_name'  => 'Feature to enable Eligibility api flow',
             'documentation' => '',
         ],
+        \RZP\Services\Dcs\Features\Constants::ShowEmailOnCheckout => [
+            'feature'       => \RZP\Services\Dcs\Features\Constants::ShowEmailOnCheckout,
+            'display_name'  => 'Show email on std/hosted checkout',
+            'documentation' => '',
+        ],
+        \RZP\Services\Dcs\Features\Constants::EmailOptionalOnCheckout => [
+            'feature'       => \RZP\Services\Dcs\Features\Constants::EmailOptionalOnCheckout,
+            'display_name'  => 'Email optional on std/hosted checkout',
+            'documentation' => '',
+        ],
         self::QR_CUSTOM_TXN_NAME => [
             'feature'       => self::QR_CUSTOM_TXN_NAME,
             'display_name'  => 'QR Payment custom notes',
@@ -3319,7 +3331,9 @@ class Constants
         self::CRED_MERCHANT_CONSENT,
         self::MISSED_ORDERS_PLINK,
         self::DISABLE_COLLECT_CONSENT,
-        self::CARD_MANDATE_SKIP_PAGE
+        self::CARD_MANDATE_SKIP_PAGE,
+        \RZP\Services\Dcs\Features\Constants::ShowEmailOnCheckout,
+        \RZP\Services\Dcs\Features\Constants::EmailOptionalOnCheckout,
     ];
 
     /*

@@ -12,6 +12,8 @@ class Constants
     const RefundEnabled = 'refund_enabled';
     const DisableAutoRefund = 'disable_auto_refund';
     const EligibilityEnabled = 'eligibility_enabled';
+    const ShowEmailOnCheckout = 'show_email_on_checkout';
+    const EmailOptionalOnCheckout = 'email_optional_oncheckout';
 
     /**
      * Stores the mapping of the features to their corresponding dcs keys
@@ -19,7 +21,9 @@ class Constants
     public static $featureToDCSKeyMapping = [
         self::RefundEnabled => "example/pg/merchant/refund/Features",
         self::DisableAutoRefund => "example/pg/merchant/refund/Features",
-        self::EligibilityEnabled => "rzp/pg/merchant/affordability/EligibilityFeatures"
+        self::EligibilityEnabled => "rzp/pg/merchant/affordability/EligibilityFeatures",
+        self::ShowEmailOnCheckout => "rzp/pg/merchant/checkout/features/email/v1/EmailFieldCustomizationFeatures",
+        self::EmailOptionalOnCheckout => "rzp/pg/merchant/checkout/features/email/v1/EmailFieldCustomizationFeatures",
     ];
 
     /**
@@ -27,6 +31,8 @@ class Constants
      */
     public static $dcsNewFeatures = [
         self::EligibilityEnabled,
+        self::EmailOptionalOnCheckout,
+        self::ShowEmailOnCheckout,
     ];
 
     public static function isShadowFeature($variant)

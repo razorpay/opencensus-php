@@ -7,6 +7,7 @@ use Config;
 use Carbon\Carbon;
 use Conner\Tagging\Taggable;
 use Razorpay\Trace\Logger;
+use RZP\Services\Dcs;
 use RZP\Constants\Mode;
 use RZP\Constants\Product;
 use RZP\Constants\Table;
@@ -3003,6 +3004,33 @@ class Entity extends Base\PublicEntity
     public function isTokenInteroperabilityEnabled() : bool
     {
         return $this->isFeatureEnabled(Feature\Constants::TOKEN_INTEROPERABILITY);
+    }
+
+    /**
+     * The show_email_on_checkout feature flag is used for displaying email on std/hosted checkout.
+     * This feature flag can be overridden by checkout options sent by merchants.
+     * Email customizations on std/hosted checkout based on feature flags -
+     * show_email_on_checkout => false and email_optional_on_checkout => false ==> email-less checkout
+     * show_email_on_checkout => true and email_optional_on_checkout => false ==> email is mandatory on checkout
+     * show_email_on_checkout => true and email_optional_on_checkout => true ==> email is optional on checkout
+     * show_email_on_checkout => false and email_optional_on_checkout => true ==> email-less checkout
+     * 
+     * @return bool
+     */
+    public function isEmailShownOnCheckout()
+    {
+        return $this->isFeatureEnabled(Dcs\Features\Constants::ShowEmailOnCheckout);
+    }
+
+    /**
+     * The email_optional_on_checkout feature flag is used for making email optional on only std/hosted checkout.
+     * For making email optional on custom checkout/S2S please use email_optional feature flag.
+     * 
+     * @return bool
+     */
+    public function isEmailOptionalOnCheckout()
+    {
+        return $this->isFeatureEnabled(Dcs\Features\Constants::EmailOptionalOnCheckout);
     }
 
     public function isIvrEnabled() : bool
