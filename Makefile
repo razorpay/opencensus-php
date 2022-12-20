@@ -39,7 +39,7 @@ endif
 
 # Change this branch name for local testing
 #TODO :vinita
-ERROR_MODULE_BRANCH := api_dcs_errors
+ERROR_MODULE_BRANCH := master
 # Do not Change below code till endif
 API_BRANCH := $(shell git for-each-ref --format='%(objectname) %(refname:short)' refs/heads | awk "/^$$(git rev-parse HEAD)/ {print \$$2}")
 ifeq ($(API_BRANCH),master)
