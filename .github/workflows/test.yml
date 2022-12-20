@@ -17,15 +17,6 @@ jobs:
       - name: Setup yarn
         run: npm install -g yarn
 
-      # This action allows caching dependencies and build outputs
-      # to improve workflow execution time
-      - name: Cache multiple paths
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-npm-cache-${{ hashFiles('**/package-lock.json') }}
-
-
       - name: Install Dependencies
         run: |
           npm config set unsafe-perm true
