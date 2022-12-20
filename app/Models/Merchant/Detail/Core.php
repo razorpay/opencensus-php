@@ -15,6 +15,7 @@ use RZP\Constants\HyperTrace;
 use RZP\Encryption;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Terminal;
 use RZP\Constants\Table;
 use RZP\Metro\MetroHandler;
 use Rzp\Bvs\Validation\V1\TwirpError;
@@ -2861,6 +2862,11 @@ class Core extends Base\Core
             return false;
         }
 
+        if ($this->allowActivationOnTerminalChecks($merchant) === true)
+        {
+            return false;
+        }
+
         $merchantDetails = $merchant->merchantDetail;
 
         //Do not move merchants to Activated if the merchant has not transacted yet
@@ -4877,6 +4883,29 @@ class Core extends Base\Core
         }
 
         return Status::UNDER_REVIEW;
+    }
+
+    private function allowActivationOnTerminalChecks($merchant)
+    {
+        if (($merchant->org->isFeatureEnabled(Feature\Constants::ORG_PROGRAM_DS_CHECK) === false) or ($merchant->isFeatureEnabled(Feature\Constants::ONLY_DS) === false))
+        {
+            return false;
+        }
+
+        $merchantTerminals = (new Terminal\Service())->countAllTerminalsOfMerchantAndCheckForTypeArray($merchant->getId());
+
+        if ($merchantTerminals === null)
+        {
+            return false;
+        }
+
+        if ((isset($merchantTerminals['ds_terminals']) === true and  $merchantTerminals['ds_terminals'] > 0) and
+            (isset($merchantTerminals['non_ds_terminals']) === true and $merchantTerminals['non_ds_terminals'] === 0))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function isAutoKycDone(Entity $merchantDetails)

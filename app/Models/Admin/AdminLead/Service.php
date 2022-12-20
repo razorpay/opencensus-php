@@ -4,9 +4,13 @@ namespace RZP\Models\Admin\AdminLead;
 
 use Carbon\Carbon;
 
+use RZP\Trace\TraceCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
+use RZP\Models\Feature;
+
 
 class Service extends Base\Service
 {
@@ -17,6 +21,26 @@ class Service extends Base\Service
         $admin = $this->app['basicauth']->getAdmin();
 
         $entity = (new Entity)->getEntityName();
+
+
+        $org = OrgEntity::find($orgId);
+
+        $ds = false;
+
+        if ($org->isFeatureEnabled(Feature\Constants::ORG_PROGRAM_DS_CHECK) === true)
+        {
+            if ((isset($input["is_ds_merchant"]) === false) or ($input["is_ds_merchant"] === '0'))
+            {
+                $this->trace->info(TraceCode::BLOCK_NON_DS_MERCHANT_REGISTRATION, ["input" => $input]);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+                    null,
+                    $data);
+            }
+            $ds = true;
+            unset($input['is_ds_merchant']);
+        }
 
         (new Validator)->validateOrgSpecificInput(
             'sendInvitation', $input, $orgId, $entity);
@@ -34,6 +58,10 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_ADMIN_SELF_INVITE_PROHIBITED,
                 null,
                 $data);
+        }
+
+        if ($ds === true) {
+            $input["ds"] = true;
         }
 
         $invitation = $this->core()->create($admin, $input);

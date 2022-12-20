@@ -30,6 +30,7 @@ use RZP\Constants\Environment;
 use RZP\Mail\User as UserMail;
 use RZP\Services\TokenService;
 use RZP\Services\HubspotClient;
+use RZP\Models\Admin\AdminLead;
 use RZP\Jobs\MailChimpSubscribe;
 use RZP\Mail\User\Otp as OtpMail;
 use RZP\Http\BasicAuth\BasicAuth;
@@ -490,6 +491,8 @@ class Core extends Base\Core
 
         unset($input['invitation']);
 
+        unset($input['token_data']);
+
         $user = $this->getUserEntity()->build($input, $operation);
 
         $this->repo->transactionOnLiveAndTest(function() use ($user, $input)
@@ -504,6 +507,17 @@ class Core extends Base\Core
     //block pg merchants signup
     public function validateActivation(array $input)
     {
+        $merchantToken = $input['token_data'];
+
+        if ($merchantToken !== null)
+        {
+            if ((isset($merchantToken['form_data']) === true) and (isset($merchantToken['form_data']['ds']) === true) and
+                ($merchantToken['form_data']['ds'] === true))
+            {
+                return;
+            }
+        }
+
         //$signupSource is being used for capital cards and x submerchants account creation
         // as the RequestOriginProduct is primary for these two flows
         $signupSource = $input[MerchantEntity::SIGNUP_SOURCE] ?? null;

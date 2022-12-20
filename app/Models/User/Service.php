@@ -382,6 +382,8 @@ class Service extends Base\Service
             // Check if this token is valid or not
             $heimdallTokenData = (new AdminLead\Service)->verify($heimdallInvitationToken);
 
+            $input['token_data'] = $heimdallTokenData;
+
             if (isset($heimdallTokenData['id']) === true)
             {
                 $tokenSignUpInput = [AdminLead\Entity::SIGNED_UP => 1];
