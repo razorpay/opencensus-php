@@ -318,16 +318,7 @@ class Payment extends Base
 
         if($subtype === 'business' && $orgId === Org\Entity::RAZORPAY_ORG_ID)
         {
-            $merchantId = $payment->getMerchantId();
-            $mode = $this->mode ?? Mode::LIVE;
-
-            $variant = $this->app->razorx->getTreatment(
-                $merchantId, RazorxTreatment::CORPORATE_PRICING_FUNCTIONALITY, $mode);
-
-            if ($variant === "on")
-            {
-                return $this->getRelevantPricingRuleForCorporateCardPayment($rules);
-            }
+            return $this->getRelevantPricingRuleForCorporateCardPayment($rules);
         }
 
         // Current Implementation

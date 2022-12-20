@@ -30,8 +30,6 @@ final class RazorxTreatment
     const PASSPORT_SYNC             = 'passport_sync';
     const BVS_IN_SYNC               = "bvs_in_sync";
 
-    const CORPORATE_PRICING_FUNCTIONALITY = 'CORPORATE_PRICING_FUNCTIONALITY';
-
     // the ON variant
     const RAZORX_VARIANT_ON     = 'on';
 
