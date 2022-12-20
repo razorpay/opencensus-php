@@ -182,7 +182,7 @@ class Service extends Base\Service
             'merchant_name'     => $merchant->getName(),
             'mid'               => $merchant->getId(),
             'date_time_stamp'   => date('Y-m-d H:i:s'),
-            'amount'            => $paymentDetails->getBaseAmount(),
+            'amount'            => $paymentDetails->getBaseAmount()/100,
             'payment_id'        => $paymentDetails->getId(),
             'payment_created_at' => epoch_format($paymentDetails->created_at + Constants::IST_DIFF),
             'respond_by'        => date('d F Y', time()+Constants::MERCHANT_RESPOND_BY_IN_SECONDS + Constants::IST_DIFF),
@@ -197,7 +197,7 @@ class Service extends Base\Service
             'email'           => $merchant->getEmail(),
             'tags'            => ['bulk_fraud_email'],
             'group_id'        => (int) $this->app['config']->get('applications.freshdesk')['group_ids']['rzpind']['byers_risk'],
-            'email_config_id' => (int) $this->app['config']->get('applications.freshdesk')['email_config_ids']['rzpind']['risk_notification'],
+            'email_config_id' => (int) $this->app['config']->get('applications.freshdesk')['email_config_ids']['notify_merchant'],
             'custom_fields'   => [
                 'cf_ticket_queue' => 'Merchant',
                 'cf_merchant_id'  => $merchant->getId(),
@@ -216,29 +216,20 @@ class Service extends Base\Service
             ]);
     }
 
-    protected function sendFreshdeskOutboundMailReplyToLEA($paymentDetails, $freshdeskTicketId, $shareBeneficiaryAccountDetails)
+    protected function sendFreshdeskOutboundMailReplyToLEA($payment, $freshdeskTicketId, $shareBeneficiaryAccountDetails)
     {
-        $merchant                       = $paymentDetails->merchant;
+        $merchant                       = $payment->merchant;
 
         $currentDateTime                = date('Y-m-d H:i:s');
 
-        $paymentAnalytics               = $this->repo->payment_analytics->findForPayment($paymentDetails->getId());
+        $customerIpAddress               = $payment->analytics->getIp();;
 
         $beneficiaryBankAccountDetails  = $this->repo->bank_account->getBankAccount($merchant, Type::MERCHANT);
-
-        $customerIpAddress    = '';
-
-        if (count($paymentAnalytics) > 0 ) {
-
-            $paymentAnalytics  = $paymentAnalytics[0];
-
-            $customerIpAddress = $paymentAnalytics['ip'];
-        }
 
         $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchant->getId());
 
         $mailBody = \View::make(Constants::REPLY_MAIL_TO_LEA_TEMPLATE, [
-            'payment_details'                  => $paymentDetails,
+            'payment_details'                  => $payment,
             'customer_ip_address'              => $customerIpAddress,
             'merchant'                         => $merchant,
             'merchant_details'                 => $merchantDetails,

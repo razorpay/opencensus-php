@@ -172,7 +172,7 @@
             </tr>
           </table>
         </div>
-        <p style="margin: 0">(B) Beneficiary Contact Details</p>
+        <p style="margin: 0">(B) Beneficiary Details</p>
         <div style="overflow: scroll; margin: 15px 0">
           <table
             style="
@@ -185,9 +185,14 @@
             <tr style="padding: 5px; border: 1px solid #cccccc">
               <th style="padding: 5px; border: 1px solid #cccccc" colspan="3">
                 <p style="font-size: 14px; margin: 0">
-                  (B) Beneficiary Contact Details
+                      Beneficiary Contact Details
                 </p>
               </th>
+                <th style="padding: 5px; border: 1px solid #cccccc" colspan="3">
+                    <p style="font-size: 14px; margin: 0">
+                        Beneficiary Account Details
+                    </p>
+                </th>
             </tr>
             <tr style="padding: 5px; border: 1px solid #cccccc">
               <th style="padding: 5px; border: 1px solid #cccccc">

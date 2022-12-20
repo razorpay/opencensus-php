@@ -134,7 +134,7 @@
                 {{$payment_created_at}}
               </td>
               <td style="padding: 5px; border: 1px solid #cccccc">
-                {{$amount}}
+                 Rs {{number_format((float)$amount, 2, '.', '')}}
               </td>
               <td style="padding: 5px; border: 1px solid #cccccc">CyberCell</td>
               <td style="padding: 5px; border: 1px solid #cccccc">

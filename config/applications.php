@@ -487,6 +487,7 @@ return [
             'cybercrime_helpdesk'   => [
                 'acknowledgement'   => env('FRESHDESK_CYBERCRIME_HELPDESK_EMAIL_CONFIG_RISK_NOTIFICATION_ID'),
                 'reply_to_lea'      => env('FRESHDESK_CYBERCRIME_HELPDESK_EMAIL_CONFIG_RISK_NOTIFICATION_ID'),
+                'notify_merchant'   => env('FRESHDESK_CYBERCRIME_HELPDESK_EMAIL_CONFIG_RISK_NOTIFICATION_ID')
             ]
         ],
     ],
