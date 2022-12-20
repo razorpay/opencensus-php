@@ -43,6 +43,9 @@ class Service extends Base\Service
         "Terminal doesn't exist with this Id",
         "BAD_REQUEST_ACCESS_DENIED"
     ];
+
+
+
     public function createTerminal($id, $input)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
@@ -98,7 +101,11 @@ class Service extends Base\Service
 
             $content["sub_merchant"] = $subMerchantFlag;
 
-            $content["statuses"] = ["activated", "deactivated"];
+            $razorxResponse = $this->app->razorx->getTreatment($mid, RazorxTreatment::REMOVE_GET_TERMINALS_PROXY_INVALID_FILTERS, $mode);
+
+            if($razorxResponse === 'control') {
+                $content["statuses"] = ["activated", "deactivated"];
+            }
 
             $content["deleted"] = true;
 
