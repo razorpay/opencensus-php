@@ -413,6 +413,9 @@ final class RazorxTreatment
     // Experiment to have refunds created directly on scrooge based on merchant id
     const MERCHANTS_REFUND_CREATE_V_1_1 = 'merchants_refund_create_v1.1';
 
+    // Experiment to have batch refunds created directly on scrooge
+    const BATCH_REFUND_CREATE_V_1_1 = 'batch_refund_create_v1.1';
+
     // Experiment to enable queued payouts creation via payouts service
     const ENABLE_QUEUED_PAYOUTS_VIA_PAYOUTS_SERVICE = 'enable_queued_payouts_via_payouts_service';
 

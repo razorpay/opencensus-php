@@ -258,6 +258,23 @@ trait Refund
 
     public function createRefundFromMerchantFile(Payment\Entity $payment, array $input, Batch\Entity $batch = null)
     {
+        if ($this->isBatchRefundRequestV1_1($payment) === true)
+        {
+            $input['batch_id'] = (empty($batch) === false) ? $batch->getId() : '';
+
+            $input['admin_batch_upload'] = true;
+
+            $this->trace->info(
+                TraceCode::REFUND_FROM_BATCH_UPLOAD_SCROOGE,
+                [
+                    'payment_id' => $payment->getId(),
+                    'input'      => $input,
+                ]);
+
+            // Route refund creation to scrooge
+            return $this->newRefundV2Flow($payment, $input);
+        }
+
         return $this->refund($payment, $input, $batch);
     }
 
@@ -977,9 +994,27 @@ trait Refund
 
         $refund = null;
 
-        if (empty($batch) === false)
+        if ((empty($batch) === false) or (empty($batchId) === false))
         {
-            $refund = $this->findExistingRefundForBatch($batch, $payment);
+            if ($this->isBatchRefundRequestV1_1($payment) === true)
+            {
+                $input['batch_id'] = (empty($batch) === false) ? $batch->getId() : $batchId;
+
+                $this->trace->info(
+                    TraceCode::REFUND_FROM_MERCHANT_BATCH_SCROOGE,
+                    [
+                        'payment_id' => $payment->getId(),
+                        'input'      => $input,
+                    ]);
+
+                // Route refund creation to scrooge
+                return $this->newRefundV2Flow($payment, $input);
+            }
+
+            if (empty($batch) === false)
+            {
+                $refund = $this->findExistingRefundForBatch($batch, $payment);
+            }
         }
 
         if ($refund !== null)
@@ -4172,7 +4207,7 @@ trait Refund
         if (($payment->getCurrency() !== Currency\Currency::INR) or
             ($payment->isDCC() === true) or
             (($payment->isTransferred() === true) and
-            ($payment->isTransfer() === false)))
+                ($payment->isTransfer() === false)))
         {
             return false;
         }
@@ -4180,6 +4215,25 @@ trait Refund
         $variant = $this->app->razorx->getTreatment(
             $payment->getId(),
             Merchant\RazorxTreatment::MERCHANTS_REFUND_CREATE_V_1_1,
+            $this->mode
+        );
+
+        return (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON);
+    }
+
+    public function isBatchRefundRequestV1_1(Payment\Entity $payment): bool
+    {
+        if (($payment->getCurrency() !== Currency\Currency::INR) or
+            ($payment->isDCC() === true) or
+            (($payment->isTransferred() === true) and
+                ($payment->isTransfer() === false)))
+        {
+            return false;
+        }
+
+        $variant = $this->app->razorx->getTreatment(
+            $payment->getId(),
+            Merchant\RazorxTreatment::BATCH_REFUND_CREATE_V_1_1,
             $this->mode
         );
 
