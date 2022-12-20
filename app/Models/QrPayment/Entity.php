@@ -35,6 +35,9 @@ class Entity extends Base\PublicEntity
     const MAX_NARRATION_LENGTH          = 39;
     const INVALID_ACC_CREDIT_NARRATION  = 'ACC DOESNT EXIST';
 
+    const NOTES                         = 'notes';
+    const MAX_NOTES_LENGTH              = 50;
+
     protected static $sign = 'qp';
 
     protected $primaryKey = self::ID;
@@ -56,6 +59,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY,
         self::UNEXPECTED_REASON,
         self::PAYER_BANK_ACCOUNT_ID,
+        self::NOTES,
     ];
 
     protected $visible = [
@@ -72,6 +76,7 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_TIME,
         self::GATEWAY,
         self::PAYER_BANK_ACCOUNT_ID,
+        self::NOTES,
     ];
 
     protected $public = [
@@ -195,5 +200,15 @@ class Entity extends Base\PublicEntity
     public function isBankTransfer()
     {
         return $this->getAttribute(self::METHOD) === 'bank_transfer';
+    }
+
+    public function setNotes($notes)
+    {
+        $this->setAttribute(self::NOTES, $notes);
+    }
+
+    public function getNotes()
+    {
+        return $this->getAttribute(self::NOTES);
     }
 }

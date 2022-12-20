@@ -32,6 +32,11 @@ class Core extends Base\Core
 
         try
         {
+            if(array_key_exists('notes', $input))
+            {
+                $input['notes'] = substr($input['notes'], 0, Entity::MAX_NOTES_LENGTH);
+            }
+
             $qrPayment = (new Entity)->build($input);
 
             $mutexKey = sprintf(self::MUTEX_KEY, $input[Entity::MERCHANT_REFERENCE], $input[Entity::PROVIDER_REFERENCE_ID]);
@@ -111,6 +116,11 @@ class Core extends Base\Core
             Entity::GATEWAY               => $gatewayInputQrData[BharatQr\GatewayResponseParams::GATEWAY],
             Entity::PAYER_VPA             => $gatewayInputQrData[BharatQr\GatewayResponseParams::VPA] ?? null,
         ];
+
+        if (array_key_exists(Entity::NOTES, $gatewayInputQrData) === true)
+        {
+            $input[Entity::NOTES] = $gatewayInputQrData[Entity::NOTES];
+        }
 
         if ($gatewayInputQrData[BharatQr\GatewayResponseParams::GATEWAY] === Gateway::SHARP)
         {

@@ -12,6 +12,7 @@ use RZP\Models\UpiTransfer;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Status;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\QrPayment\Entity;
 use RZP\Models\Base\PublicEntity;
 use RZP\Gateway\Upi\Icici\Action;
 use Razorpay\Spine\Exception\DbQueryException;
@@ -36,6 +37,7 @@ class PaymentReconciliate extends UpiPaymentServiceReconciliate
     const MERCHANT_ID        = 'merchantid';
     const DATE               = 'date';
     const TIME               = 'time';
+    const REMARK             = 'remark';
 
     const BLACKLISTED_COLUMNS = [
         self::PAYER_VPA,
@@ -115,6 +117,15 @@ class PaymentReconciliate extends UpiPaymentServiceReconciliate
         if ($qrCodePayment === null)
         {
             $qrCodePayment = $this->repo->qr_payment->findByProviderReferenceIdAndGatewayAndAmount($referenceNumber, Gateway::UPI_ICICI, $amount);
+
+            if((array_key_exists(self::REMARK, $row) === true)
+                and ($qrCodePayment !== null)
+                and ($qrCodePayment->getNotes() === null))
+            {
+                $qrCodePayment->setNotes(substr($row[self::REMARK],0,Entity::MAX_NOTES_LENGTH));
+
+                $this->repo->saveOrFail($qrCodePayment);
+            }
         }
 
         if ($qrCodePayment != null)
@@ -234,6 +245,11 @@ class PaymentReconciliate extends UpiPaymentServiceReconciliate
 
         $callbackData[UpiIciciFields::TXN_INIT_DATE] = $formattedDate;
         $callbackData[UpiIciciFields::TXN_COMPLETION_DATE] = $formattedDate;
+
+        if(array_key_exists(self::REMARK, $row) === true)
+        {
+            $callbackData[UpiIciciFields::REMARK] = $row[self::REMARK];
+        }
 
         return $callbackData;
     }

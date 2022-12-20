@@ -64,6 +64,10 @@ class CreateQrPaymentTable extends Migration
 
             $table->integer(Entity::UPDATED_AT);
 
+             $table->string(Entity::NOTES)
+                   ->nullable(true)
+                   ->default(null);
+
             $table->index(Entity::QR_CODE_ID);
 
             $table->index([Entity::PROVIDER_REFERENCE_ID, Entity::GATEWAY]);

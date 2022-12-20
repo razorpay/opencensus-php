@@ -1275,6 +1275,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testFetchQrCodePayments()
     {
+        $this->markTestSkipped();
+        
         $qrCode = $this->createQrCode();
 
         $qrCodeId = $qrCode['id'];

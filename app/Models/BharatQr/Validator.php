@@ -26,5 +26,6 @@ class Validator extends Base\Validator
         GatewayResponseParams::AMOUNT                => 'required|integer|min:0',
         GatewayResponseParams::GATEWAY_MERCHANT_ID   => 'required_without:mpan|string',
         GatewayResponseParams::MPAN                  => 'required_without:gateway_merchant_id|string',
+        GatewayResponseParams::NOTES                 => 'sometimes|string',
     ];
 }

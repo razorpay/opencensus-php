@@ -47,4 +47,5 @@ class Fields
     const TXN_STATUS                = 'TxnStatus';
     const RESPONSE_CODE             = 'ResponseCode';
     const UMN                       = 'UMN';
+    const REMARK                    = 'Remark';
 }

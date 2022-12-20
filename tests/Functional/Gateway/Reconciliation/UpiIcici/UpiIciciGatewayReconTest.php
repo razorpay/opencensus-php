@@ -485,6 +485,108 @@ class UpiIciciGatewayReconTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testQrPaymentReconWithRemarks()
+    {
+        $reconRow = $this->testData['upiIcici'];
+
+        $reconRow['Remark'] = 'somerandomremarks';
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+        $this->fixtures->merchant->addFeatures(['qr_codes']);
+        $this->t2 = $this->fixtures->create('terminal:vpa_shared_terminal_icici');
+
+        $this->createQrCode(['type' => 'upi_qr']);
+        $qrCode = $this->getDbLastEntity('qr_code');
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+        $request['content']['BankRRN'] = $reconRow['bankTranID'];
+        $request['content']['merchantTranId'] = $qrCode->getReference() . 'qrv2';
+
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment = $this->getDbLastEntity('qr_payment');
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals($qrPayment['payment_id'], $payment['id']);
+
+        $reconRow['merchantID']         = $this->t2->getGatewayMerchantId();
+        $reconRow['merchantTranID']     = $qrCode->getReference() . 'qrv2';
+        $reconRow['subMerchantName']    = 'RAZORPAY BHARAT QR';
+
+        $entries[] = $reconRow;
+
+        $file = $this->writeToExcelFile($entries, 'mis_report','files/settlement','Recon MIS');
+        $uploadedFile = $this->createUploadedFile($file);
+        $this->reconcile($uploadedFile, 'UpiIcici');
+        $transactionId = $payment['transaction_id'];
+        $transaction = $this->getDbEntityById('transaction', $transactionId);
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        // Assert UPI entity
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertArraySubset([
+                                     'payment_id'            => $payment->getId(),
+                                     'npci_reference_id'     => $reconRow['bankTranID'],
+                                     'merchant_reference'    => $qrCode->getId() . 'qrv2',
+                                 ], $upi->toArray());
+
+        $this->assertBatchStatus(Status::PROCESSED);
+
+        $qrPayment = $this->getDbLastEntity('qr_payment');
+        $this->assertEquals($qrPayment['notes'],'somerandomremarks');
+    }
+
+    public function testQrPaymentReconWithExistingRemarks()
+    {
+        $reconRow = $this->testData['upiIcici'];
+
+        $reconRow['Remark'] = 'somerandomremarks';
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+        $this->fixtures->merchant->addFeatures(['qr_codes']);
+        $this->t2 = $this->fixtures->create('terminal:vpa_shared_terminal_icici');
+
+        $this->createQrCode(['type' => 'upi_qr']);
+        $qrCode = $this->getDbLastEntity('qr_code');
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+        $request['content']['BankRRN'] = $reconRow['bankTranID'];
+        $request['content']['merchantTranId'] = $qrCode->getReference() . 'qrv2';
+        $request['content']['Remark'] = 'notsomerandomremark';
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment = $this->getDbLastEntity('qr_payment');
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals($qrPayment['payment_id'], $payment['id']);
+
+        $reconRow['merchantID']         = $this->t2->getGatewayMerchantId();
+        $reconRow['merchantTranID']     = $qrCode->getReference() . 'qrv2';
+        $reconRow['subMerchantName']    = 'RAZORPAY BHARAT QR';
+
+        $entries[] = $reconRow;
+
+        $file = $this->writeToExcelFile($entries, 'mis_report','files/settlement','Recon MIS');
+        $uploadedFile = $this->createUploadedFile($file);
+        $this->reconcile($uploadedFile, 'UpiIcici');
+        $transactionId = $payment['transaction_id'];
+        $transaction = $this->getDbEntityById('transaction', $transactionId);
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        // Assert UPI entity
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertArraySubset([
+                                     'payment_id'            => $payment->getId(),
+                                     'npci_reference_id'     => $reconRow['bankTranID'],
+                                     'merchant_reference'    => $qrCode->getId() . 'qrv2',
+                                 ], $upi->toArray());
+
+        $this->assertBatchStatus(Status::PROCESSED);
+
+        $qrPayment = $this->getDbLastEntity('qr_payment');
+        $this->assertEquals($qrPayment['notes'],'notsomerandomremark');
+    }
+
     public function testCreateQrPaymentViaRecon()
     {
         $reconRow = $this->testData['upiIcici'];
@@ -507,6 +609,48 @@ class UpiIciciGatewayReconTest extends TestCase
         $payment = $this->getDbLastEntity('payment');
         $qrPayment = $this->getDbLastEntity('qr_payment');
         $this->assertEquals($payment['id'], $qrPayment['payment_id']);
+
+        $transactionId = $payment['transaction_id'];
+        $transaction = $this->getDbEntityById('transaction', $transactionId);
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        // Assert UPI entity
+        $upi = $this->getDbLastEntity('upi');
+        $this->assertArraySubset([
+            'payment_id'            => $payment->getId(),
+            'npci_reference_id'     => $reconRow['bankTranID'],
+            'merchant_reference'    => $qrCode->getId() . 'qrv2',
+        ], $upi->toArray());
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testCreateQrPaymentViaReconWithRemarks()
+    {
+        $reconRow = $this->testData['upiIcici'];
+
+        $reconRow['Remark'] = 'somerandomremarks';
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+        $this->fixtures->merchant->addFeatures(['qr_codes']);
+        $this->t2 = $this->fixtures->create('terminal:vpa_shared_terminal_icici');
+
+        $this->createQrCode(['type' => 'upi_qr']);
+        $qrCode = $this->getDbLastEntity('qr_code');
+
+        $reconRow['merchantID']         = $this->t2->getGatewayMerchantId();
+        $reconRow['merchantTranID']     = $qrCode->getReference() . 'qrv2';
+        $reconRow['subMerchantName']    = 'RAZORPAY BHARAT QR';
+        $entries[] = $reconRow;
+        $file = $this->writeToExcelFile($entries, 'mis_report','files/settlement','Recon MIS');
+        $uploadedFile = $this->createUploadedFile($file);
+        $this->reconcile($uploadedFile, 'UpiIcici');
+
+        $payment = $this->getDbLastEntity('payment');
+        $qrPayment = $this->getDbLastEntity('qr_payment');
+        $this->assertEquals($payment['id'], $qrPayment['payment_id']);
+        $this->assertEquals($qrPayment['notes'],'somerandomremarks');
 
         $transactionId = $payment['transaction_id'];
         $transaction = $this->getDbEntityById('transaction', $transactionId);

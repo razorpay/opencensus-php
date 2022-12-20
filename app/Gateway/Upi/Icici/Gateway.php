@@ -1509,6 +1509,11 @@ class Gateway extends Base\Gateway
             BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => (string) $input[Fields::BANK_RRN],
         ];
 
+        if(array_key_exists(Fields::REMARK, $input))
+        {
+            $qrData[BharatQr\GatewayResponseParams::NOTES] = (string) $input[Fields::REMARK];
+        }
+
         return [
             'callback_data' => $input,
             'qr_data'       => $qrData
