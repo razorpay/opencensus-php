@@ -1366,6 +1366,23 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    public function fetchAllMerchantIDsFromSlaveDB($input)
+    {
+        $query = $this->newQueryWithConnection($this->getAccountServiceReplicaConnection())->select([Entity::ID])->orderBy(Entity::ID);
+
+        if (isset($input['afterId']) === true)
+        {
+            $query->where(Entity::ID, '>', $input['afterId']);
+        }
+
+        if (isset($input['count']) === true)
+        {
+            $query->take($input['count']);
+        }
+
+        return $query->get();
+    }
+
     public function fetchHistoricalClaimedMerchantIds($mode)
     {
         $historicalClaimedMerchantIds = \DB::connection($mode)->table(Table::MERCHANT_MAP)

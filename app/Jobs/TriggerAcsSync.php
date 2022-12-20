@@ -17,13 +17,17 @@ class TriggerAcsSync extends Job
 
     protected $outboxJobs;
 
-    public function __construct(string $mode, array $merchantIds, array $outboxJobs)
+    protected $operation;
+
+    public function __construct(string $mode, array $merchantIds, array $outboxJobs, string $operation)
     {
         parent::__construct($mode);
 
         $this->merchantIds = $merchantIds;
 
         $this->outboxJobs = $outboxJobs;
+
+        $this->operation = $operation;
     }
 
     public function handle()
@@ -37,6 +41,7 @@ class TriggerAcsSync extends Job
             $input['account_ids'] = $this->merchantIds;
             $input['mode'] = $this->mode;
             $input['outbox_jobs'] = $this->outboxJobs;
+            $input['operation'] = $this->operation;
 
             (new Acs\Service)->triggerSync($input);
 

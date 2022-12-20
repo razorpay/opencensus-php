@@ -1366,12 +1366,14 @@ return [
         'host' => env('ASV_HOST', 'https://acs-web.razorpay.com'),
         'user' => env('ASV_USERNAME'),
         'password' => env('ASV_PASSWORD'),
+        'asv_full_data_sync_splitz_experiment_id' => env('ASV_FULL_DATA_SYNC_SPLITZ_EXPERIMENT_ID', ''),
         'asv_http_client_timeout' => env('ASV_HTTP_CLIENT_TIMEOUT', 5),
         'sync_deviation_route_http_timeout_sec' => env('ASV_SYNC_DEVIATION_ROUTE_HTTP_TIMEOUT_SEC', 4),
         'document_delete_route_http_timeout_sec' => env('ASV_DOCUMENT_DELETE_ROUTE_HTTP_TIMEOUT_SEC',2),
         'account_contact_delete_route_http_timeout_sec' => env('ASV_ACCOUNT_CONTACT_DELETE_ROUTE_HTTP_TIMEOUT_SEC', 2),
         'asv_save_api_route_http_timeout_sec' => env('ASV_SAVE_API_ROUTE_HTTP_TIMEOUT_SEC', 2),
-        'asv_fetch_route_http_timeout_sec' => env('ASV_MERCHANT_FETCH_ROUTE_HTTP_TIMEOUT_SEC', 2)
+        'asv_fetch_route_http_timeout_sec' => env('ASV_MERCHANT_FETCH_ROUTE_HTTP_TIMEOUT_SEC', 2),
+        'asv_data_sync_events_topic' => env('ASV_DATA_SYNC_EVENTS_TOPIC', 'prod-asv-data-sync-events')
     ],
 
     'recon'         => [

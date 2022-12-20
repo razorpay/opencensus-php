@@ -7537,6 +7537,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ASV_HTTP_CLIENT_ERROR                                 = 'ASV_HTTP_CLIENT_ERROR';
     const ASV_COMPARE_MISMATCH                                  = 'ASV_COMPARE_MISMATCH';
     const ASV_WRITE_EXCEPTION                                   = 'ASV_WRITE_EXCEPTION';
+    const ASV_KAFKA_PUSH_MESSAGE                                = 'ASV_KAFKA_PUSH_MESSAGE';
+    const ASV_FULL_SYNC_SPLITZ_ENABLED                          = 'ASV_FULL_SYNC_SPLITZ_ENABLED';
 
 
     # ASV Migration
