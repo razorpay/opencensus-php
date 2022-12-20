@@ -33,6 +33,16 @@ class CareServiceClient
     const ID            = 'id';
     const CREATED_AT    = 'created_at';
 
+    const MERCHANT_POPULAR_PRODUCTS_CRON = 'MerchantPopularProductsCron';
+
+    const ROUTES_URL_MAP  = [
+        self::MERCHANT_POPULAR_PRODUCTS_CRON => 'twirp/rzp.care.merchantNavigation.v1.MerchantNavigationService/PostMerchantPopularProducts',   // 5mins
+    ];
+
+    const PATH_TIMEOUT_MAP  = [
+        self::MERCHANT_POPULAR_PRODUCTS_CRON => 300,   // 5mins
+    ];
+
     public function __construct($app = null)
     {
         if ($app === null)
@@ -189,7 +199,9 @@ class CareServiceClient
     {
         $headers = array_merge($headers, $this->getHeaders());
 
-        $options = array_merge($options, $this->getOptions());
+        $path = substr($url, strpos($url, 'twirp'));
+
+        $options = array_merge($options, $this->getOptions($path));
 
         if (empty($content) === true)
         {
@@ -297,8 +309,17 @@ class CareServiceClient
         return $input;
     }
 
-    protected function getOptions()
+    protected function getOptions($path)
     {
+        if (in_array($path, array_values(self::ROUTES_URL_MAP), true) === true)
+        {
+            $route = array_search($path, self::ROUTES_URL_MAP);
+
+            return [
+                self::TIMEOUT => self::PATH_TIMEOUT_MAP[$route],
+            ];
+        }
+
         return [
             self::TIMEOUT => self::DEFAULT_TIMEOUT_DURATION_SECONDS,
         ];
