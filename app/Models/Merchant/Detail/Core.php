@@ -2674,6 +2674,7 @@ class Core extends Base\Core
         $submit = $input[Entity::SUBMIT] ?? false;
 
         return (($submit === '1') or
+                ($submit === 1) or
                 ($activationFormMilestone === DetailConstants::L2_SUBMISSION));
     }
 
@@ -2851,11 +2852,6 @@ class Core extends Base\Core
 
         // activations allowed for linked accounts
         if ($merchant->isLinkedAccount() === true)
-        {
-            return false;
-        }
-        // activations allowed for x merchants
-        if ($merchant->isBusinessBankingEnabled() === true)
         {
             return false;
         }

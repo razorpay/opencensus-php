@@ -122,6 +122,8 @@ class Service extends Base\Service
 
         $signupCampaign = $input[DeviceDetail\Entity::SIGNUP_CAMPAIGN] ?? null;
 
+        $signupSource = $input[DeviceDetail\Entity::SIGNUP_SOURCE] ?? null;
+
         unset($input[DeviceDetail\Entity::SIGNUP_CAMPAIGN]);
 
         $heimdallTokenData = $this->handleHeimdallInvitation($input);
@@ -204,6 +206,8 @@ class Service extends Base\Service
         }
         else
         {
+            $input[DeviceDetail\Entity::SIGNUP_SOURCE] = $signupSource;
+
             $data = $this->createMerchant($user, $referrer, $businessName, $countryCode, $partnerIntent, $input, $heimdallTokenData, $sendConfirmation);
 
             $merchantId = $data['id'];
@@ -504,21 +508,25 @@ class Service extends Base\Service
     {
         $merchantInputData = [
             Merchant\Entity::NAME          => $businessName,
-            Merchant\Entity::SIGNUP_SOURCE => $this->auth->getRequestOriginProduct(),
-            Merchant\Entity::COUNTRY_CODE          => $countryCode ?? 'IN',
+            Merchant\Entity::SIGNUP_SOURCE => $input[DeviceDetail\Entity::SIGNUP_SOURCE] ??
+                                              $this->auth->getRequestOriginProduct(),
+            Merchant\Entity::COUNTRY_CODE  => $countryCode ?? 'IN',
         ];
 
         $merchantDetailInputData = [];
 
         if (isset($user[Entity::EMAIL]) === true)
         {
-            $merchantInputData[Merchant\Entity::EMAIL] = $user[Entity::EMAIL];
+            $merchantInputData[Merchant\Entity::EMAIL]            = $user[Entity::EMAIL];
             $merchantInputData[Merchant\Entity::SIGNUP_VIA_EMAIL] = 1;
         }
-        else if (isset($user[Entity::CONTACT_MOBILE]))
+        else
         {
-            $merchantDetailInputData[Entity::CONTACT_MOBILE] = $user[Entity::CONTACT_MOBILE];
-            $merchantInputData[Merchant\Entity::SIGNUP_VIA_EMAIL] = 0;
+            if (isset($user[Entity::CONTACT_MOBILE]))
+            {
+                $merchantDetailInputData[Entity::CONTACT_MOBILE]      = $user[Entity::CONTACT_MOBILE];
+                $merchantInputData[Merchant\Entity::SIGNUP_VIA_EMAIL] = 0;
+            }
         }
 
         if (isset($input[Merchant\Constants::PARTNER_INTENT]))
@@ -535,7 +543,7 @@ class Service extends Base\Service
         }
 
         $sendOtpEmail = filter_var($this->app['request']->header(RequestHeader::X_SEND_EMAIL_OTP, false),
-            FILTER_VALIDATE_BOOLEAN);
+                                   FILTER_VALIDATE_BOOLEAN);
 
         // Remove this when signup experiment for X is ramped up as we can find the
         // template just from the product origin
