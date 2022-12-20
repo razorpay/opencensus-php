@@ -2846,6 +2846,40 @@ class Core extends Base\Core
         return $merchantDetails;
     }
 
+    public function blockMerchantActivations($merchant)
+    {
+
+        // activations allowed for linked accounts
+        if ($merchant->isLinkedAccount() === true)
+        {
+            return false;
+        }
+        // activations allowed for x merchants
+        if ($merchant->isBusinessBankingEnabled() === true)
+        {
+            return false;
+        }
+        //activations allowed for lower environments
+        if ($this->shouldBlockActivation() === false)
+        {
+            return false;
+        }
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        //Do not move merchants to Activated if the merchant has not transacted yet
+        $mtuTransacted = (new \RZP\Models\Payment\Repository)
+            ->hasMerchantTransacted($merchantDetails->getMerchantId());
+
+        if ($mtuTransacted === true)
+        {
+            return false;
+        }
+
+        return true;
+
+    }
+
     /**
      * This function is used for updating merchant activation status
      *
@@ -2872,25 +2906,23 @@ class Core extends Base\Core
             'Activation Status' => $input[Entity::ACTIVATION_STATUS]
         ]);
 
+        if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED or
+            $input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_KYC_PENDING or
+            $input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_MCC_PENDING or
+            $input[Entity::ACTIVATION_STATUS] === Status::NEEDS_CLARIFICATION )
+        {
+            if($this->blockMerchantActivations($merchant) === true) {
+
+                $this->trace->info(TraceCode::BLOCKING_MX_ACTIVATIONS_TEMPORARILY, ["id"=>$merchant->getId()]);
+
+                throw new BadRequestValidationFailureException(
+                    'This merchant is not eligible for activation');
+            }
+        }
+
         if($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED)
         {
             (new Merchant\Website\Service())->canActivateMerchant($merchantDetails, $websiteDetail);
-
-            if ($merchant->isLinkedAccount() === false and
-                $merchant->isBusinessBankingEnabled() === false)
-            {
-                //Do not move merchants to Activated if the merchant has not transacted yet
-                $mtuTransacted = (new \RZP\Models\Payment\Repository)
-                    ->hasMerchantTransacted($merchantDetails->getMerchantId());
-
-                $shouldBlockActivation = $this->shouldBlockActivation();
-
-                if ($mtuTransacted === false and $shouldBlockActivation === true)
-                {
-                    throw new BadRequestValidationFailureException(
-                        'Merchant has not yet transacted');
-                }
-            }
         }
 
         $merchantDetails->getValidator()
@@ -4940,19 +4972,11 @@ class Core extends Base\Core
             return false;
         }
 
-        if ($merchantDetails->merchant->isLinkedAccount() === false and
-            $merchantDetails->merchant->isBusinessBankingEnabled() === false)
+        if ($this->blockMerchantActivations($merchantDetails->merchant) === true)
         {
-            //Do not move merchants to Activated mcc pending if the merchant has not transacted yet
-            $mtuTransacted = (new \RZP\Models\Payment\Repository)
-                ->hasMerchantTransacted($merchantDetails->getMerchantId());
+            $this->trace->info(TraceCode::BLOCKING_MX_ACTIVATIONS_TEMPORARILY, ["id" => $merchantDetails->getMerchantId()]);
 
-            $shouldBlockActivation = $this->shouldBlockActivation();
-
-            if ($mtuTransacted === false and $shouldBlockActivation === true)
-            {
-                return false;
-            }
+            return false;
         }
 
         return $autoKycDone;

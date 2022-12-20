@@ -488,6 +488,8 @@ class Core extends Base\Core
 
         unset($input[MerchantEntity::SIGNUP_SOURCE]);
 
+        unset($input['invitation']);
+
         $user = $this->getUserEntity()->build($input, $operation);
 
         $this->repo->transactionOnLiveAndTest(function() use ($user, $input)
@@ -506,6 +508,15 @@ class Core extends Base\Core
         // as the RequestOriginProduct is primary for these two flows
         $signupSource = $input[MerchantEntity::SIGNUP_SOURCE] ?? null;
 
+        $invitation = $input['invitation'] ?? null;
+
+        if (empty($invitation) === false)
+        {
+            $this->trace->info(TraceCode::SIGNUP_VALIDATIONS, ["invitation" => $invitation]);
+
+            return;
+        }
+
         if ($signupSource === Product::BANKING)
         {
             return;
@@ -522,6 +533,10 @@ class Core extends Base\Core
 
         $requestOriginHost = parse_url($origin, PHP_URL_HOST);
 
+        $this->trace->info(TraceCode::SIGNUP_VALIDATIONS, [
+            "rizeOriginHost" => $rizeOriginHost,
+            "origin"         => $origin]);
+
         if ($requestOriginHost === $rizeOriginHost)
         {
             return;
@@ -533,7 +548,7 @@ class Core extends Base\Core
         {
             return;
         }
-        
+
         throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ACTION);
     }
 

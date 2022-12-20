@@ -150,7 +150,7 @@ class Service extends Base\Service
 
             if (isset($input[Entity::CONTACT_MOBILE]) === true)
             {
-                if($this->core()->checkIfMobileAlreadyExists($input[Entity::CONTACT_MOBILE]) === true)
+                if ($this->core()->checkIfMobileAlreadyExists($input[Entity::CONTACT_MOBILE]) === true)
                 {
                     throw new BadRequestException(ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_EXISTS);
                 }
@@ -166,6 +166,11 @@ class Service extends Base\Service
             unset($input['business_name']);
 
             unset($input['country_code']);
+
+            if (empty($invitation) === false)
+            {
+                $input['invitation'] = $invitation;
+            }
 
             $user = $this->create($input, $operation);
         }

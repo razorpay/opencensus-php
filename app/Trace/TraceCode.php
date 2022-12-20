@@ -7,6 +7,8 @@ use RZP\Exception\InvalidArgumentException;
 class TraceCode extends \Razorpay\Trace\TraceCode
 {
     //consents
+    const BLOCKING_MX_ACTIVATIONS_TEMPORARILY                   = 'BLOCKING_MX_ACTIVATIONS_TEMPORARILY';
+
     const CREATE_MERCHANT_CONSENT_DETAILS           = 'CREATE_MERCHANT_CONSENT_DETAILS';
     const CREATE_MERCHANT_CONSENTS                  = 'CREATE_MERCHANT_CONSENTS';
     const BVS_RESPONSE_CREATE_CONSENTS              = 'BVS_RESPONSE_CREATE_CONSENTS';
@@ -2688,7 +2690,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const KUBERNETES_INVOICE_JOB_ERROR                          = 'KUBERNETES_INVOICE_JOB_ERROR';
     const KUBERNETES_INVOICE_JOB_IN_PROCESS                     = 'KUBERNETES_INVOICE_JOB_IN_PROCESS';
     const KUBERNETES_INVOICE_JOB_NAMESPACE                      = 'KUBERNETES_INVOICE_JOB_NAMESPACE';
-
+    const SIGNUP_VALIDATIONS                                    = 'SIGNUP_VALIDATIONS';
     const BATCH_WORKFLOW                                        = 'BATCH_WORKFLOW';
 
     const BATCH_FILE_DELETE_ERROR                               = 'BATCH_FILE_DELETE_ERROR';
