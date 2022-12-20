@@ -15,6 +15,7 @@ use Session;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
+use RZP\Services\Dcs;
 use RZP\Models\Base;
 use RZP\Models\Emi;
 use RZP\Models\Card;
@@ -191,6 +192,8 @@ class Checkout
         $this->fill1ccAddressOptExperiment($merchant, $data);
 
         $this->fillCheckoutExperiments($input, $data, $merchant->getId());
+
+        $this->fillEmailRequiredOnCheckoutIfApplicable($data);
 
         $this->fillCovidReliefDetails($merchant, $data, $mode);
 
@@ -1615,6 +1618,26 @@ class Checkout
         //adding this here because there are condition at checkout so we have to return this feature always true
         $data['features'][Feature\Constants::REDIRECT_TO_ZESTMONEY] = true;
 
+    }
+
+    /**
+     * This function will add `show_email_on_checkout` feature to features array of preferences response 
+     * based on email-less-checkout experiment.
+     * if email-less-checkout experiment  returns -
+     * True  => We will not add/edit anything to features array of preferences response. 
+     *          We will send show_email_on_checkout and email_optional_oncheckout if they are enabled on merchant.
+     * False => We will add show_email_on_checkout to features array of preferences response. 
+     *          We will send email_optional_oncheckout if it is enabled on the merchant.
+     *
+     * @param  array &$data
+     * @return void
+     */
+    protected function fillEmailRequiredOnCheckoutIfApplicable(array &$data): void
+    {
+        if (!$data['experiments']['email_less_checkout'])
+        {
+            $data['features'][Dcs\Features\Constants::ShowEmailOnCheckout] = true;
+        }
     }
 
     protected function updateCurrencyMethodsIfApplicable($input, $merchant, array & $data)

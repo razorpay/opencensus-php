@@ -51,6 +51,7 @@ class CheckoutExperiment
             'recurring_upi_all_psp'   => false,
             'banking_redesign_v15'    => false,
             'remove_default_tokenization_flag' => false,
+            'email_less_checkout' => false,
         ];
 
         $this->input = $input;
@@ -183,6 +184,14 @@ class CheckoutExperiment
             'app.checkout_remove_default_tokenization_flag_splitz_experiment_id',
             'RemoveDefaultTokenizationFlag',
             'remove_default_tokenization_flag',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.email_less_checkout_experiment_id',
+            'EmailLessCheckout',
+            'email_less_checkout',
             ['merchant_id' => $this->merchantId]
         );
     }
@@ -332,6 +341,13 @@ class CheckoutExperiment
     }
 
     private function handleRemoveDefaultTokenizationFlagResponse($response): bool
+    {
+        $variant = $response['variant']['name'] ?? '';
+
+        return $variant === 'variant_on';
+    }
+
+    private function handleEmailLessCheckoutResponse($response): bool
     {
         $variant = $response['variant']['name'] ?? '';
 

@@ -465,6 +465,8 @@ return array(
         'magic_pg_order_mutex_retries' => env('MAGIC_PG_ORDER_MUTEX_RETRIES'),
     ],
 
+    'email_less_checkout_experiment_id' => env('EMAIL_LESS_CHECKOUT_EXPERIMENT_ID'),
+
     'checkout_redesign_v1_5_splitz_experiment_id' => env('CHECKOUT_REDESIGN_V1_5_SPLITZ_EXPERIMENT_ID'),
 
     'checkout_upi_ux_splitz_experiment_id'        => env('CHECKOUT_UPI_UX_SPLITZ_EXPERIMENT_ID'),
