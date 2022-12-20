@@ -15,7 +15,7 @@ use Razorpay\Trace\Logger as Trace;
 trait Vpa
 {
     // realtime validate vpa for the ixigo and bajaj merchants
-    private $gatewayValidateMerchants = ['8RerE9oY0d7rbC','GCwhxngAcMtWC8', 'GDJYY4pJqT0cQ5', 'Epq7C3REXxW4po', 'KKvun1NXU95w0O'];
+    private $gatewayValidateMerchants = ['8RerE9oY0d7rbC','GCwhxngAcMtWC8', 'GDJYY4pJqT0cQ5', 'Epq7C3REXxW4po', 'KKvun1NXU95w0O','H9s3fChY9rxatj'];
 
     /**
      * @param array $input
