@@ -244,6 +244,93 @@ class UpiAirtelReconTest extends TestCase
         $this->assertNotNull($payment['reference16']);
     }
 
+    public function testNewMISFilePaymentReconciliation()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $rrn = '227121351902';
+
+        $this->makeUpiAirtelPaymentsSince($createdAt, $rrn, 1);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->mockReconContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'airtel_recon')
+            {
+                $content['Transaction Type']         = 'COLLECT';
+            }
+        });
+
+        $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile($uploadedFile, 'UpiAirtel');
+
+        $this->paymentReconAsserts($payment->toArray());
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'type'            => 'reconciliation',
+                'gateway'         => 'UpiAirtel',
+                'status'          => Status::PROCESSED,
+                'total_count'     => 1,
+                'success_count'   => 1,
+                'processed_count' => 1,
+                'failure_count'   => 0,
+            ],
+            $batch
+        );
+    }
+
+    public function testNewMisFileRefundRecon()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $rrn = '22712135190';
+
+        $this->makeUpiAirtelPaymentsSince($createdAt, $rrn, 1);
+
+        $payment = $this->getDbLastPayment();
+
+        $refund = $this->createDependentEntitiesForRefund($payment);
+
+        $this->mockReconContentFunction(function (& $content)
+        {
+            $content['Transaction Type']         = 'MERCHANT_REFUND';
+        });
+
+        $fileContents = $this->generateReconFile(
+            [
+                'gateway' => $this->gateway,
+                'type'    => 'refund',
+            ]);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile($uploadedFile, 'UpiAirtel');
+
+        $this->refundReconAsserts($refund);
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'type'            => 'reconciliation',
+                'gateway'         => 'UpiAirtel',
+                'status'          => Status::PROCESSED,
+                'total_count'     => 1,
+                'success_count'   => 1,
+                'processed_count' => 1,
+                'failure_count'   => 0,
+            ],
+            $batch
+        );
+    }
+
     protected function createDependentEntitiesForRefund($payment, $status = 'authorized')
     {
         $refundArray = [
