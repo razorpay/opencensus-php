@@ -94,7 +94,7 @@ const GreylistedSteps: React.FC<
     });
     const payload = isInstantActivationEnabled
       ? { activation_form_milestone: 'L2' }
-      : { submit: 1 };
+      : { submit: '1' };
 
     const payloadData = {
       ...payload,

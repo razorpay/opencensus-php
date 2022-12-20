@@ -388,7 +388,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     });
     const payload = isInstantActivationEnabled
       ? { activation_form_milestone: 'L2' }
-      : { submit: 1 };
+      : { submit: '1' };
 
     const payloadData = {
       ...payload,

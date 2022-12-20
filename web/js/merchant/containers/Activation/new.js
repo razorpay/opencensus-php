@@ -508,7 +508,7 @@ export default class ActivationContainer extends React.Component {
         method: 'post',
         // For accountId, mode must be respected, otherwise accountId in Headers would be ignored in api.
         mode: !!this.props.accountId ? this.props.session.mode : 'live',
-        data: { submit: 1 },
+        data: { submit: '1' },
         accountId: this.props.accountId, // accountId for linked_accounts. Axios auto-ignore undefined keys in options
       })
         .then((response) => {

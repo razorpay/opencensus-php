@@ -110,7 +110,7 @@ const RenderMwebActivationForm = (props) => {
 
   const submitForm = () => {
     const reqData = {
-      submit: 1,
+      submit: '1',
     };
     postData(reqData);
     props.tracking.trackEvent(
