@@ -27,12 +27,14 @@ class Constants
     ];
 
     /**
-     * Stores the mapping of the features to their corresponding dcs keys
+     * Stores the mapping of the features to their corresponding handlers
      */
     public static $dcsNewFeatures = [
-        self::EligibilityEnabled,
-        self::EmailOptionalOnCheckout,
-        self::ShowEmailOnCheckout,
+        self::RefundEnabled => 'direct',
+        self::DisableAutoRefund => 'direct',
+        self::EligibilityEnabled => 'client',
+        self::EmailOptionalOnCheckout => 'direct',
+        self::ShowEmailOnCheckout => 'direct',
     ];
 
     public static function isShadowFeature($variant)

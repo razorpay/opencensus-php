@@ -227,7 +227,7 @@ class Service
 
     protected function throwServiceErrorException(\Throwable $e)
     {
-        $errorCode = 'SERVER_ERROR_DCS_EXTERNAL_SERVICE_FAILURE';
+        $errorCode = ErrorCode::SERVER_ERROR_DCS_EXTERNAL_SERVICE_FAILURE;
 
         throw new Exception\ServerErrorException($e->getMessage(), $errorCode);
     }
@@ -265,7 +265,7 @@ class Service
             $description = ($response['error'] !== null && $response['error']['description'] !== null) ?
                 $response['error']['description']: "Error in DCS Client Service Request";
             $ex = new Exception\ServerErrorException($description,
-                'SERVER_ERROR_DCS_CLIENT_REQUEST_FAILURE', // TODO add it in error module repo
+                ErrorCode::SERVER_ERROR_DCS_CLIENT_REQUEST_FAILURE, // TODO add it in error module repo
                 "failure response from external service");
 
             $this->trace->traceException($ex);

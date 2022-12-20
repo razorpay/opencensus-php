@@ -3,6 +3,7 @@
 namespace RZP\Services\Dcs\Features;
 
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use Illuminate\Foundation\Application;
 use Psr\Http\Client\NetworkExceptionInterface;
@@ -120,11 +121,11 @@ class Base
      */
     protected function throwServerRequestException(\Exception $e,bool $throwException =  true)
     {
-        $errorCode = 'SERVER_ERROR_DCS_SERVICE_FAILURE';
+        $errorCode = ErrorCode::SERVER_ERROR_DCS_SERVICE_FAILURE;
 
         if ($e instanceof NetworkExceptionInterface)
         {
-            $errorCode = 'SERVER_ERROR_DCS_SERVICE_TIMEOUT';
+            $errorCode = ErrorCode::SERVER_ERROR_DCS_SERVICE_TIMEOUT;
         }
 
         $this->trace->traceException(

@@ -2845,6 +2845,13 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_FAILED_EXCEEDS_ARRANGEMENT                           = 'BAD_REQUEST_PAYMENT_FAILED_EXCEEDS_ARRANGEMENT';
     const BAD_REQUEST_MERCHANT_NOT_ONBOARDED_FOR_TOKENISATION                      = 'BAD_REQUEST_MERCHANT_NOT_ONBOARDED_FOR_TOKENISATION';
     const BAD_REQUEST_ERROR_INVALID_ONE_CC_MERCHANT                                = 'BAD_REQUEST_ERROR_INVALID_ONE_CC_MERCHANT';
+    const SERVER_ERROR_DCS_EXTERNAL_SERVICE_FAILURE                                = 'SERVER_ERROR_DCS_EXTERNAL_SERVICE_FAILURE';
+    const SERVER_ERROR_DCS_CLIENT_REQUEST_FAILURE                                  = 'SERVER_ERROR_DCS_CLIENT_REQUEST_FAILURE';
+    const BAD_REQUEST_DCS_DISABLED                                                 = 'BAD_REQUEST_DCS_DISABLED';
+    const SERVER_ERROR_DCS_SERVICE_FAILURE                                         = 'SERVER_ERROR_DCS_SERVICE_FAILURE';
+    const SERVER_ERROR_DCS_SERVICE_TIMEOUT                                         = 'SERVER_ERROR_DCS_SERVICE_TIMEOUT';
+
+
 
     static function getConstants()
     {

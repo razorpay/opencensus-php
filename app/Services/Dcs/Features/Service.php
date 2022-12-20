@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Services\Dcs\ExternalService;
 use RZP\Services\Dcs\ExternalService\Constants;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Feature\Entity;
 use Razorpay\Dcs\DataFormatter;
 use RZP\Services\Dcs\Features\Constants as DcsConstants;
@@ -74,7 +75,7 @@ class Service extends Base
             elseif (self::isDcsNewFeature($entity->getName()) === true)
             {
                 $ex = new Exception\ServerErrorException('dcs service is disabled, please check with dcs team',
-                    'SERVER_ERROR_DCS_DISABLED',
+                    ErrorCode::BAD_REQUEST_DCS_DISABLED,
                     "dcs service is disabled, please check with dcs team");
                 $this->trace->traceException($ex);
 
