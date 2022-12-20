@@ -25,6 +25,7 @@ class Constants
     const ACTIVATION_PROGRESS = 'activation_progress';
     const REQUIRED_FIELDS     = 'required_fields';
     const DISABLE_REASON      = 'disable_reason';
+    const DOCUMENTS           = 'documents';
 
     const ACTIVATION_STATUSES = [self::UNDER_REVIEW, self::ACTIVATED, self::REJECTED, self::REJECTED];
 

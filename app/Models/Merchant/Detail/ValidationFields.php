@@ -487,14 +487,14 @@ class ValidationFields
         return $requiredFields;
     }
 
-    public static function getPartnerKycValidationFields(string $businessType): array
+    public static function getPartnerKycValidationFields(string $businessType)
     {
         switch ($businessType)
         {
             case BusinessType::INDIVIDUAL:
             case BusinessType::NOT_YET_REGISTERED:
             case BusinessType::PROPRIETORSHIP:
-                return [Entity::PROMOTER_PAN,
+                return [[Entity::PROMOTER_PAN,
                         Entity::PROMOTER_PAN_NAME,
                         Entity::BANK_ACCOUNT_NAME,
                         Entity::BANK_ACCOUNT_NUMBER,
@@ -502,9 +502,10 @@ class ValidationFields
                         Entity::BUSINESS_OPERATION_ADDRESS,
                         Entity::BUSINESS_OPERATION_PIN,
                         Entity::BUSINESS_OPERATION_CITY,
-                        Entity::BUSINESS_OPERATION_STATE];
+                        Entity::BUSINESS_OPERATION_STATE],
+                        SelectiveRequiredFields::UNREGISTERED_POA_FIELDS ];
             default:
-                return [Entity::COMPANY_PAN,
+                return [[Entity::COMPANY_PAN,
                         Entity::BUSINESS_NAME,
                         Entity::BANK_ACCOUNT_NAME,
                         Entity::BANK_ACCOUNT_NUMBER,
@@ -512,7 +513,8 @@ class ValidationFields
                         Entity::BUSINESS_REGISTERED_ADDRESS,
                         Entity::BUSINESS_REGISTERED_PIN,
                         Entity::BUSINESS_REGISTERED_CITY,
-                        Entity::BUSINESS_REGISTERED_STATE];
+                        Entity::BUSINESS_REGISTERED_STATE],
+                        SelectiveRequiredFields::REGISTERED_POA_FIELDS ];
         }
     }
 

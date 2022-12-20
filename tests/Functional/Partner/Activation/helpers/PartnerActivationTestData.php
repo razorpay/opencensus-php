@@ -84,7 +84,7 @@ return [
                     'merchant_id'  => '1cXSLlUU8V9sXl',
                     'hold_funds'   => false,
                     'verification' => [
-                        'activation_progress' => 78,
+                        'activation_progress' => 80,
                         'status'              => 'disabled',
                         'required_fields'     => ['bank_account_number', 'bank_branch_ifsc'],
                     ],
@@ -114,9 +114,39 @@ return [
                     'merchant_id'  => '1cXSLlUU8V9sXl',
                     'hold_funds'   => false,
                     'verification' => [
-                        'activation_progress' => 89,
+                        'activation_progress' => 90,
                         'status'              => 'disabled',
                         'required_fields'     => ['company_pan'],
+                    ],
+                    'can_submit'   => false
+                ]
+            ],
+        ],
+    ],
+
+    'testSavePartnerActivationForRegisteredBusinessWithoutPOA' => [
+        'request'  => [
+            'url'     => '/partner/activation',
+            'method'  => 'POST',
+            'content' => [
+                'bank_account_name'              => 'User 1',
+                'bank_account_number'            => '051610000039259',
+                'bank_branch_ifsc'               => 'UBIN0805165',
+                'business_registered_address'    => '507, Koramangala 1st block',
+                'business_registered_pin'        => '560034',
+                'business_registered_city'       => 'Bengaluru',
+                'business_registered_state'      => 'KA'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'partner_activation' => [
+                    'merchant_id'  => '1cXSLlUU8V9sXl',
+                    'hold_funds'   => false,
+                    'verification' => [
+                        'activation_progress' => 80,
+                        'status'              => 'disabled',
+                        'required_fields'     => ['company_pan', 'promoter_address_url'],
                     ],
                     'can_submit'   => false
                 ]

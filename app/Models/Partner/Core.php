@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Constants\Product;
 use RZP\Exception;
+use RZP\Trace\Tracer;
 use RZP\Jobs\BulkMigrateResellerToAggregatorJob;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntity;
@@ -448,11 +449,15 @@ class Core extends Detail\Core
     {
         $merchantDetails = $merchant->merchantDetail;
 
-        $validationFields = $this->getPartnerValidationFields($merchantDetails);
+        [$validationFields, $validationSelectiveRequiredFields] = $this->getPartnerValidationFields($merchantDetails);
 
-        $totalRequiredFieldCount = count($validationFields);
+        $totalRequiredFieldCount = count($validationFields) + count($validationSelectiveRequiredFields);
 
         $merchantDetailsArr = $merchantDetails->toArray();
+
+        $documentsResponse = Tracer::inSpan(['name' => 'fetch_document_response'], function() use ($merchant) {
+            return $this->documentCore()->documentResponse($merchant);
+        });
 
         $requiredFields = [];
 
@@ -464,7 +469,15 @@ class Core extends Detail\Core
             }
         }
 
+        $this->calculateRequiredDocumentFields(
+            $merchant,
+            $validationSelectiveRequiredFields,
+            $documentsResponse,
+            $requiredFields);
+
         $response = [];
+
+        $response[Activation\Constants::DOCUMENTS] = $documentsResponse;
 
         if (count($requiredFields) > 0)
         {

@@ -124,6 +124,15 @@ class PartnerActivationTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testSavePartnerActivationForRegisteredBusinessWithoutPOA()
+    {
+        $this->createMerchant(self::MERCHANT_ID, true, null, true, false);
+
+        $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
+
+        $this->startTest();
+    }
+
     public function testSubmitPartnerActivationForNonRegisteredBusinessActivated()
     {
         $this->createMerchant(self::MERCHANT_ID, false, null);
@@ -164,6 +173,22 @@ class PartnerActivationTest extends OAuthTestCase
         $this->assertEquals('under_review', $state['name']);
 
         $this->assertEquals('partner_activation', $state['entity_type']);
+    }
+
+    /**
+     * @param        $merchantId
+     * @param        $documentType
+     * @param string $ocrVerificationStatus
+     */
+    private function createMerchantDocumentEntries($merchantId, $documentType, $ocrVerificationStatus = 'verified'): void
+    {
+        $this->fixtures->create(
+            'merchant_document',
+            [
+                'merchant_id'   => $merchantId,
+                'document_type' => $documentType,
+                'ocr_verify'    => $ocrVerificationStatus,
+            ]);
     }
 
     public function testSubmitPartnerActivationWhenMerchantActivationLocked()
@@ -599,7 +624,7 @@ class PartnerActivationTest extends OAuthTestCase
         );
     }
 
-    private function createMerchant(string $merchantId, bool $registeredBusinessType, $activationStatus, bool $isPartner = true)
+    private function createMerchant(string $merchantId, bool $registeredBusinessType, $activationStatus, bool $isPartner = true, bool $submitPOADoc = true)
     {
         $businessType = $registeredBusinessType === true ? 4 : 1;
 
@@ -633,6 +658,13 @@ class PartnerActivationTest extends OAuthTestCase
                 'user_id'     => User::MERCHANT_USER_ID,
                 'role'        => 'owner',
             ]);
+
+        if($submitPOADoc === true)
+        {
+            $this->createMerchantDocumentEntries(self::MERCHANT_ID, 'aadhar_front');
+
+            $this->createMerchantDocumentEntries(self::MERCHANT_ID, 'aadhar_back');
+        }
     }
 
     private function fillAllRequirements(string $merchantId, bool $registeredBusinessType)
