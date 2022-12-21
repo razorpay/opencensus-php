@@ -489,6 +489,8 @@ class Core extends Base\Core
 
         unset($input[MerchantEntity::SIGNUP_SOURCE]);
 
+        unset($input[MerchantEntity::COUNTRY_CODE]);
+
         unset($input['invitation']);
 
         unset($input['token_data']);
@@ -522,6 +524,8 @@ class Core extends Base\Core
         // as the RequestOriginProduct is primary for these two flows
         $signupSource = $input[MerchantEntity::SIGNUP_SOURCE] ?? null;
 
+        $countryCode = $input[MerchantEntity::COUNTRY_CODE] ?? null;
+
         $invitation = $input['invitation'] ?? null;
 
         if (empty($invitation) === false)
@@ -537,6 +541,11 @@ class Core extends Base\Core
         }
 
         if ($this->app['basicauth']->getRequestOriginProduct() === Product::BANKING)
+        {
+            return;
+        }
+
+        if ($countryCode === 'MY')
         {
             return;
         }
