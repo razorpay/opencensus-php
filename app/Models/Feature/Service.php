@@ -42,7 +42,7 @@ class Service extends Base\Service
 
         $validator->validateForRouteLaPennyTestingFeature($input[Constants::NAMES]);
 
-        $this->validateIfDisabledFeaturesArePresent($input);
+        $this->validateIfDisabledFeaturesArePresent($input, $entityType, $entityId);
 
         $featureParams = $this->buildFeatureParams($input, $entityType, $entityId);
 
@@ -65,16 +65,25 @@ class Service extends Base\Service
         return $features->toArray();
     }
 
-    protected function validateIfDisabledFeaturesArePresent($input)
+    protected function validateIfDisabledFeaturesArePresent($input, $entityType, $entityId)
     {
-        $env = $this->app['env'];
+        $entityType = $entityType ?? $input[Entity::ENTITY_TYPE];
 
-        if($env !== Environment::PRODUCTION)
+        $entityId = $entityId ?? $input[Entity::ENTITY_ID];
+
+        if($entityType !== Constants::MERCHANT)
         {
             return;
         }
 
-        if($this->merchant->isFeatureEnabled(Constants::ONLY_DS) === false)
+        $merchant = $this->repo->merchant->find($entityId);
+
+        if(isset($merchant) === false)
+        {
+            return;
+        }
+
+        if($merchant->isFeatureEnabled(Constants::ONLY_DS) === false)
         {
             return;
         }
@@ -86,7 +95,7 @@ class Service extends Base\Service
             Features::WHITE_LABELLED_QRCODES,
         ];
 
-        $check = array_intersect($disabledFeatures, $input['features']);
+        $check = array_intersect($disabledFeatures, $input[Entity::NAMES]);
 
         if(count($check) === 0)
         {
