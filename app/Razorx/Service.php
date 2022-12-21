@@ -266,6 +266,7 @@ class Service extends Base\Service
             'hide_PI_details',
             'rx_custom_access_control_disabled',
             'rx_vp_reports',
+            'rx_ba_sync_survey'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
