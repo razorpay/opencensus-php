@@ -155,10 +155,6 @@ class Core extends Base\Core
                 throw new Exception\BadRequestValidationFailureException('Invalid Terminal Configuration');
             }
         }
-        else
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_MERCHANT);
-        }
     }
 
     protected function validateBuyPricing(& $input)
