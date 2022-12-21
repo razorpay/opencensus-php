@@ -1,6 +1,7 @@
 <?php
 
 use Carbon\Carbon;
+use RZP\Diag\EventCode;
 use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Models\Contact;
@@ -36,6 +37,7 @@ use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Mail\BankingAccount\UpdatesForAuditor;
 use RZP\Services\Segment\XSegmentClient;
 use RZP\Models\BankingAccountStatement\Details;
+use RZP\Tests\Functional\Helpers\MocksDiagTrait;
 use RZP\Services\Segment\SegmentAnalyticsClient;
 use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -70,6 +72,7 @@ class BankingAccountTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
     use EventsTrait;
+    use MocksDiagTrait;
     use CreateLegalDocumentsTrait;
 
     const DefaultMerchantId = '10000000000000';
@@ -494,6 +497,11 @@ class BankingAccountTest extends TestCase
             ],
         ];
 
+        $this->assertFreshDeskTicketCreatedEventFired(true,[
+            'banking_account_id' => substr($bankingAccountId,5),
+            'status'             => 'picked',
+        ]);
+
         $this->startTest($dataToReplace);
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
@@ -539,6 +547,11 @@ class BankingAccountTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
 
         $this->ba->addXOriginHeader();
+
+        $this->assertFreshDeskTicketCreatedEventFired(true,[
+            'banking_account_id' => substr($bankingAccountId,5),
+            'status'             => 'picked',
+        ]);
 
         $this->startTest($dataToReplace);
 
@@ -597,6 +610,15 @@ class BankingAccountTest extends TestCase
                 ],
             ]
         ];
+
+        if ($shouldQueue)
+        {
+            $this->assertFreshDeskTicketCreatedEventFired(true,[
+                'banking_account_id' => $baId,
+                'status'             => 'picked',
+            ]);
+
+        }
 
         $this->ba->proxyAuth('rzp_test_' . self::DefaultMerchantId);
 
@@ -670,6 +692,15 @@ class BankingAccountTest extends TestCase
         ];
 
         $this->ba->mobAppAuthForInternalRoutes();
+
+        if ($shouldQueue)
+        {
+            $this->assertFreshDeskTicketCreatedEventFired(true,[
+                'banking_account_id' => $baId,
+                'status'             => 'picked',
+            ]);
+
+        }
 
         $this->startTest($dataToReplace);
 
@@ -853,6 +884,11 @@ class BankingAccountTest extends TestCase
                 'method'  => 'PATCH',
             ],
         ];
+
+        $this->assertFreshDeskTicketCreatedEventFired(true,[
+            'banking_account_id' => substr($bankingAccountId,5),
+            'status'             => 'picked',
+        ]);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
 
@@ -6825,6 +6861,11 @@ class BankingAccountTest extends TestCase
             ],
         ];
 
+        $this->assertFreshDeskTicketCreatedEventFired(true,[
+            'banking_account_id' => substr($bankingAccountId,5),
+            'status'             => 'picked',
+        ]);
+
         $this->ba->adminAuth();
 
         $this->startTest($dataToReplace);
@@ -10925,6 +10966,8 @@ class BankingAccountTest extends TestCase
 
         Mail::fake();
 
+        $this->assertFreshDeskTicketCreatedEventFired(false,[]);
+
         $this->startTest();
 
         Mail::assertNotQueued(XProActivation::class);
@@ -11178,6 +11221,11 @@ class BankingAccountTest extends TestCase
             ]
         ];
 
+        $this->assertFreshDeskTicketCreatedEventFired(true,[
+            'banking_account_id' => $baId,
+            'status'             => 'picked',
+        ]);
+
         $this->startTest($dataToReplace);
 
         Mail::assertQueued(XProActivation::class, 1);
@@ -11276,6 +11324,28 @@ class BankingAccountTest extends TestCase
         $core->addSalesPOCToBankingAccount($ba, 'admin_' . ORG::SUPER_ADMIN);
 
         $this->verifyFreshDeskTicketCreationBehaviourForSalesLed($ba->getId(), $baActivationDetail->getId(), [], $activationDetail, $admin);
+    }
+
+    private function assertFreshDeskTicketCreatedEventFired(bool $shouldFireEvent, array $payload): EventCode|\Mockery\MockInterface|\Mockery\LegacyMockInterface
+    {
+        $diagMock = $this->createAndReturnDiagMock();
+
+        if ($shouldFireEvent)
+        {
+            $diagMock->shouldReceive('trackOnboardingEvent')
+                ->once()
+                ->withArgs(function($eventData, $merchant, $ex, $actualData) use ($payload) {
+                    $this->assertEquals($payload, $actualData);
+                    $this->assertEquals(EventCode::X_CA_ONBOARDING_FRESHDESK_TICKET_CREATE, $eventData);
+                    return true;
+                })
+                ->andReturnNull();
+        } else
+        {
+            $diagMock->shouldNotReceive('trackOnboardingEvent');
+        }
+
+        return $diagMock;
     }
 
     public function testGetOpsMxPocsList()

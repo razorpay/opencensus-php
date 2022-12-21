@@ -814,6 +814,11 @@ class EventCode
         'name'  => 'x.ca.opportunity.upsert'
     ];
 
+    const X_CA_ONBOARDING_FRESHDESK_TICKET_CREATE = [
+        'group' => 'onboarding',
+        'name'  => 'x.ca.freshdesk_ticket.create'
+    ];
+
     const VIRTUAL_ACCOUNT_CREATED = [
         'group' => 'virtual_account',
         'name'  => 'virtual_account.created',

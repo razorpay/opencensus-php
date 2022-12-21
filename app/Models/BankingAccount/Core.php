@@ -7,6 +7,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Models\Contact;
+use RZP\Diag\EventCode;
 use RZP\Models\Counter;
 use RZP\Models\Feature;
 use RZP\Constants\Mode;
@@ -352,6 +353,12 @@ class Core extends Base\Core
                     'status'             => $bankingAccount->getStatus(),
                     'message'            => 'Mail Sent'
                 ]);
+
+            $this->app['diag']->trackOnboardingEvent(EventCode::X_CA_ONBOARDING_FRESHDESK_TICKET_CREATE, $bankingAccount->merchant, null, [
+                'banking_account_id' => $bankingAccount->getId(),
+                'status'             => $bankingAccount->getStatus()
+            ]);
+
         }
         catch(\Exception $e)
         {
