@@ -18,7 +18,7 @@ import { ProviderShimmer } from './ProviderShimmer';
     const { navigator, session } = state;
     const { rules, loading, default_rule, terminalProviders, providers_loading } = navigator;
     return {
-      rules,
+      rules: rules ?? [],
       isLoading: loading,
       default_rule,
       isProvidersLoading: providers_loading,
@@ -77,14 +77,14 @@ export default class RuleList extends React.Component {
 
   render() {
     const { isCollapsed, redirect } = this.state;
-    const { terminalProviders, isProvidersLoading } = this.props;
+    const { isLoading, terminalProviders, isProvidersLoading, default_rule, rules } = this.props;
     const docsLinkProps = {
       url: 'https://razorpay.com/docs/payments/optimizer/',
       title: <span>Documentation</span>,
     };
-    if (redirect) {
-      return <Redirect to={redirect} />;
-    }
+
+    if (redirect) return <Redirect to={redirect} />;
+
     return (
       <div className="routing-container">
         <div className="panel gateway-list" style={{ borderLeft: 0, borderRight: 0 }}>
@@ -148,7 +148,7 @@ export default class RuleList extends React.Component {
           <div class="panel-header">
             <h2 class="payment-gateway-title" style={{ marginTop: '20px', marginBottom: '10px' }}>
               <span className="provider-title">Default Rule</span>
-              <Link to={`/optimizer/rules/${this.props.default_rule.id}`} class="pull-right">
+              <Link to={`/optimizer/rules/${default_rule?.id}`} class="pull-right">
                 <button className="pull-right no-border create-rule-act"> View Default Rule</button>
               </Link>
             </h2>
@@ -158,13 +158,13 @@ export default class RuleList extends React.Component {
               <div className="col-xs-12">
                 <p style={{ marginTop: '-13px', paddingLeft: '20px !important' }}>
                   All transactions which do not fall under the custom rules will be routed via{' '}
-                  <Link to={`/optimizer/rules/${this.props.default_rule.id}`}>
+                  <Link to={`/optimizer/rules/${default_rule?.id}`}>
                     <span className="rule-status-label default-rule-status-label status-label label label-info">
                       {uniqueArray(
-                        this.props.default_rule.rules
-                          .filter((i) => i.expression.operands[0].operands)
+                        (default_rule?.rules ?? [])
+                          .filter((i) => i?.expression?.operands?.[0]?.operands)
                           .map((i) => {
-                            let id = i.expression.operands[0].operands[1].value;
+                            let id = i?.expression?.operands?.[0]?.operands?.[1]?.value;
                             const id_arr = id?.split('_');
                             if (id_arr?.length > 0) {
                               id = id_arr[id_arr?.length - 1];
@@ -197,7 +197,7 @@ export default class RuleList extends React.Component {
           <div class="panel-body pt0" style={{ paddingLeft: '25px !important' }}>
             <div class="row">
               <div className="col-xs-12">
-                {this.props.isLoading ? (
+                {isLoading ? (
                   <div class="page-spinner-container">
                     <Spinner />
                   </div>
@@ -208,13 +208,11 @@ export default class RuleList extends React.Component {
                   >
                     <DataTable
                       title="Rules"
+                      items={rules}
                       empty_placeholder={
                         <div class="rule-list-empty-placeholder">
                           <p className="text-center no-rule">No custom rule set!</p>
-                          <p className="text-center start-now">
-                            Create a new custom rule now.
-                            {/* <a class="nav-link">Learn More</a> */}
-                          </p>
+                          <p className="text-center start-now">Create a new custom rule now.</p>
                           <div class="text-center">
                             <Link to="/optimizer/create-rule">
                               <button style={{ marginTop: '15px' }} className="btn btn-primary">
@@ -227,7 +225,7 @@ export default class RuleList extends React.Component {
                       columns={[
                         {
                           title: 'Priority',
-                          value: (v) => this.props.rules.indexOf(v) + 1,
+                          value: (v) => rules?.indexOf(v) + 1,
                         },
                         {
                           title: 'Rule Name',
@@ -235,8 +233,8 @@ export default class RuleList extends React.Component {
                             const url = 'optimizer/rules';
                             return (
                               <div class="rule-table-overflow">
-                                <Link to={`/${url}/${item.id}`}>
-                                  {idItem(removeMid(item.name))}
+                                <Link to={`/${url}/${item?.id}`}>
+                                  {idItem(removeMid(item?.name))}
                                 </Link>
                               </div>
                             );
@@ -246,13 +244,15 @@ export default class RuleList extends React.Component {
                           title: 'Condition On',
                           value: (v) => {
                             const OP =
-                              v.precondition.type == 'logical'
-                                ? v.precondition.operands
-                                : [v.precondition];
+                              v?.precondition?.type === 'logical'
+                                ? v?.precondition?.operands
+                                : [v?.precondition];
                             return (
                               <div class="rule-table-overflow">
                                 {uniqueArray(
-                                  OP.map((o) => getValue('parameter', o.operands[0].value).name),
+                                  OP.map(
+                                    (o) => getValue('parameter', o?.operands?.[0]?.value)?.name,
+                                  ),
                                 ).join(', ')}
                               </div>
                             );
@@ -263,8 +263,8 @@ export default class RuleList extends React.Component {
                           value: (val) => (
                             <div className="rule-table-overflow">
                               {uniqueArray(
-                                val.rules.map((i) => {
-                                  let id = i.expression.operands[0].operands[1].value;
+                                (val?.rules ?? []).map((i) => {
+                                  let id = i?.expression?.operands?.[0]?.operands?.[1]?.value;
                                   const id_arr = id?.split('_');
                                   if (id_arr?.length > 0) {
                                     id = id_arr[id_arr?.length - 1];
@@ -277,7 +277,7 @@ export default class RuleList extends React.Component {
                         },
                         {
                           title: 'Created At',
-                          value: (v) => moment(v.created_at).format('DD/MM/YYYY'),
+                          value: (v) => moment(v?.created_at).format('DD/MM/YYYY'),
                         },
                         {
                           title: 'Status',
@@ -286,16 +286,15 @@ export default class RuleList extends React.Component {
                             return (
                               <span
                                 class={`rule-detail-mode rule-status-label status-label label label-${
-                                  status == 'live' ? 'success' : 'info'
+                                  status === 'live' ? 'success' : 'info'
                                 }`}
                               >
-                                {status == 'live' ? 'Live' : 'Draft'}
+                                {status === 'live' ? 'Live' : 'Draft'}
                               </span>
                             );
                           },
                         },
                       ]}
-                      items={this.props.rules}
                     />
                   </div>
                 )}
