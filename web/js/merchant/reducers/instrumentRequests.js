@@ -871,7 +871,7 @@ const initialState = {
       leafList: [
         {
           header: 'International Payments',
-          docLink: 'https://razorpay.com/accept-international-payments/',
+          docLink: 'https://razorpay.com/docs/payments/payments/international-payments/',
           list: [
             {
               name: 'International Cards',
