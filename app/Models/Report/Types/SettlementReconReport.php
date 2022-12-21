@@ -30,6 +30,7 @@ class SettlementReconReport extends BasicEntityReport
                 Adjustment\Entity::ENTITY . '.' . E::PAYMENT . '.' . E::ORDER,
             ],
             E::SETTLEMENT,
+            E::CREDIT_REPAYMENT
         ]
     ];
 

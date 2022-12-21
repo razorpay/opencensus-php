@@ -2,13 +2,14 @@
 
 namespace RZP\Models\CreditRepayment;
 
-use RZP\Models\Base\PublicEntity;
+use RZP\Constants\Entity as E;
+use RZP\Models\Base;
 
-class Entity extends PublicEntity
+class Entity extends Base\PublicEntity
 {
     protected static $sign = 'repay';
 
-    protected $entity = 'credit_repayment';
+    protected $entity = E::CREDIT_REPAYMENT;
 
     const MERCHANT_ID      = 'merchant_id';
     const AMOUNT           = 'amount';
@@ -46,5 +47,16 @@ class Entity extends PublicEntity
     public function transaction()
     {
         return $this->belongsTo(\RZP\Models\Transaction\Entity::class);
+    }
+
+    public static function create(array $input): Entity
+    {
+        $creditRepayment = (new Entity);
+        $creditRepayment->setAttribute(self::ID, $input['id']);
+        $creditRepayment->setAttribute(self::AMOUNT, $input['amount']);
+        $creditRepayment->setAttribute(self::CURRENCY, $input['currency']);
+        $creditRepayment->setAttribute(self::MERCHANT_ID, $input['merchant_id']);
+        $creditRepayment->setAttribute(self::TRANSACTION_ID, $input['transaction_id']);
+        return $creditRepayment;
     }
 }
