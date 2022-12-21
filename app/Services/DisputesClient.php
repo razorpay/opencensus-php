@@ -19,7 +19,9 @@ class DisputesClient
     const CONTENT_TYPE      = 'content-type';
     const CONTENT_TYPE_JSON = 'application/json';
     const X_REQUEST_ID      = 'X-Request-ID';
-    const X_MERCHANT_ID      = 'X-Merchant-ID';
+    const X_MERCHANT_ID     = 'X-Merchant-ID';
+    const X_AUTH_TYPE       = 'X-Auth-Type';
+    const X_IS_EXPRESS      = 'X-Is-Express';
 
     protected $client;
 
@@ -67,6 +69,8 @@ class DisputesClient
             self::CONTENT_TYPE  => 'application/json',
             self::X_REQUEST_ID  => $this->app['request']->getTaskId(),
             self::X_MERCHANT_ID => $this->app['basicauth']->getMerchantId(),
+            self::X_AUTH_TYPE   => $this->app['basicauth']->getAuthType(),
+            self::X_IS_EXPRESS   => $this->app['basicauth']->isExpress(),
         ];
     }
 

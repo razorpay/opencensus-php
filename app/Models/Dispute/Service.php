@@ -330,7 +330,16 @@ class Service extends Base\Service
 
         if ($this->app['basicauth']->isExpress() === true)
         {
-            return $dispute->toArrayAdmin();
+            $res = $dispute->toArrayAdmin();
+
+            $this->trace->info(
+                TraceCode::DISPUTE_FETCH_REQUEST_EXPRESS,
+                [
+                    'response'  => $res,
+                ],
+            );
+
+            return $res;
         }
 
         return $dispute->toArrayPublicWithExpand();
