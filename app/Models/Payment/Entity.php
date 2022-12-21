@@ -6065,4 +6065,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return false;
     }
 
+    public function getFormattedCreatedAtWithTimeZone(){
+        $timeZone = $this->merchant->getTimeZone();
+        return Carbon::createFromTimestamp($this->getCreatedAt(), $timeZone)->format('dS M, Y H:i:s A ')  . Timezone::getTimeZoneAbbrevation($timeZone);
+    }
+
 }

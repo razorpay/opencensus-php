@@ -11,6 +11,7 @@ use RZP\Services\Dcs;
 use RZP\Constants\Mode;
 use RZP\Constants\Product;
 use RZP\Constants\Table;
+use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\LogicException;
@@ -3769,6 +3770,15 @@ class Entity extends Base\PublicEntity
     public function getCurrency()
     {
         return Currency::getCurrencyForCountry($this->getCountry()) ?? "INR";
+    }
+
+    public function getTimeZone(){
+
+        $country = $this->getCountry();
+        if ($country == 'MY'){
+            return Timezone::MYT;
+        }
+        return Timezone::IST;
     }
 
 }

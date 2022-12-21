@@ -566,8 +566,8 @@ class Notify
                 'timestamp'            => $this->payment->getUpdatedAt(),
                 'captured_at'          => $this->payment->getAttribute('captured_at'),
                 'amount_spread'        => $this->payment->getAmountComponents(),
-                'created_at_formatted' => Carbon::createFromTimestamp($this->payment->getCreatedAt(), Timezone::IST)->format('dS M, Y H:i:s A T'),
-
+                // note that payment method is unavailable to the merchant
+                'created_at_formatted' => $this->payment->getFormattedCreatedAtWithTimeZone(),
                 // note that payment method is unavailable to the merchant
                 'method'               => $this->payment->getMethodWithDetail(),
                 'orderId'              => $this->payment->getOrderId(),
