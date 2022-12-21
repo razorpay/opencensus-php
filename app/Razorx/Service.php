@@ -264,7 +264,8 @@ class Service extends Base\Service
             'rx_mtp_downtime_enabled',
             'rx_accounting_onboarding_banner',
             'hide_PI_details',
-            'rx_custom_access_control_disabled'
+            'rx_custom_access_control_disabled',
+            'rx_vp_reports',
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
