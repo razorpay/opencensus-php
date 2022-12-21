@@ -110,7 +110,6 @@ class Validator extends Base\Validator
     ];
 
    protected static $globalCreateValidators = [
-       Entity::EMAIL,
        'provider',
    ];
 

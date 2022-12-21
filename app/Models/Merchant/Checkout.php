@@ -60,6 +60,11 @@ class Checkout
 
     const DYNAMIC_WALLET_FLOW = 'dynamic_wallet_flow';
 
+    const EMAIL_LESS_CHECKOUT_ALLOWED_LIBRARIES = [
+        Payment\Analytics\Metadata::CHECKOUTJS, // standard checkout
+        Payment\Analytics\Metadata::HOSTED, // hosted checkout
+    ];
+
     protected $app;
     /**
      * @var Trace

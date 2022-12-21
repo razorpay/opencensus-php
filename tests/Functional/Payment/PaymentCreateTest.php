@@ -23,6 +23,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Admin;
 use RZP\Error\ErrorCode;
 use RZP\Models\Feature;
+use RZP\Services\Dcs;
 use RZP\Jobs\EsSync;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
@@ -36,6 +37,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\UpiMetadata;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Mail\Payment\Refunded as RefundedMail;
 use RZP\Mail\Payment\Captured as CapturedMail;
@@ -10190,5 +10192,148 @@ class PaymentCreateTest extends TestCase
         }
 
         $this->assertEquals($billingAddress['postal_code'], $addressEntity['zipcode']);
+    }
+
+    public function testPaymentCreateWhenInputEmailIsNotPresentAndWithStandardCheckoutLibraryExpectsSuccessfulPaymentCreation(): void
+    {
+        $this->doPaymentCreateAndCalculateFees('checkoutjs');
+    }
+
+    public function testPaymentCreateWhenInputEmailIsNotPresentAndWithHostedCheckoutLibraryExpectsSuccessfulPaymentCreation()
+    {
+        $this->doPaymentCreateAndCalculateFees('hosted');
+    }
+
+    public function testPaymentCreateWhenInputEmailIsNotPresentAndWithCustomCheckoutLibraryExpectsPaymentCreationFailureWithEmailRequiredException()
+    {
+        $this->doPaymentCreateAndCalculateFees('razorpayjs', false);
+    }
+
+    public function testPaymentCreateWhenInputEmailIsNotPresentAndNonRazorpayOrgMerchantExpectsPaymentCreationFailureWithEmailRequiredException()
+    {
+        $this->fixtures->org->createHdfcOrg();
+        
+        $this->fixtures->edit(
+            'merchant',
+            '10000000000000',
+            [
+                "org_id" => Org::HDFC_ORG,
+            ]
+        );
+        
+        $this->doPaymentCreateAndCalculateFees('checkoutjs', false);
+    }
+
+    public function testPaymentCreateWhenInputEmailIsNotPresentAndNonINRCurrencyExpectsPaymentCreationFailureWithEmailRequiredException()
+    {
+        $input['currency'] = 'USD';
+
+        $this->doPaymentCreateAndCalculateFees('checkoutjs', false, $input);
+    }
+
+    public function testPaymentCreateWhenInputEmailIsNotPresentAndEmailRequiredMerchantExpectsPaymentCreationFailureWithEmailRequiredException()
+    {
+        $this->fixtures->merchant->addFeatures([Dcs\Features\Constants::ShowEmailOnCheckout]);
+        $this->fixtures->merchant->removeFeatures([Dcs\Features\Constants::EmailOptionalOnCheckout]);
+
+        $this->doPaymentCreateAndCalculateFees('checkoutjs', false);
+    }
+
+    public function testPaymentCreateWhenInputEmailIsPresentAndEmailRequiredMerchantExpectsSuccessfulPaymentCreation()
+    {
+        $this->fixtures->merchant->addFeatures([Dcs\Features\Constants::ShowEmailOnCheckout]);
+        $this->fixtures->merchant->removeFeatures([Dcs\Features\Constants::EmailOptionalOnCheckout]);
+
+        $input['email'] = 'randomemail@gmail.com';
+
+        $this->doPaymentCreateAndCalculateFees('checkoutjs', true, $input);
+    }
+
+    public function testPaymentCreateWhenInputEmailIsNotPresentAndEmailOptionalMerchantExpectsSuccessfulPaymentCreation()
+    {
+        $this->fixtures->merchant->addFeatures([Dcs\Features\Constants::ShowEmailOnCheckout, Dcs\Features\Constants::EmailOptionalOnCheckout]);
+
+        $this->doPaymentCreateAndCalculateFees('checkoutjs');
+    }
+
+    public function testPaymentCreateWhenInputEmailIsPresentAndEmailOptionalMerchantExpectsSuccessfulPaymentCreation()
+    {
+        $this->fixtures->merchant->addFeatures([Dcs\Features\Constants::ShowEmailOnCheckout, Dcs\Features\Constants::EmailOptionalOnCheckout]);
+
+        $input['email'] = 'randomemail@gmail.com';
+
+        $this->doPaymentCreateAndCalculateFees('checkoutjs', true, $input);
+    }
+
+    public function testPaymentCreateWhenInputEmailIsPresentAndEmailLessMerchantExpectsSuccessfulPaymentCreation()
+    {
+        $this->fixtures->merchant->addFeatures([Dcs\Features\Constants::ShowEmailOnCheckout, Dcs\Features\Constants::EmailOptionalOnCheckout]);
+
+        $input['email'] = 'randomemail@gmail.com';
+
+        $this->doPaymentCreateAndCalculateFees('checkoutjs', true, $input);
+    }
+
+    protected function doPaymentCreateAndCalculateFees($library, $expectsSuccessfulPayment = true, $input = [])
+    {
+        $this->ba->publicAuth();
+    
+        $payment = $this->getDefaultPaymentArray();
+
+        unset($payment['email']);
+
+        if (isset($input['email'])) {
+            $payment['email'] = $input['email']; 
+        }
+
+        $payment['currency'] = $input['currency'] ?? 'INR';
+
+        $payment['_']['library'] = $library;
+
+        $paymentCreatUrls = ['/payments/create/ajax', '/payments/create/checkout', '/payments/create/fees'];
+
+        foreach($paymentCreatUrls as $url)
+        {
+            if ($url === '/payments/create/fees')
+            {
+                $this->fixtures->merchant->enableConvenienceFeeModel();
+                $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
+            }
+
+            $request = [
+                'method'  => 'POST',
+                'url'     => $url,
+                'content' => $payment,
+            ];
+
+            if ($expectsSuccessfulPayment)
+            {
+                $response = $this->makeRequestAndGetContent($request);
+
+                if ($url === '/payments/create/fees')
+                {
+                    $this->assertEquals($response['display']['fees'], 10);
+                }
+                else
+                {
+                    $this->assertNotEmpty($response['razorpay_payment_id']);
+                    $currentPayment = $this->getDbEntityById('payment', $response['razorpay_payment_id']);
+
+                    if (isset($input['email'])) {
+                        $this->assertEquals($currentPayment['email'], $input['email']);
+                    }
+                }
+            }
+            else
+            {
+                $this->makeRequestAndCatchException(
+                    function() use ($request) {
+                        $this->makeRequestAndGetContent($request);
+                    },
+                    BadRequestValidationFailureException::class,
+                    'The email field is required.'
+                );
+            }
+        }
     }
 }

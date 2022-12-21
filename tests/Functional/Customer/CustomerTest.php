@@ -320,31 +320,6 @@ class customerTest extends TestCase
         $this->assertEquals($responseWithValidEmail['success'], 1);
     }
 
-    public function testOtpWorkFlowWithEmailRequired()
-    {
-        $this->ba->publicAuth();
-
-        $this->mockRaven();
-
-        $this->sendOtp('9988776655');
-
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow($data, function()
-        {
-            $this->verifyOtp('9988776655', null, '233323');
-        });
-
-        $this->runRequestResponseFlow($data, function()
-        {
-            $this->verifyOtp('9988776655', '', '233323');
-        });
-
-        $responseWithValidEmail = $this->verifyOtp('9988776655', 'test@razorpay.com', '233323');
-
-        $this->assertEquals($responseWithValidEmail['success'], 1);
-    }
-
     public function testOtpFlowWithoutDeviceToken()
     {
         $this->ba->publicAuth();

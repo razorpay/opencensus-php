@@ -32,6 +32,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\HashAlgo;
 use RZP\Models\Locale\Core as LocaleCore;
 use RZP\Models\Payment\TokenisationConsent;
+use RZP\Models\Merchant\Checkout;
 
 class PaymentCreateController extends Controller
 {
@@ -223,6 +224,8 @@ class PaymentCreateController extends Controller
             return $tokenisationConsent->returnTokenisationConsentView($input);
         }
 
+        $this->addDummyEmailIfApplicable($input, $merchant);
+
         $ret = $this->createPayment();
 
         if ((is_array($ret)) and
@@ -358,9 +361,11 @@ class PaymentCreateController extends Controller
 
         (new Payment\Metric())->pushCheckoutSubmitRequestMetrics($input, $startTime);
 
-        $data = $this->service(E::PAYMENT)->process($input);
-
         $merchant =  $this->app['basicauth']->getMerchant();
+
+        $this->addDummyEmailIfApplicable($input, $merchant);
+
+        $data = $this->service(E::PAYMENT)->process($input);
 
         $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
 
@@ -515,9 +520,11 @@ class PaymentCreateController extends Controller
             unset($input['view']);
         }
 
-        $data = $this->service(E::PAYMENT)->processAndReturnFees($input);
-
         $merchant =  $this->app['basicauth']->getMerchant();
+
+        $this->addDummyEmailIfApplicable($input, $merchant);
+
+        $data = $this->service(E::PAYMENT)->processAndReturnFees($input);
 
         // Converts all the amounts to rupees
 
@@ -1972,6 +1979,42 @@ class PaymentCreateController extends Controller
             return true;
         }
         return false;
+    }
+
+
+    /**
+     * Email less checkout: DUMMY_EMAIL addition to bypass payment create validations.
+     *
+     * Based on following conditions -
+     * Standard/hosted checkout library and email empty and international payment check and
+     * (no show_email_on_checkout feature  or email_optional_on_checkout) => email required
+     * Email customizations on std/hosted checkout based on feature flags -
+     * show_email_on_checkout => false and email_optional_on_checkout => false ==> email-less checkout
+     * show_email_on_checkout => true  and email_optional_on_checkout => false ==> email is mandatory on checkout
+     * show_email_on_checkout => true  and email_optional_on_checkout => true  ==> email is optional on checkout
+     * show_email_on_checkout => false and email_optional_on_checkout => true  ==> email-less checkout
+     *
+     * @param array          &$input
+     * @param MerchantEntity $merchant
+     *
+     * @return void
+     */
+    protected function addDummyEmailIfApplicable(array &$input, MerchantEntity $merchant): void
+    {
+        $library = $input['_']['library'] ?? '';
+
+        if (in_array($library, Checkout::EMAIL_LESS_CHECKOUT_ALLOWED_LIBRARIES, true) &&
+            (!$merchant->isEmailShownOnCheckout() || $merchant->isEmailOptionalOnCheckout()) &&
+            !isset($input['email']) &&
+            $merchant->isRazorpayOrgId() &&
+            (!isset($input['currency']) || ($input['currency'] === Currency::INR)))
+        {
+            $input['email'] = Payment\Entity::DUMMY_EMAIL;
+
+            $request = Request::instance();
+            
+            $request->merge(['email' => Payment\Entity::DUMMY_EMAIL]);
+        }
     }
 
     protected function shouldReturnCallbackViewForNon3ds($id,$data): bool {
