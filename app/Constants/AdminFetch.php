@@ -3386,6 +3386,10 @@ class AdminFetch
                     Fetch::LABEL  => 'Contact Email',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
+                'contact' => [
+                    Fetch::LABEL  => 'Contact Number',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
                 'gateway' => Fetch::FIELD_GATEWAY,
                 'gateway_terminal_id' => [
                     Fetch::LABEL  => 'Gateway Terminal Id',

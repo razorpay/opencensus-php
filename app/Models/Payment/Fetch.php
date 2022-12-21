@@ -13,6 +13,7 @@ class Fetch extends BaseFetch
     const RULES = [
         self::DEFAULTS => [
             Entity::EMAIL                        => 'sometimes|email',
+            Entity::CONTACT                      => 'sometimes|string|max:15',
             Entity::ORDER_ID                     => 'sometimes|string|size:20',
             Entity::INVOICE_ID                   => 'sometimes|public_id|size:18',
             Entity::TRANSFERRED                  => 'sometimes|boolean|in:0,1',
@@ -70,6 +71,7 @@ class Fetch extends BaseFetch
     const ACCESSES = [
         AuthType::PRIVATE_AUTH => [
             Entity::EMAIL,
+            Entity::CONTACT,
             Entity::ORDER_ID,
             Entity::INVOICE_ID,
             Entity::TRANSFERRED,
