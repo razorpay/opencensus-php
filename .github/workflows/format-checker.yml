@@ -65,12 +65,28 @@ jobs:
           npm ci
           base=$base npm run validate-lint
           npx eslint \
+          --output-file eslint_report.json --format json \
           --ext .js,.jsx,.ts,.tsx \
           ${{ steps.changed-files.outputs.all_modified_files }}
+        continue-on-error: true
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
           base: origin/${{ github.base_ref }}
+
+      - name: Annotate ES lint issues
+        uses: ataylorme/eslint-annotate-action@v2
+        id: eslint-annotator
+        # skip test for revert pr's
+        if: |
+          !(
+            startsWith(steps.branch-name.outputs.current_branch, 'revert-') ||
+            startsWith(steps.branch-name.outputs.current_branch, 'skiplint-')
+          )
+        with:
+          repo-token: '${{ secrets.GITHUB_TOKEN }}'
+          report-json: 'eslint_report.json'
+          check-name: "Eslint Report"
 
       - name: Get changed Stylus files
         id: changed-stylus-files
