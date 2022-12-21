@@ -10902,6 +10902,37 @@ IFSC Code  ICIC0001206
         $this->startTest();
     }
 
+    public function testGetMerchantNcCount()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '100ghi000ghi00', 'contact_email' => 'test@gmail.com']);
+
+        $this->fixtures->create('state', [
+            'entity_id'   =>  '100ghi000ghi00',
+            'entity_type' => 'merchant_detail',
+            'name'        => 'under_review'
+        ]);
+
+        $this->fixtures->create('state', [
+            'entity_id'   =>  '100ghi000ghi00',
+            'entity_type' => 'merchant_detail',
+            'name'        => 'needs_clarification'
+        ]);
+
+        $this->fixtures->create('state', [
+            'entity_id'   =>  '100ghi000ghi00',
+            'entity_type' => 'merchant_detail',
+            'name'        => 'under_review'
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchants/100ghi000ghi00/nc_count';
+
+        $this->startTest();
+    }
+
     public function testInternalGetMerchantPayoutService()
     {
         $this->ba->appAuthLive($this->config['applications.payouts_service.secret']);

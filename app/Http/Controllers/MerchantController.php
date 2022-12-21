@@ -1784,6 +1784,13 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getMerchantNcCount(string $merchantId)
+    {
+        $response = $this->service()->getMerchantNcCount($merchantId);
+
+        return ApiResponse::json($response);
+    }
+
     /**
      * returns merchant name and website only, to be used by internal apps
      */
@@ -3663,7 +3670,7 @@ class MerchantController extends Controller
 
         return ApiResponse::json([], 200);
     }
-        
+
 
     public function getMerchantConsents(string $merchantId)
     {

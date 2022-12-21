@@ -452,6 +452,7 @@ class Route
         'merchant_details_suggested_update'        => ['post',     'merchants/details/suggested_update',             'MerchantController@updateSuggestedMerchantDetails'                 ],
         'internal_merchants_fetch'                 => ['get',      'internal/merchants',                             'MerchantController@getMerchantBulk'                                ],
         'internal_merchant_fetch'                  => ['get',      'internal/merchants/{id}',                        'MerchantController@internalGetMerchant'                            ],
+        'merchant_nc_count_admin'                  => ['get',      'merchants/{id}/nc_count',                        'MerchantController@getMerchantNcCount'                            ],
         'internal_payment_instruments_fetch'       => ['get',      'internal/payment_instruments_fetch',             'MerchantController@internalGetPaymentInstruments'                            ],
         'internal_merchants_fetch_by_params'       => ['get',      'internal/iir/merchants',                         'MerchantController@fetchMerchantsByparams'                         ],
         'internal_merchant_submission_date'        => ['get',      'internal/merchants/{id}/submission_date',       'MerchantController@internalGetMerchantSubmissionDate'               ],
@@ -7591,6 +7592,7 @@ class Route
 
         // CMMA Service
         'cmma_service_admin_proxy',
+        'merchant_nc_count_admin',
 
         'freshchat_put_chat_timings_config',
         'freshchat_get_chat_timings_config',
@@ -8938,6 +8940,7 @@ class Route
         'care_service_dark_proxy'                             => Permission::CARE_SERVICE_DARK_PROXY,
 
         'cmma_service_admin_proxy'                            => Permission::CMMA_SERVICE_PROXY_ACCESS,
+        'merchant_nc_count_admin'                                   => Permission::VIEW_MERCHANT,
 
         'freshchat_put_chat_timings_config'                   => Permission::MANAGE_FRESHCHAT,
         'freshchat_get_chat_timings_config'                   => Permission::MANAGE_FRESHCHAT,
@@ -11514,6 +11517,7 @@ class Route
             'care_service_admin_proxy',
             'care_service_dark_proxy',
             'cmma_service_admin_proxy',
+            'merchant_nc_count_admin',
             'channel_health_check',
             'checkout',
             'checkout_embedded',

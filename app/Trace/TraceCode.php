@@ -5601,6 +5601,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_BALANCE_ID                                   = 'MERCHANT_BALANCE_ID';
     const MERCHANT_FETCH                                        = 'MERCHANT_FETCH';
     const MERCHANT_GET_INTERNAL                                 = 'MERCHANT_GET_INTERNAL';
+    const MERCHANT_NC_COUNT                                     = 'MERCHANT_NC_COUNT';
     const MERCHANT_FETCH_FAILED                                 = 'MERCHANT_FETCH_FAILED';
     const USER_FETCH_FAILED_FOR_SEGMENT_EVENT                   = 'USER_FETCH_FAILED_FOR_SEGMENT_EVENT';
     const XSEGMENT_EVENT_DISPATCH                               = 'XSEGMENT_EVENT_DISPATCH';

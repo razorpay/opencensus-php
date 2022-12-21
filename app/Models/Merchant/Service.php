@@ -11069,4 +11069,21 @@ class Service extends Base\Service
             $config
         );
     }
+
+    public function getMerchantNcCount($merchantId)
+    {
+        $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchantId);
+
+        $statusChangeLogs = (new Merchant\Core)->getActivationStatusChangeLog($merchantDetails->merchant);
+
+        $ncCount = (new MerchantDetailCore())->getStatusChangeCount($statusChangeLogs, Merchant\Detail\Status::NEEDS_CLARIFICATION);
+
+        $this->trace->info(TraceCode::MERCHANT_NC_COUNT,
+            [
+                'merchant_id'           => $merchantId,
+                'nc_count'              => $ncCount,
+            ]);
+
+        return ['nc_count' => $ncCount];
+    }
 }

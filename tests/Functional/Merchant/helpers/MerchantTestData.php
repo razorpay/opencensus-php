@@ -8072,6 +8072,19 @@ return [
         ]
     ],
 
+    'testGetMerchantNcCount'    =>  [
+        'request'       =>  [
+            'method'    =>  'GET',
+            'url'       =>  '/merchants/{id}/nc_count'
+        ],
+        'response'      =>  [
+            'content'   => [
+                'nc_count'  =>  1
+            ],
+            'status_code'   =>  200
+        ]
+    ],
+
     'testInternalGetMerchantPayoutService'    =>  [
         'request'       =>  [
             'method'    =>  'GET',
@@ -13722,7 +13735,7 @@ return [
             'status_code' => 200
         ],
     ],
-    
+
     'testOneCcGiftCardConfigs' => [
         'request' => [
             'url' => '/1cc/merchant/configs',
