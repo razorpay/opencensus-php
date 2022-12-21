@@ -15,11 +15,16 @@ import {
   getURLQueryParams,
   isPasswordUXImprovementEnabled,
   isTestEnvironment,
+  getHostName,
 } from 'newAuth/utils';
 import { setCookie } from 'common/utils/cookies';
 import CommanderShieldThemeWrapper from 'newAuth/commanderShieldThemeWrapper';
+import { fetchOrg } from 'newAuth/apis';
+import { FullPageLoader } from 'common/components/Loader';
 
 const SignUp = () => {
+  const [programDsCheck, setProgramDsCheck] = useState(false);
+  const [isFetchingOrgData, setFetchingOrgData] = useState(false);
   const [oneTapInfo, setOneTapInfo] = useState({
     isExpOn: true,
     isScriptFailed: window.isOneTapScriptFailed,
@@ -75,6 +80,27 @@ const SignUp = () => {
     });
   }, []);
 
+  const getOrgData = () => {
+    setFetchingOrgData(true);
+    fetchOrg()
+      .then((res) => {
+        const isProgramDsCheck = res?.data?.features?.indexOf('program_ds_check') > -1;
+        setProgramDsCheck(isProgramDsCheck);
+        setFetchingOrgData(false);
+      })
+      .catch(() => {
+        setFetchingOrgData(false);
+      });
+  };
+
+  // Check org feature flag 'program_ds_check' & allow sign up
+  useEffect(() => {
+    // Only fetch org data if it's a banking url
+    if (getHostName() !== 'dashboard.razorpay.com') {
+      getOrgData();
+    }
+  }, []);
+
   const handleContactUsClick = () => {
     window.rzpQ.push(
       window.rzpQ.now().onbr().initiated('signup.secondary_links', { source: 'Contact us' }),
@@ -101,52 +127,55 @@ const SignUp = () => {
   const query = QueryString.parse(window.location.search);
 
   // enable signup for invitation merchant
-  const disableSignup = !query.invitation;
-
+  const disableSignup = !query.invitation && !programDsCheck;
   return (
     <ThemeProvider theme={theme}>
-      <Size minHeight="100vh">
-        <Container>
-          <Size maxWidth="830px" height="100%">
-            <Flex flexDirection="column">
-              <ContentContainer>
-                <Header
-                  handleOnClick={handleLoginClick}
-                  isSignUpFromWebsite={isSignUpFromWebsite}
-                />
-                {/* Temprorary disable signup */}
-                {disableSignup ? (
-                  <DisableSignupContainer>
-                    <Text size="large" weight="bold" align="center">
-                      We are under scheduled maintenance.
-                      <br /> Apologies for the inconvenience.
-                    </Text>
-                  </DisableSignupContainer>
-                ) : (
-                  <RelativeView>
-                    <RefereeBanner />
-                    <AbsoluteView>
-                      <CommanderShieldThemeWrapper>
-                        <Auth
-                          appName="dashboard"
-                          authClientId={window.OAUTH_CLIENT_ID}
-                          oneTapInfo={oneTapInfo}
-                          showPasswordRules={isPasswordUXImprovementEnabled()}
-                          skipCaptcha={isTestEnvironment()}
-                          autoReadOtpSignup
-                          showMobileSignup
-                        />
-                      </CommanderShieldThemeWrapper>
-                    </AbsoluteView>
+      {isFetchingOrgData ? (
+        <FullPageLoader />
+      ) : (
+        <Size minHeight="100vh">
+          <Container>
+            <Size maxWidth="830px" height="100%">
+              <Flex flexDirection="column">
+                <ContentContainer>
+                  <Header
+                    handleOnClick={handleLoginClick}
+                    isSignUpFromWebsite={isSignUpFromWebsite}
+                  />
+                  {/* Temprorary disable signup */}
+                  {disableSignup ? (
+                    <DisableSignupContainer>
+                      <Text size="large" weight="bold" align="center">
+                        We are under scheduled maintenance.
+                        <br /> Apologies for the inconvenience.
+                      </Text>
+                    </DisableSignupContainer>
+                  ) : (
+                    <RelativeView>
+                      <RefereeBanner />
+                      <AbsoluteView>
+                        <CommanderShieldThemeWrapper>
+                          <Auth
+                            appName="dashboard"
+                            authClientId={window.OAUTH_CLIENT_ID}
+                            oneTapInfo={oneTapInfo}
+                            showPasswordRules={isPasswordUXImprovementEnabled()}
+                            skipCaptcha={isTestEnvironment()}
+                            autoReadOtpSignup
+                            showMobileSignup
+                          />
+                        </CommanderShieldThemeWrapper>
+                      </AbsoluteView>
 
-                    <InfoContainer handleContactUsClick={handleContactUsClick} />
-                  </RelativeView>
-                )}
-              </ContentContainer>
-            </Flex>
-          </Size>
-        </Container>
-      </Size>
+                      <InfoContainer handleContactUsClick={handleContactUsClick} />
+                    </RelativeView>
+                  )}
+                </ContentContainer>
+              </Flex>
+            </Size>
+          </Container>
+        </Size>
+      )}
     </ThemeProvider>
   );
 };
