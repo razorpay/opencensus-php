@@ -74,7 +74,7 @@ class Entity extends Base\PublicEntity
         self::WEBSITE_DETAILS                => [],
         self::APP_URLS                       => null,
         self::BLACKLISTED_PRODUCTS_CATEGORY  => null,
-        self::PLUGIN_DETAILS                 => null,
+        self::PLUGIN_DETAILS                 => [],
         self::LEAD_SCORE_COMPONENTS          => [],
         self::ONBOARDING_SOURCE              => null,
         self::PG_USE_CASE                    => null

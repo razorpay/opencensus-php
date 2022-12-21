@@ -127,6 +127,11 @@ class Core extends Base\Core
                         unset($input[Constants::TXN_URL]);
                     }
 
+                    if (empty($input[Entity::PLUGIN_DETAILS]) === false)
+                    {
+                        $input[Entity::PLUGIN_DETAILS] = [$input[Entity::PLUGIN_DETAILS]];
+                    }
+
                     $businessDetail->build($input);
 
                     $this->repo->merchant_business_detail->saveOrFail($businessDetail);

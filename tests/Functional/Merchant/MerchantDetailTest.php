@@ -8109,8 +8109,10 @@ We look forward to transacting with you!
         $businessDetail = $this->getLastEntity('merchant_business_detail', true);
 
         $expectedData = [
-            'website' => 'https://flipkart.com',
-            'merchant_selected_plugin' => 'wix'
+            [
+                'website' => 'https://flipkart.com',
+                'merchant_selected_plugin' => 'wix'
+            ]
         ];
 
         $this->assertEquals($expectedData, $businessDetail['plugin_details']);
@@ -8143,8 +8145,10 @@ We look forward to transacting with you!
         $businessDetail = $this->getLastEntity('merchant_business_detail', true);
 
         $expectedData = [
-            'website' => 'https://flipkart.com',
-            'merchant_selected_plugin' => 'wix'
+            [
+                'website' => 'https://flipkart.com',
+                'merchant_selected_plugin' => 'wix'
+            ]
         ];
 
         $this->assertEquals($expectedData, $businessDetail['plugin_details']);
@@ -8174,8 +8178,10 @@ We look forward to transacting with you!
         $businessDetail = $this->getDbLastEntity('merchant_business_detail', 'live');
 
         $expectedData = [
-            'website' => 'www.liotec.ch',
-            'suggested_plugin' => 'DummyTestPluginType'
+            [
+             'website' => 'www.liotec.ch',
+             'suggested_plugin' => 'DummyTestPluginType'
+            ]
         ];
 
         $this->assertEquals($expectedData, $businessDetail['plugin_details']);
