@@ -1407,19 +1407,7 @@ EOT;
                     $query->orWhere($condition);
                 }
             });
-    }
-
-    public function fetchPaymentsForCustomerMethod($customer, $method, $skip)
-    {
-        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
-                    ->where(Payment\Entity::METHOD, '=', $method)
-                    ->where(Payment\Entity::GLOBAL_CUSTOMER_ID, '=', $customer->getId())
-                    ->whereNotNull(Payment\Entity::CAPTURED_AT)
-                    ->skip($skip)
-                    ->take(10)
-                    ->with('merchant', 'card')
-                    ->get();
-    }
+    } 
 
     public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $relations = [])
     {
@@ -3373,6 +3361,20 @@ EOT;
             ->WhereNotNull(Payment\Entity::TOKEN_ID)
             ->where(Payment\Entity::METHOD, Payment\Method::NACH)
             ->limit(5);
+    }
+
+    public function fetchPaymentsByContacts(array $contacts, int $skip, int $count) : Base\PublicCollection
+    {
+        $nowMinus6Months = Carbon::now()->subMonths(6)->getTimestamp();
+
+        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+            ->whereIn(Entity::CONTACT, $contacts)
+            ->where(Entity::CREATED_AT, '>=', $nowMinus6Months)
+            ->with(['merchant', 'refunds'])
+            ->skip($skip)
+            ->take($count)
+            ->latest()
+            ->get();
     }
 
     public function fetchDebitEmiPaymentsWithRelationsBetween($from, $to, $bank,$gateway)

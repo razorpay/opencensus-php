@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Customer;
 
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use Request;
@@ -16,6 +17,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Customer\Account\Constants as AccountConstants;
 use RZP\Error\PublicErrorDescription;
 use Razorpay\Trace\Logger as Trace;
 
@@ -681,47 +683,26 @@ class Service extends Base\Service
 
     public function fetchPaymentsForGlobalCustomer($input)
     {
-        Customer\Validator::validateFetchCustomerPaymentsInput($input);
+        (new Validator())->validateInput('fetch_payments_for_global_customer', $input);
 
-        $skip = 0;
+        $this->mode = $input['mode'] ?? Mode::LIVE;
 
-        if (empty($input['skip']) === false)
+        $this->auth->setModeAndDbConnection($this->mode);
+
+        $customer = $this->getCustomerFromSession();
+
+        if ($customer === null)
         {
-            $skip = $input['skip'];
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED
+            );
         }
 
-        $appTokenId = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
+        $skip = $input['skip'] ?? AccountConstants::FETCH_PAYMENTS_DEFAULT_SKIP;
 
-        $payments = new Base\PublicCollection;
+        $count = $input['count'] ?? AccountConstants::FETCH_PAYMENTS_DEFAULT_COUNT;
 
-        if ($appTokenId !== null)
-        {
-            $appToken = (new AppToken\Core)->getAppByAppTokenId($appTokenId, $this->merchant);
-
-            if ($appToken !== null)
-            {
-                $payments = $this->repo->payment->fetchPaymentsForCustomerMethod(
-                    $appToken->customer,
-                    Payment\Method::CARD,
-                    $skip);
-            }
-        }
-
-        $collection = new Base\PublicCollection;
-
-        foreach ($payments as $payment)
-        {
-            $info = array(
-                'merchant'  => $payment->merchant->getBillingLabel(),
-                'card'      => $payment->card->getLast4(),
-                'amount'    => $payment->getAmount(),
-                'time'      => $payment->getCaptureTimestamp(),
-                'id'        => $payment->getPublicId());
-
-            $collection->push($info);
-        }
-
-        return $collection->toArrayWithItems();
+        return $this->core->fetchPaymentsByCustomerContact($customer, $skip, $count);
     }
 
     public function createGlobalAddress(array $input)

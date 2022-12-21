@@ -4110,7 +4110,6 @@ class Route
         'emi_plans_fetch_multiple',
         'customer_get_saved_status',
         'app_delete_token',
-        'app_fetch_payments',
         'customer_logout_global',
         'customer_create_token_public',
         'otp_post',
@@ -9760,6 +9759,9 @@ class Route
         // Webhooks from Shopify
         '1cc_process_webhooks',
         '1cc_fetch_analytics',
+
+        // Support Dashboard Routes
+        'app_fetch_payments',
     ];
 
     public static $dynamicLifeTimeSession = [
@@ -10048,7 +10050,6 @@ class Route
             'is_admin_as_merchant',
             'adj_fetch_multiple',
             'app_delete_token',
-            'app_fetch_payments',
             'app_fetch_tokens',
             'app_merchant_mapping_get',
             'auth_link_paper_mandate_authenticate',
@@ -11400,7 +11401,6 @@ class Route
             'api_refunds_retry_without_verify',
             'app_create',
             'app_delete_token',
-            'app_fetch_payments',
             'app_fetch_tokens',
             'app_get',
             'app_mapping_create',

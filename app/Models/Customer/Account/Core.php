@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Customer;
 
+use Str;
 use http\Url;
 use Lib\PhoneBook;
 use RZP\Constants\Mode;
@@ -13,7 +14,9 @@ use RZP\Models\Customer;
 use RZP\Models\Address;
 use RZP\Models\Device;
 use RZP\Models\Merchant;
+use RZP\Models\Payment\Refund;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Customer\Account\Constants as AccountConstants;
 use RZP\Constants;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -1499,6 +1502,78 @@ class Core extends Base\Core
             true);
 
         return (new CustomerConsent1cc\Core())->recordCustomerConsent1cc($input, $customer, $this->merchant);
+    }
+
+    public function fetchPaymentsByCustomerContact(Customer\Entity $customer, int $skip, int $count): array
+    {
+        $contacts = $this->getCustomerContactWithAndWithoutCountryCode($customer);
+
+        // Since this is a direct auth route - and we do not have the merchant ID
+        // we need to allow multiple fetch without merchant ID
+        $this->repo->payment->setMerchantIdRequiredForMultipleFetch(false);
+        $this->repo->refund->setMerchantIdRequiredForMultipleFetch(false);
+
+        $payments = $this->repo->payment->fetchPaymentsByContacts($contacts, $skip, $count);
+
+        $paymentsDetails = [];
+
+        $paymentsDetails['has_more'] = true;
+
+        if (count($payments) < $count)
+        {
+            $paymentsDetails['has_more'] = false;
+        }
+
+        $paymentsDetails['payments'] = [];
+
+        $refundsService = new Refund\Service();
+
+        foreach ($payments as $payment)
+        {
+            $paymentsDetails['payments'][] = $this->formatPaymentDetailsForSupportPage(
+                $refundsService->getPaymentAlongWithRefundDetails($payment)
+            );
+        }
+
+        return $paymentsDetails;
+    }
+
+    protected function getCustomerContactWithAndWithoutCountryCode($customer): array
+    {
+        $contactWithCountryCode = $customer->getContact();
+
+        $phoneBook = new PhoneBook($contactWithCountryCode, false);
+
+        $countryCode = '+' . $phoneBook->getPhoneNumber()->getCountryCode();
+
+        $contact = $phoneBook->getRawInput();
+
+        $contactWithoutCountryCode = Str::startsWith($contact, $countryCode) ? substr($contact, strlen($countryCode)) : null;
+
+        $contacts = [$contact];
+
+        if ($contactWithoutCountryCode !== null)
+        {
+            $contacts[] = $contactWithoutCountryCode;
+        }
+
+        return $contacts;
+    }
+
+    protected function formatPaymentDetailsForSupportPage(array $paymentDetails) : array
+    {
+        if (empty($paymentDetails))
+        {
+            return $paymentDetails;
+        }
+
+        $formattedPaymentDetails = [];
+        $formattedPaymentDetails['payment'] = $paymentDetails['payments'][0]['payment'] ?? [];
+        $formattedPaymentDetails['refunds'] = $paymentDetails['payments'][0]['refunds'] ?? [];
+        $formattedPaymentDetails['business_support_details'] = $paymentDetails['business_support_details'];
+        $formattedPaymentDetails['payment']['merchant_logo'] = $paymentDetails['merchant_logo'];
+
+        return $formattedPaymentDetails;
     }
 
     protected function setUserProfileInResponse(array &$response, array $truecallerResponse): void

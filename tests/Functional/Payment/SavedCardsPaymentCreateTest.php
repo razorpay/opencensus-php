@@ -828,6 +828,8 @@ class SavedCardsPaymentCreateTest extends TestCase
      */
     public function testCustomerFetchPayments()
     {
+        $this->markTestSkipped("This is the old testcase related to /apps/payments, will update new testcases in separate PR");
+
         // create payments and fetch on public auth
         $this->testPaymentCreateAndSaveCardGlobal();
 
@@ -879,6 +881,8 @@ class SavedCardsPaymentCreateTest extends TestCase
      */
     public function testCustomerFetchPaymentsInvalidApp()
     {
+        $this->markTestSkipped("This is the old testcase related to /apps/payments, will update new testcases in separate PR");
+
         // create payments and fetch on public auth
         $this->testPaymentCreateAndSaveCardGlobal();
 

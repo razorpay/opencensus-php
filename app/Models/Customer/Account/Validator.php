@@ -96,8 +96,10 @@ class Validator extends Base\Validator
         'language_code'         => 'sometimes',
     ];
 
-    protected static $paymentRules = [
-        'skip'                  => 'sometimes|integer'
+    protected static $fetchPaymentsForGlobalCustomerRules = [
+        'skip'                    => 'sometimes|integer',
+        'count'                   => 'sometimes|integer|max:100',
+        'mode'                    => 'sometimes|in:test,live',
     ];
 
     protected static $walletAppCreateRules = [
@@ -228,11 +230,6 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED);
         }
-    }
-
-    public static function validateFetchCustomerPaymentsInput($input)
-    {
-        (new static)->validateInput('payment', $input);
     }
 
     public static function validateGlobalCustomerCreateInput($input)

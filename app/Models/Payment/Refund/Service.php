@@ -3828,4 +3828,27 @@ class Service extends Base\Service
             return 'Refund Details Filtered';
         }
     }
+
+    /**
+     * Fetches refund and merchant details for the payment.
+     *
+     * @param  Payment\Entity $payment
+     * @return array
+     */
+    public function getPaymentAlongWithRefundDetails(Payment\Entity $payment): array
+    {
+        $paymentDetails = [
+            RefundConstants::PAYMENTS => [],
+        ];
+
+        $this->populateRefundDetailsForCustomer($paymentDetails, $payment);
+
+        $merchantLogo = $payment->merchant->getFullLogoUrlWithSize('medium');
+
+        $paymentDetails['merchant_logo'] = $merchantLogo;
+
+        $this->populateMerchantSupportDetails($paymentDetails);
+
+        return $this->slicingDetailsforSecurity($paymentDetails);
+    }
 }
