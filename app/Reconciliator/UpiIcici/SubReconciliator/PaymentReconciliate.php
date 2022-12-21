@@ -109,7 +109,7 @@ class PaymentReconciliate extends UpiPaymentServiceReconciliate
         }
 
         // Fetch payment ID from bharat_qr
-        $amount = (int) ($row[self::AMOUNT] * 100);
+        $amount = (int)round(($row[self::AMOUNT] * 100));
 
         $qrCodePayment = $this->repo->bharat_qr->findByProviderReferenceIdAndAmount($referenceNumber, $amount);
 

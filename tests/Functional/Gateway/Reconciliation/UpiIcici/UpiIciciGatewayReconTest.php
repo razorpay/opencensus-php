@@ -485,6 +485,58 @@ class UpiIciciGatewayReconTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testQrPaymentReconWithDecimalAmount()
+    {
+        //while converting decimal values to paise, the value gets changed happens
+        //only with few numbers like (265.84, 2159.2, 1175.84)
+        //to validate that using this decimal value '1175.84'
+
+        $reconRow = $this->testData['upiIcici'];
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+        $this->fixtures->merchant->addFeatures(['qr_codes']);
+        $this->t2 = $this->fixtures->create('terminal:vpa_shared_terminal_icici');
+
+        $this->createQrCode(['type' => 'upi_qr']);
+        $qrCode = $this->getDbLastEntity('qr_code');
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+        $request['content']['BankRRN'] = $reconRow['bankTranID'];
+        $request['content']['merchantTranId'] = $qrCode->getReference() . 'qrv2';
+        $request['content']['PayerAmount'] = '1175.84';
+
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment = $this->getDbLastEntity('qr_payment');
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals($qrPayment['payment_id'], $payment['id']);
+
+        $reconRow['merchantID']         = $this->t2->getGatewayMerchantId();
+        $reconRow['merchantTranID']     = $qrCode->getReference() . 'qrv2';
+        $reconRow['subMerchantName']    = 'RAZORPAY BHARAT QR';
+        $reconRow['amount']             = '1175.84';
+
+        $entries[] = $reconRow;
+
+        $file = $this->writeToExcelFile($entries, 'mis_report','files/settlement','Recon MIS');
+        $uploadedFile = $this->createUploadedFile($file);
+        $this->reconcile($uploadedFile, 'UpiIcici');
+        $transactionId = $payment['transaction_id'];
+        $transaction = $this->getDbEntityById('transaction', $transactionId);
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        // Assert UPI entity
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertArraySubset([
+            'payment_id'            => $payment->getId(),
+            'npci_reference_id'     => $reconRow['bankTranID'],
+            'merchant_reference'    => $qrCode->getId() . 'qrv2',
+        ], $upi->toArray());
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     public function testQrPaymentReconWithRemarks()
     {
         $reconRow = $this->testData['upiIcici'];
