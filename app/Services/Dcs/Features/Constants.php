@@ -22,8 +22,8 @@ class Constants
         self::RefundEnabled => "example/pg/merchant/refund/Features",
         self::DisableAutoRefund => "example/pg/merchant/refund/Features",
         self::EligibilityEnabled => "rzp/pg/merchant/affordability/EligibilityFeatures",
-        self::ShowEmailOnCheckout => "rzp/pg/merchant/checkout/features/email/v1/EmailFieldCustomizationFeatures",
-        self::EmailOptionalOnCheckout => "rzp/pg/merchant/checkout/features/email/v1/EmailFieldCustomizationFeatures",
+        self::ShowEmailOnCheckout => "rzp/pg/merchant/checkout/EmailFieldCustomizationFeatures",
+        self::EmailOptionalOnCheckout => "rzp/pg/merchant/checkout/EmailFieldCustomizationFeatures",
     ];
 
     /**

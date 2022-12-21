@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6d88f50171a504e6d6e4971a9140e17d",
+    "content-hash": "67fa35070c1a0e3aa30df034d8d7b42c",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -10698,16 +10698,16 @@
         },
         {
             "name": "razorpay/config-proto",
-            "version": "v1.3.1",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/config-proto.git",
-                "reference": "c5839a0cc59b47f474fe08a5ae535596ed64159e"
+                "reference": "f2cc963352c967f1e0733c6eda7f82647b013bf7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/c5839a0cc59b47f474fe08a5ae535596ed64159e",
-                "reference": "c5839a0cc59b47f474fe08a5ae535596ed64159e",
+                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/f2cc963352c967f1e0733c6eda7f82647b013bf7",
+                "reference": "f2cc963352c967f1e0733c6eda7f82647b013bf7",
                 "shasum": ""
             },
             "require": {
@@ -10719,6 +10719,7 @@
                 "php": "^8.1",
                 "phpunit/phpunit": "^9.0"
             },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -10732,20 +10733,20 @@
                 "dcs-config",
                 "razorpay"
             ],
-            "time": "2022-12-14T10:16:04+00:00"
+            "time": "2022-12-21T07:37:35+00:00"
         },
         {
             "name": "razorpay/dcs-php-sdk",
-            "version": "v1.1.1",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/dcs-php-sdk.git",
-                "reference": "50209cceaa472d5d71bd2375d29d94097dc4ae64"
+                "reference": "23fde51d31f447245ce6fbf99efd6a2ff10f4706"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/dcs-php-sdk/zipball/50209cceaa472d5d71bd2375d29d94097dc4ae64",
-                "reference": "50209cceaa472d5d71bd2375d29d94097dc4ae64",
+                "url": "https://api.github.com/repos/razorpay/dcs-php-sdk/zipball/23fde51d31f447245ce6fbf99efd6a2ff10f4706",
+                "reference": "23fde51d31f447245ce6fbf99efd6a2ff10f4706",
                 "shasum": ""
             },
             "require": {
@@ -10759,12 +10760,13 @@
                 "illuminate/support": "^9.0",
                 "php": "^8.1",
                 "phpunit/phpunit": "^9.0",
-                "razorpay/config-proto": "v1.3.1"
+                "razorpay/config-proto": "dev-master"
             },
             "require-dev": {
                 "donatj/mock-webserver": "^2.5",
                 "kint-php/kint": "^3.3"
             },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -10791,7 +10793,7 @@
                 "dcs-php-sdk",
                 "razorpay"
             ],
-            "time": "2022-12-14T11:09:02+00:00"
+            "time": "2022-12-21T07:53:45+00:00"
         },
         {
             "name": "razorpay/ec2-metadata",
@@ -18973,6 +18975,8 @@
         "razorpay/oauth": 20,
         "symfony/mailgun-mailer": 20,
         "symfony/http-client": 20,
+        "razorpay/config-proto": 20,
+        "razorpay/dcs-php-sdk": 20,
         "laracasts/testdummy": 20,
         "roave/no-leaks": 20
     },
@@ -18989,5 +18993,5 @@
         "ext-curl": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.2.0"
 }
