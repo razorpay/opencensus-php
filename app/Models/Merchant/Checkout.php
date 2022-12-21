@@ -9,6 +9,7 @@ use RZP\Constants\Country;
 use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Customer\Truecaller\AuthRequest\Metric;
 use RZP\Models\Locale\Core as Locale;
 use RZP\Models\Order\ProductType;
 use Session;
@@ -45,6 +46,7 @@ use RZP\Models\SubscriptionRegistration\Validator as SubscriptionRegistrationVal
 use RZP\Models\Key;
 use RZP\Models\TrustedBadge;
 use RZP\Models\Customer\AppToken;
+use RZP\Models\Customer\Truecaller\AuthRequest\Service as TruecallerService;
 use RZP\Models\Merchant\OneClickCheckout\Constants;
 use RZP\Models\Merchant\OneClickCheckout\Config\Service as oneClickCheckoutConfigService;
 use RZP\Models\Merchant\CheckoutExperiment as CheckoutExperiment;
@@ -195,6 +197,8 @@ class Checkout
 
         $this->fillEmailRequiredOnCheckoutIfApplicable($data);
 
+        $this->fillTruecallerDetailsIfApplicable($input, $data, $merchant->getId());
+
         $this->fillCovidReliefDetails($merchant, $data, $mode);
 
         $this->fillMerchantPolicyPage($merchant,$data);
@@ -250,6 +254,37 @@ class Checkout
 
             $data['rtb_experiment'] = (new TrustedBadge\Core())->getRTBExperimentDetails($merchant->getId(), $contact);
         }
+    }
+
+    protected function fillTruecallerDetailsIfApplicable(array &$input, array &$data, $merchantId): void
+    {
+        try{
+            if ($this->shouldDisplayTruecaller($input, $data) === true)
+            {
+                $this->fillTruecallerDetails($merchantId, $data);
+            }
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->error(TraceCode::FILL_TRUECALLER_DETAILS_ERROR, [
+                'message'      => $exception->getMessage()
+            ]);
+
+            $this->trace->count(Metric::CREATE_TRUECALLER_ENTITY_REQUEST, [
+                'status' => 'error',
+            ]);
+        }
+    }
+
+    protected function fillTruecallerDetails(string $merchantId, array & $data): void
+    {
+        $input['context'] = $merchantId;
+
+        $input['service'] = 'checkout';
+
+        $truecallerAuthRequest = (new TruecallerService())->create($input);
+
+        $data['truecaller']['request_id'] = $truecallerAuthRequest->getId();
     }
 
     protected function fillCovidReliefDetails(Entity $merchant, array & $data, $mode)
@@ -335,23 +370,25 @@ class Checkout
     }
 
     /**
-     * This method is used to fill checkout experiment's results into $data
-     *
+     * @param array $input
      * @param array $data
-     *
-     * @return void
-     */
-    /**
-     * This method is used to fill checkout experiment's results into $data
-     * @param  array  $input
-     * @param  array  $data
-     * @param  string  $merchantId
-     *
+     * @param string $merchantId
      * @return void
      */
     protected function fillCheckoutExperiments(array $input, array &$data, string $merchantId): void
     {
         $data['experiments'] = (new CheckoutExperiment($input, $merchantId))->getCheckoutExperimentsResults();
+    }
+
+    protected function shouldDisplayTruecaller(array $input): bool
+    {
+        $inputValue = $input['truecaller'] ?? null;
+
+        if ($inputValue === null || $inputValue === 0)
+        {
+            return false;
+        }
+        return true;
     }
 
     protected function checkAndFillAppDetails(array $input, Entity $merchant, array &$data, $mode)
@@ -1615,18 +1652,48 @@ class Checkout
             }
         }
 
+        foreach (Feature\Constants::TRUECALLER_FEATURES as $feature)
+        {
+            $value = !$merchant->isFeatureEnabled($feature);
+
+            switch ($feature)
+            {
+                case Feature\Constants::DISABLE_TRUECALLER_LOGIN:
+                    $data['features']['truecaller']['login'] = $value;
+                    break;
+                case Feature\Constants::DISABLE_TRUECALLER_LOGIN_MWEB:
+                    $data['features']['truecaller']['login_mweb'] = $value;
+                    break;
+                case Feature\Constants::DISABLE_TRUECALLER_LOGIN_SDK:
+                    $data['features']['truecaller']['login_sdk'] = $value;
+                    break;
+                case Feature\Constants::DISABLE_TRUECALLER_LOGIN_CONTACT_SCREEN:
+                    $data['features']['truecaller']['login_contact_screen'] = $value;
+                    break;
+                case Feature\Constants::DISABLE_TRUECALLER_LOGIN_HOME_SCREEN:
+                    $data['features']['truecaller']['login_home_screen'] = $value;
+                    break;
+                case Feature\Constants::DISABLE_TRUECALLER_LOGIN_ADD_NEW_CARD_SCREEN:
+                    $data['features']['truecaller']['login_add_new_card_screen'] = $value;
+                    break;
+                case Feature\Constants::DISABLE_TRUECALLER_LOGIN_SAVED_CARDS_SCREEN:
+                    $data['features']['truecaller']['login_saved_cards_screen'] = $value;
+                    break;
+            }
+        }
+
         //adding this here because there are condition at checkout so we have to return this feature always true
         $data['features'][Feature\Constants::REDIRECT_TO_ZESTMONEY] = true;
 
     }
 
     /**
-     * This function will add `show_email_on_checkout` feature to features array of preferences response 
+     * This function will add `show_email_on_checkout` feature to features array of preferences response
      * based on email-less-checkout experiment.
      * if email-less-checkout experiment  returns -
-     * True  => We will not add/edit anything to features array of preferences response. 
+     * True  => We will not add/edit anything to features array of preferences response.
      *          We will send show_email_on_checkout and email_optional_oncheckout if they are enabled on merchant.
-     * False => We will add show_email_on_checkout to features array of preferences response. 
+     * False => We will add show_email_on_checkout to features array of preferences response.
      *          We will send email_optional_oncheckout if it is enabled on the merchant.
      *
      * @param  array &$data

@@ -7,6 +7,7 @@ use RZP\Exception;
 use Request;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
+use RZP\Models\Customer\Account\Metrics\Metric;
 use RZP\Models\Payout;
 use RZP\Models\Address;
 use RZP\Models\Payment;
@@ -16,6 +17,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Error\PublicErrorDescription;
+use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {
@@ -128,6 +130,62 @@ class Service extends Base\Service
         $customer = $this->core->edit($customer, $input);
 
         return $customer->toArrayPublic();
+    }
+
+    /**
+     * @param $input
+     * @return array
+     * @throws BadRequestException|\Throwable
+     */
+    public function editGlobalCustomer($input): array
+    {
+        $merchantId = $this->merchant->getId();
+
+        $this->trace->info(TraceCode::GLOBAL_CUSTOMER_EDIT_REQUEST, [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $this->trace->count(Metric::GLOBAL_CUSTOMER_EDIT_COUNT);
+
+        try{
+            Customer\Validator::validateEditGlobalCustomer($input);
+        }
+        catch(\Exception $exception)
+        {
+            // catching execption to log data
+            $this->trace->traceException($exception, Trace::ERROR, TraceCode::GLOBAL_CUSTOMER_EDIT_INVALID_INPUT, [
+                'merchant_id' => $merchantId,
+            ]);
+
+            $this->trace->count(Metric::GLOBAL_CUSTOMER_EDIT_ERROR, [
+                Metric::LABEL_ERROR_MESSAGE => TraceCode::GLOBAL_CUSTOMER_EDIT_INVALID_INPUT,
+            ]);
+
+            throw $exception;
+        }
+
+        $customer = $this->getCustomerFromSession();
+
+        if ($customer === null)
+        {
+            $this->trace->error(TraceCode::GLOBAL_CUSTOMER_NOT_FOUND_IN_SESSION, [
+                'merchant_id' => $merchantId,
+            ]);
+
+            $this->trace->count(Metric::GLOBAL_CUSTOMER_EDIT_ERROR, [
+                Metric::LABEL_ERROR_MESSAGE => TraceCode::GLOBAL_CUSTOMER_NOT_FOUND_IN_SESSION,
+            ]);
+
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED
+            );
+        }
+
+        $this->core->edit($customer, [
+            'email' => $input['email'],
+        ]);
+
+        return [];
     }
 
     /**
@@ -245,6 +303,29 @@ class Service extends Base\Service
 
         return $data;
     }
+
+    /**
+     * Verifies the authentication status of a request id.
+     *
+     * @param $input
+     * @return array
+     */
+    public function verifyTrueCallerAuthRequest($input): array
+    {
+        return $this->core->verifyTrueCallerAuthRequest($input, $this->merchant);
+    }
+
+    /**
+     * Verifies the authentication status of a request id for 1cc.
+     *
+     * @param $input
+     * @return array
+     */
+    public function verifyOneCCTrueCallerAuthRequest($input): array
+    {
+        return $this->core->verifyOneCCTrueCallerAuthRequest($input, $this->merchant);
+    }
+
     /**
      * @param  otp verification data
      * @return success with tokens or failure

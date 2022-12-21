@@ -8657,6 +8657,38 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const DEDUCT_OD_FROM_GATEWAY_BALANCE      = 'DEDUCT_OD_FROM_GATEWAY_BALANCE';
 
+    // ------------------------------ Truecaller Authentication Tracecodes ------------------------------
+    // Truecaller - request id traces
+    const CREATE_TRUECALLER_ENTITY_REQUEST                            = 'CREATE_TRUECALLER_ENTITY_REQUEST';
+    const FILL_TRUECALLER_DETAILS_ERROR                               = 'FILL_TRUECALLER_DETAILS_ERROR';
+
+    // Truecaller - callback traces
+    const TRUECALLER_CALLBACK_ERROR                                   = 'TRUECALLER_CALLBACK_ERROR';
+    const RECIEVED_TRUECALLER_CALLBACK                                = 'RECIEVED_TRUECALLER_CALLBACK';
+    const TRUECALLER_CALLBACK_MISSING_REQUEST_ID                      = 'TRUECALLER_CALLBACK_MISSING_REQUEST_ID';
+    const TRUECALLER_CALLBACK_MISSING_ACCESS_TOKEN                    = 'TRUECALLER_CALLBACK_MISSING_ACCESS_TOKEN';
+    const TRUECALLER_CALLBACK_MISSING_ENDPOINT                        = 'TRUECALLER_CALLBACK_MISSING_ENDPOINT';
+    const TRUECALLER_CALLBACK_INVALID_REQUEST_ID                      = 'TRUECALLER_CALLBACK_INVALID_REQUEST_ID';
+    const TRUECALLER_CALLBACK_INVALID_STATUS                          = 'TRUECALLER_CALLBACK_INVALID_STATUS';
+    const TRUECALLER_PROFILE_FETCHED                                  = 'TRUECALLER_PROFILE_FETCHED';
+
+    // Truecaller - fetch user profile traces
+    const TRUECALLER_PROFILE_ACCESS_DENIED                            = 'TRUECALLER_PROFILE_ACCESS_DENIED';
+    const TRUECALLER_REQUEST_ERROR                                    = 'TRUECALLER_REQUEST_ERROR';
+    const TRUECALLER_NON_TWO_HUNDERED_ERROR                           = 'TRUECALLER_NON_TWO_HUNDERED_ERROR';
+
+    // edit global customer traces
+    const GLOBAL_CUSTOMER_EDIT_REQUEST                                = 'GLOBAL_CUSTOMER_EDIT_REQUEST';
+    const GLOBAL_CUSTOMER_NOT_FOUND_IN_SESSION                        = 'GLOBAL_CUSTOMER_NOT_FOUND_IN_SESSION';
+    const GLOBAL_CUSTOMER_EDIT_INVALID_INPUT                          = 'GLOBAL_CUSTOMER_EDIT_INVALID_INPUT';
+
+    // Truecaller - Verify request traces
+    const TRUECALLER_VERIFY_REQUEST                                   = 'TRUECALLER_VERIFY_REQUEST';
+    const INVALID_TRUECALLER_VERIFY_REQUEST_FORMAT                    = 'INVALID_TRUECALLER_VERIFY_REQUEST_FORMAT';
+    const TRUECALLER_VERIFY_REQUEST_NOT_FOUND                         = 'TRUECALLER_VERIFY_REQUEST_NOT_FOUND';
+    const TRUECALLER_INTERNATIONAL_NUMBER_USED                        = 'TRUECALLER_INTERNATIONAL_NUMBER_USED';
+
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

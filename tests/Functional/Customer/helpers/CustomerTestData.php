@@ -266,6 +266,38 @@ return [
         ],
     ],
 
+    'testUpdateGlobalCustomerWithValidEmail' => [
+        'request' => [
+            'content' => [
+                'email'   => 'test@rzp.com'
+            ],
+        ],
+    ],
+
+    'testUpdateGlobalCustomerWithInvalidEmail' => [
+        'request' => [
+            'content' => [
+                'email'   => 'invalid_email_format'
+            ],
+        ],
+    ],
+
+    'testUpdateGlobalCustomerWithInvalidInput' => [
+        'request' => [
+            'content' => [
+                'other'   => 'malicious code'
+            ],
+        ],
+    ],
+
+    'testUpdateGlobalCustomerWithInvalidSession' => [
+        'request' => [
+            'content' => [
+                'email'   => 'test@rzp.com'
+            ],
+        ],
+    ],
+
     'testUpdateCustomerEmail' => [
         'request' => [
             'url' => '/customers/cust_100000customer',
