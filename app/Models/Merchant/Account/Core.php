@@ -57,6 +57,8 @@ class Core extends Merchant\Core
 
         (new Validator)->validateInput('create', $input);
 
+        $this->blockLinkedAccountCreationIfApplicable($parentMerchant);
+
         $merchantDetailsInput    = $this->getMerchantDetailsFromInput($input);
         $bankAccountDetailsInput = $this->getBankAccountDetailsFromInput($input[Entity::BANK_ACCOUNT] ?? []);
         $merchantDetailsInput    = array_merge($merchantDetailsInput, $bankAccountDetailsInput);

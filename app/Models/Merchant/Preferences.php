@@ -149,6 +149,7 @@ class Preferences
     const MID_EDELWEISS_ECL         = 'FfaKyVTNaPTBXf';
     const MID_EDELWEISS_EHFL        = 'Fg1qjtRFHMvHSy';
     const MID_EDELWEISS_ERFL        = 'Fg2AWmybDBvRBM';
+    const MID_ETSY                  = 'HscZ2md6SOPF3U';
 
     const MID_CLIX_CAPITAL            = 'AxEq4Z2U8Gd8vH';
     const MID_CLIX_CAPITAL_SERVICES   = 'Bkeuzp5jlMNhzD';
@@ -383,7 +384,15 @@ class Preferences
     ];
 
     const TRANSFER_SETTLED_WEBHOOK_MIDS = [
-        self::MID_BSE, self::MID_INDIABONDS,
+        self::MID_BSE,
+        self::MID_INDIABONDS,
+    ];
+
+    /**
+     * This is in regard to RBI compliance. The change is temporary and will be reverted soon.
+     */
+    const BLOCK_LINKED_ACCOUNT_CREATION_MIDS = [
+        self::MID_ETSY,
     ];
 
     const NO_MERCHANT_INVOICE_PARENT_MIDS =  [

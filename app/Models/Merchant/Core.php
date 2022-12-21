@@ -8700,4 +8700,17 @@ class Core extends Base\Core
         return false;
     }
 
+    public function blockLinkedAccountCreationIfApplicable(Entity $merchant)
+    {
+        if (in_array($merchant->getId(), Preferences::BLOCK_LINKED_ACCOUNT_CREATION_MIDS) === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CREATION_BLOCKED,
+                null,
+                [
+                    'parent_merchant_id'    => $merchant->getId(),
+                ]
+            );
+        }
+    }
 }

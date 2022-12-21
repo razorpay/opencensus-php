@@ -235,7 +235,7 @@ class Service extends Base\Service
     public function __construct()
     {
         parent::__construct();
-
+        
         $this->mutex = $this->app['api.mutex'];
 
         $this->featureService = new Feature\Service();
@@ -455,6 +455,11 @@ class Service extends Base\Service
 
             $isLinkedAccount = (bool) ($input['account'] ?? false);
 
+            if ($isLinkedAccount === true)
+            {
+                $this->core()->blockLinkedAccountCreationIfApplicable($merchant);
+            }
+
             $rateLimit = $this->subMOnboardingRateLimitEnabled($merchant, $isLinkedAccount, $source);
 
             if($rateLimit === true)
@@ -629,6 +634,8 @@ class Service extends Base\Service
                 'linked_account_name'   => $input[BatchHeader::ACCOUNT_NAME],
             ]
         );
+
+        $this->core()->blockLinkedAccountCreationIfApplicable($this->merchant);
 
         $submerchantInput = $this->extractSubmerchantInput($input);
 
