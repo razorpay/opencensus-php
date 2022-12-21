@@ -4698,7 +4698,8 @@ class Gateway
             self::UPI_YESBANK,
             self::UPI_JUSPAY,
             self::UPI_SBI,
-            self::UPI_ICICI
+            self::UPI_ICICI,
+            self::UPI_AXIS,
         ];
 
         return (in_array($gateway, $gateways, true));
