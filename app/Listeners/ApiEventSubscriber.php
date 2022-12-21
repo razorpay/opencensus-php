@@ -460,6 +460,8 @@ class ApiEventSubscriber extends Base\Core
 
         $this->notifySubscriptionRegistrationPaymentAuthorized($payment);
 
+        $this->pushForBarricade($payment);
+
         $this->dispatchEventToStork($payload);
 
         $this->dispatchOrderFor1ccShopify($payment);
@@ -642,38 +644,7 @@ class ApiEventSubscriber extends Base\Core
                     'payment_id' => $payment->getId(),
                 ]);
         }
-        $sqsPush = $this->app->razorx->getTreatment($payment->getId(), self::BARRICADE_MERCHANT_INTEGRATION, $this->mode);
-
-        if ($sqsPush === 'on'){
-
-            $data = $this->getPaymentPayload($payment);
-            $data['action'] = [
-                'action'=>self::BARRICADE_ACTION
-            ];
-
-            try {
-                $waitTime = 600;
-                $queueName = $this->app['config']->get('queue.barricade_verify.' . $this->mode);
-                $this->app['queue']->connection('sqs')->later($waitTime, "Barricade Queue Push", json_encode($data), $queueName);
-
-
-                $this->trace->info(TraceCode::BARRICADE_SQS_PUSH_SUCCESS,
-                    [
-                        'queueName' => $queueName,
-                        'data'      => $data,
-                    ]);
-
-            } catch (\Throwable $ex)
-            {
-                $this->trace->traceException(
-                    $ex,
-                    Trace::CRITICAL,
-                    TraceCode::BARRICADE_SQS_PUSH_FAILURE,
-                    [
-                        'payment_id' => $payment->getId(),
-                    ]);
-            }
-        }
+        $this->pushForBarricade($payment);
 
         $payload = $this->getPaymentPayload($payment);
         $this->dispatchEventToStork($payload);
@@ -2187,6 +2158,41 @@ class ApiEventSubscriber extends Base\Core
         }
 
         return;
+    }
+
+    protected function pushForBarricade($payment): void
+    {
+        $sqsPush = $this->app->razorx->getTreatment($payment->getId(), self::BARRICADE_MERCHANT_INTEGRATION, $this->mode);
+
+        if ($sqsPush === 'on') {
+
+            $data = $this->getPaymentPayload($payment);
+            $data['action'] = [
+                'action' => self::BARRICADE_ACTION
+            ];
+
+            try {
+                $waitTime = 600;
+                $queueName = $this->app['config']->get('queue.barricade_verify.' . $this->mode);
+                $this->app['queue']->connection('sqs')->later($waitTime, "Barricade Queue Push", json_encode($data), $queueName);
+
+
+                $this->trace->info(TraceCode::BARRICADE_SQS_PUSH_SUCCESS,
+                    [
+                        'queueName' => $queueName,
+                        'data' => $data,
+                    ]);
+
+            } catch (\Throwable $ex) {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::CRITICAL,
+                    TraceCode::BARRICADE_SQS_PUSH_FAILURE,
+                    [
+                        'payment_id' => $payment->getId(),
+                    ]);
+            }
+        }
     }
 
 }
