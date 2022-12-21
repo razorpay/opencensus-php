@@ -152,6 +152,7 @@ const initialState = {
   isTourVisible: false,
   isUsingPartnerMode: false,
   user_segment_data: null,
+  isTagsLoaded: false,
 };
 
 export default function sessionReducer(state = initialState, action) {
@@ -183,6 +184,16 @@ export default function sessionReducer(state = initialState, action) {
           ...state.user,
           tags: action?.payload?.data || [],
         }),
+        isTagsLoaded: true,
+      });
+
+    case `${UPDATE_USER_TAGS}::ERROR`:
+      return merge(state, {
+        user: new User({
+          ...state.user,
+          tags: [],
+        }),
+        isTagsLoaded: true,
       });
 
     case UPDATE_USER_FEATURES:

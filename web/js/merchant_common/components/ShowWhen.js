@@ -1,5 +1,8 @@
 import React from 'react';
 import { Route, Redirect } from 'react-router-dom';
+import Loader from 'common/ui/Loader';
+
+const TAGS_API_NOT_RESOLVED_YET = 'TAGS_API_NOT_RESOLVED_YET';
 
 function convertToArray(arrayOrString) {
   if (arrayOrString) {
@@ -10,7 +13,15 @@ function convertToArray(arrayOrString) {
 }
 
 export default (store) => (props) => {
-  return showWhenUtil(store)(props) ? props.children : null;
+  const loader = props?.loader;
+  const showWhenUtilResult = showWhenUtil(store)(props);
+
+  if (showWhenUtilResult === TAGS_API_NOT_RESOLVED_YET) {
+    return loader || <Loader />;
+  } else if (showWhenUtilResult) {
+    return props.children;
+  }
+  return null;
 };
 
 export function showWhenUtil(store) {
@@ -21,8 +32,15 @@ export function showWhenUtil(store) {
 
     const user = store && store.getState().session.user;
 
+    const isTagsDependent = props?.isTagDependent;
+    const isTagsLoaded = store?.getState()?.session?.isTagsLoaded;
+
     if (!user) {
       return false;
+    }
+
+    if (isTagsDependent && !isTagsLoaded) {
+      return TAGS_API_NOT_RESOLVED_YET;
     }
 
     if (myRole && notMyRole) {
@@ -41,7 +59,6 @@ export function showWhenUtil(store) {
     if (user.isAuthenticated) {
       userRole = user.userRole;
     }
-
     /*
      * (Greater the no., higher the priority)
      * Show content when
@@ -86,18 +103,25 @@ export function ShowWhenRoute(store, defaultPath = '/dashboard') {
   return ({ component: Component, ...rest }) => (
     <Route
       {...rest}
-      render={() =>
-        showWhenUtil(store)(rest) ? (
-          <Component {...rest} />
-        ) : (
-          <Redirect // nosemgrep : https://semgrep.dev/s/razorpay:rzp-react-router-redirect
-            to={{
-              pathname: defaultPath,
-              state: { from: rest.location, was404: true },
-            }}
-          />
-        )
-      }
+      render={() => {
+        const loader = rest?.loader;
+        const showWhenUtilResult = showWhenUtil(store)(rest);
+
+        if (showWhenUtilResult === TAGS_API_NOT_RESOLVED_YET) {
+          return loader || <Loader />;
+        } else if (showWhenUtilResult) {
+          return <Component {...rest} />;
+        } else {
+          return (
+            <Redirect // nosemgrep : https://semgrep.dev/s/razorpay:rzp-react-router-redirect
+              to={{
+                pathname: defaultPath,
+                state: { from: rest.location, was404: true },
+              }}
+            />
+          );
+        }
+      }}
     />
   );
 }

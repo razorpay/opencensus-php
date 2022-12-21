@@ -338,6 +338,7 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/success-rate"
             component={Transactions}
+            isTagDependent={true}
             additionalCondition={(usr) => this.props.mode === 'live' && usr.findTag('success_rate')}
           />
 
