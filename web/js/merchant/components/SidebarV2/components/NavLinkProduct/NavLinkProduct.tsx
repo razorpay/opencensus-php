@@ -5,7 +5,13 @@ import { PRODUCTS_DATA } from 'merchant/components/SidebarV2/utils/Products';
 import { ProductHeading, Items, Toggler } from './styled';
 import NavGroupShimmer from 'merchant/components/SidebarV2/components/Shimmer';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
-import { Products, NavLinkProductPropsInterface } from 'merchant/components/SidebarV2/typings';
+import {
+  NavLinkProductPropsInterface,
+  ProductsStateInterface,
+  FilterProductInterface,
+} from 'merchant/components/SidebarV2/typings';
+import { PromotedReservationState } from 'merchant/components/SidebarV2/constants/constants';
+import { swapElements } from 'merchant/components/SidebarV2/utils/utils';
 
 const NavLinkProduct = ({
   heading,
@@ -14,31 +20,64 @@ const NavLinkProduct = ({
   activeTab,
   loading,
   user,
+  section_id,
 }: NavLinkProductPropsInterface): JSX.Element | null => {
+  const [sectionProducts, setSectionProducts] = useState<ProductsStateInterface>();
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [validProducts, setValidProducts] = useState<Products[] | []>();
-
   const handleToggle = (): void => setIsOpen((prevState) => !prevState);
 
   useEffect(() => {
-    const productsToShow = products.filter(
-      (each) =>
-        PRODUCTS_DATA[each.product_id] &&
-        showWhenUtil({
-          additionalCondition: PRODUCTS_DATA[each.product_id].additionalCondition,
-        }),
+    const reservationState = PromotedReservationState[section_id];
+    const { valid } = products.reduce(
+      (accumulator, each, index) => {
+        if (
+          PRODUCTS_DATA[each.product_id] &&
+          showWhenUtil({
+            additionalCondition: PRODUCTS_DATA[each.product_id].additionalCondition,
+          })
+        ) {
+          accumulator.valid.push(each);
+          if (
+            each.category &&
+            reservationState?.[each.category] &&
+            accumulator[each.category] &&
+            accumulator[each.category].length < reservationState[each.category].reservedPos.length
+          ) {
+            accumulator[each.category].push(index + 1);
+          }
+        }
+        if (index === products.length - 1 && reservationState) {
+          const reservedArray = [...accumulator.valid];
+          Object.keys(reservationState).forEach((eachCategory) => {
+            if (accumulator[eachCategory]?.length) {
+              accumulator[eachCategory].forEach((position, index) => {
+                swapElements(
+                  reservedArray,
+                  position - 1,
+                  reservationState[eachCategory].reservedPos[index] - 1,
+                );
+              });
+            }
+          });
+          accumulator.valid = reservedArray;
+        }
+        return accumulator;
+      },
+      {
+        valid: [],
+        promoted: [],
+      } as FilterProductInterface,
     );
-    setValidProducts(productsToShow);
-    if (productsToShow.slice(3).find((each) => each.product_id === activeTab)) {
-      setIsOpen(true);
-    }
-  }, [products]);
+    setSectionProducts({
+      valid,
+    });
+  }, [products, section_id]);
 
   useEffect(() => {
-    if (validProducts?.slice(3).find((each) => each.product_id === activeTab)) {
+    if (sectionProducts?.valid?.slice(3).find((each) => each.product_id === activeTab)) {
       setIsOpen(true);
     }
-  }, [validProducts, activeTab]);
+  }, [sectionProducts, activeTab]);
 
   const RenderNavLink = ({ product }) => (
     <NavLinkItem
@@ -50,26 +89,26 @@ const NavLinkProduct = ({
     />
   );
 
-  return validProducts?.length ? (
+  return sectionProducts?.valid?.length ? (
     <>
       <ProductHeading>{heading}</ProductHeading>
       {loading ? (
         <NavGroupShimmer />
       ) : (
         <Items>
-          {validProducts.slice(0, 3).map((each, index) => (
+          {sectionProducts.valid.slice(0, 3).map((each, index) => (
             <RenderNavLink key={`${each.title}_${index}`} product={each} />
           ))}
           <Collapsible open={isOpen}>
             <Items>
-              {validProducts.slice(3).map((each, index) => (
+              {sectionProducts.valid.slice(3).map((each, index) => (
                 <RenderNavLink key={`${each.title}_${index}`} product={each} />
               ))}
             </Items>
           </Collapsible>
-          {validProducts.length > 3 && (
+          {sectionProducts.valid.length > 3 && (
             <Toggler onClick={handleToggle} type="button">
-              {isOpen ? 'Show less' : `Show all (${validProducts.length})`}
+              {isOpen ? 'Show less' : `Show all (${sectionProducts.valid.length})`}
             </Toggler>
           )}
         </Items>

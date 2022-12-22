@@ -11,7 +11,7 @@ import { NavLinkItemInterface } from 'merchant/components/SidebarV2/typings';
 const getTags = (type) => {
   return type.reduce((acc, each) => {
     switch (each) {
-      case 'New': {
+      case 'NEW': {
         acc.push(<NewTag>New</NewTag>);
         break;
       }

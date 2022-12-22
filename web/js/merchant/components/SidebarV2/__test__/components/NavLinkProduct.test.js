@@ -32,6 +32,7 @@ describe('NavLinkProduct', () => {
         loading: false,
         heading: FALLBACK_PRODUCTS[0].section_name,
         products: FALLBACK_PRODUCTS[0].product_options,
+        section_id: FALLBACK_PRODUCTS[0].section_id,
       },
     });
     await waitFor(() => {

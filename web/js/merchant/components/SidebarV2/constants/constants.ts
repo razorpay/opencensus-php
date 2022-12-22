@@ -11,3 +11,16 @@ export const ACTIVATION_STATE = {
   L2_DEDUPE_BLOCKED: 'L2_dedupe_blocked',
   REJECTED: 'rejected',
 };
+
+export const PromotedReservationState = {
+  payment_products: {
+    promoted: {
+      reservedPos: [3],
+    },
+  },
+  banking_products: {
+    promoted: {
+      reservedPos: [2, 3],
+    },
+  },
+};

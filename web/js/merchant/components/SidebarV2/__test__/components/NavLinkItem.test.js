@@ -104,7 +104,7 @@ describe('NavLinkItem', () => {
   test('should render tags when available', async () => {
     renderApp({
       props: {
-        tags: ['New'],
+        tags: ['NEW'],
         routes: {},
       },
     });

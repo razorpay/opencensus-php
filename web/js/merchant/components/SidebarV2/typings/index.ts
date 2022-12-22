@@ -47,7 +47,7 @@ export interface NavLinkItemInterface extends RouteComponentProps {
   title: string;
   icon: string;
   product_id: string;
-  tags: string[] | [];
+  tags: string[];
   activeTab?: string;
   routes: Record<string, string>;
   additionalCondition: (payload: any) => boolean;
@@ -58,9 +58,19 @@ export interface NavLinkItemInterface extends RouteComponentProps {
 
 export interface NavLinkProductPropsInterface {
   heading: string;
-  products: Products[] | [];
+  products: Products[];
   routes: Record<string, string>;
   activeTab: string;
   loading: boolean;
   user: User;
+  section_id: string;
+}
+
+export interface ProductsStateInterface {
+  valid: Products[];
+  reserved?: Products[];
+}
+
+export interface FilterProductInterface extends ProductsStateInterface {
+  promoted: number[];
 }
