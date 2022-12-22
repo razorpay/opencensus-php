@@ -2763,7 +2763,7 @@ class TerminalMigrationTest extends TestCase
 
             $this->assertEquals("v1/merchants/terminals", $path);
 
-            $expectedContent = ["merchant_ids" => ["10000000000000"], "sub_merchant"=> false, "statuses" => ["activated","deactivated"], "deleted" => true];
+            $expectedContent = ["merchant_ids" => ["10000000000000"], "sub_merchant"=> false, "deleted" => true];
 
             $this->assertEquals(json_encode($expectedContent), $content);
 
