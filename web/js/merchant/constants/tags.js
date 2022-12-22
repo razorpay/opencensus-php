@@ -46,4 +46,5 @@ export const HIDDEN_INTERNATIONAL_FEATURES_TAGS = {
   International: 'i18_hide_international',
   WhatsappNotification: 'i18_hide_whatsapp_notification',
   MandateSummary: 'i18_hide_subscription.mandate_summary',
+  Documentation: 'i18_hide_documentation',
 };

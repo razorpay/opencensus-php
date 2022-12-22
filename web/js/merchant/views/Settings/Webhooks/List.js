@@ -21,6 +21,8 @@ import {
   ACTION_QUERY_PARAM_KEY,
 } from 'merchant/views/Settings/deeplink-constants';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 class WebhooksContainer extends ListContainer {
   fetchEntityList(params) {
@@ -101,7 +103,13 @@ class WebhooksContainer extends ListContainer {
           {/* passing the new props to the HeaderAction component to support the m-web view */}
           <HeaderAction responsive>
             <div className="btn-toolbar pull-right webhook-flex">
-              <DocsLink url="https://razorpay.com/docs/webhooks/" />
+              <ShowWhen
+                additionalCondition={(user) =>
+                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
+                }
+              >
+                <DocsLink url="https://razorpay.com/docs/webhooks/" />
+              </ShowWhen>
               {/* To make the CTAs on header to be sticky in teh bottom need to add a wrapper to them added same */}
               <span className="cta-container">
                 <button className="btn btn-primary" onClick={this.showNewWebhookModal}>
