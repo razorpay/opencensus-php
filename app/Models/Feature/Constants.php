@@ -3,6 +3,7 @@
 namespace RZP\Models\Feature;
 
 use RZP\Models\Merchant\Detail as MerchantDetail;
+use RZP\Services\Dcs\Features\Constants as DcsConstants;
 
 class Constants
 {
@@ -1799,6 +1800,8 @@ class Constants
         self::ONE_CC_CONSENT_NOTDEFAULT,
         self::ONE_CC_COUPON_DISABLE_COD,
         self::ONE_CC_DISABLE_EMAIL_COOKIE,
+        DcsConstants::EmailOptionalOnCheckout,
+        DcsConstants::ShowEmailOnCheckout,
     ];
 
     const ONE_CC_FEATURES = [
@@ -2390,11 +2393,11 @@ class Constants
         self::SEND_NAME_IN_EMAIL_FOR_QR       => true,
         self::ONE_CC_DISABLE_EMAIL_COOKIE       => true,
         self::ROUTE_NO_DOC_KYC                => true,
-        \RZP\Services\Dcs\Features\Constants::RefundEnabled => true,  // Example Feature for DCS
-        \RZP\Services\Dcs\Features\Constants::DisableAutoRefund => true,  // Example Feature for DCS
-        \RZP\Services\Dcs\Features\Constants::EligibilityEnabled => true,
-        \RZP\Services\Dcs\Features\Constants::EmailOptionalOnCheckout => true,
-        \RZP\Services\Dcs\Features\Constants::ShowEmailOnCheckout => true,
+        DcsConstants::RefundEnabled => true,  // Example Feature for DCS
+        DcsConstants::DisableAutoRefund => true,  // Example Feature for DCS
+        DcsConstants::EligibilityEnabled => true,
+        DcsConstants::EmailOptionalOnCheckout => true,
+        DcsConstants::ShowEmailOnCheckout => true,
         self::ONE_CC_ADDRESS_SYNC_OFF         => true,
         self::REDUCE_OD_BALANCE_FOR_CA        => true,
         self::PUSH_PROVISIONING_LIVE          => true,
@@ -3284,28 +3287,28 @@ class Constants
             'documentation' => '',
         ],
 
-        \RZP\Services\Dcs\Features\Constants::RefundEnabled => [
-            'feature'       => \RZP\Services\Dcs\Features\Constants::RefundEnabled,
+        DcsConstants::RefundEnabled => [
+            'feature'       => DcsConstants::RefundEnabled,
             'display_name'  => 'Feature to enable Refunds api flow',
             'documentation' => '',
         ],
-        \RZP\Services\Dcs\Features\Constants::DisableAutoRefund => [
-            'feature'       => \RZP\Services\Dcs\Features\Constants::DisableAutoRefund,
+        DcsConstants::DisableAutoRefund => [
+            'feature'       => DcsConstants::DisableAutoRefund,
             'display_name'  => 'Feature to disable Auto Refunds',
             'documentation' => '',
         ],
-        \RZP\Services\Dcs\Features\Constants::EligibilityEnabled => [
-            'feature'       => \RZP\Services\Dcs\Features\Constants::EligibilityEnabled,
+        DcsConstants::EligibilityEnabled => [
+            'feature'       => DcsConstants::EligibilityEnabled,
             'display_name'  => 'Feature to enable Eligibility api flow',
             'documentation' => '',
         ],
-        \RZP\Services\Dcs\Features\Constants::ShowEmailOnCheckout => [
-            'feature'       => \RZP\Services\Dcs\Features\Constants::ShowEmailOnCheckout,
+        DcsConstants::ShowEmailOnCheckout => [
+            'feature'       => DcsConstants::ShowEmailOnCheckout,
             'display_name'  => 'Show email on std/hosted checkout',
             'documentation' => '',
         ],
-        \RZP\Services\Dcs\Features\Constants::EmailOptionalOnCheckout => [
-            'feature'       => \RZP\Services\Dcs\Features\Constants::EmailOptionalOnCheckout,
+        DcsConstants::EmailOptionalOnCheckout => [
+            'feature'       => DcsConstants::EmailOptionalOnCheckout,
             'display_name'  => 'Email optional on std/hosted checkout',
             'documentation' => '',
         ],
@@ -3361,8 +3364,8 @@ class Constants
         self::MISSED_ORDERS_PLINK,
         self::DISABLE_COLLECT_CONSENT,
         self::CARD_MANDATE_SKIP_PAGE,
-        \RZP\Services\Dcs\Features\Constants::ShowEmailOnCheckout,
-        \RZP\Services\Dcs\Features\Constants::EmailOptionalOnCheckout,
+        DcsConstants::ShowEmailOnCheckout,
+        DcsConstants::EmailOptionalOnCheckout,
     ];
 
     /*
