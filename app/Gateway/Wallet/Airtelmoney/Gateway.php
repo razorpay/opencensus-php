@@ -127,6 +127,59 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+
+    // for barricade flow return gateway verify response
+    public function verifyGateway(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify = $this->sendPaymentVerifyRequestGateway($verify);
+
+        return $verify->getDataToTrace();
+    }
+
+    public function sendPaymentVerifyRequestGateway($verify)
+    {
+        $content = $this->getVerifyRequestContent($verify);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST, [
+            'gateway'    => 'wallet_airtelmoney',
+            'payment_id' => $verify->input['payment']['id'],
+            'request'    => $request
+        ]);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'gateway'    => 'wallet_airtelmoney',
+                'payment_id' => $verify->input['payment']['id'],
+                'response'   => $response->body
+            ]);
+
+        $responseArray = $this->jsonToArray($response->body);
+
+        $verify->verifyResponse = $response;
+
+        $verify->verifyResponseBody = $response->body;
+
+        $verify->verifyResponseContent = $responseArray;
+
+        if ($responseArray[VerifyFields::ERROR_CODE] === ErrorCodes::SUCCESS)
+        {
+            $this->verifySecureHash($responseArray);
+        }
+
+        $this->checkActionStatus($responseArray);
+
+        return $verify;
+    }
+
     protected function saveCallbackContent($input, $content)
     {
         $attributes = $this->getCallbackAttributes($content);

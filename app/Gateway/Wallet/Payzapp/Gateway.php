@@ -265,6 +265,100 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    public function verifyGateway(array $input)
+    {
+        parent::verify($input);
+
+        $this->setDomainType();
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify = $this->sendPaymentVerifyRequestGateway($verify);
+
+        return $verify->getDataToTrace();
+    }
+
+    protected function sendPaymentVerifyRequestGateway($verify)
+    {
+        $input = $verify->input;
+
+        $this->perform  = 'verify';
+
+        $responseContent = '';
+
+        $response = '';
+
+        $txnStatusResults = [];
+
+        $verifyStates = TransactionType::$codes;
+
+        // Don't Check for settle during Verify
+        unset($verifyStates['SETTLE']);
+
+        // Since payzapp does not provide state of the payment with payment result api,
+        // We will have to check for status of all possible states
+        foreach ($verifyStates as $txnType => $txnTypeCode)
+        {
+            $content =  array(
+                'pg_instance_id'                    => $this->config['live_pg_instance_id'],
+                'merchant_id'                       => $input['terminal']['gateway_merchant_id2'],
+                'perform'                           => $this->performMap[$this->perform],
+                'currency_code'                     => '356',
+                'transaction_type'                  => $txnTypeCode,
+                'amount'                            => $input['payment']['amount'],
+                'merchant_reference_no'             => $input['payment']['id'],
+            );
+
+            $this->addMerchantDetailsInTest($content);
+
+            $content['message_hash'] = 'CURRENCY:7:'.$this->getHashForVerifyRequest($content);
+
+            $contentLog = $content;
+
+            unset($contentLog['pg_instance_id']);
+
+            $this->trace->info(
+                TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+                [
+                    'request'=> $contentLog
+                ]);
+
+            $requestResponse = $this->postRequest($content);
+
+            $content = $requestResponse['content'];
+
+            $txnStatus = $this->getTransactionStatusForVerifyFromContent($content);
+
+            //Record the transaction status for sale first and otherlater ones if possible.
+            $txnStatusResults[$txnType] = [
+                'status'    => $txnStatus,
+                'content'   => $content,
+                'response'  => $requestResponse['response'],
+            ];
+
+            if (($txnType === 'SALE') or
+                ($this->isTransactionSuccess($txnStatus)))
+            {
+                $responseContent = $content;
+
+                $verify->transactionType = $txnType;
+
+                $response = $requestResponse['response'];
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            array('txnStatusResults' => $txnStatusResults));
+
+        $verify->verifyResponse = $response;
+        $verify->verifyResponseBody = $response->body;
+        $verify->verifyResponseContent = $responseContent;
+        $verify->verifystatusResults = $txnStatusResults;
+
+        return $verify;
+    }
+
     public function capture(array $input)
     {
         parent::capture($input);
