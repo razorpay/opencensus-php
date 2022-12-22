@@ -3,7 +3,9 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Config;
+use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Constants\Timezone;
 use RZP\Models\Partner\Commission\Invoice;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Partner\Commission\CommissionTrait as CommissionBaseTrait;
@@ -48,10 +50,11 @@ trait CommissionTrait
             'partner_config_id' => $config->getId(),
         ];
 
-        for($i =0; $i < Invoice\Constants::VIEW_INVOICE_MIN_SUBM_COUNT; $i++)
+        for($i =0; $i < Invoice\Constants::GENERATE_INVOICE_MIN_SUB_MTU_COUNT; $i++)
         {
             $subMerchantAttributes['id'] = random_alphanum_string(14);
             list($subMerchant) = $this->createSubMerchant($partner, $app, $subMerchantAttributes);
+            $this->createPaymentEntities(1, $subMerchantAttributes['id'],Carbon::today(Timezone::IST));
         }
 
         $commissionAttributes = array_merge($defaultCommissionAttributes, $commissionAttributes);

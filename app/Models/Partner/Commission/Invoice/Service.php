@@ -58,8 +58,6 @@ class Service extends Base\Service
 
     public function fetchBulk(array $input)
     {
-        $this->validateInvoiceFetch();
-
         $invoices = $this->repo->commission_invoice->fetch($input, $this->merchant->getId());
 
         $this->trace->count(Metric::COMMISSION_INVOICE_BULK_FETCH_SUCCESS_TOTAL, $input);
@@ -103,43 +101,16 @@ class Service extends Base\Service
     }
 
     /**
-     * This function validates the following before returning the invoices to the partner
-     * 1. Partner should onboard more than 3 subM to view the invoices
-     * This validation restricts the partner to perform any action on the invoice (approve invoice)
-     * @throws BadRequestException
+     * This function validates time taken for sub mtu query
+     * This is a temporary code for testing the query and will be reverted after testing
+     *
+     * @return array
+     * @throws \Throwable
      */
-    private function validateInvoiceFetch()
+    public function fetchPartnerSubMtusCount( array $input): array
     {
-        $isExperimentEnabled = $this->isViewCommissionInvoiceExperimentEnabled();
+        (new Validator)->validateInput('fetch_sub_mtu_count', $input);
 
-        if ($isExperimentEnabled === false)
-        {
-            return;
-        }
-
-        $subMs = $this->repo->merchant_access_map->getMappingsFromEntityOwnerId($this->merchant->getId(),Constants::VIEW_INVOICE_MIN_SUBM_COUNT);
-
-        if ($subMs->count() !== Constants::VIEW_INVOICE_MIN_SUBM_COUNT)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PARTNER_ADD_MINIMUM_SUBM,
-                null,
-                [
-                    'partner_id' => $this->merchant->getId(),
-                    'reason'     => 'please add minimum of ' . Constants::VIEW_INVOICE_MIN_SUBM_COUNT . 'subMerchants to view the invoices'
-                ]
-            );
-        }
+        return $this->repo->commission_invoice->fetchPartnerSubMtuCountFromDataLake($input[Constants::PARTNER_IDS],$input[Constants::INVOICE_MONTH]);
     }
-
-    private function isViewCommissionInvoiceExperimentEnabled(): bool
-    {
-        $properties = [
-            'id'            => $this->merchant->getId(),
-            'experiment_id' => $this->app['config']->get('app.view_comm_invoice_with_less_subM_experiment_id')
-        ];
-
-        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
-    }
-
 }

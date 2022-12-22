@@ -69,4 +69,13 @@ class CommissionInvoiceController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function fetchPartnerSubMtusCount()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchPartnerSubMtusCount($input);
+
+        return ApiResponse::json($data);
+    }
 }

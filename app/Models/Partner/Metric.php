@@ -27,6 +27,9 @@ final class Metric
     const COMMISSION_INVOICE_GENERATION_JOB_PROCESSING_IN_MS = 'commission_invoice_generation_job_processing_in_ms';
 
     const COMMISSION_INVOICE_GENERATION_FAILED_TOTAL                = 'commission_invoice_generation_failed_total';
+    const COMMISSION_INVOICE_SKIPPED_SUB_MTU_LIMIT                  = 'commission_invoice_skipped_sub_mtu_limit';
+    const FETCH_PARTNER_SUB_MTU_COUNT_FAILED_TOTAL                  = 'fetch_partner_sub_mtu_count_failed_total';
+    const FETCH_PARTNER_SUB_MTU_COUNT_QUERY_TIME                    = 'fetch_partner_sub_mtu_count_query_time';
     const COMMISSION_INVOICE_BULK_FETCH_SUCCESS_TOTAL               = 'commission_invoice_bulk_fetch_success_total';
     const COMMISSION_TRANSACTIONS_SETTLEMENTS_DISPATCH_FAILED_TOTAL = 'commission_transactions_settlements_dispatch_failed_total';
 

@@ -2896,6 +2896,7 @@ class Route
         'commissions_invoice_fetch'                => ['get',      'commissions/invoice/{id}',                       'CommissionInvoiceController@fetch'                                 ],
         'invoice_on_hold_clear_bulk'               => ['put',      'commissions/invoice/on_hold_clear/bulk',         'CommissionInvoiceController@clearOnHoldForInvoiceBulk'             ],
         'commissions_invoice_reminder'             => ['post',     'commissions/invoice/send_reminders',             'CommissionInvoiceController@sendInvoiceReminders'                  ],
+        'fetch_partner_sub_mtu'                    => ['post',     'partner/sub_mtu/bulk',                           'CommissionInvoiceController@fetchPartnerSubMtusCount'                  ],
 
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
         'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
@@ -4533,6 +4534,7 @@ class Route
         'update_bucket_name_region',
 
         'partner_referral_regenerate',
+        'fetch_partner_sub_mtu',
 
         // webhooks for onboarding APIs
         'onboarding_webhook_create',

@@ -190,7 +190,7 @@ trait PartnerTrait
 
     public function createPurePlatFormMerchantAndSubMerchant()
     {
-        $this->fixtures->merchant->createAccount(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        $partner = $this->fixtures->merchant->createAccount(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
         $this->fixtures->merchant->createAccount(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID);
 
         $this->fixtures->user->createUserMerchantMapping(
@@ -237,7 +237,7 @@ trait PartnerTrait
             ]
         );
 
-        return [$application, $accessMap];
+        return [$application, $accessMap, $partner];
     }
 
     public function setSubmerchantPublicAuth($merchantId = Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID)

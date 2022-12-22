@@ -23,6 +23,11 @@ class Validator extends Base\Validator
         Entity::ACTION => 'required|string|custom',
     ];
 
+    protected static $fetchSubMtuCountRules = [
+        Constants::PARTNER_IDS   => 'required|array',
+        Constants::INVOICE_MONTH => 'required|string',
+    ];
+
     protected static $createRules = [
         Entity::MONTH => 'required|integer|between:1,12',
         Entity::YEAR  => 'required|digits:4',

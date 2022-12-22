@@ -47,32 +47,7 @@ class CommissionInvoiceGenerate extends Job
                     'data'   => $this->data,
                 ]);
 
-            $summary = [
-                'failed_ids'    => [],
-                'failed_count'  => 0,
-                'success_count' => 0,
-            ];
-
-            foreach ($this->data['merchant_ids'] as $merchantId)
-            {
-                try
-                {
-                    $partner = $this->repoManager->merchant->findOrFailPublic($merchantId);
-
-                    (new Invoice\Core)->generateInvoice($partner, $this->data);
-
-                    $summary['success_count']++;
-                }
-                catch (\Throwable $e)
-                {
-                    $summary['failed_count']++;
-                    $summary['failed_ids'][] = $merchantId;
-
-                    $this->trace->traceException($e, Trace::ERROR, TraceCode::COMMISSION_INVOICE_GENERATE_ERROR, ['id' => $merchantId]);
-
-                    $this->trace->count(Metric::COMMISSION_INVOICE_GENERATION_FAILED_TOTAL);
-                }
-            }
+            $summary = (new Invoice\Core)->bulkGenerateCommissionInvoice($this->data);
 
             $this->trace->info(TraceCode::COMMISSION_INVOICE_GENERATE_SUMMARY, $summary);
 
@@ -125,4 +100,5 @@ class CommissionInvoiceGenerate extends Job
             $this->release(self::RETRY_INTERVAL);
         }
     }
+
 }

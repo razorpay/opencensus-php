@@ -22,6 +22,7 @@ use RZP\Models\Merchant\Metric;
 use RZP\Services\KafkaProducer;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Partner\Commission;
+use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Pricing\Calculator;
 use RZP\Models\Tax\Gst\GstTaxIdMap;
 use Razorpay\Trace\Logger as Trace;
@@ -607,6 +608,128 @@ class Core extends Base\Core
             },
             self::COMMISSION_INVOICE_GENERATE_MUTEX_TIMEOUT,
             ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS);
+    }
+
+    /**
+     * Generate invoice for partners in bulk for given month and year
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function bulkGenerateCommissionInvoice(array $input): array
+    {
+        $summary = [
+            'failed_ids'    => [],
+            'failed_count'  => 0,
+            'success_count' => 0,
+        ];
+
+        [$newTncPartners, $oldTncPartners] = $this->fetchPartnerWithOldAndNewTnc($input['merchant_ids']);
+
+        if(count($newTncPartners)>0)
+        {
+            $newTncPartnerIds = $newTncPartners->getIds();
+
+            $invoiceMonth = $this->getInvoiceMonthString($input);
+
+            try
+            {
+                $partnerSubMtuArray = $this->repo->commission_invoice->fetchPartnerSubMtuCountFromDataLake($newTncPartnerIds, $invoiceMonth);
+                $partnerSubMtuMap = array_combine(array_column($partnerSubMtuArray, 'partner_id'), array_column($partnerSubMtuArray, 'mtu_count'));
+
+                foreach ($newTncPartners as $partner)
+                {
+                    try
+                    {
+                        if(empty($partnerSubMtuMap[$partner->getId()]) === false and $partnerSubMtuMap[$partner->getId()] >= Constants::GENERATE_INVOICE_MIN_SUB_MTU_COUNT)
+                        {
+                            $this->generateInvoice($partner, $input);
+                        }
+                        else
+                        {
+                            $this->trace->info(TraceCode::COMMISSION_INVOICE_SKIPPED_SUB_MTU_LIMIT,
+                                               ['partner_id'=>$partner->getId(), 'mtu_count'=>$partnerSubMtuMap[$partner->getId()]]);
+
+                            $this->trace->count(PartnerMetric::COMMISSION_INVOICE_SKIPPED_SUB_MTU_LIMIT, ['month' => $input[Entity::MONTH]]);
+                        }
+
+                        $summary['success_count']++;
+                    }
+                    catch (\Throwable $e)
+                    {
+                        $summary['failed_count']++;
+                        $summary['failed_ids'][] = $partner->getId();
+
+                        $this->trace->traceException($e, Trace::ERROR, TraceCode::COMMISSION_INVOICE_GENERATE_ERROR, ['id' => $partner->getId()]);
+
+                        $this->trace->count(PartnerMetric::COMMISSION_INVOICE_GENERATION_FAILED_TOTAL);
+                    }
+                }
+
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e, Trace::ERROR, TraceCode::PARTNER_SUB_MTU_COUNT_FETCH_ERROR, ['partnerIds' => $newTncPartnerIds]);
+
+                $this->trace->count(PartnerMetric::FETCH_PARTNER_SUB_MTU_COUNT_FAILED_TOTAL);
+
+                $summary['failed_count'] = $summary['failed_count']+count($newTncPartners);
+            }
+        }
+        // TODO: to be removed after TNC changes released to all partners
+        foreach ($oldTncPartners as $partner)
+        {
+            try
+            {
+                $this->generateInvoice($partner, $input);
+                $summary['success_count']++;
+            }
+            catch (\Throwable $e)
+            {
+                $summary['failed_count']++;
+                $summary['failed_ids'][] = $partner->getId();
+
+                $this->trace->traceException($e, Trace::ERROR, TraceCode::COMMISSION_INVOICE_GENERATE_ERROR, ['id' => $partner->getId()]);
+
+                $this->trace->count(PartnerMetric::COMMISSION_INVOICE_GENERATION_FAILED_TOTAL);
+            }
+        }
+        return $summary;
+    }
+
+    /**
+     * get invoice month string to fetch from datalake
+     *
+     * @param array $input
+     *
+     * @return string
+     */
+    protected function getInvoiceMonthString(array $input): string
+    {
+        $previousMonth = Carbon::now(Timezone::IST)->subMonth();
+        $year            = $input[Entity::YEAR] ?? $previousMonth->year;
+        $month           = $input[Entity::MONTH] ?? $previousMonth->month;
+
+        return $year.'-'. $month;
+    }
+
+    /**
+     * Fetch partners created before and after tnc update
+     *
+     * @param array $merchantIds
+     *
+     * @return array
+     */
+    protected function fetchPartnerWithOldAndNewTnc(array $merchantIds): array
+    {
+        $partners = $this->repo->merchant->findManyOnReadReplica($merchantIds);
+        $newTncPartners = $partners->filter(function ($partner)  {
+            return $partner->getCreatedAt() >= Constants::INVOICE_TNC_UPDATED_TIMESTAMP;
+        });
+        $oldTncPartners = $partners->diff($newTncPartners);
+
+        return [$newTncPartners,$oldTncPartners];
     }
 
     protected function generate(Merchant\Entity $partner, array $input)

@@ -373,8 +373,6 @@ return array(
 
     'add_subm_ratelimiting_experiment_id' => env('ADD_SUBM_RATELIMITING_EXPERIMENT_ID'),
 
-    'view_comm_invoice_with_less_subM_experiment_id' => env('VIEW_COMM_INVOICE_WITH_LESS_SUBM_EXPERIMENT_ID'),
-
     'admin_submerchant_bulk_increase_resources_exp_id' => env('ADMIN_SUBMERCHANT_BULK_INCREASE_RESOURCES_EXP_ID'),
 
     'attach_view_only_role_banking_account_exp_id' => env('ATTACH_VIEW_ONLY_ROLE_BANKING_ACCOUNT'),

@@ -2,8 +2,10 @@
 
 namespace RZP\Models\Partner\Commission\Invoice;
 
+use RZP\Trace\TraceCode;
 use RZP\Base\ConnectionType;
 use RZP\Models\Base;
+use RZP\Models\Partner\Metric;
 
 class Repository extends Base\Repository
 {
@@ -83,5 +85,50 @@ class Repository extends Base\Repository
             ->get()
             ->pluck(Entity::ID)
             ->toArray();
+    }
+
+    /**
+     * fetches partner sub merchant MTUs count for given month from datalake.
+     *
+     * @param array  $partnerIds
+     * @param string $month
+     *
+     * @return array
+     * @throws \Throwable
+     */
+    public function fetchPartnerSubMtuCountFromDataLake(array $partnerIds, string $month): array
+    {
+        $partnerIdsString = implode("', '", $partnerIds);
+
+
+        $rawQueryBuilder =<<<'EOT'
+            SELECT partner_id,mtu_count FROM hive.aggregate_ba.partner_monthly_subM_mtus_count
+            WHERE partner_id IN ('%s')
+            AND month =('%s')
+        EOT;
+
+        $rawQuery = sprintf(
+            $rawQueryBuilder,
+            $partnerIdsString,
+            $month
+        );
+        try
+        {
+            $timeStarted = millitime();
+            $result = $this->app['datalake.presto']->getDataFromDataLake($rawQuery);
+            $timeTaken = millitime()-$timeStarted;
+            $this->trace->info(TraceCode::PARTNER_SUB_MTU_COUNT_FETCH_SUCCESS,
+                               ['timeTaken'=>$timeTaken, 'result'=>$result, 'partnerIds'=>$partnerIds]);
+            $this->trace->histogram(Metric::FETCH_PARTNER_SUB_MTU_COUNT_QUERY_TIME, $timeTaken);
+            return $result;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::PARTNER_SUB_MTU_COUNT_FETCH_ERROR, ['partnerIds' => $partnerIds]);
+
+            $this->trace->count(Metric::FETCH_PARTNER_SUB_MTU_COUNT_FAILED_TOTAL);
+
+            throw $e;
+        }
     }
 }

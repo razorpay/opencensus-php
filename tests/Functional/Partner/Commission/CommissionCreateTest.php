@@ -6,7 +6,9 @@ use DB;
 
 use App;
 use Mail;
+use Mockery;
 use Carbon\Carbon;
+use RZP\Services\Mock\DataLakePresto;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Constants\Mode;
@@ -283,6 +285,8 @@ class CommissionCreateTest extends TestCase
 
         $this->createTaxes();
 
+        $this->mockPartnerSubMtuDatalakeQuery($partner->getId());
+
         $this->runRequestResponseFlow($testData);
 
         $invoice = $this->getDbLastEntity('commission_invoice');
@@ -333,6 +337,8 @@ class CommissionCreateTest extends TestCase
         $testData['request']['content']['merchant_ids'] = [$partner->getId()];
 
         $this->createTaxes();
+
+        $this->mockPartnerSubMtuDatalakeQuery($partner->getId());
 
         $this->runRequestResponseFlow($testData);
 
@@ -432,7 +438,7 @@ class CommissionCreateTest extends TestCase
     {
         Mail::fake();
 
-        $testData = $this->setUpCommissionCreate();
+        $testData = $this->setUpCommissionCreateWith3MTU();
 
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
 
@@ -459,6 +465,8 @@ class CommissionCreateTest extends TestCase
         $testData['request']['content']['merchant_ids'] = [Constants::DEFAULT_PLATFORM_MERCHANT_ID];
 
         $this->createTaxes();
+
+        $this->mockPartnerSubMtuDatalakeQuery(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
 
         $this->runRequestResponseFlow($testData);
 
@@ -527,22 +535,110 @@ class CommissionCreateTest extends TestCase
     /**
      * The following testcase validates the following
      * 1. Create commission for a single subM
-     * 2. Create commission_invoice
-     * 3. Validate Fetch commission_invoice should return exception since subM onboarded are less than 3
-     * as the experiment is enabled
+     * 2. Validate create commission_invoice should be skipped without exception
+     * since partner do not have three transacting mtus and partner created after tnc update timestamp
      */
-    public function testInvoiceFetchWithLessSubMExpEnabled()
+    public function testInvoiceCreateWithout3SubMtusAfterUpdatedTnc()
     {
-        $this->createInvoiceDataForLessSubM();
+        Mail::fake();
+
+        $testData = $this->setUpCommissionCreate();
+
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
+
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->merchant->edit(Constants::DEFAULT_PLATFORM_MERCHANT_ID, ['created_at' => Invoice\Constants::INVOICE_TNC_UPDATED_TIMESTAMP]);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            null,
+            [
+                'implicit_plan_id'    => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            ]);
+
+        $this->runRequestResponseFlow($testData);
+
+        list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::IMPLICIT);
+
+        $testData = $this->testData['testInvoiceGenerate'];
+
+        $now = Carbon::now(Timezone::IST);
+
+        $testData['request']['content']['month']        = $now->month;
+        $testData['request']['content']['year']         = $now->year;
+        $testData['request']['content']['merchant_ids'] = [Constants::DEFAULT_PLATFORM_MERCHANT_ID];
+
+        $this->createTaxes();
 
         $this->mockAllSplitzTreatment();
 
-        $testData = $this->testData['testInvoiceFetchWithLessSubMTestDataExpEnabled'];
+        $this->runRequestResponseFlow($testData);
 
-        $this->ba->proxyAuth('rzp_test_' . Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        // check that invoice is created with line items and amounts
+        $invoice = $this->getDbLastEntity('commission_invoice');
+
+        $this->assertNull($invoice);
+    }
+
+    /**
+     * The following testcase validates the following
+     * 1. Create commission for a single subM
+     * 2. Validate create commission_invoice should not be skipped even if
+     *  partner do not have three transacting mtus as created_at is before tnc timestamp
+     */
+    public function testInvoiceCreateWithout3SubMtusBeforeUpdatedTnc()
+    {
+        Mail::fake();
+
+        $testData = $this->setUpCommissionCreate();
+
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
+
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->merchant->edit(Constants::DEFAULT_PLATFORM_MERCHANT_ID, ['created_at' => (Invoice\Constants::INVOICE_TNC_UPDATED_TIMESTAMP-1000)]);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            null,
+            [
+                'implicit_plan_id'    => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            ]);
 
         $this->runRequestResponseFlow($testData);
+
+        list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::IMPLICIT);
+
+        $testData = $this->testData['testInvoiceGenerate'];
+
+        $now = Carbon::now(Timezone::IST);
+
+        $testData['request']['content']['month']        = $now->month;
+        $testData['request']['content']['year']         = $now->year;
+        $testData['request']['content']['merchant_ids'] = [Constants::DEFAULT_PLATFORM_MERCHANT_ID];
+
+        $this->createTaxes();
+
+        $this->mockAllSplitzTreatment();
+
+        $invoiceExpectedData = [
+            'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+            'month' => $now->month,
+            'year' => $now->year,
+            'status' => 'issued',
+            'gross_amount' => 944,
+            'tax_amount' => 144,
+        ];
+
+        $this->runRequestResponseFlow($testData);
+
+        // check that invoice is created with line items and amounts
+        $invoice = $this->getDbLastEntity('commission_invoice');
+
+        $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
     }
+
 
     /**
      * The following testcase validates the following
@@ -553,16 +649,6 @@ class CommissionCreateTest extends TestCase
     public function testInvoiceFetchWithLessSubMExpDisabled()
     {
         $this->createInvoiceDataForLessSubM();
-
-        $splitzResponse = [
-            "response" => [
-                "variant" => [
-                    "name" => 'disable',
-                ]
-            ]
-        ];
-
-        $this->mockAllSplitzTreatment($splitzResponse);
 
         $testData = $this->testData['testInvoiceFetchWithLessSubMTestDataExpDisabled'];
 
@@ -603,6 +689,8 @@ class CommissionCreateTest extends TestCase
         $this->createTaxes();
 
         $this->ba->adminAuth();
+
+        $this->mockPartnerSubMtuDatalakeQuery(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
 
         $this->runRequestResponseFlow($testData);
     }
@@ -717,6 +805,8 @@ class CommissionCreateTest extends TestCase
 
         $this->createTaxes();
 
+        $this->mockPartnerSubMtuDatalakeQuery($partner->getId());
+
         $this->startTest($testData);
 
         // calling generate invoice twice should still create only one invoice
@@ -804,6 +894,9 @@ class CommissionCreateTest extends TestCase
         $testData['request']['content']['merchant_ids'] = [$partner->getId()];
 
         $this->createTaxes();
+
+        $this->mockPartnerSubMtuDatalakeQuery($partner->getId());
+
         $this->startTest($testData);
 
         // calling generate invoice twice should still create only one invoice
@@ -885,6 +978,9 @@ class CommissionCreateTest extends TestCase
         $testData['request']['content']['merchant_ids'] = [$partner->getId()];
 
         $this->createTaxes();
+
+        $this->mockPartnerSubMtuDatalakeQuery($partner->getId());
+
         $this->startTest($testData);
 
         // calling generate invoice twice should still create only one invoice
@@ -1104,6 +1200,8 @@ class CommissionCreateTest extends TestCase
 
         $this->createTaxes();
 
+        $this->mockPartnerSubMtuDatalakeQuery($partner->getId());
+
         $this->startTest($testData);
 
         return  $this->getDbLastEntity('commission_invoice');
@@ -1137,6 +1235,8 @@ class CommissionCreateTest extends TestCase
         $testData['request']['content']['merchant_ids'] = [$partner->getId()];
 
         $this->createTaxes();
+
+        $this->mockPartnerSubMtuDatalakeQuery($partner->getId());
 
         $this->runRequestResponseFlow($testData);
 
@@ -1838,6 +1938,47 @@ class CommissionCreateTest extends TestCase
         return $testData;
     }
 
+    /**
+     * set up all the entities required in commission creation flow
+     * Add 3 transacting sub merchants for the month to enable invoice creation
+     */
+    protected function setUpCommissionCreateWith3MTU($paymentAttributes = [])
+    {
+        [$app, $accessMap, $partner] = $this->createPurePlatFormMerchantAndSubMerchant();
+
+        for($i =0; $i < Invoice\Constants::GENERATE_INVOICE_MIN_SUB_MTU_COUNT; $i++)
+        {
+            $subMerchantAttributes['id'] = random_alphanum_string(14);
+            list($subMerchant) = $this->createSubMerchant($partner, $app, $subMerchantAttributes);
+            $this->createPaymentEntities(1, $subMerchantAttributes['id'],Carbon::today(Timezone::IST));
+        }
+        $this->createImplicitPricingPlan();
+
+        $defaultPaymentAttributes = [
+            'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            'amount'      => 4000 * 100,
+        ];
+
+        $paymentAttributes = array_merge($defaultPaymentAttributes, $paymentAttributes);
+
+        $payment = $this->fixtures->create('payment:authorized', $paymentAttributes);
+
+        $this->createEntityOrigin('payment', $payment->getId());
+
+        $this->setSubmerchantPrivateAuth();
+
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $name = $trace[1]['function'];
+
+        $testData = $this->testData[$name];
+
+        $testData['request']['content']['amount'] = $payment->getAmount();
+
+        $testData['request']['url'] = '/payments/' . $payment->getPublicId() . '/capture';
+
+        return $testData;
+    }
+
     protected function assertAndGetCommissionByType(string $type, int $totalCount = 1)
     {
         $payment = $this->getLastEntity('payment', true);
@@ -2072,5 +2213,16 @@ class CommissionCreateTest extends TestCase
         ];
 
         $this->mockSplitzTreatment($input, $output);
+    }
+
+    private function mockPartnerSubMtuDatalakeQuery(string $partnerId, string $mtuCount=Invoice\Constants::GENERATE_INVOICE_MIN_SUB_MTU_COUNT )
+    {
+        $datalakeMock = Mockery::mock(DataLakePresto::class)->makePartial();
+
+        $this->app->instance('datalake.presto', $datalakeMock);
+
+        $datalakeMock->shouldReceive('getDataFromDataLake')->andReturn([
+            json_decode(json_encode(['partner_id' => $partnerId, 'mtu_count' => $mtuCount]))
+        ]);
     }
 }

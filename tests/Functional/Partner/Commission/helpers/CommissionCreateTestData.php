@@ -97,6 +97,32 @@ return [
         ],
     ],
 
+    'testInvoiceCreateWithout3SubMtusAfterUpdatedTnc' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
+    'testInvoiceCreateWithout3SubMtusBeforeUpdatedTnc' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
     'testImplicitVariableOnHoldClearForHighTdsPercentage' => [
         'request' => [
             'method' => 'POST',
@@ -630,7 +656,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
-    
+
     'createInvoiceDataForLessSubM' => [
         'request' => [
             'method' => 'POST',
