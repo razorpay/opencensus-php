@@ -127,7 +127,13 @@ const SignUp = () => {
   const query = QueryString.parse(window.location.search);
 
   // enable signup for invitation merchant
-  const disableSignup = !query.invitation && !programDsCheck;
+  let disableSignup = !query.invitation && !programDsCheck;
+
+  // Enable signup for curlec.com (Malaysia)
+  if (window.location.host === 'dashboard.curlec.com') {
+    disableSignup = false;
+  }
+
   return (
     <ThemeProvider theme={theme}>
       {isFetchingOrgData ? (
