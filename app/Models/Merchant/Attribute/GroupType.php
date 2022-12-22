@@ -55,6 +55,7 @@ class GroupType
             Type::INSTANT_SETTLEMENTS,
             Type::MARKETPLACE_IS,
             Type::DEMO_ONBOARDING,
+            Type::CAPITAL_LOC_EMI,
             Type::OTHERS
         ],
 

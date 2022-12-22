@@ -51,6 +51,7 @@ class Type
     const INSTANT_SETTLEMENTS           = 'instant_settlements';
     const MARKETPLACE_IS                = 'marketplace_is';
     const DEMO_ONBOARDING               = 'demo_onboarding';
+    const CAPITAL_LOC_EMI               = 'capital_loc_emi';
     const OTHERS                        = 'others';
 
     //SOURCE Types
