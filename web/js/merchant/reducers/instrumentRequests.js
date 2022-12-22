@@ -851,6 +851,13 @@ const initialState = {
               slug: 'getsimpl',
               icon: 'getsimpl',
             },
+            {
+              name: 'Lazypay',
+              description: '',
+              status: 'greyed',
+              slug: 'lazypay',
+              icon: 'https://cdn.razorpay.com/paylater-sq/lazypay.svg',
+            },
             // {
             //   name: 'ePayLater',
             //   description: '',
