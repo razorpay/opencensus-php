@@ -3,11 +3,13 @@
 namespace RZP\Tests\Functional\Gateway\File;
 
 use Carbon\Carbon;
+use RZP\Exception;
 use Illuminate\Http\UploadedFile;
 use Mail;
 
 use RZP\Constants\Entity;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
 use RZP\Models\Payment as PaymentClass;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Transaction\Entity as Txn;
@@ -178,6 +180,87 @@ class NbplusNetbankingIciciReconciliationTest extends NbPlusPaymentServiceNetban
         $batch = $this->getDbLastEntityToArray('batch');
 
         $this->assertEquals($batch['status'], 'processed');
+    }
+
+    public function testInvalidNetbankingIciciUpdateReconData()
+    {
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getDbLastEntityToArray(Entity::PAYMENT);
+
+        $content = $this->getDefaultNetbankingPostReconArray();
+
+        $content['payment_id'] = $payment['id'];
+
+        unset($content['reconciled_at']);
+
+        $this->makeRequestAndCatchException(function() use ($content)
+        {
+            $request = [
+                'url' => '/reconciliate/data',
+                'method' => 'POST',
+                'content' => $content,
+            ];
+
+            $this->ba->appAuth();
+
+            $this->makeRequestAndGetContent($request);
+        }, Exception\BadRequestValidationFailureException::class);
+    }
+
+    public function testNetbankingIciciUpdateAlreadyReconciled()
+    {
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getDbLastEntityToArray(Entity::PAYMENT);
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->fixtures->edit('transaction', $transaction['id'], ['reconciled_at' => Carbon::now(Timezone::IST)->getTimestamp()]);
+
+        $content = $this->getDefaultNetbankingPostReconArray();
+
+        $content['payment_id'] = $payment['id'];
+
+        $response = $this->makeUpdatePostReconRequestAndGetContent($content);
+
+        $this->assertFalse($response['success']);
+
+        $this->assertEquals('ALREADY_RECONCILED', $response['error']['code']);
+    }
+
+    public function testNetbankingIciciUpdatePostReconData()
+    {
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getDbLastEntityToArray(Entity::PAYMENT);
+
+        $content = $this->getDefaultNetbankingPostReconArray();
+
+        $content['payment_id'] = $payment['id'];
+
+        $content['reconciled_at'] = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $response = $this->makeUpdatePostReconRequestAndGetContent($content);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotEmpty($transactionEntity['reconciled_at']);
+
+        $this->assertTrue($response['success']);
+    }
+
+    private function makeUpdatePostReconRequestAndGetContent(array $content)
+    {
+        $request = [
+            'method'  => 'POST',
+            'content' => $content,
+            'url'     => '/reconciliate/data',
+        ];
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
     }
 
     protected function createPaylaterPayment()

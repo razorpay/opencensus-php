@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use App;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Refund;
 use RZP\Reconciliator\Service;
 use RZP\Models\Payment\Gateway;
 use RZP\Base\RepositoryManager;
@@ -209,6 +210,8 @@ class ArtReconProcess extends Job
             }
         }
 
+        $scroogeReconData = handleStatusWithArn($scroogeReconData, $gateway);
+
         for ($i=0; $i<$refundsSize; $i++) {
             if(isset($scroogeReconData['refunds'][$i]['payment_id']))
             {
@@ -217,4 +220,24 @@ class ArtReconProcess extends Job
         }
         return $scroogeReconData;
     }
+}
+
+function handleStatusWithArn(array $scroogeReconData, string $gateway): array
+{
+    $refundsSize = count($scroogeReconData['refunds']);
+
+    if($gateway == Gateway::NETBANKING_ICICI)
+    {
+        for ($i=0; $i<$refundsSize; $i++) {
+            if(is_null($scroogeReconData['refunds'][$i]['arn']) == false)
+            {
+                $scroogeReconData['refunds'][$i]['status'] = Refund\Status::PROCESSED;
+            }
+            else
+            {
+                $scroogeReconData['refunds'][$i]['status'] = null;
+            }
+        }
+    }
+    return $scroogeReconData;
 }

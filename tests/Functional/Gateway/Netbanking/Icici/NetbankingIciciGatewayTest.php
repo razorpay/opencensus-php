@@ -6,10 +6,14 @@ use Mail;
 use Excel;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Excel\Import as ExcelImport;
+use RZP\Exception\GatewayErrorException;
+use RZP\Services\NbPlus as NbPlusPaymentService;
 use RZP\Gateway\Netbanking\Icici\ResponseFields;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
@@ -34,11 +38,15 @@ class NetbankingIciciGatewayTest extends TestCase
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_netbanking_icici_terminal');
 
-        $this->markTestSkipped('This test is depricated and moved to nbplus service');
+        $this->app['rzp.mode'] = Mode::TEST;
+        $this->nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlus\Netbanking', [$this->app])->makePartial();
+        $this->app->instance('nbplus.payments', $this->nbPlusService);
     }
 
     public function testPayment()
     {
+        $this->markTestSkipped('This test is depricated and moved to nbplus service');
+
         $this->doAuthAndCapturePayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -56,6 +64,8 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testEmiPayment()
     {
+        $this->markTestSkipped('This test is depricated and moved to nbplus service');
+
         $this->payment['amount'] = '60000';
 
         $this->doAuthAndCapturePayment($this->payment);
@@ -81,6 +91,8 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testCallbackFailedDueDateMismatch()
     {
+        $this->markTestSkipped('This test is depricated and moved to nbplus service');
+
         $boundaryTime = Carbon::create(2018, 6, 21, 23, 58, 00,Timezone::IST);
 
         Carbon::setTestNow($boundaryTime);
@@ -124,6 +136,8 @@ class NetbankingIciciGatewayTest extends TestCase
      **/
     public function testRetailPaymentWithCorpTerminalPresent()
     {
+        $this->markTestSkipped('This test is depricated and moved to nbplus service');
+
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_netbanking_icici_corp_terminal');
 
         $this->testPayment();
@@ -131,6 +145,8 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testPaymentCorporate()
     {
+        $this->markTestSkipped('This test is depricated and moved to nbplus service');
+
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_netbanking_icici_corp_terminal');
         $this->fixtures->merchant->addFeatures('corporate_banks');
 
@@ -165,6 +181,8 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testCorporatePendingPayment()
     {
+        $this->markTestSkipped('This test is depricated and moved to nbplus service');
+
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_icici_corp_terminal');
         $this->fixtures->merchant->addFeatures('corporate_banks');
 
@@ -206,6 +224,8 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testAmountTampering()
     {
+        $this->markTestSkipped('This test is depricated and moved to nbplus service');
+
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             $content['AMT'] = '1';
@@ -221,6 +241,8 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testVerifyAmountMismatch()
     {
+        $this->markTestSkipped('This test is depricated and moved to nbplus service');
+
         $this->mockAmountMismatch();
 
         $data = $this->testData[__FUNCTION__];
@@ -235,6 +257,8 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testPaymentVerify()
     {
+        $this->markTestSkipped('This test is depricated and moved to nbplus service');
+
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $content = $this->verifyPayment($payment['id']);
@@ -244,6 +268,8 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testRefund()
     {
+        $this->markTestSkipped('This test is depricated and moved to nbplus service');
+
         $refund = $this->doAuthCaptureAndRefundPayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -254,6 +280,8 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testPartialRefund()
     {
+        $this->markTestSkipped('This test is depricated and moved to nbplus service');
+
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
         // Refund the payment above partially
@@ -267,6 +295,8 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testFailedRefund()
     {
+        $this->markTestSkipped('This test is depricated and moved to nbplus service');
+
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $data = $this->testData[__FUNCTION__];
@@ -306,6 +336,8 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testTpvPayment()
     {
+        $this->markTestSkipped('This test is depricated and moved to nbplus service');
+
         $terminal = $this->fixtures->create('terminal:shared_netbanking_icici_tpv_terminal');
 
         $this->ba->privateAuth();
@@ -336,6 +368,8 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testFailedAuthPayment()
     {
+        $this->markTestSkipped('This test is depricated and moved to nbplus service');
+
         $this->mockPaymentFailure();
 
         $data = $this->testData[__FUNCTION__];
@@ -350,6 +384,8 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testVerifyMismatch()
     {
+        $this->markTestSkipped('This test is depricated and moved to nbplus service');
+
         $data = $this->testData[__FUNCTION__];
 
         $payment = $this->doAuthPayment($this->payment);
@@ -370,6 +406,8 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testEmptyVerifyResponse()
     {
+        $this->markTestSkipped('This test is depricated and moved to nbplus service');
+
         $data = $this->testData['testVerifyMismatch'];
 
         $this->testFailedAuthPayment();
@@ -393,6 +431,8 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testStringIndexOutOfRangeVerifyResponse()
     {
+        $this->markTestSkipped('This test is depricated and moved to nbplus service');
+
         $data = $this->testData['testVerifyMismatch'];
 
         $this->testFailedAuthPayment();
@@ -416,6 +456,8 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testAuthResponseDecryptionFailure()
     {
+        $this->markTestSkipped('This test is depricated and moved to nbplus service');
+
         $this->mockAuthDecryptionFailure();
 
         $data = $this->testData[__FUNCTION__];
@@ -432,6 +474,8 @@ class NetbankingIciciGatewayTest extends TestCase
     // Results in a payment verification error
     public function testAuthFailedVerifySuccess()
     {
+        $this->markTestSkipped('This test is depricated and moved to nbplus service');
+
         $data = $this->testData[__FUNCTION__];
 
         $this->testFailedAuthPayment();
@@ -444,6 +488,151 @@ class NetbankingIciciGatewayTest extends TestCase
             {
                 $this->verifyPayment($payment['id']);
             });
+    }
+
+    public function testAuthorizeFailedPayment()
+    {
+        $this->nbPlusService->shouldReceive('content')->andReturnUsing(function(& $content, $action = null)
+        {
+            $content = [
+                NbPlusPaymentService\Response::RESPONSE => null,
+                NbPlusPaymentService\Response::ERROR => [
+                    NbPlusPaymentService\Error::CODE  => 'GATEWAY',
+                    NbPlusPaymentService\Error::CAUSE => [
+                        NbPlusPaymentService\Error::MOZART_ERROR_CODE   =>  'BAD_REQUEST_PAYMENT_FAILED',
+                        'gateway_error_code'                            =>  '',
+                        'gateway_error_description'                     =>  '',
+                    ]
+                ],
+            ];
+        });
+
+        $this->makeRequestAndCatchException(function ()
+        {
+            $this->doAuthAndCapturePayment($this->payment);
+        }, GatewayErrorException::class);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $this->assertEmpty($payment['transaction_id']);
+
+        $content = $this->getDefaultNetbankingAuthorizeFailedPaymentArray();
+
+        $content['payment']['id'] = substr($payment['id'],4);
+
+        $content['meta']['force_auth_payment'] = true;
+
+        $response = $this->makeAuthorizeFailedPaymentAndGetPayment($content);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertNotEmpty($updatedPayment['transaction_id']);
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
+
+        $this->assertNotNull($updatedPayment['reference1']);
+    }
+
+    /**
+     * Validate negative case of authorizing succesfulpayment
+     */
+    public function testForceAuthorizeSucessfulPayment()
+    {
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $content = $this->getDefaultNetbankingAuthorizeFailedPaymentArray();
+
+        $content['payment']['id'] = substr($payment['id'],4);
+
+        $content['meta']['force_auth_payment'] = true;
+
+        $this->makeRequestAndCatchException(function() use ($content)
+        {
+            $request = [
+                'url'     => '/payments/authorize/nbplus/failed',
+                'method'  => 'POST',
+                'content' => $content,
+            ];
+
+            $this->ba->appAuth();
+
+            $this->makeRequestAndGetContent($request);
+        }, Exception\BadRequestValidationFailureException::class);
+    }
+
+    public function testForceAuthorizePaymentValidationFailure()
+    {
+        $content = $this->getDefaultNetbankingAuthorizeFailedPaymentArray();
+
+        unset($content['payment']['method']);
+
+        $this->makeRequestAndCatchException(function() use ($content)
+        {
+            $request = [
+                'url'     => '/payments/authorize/nbplus/failed',
+                'method'  => 'POST',
+                'content' => $content,
+            ];
+
+            $this->ba->appAuth();
+
+            $this->makeRequestAndGetContent($request);
+        }, Exception\BadRequestValidationFailureException::class);
+    }
+
+    public function testVerifyAuthorizeFailedPayment()
+    {
+        $this->nbPlusService->shouldReceive('content')->andReturnUsing(function(& $content, $action = null)
+        {
+            if ($action === 'callback')
+            {
+                $content = [
+                    NbPlusPaymentService\Response::RESPONSE => null,
+                    NbPlusPaymentService\Response::ERROR => [
+                        NbPlusPaymentService\Error::CODE  => 'GATEWAY',
+                        NbPlusPaymentService\Error::CAUSE => [
+                            NbPlusPaymentService\Error::MOZART_ERROR_CODE   =>  'BAD_REQUEST_PAYMENT_FAILED',
+                            'gateway_error_code'                            =>  '',
+                            'gateway_error_description'                     =>  '',
+                        ]
+                    ],
+                ];
+            }
+        });
+
+        $this->makeRequestAndCatchException(function ()
+        {
+            $this->doAuthAndCapturePayment($this->payment);
+        }, GatewayErrorException::class);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $content = $this->getDefaultNetbankingAuthorizeFailedPaymentArray();
+
+        $content['payment']['id'] = substr($payment['id'], 4);
+
+        $content['meta']['force_auth_payment'] = false;
+
+        $response = $this->makeAuthorizeFailedPaymentAndGetPayment($content);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        // asset the late authorized flag for authorizing via verify
+        $this->assertTrue($updatedPayment['late_authorized']);
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
+
+        $this->assertNotNull($updatedPayment['reference1']);
+
+        $this->assertNotEmpty($updatedPayment['transaction_id']);
     }
 
     protected function createRefundsForExcel()
@@ -569,5 +758,18 @@ class NetbankingIciciGatewayTest extends TestCase
         ];
 
         $this->sendRequest($request);
+    }
+
+    protected function makeAuthorizeFailedPaymentAndGetPayment(array $content)
+    {
+        $request = [
+            'url'      => '/payments/authorize/nbplus/failed',
+            'method'   => 'POST',
+            'content'  => $content,
+        ];
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
     }
 }
