@@ -8631,6 +8631,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_METADATA_DELETE_SUCCESSFUL                             = 'CARD_METADATA_DELETE_SUCCESSFUL';
     const CARD_METADATA_DELETE_EVENT                                  = 'CARD_METADATA_DELETE_EVENT';
 
+    const PAYMENT_STATUS_EVENT_FAILURE                                = 'PAYMENT_STATUS_EVENT_FAILURE';
+
     //Table partitioning
     const TABLE_PARTITION_CREATE_QUERY                  = 'TABLE_PARTITION_CREATE_QUERY';
     const TABLE_PARTITION_DROP_QUERY                    = 'TABLE_PARTITION_DROP_QUERY';

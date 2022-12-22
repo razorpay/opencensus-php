@@ -114,15 +114,26 @@ class PaymentEvent extends Event
 
 
         $terminal_id = "";
+        $tag = "razorpay";
 
         // updating terminal id if available
         if (($payment->hasTerminal() === true) && ($payment->terminal !== null))
         {
-            $terminal_id = $payment->terminal->getId();
+            $terminal = $payment->terminal;
+
+            $terminal_id = $terminal->getId();
+
+            $terminalTypeArray = $terminal->getType();
+
+            if (($terminalTypeArray != null) && (in_array('optimizer', $terminalTypeArray) === true))
+            {
+                $tag = "optimizer";
+            }
         }
 
         $properties['payment'] += [
             'terminal_id'       => $terminal_id,
+            'tag'               => $tag,
         ];
 
 

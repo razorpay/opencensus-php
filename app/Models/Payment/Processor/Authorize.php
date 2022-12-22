@@ -368,8 +368,36 @@ trait Authorize
         $this->performFraudCheckRaasInternational($payment, $input);
         $this->setSelectedTerminalsForApplicationMethodsIfApplicable($payment);
 
-        // we are doing this after terminal selection since we might reject payemnt if there are no terminals found
-        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATION_PROCESSED, $payment);
+        //This try-catch block is temporary and will be removed by Optimizer team in 2-3 weeks
+        try
+        {
+
+            $paymentEvent = clone $payment;
+
+            //cloning payment entity and associating the terminal for terminal downtime detection on pg-availability
+            if (is_null($paymentEvent->getTerminalId()) === true)
+            {
+                $currentTerminal = $this->selectedTerminals[0];
+
+                $paymentEvent->associateTerminal($currentTerminal);
+            }
+
+            // we are doing this after terminal selection since we might reject payemnt if there are no terminals found
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATION_PROCESSED, $paymentEvent);
+
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::PAYMENT_STATUS_EVENT_FAILURE,
+                [
+                    'message' => $ex->getMessage(),
+                    'stack_trace' => $ex->getTrace(),
+                    'payment_event' => $paymentEvent,
+                    'payment' => $payment,
+                ]
+            );
+        }
+        unset($paymentEvent);
 
         if ($this->shouldHitGatewayForPayment($payment, $gatewayInput) === false)
         {
@@ -4718,7 +4746,7 @@ trait Authorize
         // for moto feature else decline the payment.
         // TODO: Need to change if AMEX card is enabled for skip
         //
-        if ($payment->getAuthType() === Payment\AuthType::SKIP) 
+        if ($payment->getAuthType() === Payment\AuthType::SKIP)
         {
             $input['card']['cvv'] = Card\Entity::DUMMY_CVV;
 
