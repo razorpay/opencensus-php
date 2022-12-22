@@ -43,7 +43,7 @@ const NavLinkProduct = ({
             accumulator[each.category] &&
             accumulator[each.category].length < reservationState[each.category].reservedPos.length
           ) {
-            accumulator[each.category].push(index + 1);
+            accumulator[each.category].push(accumulator.valid.length);
           }
         }
         if (index === products.length - 1 && reservationState) {
