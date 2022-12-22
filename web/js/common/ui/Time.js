@@ -46,7 +46,7 @@ class Time extends Component {
   }
 
   getInitTime = (props = this.props) => {
-    const { value = moment(), format = 'DD MMM YYYY', ...otherProps } = props;
+    const { value = moment().local(), format = 'DD MMM YYYY', ...otherProps } = props;
     const isRelative = 'relative' in otherProps;
     this.isRelative = isRelative;
 
@@ -70,7 +70,7 @@ class Time extends Component {
     const { date, displayText } = this.state;
     const { format, value, relative, ...props } = this.props;
     const isoString = date.toISOString();
-    const title = `${date.toDate()}`;
+    const title = `${date.local().toDate()}`;
 
     if (!value) return '--';
 

@@ -3,7 +3,8 @@ import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 const DATE_FORMAT = 'DD MMM YYYY';
 
-export const getFormattedDate = (unixTimeStamp) => moment(unixTimeStamp, 'X').format(DATE_FORMAT);
+export const getFormattedDate = (unixTimeStamp) =>
+  moment(unixTimeStamp, 'X').local().format(DATE_FORMAT);
 
 export const getTimeUnix = (timeMoment) =>
   moment(timeMoment)

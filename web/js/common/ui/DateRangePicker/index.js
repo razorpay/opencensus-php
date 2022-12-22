@@ -20,7 +20,7 @@ class DateRangePicker extends Component {
     super(props);
 
     let { presets } = props;
-    const { endDate = moment() } = props;
+    const { endDate = moment().local() } = props;
 
     if (!Array.isArray(presets)) {
       presets = defaultPresets;
@@ -61,7 +61,7 @@ class DateRangePicker extends Component {
     this.setState({ selectedPreset });
 
     if (selectedPreset !== this.customPreset) {
-      const endDate = moment();
+      const endDate = moment().local();
       const startDate = getStartDateFromDiff(selectedPreset.value, endDate);
 
       this.setDates(startDate, endDate, selectedPreset);
