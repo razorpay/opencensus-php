@@ -13,6 +13,7 @@ use RZP\Models\Payment\UpiMetadata\Flow;
 use RZP\Models\Batch\Status as BatchStatus;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
+use RZP\Exception\PaymentVerificationException;
 
 
 class UpiIciciPaymentServiceTest extends UpiPaymentServiceTest
@@ -129,9 +130,11 @@ class UpiIciciPaymentServiceTest extends UpiPaymentServiceTest
         ], $upiEntity->toArray());
     }
 
-    public function testPaymentSuccess()
+    public function testUpsPaymentSuccess($description = 'create_collect_success')
     {
         $this->gateway = 'upi_mozart';
+
+        $this->payment['description'] = $description;
 
         $this->setMockGatewayTrue();
 
@@ -386,7 +389,7 @@ class UpiIciciPaymentServiceTest extends UpiPaymentServiceTest
 
     public function testFullRefund()
     {
-        $this->testPaymentSuccess();
+        $this->testUpsPaymentSuccess();
 
         $payment = $this->getDbLastPayment();
 
@@ -425,7 +428,7 @@ class UpiIciciPaymentServiceTest extends UpiPaymentServiceTest
 
     public function testFullRefundVerifySuccess()
     {
-        $this->testPaymentSuccess();
+        $this->testUpsPaymentSuccess();
 
         $payment = $this->getDbLastPayment();
 
@@ -440,9 +443,44 @@ class UpiIciciPaymentServiceTest extends UpiPaymentServiceTest
         $this->assertNull($upiEntity);
     }
 
+    /**
+     * Test Late Auth Payments
+     *
+     * @return void
+     */
+    public function testVerifyLateAuth()
+    {
+        $this->testPaymentFailure();
+
+        $payment = $this->getDbLastPayment();
+
+        $time = Carbon::now(Timezone::IST)->addMinutes(4);
+
+        Carbon::setTestNow($time);
+
+        $this->verifyAllPayments();
+
+        $payment->reload();
+
+        $this->assertTrue($payment->isLateAuthorized());
+
+        $this->assertArraySubset(
+            [
+            Entity::STATUS          => Status::AUTHORIZED,
+            Entity::GATEWAY         => 'upi_icici',
+            Entity::TERMINAL_ID     => $this->terminal->getId(),
+            Entity::CPS_ROUTE       => Entity::UPI_PAYMENT_SERVICE,
+            ], $payment->toArray()
+        );
+
+        $upiEntity = $this->getDbLastEntity('upi', 'test');
+
+        $this->assertNull($upiEntity);
+    }
+
     public function testRetryRefund()
     {
-        $this->testPaymentSuccess();
+        $this->testUpsPaymentSuccess();
 
         $payment = $this->getDbLastPayment();
 
@@ -473,6 +511,100 @@ class UpiIciciPaymentServiceTest extends UpiPaymentServiceTest
         $refund = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $this->assertEquals($refund['status'], 'processed');
+    }
+
+    /**
+     * Test verify amount mismatch
+     *
+     * @return void
+     */
+    public function testVerifyAmountMisMatch()
+    {
+        $this->testUpsPaymentSuccess('verify_amount_mismatch');
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertSame(Status::AUTHORIZED, $payment->getStatus());
+
+        $this->expectException(PaymentVerificationException::class);
+
+        $this->verifyPayment($payment->getPublicId());
+    }
+
+    /**
+     * Test verify amount mismatch
+     *
+     * @return void
+     */
+    public function testVerifyAmountMisMatchSuccess()
+    {
+        $this->doAjaxPaymentWithUps('terminal:shared_upi_icici_terminal', 'upi_icici');
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertSame(Status::CREATED, $payment->getStatus());
+
+        $payment->setVerifyAt(now()->getTimestamp());
+        $payment->setDescription('verify_amount_mismatch');
+        $payment->save();
+
+        $response = $this->verifyAllPayments($payment->getPublicId());
+
+        $this->assertArraySubset([
+            'authorized'    => 0,
+            'success'       => 0,
+            'error'         => 1,
+            'unknown'       => 0,
+        ], $response);
+    }
+
+    public function testAmountDeficitOnSuccessfulWithVerify()
+    {
+        $this->doAjaxPaymentWithUps('terminal:shared_upi_icici_terminal', 'upi_icici');
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset([
+            'amount'        => 50000,
+            'base_amount'   => 50000,
+            'status'        => 'created',
+        ], $payment->toArray(), true);
+
+        $payment->setVerifyAt(now()->getTimestamp());
+        $payment->setDescription('verify_amount_mismatch');
+        $payment->save();
+
+        config()->set('app.amount_difference_allowed_authorized', [$payment->getMerchantId()]);
+
+        $this->mockServerContentFunction(function (&$content){
+            $content['data']['data']['payment']['amount_authorized'] = 49000;
+        });
+
+        $response = $this->verifyAllPayments($payment->getPublicId());
+
+        $this->assertArraySubset([
+            'authorized'    => 1,
+            'success'       => 0,
+            'error'         => 0,
+            'unknown'       => 0,
+        ], $response);
+
+        $payment->refresh();
+
+        $this->assertArraySubset([
+            'amount'            => 49000,
+            'base_amount'       => 49000,
+            'status'            => 'authorized',
+            'verified'          => 0,
+            'vpa'               => 'vishnu@icici',
+            'late_authorized'   => true,
+        ], $payment->toArray(), true);
+
+        $this->assertArraySubset([
+            'gateway_amount'            => 49000,
+            'mismatch_amount'           => 1000,
+            'mismatch_amount_reason'    => 'credit_deficit',
+        ], $payment->paymentMeta->toArray(), true);
     }
 
     public function testPaymentReconciliation()
@@ -793,6 +925,8 @@ class UpiIciciPaymentServiceTest extends UpiPaymentServiceTest
         $reconciled3 = $this->getDbEntity('transaction', ['entity_id' => $payments['000000000003']]);
         $this->assertNull($reconciled3->getReconciledAt());
     }
+
+    /*********************************Helpers*********************************/
 
     protected function unlinkUpiEnity($rrn = '')
     {

@@ -765,6 +765,14 @@ class Service
         if (($verify->amountMismatch === true) and
             ($verify->throwExceptionOnMismatch))
         {
+            if (($this->gateway === Payment\Gateway::UPI_ICICI) and
+                ($verify->gatewaySuccess === true))
+            {
+                throw new Exception\PaymentVerificationException(
+                    $verify->getDataToTrace(),
+                    $verify);
+            }
+
             throw new Exception\RuntimeException(
                 'Payment verification failed due to amount mismatch.',
                 [

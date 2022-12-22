@@ -272,6 +272,8 @@ class Service extends UpiPaymentService
             'error'     => null,
         ];
 
+        $this->content($response);
+
         return [$response, 200];
     }
 
