@@ -47,7 +47,14 @@ module.exports = {
   collectCoverage: true,
 
   // An object that configures minimum threshold enforcement for coverage results
+
   coverageThreshold: {
+    global: {
+      statements: 50,
+      branches: 37,
+      functions: 39,
+      lines: 51,
+    },
     './js/merchant/views/onboarding/': {
       statements: 72,
       branches: 58,

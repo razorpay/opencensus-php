@@ -21,6 +21,7 @@
     "build": "cd web && npm run production:build",
     "test": "cd web && npm run test",
     "test:jest": "cd web && npm run test:jest",
+    "test:jest:ci": "cd web && npm run test:jest",
     "test:jest-watch-changed": "cd web && npm run test:jest-watch-changed",
     "test:jest-watch": "cd web && npm run test:jest-watch",
     "lint": "bash lint.sh",
