@@ -50,6 +50,8 @@ class Fetch extends BaseFetch
             Entity::TO_OPS_FOLLOW_UP_DATE               => 'sometimes|epoch',
             Entity::SKIP_DWT                            => 'sometimes|int',
             Entity::OPS_MX_POC_ID                       => 'sometimes|string',
+            Entity::FROM_DOCKET_ESTIMATED_DELIVERY_DATE => 'sometimes|epoch',
+            Entity::TO_DOCKET_ESTIMATED_DELIVERY_DATE   => 'sometimes|epoch',
         ],
     ];
 
@@ -94,6 +96,8 @@ class Fetch extends BaseFetch
             Entity::TO_OPS_FOLLOW_UP_DATE,
             Entity::SKIP_DWT,
             Entity::OPS_MX_POC_ID,
+            Entity::FROM_DOCKET_ESTIMATED_DELIVERY_DATE,
+            Entity::TO_DOCKET_ESTIMATED_DELIVERY_DATE,
             self::EXPAND_EACH,
         ]
     ];

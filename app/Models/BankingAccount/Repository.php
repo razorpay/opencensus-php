@@ -1057,6 +1057,33 @@ class Repository extends Base\Repository
     }
 
     /**
+     * Filter to fetch applications by docket estimated delivery date
+     */
+    public function addQueryParamFromDocketEstimatedDeliveryDate(Base\BuilderEx $query, $params)
+    {
+        $fromDocketEstimatedDeliveryDate = $params[Entity::FROM_DOCKET_ESTIMATED_DELIVERY_DATE];
+
+        $this->joinQueryActivationDetail($query);
+
+        $query->select($this->dbColumn('*'));
+
+        $query->whereRaw('JSON_UNQUOTE(JSON_EXTRACT(additional_details, \'$."docket_estimated_delivery_date"\')) != \'\' AND ' .
+            'JSON_UNQUOTE(JSON_EXTRACT(additional_details, \'$."docket_estimated_delivery_date"\')) >= \''.$fromDocketEstimatedDeliveryDate.'\'');
+    }
+
+    public function addQueryParamToDocketEstimatedDeliveryDate(Base\BuilderEx $query, $params)
+    {
+        $toDocketEstimatedDeliveryDate = $params[Entity::TO_DOCKET_ESTIMATED_DELIVERY_DATE];
+
+        $this->joinQueryActivationDetail($query);
+
+        $query->select($this->dbColumn('*'));
+
+        $query->whereRaw('JSON_UNQUOTE(JSON_EXTRACT(additional_details, \'$."docket_estimated_delivery_date"\')) != \'\' AND ' .
+            'JSON_UNQUOTE(JSON_EXTRACT(additional_details, \'$."docket_estimated_delivery_date"\')) <= \''.$toDocketEstimatedDeliveryDate.'\'');
+    }
+
+    /**
      *
      * select distinct `merchant_id` from `banking_accounts`
      *         where `channel` = ? and

@@ -11199,6 +11199,114 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
+    public function testFilterFromDocketEstimatedDeliveryDateAndToDocketEstimatedDeliveryDate()
+    {
+        $ba1 = $this->fixtures->create('banking_account', [
+            'id'                    => '01234567890123',
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->fixtures->create('banking_account_activation_detail', [
+            'banking_account_id' => $ba1->getId(),
+            'additional_details'        => json_encode([
+                'docket_estimated_delivery_date' => '1667346201'
+            ])
+        ]);
+
+        $ba2 = $this->fixtures->create('banking_account', [
+            'id'                    => '01234567890124',
+            'account_number'        => '2224440041626906',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000001',
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->fixtures->create('banking_account_activation_detail', [
+            'banking_account_id' => $ba2->getId(),
+            'additional_details'        => json_encode([
+                'docket_estimated_delivery_date' => '1667346100'
+            ])
+        ]);
+
+        $ba3 = $this->fixtures->create('banking_account', [
+            'id'                    => '01234567890125',
+            'account_number'        => '2224440041626907',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000003',
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->fixtures->create('banking_account_activation_detail', [
+            'banking_account_id' => $ba3->getId(),
+            'additional_details'        => json_encode([
+                'docket_estimated_delivery_date' => '1667348220'
+            ])
+        ]);
+
+        $ba4 = $this->fixtures->create('banking_account', [
+            'id'                    => '01234567890126',
+            'account_number'        => '2224440041626910',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000004',
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->fixtures->create('banking_account_activation_detail', [
+            'banking_account_id' => $ba4->getId(),
+            'additional_details'        => json_encode([
+                'docket_estimated_delivery_date' => '1667348220'
+            ])
+        ]);
+
+        $this->ba->adminAuth();
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/admin/banking_account?count=20&skip=0&account_type=current&from_docket_estimated_delivery_date=1667346200&to_docket_estimated_delivery_date=1667348200',
+                'method'  => 'GET',
+                'content' => [
+                    'expand' => ['merchant','merchant.merchantDetail'],
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'entity' => 'collection',
+                    'count' => 1,
+                    'items' => [
+                        [
+                            'banking_account_activation_details' => [
+                                'additional_details' => [
+                                    'docket_estimated_delivery_date' => '1667346201'
+                                ]
+                            ]
+                        ]
+                    ],
+                ],
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
     public function verifyFreshDeskTicketCreationBehaviourForSalesLed(string $baId, string $baActivationDetailId, array $activationDetail, array $reqContent, Admin\Admin\Entity $admin)
     {
         $this->fixtures->edit('banking_account', $baId, ['status' => 'created']);

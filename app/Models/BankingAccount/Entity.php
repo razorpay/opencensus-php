@@ -181,6 +181,8 @@ class Entity extends Base\PublicEntity
     const FROM_OPS_FOLLOW_UP_DATE = 'from_ops_follow_up_date';
     const TO_OPS_FOLLOW_UP_DATE = 'to_ops_follow_up_date';
     const SKIP_DWT = 'skip_dwt';
+    const FROM_DOCKET_ESTIMATED_DELIVERY_DATE = 'from_docket_estimated_delivery_date';
+    const TO_DOCKET_ESTIMATED_DELIVERY_DATE = 'to_docket_estimated_delivery_date';
 
     // For experimentation - resolved from merchant preferences - group x_merchant_current_accounts
     const USING_NEW_STATES = 'using_new_states';
