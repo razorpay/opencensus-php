@@ -16,6 +16,7 @@ import {
   setRecommendedProduct,
   getRecommendedProductDetails,
 } from 'merchant/components/Activation/ActivationUtils';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 function MerchantNavLinks(props) {
   // prettier-ignore
@@ -84,7 +85,8 @@ function MerchantNavLinks(props) {
         to="/settlements"
         isSettlementEnabled={isSettlementEnabled && !isRecommendProduct}
         additionalCondition={(currentUser) =>
-          currentUser.isAllowedView('settlements') && !currentUser.findTag('i18_hide_settlements')
+          currentUser.isAllowedView('settlements') &&
+          !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements)
         }
       />
 
@@ -110,7 +112,8 @@ function MerchantNavLinks(props) {
         type="product"
         to={routes.invoices}
         additionalCondition={(currentUser) =>
-          currentUser.isAllowedView('invoices') && !currentUser.findTag('i18_hide_invoices')
+          currentUser.isAllowedView('invoices') &&
+          !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Invoices)
         }
       />
       <MainNavLink
@@ -120,7 +123,7 @@ function MerchantNavLinks(props) {
         to={routes.paymentlinks}
         additionalCondition={(currentUser) =>
           currentUser.isAllowedView('payment_links') &&
-          !currentUser.findTag('i18_hide_payment_links')
+          !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentLinks)
         }
         customBadge={getProductBadge(['payment_link'])}
       />
@@ -131,7 +134,7 @@ function MerchantNavLinks(props) {
         to={routes.paymentpages}
         additionalCondition={(currentUser) =>
           currentUser.isAllowedView('payment_pages') &&
-          !currentUser.findTag('i18_hide_payment_pages')
+          !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages)
         }
         customBadge={getProductBadge(['payment_page'])}
       />
@@ -143,7 +146,7 @@ function MerchantNavLinks(props) {
         additionalCondition={(currentUser) =>
           currentUser.isAllowedView('stores') &&
           currentUser.isStoresEnabled &&
-          !currentUser.findTag('i18_hide_stores')
+          !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Stores)
         }
         isNew={true}
       />
@@ -170,7 +173,7 @@ function MerchantNavLinks(props) {
         additionalCondition={(currentUser) =>
           currentUser.isAllowedMultiple('payment_buttons subscription_buttons') &&
           (currentUser.isPaymentButtonEnabledByRazorX || currentUser.isSubscriptionButtonEnabled) &&
-          !currentUser.findTag('i18_hide_payment_buttons')
+          !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentButtons)
         }
         customBadge={getProductBadge(['payment_button', 'payment_gateway'])}
       />
@@ -180,7 +183,8 @@ function MerchantNavLinks(props) {
         to={routes.marketplace}
         icon="i i-route text-success"
         additionalCondition={(currentUser) =>
-          currentUser.isAllowedView('marketplace') && !currentUser.findTag('i18_hide_marketplace')
+          currentUser.isAllowedView('marketplace') &&
+          !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Marketplace)
         }
         customBadge={getProductBadge(['route'])}
       />
@@ -207,7 +211,7 @@ function MerchantNavLinks(props) {
         icon="i i-refresh text-info"
         additionalCondition={(currentUser) =>
           currentUser.isAllowedView('subscriptions') &&
-          !currentUser.findTag('i18_hide_subscription')
+          !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Subscriptions)
         }
         to={routes[isChargeAtWillEnabled ? 'chargeAtWill' : 'subscriptions']}
         customBadge={getProductBadge(['subscriptions'])}
@@ -227,7 +231,8 @@ function MerchantNavLinks(props) {
         type="product"
         icon="i i-qr-code text-warm"
         additionalCondition={(currentUser) =>
-          currentUser.isAllowedView('qr_codes') && !currentUser.findTag('i18_hide_qr_codes')
+          currentUser.isAllowedView('qr_codes') &&
+          !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.QrCodes)
         }
         to={routes.qrCodes}
         isNew={!isRecommendProduct}
@@ -285,7 +290,8 @@ function MerchantNavLinks(props) {
         icon="i i-people text-warning"
         to="/customers"
         additionalCondition={(currentUser) =>
-          currentUser.isAllowedView('customers') && !currentUser.findTag('i18_hide_customers')
+          currentUser.isAllowedView('customers') &&
+          !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Customers)
         }
       />
 
@@ -295,7 +301,8 @@ function MerchantNavLinks(props) {
         type="general"
         to="/offers"
         additionalCondition={(currentUser) =>
-          currentUser.isAllowedView('offers') && !currentUser.findTag('i18_hide_offers')
+          currentUser.isAllowedView('offers') &&
+          !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Offers)
         }
       />
 
@@ -305,7 +312,7 @@ function MerchantNavLinks(props) {
         to="/checkout-rewards"
         additionalCondition={(currentUser) =>
           currentUser.isAllowedView('checkoutrewards') &&
-          !currentUser.findTag('i18_hide_checkoutrewards')
+          !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Checkoutrewards)
         }
       />
 

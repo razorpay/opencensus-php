@@ -17,6 +17,7 @@ import MerchantNavLinks from './MerchantNavLinks';
 import PartnerNavLinks from './PartnerNavLinks';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { isOrgFeatureExist } from 'merchant/models/User';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(trustedbadge|profile|credits|addfunds|referrals)/;
@@ -205,7 +206,7 @@ export default class Sidebar extends Component {
                 <ShowWhen
                   additionalCondition={(currentUser) =>
                     !isOrgFeatureExist('hide_activation_form') &&
-                    !currentUser.findTag('i18_hide_onboarding')
+                    !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Onboarding)
                   }
                 >
                   <ActivationProgress
@@ -215,7 +216,8 @@ export default class Sidebar extends Component {
                   />
                 </ShowWhen>
 
-                {user.isPartner() && !user.findTag('i18_hide_partnership') ? (
+                {user.isPartner() &&
+                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Partnership) ? (
                   <PartnerSidebar merchantNavLinkProps={merchantNavLinkProps} user={user} />
                 ) : (
                   <MerchantNavLinks {...merchantNavLinkProps} user={user} />
@@ -224,7 +226,7 @@ export default class Sidebar extends Component {
                 <ShowWhen
                   additionalCondition={(currentUser) =>
                     !isOrgFeatureExist('hide_razorpay_text_link') &&
-                    !currentUser.findTag('i18_hide_app_store')
+                    !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.AppStore)
                   }
                 >
                   <div className="open">
