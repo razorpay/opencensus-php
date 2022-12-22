@@ -9,12 +9,12 @@ use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\LegalDocumentBaseResponse;
 class LegalDocumentProcessorMock extends LegalDocumentProcessor
 {
     /**
-     * @param array|null $documents_detail
+     * @param array|null $input
      * @param string     $platform
      *
      * @return LegalDocumentBaseResponse
      */
-    public function processLegalDocuments(array $documents_detail = null, string $platform = 'pg') {
+    public function processLegalDocuments(array $input = null, string $platform = 'pg') {
 
         $response = new LegalDocumentsManagerResponse();
 

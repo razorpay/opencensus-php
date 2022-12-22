@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Detail;
 use RZP\lib\TemplateEngine;
 use DOMDocument;
 use RZP\Http\RequestHeader;
+use RZP\Constants\Environment;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Balance\Type as ProductType;
@@ -414,9 +415,13 @@ class Service extends Base\Service
 
                         $documents_detail = $this->getDocumentsDetails($input);
 
+                        $legalDocumentsInput = [
+                            DEConstants::DOCUMENTS_DETAIL => $documents_detail
+                        ];
+
                         $processor = (new ProcessorFactory())->getLegalDocumentProcessor();
 
-                        $response = $processor->processLegalDocuments($documents_detail);
+                        $response = $processor->processLegalDocuments($legalDocumentsInput);
 
                         $responseData = $response->getResponseData();
 
@@ -3336,7 +3341,7 @@ class Service extends Base\Service
         return true;
     }
 
-    private function storeConsents(string $merchantId, array $input)
+    public function storeConsents(string $merchantId, array $input, string $userId = null)
     {
         $documentDetailsInput = $input[DEConstants::DOCUMENTS_DETAIL] ?? null;
 
@@ -3351,7 +3356,7 @@ class Service extends Base\Service
         {
             $details = new MerchantConsentDetails();
 
-            $createdAt = Carbon::now()->getTimestamp();
+            $createdAt = $input[DEConstants::DOCUMENTS_ACCEPTANCE_TIMESTAMP] ?? Carbon::now()->getTimestamp();
 
             $id = (new Entity)->generateUniqueIdFromTimestamp($createdAt);
 
@@ -3376,13 +3381,17 @@ class Service extends Base\Service
             $merchant_consent->setCreatedAt($createdAt);
 
             $metadata = [
-                ConsentConstant::IP_ADDRESS => $_SERVER['HTTP_X_IP_ADDRESS'] ?? $this->app['request']->ip(),
+                ConsentConstant::IP_ADDRESS => $input[DEConstants::IP_ADDRESS] ?? $_SERVER['HTTP_X_IP_ADDRESS'] ?? $this->app['request']->ip(),
                 ConsentConstant::USER_AGENT => $this->app['request']->header('X-User-Agent') ?? $this->app['request']->header('User-Agent') ?? null,
             ];
 
             $merchant_consent->setMetadata($metadata);
 
-            $merchant_consent->setUserId($this->app['request']->header(RequestHeader::X_DASHBOARD_USER_ID));
+            $merchant_consent->setUserId($userId ?? $this->app['request']->header(RequestHeader::X_DASHBOARD_USER_ID));
+
+            $merchant_consent->setEntityId($input[MerchantConsent::ENTITY_ID]);
+
+            $merchant_consent->setEntityType($input[MerchantConsent::ENTITY_TYPE]);
 
             $merchant_consent->setId((new Entity)->generateUniqueId());
 
@@ -3509,9 +3518,13 @@ class Service extends Base\Service
         {
             $documentsDetail = $this->getDocumentsDetails($input);
 
+            $legalDocumentsInput = [
+                DEConstants::DOCUMENTS_DETAIL => $documentsDetail
+            ];
+
             $processor = (new ProcessorFactory())->getLegalDocumentProcessor();
 
-            $response = $processor->processLegalDocuments($documentsDetail, DEConstants::RX);
+            $response = $processor->processLegalDocuments($legalDocumentsInput, DEConstants::RX);
 
             $responseData = $response->getResponseData();
 
@@ -3572,8 +3585,10 @@ class Service extends Base\Service
      *
      * @return array
      */
-    private function getDocumentsDetails($input): array
+    public function getDocumentsDetails($input): array
     {
+        $isTestingEnvironment = $this->app['env'] === Environment::TESTING;
+
         $documentDetailsInput = $input[DEConstants::DOCUMENTS_DETAIL];
 
         $documents_detail = [];
@@ -3583,7 +3598,7 @@ class Service extends Base\Service
             $document_detail = [
                 "type"         => $documentDetailInput['type'],
                 "content_type" => "html",
-                "content"      => $this->getFileContentInHtml($documentDetailInput['url']),
+                "content"      => !$isTestingEnvironment ? $this->getFileContentInHtml($documentDetailInput['url']) : "Dummy Content",
             ];
 
             array_push($documents_detail, $document_detail);

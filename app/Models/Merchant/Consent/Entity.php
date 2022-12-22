@@ -25,6 +25,8 @@ class Entity extends Base\PublicEntity
     const AUDIT_ID    = 'audit_id';
     const UPDATED_AT  = 'updated_at';
     const RETRY_COUNT = 'retry_count';
+    const ENTITY_TYPE = 'entity_type';
+    const ENTITY_ID   = 'entity_id';
 
     protected $entity             = 'merchant_consents';
 
@@ -39,7 +41,9 @@ class Entity extends Base\PublicEntity
         self::AUDIT_ID,
         self::STATUS,
         self::REQUEST_ID,
-        self::RETRY_COUNT
+        self::RETRY_COUNT,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE
 
     ];
 
@@ -51,7 +55,9 @@ class Entity extends Base\PublicEntity
         self::CONSENT_FOR,
         self::STATUS,
         self::REQUEST_ID,
-        self::RETRY_COUNT
+        self::RETRY_COUNT,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE
     ];
 
     protected $casts              = [
@@ -63,7 +69,9 @@ class Entity extends Base\PublicEntity
         self::DETAILS_ID => null,
         self::STATUS     => null,
         self::REQUEST_ID => null,
-        self::RETRY_COUNT => 0
+        self::RETRY_COUNT => 0,
+        self::ENTITY_ID  => null,
+        self::ENTITY_TYPE => null
     ];
 
     public function getMerchantId()
@@ -143,5 +151,15 @@ class Entity extends Base\PublicEntity
     public function setRetryCount($retryCount)
     {
         return $this->setAttribute(self::RETRY_COUNT, $retryCount);
+    }
+
+    public function setEntityId($entityId)
+    {
+        return $this->setAttribute(self::ENTITY_ID, $entityId);
+    }
+
+    public function setEntityType($entityType)
+    {
+        return $this->setAttribute(self::ENTITY_TYPE, $entityType);
     }
 }

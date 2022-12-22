@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Exception\LogicException;
 use Illuminate\Support\Facades\DB;
 use RZP\Models\Merchant\Consent\Processor\Factory;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\FetchLegalDocumentBaseResponse;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\LegalDocumentBaseResponse;
 use RZP\Models\Merchant\Consent\Constants as ConsentConstant;
@@ -148,9 +149,13 @@ class Core extends Base\Core
 
             $documents_detail = $this->getDocumentsDetails($consentDetailsForMerchant);
 
+            $legalDocumentsInput = [
+                DEConstants::DOCUMENTS_DETAIL => $documents_detail
+            ];
+
             $processor = (new Factory())->getLegalDocumentProcessor();
 
-            $response = $processor->processLegalDocuments($documents_detail, $platform);
+            $response = $processor->processLegalDocuments($legalDocumentsInput, $platform);
 
             $responseData = $response->getResponseData();
 

@@ -50,6 +50,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CREATED_AT);
     }
 
+    public function getClientIp()
+    {
+        return $this->getAttribute(self::CLIENT_IP);
+    }
+
     public function getAcceptedChannel()
     {
         return $this->getAttribute(self::ACCEPTED_CHANNEL);

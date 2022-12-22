@@ -631,8 +631,11 @@ class Core extends Base\Core
 
         $submitResponse = [];
 
+        $consentDocumentsService = TncMap\ConsentDocuments\Factory::getInstance($merchantProduct->getProduct());
+
         if ($merchantDetails->getActivationStatus() !== Detail\Status::NEEDS_CLARIFICATION)
         {
+            $consentDocumentsService->createLegalDocuments($merchant, $merchantProduct, 'L2');
             // auto submit the activation form if all requirements are met
             $submitResponse = $merchantDetailCore->saveMerchantDetails($input, $merchant);
         }
@@ -642,6 +645,7 @@ class Core extends Base\Core
 
             if ($nonAcknowledgedNCFields[Merchant\Constants::COUNT] === 0)
             {
+                $consentDocumentsService->createLegalDocuments($merchant, $merchantProduct, 'L2');
                 $submitResponse = $merchantDetailCore->saveMerchantDetails($input, $merchant);
             }
         }

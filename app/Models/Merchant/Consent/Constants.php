@@ -41,7 +41,10 @@ class Constants
     const VALID_LEGAL_DOC = [
         'L2_Terms and Conditions',
         'L2_Service Agreement',
-        'L2_Privacy Policy'
+        'L2_Privacy Policy',
+        'L2_terms',
+        'L2_privacy',
+        'L2_agreement'
     ];
 
     const VALID_LEGAL_DOC_FOR_X = [

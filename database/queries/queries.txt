@@ -7112,6 +7112,10 @@ Alter table merchant_details
 ALTER TABLE merchant_website
     MODIFY COLUMN grace_period tinyint(1) DEFAULT NULL ;
 
+ALTER TABLE merchant_consents
+    ADD COLUMN entity_id CHAR(14) COLLATE utf8mb4_bin DEFAULT NULL,
+    ADD COLUMN entity_type VARCHAR(32) DEFAULT NULL;
+
 ALTER TABLE qr_payment
     ADD COLUMN notes varchar(50) DEFAULT NULL;
 

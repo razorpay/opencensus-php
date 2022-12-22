@@ -1981,7 +1981,7 @@ return [
             'content' => [
                 'status'   => 'active',
                 'content'  => [
-                    'terms' => 'https://www.terms.com'
+                    'terms' => 'https://www.razorpay.com/terms/'
                 ],
                 'accepted' => false
             ],
@@ -1998,7 +1998,7 @@ return [
             'content' => [
                 'status'   => 'active',
                 'content'  => [
-                    'terms' => 'https://www.terms.com'
+                    'terms' => 'https://www.razorpay.com/terms/'
                 ],
                 'accepted' => true
             ],
@@ -2018,7 +2018,7 @@ return [
             'content' => [
                 'status'   => 'active',
                 'content'  => [
-                    'terms' => 'https://www.terms.com'
+                    'terms' => 'https://www.razorpay.com/terms/'
                 ],
                 'accepted' => true
             ]

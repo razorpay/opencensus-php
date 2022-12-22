@@ -36,8 +36,8 @@ class RouteConfigTest extends TestCase
 
         $this->terminalsServiceMock = $this->getTerminalsServiceMock();
 
-        $this->fixtures->connection('test')->create('tnc_map', ['product_name' => 'all', 'content' => ['terms' => 'https://www.terms.com'], 'business_unit' => 'payments']);
-        $this->fixtures->connection('live')->create('tnc_map', ['product_name' => 'all', 'content' => ['terms' => 'https://www.terms.com'], 'business_unit' => 'payments']);
+        $this->fixtures->connection('test')->create('tnc_map', ['product_name' => 'all', 'content' => ['terms' => 'https://www.razorpay.com/terms/'], 'business_unit' => 'payments']);
+        $this->fixtures->connection('live')->create('tnc_map', ['product_name' => 'all', 'content' => ['terms' => 'https://www.razorpay.com/terms/'], 'business_unit' => 'payments']);
 
         $this->mockStorkService();
 

@@ -30,6 +30,7 @@ use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Tests\Functional\Helpers\CreateLegalDocumentsTrait;
 
 class PaymentGatewayConfigTest extends OAuthTestCase
 {
@@ -41,6 +42,7 @@ class PaymentGatewayConfigTest extends OAuthTestCase
     use HeimdallTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
+    use CreateLegalDocumentsTrait;
 
 
     const RZP_ORG = '100000razorpay';
@@ -55,8 +57,8 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $this->terminalsServiceMock = $this->getTerminalsServiceMock();
 
-        $this->fixtures->connection('test')->create('tnc_map', ['product_name' => 'all', 'content' => ['terms' => 'https://www.terms.com'], 'business_unit' => 'payments']);
-        $this->fixtures->connection('live')->create('tnc_map', ['product_name' => 'all', 'content' => ['terms' => 'https://www.terms.com'], 'business_unit' => 'payments']);
+        $this->fixtures->connection('test')->create('tnc_map', ['product_name' => 'all', 'content' => ['terms' => 'https://www.razorpay.com/terms/'], 'business_unit' => 'payments']);
+        $this->fixtures->connection('live')->create('tnc_map', ['product_name' => 'all', 'content' => ['terms' => 'https://www.razorpay.com/terms/'], 'business_unit' => 'payments']);
 
         $this->mockStorkService();
 
@@ -2017,6 +2019,239 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $testData = $this->testData['testEmptyRequirements'];
 
         $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+    }
+
+    public function testCreateLegalDocsForMerchantConsentOnSubmitActivation()
+    {
+        Mail::fake();
+
+        $this->setupPrivateAuthForPartner();
+
+        $this->mockTerminalServiceResponse();
+
+        $bvsMock = $this->mockCreateLegalDocument();
+
+        $bvsMock->expects($this->once())->method('createLegalDocument')->withAnyParameters();
+
+        $testData = $this->testData['createRegisteredBusinessTypeAccount'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData['testCreateDefaultPaymentGatewayConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $merchantProductId = $response['id'];
+
+        $testData = $this->testData['testRequirementsForRegisteredBusiness'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['updateSettlementFieldsForRegisteredBusiness'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testCreateStakeholderForThinRequest'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders';
+
+        $stakeholderResponse = $this->runRequestResponseFlow($testData);
+
+        $stakeholderId = $stakeholderResponse['id'];
+
+        $testData = $this->testData['testUpdateStakeholderDetails'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders/' . $stakeholderId;
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testRequirementsForRegisteredBusinessAfterStakeholderDetailsSubmission'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+
+        $this->runRequestResponseFlow($testData);
+
+        $this->updateUploadDocumentData('testPostStakeholderDocumentAadharFront');
+
+        $testData = $this->testData['testPostStakeholderDocumentAadharFront'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders/' . $stakeholderId . '/documents';
+
+        $this->runRequestResponseFlow($testData);
+
+        $this->updateUploadDocumentData('testPostStakeholderDocumentAadharBack');
+
+        $testData = $this->testData['testPostStakeholderDocumentAadharBack'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders/' . $stakeholderId . '/documents';
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['updateBusinessProofDetails'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId;
+
+        $this->runRequestResponseFlow($testData);
+
+        $this->updateUploadDocumentData('testPostBusinessProofDocument');
+
+        $testData = $this->testData['testPostBusinessProofDocument'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/documents';
+
+        $this->runRequestResponseFlow($testData);
+
+        $this->updateUploadDocumentData('testPostBusinessPanDocument');
+
+        $testData = $this->testData['testPostBusinessPanDocument'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/documents';
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['acceptAccountTnc'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/tnc';
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testEmptyRequirements'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+
+        $this->runRequestResponseFlow($testData);
+
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+
+        $merchantConsents = $this->getDbEntities('merchant_consents',  ['merchant_id' => $accountId], Mode::LIVE)->toArray();
+
+        $this->assertCount(1, $merchantConsents);
+    }
+
+    public function testCreateLegalDocsForMerchantConsentOnSubmitActivationConsentsAlreadyPresent()
+    {
+        Mail::fake();
+
+        $this->setupPrivateAuthForPartner();
+
+        $this->mockTerminalServiceResponse();
+
+        $bvsMock = $this->mockCreateLegalDocument();
+
+        $bvsMock->expects($this->never())->method('createLegalDocument')->withAnyParameters();
+
+        $testData = $this->testData['createRegisteredBusinessTypeAccount'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $merchantId = $accountId;
+
+        Account\Entity::verifyIdAndSilentlyStripSign($merchantId);
+
+        $this->fixtures->create('merchant_consents',
+            [
+                'merchant_id' => $merchantId
+            ]);
+
+        $testData = $this->testData['testCreateDefaultPaymentGatewayConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $merchantProductId = $response['id'];
+
+        $testData = $this->testData['testRequirementsForRegisteredBusiness'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['updateSettlementFieldsForRegisteredBusiness'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testCreateStakeholderForThinRequest'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders';
+
+        $stakeholderResponse = $this->runRequestResponseFlow($testData);
+
+        $stakeholderId = $stakeholderResponse['id'];
+
+        $testData = $this->testData['testUpdateStakeholderDetails'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders/' . $stakeholderId;
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testRequirementsForRegisteredBusinessAfterStakeholderDetailsSubmission'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+
+        $this->runRequestResponseFlow($testData);
+
+        $this->updateUploadDocumentData('testPostStakeholderDocumentAadharFront');
+
+        $testData = $this->testData['testPostStakeholderDocumentAadharFront'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders/' . $stakeholderId . '/documents';
+
+        $this->runRequestResponseFlow($testData);
+
+        $this->updateUploadDocumentData('testPostStakeholderDocumentAadharBack');
+
+        $testData = $this->testData['testPostStakeholderDocumentAadharBack'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders/' . $stakeholderId . '/documents';
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['updateBusinessProofDetails'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId;
+
+        $this->runRequestResponseFlow($testData);
+
+        $this->updateUploadDocumentData('testPostBusinessProofDocument');
+
+        $testData = $this->testData['testPostBusinessProofDocument'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/documents';
+
+        $this->runRequestResponseFlow($testData);
+
+        $this->updateUploadDocumentData('testPostBusinessPanDocument');
+
+        $testData = $this->testData['testPostBusinessPanDocument'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/documents';
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['acceptAccountTnc'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/tnc';
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testEmptyRequirements'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+
+        $this->runRequestResponseFlow($testData);
     }
 }
 

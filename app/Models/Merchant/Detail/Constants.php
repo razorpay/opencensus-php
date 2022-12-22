@@ -291,6 +291,8 @@ class Constants
     const DOCUMENTS_DETAIL = 'documents_detail';
     const URL = 'url';
     const TYPE = 'type';
+    const IP_ADDRESS = 'ip_address';
+    const DOCUMENTS_ACCEPTANCE_TIMESTAMP = 'documents_acceptance_timestamp';
 
     /*
      * Allowed activation form milestones
