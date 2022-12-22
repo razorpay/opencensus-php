@@ -91,6 +91,25 @@ function PaymentDetails(props) {
     }
   }, [scrolledToBottom]);
 
+  /* This function handles specific flow for international payments
+  other flows won't be affected
+  1. fee bearer is customer
+  2. currency is not INR
+  3. payment is in authorized state
+  4. fee_currency_amount is not null */
+  const getPaymentFees = () => {
+    let fee = payment?.fee ?? 0;
+    if (
+      payment?.fee_bearer === 'customer' &&
+      payment?.currency !== 'INR' &&
+      payment?.fee_currency_amount &&
+      payment?.status === 'authorized'
+    ) {
+      fee = payment.fee_currency_amount;
+    }
+    return fee;
+  };
+
   useEffect(() => {
     if (user.isSingleReconEnabled && user.isOptimizerEnabled) {
       scroller.current.addEventListener('scroll', handleScroll);
@@ -416,10 +435,10 @@ function PaymentDetails(props) {
                 >
                   <EntityDetailRow label="Total Fee">
                     <Definition>
-                      <Amount value={payment.fee} />
+                      <Amount value={getPaymentFees()} />
                       <span>
                         {hideRazorpayTextLink ? '' : 'Razorpay '}Fee -&nbsp;
-                        <Amount value={payment.fee - payment.tax} currency="INR" />
+                        <Amount value={getPaymentFees() - payment.tax} currency="INR" />
                       </span>
                       <span>
                         GST - <Amount value={payment.tax} currency="INR" />
