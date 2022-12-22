@@ -168,10 +168,6 @@ return [
                 [
                     'type'  => 'demo_onboarding',
                     'value' => 'true'
-                ],
-                [
-                    'type'  => 'capital_loc_emi',
-                    'value' => 'true'
                 ]
             ],
             'url' => '/merchant/preferences/x_merchant_intent',
@@ -196,10 +192,6 @@ return [
                 ],
                 [
                     'type'  => 'vendor_payments',
-                    'value' => 'true'
-                ],
-                [
-                    'type'  => 'capital_loc_emi',
                     'value' => 'true'
                 ]
             ]
