@@ -177,11 +177,11 @@ class Repository extends Base\Repository
         $queryDirectCol = 'IF(' . $terminalMerchantIdColumn . ' != "' . Account::SHARED_ACCOUNT . '", 1, 0) AS direct';
 
         $apiTerminals = $this->newQuery()
-                    ->select($terminalAllColumn, DB::raw($queryDirectCol))
-                    ->type([$type])
-                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
-                    ->enabled()
-                    ->get();
+            ->select($terminalAllColumn, DB::raw($queryDirectCol))
+            ->type([$type])
+            ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+            ->enabled()
+            ->get();
 
         try
         {
@@ -206,7 +206,6 @@ class Repository extends Base\Repository
                 $response = $this->app['terminals_service']->proxyTerminalService($content, "POST", $path);
 
                 $terminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
-
 
                 if (Terminal\Service::compareTerminalCollection($apiTerminals, $terminals) === false)
                 {
@@ -242,13 +241,6 @@ class Repository extends Base\Repository
 
     public function getById($id, $withTrashed = true, $fromTerminalsService = true)
     {
-        $query = $this->newQuery();
-
-        if ($withTrashed === true)
-        {
-            $query->withTrashed();
-        }
-
         if (($this->app->runningUnitTests() === false) and $fromTerminalsService === true and Environment::isEnvironmentQA($this->app['env']) === false)
         {
             $data = ["function" => "getById", "terminal_id" => $id, "with_trashed" => $withTrashed];
@@ -262,16 +254,6 @@ class Repository extends Base\Repository
                 $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path);
 
                 $terminalFromTs = Terminal\Service::getEntityFromTerminalServiceResponse($response);
-                // Only saving and comparing the terminals which are present in the API service DB.
-                // In case of activated PayPal terminals it is present in both API service DB and TS service DB.
-                if(!$terminalFromTs->isTerminalOnlyOnTerminalsService()){
-                    $terminal = $query->findOrFailPublic($id);
-
-                    if (Terminal\Service::compareTerminalEntity($terminal, $terminalFromTs) === false)
-                    {
-                        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
-                    }
-                }
 
                 return $terminalFromTs;
             }
@@ -281,6 +263,13 @@ class Repository extends Base\Repository
 
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
             }
+        }
+
+        $query = $this->newQuery();
+
+        if ($withTrashed === true)
+        {
+            $query->withTrashed();
         }
 
         return $query->findOrFailPublic($id);
@@ -461,16 +450,6 @@ class Repository extends Base\Repository
 
     public function getActivatedDirectSettlementTerminalsByMerchant(string $mId)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getActivatedDirectSettlementTerminalsByMerchant', 'route_name' => $this->fetchRouteName()]);
-
-        $query = $this->newQuery();
-
-        $this->addMerchantWhereCondition($query, [$mId]);
-
-        $query->where(Entity::STATUS, Status::ACTIVATED);
-
-        $terminals = $query->get();
-
         try
         {
             if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
@@ -491,11 +470,6 @@ class Repository extends Base\Repository
                 {
                     $terminals2 = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
 
-                    if (Terminal\Service::compareTerminalCollection($terminals, $terminals2) === false)
-                    {
-                        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
-                    }
-
                     return $terminals2->filter(function ($terminal) {
                         return (($terminal->isDirectSettlementWithoutRefund() === true) or ($terminal->isDirectSettlementWithRefund() === true));
                     });
@@ -509,6 +483,16 @@ class Repository extends Base\Repository
             $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
         }
 
+        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getActivatedDirectSettlementTerminalsByMerchant', 'route_name' => $this->fetchRouteName()]);
+
+        $query = $this->newQuery();
+
+        $this->addMerchantWhereCondition($query, [$mId]);
+
+        $query->where(Entity::STATUS, Status::ACTIVATED);
+
+        $terminals = $query->get();
+
         return $terminals->filter(function ($terminal) {
             return (($terminal->isDirectSettlementWithoutRefund() === true) or ($terminal->isDirectSettlementWithRefund() === true));
         });
@@ -516,23 +500,6 @@ class Repository extends Base\Repository
 
     public function findByGatewayAndTerminalData(string $gateway, array $terminalData = [], bool $withTrashed = false, $mode = null)
     {
-        $query =  $this->newQueryWithConnection($this->getSlaveConnection($mode))
-                       ->where(Entity::GATEWAY, '=', $gateway);
-
-        foreach ($terminalData as $key => $value)
-        {
-            $query->where($key, $value);
-        }
-
-        if ($withTrashed === true)
-        {
-            $query->withTrashed();
-        }
-
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'findByGatewayAndTerminalData', 'route_name' => $this->fetchRouteName()]);
-
-        $apiTerminals = $query->get();
-
         try
         {
             $data = ["function" => "findByGatewayAndTerminalData", "gateway"=> $gateway, "terminal_data" => $terminalData, "withTrashed" => $withTrashed];
@@ -553,11 +520,6 @@ class Repository extends Base\Repository
 
                 $terminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
 
-                if (Terminal\Service::compareTerminalCollection($apiTerminals, $terminals) === false)
-                {
-                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
-                }
-
                 return $terminals->first();
             }
         }
@@ -567,6 +529,23 @@ class Repository extends Base\Repository
 
             $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
         }
+
+        $query =  $this->newQueryWithConnection($this->getSlaveConnection($mode))
+            ->where(Entity::GATEWAY, '=', $gateway);
+
+        foreach ($terminalData as $key => $value)
+        {
+            $query->where($key, $value);
+        }
+
+        if ($withTrashed === true)
+        {
+            $query->withTrashed();
+        }
+
+        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'findByGatewayAndTerminalData', 'route_name' => $this->fetchRouteName()]);
+
+        $apiTerminals = $query->get();
 
         return $apiTerminals->first();
     }
