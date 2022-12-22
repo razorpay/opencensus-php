@@ -569,6 +569,60 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     * Verifies OTP on support page,
+     * creates global customer if not present and
+     * Gets latest five payments with customer contact.
+     *
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function verifyOtpSupportPage(array $input): array
+    {
+        Customer\Validator::validateGlobalCustomerCreateInput($input);
+
+        // Parse contact
+        $input = Customer\Validator::validateAndParseContactInInput($input);
+
+        $this->mode = $input['mode'] ?? Mode::LIVE;
+
+        $this->app['basicauth']->setModeAndDbConnection($this->mode);
+
+        $this->merchant = $this->repo->merchant->find(Merchant\Account::DEMO_PAGE_ACCOUNT);
+
+        // Verify the otp with raven service
+        $this->verifyRavenOtp($input, $this->merchant);
+
+        // Get global customer from db or create one.
+        $customer = $this->getOrCreateGlobalCustomer($input);
+
+        // Create app token for customer
+        $appToken = $this->createCustomerAppToken($customer, $input, $customer->merchant);
+
+        // Put app token details in session so that we may not
+        // need to verify the customer in future.
+        $this->putAppTokenInSession($appToken);
+
+        // Create response
+        $response = ['success' => 1];
+
+        if ($this->isCookieDisabledOnBrowser() === true)
+        {
+            $response['session_id'] = $this->getTemporarySessionToken();
+        }
+
+        //Fetch latest five payments with customer contact
+        $payments = $this->fetchPaymentsByCustomerContact($customer, AccountConstants::FETCH_PAYMENTS_DEFAULT_SKIP, AccountConstants::FETCH_PAYMENTS_DEFAULT_COUNT);
+
+        $response['payments'] = $payments['payments'];
+
+        $response['has_more'] = $payments['has_more'];
+
+        return $response;
+    }
+
     protected function maskVerificationDetailsDetails($input) {
         $maskedRequest =[];
         if (empty($input['contact']) === false) {

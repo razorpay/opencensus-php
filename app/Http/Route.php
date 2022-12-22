@@ -1434,6 +1434,7 @@ class Route
         'app_delete_token'                         => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                         => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomer'                   ],
         'app_fetch_payments'                       => ['get',      'apps/payments',                                  'CustomerController@fetchPaymentsForGlobalCustomer'                 ],
+        'support_page_otp_verify'                  => ['post',     'support/otp/verify',                             'CustomerController@verifyOtpSupportPage'                           ],
         'bank_account_fetch'                       => ['get',      'account/bank_account',                           'MerchantController@getOwnBankAccount'                              ],
         'device_verify_token'                      => ['post',     'devices/{deviceToken}/verify',                   'CustomerController@validateDeviceToken'                            ],
         'otp_post'                                 => ['post',     'otp/create',                                     'CustomerController@postOtp'                                        ],
@@ -9764,6 +9765,7 @@ class Route
         '1cc_fetch_analytics',
 
         // Support Dashboard Routes
+        'support_page_otp_verify',
         'app_fetch_payments',
     ];
 
@@ -9793,6 +9795,7 @@ class Route
         'internal_merchant_checkout_preferences',
         'otp_verify',
         '1cc_otp_verify',
+        'support_page_otp_verify',
         '1cc_customer_truecaller_verify',
         'customer_update_global',
         'customer_truecaller_verify',

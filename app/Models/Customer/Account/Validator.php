@@ -55,6 +55,7 @@ class Validator extends Base\Validator
         'payment_id'            => 'sometimes_if:method,cardless_emi',
         'language_code'         => 'sometimes',
         'address_consent'       => 'sometimes',
+        'mode'                  => 'sometimes|in:live,test',
     ];
 
     protected static $addressConsentRules = [

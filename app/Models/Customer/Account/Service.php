@@ -339,6 +339,18 @@ class Service extends Base\Service
 
         return $data;
     }
+
+    /**
+     * Support page - OTP verify
+     *
+     * @param  array $input
+     * @return array
+     */
+    public function verifyOtpSupportPage(array $input): array
+    {
+        return $this->core->verifyOtpSupportPage($input);
+    }
+
     /**
      * Used by the Open Wallet demo app
      */
