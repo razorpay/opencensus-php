@@ -26,4 +26,12 @@ class Request
 
     //Content Type
     const APPLICATION_JSON          = 'application/json';
+
+
+    const MODEL             = 'model';
+    const COLUMN_NAME       = 'column_name';
+    const VALUE             = 'value';
+    const PAYMENT_ID        = 'payment_id';
+    const GATEWAY           = 'gateway';
+    const REQUIRED_FIELDS   = 'required_fields';
 }

@@ -23,6 +23,22 @@ class UpiIciciPaymentServiceTest extends UpiPaymentServiceTest
     {
         parent::setUp();
         $this->gateway = 'upi_icici';
+
+        $this->testData['testRefundUpiEntity'] = [
+            'action'                => 'refund',
+            'amount'                => 50000,
+            'bank'                  => 'ICIC',
+            'acquirer'              => 'icici',
+            'received'              => true,
+            'gateway_data'          => null,
+            'contact'               => null,
+            'gateway_merchant_id'   => '123456',
+            'npci_reference_id'     => '836416213628',
+            'status_code'           => '0',
+            'vpa'                   => 'vishnu@icici',
+            'provider'              => 'icici',
+            'entity'                => 'upi',
+        ];
     }
 
     public function testNonRearchPaymentSuccessWithApiPreProcess()
@@ -366,6 +382,97 @@ class UpiIciciPaymentServiceTest extends UpiPaymentServiceTest
             Entity::ERROR_CODE          => 'GATEWAY_ERROR',
             Entity::INTERNAL_ERROR_CODE => 'GATEWAY_ERROR_DEBIT_FAILED',
         ], $payment);
+    }
+
+    public function testFullRefund()
+    {
+        $this->testPaymentSuccess();
+
+        $payment = $this->getDbLastPayment();
+
+        $payment = $this->getEntityById('payment', $payment->getPublicId(), true);
+
+        $this->capturePayment($payment['id'], 50000);
+
+        $this->mockServerGatewayContentFunction(function(&$content, $action)
+        {
+            if ($action === 'verify')
+            {
+                $content['status'] = 'FAILURE';
+            }
+
+            if ($action === 'refund')
+            {
+                $content['originalBankRRN'] = '836416213628';
+            }
+        });
+
+        $this->mockServerContentFunction(function(&$content)
+        {
+            $content['entity']['customer_reference'] = '836416213628';
+        });
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertNotNull($refund['reference1']);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertTestResponse($upiEntity, 'testRefundUpiEntity');
+    }
+
+    public function testFullRefundVerifySuccess()
+    {
+        $this->testPaymentSuccess();
+
+        $payment = $this->getDbLastPayment();
+
+        $payment = $this->getEntityById('payment', $payment->getPublicId(), true);
+
+        $this->capturePayment($payment['id'], 50000);
+
+        $this->refundPayment($payment['id']);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertNull($upiEntity);
+    }
+
+    public function testRetryRefund()
+    {
+        $this->testPaymentSuccess();
+
+        $payment = $this->getDbLastPayment();
+
+        $payment = $this->getEntityById('payment', $payment->getPublicId(), true);
+
+        $this->capturePayment($payment['id'], 50000);
+
+        $refundAmount = 30000;
+
+        $this->mockServerGatewayContentFunction(function(&$content, $action)
+        {
+            if ($action === 'refund')
+            {
+                $content['status'] = 'FAILURE';
+            }
+        });
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->mockServerGatewayContentFunction(function(&$content, $action)
+        {
+            if ($action === 'refund')
+            {
+                $content['status'] = 'SUCCESS';
+            }
+        });
+
+        $refund = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
+
+        $this->assertEquals($refund['status'], 'processed');
     }
 
     public function testPaymentReconciliation()

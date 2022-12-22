@@ -414,4 +414,28 @@ class UpiPaymentServiceTest extends TestCase
 
         return $uploadedFile;
     }
+
+    protected function mockServerGatewayContentFunction($closure, $gateway = null)
+    {
+        $server = $this->mockServer($gateway)
+                       ->shouldReceive('content')
+                       ->andReturnUsing($closure)
+                       ->mock();
+
+        $this->setMockServer($server, $gateway);
+
+        return $server;
+    }
+
+    protected function mockServerGatewayRequestFunction($closure, $gateway = null)
+    {
+        $server = $this->mockServer($gateway)
+                       ->shouldReceive('request')
+                       ->andReturnUsing($closure)
+                       ->mock();
+
+        $this->setMockServer($server, $gateway);
+
+        return $server;
+    }
 }

@@ -417,7 +417,8 @@ class Service
             {
                 $input[self::METADATA][self::TPV] = true;
             }
-            else {
+            else
+            {
                 $input[self::METADATA] = [
                     self::TPV => true
                 ];
@@ -781,6 +782,19 @@ class Service
         }
     }
 
+    protected function findByPaymentIdAndGatewayOrFail(string $paymentId, string $gateway, array $requiredFields)
+    {
+        $input = [
+            Request::MODEL              => Payment\Action::AUTHORIZE,
+            Request::COLUMN_NAME        => Request::PAYMENT_ID,
+            Request::REQUIRED_FIELDS    => $requiredFields,
+            Request::VALUE              => $paymentId,
+            Request::GATEWAY            => $gateway
+        ];
+
+        return $this->action(self::ENTITY_FETCH, $input, $gateway);
+    }
+
     /**
      * sets gateway status in verify object
      *
@@ -949,7 +963,6 @@ class Service
 
         return $headers;
     }
-
 
     /**
      * Returns uri for request

@@ -322,6 +322,7 @@ class Service extends UpiPaymentService
         $response['entity']['gateway_reference']    = '';
         $response['entity']['reconciled_at']        = 0;
         $response['entity']['gateway']              = $content['gateway'];
+        $response['entity']['gateway_payment_id']   = 227121351902;
 
         if (empty($content['reconciled_at']) === false)
         {

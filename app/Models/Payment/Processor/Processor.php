@@ -4817,7 +4817,7 @@ class Processor
                 return;
             }
         }
-        else if ($this->isRoutedThroughUpiPaymentService($gatewayData) === true)
+        else if ($this->isRoutedThroughUpiPaymentService($action, $gatewayData) === true)
         {
             $gatewayData[Payment\Entity::CPS_ROUTE] = Payment\Entity::UPI_PAYMENT_SERVICE;
         }
@@ -4987,8 +4987,14 @@ class Processor
         return false;
     }
 
-    public function isRoutedThroughUpiPaymentService($input): bool
+    public function isRoutedThroughUpiPaymentService($action, $input): bool
     {
+        // API refunds are processed through API gateway layer itself
+        if (($action === Action::REFUND) or
+            ($action === Action::VERIFY_REFUND))
+        {
+            return false;
+        }
         /**
          * We check if the current request is to be routed through UPI payments service,
          * We set `cps_route` as 4 for gateways to be processed through service. The

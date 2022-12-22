@@ -1688,27 +1688,52 @@ class Gateway extends Base\Gateway
         return  env('EXTERNAL_MOCK_GO_GATEWAY_DOMAIN') . $this->getRelativeUrl($type);
     }
 
-    protected function getRefundRequest(array $input)
+    protected function getGatewayRefundRequestData(array $input): array
     {
         $payment = $input['payment'];
 
         $refund = $input['refund'];
 
-        $repo = $this->getRepository();
+        if ($payment['cps_route'] === Payment\Entity::UPI_PAYMENT_SERVICE)
+        {
+            $fiscalEntity = $this->app['upi.payments']->findByPaymentIdAndGatewayOrFail(
+                $payment['id'],
+                $payment['gateway'],
+                [
+                    'gateway_payment_id',
+                    'merchant_reference',
+                ]);
 
-        $gatewayPayment = $repo->findByPaymentIdAndActionOrFail($payment['id'], Action::AUTHORIZE);
+            $bankRrn            = $fiscalEntity['gateway_payment_id'];
+            $merchantReference  = $fiscalEntity['merchant_reference'] ?? $payment['id'];
+
+        } else {
+            $gatewayPayment = $this->getRepository()->findByPaymentIdAndActionOrFail(
+                $payment['id'],
+                Action::AUTHORIZE);
+
+            $bankRrn            = $gatewayPayment->getGatewayPaymentId();
+            $merchantReference  = $gatewayPayment['merchant_reference'] ?? $payment['id'];
+        }
 
         $data = [
             Fields::MERCHANT_ID                     => $this->getMerchantId(),
             Fields::SUBMERCHANT_ID                  => $this->getSubMerchantId($input),
             Fields::TERMINAL_ID                     => $this->getTerminalId($input),
-            Fields::ORIGINAL_BANK_RRN_REQ           => $gatewayPayment->getGatewayPaymentId(),
+            Fields::ORIGINAL_BANK_RRN_REQ           => $bankRrn,
             Fields::MERCHANT_TRAN_ID                => $this->getRefundId($refund),
-            Fields::ORIGINAL_MERCHANT_TRAN_ID       => $gatewayPayment['merchant_reference'] ?? $payment['id'],
+            Fields::ORIGINAL_MERCHANT_TRAN_ID       => $merchantReference,
             Fields::REFUND_AMOUNT                   => $this->formatAmount($refund['amount']),
             Fields::NOTE                            => 'Razorpay Refund ' . $refund['id'],
             Fields::ONLINE_REFUND                   => $this->isOnlineRefund($refund),
         ];
+
+        return $data;
+    }
+
+    protected function getRefundRequest(array $input)
+    {
+        $data = $this->getGatewayRefundRequestData($input);
 
         $content = $this->transformRequestArrayToContent($data);
 
