@@ -71,7 +71,7 @@ class Cred extends Base
         {
             $response['success'] = false;
 
-            (new Payment\Metric)->pushCredEligibilityMetrics($input, $response);
+            (new Payment\Metric)->pushCredEligibilityMetrics($input, $response, $exception);
 
             throw $exception;
         }

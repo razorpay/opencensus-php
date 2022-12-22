@@ -220,9 +220,16 @@ class Metric extends Base\Core
         }
     }
 
-    public function pushCredEligibilityMetrics($input, $response)
+    public function pushCredEligibilityMetrics($input, $response, $exe = null)
     {
         $dimensions = $this->getCredEligibilityDimensions($input, $response);
+
+        if ($exe !== null)
+        {
+            $exceptionDimensions = $this->getDefaultExceptionDimensions($exe);
+
+            $dimensions = array_merge($dimensions, $exceptionDimensions);
+        }
 
         $this->trace->count(self::CRED_ELIGIBILITY_REQUEST_COUNT, $dimensions);
     }
