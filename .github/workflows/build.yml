@@ -1,5 +1,6 @@
 name: Build
 on: push
+
 jobs:
   build:
     name: Build Dashboard
@@ -82,6 +83,7 @@ jobs:
           build-args: |
             GIT_COMMIT_HASH=${{ github.sha }}
             GIT_USERNAME=rzp
+
 
   workflow_status:
     runs-on: [self-hosted]

@@ -70,3 +70,27 @@ STAGE=development REDIRECTOR=true node tools/build.js --project=razorx
 # Deployment Process
 
 https://docs.google.com/document/d/1__-n3Ap8vLKCBLFt8Z2FyxvpQR9GfkimyEPm3C0Cslo/edit
+
+
+# End 2 End Testing Process 
+To run E2E testing 
+1. Make devstack build 
+2. Update your devstack label in DEV_LABEL variable in package.json command and run test:e2e command.
+
+Incase of any error, you can check screenshot on web/test-results folder
+
+E2E Code Structure: 
+  - Web 
+    - e2e
+      - setup
+        // global setup for authentication
+        // we can add funtionality which we need for all test suites
+      - storageState
+        // storage state file for user auth state to reuse in other test suites
+      - suites
+        // e2e test cases to add
+      - utils 
+        // helper method or reusable methods
+
+    - test-results
+      // screnshots of failed test suites

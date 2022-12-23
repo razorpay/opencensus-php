@@ -13,7 +13,9 @@
     "@razorpay/commander-services": "1.0.38",
     "@razorpay/commander-shield": "0.0.1490",
     "@razorpay/frontend-care": "0.5.17",
-    "@razorpay/universe-utils": "7.2.0",
+    "@razorpay/universe-doctor": "4.4.16",
+    "@razorpay/universe-test": "2.2.20",
+    "@razorpay/universe-utils": "7.4.4",
     "@types/react-is": "17.0.0",
     "@types/yup": "0.29.10",
     "@universe/services": "1.0.30",
@@ -29,6 +31,7 @@
     "deepmerge": "2.2.1",
     "file-saver": "1.3.8",
     "formik": "2.1.5",
+    "fs": "0.0.1-security",
     "graphql": "15.3.0",
     "graphql-tag": "2.11.0",
     "html2canvas": "1.0.0-rc.5",
@@ -103,7 +106,11 @@
     "build-storybook": "build-storybook",
     "tsc": "tsc",
     "chromatic": "chromatic --project-token $CHROMATIC_TOKEN --auto-accept-changes --exit-once-uploaded",
-    "test:build:merchant": "DANGER_ENV=true STAGE=production node tools/build.js --project=merchant"
+    "test:build:merchant": "DANGER_ENV=true STAGE=production node tools/build.js --project=merchant",
+    "test:e2e": "universe-test web-e2e test",
+    "devstack-deploy": "universe-test infra-e2e devstack-deploy",
+    "devstack-revert": "universe-test infra-e2e devstack-revert",
+    "test:e2e-infra": "universe-test infra-e2e e2e-run"
   },
   "devDependencies": {
     "@babel/core": "7.9.0",

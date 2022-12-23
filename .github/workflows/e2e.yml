@@ -1,0 +1,109 @@
+name: E2E Tests
+on:
+  push:
+    branches:
+      - master
+  issue_comment:
+    types:
+      - created
+env:
+  APP_NAME: dashboard
+  HOME: /actions-runner/_work
+  GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+  NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+  DOCKER_USERNAME: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+  DOCKER_PASSWORD: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+  DOCKER_REGISTRY: c.rzp.io
+  ARGO_TOKEN: ${{ secrets.ARGO_TOKEN }}
+  ImageOS: ubuntu20
+
+jobs:  
+  build-and-run-e2e:
+    name: Run E2E Tests on PR Comment or on master
+    if: ${{ github.event_name == 'pull_request' && contains(github.event.comment.body, '/run-e2e')}} || ${{ github.ref == 'refs/heads/master' && !github.event.comment.body }}
+    timeout-minutes: 60
+    runs-on: [self-hosted]
+    steps:
+      - name: Fetch data of comment's associated PR
+        uses: xt0rted/pull-request-comment-branch@v1
+        id: comment-branch
+        if: ${{ github.event_name == 'pull_request' && contains(github.event.comment.body, '/run-e2e')}}
+        with:
+          repo_token: ${{ secrets.GITHUB_ACCESS_TOKEN }}
+        
+      - name: Set Commit ID if its a PR comment
+        if: ${{ github.event_name == 'pull_request' && contains(github.event.comment.body, '/run-e2e')}}
+        run: |
+          echo "COMMIT_ID=${{ steps.comment-branch.outputs.head_sha }}" >> $GITHUB_ENV
+
+      - name: Set Commit ID if its on master
+        if: ${{ github.ref == 'refs/heads/master' && !github.event.comment.body }}
+        run: |
+          echo "COMMIT_ID=${{ github.sha }}" >> $GITHUB_ENV
+
+      - name: Checkout Codebase
+        uses: actions/checkout@v2
+
+      - name: Use Node v16.13.1
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.13.1
+      - name: Install libraries for webp conversion
+        run: |
+          apt-get update && apt-get install -y libjpeg-dev libpng-dev libtiff-dev libgif-dev
+      
+      - name: Setup yarn
+        run: npm install -g yarn
+
+      # This action allows caching dependencies and build outputs
+      # to improve workflow execution time
+      - name: Cache npm packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.OS }}-npm-cache-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install Dependencies
+        run: |
+          npm config set unsafe-perm true
+          HUSKY=0 npm ci # Automatically installs npm ci in web too
+        env:
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+      - name: Login to Harbor
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Build Docker Image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          tags: ${{env.DOCKER_REGISTRY}}/razorpay/${{env.APP_NAME}}_fe_e2e:${{ env.COMMIT_ID }}
+          push: true
+          file: ./Dockerfile.e2e
+          build-args: |
+            APP_NAME=${{env.APP_NAME}}
+            GITHUB_ACCESS_TOKEN=${{env.GITHUB_ACCESS_TOKEN}}
+            NPM_RAZORPAY_TOKEN=${{env.NPM_RAZORPAY_TOKEN}}
+
+      - name: Wait for tests to succeed
+        uses: lewagon/wait-on-check-action@v1.2.0
+        with:
+          ref: ${{ env.COMMIT_ID }}
+          check-name: 'Build Dashboard'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 30
+
+      - name: E2E Test Webhook
+        run: yarn test:e2e-infra
+        env:
+          COMMIT_ID: ${{ env.COMMIT_ID }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          JOB_URL: 'https://argo.dev.razorpay.in/api/v1/events/argo-workflows/dashboard-fe-e2e'
+

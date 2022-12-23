@@ -25,10 +25,13 @@
     "test:jest-watch-changed": "cd web && npm run test:jest-watch-changed",
     "test:jest-watch": "cd web && npm run test:jest-watch",
     "lint": "bash lint.sh",
+    "devstack-deploy": "cd web && npm run devstack-deploy",
     "validate-lint": "bash validate-eslint.sh $base",
     "lint:css": "stylelint --config .stylelintrc-stylus.js",
     "fix:css": "stylelint --config .stylelintrc-stylus.js --fix",
-    "sizelimit:local": "npx danger local --dangerfile dangerfile-bundlelimit.js"
+    "sizelimit:local": "npx danger local --dangerfile dangerfile-bundlelimit.js",
+    "test:e2e": "cd web && npm run test:e2e",
+    "test:e2e-infra": "cd web && npm run test:e2e-infra"
   },
   "devDependencies": {
     "@actions/core": "1.2.6",

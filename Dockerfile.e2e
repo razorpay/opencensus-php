@@ -1,0 +1,26 @@
+FROM mcr.microsoft.com/playwright:v1.24.0-focal
+
+ARG GITHUB_ACCESS_TOKEN
+ARG NPM_RAZORPAY_TOKEN
+
+ENV GITHUB_ACCESS_TOKEN=$GITHUB_ACCESS_TOKEN
+ENV NPM_RAZORPAY_TOKEN=$NPM_RAZORPAY_TOKEN
+
+WORKDIR /app
+
+RUN mkdir web
+
+# Copy dependencies files so we can have better caching as these don't change often
+COPY --chown=node:node .npmrc package.json package-lock.json ./
+
+# Copy dependencies files so we can have better caching as these don't change often
+COPY --chown=node:node ./web/.npmrc ./web/package.json ./web/package-lock.json ./web
+
+RUN npm config set unsafe-perm true \
+    && HUSKY=0 npm ci --legacy-peer-deps
+
+RUN cd web && npx playwright install --with-deps
+
+COPY . .
+
+CMD npm run test:e2e
