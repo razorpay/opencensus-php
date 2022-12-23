@@ -121,4 +121,26 @@ class DeviceHelper extends P2pHelper
 
         return $this->get($request);
     }
+
+    public function getGatewayConfig(string $gatewayId, array $content = [])
+    {
+        $this->shouldValidateJsonSchema = false;
+
+        // This API work on public auth
+        $this->setCustomerInContext(false);
+        $this->setDeviceInContext(false);
+
+        $this->validationJsonSchemaPath = 'device/get_gateway_config';
+
+        $request = $this->request('turbo/%s/config',[$gatewayId]);
+
+        $default = [
+            'customer_id' => $this->fixtures->customer->getPublicId(),
+        ];
+
+        $this->content($request, $default, $content);
+
+        return $this->post($request);
+    }
+
 }

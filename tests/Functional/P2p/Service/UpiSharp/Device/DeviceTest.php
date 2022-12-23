@@ -5,6 +5,7 @@ namespace RZP\Tests\P2p\Service\UpiSharp\Device;
 use Carbon\Carbon;
 use phpseclib\Crypt\AES;
 use RZP\Models\P2p\Device;
+use RZP\Exception\RuntimeException;
 use RZP\Models\P2p\Device\DeviceToken;
 use RZP\Http\Controllers\P2p\Requests;
 use RZP\Tests\P2p\Service\Base\P2pRequest;
@@ -504,5 +505,16 @@ class DeviceTest extends TestCase
         $cases[$message] = [[$rotation], $gatewayData, 'rotate', $message,];
 
         return $cases;
+    }
+
+    public function testGetGatewayConfig()
+    {
+        $helper = $this->getDeviceHelper();
+
+        $helper->withSchemaValidated();
+
+        $this->expectException(RuntimeException::class);
+
+        $helper->getGatewayConfig($this->gateway, []);
     }
 }

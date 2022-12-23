@@ -3,11 +3,14 @@
 namespace RZP\Models\P2p\Client;
 
 use RZP\Models\P2p\Base;
+use RZP\Models\P2p\Device\Entity as DeviceEntity;
 
 class Validator extends Base\Validator
 {
     protected static $createRules;
     protected static $editRules;
+    protected static $getGatewayConfigRules;
+    protected static $getGatewayConfigSuccessRules;
 
     protected static $createValidators = [
        Entity::SECRETS,
@@ -72,5 +75,24 @@ class Validator extends Base\Validator
         $gatewayData = $input[Entity::GATEWAY_DATA];
 
         (new GatewayData())->validate($input);
+    }
+
+    public function makeGetGatewayConfigRules()
+    {
+        $rules = $this->makeRules([
+                      Entity::CUSTOMER_ID  => 'required',
+                  ]);
+
+        return $rules;
+    }
+
+    public function makeGetGatewayConfigSuccessRules()
+    {
+        $rules = $this->makeRules([
+                      Entity::GATEWAY_CONFIG  => 'required',
+                      Entity::TOKEN           => 'required',
+                  ]);
+
+        return $rules;
     }
 }

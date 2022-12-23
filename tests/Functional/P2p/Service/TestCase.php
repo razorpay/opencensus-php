@@ -77,6 +77,11 @@ class TestCase extends Functional\TestCase
         return new Base\DeviceHelper($this->fixtures, $this->exceptionHandler);
     }
 
+    protected function getClientHelper(): Base\ClientHelper
+    {
+        return new Base\ClientHelper($this->fixtures, $this->exceptionHandler);
+    }
+
     protected function getBankAccountHelper(): Base\BankAccountHelper
     {
         return new Base\BankAccountHelper($this->fixtures, $this->exceptionHandler);

@@ -11,13 +11,20 @@ class Entity extends Base\Entity
 {
     use HasFactory;
 
-    const ID           = 'id';
-    const HANDLE       = 'handle';
-    const CLIENT_TYPE  = 'client_type';
-    const CLIENT_ID    = 'client_id';
-    const SECRETS      = 'secrets';
-    const CONFIG       = 'config';
-    const GATEWAY_DATA = 'gateway_data';
+    const ID                = 'id';
+    const HANDLE            = 'handle';
+    const CLIENT_TYPE       = 'client_type';
+    const CLIENT_ID         = 'client_id';
+    const SECRETS           = 'secrets';
+    const CONFIG            = 'config';
+    const GATEWAY_DATA      = 'gateway_data';
+
+    /*************** Constants********************/
+    const CUSTOMER          = 'customer';
+    const CUSTOMER_ID       = 'customer_id';
+    const GATEWAY_CONFIG    = 'gateway_config';
+    const GATEWAYS          = 'gateways';
+    const TOKEN             = 'token';
 
     /************** Entity Properties ************/
 

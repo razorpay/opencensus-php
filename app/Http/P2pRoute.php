@@ -45,6 +45,12 @@ final class P2pRoute
                 'customer/deregister',
                 'DeviceController@deregister'
             ],
+        Requests::P2P_TURBO_GATEWAY_CONFIG =>
+            [
+                'post',
+                '/turbo/{gateway_name}/config',
+                'ClientController@getGatewayConfig'
+            ],
 
         /*************** Bank Account **************/
         Requests::P2P_BANKS_FETCH_ALL =>
@@ -392,6 +398,7 @@ final class P2pRoute
         Requests::P2P_BANKS_FETCH_ALL,
         Requests::P2P_CUSTOMER_INITIATE_VERIFICATION,
         Requests::P2P_CUSTOMER_VERIFICATION,
+        Requests::P2P_TURBO_GATEWAY_CONFIG,
     ];
 
     public static $device = [
