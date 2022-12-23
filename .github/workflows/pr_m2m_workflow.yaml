@@ -4,32 +4,16 @@ on:
   pull_request_review:
     types: [ submitted ]
   pull_request:
-    types: [ opened, synchronize, reopened, unlabeled, labeled ]
+    types: [ synchronize, labeled, unlabeled ]
 env:
   commit_id: ${{ github.event.pull_request.head.sha }}
 jobs:
   cancel:
     name: Cancel or Skip workflow
     if: always()
-    runs-on: [ self-hosted ]
+    runs-on: [ self-hosted, api ]
     steps:
-      - name: Label Check
-        if: contains(github.event.pull_request.labels.*.name, 'razorpay_bank_lms')
-        id: labelPresent
-        run: echo "::set-output name=label::true"
-
-      - name: Skip tests workflow check if label not present
-        if: ${{ !steps.labelPresent.outputs.label }}
-        run: |
-          echo "Step skipped as no test file added or change"
-          echo "label named *razorpay_bank_lms* not added in pr to skip this step before approval"
-          curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${{ github.token }}" \
-          -d '{ "state" : "success" , "context" : "pr-approval-workflow/argo/partner-lms-tests" , "description" : "Skipped suite as bank LMS label not present", "target_url" : "https://github.com/${{ github.repository }}" }' \
-          https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }}
-          exit 0
-
       - name: Cancel Previous Runs
-        if: ${{ steps.labelPresent.outputs.label }}
         timeout-minutes: 3
         uses: styfle/cancel-workflow-action@0.9.0
         with:
@@ -38,11 +22,28 @@ jobs:
 
   run_partnerLms_sanity_on_pr_approval:
     name: Partner LMS sanity workflow
-    if: ${{ (github.event.review.state == 'approved' || contains(github.event.pull_request.labels.*.name, 'approved')) && github.event.pull_request.base.ref == 'master' && contains(github.event.pull_request.labels.*.name, 'razorpay_bank_lms') }}
-    runs-on: [ self-hosted ]
+    if: ${{ (github.event.review.state == 'approved' || contains(github.event.pull_request.labels.*.name, 'approved')) }}
+    runs-on: [ self-hosted, api ]
     needs: [ cancel ]
     steps:
-
+      - name: Get Build Image Workflow Status
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+          WORKFLOW: build_images.yml
+        run: |
+          echo "WORKFLOW_STATUS=$(sh ./.github/actions/getWorkflowStatus.sh)" >> $GITHUB_ENV
+      - name: Check Workflow Status
+        run: echo $WORKFLOW_STATUS
+              # Log Workflow Status outputs the logs for Get Build Image Workflow Status workflow
+      - name: Log Workflow Status
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+          WORKFLOW: build_images.yml
+          API_HEADER: "Accept: application/vnd.github.v3+json"
+        run: |
+          cat build_image_workflow_log.txt
       - name: Checkout Codebase
         uses: actions/checkout@v2
         with:
@@ -73,7 +74,7 @@ jobs:
 
       - name: Check Pre Condition for BVT
         id: bvt_pre_conditions
-        if: ${{ !steps.hotfix.outputs.flag && !steps.revert.outputs.flag && !steps.skipLmsRuns.outputs.flag && !startsWith(github.event.pull_request.head.ref, 'beta_') && env.GIT_NEW_COMMIT_AFTER_MERGE == env.commit_id }}
+        if: ${{ !steps.hotfix.outputs.flag && !steps.revert.outputs.flag && !steps.skipLmsRuns.outputs.flag && !startsWith(github.event.pull_request.head.ref, 'beta_') && env.GIT_NEW_COMMIT_AFTER_MERGE == env.commit_id && env.WORKFLOW_STATUS == 'success' }}
         run: |
           echo "::set-output name=flag::true"
 
