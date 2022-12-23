@@ -97,10 +97,11 @@ class Repository extends Base\Repository
      */
     public function __findDocumentsForMerchantId(string $merchantId)
     {
-        return $this->repo->transactionOnLiveAndTest(function () use ($merchantId) {
-            $documentsFromAPI = $this->findDocumentsForMerchantIds([$merchantId]);
-            return (new MerchantDocument())->FindDocumentsForMerchantId($merchantId, $documentsFromAPI);
-        });
+        $documentsFromAPI = $this->findDocumentsForMerchantIds([$merchantId]);
+        if (count($documentsFromAPI) === 0) {
+            return $documentsFromAPI;
+        }
+        return (new MerchantDocument())->FindDocumentsForMerchantId($merchantId, $documentsFromAPI);
     }
 
     /**

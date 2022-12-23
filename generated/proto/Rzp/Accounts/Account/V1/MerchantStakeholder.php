@@ -58,9 +58,9 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
      */
     protected $poi_identification_number = '';
     /**
-     * Generated from protobuf field <code>bool aadhaar_linked = 12;</code>
+     * Generated from protobuf field <code>int32 aadhaar_linked = 12;</code>
      */
-    protected $aadhaar_linked = false;
+    protected $aadhaar_linked = 0;
     /**
      * Generated from protobuf field <code>string aadhaar_pin = 13;</code>
      */
@@ -87,7 +87,7 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
      *     @type string $phone_primary
      *     @type string $phone_secondary
      *     @type string $poi_identification_number
-     *     @type bool $aadhaar_linked
+     *     @type int $aadhaar_linked
      *     @type string $aadhaar_pin
      *     @type string $audit_id
      * }
@@ -350,8 +350,8 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>bool aadhaar_linked = 12;</code>
-     * @return bool
+     * Generated from protobuf field <code>int32 aadhaar_linked = 12;</code>
+     * @return int
      */
     public function getAadhaarLinked()
     {
@@ -359,13 +359,13 @@ class MerchantStakeholder extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>bool aadhaar_linked = 12;</code>
-     * @param bool $var
+     * Generated from protobuf field <code>int32 aadhaar_linked = 12;</code>
+     * @param int $var
      * @return $this
      */
     public function setAadhaarLinked($var)
     {
-        GPBUtil::checkBool($var);
+        GPBUtil::checkInt32($var);
         $this->aadhaar_linked = $var;
 
         return $this;

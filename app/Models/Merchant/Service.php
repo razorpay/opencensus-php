@@ -235,7 +235,7 @@ class Service extends Base\Service
     public function __construct()
     {
         parent::__construct();
-        
+
         $this->mutex = $this->app['api.mutex'];
 
         $this->featureService = new Feature\Service();
@@ -8990,7 +8990,7 @@ class Service extends Base\Service
             }
         }
 
-        $data['merchant'] = $merchant->toArray();
+        $data['merchant'] = $merchant->toArrayWithRawValuesForAccountService();
         $data['merchant_details'] = $merchantDetails->toArray();
         $data['stakeholders'] = $stakeholderArray;
 
@@ -9010,6 +9010,74 @@ class Service extends Base\Service
         $data['merchant_website'] = $merchantWebsite == null ? null : $merchantWebsite->toArray();
 
         return $data;
+    }
+
+    public function getMerchantDetailsForAccountServiceReverseMap(string $accountId): array
+    {
+        $this->trace->info(TraceCode::ACS_FETCH_ACCOUNT_DETAILS_REVERSE_MAP, ['id' => $accountId]);
+
+        try {
+            $data = [];
+
+            $merchant = $this->repo->merchant->__findOrFailPublicTemp($accountId);
+            $merchantDetails = $this->repo->merchant_detail->__getByMerchantId($accountId);
+
+            $stakeholders = $this->repo->stakeholder->__fetchStakeholders($accountId);
+            $documents = $this->repo->merchant_document->__findDocumentsForMerchantId($accountId);
+            $merchantEmails = $this->repo->merchant_email->__getEmailByMerchantId($accountId);
+
+            $merchantWebsite = $this->repo->merchant_website->__getWebsiteDetailsForMerchantId($accountId);
+            $merchantBusinessDetails = $this->repo->merchant_business_detail->__getBusinessDetailsForMerchantId($accountId);
+
+            $stakeholderArray = [];
+            foreach ($stakeholders as $stakeholder) {
+                $stakeholderArray[] = $stakeholder->toArrayWithRawValuesForAccountService();
+            }
+
+            $isStakeHolderPresent = count($stakeholderArray) > 0;
+
+            $merchantDocs = new Base\PublicCollection;
+            $stakeholderDocs = new Base\PublicCollection;
+            foreach ($documents as $document) {
+                if ($document->getEntityType() === EntityConstants::STAKEHOLDER) {
+                    $stakeholderDocs->add($document);
+                } else {
+                    $docType = $document->getDocumentType();
+                    $proofType = Document\Type::DOCUMENT_TYPE_TO_PROOF_TYPE_MAPPING[$docType];
+
+                    if (Document\Type::PROOF_TYPE_ENTITY_MAPPING[$proofType] === EntityConstants::STAKEHOLDER and
+                        ($isStakeHolderPresent === true)) {
+                        $stakeholderDocs->add($document);
+                    } else {
+                        $merchantDocs->add($document);
+                    }
+                }
+            }
+
+            $data['merchant'] = $merchant->toArrayWithRawValuesForAccountService();
+            $data['merchant_details'] = $merchantDetails->toArray();
+            $data['stakeholders'] = $stakeholderArray;
+
+            foreach ($stakeholders as $index => $stakeholder) {
+                $address = $this->repo->address->__fetchPrimaryAddressForStakeholder($stakeholder, Address\Type::RESIDENTIAL);
+                if (empty($address) === false) {
+                    $data['stakeholders'][$index]['addresses']['residential'] = $address->toArray();
+                }
+            }
+
+            $data['stakeholder_documents'] = $stakeholderDocs->toArray();
+            $data['merchant_documents'] = $merchantDocs->toArray();
+            $data['merchant_emails'] = $merchantEmails->toArray();
+            $data['merchant_business_detail'] = $merchantBusinessDetails == null ? null : $merchantBusinessDetails->toArray();
+            $data['merchant_website'] = $merchantWebsite == null ? null : $merchantWebsite->toArray();
+
+            // do not returning data but just the success or failure, of required later then can be returned
+
+            return ["success" => true];
+        } catch (\Exception $e) {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::ACS_FETCH_ACCOUNT_DETAILS_REVERSE_MAP_ERROR, ['id' => $accountId]);
+            return ["success" => false];
+        }
     }
 
     /**

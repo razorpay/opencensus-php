@@ -3086,6 +3086,14 @@ class Entity extends Base\PublicEntity
         return $data;
     }
 
+    public function toArrayWithRawValuesForAccountService() : array {
+        $array = $this->toArray();
+        if(array_key_exists(self::BRAND_COLOR, $array)) {
+            $array[self::BRAND_COLOR] = $this->getAttributes()[self::BRAND_COLOR];
+        }
+        return $array;
+    }
+
     public function groups()
     {
         return $this->morphedByMany('\RZP\Models\Admin\Group\Entity', 'entity', Table::MERCHANT_MAP);

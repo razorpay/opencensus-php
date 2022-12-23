@@ -61,6 +61,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getMerchantDetailsForAccountServiceReverseMap(string $accountId)
+    {
+        $data = $this->service()->getMerchantDetailsForAccountServiceReverseMap($accountId);
+
+        return ApiResponse::json($data);
+    }
+
     public function getUpdatedAccountsForAccountService()
     {
         $input = Request::all();

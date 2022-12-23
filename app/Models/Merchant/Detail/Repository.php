@@ -13,6 +13,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\AccessMap;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
+use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Modules\Acs\Wrapper\MerchantDetail as MerchantDetailWrapper;
@@ -88,13 +89,25 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function __findOrFailPublic($id)
+    {
+        $merchantDetailFromApi = $this->findOrFailPublic($id);
+        $id = Entity::stripDefaultSign($id);
+        return (new MerchantDetailWrapper())->getByMerchantId($id, $merchantDetailFromApi);
+    }
 
     public function __getByMerchantId($merchantId)
     {
-        return $this->repo->transactionOnLiveAndTest(function () use ($merchantId) {
-            $merchantDetailsFromApi = $this->getByMerchantId($merchantId);
-            return (new MerchantDetailWrapper())->getByMerchantId($merchantId, $merchantDetailsFromApi);
-        });
+        $merchantDetailsFromApi = $this->getByMerchantId($merchantId);
+        if($merchantDetailsFromApi === null) {
+            return $merchantDetailsFromApi;
+        }
+        return (new MerchantDetailWrapper())->getByMerchantId($merchantId, $merchantDetailsFromApi);
+    }
+
+    public function __findOrFail($id) {
+        $merchantDetailsFromApi = $this->findOrFail($id);
+        return (new MerchantDetailWrapper())->getByMerchantId($id, $merchantDetailsFromApi);
     }
 
     protected function validateEntitiesMatch($liveEntity, $testEntity)

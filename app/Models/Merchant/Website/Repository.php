@@ -34,13 +34,13 @@ class Repository extends Base\Repository
      * Important: This function is to be used to migrate reads to Account Service
      * Only use this if you are trying to do read on account service database.
      */
-    public function __getWebsiteDetailsForMerchantId(string $merchantId){
-
-        return $this->repo->transactionOnLiveAndTest(function () use ($merchantId) {
-            $apiMerchantWebsiteEntity = $this->getWebsiteDetailsForMerchantId($merchantId);
-
-            return (new MerchantWebsiteWrapper())->processGetWebsiteDetailsForMerchantId($merchantId, $apiMerchantWebsiteEntity);
-        });
+    public function __getWebsiteDetailsForMerchantId(string $merchantId)
+    {
+        $apiMerchantWebsiteEntity = $this->getWebsiteDetailsForMerchantId($merchantId);
+        if ($apiMerchantWebsiteEntity === null) {
+            return $apiMerchantWebsiteEntity;
+        }
+        return (new MerchantWebsiteWrapper())->processGetWebsiteDetailsForMerchantId($merchantId, $apiMerchantWebsiteEntity);
     }
 
     /**
@@ -61,11 +61,9 @@ class Repository extends Base\Repository
  * Important: This function is to be used to migrate reads to Account Service
  * Only use this if you are trying to do read on account service database.
  */
-    public function __findOrFail(string $id){
-
-        return $this->repo->transactionOnLiveAndTest(function () use ($id) {
-            $apiMerchantWebsiteEntity = $this->findOrFail($id);
-            return (new MerchantWebsiteWrapper())->processGetWebsiteDetailsForId($id, $apiMerchantWebsiteEntity);
-        });
+    public function __findOrFail(string $id)
+    {
+        $apiMerchantWebsiteEntity = $this->findOrFail($id);
+        return (new MerchantWebsiteWrapper())->processGetWebsiteDetailsForId($id, $apiMerchantWebsiteEntity);
     }
 }

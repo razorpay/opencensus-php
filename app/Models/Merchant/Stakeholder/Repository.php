@@ -42,10 +42,11 @@ class Repository extends Base\Repository
      */
     public function __fetchStakeholders(string $merchantId): Base\PublicCollection
     {
-        return $this->repo->transactionOnLiveAndTest(function () use ($merchantId) {
-            $apiStakeholders = $this->fetchStakeholders($merchantId);
-            return (new MerchantStakeholderWrapper())->processFetchStakeholdersByMerchantId($merchantId, $apiStakeholders);
-        });
+        $apiStakeholders = $this->fetchStakeholders($merchantId);
+        if (count($apiStakeholders) === 0) {
+            return $apiStakeholders;
+        }
+        return (new MerchantStakeholderWrapper())->processFetchStakeholdersByMerchantId($merchantId, $apiStakeholders);
     }
 
     /**
@@ -54,12 +55,11 @@ class Repository extends Base\Repository
      *
      * @throws \Throwable
      */
-    public function __findOrFailPublic(string $id) {
-        return $this->repo->transactionOnLiveAndTest(function () use ($id) {
-            $apiStakeholder = $this->findOrFailPublic($id);
-            $id = Entity::stripDefaultSign($id);
-            return (new MerchantStakeholderWrapper())->processFetchStakeholderById($id, $apiStakeholder);
-        });
+    public function __findOrFailPublic(string $id)
+    {
+        $apiStakeholder = $this->findOrFailPublic($id);
+        $id = Entity::stripDefaultSign($id);
+        return (new MerchantStakeholderWrapper())->processFetchStakeholderById($id, $apiStakeholder);
     }
 
     /**

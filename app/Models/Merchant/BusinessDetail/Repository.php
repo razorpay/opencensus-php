@@ -25,6 +25,9 @@ class Repository extends Base\Repository
     public function __getBusinessDetailsForMerchantId(string $merchantId)
     {
         $businessDetailFromApi = $this->getBusinessDetailsForMerchantId($merchantId);
+        if ($businessDetailFromApi === null) {
+            return $businessDetailFromApi;
+        }
         return (new MerchantBusinessDetailWrapper())->GetMerchantBusinessDetailForMerchantId($merchantId, $businessDetailFromApi);
     }
 

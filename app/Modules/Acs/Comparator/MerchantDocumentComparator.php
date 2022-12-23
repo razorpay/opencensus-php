@@ -11,7 +11,10 @@ class MerchantDocumentComparator extends Base
         'created_at' => true,
         'updated_at' => true,
         'source' => true,
-        'validation_id' => true
+        'validation_id' => true,
+        'metadata' => true,
+        'ocr_verify' => true,
+        'document_date' => true
     ];
 
     function __construct()

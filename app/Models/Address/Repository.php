@@ -182,11 +182,13 @@ class Repository extends Base\Repository
      * @param $type
      * @throws \Throwable
      */
-    public function __fetchPrimaryAddressForStakeholder(MerchantStakeholderEntity $entity, $type) {
-        $this->repo->transactionOnLiveAndTest(function () use ($entity, $type) {
-            $primaryAddressOfType = $this->fetchPrimaryAddressOfEntityOfType($entity, $type);
-            return (new MerchantStakeholderWrapper())->processFetchPrimaryResidentialAddressForStakeholder($entity, $primaryAddressOfType);
-        });
+    public function __fetchPrimaryAddressForStakeholder(MerchantStakeholderEntity $entity, $type)
+    {
+        $primaryAddressOfType = $this->fetchPrimaryAddressOfEntityOfType($entity, $type);
+        if ($primaryAddressOfType === null) {
+            return $primaryAddressOfType;
+        }
+        return (new MerchantStakeholderWrapper())->processFetchPrimaryResidentialAddressForStakeholder($entity, $primaryAddressOfType);
     }
 
     /**

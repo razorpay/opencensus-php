@@ -3,7 +3,6 @@
 namespace RZP\Models\Merchant\Email;
 
 use RZP\Models\Base;
-use RZP\Modules\Acs\ASVEntityMapper;
 use RZP\Modules\Acs\Wrapper\MerchantEmail;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
 use RZP\Models\Merchant\Email\Entity as MerchantEmailEntity;
@@ -97,6 +96,9 @@ class Repository extends Base\Repository
     public function __getEmailByMerchantId(string $merchantId)
     {
         $merchantEmails = $this->getEmailByMerchantId($merchantId);
+        if (count($merchantEmails) === 0) {
+            return $merchantEmails;
+        }
         return (new MerchantEmail())->FetchMerchantEmailsFromMerchantId($merchantId, $merchantEmails);
     }
     /**

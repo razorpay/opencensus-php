@@ -108,6 +108,11 @@ class Repository extends Base\Repository
         });
     }
 
+    public function __findOrFailPublicTemp($id) {
+        $merchantFromApi = $this->findOrFailPublic($id);
+        return (new MerchantWrapper())->FindOrFail($id, $merchantFromApi);
+    }
+
     public function addQueryParamTags($query, $params)
     {
         $tags = $params[Constants::TAGS];
