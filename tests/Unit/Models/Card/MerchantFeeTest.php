@@ -1151,12 +1151,8 @@ class MerchantFeeTest extends TestCase
 
         $this->fee->setPricingRepo($this->getMockPricingRepo(false, false, false, $pricingRules));
 
-        $this->runMerchantFeeTest('200100', 'Visa', ['payment' => '1nvp2XPnonCorp'], Card\Type::CREDIT, false, false, null, null, null, "business");
-
-        // with razorx
-        $this->mockRazorx();
-
         $this->runMerchantFeeTest('200100', 'Visa', ['payment' => '1nvp2XPMmaCORP'], Card\Type::CREDIT, false, false, null, null, null, "business");
+
     }
 
     public function testCorporateCardRuleWithNetwork()
