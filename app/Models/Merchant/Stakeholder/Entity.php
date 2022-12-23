@@ -50,6 +50,7 @@ class Entity extends Base\PublicEntity
     const AUDIT_ID                  = 'audit_id';
     const CREATED_AT                = 'created_at';
     const UPDATED_AT                = 'updated_at';
+    const VERIFICATION_METADATA     = 'verification_metadata';
 
     protected $generateIdOnCreate = true;
 
@@ -76,7 +77,8 @@ class Entity extends Base\PublicEntity
         self::AADHAAR_PIN,
         self::AADHAAR_LINKED,
         self::BVS_PROBE_ID,
-        self::AUDIT_ID
+        self::AUDIT_ID,
+        self::VERIFICATION_METADATA
     ];
 
     protected $public = [
@@ -98,7 +100,8 @@ class Entity extends Base\PublicEntity
         self::AADHAAR_VERIFICATION_WITH_PAN_STATUS,
         self::AADHAAR_PIN,
         self::AADHAAR_LINKED,
-        self::BVS_PROBE_ID
+        self::BVS_PROBE_ID,
+        self::VERIFICATION_METADATA
     ];
 
     protected $casts = [
@@ -213,5 +216,15 @@ class Entity extends Base\PublicEntity
     public function getPercentageOwnership()
     {
         return $this->getAttribute(self::PERCENTAGE_OWNERSHIP);
+    }
+
+    public function getVerificationMetadata()
+    {
+        return $this->getAttribute(self::VERIFICATION_METADATA);
+    }
+
+    public function setVerificationMetadata($verificationMetadata)
+    {
+        $this->setAttribute(self::VERIFICATION_METADATA, $verificationMetadata);
     }
 }

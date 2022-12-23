@@ -30,6 +30,7 @@ class Validator extends Base\Validator
         Entity::AADHAAR_VERIFICATION_WITH_PAN_STATUS      => 'sometimes|string|nullable',
         Entity::AADHAAR_PIN               => 'sometimes|string|nullable',
         Entity::BVS_PROBE_ID              => 'sometimes|string|nullable',
+        Entity::VERIFICATION_METADATA     => 'sometimes|array'
     ];
 
     protected static $editRules = [
@@ -46,6 +47,7 @@ class Validator extends Base\Validator
         Entity::AADHAAR_VERIFICATION_WITH_PAN_STATUS      => 'sometimes|string|nullable',
         Entity::AADHAAR_PIN               => 'sometimes|string|nullable',
         Entity::BVS_PROBE_ID              => 'sometimes|string|nullable',
+        Entity::VERIFICATION_METADATA     => 'sometimes|array'
     ];
 
     protected static $createStakeholderRules = [

@@ -53,6 +53,9 @@ class CreateStakeholders extends Migration
             $table->index(Entity::CREATED_AT);
 
             $table->index(Entity::UPDATED_AT);
+
+            $table->json(Entity::VERIFICATION_METADATA)
+                  ->nullable();
         });
     }
 
