@@ -12,6 +12,7 @@ import {
   CLICK_KNOW_MORE_MANAGE_ALERTS,
   CLICK_SAVE_MANAGE_ALERTS,
 } from './ga';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 const items = [{ credit_type: 'Current Balance' }];
 
@@ -42,6 +43,11 @@ function ManageBalanceAlert({
 
     return updateConfig(payload)
       .then(() => {
+        selfServeTrackSuccess({
+          selfServeAction: 'Funds Alert Created',
+          page: 'Addfunds',
+          screen: 'My Account',
+        });
         showNotification({
           type: 'success',
           message: 'Balance threshold updated successfully',

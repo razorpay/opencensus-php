@@ -18,6 +18,9 @@ import { fetchStates } from 'merchant/reducers/states';
 
 import AddressEntry from 'merchant/views/Customers/components/AddressEntry';
 import Countries from 'merchant/helpers/countries.json';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+
+const selector = formValueSelector('newCustomer');
 
 @connect(
   (state) => {
@@ -46,6 +49,7 @@ import Countries from 'merchant/helpers/countries.json';
 })
 export default class AddCustomer extends Component {
   constructor() {
+    // eslint-disable-next-line prefer-rest-params
     super(...arguments);
 
     this.DEFAULT_COUNTRY = 'India';
@@ -75,14 +79,16 @@ export default class AddCustomer extends Component {
     }
 
     if (!this.props.user.isInttCurrenciesEnabled) {
-      let promises = [this.props.fetchStates()];
+      const promises = [this.props.fetchStates()];
       this.setState({
+        // eslint-disable-next-line react/no-unused-state
         isLoading: true,
       });
 
       Promise.all(promises)
         .then(([states]) => {
           this.setState({
+            // eslint-disable-next-line react/no-unused-state
             isLoading: false,
             states: states && states.data && states.data.items,
           });
@@ -132,8 +138,9 @@ export default class AddCustomer extends Component {
    * @param {Object} props
    * @return {Object}
    */
+
   prepareForSave = (props) => {
-    let _props = {};
+    const _props = {};
 
     // If address is to be saved.
     if (props.add_customer_address) {
@@ -142,8 +149,8 @@ export default class AddCustomer extends Component {
 
       // Check if billing and shipping addresses are same despite the checkbox,
       if (!props.shipping_same_as_billing) {
-        let shippingAddr = this.state.editedShippingAddress;
-        let billingAddr = this.state.editedBillingAddress;
+        const shippingAddr = this.state.editedShippingAddress;
+        const billingAddr = this.state.editedBillingAddress;
         let areAddressesSame = true;
 
         // Check if shipping address is the same as billing address.
@@ -178,6 +185,7 @@ export default class AddCustomer extends Component {
    * @param {Object} props
    * @return {Promise}
    */
+
   save = (props) => {
     const { shipping_same_as_billing } = props;
 
@@ -191,7 +199,7 @@ export default class AddCustomer extends Component {
     });
 
     // Get extra props.
-    let extraProps = this.prepareForSave({ ...props });
+    const extraProps = this.prepareForSave({ ...props });
 
     // Save customer.
     return this.props
@@ -201,6 +209,11 @@ export default class AddCustomer extends Component {
       })
       .then((customer) => {
         this.props.onSave(customer, shipping_same_as_billing);
+        selfServeTrackSuccess({
+          selfServeAction: 'New Customer Created',
+          page: 'Customers',
+          screen: 'Customers',
+        });
         this.props.showNotification({
           type: 'success',
           message: 'Customer saved successfully',
@@ -215,9 +228,9 @@ export default class AddCustomer extends Component {
 
   /**
    * Method to invoke when Same Shipping address as Billing address is clicked on Screen 3
-   * @param {Event} e
    */
-  onSameShippingAsBilling = (e) => {
+
+  onSameShippingAsBilling = (_) => {
     // Get value of checkbox before it was clicked.
     let { shipping_same_as_billing } = this.props;
 
@@ -226,9 +239,11 @@ export default class AddCustomer extends Component {
 
     // Set shipping address the same as billing address.
     if (shipping_same_as_billing) {
-      this.setState({
-        editedShippingAddress: this.state.editedBillingAddress,
-        shippingAddressStates: this.state.billingAddressStates,
+      this.setState((prevState) => {
+        return {
+          editedShippingAddress: prevState.editedBillingAddress,
+          shippingAddressStates: prevState.billingAddressStates,
+        };
       });
     }
   };
@@ -243,8 +258,10 @@ export default class AddCustomer extends Component {
   /**
    * Toggles the "Add Customer Address" checkbox.
    */
+
   toggleAddCustomerAddress = (e) => {
     this.setState({
+      // eslint-disable-next-line react/no-unused-state
       address: e.target.checked,
     });
   };
@@ -253,6 +270,7 @@ export default class AddCustomer extends Component {
    * Invoked when Billing Address is changed.
    * @param {Object} address
    */
+
   onBillingAddressChange = (address) => {
     if (this.props.user.isInttCurrenciesEnabled) {
       let updatedAddress = {
@@ -288,6 +306,7 @@ export default class AddCustomer extends Component {
    * Invoked when Shipping Address is changed/
    * @param {Object} address
    */
+
   onShippingAddressChange = (address) => {
     this.uncheckShippingSameAsBilling();
 
@@ -326,6 +345,7 @@ export default class AddCustomer extends Component {
    * @param {Number} screenNumber
    * @return {Function}
    */
+
   getChangeScreenHandler = (screenNumber) => {
     return () => this.changeScreen(screenNumber);
   };
@@ -346,7 +366,6 @@ export default class AddCustomer extends Component {
       email: _email, // Renaming this because an `email` function is imported for validation.
       contact,
 
-      shipping_same_as_billing,
       add_customer_address: address,
       add_shipping_address,
 
@@ -363,7 +382,7 @@ export default class AddCustomer extends Component {
       shippingAddressStates,
     } = this.state;
 
-    let screens = [];
+    const screens = [];
 
     /**
      * Array of Booleans that depicts whether or not the CTA on the screen corresponding to the index
@@ -381,7 +400,7 @@ export default class AddCustomer extends Component {
     ];
 
     // Ask Address only when this is not an Edit Modal or the `add_customer_address` prop is true.
-    let askAddress =
+    const askAddress =
       typeof this.props.askAddress === 'undefined'
         ? !(customer && customer.id) || address
         : this.props.askAddress;
@@ -390,6 +409,7 @@ export default class AddCustomer extends Component {
 
     if (isInttCurrenciesEnabled) {
       extraProps = {
+        // eslint-disable-next-line no-use-before-define
         countries: CountryNames,
       };
     }
@@ -661,7 +681,7 @@ AddCustomer.defaultProps = {
 const CountryNames = Object.keys(Countries);
 
 function validate(values) {
-  let errors = {};
+  const errors = {};
 
   if (values.gstin && !isValidGSTIN(values.gstin)) {
     errors._error = 'Please provide a valid GSTIN';
@@ -669,5 +689,3 @@ function validate(values) {
 
   return errors;
 }
-
-const selector = formValueSelector('newCustomer');

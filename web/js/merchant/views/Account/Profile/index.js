@@ -59,7 +59,7 @@ import { isWorkflowInClarification } from 'merchant/views/Account/Profile/compon
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import {
   BankVerificationErrorInDetailsMap,
   getResponseTime,
@@ -346,6 +346,11 @@ class Profile extends Component {
       .updateMerchantConfig(props)
       .then((resp) => {
         if (resp.success) {
+          selfServeTrackSuccess({
+            selfServeAction: 'Display Name Updated',
+            page: 'Profile',
+            screen: 'My Account',
+          });
           analyticsTrack({
             objectName: 'display name update',
             actionName: 'status',
@@ -571,6 +576,11 @@ class Profile extends Component {
               responseTime: getResponseTime(requestStartedAt),
               requestType: data?.sync_flow ? 'sync' : 'async',
             },
+          });
+          selfServeTrackSuccess({
+            selfServeAction: 'Bank Account Update',
+            page: 'Profile',
+            screen: 'My Account',
           });
           if (data.new_bank_account && data.sync_flow === true) {
             fetchBankAccount();

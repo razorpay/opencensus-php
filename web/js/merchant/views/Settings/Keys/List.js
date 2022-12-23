@@ -19,6 +19,7 @@ import { shouldShowWebsiteComplianceModal } from 'merchant/views/Account/Website
 import WebsiteComplianceMobilePrompt from 'merchant/views/Account/WebsiteAppDetails/Prompt.mobile';
 import WebsiteComplianceBanner from 'merchant/components/Announcements/WebsiteCompliance';
 import { isMobileDevice } from 'merchant/components/Home/data';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 class KeysListContainer extends ListContainer {
   fetchEntityList() {
@@ -63,6 +64,11 @@ class KeysListContainer extends ListContainer {
           closeTimeout: 15000,
         });
 
+        selfServeTrackSuccess({
+          selfServeAction: 'API Key Regenerated',
+          page: 'API Keys',
+          screen: 'Settings',
+        });
         analyticsTrack({
           objectName: `regenerate ${this.props.session.mode} key`,
           actionName: 'result',

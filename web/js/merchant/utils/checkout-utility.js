@@ -78,7 +78,7 @@ const openCheckout = async (
     },
     handler: function handler(transaction = {}) {
       if (analyticsHandler) {
-        analyticsHandler(amountInPaise);
+        analyticsHandler(amountInPaise, type);
       }
       addHandler(
         {

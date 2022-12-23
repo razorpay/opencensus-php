@@ -11,6 +11,7 @@ import { closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 @connect(null, { updatePassword, closeModal, showNotification })
 @RTracking(() => window.rzpQ.component('PasswordForm'))
@@ -44,6 +45,11 @@ export default class PasswordForm extends PureComponent {
     return this.props
       .updatePassword(props)
       .then(() => {
+        selfServeTrackSuccess({
+          selfServeAction: 'Password Updated',
+          page: 'Profile',
+          screen: 'My Account',
+        });
         analyticsTrack({
           objectName: 'change password',
           actionName: 'status',

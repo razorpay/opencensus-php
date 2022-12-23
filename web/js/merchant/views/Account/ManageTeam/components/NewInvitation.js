@@ -13,6 +13,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { closeModal } from 'merchant_common/reducers/modals';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import { analyticsTrack } from 'common/utils/analytics';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 const selector = formValueSelector('newInvitation');
 @reduxForm({
@@ -53,6 +54,11 @@ class NewInvitation extends Component {
     return this.props
       .onFormSubmit(body)
       .then(() => {
+        selfServeTrackSuccess({
+          selfServeAction: 'New Member Invited',
+          page: 'Team',
+          screen: 'My Account',
+        });
         analyticsTrack({
           objectName: 'invite new member',
           actionName: 'status',

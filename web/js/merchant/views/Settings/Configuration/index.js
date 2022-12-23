@@ -41,6 +41,7 @@ import Firc from './components/FircAnnouncements/Firc';
 import ToggleSetting from './ToggleSetting';
 import { flashCheckoutProps, skipCardMandateSummaryProps } from './settings-config-constants';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 // eslint-disable-next-line react/no-unsafe
 class CongfigurationContainer extends Component {
@@ -90,6 +91,11 @@ class CongfigurationContainer extends Component {
           hidePrevious: true,
         });
         if (config === 'theme') {
+          selfServeTrackSuccess({
+            selfServeAction: 'Theme Color Changed',
+            page: 'Config',
+            screen: 'Settings',
+          });
           analyticsTrack({
             objectName: 'theme color save changes',
             actionName: 'result',

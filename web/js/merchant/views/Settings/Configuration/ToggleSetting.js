@@ -6,7 +6,7 @@ import { updateFeatures } from 'merchant/reducers/config';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import SwitchField from 'common/ui/Forms/SwitchField';
 import TextHighlighter from 'common/ui/TextHighlighter';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 class ToggleSetting extends Component {
   constructor(props) {
@@ -37,6 +37,7 @@ class ToggleSetting extends Component {
   analyticsForFeatureChange = (
     isToggleTriggered = false,
     isFeatureEnabled,
+    selfServerTrack = false,
     optionalProperties = {},
   ) => {
     const featureName = this.props.featureName;
@@ -45,6 +46,13 @@ class ToggleSetting extends Component {
 
     if (isToggleTriggered && isFeatureEnabled) {
       selfServeTrackInitiate({
+        selfServeAction: `${featureName} Enabled`,
+        page: 'Config',
+        screen: 'Settings',
+      });
+    }
+    if (selfServerTrack) {
+      selfServeTrackSuccess({
         selfServeAction: `${featureName} Enabled`,
         page: 'Config',
         screen: 'Settings',
@@ -96,7 +104,7 @@ class ToggleSetting extends Component {
           message: 'Your preference was saved',
         });
 
-        this.analyticsForFeatureChange(false, isFeatureEnabled, { status: 'Success' });
+        this.analyticsForFeatureChange(false, isFeatureEnabled, true, { status: 'Success' });
         this.setState((prevState) => {
           return {
             isFeatureFlagEnabled: !prevState.isFeatureFlagEnabled,
@@ -111,7 +119,7 @@ class ToggleSetting extends Component {
         message: err.errors,
       });
 
-      this.analyticsForFeatureChange(false, isFeatureEnabled, {
+      this.analyticsForFeatureChange(false, isFeatureEnabled, false, {
         status: 'Failure',
         failureReason: err.errors?.[0] || '',
       });

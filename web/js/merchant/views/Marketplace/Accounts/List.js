@@ -23,6 +23,7 @@ import ListContainer from 'merchant/containers/ListContainer';
 import AccountCreation from 'merchant/views/Marketplace/Accounts/New';
 import AccountDetails from 'merchant/views/Marketplace/Accounts/Details';
 import { isOrgFeatureExist } from 'merchant/models/User';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 @connect(
   (state) => {
@@ -220,6 +221,11 @@ export default class AccountsListContainer extends ListContainer {
     return exportAccountsCSV()
       .then((response) => {
         window.location.href = response.data.url;
+        selfServeTrackSuccess({
+          selfServeAction: 'Route Accounts List Downloaded',
+          page: 'Account',
+          screen: 'Route',
+        });
       })
       .catch(({ errors }) => {
         showNotification({

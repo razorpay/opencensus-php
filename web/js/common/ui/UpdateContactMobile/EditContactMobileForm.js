@@ -13,6 +13,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { updateContactMobile } from 'merchant_common/reducers/user';
 import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 @connect(
   (state) => ({
@@ -53,6 +54,11 @@ export default class EditContactMobileForm extends React.Component {
     return this.props
       .updateContactMobile(data)
       .then(() => {
+        selfServeTrackSuccess({
+          selfServeAction: 'Mobile Updated',
+          page: 'Profile',
+          screen: 'My Account',
+        });
         analyticsTrack({
           objectName: 'change contact number',
           actionName: 'result',

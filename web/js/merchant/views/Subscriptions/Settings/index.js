@@ -21,7 +21,8 @@ import {
   EMANDATE_MAX_LIMIT,
   UPI_MAX_LIMIT_FOR_NON_BFSI,
 } from 'merchant/views/Subscriptions/constants';
-import analytics from '../analytics';
+import analytics from 'merchant/views/Subscriptions/analytics';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 const PAYMENT_METHODS = {
   UPI: 'upi',
@@ -78,6 +79,11 @@ export default class SubscriptionsSettings extends React.Component {
       .then(() => {
         cb(true);
 
+        selfServeTrackSuccess({
+          selfServeAction: `Subscriptions ${methodName} ${checked ? 'disabled' : 'enabled'}`,
+          page: 'Settings',
+          screen: 'Subscriptions',
+        });
         this.props.showNotification({
           type: 'success',
           message: `Payment method ${methodName} ${checked ? 'disabled' : 'enabled'} successfully`,

@@ -14,6 +14,7 @@ import OfferForm from './Forms/Offers';
 import NoCostEMI from './Forms/NoCostEMI';
 import Subscription from './Forms/Subscription';
 import OfferTypeSelector from './components/OfferTypeSelector';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 const BaseFormKey = 'base';
 const FORMS = {
@@ -32,6 +33,7 @@ const FORMS = {
   appendOfferInReduxList,
 })
 @RTracking(() => window.rzpQ.component('CreateOfferWizard'))
+// eslint-disable-next-line no-undef
 export default class CreateOfferWizard extends React.Component {
   constructor(props) {
     super();
@@ -57,6 +59,11 @@ export default class CreateOfferWizard extends React.Component {
           isFormLocked: false,
         });
 
+        selfServeTrackSuccess({
+          selfServeAction: 'New offer created',
+          page: 'Offers',
+          screen: 'Offers',
+        });
         this.props.showNotification({
           type: 'success',
           message: 'New offer created',

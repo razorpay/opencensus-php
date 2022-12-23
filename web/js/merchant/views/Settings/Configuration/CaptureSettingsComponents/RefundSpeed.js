@@ -10,7 +10,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { parseTimeoutValues } from './data';
 import { renderTimeoutAsString } from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/util';
 import { GraphicalExplanation } from './GraphicalExplanation';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 function RefundSpeed(props) {
   const [refundSpeed, setrefundSpeed] = useState(() => {
@@ -129,6 +129,11 @@ function RefundSpeed(props) {
     props
       .createLateAuthConfig(payload, method)
       .then(() => {
+        selfServeTrackSuccess({
+          selfServeAction: 'Payment Capture Period Updated',
+          page: 'Config',
+          screen: 'Settings',
+        });
         props.showNotification({
           type: 'success',
           message: method === 'PATCH' ? 'Preference Updated' : 'Preference Saved',

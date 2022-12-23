@@ -46,6 +46,7 @@ import {
 } from 'merchant/views/SmartCollect/VirtualAccounts/helpers';
 
 import { fetchFeatureStatus } from 'merchant/reducers/config';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 const CustomCustomerOption = ({ option }) => {
   return (
@@ -259,6 +260,11 @@ export default class CreateVirtualAccount extends React.Component {
 
         this.track('advance.notes.submit.success');
 
+        selfServeTrackSuccess({
+          selfServeAction: 'Virtual Account Created',
+          page: 'Virtualaccounts',
+          screen: 'Smart Collect',
+        });
         // On success, Show account details summary
         this.props.openModal({
           size: 'small',

@@ -10,8 +10,10 @@ import {
   CLICK_KNOW_MORE_MANAGE_ALERTS,
   CLICK_CANCEL_MANAGE_ALERTS,
   CLICK_SAVE_MANAGE_ALERTS,
-} from '../ga';
+  getAnalyticsData,
+} from 'merchant/views/Account/Credits/ga';
 import { analyticsTrack } from 'common/utils/analytics';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 const items = [
   { credit_type: 'Amount Credit' },
@@ -23,6 +25,7 @@ function ManageCreditAlerts(props) {
   const ref = useRef();
 
   const onClickSave = () => {
+    selfServeTrackSuccess(getAnalyticsData('save', 'Credit Alert Created'));
     analyticsTrack(CLICK_SAVE_MANAGE_ALERTS);
     const alertValues = ref.current.getAlertValues();
 

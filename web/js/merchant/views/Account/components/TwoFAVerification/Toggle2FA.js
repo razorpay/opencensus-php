@@ -17,6 +17,7 @@ import SwitchField from 'common/ui/Forms/SwitchField';
 import UpdateSelfContactMobile from 'merchant/views/Account/Profile/components/UpdateSelfContactMobile';
 import PasswordVerification from './PasswordVerification';
 import { analyticsTrack } from 'common/utils/analytics';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
 import {
   ACTION_QUERY_PARAM_KEY,
@@ -72,6 +73,11 @@ class Toggle2FA extends Component {
         const { second_factor_auth } = response.data;
         const twoFaStatus = second_factor_auth ? 'on' : 'off';
         const message = getToggle2FaSuccessMsg(twoFaStatus);
+        selfServeTrackSuccess({
+          selfServeAction: '2fa Switch Result',
+          page: 'Team',
+          screen: 'My Account',
+        });
         analyticsTrack({
           objectName: `2fa switch`,
           actionName: 'result',

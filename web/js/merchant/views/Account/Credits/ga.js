@@ -120,6 +120,9 @@ export const getAnalyticsData = (actionType, type) => {
     case 'view':
       action = `${type === 'fee' ? 'Fee' : 'Refund'} Credit Listing Viewed`;
       break;
+    case 'save':
+      action = `${type}`;
+      break;
     default:
   }
   return {

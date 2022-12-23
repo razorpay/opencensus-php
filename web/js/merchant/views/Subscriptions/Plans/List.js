@@ -21,7 +21,8 @@ import { getSubscriptionQuickGuideIsClosed } from 'merchant/views/Subscriptions/
 
 import PlansListFilter from 'merchant/views/Subscriptions/Plans/components/ListFilter';
 import ListContainer from 'merchant/containers/ListContainer';
-import analytics from '../analytics';
+import analytics from 'merchant/views/Subscriptions/analytics';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 @connect(
   (state) => ({
@@ -97,6 +98,11 @@ export default class PlansListContainer extends ListContainer {
                 <NavLink
                   to="/plans/new"
                   onClick={() => {
+                    selfServeTrackInitiate({
+                      selfServeAction: 'Create New Plan',
+                      page: 'New Plans',
+                      screen: 'Subscriptions',
+                    });
                     analytics.track('plan.create.initiate');
                   }}
                 >

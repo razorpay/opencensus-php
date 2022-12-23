@@ -5,6 +5,7 @@ import moment from 'moment';
 import { compose, bindActionCreators } from 'redux';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import BatchCreateModal from 'merchant/components/BatchNew/CreateModal';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 const oneHour = 3600 * 1000; //1 hour in milliseconds
 
@@ -67,6 +68,11 @@ class BatchCreate extends Component {
       this.props
         .createBatch(data)
         .then((response) => {
+          selfServeTrackSuccess({
+            selfServeAction: 'Route New Batch Uploaded ',
+            page: 'batchuploads',
+            screen: 'Route',
+          });
           this.props.onCreation(response);
         })
         .catch(() => {

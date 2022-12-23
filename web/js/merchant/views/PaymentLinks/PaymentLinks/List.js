@@ -27,6 +27,7 @@ import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
 import track from './track';
 import { trackSearchFilterForInternational } from './ga';
 import EasterEgg from 'merchant/components/EasterEgg';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 // TODO: Update colSpan if no of columns are changes
 const EmptyComponent = () => (
@@ -290,6 +291,11 @@ export default class PaymentLinksContainer extends ListContainer {
                           action: 'Initiate_PL_Creation',
                         }),
                       );
+                      selfServeTrackInitiate({
+                        selfServeAction: 'Create Payment Link',
+                        page: 'Paymentlink',
+                        screen: 'Payment Links',
+                      });
                       analyticsTrack({
                         objectName: 'create payment link',
                         actionName: 'clicked',

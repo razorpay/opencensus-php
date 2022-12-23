@@ -15,6 +15,7 @@ import InputField from 'common/ui/Forms/InputField';
 import { autoPrefixUrls, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import VerifyOTP from './VerifyOTPScreen';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 class MerchantDataCollectionModal extends Component {
   state = { isVerifying: false, newEmail: '', newUrl: '' };
@@ -97,6 +98,11 @@ class MerchantDataCollectionModal extends Component {
     createSupportDetail({ email, url: newurl, phone })
       .then((res) => {
         if (res.success && supportModal) {
+          selfServeTrackSuccess({
+            selfServeAction: 'Merchant Support Details Updated',
+            page: 'Profile',
+            screen: 'My Account',
+          });
           showNotification({
             type: 'success',
             message: 'Support detail successfully added',

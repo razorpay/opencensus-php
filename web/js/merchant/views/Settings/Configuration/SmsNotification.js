@@ -10,7 +10,7 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import SwitchField from 'common/ui/Forms/SwitchField';
 import { SMS_NOTIF } from './deeplink-constants';
 import TextHighlighter from 'common/ui/TextHighlighter';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { isOrgFeatureExist } from 'merchant/models/User';
 
 function SmsNotification({ currentUser, showNotification }) {
@@ -85,6 +85,11 @@ function SmsNotification({ currentUser, showNotification }) {
       .then((response) => {
         cb(true);
         setSmsOptin(response.data.enabled);
+        selfServeTrackSuccess({
+          selfServeAction: 'SMS Notifications Enabled',
+          page: 'Config',
+          screen: 'Settings',
+        });
         showNotification({
           type: 'success',
           message: 'Your SMS preference was saved',

@@ -13,6 +13,7 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import SwitchField from 'common/ui/Forms/SwitchField';
 import ShowWhen from 'merchant/components/ShowWhen';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 // Decorate with connect to read form values
 const selector = formValueSelector('newAccount');
@@ -43,6 +44,7 @@ const selector = formValueSelector('newAccount');
 @RTracking(() => window.rzpQ.component('AddAccount'))
 export default class AddAccount extends Component {
   static contextTypes = {
+    // eslint-disable-next-line
     confirm: PropTypes.func,
   };
 
@@ -75,8 +77,8 @@ export default class AddAccount extends Component {
 
   save = (props) => {
     const { accountData } = this.props;
-    let requestData = { ...props };
-    let reqFunc = accountData ? this.props.updateEmail : this.props.saveAccount;
+    const requestData = { ...props };
+    const reqFunc = accountData ? this.props.updateEmail : this.props.saveAccount;
 
     if (accountData) {
       requestData.accountId = accountData.id;
@@ -98,6 +100,11 @@ export default class AddAccount extends Component {
     return reqFunc(requestData)
       .then((account) => {
         this.props.onSave(account);
+        selfServeTrackSuccess({
+          selfServeAction: accountData ? 'Email added' : 'Route Account created',
+          page: 'Account',
+          screen: 'Route',
+        });
         this.props.showNotification({
           type: 'success',
           message: accountData ? 'Email added successfully' : 'Account created successfully',
@@ -106,7 +113,7 @@ export default class AddAccount extends Component {
       })
       .catch(({ errors }) => {
         this.setState({
-          errors: errors,
+          errors,
         });
       });
   };
@@ -136,7 +143,7 @@ export default class AddAccount extends Component {
             fromChange('allow_reversals', false);
           },
         })
-        .catch((e) => {
+        .catch((_) => {
           fromChange('dashboard_access', checked);
         });
     }
@@ -166,7 +173,7 @@ export default class AddAccount extends Component {
             fromChange('allow_reversals', true);
           },
         })
-        .catch((e) => {
+        .catch((_) => {
           fromChange('dashboard_access', false);
           fromChange('allow_reversals', false);
         });
@@ -317,7 +324,7 @@ const EnableDashboardField = ({ children, isDisabled }) => {
     return (
       <small class="help-content">
         {children}
-        <Popover align="top" parentQuerySelector={`.accounts-edit-new`} theme="dark">
+        <Popover align="top" parentQuerySelector=".accounts-edit-new" theme="dark">
           <PopoverBody>
             <div>
               Please add Email id to enable dashboard access and customer refunds for this linked

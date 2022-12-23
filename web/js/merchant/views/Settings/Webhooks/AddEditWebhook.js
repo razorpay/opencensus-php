@@ -19,6 +19,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import sanitizer from 'common/utils/xss-sanitizer';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 class webhookForm extends Component {
   state = {
@@ -296,7 +297,11 @@ class webhookForm extends Component {
               }),
             );
           }
-
+          selfServeTrackSuccess({
+            selfServeAction: `Webhook ${webhook ? 'Edited' : 'Added'}`,
+            page: 'Webhooks',
+            screen: 'Settings',
+          });
           analyticsTrack({
             objectName: `${webhook ? 'edit' : 'add'} webhooks`,
             actionName: 'result',

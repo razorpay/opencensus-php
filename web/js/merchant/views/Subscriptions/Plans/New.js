@@ -21,7 +21,8 @@ import {
   getURLQueryParams,
   paiseToRupees,
 } from 'common/utils/rzp-utils';
-import analytics from '../analytics';
+import analytics from 'merchant/views/Subscriptions/analytics';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 const selector = formValueSelector('newPlan');
 
@@ -151,6 +152,11 @@ export default class NewPlan extends Component {
         }
         this.props.onSave(plan);
         this.props.history.push(`/plans/${plan[plan.resourceIdField]}`);
+        selfServeTrackSuccess({
+          selfServeAction: 'Create New Plan',
+          page: 'New Plans',
+          screen: 'Subscriptions',
+        });
         this.props.showNotification({
           type: 'success',
           message: 'Plan saved successfully',

@@ -1,5 +1,6 @@
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 function _track() {
   let lumberjackTrack = () => {};
@@ -37,6 +38,11 @@ function _track() {
     createOrEditSuccess(payment_button_id) {
       this.setConfig({ payment_button_id });
 
+      selfServeTrackSuccess({
+        selfServeAction: 'Create Payment Button',
+        page: 'Edit Payment Button',
+        screen: 'Button Create',
+      });
       sendToLumberjack('review.complete_button.success');
       sendToSegment('create button', 'success', {}, true);
     },

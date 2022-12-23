@@ -1,4 +1,4 @@
-import { Component, Fragment } from 'react';
+import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
@@ -16,10 +16,9 @@ import RadioButton from 'common/ui/Forms/RadioButton';
 import { deepCopy } from 'common/utils/immutable';
 import Item from 'merchant/models/Item';
 import { isTaxOfTypeCess } from 'common/utils/rzp-utils';
-import { AmountTooltip } from 'common/ui/Amount';
 import Input from 'common/new-ui/Input';
-import { classList } from 'common/utils/rzp-utils';
 import CheckableItem from './components/CheckableItem';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 const selector = formValueSelector('newItem');
 
@@ -45,22 +44,18 @@ const deleteOrNullify = (shouldDelete, obj, key) => {
  * @param {Object} all
  * @return {String}
  */
+
 const sacLengthValidator = (sac, all) => {
-  if (
-    all &&
-    sac &&
-    all.hsn_sac_code_type &&
-    all.hsn_sac_code_type === 'sac' &&
-    sac.length > 8
-  ) {
+  if (all && sac && all.hsn_sac_code_type && all.hsn_sac_code_type === 'sac' && sac.length > 8) {
     return 'SAC Code can be at most 8 characters';
   }
 
   return undefined;
 };
 
+// eslint-disable-next-line react/no-unsafe
 @connect(
-  state => ({
+  (state) => ({
     taxRate: selector(state, 'tax_rate'),
     taxInclusive: selector(state, 'tax_inclusive'),
     cess: selector(state, 'cess'),
@@ -75,7 +70,7 @@ const sacLengthValidator = (sac, all) => {
     ...ItemActions,
     ...ModalActions,
     ...NotificationsActions,
-  }
+  },
 )
 @reduxForm({
   form: 'newItem',
@@ -86,6 +81,7 @@ const sacLengthValidator = (sac, all) => {
 })
 export default class AddItem extends Component {
   constructor() {
+    // eslint-disable-next-line prefer-rest-params
     super(...arguments);
     this.state = {
       errors: null,
@@ -93,9 +89,10 @@ export default class AddItem extends Component {
   }
 
   UNSAFE_componentWillMount() {
-    let promises = [this.props.fetchTaxes(), this.props.fetchGSTTaxes()];
+    const promises = [this.props.fetchTaxes(), this.props.fetchGSTTaxes()];
 
     this.setState({
+      // eslint-disable-next-line react/no-unused-state
       isLoading: true,
     });
 
@@ -108,6 +105,7 @@ export default class AddItem extends Component {
     Promise.all(promises)
       .then(([taxes, gst]) => {
         this.setState({
+          // eslint-disable-next-line react/no-unused-state
           isLoading: false,
           gst: gst && gst.data,
           taxes: taxes && taxes.data.items,
@@ -138,7 +136,8 @@ export default class AddItem extends Component {
    * Processes taxes and stuff.
    * @param {Item} item
    */
-  _initialize(item, currency) {
+
+  _initialize(item, _) {
     item = new Item(deepCopy(item));
 
     let showCessForm = false;
@@ -197,16 +196,16 @@ export default class AddItem extends Component {
    * Method to get a Component for Tax Rate list.
    * @return {Component}
    */
-  getTaxRateComponent = ({ option }) => (
-    <CheckableItem text={option} value={option} />
-  );
+
+  getTaxRateComponent = ({ option }) => <CheckableItem text={option} value={option} />;
 
   /**
    * Prepares Item for saving.
    * @param {Object} props
    * @return {Promise}
    */
-  prepareForSave = props =>
+
+  prepareForSave = (props) =>
     new Promise((resolve, reject) => {
       if (!this.props.showTaxes || this.props.selected_currency !== 'INR') {
         delete props.tax;
@@ -218,13 +217,7 @@ export default class AddItem extends Component {
         return resolve(props);
       }
 
-      let {
-        hsn_sac_code,
-        hsn_sac_code_type,
-        tax_rate,
-        tax_inclusive,
-        cess,
-      } = props;
+      const { hsn_sac_code, hsn_sac_code_type, tax_rate, tax_inclusive, cess } = props;
 
       // Detemine whether the item is new or not.
       const isNew = this.props.isNew || !this.props.item;
@@ -264,17 +257,15 @@ export default class AddItem extends Component {
         let cessPerc = cess;
 
         // Convert to an integer. (5% => 500)
-        cessPerc = parseInt(parseFloat(cessPerc) * 100);
+        cessPerc = parseInt(parseFloat(cessPerc) * 100, 10);
 
         // Find an existing cess.
-        let { taxes } = this.state;
+        const { taxes } = this.state;
 
         // Promise to find a cess if one already exists, or create a new one if none exists.
-        let findCessPromise = new Promise((_resolve, _reject) => {
+        const findCessPromise = new Promise((_resolve, _reject) => {
           // Find existing cess.
-          let existingCess = taxes.find(
-            tax => isTaxOfTypeCess(tax) && tax.rate === cessPerc
-          );
+          const existingCess = taxes.find((tax) => isTaxOfTypeCess(tax) && tax.rate === cessPerc);
 
           // If there's one, resolve immediately.
           if (existingCess) {
@@ -289,18 +280,18 @@ export default class AddItem extends Component {
               rate_type: 'percentage',
               rate: cessPerc,
             })
-            .then(createdTax => _resolve(createdTax))
-            .catch(err => _reject(err));
+            .then((createdTax) => _resolve(createdTax))
+            .catch((err) => _reject(err));
         });
 
         // Find a cess and assign it's tax ID.
         findCessPromise
-          .then(newCess => {
+          .then((newCess) => {
             props.tax_id = newCess.id;
             delete props.cess;
             resolve(props);
           })
-          .catch(err => reject(err));
+          .catch((err) => reject(err));
       } else {
         // If cess is not present
         // Remove tax_id (Because cess is not present, we assume cess needs to be removed.)
@@ -310,12 +301,13 @@ export default class AddItem extends Component {
         // Resolve
         resolve(props);
       }
+      return '';
     });
 
-  save = _props => {
+  save = (_props) => {
     // Prepare props for saving and then save.
     return this.prepareForSave({ ..._props })
-      .then(props => {
+      .then((props) => {
         if (this.props.type) {
           props.type = this.props.type;
         }
@@ -327,20 +319,25 @@ export default class AddItem extends Component {
         }
 
         return saveItem(props)
-          .then(item => {
+          .then((item) => {
+            selfServeTrackSuccess({
+              selfServeAction: 'New Item Created',
+              page: 'Items',
+              screen: 'Invoice',
+            });
             this.props.showNotification({
               type: 'success',
               message: 'Item saved successfully',
             });
             this.props.onSave && this.props.onSave(item, this.props.item);
           })
-          .catch(err => {
+          .catch((err) => {
             this.setState({
               errors: err.errors,
             });
           });
       })
-      .catch(err => {
+      .catch((err) => {
         this.setState({
           errors: err.errors,
         });
@@ -352,13 +349,14 @@ export default class AddItem extends Component {
    * eg. ['0%', '5%', '12%', ...]
    * @return {Array}
    */
+
   getGSTRates = () => {
     const { gst } = this.state;
 
     // If GST doesn't exist yet, return an empty array.
     if (!(gst && gst.gst_tax_slabs_v2)) return [];
 
-    return gst.gst_tax_slabs_v2.map(rate => {
+    return gst.gst_tax_slabs_v2.map((rate) => {
       return `${rate / 10000}%`;
     });
   };
@@ -366,8 +364,9 @@ export default class AddItem extends Component {
   /**
    * Sets the flag for tax radio display.
    */
+
   updateTaxRadioSection = (props = this.props) => {
-    let { taxRate, cess } = props;
+    const { taxRate, cess } = props;
 
     let { showTaxRadios } = this.state;
 
@@ -382,7 +381,8 @@ export default class AddItem extends Component {
    * Makes Cess positive.
    * @param {Event} e
    */
-  makeCessPositive = e => {
+
+  makeCessPositive = (e) => {
     let val = parseFloat(e.target.value);
 
     // Check for NaN
@@ -395,32 +395,30 @@ export default class AddItem extends Component {
     return setTimeout(() => this.props.change('cess', val), 0);
   };
 
-  onCurrencyChange = option => {
+  onCurrencyChange = (option) => {
     this.props.change('currency', option.name);
   };
 
   render() {
     const {
       handleSubmit,
-      change,
       invalid,
       item,
       taxRate,
-      taxInclusive,
       cess,
       selected_currency,
       user,
       showTaxes,
       currency,
     } = this.props;
+
+    // eslint-disable-next-line
     const { showCessForm, editingItem, showTaxRadios } = this.state;
 
-    const gstRates = this.getGSTRates(),
-      disableCurrencySelect =
-        this.props.disableCurrencySelect ||
-        !user.isInttCurrenciesEnabled ||
-        (item && item.id),
-      isNonINR = selected_currency !== 'INR';
+    const gstRates = this.getGSTRates();
+    const disableCurrencySelect =
+      this.props.disableCurrencySelect || !user.isInttCurrenciesEnabled || (item && item.id);
+    const isNonINR = selected_currency !== 'INR';
 
     let aligenedStyleClass = `${showTaxes ? 'col-md-6' : 'col-md-12'}`;
 
@@ -521,14 +519,9 @@ export default class AddItem extends Component {
                     />
                   </div>
                 </div>
-                {!showTaxes &&
-                  item &&
-                  item.id && (
-                    <p>
-                      Note: The updated item details will be reflected
-                      everywhere in the future.
-                    </p>
-                  )}
+                {!showTaxes && item && item.id && (
+                  <p>Note: The updated item details will be reflected everywhere in the future.</p>
+                )}
                 {(!showTaxes || isNonINR) && (
                   <div class="Modal__actions">
                     <AsyncButton
@@ -543,127 +536,117 @@ export default class AddItem extends Component {
                 )}
               </div>
             </div>
-            {showTaxes &&
-              !isNonINR && (
-                <div class="row ItemCreationModal__TaxContainer">
-                  <div class="col-md-6">
-                    <div class="form-group">
-                      <label>Tax Rate</label>
-                      <PowerSelect
-                        class="CheckableItem__PowerSelect ps-in-modal"
-                        placeholder="Select Tax Rate"
-                        options={gstRates}
-                        selected={taxRate}
-                        optionComponent={this.getTaxRateComponent}
-                        onChange={({ option = null }) => {
-                          this.props.change('tax_rate', option);
-                        }}
-                        searchEnabled={false}
-                      />
-                      <div class="row">
-                        <div
-                          class="col-md-12"
-                          style={{ fontSize: '0.85em', marginTop: '4px' }}
-                        >
-                          Tax breakup will be calculated automatically.
-                        </div>
+            {showTaxes && !isNonINR && (
+              <div class="row ItemCreationModal__TaxContainer">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label>Tax Rate</label>
+                    <PowerSelect
+                      class="CheckableItem__PowerSelect ps-in-modal"
+                      placeholder="Select Tax Rate"
+                      options={gstRates}
+                      selected={taxRate}
+                      optionComponent={this.getTaxRateComponent}
+                      onChange={({ option = null }) => {
+                        this.props.change('tax_rate', option);
+                      }}
+                      searchEnabled={false}
+                    />
+                    <div class="row">
+                      <div class="col-md-12" style={{ fontSize: '0.85em', marginTop: '4px' }}>
+                        Tax breakup will be calculated automatically.
                       </div>
                     </div>
-
-                    {showCessForm ? (
-                      cessForm
-                    ) : (
-                      <div class="row CreateItemModal__cess-form">
-                        <div class="col-md-12">
-                          <span
-                            class="text-primary cursor-pointer"
-                            onClick={e => this.setState({ showCessForm: true })}
-                          >
-                            + Add Cess
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                    {showTaxRadios ? (
-                      <Fragment>
-                        <div class="row">
-                          <div class="col-md-6">
-                            <Field
-                              name="tax_inclusive"
-                              component={RadioButton}
-                              htmlValue="1"
-                              label="Tax Inclusive"
-                            />
-                          </div>
-                          <div class="col-md-6">
-                            <Field
-                              name="tax_inclusive"
-                              component={RadioButton}
-                              htmlValue="0"
-                              label="Tax Exclusive"
-                            />
-                          </div>
-                        </div>
-                      </Fragment>
-                    ) : null}
                   </div>
-                  <div class="col-md-6">
-                    <div class="row ItemCreationModal__hsn-radios">
-                      <div class="form-group">
-                        <div class="col-md-12">
-                          <label style={{ marginBottom: '8px' }}>
-                            HSN/SAC Code
-                          </label>
-                        </div>
-                        <div class="col-md-6">
-                          <Field
-                            name="hsn_sac_code_type"
-                            component={RadioButton}
-                            htmlValue="hsn"
-                            label="HSN Code"
-                          />
-                        </div>
-                        <div class="col-md-6">
-                          <Field
-                            name="hsn_sac_code_type"
-                            component={RadioButton}
-                            htmlValue="sac"
-                            label="SAC Code"
-                          />
-                        </div>
-                      </div>
+
+                  {showCessForm ? (
+                    cessForm
+                  ) : (
+                    <div class="row CreateItemModal__cess-form">
                       <div class="col-md-12">
+                        <span
+                          class="text-primary cursor-pointer"
+                          onClick={(_) => this.setState({ showCessForm: true })}
+                        >
+                          + Add Cess
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {showTaxRadios ? (
+                    <div class="row">
+                      <div class="col-md-6">
                         <Field
-                          placeholder="HSN/SAC Code"
-                          name="hsn_sac_code"
-                          component={InputField}
-                          class="form-control"
-                          validate={[sacLengthValidator]}
+                          name="tax_inclusive"
+                          component={RadioButton}
+                          htmlValue="1"
+                          label="Tax Inclusive"
+                        />
+                      </div>
+                      <div class="col-md-6">
+                        <Field
+                          name="tax_inclusive"
+                          component={RadioButton}
+                          htmlValue="0"
+                          label="Tax Exclusive"
                         />
                       </div>
                     </div>
-                    {item &&
-                      item.id && (
-                        <p style={{ marginTop: '8px' }}>
-                          Note: The updated item details will be reflected
-                          everywhere in the future.
-                        </p>
-                      )}
-
-                    <div class="Modal__actions">
-                      <AsyncButton
-                        type="submit"
-                        class="btn btn-primary btn-block"
-                        text={this.props.saveLabel}
-                        pendingText="Saving..."
-                        disabled={invalid}
-                        onClick={handleSubmit(this.save)}
+                  ) : null}
+                </div>
+                <div class="col-md-6">
+                  <div class="row ItemCreationModal__hsn-radios">
+                    <div class="form-group">
+                      <div class="col-md-12">
+                        <label style={{ marginBottom: '8px' }}>HSN/SAC Code</label>
+                      </div>
+                      <div class="col-md-6">
+                        <Field
+                          name="hsn_sac_code_type"
+                          component={RadioButton}
+                          htmlValue="hsn"
+                          label="HSN Code"
+                        />
+                      </div>
+                      <div class="col-md-6">
+                        <Field
+                          name="hsn_sac_code_type"
+                          component={RadioButton}
+                          htmlValue="sac"
+                          label="SAC Code"
+                        />
+                      </div>
+                    </div>
+                    <div class="col-md-12">
+                      <Field
+                        placeholder="HSN/SAC Code"
+                        name="hsn_sac_code"
+                        component={InputField}
+                        class="form-control"
+                        validate={[sacLengthValidator]}
                       />
                     </div>
                   </div>
+                  {item && item.id && (
+                    <p style={{ marginTop: '8px' }}>
+                      Note: The updated item details will be reflected everywhere in the future.
+                    </p>
+                  )}
+
+                  <div class="Modal__actions">
+                    <AsyncButton
+                      type="submit"
+                      class="btn btn-primary btn-block"
+                      text={this.props.saveLabel}
+                      pendingText="Saving..."
+                      disabled={invalid}
+                      onClick={handleSubmit(this.save)}
+                    />
+                  </div>
                 </div>
-              )}
+              </div>
+            )}
           </form>
         </div>
       </div>

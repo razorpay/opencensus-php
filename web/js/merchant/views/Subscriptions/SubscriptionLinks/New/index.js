@@ -32,18 +32,24 @@ import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
 
 import AddOnDetails from './AddOnDetails';
 import LinkDetails from './LinkDetails';
-import PlanDetails from '../components/PlanDetails';
+import PlanDetails from 'merchant/views/Subscriptions/SubscriptionLinks/components/PlanDetails';
 import Review from './Review';
-import UPIBanner from '../components/UPIBanner';
+import UPIBanner from 'merchant/views/Subscriptions/SubscriptionLinks/components/UPIBanner';
 import Spinner from 'common/ui/Spinner';
 import moment from 'moment';
 import { isMobileDevice } from 'merchant/components/Home/data';
-import { trackSaveDuplicateSubscription, trackAddAddon, trackAddPlans } from '../ga';
-import analytics from '../../analytics';
+import {
+  trackSaveDuplicateSubscription,
+  trackAddAddon,
+  trackAddPlans,
+} from 'merchant/views/Subscriptions/SubscriptionLinks/ga';
+import analytics from 'merchant/views/Subscriptions/analytics';
 import './index.styl';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 const tabs = ['Plan Details', 'Add Ons', 'Link Details', 'Review'];
 
+// eslint-disable-next-line react/no-unsafe
 @withRouter
 @connect(
   (state) => ({
@@ -435,6 +441,11 @@ export default class NewSubscriptionLink extends React.Component {
       .saveSubscription(data)
       .then((resData) => {
         if (resData) {
+          selfServeTrackSuccess({
+            selfServeAction: 'Subscription Created',
+            page: 'Subscriptions',
+            screen: 'Subscriptions',
+          });
           this.props.showNotification({
             type: 'success',
             message: 'Subscription Created Successfully',

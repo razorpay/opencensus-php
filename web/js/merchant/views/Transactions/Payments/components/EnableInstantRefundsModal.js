@@ -18,7 +18,7 @@ import {
 } from 'merchant/reducers/payments/details';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 const raiseTicket = () => {
   CreateTicketEmitter.emit('create-ticket', 'tickets');
@@ -112,7 +112,11 @@ class EnableInstantRefundsModal extends Component {
             }),
           );
         }
-
+        selfServeTrackSuccess({
+          selfServeAction: `Enable ${this.props.speed === 'normal' ? 'normal' : 'instant'} refund`,
+          page: 'Config',
+          screen: 'Settings',
+        });
         analyticsTrack({
           objectName: `${this.props.speed === 'normal' ? 'normal' : 'instant'} refund`,
           actionName: 'result',

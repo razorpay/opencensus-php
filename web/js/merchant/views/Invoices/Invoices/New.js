@@ -69,6 +69,7 @@ import AddGST from 'merchant/views/Account/Profile/components/AddGST';
 import PickCurrency from 'merchant/views/Invoices/Invoices/components/PickCurrency';
 import debounce from 'common/utils/debounce';
 import { removeTaxForNonINRItems } from './helpers';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 function validate(values) {
   const errors = {
@@ -1101,6 +1102,11 @@ export default class InvoicesNewContainer extends Component {
         track({
           eventAction: 'Issue - Invoice',
           eventLabel: getKeysSeparatedByPipe(props),
+        });
+        selfServeTrackSuccess({
+          selfServeAction: 'New Invoice Created',
+          page: 'Invoices',
+          screen: 'Invoices',
         });
         this.props.showNotification({
           type: 'success',

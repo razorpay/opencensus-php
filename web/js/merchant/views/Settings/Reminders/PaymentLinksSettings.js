@@ -13,6 +13,7 @@ import {
 
 import { fetchPLCount } from 'merchant/reducers/paymentlinks/details';
 import ReminderSettings from 'merchant/views/Settings/Reminders/components/Settings';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 class PaymentLinksSettings extends React.Component {
   constructor(props) {
@@ -64,6 +65,11 @@ class PaymentLinksSettings extends React.Component {
     return this.props
       .editRemindersMerchantConfigs(this.props.paymentLinkReminder.id, data)
       .then(() => {
+        selfServeTrackSuccess({
+          selfServeAction: 'PL Reminder Updated',
+          page: 'Reminders',
+          screen: 'Settings',
+        });
         this.props.showNotification({
           type: 'success',
           message: 'Reminders are updated successfully',

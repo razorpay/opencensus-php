@@ -20,6 +20,7 @@ import {
 } from 'merchant/reducers/onboarding';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import { RZPFeatures } from 'merchant/helpers/data';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 @connect(
   (state) => ({
@@ -93,6 +94,12 @@ export default class ItemsListContainer extends ListContainer {
     const user = this.props.session.user;
     const gstin = user.gstin || user.p_gstin;
     const showTaxes = Boolean(gstin);
+
+    selfServeTrackInitiate({
+      selfServeAction: 'New Item Created',
+      page: 'Items',
+      screen: 'Invoice',
+    });
 
     this.props.openModal({
       size: showTaxes ? 'regular' : 'small',

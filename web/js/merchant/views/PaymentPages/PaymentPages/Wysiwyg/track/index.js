@@ -1,5 +1,6 @@
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 function _track() {
   let lumberjackTrack = () => {};
@@ -45,6 +46,16 @@ function _track() {
     publishPaymentPageSuccess: (payment_page_id, isNew) => {
       setConfig({ payment_page_id });
 
+      selfServeTrackSuccess({
+        selfServeAction: 'Create Payment Page',
+        page: 'Paymentpage',
+        screen: 'Payment Page',
+      });
+      selfServeTrackSuccess({
+        selfServeAction: 'Publish Page Success',
+        page: 'Paymentpage',
+        screen: 'Payment Page',
+      });
       sendToLumberjack('publish_page.success', { isNew });
       sendToSegment('publish page', 'success', { isNew }, true);
     },

@@ -27,7 +27,7 @@ import TextHighlighter from 'common/ui/TextHighlighter';
 import Button from 'common/new-ui/Button';
 import { getCustomURL } from 'merchant/components/DocsLink';
 import EasterEgg from 'merchant/components/EasterEgg';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 const languageOptions = [
@@ -122,6 +122,11 @@ class CheckoutTheme extends Component {
         this.props.showNotification({
           type: 'success',
           message: 'File Uploaded Successfully',
+        });
+        selfServeTrackSuccess({
+          selfServeAction: 'Brand Logo Uploaded Successfully',
+          page: 'Config',
+          screen: 'Settings',
         });
         analyticsTrack({
           objectName: 'logo choose file',
@@ -238,6 +243,11 @@ class CheckoutTheme extends Component {
     }
 
     return this.props.saveLocale(data).then(() => {
+      selfServeTrackSuccess({
+        selfServeAction: 'Language Changed',
+        page: 'Config',
+        screen: 'Settings',
+      });
       this.props.showNotification({
         type: 'success',
         message: 'Default language updated',

@@ -30,7 +30,7 @@ import HeaderAction from 'common/ui/HeaderAction';
 import CurrentBalance from 'merchant/views/Account/Balances/CurrentBalance';
 import Loader from 'common/ui/Loader';
 import { TicketSystemEmitter } from 'merchant/care/init';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 const ManageBalanceAlert = lazy(() =>
   import(
@@ -112,7 +112,12 @@ class AddFundsContainer extends Component {
       });
   };
 
-  analyticsHandler = (amount) => {
+  analyticsHandler = (amount, type) => {
+    selfServeTrackSuccess({
+      selfServeAction: `${type} Funds Added`,
+      page: 'Addfunds',
+      screen: 'My Account',
+    });
     analyticsTrack({
       objectName: 'add funds',
       actionName: 'result',

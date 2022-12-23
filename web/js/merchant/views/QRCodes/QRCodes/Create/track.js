@@ -1,4 +1,5 @@
 import { trackLJ, trackSegment } from 'merchant/views/QRCodes/track';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 function _track() {
   let track;
@@ -14,7 +15,14 @@ function _track() {
   }
 
   return {
-    open: () => send('open'),
+    open: () => {
+      selfServeTrackInitiate({
+        selfServeAction: 'Create QR code',
+        page: 'Qr code',
+        screen: 'QR Codes',
+      });
+      send('open');
+    },
 
     field: (name, value) =>
       send(`field.${name}`, {
@@ -27,11 +35,16 @@ function _track() {
 
     cancel: () => send('cancel'),
 
-    submitSuccess: () =>
+    submitSuccess: () => {
+      selfServeTrackSuccess({
+        selfServeAction: 'Create QR code',
+        page: 'Qr code',
+        screen: 'QR Codes',
+      });
       send('submit_success', {
         success: true,
-      }),
-
+      });
+    },
     downloadImage: () => send('submit_success_download'),
 
     backToDashboard: () => send('back_to_dashboard'),

@@ -14,6 +14,7 @@ import LogList from './Logs/List';
 import GenerateReportPanel from './GenerateReportPanel';
 import EasterEgg from 'merchant/components/EasterEgg';
 import DashboardBanner from 'common/ui/DashboardBanner';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 @connect(null, { showNotification })
 export default class ReportHome extends React.PureComponent {
@@ -51,6 +52,11 @@ export default class ReportHome extends React.PureComponent {
               type: 'info',
               message:
                 'Request with same report type and date range is in processing. Please check your request history',
+            });
+            selfServeTrackSuccess({
+              selfServeAction: 'Report Generated',
+              page: 'Reports',
+              screen: 'Reports',
             });
             analyticsTrack({
               objectName: 'generate report',

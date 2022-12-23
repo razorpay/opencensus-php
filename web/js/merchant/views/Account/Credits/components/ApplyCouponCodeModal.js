@@ -11,6 +11,7 @@ import { required } from 'common/utils/validators';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getFormattedAmount, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { merchantFetch } from 'merchant/utils/ajax';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 const ApplyCouponCodeModal = ({
   onComplete,
@@ -54,6 +55,11 @@ const ApplyCouponCodeModal = ({
     })
       .then((res) => {
         if (res && res.data) {
+          selfServeTrackSuccess({
+            selfServeAction: 'Coupon Code Applied',
+            page: 'Credits',
+            screen: 'My Account',
+          });
           analyticsTrack({
             objectName: `coupon code ${token ? 'confirm' : 'submit'}`,
             actionName: 'result',

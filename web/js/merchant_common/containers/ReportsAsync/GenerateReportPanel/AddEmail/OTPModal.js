@@ -9,6 +9,7 @@ import RTracking from 'react-tracking';
 import { AsyncBtn } from 'common/new-ui/Button';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 const OTPModal = ({
   heading,
@@ -153,6 +154,11 @@ const OTPModal = ({
         .then((res) => {
           setIsVerifyingOtp(false);
           if (res.success) {
+            selfServeTrackSuccess({
+              selfServeAction: 'Email Updated',
+              page: 'Profile',
+              screen: 'My Account',
+            });
             analyticsTrack({
               objectName: 'add email',
               actionName: 'verify',

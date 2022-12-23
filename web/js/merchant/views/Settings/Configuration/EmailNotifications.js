@@ -15,7 +15,7 @@ import TwoFactorVerificationOTP from 'common/ui/TwoFactorVerification/TwoFactorV
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { updateEmailSettings, updateConfig } from 'merchant/reducers/config';
 import rolesList from 'merchant/helpers/permissions/roles-list';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 class EmailNotifications extends Component {
@@ -82,6 +82,14 @@ class EmailNotifications extends Component {
     });
   }
 
+  selfServeAnalytics = (action) => {
+    return {
+      selfServeAction: action,
+      page: 'Config',
+      screen: 'Settings',
+    };
+  };
+
   handleUpdate = (data) => {
     if (this.props.org.features.indexOf('email_update_2fa_enabled') > -1) {
       return this.props
@@ -110,13 +118,14 @@ class EmailNotifications extends Component {
     } else {
       return this.props
         .updateConfig(data)
-        .then((_) =>
+        .then((_) => {
+          selfServeTrackSuccess(this.selfServeAnalytics('Email Notification Enabled'));
           this.props.showNotification({
             type: 'success',
             message: 'Emails Updated',
             hidePrevious: true,
-          }),
-        )
+          });
+        })
         .catch((err) => {
           this.props.showNotification({
             type: 'error',
@@ -130,11 +139,7 @@ class EmailNotifications extends Component {
     const emails = transaction_report_email ? transaction_report_email.split(',') : null;
     this.transaction_report_email = emails;
 
-    selfServeTrackInitiate({
-      selfServeAction: 'Email Notification Enabled',
-      page: 'Config',
-      screen: 'Settings',
-    });
+    selfServeTrackInitiate(this.selfServeAnalytics('Email Notification Enabled'));
     return this.handleUpdate({
       transaction_report_email: emails,
     });
