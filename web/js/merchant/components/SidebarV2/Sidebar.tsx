@@ -99,18 +99,16 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
               </Items>
               <Divider />
               {data.map((each) => (
-                <React.Fragment key={each.section_name}>
-                  <NavLinkProduct
-                    heading={each.section_name}
-                    products={each.product_options}
-                    routes={routesInfo}
-                    activeTab={activeTab}
-                    loading={isLoading}
-                    user={user}
-                    {...each}
-                  />
-                  <Divider />
-                </React.Fragment>
+                <NavLinkProduct
+                  key={each.section_name}
+                  heading={each.section_name}
+                  products={each.product_options}
+                  routes={routesInfo}
+                  activeTab={activeTab}
+                  loading={isLoading}
+                  user={user}
+                  {...each}
+                />
               ))}
               <Items>
                 {CUSTOMERS_PRODUCTS.map((product, index) => (

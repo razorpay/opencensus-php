@@ -12,6 +12,7 @@ import {
 } from 'merchant/components/SidebarV2/typings';
 import { PromotedReservationState } from 'merchant/components/SidebarV2/constants/constants';
 import { swapElements } from 'merchant/components/SidebarV2/utils/utils';
+import Divider from 'merchant/components/SidebarV2/components/Divider';
 
 const NavLinkProduct = ({
   heading,
@@ -113,6 +114,7 @@ const NavLinkProduct = ({
           )}
         </Items>
       )}
+      <Divider />
     </>
   ) : null;
 };
