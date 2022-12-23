@@ -98,7 +98,9 @@ class Core extends Base\Core
             $terminal->org()->associate($merchant->org);
         }
 
-        $this->validateExistingTerminal($terminal);
+        if ($terminal->getGateway() != "upi_icici") {
+            $this->validateExistingTerminal($terminal);
+        }
 
         $this->validateDirectSettlementMapping($terminal);
 
