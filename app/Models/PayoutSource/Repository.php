@@ -47,7 +47,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getPayoutServiceSources(string $payoutId)
+    public function getPayoutServiceSources(string $payoutId, array $fields = [], string $orderBy = "", bool $asc = true)
     {
         $tableName = Table::PAYOUT_SOURCE;
 
@@ -56,7 +56,24 @@ class Repository extends Base\Repository
             $tableName = 'ps_payout_sources';
         }
 
+        if (count($fields) > 0)
+        {
+            $columns = join(',', $fields);
+        }
+        else
+        {
+            $columns = '*';
+        }
+
+        $orderByColumn = '';
+        $order         = ($asc === true) ? 'asc' : 'desc';
+
+        if ($orderBy !== '')
+        {
+            $orderByColumn = 'order by ' . $orderBy . ' ' . $order;
+        }
+
         return \DB::connection($this->getPayoutsServiceConnection())
-                  ->select("select * from $tableName where payout_id = '$payoutId'");
+                  ->select("select $columns from $tableName where payout_id = '$payoutId' $orderByColumn");
     }
 }

@@ -6,6 +6,8 @@ use App;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use Jitendra\Lqext\TransactionAware;
+use RZP\Models\Payout\Core as PayoutCore;
+use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 
 /***
@@ -54,7 +56,28 @@ class PayoutSourceUpdaterJob extends Job
 
         try
         {
-            $payout = $this->repoManager->payout->findByPublicId($this->payoutPublicId);
+            try
+            {
+                $payout = $this->repoManager->payout->findByPublicId($this->payoutPublicId);
+
+                if ($payout->getIsPayoutService() === true)
+                {
+                    PayoutEntity::verifyIdAndStripSign($this->payoutPublicId);
+
+                    $payout = (new PayoutCore())->getAPIModelPayoutFromPayoutService($this->payoutPublicId);
+                }
+            }
+            catch (\Throwable $exception)
+            {
+                PayoutEntity::verifyIdAndStripSign($this->payoutPublicId);
+
+                $payout = (new PayoutCore())->getAPIModelPayoutFromPayoutService($this->payoutPublicId);
+
+                if (empty($payout) === true)
+                {
+                    throw $exception;
+                }
+            }
 
             $context['current_status'] = $payout->getStatus();
 

@@ -37,6 +37,7 @@ use RZP\Models\Admin\Permission;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Settlement\Channel;
 use Razorpay\IFSC\IFSC as BaseIFSC;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Exception\BadRequestException;
@@ -349,6 +350,10 @@ class Entity extends Base\PublicEntity
     // Attribute exposed in public response for proxy auth for ICICI 2FA enabled merchants.
     // This attribute indicates the reason why a payout is in pending state.
     const PENDING_REASON            = 'pending_reason';
+
+    // Source update constants
+    const PREVIOUS_STATUS = 'previous_status';
+    const EXPECTED_CURRENT_STATUS = 'expected_current_status';
 
     protected $queueFlag = false;
 
@@ -2046,8 +2051,24 @@ class Entity extends Base\PublicEntity
         ];
 
         $sourceDetails = $this->payoutSources()->select($visibleKeys)
-                                               ->orderBy(PayoutSource\Entity::PRIORITY)
-                                               ->get();
+                              ->orderBy(PayoutSource\Entity::PRIORITY)
+                              ->get();
+
+        if ($this->getIsPayoutService() === true)
+        {
+            $details = (new PayoutSource\Repository())->getPayoutServiceSources(
+                $this->getId(),
+                $visibleKeys,
+                PayoutSource\Entity::PRIORITY);
+
+            $sourceDetails = new PublicCollection();
+
+            foreach ($details as $key => $value)
+            {
+                $sourceDetails->push($value);
+            }
+        }
+
 
         return $sourceDetails;
     }

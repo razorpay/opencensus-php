@@ -163,6 +163,8 @@ class LedgerJournalJobTest extends TestCase
 
     public function testReversalTransactionCreationForPSReversal()
     {
+        $this->app->instance('rzp.mode', "test");
+
         $balance = $this->getDbLastEntity('balance');
 
         $this->fundAccount = $this->createVpaFundAccount();

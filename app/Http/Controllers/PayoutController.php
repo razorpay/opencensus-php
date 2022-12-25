@@ -567,6 +567,15 @@ class PayoutController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function payoutSourceUpdate()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->payoutSourceUpdate($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function statusDetailsSourceUpdate()
     {
         $input = Request::all();

@@ -2936,6 +2936,11 @@ class Service extends Base\Service
         return $this->core->postFreePayoutRollback($input);
     }
 
+    public function payoutSourceUpdate(array $input)
+    {
+        return $this->core->payoutSourceUpdate($input);
+    }
+
     public function statusDetailsSourceUpdate(array $input)
     {
         return $this->core->statusDetailsSourceUpdate($input);

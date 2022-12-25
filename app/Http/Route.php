@@ -3778,6 +3778,7 @@ class Route
         'rollback_free_payouts'                   => ['post',     'payouts_service/free_payout_rollback',                   'PayoutController@freePayoutRollback'                          ],
         'payouts_service_redis_key_set'           => ['post',     'payouts_service_redis_key_set',                          'PayoutController@payoutServiceRedisKeySet'                    ],
         'payouts_service_mail_and_sms'            => ['post',     'payouts_service/mail_and_sms',                           'PayoutController@payoutServiceMailAndSms'                     ],
+        'payouts_source_update'                   => ['post',     'payouts_service/source_update',                          'PayoutController@payoutSourceUpdate'                          ],
         'status_details_source_update'            => ['post',     'payouts_service/status_details_source_update',           'PayoutController@statusDetailsSourceUpdate'                   ],
         'payouts_service_dual_write'              => ['post',     'payouts_service/dual_write',                             'PayoutController@payoutServiceDualWrite'                      ],
         'delete_card_meta_data_and_vault_token'   => ['delete',   'payouts_service/delete_card_metadata',                   'PayoutController@payoutServiceDeleteCardMetaData'             ],
@@ -5314,6 +5315,7 @@ class Route
         'payout_bulk_update_attachments',
         'decrement_free_payouts_payouts_service',
         'payouts_service_mail_and_sms',
+        'payouts_source_update',
         'status_details_source_update',
 
         'rollback_free_payouts',
@@ -14517,6 +14519,7 @@ class Route
             'workflow_state_callback',
             'workflow_state_callback_update',
             'payouts_service_mail_and_sms',
+            'payouts_source_update',
             'status_details_source_update',
         ],
 

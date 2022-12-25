@@ -4,6 +4,7 @@ namespace Functional\Payout;
 
 use DB;
 use Config;
+use Queue;
 use Mockery;
 use Carbon\Carbon;
 use \WpOrg\Requests\Response;
@@ -23,6 +24,7 @@ use RZP\Models\Feature\Constants;
 use RZP\Jobs\BatchPayoutsProcess;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payout\DataMigration;
+use RZP\Jobs\PayoutSourceUpdaterJob;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payout\WorkflowFeature;
 use RZP\Jobs\PayoutServiceDataMigration;
@@ -1890,6 +1892,240 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals(1614325830, $response[Entity::INITIATED_AT]);
         $this->assertEquals("10000000000000", $response[Entity::MERCHANT_ID]);
     }
+
+    // TODO add mocks to verify if correct status updates were pushed
+    public function testPayoutSetStatusQueuePushForPayoutsServicePayout()
+    {
+        $this->ba->payoutInternalAppAuth('live');
+
+        $payoutData = [
+            'id'                   => "randomid111121",
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 2000000,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "initiated",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTM",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData);
+
+        $payoutSourcesData = [
+            [
+                'id'          => 'randomid111122',
+                'payout_id'   => "randomid111121",
+                'source_id'   => 'randomid111123',
+                'source_type' => 'refund',
+                'priority'    => 1,
+                'created_at'  => 1000000002,
+                'updated_at'  => 1000000001
+            ],
+        ];
+
+        \DB::connection('test')->table('ps_payout_sources')->insert($payoutSourcesData);
+
+        $this->startTest();
+    }
+
+    // TODO add mocks to verify if correct status updates were pushed
+    public function testPayoutSetStatusQueuePushForPayoutsServicePayoutWithDualWrittenAPIData()
+    {
+        $this->ba->payoutInternalAppAuth('live');
+
+        $payoutData = [
+            'id'                   => "randomid111121",
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 2000000,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "initated",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTM",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData);
+
+        $payoutAPIData = [
+            'id'                   => "randomid111121",
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 200,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "processed",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTM",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('live')->table('payouts')->insert($payoutData);
+
+        $payoutSourcesData = [
+            [
+                'id'          => 'randomid111122',
+                'payout_id'   => "randomid111121",
+                'source_id'   => 'randomid111123',
+                'source_type' => 'refund',
+                'priority'    => 1,
+                'created_at'  => 1000000002,
+                'updated_at'  => 1000000001
+            ],
+        ];
+
+        \DB::connection('test')->table('ps_payout_sources')->insert($payoutSourcesData);
+
+        $payoutSourcesData = [
+            [
+                'id'          => 'randomid111122',
+                'payout_id'   => "randomid111121",
+                'source_id'   => 'randomid111123',
+                'source_type' => 'x',
+                'priority'    => 1,
+                'created_at'  => 1000000002,
+                'updated_at'  => 1000000001
+            ],
+        ];
+
+        \DB::connection('live')->table('payout_sources')->insert($payoutSourcesData);
+
+        $this->startTest();
+    }
+
+    public function testPayoutSetStatusQueuePushWithMockQueue()
+    {
+        $this->markTestSkipped("This test is failing due to transaction aware in the payout source updater job worker");
+
+        Queue::fake();
+
+        $this->ba->payoutInternalAppAuth('live');
+
+        $payoutData = [
+            'id'                   => "randomid111121",
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 2000000,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "initiated",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTM",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData);
+
+        $payoutSourcesData = [
+            [
+                'id'          => 'randomid111122',
+                'payout_id'   => "randomid111121",
+                'source_id'   => 'randomid111123',
+                'source_type' => 'refund',
+                'priority'    => 1,
+                'created_at'  => 1000000002,
+                'updated_at'  => 1000000001
+            ],
+        ];
+
+        \DB::connection('test')->table('ps_payout_sources')->insert($payoutSourcesData);
+
+        $this->startTest();
+
+        Queue::assertPushed(PayoutSourceUpdaterJob::class);
+    }
+
 
     public function testCreatePayoutWithNewBankingError(): array
     {

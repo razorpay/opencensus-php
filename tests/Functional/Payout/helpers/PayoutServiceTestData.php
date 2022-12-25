@@ -523,6 +523,78 @@ return [
         ],
     ],
 
+    'testPayoutSetStatusQueuePushForPayoutsServicePayout' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/source_update',
+            'content' => [
+                'source_details'          => [
+                    [
+                        'source_id'   => 'randomid111121',
+                        'source_type' => 'refund',
+                        'priority'    => 1
+                    ],
+                ],
+                'payout_id'               => 'randomid111121',
+                'previous_status'         => 'initiated',
+                'expected_current_status' => 'processed',
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
+
+    'testPayoutSetStatusQueuePushForPayoutsServicePayoutWithDualWrittenAPIData' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/source_update',
+            'content' => [
+                'source_details'          => [
+                    [
+                        'source_id'   => 'randomid111121',
+                        'source_type' => 'refund',
+                        'priority'    => 1
+                    ],
+                ],
+                'payout_id'               => 'randomid111121',
+                'previous_status'         => 'initiated',
+                'expected_current_status' => 'processed',
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
+
+    'testPayoutSetStatusQueuePushWithMockQueue' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/source_update',
+            'content' => [
+                'source_details'          => [
+                    [
+                        'source_id'   => 'randomid111121',
+                        'source_type' => 'refund',
+                        'priority'    => 1
+                    ],
+                ],
+                'payout_id'               => 'randomid111121',
+                'previous_status'         => 'initiated',
+                'expected_current_status' => 'processed',
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
+
     'testCreatePayoutWithNewBankingError' => [
         'request'  => [
             'method'  => 'POST',

@@ -82,6 +82,7 @@ use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 use RZP\Models\BankingAccountStatement\Entity as BASEntity;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 use RZP\Models\Workflow\Service\Adapter\Constants as WorkflowConstants;
@@ -5274,6 +5275,25 @@ class Core extends Base\Core
                            ]);
 
         return $response;
+    }
+
+    public function payoutSourceUpdate($input)
+    {
+        (new Validator)->setStrictFalse()->validateInput(Validator::PAYOUTS_SOURCE_UPDATE, $input);
+
+        $previousStatus        = $input[ENTITY::PREVIOUS_STATUS];
+        $expectedCurrentStatus = $input[ENTITY::EXPECTED_CURRENT_STATUS];
+
+        $payout = $this->getAPIModelPayoutFromPayoutService($input[Entity::PAYOUT_ID]);
+
+        // pushing a message in the queue to update the source for payout
+        $mode = app('rzp.mode') ? app('rzp.mode') : Constants\Mode::LIVE;
+
+        SourceUpdater::dispatchToQueue($mode, $payout, $previousStatus, $expectedCurrentStatus);
+
+        return [
+            'sources_updated' => true,
+        ];
     }
 
     public function statusDetailsSourceUpdate($input)

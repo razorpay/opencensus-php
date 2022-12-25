@@ -114,6 +114,7 @@ class Validator extends Base\Validator
     const DECREMENT_FREE_PAYOUT_FOR_PAYOUTS_SERVICE = 'decrement_free_payout_for_payouts_service';
     const MIGRATE_FREE_PAYOUT_PAYOUTS_SERVICE       = 'migrate_free_payout_payouts_service';
     const ROLLBACK_FREE_PAYOUT_PAYOUTS_SERVICE      = 'rollback_free_payout_payouts_service';
+    const PAYOUTS_SOURCE_UPDATE                     = 'payouts_source_update';
     const STATUS_DETAILS_SOURCE_UPDATE              = 'status_details_source_update';
     const DELETE_CARD_META_DATA_FOR_PAYOUT_SERVICE  = 'delete_card_meta_data_payout_service';
 
@@ -268,6 +269,13 @@ class Validator extends Base\Validator
     protected static $payoutServiceCreateRules = [
         Entity::ID                   => 'required|string|size:14',
         Entity::MERCHANT_ID          => 'required|string|size:14'
+    ];
+
+    protected static $payoutsSourceUpdateRules = [
+        ENTITY::PAYOUT_ID               => 'required|string|size:14',
+        ENTITY::SOURCE_DETAILS          => 'required|array',
+        ENTITY::PREVIOUS_STATUS         => 'required|string',
+        ENTITY::EXPECTED_CURRENT_STATUS => 'required|string'
     ];
 
     protected static $statusDetailsSourceUpdateRules = [
