@@ -21126,6 +21126,117 @@ return [
         ],
     ],
 
+    'testPayoutCreateAndProcessWith404ResponseForLedgerInLedgerReverseShadowMode' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => '2000000',
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'entity'          => 'payout',
+                'fund_account_id' => 'fa_100000000000fa',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'notes'           => [
+                    'abc' => 'xyz'
+                ],
+                'status'          => 'processing',
+                'purpose'         => 'refund',
+                'utr'             => null,
+                'mode'            => 'IMPS',
+                'reference_id'    => null,
+                'narration'       => 'Batman',
+                'batch_id'        => null,
+                'failure_reason'  => NULL,
+            ],
+        ],
+    ],
+
+    'testPayoutCreateWithQueueIfLowBalanceFlagAndProcessWithInsufficientBalanceResponseInLedgerRS' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'queue_if_low_balance' => 1,
+                'account_number'       => '2224440041626905',
+                'amount'               => '2000000',
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'Batman',
+                'mode'                 => 'IMPS',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'notes'                => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'entity'          => 'payout',
+                'fund_account_id' => 'fa_100000000000fa',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'notes'           => [
+                    'abc' => 'xyz'
+                ],
+                'status'          => 'queued',
+                'purpose'         => 'refund',
+                'utr'             => null,
+                'mode'            => 'IMPS',
+                'reference_id'    => null,
+                'narration'       => 'Batman',
+                'batch_id'        => null,
+                'failure_reason'  => NULL,
+            ],
+        ],
+    ],
+
+    'testPayoutCreateWithQueueIfLowBalanceFlagNotSetAndProcessWithInsufficientBalanceResponseInLedgerRS' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'       => '2224440041626905',
+                'amount'               => '2000000',
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'Batman',
+                'mode'                 => 'IMPS',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'notes'                => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Your account does not have enough balance to carry out the payout operation.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING,
+        ],
+    ],
+
     'testPayoutsBlockedFromMasterMerchantSharedAccount' => [
         'request'  => [
             'method'  => 'POST',

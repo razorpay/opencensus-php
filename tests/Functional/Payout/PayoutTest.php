@@ -27434,6 +27434,97 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('pout_' . $payout3["id"], $payload->payload->payout->entity->id);
     }
 
+    public function testPayoutCreateAndProcessWith404ResponseForLedgerInLedgerReverseShadowMode()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        // A 404 response from ledger raises a BadRequestException
+        $mockLedger->shouldReceive('createJournal')
+            ->andThrow(new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR
+            ));
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $payout = $this->getDbEntityById('payout', $response['id'])->toArray();
+        $this->assertEquals($payout['status'], Payout\Status::CREATED);
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt');
+        $this->assertNull($fta);
+    }
+
+    public function testPayoutCreateWithQueueIfLowBalanceFlagAndProcessWithInsufficientBalanceResponseInLedgerRS()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+            ->andThrow(new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                [
+                    'status_code'   => 400,
+                    'response_body' => [
+                        'code' => 'invalid_argument',
+                        'msg'  => 'insufficient_balance_failure: BAD_REQUEST_INSUFFICIENT_BALANCE'
+                    ]
+                ],
+                'insufficient_balance_failure: BAD_REQUEST_INSUFFICIENT_BALANCE'
+            ));
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $payout = $this->getDbEntityById('payout', $response['id'])->toArray();
+        $this->assertEquals($payout['status'], Payout\Status::QUEUED);
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt');
+        $this->assertNull($fta);
+    }
+
+    public function testPayoutCreateWithQueueIfLowBalanceFlagNotSetAndProcessWithInsufficientBalanceResponseInLedgerRS()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+            ->andThrow(new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                [
+                    'status_code'   => 400,
+                    'response_body' => [
+                        'code' => 'invalid_argument',
+                        'msg'  => 'insufficient_balance_failure: BAD_REQUEST_INSUFFICIENT_BALANCE'
+                    ]
+                ],
+                'insufficient_balance_failure: BAD_REQUEST_INSUFFICIENT_BALANCE'
+            ));
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt');
+        $this->assertNull($fta);
+    }
+
     public function testOnHoldPayoutCreateAndProcessFailureInLedgerReverseShadowModeWithoutFailedWebhookSubscription()
     {
         $this->app['config']->set('applications.ledger.enabled', false);

@@ -198,13 +198,32 @@ class Base extends FundAccountPayout\Base
         catch (BadRequestException $ex)
         {
             // We only expect Insufficient balance exception to come here
-            // Because of the way the internal functions handle exceptions from ledger
-            $this->failPayoutPostLedgerFailure($payout, $ex->getError()->getInternalErrorCode());
-
-            if ($payout->toBeQueued() === false)
+            // Because of the way the internal functions handle exceptions from ledger.
+            // If other exceptions occur, we set the ledger response awaited flag so that FTS transfer is not made
+            if ($ex->getError()->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING)
             {
-                throw $ex;
+                $this->failPayoutPostLedgerFailure($payout, $ex->getError()->getInternalErrorCode());
+
+                if ($payout->toBeQueued() === false)
+                {
+                    throw $ex;
+                }
             }
+            else
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::CRITICAL,
+                    TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_FAILURE,
+                    [
+                        'payout_id' => $payout->getId(),
+                    ]
+                );
+
+                $payout->setLedgerResponseAwaitedFlag(true);
+            }
+
+            return $payout;
         }
         catch (IntegrationException $ex)
         {
@@ -227,6 +246,8 @@ class Base extends FundAccountPayout\Base
                     'payout_id' => $payout->getId(),
                 ]
             );
+
+            return $payout;
         }
 
         return $payout;
