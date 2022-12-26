@@ -40,22 +40,18 @@ class CheckoutExperiment
 
         // initialise with default values which we want to see if experiment fails for some reason
         $this->experimentResults = [
-            'checkout_redesign_v1_5'                             => false,
-            'upi_ux'                                             => 'existing_variant',
-            'emi_ux_revamp'                                      => false,
-            'upi_qr_v2'                                          => false,
-            'cb_redesign_v1_5'                                   => false,
-            'recurring_redesign_v1_5'                            => false,
-            'reuse_upi_paymentId'                                => false,
-            'recurring_upi_intent_qr'                            => false,
-            'recurring_upi_all_psp'                              => false,
-            'banking_redesign_v15'                               => false,
-            'remove_default_tokenization_flag'                   => false,
-            'truecaller_standard_checkout_for_prefill'           => 'control',
-            'truecaller_standard_checkout_for_non_prefill'       => 'control',
-            'truecaller_1cc_for_prefill'                         => 'control',
-            'truecaller_1cc_for_non_prefill'                     => 'control',
-            'email_less_checkout'                                => false,
+            'checkout_redesign_v1_5' => false,
+            'upi_ux'                 => 'existing_variant',
+            'emi_ux_revamp'          => false,
+            'upi_qr_v2'              => false,
+            'cb_redesign_v1_5'       => false,
+            'recurring_redesign_v1_5' => false,
+            'reuse_upi_paymentId'     => false,
+            'recurring_upi_intent_qr'=> false,
+            'recurring_upi_all_psp'   => false,
+            'banking_redesign_v15'    => false,
+            'remove_default_tokenization_flag' => false,
+            'email_less_checkout' => false,
         ];
 
         $this->input = $input;
@@ -76,17 +72,7 @@ class CheckoutExperiment
         {
             $this->fillSplitzExperimentsData();
 
-            // at max, each bulk evaluate call can have upto 10 experiments.
-            $chunkedExperimentsData = array_chunk($this->experimentsData, 10);
-
-            $chunkedResponses = [];
-
-            foreach ($chunkedExperimentsData as $experimentData)
-            {
-                $chunkedResponses [] = $this->app['splitzService']->bulkCallsToSplitz($experimentData);
-            }
-
-            $response = array_merge([], ...$chunkedResponses);
+            $response = $this->app['splitzService']->bulkCallsToSplitz($this->experimentsData);
 
             return $this->handleExperimentResponses($response);
         }
@@ -198,38 +184,6 @@ class CheckoutExperiment
             'app.checkout_remove_default_tokenization_flag_splitz_experiment_id',
             'RemoveDefaultTokenizationFlag',
             'remove_default_tokenization_flag',
-            ['merchant_id' => $this->merchantId]
-        );
-
-        $this->fillExperimentData(
-            UniqueIdEntity::generateUniqueId(),
-            'app.truecaller_standard_checkout_for_prefill_splitz_experiment_id',
-            'TruecallerStandardCheckoutForPrefill',
-            'truecaller_standard_checkout_for_prefill',
-            ['merchant_id' => $this->merchantId]
-        );
-
-        $this->fillExperimentData(
-            UniqueIdEntity::generateUniqueId(),
-            'app.truecaller_standard_checkout_for_non_prefill_splitz_experiment_id',
-            'TruecallerStandardCheckoutForNonPrefill',
-            'truecaller_standard_checkout_for_non_prefill',
-            ['merchant_id' => $this->merchantId]
-        );
-
-        $this->fillExperimentData(
-            UniqueIdEntity::generateUniqueId(),
-            'app.truecaller_1cc_for_prefill_splitz_experiment_id',
-            'TruecallerOneCCForPrefill',
-            'truecaller_1cc_for_prefill',
-            ['merchant_id' => $this->merchantId]
-        );
-
-        $this->fillExperimentData(
-            UniqueIdEntity::generateUniqueId(),
-            'app.truecaller_1cc_for_non_prefill_splitz_experiment_id',
-            'TruecallerOneCCForNonPrefill',
-            'truecaller_1cc_for_non_prefill',
             ['merchant_id' => $this->merchantId]
         );
 
@@ -398,51 +352,5 @@ class CheckoutExperiment
         $variant = $response['variant']['name'] ?? '';
 
         return $variant === 'variant_on';
-    }
-
-    private function handleTruecallerStandardCheckoutForPrefillResponse($response): string
-    {
-        $variant = $response['variant']['name'] ?? 'control';
-
-        return match ($variant)
-        {
-            'variant_1' => 'home_and_add_card',
-            'variant_2' => 'access_saved_cards_and_add_card',
-            'variant_3' => 'home_and_access_saved_cards_and_add_card',
-            default => 'control',
-        };
-    }
-
-    private function handleTruecallerStandardCheckoutForNonPrefillResponse($response): string
-    {
-        $variant = $response['variant']['name'] ?? 'control';
-
-        return match ($variant)
-        {
-            'variant_1' => 'contact',
-            default => 'control',
-        };
-    }
-
-    private function handleTruecallerOneCCForPrefillResponse($response): string
-    {
-        $variant = $response['variant']['name'] ?? 'control';
-
-        return match ($variant)
-        {
-            'variant_1' => 'test',
-            default => 'control',
-        };
-    }
-
-    private function handleTruecallerOneCCForNonPrefillResponse($response): string
-    {
-        $variant = $response['variant']['name'] ?? 'control';
-
-        return match ($variant)
-        {
-            'variant_1' => 'test',
-            default => 'control',
-        };
     }
 }

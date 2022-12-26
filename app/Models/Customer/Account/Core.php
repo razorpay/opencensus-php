@@ -4,7 +4,6 @@ namespace RZP\Models\Customer;
 
 use Str;
 use http\Url;
-use Lib\PhoneBook;
 use RZP\Constants\Mode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
@@ -29,10 +28,6 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Customer\Account\Metrics\Metric as AddressMetric;
 use RZP\Models\Locale\Core as Locale;
 use RZP\Models\Merchant\Metric;
-use RZP\Models\Customer\Truecaller\AuthRequest\Core as TruecallerCore;
-use RZP\Models\Customer\Truecaller\AuthRequest\Entity as TruecallerEntity;
-use RZP\Models\Customer\Truecaller\AuthRequest\Constants as TruecallerConstants;
-use RZP\Models\Customer\Truecaller\AuthRequest\Metric as TruecallerMetric;
 
 class Core extends Base\Core
 {
@@ -321,165 +316,6 @@ class Core extends Base\Core
         }
 
         $response['addresses'] = (new Customer\Core)->fetchRzpAddressesFor1CC($customer);
-
-        return $response;
-    }
-
-    /**
-     * @throws Exception\BadRequestValidationFailureException
-     * @throws Exception\ServerErrorException
-     * @throws Exception\BadRequestException
-     */
-    public function verifyTruecallerAuthRequest(array &$input, $merchant): array
-    {
-        $this->trace->info(TraceCode::TRUECALLER_VERIFY_REQUEST, [
-            'input' => $input,
-            'merchant_id' => $merchant->getId(),
-        ]);
-
-        $response = [];
-
-        Locale::setLocale($input, $merchant->getId());
-
-        Customer\Truecaller\AuthRequest\Validator::validateVerifyTruecallerRequestInput($input);
-
-        $truecallerResponse = (new TruecallerCore)->getTrueCallerAuthRequest($input);
-
-        if ($truecallerResponse['status'] === TruecallerConstants::PENDING)
-        {
-            $response['status'] = $truecallerResponse[TruecallerEntity::STATUS];
-
-            return $response;
-        }
-
-        if (array_key_exists($truecallerResponse[TruecallerEntity::TRUECALLER_STATUS],TruecallerConstants::REJECTED_STATUES))
-        {
-            $response['status'] = 'rejected';
-
-            $response['code'] = $truecallerResponse[TruecallerEntity::TRUECALLER_STATUS];
-
-            return $response;
-        }
-
-        // if we reach this point, it means we have user profile fetched
-        $response['status'] = TruecallerConstants::RESOLVED;
-
-        $this->setUserProfileInResponse($response, $truecallerResponse);
-
-        // for international numbers, we should not log them in.
-        try{
-            (new Validator)->validateIndianContact($response['contact']);
-        }
-        catch(\Throwable $e)
-        {
-            $this->trace->count(TruecallerMetric::TRUECALLER_VERIFY_REQUEST_SUCCESS, [
-                TruecallerMetric::LABEL_SUCCESS_MESSAGE => TraceCode::TRUECALLER_INTERNATIONAL_NUMBER_USED,
-            ]);
-
-            return $response;
-        }
-
-        $this->trace->count(TruecallerMetric::TRUECALLER_VERIFY_REQUEST_SUCCESS);
-
-        $this->handleTruecallerVerificationSuccess($input, $response, $merchant);
-
-        return $response;
-    }
-
-    protected function handleTruecallerVerificationSuccess(array $input, array &$response, $merchant): void
-    {
-        $customer = $this->getOrCreateGlobalCustomerForTruecaller($response);
-
-        // Create app token for customer
-        $appToken = $this->createCustomerAppToken($customer, $input, $merchant);
-
-        // Fetch existing tokens for global customer
-        $tokens = (new Customer\Token\Core)->fetchTokensByCustomerForCheckout($customer, $merchant);
-
-        // Put app token details in session so that we may not
-        // need to verify the customer in future.
-        $this->putAppTokenInSession($appToken);
-
-        $response['logged_in'] = 1;
-
-        if ($appToken->merchant->getId() !== $this->getSharedAccount()->getId())
-        {
-            $response['device_token'] = $appToken->getDeviceToken();
-        }
-
-        if ($tokens->isNotEmpty() === true)
-        {
-            //
-            // Currently, we do not expose netbanking recurring tokens to the
-            // customer. We don't have a way to handle first recurring
-            // with an existing recurring token.
-            //
-
-            // TODO: Uncomment this when we use charge_at_will for global flow
-            // $tokens = (new Token\Core)->removeEmandateRecurringTokens($tokens);
-
-            $tokenCore = (new Token\Core());
-
-            $tokens = $tokenCore->removeDisabledNetworkTokens($tokens, $merchant->methods->getCardNetworks());
-
-            $tokens = $tokenCore->removeNonCompliantCardTokens($tokens, $merchant->getId());
-
-            $tokens = $tokenCore->removeNonActiveTokenisedCardTokens($tokens);
-
-            $tokens = $tokenCore->addConsentFieldInTokens($tokens, $merchant);
-
-            $response['tokens'] = $tokens->toArrayPublic();
-        }
-
-        if ($this->isCookieDisabledOnBrowser() === true)
-        {
-            $response['session_id'] = $this->getTemporarySessionToken();
-        }
-
-        $response['addresses'] = (new Customer\Core)->fetchRzpAddressesFor1CC($customer);
-
-        $response['email'] = $customer->getEmail();
-    }
-
-    /**
-     * @throws Exception\BadRequestValidationFailureException
-     * @throws Exception\ServerErrorException
-     * @throws Exception\BadRequestException
-     */
-    public function verifyOneCCTruecallerAuthRequest($input, $merchant): array
-    {
-        $response = $this->verifyTruecallerAuthRequest($input, $merchant);
-
-        if (empty($response) === false && $response['logged_in'] === 1)
-        {
-            $customer = $this->getOrCreateGlobalCustomer($response);
-
-            // record address consented details
-            if ((empty($input['address_consent']) === false) &&
-                (empty($input['address_consent']['device_id']) === false))
-            {
-                $addressConsentInput = [
-                    'device_id' => $input['address_consent']['device_id'],
-                ];
-
-                (new Address\Core)->recordAddressConsent1cc($addressConsentInput, $customer);
-            }
-            if (empty($response['addresses']) === false)
-            {
-                $rzpAddresses = $response['addresses'];
-            }
-            else
-            {
-                $rzpAddresses = (new Customer\Core)->fetchRzpAddressesFor1CC($customer);
-            }
-            $addressConsentView = (new Customer\Core)->fetchAddressConsentViewsFor1CC($customer);
-            $thirdPartyAddresses = (new Customer\Core)->fetchThirdPartyAddressesFor1cc($customer);
-            $addresses = array_merge($rzpAddresses, $thirdPartyAddresses);
-
-            $response['addresses'] = $addresses;
-            $response['1cc_consent_banner_views'] = $addressConsentView;
-            $response['1cc_customer_consent'] = (new Customer\Core)->fetchCustomerConsentFor1CC($customer->getContact(), $merchant->getId());
-        }
 
         return $response;
     }
@@ -1009,41 +845,6 @@ class Core extends Base\Core
         // Create global customer if it does not exist.
         if ($customer === null)
         {
-            $custCreateInput = [
-                Customer\Entity::CONTACT => $contact,
-                Customer\Entity::EMAIL => $email
-            ];
-
-            $customer = $this->createGlobalCustomer($custCreateInput);
-        }
-
-        return $customer;
-    }
-
-    /**
-     * we use this method (instead of existing) to find out if email of customer is coming from existing global customer
-     * or via Truecaller. This information is required for FE to store email in browser based on where it's coming from.
-     *
-     * @param array $userProfile
-     * @return Entity
-     * @throws Exception\BadRequestException
-     * @throws Exception\LogicException
-     */
-    protected function getOrCreateGlobalCustomerForTruecaller(array &$userProfile): Entity
-    {
-        $contact = $userProfile[Customer\Entity::CONTACT];
-
-        $email = $userProfile[Customer\Entity::EMAIL] ?? null;
-
-        $customer = $this->repo->customer->findByContactAndMerchant(
-            $contact,
-            $this->getSharedAccount());
-
-        // Create global customer if it does not exist.
-        if ($customer === null)
-        {
-            $userProfile['truecaller_email'] = 1;
-
             $custCreateInput = [
                 Customer\Entity::CONTACT => $contact,
                 Customer\Entity::EMAIL => $email
@@ -1628,20 +1429,5 @@ class Core extends Base\Core
         $formattedPaymentDetails['payment']['merchant_logo'] = $paymentDetails['merchant_logo'];
 
         return $formattedPaymentDetails;
-    }
-
-    protected function setUserProfileInResponse(array &$response, array $truecallerResponse): void
-    {
-        $contact = $truecallerResponse['user_profile']['contact'] ?? '';
-
-        $email = $truecallerResponse['user_profile']['email'] ?? null;
-
-        $contact = Customer\Validator::validateAndParseContact($contact);
-
-        // override any contact passed in prefill as truecaller's contact takes precedence.
-        // for email, for now fill truecaller's email, override it with customer's email if customer exists
-        $response['contact'] = $contact;
-
-        $response['email'] = $email;
     }
 }
