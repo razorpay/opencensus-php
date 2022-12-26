@@ -49,6 +49,10 @@ const CashAdvanceV2 = lazy(() =>
   import(/* webpackChunkName: 'CashAdvanceV2' */ '../CashAdvanceV2'),
 );
 
+const PreApprovedOnboarding = lazy(() =>
+  import(/* webpackChunkName: 'PreApprovedOnboarding' */ '../PreApprovedOnboarding'),
+);
+
 const REDIRECTABLE_APPLICATION_STATES = [
   APPLICATION_STATES.CREDIT_DISBURSED,
   APPLICATION_STATES.RZP_REJECTED,
@@ -535,7 +539,7 @@ export default class LoanApplicationOverview extends React.Component {
   };
 
   render() {
-    const { loanApplicationDetails, user = {} } = this.props;
+    const { loanApplicationDetails } = this.props;
 
     if (loanApplicationDetails.products.loading || loanApplicationDetails.meta.loading)
       return (
@@ -548,20 +552,23 @@ export default class LoanApplicationOverview extends React.Component {
     const isLoanApplicationDisabledDueToDPD = this.isLoanDisabled;
     const isFetchingLoanDisabledReason = this.state.loanDisabledReason.fetching;
 
-    const isCAXExperimentEnabled = user.isCashAdvanceXMigrationEnabled;
-    const isCARerouteExperiment = user.isCARerouteExperiment;
     const hasApplication = loanApplicationDetails?.meta?.data?.application;
     const isProductCashAdvance = window.location.pathname.includes('cash-advance');
 
-    const showV2CashAdvance =
-      isProductCashAdvance && (isCAXExperimentEnabled || (hasApplication && isCARerouteExperiment));
-    if (showV2CashAdvance) {
-      const showApplyNow = !hasApplication;
-      return (
-        <SuspenseWithLoader>
-          <CashAdvanceV2 showApplyNow={showApplyNow} applicationId={hasApplication?.id} />
-        </SuspenseWithLoader>
-      );
+    if (isProductCashAdvance) {
+      if (hasApplication) {
+        return (
+          <SuspenseWithLoader>
+            <CashAdvanceV2 showApplyNow={!hasApplication} applicationId={hasApplication?.id} />
+          </SuspenseWithLoader>
+        );
+      } else {
+        return (
+          <SuspenseWithLoader>
+            <PreApprovedOnboarding />
+          </SuspenseWithLoader>
+        );
+      }
     } else
       return (
         <OnBoardingWrapper className="Loans">

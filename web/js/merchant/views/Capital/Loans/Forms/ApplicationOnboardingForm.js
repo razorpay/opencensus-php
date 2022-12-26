@@ -1,12 +1,10 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
-
 import IntentForm from './LosOnboarding/IntentForm';
 import BusinessDetailsForm from './LosOnboarding/BusinessDetailsForm';
 import PersonalDetailsForm from './LosOnboarding/PersonalDetailsForm';
-
-import { BUSINESS_TYPES } from '../constants';
+import { BUSINESS_TYPES } from 'merchant/views/Capital/Loans/constants';
 import {
   saveApplicantDetails,
   saveApplicationDetails,
@@ -22,8 +20,8 @@ import {
   trackApplyNowCTACashAdvanceV2,
   trackCashAdvanceV2Rendered,
 } from './ga';
-import { MERCHANT_OWNER_TYPE } from '../../CashAdvance/constants';
-import { CASH_ADVANCE_LINK } from '../../CashAdvanceV2/constants';
+import { MERCHANT_OWNER_TYPE } from 'merchant/views/Capital/CashAdvance/constants';
+import { CASH_ADVANCE_LINK } from 'merchant/views/Capital/CashAdvanceV2/constants';
 
 const ApplicationOnboardingForm = (props) => {
   const [view, setView] = React.useState('get_started');
@@ -42,11 +40,10 @@ const ApplicationOnboardingForm = (props) => {
       });
     }
   };
-  const { isCARerouteExperiment } = props.user;
 
   React.useEffect(() => {
     fetch();
-    if (props.isProductCashAdvance && isCARerouteExperiment) {
+    if (props.isProductCashAdvance) {
       trackCashAdvanceV2Rendered();
     }
   }, []);
@@ -305,13 +302,12 @@ const ApplicationOnboardingForm = (props) => {
   }
 
   const handleIntentSubmit = (data) => {
-    const { isCARerouteExperiment } = props.user;
     setFormsData({
       ...formsData,
       intent: data,
     });
     setView('business_details');
-    if (props.isProductCashAdvance && isCARerouteExperiment) {
+    if (props.isProductCashAdvance) {
       trackApplyNowCTACashAdvanceV2();
       window.open(CASH_ADVANCE_LINK, '_self');
     }
