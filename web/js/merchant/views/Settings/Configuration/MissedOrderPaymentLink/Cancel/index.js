@@ -21,7 +21,7 @@ const Cancel = ({ closeModal, showNotification, isFreeTrial, fetchMerchantMOPLSu
       .then(() => {
         showNotification({
           type: 'success',
-          message: 'Razorpay Remarketer deactivated successfully',
+          message: 'Failed Payments Recovery deactivated successfully',
         });
         fetchMerchantMOPLSubscription();
         track.cancel.deactivation();
@@ -29,7 +29,7 @@ const Cancel = ({ closeModal, showNotification, isFreeTrial, fetchMerchantMOPLSu
       .catch(() => {
         showNotification({
           type: 'error',
-          message: 'An error occurred in stopping Razorpay Remarketer',
+          message: 'An error occurred in stopping Failed Payments Recovery',
         });
       })
       .finally(() => {
@@ -47,7 +47,7 @@ const Cancel = ({ closeModal, showNotification, isFreeTrial, fetchMerchantMOPLSu
             height="18px"
             width="18px"
           />
-          <h3 className="modal-title">Stop Razorpay Re-Marketer</h3>
+          <h3 className="modal-title">Stop Failed Payments Recovery</h3>
         </div>
         {closeModal && (
           <div>

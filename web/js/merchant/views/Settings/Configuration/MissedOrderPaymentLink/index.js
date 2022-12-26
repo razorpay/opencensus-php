@@ -145,7 +145,7 @@ const MissedOrderPaymentLink = ({
       <div className="panel panel-default">
         <div className="panel-heading manage-wrapper">
           <span className="title">
-            <TextHighlighter>Re-Marketer</TextHighlighter>
+            <TextHighlighter>Failed Payments Recovery</TextHighlighter>
             {activeSubscription && (
               <>
                 <td className="active-wrapper">

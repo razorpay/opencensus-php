@@ -7,17 +7,15 @@ const PlanSelection = ({ closeModal, missed_order_payment_link }) => {
   const subscription = missed_order_payment_link.subscription?.data;
   return (
     <div className="plan-selection-container">
-      <ModalHeader title="Re-Marketer" onCloseClick={closeModal} />
+      <ModalHeader title="Failed Payments Recovery" onCloseClick={closeModal} />
       <div className="content">
         {' '}
-        More than 30% of the customers drop off due to failed payments. With Razorpay Re-Marketer:{' '}
+        More than 30% of the customers drop off due to failed payments. With Failed Payments
+        Recovery:{' '}
         <ul>
-          <li>You can revive missed orders</li>
-          <li>
-            Improve your conversion by retargeting your <br /> customers across any of their
-            prefrerred channels
-          </li>
-          <li>Your customers can pick off where they were dropped</li>
+          <li>Grow your revenue by upto 10%</li>
+          <li>Recover up to 20% of failed payments</li>
+          <li>Get insights on conversions & recovered revenue</li>
         </ul>
         <div>
           <b>Pick a monthly Plan</b> (cancel anytime later)
