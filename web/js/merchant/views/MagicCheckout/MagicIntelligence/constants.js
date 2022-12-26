@@ -43,3 +43,10 @@ export const ATTRIBUTE_TYPE = {
   email: 'Email',
   phone: 'Phone',
 };
+
+export const HEADING_SUBTEXT = {
+  Blocklist:
+    'Block high-risk customers from placing COD orders based on their phone/email/zipcode/IP address.',
+  Allowlist:
+    'Allow good customers to never be denied the COD option based on their phone and email.',
+};

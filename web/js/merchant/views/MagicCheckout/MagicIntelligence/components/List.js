@@ -1,6 +1,9 @@
 import { useEffect } from 'react';
 import ListFilter from 'merchant/components/ListFilter';
-import { ATTRIBUTE_TYPE } from 'merchant/views/MagicCheckout/MagicIntelligence/constants';
+import {
+  ATTRIBUTE_TYPE,
+  HEADING_SUBTEXT,
+} from 'merchant/views/MagicCheckout/MagicIntelligence/constants';
 
 export const EmptyComponent = (onUploadClick, txt, hasNoData) => () => (
   <div className="empty-table-message">
@@ -58,10 +61,11 @@ const IntelligenceContainer = (props) => {
     <>
       <div className="content-wrapper">
         <div className="row list-header">
-          <div className="col-md-6">
+          <div className="col-md-10 d-flex p--0">
             <label>{ctaText}</label>
+            <p className="list-header-subText">{HEADING_SUBTEXT[ctaText]}</p>
           </div>
-          <div className="col-md-6">
+          <div className="col-md-2 p--0">
             <span className="cta-container pull-right">
               <button type="button" className="btn btn-primary btn-shine" onClick={onUploadClick}>
                 <i className="i i-plus" />
@@ -84,6 +88,7 @@ const IntelligenceContainer = (props) => {
               className="form-control input-sm"
               value={attributeType}
               onChange={(e) => setAttributeType(e.target.value)}
+              name="type"
             >
               <option value="">All</option>
               {list.map((item, index) => (
@@ -103,6 +108,7 @@ const IntelligenceContainer = (props) => {
               className="form-control input-sm"
               value={attributeValue}
               onChange={(e) => setAttributeValue(e.target.value)}
+              name="value"
             />
           </div>
         )}
@@ -115,6 +121,7 @@ const IntelligenceContainer = (props) => {
             className="form-control input-sm"
             value={count}
             onChange={(e) => setCount(e.target.value)}
+            name="count"
           />
         </div>
       </ListFilter>

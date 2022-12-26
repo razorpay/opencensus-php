@@ -25,7 +25,7 @@ const MagicIntelligence = () => {
 
   return (
     <div className="tabs">
-      <tabbed-container>
+      <div className="tabbed-container" data-testid="magic-intelligence-tabbed-container">
         <header>
           {magicIntelligenceRoutes.map((item) => (
             <TabNavItem
@@ -48,7 +48,7 @@ const MagicIntelligence = () => {
             />
           ))}
         </content>
-      </tabbed-container>
+      </div>
     </div>
   );
 };
