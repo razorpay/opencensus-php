@@ -19,6 +19,7 @@ use RZP\Models\Terminal\TpvType;
 use RZP\Models\Currency\Currency;
 use RZP\Constants\Mode as RzpMode;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Terminal\BankingType;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Base\QueryCache\Cacheable;
@@ -469,7 +470,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::GATEWAY_MERCHANT_ID2);
     }
-    
+
     public function getVpaWhitelisted()
     {
         return $this->getAttribute(self::GATEWAY_VPA_WHITELISTED);
@@ -928,7 +929,14 @@ class Entity extends Base\PublicEntity
 
         if (in_array($routeName, Route::$detokenizeMpansRoutes, true) === true)
         {
-            $shouldTokenize = true;
+            $variant = $app('razorx')->getTreatment(UniqueIdEntity::generateUniqueId(), Merchant\RazorxTreatment::DETOKENIZE_MPANS,
+                $this->mode ?? "live");
+
+            // If experiment enabled then don't de-tokenize
+            if(strtolower($variant) != 'on')
+            {
+                $shouldTokenize = true;
+            }
         }
 
         $cardVaultApp = $app['mpan.cardVault'];

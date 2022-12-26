@@ -698,4 +698,7 @@ final class RazorxTreatment
 
     //Experiment to remove invalid filters in the terminals proxy calls
     const REMOVE_GET_TERMINALS_PROXY_INVALID_FILTERS = "remove_get_terminals_proxy_invalid_filters";
+
+    /** Experiment used check whether mapns to be de-tokenized or not **/
+    const DETOKENIZE_MPANS = "detokenize_mpans";
 }

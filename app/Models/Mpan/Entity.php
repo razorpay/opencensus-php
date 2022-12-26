@@ -7,6 +7,9 @@ use App;
 use RZP\Http\Route;
 use RZP\Models\Base;
 use RZP\Constants;
+use RZP\Models\Merchant;
+use RZP\Models\Base\UniqueIdEntity;
+
 class Entity extends Base\PublicEntity
 {
     const MPAN          = 'mpan';
@@ -117,6 +120,15 @@ class Entity extends Base\PublicEntity
         $routeName = $app['api.route']->getCurrentRouteName();
 
         if (in_array($routeName, Route::$detokenizeMpansRoutes, true) === false)
+        {
+            return;
+        }
+
+        $variant = $app('razorx')->getTreatment(UniqueIdEntity::generateUniqueId(), Merchant\RazorxTreatment::DETOKENIZE_MPANS,
+            $this->mode ?? "live");
+
+        // If experiment enabled then don't de-tokenize
+        if (strtolower($variant) === 'on')
         {
             return;
         }
