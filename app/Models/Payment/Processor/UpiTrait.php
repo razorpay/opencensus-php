@@ -176,10 +176,16 @@ trait UpiTrait
         }
 
         //Currently getting passed as _.upiqr . Should be under upi.mode.
-        if ((isset($input[Payment\Method::UPI][Entity::MODE]) === true)
-            and ($input[Payment\Method::UPI][Entity::MODE] === Payment\UpiMetadata\Mode::UPI_QR))
+        if (isset($input[Payment\Method::UPI][Entity::MODE]) === true)
         {
-            $input['_']['upiqr'] = true;
+            if($input[Payment\Method::UPI][Entity::MODE] === Payment\UpiMetadata\Mode::UPI_QR)
+            {
+                $input['_']['upiqr'] = true;
+            }
+            else if($input[Payment\Method::UPI][Entity::MODE] === Payment\UpiMetadata\Mode::TURBO)
+            {
+                $input['_'][Payment\UpiMetadata\Mode::TURBO] = true;
+            }
         }
         else if ((isset($input['_']['upiqr']) === true) and ($input['_']['upiqr']))
         {
