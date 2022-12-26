@@ -987,7 +987,8 @@ tr.is_current
   overflow: scroll
 
   .container
-    padding: 10px 75px
+    @media (min-width 768px)
+      padding: 10px 75px
 
 .cover-full-page-header
   background: $white
@@ -1189,6 +1190,11 @@ tr.is_current
 
   .Input.Input--checkbox label
     margin-top: 0
+
+.routing-navigator .tpv-field-wrapper
+  .Input--radioLabels label
+    margin-top: 0
+    width: auto
 
 .provider-details-validation-error
   font-size: 12px

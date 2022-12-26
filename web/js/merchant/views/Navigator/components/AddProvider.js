@@ -15,7 +15,10 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { HowToGetDetails } from './Provider/HowToGetDetails';
 import { Step1, Step2, Step3 } from './AddProvider/index';
-import { trackOptimizerEvents, trackAPIResutls } from 'merchant/views/Navigator/track';
+import { trackOptimizerEvents, trackAPIResults } from 'merchant/views/Navigator/track';
+import { addProvider, editProvider } from 'merchant/views/Navigator/service';
+import { INIT_PROVIDER_STATE, INIT_FORM_STATE } from 'merchant/views/Navigator/constants';
+import { deepClone } from 'common/utils/rzp-utils';
 
 @withRouter
 @connect(
@@ -33,15 +36,8 @@ export default class AddProvider extends React.Component {
     super(props);
     this.state = {
       redirect: null,
-      provider: {
-        Provider_name: '',
-        Description: '',
-        Gateway: '',
-        Gateway_details: {
-          'Payment Methods': [],
-        },
-      },
-      loading: !!props?.match?.params?.id,
+      provider: deepClone(INIT_PROVIDER_STATE),
+      terminalId: props?.match?.params?.id,
       steps: {
         1: {
           edit: true,
@@ -86,39 +82,33 @@ export default class AddProvider extends React.Component {
         this.setState({ loadingProviders: false });
       });
 
-    const { match, activeProviders } = this.props;
+    this.setInitialProvider();
+  }
 
-    if (match?.params?.id) {
-      setTimeout(() => {
-        const provider =
-          activeProviders?.filter((item) => item?.Terminal_id === match.params.id)[0] || {};
-        this.setState({
-          loading: false,
-          isEdit: true,
-          provider,
-          selectedProvider: provider?.Gateway,
-          steps: {
-            1: {
-              edit: false,
-              show: true,
-            },
-            2: {
-              edit: true,
-              show: true,
-            },
-            3: {
-              edit: false,
-              show: true,
-            },
-          },
-        });
-      }, 0);
+  componentDidUpdate(prevProps) {
+    if (this.props.activeProviders?.length !== prevProps.activeProviders?.length) {
+      this.setInitialProvider();
     }
   }
 
+  setInitialProvider = () => {
+    const { activeProviders } = this.props;
+    const { terminalId } = this.state;
+
+    if (terminalId && activeProviders?.length > 0) {
+      const provider = activeProviders.find((item) => item?.Terminal_id === terminalId) || {};
+
+      this.setState({
+        ...deepClone(INIT_FORM_STATE),
+        selectedProvider: provider?.Gateway || '',
+        provider,
+      });
+    }
+  };
+
   filterProvidersOnSearch = (val) => {
     const { providers } = this.state;
-    if (val === '') {
+    if (val.trim() === '') {
       this.setState({ filteredProviders: providers, isGatewaySearch: false });
     } else {
       const keys = Object.keys(providers).filter((item) =>
@@ -234,14 +224,14 @@ export default class AddProvider extends React.Component {
     }
     return (
       <>
-        {!isGatewaySearch && (
+        {!isGatewaySearch && Object.keys(providers).length > 0 && (
           <>
             <div className="col-xs-12 popular-gateways-header">
               <img
                 alt="popular"
                 src="https://cdn.razorpay.com/static/assets/merchant-dash/popular_provider.svg"
               />
-              Popular Gateways
+              <span>Popular Gateways</span>
             </div>
             {popularGateways.map((provider, index) => this.viewProvider(provider, index))}
             <div className="col-xs-12 all-gateways-header">All Gateways</div>
@@ -270,8 +260,14 @@ export default class AddProvider extends React.Component {
   };
 
   changeGateway = () => {
-    this.setState({ selectedProvider: null });
-    this.filterProvidersOnSearch('');
+    const { providers } = this.state;
+
+    this.setState({
+      selectedProvider: null,
+      provider: deepClone(INIT_PROVIDER_STATE),
+      filteredProviders: providers,
+      isGatewaySearch: false,
+    });
   };
 
   changeProviderDetails = (name, val) => {
@@ -320,65 +316,73 @@ export default class AddProvider extends React.Component {
 
   checkAllValuesExist = () => {
     const { provider, providers } = this.state;
-    let isValid = true;
     const selectedProviderWithAcquirer = this.getSelectedProviderWithAcquirer();
+
+    let isValid = true;
+
     Object.keys(providers[selectedProviderWithAcquirer]).forEach((key) => {
-      if (
-        !provider?.Gateway_details?.[key] &&
-        key !== 'Payment Methods' &&
-        key !== 'Gateway Name'
-      ) {
+      const value = provider?.Gateway_details?.[key];
+
+      if (!['Payment Methods', 'Gateway Name', 'TPV'].includes(key) && !value) {
         isValid = false;
-      } else if (provider?.Gateway_details?.['Payment Methods']?.length === 0) {
+      } else if (key === 'Payment Methods' && value?.length === 0) {
         isValid = false;
       }
     });
+
     if (
       provider?.Gateway_details?.['Payment Methods'].indexOf('wallet') !== -1 &&
       provider?.Gateway_details?.wallet_metadata?.wallets?.length <= 0
     ) {
       isValid = false;
     }
+
     return isValid;
   };
 
   changeGatewayDetails = (event, item) => {
-    const { type, checked, value } = event.target;
-    this.setState((prevState) => {
-      const { provider, providers } = prevState;
-      if (type === 'checkbox') {
-        const val = checked;
-        if (val) {
-          provider.Gateway_details['Payment Methods'] = [
-            ...provider?.Gateway_details?.['Payment Methods'],
-            item,
-          ];
-          if (item === 'wallet') {
-            const selectedProviderWithAcquirer = this.getSelectedProviderWithAcquirer();
-            provider.Gateway_details.wallet_metadata = {
-              wallets: [
-                ...providers?.[selectedProviderWithAcquirer]?.['Payment Methods']?.meta_data
-                  ?.wallet_metadata?.wallets,
-              ],
-            };
+    const { type, checked, value, name } = event.target;
+
+    this.setState(
+      (prevState) => {
+        const { provider, providers } = prevState;
+        if (type === 'checkbox') {
+          if (checked) {
+            provider.Gateway_details['Payment Methods'] = [
+              ...provider?.Gateway_details?.['Payment Methods'],
+              item,
+            ];
+            if (item === 'wallet') {
+              const selectedProviderWithAcquirer = this.getSelectedProviderWithAcquirer();
+              provider.Gateway_details.wallet_metadata = {
+                wallets: [
+                  ...providers?.[selectedProviderWithAcquirer]?.['Payment Methods']?.meta_data
+                    ?.wallet_metadata?.wallets,
+                ],
+              };
+            }
+          } else if (provider?.Gateway_details?.['Payment Methods']) {
+            const index = provider.Gateway_details['Payment Methods'].indexOf(item);
+            provider.Gateway_details['Payment Methods'] = [
+              ...provider.Gateway_details['Payment Methods'].slice(0, index),
+              ...provider.Gateway_details['Payment Methods'].slice(index + 1),
+            ];
+            if (item === 'wallet') {
+              delete provider.Gateway_details.wallet_metadata;
+            }
           }
-        } else if (provider?.Gateway_details?.['Payment Methods']) {
-          const index = provider.Gateway_details['Payment Methods'].indexOf(item);
-          provider.Gateway_details['Payment Methods'] = [
-            ...provider.Gateway_details['Payment Methods'].slice(0, index),
-            ...provider.Gateway_details['Payment Methods'].slice(index + 1),
-          ];
-          if (item === 'wallet') {
-            delete provider.Gateway_details.wallet_metadata;
-          }
+        } else if (type === 'radio' && ['tpv'].includes(name)) {
+          const upiFeatures = provider.Gateway_details['UPI Features'] || {};
+
+          provider.Gateway_details['UPI Features'] = { ...upiFeatures, [name]: Number(value) };
+        } else {
+          provider.Gateway_details[item] = value;
         }
-      } else {
-        const val = value;
-        provider.Gateway_details[item] = val;
-        this.validateGatewayDetails(item);
-      }
-      return { provider };
-    });
+
+        return { provider };
+      },
+      () => this.validateGatewayDetails(item),
+    );
   };
 
   changeGatewayWallets = (event, wallet) => {
@@ -401,40 +405,39 @@ export default class AddProvider extends React.Component {
   };
 
   validateGatewayDetails = (key) => {
-    const { provider, providers, validationErrors, allDetailsValid } = this.state;
+    const { provider, providers, validationErrors } = this.state;
     const selectedProviderWithAcquirer = this.getSelectedProviderWithAcquirer();
-    const { min_length: minLength, max_length: maxLength, meta_data } = providers?.[
-      selectedProviderWithAcquirer
-    ]?.[key];
+    const { min_length: minLength, max_length: maxLength, meta_data } =
+      providers?.[selectedProviderWithAcquirer]?.[key] || {};
     const validationRegex = meta_data?.validation_regex;
     const checkVal = provider?.Gateway_details?.[key];
     const validErr = { ...validationErrors };
 
-    if (validationRegex && checkVal && !new RegExp(validationRegex).test(checkVal)) {
-      validErr[key] = `Please enter valid value`;
-    } else if (
-      checkVal &&
-      ((minLength && checkVal.length < minLength) || (maxLength && checkVal.length > maxLength))
-    ) {
-      if (maxLength && maxLength !== 0) {
+    if (checkVal) {
+      if (validationRegex && !new RegExp(validationRegex).test(checkVal)) {
+        validErr[key] = `Please enter valid value`;
+      } else if (minLength && checkVal.length < minLength) {
+        validErr[key] = `Please enter minimum ${minLength} characters value`;
+      } else if (maxLength && maxLength !== 0 && checkVal.length > maxLength) {
         validErr[key] = `Please enter ${minLength} to ${maxLength} characters value`;
       } else {
-        validErr[key] = `Please enter minimum ${minLength} characters value`;
+        delete validErr[key];
       }
-    } else if (validErr[key]) {
+    } else {
       delete validErr[key];
     }
-    this.setState({ validationErrors: validErr });
-    if (Object.keys(validErr).length === 0) {
-      this.setState({ allDetailsValid: true });
-    } else if (allDetailsValid) {
-      this.setState({ allDetailsValid: false });
-    }
+
+    this.setState({
+      validationErrors: validErr,
+      allDetailsValid: Object.keys(validErr).length === 0,
+    });
   };
 
-  onSubmit = () => {
+  onSubmit = async () => {
     const { provider, isEdit } = this.state;
-    const { showNotification, closeModal } = this.props;
+    const { closeModal, history, showNotification } = this.props;
+
+    let res = null;
 
     const payload = {
       ...provider,
@@ -452,84 +455,52 @@ export default class AddProvider extends React.Component {
     });
 
     this.setState({ isSaving: true });
-    if (isEdit) {
-      delete payload.Currency;
-      delete payload.Gateway_acquirer;
-      // PUT API
-      merchantFetch({
-        url: 'terminals/proxy/optimizer/mid/provider',
-        method: 'put',
-        data: payload,
-      })
-        .then((response) => {
-          if (response?.success) {
-            showNotification({
-              type: 'success',
-              message: `${payload?.Provider_name} provider updated successfully.`,
-              closeTimeout: 5000,
-            });
-            closeModal();
-            trackAPIResutls({
-              name: 'Edit Provider',
-              properties: {
-                success: true,
-              },
-            });
-            this.setState({ redirect: '/optimizer/rules', isSaving: false });
-          }
-        })
-        .catch((error) => {
-          showNotification({
-            type: 'error',
-            message: error?.errors?.[0],
-          });
-          trackAPIResutls({
-            name: 'Edit Provider',
-            properties: {
-              success: false,
-              failureReason: error?.errors?.[0],
-            },
-          });
-          this.setState({ isSaving: false });
+
+    try {
+      if (isEdit) {
+        delete payload.Currency;
+        delete payload.Gateway_acquirer;
+
+        res = await editProvider({ payload });
+      } else {
+        res = await addProvider({ payload });
+      }
+
+      if (res?.success) {
+        closeModal();
+
+        history.push('/optimizer/rules');
+
+        showNotification({
+          type: 'success',
+          message: `${payload?.Provider_name} provider ${isEdit ? 'updated' : 'add'} successfully.`,
+          closeTimeout: 5000,
         });
-    } else {
-      // POST API
-      merchantFetch({
-        url: 'terminals/proxy/optimizer/mid/provider',
-        method: 'post',
-        data: payload,
-      })
-        .then((response) => {
-          if (response?.success) {
-            showNotification({
-              type: 'success',
-              message: `${payload?.Provider_name} provider added successfully.`,
-              closeTimeout: 5000,
-            });
-            closeModal();
-            trackAPIResutls({
-              name: 'Add Provider',
-              properties: {
-                success: true,
-              },
-            });
-            this.setState({ redirect: '/optimizer/rules', isSaving: false });
-          }
-        })
-        .catch((error) => {
-          showNotification({
-            type: 'error',
-            message: error?.errors?.[0],
-          });
-          trackAPIResutls({
-            name: 'Add Provider',
-            properties: {
-              success: false,
-              failureReason: error?.errors?.[0],
-            },
-          });
-          this.setState({ isSaving: false });
+
+        trackAPIResults({
+          name: `${isEdit ? 'Edit' : 'Add'} Provider`,
+          properties: {
+            success: true,
+          },
         });
+      }
+
+      this.setState({ isSaving: false });
+    } catch (error) {
+      showNotification({
+        type: 'error',
+        message: error?.errors?.[0],
+      });
+
+      trackAPIResults({
+        name: `${isEdit ? 'Edit' : 'Add'} Provider`,
+        properties: {
+          success: false,
+          failureReason: error?.errors?.[0],
+        },
+      });
+
+      this.setState({ isSaving: false });
     }
   };
 
@@ -552,11 +523,12 @@ export default class AddProvider extends React.Component {
       isSaving,
       isProviderNameValid,
       allDetailsValid,
-      loading,
       loadingProviders,
       steps,
       provider,
+      selectedProvider,
     } = this.state;
+
     if (redirect) {
       return <Redirect to={redirect} />;
     }
@@ -586,14 +558,14 @@ export default class AddProvider extends React.Component {
         </FullPageCoverHeader>
         <div className="container">
           <div className="navigator--create-rule">
-            {loading || loadingProviders ? (
+            {loadingProviders ? (
               <div className="page-spinner-container">
                 <Spinner />
               </div>
             ) : (
               <>
                 {steps?.[1]?.show && (
-                  <CSSTransition in={true} appear={true} timeout={800} classNames="slide-up">
+                  <CSSTransition in appear timeout={800} classNames="slide-up">
                     <div
                       className={`panel gateway-list rule-detail${steps[1].edit ? ' active' : ''}`}
                     >
@@ -638,14 +610,14 @@ export default class AddProvider extends React.Component {
                   </CSSTransition>
                 )}
                 {steps?.[2]?.show || isEdit ? (
-                  <CSSTransition in={true} appear={true} timeout={800} classNames="slide-up">
+                  <CSSTransition in appear timeout={800} classNames="slide-up">
                     <div
                       className={`panel gateway-list rule-detail${steps[2].edit ? ' active' : ''}`}
                     >
                       <div className="panel-header">
                         <h2 className="payment-gateway-title">
                           Provider Details
-                          {!steps?.[2]?.edit ? (
+                          {selectedProvider && !steps?.[2]?.edit ? (
                             <button
                               onClick={this.updateStep(2, {
                                 edit: !steps[2].edit,
@@ -687,19 +659,21 @@ export default class AddProvider extends React.Component {
                 ) : null}
 
                 {steps?.[3]?.show || isEdit ? (
-                  <CSSTransition in={true} appear={true} timeout={800} classNames="slide-up">
+                  <CSSTransition in appear timeout={800} classNames="slide-up">
                     <div className={`panel gateway-list${steps[3].edit ? ' active' : ''}`}>
                       <div className="panel-header">
                         <h2 className="payment-gateway-title">
-                          {`${providers?.[selectedProviderWithAcquirer]?.['Gateway Name']?.data_value} Production API Details`}
-                          {!steps?.[3]?.edit ? (
+                          {`${
+                            providers?.[selectedProviderWithAcquirer]?.['Gateway Name']
+                              ?.data_value || ''
+                          } Production API Details`}
+                          {selectedProvider && !steps?.[3]?.edit ? (
                             <button
                               onClick={this.updateStep(3, {
                                 edit: !steps[3].edit,
                               })}
                               className=" pull-right no-border create-rule-act"
                             >
-                              {' '}
                               <i className="i i-pencil-edit" /> Edit Provider Details
                             </button>
                           ) : (
@@ -707,9 +681,12 @@ export default class AddProvider extends React.Component {
                           )}
                         </h2>
                         {steps?.[3]?.edit ? (
-                          <p className="desc gateway-details-desc">
-                            Please make sure you <span>enter the production API details</span> only
-                            and <span>NOT the Test Details</span>
+                          <div className="desc">
+                            <p className="gateway-details-desc">
+                              Please make sure you <span>enter the production API details</span>{' '}
+                              only and <span>NOT the Test Details</span>
+                            </p>
+
                             <p
                               className="gateway-details-desc--how-to"
                               onClick={this.howtoGetDetails}
@@ -717,13 +694,13 @@ export default class AddProvider extends React.Component {
                               <i className="i i-help" />
                               Where do I find {selectedProviderWithAcquirer} details?
                             </p>
-                          </p>
+                          </div>
                         ) : null}
                       </div>
 
                       <div className="panel-body">
                         <Step3
-                          steps={steps}
+                          isEdit={steps?.[3]?.edit}
                           selectedProvider={selectedProviderWithAcquirer}
                           providers={providers}
                           provider={provider}

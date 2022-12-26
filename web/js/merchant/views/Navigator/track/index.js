@@ -17,7 +17,7 @@ export const trackOptimizerEvents = ({
   });
 };
 
-export const trackAPIResutls = ({ name, properties }) => {
+export const trackAPIResults = ({ name, properties }) => {
   trackOptimizerEvents({
     objectName: `${name} API`,
     actionName: 'result',

@@ -1,6 +1,6 @@
 import Input from 'common/new-ui/Input';
-import { SeamlessOption } from '../Provider/SeamlessOption';
-import { gatewayLogos } from '../util';
+import { SeamlessOption } from 'merchant/views/Navigator/components/Provider/SeamlessOption';
+import { gatewayLogos } from 'merchant/views/Navigator/components/util';
 
 export const Step1 = ({
   steps,
@@ -22,21 +22,21 @@ export const Step1 = ({
             </label>
           </div>
           <div className="col-xs-6">
-            {!steps[1].edit ? (
+            {!steps[1].edit && selectedProvider ? (
               <label className="provider-details-read-only">
-                <div class="provider-logo-holder">
-                  <img src={gatewayLogos[selectedProvider.toLowerCase()]} />
+                <div className="provider-logo-holder">
+                  <img src={gatewayLogos[selectedProvider.toLowerCase()]} alt="gateway-logo" />
                 </div>
-                {providers[selectedProvider]['Gateway Name'].data_value}
+                {providers?.[selectedProvider]?.['Gateway Name']?.data_value}
               </label>
             ) : selectedProvider ? (
               <>
                 <div className="selected-gateway-provider">
                   <div class="provider-img-holder">
-                    <img src={gatewayLogos[selectedProvider.toLowerCase()]} />
+                    <img src={gatewayLogos[selectedProvider.toLowerCase()]} alt="gateway-logo" />
                   </div>
                   <div className="gateway-provider-block--details">
-                    <h3>{providers[selectedProvider]['Gateway Name'].data_value}</h3>
+                    <h3>{providers?.[selectedProvider]?.['Gateway Name']?.data_value}</h3>
                     <div className="gateway-provider-block--details--methods">
                       <p
                         title={providers[selectedProvider]['Payment Methods'].data_value.join(', ')}
@@ -48,8 +48,7 @@ export const Step1 = ({
                 </div>
                 {steps[1].edit && !isEdit && (
                   <div className="change-gateway" onClick={changeGateway}>
-                    <i className="i i-pencil-edit" />
-                    Change Gateway
+                    <i className="i i-pencil-edit" /> Change Gateway
                   </div>
                 )}
               </>

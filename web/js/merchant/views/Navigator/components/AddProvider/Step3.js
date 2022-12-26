@@ -1,110 +1,146 @@
+import React, { Fragment } from 'react';
 import Input from 'common/new-ui/Input';
-import { WalletsMultiSelect } from './WalletsMultiSelect';
 
-export const Step3 = ({
-  steps,
+import { WalletsMultiSelect } from './WalletsMultiSelect';
+import { TPV_OPTIONS } from './constants';
+
+export function Step3({
+  isEdit,
   selectedProvider,
   providers,
   provider,
   validationErrors,
   changeGatewayDetails,
   changeGatewayWallets,
-}) => {
+}) {
+  const selectedProviderDetails = providers?.[selectedProvider] || {};
   const walletOptions =
-    providers?.[selectedProvider]?.['Payment Methods']?.meta_data?.wallet_metadata?.wallets || [];
+    selectedProviderDetails?.['Payment Methods']?.meta_data?.wallet_metadata?.wallets || [];
+
+  // Filter out the fields that are required in this step i.e step 3.
+  const fields = Object.entries(selectedProviderDetails).reduce((acc, [label, value]) => {
+    if (['Gateway Name'].includes(label)) {
+      return acc;
+    }
+
+    acc.push({ label, ...value });
+
+    return acc;
+  }, []);
+
   return (
     <div className="row">
-      {selectedProvider &&
-        providers[selectedProvider] &&
-        Object.keys(providers[selectedProvider]).map((item, index) =>
-          item !== 'Payment Methods' ? (
-            item !== 'Gateway Name' ? (
-              <div className="col-xs-12" key={index}>
-                <div className="row">
-                  <div className="col-xs-3">
-                    <label for="name" className="title-left gateway-detail-title">
-                      {item}
-                    </label>
-                  </div>
-                  <div className="col-xs-6">
-                    {!steps[3].edit ? (
-                      <label className="provider-details-read-only">
-                        {provider?.Gateway_details?.[item] ? provider.Gateway_details[item] : ''}
-                      </label>
-                    ) : (
-                      <>
-                        <Input
-                          id={item.toLowerCase()}
-                          className="Input--vLeft"
-                          name={item.toLowerCase()}
-                          type={
-                            providers[selectedProvider][item].data_type === 'string'
-                              ? 'text'
-                              : 'number'
-                          }
-                          value={provider.Gateway_details[item]}
-                          placeholder={providers[selectedProvider][item].data_value}
-                          onChange={(e) => changeGatewayDetails(e, item)}
-                        />
-                        {validationErrors[item] && (
-                          <div className="provider-details-validation-error">
-                            {validationErrors[item]}
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ) : null
-          ) : (
-            <>
+      {fields.map(({ label = '', data_type, data_value }) => {
+        if (data_type === 'array' && label === 'Payment Methods') {
+          return (
+            <Fragment key={label}>
               <div className="col-xs-12">
                 <div className="row">
                   <div className="col-xs-3">
-                    <label for="name" className="title-left gateway-detail-title">
-                      Payment Methods
+                    <label for="name" className="gateway-detail-title">
+                      {label}
                     </label>
                   </div>
                   <div className="col-xs-9">
-                    {providers[selectedProvider][item].data_value.map((method, index2) => (
-                      <span className="payment-method-checkbox-span" key={index2}>
-                        <Input.Check
-                          fieldLabel={method}
-                          checkboxMaskLabel={false}
-                          key={index}
-                          checked={
-                            provider.Gateway_details['Payment Methods'].indexOf(method) !== -1
-                          }
-                          onChange={(e) => changeGatewayDetails(e, method)}
-                          disabled={selectedProvider === 'paytm' && method === 'wallet'} // Paytm onboarding enabled wallet method by default
-                        />
-                      </span>
-                    ))}
+                    <div>
+                      {data_value.map((method) => (
+                        <span className="payment-method-checkbox-span" key={method}>
+                          <Input.Check
+                            id={method}
+                            fieldLabel={method}
+                            checked={provider?.Gateway_details?.['Payment Methods']?.includes(
+                              method,
+                            )}
+                            onChange={(e) => changeGatewayDetails(e, method)}
+                            disabled={
+                              !isEdit || (selectedProvider === 'paytm' && method === 'wallet')
+                            } // Paytm onboarding enabled wallet method by default
+                            autoRender
+                          />
+                        </span>
+                      ))}
+                    </div>
+                    <p className="select-payment-method-desc">
+                      Select the payment methods to be enabled for the {selectedProvider}
+                      {selectedProvider === 'paytm' && '. Paytm wallet will be enabled by default.'}
+                    </p>
                   </div>
                 </div>
               </div>
-              <div className="col-xs-12">
-                <div className="row">
-                  <div className="col-xs-3" />
-                  <div className="col-xs-6 select-payment-method-desc">
-                    Select the payment methods to be enabled for the {selectedProvider}
-                    {selectedProvider === 'paytm' && '. Paytm wallet will be enabled by default.'}
-                  </div>
-                </div>
-              </div>
+
               {walletOptions?.length > 0 &&
-                provider.Gateway_details['Payment Methods'].indexOf('wallet') !== -1 && (
+                provider?.Gateway_details?.['Payment Methods']?.includes('wallet') && (
                   <WalletsMultiSelect
                     walletOptions={walletOptions}
-                    walletSelected={provider.Gateway_details.wallet_metadata.wallets}
+                    walletSelected={provider?.Gateway_details?.wallet_metadata?.wallets}
                     changeGatewayWallets={changeGatewayWallets}
                     disabled={selectedProvider === 'paytm'} // For paytm wallets get enabled by default
                   />
                 )}
-            </>
-          ),
-        )}
+            </Fragment>
+          );
+        }
+
+        if (data_type === 'bool' && label === 'TPV') {
+          return (
+            <div className="col-xs-12" key={label}>
+              <div className="row tpv-field-wrapper">
+                <div className="col-xs-3">
+                  <label for="name" className="gateway-detail-title">
+                    {label}
+                  </label>
+                </div>
+
+                <div className="col-xs-9">
+                  <Input.Radio
+                    defaultValue={provider.Gateway_details?.['UPI Features']?.tpv ?? 0}
+                    options={TPV_OPTIONS}
+                    name={label.toLowerCase()}
+                    onChange={changeGatewayDetails}
+                    disabled={!isEdit}
+                    autoRender
+                  />
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div className="col-xs-12" key={label}>
+            <div className="row">
+              <div className="col-xs-3">
+                <label for="name" className="gateway-detail-title">
+                  {label}
+                </label>
+              </div>
+              <div className="col-xs-6">
+                {!isEdit ? (
+                  <label className="provider-details-read-only">
+                    {provider?.Gateway_details?.[label] || ''}
+                  </label>
+                ) : (
+                  <>
+                    <Input
+                      id={label?.toLowerCase()}
+                      name={label?.toLowerCase()}
+                      type={data_type === 'string' ? 'text' : 'number'}
+                      value={provider?.Gateway_details?.[label] || ''}
+                      placeholder={data_value}
+                      onChange={(e) => changeGatewayDetails(e, label)}
+                    />
+                    {validationErrors[label] && (
+                      <div className="provider-details-validation-error">
+                        {validationErrors[label]}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
-};
+}

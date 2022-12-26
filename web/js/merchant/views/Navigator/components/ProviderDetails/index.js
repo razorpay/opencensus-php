@@ -1,14 +1,20 @@
-import Spinner from 'common/ui/Spinner';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter, Link } from 'react-router-dom';
+import PropTypes from 'prop-types';
+
+import Spinner from 'common/ui/Spinner';
+import { titleCase, isBlank } from 'common/utils/rzp-utils';
+
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
+
 import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
-import PropTypes from 'prop-types';
-import { titleCase } from 'common/utils/rzp-utils';
-import { gatewayLogos, WalletLabels } from './util';
+import { gatewayLogos, WalletLabels } from 'merchant/views/Navigator/components/util';
+
+import APIDetails from './components/APIDetails';
+import NoProviderFound from './components/NoProviderFound';
 
 @withRouter
 @connect(
@@ -35,12 +41,17 @@ export default class ProviderDetails extends Component {
   };
 
   render() {
-    const { providers } = this.props;
-    const provider = providers.filter((item) => item.Terminal_id === this.props.id)[0];
+    const { providers = {} } = this.props;
+    const provider = providers.find((item) => item.Terminal_id === this.props.id);
+
     if (provider) {
-      const detailsKeys = Object.keys(provider.Gateway_details);
+      const providerDetails = Object.entries(provider?.Gateway_details || {});
       const wallets = provider.Gateway_details?.wallet_metadata?.wallets || [];
       const walletsNames = wallets.map((wallet) => WalletLabels[wallet] || titleCase(wallet));
+
+      const { 'UPI Features': upiFeatures, 'Payment Methods': paymentMethods } =
+        provider?.Gateway_details || {};
+
       return (
         <div className="content-wrapper content-sm txn-details optimizer-provider-detail">
           {this.props.provider_detail_loading ? (
@@ -61,8 +72,7 @@ export default class ProviderDetails extends Component {
                         type="button"
                         onClick={this.trackEventOnEdit}
                       >
-                        <i className="i i-pencil-edit" />
-                        Edit Details
+                        <i className="i i-pencil-edit" /> Edit Details
                       </button>
                     </Link>
                   </div>
@@ -87,12 +97,14 @@ export default class ProviderDetails extends Component {
                       )}
                     />
                   </div>
+
                   <div className="list-group details-row-container">
                     <EntityDetailRow
                       label="Methods Enabled"
-                      value={() => provider.Gateway_details['Payment Methods'].join(', ')}
+                      value={() => paymentMethods?.join(', ')}
                     />
                   </div>
+
                   {walletsNames?.length > 0 && (
                     <div className="list-group details-row-container">
                       <EntityDetailRow
@@ -101,31 +113,17 @@ export default class ProviderDetails extends Component {
                       />
                     </div>
                   )}
-                  <div className="list-group details-row-container">
-                    <EntityDetailRow
-                      label="Production API Details"
-                      value={() => (
-                        <div className="provider-api-details">
-                          {detailsKeys.map((key, index) => {
-                            if (key != 'Payment Methods' && !key.includes('metadata')) {
-                              return (
-                                <Fragment key={index}>
-                                  <div className="key-name">{titleCase(key)}</div>
-                                  <div className="key-value">
-                                    {provider.Gateway_details[key]
-                                      ? provider.Gateway_details[key]
-                                      : '**********'}
-                                  </div>
-                                </Fragment>
-                              );
-                            } else {
-                              return null;
-                            }
-                          })}
-                        </div>
-                      )}
-                    />
-                  </div>
+
+                  {!isBlank(upiFeatures?.tpv) && (
+                    <div className="list-group details-row-container">
+                      <EntityDetailRow
+                        label="TPV Enabled"
+                        value={() => (upiFeatures.tpv ? 'Yes' : 'No')}
+                      />
+                    </div>
+                  )}
+
+                  <APIDetails providerDetails={providerDetails} />
                 </div>
               </div>
             </div>
@@ -133,24 +131,7 @@ export default class ProviderDetails extends Component {
         </div>
       );
     }
-    return (
-      <div className="content-wrapper content-sm txn-details optimizer-provider-detail">
-        <div className="panel panel-default SliderPanel provider-detail-panel">
-          <div className="panel-heading">
-            <div className="row">
-              <div className="col-xs-7">
-                <b>Provider</b>
-              </div>
-              <div className="col-xs-5" />
-            </div>
-          </div>
-          <div className="SliderPanel__Body">
-            <div className="panel-body">
-              <p className="no-provider">No target provider found!</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+
+    return <NoProviderFound />;
   }
 }
