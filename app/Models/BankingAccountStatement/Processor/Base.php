@@ -296,8 +296,34 @@ abstract class Base extends BaseCore
 
                 if (in_array($accountNumber, array_keys($merchantMissingStatementList)) === true)
                 {
-                    $merchantMissingStatementList[$accountNumber] = array_merge($merchantMissingStatementList[$accountNumber],
-                                                                                array_values($missingStatements));
+                    $encodedMissingStatements = array_map('json_encode', $missingStatements);
+
+                    $encodedExistingMissingStatements = array_map(
+                        'json_encode',
+                        $merchantMissingStatementList[$accountNumber]
+                    );
+
+                    $encodedUniqueMissingStatements = array_values(array_diff(
+                        $encodedMissingStatements,
+                        $encodedExistingMissingStatements
+                    ));
+
+                    $uniqueMissingStatements = array_map(
+                        'json_decode',
+                        $encodedUniqueMissingStatements,
+                        array_map('boolval', $encodedUniqueMissingStatements)
+                    );
+
+                    $existingMissingStatements = array_map(
+                        'json_decode',
+                        $encodedExistingMissingStatements,
+                        array_map('boolval', $encodedExistingMissingStatements)
+                    );
+
+                    $merchantMissingStatementList[$accountNumber] = array_merge(
+                        $existingMissingStatements,
+                        $uniqueMissingStatements
+                    );
                 }
                 else
                 {
