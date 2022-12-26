@@ -112,6 +112,11 @@ class TestCase extends Functional\TestCase
         return new Base\BlackListHelper($this->fixtures, $this->exceptionHandler);
     }
 
+    protected function getPreferencesHelper(): Base\PreferencesHelper
+    {
+        return new Base\PreferencesHelper($this->fixtures, $this->exceptionHandler);
+    }
+
     protected function registerMockExceptionHandler()
     {
         $this->exceptionHandler = $this->app->make(Base\MockExceptionHandler::class);

@@ -9,6 +9,7 @@ class Requests
     const P2P_CUSTOMER_INITIATE_GET_TOKEN                   = 'p2p_customer_initiate_get_token';
     const P2P_CUSTOMER_GET_TOKEN                            = 'p2p_customer_get_token';
     const P2P_CUSTOMER_DEREGISTER                           = 'p2p_customer_deregister';
+    const P2P_TURBO_PREFERENCES                             = 'p2p_turbo_preferences';
     const P2P_TURBO_GATEWAY_CONFIG                          = 'p2p_turbo_gateway_config';
 
     const P2P_BANKS_FETCH_ALL                               = 'p2p_banks_fetch_all';
