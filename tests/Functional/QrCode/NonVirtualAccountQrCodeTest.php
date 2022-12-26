@@ -636,7 +636,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->makeUpiIciciPayment($request);
 
-        $qrPayment = $this->getDbLastEntity('qr_payment');
+        $qrPayment = $this->getLastEntity('qr_payment', true);
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('upi', $payment['method']);
         $this->assertEquals('captured', $payment['status']);
@@ -1275,8 +1275,6 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testFetchQrCodePayments()
     {
-        $this->markTestSkipped();
-        
         $qrCode = $this->createQrCode();
 
         $qrCodeId = $qrCode['id'];

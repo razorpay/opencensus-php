@@ -35,7 +35,9 @@ class Repository extends Base\Repository
 
     protected function serializeForIndexing(PublicEntity $entity): array
     {
-        $serialized = parent::serializeForIndexing($entity);
+        $fields = $this->esRepo->getIndexedFields();
+
+        $serialized = $entity->setVisible($fields)->toArray();
 
         if ($entity->payment !== null)
         {

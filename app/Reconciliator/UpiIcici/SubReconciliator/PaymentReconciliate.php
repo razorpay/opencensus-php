@@ -116,15 +116,21 @@ class PaymentReconciliate extends UpiPaymentServiceReconciliate
         // Fetch payment ID from qr_payment
         if ($qrCodePayment === null)
         {
-            $qrCodePayment = $this->repo->qr_payment->findByProviderReferenceIdAndGatewayAndAmount($referenceNumber, Gateway::UPI_ICICI, $amount);
+            $qrCodePayment = $this->repo
+                                  ->qr_payment
+                                  ->findByProviderReferenceIdAndGatewayAndAmount($referenceNumber,
+                                                                               Gateway::UPI_ICICI,
+                                                                               $amount);
 
-            if((array_key_exists(self::REMARK, $row) === true)
-                and ($qrCodePayment !== null)
-                and ($qrCodePayment->getNotes() === null))
+            if((array_key_exists(self::REMARK, $row) === true) and
+               ($qrCodePayment !== null) and
+               ($qrCodePayment->getNotes() === null))
             {
-                $qrCodePayment->setNotes(substr($row[self::REMARK],0,Entity::MAX_NOTES_LENGTH));
+                $qrPayment = $this->repo->qr_payment->findOrFail($qrCodePayment->getId());
 
-                $this->repo->saveOrFail($qrCodePayment);
+                $qrPayment->setNotes(substr($row[self::REMARK],0,Entity::MAX_NOTES_LENGTH));
+
+                $this->repo->qr_payment->saveOrFail($qrPayment);
             }
         }
 

@@ -556,7 +556,7 @@ class UpiIciciGatewayReconTest extends TestCase
 
         $this->makeUpiIciciPayment($request);
 
-        $qrPayment = $this->getDbLastEntity('qr_payment');
+        $qrPayment = $this->getLastEntity('qr_payment', true);
         $payment = $this->getDbLastEntity('payment');
         $this->assertEquals($qrPayment['payment_id'], $payment['id']);
 
@@ -584,7 +584,7 @@ class UpiIciciGatewayReconTest extends TestCase
 
         $this->assertBatchStatus(Status::PROCESSED);
 
-        $qrPayment = $this->getDbLastEntity('qr_payment');
+        $qrPayment = $this->getLastEntity('qr_payment', true);
         $this->assertEquals($qrPayment['notes'],'somerandomremarks');
     }
 
