@@ -432,6 +432,9 @@ class Dashboard extends Base
             $input['options']['force'] = ($input['options']['force'] == '1');
         }
 
+        // adding manual conversion of options from the data
+        $input['options'] = (object) $input['options'];
+
         return $this->makeRequest(self::EXECUTION_REGISTER, $input, self::SERVICE_DASHBOARD);
     }
 
