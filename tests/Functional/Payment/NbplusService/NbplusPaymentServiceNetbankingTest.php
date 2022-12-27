@@ -82,8 +82,6 @@ class NbPlusPaymentServiceNetbankingTest extends TestCase
 
         $this->bank = "IDIB";
 
-        $this->enableNbPlusConfig();
-
         // This may be made generic when there are more than just netbanking methods migrated to new service
         $this->nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlus\Netbanking', [$this->app])->makePartial();
 

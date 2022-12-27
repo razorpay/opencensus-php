@@ -74,8 +74,6 @@ class NbplusPaymentServiceEmandateTest extends TestCase
                         })
                   );
 
-        $this->enableNbPlusConfig();
-
         $this->nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlus\Emandate', [$this->app])->makePartial();
 
         $this->app->instance('nbplus.payments', $this->nbPlusService);
@@ -688,7 +686,7 @@ class NbplusPaymentServiceEmandateTest extends TestCase
     }
 
     // This test mocks sync token confirmation flow, after successful auth txn
-    // 
+    //
     // Make auth payment -> Payment is authorized ->
     // Callback has token in confirmed status -> Payment moves to captured
     public function testEMandateRegistrationConfirmedSyncFlow()
@@ -711,8 +709,8 @@ class NbplusPaymentServiceEmandateTest extends TestCase
     }
 
     // This test mocks sync token confirmation flow, after successful auth txn
-    // and checks to see if webhook flow is not triggered. 
-    // 
+    // and checks to see if webhook flow is not triggered.
+    //
     // Make auth payment -> Payment is authorized ->
     // Callback has token in confirmed status -> Payment moves to captured ->
     // Webhook initiated by gateway -> Webhook flow stopped
@@ -742,7 +740,7 @@ class NbplusPaymentServiceEmandateTest extends TestCase
     }
 
     // This test mocks async token confirmation flow, after successful auth txn
-    // 
+    //
     // Make auth payment -> Payment is authorized ->
     // Callback has token in initiated status -> Webhook from gateway ->
     // Token is confirmed -> Payment moves to captured
@@ -790,9 +788,9 @@ class NbplusPaymentServiceEmandateTest extends TestCase
 
     // This test mocks async token confirmation flow on older callback, after successful auth txn.
     // This is to ensure old_callback does not change in functionality.
-    // 
+    //
     // Make auth payment -> Payment is authorized ->
-    // Callback has token in initiated status -> 
+    // Callback has token in initiated status ->
     // Webhook from gateway sent to gateway_payment_callback_post instead of
     // gateway_payment_static_s2scallback_post ->
     // Token is confirmed -> Payment moves to captured
@@ -838,7 +836,7 @@ class NbplusPaymentServiceEmandateTest extends TestCase
     }
 
     // This test mocks async token refunded flow, after successful auth txn
-    // 
+    //
     // Make auth payment -> Payment is authorized ->
     // Callback has token in initiated status -> Webhook from gateway ->
     // Token is rejected -> Payment moves to refunded
@@ -918,11 +916,11 @@ class NbplusPaymentServiceEmandateTest extends TestCase
     }
 
     // This test mocks sirecurring payment happening in async mode.
-    // 
+    //
     // Initial payment is captured and token is confirmed ->
     // sirecurring payment in created state -> run verify to confirm pending state ->
     // webhook trigger with capture state -> callback updates payment to capture
-    // 
+    //
     public function testEMandateDebitASyncPaymentForPayu()
     {
         $oldTerminal = $this->terminal;
@@ -1042,7 +1040,7 @@ class NbplusPaymentServiceEmandateTest extends TestCase
         /*
          * Assert Token Entity
          */
-        $this->assertEquals($payment[Payment::TOKEN_ID], $token[Token::ID]);        
+        $this->assertEquals($payment[Payment::TOKEN_ID], $token[Token::ID]);
         $this->assertEquals(Token::DEFAULT_MAX_AMOUNT, $token[Token::MAX_AMOUNT]);
         // Recurring status will be initiated
         $this->assertEquals(RecurringStatus::INITIATED, $token[Token::RECURRING_DETAILS][Token::RECURRING_STATUS_SHORT]);
@@ -1123,7 +1121,7 @@ class NbplusPaymentServiceEmandateTest extends TestCase
          * Assert Payment Entity
          */
         $this->assertEquals(PaymentMethod::EMANDATE, $payment[Payment::METHOD]);
-        $this->assertEquals('created', $payment[Payment::STATUS]); 
+        $this->assertEquals('created', $payment[Payment::STATUS]);
         $this->assertEquals('auto', $payment[Payment::RECURRING_TYPE]);
 
         $this->assertTrue($payment[Payment::RECURRING]);

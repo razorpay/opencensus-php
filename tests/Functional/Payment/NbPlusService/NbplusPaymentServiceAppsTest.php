@@ -70,8 +70,6 @@ class NbPlusPaymentServiceAppsTest extends TestCase
 
         $this->fixtures->merchant->enableApp('10000000000000', 'twid');
 
-        $this->enableNbPlusConfig();
-
         $this->nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlus\AppMethod', [$this->app])->makePartial();
 
         $this->app->instance('nbplus.payments', $this->nbPlusService);

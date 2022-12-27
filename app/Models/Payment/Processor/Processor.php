@@ -3190,19 +3190,16 @@ class Processor
             return;
         }
 
-        if ($this->isNbPlusServiceConfigEnabled() === true)
+        $prefix = $payment->getMethod() . '_' . self::NB_PLUS_PAYMENTS_PREFIX;
+
+        if (Payment\Gateway::gatewaysPartiallyMigratedToNbPlusWithBankCode($payment->getGateway()))
         {
-            $prefix = $payment->getMethod() . '_' . self::NB_PLUS_PAYMENTS_PREFIX;
-
-            if (Payment\Gateway::gatewaysPartiallyMigratedToNbPlusWithBankCode($payment->getGateway()))
-            {
-                $prefix .= '_' . strtolower($payment->getBank());
-            }
-
-            $variant = $this->getRazorxVariant($payment, $prefix);
-
-            $this->setPaymentService($payment, $variant);
+            $prefix .= '_' . strtolower($payment->getBank());
         }
+
+        $variant = $this->getRazorxVariant($payment, $prefix);
+
+        $this->setPaymentService($payment, $variant);
     }
 
     /**
@@ -3244,11 +3241,6 @@ class Processor
     protected function isCardPaymentServiceConfigEnabled(): bool
     {
         return (bool) Admin\ConfigKey::get(Admin\ConfigKey::CARD_PAYMENT_SERVICE_ENABLED, false);
-    }
-
-    protected function isNbPlusServiceConfigEnabled(): bool
-    {
-        return (bool) Admin\ConfigKey::get(Admin\ConfigKey::NB_PLUS_SERVICE_ENABLED, false);
     }
 
     protected function isUpiPaymentServiceEnabled(): bool
@@ -3622,7 +3614,7 @@ class Processor
         $validator->validateInput('transfer', $input);
 
         $deadLockRetryAttempts = 1;
-        
+
         $asyncTransfer = true;
 
         return $this->mutex->acquireAndRelease(
@@ -4803,12 +4795,7 @@ class Processor
         }
         else if ($this->isRoutedThroughNbPlusService($action, $gatewayData) === true)
         {
-            if (($this->isNbPlusServiceConfigEnabled() === true) or
-                (Payment\Gateway::gatewaysAlwaysRoutedThroughNbplusService($this->payment->getGateway(), $this->payment->getBank(), $this->payment->getMethod(), $this->payment) === true) or
-                ($this->payment->getGateway()=== Payment\Gateway::WALLET_PAYPAL))
-            {
-                $gatewayData[Payment\Entity::CPS_ROUTE] = Payment\Entity::NB_PLUS_SERVICE;
-            }
+            $gatewayData[Payment\Entity::CPS_ROUTE] = Payment\Entity::NB_PLUS_SERVICE;
 
             // netbanking flow doesn't have any debit action
             // TODO: handle when migrating wallets flow

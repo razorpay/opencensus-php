@@ -4527,7 +4527,7 @@ class Gateway
         return (in_array($gateway, $gatewayPartiallyMigrated, true));
     }
 
-    public static function gatewayMigratedToNbPlusOnMerchantLevel($gateway)
+    public static function gatewayMigratedToNbPlusOnMerchantLevel($gateway): bool
     {
         $gatewayToNbPlusOnMerchantLevel = [
             self::WALLET_PAYZAPP

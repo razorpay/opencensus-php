@@ -118,8 +118,6 @@ class NbPlusPaymentServiceWalletTest extends TestCase
 
         $this->fixtures->merchant->enableWallet($this->merchantId, self::WALLET);
 
-        $this->enableNbPlusConfig();
-
         $this->nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlus\Wallet', [$this->app])->makePartial();
 
         $this->app->instance('nbplus.payments', $this->nbPlusService);

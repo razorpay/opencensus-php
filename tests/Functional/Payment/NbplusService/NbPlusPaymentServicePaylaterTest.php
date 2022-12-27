@@ -74,8 +74,6 @@ class NbPlusPaymentServicePaylaterTest extends TestCase
         // s2s flow
         $this->terminal = $this->fixtures->create('terminal:paylater_lazypay_terminal');
 
-        $this->enableNbPlusConfig();
-
         // This may be made generic when there are more than just netbanking methods migrated to new service
         $this->nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlus\Paylater', [$this->app])->makePartial();
 

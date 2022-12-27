@@ -84,7 +84,6 @@ class Validator extends Base\Validator
         ConfigKey::CURL_INFO_LOG_VERBOSE                => 'filled|boolean',
         ConfigKey::HITACHI_NEW_URL_ENABLED              => 'filled|boolean',
         ConfigKey::CARD_PAYMENT_SERVICE_ENABLED         => 'filled|boolean',
-        ConfigKey::NB_PLUS_SERVICE_ENABLED              => 'filled|boolean',
         ConfigKey::PG_ROUTER_SERVICE_ENABLED            => 'filled|boolean',
         ConfigKey::CARD_ARCHIVAL_FALLBACK_ENABLED       => 'filled|boolean',
         ConfigKey::PAYMENTS_DUAL_WRITE                  => 'filled|boolean',

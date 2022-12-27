@@ -72,8 +72,6 @@ class NbplusPaymentServiceCardlessEmiTest extends TestCase
 
         $this->terminal = $this->fixtures->create('terminal:shared_cardless_emi_walnut369_terminal');
 
-        $this->enableNbPlusConfig();
-
         $this->nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlus\CardlessEmi', [$this->app])->makePartial();
 
         $this->app->instance('nbplus.payments', $this->nbPlusService);

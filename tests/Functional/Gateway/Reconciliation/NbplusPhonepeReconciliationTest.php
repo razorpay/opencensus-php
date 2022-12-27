@@ -55,8 +55,6 @@ class NbplusWalletPhonepeReconciliationTest extends TestCase
                 })
             );
 
-        $this->enableNbPlusConfig();
-
         $this->nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlus\Wallet', [$this->app])->makePartial();
 
         $this->app->instance('nbplus.payments', $this->nbPlusService);
