@@ -1494,7 +1494,7 @@ class Gateway extends Base\Gateway
         return false;
     }
 
-    protected function getQrData(array $input)
+    public function getQrData(array $input)
     {
         $this->checkForBharatQrPaymentFailure($input);
 

@@ -82,7 +82,7 @@ return [
     ],
 
     'testProcessIciciQrPayment' => [
-        'url'     => '/payment/callback/bharatqr/upi_icici',
+        'url'     => '/callback/upi_icici',
         'method'  => 'post',
         'content' => [
             Fields::MERCHANT_ID         => 'abcd_bharat_qr',

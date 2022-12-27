@@ -77,8 +77,7 @@ class Generator extends QrCode\Generator
             //@todo:: Check for static and dynamic QR. For static QR, terminal type offline should be passed
             $terminal = (new VirtualAccount\Provider())->getTerminalForMethod(Payment\Method::UPI, $qrCode);
 
-            if (($terminal !== null) and
-                (empty($terminal->getGatewayMerchantId2()) === false))
+            if (($terminal !== null) and (empty($terminal->getGatewayMerchantId2()) === false))
             {
                 return $terminal->getGatewayMerchantId2();
             }

@@ -852,6 +852,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testProcessIciciQrPaymentForQrNotFound()
     {
+        self::markTestSkipped();
         $request = $this->testData['testProcessIciciQrPayment'];
 
         $rrn = '000011100101';
@@ -1784,6 +1785,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testProcessIciciQrPaymentWithInvalidHandle()
     {
+        self::markTestSkipped();
         $qrCode = $this->createQrCode(['customer_id' => 'cust_100000customer']);
 
         $qrCodeId = $qrCode['id'];

@@ -15,6 +15,7 @@ use RZP\Models\Payment;
 use RZP\Services\NbPlus;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\BharatQr;
 use Razorpay\Trace\Logger;
 use RZP\Http\RequestHeader;
 use RZP\Gateway\Base\Action;
@@ -321,6 +322,8 @@ class GatewayController extends Controller
         $suffixLength = strlen(QrCode\Constants::QR_CODE_V2_TR_SUFFIX);
 
         $isQrV2Payment = false;
+        // this checks will only be applicable for static QR code. For dynamic QR code,
+        // bank will send the ref id generated during QR creation
         if ((strlen($paymentId) >= ($suffixLength + QrCode\Entity::ID_LENGTH)) and
             (str_ends_with($paymentId, QrCode\Constants::QR_CODE_V2_TR_SUFFIX)))
         {
@@ -332,14 +335,25 @@ class GatewayController extends Controller
 
         if ($mode !== null)
         {
+            $this->app['basicauth']->setModeAndDbConnection($mode);
+
+            $qrCode = $qrRepo->findByMerchantReference($paymentId);
+
+            if (($isQrV2Payment === false) and
+                ($qrCode !== null) and
+                ($qrCode->getReference() !== $qrCode->getId()))
+            {
+                $isQrV2Payment = true;
+            }
+
             if ($isQrV2Payment === true)
             {
                 $this->trace->info(TraceCode::QR_PAYMENT_GATEWAY_CALLBACK, $input);
+
+                $data = (new BharatQr\Service)->processPayment($input, $gatewayDriver);
             }
             else
             {
-                $this->app['basicauth']->setModeAndDbConnection($mode);
-
                 $data = (new QrCode\Upi\Service)->processPayment($input, $paymentId, $gatewayDriver);
             }
         }

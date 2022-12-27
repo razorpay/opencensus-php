@@ -291,7 +291,7 @@ class Gateway extends Base\Gateway
                 ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL));
     }
 
-    protected function getQrData(array $input)
+    public function getQrData(array $input)
     {
         (new Validator)->validateInput('test_bharatqr_payment', $input);
 

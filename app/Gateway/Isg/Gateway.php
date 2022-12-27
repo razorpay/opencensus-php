@@ -449,7 +449,7 @@ class Gateway extends Base\Gateway
         return bin2hex($aes->encryptString($string));
     }
 
-    protected function getQrData(array $input)
+    public function getQrData(array $input)
     {
         $customerCardNumber = $this->getDecryptedString($input[Field::CONSUMER_PAN]);
 

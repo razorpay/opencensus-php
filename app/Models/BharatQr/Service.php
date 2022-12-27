@@ -37,6 +37,17 @@ class Service extends Base\Service
         $this->smartCollectService = $this->app['smartCollect'];
     }
 
+    private function getDedicatedTerminalAndGatewayResponse($input, $gatewayClass, $gateway)
+    {
+        $gatewayResponse = $gatewayClass->getQrData($input);
+
+        $gatewayResponse['qr_data'][GatewayResponseParams::GATEWAY] = $gateway;
+
+        $terminal = $this->getTerminal($gatewayResponse['qr_data']);
+
+        return [$terminal, $gatewayResponse];
+    }
+
     public function processPayment($input, string $gateway)
     {
         $inputTrace = $input;
@@ -67,7 +78,16 @@ class Service extends Base\Service
 
         try
         {
-            [$terminal, $gatewayResponse] = $this->getTerminalAndGatewayReponse($input, $gatewayClass, $gateway);
+            $routeName = $this->app['api.route']->getCurrentRouteName();
+
+            if ($routeName === 'gateway_payment_callback_post')
+            {
+                [$terminal, $gatewayResponse] = $this->getDedicatedTerminalAndGatewayResponse($input, $gatewayClass, $gateway);
+            }
+            else
+            {
+                [$terminal, $gatewayResponse] = $this->getTerminalAndGatewayReponse($input, $gatewayClass, $gateway);
+            }
 
             $qrPaymentRequest = (new QrPaymentRequest\Service())->create($gatewayResponse, QrPaymentRequest\Type::BHARAT_QR);
 

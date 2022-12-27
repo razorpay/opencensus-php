@@ -132,11 +132,18 @@ trait NonVirtualAccountQrCodeTrait
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $xmlResponse = $response['original'];
+        if (isset($response['success']) === true)
+        {
+            $this->assertEquals('true', $response['success']);
+        }
+        else
+        {
+            $xmlResponse = $response['original'];
 
-        $response = $this->parseResponseXml($xmlResponse);
+            $response = $this->parseResponseXml($xmlResponse);
 
-        $this->assertEquals('OK', $response[0]);
+            $this->assertEquals('OK', $response[0]);
+        }
 
         return $response;
     }
