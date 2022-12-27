@@ -12,6 +12,7 @@ class Fields
     // --------------------------- Device --------------- //
     const CONTACT                   = 'c';
     const TOKEN                     = 't';
+    const GATEWAY_TOKEN             = 'gateway_token';
 
     // --------------------------- Mandate --------------- //
     const PAYER_VPA                 = 'pr';

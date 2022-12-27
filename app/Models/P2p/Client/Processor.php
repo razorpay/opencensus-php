@@ -29,7 +29,9 @@ class Processor extends Base\Processor
             throw new Exception\P2p\BadRequestException(ErrorCode::BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED);
         }
 
-        throw new Exception\RuntimeException("Implementation is on the way");
+        $this->gatewayInput->put(Entity::CUSTOMER, $customer->toArray());
+
+        return $this->callGateway();
     }
 
     public function getGatewayConfigSuccess(array $input): array

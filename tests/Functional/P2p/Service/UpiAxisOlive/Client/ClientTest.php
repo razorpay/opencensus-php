@@ -2,13 +2,9 @@
 
 namespace RZP\Tests\P2p\Service\UpiAxisOlive\Client;
 
-use RZP\Exception\RuntimeException;
-use RZP\Gateway\P2p\Upi\Axis\Fields;
-use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Models\P2p\Client\Entity;
+use RZP\Gateway\P2p\Upi\AxisOlive\Fields;
 use RZP\Tests\P2p\Service\UpiAxisOlive\TestCase;
-use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
-use RZP\Tests\P2p\Service\Base\Traits\MetricsTrait;
-use RZP\Tests\P2p\Service\Base\Traits\TransactionTrait;
 
 class ClientTest extends TestCase
 {
@@ -18,8 +14,15 @@ class ClientTest extends TestCase
 
         $helper->withSchemaValidated();
 
-        $this->expectException(RuntimeException::class);
+        $response = $helper->getGatewayConfig($this->gateway, []);
 
-        $helper->getGatewayConfig($this->gateway, []);
+        $this->assertArraySubset([
+                     Entity::GATEWAY_CONFIG =>[
+                         Fields::MERCHANT_ID            => "RAZORPAYAGG",
+                         Fields::MERCHANT_CHANNEL_ID    => "OLIVEAPP",
+                         Fields::SUB_MERCHANT_ID        => "OLIVE",
+                         Fields::MCC_CODE               => "7299",
+                     ]
+                 ], $response);
     }
 }

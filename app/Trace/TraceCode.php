@@ -4685,6 +4685,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const P2P_MANAGE_RESPONSE                                   = 'P2P_MANAGE_RESPONSE';
     const P2P_REMINDER_CALLBACK                                 = 'P2P_REMINDER_CALLBACK';
 
+    // Turbo Traces
+    const TURBO_GATEWAY_REQUEST                                 = 'TURBO_GATEWAY_REQUEST';
+    const TURBO_GATEWAY_RESPONSE                                = 'TURBO_GATEWAY_RESPONSE';
+
     // PSPx Traces
     const PSPX_REQUEST                                          = 'PSPX_REQUEST';
     const PSPX_RESPONSE                                         = 'PSPX_RESPONSE';

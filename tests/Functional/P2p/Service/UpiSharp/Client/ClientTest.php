@@ -22,8 +22,6 @@ class ClientTest extends TestCase
 
         $helper->withSchemaValidated();
 
-        $this->expectException(RuntimeException::class);
-
-        $helper->getGatewayConfig($this->gateway, []);
+        $response = $helper->getGatewayConfig($this->gateway, []);
     }
 }

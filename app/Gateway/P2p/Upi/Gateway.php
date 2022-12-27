@@ -63,6 +63,15 @@ class Gateway extends Base\Gateway
         return $gateway->response();
     }
 
+    public function client(Context $context)
+    {
+        $gateway = Factory::make($context, Contracts\ClientGateway::class);
+
+        $this->handleGatewaySwitch($gateway, __FUNCTION__);
+
+        return $gateway->response();
+    }
+
     protected function sendGatewayRequest($request)
     {
         if ($this->mock === true)
