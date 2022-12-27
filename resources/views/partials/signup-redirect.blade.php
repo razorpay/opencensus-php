@@ -6,7 +6,7 @@
         // old angular paths have /access/ in it
         if (loc.hash.includes('/access/')) {
           // oldAngularPathsRegexQ matches url created by /captcha page
-          const oldAngularPathsRegexQ = /\?\#\/access\/(signin|signup|resetpassword|forgotpassword)\?/;
+          const oldAngularPathsRegexQ = /\?\#\/access\/(signin|signup|resetpassword|forgotpassword|emailupdate)\?/;
           const parserAnchor = document.createElement('a');
           if (loc.href.match(oldAngularPathsRegexQ)) {
             parserAnchor.href = loc.href.replace(oldAngularPathsRegexQ, '?');
@@ -14,16 +14,21 @@
               return '/signup' + parserAnchor.search;
             } else if (loc.hash.includes('/access/resetpassword?')) {
               return '/resetpassword' + parserAnchor.search;
+            } else if (loc.hash.includes('/access/emailupdate?')) {
+              return '/emailupdate' + parserAnchor.search;
             }
+
             return '/signin' + parserAnchor.search;
           }
           // if only captcha redirect didn't happen.
-          const oldAngularPathsRegex = /\#\/access\/(signin|signup|resetpassword|forgotpassword)/;
+          const oldAngularPathsRegex = /\#\/access\/(signin|signup|resetpassword|forgotpassword|emailupdate)/;
           parserAnchor.href = loc.href.replace(oldAngularPathsRegex, '');;
           if (loc.hash.includes('/access/signup')) {
             return '/signup' + parserAnchor.search;
           } else if (loc.hash.includes('/access/resetpassword')) {
             return '/resetpassword' + parserAnchor.search;
+          } else if (loc.hash.includes('/access/emailupdate')) {
+            return '/emailupdate' + parserAnchor.search;
           }
           return '/signin' + parserAnchor.search;
         }

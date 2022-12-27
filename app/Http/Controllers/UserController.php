@@ -135,7 +135,7 @@ class UserController extends Controller
         $data['rootPath']       = self::ROOT_PATH;
         $data['isAuthPath']     = false;
 
-        if (empty($currentRouteName) === false and ($currentRouteName === "signup" || $currentRouteName === "signin" || $currentRouteName === "resetpassword"))
+        if (empty($currentRouteName) === false and ($currentRouteName === "signup" || $currentRouteName === "signin" || $currentRouteName === "resetpassword" || $currentRouteName === "emailupdate"))
         {
             $data['isAuthPath'] = true;
             if ($currentRouteName === 'signup')

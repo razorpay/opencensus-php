@@ -14,6 +14,7 @@ __webpack_public_path__ = `${window.cdnDashboardUrl || ''}/dist/`; // eslint-dis
 const SignIn = React.lazy(() => import('./signin'));
 const SignUp = React.lazy(() => import('./signup'));
 const ResetPassword = React.lazy(() => import('./resetPassword'));
+const EmailUpdate = React.lazy(() => import('./emailUpdate'));
 
 const isSupportedPath = (pathname) => ['', ...Object.values(ROUTES)].indexOf(pathname) > -1;
 
@@ -48,6 +49,8 @@ const App = () => {
         return <SignUp />;
       case ROUTES.RESETPASSWORD:
         return <ResetPassword />;
+      case ROUTES.EMAIL_UPDATE:
+        return <EmailUpdate />;
       default:
         return <div />;
     }

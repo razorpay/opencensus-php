@@ -2,6 +2,7 @@ export const ROUTES = {
   SIGNIN: 'signin',
   SIGNUP: 'signup',
   RESETPASSWORD: 'resetpassword',
+  EMAIL_UPDATE: 'emailupdate',
 };
 
 export const BANK_NAMES = {
