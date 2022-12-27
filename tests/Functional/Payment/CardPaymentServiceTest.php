@@ -1409,7 +1409,7 @@ class CardPaymentServiceTest extends TestCase
             ->will($this->returnCallback(
                 function ($mid, $feature, $mode)
                 {
-                    if ($feature === 'merchants_refund_create_v1.1' or $feature === 'store_empty_value_for_non_exempted_card_metadata')
+                    if ($feature === 'merchants_refund_create_v1.1' or $feature === 'store_empty_value_for_non_exempted_card_metadata' or $feature === 'non_merchant_refund_create_v1.1')
                     {
                         return 'off';
                     }
@@ -4582,11 +4582,18 @@ class CardPaymentServiceTest extends TestCase
 
         $this->mockSplitzTreatment($output);
 
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
         $this->app->razorx->method('getTreatment')
             ->will($this->returnCallback(
                 function ($mid, $feature, $mode)
                 {
-                    if ($feature === 'merchants_refund_create_v1.1' or $feature === 'store_empty_value_for_non_exempted_card_metadata')
+                    if ($feature === 'merchants_refund_create_v1.1' or $feature === 'store_empty_value_for_non_exempted_card_metadata' or $feature === 'non_merchant_refund_create_v1.1')
                     {
                         return 'off';
                     }
@@ -4748,11 +4755,18 @@ class CardPaymentServiceTest extends TestCase
 
         $this->mockSplitzTreatment($output);
 
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
         $this->app->razorx->method('getTreatment')
             ->will($this->returnCallback(
                 function ($mid, $feature, $mode)
                 {
-                    if ($feature === 'merchants_refund_create_v1.1' or $feature === 'store_empty_value_for_non_exempted_card_metadata')
+                    if ($feature === 'merchants_refund_create_v1.1' or $feature === 'store_empty_value_for_non_exempted_card_metadata' or $feature === 'non_merchant_refund_create_v1.1')
                     {
                         return 'off';
                     }

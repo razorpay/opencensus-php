@@ -811,22 +811,21 @@ trait Refund
                 'input'         => $input,
             ]);
 
-        // commented for now, will be enabled during further ramp-up
-        // if ($this->isRefundRequestV1_1($this->merchant->getId(), $payment) === true)
-        // {
-        //     $this->trace->info(
-        //     TraceCode::REFUND_FROM_AUTHORIZED_REQUEST_SCROOGE,
-        //     [
-        //         'payment_id' => $payment->getId(),
-        //         'input'      => $input,
-        //     ]);
+         if ($this->isNonMerchantRefundRequestV1_1($payment) === true)
+         {
+             $this->trace->info(
+             TraceCode::REFUND_FROM_AUTHORIZED_REQUEST_SCROOGE,
+             [
+                 'payment_id' => $payment->getId(),
+                 'input'      => $input,
+             ]);
 
-        //     // Refunds for authorized payments are always full, explicitly set amount
-        //     $input['amount'] = $payment->getAmount();
+             // Refunds for authorized payments are always full, explicitly set amount
+             $input['amount'] = $payment->getAmount();
 
-        //     // Route refund creation to scrooge
-        //     return $this->newRefundV2Flow($payment, $input);
-        // }
+             // Route refund creation to scrooge
+             return $this->newRefundV2Flow($payment, $input);
+         }
 
         // Some bank transfer payments cannot be refunded.
         if ($payment->isBankTransfer() === true)
@@ -927,7 +926,7 @@ trait Refund
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CARD_REFUND_NOT_ALLOWED);
         }
 
-        return $this->refundCapturedPayment($payment, $input);
+        return $this->refundCapturedPayment($payment, $input, null, null, 'off');
     }
 
     /**
@@ -2886,8 +2885,24 @@ trait Refund
         return null;
     }
 
-    public function refundCapturedPayment($payment, array $input = [], Batch\Entity $batch = null, $batchID = null)
+    public function refundCapturedPayment($payment, array $input = [], Batch\Entity $batch = null, $batchID = null, $variant = null)
     {
+        if (($this->isNonMerchantRefundRequestV1_1($payment) === true) and
+            ($batch === null) and ($batchID === null) and ($variant !== 'off'))
+        {
+            $this->trace->info(
+                TraceCode::REFUND_FROM_CAPTURED_REQUEST_SCROOGE,
+                [
+                    'payment_id' => $payment->getId(),
+                    'input'      => $input,
+                ]);
+            // For captured payments, refund amount either needs to be defined in $input params, or
+            // by default refund amount will be full payment amount.
+            // No need to override refund amount here.
+            // Route refund creation to scrooge
+            return $this->newRefundV2Flow($payment, $input);
+        }
+
         $variant = $this->app->razorx->getTreatment(
                 $this->merchant->getId(),
                 Merchant\RazorxTreatment::DUPLICATE_RECEIPT_CHECK,
@@ -4234,6 +4249,25 @@ trait Refund
         $variant = $this->app->razorx->getTreatment(
             $payment->getId(),
             Merchant\RazorxTreatment::BATCH_REFUND_CREATE_V_1_1,
+            $this->mode
+        );
+
+        return (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON);
+    }
+
+    public function isNonMerchantRefundRequestV1_1(Payment\Entity $payment): bool
+    {
+        if (($payment->getCurrency() !== Currency\Currency::INR) or
+            ($payment->isDCC() === true) or
+            (($payment->isTransferred() === true) and
+                ($payment->isTransfer() === false)))
+        {
+            return false;
+        }
+
+        $variant = $this->app->razorx->getTreatment(
+            $payment->getId(),
+            Merchant\RazorxTreatment::NON_MERCHANT_REFUND_CREATE_V_1_1,
             $this->mode
         );
 

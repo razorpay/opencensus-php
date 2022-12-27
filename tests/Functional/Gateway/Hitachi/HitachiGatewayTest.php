@@ -112,6 +112,11 @@ class HitachiGatewayTest extends TestCase
                         return 'off';
                     }
 
+                    if ($feature === RazorxTreatment::NON_MERCHANT_REFUND_CREATE_V_1_1)
+                    {
+                        return 'off';
+                    }
+
                     if ($feature === 'recurring_tokenisation_unhappy_flow_handling')
                     {
                         return 'control';
