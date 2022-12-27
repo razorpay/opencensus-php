@@ -393,6 +393,8 @@ class PaymentLinkService
 
         $headers['X-Razorpay-Public-Key'] = $this->ba->getPublicKey();
 
+        $headers['X-Razorpay-Application-Id'] = $this->ba->getOAuthApplicationId();
+
         return $headers;
     }
 }
