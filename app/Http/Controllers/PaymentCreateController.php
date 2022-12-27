@@ -12,6 +12,7 @@ use RZP\Http\CheckoutView;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Settlement\Merchant;
@@ -1812,6 +1813,13 @@ class PaymentCreateController extends Controller
                 'view create via'   =>  'gateway.callbackNachNb - callback view',
             ]);
 
+        $variantFlag = $this->isNpciFeedbackPopupAllowed();
+
+        if ($variantFlag === 'on')
+        {
+            $data['allow_feedback'] = '1';
+        }
+
         return View::make('gateway.callbackNachNb')->with('data', $data);
     }
 
@@ -1821,6 +1829,14 @@ class PaymentCreateController extends Controller
             [
                 'view create via'   =>  'gateway.callbackNachNb - redirect view',
             ]);
+
+        $variantFlag = $this->isNpciFeedbackPopupAllowed();
+
+
+        if ($variantFlag === 'on')
+        {
+            $data['allow_feedback'] = '1';
+        }
 
         return View::make('gateway.callbackNachNb')->with('data', $data);
     }
@@ -2091,5 +2107,35 @@ class PaymentCreateController extends Controller
         }
 
         return false;
+    }
+
+    protected function isNpciFeedbackPopupAllowed()
+    {
+        try
+        {
+            $merchant = $this->app['basicauth']->getMerchant();
+
+            $variantFlag = $this->app['razorx']->getTreatment($merchant->getId(),
+                RazorxTreatment::ALLOW_NPCI_FEEDBACK_POPUP,
+                $this->app['rzp.mode']);
+
+            $this->trace->info(
+                TraceCode::EMANDATE_ALLOW_NPCI_FEEDBACK_RAZORX_SUCCESS,
+                [
+                    'variant' => $variantFlag
+                ]);
+
+            return $variantFlag;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(
+                TraceCode::EMANDATE_ALLOW_NPCI_FEEDBACK_RAZORX_FAILURE,
+                [
+                    'error' => $e,
+                ]);
+
+            return 'control';
+        }
     }
 }

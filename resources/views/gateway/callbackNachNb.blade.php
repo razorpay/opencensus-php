@@ -41,6 +41,51 @@
         // Callback data //
       var data = {!!utf8_json_encode($data)!!}; // Callback data //
 
+      // ================= NPCI Feedback =========
+      window.addEventListener("load", onLoad);
+      document.addEventListener("readystatechange", onLoad);
+
+      var NPCI_FEEDBACK_URL = "https://qdeg.in/5K2qabC";
+      var feedbackPopup = document.getElementById("npci-feedback-link-modal");
+      var isPostMandateRegistration = !!data['request'];
+      var isFeedbackAllowed = !!data['allow_feedback']
+      function onLoad() {
+        openNPCIFeedbackModal();
+      }
+      
+      function openNPCIFeedbackModal() {
+        // If data[request] is not set, it indicates post mandate registration summery page
+        // Show only when allow_feedback param is present
+        if (isPostMandateRegistration && isFeedbackAllowed) {
+          feedbackPopup.classList.add("show-modal");
+        } else {
+          closeFeedbackPopup();
+        }
+      }
+      
+      function closeFeedbackPopup() {
+        feedbackPopup.classList.remove("show-modal");
+      }
+      
+      function handleFeedbackLinkClick() {
+        try {
+          const feedbackWindow = window.open(NPCI_FEEDBACK_URL, "_blank");
+          if (
+            !feedbackWindow ||
+            feedbackWindow.closed ||
+            typeof feedbackWindow.closed == "undefined"
+          ) {
+            closeFeedbackPopup();
+          } else {
+            closeFeedbackPopup();
+          }
+        } catch {
+          closeFeedbackPopup();
+        }
+      }
+
+      // ================ END OF NPCIFeedback ===========
+
       var iosBridge = window.webkit && webkit.messageHandlers && webkit.messageHandlers.CheckoutBridge;
 
       function paymentCallback(btnElm) {

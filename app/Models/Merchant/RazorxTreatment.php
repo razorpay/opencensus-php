@@ -636,6 +636,9 @@ final class RazorxTreatment
     // This is for czrd recurring subsequent payment capture setting
     public const DEFAULT_CAPTURE_SETTING_CONFIG_CARD_RECURRING = "default_capture_setting_config_card_recurring";
 
+    // This is to show the feedback collection popup for npci
+    public const ALLOW_NPCI_FEEDBACK_POPUP = "allow_npci_feedback_popup";
+
     // Experiment to migrate yes bank debit file batch processing
     public const BATCH_SERVICE_ENACH_NPCI_NETBANKING_MIGRATION = "batch_service_enach_npci_netbanking_migration";
 

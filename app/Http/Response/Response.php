@@ -4,6 +4,7 @@ namespace RZP\Http\Response;
 
 use App;
 use RZP\Http\CheckoutView;
+use RZP\Trace\TraceCode;
 use View;
 use Request;
 use RZP\Http\Route;
@@ -236,6 +237,11 @@ class Response
 
                 $callbackArray += (new CheckoutView())->addOrgInformationInResponse($merchant);
 
+                $app['trace']->info(TraceCode::CALLBACK_ROUTE_TEMPLATE, [
+                    'callbackRoute' => 'Merchant',
+                    'template' => 'callbackReturnUrl'
+                ]);
+
                 $view = \View::make('gateway.callbackReturnUrl')
                             ->with('data', $callbackArray)->render();
 
@@ -247,6 +253,11 @@ class Response
             $data['http_status_code'] = $status;
 
             $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
+
+            $app['trace']->info(TraceCode::CALLBACK_ROUTE_TEMPLATE, [
+                'callbackRoute' => 'Checkout',
+                'template' => 'callback'
+            ]);
 
             $view = \View::make('gateway.callback')->with('data', $data)->render();
 

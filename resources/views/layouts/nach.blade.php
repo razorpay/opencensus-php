@@ -132,6 +132,183 @@
       button:disabled {
         opacity: 0.5;
       }
+
+            /* NPCI Feedback Popup */
+     .modal {
+        position: fixed;
+        text-transform: none;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgb(39 39 39 / 86%);
+        opacity: 0;
+        visibility: hidden;
+        font-family: "Lato", sans-serif;
+        transform: scale(1.1);
+        transition: visibility 0s linear 0.25s, opacity 0.25s 0s,
+          transform 0.25s;
+      }
+      .modal-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #ffffff;
+        border: 1px solid #f8f9fb;
+        min-width: 33em;
+        max-width: 42em;
+        box-shadow: 0px 1px 2px rgba(21, 45, 75, 0.2),
+          0px 0px 1px rgba(21, 45, 75, 0.2);
+        border-radius: 4px;
+      }
+      .mandate-info {
+        padding: 5% 18%;
+      }
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        margin: 1em 0em;
+        border-bottom: 1px solid #e6e6e8;
+        padding: 1em 2em 1.5em 2em;
+      }
+      .modal-footer {
+        padding: 2em;
+        justify-content: center;
+        display: flex;
+      }
+      .powered-by {
+        font-size: 12px;
+        line-height: 30px;
+        padding-right: 7px;
+        font-weight: 700;
+      }
+      .msg {
+        font-family: "Lato", sans-serif;
+        font-style: normal;
+        font-weight: 400;
+        font-size: 18px;
+        line-height: 28px;
+        text-align: center;
+        display: block;
+        padding-top: 1em;
+      }
+      .success {
+        color: #008659;
+      }
+      .error {
+        color: #d13821;
+      }
+      .npci-message-container {
+        padding: 10px;
+      }
+      .npci-message {
+        font-style: normal;
+        font-weight: 700;
+        font-size: 18px;
+        line-height: 28px;
+        color: #435775;
+        text-align: center;
+        display: block;
+        padding: 1em 1em;
+      }
+      .mandate-summery-message {
+        display: block;
+        justify-content: center;
+        padding: 34px 24px 24px 24px;
+        color: #435775;
+        font-size: 16px;
+        font-weight: normal;
+        text-align: center;
+      }
+      .show-modal {
+        opacity: 1;
+        visibility: visible;
+        transform: scale(1);
+        transition: visibility 0s linear 0s, opacity 0.25s 0s, transform 0.25s;
+      }
+      .success-tick {
+        display: flex;
+        justify-content: center;
+      }
+      .mandate-status {
+        padding: 1em 4em;
+      }
+      .action {
+        display: block;
+        text-align: center;
+      }
+      #tick-mark {
+        position: relative;
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+      }
+      #tick-mark::before {
+        position: absolute;
+        left: 0;
+        top: 50%;
+        height: 50%;
+        width: 3px;
+        background-color: #01b358;
+        content: "";
+        transform: translateX(10px) rotate(-45deg);
+        transform-origin: left bottom;
+      }
+      #tick-mark::after {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        height: 3px;
+        width: 100%;
+        background-color: #01b358;
+        content: "";
+        transform: translateX(10px) rotate(-45deg);
+        transform-origin: left bottom;
+      }
+      .btn-large {
+        width: 284px;
+        padding: 0px;
+        margin: 0px;
+      }
+      .arrow {
+        font-size: 22px;
+        padding-left: 10px;
+      }
+      .failed {
+        display: flex;
+        justify-content: center;
+      }
+      .close {
+        box-sizing: border-box;
+        position: relative;
+        display: block;
+        transform: scale(var(--ggs, 1));
+        width: 22px;
+        height: 22px;
+        border: 2px solid transparent;
+        border-radius: 40px;
+      }
+      .close::after,
+      .close::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        width: 32px;
+        height: 3px;
+        background: #d13821;
+        transform: rotate(45deg);
+        border-radius: 5px;
+        top: 8px;
+        left: 1px;
+      }
+      .close::after {
+        transform: rotate(-45deg);
+      }
+      /* EOF NPCI Feedback  */
+
     </style>
 </head>
 <body>
@@ -149,6 +326,59 @@
     <div>MANDATE SUMMARY</div>
     <img height="24" src="https://cdn.razorpay.com/brand/nach.png">
   </header>
+
+   <!-- NPCI FEEDBACK Modal -->
+  <section>  
+    <div class="modal" id="npci-feedback-link-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <img height="32" src="https://cdn.razorpay.com/brand/npci.png" />
+
+          <img height="24" src="https://cdn.razorpay.com/brand/nach.png" />
+        </div>
+        <div class="mandate-info">
+          <div class="mandate-status">
+            <!-- this or this -->
+            <div class="success-tick">
+              <div id="tick-mark"></div>
+            </div>
+            <div class="msg success">
+              Your e-mandate registration has been created successfully.
+            </div>
+            <!-- <div class="failed">
+              <i class="close"></i>
+            </div>
+            <div class="msg error">
+              Oops! Your e-mandate registration has failed.
+            </div> -->
+          </div>
+          <div class="npci-message-container">
+            <div class="npci-message">
+              Please rate your experience to continue. It’ll only take a few
+              seconds.
+            </div>
+            <div class="action">
+              <button onclick="handleFeedbackLinkClick()" class="btn-large">
+                Proceed<span class="arrow">&#8594;</span>
+              </button>
+            </div>
+          </div>
+          <div class="mandate-summery-message">
+            <!-- You may retry the e-mandate registration after sharing your
+            feedback. -->
+            You may check the details of your mandate after sharing your
+            feedback.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <span class="powered-by">Powered by</span>
+          <img height="26" src="https://cdn.razorpay.com/logo.svg" />
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- END OF NPCI FEEDBACK Modal -->
+  
   <section>
     <div class="name">{{ htmlspecialchars($data['emandate_details']['customer_name']) }}</div>
     <div class="bank">
