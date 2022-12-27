@@ -21,6 +21,7 @@ use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
 use RZP\Models\Merchant\Document\Entity as DocumentEntity;
+use RZP\Models\User\Core as UserCore;
 use Throwable;
 use Carbon\Carbon;
 use RZP\Exception;
@@ -6518,6 +6519,13 @@ class Service extends Base\Service
         $ownerId = $merchant->primaryOwner()->getId();
 
         $product = $input[Entity::PRODUCT] ?? Product::PRIMARY;
+
+        //block P.G sub merchant creation
+        $inputCopy = $input;
+
+        $inputCopy[Entity::SIGNUP_SOURCE] = $product;
+
+        (new UserCore())->validateActivation($inputCopy);
 
         // TODO: Remove when dashboard stops sending
         unset($input['user_id']);
