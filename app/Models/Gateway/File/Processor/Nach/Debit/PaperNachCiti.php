@@ -53,6 +53,8 @@ class PaperNachCiti extends Debit\Base
 
     const CITI_NACH_DATE_SELECT = 'citi_nach_date_select';
 
+    const EMANDATE_NARRATION = 'emandate_narration';
+
     const MUT_TARGET = "combined_nach_citi_early_debit_v2";
 
     const NORMAL_OFFSET = "0";
@@ -340,7 +342,7 @@ class PaperNachCiti extends Debit\Base
         $mailable = new NachMail($mailData, $type, $this->gatewayFile->getRecipients());
 
         Mail::queue($mailable);
-    
+
         if($this->gatewayFile->getTarget() === Constants::PAPER_NACH_CITI_V2)
         {
             $this->sendMail($files);
@@ -683,14 +685,23 @@ class PaperNachCiti extends Debit\Base
         $size = FieldsLength::USER_NUMBER;
         $utilityCode = $this->getPaddedValue($utilityCode, $size, ' ', STR_PAD_RIGHT);
 
-        $label = $token->merchant->getFilteredDba();
-        $label = preg_replace('/\s+/', '', $label);
-        $merchantName = $this->getPaddedValue($label, 10, 'X', STR_PAD_RIGHT);
+        $narration = $this->getNarration($token);
+
+        if($narration !== null)
+        {
+            $merchantName = $this->getPaddedValue($narration, 15, 'X', STR_PAD_RIGHT);
+        }
+        else
+        {
+            $label = $token->merchant->getFilteredDba();
+            $label = preg_replace('/\s+/', '', $label);
+            $merchantName = $this->getPaddedValue($label, 10, 'X', STR_PAD_RIGHT);
+        }
+
         $merchantName = strtoupper($merchantName);
         $transactionReference = implode("", [$merchantName, $paymentId]);
         $size = FieldsLength::TRANSACTION_REFERENCE;
-        $transactionReference = $this->getPaddedValue($transactionReference, $size,
-                                                 ' ', STR_PAD_RIGHT);
+        $transactionReference = $this->getPaddedValue($transactionReference, $size, ' ', STR_PAD_RIGHT);
 
         $sponserBank = $token->terminal->getGatewayAccessCode();
         $size = FieldsLength::SPONSER_BANK_IFSC;
@@ -708,6 +719,38 @@ class PaperNachCiti extends Debit\Base
             Fields::TRANSACTION_REFERENCE    => $transactionReference,
             Fields::SPONSER_BANK             => $sponserBank,
         ], true];
+    }
+
+    /**
+     * @param $token
+     * @return mixed|string|string[]|null
+     */
+    public function getNarration($token)
+    {
+        try
+        {
+            $paymentNotes = $token['payment_notes'];
+
+            if($paymentNotes != null and
+                is_string($paymentNotes) === true)
+            {
+                $notesArray = json_decode($paymentNotes, true);
+
+                if(is_array($notesArray) === true and
+                    empty($notesArray[self::EMANDATE_NARRATION]) === false and
+                    $notesArray[self::EMANDATE_NARRATION] !== null and
+                    is_string($notesArray[self::EMANDATE_NARRATION]) === true)
+                {
+                    return preg_replace("/[^a-zA-Z0-9]/", "", $notesArray[self::EMANDATE_NARRATION]);
+                }
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::EMANDATE_NARRATION_ERROR, ["narration parsing error" => $e]);
+        }
+
+        return null;
     }
 
     public function getPaddedValue($value, $fieldLength, $padString, $padType)
@@ -884,7 +927,7 @@ class PaperNachCiti extends Debit\Base
             $type = self::MUT_TYPE;
         }
         elseif($this->gatewayFile->getSubType() === self::NORMAL_OFFSET) {
-            $type = self::NORMAL_OFFSET;
+            $type = self::NORMAL_TYPE;
         }
         else {
             $type = self::EARLY_TYPE;

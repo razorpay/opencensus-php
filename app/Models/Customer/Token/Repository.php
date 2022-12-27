@@ -616,7 +616,6 @@ class Repository extends Base\Repository
         $paymentRecurringColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING);
 
         $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
-
         
         $paymentStatusColumn = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
 
@@ -642,6 +641,7 @@ class Repository extends Base\Repository
                        'tokens.' . Entity::TERMINAL_ID,
                        'payments.id as payment_id',
                        'payments.amount as payment_amount',
+                       'payments.notes as payment_notes',
                        'payments.created_at as payment_created_at',
                        'payments.email as payment_email')
               ->from(\DB::raw('`tokens`, `payments`, `terminals`'))
