@@ -1869,4 +1869,9 @@ class M2PConfigs
             ],
         ],
     ];
+
+    public static function getNetworkRailsSupportedModesMap()
+    {
+        return self::$m2pSupportedModesMap;
+    }
 }

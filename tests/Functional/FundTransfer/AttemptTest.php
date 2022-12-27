@@ -735,4 +735,22 @@ class AttemptTest extends TestCase
 
         $this->assertEquals('initiated', $payout['status']);
     }
+
+    public function testGetCardSupportedModesForScrooge()
+    {
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/fund_transfer_attempts/modes',
+            'server'  => [
+                'HTTP_X-Request-ID' => $this->app['request']->getTaskId(),
+            ],
+            'content' => [],
+        ];
+
+        $this->ba->appAuthTest($this->config['applications.scrooge.secret']);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEmpty($response['card']);
+    }
 }

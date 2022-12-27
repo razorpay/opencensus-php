@@ -4,6 +4,7 @@ namespace RZP\Models\FundTransfer\Attempt;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
@@ -14,6 +15,7 @@ use Razorpay\Trace\Logger as Trace;
 use http\Exception\RuntimeException;
 use RZP\Models\FundTransfer\Redaction;
 use RZP\Models\FundTransfer\Attempt\Core;
+use RZP\Models\FundTransfer\M2P\M2PConfigs;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\FundTransfer\Attempt\Validator;
@@ -396,14 +398,22 @@ class Service extends Base\Service
 
         $supportedModes = Mode::getSupportedModesMap();
 
+        $networkRailsSupportedModesMap = M2PConfigs::getNetworkRailsSupportedModesMap();
+
+        $supportedModes[Payout\Entity::CARD] = $networkRailsSupportedModesMap;
+
+        $networkRailsIssuerCount = (isset($supportedModes[Payout\Entity::CARD]) === true) ?
+            count($supportedModes[Payout\Entity::CARD]) : 0;
+
         //
         // Not logging entire map, since we are logging only to confirm we have reached this point
         //
         $this->trace->info(
             TraceCode::FTA_FETCH_SUPPORTED_MODES_RESPONSE,
             [
-                'issuer_count' => count(array_keys($supportedModes)),
-                'x-request-id' => $xRequestId,
+                'issuer_count'               => count(array_keys($supportedModes)),
+                'network_rails_issuer_count' => $networkRailsIssuerCount,
+                'x-request-id'               => $xRequestId,
             ]
         );
 
