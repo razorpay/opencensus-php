@@ -2,11 +2,6 @@
 
 namespace RZP\Services\Dcs\Features;
 
-use Example\Pg\Merchant\Refund\Features as RefundFeatures;
-use Rzp\Pg\Merchant\Affordability\EligibilityFeatures;
-
-use Razorpay\Dcs\Kv\V1\Model\V1Key;
-
 class Constants
 {
     const RefundEnabled = 'refund_enabled';

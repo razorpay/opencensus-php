@@ -89,10 +89,9 @@
         "simplesoftwareio/simple-qrcode": "~4",
         "ext-gd": "*",
         "ext-curl": "*",
-        "razorpay/config-proto": "dev-master",
         "mvanduijker/laravel-transactional-model-events": "^2.3",
-        "razorpay/dcs-php-sdk": "dev-master",
-        "razorpay/wda-php-sdk": "v1.0.0"
+        "razorpay/wda-php-sdk": "v1.0.0",
+        "razorpay/dcs-php-sdk": "dev-master"
     },
     "repositories": [
         {

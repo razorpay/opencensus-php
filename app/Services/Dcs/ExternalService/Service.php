@@ -3,7 +3,6 @@
 namespace RZP\Services\Dcs\ExternalService;
 
 use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
 use \WpOrg\Requests\Hooks as Requests_Hooks;
 use RZP\Exception;
 use RZP\Trace\TraceCode;

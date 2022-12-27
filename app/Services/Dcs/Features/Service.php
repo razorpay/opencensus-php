@@ -189,6 +189,7 @@ class Service extends Base
         $this->trace->info(TraceCode::DCS_FETCH_REQUEST_RECEIVED, [
             'feature_names' => $featureNames,
             'id' =>  $entityId,
+            'data' => $data,
             'key' => $key,
             'mode' => $mode,
         ]);

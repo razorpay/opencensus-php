@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Feature;
 
+use Razorpay\Trace\Logger;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Constants\Table;
@@ -9,6 +10,7 @@ use RZP\Models\Merchant;
 use RZP\Exception;
 use Illuminate\Support\Collection;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Services\Dcs\Features\Constants as DcsFeaturesConstants;
 use RZP\Services\Dcs\Features\Service;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\PublicCollection;
@@ -30,20 +32,48 @@ class Repository extends Base\Repository
 
     public function fetchByEntityTypeAndEntityId(string $entityType, string $entityId, string $mode = null)
     {
+        $res = collect();
         $cacheTtl = $this->getCacheTtl();
         $cacheTags = Entity::getCacheTagsForEntities($entityType, $entityId);
 
         $query = ($mode === null) ? $this->newQuery() : $this->newQueryWithConnection($mode);
 
-        return $query->where(Entity::ENTITY_TYPE, $entityType)
+        try
+        {
+            $dcs = $this->app['dcs'];
+            $dcsFeatures = array_keys(DcsFeaturesConstants::$dcsNewFeatures);
+            $response = $dcs->fetchByEntityIdAndFeatureNames($entityId, $dcsFeatures, ($mode === null) ? $this->getAppMode() : $mode);
+            $res = collect($response);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
+        }
+
+        $apiResponse = $query->where(Entity::ENTITY_TYPE, $entityType)
             ->where(Entity::ENTITY_ID, $entityId)
             ->remember($cacheTtl)
             ->cacheTags($cacheTags)
             ->get();
+
+        return $res->merge($apiResponse)->unique(Entity::NAME, true);
     }
 
     public function findByEntityTypeEntityIdAndNameOrFail(string $entityType, string $entityId, string $featureName)
     {
+        if (key_exists($featureName, DcsFeaturesConstants::$dcsNewFeatures))
+        {
+            try
+            {
+                $dcs = $this->app['dcs'];
+                return $dcs->fetchByEntityIdAndName($entityId, $featureName, $this->getAppMode());
+            }
+            catch(\Exception $e)
+            {
+                $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
+            }
+        }
+
         return $this->newQuery()
                     ->where(Entity::ENTITY_TYPE, $entityType)
                     ->where(Entity::ENTITY_ID, $entityId)
@@ -53,6 +83,19 @@ class Repository extends Base\Repository
 
     public function findByEntityTypeEntityIdAndName(string $entityType, string $entityId, string $featureName)
     {
+        if (key_exists($featureName, DcsFeaturesConstants::$dcsNewFeatures))
+        {
+            try
+            {
+                $dcs = $this->app['dcs'];
+                return $dcs->fetchByEntityIdAndName($entityId, $featureName, $this->getAppMode());
+            }
+            catch(\Exception $e)
+            {
+                $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
+            }
+        }
+
         return $this->newQuery()
                     ->where(Entity::ENTITY_TYPE, $entityType)
                     ->where(Entity::ENTITY_ID, $entityId)
@@ -62,6 +105,19 @@ class Repository extends Base\Repository
 
     public function findByEntityIdAndNameOnConnection(string $entityId, string $featureName, string $mode)
     {
+        if (key_exists($featureName, DcsFeaturesConstants::$dcsNewFeatures))
+        {
+            try
+            {
+                $dcs = $this->app['dcs'];
+                return $dcs->fetchByEntityIdAndName($entityId, $featureName, $this->getAppMode());
+            }
+            catch(\Exception $e)
+            {
+                $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
+            }
+        }
+
         return $this->newQueryWithConnection($mode)
                     ->where(Entity::ENTITY_ID, $entityId)
                     ->where(Entity::NAME, $featureName)
@@ -90,22 +146,66 @@ class Repository extends Base\Repository
 
     public function findMerchantWithFeatures(string $merchantId, array $featureNames)
     {
-        return $this->newQuery()
+        $dcsRes = collect();
+        $apiFeatures = $featureNames;
+        try
+        {
+            $dcsFeatures = array_intersect($featureNames, array_keys(DcsFeaturesConstants::$dcsNewFeatures));
+            if (sizeof($dcsFeatures) !== 0) {
+                $dcs = $this->app['dcs'];
+                $response = $dcs->fetchByEntityIdAndFeatureNames($merchantId, $dcsFeatures, $this->getAppMode());
+                $dcsRes = collect($response);
+                $apiFeatures = array_diff($featureNames, array_keys(DcsFeaturesConstants::$dcsNewFeatures));
+                if (sizeof($apiFeatures) === 0)
+                {
+                    return $dcsRes;
+                }
+            }
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
+        }
+
+        $apiResponse = $this->newQuery()
                     ->select(Entity::NAME)
-                    ->whereIn(Entity::NAME, $featureNames)
+                    ->whereIn(Entity::NAME, $apiFeatures)
                     ->where(Entity::ENTITY_TYPE, 'merchant')
                     ->where(Entity::ENTITY_ID, $merchantId)
                     ->get();
+
+        return $dcsRes->merge($apiResponse)->unique(Entity::NAME, true);
     }
 
     public function findMerchantWithFeaturesOnConnection(string $merchantId, array $featureNames, $mode)
     {
-        return $this->newQueryWithConnection($mode)
-                    ->whereIn(Entity::NAME, $featureNames)
-                    ->where(Entity::ENTITY_TYPE, 'merchant')
-                    ->where(Entity::ENTITY_ID, $merchantId)
-                    ->pluck(Entity::NAME)
-                    ->toArray();
+        $dcsRes = [];
+        $apiFeatures = $featureNames;
+        try
+        {
+            $dcsFeatures = array_intersect($featureNames, array_keys(DcsFeaturesConstants::$dcsNewFeatures));
+            if (sizeof($dcsFeatures) !== 0) {
+                $dcs = $this->app['dcs'];
+                $response = $dcs->fetchByEntityIdAndFeatureNames($merchantId, $dcsFeatures, $mode);
+                $dcsRes = collect($response)->pluck(Entity::NAME)->toArray();
+                $apiFeatures = array_diff($featureNames, array_keys(DcsFeaturesConstants::$dcsNewFeatures));
+                if (sizeof($apiFeatures) === 0) {
+                    return $dcsRes;
+                }
+            }
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
+        }
+
+        $apiResponse = $this->newQueryWithConnection($mode)
+                            ->whereIn(Entity::NAME, $apiFeatures)
+                            ->where(Entity::ENTITY_TYPE, 'merchant')
+                            ->where(Entity::ENTITY_ID, $merchantId)
+                            ->pluck(Entity::NAME)
+                            ->toArray();
+        return array_unique(array_merge($apiResponse, $dcsRes));
     }
 
     /**
@@ -178,6 +278,19 @@ class Repository extends Base\Repository
 
     public function getMerchantIdsHavingFeature(string $featureName, array $merchantIds)
     {
+        if (key_exists($featureName, DcsFeaturesConstants::$dcsNewFeatures))
+        {
+            try
+            {
+                $dcs = $this->app['dcs'];
+                return $dcs->fetchByEntityIdsAndName($merchantIds, $featureName, $this->getAppMode());
+            }
+            catch(\Exception $e)
+            {
+                $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
+            }
+        }
+
         return $this->newQuery()
                     ->select(Entity::ENTITY_ID)
                     ->whereIn(Entity::ENTITY_ID, $merchantIds)
