@@ -85,4 +85,8 @@ export const FLAGGED_RULES_MAP = {
   emailmerchantfeatures_sumpurchaseamountinoneday: 'High purchase amount in one day',
   generic_createaccounttimebucket: 'New customer on your store',
   phonemerchantfeatures_sumpurchaseamountinoneday: 'High purchase amount in one day',
+  IsPhoneBlacklisted: 'Customer phone blocklisted by merchant',
+  IsIPBlacklisted: 'Customer IP blocklisted by merchant',
+  IsZipcodeBlacklisted: 'Customer zipcode blocklisted by merchant',
+  IsEmailBlacklisted: 'Customer email blocklisted by merchant',
 };

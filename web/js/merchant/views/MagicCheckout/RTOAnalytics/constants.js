@@ -94,7 +94,7 @@ export const DATASET_LABEL_MAP = {
     response_key: 'percentage',
   },
   REGULAR_PREPAID_ORDERS: {
-    label: 'Regular prepaid orders',
+    label: 'Regular orders',
     response_key: 'safe_successful_orders_count',
   },
   ADDITIONAL_PREPAID_ORDERS: {

@@ -64,7 +64,7 @@ const FeedbackRate = ({
       <GenericPanel className="feedbackRate-panel" isLoading={isloading}>
         <PanelTopbar>
           <p className="panel-topbar-heading">Delivery data</p>
-          <p className="panel-heading-subtext">Data recieved for orders shipped by you</p>
+          <p className="panel-heading-subtext">Data received for orders shipped by you</p>
         </PanelTopbar>
         <PanelBody>
           <FeedbackDoughnut feedbackPercentage={feedbackPercentage} />

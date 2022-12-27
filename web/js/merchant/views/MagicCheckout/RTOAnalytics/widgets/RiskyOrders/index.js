@@ -48,7 +48,7 @@ const RiskyOrdersChartOptions = {
         const totalOrders = tooltipItem.reduce((count, cval) => {
           return count + cval.yLabel;
         }, 0);
-        return `Total prepaid orders: ${totalOrders}`;
+        return `Total orders: ${totalOrders}`;
       },
       labelColor: (item, chart) => {
         const color =
@@ -169,7 +169,7 @@ const RiskyOrders = ({
         <div className="legend">
           <div className="item-box">
             <div className="colored safe" />
-            <span>Regular prepaid orders</span>
+            <span>Regular orders</span>
           </div>
           <div className="item-box">
             <div className="colored total" />
