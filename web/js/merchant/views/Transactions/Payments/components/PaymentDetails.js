@@ -28,6 +28,7 @@ import { isInteger } from 'common/utils/validators';
 import track from 'merchant/views/Transactions/Payments/track';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import { isOrgFeatureExist } from 'merchant/models/User';
+import { selfServerTrack } from 'merchant/views/Transactions/AnalyticsTrack';
 // styles
 import './Payments.styl';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
@@ -482,7 +483,7 @@ function PaymentDetails(props) {
 
                 <EntityDetailRow label="Order ID">
                   {payment.order_id ? (
-                    <Link to={`/orders/${payment.order_id}`}>
+                    <Link to={`/orders/${payment.order_id}`} onClick={selfServerTrack}>
                       <code>{payment.order_id}</code>
                     </Link>
                   ) : (

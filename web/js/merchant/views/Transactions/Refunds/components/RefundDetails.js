@@ -19,6 +19,7 @@ import { bindActionCreators } from 'redux';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { OptimizerDetails } from 'merchant/views/Transactions/Payments/components/OptimizerDetails';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 class PaymentDetailsContainer extends Component {
   componentDidUpdate() {
@@ -81,7 +82,16 @@ class PaymentDetailsContainer extends Component {
                   <EntityDetailRow
                     label="Payment"
                     value={() => (
-                      <Link to={`/payments/${refund.payment_id}`}>
+                      <Link
+                        to={`/payments/${refund.payment_id}`}
+                        onClick={() =>
+                          selfServeTrackInitiate({
+                            selfServeAction: 'Payment Details Fetched',
+                            page: 'Payment Listing',
+                            screen: 'Transaction',
+                          })
+                        }
+                      >
                         <code>{refund.payment_id}</code>
                       </Link>
                     )}

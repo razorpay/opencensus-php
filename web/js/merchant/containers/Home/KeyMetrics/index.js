@@ -647,7 +647,7 @@ class KeyMetricsContainer extends Component {
           this.state.loading = false;
         } else {
           selfServeTrackSuccess({
-            selfServeAction: 'Payment Insights Fetched',
+            selfServeAction: 'Payment Details Fetched',
             page: 'Home',
             screen: 'Home',
           });

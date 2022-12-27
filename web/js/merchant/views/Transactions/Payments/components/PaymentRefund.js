@@ -13,6 +13,7 @@ import {
 } from 'common/ui/item/pair';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { analyticsTrack } from 'common/utils/analytics';
+import { selfServerTrack } from 'merchant/views/Transactions/AnalyticsTrack';
 
 /*
  * Design:
@@ -60,6 +61,7 @@ const RefundsList = ({ refunds, onToggleClick = () => {} }) => {
           loading={refunds.loading}
           showHeaders={true}
           noStripe={true}
+          onCellClick={selfServerTrack}
         />
       </div>
     </ContentToggler>

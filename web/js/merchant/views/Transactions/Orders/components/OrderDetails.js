@@ -11,6 +11,7 @@ import Definition from 'common/ui/Definition';
 import React, { useEffect } from 'react';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { selfServerTrack } from 'merchant/views/Transactions/AnalyticsTrack';
 
 export default (props) => {
   const { order, payments, isLoading, statusMsg } = props;
@@ -77,6 +78,7 @@ export default (props) => {
                     items={payments.items}
                     loading={payments.loading}
                     showHeaders={false}
+                    onCellClick={selfServerTrack}
                   />
                 </ListGroupToggler>
               ) : (

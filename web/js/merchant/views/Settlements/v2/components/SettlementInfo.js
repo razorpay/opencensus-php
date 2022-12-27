@@ -16,6 +16,7 @@ import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { fetchBankSettleStatus, customSettlementEnabled } from 'merchant/views/Settlements/v2/util';
 import LoaderDots from 'common/ui/LoaderDots';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 const SettlementInfo = (props) => {
   const {
@@ -96,6 +97,11 @@ const SettlementInfo = (props) => {
       const data = await fetchItem(settlementId);
       const properties = { ...propertiesPayload('settlement', data), status: 'success' };
       handleAnalytics(objectName, actionName, properties, screen);
+      selfServeTrackSuccess({
+        selfServeAction: 'Settlement Details Fetched',
+        page: 'Home',
+        screen: 'Home',
+      });
     } catch (e) {
       const properties = {
         status: 'failure',

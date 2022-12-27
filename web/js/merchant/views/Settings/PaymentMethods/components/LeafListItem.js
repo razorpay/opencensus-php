@@ -43,6 +43,7 @@ import MissingInfoModal from './MissingInfoModal';
 import { withRouter } from 'react-router-dom';
 
 import ConfirmBoxContext from './ConfimBoxContent';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 class LeafListItem extends React.Component {
   static contextTypes = {
@@ -110,13 +111,18 @@ class LeafListItem extends React.Component {
     });
     return this.props
       .createMerchantInstrumentRequest(requestSlug)
-      .then(() =>
+      .then(() => {
         this.tracker('instrument request', 'result', 'settings', {
           instrumentName: instrument.name,
           method: leafInstrument.name,
           status: 'Success',
-        }),
-      )
+        });
+        selfServeTrackSuccess({
+          selfServeAction: 'Instrument Requested',
+          page: 'Payment-Methods',
+          screen: 'Settings',
+        });
+      })
       .then(() => {
         this.props.showNotification({
           type: 'success',
@@ -200,6 +206,11 @@ class LeafListItem extends React.Component {
     this.tracker('instrument', 'requested', 'settings', {
       instrumentName: instrument.name,
       method: leafInstrument.name,
+    });
+    selfServeTrackInitiate({
+      selfServeAction: 'Instrument Requested',
+      page: 'Payment-Methods',
+      screen: 'Settings',
     });
     this.props.openModal({
       component: (
