@@ -8387,21 +8387,68 @@ class Service extends Base\Service
             $email = $merchant->getEmail();
         }
 
+        $partnerCommissionConfig = Tracer::inspan(['name' => HyperTrace::GET_PARTNER_COMMISSION_CONFIG], function() use ($merchant) {
+
+            return $this->getPartnerCommissionConfig($merchant);
+        });
+
         // RSR-2002; global_hold_status & global_hold_reason will be provided to new settlement service as Global config.
         return [
-            "active"               => $merchant->isActivated(),
-            "parent"               => $this->settlementToPartner($mid),
-            "partner_bank_account" => isset($merchantSettleToPartner[$mid]) ? $merchantSettleToPartner[$mid] : null,
-            "pan_details"          => $this->getMerchantPANDetails($merchant),
-            "purpose_code"         => $merchant->getPurposeCode(),
-            "iec_code"             => $merchant->getIecCode(),
-            "business_address"     => ($merchant->merchantDetail !== null) ? $merchant->merchantDetail->getBusinessRegisteredAddressAsText(', ') : null,
-            "global_hold_status"   => $merchant->getHoldFunds(),
-            "global_hold_reason"   => ($merchant->getHoldFunds() === false) ? '' : ($merchant->getHoldFundsReason() ?? 'merchant funds are on hold'),
-            "settle_to_org"        => $this->getMerchantOrgSettleValue($merchant),
-            "org_id"               => $merchant->getOrgId(),
-            "merchant_email"       => $email,
+            "active"                     => $merchant->isActivated(),
+            "parent"                     => $this->settlementToPartner($mid),
+            "partner_bank_account"       => isset($merchantSettleToPartner[$mid]) ? $merchantSettleToPartner[$mid] : null,
+            "pan_details"                => $this->getMerchantPANDetails($merchant),
+            "purpose_code"               => $merchant->getPurposeCode(),
+            "iec_code"                   => $merchant->getIecCode(),
+            "business_address"           => ($merchant->merchantDetail !== null) ? $merchant->merchantDetail->getBusinessRegisteredAddressAsText(', ') : null,
+            "global_hold_status"         => $merchant->getHoldFunds(),
+            "global_hold_reason"         => ($merchant->getHoldFunds() === false) ? '' : ($merchant->getHoldFundsReason() ?? 'merchant funds are on hold'),
+            "settle_to_org"              => $this->getMerchantOrgSettleValue($merchant),
+            "org_id"                     => $merchant->getOrgId(),
+            "merchant_email"             => $email,
+            "partner_commissions_config" => $partnerCommissionConfig,
         ];
+    }
+
+    private function getPartnerCommissionConfig($merchant)
+    {
+        $globalOnHold           = $merchant->getHoldFunds();
+        $globalOnHoldReason     = ($merchant->getHoldFunds() === false) ? '' : ($merchant->getHoldFundsReason() ?? 'merchant funds are on hold');
+        $partnerType            = $merchant->getPartnerType();
+
+        $partnerCommissionConfig = [
+            'hold_status'          => $globalOnHold,
+            'hold_reason'          => $globalOnHoldReason,
+            'enabled'              => false,
+        ];
+
+        $properties = [
+            'id'                   => $merchant->getId(),
+            'experiment_id'        => $this->app['config']->get('app.partner_independent_kyc_exp_id'),
+        ];
+
+        $isExpEnable = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+
+        if($isExpEnable === false )
+        {
+            return $partnerCommissionConfig;
+        }
+
+        if ($partnerType === Constants::RESELLER)
+        {
+            $activationStatus       = ($merchant->merchantDetail !== null) ? $merchant->merchantDetail->getActivationStatus() : null;
+
+            if (empty($activationStatus) === true)
+            {
+                $partnerActivation = $merchant->partnerActivation;
+
+                $partnerCommissionConfig ['hold_status'] = $partnerActivation->getFundsOnHold();
+                $partnerCommissionConfig ['hold_reason'] = ($partnerActivation->getFundsOnHold() === false) ? '' : 'Partner funds are on hold';
+                $partnerCommissionConfig ['enabled']     = true;
+            }
+        }
+
+        return $partnerCommissionConfig;
     }
 
     private function getMerchantPANDetails($merchant) {

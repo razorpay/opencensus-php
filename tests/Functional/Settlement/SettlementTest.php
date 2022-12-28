@@ -16,6 +16,7 @@ use Razorpay\OAuth\Application;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Settlement\Channel;
+use RZP\Tests\Traits\MocksSplitz;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\Partner as Partner;
 use RZP\Models\Merchant\Core as MerchantCore;
@@ -39,6 +40,7 @@ use RZP\Models\Transaction\Processor\SettlementTransfer;
 class SettlementTest extends TestCase
 {
     use PartnerTrait;
+    use MocksSplitz;
     use SettlementTrait;
     use PaymentTrait;
     use HeimdallTrait;
@@ -2948,6 +2950,238 @@ class SettlementTest extends TestCase
         $result = $this->getGlobalConfig('110000Razorpay');
 
         $this->assertEquals("COMPANYPAN", $result["pan_details"]);
+    }
+
+    public function testGetPartnerCommissionConfigForResellerPartnerActivated()
+    {
+        $this->ba->settlementsAuth();
+
+        $this->fixtures->create('org',[
+            'id' => 'IUXvshap3Hbzot',
+            'display_name' => 'HDFC CollectNow Bank'
+        ]);
+
+        $this->fixtures->merchant->createMerchantWithDetails(
+            'IUXvshap3Hbzot',
+            '110000Razorpay',
+            [
+                MerchantEntity::NAME            => 'Test IIR MID 1254',
+                MerchantEntity::WEBSITE         => 'www.testIIRMid1235.com',
+                MerchantEntity::PARTNER_TYPE    => 'reseller',
+                MerchantEntity::ACTIVATED       => 0,
+            ],
+            [
+                MerchantDetailsEntity::ACTIVATION_STATUS        => null,
+                MerchantDetailsEntity::BUSINESS_TYPE            => '1',
+                MerchantDetailsEntity::BUSINESS_CATEGORY        => 'biz category 2',
+                MerchantDetailsEntity::BUSINESS_SUBCATEGORY     => 'biz subcategory',
+                MerchantDetailsEntity::PROMOTER_PAN             => 'AJDDOC1234',
+            ]);
+
+        $this->fixtures->create('partner_activation',[
+            'merchant_id'       => '110000Razorpay',
+            'hold_funds'        => false,
+            'activation_status' => 'activated'
+        ]);
+
+        $this->mockAllSplitzTreatment();
+
+        $result = $this->getGlobalConfig('110000Razorpay');
+
+        $expectedPartnerCommissionsConfig = [
+            'hold_status'          => false,
+            'hold_reason'          => '',
+            'enabled'              => true,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedPartnerCommissionsConfig, $result["partner_commissions_config"]);
+    }
+
+    public function testGetPartnerCommissionConfigForResellerMerchantActivated()
+    {
+        $this->ba->settlementsAuth();
+
+        $this->fixtures->create('org',[
+            'id' => 'IUXvshap3Hbzot',
+            'display_name' => 'HDFC CollectNow Bank'
+        ]);
+
+        $this->fixtures->merchant->createMerchantWithDetails(
+            'IUXvshap3Hbzot',
+            '110000Razorpay',
+            [
+                MerchantEntity::NAME            => 'Test IIR MID 1254',
+                MerchantEntity::WEBSITE         => 'www.testIIRMid1235.com',
+                MerchantEntity::PARTNER_TYPE    => 'reseller',
+                MerchantEntity::ACTIVATED       => 1,
+                MerchantEntity::LIVE            => 1,
+                MerchantEntity::ACTIVATED_AT    => Carbon::now()->timestamp,
+            ],
+            [
+                MerchantDetailsEntity::ACTIVATION_STATUS        => 'activated',
+                MerchantDetailsEntity::BUSINESS_TYPE            => '1',
+                MerchantDetailsEntity::BUSINESS_CATEGORY        => 'biz category 2',
+                MerchantDetailsEntity::BUSINESS_SUBCATEGORY     => 'biz subcategory',
+                MerchantDetailsEntity::PROMOTER_PAN             => 'AJDDOC1234',
+            ]);
+
+        $this->fixtures->create('partner_activation',[
+            'merchant_id'       => '110000Razorpay',
+            'hold_funds'        => false,
+            'activation_status' => 'activated'
+        ]);
+
+        $this->mockAllSplitzTreatment();
+
+        $result = $this->getGlobalConfig('110000Razorpay');
+
+        $expectedPartnerCommissionsConfig = [
+            'hold_status'          => false,
+            'hold_reason'          => '',
+            'enabled'              => false,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedPartnerCommissionsConfig, $result["partner_commissions_config"]);
+    }
+
+    public function testGetPartnerCommissionConfigForNonResellerMerchantActivated()
+    {
+        $this->ba->settlementsAuth();
+
+        $this->fixtures->create('org',[
+            'id' => 'IUXvshap3Hbzot',
+            'display_name' => 'HDFC CollectNow Bank'
+        ]);
+
+        $this->fixtures->merchant->createMerchantWithDetails(
+            'IUXvshap3Hbzot',
+            '110000Razorpay',
+            [
+                MerchantEntity::NAME               => 'Test IIR MID 1254',
+                MerchantEntity::WEBSITE            => 'www.testIIRMid1235.com',
+                MerchantEntity::PARTNER_TYPE       => 'aggregator',
+                MerchantEntity::ACTIVATED          => 1,
+                MerchantEntity::LIVE               => 1,
+                MerchantEntity::ACTIVATED_AT       => Carbon::now()->timestamp,
+                MerchantEntity::HOLD_FUNDS         => false,
+            ],
+            [
+                MerchantDetailsEntity::ACTIVATION_STATUS        => 'activated',
+                MerchantDetailsEntity::BUSINESS_TYPE            => '1',
+                MerchantDetailsEntity::BUSINESS_CATEGORY        => 'biz category 2',
+                MerchantDetailsEntity::BUSINESS_SUBCATEGORY     => 'biz subcategory',
+                MerchantDetailsEntity::PROMOTER_PAN             => 'AJDDOC1234',
+            ]);
+
+        $this->fixtures->create('partner_activation',[
+            'merchant_id'       => '110000Razorpay',
+            'hold_funds'        => false,
+            'activation_status' => 'activated'
+        ]);
+
+        $this->mockAllSplitzTreatment();
+
+        $result = $this->getGlobalConfig('110000Razorpay');
+
+        $expectedPartnerCommissionsConfig = [
+            'hold_status'          => false,
+            'hold_reason'          => '',
+            'enabled'              => false,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedPartnerCommissionsConfig, $result["partner_commissions_config"]);
+    }
+
+    public function testGetPartnerCommissionConfigForNonPartnerMerchantActivated()
+    {
+        $this->ba->settlementsAuth();
+
+        $this->fixtures->create('org',[
+            'id' => 'IUXvshap3Hbzot',
+            'display_name' => 'HDFC CollectNow Bank'
+        ]);
+
+        $this->fixtures->merchant->createMerchantWithDetails(
+            'IUXvshap3Hbzot',
+            '110000Razorpay',
+            [
+                MerchantEntity::NAME               => 'Test IIR MID 1254',
+                MerchantEntity::WEBSITE            => 'www.testIIRMid1235.com',
+                MerchantEntity::ACTIVATED          => 1,
+                MerchantEntity::LIVE               => 1,
+                MerchantEntity::ACTIVATED_AT       => Carbon::now()->timestamp,
+                MerchantEntity::HOLD_FUNDS         => false,
+            ],
+            [
+                MerchantDetailsEntity::ACTIVATION_STATUS        => 'activated',
+                MerchantDetailsEntity::BUSINESS_TYPE            => '1',
+                MerchantDetailsEntity::BUSINESS_CATEGORY        => 'biz category 2',
+                MerchantDetailsEntity::BUSINESS_SUBCATEGORY     => 'biz subcategory',
+                MerchantDetailsEntity::PROMOTER_PAN             => 'AJDDOC1234',
+            ]);
+
+        $this->fixtures->create('partner_activation',[
+            'merchant_id'       => '110000Razorpay',
+            'hold_funds'        => false,
+            'activation_status' => 'activated'
+        ]);
+
+        $this->mockAllSplitzTreatment();
+
+        $result = $this->getGlobalConfig('110000Razorpay');
+
+        $expectedPartnerCommissionsConfig = [
+            'hold_status'          => false,
+            'hold_reason'          => '',
+            'enabled'              => false,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedPartnerCommissionsConfig, $result["partner_commissions_config"]);
+    }
+
+    public function testGetPartnerCommissionConfigForNonActivatedResellerPartnerAndMerchant()
+    {
+        $this->ba->settlementsAuth();
+
+        $this->fixtures->create('org',[
+            'id' => 'IUXvshap3Hbzot',
+            'display_name' => 'HDFC CollectNow Bank'
+        ]);
+
+        $this->fixtures->merchant->createMerchantWithDetails(
+            'IUXvshap3Hbzot',
+            '110000Razorpay',
+            [
+                MerchantEntity::NAME               => 'Test IIR MID 1254',
+                MerchantEntity::WEBSITE            => 'www.testIIRMid1235.com',
+                MerchantEntity::PARTNER_TYPE       => 'reseller',
+                MerchantEntity::HOLD_FUNDS         => true,
+            ],
+            [
+                MerchantDetailsEntity::ACTIVATION_STATUS        => null,
+                MerchantDetailsEntity::BUSINESS_TYPE            => '1',
+                MerchantDetailsEntity::BUSINESS_CATEGORY        => 'biz category 2',
+                MerchantDetailsEntity::BUSINESS_SUBCATEGORY     => 'biz subcategory',
+                MerchantDetailsEntity::PROMOTER_PAN             => 'AJDDOC1234',
+            ]);
+
+        $this->fixtures->create('partner_activation',[
+            'merchant_id'       => '110000Razorpay',
+            'hold_funds'        => true,
+            'activation_status' => null
+        ]);
+
+        $this->mockAllSplitzTreatment();
+
+        $result = $this->getGlobalConfig('110000Razorpay');
+
+        $expectedPartnerCommissionsConfig = [
+            'hold_status'          => true,
+            'hold_reason'          => 'Partner funds are on hold',
+            'enabled'              => true,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedPartnerCommissionsConfig, $result["partner_commissions_config"]);
     }
 
     public function testGetMerchantConfigForSettlementForMerchantWithBusinessTypeProprietorshipWithPromoterPan()
