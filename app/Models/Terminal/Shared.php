@@ -164,6 +164,7 @@ class Shared
     const NETBANKING_DBS_TERMINAL            = '1000NbDbsTrmnl';
     const RUPAY_SIHUB_RAZORPAY_TERMINAL      = '1000RupSiTrmnl';
     const NETBANKING_SARASWAT_TERMINAL       = '1000NbSrcbTrmnl';
+    const UPI_ICICI_DEDICATED_TERMINAL       = '102IciciDedTml';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
@@ -243,6 +244,8 @@ class Shared
         self::MANDATE_HQ_RAZORPAY_TERMINAL,
         self::NETBANKING_DBS_TERMINAL,
         self::RUPAY_SIHUB_RAZORPAY_TERMINAL,
+        self::UPI_ICICI_ONLINE_TERMINAL,
+        self::UPI_ICICI_OFFLINE_TERMINAL,
     );
 
     // NOTE: No two shared terminal should be present for same gateway
@@ -330,6 +333,8 @@ class Shared
         self::NETBANKING_DBS_TERMINAL            => Gateway::NETBANKING_DBS,
         self::RUPAY_SIHUB_RAZORPAY_TERMINAL      => Gateway::RUPAY_SIHUB,
         self::NETBANKING_SARASWAT_TERMINAL       => Gateway::NETBANKING_SARASWAT,
+        self::UPI_ICICI_ONLINE_TERMINAL          => Gateway::UPI_ICICI,
+        self::UPI_ICICI_OFFLINE_TERMINAL         => Gateway::UPI_ICICI,
     ];
 
     public static function getSharedTerminalMapping()

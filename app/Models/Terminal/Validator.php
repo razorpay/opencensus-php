@@ -2779,6 +2779,14 @@ class Validator extends Base\Validator
                 Entity::TYPE);
         }
 
+        if (( in_array(Type::ONLINE, $type) === true ) and
+            ( in_array(Type::OFFLINE, $type) === true ))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Terminal should be either online or offline.',
+                Entity::TYPE);
+        }
+
         if ($this->entity->isBankTransferEnabled() === false)
         {
             return;

@@ -470,6 +470,54 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateUpiIciciOnlineTerminal()
+    {
+        $this->startTest();
+    }
+
+    public function testEditUpiIciciOnlineTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:upi_icici_dedicated_terminal');
+
+        $data = [
+            'gateway'                   => 'upi_icici',
+            'type'                      => [
+                'online' => '1',
+            ],
+        ];
+
+        $content = $this->editTerminal($terminal->getId(), $data);
+
+        $this->assertEquals($content['type'], ['non_recurring','pay', 'collect', 'online']);
+
+    }
+
+    public function testCreateUpiIciciOfflineTerminal()
+    {
+        $this->startTest();
+    }
+
+    public function testEditUpiIciciOfflineTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:upi_icici_dedicated_terminal');
+
+        $data = [
+            'gateway'                   => 'upi_icici',
+            'type'                      => [
+                'offline' => '1',
+            ],
+        ];
+
+        $content = $this->editTerminal($terminal->getId(), $data);
+
+        $this->assertEquals($content['type'], ['non_recurring','pay', 'collect', 'offline']);
+    }
+
+    public function testCreateUpiIciciOnlineAndOfflineTerminal()
+    {
+        $this->startTest();
+    }
+
     public function testAddBharatQrTerminal()
     {
         $this->startTest();

@@ -1848,6 +1848,16 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(Type::OPTIMIZER) === true);
     }
 
+    public function isOnline()
+    {
+        return ($this->isTypeApplicable(Type::ONLINE) === true);
+    }
+
+    public function isOffline()
+    {
+        return ($this->isTypeApplicable(Type::OFFLINE) === true);
+    }
+
     public function isPin()
     {
         return ($this->isTypeApplicable(Type::PIN) === true);

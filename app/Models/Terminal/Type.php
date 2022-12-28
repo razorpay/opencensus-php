@@ -72,6 +72,10 @@ class Type
     // Terminals for Optimizer
     const OPTIMIZER                        = 'optimizer';
 
+    const ONLINE                           = 'online';
+
+    const OFFLINE                          = 'offline';
+
     protected static $types = [
         self::NON_RECURRING,
         self::RECURRING_3DS,
@@ -96,6 +100,8 @@ class Type
         self::MANDATE_HUB,
         self::OPTIMIZER,
         self::POS,
+        self::ONLINE,
+        self::OFFLINE,
     ];
 
     protected static $bitPosition = [
@@ -122,6 +128,8 @@ class Type
         self::MANDATE_HUB                      => 21,
         self::OPTIMIZER                        => 22,
         self::POS                              => 23,
+        self::ONLINE                           => 24,
+        self::OFFLINE                          => 25,
     ];
 
     /**

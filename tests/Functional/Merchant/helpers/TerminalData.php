@@ -732,6 +732,92 @@ return [
         ]
     ],
 
+    'testCreateUpiIciciOnlineTerminal' => [
+        'request'  => [
+            'content' => [
+                'gateway'              => 'upi_icici',
+                'gateway_merchant_id'  => '12345',
+                'gateway_merchant_id2' => 'rzpbqr@icici',
+                'upi'                  => true,
+                'type'                 => [
+                    'pay'           => '1',
+                    'collect'       => '1',
+                    'non_recurring' => '1',
+                    'online'        => '1',
+                ],
+            ],
+            'method'  => 'POST',
+            'url'     => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id'  => '12345',
+                'gateway_merchant_id2' => 'rzpbqr@icici',
+                'enabled'              => true
+            ]
+        ]
+    ],
+
+    'testCreateUpiIciciOfflineTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'upi_icici',
+                'gateway_merchant_id'       => '12345',
+                'vpa'                       => 'rzpbqr@icici',
+                'upi'                       => true,
+                'type'                      => [
+                    'offline'       => '1',
+                    'pay'           => '1',
+                    'collect'       => '1',
+                    'non_recurring' => '1',
+                ],
+            ],
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id' => '12345',
+                'vpa'                 => 'rzpbqr@icici',
+                'enabled'             => true
+            ]
+        ]
+    ],
+
+    'testCreateUpiIciciOnlineAndOfflineTerminal' => [
+        'request'   => [
+            'content' => [
+                'gateway'              => 'upi_icici',
+                'gateway_merchant_id'  => '12345',
+                'gateway_merchant_id2' => 'rzpbqr@icici',
+                'upi'                  => true,
+                'type'                 => [
+                    'pay'           => '1',
+                    'collect'       => '1',
+                    'non_recurring' => '1',
+                    'online'        => '1',
+                    'offline'       => '1',
+                ],
+            ],
+
+            'method' => 'POST',
+            'url'    => '/merchants/10000000000000/terminals',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Terminal should be either online or offline.',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testAddBharatQrTerminal' => [
         'request' => [
             'content' => [
