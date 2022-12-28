@@ -7,6 +7,9 @@ use RZP\Exception\InvalidArgumentException;
 class TraceCode extends \Razorpay\Trace\TraceCode
 {
     //consents
+
+    const ICICI_QR_API_REF_ID_GENERATION_FAILED     = 'ICICI_QR_API_REF_ID_GENERATION_FAILED';
+    const ICICI_QR_API_REQUEST_RESPONSE_TRACE       = 'ICICI_QR_API_REQUEST_RESPONSE_TRACE';
     const BLOCKING_MX_ACTIVATIONS_TEMPORARILY                   = 'BLOCKING_MX_ACTIVATIONS_TEMPORARILY';
 
     const CREATE_MERCHANT_CONSENT_DETAILS           = 'CREATE_MERCHANT_CONSENT_DETAILS';

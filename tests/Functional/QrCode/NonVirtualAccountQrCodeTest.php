@@ -1876,4 +1876,61 @@ class NonVirtualAccountQrCodeTest extends TestCase
             return true;
         });
     }
+
+    public function testCreateDynamicQrWithDedicatedTerminal()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+
+        $qrCode = $this->createQrCode(['usage'          => 'multiple_use',
+            'type'           => 'upi_qr',
+            'fixed_amount'   => true,
+            'payment_amount' => 10000
+        ],
+            'test',
+            'LiveAccountMer');
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+
+        $this->assertEquals($qrCodeEntity['id'], $qrCode['id']);
+
+        $this->assertEquals($qrCodeEntity['reference'],'icicirefID');
+
+        $this->assertStringContainsString('icicirefID', $qrCodeEntity['qr_string']);
+    }
+
+    public function testCreateStaticQrWithDedicatedTerminal()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+
+        $response = $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type' => 'upi_qr',
+            ],
+            'test',
+            'LiveAccountMer');
+
+        $this->runEntityAssertions($response);
+    }
+
+    protected function enableRazorXTreatmentForQrDedicatedTerminal()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if ($featureFlag === (RazorxTreatment::DEDICATED_TERMINAL_QR_CODE))
+                {
+                    return 'on';
+                }
+                return 'control';
+            });
+    }
 }

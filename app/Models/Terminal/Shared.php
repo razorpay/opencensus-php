@@ -105,6 +105,7 @@ class Shared
     const UPI_ICICI_RAZORPAY_TERMINAL        = '100UPIICICITml';
     const UPI_ICICI_RECURRING_TERMINAL       = '100IciciRcrTml';
     const UPI_ICICI_RECURRING_TERMINAL_DEDICATED = '101IciciRcrTml';
+    const UPI_ICICI_TERMINAL_DEDICATED       = '102IciciDedTml';
     const UPI_ICICI_RECURRING_INTENT_TERMINAL= '1IcicRcrIntTml';
     const UPI_ICICI_TPV_TERMINAL             = '100UPIICTpvTml';
     const UPI_AXIS_RAZORPAY_TERMINAL         = '100UPIAXISTmnl';

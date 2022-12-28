@@ -668,6 +668,37 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    public function getQrRefId($input): string
+    {
+        //adding the merchant id here as the merchant id that needs
+        //to be sent here is the icici merchant id for razorpay
+        $this->input = $input;
+
+        $input = [
+            Fields::AMOUNT => $this->formatAmount($input['qr_code']['amount']),
+            Fields::MERCHANT_ID => $this->getMerchantId(),
+            Fields::TERMINAL_ID => $this->getTerminalId($this->input),
+            Fields::BILL_NUMBER => '1234',
+            Fields::MERCHANT_TRAN_ID => $input['qr_code']['id'],
+        ];
+
+        $path = 'pay_v3';
+
+        $this->trace->info(TraceCode::ICICI_QR_API_REQUEST_RESPONSE_TRACE, ['input' => $input]);
+
+        $content = $this->transformRequestArrayToContent($input);
+
+        $request = $this->getStandardRequestArray($content, 'post', $path);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $response = $this->parseGatewayResponse($response->body);
+
+        $this->trace->info(TraceCode::ICICI_QR_API_REQUEST_RESPONSE_TRACE, ['response' => $response]);
+
+        return $response['refId'];
+    }
+
     protected function getTerminalId(array $input): string
     {
         $mcc = (string) $input['merchant']->getCategory();

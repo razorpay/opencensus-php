@@ -5,6 +5,7 @@ namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 use RZP\Models\Vpa;
 use RZP\Models\QrCode;
 use RZP\Models\Settings;
+use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use BaconQrCode\Writer;
@@ -18,9 +19,13 @@ use RZP\Models\BharatQr\Tags;
 use RZP\Models\QrCode\Entity;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Payment\Gateway;
+use RZP\Gateway\Upi\Icici\Fields;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\QrCode\Constants as Constants;
 use RZP\Models\BharatQr\Constants as BQRConstants;
 use RZP\Models\Payment\Processor\TerminalProcessor;
+use RZP\Gateway\Upi\Icici\Gateway as IciciGateway;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as NonVAQrEntity;
 use SimpleSoftwareIO\QrCode\Facades\QrCode as QrCodeWriter;
 
@@ -34,6 +39,8 @@ class Generator extends QrCode\Generator
     const TR_PREFIX            = 'RZP';
     const VPA_NUM_CHAR_SPACE   = '0123456789';
     const GATEWAY              = Gateway::UPI_ICICI;
+
+    private $terminalId         = null;
 
     /**
      * Fetches Bharat QR UPI identifiers for merchant
@@ -77,8 +84,11 @@ class Generator extends QrCode\Generator
             //@todo:: Check for static and dynamic QR. For static QR, terminal type offline should be passed
             $terminal = (new VirtualAccount\Provider())->getTerminalForMethod(Payment\Method::UPI, $qrCode);
 
-            if (($terminal !== null) and (empty($terminal->getGatewayMerchantId2()) === false))
+            if (($terminal !== null) and
+                (empty($terminal->getGatewayMerchantId2()) === false))
             {
+                $this->terminalId = $terminal->getId();
+                
                 return $terminal->getGatewayMerchantId2();
             }
         }
@@ -116,6 +126,47 @@ class Generator extends QrCode\Generator
         return $this->generateUpiQrIntentUrl($vpa, $qrCode);
     }
 
+    private function getRefIdForQrCode($qrCode)
+    {
+        $refId = self::TR_PREFIX . $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
+
+        if (($this->terminalId === null) or ($qrCode->getAmount() === null))
+        {
+            return $refId;
+        }
+
+        $terminal = $this->repo
+                         ->terminal
+                         ->getById($this->terminalId);
+
+        $input = [
+            'qr_code'  => $qrCode->toArray(),
+            'terminal' => $terminal->toArray(),
+            'merchant' => $qrCode->merchant->toArray()
+        ];
+
+        $gatewayClass = $this->app['gateway']->gateway($terminal->getGateway());
+
+        if (method_exists($gatewayClass, 'getQrRefId') === true)
+        {
+            try
+            {
+                $refId = $gatewayClass->getQrRefId($input);
+
+                $qrCode->setReference($refId);
+            }
+            catch(\Exception $ex)
+            {
+                throw new ServerErrorException('QrCode creation failed due to error at bank or wallet gateway',
+                    ErrorCode::SERVER_ERROR_QR_CODE_REF_ID_GENERATION_FAILURE,
+                    null,
+                    null);
+            }
+        }
+
+        return $refId;
+    }
+
     private function generateUpiQrIntentUrl($vpa, $qrCode)
     {
         $content = [
@@ -123,7 +174,7 @@ class Generator extends QrCode\Generator
             Base\IntentParams::MODE          => $this->getQrCodeMode($qrCode),
             Base\IntentParams::PAYEE_ADDRESS => $vpa,
             Base\IntentParams::PAYEE_NAME    => preg_replace('/\s+/', '', $this->merchant->getFilteredDba()),
-            Base\IntentParams::TXN_REF_ID    => self::TR_PREFIX . $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX,
+            Base\IntentParams::TXN_REF_ID    => $this->getRefIdForQrCode($qrCode),
             Base\IntentParams::TXN_CURRENCY  => 'INR',
             Base\IntentParams::MCC           => $this->merchant->getCategory(),
             Base\IntentParams::QR_MEDIUM     => QrCode\Constants::QR_V2_QR_MEDIUM,
