@@ -386,6 +386,7 @@ class Gateway
         self::OFFLINE_HDFC          => self::HDFC,
         self::HDFC_EZETAP           => self::HDFC,
         self::UMOBILE               => self::UMOBILE,
+        self::FPX                   => self::FPX,
     ];
 
     // Map of DS settlement entity with DS Bank/org name
@@ -419,6 +420,7 @@ class Gateway
         self::HDFC_EZETAP           =>self::HDFC,
         self::PAYSECURE             => self::AXIS,
         self::UMOBILE               => self::UMOBILE,
+        self::FPX                   => self::FPX,
     ];
 
 
