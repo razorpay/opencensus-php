@@ -257,7 +257,6 @@ class Service extends Base\Service
             'rx_bill_payments',
             'batch_service_recurring_charge_bulk',
             'rx_finance_x',
-            'pp_custom_domain_show_remove',
             'rx_auto_tds_accrual',
             'rx_mtp_downtime_enabled',
             'rx_accounting_onboarding_banner',
