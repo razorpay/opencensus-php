@@ -458,7 +458,9 @@ class Service extends Base\Service
 
             if ($isLinkedAccount === true)
             {
-                $this->core()->blockLinkedAccountCreationIfApplicable($merchant);
+                // - unblocking individual la creation from dashboard. Ref: https://razorpay.slack.com/archives/C01QG1N4A82/p1672037321513599
+
+                //$this->core()->blockLinkedAccountCreationIfApplicable($merchant);
             }
 
             $rateLimit = $this->subMOnboardingRateLimitEnabled($merchant, $isLinkedAccount, $source);
@@ -635,8 +637,9 @@ class Service extends Base\Service
                 'linked_account_name'   => $input[BatchHeader::ACCOUNT_NAME],
             ]
         );
+        // - unblocking batch la creation from dashboard. Ref: https://razorpay.slack.com/archives/C01QG1N4A82/p1672037321513599
 
-        $this->core()->blockLinkedAccountCreationIfApplicable($this->merchant);
+        //$this->core()->blockLinkedAccountCreationIfApplicable($this->merchant);
 
         $submerchantInput = $this->extractSubmerchantInput($input);
 
