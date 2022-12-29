@@ -4075,6 +4075,10 @@ trait Refund
                 }
             }
         }
+        else if ($payment->getMethod() === Payment\Method::UPI)
+        {
+            $queryParams[RefundConstants::VPA] = $payment->getVpa();
+        }
 
         $scroogeResponse = $this->app['scrooge']->fetchRefundCreateData($queryParams);
 
