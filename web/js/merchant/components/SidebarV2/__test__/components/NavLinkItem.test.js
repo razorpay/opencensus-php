@@ -69,7 +69,7 @@ describe('NavLinkItem', () => {
           clickedElement: transactionsLinksInfo.title,
           section: transactionsLinksInfo.title,
           location: 'sidebar',
-          sidebar: 'v1/v2',
+          sidebar: 'v2',
         },
       });
     });
@@ -95,7 +95,7 @@ describe('NavLinkItem', () => {
           clickedElement: paymentLinksInfo.title,
           section: paymentLinksInfo.section,
           location: 'sidebar',
-          sidebar: 'v1/v2',
+          sidebar: 'v2',
         },
       });
     });

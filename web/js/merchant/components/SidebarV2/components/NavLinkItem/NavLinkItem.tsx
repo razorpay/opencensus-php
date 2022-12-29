@@ -44,7 +44,7 @@ const NavLinkItem = ({
         clickedElement: title,
         section: section ? titleCase(section) : title,
         location: 'sidebar',
-        sidebar: 'v1/v2',
+        sidebar: 'v2',
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
