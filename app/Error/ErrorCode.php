@@ -2856,7 +2856,7 @@ class ErrorCode
     const BAD_REQUEST_DCS_DISABLED                                                 = 'BAD_REQUEST_DCS_DISABLED';
     const SERVER_ERROR_DCS_SERVICE_FAILURE                                         = 'SERVER_ERROR_DCS_SERVICE_FAILURE';
     const SERVER_ERROR_DCS_SERVICE_TIMEOUT                                         = 'SERVER_ERROR_DCS_SERVICE_TIMEOUT';
-
+    const BAD_REQUEST_CRYPTOGRAM_NOT_SUPPORTED                                     = 'BAD_REQUEST_CRYPTOGRAM_NOT_SUPPORTED';
 
 
     static function getConstants()

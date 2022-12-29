@@ -1922,8 +1922,18 @@ class Core extends Base\Core
 
         $token = new Token\Entity;
 
-        // todo: change to golabal status when token v/s card design is finalized
-        $tokenStatus = $serviceProviderTokens[0]['status'];
+        $noOfTokens = count($serviceProviderTokens);
+
+        $tokenStatus = null;
+
+        if ($noOfTokens > 1)
+        {
+            $tokenStatus = $this->fetchDualTokenStatus($serviceProviderTokens);
+        }
+        else {
+            // todo: change to golabal status when token v/s card design is finalized
+            $tokenStatus = $serviceProviderTokens[0]['status'];
+        }
 
         $createTokenInput = [
             Entity::METHOD      => Method::CARD,
@@ -1980,6 +1990,27 @@ class Core extends Base\Core
         return [$token, $serviceProviderTokens];
     }
 
+    public function fetchDualTokenStatus($serviceProviderTokens){
+        $tokenStatus = null;
+        if ($serviceProviderTokens[0]['status'] === 'active' || $serviceProviderTokens[1]['status'] === 'active')
+        {
+            $tokenStatus = 'active';
+        }
+        else if ($serviceProviderTokens[0]['status'] === 'initiated' || $serviceProviderTokens[1]['status'] === 'initiated')
+        {
+            $tokenStatus = 'initiated';
+        }
+        else if ($serviceProviderTokens[0]['status'] === 'deactivated' || $serviceProviderTokens[1]['status'] === 'deactivated')
+        {
+            $tokenStatus = 'deactivated';
+        }
+        else if ($serviceProviderTokens[0]['status'] === 'deleted' || $serviceProviderTokens[1]['status'] === 'deleted')
+        {
+            $tokenStatus = 'deleted';
+        }
+        return $tokenStatus;
+    }
+
     public function migrateToTokenizedCard($token, $cardInput, $payment = null, $isAsync = false)
     {
         $cardInput += [
@@ -1994,7 +2025,17 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::TOKEN_MIGREATE_FOR_TOKENIZED_CARD);
 
-        $token->setStatus($serviceProviderTokens[0]['status']);
+        $noOfTokens = count($serviceProviderTokens);
+        $tokenStatus = null;
+
+        if ($noOfTokens > 1)
+        {
+            $tokenStatus = $this->fetchDualTokenStatus($serviceProviderTokens);
+        }
+        else {
+            $tokenStatus = $serviceProviderTokens[0]['status'];
+        }
+        $token->setStatus($tokenStatus);
 
         $token->card()->associate($card);
 

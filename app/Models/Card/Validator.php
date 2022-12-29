@@ -50,7 +50,7 @@ class Validator extends Base\Validator
         Entity::NAME               => 'sometimes|alpha_space|max:100',
         Entity::VAULT_TOKEN        => 'sometimes|string',
         Entity::GLOBAL_FINGERPRINT => 'sometimes|string',
-        Entity::VAULT              => 'required_with:vault_token|in:tokenex,rzpvault,rzpencryption,mastercard,visa,rupay,amex,hdfc,axis',
+        Entity::VAULT              => 'required_with:vault_token|in:tokenex,rzpvault,rzpencryption,mastercard,visa,rupay,amex,hdfc,axis,providers',
         Entity::IIN                => 'required|numeric|digits:6',
         Entity::TOKEN_IIN          => 'required|numeric|digits:9',
         Entity::EXPIRY_MONTH       => 'required|integer|digits_between:1,2|max:12|min:0',

@@ -173,14 +173,34 @@ class Core extends Base\Core
 
         $tokenisedCard->setGlobalFingerprint($response['fingerprint']);
 
-        if(isset($payment) && empty($response['providerReferenceId']) === false)
+        $providerReferenceId = null;
+
+        $noOfTokens = count($response['service_provider_tokens']);
+
+        if ($noOfTokens > 1){
+            // fetching providerReferenceId from token entity
+            foreach ($response['service_provider_tokens'] as $token) {
+                if ($token['type'] === "network" && empty($token['providerReferenceId'] === false)) {
+                    $providerReferenceId = $token['providerReferenceId'];
+                }
+            }
+        }
+        else if (isset($payment) && empty($response['providerReferenceId']) === false) {
+            $providerReferenceId = $response['providerReferenceId'];
+        }
+        else if ((isset($payment) && empty($response['service_provider_tokens'][0]['providerReferenceId']) === false)) {
+            $providerReferenceId = $response['service_provider_tokens'][0]['providerReferenceId'];
+        }
+
+
+        if(isset($payment) && $providerReferenceId != null)
         {
-            $payment->card->setProviderReferenceId($response['providerReferenceId']);
+            $payment->card->setProviderReferenceId($providerReferenceId);
 
             $this->repo->saveOrFail($payment->card);
         }
 
-        if(empty($response['providerReferenceId']) === true)
+        if($providerReferenceId === null)
         {
             $this->trace->info(TraceCode::TRACE_EMPTY_PROVIDER_REFERENCE,
                 [
@@ -191,28 +211,26 @@ class Core extends Base\Core
 
         if(empty($response['service_provider_tokens']) === false)
         {
-            $tokenisedCard->setVault(strtolower($response['service_provider_tokens'][0]['provider_name']));
-
-            if($this->isPresent($response['service_provider_tokens'][0]['provider_data'], 'token_number'))
+            if ($noOfTokens > 1)
             {
-                $tokenisedCard->setTokenIin(substr($response['service_provider_tokens'][0]['provider_data']['token_number'], 0, 9));
+                $tokenisedCard->setVault(Card\Vault::PROVIDERS);
+                $tokenResponse = $this->getTokenIIN($response['service_provider_tokens']);
+                $tokenisedCard->setTokenIin($tokenResponse[0]);
             }
-
-            if($this->isPresent($response['service_provider_tokens'][0]['provider_data'], 'token_expiry_month') &&
-                $this->isPresent($response['service_provider_tokens'][0]['provider_data'], 'token_expiry_year'))
+            else
             {
-                $tokenisedCard->setTokenExpiryMonth($response['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
-
-                $expiry_year = $response['service_provider_tokens'][0]['provider_data']['token_expiry_year'];
-
-                if ($expiry_year !== null && strlen($expiry_year) == 2)
-                {
-                    $expiry_year = '20' . $expiry_year;
+                $tokenisedCard->setVault(strtolower($response['service_provider_tokens'][0]['provider_name']));
+                if($this->isPresent($response['service_provider_tokens'][0]['provider_data'], 'token_number')){
+                    $tokenisedCard->setTokenIin(substr($response['service_provider_tokens'][0]['provider_data']['token_number'], 0, 9));
                 }
-
-                $tokenisedCard->setTokenExpiryYear($expiry_year);
             }
 
+            if ($noOfTokens > 0) {
+
+                $expiry_token = $this->getDualTokenMaxExpiry($response['service_provider_tokens']);
+                $tokenisedCard->setTokenExpiryYear($expiry_token[0]);
+                $tokenisedCard->setTokenExpiryMonth($expiry_token[1]);
+            }
             $this->repo->saveOrFail($tokenisedCard);
         }
 
@@ -246,44 +264,40 @@ class Core extends Base\Core
 
         if (empty($response['service_provider_tokens']) === false)
         {
-            $createInput[Card\Entity::VAULT] = strtolower($response['service_provider_tokens'][0]['provider_name']);
+            $noOfTokens = count($response['service_provider_tokens']);
 
-            if($this->isPresent($response['service_provider_tokens'][0]['provider_data'], 'token_number'))
+            if ($noOfTokens > 1)
             {
-                $createInput[Card\Entity::TOKEN_IIN] = substr($response['service_provider_tokens'][0]['provider_data']['token_number'], 0, 9);
+                $createInput[Card\Entity::VAULT] = Card\Vault::PROVIDERS;
+
+                $tokenResponse = $this->getTokenIIN($response['service_provider_tokens']);
+                $createInput[Card\Entity::TOKEN_IIN] = $tokenResponse[0];
+                $createInput[Card\Entity::LENGTH] = $tokenResponse[2];
             }
+
             else
             {
-                $response['service_provider_tokens'][0]['provider_data']['token_iin'] = null;
-            }
-
-            if($this->isPresent($response['service_provider_tokens'][0]['provider_data'], 'token_number'))
-            {
-                $createInput[Card\Entity::LENGTH] = strlen($response['service_provider_tokens'][0]['provider_data']['token_number']);
-            }
-
-            if($this->isPresent($response['service_provider_tokens'][0]['provider_data'], 'token_expiry_month') &&
-                $this->isPresent($response['service_provider_tokens'][0]['provider_data'], 'token_expiry_year'))
-            {
-                $createInput[Card\Entity::TOKEN_EXPIRY_MONTH] = $response['service_provider_tokens'][0]['provider_data']['token_expiry_month'];
-
-                $expiry_year = $response['service_provider_tokens'][0]['provider_data']['token_expiry_year'];
-
-                if ($expiry_year !== null && strlen($expiry_year) == 2)
+                $createInput[Card\Entity::VAULT] = strtolower($response['service_provider_tokens'][0]['provider_name']);
+                if($this->isPresent($response['service_provider_tokens'][0]['provider_data'], 'token_number'))
                 {
-                    $expiry_year = '20' . $expiry_year;
+                    $createInput[Card\Entity::TOKEN_IIN] = substr($response['service_provider_tokens'][0]['provider_data']['token_number'], 0, 9);
+                    $createInput[Card\Entity::LENGTH] = strlen($response['service_provider_tokens'][0]['provider_data']['token_number']);
                 }
-
-                $createInput[Card\Entity::TOKEN_EXPIRY_YEAR] = $expiry_year;
+                else
+                {
+                    $response['service_provider_tokens'][0]['provider_data']['token_iin'] = null;
+                }
             }
-            else
-            {
-                $response['service_provider_tokens'][0]['provider_data']['token_expiry_month'] = null;
 
-                $response['service_provider_tokens'][0]['provider_data']['token_expiry_year'] = null;
+            if ($noOfTokens > 0)
+            {
+                $expiry_token = $this->getDualTokenMaxExpiry($response['service_provider_tokens']);
+
+                $createInput[Card\Entity::TOKEN_EXPIRY_YEAR] = $expiry_token[0];
+
+                $createInput[Card\Entity::TOKEN_EXPIRY_MONTH] = $expiry_token[1];
             }
         }
-
         $tokenizedCard = (new Card\Entity)->buildCard($createInput, 'tokenizedCard');
 
         $tokenizedCard->merchant()->associate($merchant);
@@ -301,6 +315,23 @@ class Core extends Base\Core
         }
 
         return [$tokenizedCard, $response['service_provider_tokens']];
+    }
+
+    public function getTokenIIN($serviceProviderArray) {
+        $tokenIIN = 000000000;
+        $tokenLast4 = 0000;
+        $tokenLen = 0;
+        foreach ($serviceProviderArray as $data) {
+            if ($data['provider_type'] == "network" and $this->isPresent($data['provider_data'],'token_number')) {
+                $tokenIIN = substr($data['provider_data']['token_number'],0,9);
+                $tokenLast4 = substr($data['provider_data']['token_number'],-4);
+            }
+        }
+        $response = array();
+        array_push($response, $tokenIIN);
+        array_push($response, $tokenLast4);
+        array_push($response, $tokenLen);
+        return $response;
     }
 
     public function fetchCryptogram($serviceProviderTokenId, $merchant)
@@ -1354,5 +1385,37 @@ class Core extends Base\Core
         $iinEntity = $this->repo->iin->find($cardActualIin);
 
         return $iinEntity->getCobrandingPartner();
+    }
+
+    protected function getDualTokenMaxExpiry($provider_data)
+    {
+        $expiry_year = '0000';
+        $expiry_month = '00';
+        foreach ($provider_data as $data) {
+            if ($this->isPresent($data['provider_data'], 'token_expiry_month') &&
+                $this->isPresent($data['provider_data'], 'token_expiry_year')) {
+
+                if (strlen($data['provider_data']['token_expiry_year']) == 2){
+                    $data['provider_data']['token_expiry_year'] = '20' . $data['provider_data']['token_expiry_year'];
+                }
+
+                if ($data['provider_data']['token_expiry_year'] > $expiry_year )
+                {
+                    $expiry_year = $data['provider_data']['token_expiry_year'];
+                    $expiry_month = $data['provider_data']['token_expiry_month'];
+                }
+                else if ($data['provider_data']['token_expiry_year'] == $expiry_year) {
+                    if ($data['provider_data']['token_expiry_month'] > $expiry_month){
+                        $expiry_month = $data['provider_data']['token_expiry_month'];
+                        $expiry_year = $data['provider_data']['token_expiry_year'];
+                    }
+                }
+            }
+        }
+        $expiry_array = array();
+        array_push($expiry_array, (int) $expiry_year);
+        array_push($expiry_array, (int) $expiry_month);
+        return $expiry_array;
+
     }
 }

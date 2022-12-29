@@ -3015,7 +3015,7 @@ class Entity extends Base\PublicEntity
      * show_email_on_checkout => true and email_optional_on_checkout => false ==> email is mandatory on checkout
      * show_email_on_checkout => true and email_optional_on_checkout => true ==> email is optional on checkout
      * show_email_on_checkout => false and email_optional_on_checkout => true ==> email-less checkout
-     * 
+     *
      * @return bool
      */
     public function isEmailShownOnCheckout()
@@ -3026,7 +3026,7 @@ class Entity extends Base\PublicEntity
     /**
      * The email_optional_on_checkout feature flag is used for making email optional on only std/hosted checkout.
      * For making email optional on custom checkout/S2S please use email_optional feature flag.
-     * 
+     *
      * @return bool
      */
     public function isEmailOptionalOnCheckout()

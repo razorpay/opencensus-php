@@ -440,8 +440,6 @@ class CardVault extends Base\Core
             $input['customer_id'] = $tokenInput['customer_id'];
         }
 
-        $input['features'] = $merchant->getEnabledFeatures();
-
         return $this->app['card.cardVault']->createTokenizedCard($input);
     }
 
@@ -542,11 +540,12 @@ class CardVault extends Base\Core
         return $this->app['card.cardVault']->fetchCryptogram($input);
     }
 
-    public function fetchCryptogramFromVaultToken($vaultToken, $merchant, $internalServiceRequest = false)
+    public function fetchCryptogramFromVaultToken($vaultToken, $merchant, $internalServiceRequest = false, $token_type = 'null')
     {
         $input = [
             'token'                    => $vaultToken,
             'internal_service_request' => $internalServiceRequest,
+            'token_type'               => $token_type
         ];
 
         $input = $this->setMerchantDetails($input, $merchant);
@@ -554,9 +553,9 @@ class CardVault extends Base\Core
         return $this->app['card.cardVault']->fetchCryptogram($input);
     }
 
-    public function fetchCryptogramForPayment($cardVaultToken, $merchant)
+    public function fetchCryptogramForPayment($cardVaultToken, $merchant, $token_type = 'null')
     {
-        $response = $this->fetchCryptogramFromVaultToken($cardVaultToken, $merchant, true);
+        $response = $this->fetchCryptogramFromVaultToken($cardVaultToken, $merchant, true, $token_type);
 
         return $response['service_provider_tokens'][0]['provider_data'];
     }
@@ -587,7 +586,8 @@ class CardVault extends Base\Core
         // todo: send required merchant attributes after api contract finalization
         $input['merchant'] = [
             'id' => $merchant->getId(),
-            'category' => $merchant->getCategory()
+            'category' => $merchant->getCategory(),
+            'features' => $merchant->getEnabledFeatures()
         ];
 
         return $input;
