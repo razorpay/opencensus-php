@@ -84,7 +84,7 @@ use RZP\Mail\Merchant\RejectionSettlement;
 use RZP\Models\Comment\Core as CommentCore;
 use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Services\MerchantRiskClient as MRS;
-use RZP\Jobs\SendSubmerchantActivatedEvents;
+use RZP\Jobs\SendSubMerchantActivatedEventsToSegment;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Key\Validator as KeyValidator;
 use Illuminate\Foundation\Bus\DispatchesJobs;
@@ -3273,7 +3273,7 @@ class Core extends Base\Core
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
             $merchant, $properties, SegmentEvent::ACTIVATION_STATUS_CHANGE);
 
-        SendSubmerchantActivatedEvents::dispatch($merchant, $input[Entity::ACTIVATION_STATUS]);
+        SendSubMerchantActivatedEventsToSegment::dispatch($merchant->getId(), $input[Entity::ACTIVATION_STATUS]);
 
         $this->pushHubspotEvent($merchant, $merchantDetails);
 

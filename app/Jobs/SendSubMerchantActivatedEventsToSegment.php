@@ -12,8 +12,7 @@ use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 
-// TODO delete later once the messages are drained from queue
-class SendSubmerchantActivatedEvents extends Job
+class SendSubMerchantActivatedEventsToSegment extends Job
 {
     const MAX_RETRY_ATTEMPT = 2;
 
@@ -21,15 +20,15 @@ class SendSubmerchantActivatedEvents extends Job
 
     protected $queueConfigKey = 'commission';
 
-    protected $merchant;
+    protected $merchantId;
 
     protected $currentActivationStatus;
 
-    public function __construct(Merchant\Entity $merchant, string $currentActivationStatus)
+    public function __construct(string $merchantId, string $currentActivationStatus)
     {
         parent::__construct(Mode::LIVE);
 
-        $this->merchant = $merchant;
+        $this->merchantId = $merchantId;
 
         $this->currentActivationStatus = $currentActivationStatus;
     }
@@ -48,12 +47,12 @@ class SendSubmerchantActivatedEvents extends Job
         {
             if (in_array($this->currentActivationStatus, [Status::INSTANTLY_ACTIVATED, Status::ACTIVATED, Status::ACTIVATED_MCC_PENDING]))
             {
-                $partners = $merchantCore->fetchAffiliatedPartners($this->merchant->getId());
+                $partners = $merchantCore->fetchAffiliatedPartners($this->merchantId);
                 foreach ($partners as $partner)
                 {
                     $properties = [
                         'partner_id'  => $partner->getId(),
-                        'merchant_id' => $this->merchant->getId(),
+                        'merchant_id' => $this->merchantId,
                     ];
 
                     $this->trace->info(TraceCode::SEND_SUBMERCHANT_ACTIVATED_EVENTS_JOB, $properties);
@@ -80,7 +79,7 @@ class SendSubmerchantActivatedEvents extends Job
                 Trace::ERROR,
                 TraceCode::SEND_SUBMERCHANT_ACTIVATED_EVENTS_JOB_ERROR,
                 [
-                    'merchant_id' => $this->merchant->getId(),
+                    'merchant_id' => $this->merchantId,
                 ]);
             $this->checkRetry();
         }
@@ -92,7 +91,7 @@ class SendSubmerchantActivatedEvents extends Job
         if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
         {
             $this->trace->error(TraceCode::SEND_SUBMERCHANT_ACTIVATED_EVENTS_JOB_DELETE, [
-                'merchant_id'  => $this->merchant->getId(),
+                'merchant_id'  => $this->merchantId,
                 'job_attempts' => $this->attempts(),
                 'message'      => 'Deleting the job after configured number of tries. Still unsuccessful.'
             ]);

@@ -25,7 +25,7 @@ use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
 use RZP\Models\Currency\Currency;
 use RZP\Jobs\FundAccountValidation;
-use RZP\Jobs\SendSubmerchantActivatedEvents;
+use RZP\Jobs\SendSubMerchantActivatedEventsToSegment;
 use RZP\Models\Admin\Permission\Name;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Document\Type;
@@ -2108,7 +2108,7 @@ class ActivationTest extends OAuthTestCase
 
         $this->startTest($testData);
         // ensure job was triggered
-        Queue::assertPushed(SendSubmerchantActivatedEvents::class);
+        Queue::assertPushed(SendSubMerchantActivatedEventsToSegment::class);
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
                             ->setConstructorArgs([$this->app])
@@ -2126,8 +2126,8 @@ class ActivationTest extends OAuthTestCase
                     }));
 
         // Test worker
-        $sendSubmerchantActivatedEvents = new SendSubmerchantActivatedEvents($merchant, $currentActivationStatus);
-        $sendSubmerchantActivatedEvents->handle();
+        $sendSubMerchantActivatedEventsToSegment = new SendSubMerchantActivatedEventsToSegment($merchant->getId(), $currentActivationStatus);
+        $sendSubMerchantActivatedEventsToSegment->handle();
 
     }
 
@@ -2165,7 +2165,7 @@ class ActivationTest extends OAuthTestCase
         $this->startTest($testData);
 
         // ensure job was triggered
-        Queue::assertPushed(SendSubmerchantActivatedEvents::class);
+        Queue::assertPushed(SendSubMerchantActivatedEventsToSegment::class);
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
                             ->setConstructorArgs([$this->app])
@@ -2179,8 +2179,8 @@ class ActivationTest extends OAuthTestCase
                     ->method('pushIdentifyAndTrackEvent');
 
         // Test worker
-        $sendSubmerchantActivatedEvents = new SendSubmerchantActivatedEvents($merchant, $currentActivationStatus);
-        $sendSubmerchantActivatedEvents->handle();
+        $sendSubMerchantActivatedEventsToSegment = new SendSubMerchantActivatedEventsToSegment($merchant->getId(), $currentActivationStatus);
+        $sendSubMerchantActivatedEventsToSegment->handle();
 
     }
 
