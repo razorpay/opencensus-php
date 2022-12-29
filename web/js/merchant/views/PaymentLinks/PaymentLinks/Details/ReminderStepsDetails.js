@@ -1,4 +1,5 @@
 import Stepper from 'common/new-ui/Stepper';
+import moment from 'moment';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 
 const ReminderStepsDetails = ({
@@ -8,31 +9,23 @@ const ReminderStepsDetails = ({
   isPaymentLinkClosed,
 }) => {
   const reminderStepsData = nextReminders
-    .map(reminder => {
-      const currDate = moment(undefined),
-        reminderDate = moment(reminder * 1000),
-        isPendingState = reminderDate.isAfter(currDate);
+    .map((reminder) => {
+      const currDate = moment(undefined);
+      const reminderDate = moment(reminder * 1000);
+      const isPendingState = reminderDate.isAfter(currDate);
 
       if (isPaymentLinkClosed && isPendingState) {
         return null;
       }
 
       const newReminder = {
-        status: !isRemindersEnabled
-          ? 'disabled'
-          : isPendingState > 0 ? 'pending' : 'completed',
+        status: !isRemindersEnabled ? 'disabled' : isPendingState > 0 ? 'pending' : 'completed',
         time_to_sent: reminder,
       };
 
       return {
         status: newReminder.status,
-        type: (
-          <i
-            class={`i i-${
-              newReminder.status === 'completed' ? 'check-circle' : 'bullet'
-            }`}
-          />
-        ),
+        type: <i class={`i i-${newReminder.status === 'completed' ? 'check-circle' : 'bullet'}`} />,
         label: isAutoRemindersUpdating ? (
           <PlaceholderLoader />
         ) : (
@@ -40,7 +33,7 @@ const ReminderStepsDetails = ({
         ),
       };
     })
-    .filter(ele => ele !== null);
+    .filter((ele) => ele !== null);
 
   return <Stepper list={reminderStepsData} />;
 };

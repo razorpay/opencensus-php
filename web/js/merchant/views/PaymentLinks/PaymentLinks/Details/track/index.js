@@ -59,7 +59,7 @@ function _track() {
 
     onCopyClick: () => {
       sendToLumberjack(`pl.create.copy`);
-      sendToSegment(`payment link create copy`, 'clicked', `payment link`);
+      sendToSegment(`payment link create copy`, 'clicked');
     },
     onDetailsView: (paymentLinkType) => {
       const prop = {

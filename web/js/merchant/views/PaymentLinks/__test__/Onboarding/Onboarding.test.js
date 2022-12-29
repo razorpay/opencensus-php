@@ -1,0 +1,84 @@
+import React from 'react';
+import '@testing-library/jest-dom/extend-expect';
+import { App, onboarding } from 'merchant/views/PaymentLinks/__test__/mocks/fixtures/Onboarding';
+import { render, screen, userEvent } from 'test-utils';
+
+describe('Payment link Onboarding Screen', () => {
+  /*
+   * @param {*} props = {}
+   * @return <New /> component file
+   */
+  beforeAll(() => {
+    window.rzp_user = {};
+
+    window.rzpQ = {
+      component: jest.fn(),
+      paymentLinks: () => ({
+        interaction: jest.fn(),
+      }),
+      productOnboarding: () => ({
+        success: jest.fn(),
+      }),
+    };
+  });
+
+  const renderApp = (props = {}) => {
+    render(<App {...props} closeOnboarding={() => {}} />, {
+      initialState: {
+        session: { user: { isPaymentLinksEnabled: true } },
+        onboarding,
+      },
+    });
+  };
+  test('should render Onboarding component without errors', () => {
+    expect(renderApp).not.toThrowError();
+  });
+
+  test('should load onboarding initial screen', () => {
+    renderApp();
+    expect(
+      screen.getByText(
+        'Create and share a Razorpay Payment Link in under a minute with your customers via email, SMS, messenger, chatbot etc. Get domestic and international payments online directly into your bank account.',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  test('should load initial components "Skip & Read More" ', () => {
+    renderApp();
+    expect(screen.getByText(/Read More/i)).toBeInTheDocument();
+    expect(screen.getByText(/Skip And Get Started/i)).toBeInTheDocument();
+  });
+
+  test('should load feature page of pl onboarding module', async () => {
+    renderApp();
+    const readMoreCTA = screen.getByRole('button', {
+      name: /Read More/,
+    });
+    expect(readMoreCTA).toBeInTheDocument();
+    await userEvent.click(readMoreCTA);
+    expect(screen.getByText(/What makes Payment Links great/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Don't have an app or website for selling? Now let your customers pay online with payment links",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Alternative Payment Option/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Payment Links can be an easy substitute for cash-on-delivery and point-of-sale payment methods in your business./i,
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Partial Payments/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Provide your customers with the flexibility to make payments in parts against large orders instead of making the entire payment at once./i,
+      ),
+    ).toBeInTheDocument();
+    const goBackCTA = screen.getByText('Back');
+    const getStartedCTA = screen.getByText('Get Started');
+    const skipAndGetStartedCTA = screen.getByText('Skip And Get Started');
+    expect(goBackCTA).toBeInTheDocument();
+    expect(getStartedCTA).toBeInTheDocument();
+    expect(skipAndGetStartedCTA).toBeInTheDocument();
+  });
+});
