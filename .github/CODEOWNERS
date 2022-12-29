@@ -9,150 +9,45 @@
 # Core App
 #
 
-app/Http/BasicAuth/                                    @razorpay/tools_team                                    malligairajan.g@razorpay.com
-app/Http/Middleware/                                   @razorpay/tools_team                                    malligairajan.g@razorpay.com
-app/Jobs/                                              jitendra.ojha@razorpay.com
-app/Reconciliator/                                     gaurav.k@razorpay.com
+app/Http/BasicAuth/                                    @razorpay/spine-edge
+app/Http/Middleware/DecodePassportJwt.php              @razorpay/spine-edge
+app/Http/Middleware/Authenticate.php                   @razorpay/spine-edge
+app/Http/Edge/                                         @razorpay/spine-edge
 
 #
 # Gateways
 #
 
-app/Gateway/                                           @razorpay/TechPgIntegrations
 app/Gateway/Upi                                        @razorpay/techupicore
 
 #
 # Models
 #
 
-app/Models/Adjustment/                                 sunny.aggrawal@razorpay.com
-app/Models/Admin/                                      vivek.kumar@razorpay.com
-app/Models/Admin/Admin                                 malligairajan.g@razorpay.com
-app/Models/Admin/AdminLead                             malligairajan.g@razorpay.com
-app/Models/Admin/Base                                  malligairajan.g@razorpay.com
-app/Models/Admin/Group                                 malligairajan.g@razorpay.com
-app/Models/Admin/LoginAttempt                          malligairajan.g@razorpay.com
-app/Models/Admin/Org                                   malligairajan.g@razorpay.com
-app/Models/Admin/Permission                            malligairajan.g@razorpay.com
-app/Models/Admin/Role                                  malligairajan.g@razorpay.com
 app/Models/Balance/FreePayout.php                      @razorpay/Payouts-core
-app/Models/Bank/                                       nemo@razorpay.com
-app/Models/BankAccount/                                @razorpay/TechVirtualAccounts
-app/Models/BankingAccount/                             @razorpay/Payouts-core
 app/Models/BankingAccountStatement/                    @razorpay/Payouts-core
-app/Models/BankTransfer/                               @razorpay/TechVirtualAccounts
-app/Models/Base/                                       prashanth.yv@razorpay.com                               vivek.kumar@razorpay.com
-app/Models/Batch/                                      malligairajan.g@razorpay.com
-app/Models/BharatQr/                                   @razorpay/TechVirtualAccounts
-app/Models/Card/                                       sunny.aggrawal@razorpay.com                             vivek.kumar@razorpay.com
 app/Models/Card/NetworkName.php                        @razorpay/TechRulesRouting
 app/Models/Checkout/                                   @razorpay/checkout-backend-leads
-app/Models/Comment/                                    pankaj.kumar@razorpay.com                               praveen.patlola@razorpay.com
-app/Models/Contact/                                    @razorpay/Payouts-core
-app/Models/Currency/                                   sunny.aggrawal@razorpay.com                             vivek.kumar@razorpay.com
-app/Models/Customer/                                   sunny.aggrawal@razorpay.com
-app/Models/Device/                                     nemo@razorpay.com
-app/Models/Dispute/                                    malligairajan.g@razorpay.com
-app/Models/EMandate/                                   vivek.kumar@razorpay.com
-app/Models/Emi/                                        sunny.aggrawal@razorpay.com
-app/Models/FeeRecovery/                                @razorpay/Payouts-core
-app/Models/FundAccount/                                @razorpay/Payouts-core
-app/Models/FundTransfer/                               ratan.phayade@razorpay.com                              pawan.murarka@razorpay.com
-app/Models/Gateway/Downtime/                           venkat.v@razorpay.com
-app/Models/Gateway/Priority/                           sunny.aggrawal@razorpay.com
-app/Models/GeoIP/                                      junaid.anwer@razorpay.com                               sunny.aggrawal@razorpay.com
-app/Models/Invitation/                                 pankaj.kumar@razorpay.com
-app/Models/Invoice/                                    praveen.patlola@razorpay.com
-app/Models/Item/                                       jitendra.ojha@razorpay.com
-app/Models/Key/                                        nemo@razorpay.com
-app/Models/LineItem/                                   praveen.patlola@razorpay.com
-app/Models/Merchant/                                   vivek.kumar@razorpay.com
-app/Models/Merchant/Balance/LowBalanceConfig/          @razorpay/Payouts-core
+app/Models/Key/                                        @razorpay/spine-edge
 app/Models/Merchant/Checkout.php                       @razorpay/checkout-backend-leads
 app/Models/Merchant/CheckoutExperiment.php             @razorpay/checkout-backend-leads
-app/Models/Merchant/Credits/Balance/                   @razorpay/Payouts-core
-app/Models/Merchant/Credits/                           sunny.aggrawal@razorpay.com
-app/Models/Merchant/Invoice/                           sunny.aggrawal@razorpay.com
-app/Models/Merchant/Webhook/                           @razorpay/tools_team
-app/Models/Merchant/Preferences.php                    @razorpay/TechRulesRouting
-app/Models/Order/                                      sunny.aggrawal@razorpay.com
-app/Models/P2p/                                        nemo@razorpay.com
-app/Models/Payment/                                    vivek.kumar@razorpay.com
-app/Models/Payment/Refund/                             @razorpay/scrooge
-app/Models/Payment/Gateway.php                         @razorpay/TechRulesRouting
-app/Models/Payment/Processor/Netbanking.php            @razorpay/TechRulesRouting
 app/Models/Payout/                                     @razorpay/Payouts-core
-app/Models/Plan/                                       @razorpay/TechSubscriptions
-app/Models/Pricing/                                    sunny.aggrawal@razorpay.com
 app/Models/Pricing/Payout.php                          @razorpay/Payouts-core
-app/Models/QrCode/                                     @razorpay/TechVirtualAccounts
 app/Models/Reversal/                                   soutreya.kundu@razorpay.com                             @razorpay/Payouts-core
-app/Models/Risk/                                       sunny.aggrawal@razorpay.com
-app/Models/Schedule/                                   @razorpay/TechSubscriptions                             @razorpay/TechSettlements
-app/Models/Settings/                                   malligairajan.g@razorpay.com
-app/Models/Settlement/                                 @razorpay/TechSettlements
-app/Models/State/                                      praveen.patlola@razorpay.com
-app/Models/Tax/                                        praveen.patlola@razorpay.com
-app/Models/Terminal/                                   vivek.kumar@razorpay.com                                @razorpay/TechOnlinePaymentsOnboarding
-app/Models/Terminal/Auth/                              @razorpay/TechRulesRouting
-app/Models/Terminal/Filters/                           @razorpay/TechRulesRouting
 app/Models/Terminal/Sorters/                           @razorpay/TechRulesRouting
 app/Models/Terminal/AuthSelector.php                   @razorpay/TechRulesRouting
 app/Models/Terminal/Selector.php                       @razorpay/TechRulesRouting
-app/Models/Terminal/Category.php                       @razorpay/TechRulesRouting
-app/Models/Transaction/                                prashanth.yv@razorpay.com                               sunny.aggrawal@razorpay.com
 app/Models/Transfer/                                   soutreya.kundu@razorpay.com
 app/Models/TrustedBadge                                @razorpay/checkout-backend-leads
-app/Models/Upi/                                        nemo@razorpay.com                                       vivek.kumar@razorpay.com
-app/Models/User/                                       @razorpay/acquisition-be                                vivek.kumar@razorpay.com
-app/Models/VirtualAccount/                             @razorpay/TechVirtualAccounts
-app/Models/Workflow/                                   praveen.patlola@razorpay.com
 app/Models/FundTransfer/M2P/M2PConfigs.php             chirag.chiranjib@razorpay.com
 
 #
-# Database
+# Functional Tests
 #
-database/migrations                                    @razorpay/DbOps_Team
 
-#
-# Tests
-#
-tests/                                                 vivek.kumar@razorpay.com
-tests/Functional/Admin/                                malligairajan.g@razorpay.com
-tests/Functional/BankTransfer/                         @razorpay/TechVirtualAccounts
-tests/Functional/BharatQrPayment/                      @razorpay/TechVirtualAccounts
-tests/Functional/Batch/                                malligairajan.g@razorpay.com
-tests/Functional/BankingAccount/                       @razorpay/Payouts-core
-tests/Functional/BankingAccountStatement/              @razorpay/Payouts-core
-tests/Functional/Card/                                 sunny.aggrawal@razorpay.com                             vivek.kumar@razorpay.com
-tests/Functional/Contact/                              @razorpay/Payouts-core
-tests/Functional/Currency/                             sunny.aggrawal@razorpay.com                             vivek.kumar@razorpay.com
-tests/Functional/Customer/                             sunny.aggrawal@razorpay.com
-tests/Functional/Device/                               nemo@razorpay.com
-tests/Functional/Dispute/                              pankaj.kumar@razorpay.com
-tests/Functional/EMI/                                  sunny.aggrawal@razorpay.com
-tests/Functional/FeeRecovery/                          @razorpay/Payouts-core
-tests/Functional/FundAccounts/                         @razorpay/Payouts-core
-tests/Functional/Invitation/                           pankaj.kumar@razorpay.com
-tests/Functional/Invoice/                              jitendra.ojha@razorpay.com
-tests/Functional/Item/                                 jitendra.ojha@razorpay.com
-tests/Functional/Key/                                  nemo@razorpay.com
-tests/Functional/Merchant/                             vivek.kumar@razorpay.com
-tests/Functional/Order/                                sunny.aggrawal@razorpay.com
-tests/Functional/Payment/                              vivek.kumar@razorpay.com
-tests/Functional/Payout/                               @razorpay/Payouts-core
-tests/Functional/Pricing/                              sunny.aggrawal@razorpay.com
-tests/Functional/Refund/                               vivek.kumar@razorpay.com                                @razorpay/scrooge
-tests/Functional/Schedule/                             @razorpay/TechSubscriptions                             @razorpay/TechSettlements
-tests/Functional/Settlement/                           @razorpay/TechSettlements
-tests/Functional/Setting/                              malligairajan.g@razorpay.com
-tests/Functional/Subscription/                         @razorpay/TechSubscriptions
-tests/Functional/Tax/                                  jitendra.ojha@razorpay.com
-tests/Functional/Transaction/                          sunny.aggrawal@razorpay.com
 tests/Functional/Transfer/                             soutreya.kundu@razorpay.com
-tests/Functional/User/                                 pankaj.kumar@razorpay.com
-tests/Functional/VirtualAccount/                       @razorpay/TechVirtualAccounts
-tests/Functional/Gateway/                              @razorpay/TechPgIntegrations
+tests/Functional/BankingAccountStatement/              @razorpay/Payouts-core
+tests/Functional/Key/                                  @razorpay/spine-edge
 
 #
 # Services
@@ -166,19 +61,17 @@ app/Services/UpiPayment/                               @razorpay/techupicore
 
 app/Jobs/TrustedBadge.php                              @razorpay/checkout-backend-leads
 
+.github/actions/                                       @razorpay/ZeroTouchWarriors
+devspace.yaml                                          @razorpay/devstack-devs
+
 #
-# Misc
+# Features
 #
-
-composer.lock                                           nemo@razorpay.com
-wercker.yml                                             @razorpay/security                                      @razorpay/devops
-phpunit.xml                                             vivek.kumar@razorpay.com                                praveen.patlola@razorpay.com
-
-.github/actions/                                        @razorpay/ZeroTouchWarriors
-devspace.yaml                                           @razorpay/devstack-devs
-
 # /app/Models/Feature/Constants.php is owned by dcs team, any new use cases
 # of feature flags should go to dcs or razorx/splitz
 # permanent flags - dcs
 # experimental flags / rollout flags - razorx / splitz
-/app/Models/Feature/Constants.php                       @razorpay/techcommonplatforms
+
+/app/Models/Feature/Constants.php                      @razorpay/techcommonplatforms
+/app/Models/Feature                                    @razorpay/techcommonplatforms
+/app/Services/Dcs                                      @razorpay/techcommonplatforms
