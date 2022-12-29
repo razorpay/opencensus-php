@@ -183,6 +183,8 @@ class Core extends Base\Core
 
                 (new Shield($this->app))->enqueueShieldEvent($event);
 
+                $this->trace->count(Metrics::DISPUTE_CREATE);
+
                 $this->firePaymentDisputeWebhookEvent($payment, $dispute, WebhookEvent::PAYMENT_DISPUTE_CREATED);
 
                 return $dispute;
@@ -240,6 +242,10 @@ class Core extends Base\Core
                     $this->updateCustomerTicketIfApplicable($dispute);
 
                     $this->generateDisputeEvent($dispute);
+
+                    $this->trace->count(Metrics::DISPUTE_STATUS_CHANGE, [
+                        'status'    =>  $dispute->getStatus(),
+                    ]);
 
                     return $dispute;
                 });
@@ -964,7 +970,7 @@ class Core extends Base\Core
                             'phase' => $disputePhase,
                         ]);
 
-                    $this->trace->count(Metrics::DISPUTE_SUCCESS_TOTAL);
+                    $this->trace->count(Metrics::DISPUTE_MAIL_SUCCESS);
                 }
                 if ($bulkMailData[Entity::PHASE] === Phase::CHARGEBACK and isset($bulkMailData['isFraud']) === false)
                 {

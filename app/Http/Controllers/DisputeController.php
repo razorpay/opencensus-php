@@ -60,8 +60,6 @@ class DisputeController extends Controller
                         'merchant_id'   => $this->ba->getMerchantId() ?? 'none',
                     ]);
 
-                    $this->trace->count(Metric::DISPUTES_SERVICE_ERROR_COUNT);
-
                     // handling fallbacks for the new dispute service temporarily by calling
                     // the service in case of failures and emitting prom metrics, logs.
                     $response = $this->service()->fetch($id, $this->input);
@@ -69,6 +67,8 @@ class DisputeController extends Controller
                     $this->trace->error(TraceCode::DISPUTES_INTEGRATION_ERROR, [
                         'expected_response' => $response,
                     ]);
+
+                    $this->trace->count(Metric::DISPUTES_SERVICE_ERROR_COUNT);
                 }
             }
             else

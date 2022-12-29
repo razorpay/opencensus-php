@@ -23,6 +23,11 @@ class DisputesClient
     const X_AUTH_TYPE       = 'X-Auth-Type';
     const X_IS_EXPRESS      = 'X-Is-Express';
 
+    const AUTH_TYPE_PROXY   = 'proxy';
+    const AUTH_TYPE_PRIVATE = 'private';
+    const AUTH_TYPE_EXPRESS = 'express';
+
+
     protected $client;
 
     protected $options = [];
@@ -59,7 +64,24 @@ class DisputesClient
             'service'   => 'disputes',
         ]);
 
-        return $responseArray['data'] ?? null;
+        return $responseArray;
+    }
+
+    function getAuthType(): string
+    {
+        if ($this->app['basicauth']->isProxyAuth() === true)
+        {
+            return self::AUTH_TYPE_PROXY;
+        }
+        if ($this->app['basicauth']->isExpress() === true)
+        {
+            return self::AUTH_TYPE_EXPRESS;
+        }
+        if ($this->app['basicauth']->isPrivateAuth() === true)
+        {
+            return self::AUTH_TYPE_PRIVATE;
+        }
+        return $this->app['basicauth']->getAuthType();
     }
 
     // other headers for auth type, admin_id, etc to be added depending on the use-case.
@@ -69,8 +91,7 @@ class DisputesClient
             self::CONTENT_TYPE  => 'application/json',
             self::X_REQUEST_ID  => $this->app['request']->getTaskId(),
             self::X_MERCHANT_ID => $this->app['basicauth']->getMerchantId(),
-            self::X_AUTH_TYPE   => $this->app['basicauth']->getAuthType(),
-            self::X_IS_EXPRESS   => $this->app['basicauth']->isExpress(),
+            self::X_AUTH_TYPE   => $this->getAuthType(),
         ];
     }
 
