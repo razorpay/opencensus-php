@@ -28,7 +28,7 @@ export default ({ showBatchIdFilter, ...props }) => {
 
   return (
     <ListFilter date={date} provider={provider} setProvider={setProvider} {...props}>
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Payment Id</label>
         <Field
           name="id"
@@ -48,7 +48,7 @@ export default ({ showBatchIdFilter, ...props }) => {
 
       {/* used in emndate payments */}
       {showBatchIdFilter && (
-        <div class="form-group list-filter-item">
+        <div className="form-group list-filter-item">
           <label>Batch Id</label>
           <Field
             name="batch_id"
@@ -61,7 +61,7 @@ export default ({ showBatchIdFilter, ...props }) => {
         </div>
       )}
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Status</label>
         <Field
           name="status"
@@ -79,13 +79,26 @@ export default ({ showBatchIdFilter, ...props }) => {
         </Field>
       </div>
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Email</label>
         <Field
           name="email"
           component="input"
           type="email"
           class="form-control input-sm"
+          onChange={(...args) => {
+            track({ type: 'search', args });
+          }}
+        />
+      </div>
+
+      <div className="form-group list-filter-item">
+        <label>Phone</label>
+        <Field
+          name="contact"
+          component="input"
+          type="tel"
+          className="form-control input-sm"
           onChange={(...args) => {
             track({ type: 'search', args });
           }}
@@ -107,7 +120,7 @@ export default ({ showBatchIdFilter, ...props }) => {
           </div>
         )}
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Notes</label>
         <Field
           name="notes"
@@ -124,7 +137,7 @@ export default ({ showBatchIdFilter, ...props }) => {
           !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.BankReferenceId)
         }
       >
-        <div class="form-group list-filter-item">
+        <div className="form-group list-filter-item">
           <label>Bank Reference Number</label>
           <Field
             name="va_transaction_id"

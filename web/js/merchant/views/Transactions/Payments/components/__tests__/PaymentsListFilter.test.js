@@ -33,10 +33,10 @@ describe('PaymentsListFilter', () => {
       'Batch Id',
       'Status',
       'Email',
+      'Phone',
       'Processed by',
       'Notes',
       'Bank Reference Number',
-      'Count',
     ].forEach((filter) => expect(screen.getByText(filter)).toBeInTheDocument());
   });
 
@@ -66,14 +66,14 @@ describe('PaymentsListFilter', () => {
 
   test('should allow to search by readonly terminal id', () => {
     render(<App />);
-    const terminalIdFilter = screen.getAllByRole('textbox')[3];
+    const terminalIdFilter = screen.getAllByRole('textbox')[4];
     expect(terminalIdFilter).toHaveAttribute('readOnly', '');
     expect(terminalIdFilter).toHaveAttribute('value', 'All');
   });
 
   test('should allow to search by notes', async () => {
     render(<App />);
-    const notesFilter = screen.getAllByRole('textbox')[4];
+    const notesFilter = screen.getAllByRole('textbox')[5];
     const notes = 'note text';
     await userEvent.type(notesFilter, notes);
     expect(notesFilter).toHaveAttribute('value', notes);
