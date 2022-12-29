@@ -5027,6 +5027,13 @@ class Core extends Base\Core
             return false;
         }
 
+        // unblock linked account merchants
+        // ref - https://razorpay.slack.com/archives/C04FDHUCE49/p1672127563183959
+        if(empty($this->merchant) === false and $this->merchant->isLinkedAccount() === true)
+        {
+            return false;
+        }
+
         return true;
     }
 

@@ -483,9 +483,12 @@ class Core extends Base\Core
         return true;
     }
 
-    public function create(array $input, string $operation = 'create'): Entity
+    public function create(array $input, string $operation = 'create', bool $isLinkedAccountUser = false): Entity
     {
-        $this->validateActivation($input);
+        if($isLinkedAccountUser === false)
+        {
+            $this->validateActivation($input);
+        }
 
         unset($input[MerchantEntity::SIGNUP_SOURCE]);
 

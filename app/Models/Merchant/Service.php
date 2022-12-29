@@ -6314,13 +6314,15 @@ class Service extends Base\Service
 
         $userData[Merchant\Entity::SIGNUP_SOURCE]=$product;
 
+        $isLinkedAccountUser = ($subMerchant->isLinkedAccount() === true);
+
         if ($skipCaptcha === true)
         {
-            $subMerchantUser = (new User\Core)->create($userData, 'create_without_captcha');
+            $subMerchantUser = (new User\Core)->create($userData, 'create_without_captcha', $isLinkedAccountUser);
         }
         else
         {
-            $subMerchantUser = (new User\Core)->create($userData);
+            $subMerchantUser = (new User\Core)->create($userData,'create', $isLinkedAccountUser);
         }
 
         $this->core()->attachSubMerchantUser($subMerchantUser->getId(), $subMerchant, $product);
@@ -6523,12 +6525,15 @@ class Service extends Base\Service
 
         $product = $input[Entity::PRODUCT] ?? Product::PRIMARY;
 
-        //block P.G sub merchant creation
-        $inputCopy = $input;
+       //block P.G sub merchant creation
+        if ($isLinkedAccount === false)
+        {
+            $inputCopy = $input;
 
-        $inputCopy[Entity::SIGNUP_SOURCE] = $product;
+            $inputCopy[Entity::SIGNUP_SOURCE] = $product;
 
-        (new UserCore())->validateActivation($inputCopy);
+            (new UserCore())->validateActivation($inputCopy);
+        }
 
         // TODO: Remove when dashboard stops sending
         unset($input['user_id']);
