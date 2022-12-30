@@ -2355,7 +2355,7 @@ trait Authorize
                 break;
 
             case Payment\AuthType::SKIP:
-                // Skip auth flow is supported only for Master Card, Visa and Rupay.
+                // Skip auth flow is supported only for Master Card, Visa, Rupay and Amex.
                 if (Payment\Gateway::isDirectDebitSupported($payment->card->getNetworkCode()) === false)
                 {
                     throw new Exception\BadRequestValidationFailureException(
@@ -2364,6 +2364,27 @@ trait Authorize
                             'payment_id' => $payment->getPublicId(),
                             'method'     => $payment->getMethod(),
                         ]);
+                }
+
+                // For Amex moto payments, only tokenized cards to be allowed.
+                if (
+                    $payment->isCard()
+                    && $payment->card->getNetwork() === Network::getFullName(Network::AMEX)
+                )
+                {
+                    $token = $payment->getGlobalOrLocalTokenEntity();
+
+                    if ($token === null)
+                    {
+                        throw new Exception\BadRequestValidationFailureException(
+                            'Only tokenized cards are allowed for amex moto payments',
+                            null,
+                            [
+                                'payment_id' => $payment->getPublicId(),
+                                'method'     => $payment->getMethod(),
+                            ]
+                        );
+                    }
                 }
                 break;
         }
@@ -4744,21 +4765,26 @@ trait Authorize
         //
         // Appends dummy cvv if auth type of payment is skip. Validate merchant later
         // for moto feature else decline the payment.
-        // TODO: Need to change if AMEX card is enabled for skip
         //
         if ($payment->getAuthType() === Payment\AuthType::SKIP)
         {
             $input['card']['cvv'] = Card\Entity::DUMMY_CVV;
 
-            $variant = $this->app->razorx->getTreatment($merchant->getId(),
+            if (isset($input['card']['number']) === true)
+            {
+                $variant = $this->app->razorx->getTreatment(
+                    $merchant->getId(),
                     Merchant\RazorxTreatment::USE_DETECT_NETWORK_FOR_DUMMY_CVV,
-                    $this->mode);
+                    $this->mode
+                );
 
-            if(strtolower($variant) === 'on' && isset($input['card']['number']) === true){
-                $cardNumber = $input['card']['number'];
-                $iin        = substr($cardNumber ?? null, 0, 6);
-                $network    = Card\Network::detectNetwork($iin);
-                $input['card']['cvv'] = Card\Entity::getDummyCvv($network);
+                if (strtolower($variant) === 'on')
+                {
+                    $cardNumber = $input['card']['number'];
+                    $iin        = substr($cardNumber ?? null, 0, 6);
+                    $network    = Card\Network::detectNetwork($iin);
+                    $input['card']['cvv'] = Card\Entity::getDummyCvv($network);
+                }
             }
         }
 

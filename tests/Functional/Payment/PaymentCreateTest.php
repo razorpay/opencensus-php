@@ -13,6 +13,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Models\Card\Network;
 use RZP\Models\Address\Type;
 use RZP\Models\Card\Repository;
+use RZP\Models\Card\Entity as CardEntity;
 use RZP\Tests\Functional\Fixtures\Entity\Card;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\Invoice\InvoiceTestTrait;
@@ -3744,6 +3745,90 @@ class PaymentCreateTest extends TestCase
         $this->assertTrue($this->redirectToAuthorize);
     }
 
+    public function testPaymentCardMotoWithoutTokenForAmex()
+    {
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'direct_debit']);
+
+        $this->mockRazorxWith('use_detect_network_for_dummy_cvv', 'on');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        unset($payment["card"]["cvv"]);
+
+        // an amex card number
+        $payment["card"]["number"] = CardEntity::DUMMY_AMEX_CARD;
+        $payment['auth_type']      = 'skip';
+        $payment['customer_id']    = 'cust_100000customer';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/json',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('Only tokenized cards are allowed for amex moto payments');
+
+        $this->makeRequestParent($request);
+    }
+
+    public function testPaymentCardMotoWithTokenForAmex()
+    {
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'direct_debit']);
+
+        $this->mockRazorxWith('use_detect_network_for_dummy_cvv', 'on');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        unset($payment["card"]["cvv"]);
+
+        // an amex card number
+        $payment["card"]["number"] = CardEntity::DUMMY_AMEX_CARD;
+        $payment['auth_type']      = 'skip';
+        $payment['save']           = 1;
+        $payment['customer_id']    = 'cust_100000customer';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/json',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        // first normal paymernt to create the token
+        $response = $this->makeRequestParent($request);
+
+        // Note: 4 digit amex cvv check also passes here.
+        $content = $this->getJsonContentFromResponse($response);
+
+        $redirectContent = $content['next'][0];
+
+        $response = $this->makeRedirectToAuthorize($redirectContent['url']);
+
+        $content = $this->getJsonContentFromResponse($response, null);
+
+        $fetchedPayment = $this->getLastEntity('payment', true);
+
+        // getting the token created for card
+        $tokenId = $fetchedPayment['token_id'];
+
+        // moto payment, unsetting card and setting the token generated in last step
+        unset($payment["card"]["number"]);
+        unset($payment["save"]);
+
+        $payment['token'] = $tokenId;
+
+        $this->fixtures->create('terminal:shared_amex_terminal');
+
+        // Note: tokenized cards will not throw a validation error
+        $rr = $this->doAuthPayment($payment);
+
+        $this->assertNotNull($rr["razorpay_payment_id"]);
+    }
 
     public function testPaymentCardMotoWithToken()
     {
@@ -10212,7 +10297,7 @@ class PaymentCreateTest extends TestCase
     public function testPaymentCreateWhenInputEmailIsNotPresentAndNonRazorpayOrgMerchantExpectsPaymentCreationFailureWithEmailRequiredException()
     {
         $this->fixtures->org->createHdfcOrg();
-        
+
         $this->fixtures->edit(
             'merchant',
             '10000000000000',
@@ -10220,7 +10305,7 @@ class PaymentCreateTest extends TestCase
                 "org_id" => Org::HDFC_ORG,
             ]
         );
-        
+
         $this->doPaymentCreateAndCalculateFees('checkoutjs', false);
     }
 
@@ -10277,13 +10362,13 @@ class PaymentCreateTest extends TestCase
     protected function doPaymentCreateAndCalculateFees($library, $expectsSuccessfulPayment = true, $input = [])
     {
         $this->ba->publicAuth();
-    
+
         $payment = $this->getDefaultPaymentArray();
 
         unset($payment['email']);
 
         if (isset($input['email'])) {
-            $payment['email'] = $input['email']; 
+            $payment['email'] = $input['email'];
         }
 
         $payment['currency'] = $input['currency'] ?? 'INR';
