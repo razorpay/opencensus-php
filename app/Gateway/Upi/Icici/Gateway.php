@@ -25,6 +25,7 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Base\VerifyResult;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Gateway\Base as GatewayBase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Gateway\Base\AuthorizeFailed;
@@ -1316,7 +1317,23 @@ class Gateway extends Base\Gateway
         }
         else if ($this->shouldPreProcessThroughMozart($isUpiTransfer, $isBharatQr, $routeName) === true)
         {
-            return $this->preProcessThroughMozart($body);
+            $response = $this->preProcessThroughMozart($body);
+
+            // In some cases the callback for recurring payments is received on callback/{gateway} route instead of
+            // callback/recurring/{gateway} route. Hence adding this check to ensure recurring callbacks are not
+            // processed via the UPS preProcess flow that is meant for non-recurring callbacks only.
+            //
+            // merchantReference in case of non-recurring payments is the payment id and hence will always have
+            // the length as 14. While for recurring payments the merchant reference always has length > 14
+            // Example - Hv4iga1CmfWU3F0execte1 (<payment_id><env><action><attempt>)
+            $merchantReference = $response['data']['upi']['merchant_reference'] ?? '';
+
+            if (UniqueIdEntity::verifyUniqueId($merchantReference, false) === true)
+            {
+                return $response;
+            }
+
+            $response = $this->parseGatewayResponse($body, true, $isUpiTransfer);
         }
         else {
             $response = $this->parseGatewayResponse($body, true, $isUpiTransfer);
