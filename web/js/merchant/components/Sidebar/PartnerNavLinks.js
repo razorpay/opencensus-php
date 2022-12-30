@@ -44,7 +44,7 @@ export default function PartnerNavLinks() {
       <MainNavLink
         label="Settings"
         icon="i i-settings text-warning"
-        to="/partners/settings"
+        to="/partners/config"
         additionalCondition={(user) =>
           user.isAllowedView('partner_settings') && user.isPartner('aggregator', 'fully_managed')
         }

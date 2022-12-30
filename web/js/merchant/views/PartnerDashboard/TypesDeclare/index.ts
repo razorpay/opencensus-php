@@ -9,3 +9,6 @@ export interface UserT extends Record<string, unknown> {
   isShowInvoiceCurrentFY: boolean;
   isShowAffordabilityWidget: boolean;
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type TODO_PD = any;

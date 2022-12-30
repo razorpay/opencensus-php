@@ -20,6 +20,10 @@ import {
   pluginHandlers,
 } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/__test__/mocks/handlers';
 import { paymentHandleHandlers } from '../js/merchant/containers/Home/ProductOnboardingCard/__test__/mocks/handlers';
+import {
+  partnerConfigFetchHandlers,
+  partnerConfigSaveHandlers,
+} from 'merchant/views/PartnerDashboard/Settings/configuration/__tests__/mocks/handlers';
 
 export const handlers = [
   // Handles a "Login" mutation
@@ -818,4 +822,6 @@ export const handlers = [
   ...keyHandlers,
   ...pluginHandlers,
   ...paymentHandleHandlers,
+  ...partnerConfigFetchHandlers,
+  ...partnerConfigSaveHandlers,
 ];

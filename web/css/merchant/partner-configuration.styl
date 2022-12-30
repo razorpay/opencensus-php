@@ -1,0 +1,664 @@
+// stylelint-disable no-descending-specificity
+// stylelint-disable color-function-notation
+// stylelint-disable max-nesting-depth
+$background-color = #FAFAFA
+$text-dark-grey = #58666E
+$color-red = #F05050
+$modal-break = 610px
+
+#partner-configurator-content
+  background: transparent
+  padding: 20px 50px
+
+  #partner-settings-container
+    display: flex
+
+    @media screen and (max-width 1170px)
+      flex-direction: column
+
+  @media screen and (max-width $screen-xs-max)
+    padding 18px // supporting the settings content for m-web patterns
+
+  .partner-configurator-label
+    color: #333
+    font-size: 14px
+    font-weight: 500
+
+  .panel-default
+    background: #FFF
+
+  .panel-heading
+    background: transparent
+    border-bottom: 0
+    padding: 20px 20px 10px
+
+    .title
+      vertical-align: middle
+      font-size: 16px
+      font-weight: 700
+      color: #333
+
+  .sub-nav-container
+    border-bottom: 0.5px solid #EBEFF0
+    margin: 5px 0 20px 20px
+
+    .sub-nav-link
+      color: #0B70E7
+      border-bottom: 1px solid #0B70E7
+      font-size: 14px
+      font-weight: 400
+      width: fit-content
+      padding-bottom: 10px
+
+  .panel-body
+    padding: 0 20px 20px
+
+    @media screen and (max-width $screen-sm-min)
+      &.refund-speed-pannel
+        padding 0 0 20px
+
+    .error-helper
+      color: #F00
+      font-size: 12px
+
+    .description
+      margin: 8px 0 12px
+      color: #7B8199;
+      font-weight: 400;
+      font-size: 12px;
+
+    .partner-color-picker-container
+      display: flex
+
+      .color-picker-button-container
+        width: 70px
+
+      .color-picker-container
+        overflow: hidden
+        width: 40px
+        height: 34px
+        border: none
+        border-radius: 2px
+        padding: 0
+
+        .color-picker
+          padding: 0
+          outline: none
+          border: none
+          height: 100%
+          width: 100%
+
+        input[type="color"]::-webkit-color-swatch-wrapper
+          padding: 0;
+
+        input[type="color"]::-webkit-color-swatch
+          border: none;
+
+      .color-input
+        width: 200px
+
+  .upload-logo-section
+    margin: 10px 0
+
+    .upload-logo-container
+      display: flex
+      align-items: end
+
+      .logo-container
+        margin-right: 10px
+        border-radius: 5px
+        box-shadow: 0 4.3145px 12.9435px #CCC;
+        background: #FFF
+        height: 100px
+        width: 100px
+
+      .description-container
+        margin: 0 10px
+
+  .brand-name-container
+    margin: 20px 0
+
+    .brand-name-input
+      width: 220px
+
+  .panel-section--theme
+    vertical-align: top
+    width: 45%
+    padding-left: 10px
+    background: #FFF
+
+    @media screen and (max-width 1170px)
+      width: 100%
+
+  .preview-section
+    width: 55%
+    background-color: #EBEFF0
+    height: 600px
+    overflow: hidden
+    position: relative
+    display: flex
+    flex-direction: column
+
+    @media screen and (max-width 1170px)
+      width: 100%
+
+    #preview-label
+      padding: 2px 0
+      width: 72px
+      margin: 15px auto
+      font-size: 13px
+      text-align: center
+      border-radius: 4px
+      background: #FFF
+      font-weight: 600
+      color: #D8DCDD
+
+    .carouselDiv
+      display: flex
+      flex-direction: column
+      justify-content: center
+      flex-grow: 2
+
+    .partner-overlay
+      background: linear-gradient(150.3deg, rgba(255, 255, 255, 0.2) 38.3%, rgba(0, 0, 0, 0.2) 117.62%);
+      height: 100%
+      width: 100%
+      position: absolute
+      border-radius: inherit
+
+    #preview-container-mobile
+      width: 270px
+      // height: 450px
+      margin: 0 auto
+      background: #FFF;
+      overflow: hidden
+      border-radius: 1px
+
+      #preview-mobile-inner-container
+        padding: 10px 15px
+
+      .preview-bg-img
+        min-height: 100%;
+        min-width: 100%;
+        width: 100%;
+        height: auto;
+        position: relative
+
+      .preview-main-container
+        width: 100%
+        margin-top: -101%
+        height: 60%
+        padding: 15px 20px
+        border-radius: 24px 24px 0 0
+        background: #FFF
+        position: relative
+
+        .logo-container
+          display: flex
+          justify-content: center
+          align-items: center
+
+          .logo-brand-name
+            color: #000
+            font-weight: 400
+            font-size: 20px
+            margin-left: 8px
+            line-height: 20px;
+            width: 55%
+
+        .preview-color-highlight
+          height: 4px
+          border-radius: 16px 16px 0 0
+          width: 25px
+          margin-top: 18px
+          position: relative
+
+        .preview-main-heading
+          color: #213554
+          font-size: 18px
+          font-weight: 700
+          line-height: 24px
+          margin: 12px 0
+
+        .preview-sub-heading
+          color: #213554
+          font-size: 14px
+          font-weight: 400
+          margin: 10px 0 20px
+
+      .preview-heading
+        font-size: 16px
+        color: #213554
+        font-weight: 700
+        line-height: 25px
+        margin: 10px 0
+
+      #preview-header-container
+        display: flex
+        align-items: center
+
+        .back-container
+          font-size: 22px
+          margin-right: 20px
+          display: flex
+          align-items: center
+
+        .progress-container
+          height: 5px
+          width: 40px
+          border-radius: 5px
+          background: rgba(0, 156, 92, 0.08);
+          margin-right: 7px
+
+          .progress-bar
+            width: 55%
+            background: #009C5C
+            height: 100%
+            border-radius: 5px
+
+      .partner-checklist
+        border-bottom: 0.5px solid #EBEFF0
+        padding: 15px 10px
+        display: flex
+        align-items: center
+
+        &:last-child
+          border: none
+
+        .partner-checkbox
+          margin-right: 10px
+          height: 15px
+          width: 15px
+          min-width: 15px
+          padding: 0
+          display: flex
+          align-items: center
+          justify-content: center
+          border-radius: 2px
+          background: #1566F1
+          color: #FFF
+          font-size: 11px
+
+        .partner-checkbox-unchecked
+          border: 1px solid #324664;
+          margin-right: 10px
+          height: 15px
+          width: 15px
+          min-width: 15px
+          padding: 0
+          border-radius: 2px
+
+        .partner-check-details
+          color: #213554
+          font-size: 14px
+          font-weight: 400
+
+      #bottom-container-details
+        margin-top: 55px
+
+      .bottom-container
+        width: 100%
+        padding: 5px 10px
+
+        .rzp-logo-container
+          text-align: center
+          font-weight: 400;
+          font-size: 10px;
+          color: #000;
+          margin: 10px 0 8px
+
+        .button-container
+          display: flex
+
+          .skip-button
+            border: none
+            background: transparent
+            font-size: 12px
+            padding: 8px 20px
+
+        .save-button
+          padding: 5px
+          box-shadow: 0 8px 16px 4px rgba(21, 102, 241, 0.2);
+          border-radius: 8px;
+          font-style: normal;
+          font-weight: 600;
+          font-size: 12px;
+          line-height: 12px;
+          height: 30px
+          width: 100%
+          display: flex
+          align-items: center
+          justify-content: center
+          position: relative
+
+    #preview-container-desktop
+      width: 85%
+      max-width: 800px
+      height: 320px
+      margin: 0 auto
+      background: #FFF;
+      overflow: hidden
+      position: relative
+      border-radius: 3px
+      background-image: url("assets/partner-settings-background.svg")
+      background-repeat: repeat-x
+      background-size: 240px
+      background-position: bottom
+
+      .preview-bg-img
+        display: flex
+        flex-wrap: nowrap
+
+      #preview-main-container-shadow
+        margin-top: 0
+
+      .preview-main-container
+        width: 100%
+        height: 100%
+        display: flex
+        justify-content: center
+        align-items: center
+        position: absolute
+        top: 0
+
+        #preview-content-shadow
+          box-shadow: 0 10px 18px rgba(21, 45, 75, 0.1), 0 0 1px rgba(21, 45, 75, 0.2);
+          border-radius: 10px
+          width: 205px
+          height: 280px
+          padding: 0
+
+        .content
+          width: 220px
+          // height: 255px
+          background: #FFF
+          border-radius: 10px
+          padding: 15px 15px 7px
+
+          #preview-header-container
+            display: flex
+            align-items: center
+            padding: 12px
+            justify-content: space-between
+
+            .back-container
+              font-size: 11px
+              display: flex
+              align-items: center
+
+              span
+                font-size: 10px
+                margin-left: 5px
+
+            .progress-section
+              display: flex
+              justify-content: center
+              align-items: center
+
+              .progress-container
+                height: 3px
+                width: 17px
+                border-radius: 3px
+                background: rgba(0, 156, 92, 0.08);
+                margin-right: 2px
+
+                .progress-bar
+                  width: 55%
+                  background: #009C5C
+                  height: 100%
+                  border-radius: 3px
+
+          .checklist-container
+            padding: 4px 25px
+
+            .checklist-header
+              font-size: 12px
+              color: #213554
+              margin-bottom: 8px
+
+            .partner-checklist
+              padding: 6px
+              margin-bottom: 2px
+              display: flex
+              align-items: center
+              border-bottom: 0.5px solid #EBEFF0
+
+              &:last-child
+                border: none
+
+              .partner-checkbox
+                margin-right: 10px
+                height: 10px
+                width: 10px
+                padding: 2px
+                display: flex
+                align-items: center
+                justify-content: center
+                border-radius: 2px
+                background: #1566F1
+                color: #FFF
+                font-size: 9px
+
+              .partner-checkbox-unchecked
+                border: 1px solid #324664;
+                margin-right: 10px
+                height: 10px
+                width: 10px
+                min-width: 10px
+                padding: 0
+                border-radius: 2px
+
+              .partner-check-details
+                color: #213554
+                font-size: 9px
+                font-weight: 400
+
+          .logo-container
+            display: flex
+            justify-content: center
+            align-items: center
+
+            .logo-brand-name
+              color: #000
+              font-weight: 400
+              font-size: 15px
+              margin-left: 8px
+              line-height: 15px;
+              width: 55%
+
+          .preview-color-highlight
+            height: 4px
+            border-radius: 16px 16px 0 0
+            width: 25px
+            margin-top: 18px
+            position: relative
+
+          .preview-main-heading
+            color: #213554
+            font-size: 16px
+            font-weight: 600
+            line-height: 20px
+            margin: 12px 0
+
+          .preview-sub-heading
+            color: #213554
+            font-size: 13px
+            font-weight: 400
+            margin: 10px 0 20px
+
+          #bottom-container-shadow
+            padding: 7px 25px
+            margin-top: 30px
+            display: flex
+            justify-content: space-around
+            align-items: center
+            border-top: 0.5px solid #EBEFF0
+
+          .bottom-container
+            width: 100%
+
+            .skip-button
+              border: none
+              background: transparent
+              font-size: 10px
+              padding: 8px 20px
+
+            .save-button
+              padding: 4px
+              box-shadow: 0 8px 16px 4px rgba(21, 102, 241, 0.2);
+              border-radius: 7px;
+              font-style: normal;
+              font-weight: 600;
+              font-size: 10px;
+              line-height: 10px;
+              height: 28px
+              width: 100%
+              display: flex
+              align-items: center
+              justify-content: center
+              position: relative
+
+      .partner-rzp-container
+        display: flex
+        justify-content: flex-end
+        align-items: center
+        margin-top: -5%
+        margin-right: 10px
+
+        .powered-by
+          margin-right: 3px
+          font-size: 8px
+
+      #partner-rzp-container-shadow
+        position: absolute
+        width: 100%
+        bottom: 20px
+        padding-right: 6px
+        flex-direction: column
+        align-items: flex-end
+
+        .logo-and-text
+          display: flex
+
+        .t-and-c-container
+          color: rgba(33, 53, 84, 0.67);
+          font-size: 5px
+          max-width: 83px
+
+        @media screen and (max-width 1220px)
+          display: none
+
+      .top-logo-container
+        display: flex
+        justify-content: flex-start
+        align-items: center
+        position: fixed
+        top: 30px
+        margin-left: 15px
+
+        @media screen and (max-width 1220px)
+          display: none
+
+        .brand-name
+          color: #000
+          font-weight: 400
+          font-size: 10px
+          margin-left: 5px
+          max-width: 75px
+
+    .preview-switch-container
+      padding: 20px
+      display: flex
+      justify-content: center
+
+      .button-container
+        background: #D6DBE2
+        border-radius: 4px
+        width: 150px
+        text-align: center
+        display: flex
+        cursor: pointer
+
+        .button-text
+          font-style: normal;
+          font-weight: 700;
+          font-size: 14px;
+          line-height: 20px;
+          color: #354869;
+          width: 50%
+          padding: 7px
+
+        .transparant-button
+          background-color: transparent
+
+        .white-button
+          background-color: #FFF
+
+  @media (max-width 767px)
+    .theme-select
+      .btn.btn-primary
+        margin-top: 12px
+
+  @media (max-width 1144px)
+    .panel-theme
+      display: block
+
+      .panel-section--theme
+        width: 100%
+        display: block
+
+      .preview-section--mobile
+        display: none
+
+  .footer
+    background: #FFF
+    margin-top: -1px
+    padding: 16px 24px
+    border: 1px solid #EBEFF0
+    font-style: normal
+    font-weight: 400
+    font-size: 13px
+    line-height: 18px
+
+  .carousel-container
+    display: flex
+    flex-wrap: nowrap
+    align-items: center
+    overflow: hidden
+
+    button
+      position: absolute
+      height: 50px
+      z-index: 99
+      border: none
+      font-size: 30px
+      background: transparent
+
+    .prev-btn
+      left 0
+
+    .next-btn
+      right: 0
+
+    .carousel-item
+      display: flex
+      align-items: center
+      justify-content: center
+      min-width: 100%
+      width: 100%
+      transition: 1s cubic-bezier(0.39, 0.575, 0.565, 1)
+
+  .dot-container
+    display: flex
+    justify-content: center
+    margin: 10px
+
+    .rounded-dot
+      height: 7px
+      width: 7px
+      border-radius: 50%
+      margin: 2px
+      background: #D6DBE2
+
+    .active-dot
+      background: #4D9FEB

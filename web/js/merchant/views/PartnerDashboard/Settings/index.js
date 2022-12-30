@@ -55,6 +55,9 @@ export default class SettingsContainer extends Component {
     return (
       <tabbed-container>
         <header>
+          <NavLink exact to="/partners/config">
+            Configuration
+          </NavLink>
           <NavLink exact to="/partners/settings">
             Settings
           </NavLink>

@@ -13,7 +13,7 @@ import Home from './Home';
 import ErrorBoundary, { Teams } from 'common/new-ui/ErrorBoundary';
 import usePartnerPageNPS from 'merchant/views/PartnerDashboard/SubMerchant/utils/usePartnerPageNPS';
 import useTrackPartnerExperiments from 'merchant/views/PartnerDashboard/SubMerchant/utils/useTrackPartnerExperiments';
-
+import { Configuration } from './Settings/configuration';
 const PartnerShowWhenRoute = showWhenRoutex(store, '/partners/submerchants');
 
 export default function PartnerDashboard() {
@@ -45,6 +45,12 @@ export default function PartnerDashboard() {
           additionalCondition={(user) => user.isPartner('aggregator', 'fully_managed')}
           path="/partners/settings"
           component={Settings}
+        />
+
+        <ShowWhenRoute
+          additionalCondition={(user) => user.isPartner('aggregator', 'fully_managed')}
+          path="/partners/config"
+          component={Configuration}
         />
 
         <ShowWhenRoute
