@@ -522,7 +522,7 @@ return [
 
     'card_metadata_deletion' =>[
         'test'       => env('AWS_CARD_METADATA_DELETION_TEST_QUEUE'),
-        'live'       => env('AWS_CARD_METADATA_DELETION__LIVE_QUEUE'),
+        'live'       => env('AWS_CARD_METADATA_DELETION_LIVE_QUEUE'),
     ],
 
     'firs_document_process' => [
