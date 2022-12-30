@@ -12,6 +12,7 @@ use \RZP\Gateway\Upi\ICICI\Mock\Gateway as ICICI;
 use RZP\Gateway\Mozart\Mock\Upi\MozartUpiResponse;
 use \RZP\Gateway\Upi\Yesbank\Mock\Server as Yesbank;
 use RZP\Gateway\Upi\Juspay\Fields as UpiJuspayFields;
+use \RZP\Gateway\Upi\Mindgate\Mock\Gateway as Mindgate;
 
 class PreProcess extends Base\Mock\Server
 {
@@ -319,6 +320,54 @@ class PreProcess extends Base\Mock\Server
 
             $response->mergeUpi([
                 UpiEntity::STATUS_CODE => 'U30',
+            ]);
+        }
+
+        $response = $response->toArray();
+
+        unset($response['next']);
+
+        return $response;
+    }
+
+    public function upi_mindgate($entities)
+    {
+        assertTrue($entities['gateway']['cps_route'] === Payment\Entity::UPI_PAYMENT_SERVICE);
+
+        $payload = $entities['gateway']['payload'];
+
+        $data = (new Mindgate())->decryptGatewayResponse($payload['meRes']);
+
+        $response = MozartUpiResponse::getDefaultInstanceForV2();
+
+        $response->mergeUpi([
+            UpiEntity::VPA                  => $data['payer_va'],
+            UpiEntity::STATUS_CODE          => $data['respcode'],
+            UpiEntity::NPCI_REFERENCE_ID    => $data['npci_upi_txn_id'],
+            UpiEntity::MERCHANT_REFERENCE   => $data['payment_id'],
+            UpiEntity::GATEWAY_PAYMENT_ID   => $data['upi_txn_id'],
+        ]);
+
+        $response->setPayment([
+            Payment\Entity::CURRENCY          => 'INR',
+            Payment\Entity::AMOUNT_AUTHORIZED => $data['amount']*100,
+        ]);
+
+        $response->setTerminal([
+            Terminal\Entity::GATEWAY_MERCHANT_ID   => $payload['pgMerchantId'],
+            Terminal\Entity::GATEWAY               => 'upi_mindgate',
+        ]);
+
+        if($data['respcode'] === 'ZA')
+        {
+            $response->setSuccess(false);
+
+            $response->setError([
+                'description'               => 'Payment Declined',
+                'gateway_error_code'        => 'ZA',
+                'gateway_error_description' => 'Payment Declined',
+                'gateway_status_code'       =>  200,
+                'internal_error_code'       => 'BAD_REQUEST_PAYMENT_DECLINED_BY_CUSTOMER',
             ]);
         }
 

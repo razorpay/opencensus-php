@@ -22,6 +22,7 @@ use RZP\Gateway\Base\ScroogeResponse;
 use RZP\Gateway\Upi\Base\UpiErrorCodes;
 use RZP\Models\Payment\Processor\UpiTrait;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Gateway\Upi\Base\CommonGatewayTrait;
 use RZP\Models\Merchant\Repository as MerchantRepository;
 
 class Gateway extends Base\Gateway
@@ -31,6 +32,8 @@ class Gateway extends Base\Gateway
     use Base\RecurringTrait;
 
     use Base\MandateTrait;
+
+    use CommonGatewayTrait;
 
     const ACQUIRER = 'hdfc';
 
@@ -413,6 +416,20 @@ class Gateway extends Base\Gateway
             return $this->preProcessMandateCallback($input, Payment\Gateway::UPI_MINDGATE);
         }
 
+        // We are passing gateway driver as second parameter from GatewayController
+        // In that case, isBharatQr will be equals to upi_mindgate
+        if (($isBharatQr !== true) and
+            ($this->shouldUseUpiPreProcess(Payment\Gateway::UPI_MINDGATE) === true))
+        {
+            $data = [
+                'payload'       => $input,
+                'gateway'       => Payment\Gateway::UPI_MINDGATE,
+                'cps_route'     => Payment\Entity::UPI_PAYMENT_SERVICE,
+            ];
+
+            return $this->upiPreProcess($data);
+        }
+
         $encryptedResponse = $input[ResponseFields::CALLBACK_RESPONSE_KEY];
 
         $response = $this->parseGatewayResponse($encryptedResponse, Action::CALLBACK);
@@ -609,6 +626,17 @@ class Gateway extends Base\Gateway
             }
 
             return $this->mandateCreateCallback($input);
+        }
+
+        if ((isset($input['gateway']['data']['version']) === true) and
+            ($input['gateway']['data']['version']) === 'v2')
+        {
+            $acquirerData = $this->upiCallback($input);
+
+            // Some merchants onboarded on mindgate wants this field
+            $acquirerData['acquirer'][Payment\Entity::REFERENCE1] = $input['gateway']['data']['upi'][Entity::GATEWAY_PAYMENT_ID];
+
+            return $acquirerData;
         }
 
         $content = $input['gateway'];
@@ -1425,6 +1453,13 @@ class Gateway extends Base\Gateway
      */
     public function getPaymentIdFromServerCallback(array $response): string
     {
+        $version = $response['data']['version'] ?? '';
+
+        if ($version === 'v2')
+        {
+            return $this->upiPaymentIdFromServerCallback($response);
+        }
+
         $details = $this->getRecurringDetailsFromServerCallback($response);
 
         if (empty($details[Entity::PAYMENT_ID]) === false)

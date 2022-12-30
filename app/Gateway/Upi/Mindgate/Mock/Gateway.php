@@ -5,6 +5,7 @@ namespace RZP\Gateway\Upi\Mindgate\Mock;
 use RZP\Gateway\Base;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Upi\Mindgate;
+use RZP\Gateway\Upi\Mindgate\Action;
 use RZP\Exception\GatewayErrorException;
 use RZP\Gateway\Upi\Base\Mock as UpiMock;
 
@@ -25,5 +26,12 @@ class Gateway extends Mindgate\Gateway
             default:
                 return parent::getIntentUrl($input);
         }
+    }
+
+    public function decryptGatewayResponse(string $input)
+    {
+        $result = $this->parseGatewayResponse($input, Action::CALLBACK);
+
+        return $result;
     }
 }
