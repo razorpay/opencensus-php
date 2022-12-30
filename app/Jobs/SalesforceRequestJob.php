@@ -4,7 +4,7 @@ namespace RZP\Jobs;
 
 use App;
 use Jitendra\Lqext\TransactionAware;
-
+use Config;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -55,6 +55,14 @@ class SalesforceRequestJob extends RequestJob
         return $this->salesforceClient->fetchAccessToken($skipCache);
     }
 
+    private function notifySFDrop(array $input)
+    {
+        $app = App::getFacadeRoot();
+        $message = '*ALERT*: Salesforce Call Dropped for below mentioned mid';
+        $channel = Config::get('slack.channels.platform_growth_alerts');
+        $app['slack']->queue($message, $input, ['channel' => $channel]);
+    }
+
     protected function handleRequest()
     {
         $app = App::getFacadeRoot();
@@ -88,6 +96,7 @@ class SalesforceRequestJob extends RequestJob
             ($responseBody[self::STATUS] != "SUCCESS")
         )
         {
+            $this->notifySFDrop($this->request);
             throw new Exception\IntegrationException(
                 'Failed to push event to Salesforce',
                 ErrorCode::SERVER_ERROR_SALESFORCE_SERVICE_ERROR,
