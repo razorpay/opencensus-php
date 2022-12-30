@@ -1428,6 +1428,8 @@ class Service extends Base\Service
             $args[Constants::PARAMS][DashboardNotificationConstants::PREVIOUS_BUSINESS_WEBSITE] = $previousWebsite;
         }
 
+        $this->sendSelfServeSuccessAnalyticsEventToSegmentForAddOrUpdateBusinessWebsite($event);
+
         (new DashboardNotificationHandler($args))->send();
     }
 
@@ -3605,5 +3607,16 @@ class Service extends Base\Service
         }
 
         return $documents_detail;
+    }
+
+    private function sendSelfServeSuccessAnalyticsEventToSegmentForAddOrUpdateBusinessWebsite(string $event)
+    {
+        [$segmentEventName, $segmentProperties] = $this->core->pushSelfServeSuccessEventsToSegment();
+
+        $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = ($event === DashboardEvents::MERCHANT_BUSINESS_WEBSITE_UPDATE) ? "Business Website Updated" : "Business Website Added";
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $this->merchant, $segmentProperties, $segmentEventName
+        );
     }
 }

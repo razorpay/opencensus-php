@@ -3765,6 +3765,8 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($merchant);
 
+            $this->sendSelfServeSuccessAnalyticsEventToSegmentForAddBusinessWebsite();
+
             if ((empty($this->merchant->primaryOwner()) === false) and
                 ($merchantDetails->getActivationStatus() === Status::ACTIVATED))
             {
@@ -8523,4 +8525,14 @@ class Core extends Base\Core
                 BusinessDetailConstants::WEBSITE_VISITS => $visits], ($visits > 0)];
     }
 
+    private function sendSelfServeSuccessAnalyticsEventToSegmentForAddBusinessWebsite()
+    {
+        [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
+
+        $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = 'Business Website Added';
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $this->merchant, $segmentProperties, $segmentEventName
+        );
+    }
 }

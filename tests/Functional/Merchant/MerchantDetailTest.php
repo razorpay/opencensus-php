@@ -6330,7 +6330,7 @@ You can now start accepting payments from https://www.example.com.
 
         $this->app->instance('segment-analytics', $segmentMock);
 
-        $segmentMock->expects($this->exactly(1))
+        $segmentMock->expects($this->exactly(2))
             ->method('pushIdentifyAndTrackEvent')
             ->willReturn(true);
 
