@@ -17,11 +17,12 @@ class Repository  extends Base\Repository
         $statusCol    = $this->dbColumn(Entity::STATUS);
         $createdAtCol = $this->dbColumn(Entity::CREATED_AT) ;
 
-        return $this->newQuery()
+        $connection = $this->getMasterReplicaConnection();
+        return  $this->newQueryWithConnection($connection)
                     ->distinct()
                     ->select($contactCol)
                     ->where($statusCol, BulkUploadClient::STATUS_PENDING)
-                    ->where($createdAtCol, '>', Carbon::now()->subHours(3)->toDateTimeString())
+                    ->where($createdAtCol, '>', Carbon::now()->subHours(3)->timestamp)
                     ->limit(500)
                     ->get();
     }
