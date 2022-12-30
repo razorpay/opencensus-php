@@ -47,7 +47,7 @@
 
       var NPCI_FEEDBACK_URL = "https://qdeg.in/5K2qabC";
       var feedbackPopup = document.getElementById("npci-feedback-link-modal");
-      var isPostMandateRegistration = !!data['request'];
+      var isPostMandateRegistration = !!data['emandate_details'];
       var isFeedbackAllowed = !!data['allow_feedback']
       function onLoad() {
         openNPCIFeedbackModal();
