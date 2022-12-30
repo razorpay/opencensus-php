@@ -1391,6 +1391,8 @@ class Core extends Base\Core
             }
         }
 
+        $balanceAmount = $this->negateODIfApplicable($balanceEntity->merchant, $balanceAmount);
+
         return $balanceAmount;
     }
 
@@ -8027,5 +8029,29 @@ class Core extends Base\Core
         $accessor->delete(self::USER_COMMENT_KEY_IN_SETTINGS_FOR_ICICI_2FA);
 
         $accessor->save();
+    }
+
+    public function negateODIfApplicable(Merchant\Entity $merchant, $merchantBalance)
+    {
+        $isOdFeatureEnabled = $merchant->isFeatureEnabled(FeatureConstants::REDUCE_OD_BALANCE_FOR_CA);
+
+        if ($isOdFeatureEnabled === true)
+        {
+            $configuredOD = (int) (new AdminService)->getConfigKey(
+                [
+                    'key' => ConfigKey::RX_OD_BALANCE_CONFIGURED_FOR_MAGICBRICKS
+                ]);
+
+            $this->trace->info(TraceCode::DEDUCT_OD_FROM_GATEWAY_BALANCE, [
+                'merchant'          => $merchant->getId(),
+                'configured_od'     => $configuredOD,
+                'gateway_balance'   => $merchantBalance,
+                'available_balance' => $merchantBalance - $configuredOD
+            ]);
+
+            return $merchantBalance - $configuredOD;
+        }
+
+        return $merchantBalance;
     }
 }
