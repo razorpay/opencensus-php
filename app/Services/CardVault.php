@@ -31,6 +31,7 @@ class CardVault
     const TOKENEX_TOKEN     = 'tokenex_token';
     const TOKENEX_TOKENS    = 'tokenex_tokens';
     const X_RAZORPAY_TASKID = 'X-Razorpay-TaskId';
+    const X_RZP_TESTCASE_ID = 'X-RZP-TESTCASE-ID';
     const BU_NAMESPACE      = 'bu_namespace';
     const TEMP_SAVE         = 'temp_save';
 
@@ -401,6 +402,10 @@ class CardVault
 
         if ($data === null)
             $data = '';
+
+        $testCaseId = $this->app['request']->header('X-RZP-TESTCASE-ID');
+
+        $headers[self::X_RZP_TESTCASE_ID] = $testCaseId;
 
         $headers['Content-Type'] = 'application/json';
 
