@@ -28,8 +28,6 @@ class Constants
         self::RefundEnabled => 'direct',
         self::DisableAutoRefund => 'direct',
         self::EligibilityEnabled => 'client',
-        self::EmailOptionalOnCheckout => 'direct',
-        self::ShowEmailOnCheckout => 'direct',
     ];
 
     public static function isShadowFeature($variant)
