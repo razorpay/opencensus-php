@@ -1888,10 +1888,10 @@ class NonVirtualAccountQrCodeTest extends TestCase
             'fixed_amount'   => true,
             'payment_amount' => 10000
         ],
-            'test',
+            'live',
             'LiveAccountMer');
 
-        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
 
         $this->assertEquals($qrCodeEntity['id'], $qrCode['id']);
 

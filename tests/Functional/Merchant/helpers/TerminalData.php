@@ -763,7 +763,7 @@ return [
             'content' => [
                 'gateway'                   => 'upi_icici',
                 'gateway_merchant_id'       => '12345',
-                'vpa'                       => 'rzpbqr@icici',
+                'gateway_merchant_id2'      => 'rzpbqr@icici',
                 'upi'                       => true,
                 'type'                      => [
                     'offline'       => '1',
@@ -777,9 +777,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'gateway_merchant_id' => '12345',
-                'vpa'                 => 'rzpbqr@icici',
-                'enabled'             => true
+                'gateway_merchant_id'  => '12345',
+                'gateway_merchant_id2' => 'rzpbqr@icici',
+                'enabled'              => true
             ]
         ]
     ],

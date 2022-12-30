@@ -1,18 +1,10 @@
 <?php
 
-namespace RZP\Tests\P2p\Service\UpiSharp\Device;
+namespace RZP\Tests\P2p\Service\UpiSharp\Client;
 
 use Carbon\Carbon;
-use phpseclib\Crypt\AES;
-use RZP\Models\P2p\Device;
-use RZP\Exception\RuntimeException;
-use RZP\Models\P2p\Device\DeviceToken;
-use RZP\Http\Controllers\P2p\Requests;
-use RZP\Tests\P2p\Service\Base\P2pRequest;
-use RZP\Tests\P2p\Service\Base\Scenario;
-use RZP\Gateway\P2p\Upi\Sharp\DeviceGateway;
+use RZP\Models\P2p\Client\Entity;
 use RZP\Tests\P2p\Service\UpiSharp\TestCase;
-use RZP\Tests\P2p\Service\Base\Fixtures\Fixtures;
 
 class ClientTest extends TestCase
 {
@@ -20,8 +12,11 @@ class ClientTest extends TestCase
     {
         $helper = $this->getClientHelper();
 
-        $helper->withSchemaValidated();
-
         $response = $helper->getGatewayConfig($this->gateway, []);
+
+        $this->assertArraySubset([
+         Entity::GATEWAY_CONFIG =>  [
+             Entity::MERCHANT_ID            => "10000000000000",
+         ]], $response);
     }
 }

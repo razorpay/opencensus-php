@@ -506,15 +506,4 @@ class DeviceTest extends TestCase
 
         return $cases;
     }
-
-    public function testGetGatewayConfig()
-    {
-        $helper = $this->getDeviceHelper();
-
-        $helper->withSchemaValidated();
-
-        $this->expectException(RuntimeException::class);
-
-        $helper->getGatewayConfig($this->gateway, []);
-    }
 }

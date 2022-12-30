@@ -929,7 +929,7 @@ class Entity extends Base\PublicEntity
 
         if (in_array($routeName, Route::$detokenizeMpansRoutes, true) === true)
         {
-            $variant = $app('razorx')->getTreatment(UniqueIdEntity::generateUniqueId(), Merchant\RazorxTreatment::DETOKENIZE_MPANS,
+            $variant = app('razorx')->getTreatment(UniqueIdEntity::generateUniqueId(), Merchant\RazorxTreatment::DETOKENIZE_MPANS,
                 $this->mode ?? "live");
 
             // If experiment enabled then don't de-tokenize

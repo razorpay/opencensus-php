@@ -124,7 +124,7 @@ class Entity extends Base\PublicEntity
             return;
         }
 
-        $variant = $app('razorx')->getTreatment(UniqueIdEntity::generateUniqueId(), Merchant\RazorxTreatment::DETOKENIZE_MPANS,
+        $variant = app('razorx')->getTreatment(UniqueIdEntity::generateUniqueId(), Merchant\RazorxTreatment::DETOKENIZE_MPANS,
             $this->mode ?? "live");
 
         // If experiment enabled then don't de-tokenize

@@ -21,7 +21,7 @@ use RZP\Models\VirtualAccount;
 use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Upi\Icici\Fields;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Exception\ServerErrorException;
+use RZP\Exception\BadRequestException;
 use RZP\Models\QrCode\Constants as Constants;
 use RZP\Models\BharatQr\Constants as BQRConstants;
 use RZP\Models\Payment\Processor\TerminalProcessor;
@@ -157,8 +157,8 @@ class Generator extends QrCode\Generator
             }
             catch(\Exception $ex)
             {
-                throw new ServerErrorException('QrCode creation failed due to error at bank or wallet gateway',
-                    ErrorCode::SERVER_ERROR_QR_CODE_REF_ID_GENERATION_FAILURE,
+                throw new BadRequestException('QrCode creation failed due to error at bank or wallet gateway',
+                    ErrorCode::BAD_REQUEST_QR_CODE_REF_ID_GENERATION_FAILURE,
                     null,
                     null);
             }
