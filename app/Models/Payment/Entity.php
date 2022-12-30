@@ -5328,22 +5328,29 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function isTokenisationUnhappyFlowHandlingApplicable(): bool
     {
-        if ($this->isCardMandateRecurringInitialPayment() === true)
+        try
         {
-            $app = \App::getFacadeRoot();
+            if ($this->isCardMandateRecurringInitialPayment() === true) {
+                $app = \App::getFacadeRoot();
 
-            $variant = $app['razorx']->getTreatment($this->localToken->merchant->getId(),
-                RazorxTreatment::RECURRING_TOKENISATION_UNHAPPY_FLOW_HANDLING,
-                $app['rzp.mode']);
+                $key = Carbon::now()->getTimestamp();
 
-            if(strtolower($variant) === 'on')
-            {
-                $variant = $app['razorx']->getTreatment($this->localToken->card->getIin(),
+                $variant = $app['razorx']->getTreatment($key,
                     RazorxTreatment::RECURRING_TOKENISATION_UNHAPPY_FLOW_HANDLING,
                     $app['rzp.mode']);
 
                 return (strtolower($variant) === 'on');
             }
+        }
+        catch (\Exception $e)
+        {
+            $app = \App::getFacadeRoot();
+
+            $app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::RECURRING_PAYMENT_RAZORX_FAILURE
+            );
         }
 
         return false;
@@ -5455,8 +5462,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         if($this->isB2BExportCurrencyCloudPayment() === true){
             $data[self::B2BExportInvoice] = $this->getReference2();
         }
-        
-        
+
+
         // MCC CFB Payments which are in authorized state will have the fees in payment currency,
         // so we are converting it into base currency(INR) and sending it as an additional param to Merchant Dashboard.
         // If its a captured payment, then it would have already been handled in the post capture to make sure fees are stored in Base currency(INR)
@@ -5521,7 +5528,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         if($this->isB2BExportCurrencyCloudPayment() === true){
             $data[self::B2BExportInvoice] = $this->getReference2();
         }
-        
+
         // MCC CFB Payments which are in authorized state will have the fees in payment currency,
         // so we are converting it into base currency(INR) and sending it as an additional param to Merchant Dashboard.
         // If its a captured payment, then it would have already been handled in the post capture to make sure fees are stored in Base currency(INR)
