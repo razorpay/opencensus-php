@@ -839,7 +839,7 @@ class Gateway extends Base\Gateway
             $acquirerData = $this->upiCallback($input);
 
             // Some merchants onboarded on axis wants this field
-            $acquirerData[Payment\Entity::REFERENCE1] = $input['gateway']['data']['upi'][Entity::NPCI_TXN_ID];
+            $acquirerData['acquirer'][Payment\Entity::REFERENCE1] = $input['gateway']['data']['upi'][Entity::NPCI_TXN_ID] ?? '';
 
             return $acquirerData;
         }
@@ -1174,9 +1174,15 @@ class Gateway extends Base\Gateway
     {
         parent::action($input, Action::VERIFY_REFUND);
 
-        $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail($input['refund']['payment_id'], Action::AUTHORIZE);
+        if ($input['payment']['cps_route'] === Payment\Entity::UPI_PAYMENT_SERVICE)
+        {
+            $verifyRequestArray = $this->getVerifyRefundUpsRequestArray($input);
+        } else
+        {
+            $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail($input['refund']['payment_id'], Action::AUTHORIZE);
 
-        $verifyRequestArray = $this->getVerifyRefundRequestArray($input, $gatewayEntity);
+            $verifyRequestArray = $this->getVerifyRefundRequestArray($input, $gatewayEntity);
+        }
 
         $content = json_encode($verifyRequestArray);
 
@@ -1282,6 +1288,56 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
+    public function getVerifyRefundUpsRequestArray(array $input)
+    {
+        $payment = $input['payment'];
+
+        $fiscalEntity = $this->app['upi.payments']->findByPaymentIdAndGatewayOrFail(
+            $payment['id'],
+            $payment['gateway'],
+            [
+                'merchant_reference',
+                'flow'
+            ]);
+
+        //
+        // Appending (attempt count - 1)  to refund id for verifying previous refund if that was successful.
+        // For scrooge refunds, attempts are sent from scrooge which signifies the attempts which have been done on
+        // this. As attempts in scrooge starts with 0, For eg. if attempts = 5,
+        // that means we will be requesting refund R5 and we need to verify for R4.
+        //
+        $attempts = $input['refund']['attempts'] - 1;
+
+        //
+        // If this is 0th or 1st attempt, verify refund should be called for first refund (exact Refund Id)
+        // Appending empty string to refund if we want to verify refund with 14 digit refund id.
+        //
+        if (((int) $attempts === 0) or ((int) $input['refund']['attempts'] === 0))
+        {
+            $attempts = '';
+        }
+
+        $data = [
+            Fields::MERCH_ID       => $this->getMerchantId(),
+            Fields::MERCH_CHAN_ID  => $this->getMerchantId2(),
+            Fields::UNQ_TXN_ID     => $fiscalEntity['merchant_reference'] ?? $payment['id'],
+            Fields::TXN_REFUND_ID  => $input['refund']['id'] . $attempts,
+        ];
+
+        if ($fiscalEntity['flow'] === Base\Type::INTENT)
+        {
+            list($data[Fields::MERCH_ID], $data[Fields::MERCH_CHAN_ID]) = $this->getAggregatorIds($this->terminal);
+        }
+
+        $dataStr = implode('', $data);
+
+        $checksum = $this->encrypt($dataStr);
+
+        $data[Fields::CHECKSUM] = bin2hex($checksum);
+
+        return $data;
+    }
+
     private function checkRefundResponseStatus($responseContent)
     {
         $scroogeResponse = new GatewayBase\ScroogeResponse();
@@ -1320,15 +1376,35 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
-
         $attributes = $this->getGatewayEntityAttributes($input, Action::REFUND);
 
-        $attributes[Entity::TYPE] = $gatewayEntity->getType();
+        if ($input['payment']['cps_route'] === Payment\Entity::UPI_PAYMENT_SERVICE)
+        {
+            $payment = $input['payment'];
 
-        $refund = $this->createGatewayPaymentEntity($attributes);
+            $fiscalEntity = $this->app['upi.payments']->findByPaymentIdAndGatewayOrFail(
+                $payment['id'],
+                $payment['gateway'],
+                [
+                    'merchant_reference',
+                    'flow'
+                ]);
 
-        $request =  $this->getRefundRequestArray($input, $gatewayEntity);
+            $attributes[Entity::TYPE] = $fiscalEntity['flow'];
+
+            $refund = $this->createGatewayPaymentEntity($attributes);
+
+            $request =  $this->getUpsRefundRequestArray($input, $fiscalEntity);
+        } else
+        {
+            $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+
+            $attributes[Entity::TYPE] = $gatewayEntity->getType();
+
+            $refund = $this->createGatewayPaymentEntity($attributes);
+
+            $request =  $this->getRefundRequestArray($input, $gatewayEntity);
+        }
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_REQUEST,
@@ -1404,6 +1480,49 @@ class Gateway extends Base\Gateway
         ];
 
         if ($gatewayEntity->getType() === Base\Type::PAY)
+        {
+            list($data[Fields::MERCH_ID], $data[Fields::MERCH_CHAN_ID]) = $this->getAggregatorIds($this->terminal);
+        }
+
+        $dataStr = implode('', $data);
+
+        $checksum = $this->encrypt($dataStr);
+
+        $data[Fields::CHECKSUM] = bin2hex($checksum);
+
+        $content = json_encode($data);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_REQUEST,
+            [
+                'content'           => $data,
+                'gateway'           => $this->gateway,
+                'payment_id'        => $input['payment']['id'],
+                'refund_id'         => $input['refund']['id'],
+                'terminal_id'       => $input['terminal']['id'],
+            ]);
+
+        return $request;
+    }
+
+    protected function getUpsRefundRequestArray(array $input, array $fiscalEntity): array
+    {
+        $payment = $input['payment'];
+
+        $data = [
+            Fields::MERCH_ID            => $this->getMerchantId(),
+            Fields::MERCH_CHAN_ID       => $this->getMerchantId2(),
+            Fields::TXN_REFUND_ID       => $this->getRefundId($input['refund']),
+            Fields::MOB_NO              => $this->getMobileNumber(),
+            Fields::TXN_REFUND_AMOUNT   => $this->formatAmount($input['refund']['amount']),
+            Fields::UNQ_TXN_ID          => $fiscalEntity['merchant_reference'] ?? $payment['id'],
+            Fields::REFUND_REASON       => $this->getRefundRemark($input),
+            Fields::S_ID                => '',
+        ];
+
+        if ($fiscalEntity['flow'] === Base\Type::INTENT)
         {
             list($data[Fields::MERCH_ID], $data[Fields::MERCH_CHAN_ID]) = $this->getAggregatorIds($this->terminal);
         }

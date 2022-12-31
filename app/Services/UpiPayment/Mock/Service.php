@@ -211,6 +211,7 @@ class Service extends UpiPaymentService
 
     protected function callback(array $content): array
     {
+        // d($content);
         $data = $content['data']['data'];
         $error = $content['data']['error'] ?? null;
         $gateway = $content['gateway'];
@@ -227,6 +228,11 @@ class Service extends UpiPaymentService
             'amount_authorized' => (string) $payment['amount_authorized'],
             'currency'          => $payment['currency'],
         ];
+
+        if ($gateway === 'upi_axis')
+        {
+            $responseData['acquirer']['reference1'] = 'IBL3aa942ae75214480b73704d09b3c1f69';
+        }
 
         $responseError = $this->content($error);
 
@@ -325,6 +331,11 @@ class Service extends UpiPaymentService
         $response['entity']['reconciled_at']        = 0;
         $response['entity']['gateway']              = $content['gateway'];
         $response['entity']['gateway_payment_id']   = 227121351902;
+
+        if (in_array('flow', $content['required_fields'], true) === true)
+        {
+            $response['entity']['flow'] = 'intent';
+        }
 
         if (empty($content['reconciled_at']) === false)
         {

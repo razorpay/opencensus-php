@@ -2,11 +2,6 @@
 
 namespace RZP\Tests\Functional\PaymentsUpi\Service;
 
-
-use RZP\Exception;
-use Carbon\Carbon;
-use RZP\Constants\Mode;
-use RZP\Constants\Timezone;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
@@ -19,6 +14,8 @@ class UpiAxisPaymentServiceTest extends UpiPaymentServiceTest
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->gateway = 'upi_axis';
     }
 
     public function testPaymentSuccess()
@@ -52,6 +49,7 @@ class UpiAxisPaymentServiceTest extends UpiPaymentServiceTest
         $upiEntity['created_at'] = $payment['created_at'];
         $upiEntity['gateway_payment_id'] = '882087011';
         $upiEntity['gateway_merchant_id'] = '123456';
+        $upiEntity['upi_txn_id'] = 'IBL3aa942ae75214480b73704d09b3c1f69';
         $upiEntity['vpa'] =  'vishnu@icici';
         $upiEntity['payment_id'] = $payment['id'];
         $upiEntity['amount'] = $payment['amount'];
@@ -67,6 +65,7 @@ class UpiAxisPaymentServiceTest extends UpiPaymentServiceTest
             Entity::TERMINAL_ID     => $this->terminal->getId(),
             Entity::GATEWAY         => $this->gateway,
             Entity::CPS_ROUTE       => 4,
+            Entity::REFERENCE1      => 'IBL3aa942ae75214480b73704d09b3c1f69',
         ], $payment);
     }
 
@@ -125,7 +124,11 @@ class UpiAxisPaymentServiceTest extends UpiPaymentServiceTest
             }
         );
 
-        $content = $this->mockServer('upi_axis')->getAsyncCallbackContent($upiEntity, $payment, 'U30', 'DEBIT HAS FAILED');
+        $content = $this->mockServer('upi_axis')->getAsyncCallbackContent(
+            $upiEntity,
+            $payment,
+            'U30',
+            'DEBIT HAS FAILED');
 
         $response = $this->makeS2SCallbackAndGetContent($content, 'upi_axis');
 
@@ -163,7 +166,7 @@ class UpiAxisPaymentServiceTest extends UpiPaymentServiceTest
 
         $this->setRazorxMock(function ($mid, $feature, $mode)
         {
-            return $this->getRazoxVariant($feature, 'api_upi_axis_pre_process_v1', 'upi_icici');
+            return $this->getRazoxVariant($feature, 'api_upi_axis_pre_process_v1', 'upi_axis');
         });
 
         $payment = $this->getDbLastPayment()->toArray();
@@ -199,7 +202,6 @@ class UpiAxisPaymentServiceTest extends UpiPaymentServiceTest
             Entity::CPS_ROUTE       => 4,
         ], $payment);
     }
-
 
     public function testTpvPaymentFailure()
     {
@@ -323,7 +325,8 @@ class UpiAxisPaymentServiceTest extends UpiPaymentServiceTest
             Entity::REFERENCE16     => $upi['npci_reference_id'],
             Entity::VPA             => $upi['vpa'],
             Entity::TERMINAL_ID     => $this->terminal->getId(),
-            Entity::GATEWAY         => $this->gateway
+            Entity::GATEWAY         => $this->gateway,
+            Entity::REFERENCE1      => 'AXIS00090439839',
         ], $payment);
 
         $this->assertArraySubset([
@@ -469,5 +472,133 @@ class UpiAxisPaymentServiceTest extends UpiPaymentServiceTest
         ];
 
         return $this->mockServer('upi_axis')->getAsyncCallbackContent($upi, $payment);
+    }
+
+    public function testRefundSuccess()
+    {
+        $this->testPaymentSuccess();
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals(4, $payment->getCpsRoute());
+
+        // Add a capture as well, just for completeness sake
+        $this->capturePayment($payment->getPublicId(), $payment->getAmount());
+
+        $payment->reload();
+
+        $this->assertEquals('captured', $payment->getStatus());
+
+        $this->mockServerGatewayContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'verify_refund')
+            {
+                $content['code'] = '111';
+            }
+        }, $this->gateway);
+
+        // Attempt a partial refund
+        $this->refundPayment($payment->getPublicId(), 100);
+
+        $payment->reload();
+
+        $this->assertEquals('captured', $payment->getStatus());
+
+        $this->assertEquals(100, $payment->getAmountRefunded());
+
+        $this->refundPayment($payment->getPublicId(), 100);
+
+        $payment->reload();
+
+        $this->assertEquals(200, $payment->getAmountRefunded());
+    }
+
+    public function testFullRefundSuccess()
+    {
+        $this->testPaymentSuccess();
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals(4, $payment->getCpsRoute());
+
+        // Add a capture as well, just for completeness sake
+        $this->capturePayment($payment->getPublicId(), $payment->getAmount());
+
+        $payment->reload();
+
+        $this->assertEquals('captured', $payment->getStatus());
+
+        $this->mockServerGatewayContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'verify_refund')
+            {
+                $content['code'] = '111';
+            }
+        }, $this->gateway);
+
+        // Attempt a partial refund
+        $this->refundPayment($payment->getPublicId(), $payment->getAmount());
+
+        $payment->reload();
+
+        $this->assertEquals('refunded', $payment->getStatus());
+
+        $this->assertEquals($payment->getAmount(), $payment->getAmountRefunded());
+    }
+
+    public function testRefundFailure()
+    {
+        $payment = $this->testPaymentSuccess();
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals(4, $payment->getCpsRoute());
+
+        // Add a capture as well, just for completeness sake
+        $this->capturePayment($payment->getPublicId(), $payment->getAmount());
+
+        $this->mockServerGatewayContentFunction(function (& $content, $action = null)
+        {
+            $content['code'] = 'A79';
+        });
+
+        $this->refundPayment($payment->getPublicId());
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('created', $refund['status']);
+    }
+
+    public function testVerifyRefund()
+    {
+        $payment = $this->testPaymentSuccess();
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals(4, $payment->getCpsRoute());
+
+        // Add a capture as well, just for completeness sake
+        $this->capturePayment($payment->getPublicId(), $payment->getAmount());
+
+        $this->mockServerGatewayContentFunction(function (&$content, $action = null)
+        {
+            $content['code'] = 'A79';
+        }, $this->gateway);
+
+        $this->refundPayment($payment->getPublicId());
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
+
+        $this->assertEquals('created', $response['status']);
+
+        $this->resetMockServer();
+
+        $this->retryFailedRefund($refund['id'], $refund['payment_id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('processed', $refund['status']);
     }
 }

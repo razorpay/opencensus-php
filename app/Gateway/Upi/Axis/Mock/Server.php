@@ -132,7 +132,7 @@ class Server extends Base\Mock\Server
             Fields::MERCHANT_TRANSACTION_ID     => $payment['id'],
             Fields::TRANSACTION_TIMESTAMP       => date('j-F-Y'),
             Fields::TRANSACTION_AMOUNT          => $this->formatAmount($upiEntity['amount']),
-            Fields::GATEWAY_TRANSACTION_ID      => 'AXIS00090439839',
+            Fields::GATEWAY_TRANSACTION_ID      => $upiEntity['upi_txn_id'] ?? 'AXIS00090439839',
             Fields::GATEWAY_RESPONSE_CODE       => $status,
             Fields::GATEWAY_RESPONSE_MESSAGE    => $result,
             Fields::RRN                         => '714513318376',
