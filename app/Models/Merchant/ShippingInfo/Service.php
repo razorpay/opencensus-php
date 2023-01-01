@@ -413,6 +413,7 @@ class Service extends Base\Service
         $shippingInfo = [
             'shipping_methods' => [
                 [
+                    'id' => 'default',
                     'name' => 'default',
                     'description' => 'default',
                 ]
@@ -447,9 +448,14 @@ class Service extends Base\Service
         {
             $address[$key] = $address['shipping_methods'][0][$key];
         }
-
-        unset($address['shipping_methods']);
-
+        //Unset the default shipping method if its present
+        $shippingMethods = $address['shipping_methods'][0];
+        if ($shippingMethods['name'] === 'default' &&
+            $shippingMethods['id'] === 'default' &&
+            $shippingMethods['description'] === 'default')
+        {
+            unset($address['shipping_methods']);
+        }
         return $address;
     }
 

@@ -64,8 +64,11 @@ class Providers extends Base\Core
             'cod_fee',
             'name',
             'description',
+            'id',
         ];
 
+        if (empty($shippingInfo['shipping_methods']) === false)
+        {
         // Filling empty values as protobuf omits empty fields and converting strings to ints due to protobuf serialization
         for ($i = 0; $i < count($shippingInfo['shipping_methods']); $i++)
         {
@@ -75,6 +78,7 @@ class Providers extends Base\Core
                 {
                     switch ($key)
                     {
+                        case 'id':
                         case 'name':
                             $shippingInfo['shipping_methods'][$i][$key] = 'default';
                             break;
@@ -96,6 +100,7 @@ class Providers extends Base\Core
                     $shippingInfo['shipping_methods'][$i][$key] = (int)$shippingInfo['shipping_methods'][$i][$key];
                 }
             }
+        }
         }
         return array_merge($address, $shippingInfo);
     }

@@ -66,6 +66,11 @@ class Service extends \RZP\Models\Base\Service
             }
 
             $orderMetaInput = [];
+            $shippingMethod = null;
+            if (empty($input[Order1cc\Fields::SHIPPING_METHOD]) === false)
+            {
+                $shippingMethod = $input[Order1cc\Fields::SHIPPING_METHOD];
+            }
             $customerInfo = $input[Order1cc\Fields::CUSTOMER_DETAILS];
             if (isset($customerInfo[Order1cc\Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS]) === true) {
                 $country = $customerInfo[Order1cc\Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS]['country'];
@@ -98,9 +103,34 @@ class Service extends \RZP\Models\Base\Service
                     throw $ex;
                 }
 
+                $shippingFee = $shippingInfo[Order1cc\Fields::SHIPPING_FEE] ?? 0;
+                $codFee = $shippingInfo[Order1cc\Fields::COD_FEE] ?? 0;
+
+                if (empty($shippingMethod) === false && empty($shippingInfo['shipping_methods']) === false)
+                {
+                    $selectedMethod = $this->isValidShippingMethod($shippingInfo['shipping_methods'], $shippingMethod, $dimensions);
+                    $shippingMethod = [
+                        Order1cc\Fields::COD_FEE      => $selectedMethod[Order1cc\Fields::COD_FEE],
+                        Order1cc\Fields::SHIPPING_FEE => $selectedMethod[Order1cc\Fields::SHIPPING_FEE],
+                        Order1cc\Fields::NAME         => $selectedMethod[Order1cc\Fields::NAME] ?? 'default',
+                        Order1cc\Fields::DESCRIPTION  => $selectedMethod[Order1cc\Fields::DESCRIPTION] ?? 'default',
+                    ];
+                    $shippingFee = $selectedMethod[Order1cc\Fields::SHIPPING_FEE];
+                    $codFee = $selectedMethod[Order1cc\Fields::COD_FEE];
+                }
+                else
+                {
+                    $shippingMethod = [
+                        Order1cc\Fields::COD_FEE      => $codFee,
+                        Order1cc\Fields::SHIPPING_FEE => $shippingFee,
+                        Order1cc\Fields::NAME         => 'default',
+                        Order1cc\Fields::DESCRIPTION  => 'default',
+                    ];
+                }
+
             $orderMetaInput = [
-                Order1cc\Fields::COD_FEE      => $shippingInfo[Order1cc\Fields::COD_FEE] ?? 0,
-                Order1cc\Fields::SHIPPING_FEE => $shippingInfo[Order1cc\Fields::SHIPPING_FEE] ?? 0,
+                Order1cc\Fields::COD_FEE      => $codFee,
+                Order1cc\Fields::SHIPPING_FEE => $shippingFee,
             ];
         }
 
@@ -108,6 +138,12 @@ class Service extends \RZP\Models\Base\Service
                 Order1cc\Fields::CUSTOMER_DETAILS => $customerInfo,
             ]);
 
+            if (empty($shippingMethod) === false)
+            {
+                $orderMetaInput = array_merge($orderMetaInput, [
+                    Order1cc\Fields::SHIPPING_METHOD => $shippingMethod,
+                ]);
+            }
             $result = (new OneClickCheckoutCore)->update1CcOrder($orderId, $orderMetaInput);
 
             $duration = millitime() - $startTime;
@@ -530,5 +566,24 @@ class Service extends \RZP\Models\Base\Service
         }
 
         return 'NA';
+    }
+
+    /**
+     * @param $shipping_methods
+     * @param mixed $shippingMethod
+     * @param array $dimensions
+     * @return array
+     * @throws BadRequestException
+     */
+    protected function isValidShippingMethod($shipping_methods, mixed $shippingMethod, array $dimensions): array
+    {
+        $selectedMethod = array_first($shipping_methods, function ($methods) use ($shippingMethod) {
+            return $methods[Order1cc\Fields::NAME] === $shippingMethod[Order1cc\Fields::NAME];
+        });
+        if (empty($selectedMethod) === true) {
+            $this->trace->count(Metric::UPDATE_CUSTOMERS_DETAILS_REQUEST_FAULT_COUNT, $dimensions);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_SHIPPING_INFO_NOT_FOUND, null, null, "shipping method not found");
+        }
+        return $selectedMethod;
     }
 }

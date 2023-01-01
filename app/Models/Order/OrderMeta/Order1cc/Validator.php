@@ -26,10 +26,20 @@ class Validator extends Base\Validator
         Fields::REVIEWED_AT      => 'sometimes|integer',
         Fields::REVIEWED_BY      => 'sometimes|email',
         Fields::REVIEW_STATUS    => 'sometimes|in:approved,canceled,hold,approval_initiated,hold_initiated,cancel_initiated',
+        Fields::SHIPPING_METHOD  => 'sometimes|array|custom',
     ];
 
     protected static $editCustomerDetailsRules = [
         Fields::CUSTOMER_DETAILS => 'required|array|custom',
+        Fields::SHIPPING_METHOD  => 'sometimes|array|custom',
+    ];
+
+    protected static $shippingMethodRules = [
+        Fields::ID                 => 'sometimes|string|max:64',
+        Fields::NAME               => 'required|string|max:64',
+        Fields::DESCRIPTION        => 'sometimes|string|max:256',
+        Fields::SHIPPING_FEE       => 'sometimes|integer',
+        Fields::COD_FEE            => 'sometimes|integer',
     ];
 
     protected static $editOrderNotesRules = [
@@ -162,5 +172,10 @@ class Validator extends Base\Validator
     protected function validateEditOrderNotes(string $attribute, array $value)
     {
         $this->validateInput('editOrderNotes', $value);
+    }
+
+    protected function validateShippingMethod(string $attribute, array $value)
+    {
+        $this->validateInput('shippingMethod', $value);
     }
 }

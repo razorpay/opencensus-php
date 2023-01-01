@@ -60,6 +60,9 @@ class Fields
     const COD_ELIGIBILITY_RISK_TIER = 'risk_tier';
     const COD_ELIGIBILITY_RTO_REASONS = 'rto_reasons';
     const COD_ELIGIBILITY_RTO_CATEGORY = 'rto_category';
+    const SHIPPING_METHOD              = 'shipping_method';
+    const NAME                         = 'name';
+    const DESCRIPTION                  = 'description';
 
     //rto recommendation fields
     const REVIEW_STATUS = 'review_status';
