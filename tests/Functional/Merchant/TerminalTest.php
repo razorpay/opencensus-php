@@ -12,6 +12,7 @@ use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Cache\Events\KeyForgotten;
 
 use RZP\Models\Currency\Currency;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Terminal;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -4031,6 +4032,114 @@ class TerminalTest extends TestCase
     public function testGetTerminalEditableFields()
     {
         $this->startTest();
+    }
+
+    public function testEditTerminalWithGodModeEditWithOnlyDSFeature()
+    {
+        $this->fixtures->create('feature', [
+            'entity_id' => '10000000000000',
+            'name'   => 'only_ds',
+            'entity_type' => 'merchant',
+        ]);
+
+        $originalTerminal = $this->fixtures->create('terminal', [
+            'enabled'             => true,
+            'gateway'             => 'hitachi',
+            'merchant_id'         => '10000000000000',
+            'gateway_merchant_id' => '90000000001',
+            'status'              => 'activated',
+            'visa_mpan'           => '4234564890123456',
+            'gateway_terminal_id' => 'tid12345',
+        ]);
+
+        $url = '/terminals/god_mode_edit/'.$originalTerminal['id'];
+
+        $testData = $this->testData['testEditTerminalWithoutGodMode'];
+
+        $testData['request']['url'] = $url;
+
+        $this->startTest($testData);
+    }
+
+    public function testDisableTerminalWithOnlyDsWhenOnlyOneTerminal()
+    {
+        $this->fixtures->create('feature', [
+            'entity_id' => '10000000000000',
+            'name'   => 'only_ds',
+            'entity_type' => 'merchant',
+        ]);
+
+        $originalTerminal = $this->fixtures->create('terminal', [
+            'enabled'             => true,
+            'gateway'             => 'worldline',
+            'merchant_id'         => '10000000000000',
+            'gateway_merchant_id' => '90000000001',
+            'status'              => 'activated',
+            'visa_mpan'           => '4234564890123456',
+            'gateway_terminal_id' => 'tid12345',
+            'type'    => [
+                'direct_settlement_with_refund' => '1'
+            ],
+        ]);
+
+        $this->app['basicauth']->setPartnerMerchantId('10000000000000');
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
+
+        $url = '/terminals/term_'.$originalTerminal['id']. '/disable';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->privateAuth();
+
+        $this->startTest($this->testData[__FUNCTION__]);
+    }
+
+    public function testDisableTerminalWithOnlyDsWhenMoreThanOneTerminal()
+    {
+        $this->fixtures->create('feature', [
+            'entity_id' => '10000000000000',
+            'name'   => 'only_ds',
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('terminal', [
+            'enabled'             => true,
+            'gateway'             => 'worldline',
+            'merchant_id'         => '10000000000000',
+            'gateway_merchant_id' => '90000000001',
+            'status'              => 'activated',
+            'visa_mpan'           => '4234564890123456',
+            'gateway_terminal_id' => 'tid12345',
+            'type'    => [
+                'direct_settlement_with_refund' => '1'
+            ],
+        ]);
+
+        $originalTerminal = $this->fixtures->create('terminal', [
+            'enabled'             => true,
+            'gateway'             => 'worldline',
+            'merchant_id'         => '10000000000000',
+            'gateway_merchant_id' => '90000000001',
+            'status'              => 'activated',
+            'visa_mpan'           => '4234564890123456',
+            'gateway_terminal_id' => 'tid12345',
+            'type'    => [
+                'direct_settlement_with_refund' => '1'
+            ],
+        ]);
+
+        $this->app['basicauth']->setPartnerMerchantId('10000000000000');
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
+
+        $url = '/terminals/term_'.$originalTerminal['id']. '/disable';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->privateAuth();
+
+        $this->startTest($this->testData[__FUNCTION__]);
     }
 
 }

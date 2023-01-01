@@ -6,6 +6,7 @@ use App;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Card;
+use RZP\Models\Feature;
 use RZP\Models\Gateway\Terminal\Constants;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
@@ -3198,7 +3199,7 @@ class Validator extends Base\Validator
     public function editTerminalValidator($terminal, $input)
     {
 
-        if ($this->shouldSkipGatewayValidations() === true)
+        if ($this->shouldSkipGatewayValidations($terminal) === true)
         {
             return;
         }
@@ -3223,11 +3224,16 @@ class Validator extends Base\Validator
         }
     }
 
-    public function shouldSkipGatewayValidations()
+    public function shouldSkipGatewayValidations($terminal)
     {
         $app = App::getFacadeRoot();
 
         $ba = $app['basicauth'];
+
+        if (($terminal != null) and ($terminal->merchant->isFeatureEnabled(Feature\Constants::ONLY_DS) === true))
+        {
+            return false;
+        }
 
         if ($app['request.ctx']->getRoute() === 'terminal_edit_god_mode')
         {

@@ -237,6 +237,16 @@ class Service extends Base\Service
         {
             $types = $terminal->getType();
 
+            if ($terminal->getStatus() != Status::ACTIVATED)
+            {
+                continue;
+            }
+
+            if($terminal->isEnabled() === false)
+            {
+                continue;
+            }
+
             if(in_array($type[0],$types) === true || in_array($type[1], $types) === true)
             {
                 $dsCount++;

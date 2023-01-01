@@ -328,6 +328,29 @@ class Core extends Base\Core
         return $response;
     }
 
+    protected function validateDsActivated($terminal)
+    {
+        if($terminal->merchant->isFeatureEnabled(Constants::ONLY_DS) === true)
+        {
+            $count = (new Service())->countAllTerminalsOfMerchantAndCheckForTypeArray($terminal->merchant->getId());
+
+            if($count['ds_terminals'] === 1)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_MERCHANT);
+            }
+        }
+    }
+
+    protected function validateDsTerminalEdit($oldTerminal, $newTerminal)
+    {
+        //Activated to some else state
+        if (($oldTerminal->getStatus() === Status::ACTIVATED) and ($newTerminal->getStatus() !== Status::ACTIVATED))
+        {
+            $this->validateDsActivated($newTerminal);
+        }
+
+    }
+
     public function edit(Entity $terminal, array $input)
     {
         $this->validateAndTokenizeMpansIfPresentInInput($input);
@@ -349,6 +372,8 @@ class Core extends Base\Core
                 ]);
 
             $this->validateBuyPricing($input);
+
+            $oldTerminal = $terminal;
 
             $terminal->edit($input);
 
@@ -372,6 +397,8 @@ class Core extends Base\Core
             $mId = $terminal->getMerchantId();
 
             $this->validateNonDSRestriction($terminal->merchant, $terminal);
+
+            $this->validateDsTerminalEdit($oldTerminal, $terminal);
 
             $variantFlag = $this->app->razorx->getTreatment($mId, "TERMINAL_EDIT_PROXY", $mode);
 
@@ -420,6 +447,11 @@ class Core extends Base\Core
         $isEnabled = $terminal->isEnabled();
 
         $terminalStatusTrace = ($toggle) ? TraceCode::TERMINAL_ENABLE : TraceCode::TERMINAL_DISABLE;
+
+        if($toggle === false)
+        {
+            $this->validateDsActivated($terminal);
+        }
 
         $this->trace->info(
             $terminalStatusTrace,
