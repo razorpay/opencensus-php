@@ -10,7 +10,7 @@ const trackSelfServe = ({ action, page }) =>
 
 export const selfServerTrack = ({ type, actionType = 'fetch' }) => {
   const { action, page } = getAction(type, actionType);
-  trackSelfServe({ action, page });
+  action && trackSelfServe({ action, page });
 };
 
 export const handleChangeTrack = (type) => ({ type: actionType, args }) => {

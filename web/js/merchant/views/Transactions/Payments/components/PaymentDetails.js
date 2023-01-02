@@ -483,7 +483,12 @@ function PaymentDetails(props) {
 
                 <EntityDetailRow label="Order ID">
                   {payment.order_id ? (
-                    <Link to={`/orders/${payment.order_id}`} onClick={selfServerTrack}>
+                    <Link
+                      to={`/orders/${payment.order_id}`}
+                      onClick={() => {
+                        selfServerTrack({ type: 'order' });
+                      }}
+                    >
                       <code>{payment.order_id}</code>
                     </Link>
                   ) : (

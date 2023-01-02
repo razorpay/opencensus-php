@@ -28,9 +28,11 @@ const ACTION_MAP = {
 };
 
 export const getAction = (section, type) => {
-  const { event, page } = EVENT_MAP[section];
-  return {
-    action: `${event} Details ${ACTION_MAP[type]}`,
-    page,
-  };
+  const response = {};
+  if (section && EVENT_MAP[section]) {
+    const { event, page } = EVENT_MAP[section];
+    response.action = `${event} Details ${ACTION_MAP[type]}`;
+    response.page = page;
+  }
+  return response;
 };
