@@ -16,6 +16,8 @@ class Bucket extends Job
 
     const MAX_ATTEMPTS = 5;
 
+    const JOB_RETRY_INTERVAL = 100;
+
     const TRANSACTION_SETTLED_AT_ERROR_MESSAGE = 'transactions without settled_at value can not be consumed by new settlement service';
 
     /**
@@ -117,7 +119,7 @@ class Bucket extends Job
             // if the max attempt is not exhausted then release the job for retry
             if ($this->attempts() <= self::MAX_ATTEMPTS)
             {
-                $this->release(1);
+                $this->release(self::JOB_RETRY_INTERVAL);
             }
 
             $this->trace->traceException(
