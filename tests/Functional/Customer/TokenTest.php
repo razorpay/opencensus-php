@@ -262,7 +262,7 @@ class TokenTest extends TestCase
                             'token_reference_number'     => $token,
                             'payment_account_reference'  => strrev($token),
                             'token_expiry_month'         => '11',
-                            'token_expiry_year'          => '2022',
+                            'token_expiry_year'          => '2026',
                             'token_iin'                  => $token_iin,
                             'token_number'               => $input['card']['number'],
                             'cryptogram_value'           => '',
@@ -810,7 +810,7 @@ class TokenTest extends TestCase
                         'token_reference_number'     => $token,
                         'payment_account_reference'  => strrev($token),
                         'token_expiry_month'         => '11',
-                        'token_expiry_year'          => '2022',
+                        'token_expiry_year'          => '2026',
                         'token_iin'                  => $token_iin,
                         'token_number'               => $input['card']['number'],
                         'cryptogram_value'           => '',
@@ -850,7 +850,7 @@ class TokenTest extends TestCase
 
         $this->assertEquals('11', $response['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
 
-        $this->assertEquals('2022', $response['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
+        $this->assertEquals('2026', $response['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
 
         $this->assertArrayNotHasKey('customer_id', $response);
 
@@ -862,7 +862,7 @@ class TokenTest extends TestCase
         $this->assertEquals('01', $card['expiry_month']);
         $this->assertEquals('2099', $card['expiry_year']);
         $this->assertEquals('11', $card['token_expiry_month']);
-        $this->assertEquals('2022', $card['token_expiry_year']);
+        $this->assertEquals('2026', $card['token_expiry_year']);
     }
 
     public function testCreateTokenAndTokenizeCardNotAllowed()
