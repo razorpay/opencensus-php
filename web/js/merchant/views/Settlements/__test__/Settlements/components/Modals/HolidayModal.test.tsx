@@ -15,6 +15,7 @@ test('should render empty state properly', () => {
 });
 
 test('should render heading and action button, holiday list and close on clicking closeModal', async () => {
+  jest.useFakeTimers('modern').setSystemTime(new Date('2022-01-01'));
   const { container } = renderApp(holidayList);
 
   expect(screen.getByText(/Date/i)).toBeInTheDocument();
@@ -29,4 +30,5 @@ test('should render heading and action button, holiday list and close on clickin
   await delay();
   const rowsLength = container.getElementsByTagName('tr').length;
   expect(rowsLength).toBe(holidayList.data[2022].length + 1);
+  jest.useRealTimers();
 });
