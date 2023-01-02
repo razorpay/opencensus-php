@@ -63,6 +63,10 @@ Route::group(['middleware' => ['web']], function () {
     // Growth Public Assets
     Route::post('/v1/growth/assets', 'GenericController@getPublicGrowthAssets')->name('growth_public_assets');
 
+    // Get partner config based on given partner id
+    Route::get('/partner_config', 'UserController@getPartnerConfig')->name('partner_config_fetch');
+
+
     Route::group(['prefix' => 'admin', 'middleware'  =>  ['set_x_frame']], function () {
         Route::post('/signin', 'AdminController@postSignin')->name('admin_signin');
         Route::post('/2fa/otp-verify', 'AdminController@postVerify2faAuthOtp')->name('admin_2FA_verify');

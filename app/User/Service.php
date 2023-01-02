@@ -1825,6 +1825,17 @@ class Service extends Base\Service
         return [$error, $genericUser];
     }
 
+    public function getPartnerConfig(string $partnerId): array
+    {
+        $this->trace->info(TraceCode::GET_PARTNER_CONFIG_GUEST, ['partner_id' => $partnerId]);
+
+        $queryParams = [
+            'partner_id' => $partnerId
+        ];
+
+        return $this->requestAPI($queryParams,'partner_config_guest', 'GET');
+    }
+
     protected function checkAccessOfUserOnMerchant($merchantId)
     {
         $request = new \App\Admin\ApiRequestAny();

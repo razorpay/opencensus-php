@@ -1283,6 +1283,16 @@ class UserController extends Controller
         return ['success' => true];
     }
 
+    public function getPartnerConfig()
+    {
+        $input = Input::all();
+
+        $partnerId = $input['partner_id'] ?? null;
+
+        list($error, $data, $httpCode) = (new User\Service)->getPartnerConfig($partnerId);
+
+        return AppResponse::jsonResponse($error, $data, $httpCode);
+    }
 
     private function getDashboardBaseUrl()
     {
