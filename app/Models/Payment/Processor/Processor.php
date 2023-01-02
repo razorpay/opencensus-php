@@ -19,6 +19,7 @@ use RZP\Http\RequestHeader;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card;
 use RZP\Models\Card\IIN;
+use RZP\Models\Card\Network;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Merchant\Entity;
 use RZP\Jobs\Order\OrderUpdate;
