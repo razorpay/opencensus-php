@@ -4169,6 +4169,7 @@ class Processor
 
         $data['action'] = [
             'action' => 'verify',
+            'source' => 'api'
         ];
 
         return $data;
@@ -4255,6 +4256,11 @@ class Processor
                 'gateway_transaction_id' => $authorisation['gateway_transaction_id'],
             ];
         }
+
+        $data['action'] = [
+            'action' => 'verify',
+            'source' => 'api'
+        ];
 
         return $data;
     }

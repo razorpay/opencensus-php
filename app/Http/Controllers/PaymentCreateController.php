@@ -20,7 +20,7 @@ use RZP\Models\Merchant\Preferences;
 use View;
 use Crypt;
 use Carbon\Carbon;
-
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Constants\Entity as E;
@@ -1024,9 +1024,45 @@ class PaymentCreateController extends Controller
 
         assertTrue ($data !== null);
 
+        $this->pushForBarricade($data);
+
         return $this->returnCheckoutCallbackView($data);
     }
+    protected function pushForBarricade($data): void
+    {
+        $barricade_action = 'merchant_integration_s2s_callback';
+        $barricade_merchant_integration = 'barricade_merchant_integration_s2s_callback';
+        $sqsPush = $this->app->razorx->getTreatment($data['razorpay_payment_id'], $barricade_merchant_integration, 'live');
 
+        if ($sqsPush === 'control') {
+
+            $data['action'] = [
+                'action' => $barricade_action
+            ];
+
+            try {
+                $waitTime = 600;
+                $queueName = $this->app['config']->get('queue.barricade_verify.' . 'live');
+                $this->app['queue']->connection('sqs')->later($waitTime, "Barricade Queue Push", json_encode($data), $queueName);
+
+
+                $this->trace->info(TraceCode::BARRICADE_SQS_PUSH_SUCCESS,
+                    [
+                        'queueName' => $queueName,
+                        'data' => $data,
+                    ]);
+
+            } catch (\Throwable $ex) {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::CRITICAL,
+                    TraceCode::BARRICADE_SQS_PUSH_FAILURE,
+                    [
+                        'data' => $data,
+                    ]);
+            }
+        }
+    }
     protected function processCoprotoData($data)
     {
         $merchant = $this->app['basicauth']->getMerchant();
